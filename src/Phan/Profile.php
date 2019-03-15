@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Phan;
 
 /**
@@ -8,6 +9,7 @@ trait Profile
 {
     /**
      * @var array<string,array<int,float>>
+     * Maps each phase of Phan analysis to a list of 1 or more durations (in seconds) spent in that phase.
      */
     private static $label_delta_map = [];
 
@@ -41,9 +43,9 @@ trait Profile
         }
 
         // Measure the time to execute the given closure
-        $start_time = microtime(true);
+        $start_time = \microtime(true);
         $return_value = $closure();
-        $end_time = microtime(true);
+        $end_time = \microtime(true);
 
         // Emit a log message
         $delta = ($end_time - $start_time);
@@ -61,13 +63,13 @@ trait Profile
 
         // Create a shutdown function to emit the log when we're
         // all done
-        register_shutdown_function(function () {
+        \register_shutdown_function(static function () {
             $label_metric_map = [];
 
             // Compute whatever metric we care about
             foreach (self::$label_delta_map as $label => $delta_list) {
-                $total_time = array_sum($delta_list);
-                $count = count($delta_list);
+                $total_time = \array_sum($delta_list);
+                $count = \count($delta_list);
                 $average_time = $total_time / $count;
                 $label_metric_map[$label] = [
                     $count,
@@ -77,16 +79,23 @@ trait Profile
             }
 
             // Sort such that the highest metric value is on top
-            uasort($label_metric_map, function ($a, $b) : int {
-                return $b[1] <=> $a[1];
-            });
+            \uasort(
+                $label_metric_map,
+                /**
+                 * @param array{0:int,1:float,2:float} $a
+                 * @param array{0:int,1:float,2:float} $b
+                 */
+                static function (array $a, array $b) : int {
+                    return $b[1] <=> $a[1];
+                }
+            );
 
             // Print it all out
             foreach ($label_metric_map as $label => $metrics) {
                 print $label
                     . "\t"
-                    . implode("\t", array_map(function (float $v) : string {
-                        return sprintf("%0.6f", $v);
+                    . \implode("\t", \array_map(static function (float $v) : string {
+                        return \sprintf("%0.6f", $v);
                     }, $metrics))
                     . "\n";
             }

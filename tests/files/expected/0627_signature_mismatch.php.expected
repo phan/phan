@@ -1,0 +1,16 @@
+%s:19 PhanParamSignatureMismatch Declaration of function noParamType(int $x) : void should be compatible with function noParamType($x) defined in %s:6
+%s:19 PhanParamSignaturePHPDocMismatchHasParamType Declaration of real/@method function noParamType(int $x) should be compatible with real/@method function noParamType($x) (parameter #1 has type 'int' which cannot replace original parameter with no type) defined in %s:6
+%s:20 PhanParamSignaturePHPDocMismatchHasNoParamType Declaration of real/@method function hasParamType($x) should be compatible with real/@method function hasParamType(int $x) (parameter #1 with no type cannot replace original parameter with type 'int') defined in %s:7
+%s:21 PhanParamSignatureMismatch Declaration of function isReference($x) : void should be compatible with function isReference(&$x) defined in %s:8
+%s:21 PhanParamSignaturePHPDocMismatchParamIsNotReference Declaration of real/@method function isReference($x) should be compatible with real/@method function isReference(&$x) (parameter #1 is a non-reference parameter overriding a reference parameter) defined in %s:8
+%s:22 PhanUnextractableAnnotationPart Saw unextractable annotation for a fragment of comment '* @method isNotReference(&$x)': '&$x'
+%s:23 PhanParamSignatureMismatch Declaration of function variadic($x) : void should be compatible with function variadic(...$x) defined in %s:10
+%s:23 PhanParamSignaturePHPDocMismatchTooManyRequiredParameters Declaration of real/@method function variadic($x) should be compatible with real/@method function variadic(...$x) (the method override requires 1 parameter(s), but the overridden method requires only 0) defined in %s:10
+%s:24 PhanParamSignatureMismatch Declaration of function variadic2($x = NULL) : void should be compatible with function variadic2(...$x) defined in %s:11
+%s:24 PhanParamSignaturePHPDocMismatchParamNotVariadic Declaration of real/@method function variadic2($x = NULL) should be compatible with real/@method function variadic2(...$x) (parameter #1 is a non-variadic parameter replacing a variadic parameter) defined in %s:11
+%s:25 PhanParamSignatureMismatch Declaration of function notVariadic(...$x) : void should be compatible with function notVariadic($x) defined in %s:12
+%s:25 PhanParamSignaturePHPDocMismatchParamVariadic Declaration of real/@method function notVariadic(...$x) should be compatible with real/@method function notVariadic($x) (parameter #1 is a variadic parameter replacing a non-variadic parameter) defined in %s:12
+%s:26 PhanParamSignatureMismatch Declaration of function returnsInt() : string should be compatible with function returnsInt() : int defined in %s:13
+%s:26 PhanParamSignaturePHPDocMismatchReturnType Declaration of real/@method function returnsInt() should be compatible with real/@method function returnsInt() : int (method returning 'string' cannot override method returning 'int') defined in %s:13
+%s:27 PhanParamSignatureMismatch Declaration of function hasParameters() : void should be compatible with function hasParameters($x) defined in %s:14
+%s:27 PhanParamSignaturePHPDocMismatchTooFewParameters Declaration of real/@method function hasParameters() should be compatible with real/@method function hasParameters($x) (the method override accepts 0 parameter(s), but the overridden method can accept 1) defined in %s:14

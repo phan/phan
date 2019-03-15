@@ -1,12 +1,15 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
 
 namespace Phan\Tests\AST;
 
-use Phan\Tests\BaseTest;
-
+use AssertionError;
 use Phan\AST\ASTReverter;
 use Phan\Config;
+use Phan\Tests\BaseTest;
 
+/**
+ * Tests of ASTReverter converting a Node to a compact string representation of that node
+ */
 final class ASTReverterTest extends BaseTest
 {
     /**
@@ -18,13 +21,19 @@ final class ASTReverterTest extends BaseTest
         $expected = $expected ?? $snippet;
         $file_contents = '<' . '?php ' . $snippet . ';';
         $statements = \ast\parse_code($file_contents, Config::AST_VERSION);
-        $this->assertSame(1, count($statements->children));
+        $this->assertSame(1, \count($statements->children));
         $snippet_node = $statements->children[0];
+        if ($snippet_node === null) {
+            throw new AssertionError("invalid first statement in statement list");
+        }
 
         $reverter = new ASTReverter();
         $this->assertSame($expected, $reverter->toShortString($snippet_node));
     }
 
+    /**
+     * @return array<int,array{0:string}>
+     */
     public function revertShorthandProvider() : array
     {
         return [

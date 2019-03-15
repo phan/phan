@@ -8,6 +8,7 @@ src/007_printf.php:8 PhanPluginPrintfNoSpecifiers None of the formatting argumen
 src/007_printf.php:9 PhanPluginPrintfNoSpecifiers None of the formatting arguments passed alongside format string "Not using args\n" are used
 src/007_printf.php:10 PhanPluginPrintfNoSpecifiers None of the formatting arguments passed alongside format string "Not using args\n" are used
 src/007_printf.php:11 PhanPluginPrintfNoSpecifiers None of the formatting arguments passed alongside format string "Not using args\n" are used
+src/007_printf.php:13 PhanPluginPrintfVariableFormatString Code [] has a dynamic format string that could not be inferred by Phan
 src/007_printf.php:13 PhanTypeMismatchArgumentInternal Argument 1 (format) is array{} but \printf() takes string
 src/007_printf.php:14 PhanPluginPrintfNoSpecifiers None of the formatting arguments passed alongside format string "3" are used
 src/007_printf.php:14 PhanTypeMismatchArgumentInternal Argument 1 (format) is 3 but \printf() takes string
@@ -38,4 +39,4 @@ src/007_printf.php:37 PhanTypeMismatchArgumentInternal Argument 1 (format) is fa
 src/007_printf.php:38 PhanPluginPrintfNoArguments No format string arguments are given for "", consider using echo instead
 src/007_printf.php:38 PhanTypeMismatchArgumentInternal Argument 1 (format) is null but \printf() takes string
 src/007_printf.php:39 PhanPluginPrintfNoArguments No format string arguments are given for "1", consider using echo instead
-src/007_printf.php:39 PhanTypeMismatchArgumentInternal Argument 1 (format) is int but \printf() takes string
+src/007_printf.php:39 PhanTypeMismatchArgumentInternal Argument 1 (format) is 1 but \printf() takes string

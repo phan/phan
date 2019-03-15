@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Plugin\Internal\VariableTracker;
 
 use ast\Node;
@@ -7,9 +8,10 @@ use function spl_object_id;
 
 /**
  * This will represent a variable scope, similar to \Phan\Language\Scope.
- * Instead of tracking the union types for variable names, this will instead track definitions of variable names.
+ * Instead of tracking the union types for variable names, this will instead track definitions and uses of variable names.
  *
  * @see ContextMergeVisitor for something similar for union types.
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class VariableTrackingScope
 {
@@ -32,6 +34,8 @@ class VariableTrackingScope
     protected $uses = [];
 
     /**
+     * Record that $variable_name had a definition that was created by the Node $node
+     *
      * @return void
      */
     public function recordDefinition(string $variable_name, Node $node)
@@ -42,6 +46,8 @@ class VariableTrackingScope
     }
 
     /**
+     * Record that $variable_name had a definition that was created by the Node $node where spl_object_id($node) is $node_id
+     *
      * @return void
      */
     public function recordDefinitionById(string $variable_name, int $node_id)
@@ -52,6 +58,10 @@ class VariableTrackingScope
     }
 
     /**
+     * Record the fact that $node is a usage of $variable_name.
+     *
+     * If it is already a definition of $variable_name, then don't record that.
+     *
      * @suppress PhanUnreferencedPublicMethod used by reference
      * @return void
      */
@@ -66,6 +76,10 @@ class VariableTrackingScope
     }
 
     /**
+     * Record the fact that a node is a usage of $variable_name.
+     *
+     * Equivalent to $this->recordUsage($variable_name, spl_object_id($node))
+     *
      * @return void
      */
     public function recordUsageById(string $variable_name, int $node_id)
@@ -77,27 +91,62 @@ class VariableTrackingScope
     }
 
     /**
-     * Overridden by subclasses
-     * @return ?array<int,true>
+     * Gets the definitions of $variable_name in this scope.
+     *
+     * This is overridden by subclasses, some of which will modify $this->defs
+     *
+     * @return ?array<int,true> the Nodes which defined $variable_name
      */
     public function getDefinition(string $variable_name)
     {
         return $this->defs[$variable_name] ?? null;
     }
 
+    /**
+     * Gets the definitions of $variable_name in this scope.
+     *
+     * This is overridden by subclasses
+     *
+     * @return ?array<int,true> the Nodes which defined $variable_name
+     */
+    public function getDefinitionUpToScope(string $variable_name, VariableTrackingScope $forbidden_scope)
+    {
+        if ($this === $forbidden_scope) {
+            return null;
+        }
+        return $this->defs[$variable_name] ?? null;
+    }
+
+    /**
+     * Recursively finds the accessible definitions of various variable names
+     *
+     * @return array<string,array<int,true>>
+     */
+    public function getDefinitionsRecursively()
+    {
+        return $this->defs;
+    }
+
+    /**
+     * This creates a new scope where the definitions both inside and outside of the loop are accounted for.
+     *
+     * Additionally, it will mark references to variables at the beginning of the inner body of the loop as being uses of variables defined at the end of the loop.
+     * @return static
+     */
     public function mergeInnerLoopScope(
-        VariableTrackingLoopScope $scope,
+        VariableTrackingLoopScope $inner_loop_scope,
         VariableGraph $graph
     ) : VariableTrackingScope {
         $result = clone($this);
         // TODO: Can this be optimized for common use cases?
-        foreach ($scope->skipped_loop_scopes as $alternate_scope) {
-            $this->flattenScopeToMergedLoopResult($scope, $alternate_scope, $graph);
+        // TODO: Track continue and break separately - May require a more complicated graph
+        foreach ($inner_loop_scope->skipped_loop_scopes as $alternate_scope) {
+            $this->flattenScopeToMergedLoopResult($inner_loop_scope, $alternate_scope, $graph);
         }
-        foreach ($scope->skipped_exiting_loop_scopes as $alternate_scope) {
-            $this->flattenUsesFromScopeToMergedLoopResult($scope, $alternate_scope, $graph);
+        foreach ($inner_loop_scope->skipped_exiting_loop_scopes as $alternate_scope) {
+            $this->flattenUsesFromScopeToMergedLoopResult($inner_loop_scope, $alternate_scope, $graph);
         }
-        $this->addScopeToMergedLoopResult($result, $scope, $graph);
+        $this->addScopeToMergedLoopResult($result, $inner_loop_scope, $graph);
         return $result;
     }
 
@@ -105,7 +154,7 @@ class VariableTrackingScope
      * @return void
      */
     protected function flattenScopeToMergedLoopResult(
-        VariableTrackingLoopScope $scope,
+        VariableTrackingLoopScope $inner_loop_scope,
         VariableTrackingBranchScope $alternate_scope,
         VariableGraph $graph
     ) {
@@ -115,17 +164,17 @@ class VariableTrackingScope
         $parent_scope = $alternate_scope->parent_scope;
         if (!($parent_scope instanceof VariableTrackingLoopScope)) {
             '@phan-var VariableTrackingBranchScope $parent_scope';
-            $this->flattenScopeToMergedLoopResult($scope, $parent_scope, $graph);
+            $this->flattenScopeToMergedLoopResult($inner_loop_scope, $parent_scope, $graph);
         }
-        $this->addScopeToMergedLoopResult($scope, $alternate_scope, $graph);
-        $scope->mergeUses($alternate_scope->uses);
+        $this->addScopeToMergedLoopResult($inner_loop_scope, $alternate_scope, $graph);
+        $inner_loop_scope->mergeUses($alternate_scope->uses);
     }
 
     /**
      * @return void
      */
     protected function flattenUsesFromScopeToMergedLoopResult(
-        VariableTrackingLoopScope $scope,
+        VariableTrackingLoopScope $inner_loop_scope,
         VariableTrackingBranchScope $alternate_scope,
         VariableGraph $graph
     ) {
@@ -135,9 +184,9 @@ class VariableTrackingScope
         $parent_scope = $alternate_scope->parent_scope;
         if (!($parent_scope instanceof VariableTrackingLoopScope)) {
             '@phan-var VariableTrackingBranchScope $parent_scope';
-            $this->flattenScopeToMergedLoopResult($scope, $parent_scope, $graph);
+            $this->flattenScopeToMergedLoopResult($inner_loop_scope, $parent_scope, $graph);
         }
-        $scope->mergeUses($alternate_scope->uses);
+        $inner_loop_scope->mergeUses($alternate_scope->uses);
     }
 
     /**
@@ -148,8 +197,10 @@ class VariableTrackingScope
         VariableTrackingBranchScope $scope,
         VariableGraph $graph
     ) {
-        foreach ($scope->defs as $variable_name => $defs) {
-            $defs_for_variable = $result->defs[$variable_name] ?? [];
+        // @phan-suppress-next-line PhanUndeclaredProperty
+        $parent_scope = $result->parent_scope ?? $result;
+        foreach ($scope->getDefinitionsRecursively() as $variable_name => $defs) {
+            $defs_for_variable = $result->getDefinitionUpToScope($variable_name, $parent_scope) ?? [];
             $loop_uses_of_own_variable = $scope->uses[$variable_name] ?? null;
 
             foreach ($defs as $def_id => $_) {
@@ -178,6 +229,31 @@ class VariableTrackingScope
     }
 
     /**
+     * Equivalent to mergeBranchScopeList([$scope], true, [])
+     *
+     * @param VariableTrackingBranchScope $scope
+     * @return static
+     */
+    public function mergeWithSingleBranchScope(
+        VariableTrackingBranchScope $scope
+    ) : VariableTrackingScope {
+        $result = clone($this);
+        $def_key_set = $scope->defs;
+        // Anything which is used within a branch is used within the parent
+        $result->mergeUses($scope->uses);
+
+        foreach ($def_key_set as $variable_name => $_) {
+            $defs_for_variable = $result->getDefinition($variable_name) ?? [];
+
+            foreach ($scope->getDefinition($variable_name) ?? [] as $def_id => $_) {
+                $defs_for_variable[$def_id] = true;
+            }
+            $result->defs[$variable_name] = $defs_for_variable;
+        }
+        return $result;
+    }
+
+    /**
      * @param array<int,VariableTrackingBranchScope> $branch_scopes
      * @param array<int,VariableTrackingBranchScope> $inner_exiting_scope_list
      */
@@ -201,29 +277,16 @@ class VariableTrackingScope
             // TODO: Make this properly recurse until it reaches the right depth (unnecessary right now)
             $result->mergeUses($scope->uses);
         }
-        if ($merge_parent_scope) {
-            $is_redefined_in_all_scopes = function (string $variable_name) use ($branch_scopes) : bool {
-                foreach ($branch_scopes as $scope) {
-                    if (isset($scope->defs[$variable_name])) {
-                        return false;
-                    }
-                }
-                return true;
-            };
-        } else {
-            $is_redefined_in_all_scopes = function (string $unused_variable_name) : bool {
-                return false;
-            };
-        }
+
         foreach ($def_key_set as $variable_name => $_) {
-            if ($is_redefined_in_all_scopes($variable_name)) {
-                $defs_for_variable = [];
+            if ($merge_parent_scope) {
+                $defs_for_variable = $result->getDefinition($variable_name) ?? [];
             } else {
-                $defs_for_variable = $result->defs[$variable_name] ?? [];
+                $defs_for_variable = [];
             }
 
             foreach ($branch_scopes as $scope) {
-                foreach ($scope->defs[$variable_name] ?? [] as $def_id => $_) {
+                foreach ($scope->getDefinition($variable_name) ?? [] as $def_id => $_) {
                     $defs_for_variable[$def_id] = true;
                 }
             }

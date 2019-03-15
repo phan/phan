@@ -1,8 +1,9 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Analysis;
 
-use Phan\Suggestion;
 use Phan\CodeBase;
+use Phan\Exception\RecursionDepthException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Context;
@@ -13,12 +14,16 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\TemplateType;
+use Phan\Suggestion;
 
+/**
+ * An analyzer that checks method phpdoc (at)throws types of function-likes to make sure they're valid
+ */
 class ThrowsTypesAnalyzer
 {
 
     /**
-     * Check method phpdoc (at)throws types to make sure they're valid
+     * Check phpdoc (at)throws types of function-likes to make sure they're valid
      *
      * @return void
      */
@@ -26,9 +31,12 @@ class ThrowsTypesAnalyzer
         CodeBase $code_base,
         FunctionInterface $method
     ) {
-        foreach ($method->getThrowsUnionType()->getTypeSet() as $type) {
-            // TODO: When analyzing the method body, only check the valid exceptions
-            self::analyzeSingleThrowType($code_base, $method, $type);
+        try {
+            foreach ($method->getThrowsUnionType()->getTypeSet() as $type) {
+                // TODO: When analyzing the method body, only check the valid exceptions
+                self::analyzeSingleThrowType($code_base, $method, $type);
+            }
+        } catch (RecursionDepthException $_) {
         }
     }
 
@@ -45,10 +53,7 @@ class ThrowsTypesAnalyzer
         /**
          * @param array<int,int|string|Type> $args
          */
-        $maybe_emit_for_method = function (string $issue_type, array $args, Suggestion $suggestion = null) use ($code_base, $method) {
-            if ($method->hasSuppressIssue($issue_type)) {
-                return;
-            }
+        $maybe_emit_for_method = static function (string $issue_type, array $args, Suggestion $suggestion = null) use ($code_base, $method) {
             Issue::maybeEmitWithParameters(
                 $code_base,
                 $method->getContext(),
@@ -66,8 +71,9 @@ class ThrowsTypesAnalyzer
             return false;
         }
         if ($type instanceof TemplateType) {
-            // TODO: Add unit tests of templates for return types and checks
-            if ($method instanceof Method && $method->isStatic()) {
+            // TODO: Add unit tests of templates for return types and checks.
+            // E.g. should warn if passing in something that can't cast to throwable
+            if ($method instanceof Method && $method->isStatic() && !$method->declaresTemplateTypeInComment($type)) {
                 $maybe_emit_for_method(
                     Issue::TemplateTypeStaticMethod,
                     [(string)$method->getFQSEN()]
@@ -76,13 +82,13 @@ class ThrowsTypesAnalyzer
             return false;
         }
         if ($type instanceof ObjectType) {
-            // (at)throws object is valid and should be treated like throwable
+            // (at)throws object is valid and should be treated like Throwable
             // NOTE: catch (object $o) does nothing in php 7.2.
             return true;
         }
         static $throwable;
         if ($throwable === null) {
-            $throwable = Type::fromFullyQualifiedString('\\Throwable');
+            $throwable = Type::throwableInstance();
         }
         if ($type === $throwable) {
             // allow (at)throws Throwable.
@@ -91,9 +97,6 @@ class ThrowsTypesAnalyzer
 
         $type_fqsen = FullyQualifiedClassName::fromType($type);
         if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
-            if ($method->hasSuppressIssue(Issue::UndeclaredTypeThrowsType)) {
-                return false;
-            }
             $maybe_emit_for_method(
                 Issue::UndeclaredTypeThrowsType,
                 [$method->getName(), $type],
@@ -133,11 +136,12 @@ class ThrowsTypesAnalyzer
             $code_base,
             $context,
             $type_fqsen,
-            IssueFixSuggester::createFQSENFilterFromClassFilter($code_base, function (Clazz $class) use ($code_base) : bool {
+            IssueFixSuggester::createFQSENFilterFromClassFilter($code_base, static function (Clazz $class) use ($code_base) : bool {
                 if ($class->isTrait()) {
                     return false;
                 }
-                return $class->getFQSEN()->asType()->asExpandedTypes($code_base)->hasType(Type::fromFullyQualifiedString('\Throwable'));
+                // @phan-suppress-next-line PhanThrowTypeAbsentForCall
+                return $class->getFQSEN()->asType()->asExpandedTypes($code_base)->hasType(Type::throwableInstance());
             })
         );
     }

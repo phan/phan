@@ -1,0 +1,1 @@
+%s:27 PhanTypeInvalidTraitReturn Expected a class or interface (or built-in type) to be the real return type of getC1AsT() but got trait \T

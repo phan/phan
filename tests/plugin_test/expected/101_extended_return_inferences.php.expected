@@ -1,0 +1,20 @@
+src/101_extended_return_inferences.php:11 PhanTypeMismatchArgument Argument 1 (x) is 2 but \expect_zero() takes 0 defined at src/101_extended_return_inferences.php:8
+src/101_extended_return_inferences.php:12 PhanTypeMismatchArgument Argument 1 (x) is array{} but \expect_zero() takes 0 defined at src/101_extended_return_inferences.php:8
+src/101_extended_return_inferences.php:13 PhanTypeMismatchArgument Argument 1 (x) is array{0:2} but \expect_zero() takes 0 defined at src/101_extended_return_inferences.php:8
+src/101_extended_return_inferences.php:14 PhanTypeMismatchArgument Argument 1 (x) is \stdClass but \expect_zero() takes 0 defined at src/101_extended_return_inferences.php:8
+src/101_extended_return_inferences.php:15 PhanTypeMismatchArgument Argument 1 (x) is '1' but \expect_zero() takes 0 defined at src/101_extended_return_inferences.php:8
+src/101_extended_return_inferences.php:16 PhanTypeMismatchArgument Argument 1 (x) is '1,2' but \expect_zero() takes 0 defined at src/101_extended_return_inferences.php:8
+src/101_extended_return_inferences.php:17 PhanTypeMismatchArgument Argument 1 (x) is '12' but \expect_zero() takes 0 defined at src/101_extended_return_inferences.php:8
+src/101_extended_return_inferences.php:18 PhanTypeMismatchArgument Argument 1 (x) is '0' but \expect_zero() takes 0 defined at src/101_extended_return_inferences.php:8
+src/101_extended_return_inferences.php:19 PhanTypeMismatchArgument Argument 1 (x) is 'tset' but \expect_zero() takes 0 defined at src/101_extended_return_inferences.php:8
+src/101_extended_return_inferences.php:20 PhanTypeMismatchArgument Argument 1 (x) is 2 but \expect_zero() takes 0 defined at src/101_extended_return_inferences.php:8
+src/101_extended_return_inferences.php:21 PhanTypeMismatchArgument Argument 1 (x) is 1 but \expect_zero() takes 0 defined at src/101_extended_return_inferences.php:8
+src/101_extended_return_inferences.php:22 PhanTypeErrorInInternalCall Saw a call to an internal function strlen() with what would be invalid arguments in strict mode, when trying to infer the return value literal type: strlen() expects parameter 1 to be string, int given
+src/101_extended_return_inferences.php:22 PhanTypeMismatchArgumentInternal Argument 1 (string) is 11 but \strlen() takes string
+src/101_extended_return_inferences.php:22 PhanTypeMismatchArgument Argument 1 (x) is string but \expect_zero() takes 0 defined at src/101_extended_return_inferences.php:8
+src/101_extended_return_inferences.php:23 PhanTypeMismatchArgument Argument 1 (x) is 4 but \expect_zero() takes 0 defined at src/101_extended_return_inferences.php:8
+src/101_extended_return_inferences.php:24 PhanTypeMismatchArgument Argument 1 (x) is 120 but \expect_zero() takes 0 defined at src/101_extended_return_inferences.php:8
+src/101_extended_return_inferences.php:25 PhanTypeMismatchArgument Argument 1 (x) is 'TEST' but \expect_zero() takes 0 defined at src/101_extended_return_inferences.php:8
+src/101_extended_return_inferences.php:26 PhanTypeMismatchArgument Argument 1 (x) is 'test' but \expect_zero() takes 0 defined at src/101_extended_return_inferences.php:8
+src/101_extended_return_inferences.php:29 PhanTypeMismatchArgumentInternal Argument 1 (fp) is array|bool|float|int|null|string but \fwrite() takes resource
+src/101_extended_return_inferences.php:30 PhanTypeMismatchArgumentInternal Argument 1 (fp) is \stdClass|array<int,mixed>|bool|float|int|null|string but \fwrite() takes resource

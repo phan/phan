@@ -1,0 +1,9 @@
+%s:6 PhanTypeComparisonToInvalidClassType Saw code asserting that an expression has a class, but saw an invalid/impossible union type 2 (expected false|string)
+%s:9 PhanTypeComparisonToInvalidClassType Saw code asserting that an expression has a class, but saw an invalid/impossible union type \stdClass (expected false|string)
+%s:13 PhanUndeclaredMethod Call to undeclared method \stdClass::method
+%s:19 PhanUndeclaredMethod Call to undeclared method \ReflectionMethod::method
+%s:21 PhanTypeComparisonToInvalidClass Saw code asserting that an expression has a class, but that class is an invalid/impossible FQSEN ''
+%s:24 PhanTypeComparisonToInvalidClass Saw code asserting that an expression has a class, but that class is an invalid/impossible FQSEN 'A|B'
+%s:27 PhanTypeComparisonToInvalidClass Saw code asserting that an expression has a class, but that class is an invalid/impossible FQSEN '\\stdClass'
+%s:30 PhanTypeComparisonToInvalidClass Saw code asserting that an expression has a class, but that class is an invalid/impossible FQSEN '?stdClass'
+%s:35 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is \ReflectionClass|\ReflectionFunction|\ReflectionFunctionAbstract|\Reflector but \intdiv() takes int

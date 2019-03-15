@@ -36,23 +36,36 @@ class MyNamespacedClass {
 
 namespace {
 /**
- * This has a mix of comments and annotations, annotations are excluded from hover
+ * This has a mix of comments and annotations, annotations are included in hover
  *
  * - Markup in comments is preserved,
  *   and leading whitespace is as well.
  *
  * @param ?string $y
  * @return void
- * Comment lines after the first phpdoc tag are ignored
+ * Comment lines after the first phpdoc tag are ignored (with a few exceptions)
  */
 function global_function_with_comment(int $x, $y) {
 }
-
+/** description of ExampleClass */
 class ExampleClass {
     /** @var int this tracks a count */
     public $counter;
 
     /** @var int value of an HTTP response code */
     const HTTP_500 = 500;
+
+    /** @var array<string, \stdClass> */
+    public $descriptionlessProp;
+
+    /**
+     * This has a default
+     */
+    public $propWithDefault = [2,3];
+
+    /**
+     * This has no type
+     */
+    public static $typelessProp;
 }
 }  // end namespace

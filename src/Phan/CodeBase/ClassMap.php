@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Phan\CodeBase;
 
 use Phan\Language\Element\ClassConstant;
@@ -7,6 +8,7 @@ use Phan\Language\Element\Property;
 
 /**
  * Maps for elements associated with an individual class
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class ClassMap
 {
@@ -39,13 +41,16 @@ class ClassMap
     }
 
     /**
-     * @return bool
+     * @return bool does this class have a constant with name $name
      */
     public function hasClassConstantWithName(string $name) : bool
     {
-        return !empty($this->class_constant_map[$name]);
+        return isset($this->class_constant_map[$name]);
     }
 
+    /**
+     * Gets the class constant $name of this class
+     */
     public function getClassConstantByName(string $name) : ClassConstant
     {
         return $this->class_constant_map[$name];
@@ -74,7 +79,7 @@ class ClassMap
      */
     public function hasPropertyWithName(string $name) : bool
     {
-        return !empty($this->property_map[$name]);
+        return isset($this->property_map[$name]);
     }
 
     /**

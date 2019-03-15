@@ -1,0 +1,9 @@
+%s:14 PhanUndeclaredVariable Variable $undError is undeclared
+%s:15 PhanParamTooFewInternal Call with 1 arg(s) to \define() which requires 2 arg(s)
+%s:17 PhanUndeclaredConstant Reference to undeclared constant \cons2128Error2
+%s:18 PhanParamTooFewInternal Call with 1 arg(s) to \define() which requires 2 arg(s)
+%s:18 PhanUndeclaredVariable Variable $undefVar is undeclared
+%s:20 PhanInvalidConstantFQSEN '' is an invalid FQSEN for a constant
+%s:25 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is 'a' but \intdiv() takes int
+%s:33 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is 'a' but \intdiv() takes int
+%s:38 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string

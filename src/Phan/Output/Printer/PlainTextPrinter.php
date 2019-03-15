@@ -1,17 +1,23 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
+
 namespace Phan\Output\Printer;
 
 use Phan\Config;
 use Phan\Issue;
 use Phan\IssueInstance;
-use Phan\Output\IssuePrinterInterface;
 use Phan\Output\Colorizing;
+use Phan\Output\IssuePrinterInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * Outputs `IssueInstance`s to the provided OutputInterface in plain text format.
+ *
+ * 'text' is the only output format for which the option `--color` is recommended.
+ */
 final class PlainTextPrinter implements IssuePrinterInterface
 {
 
-    /** @var OutputInterface */
+    /** @var OutputInterface an output that plaintext formatted issues can be written to. */
     private $output;
 
     /**
@@ -49,7 +55,7 @@ final class PlainTextPrinter implements IssuePrinterInterface
                 $issue .= Colorizing::colorizeTemplate(" ({SUGGESTION})", [$suggestion_message]);
             }
         } else {
-            $issue = sprintf(
+            $issue = \sprintf(
                 '%s:%d %s %s',
                 $file,
                 $line,

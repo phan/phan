@@ -1,8 +1,13 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language\Type;
 
 use Phan\Language\Type;
 
+/**
+ * Phan's representation for annotations such as `Closure(MyClass):MyOtherClass`
+ * @see ClosureType for the representation of `Closure` (and closures for function-like FQSENs)
+ */
 final class ClosureDeclarationType extends FunctionLikeDeclarationType
 {
     /** @override */

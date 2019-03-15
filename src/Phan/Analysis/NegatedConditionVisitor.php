@@ -1,6 +1,10 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Analysis;
 
+use ast\flags;
+use ast\Node;
+use Closure;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\KindVisitorImplementation;
@@ -22,18 +26,13 @@ use Phan\Language\Type\ScalarType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use Phan\Language\UnionTypeBuilder;
-use ast\Node;
-use ast\flags;
-use Closure;
 
 /**
- * @phan-file-suppress PhanPluginNoAssert
- *
- * TODO: Make $x > 0, $x < 0, $x >= 50, etc.  remove FalseType and NullType from $x
- * TODO: if (a || b || c || d) might get really slow, due to creating both ConditionVisitor and NegatedConditionVisitor
+ * A visitor that takes a Context and a Node for a condition and returns a Context that has been updated with the negation of that condition.
  */
-class NegatedConditionVisitor extends KindVisitorImplementation
+class NegatedConditionVisitor extends KindVisitorImplementation implements ConditionVisitorInterface
 {
+    // TODO: if (a || b || c || d) might get really slow, due to creating both ConditionVisitor and NegatedConditionVisitor
     use ConditionVisitorUtil;
 
     /**
@@ -112,36 +111,39 @@ class NegatedConditionVisitor extends KindVisitorImplementation
      */
     public function visitBinaryOp(Node $node) : Context
     {
-        $flags = ($node->flags ?? 0);
-        if ($flags === flags\BINARY_BOOL_OR) {
-            return $this->analyzeShortCircuitingOr($node->children['left'], $node->children['right']);
-        } elseif ($flags === flags\BINARY_BOOL_AND) {
-            return $this->analyzeShortCircuitingAnd($node->children['left'], $node->children['right']);
-        } elseif ($flags === flags\BINARY_IS_IDENTICAL) {
-            $this->checkVariablesDefined($node);
-            return $this->analyzeAndUpdateToBeNotIdentical($node->children['left'], $node->children['right']);
-        } elseif ($flags === flags\BINARY_IS_EQUAL) {
-            $this->checkVariablesDefined($node);
-            return $this->analyzeAndUpdateToBeNotEqual($node->children['left'], $node->children['right']);
-        } elseif ($flags === flags\BINARY_IS_NOT_IDENTICAL || $flags === flags\BINARY_IS_NOT_EQUAL) {
-            $this->checkVariablesDefined($node);
-            // TODO: Add a different function for IS_NOT_EQUAL, e.g. analysis of != null should be different from !== null (First would remove FalseType)
-            return $this->analyzeAndUpdateToBeIdentical($node->children['left'], $node->children['right']);
+        $flags = $node->flags ?? 0;
+        switch ($flags) {
+            case flags\BINARY_BOOL_OR:
+                return $this->analyzeShortCircuitingOr($node->children['left'], $node->children['right']);
+            case flags\BINARY_BOOL_AND:
+                return $this->analyzeShortCircuitingAnd($node->children['left'], $node->children['right']);
+            case flags\BINARY_IS_IDENTICAL:
+                $this->checkVariablesDefined($node);
+                return $this->analyzeAndUpdateToBeNotIdentical($node->children['left'], $node->children['right']);
+            case flags\BINARY_IS_EQUAL:
+                $this->checkVariablesDefined($node);
+                return $this->analyzeAndUpdateToBeNotEqual($node->children['left'], $node->children['right']);
+            case flags\BINARY_IS_NOT_IDENTICAL:
+            case flags\BINARY_IS_NOT_EQUAL:
+                $this->checkVariablesDefined($node);
+                // TODO: Add a different function for IS_NOT_EQUAL, e.g. analysis of != null should be different from !== null (First would remove FalseType)
+                return $this->analyzeAndUpdateToBeIdentical($node->children['left'], $node->children['right']);
+            case flags\BINARY_IS_GREATER:
+                $this->checkVariablesDefined($node);
+                return $this->analyzeAndUpdateToBeCompared($node->children['left'], $node->children['right'], flags\BINARY_IS_SMALLER_OR_EQUAL);
+            case flags\BINARY_IS_GREATER_OR_EQUAL:
+                $this->checkVariablesDefined($node);
+                return $this->analyzeAndUpdateToBeCompared($node->children['left'], $node->children['right'], flags\BINARY_IS_SMALLER);
+            case flags\BINARY_IS_SMALLER:
+                $this->checkVariablesDefined($node);
+                return $this->analyzeAndUpdateToBeCompared($node->children['left'], $node->children['right'], flags\BINARY_IS_GREATER_OR_EQUAL);
+            case flags\BINARY_IS_SMALLER_OR_EQUAL:
+                $this->checkVariablesDefined($node);
+                return $this->analyzeAndUpdateToBeCompared($node->children['left'], $node->children['right'], flags\BINARY_IS_GREATER);
+            default:
+                $this->checkVariablesDefined($node);
+                return $this->context;
         }
-        return $this->context;
-    }
-
-    /**
-     * @param Node $node
-     * A node to parse
-     *
-     * @return Context
-     * A new or an unchanged context resulting from
-     * parsing the node
-     */
-    public function visitOr(Node $node) : Context
-    {
-        return $this->analyzeShortCircuitingOr($node->children['left'], $node->children['right']);
     }
 
     /**
@@ -182,7 +184,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
         $context = $this->context;
         $left_false_context = (new NegatedConditionVisitor($code_base, $context))($left);
         $left_true_context = (new ConditionVisitor($code_base, $context))($left);
-        // We analyze the right hand side of `cond($x) && cond2($x)` as if `cond($x)` was true.
+        // We analyze the right-hand side of `cond($x) && cond2($x)` as if `cond($x)` was true.
         $right_false_context = (new NegatedConditionVisitor($code_base, $left_true_context))($right);
         // When the NegatedConditionVisitor is false, at least one of the left or right contexts must be false.
         // (NegatedConditionVisitor returns a context for when the input Node's value was falsey)
@@ -264,11 +266,6 @@ class NegatedConditionVisitor extends KindVisitorImplementation
             return $this->context;
         }
         $args = $node->children['args']->children;
-        foreach ($args as $arg) {
-            if ($arg instanceof Node) {
-                $this->checkVariablesDefined($arg);
-            }
-        }
 
         $context = $this->context;
         $function_name = \strtolower(\ltrim($raw_function_name, '\\'));
@@ -290,9 +287,14 @@ class NegatedConditionVisitor extends KindVisitorImplementation
             if ($callback === null) {
                 return $context;
             }
-            return $callback($this, $args[0], $context);
+            return $callback(
+                $this,
+                $args[0],  // @phan-suppress-current-line PhanPartialTypeMismatchArgument
+                $context
+            );
         }
         if ($function_name === 'array_key_exists') {
+            // @phan-suppress-next-line PhanPartialTypeMismatchArgument
             return $this->analyzeArrayKeyExistsNegation($args);
         }
         return $context;
@@ -307,6 +309,9 @@ class NegatedConditionVisitor extends KindVisitorImplementation
         return $this->removeTruthyFromVariable($node, $this->context, false);
     }
 
+    /**
+     * @param array<int,Node|string|int|float> $args
+     */
     private function analyzeArrayKeyExistsNegation(array $args) : Context
     {
         $context = $this->context;
@@ -376,7 +381,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
             }
             $right_hand_type = $right_hand_union_type->getTypeSet()[0];
 
-            // TODO: Assert that instanceof right hand type is valid in NegatedConditionVisitor as well
+            // TODO: Assert that instanceof right-hand type is valid in NegatedConditionVisitor as well
 
             // Make a copy of the variable
             $variable = clone($variable);
@@ -407,11 +412,11 @@ class NegatedConditionVisitor extends KindVisitorImplementation
 
     /**
      * @return array<string,Closure> (NegatedConditionVisitor $cv, Node $var_node, Context $context) -> Context
-     * @phan-return array<string,Closure(NegatedConditionVisitor,Node,Context):Context>
+     * @phan-return array<string,Closure(NegatedConditionVisitor,Node|int|string|float,Context):Context>
      */
     private static function createNegationCallbackMap() : array
     {
-        $remove_null_cb = function (NegatedConditionVisitor $cv, Node $var_node, Context $context) : Context {
+        $remove_null_cb = static function (NegatedConditionVisitor $cv, Node $var_node, Context $context) : Context {
             return $cv->removeNullFromVariable($var_node, $context, false);
         };
 
@@ -421,12 +426,12 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                 return $cv->updateVariableWithConditionalFilter(
                     $var_node,
                     $context,
-                    function (UnionType $union_type) use ($base_class_name) : bool {
-                        return $union_type->hasTypeMatchingCallback(function (Type $type) use ($base_class_name) : bool {
+                    static function (UnionType $union_type) use ($base_class_name) : bool {
+                        return $union_type->hasTypeMatchingCallback(static function (Type $type) use ($base_class_name) : bool {
                             return $type instanceof $base_class_name;
                         });
                     },
-                    function (UnionType $union_type) use ($base_class_name) : UnionType {
+                    static function (UnionType $union_type) use ($base_class_name) : UnionType {
                         $new_type_builder = new UnionTypeBuilder();
                         $has_null = false;
                         $has_other_nullable_types = false;
@@ -436,7 +441,6 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                                 $has_null = $has_null || $type->getIsNullable();
                                 continue;
                             }
-                            assert($type instanceof Type);
                             $has_other_nullable_types = $has_other_nullable_types || $type->getIsNullable();
                             $new_type_builder->addType($type);
                         }
@@ -461,10 +465,10 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                 return $cv->updateVariableWithConditionalFilter(
                     $var_node,
                     $context,
-                    function (UnionType $union_type) use ($type_filter) : bool {
+                    static function (UnionType $union_type) use ($type_filter) : bool {
                         return $union_type->hasTypeMatchingCallback($type_filter);
                     },
-                    function (UnionType $union_type) use ($type_filter) : UnionType {
+                    static function (UnionType $union_type) use ($type_filter) : UnionType {
                         $new_type_builder = new UnionTypeBuilder();
                         $has_null = false;
                         $has_other_nullable_types = false;
@@ -474,7 +478,6 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                                 $has_null = $has_null || $type->getIsNullable();
                                 continue;
                             }
-                            assert($type instanceof Type);
                             $has_other_nullable_types = $has_other_nullable_types || $type->getIsNullable();
                             $new_type_builder->addType($type);
                         }
@@ -488,11 +491,14 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                 );
             };
         };
-        $remove_scalar_callback = $remove_conditional_function_callback(function (Type $type) : bool {
+        $remove_scalar_callback = $remove_conditional_function_callback(static function (Type $type) : bool {
             return $type instanceof ScalarType && !($type instanceof NullType);
         });
-        $remove_numeric_callback = $remove_conditional_function_callback(function (Type $type) : bool {
+        $remove_numeric_callback = $remove_conditional_function_callback(static function (Type $type) : bool {
             return $type instanceof IntType || $type instanceof FloatType;
+        });
+        $remove_bool_callback = $remove_conditional_function_callback(static function (Type $type) : bool {
+            return $type->getIsInBoolFamily();
         });
         $remove_callable_callback = static function (NegatedConditionVisitor $cv, Node $var_node, Context $context) : Context {
             return $cv->updateVariableWithConditionalFilter(
@@ -500,12 +506,12 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                 $context,
                 // if (!is_callable($x)) removes non-callable/closure types from $x.
                 // TODO: Could check for __invoke()
-                function (UnionType $union_type) : bool {
-                    return $union_type->hasTypeMatchingCallback(function (Type $type) : bool {
+                static function (UnionType $union_type) : bool {
+                    return $union_type->hasTypeMatchingCallback(static function (Type $type) : bool {
                         return $type->isCallable();
                     });
                 },
-                function (UnionType $union_type) : UnionType {
+                static function (UnionType $union_type) : UnionType {
                     $new_type_builder = new UnionTypeBuilder();
                     $has_null = false;
                     $has_other_nullable_types = false;
@@ -515,7 +521,6 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                             $has_null = $has_null || $type->getIsNullable();
                             continue;
                         }
-                        assert($type instanceof Type);
                         $has_other_nullable_types = $has_other_nullable_types || $type->getIsNullable();
                         $new_type_builder->addType($type);
                     }
@@ -530,17 +535,17 @@ class NegatedConditionVisitor extends KindVisitorImplementation
         };
         // The implementation of Traversable may change in the future (e.g. to support generics).
         // So use fromFullyQualifiedString()
-        $traversable_type = Type::fromFullyQualifiedString('\Traversable');
+        $traversable_type = Type::traversableInstance();
         $remove_array_callback = static function (NegatedConditionVisitor $cv, Node $var_node, Context $context) use ($traversable_type) : Context {
             return $cv->updateVariableWithConditionalFilter(
                 $var_node,
                 $context,
                 // if (!is_callable($x)) removes non-callable/closure types from $x.
                 // TODO: Could check for __invoke()
-                function (UnionType $union_type) : bool {
+                static function (UnionType $union_type) : bool {
                     return $union_type->hasIterable();
                 },
-                function (UnionType $union_type) use ($traversable_type) : UnionType {
+                static function (UnionType $union_type) use ($traversable_type) : UnionType {
                     $new_type_builder = new UnionTypeBuilder();
                     $has_null = false;
                     $has_other_nullable_types = false;
@@ -551,7 +556,6 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                             continue;
                         }
 
-                        assert($type instanceof Type);
                         $has_other_nullable_types = $has_other_nullable_types || $type->getIsNullable();
 
                         if (\get_class($type) === IterableType::class) {
@@ -576,10 +580,10 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                 $context,
                 // if (!is_callable($x)) removes non-callable/closure types from $x.
                 // TODO: Could check for __invoke()
-                function (UnionType $union_type) : bool {
+                static function (UnionType $union_type) : bool {
                     return $union_type->hasPossiblyObjectTypes();
                 },
-                function (UnionType $union_type) : UnionType {
+                static function (UnionType $union_type) : UnionType {
                     $new_type_builder = new UnionTypeBuilder();
                     $has_null = false;
                     $has_other_nullable_types = false;
@@ -589,7 +593,6 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                             $has_null = $has_null || $type->getIsNullable();
                             continue;
                         }
-                        assert($type instanceof Type);
                         $has_other_nullable_types = $has_other_nullable_types || $type->getIsNullable();
 
                         if (\get_class($type) === IterableType::class) {
@@ -612,7 +615,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
         return [
             'is_null' => $remove_null_cb,
             'is_array' => $remove_array_callback,
-            // 'is_bool' => $make_basic_assertion_callback(BoolType::class),
+            'is_bool' => $remove_bool_callback,
             'is_callable' => $remove_callable_callback,
             'is_double' => $remove_float_callback,
             'is_float' => $remove_float_callback,
@@ -627,20 +630,6 @@ class NegatedConditionVisitor extends KindVisitorImplementation
             'is_scalar' => $remove_scalar_callback,
             'is_string' => $make_basic_negated_assertion_callback(StringType::class),
         ];
-    }
-
-    /**
-     * @param Node $node
-     * A node to parse
-     *
-     * @return Context
-     * A new or an unchanged context resulting from
-     * parsing the node
-     */
-    public function visitCoalesce(Node $node) : Context
-    {
-        $this->checkVariablesDefined($node);
-        return $this->context;
     }
 
     /**
@@ -764,7 +753,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
         if ($var_node->kind === \ast\AST_VAR) {
             // Don't check if variables are defined - don't emit notices for if (!empty($x)) {}, etc.
             $var_name = $var_node->children['name'];
-            if (is_string($var_name)) {
+            if (\is_string($var_name)) {
                 if (!$context->getScope()->hasVariableWithName($var_name)) {
                     // Support analyzing cases such as `if (!empty($x)) { use($x); }`, or `assert(!empty($x))`
                     // (In the PHP language, empty($x) is equivalent to (!isset($x) || !$x))
@@ -775,12 +764,6 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                         $var_node->flags ?? 0
                     )));
                 }
-                $context->setScope($context->getScope()->withVariable(new Variable(
-                    $context->withLineNumberStart($var_node->lineno ?? 0),
-                    $var_name,
-                    UnionType::empty(),
-                    $var_node->flags ?? 0
-                )));
                 return $this->removeFalseyFromVariable($var_node, $context, true);
             }
         } else {
@@ -936,6 +919,10 @@ class NegatedConditionVisitor extends KindVisitorImplementation
     {
         $context = (new BlockAnalysisVisitor($this->code_base, $this->context))->visitAssign($node);
         $left = $node->children['var'];
+        if (!($left instanceof Node)) {
+            // Other code should warn about this invalid AST
+            return $context;
+        }
         return (new self($this->code_base, $context))->__invoke($left);
     }
 
@@ -953,6 +940,10 @@ class NegatedConditionVisitor extends KindVisitorImplementation
     {
         $context = (new BlockAnalysisVisitor($this->code_base, $this->context))->visitAssignRef($node);
         $left = $node->children['var'];
+        if (!($left instanceof Node)) {
+            // Other code should warn about this invalid AST
+            return $context;
+        }
         return (new self($this->code_base, $context))->__invoke($left);
     }
 }

@@ -1,20 +1,27 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Analysis;
 
+use AssertionError;
+use ast;
+use ast\Node;
 use Phan\AST\AnalysisVisitor;
 use Phan\Config;
+use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
-use Phan\Language\FQSEN\FullyQualifiedFunctionName;
-use Phan\Issue;
-
-use AssertionError;
-use ast\Node;
+use function implode;
+use function rtrim;
 
 /**
+ * An abstract visitor with methods to track elements in the current scope.
+ *
+ * This tracks the current namespace and adds namespace and `use` information to the current scope.
+ *
  * @phan-file-suppress PhanPartialTypeMismatchArgument
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
  */
@@ -73,7 +80,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
         foreach ($declares->children as $elem) {
             $name = $elem->children['name'];
             $value = $elem->children['value'];
-            if ('strict_types' === $name && is_int($value)) {
+            if ('strict_types' === $name && \is_int($value)) {
                 $context = $context->withStrictTypes($value);
             }
         }
@@ -153,6 +160,9 @@ abstract class ScopeVisitor extends AnalysisVisitor
             if ($flags === \ast\flags\USE_NORMAL && $target_php_version < 70200) {
                 self::analyzeUseElemCompatibility($alias, $target, $target_php_version, $lineno);
             }
+            if (\strcasecmp($target->getNamespace(), $context->getNamespace()) === 0) {
+                $this->maybeWarnSameNamespaceUse($alias, $target, $flags, $lineno);
+            }
             $context = $context->withNamespaceMap(
                 $flags,
                 $alias,
@@ -162,6 +172,38 @@ abstract class ScopeVisitor extends AnalysisVisitor
         }
 
         return $context;
+    }
+
+    private function maybeWarnSameNamespaceUse(string $alias, FullyQualifiedGlobalStructuralElement $target, int $flags, int $lineno)
+    {
+        if (\strcasecmp($alias, $target->getName()) !== 0) {
+            return;
+        }
+        if ($flags === ast\flags\USE_FUNCTION) {
+            if ($target->getNamespace() !== '\\') {
+                return;
+            }
+            $issue_type = Issue::UseFunctionNoEffect;
+        } elseif ($flags === ast\flags\USE_CONST) {
+            if ($target->getNamespace() !== '\\') {
+                return;
+            }
+            $issue_type = Issue::UseContantNoEffect;
+        } else {
+            if ($target->getNamespace() !== '\\') {
+                if (!Config::getValue('warn_about_relative_include_statement')) {
+                    return;
+                }
+                $issue_type = Issue::UseNormalNamespacedNoEffect;
+            } else {
+                $issue_type = Issue::UseNormalNoEffect;
+            }
+        }
+        $this->emitIssue(
+            $issue_type,
+            $lineno,
+            $target
+        );
     }
 
     /** @return void */
@@ -207,6 +249,8 @@ abstract class ScopeVisitor extends AnalysisVisitor
      * A map from alias to target
      *
      * @suppress PhanPartialTypeMismatchReturn TODO: investigate
+     * @suppress PhanPossiblyFalseTypeArgument
+     * @suppress PhanThrowTypeAbsentForCall
      */
     public static function aliasTargetMapFromUseNode(
         Node $node,
@@ -221,14 +265,14 @@ abstract class ScopeVisitor extends AnalysisVisitor
         foreach ($node->children as $child_node) {
             $target = $child_node->children['name'];
 
-            if (empty($child_node->children['alias'])) {
+            if (isset($child_node->children['alias'])) {
+                $alias = $child_node->children['alias'];
+            } else {
                 if (($pos = \strrpos($target, '\\')) !== false) {
                     $alias = \substr($target, $pos + 1);
                 } else {
                     $alias = $target;
                 }
-            } else {
-                $alias = $child_node->children['alias'];
             }
             if (!\is_string($alias)) {
                 // Should be impossible
@@ -246,19 +290,19 @@ abstract class ScopeVisitor extends AnalysisVisitor
                 $parts = \explode('\\', $target);
                 $function_name = \array_pop($parts);
                 $target = FullyQualifiedFunctionName::make(
-                    $prefix . '\\' . implode('\\', $parts),
+                    rtrim($prefix, '\\') . '\\' . implode('\\', $parts),
                     $function_name
                 );
             } elseif ($use_flag === \ast\flags\USE_CONST) {
                 $parts = \explode('\\', $target);
                 $name = \array_pop($parts);
                 $target = FullyQualifiedGlobalConstantName::make(
-                    $prefix . '\\' . implode('\\', $parts),
+                    rtrim($prefix, '\\') . '\\' . implode('\\', $parts),
                     $name
                 );
             } elseif ($use_flag === \ast\flags\USE_NORMAL) {
                 $target = FullyQualifiedClassName::fromFullyQualifiedString(
-                    $prefix . '\\' . $target
+                    rtrim($prefix, '\\') . '\\' . $target
                 );
             } else {
                 // If we get to this spot and don't know what

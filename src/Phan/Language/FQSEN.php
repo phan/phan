@@ -1,16 +1,20 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language;
 
 /**
- * A Fully-Qualified Name
+ * A Fully-Qualified Structural Element Name
  */
 interface FQSEN
 {
 
     /**
-     * @param string $fully_qualified_string
-     * An FQSEN string like '\Namespace\Class::method' or
+     * Constructs an FQSEN from a FQSEN string such as '\Namespace\Class::method' or
      * 'Class' or 'Class::method'.
+     *
+     * The case depends on the case of the first FQSEN string this was called with.
+     *
+     * @param string $fully_qualified_string
      *
      * @return static
      */
@@ -19,9 +23,10 @@ interface FQSEN
     );
 
     /**
+     * Constructs an FQSEN from an FQSEN string such as '\Namespace\Class::method' or
+     * 'Class' or 'Class::method', using namespace uses from the current context.
+     *
      * @param string $fqsen_string
-     * An FQSEN string like '\Namespace\Class::method' or
-     * 'Class' or 'Class::method'.
      *
      * @param Context $context
      * The context in which the FQSEN string was found

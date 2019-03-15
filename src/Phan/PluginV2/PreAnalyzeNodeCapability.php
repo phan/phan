@@ -1,8 +1,11 @@
 <?php declare(strict_types=1);
+
 namespace Phan\PluginV2;
 
 /**
- * @see PreAnalyzeNodeCapability->getPreAnalyzeNodeVisitorClassName
+ * Plugins can implement this to specify a visitor to pre-analyze a node in the analysis phase.
+ *
+ * @see PreAnalyzeNodeCapability::getPreAnalyzeNodeVisitorClassName()
  *
  * Note: If $this->parent_node_list is declared as an instance property, then that will automatically get set.
  * $this->parent_node_list will have the elements closest to the current node at the end.

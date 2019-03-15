@@ -1,6 +1,17 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
+
 namespace Phan\Tests;
 
+use const DIRECTORY_SEPARATOR;
+use const MULTI_EXPECTED_DIR;
+use const MULTI_FILE_DIR;
+
+/**
+ * Integration tests that require more than 1 files in a codebase to reproduce
+ * (e.g. regression tests for bugs, tests of expected functionality for multiple files, etc)
+ *
+ * @see self::getTestFiles() for how file groups are represented to test.
+ */
 class MultiFileTest extends AbstractPhanFileTest
 {
 
@@ -47,7 +58,8 @@ class MultiFileTest extends AbstractPhanFileTest
                     MULTI_FILE_DIR . DIRECTORY_SEPARATOR . '321_a.php',
                     MULTI_FILE_DIR . DIRECTORY_SEPARATOR . '321_b.php'
                 ],
-                MULTI_EXPECTED_DIR . DIRECTORY_SEPARATOR . '321.php' . AbstractPhanFileTest::EXPECTED_SUFFIX
+                MULTI_EXPECTED_DIR . DIRECTORY_SEPARATOR . '321.php' . AbstractPhanFileTest::EXPECTED_SUFFIX,
+                MULTI_FILE_DIR . DIRECTORY_SEPARATOR . '321_config.php',
             ],
 
             // Issue #551

@@ -1,0 +1,2 @@
+src/062_test.php:2 PhanNoopArrayAccess Unused array offset fetch
+src/062_test.php:3 PhanSyntaxError syntax error, unexpected '}'

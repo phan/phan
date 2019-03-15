@@ -1,10 +1,14 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language\Type;
 
+use Phan\Config;
 use Phan\Language\Type;
-
 use RuntimeException;
 
+/**
+ * Phan's representation of the type for a specific integer, e.g. `-1`
+ */
 final class LiteralIntType extends IntType implements LiteralTypeInterface
 {
     /** @var int $value */
@@ -17,16 +21,17 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
     }
 
     /**
-     * @internal - Only exists to prevent accidentally calling this
+     * Only exists to prevent accidentally calling this
+     * @internal - do not call
      * @deprecated
      */
     public static function instance(bool $unused_is_nullable)
     {
-        throw new RuntimeException('Call ' . __CLASS__ . '::instanceForValue() instead');
+        throw new RuntimeException('Call ' . self::class . '::instanceForValue() instead');
     }
 
     /**
-     * @return LiteralIntType
+     * @return LiteralIntType a unique LiteralIntType for $value (and the nullability)
      */
     public static function instanceForValue(int $value, bool $is_nullable)
     {
@@ -38,6 +43,10 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
         return $cache[$value] ?? ($cache[$value] = new self($value, false));
     }
 
+    /**
+     * Returns the literal int that this type represents
+     * (whether or not this type is nullable)
+     */
     public function getValue() : int
     {
         return $this->value;
@@ -51,11 +60,14 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
         return (string)$this->value;
     }
 
-    /** @var IntType */
+    /** @var IntType the non-nullable int type instance. */
     private static $non_nullable_int_type;
-    /** @var IntType */
+    /** @var IntType the nullable int type instance. */
     private static $nullable_int_type;
 
+    /**
+     * Called at the bottom of the file to ensure static properties are set for quick access.
+     */
     public static function init()
     {
         self::$non_nullable_int_type = IntType::instance(false);
@@ -112,11 +124,41 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
      */
     protected function canCastToNonNullableType(Type $type) : bool
     {
-        if ($type instanceof IntType) {
-            if ($type instanceof LiteralIntType) {
-                return $type->getValue() === $this->getValue();
+        if ($type instanceof ScalarType) {
+            switch ($type::NAME) {
+                case 'int':
+                    if ($type instanceof LiteralIntType) {
+                        return $type->getValue() === $this->getValue();
+                    }
+                    return true;
+                case 'string':
+                    if ($type instanceof LiteralStringType) {
+                        if ($type->getValue() != $this->value) {
+                            // Do a loose equality comparison and check if that permits that
+                            // E.g. can't cast 5 to 'foo', but can cast 5 to '5' or '5foo' depending on the other rules
+                            return false;
+                        }
+                    }
+                    break;
+                case 'float':
+                    return true;
+                case 'true':
+                    if (!$this->value) {
+                        return false;
+                    }
+                    break;
+                case 'false':
+                    if ($this->value) {
+                        return false;
+                    }
+                    break;
+                case 'null':
+                    // null is also a scalar.
+                    if ($this->value && !Config::get_null_casts_as_any_type()) {
+                        return false;
+                    }
+                    break;
             }
-            return true;
         }
 
         return parent::canCastToNonNullableType($type);
@@ -141,6 +183,17 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
             $this->value,
             $is_nullable
         );
+    }
+
+    /**
+     * Check if this type can satisfy a comparison (<, <=, >, >=)
+     * @param int|string|float|bool|null $scalar
+     * @param int $flags (e.g. \ast\flags\BINARY_IS_SMALLER)
+     * @internal
+     */
+    public function canSatisfyComparison($scalar, int $flags) : bool
+    {
+        return self::performComparison($this->value, $scalar, $flags);
     }
 }
 

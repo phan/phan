@@ -1,23 +1,32 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language\Element;
 
+// Note: This file uses both class Phan\Language\Element\Flags and namespace ast\flags
+use ast;
+use ast\Node;
+use Phan\Analysis\Analyzable;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
+use Phan\Config;
 use Phan\Exception\CodeBaseException;
 use Phan\Language\Context;
+use Phan\Language\ElementContext;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Scope\FunctionLikeScope;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\UnionType;
-use ast\Node;
+use Phan\Memoize;
 
 /**
+ * Phan's representation of a class's method.
+ *
  * @phan-file-suppress PhanPartialTypeMismatchArgument
  */
 class Method extends ClassElement implements FunctionInterface
 {
-    use \Phan\Analysis\Analyzable;
-    use \Phan\Memoize;
+    use Analyzable;
+    use Memoize;
     use FunctionTrait;
     use ClosedScopeElement;
 
@@ -59,6 +68,14 @@ class Method extends ClassElement implements FunctionInterface
         FullyQualifiedMethodName $fqsen,
         $parameter_list
     ) {
+        $internal_scope = new FunctionLikeScope(
+            $context->getScope(),
+            $fqsen
+        );
+        $context = $context->withScope($internal_scope);
+        if ($type->hasTemplateType()) {
+            $this->recordHasTemplateType();
+        }
         parent::__construct(
             $context,
             FullyQualifiedMethodName::canonicalName($name),
@@ -75,13 +92,29 @@ class Method extends ClassElement implements FunctionInterface
 
         // Record the FQSEN of this method (With the current Clazz),
         // to prevent recursing from a method into itself in non-quick mode.
-        $this->setInternalScope(new FunctionLikeScope(
-            $context->getScope(),
-            $fqsen
-        ));
+        $this->setInternalScope($internal_scope);
 
         if ($parameter_list !== null) {
             $this->setParameterList($parameter_list);
+        }
+        $this->checkForTemplateTypes();
+    }
+
+    /**
+     * Sets hasTemplateType to true if it finds any template types in the parameters or methods
+     * @return void
+     */
+    public function checkForTemplateTypes()
+    {
+        if ($this->getUnionType()->hasTemplateTypeRecursive()) {
+            $this->recordHasTemplateType();
+            return;
+        }
+        foreach ($this->parameter_list as $parameter) {
+            if ($parameter->getUnionType()->hasTemplateTypeRecursive()) {
+                $this->recordHasTemplateType();
+                return;
+            }
         }
     }
 
@@ -95,7 +128,8 @@ class Method extends ClassElement implements FunctionInterface
     }
 
     /**
-     * @param bool $from_phpdoc - True if this is a magic phpdoc method (declared via (at)method on class declaration phpdoc)
+     * Sets whether this is a magic phpdoc method (declared via (at)method on class declaration phpdoc)
+     * @param bool $from_phpdoc - True if this is a magic phpdoc method
      * @return void
      */
     public function setIsFromPHPDoc(bool $from_phpdoc)
@@ -119,7 +153,8 @@ class Method extends ClassElement implements FunctionInterface
     }
 
     /**
-     * @param bool $is_override_intended - True if this method is intended to be an override of another method (contains (at)override)
+     * Sets whether this method is intended to be an override of another method (contains (at)override)
+     * @param bool $is_override_intended
 
      * @return void
      */
@@ -140,7 +175,7 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function isAbstract() : bool
     {
-        return $this->getFlagsHasState(\ast\flags\MODIFIER_ABSTRACT);
+        return $this->getFlagsHasState(ast\flags\MODIFIER_ABSTRACT);
     }
 
     /**
@@ -149,7 +184,7 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function isFinal() : bool
     {
-        return $this->getFlagsHasState(\ast\flags\MODIFIER_FINAL);
+        return $this->getFlagsHasState(ast\flags\MODIFIER_FINAL);
     }
 
     /**
@@ -158,7 +193,7 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function returnsRef() : bool
     {
-        return $this->getFlagsHasState(\ast\flags\RETURNS_REF);
+        return $this->getFlagsHasState(ast\flags\FUNC_RETURNS_REF);
     }
 
     /**
@@ -257,7 +292,7 @@ class Method extends ClassElement implements FunctionInterface
      * An alias from a trait use, which is treated as though it was defined in $clazz
      * E.g. if you import a trait's method as private/protected, it becomes private/protected **to the class which used the trait**
      *
-     * The resulting alias doesn't inherit the \ast\Node of the method body, so aliases won't have a redundant analysis step.
+     * The resulting alias doesn't inherit the Node of the method body, so aliases won't have a redundant analysis step.
      */
     public function createUseAlias(
         Clazz $clazz,
@@ -273,21 +308,21 @@ class Method extends ClassElement implements FunctionInterface
         $method = new Method(
             $this->getContext(),
             $alias_method_name,
-            $this->getUnionType(),
+            $this->getUnionTypeWithUnmodifiedStatic(),
             $this->getFlags(),
             $method_fqsen,
             $this->getParameterList()
         );
         $method->setPhanFlags($this->getPhanFlags());
         switch ($new_visibility_flags) {
-            case \ast\flags\MODIFIER_PUBLIC:
-            case \ast\flags\MODIFIER_PROTECTED:
-            case \ast\flags\MODIFIER_PRIVATE:
+            case ast\flags\MODIFIER_PUBLIC:
+            case ast\flags\MODIFIER_PROTECTED:
+            case ast\flags\MODIFIER_PRIVATE:
                 // Replace the visibility with the new visibility.
                 $method->setFlags(Flags::bitVectorWithState(
                     Flags::bitVectorWithState(
                         $method->getFlags(),
-                        \ast\flags\MODIFIER_PUBLIC | \ast\flags\MODIFIER_PROTECTED | \ast\flags\MODIFIER_PRIVATE,
+                        ast\flags\MODIFIER_PUBLIC | ast\flags\MODIFIER_PROTECTED | ast\flags\MODIFIER_PRIVATE,
                         false
                     ),
                     $new_visibility_flags,
@@ -308,6 +343,8 @@ class Method extends ClassElement implements FunctionInterface
         $method->setRealReturnType($this->getRealReturnType());
         $method->setNumberOfRequiredParameters($this->getNumberOfRequiredParameters());
         $method->setNumberOfOptionalParameters($this->getNumberOfOptionalParameters());
+        // Copy the comment so that features such as templates will work
+        $method->comment = $this->comment;
 
         return $method;
     }
@@ -332,16 +369,6 @@ class Method extends ClassElement implements FunctionInterface
         FullyQualifiedMethodName $fqsen
     ) : Method {
 
-        // @var array<int,Parameter>
-        // The list of parameters specified on the
-        // method
-        $parameter_list =
-            Parameter::listFromNode(
-                $context,
-                $code_base,
-                $node->children['params']
-            );
-
         // Create the skeleton method object from what
         // we know so far
         $method = new Method(
@@ -350,7 +377,7 @@ class Method extends ClassElement implements FunctionInterface
             UnionType::empty(),
             $node->flags ?? 0,
             $fqsen,
-            $parameter_list
+            null
         );
         $doc_comment = $node->children['docComment'] ?? '';
         $method->setDocComment($doc_comment);
@@ -365,6 +392,27 @@ class Method extends ClassElement implements FunctionInterface
             Comment::ON_METHOD
         );
 
+        // Defer adding params to the local scope for user functions. (FunctionTrait::addParamsToScopeOfFunctionOrMethod)
+        // See PostOrderAnalysisVisitor->analyzeCallToMethod
+        $method->setComment($comment);
+
+        $element_context = new ElementContext($method);
+        // @var array<int,Parameter>
+        // The list of parameters specified on the
+        // method
+        $parameter_list = Parameter::listFromNode(
+            $element_context,
+            $code_base,
+            $node->children['params']
+        );
+        $method->setParameterList($parameter_list);
+        foreach ($parameter_list as $parameter) {
+            if ($parameter->getUnionType()->hasTemplateTypeRecursive()) {
+                $method->recordHasTemplateType();
+                break;
+            }
+        }
+
         // Add each parameter to the scope of the function
         // NOTE: it's important to clone this,
         // because we don't want any assignments to modify the original Parameter
@@ -372,6 +420,9 @@ class Method extends ClassElement implements FunctionInterface
             $method->getInternalScope()->addVariable(
                 $parameter->cloneAsNonVariadic()
             );
+        }
+        foreach ($comment->getTemplateTypeList() as $template_type) {
+            $method->getInternalScope()->addTemplateType($template_type);
         }
 
         if (!$method->isPHPInternal()) {
@@ -384,17 +435,17 @@ class Method extends ClassElement implements FunctionInterface
         // Keep an copy of the original parameter list, to check for fatal errors later on.
         $method->setRealParameterList($parameter_list);
 
-        $method->setNumberOfRequiredParameters(array_reduce(
+        $method->setNumberOfRequiredParameters(\array_reduce(
             $parameter_list,
-            function (int $carry, Parameter $parameter) : int {
+            static function (int $carry, Parameter $parameter) : int {
                 return ($carry + ($parameter->isRequired() ? 1 : 0));
             },
             0
         ));
 
-        $method->setNumberOfOptionalParameters(array_reduce(
+        $method->setNumberOfOptionalParameters(\array_reduce(
             $parameter_list,
-            function (int $carry, Parameter $parameter) : int {
+            static function (int $carry, Parameter $parameter) : int {
                 return ($carry + ($parameter->isOptional() ? 1 : 0));
             },
             0
@@ -418,16 +469,18 @@ class Method extends ClassElement implements FunctionInterface
             $method->setNumberOfRequiredParameters(0);
         }
 
+        $is_trait = $context->getScope()->isInTraitScope();
         // Add the syntax-level return type to the method's union type
         // if it exists
-        $return_union_type = UnionType::empty();
         if ($node->children['returnType'] !== null) {
-            $return_union_type = UnionTypeVisitor::unionTypeFromNode(
-                $code_base,
-                $context,
+            // TODO: Avoid resolving this, but only in traits
+            $return_union_type = (new UnionTypeVisitor($code_base, $context))->fromTypeInSignature(
                 $node->children['returnType']
             );
             $method->setUnionType($method->getUnionType()->withUnionType($return_union_type));
+            // TODO: Replace 'self' with the real class when not in a trait
+        } else {
+            $return_union_type = UnionType::empty();
         }
         $method->setRealReturnType($return_union_type);
 
@@ -435,29 +488,14 @@ class Method extends ClassElement implements FunctionInterface
         // for the method.
         if ($comment->hasReturnUnionType()) {
             $comment_return_union_type = $comment->getReturnType();
-            if ($comment_return_union_type->hasSelfType()) {
-                // We can't actually figure out 'static' at this
-                // point, but fill it in regardless. It will be partially
-                // correct
-                if ($context->isInClassScope()) {
-                    // n.b.: We're leaving the reference to self, static
-                    //       or $this in the type because I'm guessing
-                    //       it doesn't really matter. Apologies if it
-                    //       ends up being an issue.
-                    $comment_return_union_type = $comment_return_union_type->withType(
-                        $context->getClassFQSEN()->asType()
-                    );
-                    // $comment->setReturnType($comment_return_union_type);
-                }
+            if (!$is_trait) {
+                $comment_return_union_type = $comment_return_union_type->withSelfResolvedInContext($context);
             }
 
             $method->setUnionType($method->getUnionType()->withUnionType($comment_return_union_type));
             $method->setPHPDocReturnType($comment_return_union_type);
         }
-
-        // Defer adding params to the local scope for user functions. (FunctionTrait::addParamsToScopeOfFunctionOrMethod)
-        // See PostOrderAnalysisVisitor->analyzeCallToMethod
-        $method->setComment($comment);
+        $element_context->freeElementReference();
 
         return $method;
     }
@@ -491,6 +529,11 @@ class Method extends ClassElement implements FunctionInterface
         return $union_type;
     }
 
+    public function getUnionTypeWithUnmodifiedStatic() : UnionType
+    {
+        return parent::getUnionType();
+    }
+
     /**
      * @return FullyQualifiedMethodName
      */
@@ -506,8 +549,12 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function alternateGenerator(CodeBase $code_base) : \Generator
     {
-        $alternate_id = 0;
+        // Workaround so that methods of generic classes will have the resolved template types
+        yield $this;
         $fqsen = $this->getFQSEN();
+        $alternate_id = $fqsen->getAlternateId() + 1;
+
+        $fqsen = $fqsen->withAlternateId($alternate_id);
 
         while ($code_base->hasMethodWithFQSEN($fqsen)) {
             yield $code_base->getMethodByFQSEN($fqsen);
@@ -567,8 +614,8 @@ class Method extends ClassElement implements FunctionInterface
             }
         }
         // Return abstract methods before concrete methods, in order to best check method compatibility.
-        $method_list = array_merge($abstract_method_list, $method_list);
-        if (count($method_list) > 0) {
+        $method_list = \array_merge($abstract_method_list, $method_list);
+        if (\count($method_list) > 0) {
             return $method_list;
         }
 
@@ -608,8 +655,9 @@ class Method extends ClassElement implements FunctionInterface
 
         $string .= '(' . \implode(', ', $this->getParameterList()) . ')';
 
-        if (!$this->getUnionType()->isEmpty()) {
-            $string .= ' : ' . (string)$this->getUnionType();
+        $union_type = $this->getUnionTypeWithUnmodifiedStatic();
+        if (!$union_type->isEmpty()) {
+            $string .= ' : ' . (string)$union_type;
         }
 
         return $string;
@@ -665,29 +713,43 @@ class Method extends ClassElement implements FunctionInterface
         }
         $string .= $this->getName();
 
-        $string .= '(' . implode(', ', array_map(function (Parameter $parameter) : string {
-            return $parameter->toStubString();
-        }, $this->getRealParameterList())) . ')';
+        $string .= '(' . $this->getParameterStubText() . ')';
 
-        if (!$this->getRealReturnType()->isEmpty()) {
-            $string .= ' : ' . (string)$this->getRealReturnType();
+        if ($this->isPHPInternal()) {
+            $return_type = $this->getUnionType();
+        } else {
+            $return_type = $this->real_return_type;
+        }
+        if ($return_type && !$return_type->isEmpty()) {
+            $string .= ' : ' . (string)$return_type;
         }
 
         return $string;
     }
 
+    /**
+     * Returns this method's visibility ('private', 'protected', or 'public')
+     */
+    public function getVisibilityName() : string
+    {
+        if ($this->isPrivate()) {
+            return 'private';
+        } elseif ($this->isProtected()) {
+            return 'protected';
+        } else {
+            return 'public';
+        }
+    }
+
+    /**
+     * Returns a PHP stub that can be used in the output of `tool/make_stubs`
+     */
     public function toStub(bool $class_is_interface = false) : string
     {
         $string = '    ';
         // It's an error to have visibility or abstract in an interface's stub (e.g. JsonSerializable)
         if (!$class_is_interface) {
-            if ($this->isPrivate()) {
-                $string .= 'private ';
-            } elseif ($this->isProtected()) {
-                $string .= 'protected ';
-            } else {
-                $string .= 'public ';
-            }
+            $string .= $this->getVisibilityName() . ' ';
 
             if ($this->isAbstract()) {
                 $string .= 'abstract ';
@@ -704,9 +766,7 @@ class Method extends ClassElement implements FunctionInterface
         }
         $string .= $this->getName();
 
-        $string .= '(' . implode(', ', array_map(function (Parameter $parameter) : string {
-            return $parameter->toStubString();
-        }, $this->getRealParameterList())) . ')';
+        $string .= '(' . $this->getRealParameterStubText() . ')';
 
         if (!$this->getRealReturnType()->isEmpty()) {
             $string .= ' : ' . (string)$this->getRealReturnType();
@@ -718,5 +778,77 @@ class Method extends ClassElement implements FunctionInterface
         }
 
         return $string;
+    }
+
+    /**
+     * Does this method have template types anywhere in its parameters or return type?
+     * (This check is recursive)
+     */
+    public function hasTemplateType() : bool
+    {
+        return $this->getPhanFlagsHasState(Flags::HAS_TEMPLATE_TYPE);
+    }
+
+    private function recordHasTemplateType()
+    {
+        $this->setPhanFlags($this->getPhanFlags() | Flags::HAS_TEMPLATE_TYPE);
+    }
+
+    /**
+     * Attempt to convert this template method into a method with concrete types
+     * Either returns the original method or a clone of the method with more type information.
+     */
+    public function resolveTemplateType(
+        CodeBase $code_base,
+        UnionType $object_union_type
+    ) : Method {
+        $defining_fqsen = $this->getDefiningClassFQSEN();
+        $defining_class = $code_base->getClassByFQSEN($defining_fqsen);
+        if (!$defining_class->isGeneric()) {
+            // ???
+            return $this;
+        }
+        $expected_type = $defining_fqsen->asType();
+
+        foreach ($object_union_type->getTypeSet() as $type) {
+            if (!$type->hasTemplateParameterTypes()) {
+                continue;
+            }
+            if (!$type->isObjectWithKnownFQSEN()) {
+                continue;
+            }
+            $expanded_type = $type->withIsNullable(false)->asExpandedTypes($code_base);
+            foreach ($expanded_type->getTypeSet() as $candidate) {
+                if (!$candidate->isTemplateSubtypeOf($expected_type)) {
+                    continue;
+                }
+                // $candidate is $expected_type<T...>
+                $result = $this->cloneWithTemplateParameterTypeMap($candidate->getTemplateParameterTypeMap($code_base));
+                return $result;
+            }
+        }
+        return $this;
+    }
+
+    /**
+     * @param array<string,UnionType> $template_type_map
+     * A map from template type identifier to a concrete type
+     */
+    private function cloneWithTemplateParameterTypeMap(array $template_type_map) : Method
+    {
+        $result = clone($this);
+        $result->cloneParameterList();
+        foreach ($result->parameter_list as $parameter) {
+            $parameter->setUnionType($parameter->getUnionType()->withTemplateParameterTypeMap($template_type_map));
+        }
+        $result->setUnionType($result->getUnionType()->withTemplateParameterTypeMap($template_type_map));
+        $result->setPhanFlags($result->getPhanFlags() & ~Flags::HAS_TEMPLATE_TYPE);
+        if (Config::get_track_references()) {
+            // Quick and dirty fix to make dead code detection work on this clone.
+            // Consider making this an object instead.
+            // @see AddressableElement::addReference()
+            $result->reference_list = &$this->reference_list;
+        }
+        return $result;
     }
 }

@@ -1,5 +1,5 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Phan\LanguageServer;
 
@@ -13,6 +13,7 @@ use Sabre\Event\EmitterInterface;
  *
  * Source: https://github.com/felixfbecker/php-language-server/tree/master/src/ProtocolReader.php
  * See ../../../LICENSE.LANGUAGE_SERVER
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 interface ProtocolReader extends EmitterInterface
 {

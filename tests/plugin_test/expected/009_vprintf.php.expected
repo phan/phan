@@ -6,6 +6,7 @@ src/009_vprintf.php:9 PhanPluginPrintfNotPercent Format string "%d dollars 100% 
 src/009_vprintf.php:10 PhanPluginPrintfNoSpecifiers None of the formatting arguments passed alongside format string "Not using args" are used
 src/009_vprintf.php:11 PhanPluginPrintfNoSpecifiers None of the formatting arguments passed alongside format string "Not using args" are used
 src/009_vprintf.php:12 PhanPluginPrintfUnusedArgument Format string "Not using %d\n args\n" does not use provided argument #2
+src/009_vprintf.php:14 PhanPluginPrintfVariableFormatString Code [] has a dynamic format string that could not be inferred by Phan
 src/009_vprintf.php:14 PhanTypeMismatchArgumentInternal Argument 1 (format) is array{} but \vprintf() takes string
 src/009_vprintf.php:14 PhanTypeMismatchArgumentInternal Argument 2 (args) is 2 but \vprintf() takes array
 src/009_vprintf.php:16 PhanPluginPrintfNoArguments No format string arguments are given for "Hello world\n", consider using fwrite instead

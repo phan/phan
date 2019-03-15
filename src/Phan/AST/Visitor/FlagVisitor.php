@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Phan\AST\Visitor;
 
 use ast\Node;
@@ -185,7 +186,7 @@ interface FlagVisitor
     public function visitParamVariadic(Node $node);
 
     /**
-     * Visit a node with flag `\ast\flags\RETURNS_REF`
+     * Visit a node with flag `\ast\flags\FUNC_RETURNS_REF`
      */
     public function visitReturnsRef(Node $node);
 

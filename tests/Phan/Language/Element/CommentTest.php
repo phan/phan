@@ -1,7 +1,7 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
+
 namespace Phan\Tests\Language\Element;
 
-use Phan\Tests\BaseTest;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
@@ -9,14 +9,21 @@ use Phan\Language\Element\Comment;
 use Phan\Language\Type;
 use Phan\Language\Type\StaticType;
 use Phan\Library\None;
+use Phan\Output\Collector\BufferingCollector;
+use Phan\Phan;
+use Phan\Tests\BaseTest;
 
 /**
  * Unit tests of Comment
+ * @phan-file-suppress PhanThrowTypeAbsentForCall
  */
 final class CommentTest extends BaseTest
 {
-    /** @var CodeBase */
+    /** @var CodeBase The code base within which we're operating */
     protected $code_base;
+
+    /** @var array<string,mixed> the old values of Phan's Config. */
+    protected $old_values = [];
 
     const OVERRIDES = [
         'read_type_annotations' => true,
@@ -24,11 +31,9 @@ final class CommentTest extends BaseTest
         'read_magic_method_annotations' => true,
     ];
 
-    /** @var array<string,mixed> */
-    protected $old_values = [];
-
     protected function setUp()
     {
+        Phan::setIssueCollector(new BufferingCollector());
         $this->code_base = new CodeBase([], [], [], [], []);
         foreach (self::OVERRIDES as $key => $value) {
             $this->old_values[$key] = Config::getValue($key);
@@ -59,7 +64,7 @@ final class CommentTest extends BaseTest
         $this->assertFalse($comment->isDeprecated());
         $this->assertFalse($comment->isOverrideIntended());
         $this->assertFalse($comment->isNSInternal());
-        $this->assertSame('', (string)$comment->getReturnType());
+        $this->assertFalse($comment->hasReturnUnionType());
         $this->assertFalse($comment->hasReturnUnionType());
         $this->assertInstanceOf(None::class, $comment->getClosureScopeOption());
         $this->assertSame([], $comment->getParameterList());
@@ -221,7 +226,7 @@ EOT;
     {
         $comment_text = <<<'EOT'
 /**
- * The check for template is case sensitive.
+ * The check for template is case-sensitive.
  * @template T1
  * @Template TestIgnored
  * @template u
@@ -284,7 +289,7 @@ EOT;
 /**
  * @var int $my_int
  * @var array<string , stdClass> $array
- * @var float (Unparseable)
+ * @var float (Unparsable)
  */
 EOT;
         $comment = Comment::fromStringInContext(
@@ -322,5 +327,31 @@ EOT;
         $expected_type = Type::fromFullyQualifiedString('MyNS\MyClass');
         $this->assertEquals($expected_type, $scope_type);
         $this->assertSame($expected_type, $scope_type);
+    }
+
+    public function testParseReturnCommentCallableString()
+    {
+        // @phan-suppress-next-line PhanAccessClassConstantInternal
+        \preg_match(\Phan\Language\Element\Comment\Builder::RETURN_COMMENT_REGEX, '/** @return callable-string description */', $matches);
+        $this->assertSame('@return callable-string', $matches[0]);
+    }
+
+    public function testParseSuppressCommentString()
+    {
+        // @phan-suppress-next-line PhanAccessClassConstantInternal
+        \preg_match(\Phan\Language\Element\Comment\Builder::PHAN_SUPPRESS_REGEX, '/** @suppress MyPlugin-string description */', $matches);
+        $this->assertSame('MyPlugin-string', $matches[1]);
+
+        // @phan-suppress-next-line PhanAccessClassConstantInternal
+        \preg_match(\Phan\Language\Element\Comment\Builder::PHAN_SUPPRESS_REGEX, '/** @suppress MyPlugin_Issue- description of why this was suppressed */', $matches);
+        $this->assertSame('MyPlugin_Issue', $matches[1]);
+
+        // @phan-suppress-next-line PhanAccessClassConstantInternal
+        \preg_match(\Phan\Language\Element\Comment\Builder::PHAN_SUPPRESS_REGEX, '/** @suppress MyPlugin--description of why this was suppressed */', $matches);
+        $this->assertSame('MyPlugin', $matches[1]);
+
+        // @phan-suppress-next-line PhanAccessClassConstantInternal
+        \preg_match(\Phan\Language\Element\Comment\Builder::PHAN_SUPPRESS_REGEX, '/** @suppress MyPluginIssue, MyOtherPlugin-Issue--description of why this was suppressed */', $matches);
+        $this->assertSame('MyPluginIssue, MyOtherPlugin-Issue', $matches[1]);
     }
 }

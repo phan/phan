@@ -1,13 +1,21 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language\Type;
 
+use Closure;
+use Exception;
+use Phan\CodeBase;
+use Phan\Config;
+use Phan\Debug\Frame;
+use Phan\Exception\RecursionDepthException;
+use Phan\Issue;
 use Phan\Language\AnnotatedUnionType;
+use Phan\Language\Context;
+use Phan\Language\Element\FunctionInterface;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Language\UnionTypeBuilder;
-use Phan\CodeBase;
-use Phan\Config;
-
 use RuntimeException;
 
 /**
@@ -25,21 +33,31 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     private $field_types = [];
 
     /**
+     * This array shape converted to a list of 0 or more ArrayTypes.
+     * This is lazily set.
      * @var ?array<int,ArrayType>
      */
     private $as_generic_array_type_instances = null;
 
     /**
-     * @var ?int
+     * @var ?int the key type enum value (constant from GenericArrayType)
      */
     private $key_type = null;
 
     /**
+     * The union type of all possible value types of this array shape.
+     * Lazily set.
      * @var ?UnionType
      */
     private $generic_array_element_union_type = null;
 
-    /** @var ?array<int,UnionType> */
+    /**
+     * The list of all unique union types of values of this array shape.
+     * E.g. `array{a:int,b:int,c:int|string}` will have two unique union types of values: `int`, and `int|string`
+     * Lazily set.
+     *
+     * @var ?array<int,UnionType>
+     */
     private $unique_value_union_types;
 
     /**
@@ -66,12 +84,27 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         return $this->field_types;
     }
 
+    /**
+     * Returns true if this has one or more optional or required fields
+     * (i.e. this is not the type `array{}` or `?array{}`)
+     */
     public function isNotEmptyArrayShape() : bool
     {
         return \count($this->field_types) !== 0;
     }
 
     /**
+     * Is this the union type `array{}` or `?array{}`?
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public function isEmptyArrayShape() : bool
+    {
+        return \count($this->field_types) === 0;
+    }
+
+    /**
+     * Returns an immutable array shape type instance without $field_key.
+     *
      * @param int|string|float|bool $field_key
      */
     public function withoutField($field_key) : ArrayShapeType
@@ -139,10 +172,16 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
                 ));
             }
         }
-        // @phan-suppress-next-line PhanPartialTypeMismatchReturn
         return $union_type_builder->getTypeSet();
     }
 
+    /**
+     * Returns the key type enum value (`GenericArrayType::KEY_*`) for the keys of this array shape.
+     *
+     * This is lazily computed.
+     *
+     * E.g. returns `GenericArrayType::KEY_STRING` for `array{key:\stdClass}`
+     */
     public function getKeyType() : int
     {
         return $this->key_type ?? ($this->key_type = GenericArrayType::getKeyTypeForArrayLiteral($this->field_types));
@@ -158,6 +197,11 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     }
 
     // TODO: Refactor other code calling unionTypeForKeyType to use this?
+    /**
+     * Gets the representation of the key type as a union type (without literals)
+     *
+     * E.g. returns `int` for `array{0:\stdClass}`
+     */
     public function getKeyUnionType() : UnionType
     {
         if (\count($this->field_types) === 0) {
@@ -168,6 +212,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
 
     /**
      * @return UnionType
+     * @override
      */
     public function iterableValueUnionType(CodeBase $unused_code_base)
     {
@@ -177,6 +222,14 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     public function genericArrayElementUnionType() : UnionType
     {
         return $this->generic_array_element_union_type ?? ($this->generic_array_element_union_type = UnionType::merge($this->field_types));
+    }
+
+    /**
+     * Returns true for `T` and `T[]` and `\MyClass<T>`, but not `\MyClass<\OtherClass>` or `false`
+     */
+    public function hasTemplateTypeRecursive() : bool
+    {
+        return $this->genericArrayElementUnionType()->hasTemplateTypeRecursive();
     }
 
     /**
@@ -260,11 +313,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
             $d = \substr($d, 1);
         }
         if ($d === 'callable') {
-            if (\array_keys($this->field_types) !== [0, 1]) {
-                return false;
-            }
-            // TODO: Check types of offsets 0 and 1
-            return true;
+            return !$this->isDefiniteNonCallableType();
         }
 
         return parent::canCastToNonNullableType($type);
@@ -350,12 +399,10 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      * Returns an empty array shape (for `array{}`)
      * @param bool $is_nullable
      * @return ArrayShapeType
-     * @suppress PhanUnreferencedPublicMethod (TODO: Remove if we support empty array shapes and still don't use this)
      */
     public static function empty(
         bool $is_nullable = false
     ) : ArrayShapeType {
-        // TODO: Investigate if caching makes this any more efficient?
         static $nullable_shape = null;
         static $nonnullable_shape = null;
 
@@ -398,9 +445,6 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      * Expands class types to all inherited classes returning
      * a superset of this type.
      *
-     * TODO: Once Phan has full support for ArrayShapeType in the type system,
-     * make asExpandedTypes return a UnionType with a single ArrayShapeType?
-     *
      * @throws RuntimeException if the maximum recursion depth is exceeded
      * @override
      */
@@ -412,7 +456,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         // is taller than some value we probably messed up
         // and should bail out.
         if ($recursion_depth >= 20) {
-            throw new RuntimeException("Recursion has gotten out of hand");
+            throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
         }
         return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) : UnionType {
             $result_fields = [];
@@ -420,7 +464,58 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
                 // UnionType already increments recursion_depth before calling asExpandedTypes on a subclass of Type,
                 // and has a depth limit of 10.
                 // Don't increase recursion_depth here, it's too easy to reach.
-                $expanded_field_type = $union_type->asExpandedTypes($code_base, $recursion_depth);
+                try {
+                    $expanded_field_type = $union_type->asExpandedTypes($code_base, $recursion_depth);
+                } catch (RecursionDepthException $_) {
+                    $expanded_field_type = MixedType::instance(false)->asUnionType();
+                }
+                if ($union_type->getIsPossiblyUndefined()) {
+                    // array{key?:string} should become array{key?:string}.
+                    $expanded_field_type = $union_type->withIsPossiblyUndefined(true);
+                }
+                $result_fields[$key] = $expanded_field_type;
+            }
+            return ArrayShapeType::fromFieldTypes($result_fields, $this->is_nullable)->asUnionType();
+        });
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * The code base to use in order to find super classes, etc.
+     *
+     * @param int $recursion_depth
+     * This thing has a tendency to run-away on me. This tracks
+     * how bad I messed up by seeing how far the expanded types
+     * go
+     *
+     * @return UnionType
+     * Expands class types to all inherited classes returning
+     * a superset of this type.
+     *
+     * @throws RuntimeException if the maximum recursion depth is exceeded
+     * @override
+     */
+    public function asExpandedTypesPreservingTemplate(
+        CodeBase $code_base,
+        int $recursion_depth = 0
+    ) : UnionType {
+        // We're going to assume that if the type hierarchy
+        // is taller than some value we probably messed up
+        // and should bail out.
+        if ($recursion_depth >= 20) {
+            throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
+        }
+        return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) : UnionType {
+            $result_fields = [];
+            foreach ($this->field_types as $key => $union_type) {
+                // UnionType already increments recursion_depth before calling asExpandedTypesPreservingTemplate on a subclass of Type,
+                // and has a depth limit of 10.
+                // Don't increase recursion_depth here, it's too easy to reach.
+                try {
+                    $expanded_field_type = $union_type->asExpandedTypesPreservingTemplate($code_base, $recursion_depth);
+                } catch (RecursionDepthException $_) {
+                    $expanded_field_type = MixedType::instance(false)->asUnionType();
+                }
                 if ($union_type->getIsPossiblyUndefined()) {
                     // array{key?:string} should become array{key?:string}.
                     $expanded_field_type = $union_type->withIsPossiblyUndefined(true);
@@ -476,7 +571,6 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
                 $field_types[$key] = $old_union_type->withUnionType($union_type);
             }
         }
-        // @phan-suppress-next-line PhanPartialTypeMismatchArgument
         return self::fromFieldTypes($field_types, false);
     }
 
@@ -513,5 +607,172 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
             }
         }
         return false;
+    }
+
+    /**
+     * Returns true if this contains a type that is definitely non-callable
+     * e.g. returns true for false, array, int
+     *      returns false for callable, array, object, iterable, T, etc.
+     */
+    public function isDefiniteNonCallableType() : bool
+    {
+        if (\array_keys($this->field_types) !== [0, 1]) {
+            return true;
+        }
+        if (!$this->field_types[0]->canCastToUnionType(UnionType::fromFullyQualifiedString('string|object'))) {
+            // First field of callable array should be a string or object. (the expression or class)
+            return true;
+        }
+        if (!$this->field_types[1]->canCastToUnionType(StringType::instance(false)->asUnionType())) {
+            // Second field of callable array should be the method name.
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @param array<string,UnionType> $template_parameter_type_map
+     * A map from template type identifiers to concrete types
+     *
+     * @return UnionType
+     * This UnionType with any template types contained herein
+     * mapped to concrete types defined in the given map.
+     *
+     * Overridden in subclasses
+     */
+    public function withTemplateParameterTypeMap(
+        array $template_parameter_type_map
+    ) : UnionType {
+        $field_types = $this->field_types;
+        foreach ($field_types as $i => $type) {
+            $new_type = $type->withTemplateParameterTypeMap($template_parameter_type_map);
+            if ($new_type !== $type) {
+                $field_types[$i] = $new_type;
+            }
+        }
+        if ($field_types === $this->field_types) {
+            return $this->asUnionType();
+        }
+        return self::fromFieldTypes($field_types, $this->is_nullable)->asUnionType();
+    }
+
+    /**
+     * If this generic array type in a parameter declaration has template types, get the closure to extract the real types for that template type from argument union types
+     *
+     * @param CodeBase $code_base
+     * @return ?Closure(UnionType, Context):UnionType
+     */
+    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type)
+    {
+        $closure = null;
+        foreach ($this->field_types as $key => $type) {
+            $field_closure = $type->getTemplateTypeExtractorClosure($code_base, $template_type);
+            if (!$field_closure) {
+                continue;
+            }
+            $closure = TemplateType::combineParameterClosures(
+                $closure,
+                static function (UnionType $union_type, Context $context) use ($key, $field_closure) : UnionType {
+                    $result = UnionType::empty();
+                    foreach ($union_type->getTypeSet() as $type) {
+                        if (!($type instanceof ArrayShapeType)) {
+                            continue;
+                        }
+                        $field_type = $type->field_types[$key] ?? null;
+                        if ($field_type) {
+                            $result = $result->withUnionType($field_closure($field_type, $context));
+                        }
+                    }
+                    return $result;
+                }
+            );
+        }
+        return $closure;
+    }
+
+    /**
+     * If all types in this array shape can be converted to a single PHP value,
+     * and all fields are required, return the array shape represented by that.
+     *
+     * Otherwise, return null
+     *
+     * @return ?array<mixed,?string|?int|?float|?bool|?array>
+     */
+    public function asArrayLiteralOrNull()
+    {
+        $result = [];
+        foreach ($this->field_types as $key => $field_type) {
+            $field_value = $field_type->asValueOrNullOrSelf();
+            if (\is_object($field_value)) {
+                return null;
+            }
+            $result[$key] = $field_value;
+        }
+        return $result;
+    }
+
+    /**
+     * Returns the function interface this references
+     * @return ?FunctionInterface
+     */
+    public function asFunctionInterfaceOrNull(CodeBase $code_base, Context $context)
+    {
+        if (\count($this->field_types) !== 2) {
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::TypeInvalidCallableArraySize,
+                $context->getLineNumberStart(),
+                \count($this->field_types)
+            );
+            return null;
+        }
+        $i = 0;
+        foreach ($this->field_types as $key => $_) {
+            if ($key !== $i) {
+                // TODO: Be more consistent about emitting issues in Type->asFunctionInterfaceOrNull and its subclasses (e.g. if missing __invoke)
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::TypeInvalidCallableArrayKey,
+                    $context->getLineNumberStart(),
+                    $i
+                );
+                return null;
+            }
+            $i++;
+        }
+        $method_name = $this->field_types[1]->asSingleScalarValueOrNull();
+        if (!\is_string($method_name)) {
+            return null;
+        }
+        foreach ($this->field_types[0]->getTypeSet() as $type) {
+            $class = null;
+            if ($type instanceof LiteralStringType) {
+                try {
+                    $fqsen = FullyQualifiedClassName::fromFullyQualifiedString($type->getValue());
+                    if (!$code_base->hasClassWithFQSEN($fqsen)) {
+                        continue;
+                    }
+                } catch (Exception $_) {
+                    continue;
+                }
+            } elseif ($type->isObjectWithKnownFQSEN()) {
+                $fqsen = $type->asFQSEN();
+                if (!$fqsen instanceof FullyQualifiedClassName) {
+                    continue;
+                }
+            } else {
+                continue;
+            }
+            if ($code_base->hasClassWithFQSEN($fqsen)) {
+                $class = $code_base->getClassByFQSEN($fqsen);
+                if ($class->hasMethodWithName($code_base, $method_name)) {
+                    return $class->getMethodByName($code_base, $method_name);
+                }
+            }
+        }
+
+        return null;
     }
 }

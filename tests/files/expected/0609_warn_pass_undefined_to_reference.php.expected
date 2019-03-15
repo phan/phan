@@ -1,0 +1,2 @@
+%s:33 PhanTypeMismatchArgument Argument 1 (test) is null but \TestPassByRef::testRequired() takes string defined at %s:5
+%s:34 PhanTypeMismatchArgument Argument 1 (test) is null but \TestPassByRef::test() takes string defined at %s:9

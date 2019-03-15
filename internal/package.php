@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 // add all files in the project
 $dir = dirname(__DIR__);
@@ -26,17 +27,23 @@ foreach (['src', 'vendor', '.phan'] as $subdir) {
 // Include all files with suffix .php, excluding those found in the tests folder.
 $iterator = new CallbackFilterIterator(
     $iterators,
-    function (\SplFileInfo $file_info) : bool {
+    static function (\SplFileInfo $file_info) : bool {
         if ($file_info->getExtension() !== 'php') {
             return false;
         }
-        if (preg_match('@^vendor/symfony/console/Tests/@i', str_replace('\\', '/', $file_info->getPathname()))) {
+        if (preg_match('@^vendor/symfony/(console|debug)/Tests/@i', str_replace('\\', '/', $file_info->getPathname()))) {
             return false;
         }
         return true;
     }
 );
 $phar->buildFromIterator($iterator, $dir);
+foreach (glob('LICENSE*') as $license) {
+    $phar->addFile($license);
+}
+foreach ($phar as $file) {
+    echo $file->getFileName() . "\n";
+}
 
 // We don't want to use https://secure.php.net/manual/en/phar.interceptfilefuncs.php , which Phar does by default.
 // That causes annoying bugs.

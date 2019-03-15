@@ -1,5 +1,5 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Phan\LanguageServer;
 
@@ -12,7 +12,7 @@ namespace Phan\LanguageServer;
 class IdGenerator
 {
     /**
-     * @var int
+     * @var int an incrementing counter for generating unique request IDs
      */
     public $counter = 1;
 

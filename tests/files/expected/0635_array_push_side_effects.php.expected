@@ -1,0 +1,5 @@
+%s:18 PhanTypeMismatchUnpackValue Attempting to unpack a value of type \stdClass which does not contain any subtypes of iterable (such as array or Traversable)
+%s:19 PhanTypeMismatchArgumentInternal Argument 1 (stack) is 'x' but \array_unshift() takes array
+%s:19 PhanTypeMismatchUnpackValue Attempting to unpack a value of type \stdClass which does not contain any subtypes of iterable (such as array or Traversable)
+%s:19 PhanTypeNonVarPassByRef Only variables can be passed by reference at argument 1 of \array_unshift()
+%s:31 PhanTypeSuspiciousEcho Suspicious argument \ast\Node|\stdClass for an echo/print statement

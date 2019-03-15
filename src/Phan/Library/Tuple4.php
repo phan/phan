@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Library;
 
 /**
@@ -25,7 +26,7 @@ class Tuple4 extends Tuple3
     /** @var int */
     const ARITY = 4;
 
-    /** @var T3 */
+    /** @var T3 element 3 of this tuple (0-based index) */
     public $_3;
 
     /**
@@ -43,12 +44,14 @@ class Tuple4 extends Tuple3
      */
     public function __construct($_0, $_1, $_2, $_3)
     {
-        parent::__construct($_0, $_1, $_2);
+        $this->_0 = $_0;
+        $this->_1 = $_1;
+        $this->_2 = $_2;
         $this->_3 = $_3;
     }
 
     /**
-     * @return array
+     * @return array{0:T0,1:T1,2:T2,3:T3}
      * An array of all elements in this tuple.
      */
     public function toArray() : array

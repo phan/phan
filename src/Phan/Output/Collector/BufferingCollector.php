@@ -1,4 +1,5 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
+
 namespace Phan\Output\Collector;
 
 use Phan\IssueInstance;
@@ -6,13 +7,16 @@ use Phan\Output\Filter\AnyFilter;
 use Phan\Output\IssueCollectorInterface;
 use Phan\Output\IssueFilterInterface;
 
+/**
+ * BufferingCollector represents an issue collector that stores issues for use later.
+ */
 final class BufferingCollector implements IssueCollectorInterface
 {
 
-    /** @var array<string,IssueInstance> */
+    /** @var array<string,IssueInstance> the issues that were collected */
     private $issues = [];
 
-    /** @var IssueFilterInterface|null */
+    /** @var IssueFilterInterface used to prevent some issues from being output (based on config and CLI options) */
     private $filter;
 
     /**
@@ -41,29 +45,32 @@ final class BufferingCollector implements IssueCollectorInterface
      * @param IssueInstance $issue
      * @return string
      */
-    private function formatSortableKey(IssueInstance $issue)
+    private function formatSortableKey(IssueInstance $issue) : string
     {
-
         // This needs to be a sortable key so that output
         // is in the expected order
-        return implode('|', [
+        return \implode('|', [
             $issue->getFile(),
-            str_pad((string)$issue->getLine(), 5, '0', STR_PAD_LEFT),
+            \str_pad((string)$issue->getLine(), 5, '0', \STR_PAD_LEFT),
             $issue->getIssue()->getType(),
             $issue->getMessage()
         ]);
     }
 
     /**
-     * @return array<string,IssueInstance>
+     * @return array<int,IssueInstance>
      */
     public function getCollectedIssues():array
     {
-        ksort($this->issues);
-        return array_values($this->issues);
+        \ksort($this->issues);
+        return \array_values($this->issues);
     }
 
     /**
+     * Clear the array of issues without outputting anything.
+     *
+     * Called after analysis ends.
+     *
      * @return void
      */
     public function flush()
@@ -80,7 +87,7 @@ final class BufferingCollector implements IssueCollectorInterface
      */
     public function removeIssuesForFiles(array $files)
     {
-        $file_set = array_flip($files);
+        $file_set = \array_flip($files);
         foreach ($this->issues as $key => $issue) {
             if (\array_key_exists($issue->getFile(), $file_set)) {
                 unset($this->issues[$key]);

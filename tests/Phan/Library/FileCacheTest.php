@@ -1,10 +1,12 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
+
 namespace Phan\Tests\Library;
 
-use Phan\Tests\BaseTest;
 use Phan\Library\FileCache;
+use Phan\Tests\BaseTest;
 
 /**
+ * Unit tests of FileCache
  */
 final class FileCacheTest extends BaseTest
 {
@@ -28,7 +30,7 @@ final class FileCacheTest extends BaseTest
     {
         $entry = FileCache::addEntry(self::MOCK_PATH, self::MOCK_CONTENTS);
         $read_entry = FileCache::getEntry(self::MOCK_PATH);
-        $this->assertSame($read_entry, $entry);
+        $this->assertSame($entry, $read_entry);
         $this->assertSame(self::MOCK_CONTENTS, $entry->getContents());
         $this->assertSame([1 => "Mock contents\n", 2 => "Other lines\n"], $entry->getLines());
         $this->assertSame("Other lines\n", $entry->getLine(2));
@@ -47,15 +49,18 @@ final class FileCacheTest extends BaseTest
         }
         $this->assertSame($expected_paths, FileCache::getCachedFileList());
 
+        // @phan-suppress-next-line PhanPossiblyNonClassMethodCall this expects to load it
         $this->assertSame("contents of 0", FileCache::getEntry("/path/to/0")->getContents());
 
-        $first_entry = array_shift($expected_paths);
+        $first_entry = \array_shift($expected_paths);
         $expected_paths[] = $first_entry;
         $this->assertSame($expected_paths, FileCache::getCachedFileList());
 
         FileCache::addEntry("/path/to/extra", "Other contents");
         $this->assertNull(FileCache::getEntry("/path/to/1"), "Least recently used entry should be evicted");
+        // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
         $this->assertSame("Other contents", FileCache::getEntry("/path/to/extra")->getContents(), "Most recently inserted entry should be kept");
+        // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
         $this->assertSame("contents of 2", FileCache::getEntry("/path/to/2")->getContents(), "Second least recently used entry should be kept");
     }
 

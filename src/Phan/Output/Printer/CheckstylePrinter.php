@@ -1,23 +1,28 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
+
 namespace Phan\Output\Printer;
 
 use Phan\IssueInstance;
 use Phan\Output\BufferedPrinterInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use const ENT_NOQUOTES;
 
+/**
+ * This prints `IssueInstance`s in the checkstyle XML format to the configured OutputInterface
+ */
 final class CheckstylePrinter implements BufferedPrinterInterface
 {
 
-    /** @var OutputInterface */
+    /** @var OutputInterface an output that XML can be written to. */
     private $output;
 
-    /** @var array<string,array<int,array>> */
+    /** @var array<string,array<int,array>> maps files with issues to the list of those issues */
     private $files = [];
 
     /** @param IssueInstance $instance */
     public function print(IssueInstance $instance)
     {
-        if (empty($this->files[$instance->getFile()])) {
+        if (!isset($this->files[$instance->getFile()])) {
             $this->files[$instance->getFile()] = [];
         }
 
@@ -53,7 +58,7 @@ final class CheckstylePrinter implements BufferedPrinterInterface
                 // Write each element of the error as an attribute
                 // of the error
                 $error->appendChild(
-                    new \DOMAttr('line', htmlspecialchars((string)$error_map['line'], ENT_NOQUOTES, 'UTF-8'))
+                    new \DOMAttr('line', \htmlspecialchars((string)$error_map['line'], ENT_NOQUOTES, 'UTF-8'))
                 );
 
                 // Map phan severity to Jenkins/Checkstyle severity levels
@@ -71,15 +76,15 @@ final class CheckstylePrinter implements BufferedPrinterInterface
                 }
 
                 $error->appendChild(
-                    new \DOMAttr('severity', htmlspecialchars((string)$level, ENT_NOQUOTES, 'UTF-8'))
+                    new \DOMAttr('severity', \htmlspecialchars((string)$level, ENT_NOQUOTES, 'UTF-8'))
                 );
 
                 $error->appendChild(
-                    new \DOMAttr('message', htmlspecialchars((string)$error_map['message'], ENT_NOQUOTES, 'UTF-8'))
+                    new \DOMAttr('message', \htmlspecialchars((string)$error_map['message'], ENT_NOQUOTES, 'UTF-8'))
                 );
 
                 $error->appendChild(
-                    new \DOMAttr('source', htmlspecialchars((string)$error_map['source'], ENT_NOQUOTES, 'UTF-8'))
+                    new \DOMAttr('source', \htmlspecialchars((string)$error_map['source'], ENT_NOQUOTES, 'UTF-8'))
                 );
             }
         }

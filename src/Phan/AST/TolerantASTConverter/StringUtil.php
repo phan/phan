@@ -4,9 +4,14 @@ namespace Phan\AST\TolerantASTConverter;
 
 use function chr;
 use function hexdec;
+use function is_string;
 use function octdec;
-
-use Error;
+use function preg_replace;
+use function str_replace;
+use function strpos;
+use function strrpos;
+use function strspn;
+use function substr;
 
 /**
  * This class is based on code from https://github.com/nikic/PHP-Parser/blob/master/lib/PhpParser/Node/Scalar/String_.php
@@ -65,68 +70,97 @@ final class StringUtil
      * Parses a string token.
      *
      * @param string $str String token content
-     * @param bool $parse_unicode_escape Whether to parse PHP 7 \u escapes
      *
      * @return string The parsed string
      */
-    public static function parse(string $str, bool $parse_unicode_escape = true) : string
+    public static function parse(string $str) : string
     {
+        $c = $str[0];
+        if ($c === '<') {
+            return self::parseHeredoc($str);
+        }
         $binary_length = 0;
-        if ('b' === $str[0] || 'B' === $str[0]) {
+        if ('b' === $c || 'B' === $c) {
             $binary_length = 1;
         }
 
         if ('\'' === $str[$binary_length]) {
-            return \str_replace(
+            return str_replace(
                 ['\\\\', '\\\''],
                 ['\\', '\''],
-                \substr($str, $binary_length + 1, -1)
+                // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
+                substr($str, $binary_length + 1, -1)
             );
         } else {
             return self::parseEscapeSequences(
                 substr($str, $binary_length + 1, -1),
-                '"',
-                $parse_unicode_escape
+                '"'
             );
         }
     }
 
     /**
-     * @internal
-     *
+     * Converts a fragment of raw (possibly indented)
+     * heredoc to the string that the PHP interpreter would treat it as.
+     */
+    public static function parseHeredoc(string $str) : string
+    {
+        // TODO: handle dos newlines
+        // TODO: Parse escape sequences
+        $first_line_index = (int)strpos($str, "\n");
+        $last_line_index = (int)strrpos($str, "\n");
+        // $last_line = substr($str, $last_line_index + 1);
+        $spaces = strspn($str, " \t", $last_line_index + 1);
+
+        // On Windows, the "\r" must also be removed from the last line of the heredoc
+        $inner = (string)substr($str, $first_line_index + 1, $last_line_index - ($first_line_index + 1) - ($str[$last_line_index - 1] === "\r" ? 1 : 0));
+
+        if ($spaces > 0) {
+            $inner = preg_replace("/^" . substr($str, $last_line_index + 1, $spaces) . "/m", '', $inner);
+        }
+        if (strpos(substr($str, 0, $first_line_index), "'") === false) {
+            // If the start of the here/nowdoc doesn't contain a "'", it's heredoc.
+            // The contents have to be unescaped.
+            return self::parseEscapeSequences($inner, null);
+        }
+        return $inner;
+    }
+
+    /**
      * Parses escape sequences in strings (all string types apart from single quoted).
      *
-     * @param string      $str   String without quotes
+     * @param string|false $str  String without quotes
      * @param null|string $quote Quote type
-     * @param bool $parse_unicode_escape Whether to parse PHP 7 \u escapes
      *
      * @return string String with escape sequences parsed
+     * @throws InvalidNodeException for invalid code points
      */
-    public static function parseEscapeSequences(string $str, $quote, bool $parse_unicode_escape = true) : string
+    public static function parseEscapeSequences($str, $quote) : string
     {
-        if (null !== $quote) {
-            $str = \str_replace('\\' . $quote, $quote, $str);
+        if (!is_string($str)) {
+            // Invalid AST input; give up
+            return '';
         }
-
-        $extra = '';
-        if ($parse_unicode_escape) {
-            $extra = '|u\{([0-9a-fA-F]+)\}';
+        if (null !== $quote) {
+            $str = str_replace('\\' . $quote, $quote, $str);
         }
 
         return \preg_replace_callback(
-            '~\\\\([\\\\$nrtfve]|[xX][0-9a-fA-F]{1,2}|[0-7]{1,3}' . $extra . ')~',
+            '~\\\\([\\\\$nrtfve]|[xX][0-9a-fA-F]{1,2}|[0-7]{1,3}|u\{([0-9a-fA-F]+)\})~',
             /**
              * @param array<int,string> $matches
              * @return string
              */
-            function ($matches) {
+            static function ($matches) {
                 $str = $matches[1];
 
                 if (isset(self::REPLACEMENTS[$str])) {
                     return self::REPLACEMENTS[$str];
                 } elseif ('x' === $str[0] || 'X' === $str[0]) {
+                    // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal
                     return chr(hexdec($str));
                 } elseif ('u' === $str[0]) {
+                    // @phan-suppress-next-line PhanPartialTypeMismatchArgument
                     return self::codePointToUtf8(hexdec($matches[2]));
                 } else {
                     return chr(octdec($str));
@@ -143,7 +177,7 @@ final class StringUtil
      *
      * @return string UTF-8 representation of code point
      *
-     * @throws \Error for invalid code points
+     * @throws InvalidNodeException for invalid code points
      */
     private static function codePointToUtf8(int $num) : string
     {
@@ -160,6 +194,6 @@ final class StringUtil
             return chr(($num >> 18) + 0xF0) . chr((($num >> 12) & 0x3F) + 0x80)
                  . chr((($num >> 6) & 0x3F) + 0x80) . chr(($num & 0x3F) + 0x80);
         }
-        throw new Error('Invalid UTF-8 codepoint escape sequence: Codepoint too large');
+        throw new InvalidNodeException('Invalid UTF-8 codepoint escape sequence: Codepoint too large');
     }
 }

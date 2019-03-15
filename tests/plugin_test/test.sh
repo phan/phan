@@ -17,9 +17,11 @@ rm $ACTUAL_PATH -f || exit 1
 # We use the polyfill parser because it behaves consistently in all php versions.
 ../../phan --force-polyfill-parser --memory-limit 1G | tee $ACTUAL_PATH
 
-sed -i 's,\<closure_[0-9a-f]\{12\}\>,closure_%s,g' $ACTUAL_PATH
-sed -i 's,\<closure_[0-9a-f]\{12\}\>,closure_%s,g' $EXPECTED_PATH
-# php 7.3 compat
+sed -i -e 's,\<closure_[0-9a-f]\{12\}\>,closure_%s,g' \
+    -e "s,[^\\']*plugin_test[/\\\\],,g" \
+    -e 's,\(PhanTypeErrorInInternalCall.*\)integer given,\1int given,g' \
+    $ACTUAL_PATH $EXPECTED_PATH
+
 sed -i 's,missing closing parenthesis,missing ),g' $ACTUAL_PATH
 
 # diff returns a non-zero exit code if files differ or are missing
@@ -33,6 +35,11 @@ if [[ "$(php -r 'echo PHP_VERSION_ID;')" < 70100 ]]; then
     # TODO: If we imitate the reflection of php 7.1 in php 7.0, we can restore this.
     sed -i "/^.*PhanNativePHPSyntaxCheckPlugin.*unexpected '\\?'/d" $ACTUAL_PATH
 fi
+# Normalize PHP_VERSION_ID
+# and remove php 8.0 warnings
+sed -i -e 's/^\(src.020_bool.php.*of type\) [0-9]\+ \(evaluated\)/\1 int \2/g' \
+    -e '/__autoload() is no longer supported, use spl_autoload_register/d' \
+    $ACTUAL_PATH
 
 diff $EXPECTED_PATH $ACTUAL_PATH
 EXIT_CODE=$?

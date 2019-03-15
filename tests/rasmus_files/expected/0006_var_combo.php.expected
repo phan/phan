@@ -3,4 +3,3 @@
 %s:5 PhanStaticCallToNonStatic Static call to non-static method \A::func() defined at %s:3
 %s:6 PhanStaticCallToNonStatic Static call to non-static method \A::func() defined at %s:3
 %s:6 PhanTypeMismatchArgument Argument 1 (arg) is array but \A::func() takes int defined at %s:3
-

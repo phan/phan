@@ -1,18 +1,26 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Library;
+
+use Closure;
+use SplObjectStorage;
 
 /**
  * A map from object to object with key comparisons
  * based on spl_object_hash.
+ *
+ * @template K
+ * @template V
+ * @suppress PhanTemplateTypeNotDeclaredInFunctionParams
  */
-class Map extends \SplObjectStorage
+class Map extends SplObjectStorage
 {
 
     /**
      * We redefine the key to be the actual key rather than
      * the index of the key
      *
-     * @return object
+     * @return K
      * @suppress PhanParamSignatureMismatchInternal - This is deliberately changing the phpdoc return type.
      */
     public function key()
@@ -23,6 +31,7 @@ class Map extends \SplObjectStorage
     /**
      * We redefine the current value to the current value rather
      * than the current key
+     * @return V
      */
     public function current()
     {
@@ -30,19 +39,21 @@ class Map extends \SplObjectStorage
     }
 
     /**
-     * @param \Closure(object):object $key_closure
+     * @template KNew
+     * @template VNew
+     * @param Closure(object):KNew $key_closure
      * A closure that maps each key of this map
      * to a new key
      *
-     * @param \Closure(object):object $value_closure
+     * @param Closure(object):VNew $value_closure
      * A closure that maps each value of this map
      * to a new value.
      *
-     * @return Map
+     * @return Map<KNew,VNew>
      * A new map containing the mapped keys and
      * values
      */
-    public function keyValueMap(\Closure $key_closure, \Closure $value_closure)
+    public function keyValueMap(Closure $key_closure, Closure $value_closure)
     {
         $map = new Map();
         foreach ($this as $key => $value) {
@@ -53,7 +64,7 @@ class Map extends \SplObjectStorage
     }
 
     /**
-     * @return Map
+     * @return Map<K,V>
      * A new map with each key and value cloned
      * @suppress PhanUnreferencedPublicMethod possibly useful but currently unused
      */
@@ -61,17 +72,17 @@ class Map extends \SplObjectStorage
     {
         $clone =
             /**
-             * @param object $element
-             * @return object
+             * @param K|V $element
+             * @return K|V
              */
-            function ($element) {
+            static function ($element) {
                 return clone($element);
             };
         return $this->keyValueMap($clone, $clone);
     }
 
     /**
-     * @return Map
+     * @return Map<K,V>
      * A new map with each value cloned (keys remain uncloned)
      */
     public function deepCopyValues() : Map
@@ -84,7 +95,7 @@ class Map extends \SplObjectStorage
     }
 
     /**
-     * @return Set
+     * @return Set<V>
      * A new set with the unique values from this map.
      * Precondition: values of this map are objects.
      * @suppress PhanUnreferencedPublicMethod possibly useful but currently unused
@@ -99,7 +110,7 @@ class Map extends \SplObjectStorage
     }
 
     /**
-     * @return Set
+     * @return Set<K>
      * A new set with the unique keys from this map.
      * Precondition: values of this set are objects.
      * @suppress PhanUnreferencedPublicMethod possibly useful but currently unused

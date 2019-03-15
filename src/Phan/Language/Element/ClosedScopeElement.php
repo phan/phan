@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language\Element;
 
 use Phan\Language\Scope\ClosedScope;
@@ -11,11 +12,12 @@ trait ClosedScopeElement
 {
 
     /**
-     * @var ClosedScope
+     * @var ClosedScope the scope within this closed scope element.
      */
     private $internal_scope;
 
     /**
+     * Sets the internal scope of this closed scope element.
      * @return void
      */
     public function setInternalScope(ClosedScope $internal_scope)

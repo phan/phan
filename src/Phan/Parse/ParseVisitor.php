@@ -1,12 +1,20 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Parse;
 
-use Phan\AST\ContextNode;
+use AssertionError;
+use ast;
+use ast\Node;
+use InvalidArgumentException;
 use Phan\Analysis\ScopeVisitor;
+use Phan\AST\ContextNode;
+use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Daemon;
+use Phan\Exception\FQSENException;
 use Phan\Exception\IssueException;
+use Phan\Exception\UnanalyzableException;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\ClassConstant;
@@ -33,10 +41,8 @@ use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
+use Phan\Library\FileCache;
 use Phan\Library\None;
-use ast\Node;
-use ast;
-use InvalidArgumentException;
 
 /**
  * The class is a visitor for AST nodes that does parsing. Each
@@ -46,10 +52,9 @@ use InvalidArgumentException;
  *
  * @property-read CodeBase $code_base
  *
- * @phan-file-suppress PhanPluginUnusedPublicMethodArgument, PhanUnusedPublicMethodParameter implementing faster no-op methods for common visit*
+ * @phan-file-suppress PhanUnusedPublicMethodParameter implementing faster no-op methods for common visit*
  * @phan-file-suppress PhanPartialTypeMismatchArgument
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
- * @phan-file-suppress PhanPluginNoAssert
  */
 class ParseVisitor extends ScopeVisitor
 {
@@ -96,10 +101,11 @@ class ParseVisitor extends ScopeVisitor
 
         // This happens now and then and I have no idea
         // why.
-        if (empty($class_name)) {
+        if (!$class_name) {
             return $this->context;
         }
 
+        // @phan-suppress-next-line PhanThrowTypeAbsentForCall hopefully impossible
         $class_fqsen = FullyQualifiedClassName::fromStringInContext(
             $class_name,
             $this->context
@@ -207,23 +213,18 @@ class ParseVisitor extends ScopeVisitor
                             ));
                     } else {
                         $parent_class_name =
-                            $this->context->getNamespace() . '\\' . $parent_class_name;
+                            \rtrim($this->context->getNamespace(), '\\') . '\\' . $parent_class_name;
                     }
                 } elseif ($extends_node->flags & \ast\flags\NAME_RELATIVE) {
                     $parent_class_name =
-                        $this->context->getNamespace() . '\\' . $parent_class_name;
+                        \rtrim($this->context->getNamespace(), '\\') . '\\' . $parent_class_name;
                 }
                 // $extends_node->flags is 0 when it is fully qualified?
 
-                // The name is fully qualified. Make sure it looks
-                // like it is
-                if (0 !== \strpos($parent_class_name, '\\')) {
-                    $parent_class_name = '\\' . $parent_class_name;
-                }
-
-                $parent_fqsen = FullyQualifiedClassName::fromStringInContext(
-                    $parent_class_name,
-                    $this->context
+                // The name is fully qualified.
+                // @phan-suppress-next-line PhanThrowTypeAbsentForCall should be impossible
+                $parent_fqsen = FullyQualifiedClassName::fromFullyQualifiedString(
+                    $parent_class_name
                 );
 
                 // Set the parent for the class
@@ -238,7 +239,8 @@ class ParseVisitor extends ScopeVisitor
             }
 
             // Add any implemented interfaces
-            if (!empty($node->children['implements'])) {
+            if (isset($node->children['implements'])) {
+                // @phan-suppress-next-line PhanThrowTypeAbsentForCall should be impossible
                 $interface_list = (new ContextNode(
                     $this->code_base,
                     $this->context,
@@ -247,6 +249,7 @@ class ParseVisitor extends ScopeVisitor
 
                 foreach ($interface_list as $name) {
                     $class->addInterfaceClassFQSEN(
+                        // @phan-suppress-next-line PhanThrowTypeAbsentForCall should be impossible
                         FullyQualifiedClassName::fromFullyQualifiedString(
                             $name
                         )
@@ -269,12 +272,15 @@ class ParseVisitor extends ScopeVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
+     *
+     * @throws UnanalyzableException if saw an invalid AST node (e.g. from polyfill)
      */
     public function visitUseTrait(Node $node) : Context
     {
         // Bomb out if we're not in a class context
         $class = $this->getContextClass();
 
+        // @phan-suppress-next-line PhanThrowTypeMismatchForCall should be impossible
         $trait_fqsen_list = (new ContextNode(
             $this->code_base,
             $this->context,
@@ -320,9 +326,9 @@ class ParseVisitor extends ScopeVisitor
 
         $method_name = (string)$node->children['name'];
 
-        $method_fqsen = FullyQualifiedMethodName::fromStringInContext(
-            $method_name,
-            $context
+        $method_fqsen = FullyQualifiedMethodName::make(
+            $class->getFQSEN(),
+            $method_name
         );
 
         // Hunt for an available alternate ID if necessary
@@ -342,7 +348,9 @@ class ParseVisitor extends ScopeVisitor
         if ($context->isPHPInternal()) {
             // only for stubs
             foreach (FunctionFactory::functionListFromFunction($method) as $method_variant) {
-                \assert($method_variant instanceof Method);
+                if (!($method_variant instanceof Method)) {
+                    throw new AssertionError("Expected variants of Method to be Method");
+                }
                 $class->addMethod($code_base, $method_variant, new None());
             }
         } else {
@@ -402,6 +410,8 @@ class ParseVisitor extends ScopeVisitor
             ) {
                 continue;
             }
+            $variable = $comment->getVariableList()[$i] ?? null;
+            $variable_has_literals = $variable && $variable->getUnionType()->hasLiterals();
 
             // If something goes wrong will getting the type of
             // a property, we'll store it as a future union
@@ -415,7 +425,11 @@ class ParseVisitor extends ScopeVisitor
             if (!($default_node instanceof Node)) {
                 // Get the type of the default (not a literal)
                 if ($default_node !== null) {
-                    $union_type = Type::nonLiteralFromObject($default_node)->asUnionType();
+                    if ($variable_has_literals) {
+                        $union_type = Type::fromObject($default_node)->asUnionType();
+                    } else {
+                        $union_type = Type::nonLiteralFromObject($default_node)->asUnionType();
+                    }
                 } else {
                     // This is a declaration such as `public $x;` with no $default_node
                     // (we don't assume the property is always null, to reduce false positives)
@@ -432,19 +446,40 @@ class ParseVisitor extends ScopeVisitor
 
             $property_name = $child_node->children['name'];
 
-            \assert(
-                \is_string($property_name),
-                'Property name must be a string. '
-                . 'Got '
-                . print_r($property_name, true)
-                . ' at '
-                . $context_for_property
-            );
+            if (!\is_string($property_name)) {
+                throw new AssertionError(
+                    'Property name must be a string. '
+                    . 'Got '
+                    . \print_r($property_name, true)
+                    . ' at '
+                    . $context_for_property
+                );
+            }
 
             $property_fqsen = FullyQualifiedPropertyName::make(
                 $class->getFQSEN(),
                 $property_name
             );
+            if ($this->code_base->hasPropertyWithFQSEN($property_fqsen)) {
+                $old_property = $this->code_base->getPropertyByFQSEN($property_fqsen);
+                if ($old_property->getDefiningFQSEN() === $property_fqsen) {
+                    // Note: PHPDoc properties are parsed by Phan before real properties, so they take precedence (e.g. they are more visible)
+                    // PhanRedefineMagicProperty is a separate check.
+                    if ($old_property->isFromPHPDoc()) {
+                        continue;
+                    }
+                    $this->emitIssue(
+                        Issue::RedefineProperty,
+                        $child_node->lineno,
+                        $property_name,
+                        $this->context->getFile(),
+                        $child_node->lineno,
+                        $this->context->getFile(),
+                        $old_property->getContext()->getLineNumberStart()
+                    );
+                    continue;
+                }
+            }
 
             $property = new Property(
                 $context_for_property,
@@ -453,6 +488,8 @@ class ParseVisitor extends ScopeVisitor
                 $node->flags ?? 0,
                 $property_fqsen
             );
+
+            $property->setPhanFlags($comment->getPhanFlagsForProperty());
             $property->setDocComment($doc_comment);
 
             // Add the property to the class
@@ -463,13 +500,16 @@ class ParseVisitor extends ScopeVisitor
             );
 
             // Look for any @var declarations
-            if ($variable = $comment->getVariableList()[$i] ?? null) {
+            if ($variable) {
                 $original_union_type = $union_type;
                 // We try to avoid resolving $future_union_type except when necessary,
                 // to avoid issues such as https://github.com/phan/phan/issues/311 and many more.
                 if ($future_union_type !== null) {
                     try {
-                        $original_union_type = $future_union_type->get()->asNonLiteralType();
+                        $original_union_type = $future_union_type->get();
+                        if (!$variable_has_literals) {
+                            $original_union_type = $original_union_type->asNonLiteralType();
+                        }
                         // We successfully resolved the union type. We no longer need $future_union_type
                         $future_union_type = null;
                     } catch (IssueException $_) {
@@ -496,17 +536,33 @@ class ParseVisitor extends ScopeVisitor
                         Issue::TypeMismatchProperty,
                         $child_node->lineno ?? 0,
                         (string)$original_union_type,
-                        (string)$property->getFQSEN(),
+                        $property->asPropertyFQSENString(),
                         (string)$variable->getUnionType()
                     );
                 }
 
                 $original_property_type = $property->getUnionType();
-                $variable_type = $variable->getUnionType();
-                if ($variable_type->hasGenericArray() && !$original_property_type->hasTypeMatchingCallback(function (Type $type) : bool {
+                $original_variable_type = $variable->getUnionType();
+                $variable_type = $original_variable_type->withStaticResolvedInContext($this->context);
+                if ($variable_type !== $original_variable_type) {
+                    // Instance properties with (at)var static will have the same type as the class they're in
+                    // TODO: Support `static[]` as well when inheriting
+                    if ($property->isStatic()) {
+                        $this->emitIssue(
+                            Issue::StaticPropIsStaticType,
+                            $variable->getLineno(),
+                            $property->getRepresentationForIssue(),
+                            $original_variable_type,
+                            $variable_type
+                        );
+                    } else {
+                        $property->setHasStaticInUnionType(true);
+                    }
+                }
+                if ($variable_type->hasGenericArray() && !$original_property_type->hasTypeMatchingCallback(static function (Type $type) : bool {
                     return \get_class($type) !== ArrayType::class;
                 })) {
-                    // Don't convert `/** @var T[] */ public $x = []` to union type `string[]|array`
+                    // Don't convert `/** @var T[] */ public $x = []` to union type `T[]|array`
                     $property->setUnionType($variable_type);
                 } else {
                     // Set the declared type to the doc-comment type and add
@@ -520,9 +576,6 @@ class ParseVisitor extends ScopeVisitor
             if ($union_type->isType(NullType::instance(false))) {
                 $union_type = UnionType::empty();
             }
-
-            $property->setIsDeprecated($comment->isDeprecated());
-            $property->setIsNSInternal($comment->isNSInternal());
 
             // Wait until after we've added the (at)var type
             // before setting the future so that calling
@@ -552,14 +605,33 @@ class ParseVisitor extends ScopeVisitor
         $class = $this->getContextClass();
 
         foreach ($node->children as $child_node) {
-            \assert($child_node instanceof Node, 'expected class const element to be a Node');
+            if (!$child_node instanceof Node) {
+                throw new AssertionError('expected class const element to be a Node');
+            }
             $name = $child_node->children['name'];
-            \assert(\is_string($name));
+            if (!\is_string($name)) {
+                throw new AssertionError('expected class const name to be a string');
+            }
 
-            $fqsen = FullyQualifiedClassConstantName::fromStringInContext(
-                $name,
-                $this->context
+            $fqsen = FullyQualifiedClassConstantName::make(
+                $class->getFQSEN(),
+                $name
             );
+            if ($this->code_base->hasClassConstantWithFQSEN($fqsen)) {
+                $old_constant = $this->code_base->getClassConstantByFQSEN($fqsen);
+                if ($old_constant->getDefiningFQSEN() === $fqsen) {
+                    $this->emitIssue(
+                        Issue::RedefineClassConstant,
+                        $child_node->lineno,
+                        $name,
+                        $this->context->getFile(),
+                        $child_node->lineno,
+                        $this->context->getFile(),
+                        $old_constant->getContext()->getLineNumberStart()
+                    );
+                    continue;
+                }
+            }
 
             // Get a comment on the declaration
             $doc_comment = $child_node->children['docComment'] ?? '';
@@ -587,7 +659,6 @@ class ParseVisitor extends ScopeVisitor
             $constant->setIsNSInternal($comment->isNSInternal());
             $constant->setIsOverrideIntended($comment->isOverrideIntended());
             $constant->setSuppressIssueList($comment->getSuppressIssueList());
-
             $value_node = $child_node->children['value'];
             if ($value_node instanceof Node) {
                 try {
@@ -615,6 +686,15 @@ class ParseVisitor extends ScopeVisitor
                 $this->code_base,
                 $constant
             );
+            foreach ($comment->getVariableList() as $var) {
+                if ($var->getUnionType()->hasTemplateTypeRecursive()) {
+                    $this->emitIssue(
+                        Issue::TemplateTypeConstant,
+                        $constant->getFileRef()->getLineNumberStart(),
+                        (string)$constant->getFQSEN()
+                    );
+                }
+            }
         }
 
         return $this->context;
@@ -633,7 +713,9 @@ class ParseVisitor extends ScopeVisitor
     public function visitConstDecl(Node $node) : Context
     {
         foreach ($node->children as $child_node) {
-            \assert($child_node instanceof Node);
+            if (!$child_node instanceof Node) {
+                throw new AssertionError("Expected global constant element to be a Node");
+            }
 
             $value_node = $child_node->children['value'];
             try {
@@ -648,12 +730,15 @@ class ParseVisitor extends ScopeVisitor
                 // Both will emit PhanInvalidConstantExpression
                 continue;
             }
-            $this->addConstant(
-                $child_node,
+            self::addConstant(
+                $this->code_base,
+                $this->context,
+                $child_node->lineno,
                 $child_node->children['name'],
                 $value_node,
                 $child_node->flags ?? 0,
-                $child_node->children['docComment'] ?? ''
+                $child_node->children['docComment'] ?? '',
+                true
             );
         }
 
@@ -678,18 +763,12 @@ class ParseVisitor extends ScopeVisitor
 
         // Hunt for an un-taken alternate ID
         $alternate_id = 0;
-        $function_fqsen = null;
         do {
-            $function_fqsen =
-                FullyQualifiedFunctionName::fromStringInContext(
-                    $function_name,
-                    $context
-                )
-                ->withNamespace($context->getNamespace())
-                ->withAlternateId($alternate_id++);
-        } while ($code_base->hasFunctionWithFQSEN(
-            $function_fqsen
-        ));
+            // @phan-suppress-next-line PhanThrowTypeAbsentForCall this is valid
+            $function_fqsen = FullyQualifiedFunctionName::fromFullyQualifiedString(
+                \rtrim($context->getNamespace(), '\\') . '\\' . $function_name
+            )->withAlternateId($alternate_id++);
+        } while ($code_base->hasFunctionWithFQSEN($function_fqsen));
 
         $func = Func::fromNode(
             $context
@@ -703,7 +782,9 @@ class ParseVisitor extends ScopeVisitor
         if ($context->isPHPInternal()) {
             // only for stubs
             foreach (FunctionFactory::functionListFromFunction($func) as $func_variant) {
-                \assert($func_variant instanceof Func);
+                if (!($func_variant instanceof Func)) {
+                    throw new AssertionError("Expecteded variant of Func to be a Func");
+                }
                 $code_base->addFunction($func_variant);
             }
         } else {
@@ -731,7 +812,7 @@ class ParseVisitor extends ScopeVisitor
     public function visitClosure(Node $node) : Context
     {
         $closure_fqsen = FullyQualifiedFunctionName::fromClosureInContext(
-            $this->context->withLineNumberStart($node->lineno ?? 0),
+            $this->context->withLineNumberStart($node->lineno),
             $node
         );
 
@@ -781,20 +862,7 @@ class ParseVisitor extends ScopeVisitor
                                   ->setNumberOfOptionalParameters(FunctionInterface::INFINITE_PARAMETERS);
                 }
             } elseif ($function_name === 'define') {
-                // TODO: infer constant type from literal, string concatenation operators, etc?
-                $args = $node->children['args'];
-                if ($args->kind === \ast\AST_ARG_LIST
-                    && isset($args->children[0])
-                    && \is_string($args->children[0])
-                ) {
-                    $this->addConstant(
-                        $node,
-                        $args->children[0],
-                        $args->children[1] ?? null,
-                        0,
-                        ''
-                    );
-                }
+                $this->analyzeDefine($node);
             } elseif ($function_name === 'class_alias') {
                 if (Config::getValue('enable_class_alias_support') && $this->context->isInGlobalScope()) {
                     $this->recordClassAlias($node);
@@ -811,6 +879,39 @@ class ParseVisitor extends ScopeVisitor
             }
         }
         return $this->context;
+    }
+
+    private function analyzeDefine(Node $node)
+    {
+        $args = $node->children['args'];
+        if (\count($args->children) < 2) {
+            return;
+        }
+        $name = $args->children[0];
+        if ($name instanceof Node) {
+            try {
+                $name_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $name, false);
+            } catch (IssueException $_) {
+                // If this is really an issue, we'll emit it in the analysis phase when we have all of the element definitions.
+                return;
+            }
+            $name = $name_type->asSingleScalarValueOrNull();
+        }
+
+        if (!\is_string($name)) {
+            return;
+        }
+        self::addConstant(
+            $this->code_base,
+            $this->context,
+            $node->lineno,
+            $name,
+            $args->children[1],
+            0,
+            '',
+            true,
+            true
+        );
     }
 
     /**
@@ -1014,7 +1115,7 @@ class ParseVisitor extends ScopeVisitor
             return $this->context;
         }
         // Analyze the assignment for compatibility with some
-        // breaking changes betweeen PHP5 and PHP7.
+        // breaking changes between PHP5 and PHP7.
         $var_node = $node->children['var'];
         if ($var_node instanceof Node) {
             $this->analyzeBackwardCompatibility($var_node);
@@ -1032,32 +1133,30 @@ class ParseVisitor extends ScopeVisitor
             return $this->context;
         }
 
-        if (!($node->children['expr'] instanceof Node
-            && ($node->children['expr']->children['name'] ?? null) instanceof Node)
-        ) {
+        $expr = $node->children['expr'];
+        if (!($expr instanceof Node)) {
             return $this->context;
         }
 
         // check for $$var[]
-        if ($node->children['expr']->kind == \ast\AST_VAR
-            && $node->children['expr']->children['name']->kind == \ast\AST_VAR
+        if ($expr->kind === \ast\AST_VAR
+            && ($expr->children['name']->kind ?? null) === \ast\AST_VAR
         ) {
-            $temp = $node->children['expr']->children['name'];
+            $temp = $expr->children['name'];
             $depth = 1;
             while ($temp instanceof Node) {
-                \assert(
-                    isset($temp->children['name']),
-                    "Expected to find a name in context, something else found."
-                );
+                if (!isset($temp->children['name'])) {
+                    throw new AssertionError("Expected to find a name in context, something else found.");
+                }
                 $temp = $temp->children['name'];
                 $depth++;
             }
-            $dollars = str_repeat('$', $depth);
-            $ftemp = new \SplFileObject($this->context->getFile());
-            $ftemp->seek($node->lineno - 1);
-            $line = $ftemp->current();
-            \assert(\is_string($line));
-            unset($ftemp);
+            $dollars = \str_repeat('$', $depth);
+            $cache_entry = FileCache::getOrReadEntry($this->context->getFile());
+            $line = $cache_entry->getLine($node->lineno);
+            if (!\is_string($line)) {
+                return $this->context;
+            }
             if (\strpos($line, '{') === false
                 || \strpos($line, '}') === false
             ) {
@@ -1069,17 +1168,15 @@ class ParseVisitor extends ScopeVisitor
             }
 
         // $foo->$bar['baz'];
-        } elseif (!empty($node->children['expr']->children[1])
-            && ($node->children['expr']->children[1] instanceof Node)
-            && ($node->children['expr']->kind == \ast\AST_PROP)
-            && ($node->children['expr']->children[0]->kind == \ast\AST_VAR)
-            && ($node->children['expr']->children[1]->kind == \ast\AST_VAR)
+        } elseif ($expr->kind === \ast\AST_PROP &&
+            ($expr->children['expr']->kind ?? null) === ast\AST_VAR &&
+            ($expr->children['prop']->kind ?? null) === ast\AST_VAR
         ) {
-            $ftemp = new \SplFileObject($this->context->getFile());
-            $ftemp->seek($node->lineno - 1);
-            $line = $ftemp->current();
-            \assert(\is_string($line));
-            unset($ftemp);
+            $cache_entry = FileCache::getOrReadEntry($this->context->getFile());
+            $line = $cache_entry->getLines()[$node->lineno] ?? null;
+            if (!\is_string($line)) {
+                return $this->context;
+            }
             if (\strpos($line, '{') === false
                 || \strpos($line, '}') === false
             ) {
@@ -1094,8 +1191,17 @@ class ParseVisitor extends ScopeVisitor
     }
 
     /**
-     * @param Node $node
-     * The node where the constant was found
+     * Add a constant to the codebase
+     *
+     * @param CodeBase $code_base
+     * The global code base in which we store all
+     * state
+     *
+     * @param Context $context
+     * The context of the parser at the node which declares the constant
+     *
+     * @param int $lineno
+     * The line number where the node declaring the constant was found
      *
      * @param string $name
      * The name of the constant
@@ -1110,50 +1216,119 @@ class ParseVisitor extends ScopeVisitor
      * @param string $comment_string
      * A possibly empty comment string on the declaration
      *
+     * @param bool $use_future_union_type
+     * Should this lazily resolve the value of the constant declaration?
+     *
+     * @param bool $is_fully_qualified
+     * Is the provided $name already fully qualified?
+     *
      * @return void
      */
-    private function addConstant(
-        Node $node,
+    public static function addConstant(
+        CodeBase $code_base,
+        Context $context,
+        int $lineno,
         string $name,
         $value,
         int $flags,
-        string $comment_string
+        string $comment_string,
+        bool $use_future_union_type,
+        bool $is_fully_qualified = false
     ) {
-        // Give it a fully-qualified name
-        $fqsen = FullyQualifiedGlobalConstantName::fromStringInContext(
-            $name,
-            $this->context
-        );
+        $i = \strrpos($name, '\\');
+        if ($i !== false) {
+            $name_fragment = (string)\substr($name, $i + 1);
+        } else {
+            $name_fragment = $name;
+        }
+        if (\in_array(\strtolower($name_fragment), ['true', 'false', 'null'], true)) {
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::ReservedConstantName,
+                $lineno,
+                $name
+            );
+            return;
+        }
+        try {
+            // Give it a fully-qualified name
+            if ($is_fully_qualified) {
+                $fqsen = FullyQualifiedGlobalConstantName::fromFullyQualifiedString(
+                    $name
+                );
+            } else {
+                $fqsen = FullyQualifiedGlobalConstantName::fromStringInContext(
+                    $name,
+                    $context
+                );
+            }
+        } catch (InvalidArgumentException $_) {
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::InvalidConstantFQSEN,
+                $lineno,
+                $name
+            );
+            return;
+        } catch (FQSENException $_) {
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::InvalidConstantFQSEN,
+                $lineno,
+                $name
+            );
+            return;
+        }
 
         // Create the constant
         $constant = new GlobalConstant(
-            $this->context
-                ->withLineNumberStart($node->lineno ?? 0),
+            $context->withLineNumberStart($lineno ?? 0),
             $name,
             UnionType::empty(),
             $flags,
             $fqsen
         );
 
+        if ($code_base->hasGlobalConstantWithFQSEN($fqsen)) {
+            $other_constant = $code_base->getGlobalConstantByFQSEN($fqsen);
+            $other_context = $other_constant->getContext();
+            if (!$other_context->equals($context)) {
+                // Be consistent about the constant's type and only track the first declaration seen when parsing (or redeclarations)
+                // Note that global constants don't have alternates.
+                return;
+            }
+            // Keep track of old references to the new constant
+            $constant->copyReferencesFrom($other_constant);
+
+            // Otherwise, add the constant now that we know about all of the elements in the codebase
+        }
+
         // Get a comment on the declaration
         $comment = Comment::fromStringInContext(
             $comment_string,
-            $this->code_base,
-            $this->context,
-            $node->lineno ?? 0,
+            $code_base,
+            $context,
+            $lineno ?? 0,
             Comment::ON_CONST
         );
 
-        if ($value instanceof Node) {
-            $constant->setFutureUnionType(
-                new FutureUnionType(
-                    $this->code_base,
-                    $this->context,
-                    $value
-                )
-            );
+        if ($use_future_union_type) {
+            if ($value instanceof Node) {
+                $constant->setFutureUnionType(
+                    new FutureUnionType(
+                        $code_base,
+                        $context,
+                        $value
+                    )
+                );
+            } else {
+                $constant->setUnionType(Type::fromObject($value)->asUnionType());
+            }
         } else {
-            $constant->setUnionType(Type::fromObject($value)->asUnionType());
+            $constant->setUnionType(UnionTypeVisitor::unionTypeFromNode($code_base, $context, $value));
         }
 
         $constant->setNodeForValue($value);
@@ -1162,7 +1337,7 @@ class ParseVisitor extends ScopeVisitor
         $constant->setIsDeprecated($comment->isDeprecated());
         $constant->setIsNSInternal($comment->isNSInternal());
 
-        $this->code_base->addGlobalConstant(
+        $code_base->addGlobalConstant(
             $constant
         );
     }
@@ -1173,10 +1348,7 @@ class ParseVisitor extends ScopeVisitor
      */
     private function getContextClass() : Clazz
     {
-        \assert(
-            $this->context->isInClassScope(),
-            "Must be in class scope"
-        );
+        // throws AssertionError if not in class scope
         return $this->context->getClassInScope($this->code_base);
     }
 
@@ -1286,7 +1458,6 @@ class ParseVisitor extends ScopeVisitor
         ast\AST_ARRAY => true,
         ast\AST_BINARY_OP => true,
         ast\AST_CLASS_CONST => true,
-        ast\AST_COALESCE => true,
         ast\AST_CONDITIONAL => true,
         ast\AST_CONST => true,
         ast\AST_DIM => true,
@@ -1310,11 +1481,6 @@ class ParseVisitor extends ScopeVisitor
     public static function checkIsAllowedInConstExpr($n)
     {
         if (!($n instanceof Node)) {
-            if (\is_array($n)) {
-                foreach ($n as $child_node) {
-                    self::checkIsAllowedInConstExpr($child_node);
-                }
-            }
             return;
         }
         if (!\array_key_exists($n->kind, self::ALLOWED_CONST_EXPRESSION_KINDS)) {

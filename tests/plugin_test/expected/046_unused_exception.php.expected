@@ -1,1 +1,2 @@
+src/046_unused_exception.php:3 PhanUnusedVariable Unused definition of variable $e
 src/046_unused_exception.php:12 PhanUnusedVariableCaughtException Unused definition of variable $e2 as a caught exception

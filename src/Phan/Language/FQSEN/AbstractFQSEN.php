@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language\FQSEN;
 
+use Error;
 use Phan\Language\Context;
 use Phan\Language\FQSEN;
-
-use Error;
 use Serializable;
 
 /**
@@ -80,7 +80,7 @@ abstract class AbstractFQSEN implements FQSEN, Serializable
      * The canonical representation of the name of the object,
      * for use in array key lookups for singletons, namespace maps, etc.
      * This should not be used directly or indirectly in issue output
-     * If an FQSEN is case sensitive, this should return $name
+     * If an FQSEN is case-sensitive, this should return $name
      */
     public static function canonicalLookupKey(string $name) : string
     {
@@ -113,6 +113,7 @@ abstract class AbstractFQSEN implements FQSEN, Serializable
     }
 
     /**
+     * @param string $unused_serialized
      * @throws Error to prevent accidentally calling this
      */
     public function unserialize($unused_serialized)

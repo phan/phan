@@ -1,0 +1,8 @@
+%s:11 PhanNonClassMethodCall Call to method __construct on non-class type int
+%s:11 PhanTypeExpectedObjectOrClassName Expected an object instance or the name of a class but saw expression with type int
+%s:15 PhanAccessMethodPrivate Cannot access private method \Closure::__construct defined at internal:0
+%s:16 PhanUndeclaredMethodInCallable Call to undeclared method name in callable. Possible object type(s) for that method are Closure():void
+%s:17 PhanUndeclaredMethod Call to undeclared method \Closure::name
+%s:18 PhanTypeInvalidCallableObjectOfMethod In a place where phan was expecting a callable, saw a two-element array with a class or expression with an unexpected type 2 (expected a class type or string). Method name was name
+%s:18 PhanTypeMismatchArgumentInternal Argument 1 (function) is array{0:2,1:'name'} but \call_user_func() takes callable
+%s:20 PhanParamTooFew Call with 0 arg(s) to \A521::__construct() which requires 1 arg(s) defined at %s:4

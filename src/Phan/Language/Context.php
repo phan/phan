@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language;
 
+use AssertionError;
 use Phan\CodeBase;
 use Phan\Exception\CodeBaseException;
 use Phan\Issue;
@@ -10,27 +12,28 @@ use Phan\Language\Element\Property;
 use Phan\Language\Element\TypedElement;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
-use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionLikeName;
+use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Scope\GlobalScope;
+use RuntimeException;
 
 /**
  * An object representing the context in which any
  * structural element (such as a class or method) lives.
- *
- * @phan-file-suppress PhanPluginNoAssert
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class Context extends FileRef
 {
     /**
      * @var string
-     * The namespace of the file
+     * The namespace of the file.
+     * To be consistent with what ScopeVisitor sets in visitNamespace(), this is '\\' for the root namespace as well.
      */
-    private $namespace = '';
+    private $namespace = '\\';
 
     /**
      * @var int
@@ -41,8 +44,8 @@ class Context extends FileRef
     /**
      * @var array<int,array<string,NamespaceMapEntry>>
      * Maps [int flags => [string name/namespace => NamespaceMapEntry(fqsen, is_used)]]
-     * Note that for \ast\USE_CONST (global constants), this is case sensitive,
-     * but the remaining types are case insensitive (stored with lowercase name).
+     * Note that for \ast\USE_CONST (global constants), this is case-sensitive,
+     * but the remaining types are case-insensitive (stored with lowercase name).
      */
     private $namespace_map = [];
 
@@ -51,7 +54,7 @@ class Context extends FileRef
      * Maps [int flags => [string name/namespace => NamespaceMapEntry(fqsen, is_used)]]
      *
      * (This is used in the analysis phase after the parse phase)
-     * @see $this->namespace_map
+     * @see self::$namespace_map
      */
     private $parse_namespace_map = [];
 
@@ -81,7 +84,7 @@ class Context extends FileRef
         $this->scope = new GlobalScope();
     }
 
-    /*
+    /**
      * @param string $namespace
      * The namespace of the file
      *
@@ -127,14 +130,14 @@ class Context extends FileRef
         $name_parts = \explode('\\', $name, 2);
         if (\count($name_parts) > 1) {
             // We're looking for a namespace if there's more than one part
-            // Namespaces are case insensitive.
+            // Namespaces are case-insensitive.
             $namespace_map_key = \strtolower($name_parts[0]);
             $flags = \ast\flags\USE_NORMAL;
         } else {
             if ($flags !== \ast\flags\USE_CONST) {
                 $namespace_map_key = \strtolower($name);
             } else {
-                // Constants are case sensitive, and stored in a case sensitive manner.
+                // Constants are case-sensitive, and stored in a case-sensitive manner.
                 $namespace_map_key = $name;
             }
         }
@@ -156,8 +159,8 @@ class Context extends FileRef
         if (\count($name_parts) > 1) {
             $name = \strtolower($name_parts[0]);
             $suffix = $name_parts[1];
-            // In php, namespaces, functions, and classes are case insensitive.
-            // However, constants are almost always case insensitive.
+            // In php, namespaces, functions, and classes are case-insensitive.
+            // However, constants are almost always case-insensitive.
             if ($flags !== \ast\flags\USE_CONST) {
                 $suffix = \strtolower($suffix);
             }
@@ -174,39 +177,36 @@ class Context extends FileRef
 
         $namespace_map_entry = $this->namespace_map[$map_flags][$name] ?? null;
 
-        \assert(
-            !empty($namespace_map_entry),
-            "No namespace defined for name"
-        );
+        if (!$namespace_map_entry) {
+            throw new AssertionError('No namespace defined for name');
+        }
         $fqsen = $namespace_map_entry->fqsen;
         $namespace_map_entry->is_used = true;
 
-        \assert(
-            $fqsen instanceof FullyQualifiedGlobalStructuralElement,
-            "Namespace map was not a FullyQualifiedGlobalStructuralElement"
-        );
-
+        // Create something of the corresponding type (which may or may not be within a suffix)
         if (!$suffix) {
             return $fqsen;
         }
 
-        // Create something of the corresponding type (which may or may not be within a suffix)
         switch ($flags) {
             case \ast\flags\USE_NORMAL:
+                // @phan-suppress-next-line PhanThrowTypeAbsentForCall This and the suffix should have already been validated
                 return FullyQualifiedClassName::fromFullyQualifiedString(
-                    (string)$fqsen . '\\' . $suffix
+                    $fqsen->__toString() . '\\' . $suffix
                 );
             case \ast\flags\USE_FUNCTION:
+                // @phan-suppress-next-line PhanThrowTypeAbsentForCall
                 return FullyQualifiedFunctionName::fromFullyQualifiedString(
-                    (string)$fqsen . '\\' . $suffix
+                    $fqsen->__toString() . '\\' . $suffix
                 );
             case \ast\flags\USE_CONST:
+                // @phan-suppress-next-line PhanThrowTypeAbsentForCall
                 return FullyQualifiedGlobalConstantName::fromFullyQualifiedString(
-                    (string)$fqsen . '\\' . $suffix
+                    $fqsen->__toString() . '\\' . $suffix
                 );
         }
 
-        throw new \AssertionError("Unknown flag $flags");
+        throw new AssertionError("Unknown flag $flags");
     }
 
     /**
@@ -226,14 +226,14 @@ class Context extends FileRef
             $last_part_index = \strrpos($alias, '\\');
             if ($last_part_index !== false) {
                 // Convert the namespace to lowercase, but not the constant name.
-                $alias = \strtolower(\substr($alias, 0, $last_part_index + 1)) . substr($alias, $last_part_index + 1);
+                $alias = \strtolower(\substr($alias, 0, $last_part_index + 1)) . \substr($alias, $last_part_index + 1);
             }
         }
         // we may have imported this namespace map from the parse phase, making the target already exist
         // TODO: Warn if namespace_map already exists? Then again, `php -l` already does.
         $parse_entry = $this->parse_namespace_map[$flags][$alias] ?? null;
         if ($parse_entry !== null) {
-            // We add entries to namespace_map only after encounting them
+            // We add entries to namespace_map only after encountering them
             // This is because statements can appear before 'use Foo\Bar;' (and those don't use the 'use' statement.)
             $this->namespace_map[$flags][$alias] = $parse_entry;
             return $this;
@@ -311,7 +311,7 @@ class Context extends FileRef
         Variable $variable
     ) : Context {
         return $this->withScope(
-            $this->getScope()->withVariable($variable)
+            $this->scope->withVariable($variable)
         );
     }
 
@@ -324,7 +324,7 @@ class Context extends FileRef
      */
     public function addGlobalScopeVariable(Variable $variable)
     {
-        $this->getScope()->addGlobalVariable($variable);
+        $this->scope->addGlobalVariable($variable);
     }
 
     /**
@@ -341,7 +341,7 @@ class Context extends FileRef
     public function addScopeVariable(
         Variable $variable
     ) {
-        $this->getScope()->addVariable($variable);
+        $this->scope->addVariable($variable);
     }
 
     /**
@@ -358,7 +358,20 @@ class Context extends FileRef
     public function unsetScopeVariable(
         string $variable_name
     ) {
-        $this->getScope()->unsetVariable($variable_name);
+        $this->scope->unsetVariable($variable_name);
+    }
+
+    /**
+     * Returns a string representing this Context for debugging
+     * @suppress PhanUnreferencedPublicMethod kept around to make it easy to dump variables in a context
+     */
+    public function toDebugString() : string
+    {
+        $result = (string)$this;
+        foreach ($this->getScope()->getVariableMap() as $variable) {
+            $result .= "\n$variable";
+        }
+        return $result;
     }
 
     /**
@@ -368,7 +381,7 @@ class Context extends FileRef
      */
     public function isInClassScope() : bool
     {
-        return $this->getScope()->isInClassScope();
+        return $this->scope->isInClassScope();
     }
 
     /**
@@ -378,17 +391,26 @@ class Context extends FileRef
      */
     public function getClassFQSEN() : FullyQualifiedClassName
     {
-        return $this->getScope()->getClassFQSEN();
+        return $this->scope->getClassFQSEN();
+    }
+
+    /**
+     * @return ?FullyQualifiedClassName
+     */
+    public function getClassFQSENOrNull()
+    {
+        return $this->scope->getClassFQSENOrNull();
     }
 
     /**
      * @return bool
      * True if this context is currently within a property
      * scope, else false.
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function isInPropertyScope() : bool
     {
-        return $this->getScope()->isInPropertyScope();
+        return $this->scope->isInPropertyScope();
     }
 
     /**
@@ -398,7 +420,7 @@ class Context extends FileRef
      */
     public function getPropertyFQSEN() : FullyQualifiedPropertyName
     {
-        return $this->getScope()->getPropertyFQSEN();
+        return $this->scope->getPropertyFQSEN();
     }
 
     /**
@@ -414,10 +436,9 @@ class Context extends FileRef
      */
     public function getClassInScope(CodeBase $code_base) : Clazz
     {
-        \assert(
-            $this->isInClassScope(),
-            "Must be in class scope to get class"
-        );
+        if (!$this->scope->isInClassScope()) {
+            throw new AssertionError("Must be in class scope to get class");
+        }
 
         if (!$code_base->hasClassWithFQSEN($this->getClassFQSEN())) {
             throw new CodeBaseException(
@@ -444,10 +465,9 @@ class Context extends FileRef
      */
     public function getPropertyInScope(CodeBase $code_base) : Property
     {
-        \assert(
-            $this->isInPropertyScope(),
-            "Must be in property scope to get property"
-        );
+        if (!$this->scope->isInPropertyScope()) {
+            throw new AssertionError("Must be in property scope to get property");
+        }
 
         $property_fqsen = $this->getPropertyFQSEN();
         if (!$code_base->hasPropertyWithFQSEN($property_fqsen)) {
@@ -469,7 +489,7 @@ class Context extends FileRef
      */
     public function isInFunctionLikeScope() : bool
     {
-        return $this->getScope()->isInFunctionLikeScope();
+        return $this->scope->isInFunctionLikeScope();
     }
 
     /**
@@ -478,10 +498,7 @@ class Context extends FileRef
      */
     public function isInMethodScope() : bool
     {
-        return (
-            $this->isInClassScope()
-            && $this->isInFunctionLikeScope()
-        );
+        return $this->scope->isInMethodLikeScope();
     }
 
     /**
@@ -491,8 +508,11 @@ class Context extends FileRef
      */
     public function getFunctionLikeFQSEN()
     {
-        \assert($this->getScope()->isInFunctionLikeScope());
-        return $this->getScope()->getFunctionLikeFQSEN();
+        $scope = $this->scope;
+        if (!$scope->isInFunctionLikeScope()) {
+            throw new AssertionError("Must be in function-like scope to get function-like FQSEN");
+        }
+        return $scope->getFunctionLikeFQSEN();
     }
 
     /**
@@ -505,29 +525,23 @@ class Context extends FileRef
     public function getFunctionLikeInScope(
         CodeBase $code_base
     ) : FunctionInterface {
-        \assert(
-            $this->isInFunctionLikeScope(),
-            "Must be in method scope to get method."
-        );
-
         $fqsen = $this->getFunctionLikeFQSEN();
 
         if ($fqsen instanceof FullyQualifiedFunctionName) {
             if (!$code_base->hasFunctionWithFQSEN($fqsen)) {
-                throw new \RuntimeException("The function $fqsen does not exist, but Phan is in that function's scope");
+                throw new RuntimeException("The function $fqsen does not exist, but Phan is in that function's scope");
             }
             return $code_base->getFunctionByFQSEN($fqsen);
         }
 
         if ($fqsen instanceof FullyQualifiedMethodName) {
-            \assert(
-                $code_base->hasMethodWithFQSEN($fqsen),
-                "Method does not exist"
-            );
+            if (!$code_base->hasMethodWithFQSEN($fqsen)) {
+                throw new RuntimeException("Method does not exist");
+            }
             return $code_base->getMethodByFQSEN($fqsen);
         }
 
-        throw new \AssertionError("FQSEN must be for a function or method");
+        throw new AssertionError("FQSEN must be for a function or method");
     }
 
     /**
@@ -535,13 +549,11 @@ class Context extends FileRef
      * True if we're within the scope of a class, method,
      * function or closure. False if we're in the global
      * scope
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function isInElementScope() : bool
     {
-        return (
-            $this->isInFunctionLikeScope()
-            || $this->isInClassScope()  // isInPropertyScope implies isInClassScope
-        );
+        return $this->scope->isInElementScope();
     }
 
     /**
@@ -551,7 +563,7 @@ class Context extends FileRef
      */
     public function isInGlobalScope() : bool
     {
-        return !$this->isInElementScope();
+        return !$this->scope->isInElementScope();
     }
 
     /**
@@ -559,7 +571,7 @@ class Context extends FileRef
      * The code base from which to retrieve the TypedElement
      *
      * @return TypedElement
-     * The element who's scope we're in. If we're in the global
+     * The element whose scope we're in. If we're in the global
      * scope this method will go down in flames and take your
      * process with it.
      *
@@ -568,11 +580,11 @@ class Context extends FileRef
      */
     public function getElementInScope(CodeBase $code_base) : TypedElement
     {
-        if ($this->isInFunctionLikeScope()) {
+        if ($this->scope->isInFunctionLikeScope()) {
             return $this->getFunctionLikeInScope($code_base);
-        } elseif ($this->isInPropertyScope()) {
+        } elseif ($this->scope->isInPropertyScope()) {
             return $this->getPropertyInScope($code_base);
-        } elseif ($this->isInClassScope()) {
+        } elseif ($this->scope->isInClassScope()) {
             return $this->getClassInScope($code_base);
         }
 
@@ -598,7 +610,7 @@ class Context extends FileRef
         if ($code_base->hasFileLevelSuppression($this->getFile(), $issue_name)) {
             return true;
         }
-        if (!$this->isInElementScope()) {
+        if (!$this->scope->isInElementScope()) {
             return false;
         }
 
@@ -631,8 +643,8 @@ class Context extends FileRef
      * 0x10(node_id) is used for getUnionTypeOfNodeIfCached(int $node_id, true)
      * 0x01(node_id) is used for getCachedClassListOfNode(int $node_id)
      */
-    const HIGH_BIT_1 = (1 << (PHP_INT_SIZE * 8) - 1);
-    const HIGH_BIT_2 = (1 << (PHP_INT_SIZE * 8) - 2);
+    const HIGH_BIT_1 = (1 << (\PHP_INT_SIZE * 8) - 1);
+    const HIGH_BIT_2 = (1 << (\PHP_INT_SIZE * 8) - 2);
 
     /**
      * @param int $node_id \spl_object_id($node)
@@ -760,5 +772,17 @@ class Context extends FileRef
     public function importNamespaceMapFromParsePhase(CodeBase $code_base)
     {
         $this->parse_namespace_map = $code_base->getNamespaceMapFromParsePhase($this->getFile(), $this->namespace, $this->namespace_id);
+    }
+
+    /**
+     * Copy private properties of $other to this
+     * @suppress PhanTypeSuspiciousNonTraversableForeach
+     * @return void
+     */
+    final protected function copyPropertiesFrom(Context $other)
+    {
+        foreach ($other as $k => $v) {
+            $this->{$k} = $v;
+        }
     }
 }

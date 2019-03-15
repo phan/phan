@@ -1,10 +1,11 @@
 <?php declare(strict_types=1);
+
 namespace Phan\PluginV2;
 
+use ast\Node;
 use Phan\AST\AnalysisVisitor;
 use Phan\AST\Visitor\Element;
 use Phan\Issue;
-use ast\Node;
 
 /**
  * This augments AnalysisVisitor with public and internal methods.
@@ -26,6 +27,9 @@ abstract class PluginAwareBaseAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
+     * Emit an issue with the provided arguments,
+     * unless that issue is suppressed.
+     *
      * @param string $issue_type
      * A name for the type of issue such as 'PhanPluginMyIssue'
      *
@@ -96,7 +100,7 @@ abstract class PluginAwareBaseAnalysisVisitor extends AnalysisVisitor
     private static function isDefinedInSubclass(string $method_name) : bool
     {
         $method = new \ReflectionMethod(static::class, $method_name);
-        return is_subclass_of($method->getDeclaringClass()->name, self::class);
+        return \is_subclass_of($method->getDeclaringClass()->name, self::class);
     }
     // End of methods for internal use.
 }

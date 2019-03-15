@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language\Element;
 
 use Phan\CodeBase;
@@ -10,6 +11,7 @@ use Phan\Language\UnionType;
  * Any PHP structural element that also has a type and is
  * addressable such as a class, method, closure, property,
  * constant, variable, ...
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 abstract class TypedElement implements TypedElementInterface
 {
@@ -20,11 +22,11 @@ abstract class TypedElement implements TypedElementInterface
     private $name;
 
     /**
-     * @var UnionType|null
+     * @var UnionType
      * A set of types satisfied by this typed structural
      * element.
      */
-    private $type = null;
+    private $type;
 
     /**
      * @var int
@@ -43,10 +45,10 @@ abstract class TypedElement implements TypedElementInterface
     private $phan_flags = 0;
 
     /**
-     * @var Context|null
+     * @var Context
      * The context in which the structural element lives
      */
-    private $context = null;
+    private $context;
 
     /**
      * @var array<string,int>
@@ -93,9 +95,7 @@ abstract class TypedElement implements TypedElementInterface
      */
     public function __clone()
     {
-        $this->context = $this->context
-            ? clone($this->context)
-            : $this->context;
+        $this->context = clone($this->context);
     }
 
     /**
@@ -302,7 +302,7 @@ abstract class TypedElement implements TypedElementInterface
      * @return bool
      * True if this element would like to suppress the given
      * issue name
-     * @see $this->checkHasSuppressIssueAndIncrementCount() for the most common usage
+     * @see self::checkHasSuppressIssueAndIncrementCount() for the most common usage
      */
     public function hasSuppressIssue(string $issue_name) : bool
     {

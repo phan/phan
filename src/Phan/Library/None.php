@@ -1,9 +1,12 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Library;
 
 use Exception;
 
 /**
+ * This represents the absence of a value in an Option.
+ *
  * @inherits Option<null>
  */
 class None extends Option
@@ -24,8 +27,10 @@ class None extends Option
     }
 
     /**
-     * @param mixed $else
-     * @return mixed
+     * @template E
+     * @param E $else
+     * @return E
+     * @suppress PhanParamSignatureMismatch
      */
     public function getOrElse($else)
     {

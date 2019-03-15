@@ -1,10 +1,9 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Phan\LanguageServer;
 
 use Phan\LanguageServer\Protocol\Message;
-use Phan\LanguageServer\Logger;
 use Sabre\Event\Loop;
 use Sabre\Event\Promise;
 
@@ -37,7 +36,7 @@ class ProtocolStreamWriter implements ProtocolWriter
     public function write(Message $msg): Promise
     {
         // if the message queue is currently empty, register a write handler.
-        if (empty($this->messages)) {
+        if (!$this->messages) {
             Loop\addWriteStream($this->output, function () {
                 $this->flush();
             });
@@ -65,18 +64,19 @@ class ProtocolStreamWriter implements ProtocolWriter
             $message = $this->messages[0]['message'];
             $promise = $this->messages[0]['promise'];
 
-            $bytesWritten = @fwrite($this->output, $message);
+            $bytesWritten = @\fwrite($this->output, $message);
 
             if ($bytesWritten > 0) {
-                $message = substr($message, $bytesWritten);
+                $message = \substr($message, $bytesWritten);
             }
 
             // Determine if this message was completely sent
-            if (strlen($message) === 0) {
-                array_shift($this->messages);
+            // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
+            if (\strlen($message) === 0) {
+                \array_shift($this->messages);
 
                 // This was the last message in the queue, remove the write handler.
-                if (count($this->messages) === 0) {
+                if (\count($this->messages) === 0) {
                     Loop\removeWriteStream($this->output);
                     $keepWriting = false;
                 }

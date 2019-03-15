@@ -1,0 +1,2 @@
+%s:34 PhanTypeMismatchArgument Argument 1 (x) is \C2|\T but \C1::handleSelf() takes \C1 defined at %s:12
+%s:36 PhanTypeMismatchArgument Argument 1 (x) is \C2|\T but \C1::handleStatic() takes \C1|static defined at %s:23

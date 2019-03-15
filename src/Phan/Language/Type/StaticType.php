@@ -1,19 +1,26 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language\Type;
 
+use AssertionError;
 use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 
-use AssertionError;
-
-final class StaticType extends Type
+/**
+ * Represents the PHPDoc type `static`.
+ * This is converted to a real class when necessary.
+ * @see self::withStaticResolvedInContext()
+ */
+final class StaticType extends StaticOrSelfType
 {
     /** Not an override */
     const NAME = 'static';
 
     /**
+     * Returns a nullable/non-nullable instance of this StaticType
+     *
      * @param bool $is_nullable
      * An optional parameter, which if true returns a
      * nullable instance of this native type
@@ -25,7 +32,7 @@ final class StaticType extends Type
         if ($is_nullable) {
             static $nullable_instance = null;
 
-            if (empty($nullable_instance)) {
+            if ($nullable_instance === null) {
                 $nullable_instance = static::make('\\', static::NAME, [], true, Type::FROM_TYPE);
             }
 
@@ -65,7 +72,7 @@ final class StaticType extends Type
     {
         $string = $this->name;
 
-        if ($this->getIsNullable()) {
+        if ($this->is_nullable) {
             $string = '?' . $string;
         }
 
@@ -85,10 +92,18 @@ final class StaticType extends Type
             return $this;
         }
         $type = $context->getClassFQSEN()->asType();
-        if ($this->getIsNullable()) {
+        if ($this->is_nullable) {
             return $type->withIsNullable(true);
         }
         return $type;
+    }
+
+    /**
+     * @return StaticType
+     */
+    public function withIsNullable(bool $is_nullable) : Type
+    {
+        return self::instance($is_nullable);
     }
 
     public function isExclusivelyNarrowedFormOrEquivalentTo(

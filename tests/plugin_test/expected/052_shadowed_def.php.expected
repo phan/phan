@@ -1,0 +1,2 @@
+src/052_shadowed_def.php:4 PhanUnusedVariable Unused definition of variable $a
+src/052_shadowed_def.php:22 PhanUnusedVariable Unused definition of variable $a

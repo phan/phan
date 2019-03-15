@@ -149,7 +149,7 @@ By default, files are analyzed in the same order as `.phan/config.php`)
 
 ### Phan.php
 
-This executes the the parse, method/function, then the analysis phases.
+This executes the parse, method/function, then the analysis phases.
 
 This is the entry point of Phan's implementation.
 Implementations such as `./phan` or the code climate integration call into this.

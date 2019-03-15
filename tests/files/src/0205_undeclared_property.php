@@ -1,6 +1,6 @@
 <?php
 
-class C {
+class C205 {
     private $p1;
     private $p2;
     function f($a1, $a2) {

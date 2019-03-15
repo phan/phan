@@ -1,0 +1,10 @@
+src/073_template_only_in_phpdoc.php:12 PhanUndeclaredTypeParameter Parameter $x has undeclared type \TTemplate1
+src/073_template_only_in_phpdoc.php:12 PhanUndeclaredTypeReturnType Return type of Closure(\TTemplate1 $x) : \TTemplate1 is undeclared type \TTemplate1
+src/073_template_only_in_phpdoc.php:15 PhanTypeMismatchArgument Argument 1 (x) is TTemplate1 but Closure(\TTemplate1 $x) : \TTemplate1 takes \TTemplate1 defined at src/073_template_only_in_phpdoc.php:12
+src/073_template_only_in_phpdoc.php:17 PhanUndeclaredTypeParameter Parameter $y has undeclared type \TTemplate2
+src/073_template_only_in_phpdoc.php:17 PhanUndeclaredTypeReturnType Return type of Closure(\TTemplate2 $y) : \TTemplate2 is undeclared type \TTemplate2
+src/073_template_only_in_phpdoc.php:20 PhanTypeMismatchArgument Argument 1 (y) is TTemplate2 but Closure(\TTemplate2 $y) : \TTemplate2 takes \TTemplate2 defined at src/073_template_only_in_phpdoc.php:17
+src/073_template_only_in_phpdoc.php:35 PhanUndeclaredTypeParameter Parameter $y has undeclared type \TTemplate2
+src/073_template_only_in_phpdoc.php:35 PhanUndeclaredTypeReturnType Return type of Closure($y) is undeclared type \TTemplate2
+src/073_template_only_in_phpdoc.php:38 PhanTypeMismatchArgument Argument 1 (y) is TTemplate2 but Closure($y) takes \TTemplate2 defined at src/073_template_only_in_phpdoc.php:35
+src/073_template_only_in_phpdoc.php:40 PhanUndeclaredClassMethod Call to method __construct from undeclared class \TTemplate1

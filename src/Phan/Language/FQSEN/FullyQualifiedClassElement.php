@@ -1,15 +1,15 @@
 <?php declare(strict_types=1);
-namespace Phan\Language\FQSEN;
 
-use Phan\Language\Context;
-use Phan\Language\FQSEN;
+namespace Phan\Language\FQSEN;
 
 use AssertionError;
 use InvalidArgumentException;
+use Phan\Exception\FQSENException;
+use Phan\Language\Context;
+use Phan\Language\FQSEN;
 
 /**
  * A Fully-Qualified Class Name
- * @phan-file-suppress PhanPluginNoAssert
  */
 abstract class FullyQualifiedClassElement extends AbstractFQSEN
 {
@@ -48,6 +48,10 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
     }
 
     /**
+     * Construct a fully-qualified class element from the class,
+     * the element name in the class.
+     * (and an alternate id to account for duplicate element definitions)
+     *
      * @param FullyQualifiedClassName $fully_qualified_class_name
      * The fully qualified class name of the class in which
      * this element exists
@@ -60,6 +64,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
      * there are multiple definitions of the element
      *
      * @return static
+     * @suppress PhanTypeInstantiateAbstract this error is correct, but this should never be called directly
      */
     public static function make(
         FullyQualifiedClassName $fully_qualified_class_name,
@@ -102,12 +107,14 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
      * @param $fully_qualified_string
      * An FQSEN string like '\Namespace\Class::methodName'
      *
-     * @throws InvalidArgumentException if the $fully_qualified_string doesn't have a '::' delimeter
+     * @throws InvalidArgumentException if the $fully_qualified_string doesn't have a '::' delimiter
+     *
+     * @throws FQSENException if the class or element FQSEN is invalid
      */
     public static function fromFullyQualifiedString(
         string $fully_qualified_string
     ) {
-        $parts = explode('::', $fully_qualified_string);
+        $parts = \explode('::', $fully_qualified_string);
         if (\count($parts) !== 2) {
             throw new InvalidArgumentException("Fully qualified class element lacks '::' delimiter");
         }
@@ -123,7 +130,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
             );
 
         // Split off the alternate ID
-        $parts = explode(',', $name_string);
+        $parts = \explode(',', $name_string);
         $name = $parts[0];
         $alternate_id = (int)($parts[1] ?? 0);
 
@@ -144,6 +151,8 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
      * @return static
      *
      * @throws InvalidArgumentException if $fqsen_string is invalid in $context
+     *
+     * @throws FQSENException if $fqsen_string is invalid
      */
     public static function fromStringInContext(
         string $fqsen_string,

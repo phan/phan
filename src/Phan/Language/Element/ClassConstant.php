@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language\Element;
 
 use Phan\AST\ASTReverter;
@@ -6,6 +7,10 @@ use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use Phan\Language\UnionType;
 
+/**
+ * ClassConstant represents the information Phan has
+ * about the declaration of a class constant.
+ */
 class ClassConstant extends ClassElement implements ConstantInterface
 {
     use ConstantTrait;
@@ -102,7 +107,8 @@ class ClassConstant extends ClassElement implements ConstantInterface
     }
 
     /**
-     * @param bool $is_override_intended - True if this class constant is intended to be an override of another class constant (contains (at)override)
+     * Records whether or not this class constant is intended to be an override of another class constant (contains (at)override in PHPDoc)
+     * @param bool $is_override_intended
 
      * @return void
      */
@@ -133,7 +139,11 @@ class ClassConstant extends ClassElement implements ConstantInterface
         return $string;
     }
 
-    private function getVisibilityName() : string
+    /**
+     * Returns the visibility of this class constant
+     * (either 'public', 'protected', or 'private')
+     */
+    public function getVisibilityName() : string
     {
         if ($this->isPrivate()) {
             return 'private';
@@ -144,6 +154,9 @@ class ClassConstant extends ClassElement implements ConstantInterface
         }
     }
 
+    /**
+     * Converts this class constant to a stub php snippet that can be used by `tool/make_stubs`
+     */
     public function toStub() : string
     {
         $string = '    ';
@@ -158,10 +171,10 @@ class ClassConstant extends ClassElement implements ConstantInterface
         // Also, PHP modules probably won't have private/protected constants.
         $string .= 'const ' . $this->getName() . ' = ';
         $fqsen = $this->getFQSEN()->__toString();
-        if (defined($fqsen)) {
+        if (\defined($fqsen)) {
             // TODO: Could start using $this->getNodeForValue()?
-            // NOTE: This is used by tool/make_stub, which is why it uses reflection instead of getting a node.
-            $string .= var_export(constant($fqsen), true) . ';';
+            // NOTE: This is used by tool/make_stubs, which is why it uses reflection instead of getting a node.
+            $string .= \var_export(\constant($fqsen), true) . ';';
         } else {
             $string .= "null;  // could not find";
         }

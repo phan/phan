@@ -1,0 +1,4 @@
+src/068_template_typeof.php:8 PhanUndeclaredClosureScope Reference to undeclared class \TTemplateType in @phan-closure-scope
+src/068_template_typeof.php:9 PhanUndeclaredVariable Variable $this is undeclared
+src/068_template_typeof.php:10 PhanNonClassMethodCall Call to method method on non-class type class-string<TTemplateType>
+src/068_template_typeof.php:11 PhanTypeMismatchReturn Returning type class-string<TTemplateType> but Closure($x) is declared to return TTemplateType

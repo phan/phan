@@ -1,9 +1,12 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
 
 namespace Phan\Tests;
 
 use Phan\Config;
 
+/**
+ * Unit tests of Phan analysis targeting PHP 7.2 codebases and function/method signatures.
+ */
 class PHP72Test extends AbstractPhanFileTest
 {
     const OVERRIDES = [
@@ -22,7 +25,7 @@ class PHP72Test extends AbstractPhanFileTest
     /**
      * This reads all files in a test directory (e.g. `tests/files/src`), runs
      * the analyzer on each and compares the output
-     * to the files's counterpart in `tests/files/expected`
+     * to the files' counterpart in `tests/files/expected`
      *
      * @param string[] $test_file_list
      * @param string $expected_file_path
@@ -35,14 +38,22 @@ class PHP72Test extends AbstractPhanFileTest
     public function testFiles($test_file_list, $expected_file_path, $config_file_path = null)
     {
         $skip_reason = null;
-        $main_path = basename(reset($test_file_list));
-        if (PHP_VERSION_ID < 70200) {
+        // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
+        $main_path = \basename(\reset($test_file_list));
+        if (\PHP_VERSION_ID < 70200) {
             switch ($main_path) {
                 case '0002_hash.php':
                     $skip_reason = 'Skip HashContext has no stub';
                     break;
                 case '0003_is_iterable.php':
                     $skip_reason = 'Skip isIterateable not added in php < 7.2, no stub exists';
+                    break;
+            }
+        }
+        if (\PHP_VERSION_ID >= 80000) {
+            switch ($main_path) {
+                case '0006_deprecated_create_internal_function.php':
+                    $skip_reason = 'Skip create_internal_function was removed';
                     break;
             }
         }

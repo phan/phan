@@ -13,13 +13,13 @@ use Phan\CLI;
 use Phan\Prep;
 
 // Create our CLI interface and load arguments
-$cli = new CLI();
+$cli = CLI::fromArgv();
 
 $file_list = $cli->getFileList();
 
 // This is an example visitor. Do whatever you like here
 // to scan all nodes.
-$visit_node = function (\ast\Node $node, string $file_path) {
+$visit_node = static function (\ast\Node $node, string $file_path) {
 
     // Take a look at Phan\AST\Visitor\Element to see all
     // of the kinds of nodes

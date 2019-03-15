@@ -1,0 +1,3 @@
+%s:8 PhanTypeInvalidTraitParam getC1AsT() is declared to have a parameter $other with a real type of trait \T (expected a class or interface or built-in type)
+%s:8 PhanTypeInvalidTraitParam getC1AsT() is declared to have a parameter $x with a real type of trait \T (expected a class or interface or built-in type)
+%s:8 PhanTypeInvalidTraitReturn Expected a class or interface (or built-in type) to be the real return type of getC1AsT() but got trait \T

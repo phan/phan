@@ -1,1 +1,3 @@
 src/010_functions8.php:2 PhanSyntaxError syntax error, unexpected '{'
+src/010_functions8.php:2 PhanUnusedGlobalFunctionParameter Parameter $a is never used
+src/010_functions8.php:2 PhanUnusedGlobalFunctionParameter Parameter $b is never used

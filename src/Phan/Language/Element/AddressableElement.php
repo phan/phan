@@ -1,23 +1,30 @@
 <?php declare(strict_types=1);
-namespace Phan\Language\Element;
 
-use Phan\CodeBase;
-use Phan\Config;
-use Phan\Language\Context;
-use Phan\Language\FQSEN;
-use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
-use Phan\Language\FileRef;
-use Phan\Language\UnionType;
+namespace Phan\Language\Element;
 
 use AssertionError;
 use Closure;
+use Phan\CodeBase;
+use Phan\Config;
+use Phan\Language\Context;
+use Phan\Language\FileRef;
+use Phan\Language\FQSEN;
+use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
+use Phan\Language\UnionType;
+use Phan\Memoize;
 
+/**
+ * An addressable element is a TypedElement with an FQSEN.
+ * (E.g. a class, property, function, method, etc.)
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
+ */
 abstract class AddressableElement extends TypedElement implements AddressableElementInterface
 {
-    use \Phan\Memoize;
+    use Memoize;
 
     /**
      * @var FQSEN
+     * A fully qualified name for the element
      */
     protected $fqsen;
 
@@ -31,8 +38,16 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
 
     /**
      * @var ?string
+     * The doc comment of the element
      */
     protected $doc_comment;
+
+    /**
+     * @var bool
+     * Has this element been hydrated yet?
+     * (adding information from ancestor classes for more detailed type information)
+     */
+    protected $is_hydrated = false;
 
     /**
      * @param Context $context
@@ -78,9 +93,6 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      */
     public function getFQSEN()
     {
-        if (!$this->fqsen) {
-            throw new AssertionError("FQSEN must be defined");
-        }
         return $this->fqsen;
     }
 
@@ -184,14 +196,14 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
         Context $context
     ) : bool {
         // Figure out which namespace this element is within
-        $element_namespace = $this->getElementNamespace();
+        $element_namespace = $this->getElementNamespace() ?: '\\';
 
         // Get our current namespace from the context
-        $context_namespace = $context->getNamespace();
+        $context_namespace = $context->getNamespace() ?: '\\';
 
         // Test to see if the context is within the same
         // namespace as where the element is defined
-        return (0 === strcasecmp($context_namespace, $element_namespace));
+        return (0 === \strcasecmp($context_namespace, $element_namespace));
     }
 
     /**
@@ -232,7 +244,6 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     /**
      * @return array<string,FileRef>
      * A list of references to this typed structural element.
-     * @suppress PhanPartialTypeMismatchReturn TODO: investigate
      */
     public function getReferenceList() : array
     {
@@ -252,9 +263,6 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     ) : int {
         return \count($this->reference_list);
     }
-
-    /** @var bool */
-    protected $is_hydrated = false;
 
     /**
      * This method must be called before analysis
@@ -281,6 +289,9 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
         // Do nothing unless overridden
     }
 
+    /**
+     * Returns the namespace in which this element was declared
+     */
     public function getElementNamespace() : string
     {
         $element_fqsen = $this->getFQSEN();
@@ -293,7 +304,8 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     }
 
     /**
-     * @internal - Used by daemon mode to restore an element to the state it had before parsing.
+     * Used by daemon mode to restore an element to the state it had before parsing.
+     * @internal
      * @return ?Closure
      */
     abstract public function createRestoreCallback();
@@ -313,5 +325,15 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     public function getDocComment()
     {
         return $this->doc_comment;
+    }
+
+    /**
+     * @return string the representation of this FQSEN for issue messages.
+     * Overridden in some subclasses
+     * @suppress PhanUnreferencedPublicMethod (inference error?)
+     */
+    public function getRepresentationForIssue() : string
+    {
+        return $this->getFQSEN()->__toString();
     }
 }

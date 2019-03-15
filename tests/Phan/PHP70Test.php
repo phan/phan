@@ -1,9 +1,12 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
 
 namespace Phan\Tests;
 
 use Phan\Config;
 
+/**
+ * Unit tests of analysis targeting PHP 7.0 codebases
+ */
 class PHP70Test extends AbstractPhanFileTest
 {
     const OVERRIDES = [

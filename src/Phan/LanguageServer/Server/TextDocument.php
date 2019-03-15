@@ -1,12 +1,14 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
 
 namespace Phan\LanguageServer\Server;
 
+use InvalidArgumentException;
 use Phan\Config;
 use Phan\LanguageServer\FileMapping;
 use Phan\LanguageServer\LanguageClient;
 use Phan\LanguageServer\LanguageServer;
 use Phan\LanguageServer\Logger;
+use Phan\LanguageServer\Protocol\CompletionContext;
 use Phan\LanguageServer\Protocol\Position;
 use Phan\LanguageServer\Protocol\TextDocumentContentChangeEvent;
 use Phan\LanguageServer\Protocol\TextDocumentIdentifier;
@@ -18,6 +20,7 @@ use Sabre\Event\Promise;
 /**
  * Provides method handlers for all textDocument/* methods
  * Source: Based on https://github.com/felixfbecker/php-language-server/blob/master/src/Server/TextDocument.php
+ * @phan-file-suppress PhanPossiblyNullTypeArgument, PhanPossiblyNullTypeArgumentInternal
  */
 class TextDocument
 {
@@ -88,8 +91,15 @@ class TextDocument
      */
     public function didOpen(TextDocumentItem $textDocument)
     {
-        $this->file_mapping->addOverrideURI($textDocument->uri, $textDocument->text);
         Logger::logInfo("Called textDocument/didOpen, uri={$textDocument->uri}");
+        try {
+            Utils::pathToUri(Utils::uriToPath($textDocument->uri));
+        } catch (InvalidArgumentException $e) {
+            Logger::logError(\sprintf("Language server could not understand uri %s in %s: %s\n", $textDocument->uri, __METHOD__, $e->getMessage()));
+            return;
+        }
+        // TODO: Look into replacing this call with the normalized URI.
+        $this->file_mapping->addOverrideURI($textDocument->uri, $textDocument->text);
         $this->server->analyzeURIAsync($textDocument->uri);
 
         //$document = $this->documentLoader->open($textDocument->uri, $textDocument->text);
@@ -111,8 +121,15 @@ class TextDocument
      */
     public function didSave(TextDocumentIdentifier $textDocument, string $text = null)
     {
+        Logger::logInfo("Called textDocument/didSave, uri={$textDocument->uri} len(text)=" . \strlen($text ?? ''));
+        try {
+            Utils::pathToUri(Utils::uriToPath($textDocument->uri));
+        } catch (InvalidArgumentException $e) {
+            Logger::logError(\sprintf("Language server could not understand uri %s in %s: %s\n", $textDocument->uri, __METHOD__, $e->getMessage()));
+            return;
+        }
+        // TODO: Look into replacing this with the normalized URI
         $this->file_mapping->addOverrideURI($textDocument->uri, $text);
-        Logger::logInfo("Called textDocument/didSave, uri={$textDocument->uri} len(text)=" . strlen($text ?? ''));
         $this->server->analyzeURIAsync($textDocument->uri);
     }
 
@@ -130,8 +147,11 @@ class TextDocument
             $this->file_mapping->addOverrideURI($textDocument->uri, $change->text);
         }
         Logger::logInfo("Called textDocument/didChange, uri={$textDocument->uri} version={$textDocument->version}");
+        if (Config::getValue('language_server_analyze_only_on_save')) {
+            // Track the change to the file, but don't trigger analysis.
+            return;
+        }
         $this->server->analyzeURIAsync($textDocument->uri);
-
         // TODO:   Maybe allow reloading .phan/config, at least the files and directories to parse/analyze
     }
 
@@ -146,9 +166,16 @@ class TextDocument
      */
     public function didClose(TextDocumentIdentifier $textDocument)
     {
-        $this->file_mapping->removeOverrideURI($textDocument->uri);
-        $this->client->textDocument->publishDiagnostics(Utils::pathToUri(Utils::uriToPath($textDocument->uri)), []);
         Logger::logInfo("Called textDocument/didClose, uri={$textDocument->uri}");
+        try {
+            $uri = Utils::pathToUri(Utils::uriToPath($textDocument->uri));
+        } catch (InvalidArgumentException $e) {
+            Logger::logError(\sprintf("Language server could not understand uri %s in %s: %s\n", $textDocument->uri, __METHOD__, $e->getMessage()));
+            return;
+        }
+        $this->client->textDocument->publishDiagnostics($uri, []);
+        // After publishing diagnostics, remove the override
+        $this->file_mapping->removeOverrideURI($textDocument->uri);
     }
 
     /**
@@ -157,13 +184,18 @@ class TextDocument
      *
      * @param TextDocumentIdentifier $textDocument The text document
      * @param Position $position The position inside the text document
-     * @return Promise <Location|Location[]|null>
+     * @return ?Promise <Location|Location[]|null>
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
-    public function definition(TextDocumentIdentifier $textDocument, Position $position) : Promise
+    public function definition(TextDocumentIdentifier $textDocument, Position $position)
     {
         Logger::logInfo("Called textDocument/definition, uri={$textDocument->uri} position={$position->line}:{$position->character}");
-        $uri = Utils::pathToUri(Utils::uriToPath($textDocument->uri));
+        try {
+            $uri = Utils::pathToUri(Utils::uriToPath($textDocument->uri));
+        } catch (InvalidArgumentException $e) {
+            Logger::logError(\sprintf("Language server could not understand uri %s in %s: %s\n", $textDocument->uri, __METHOD__, $e->getMessage()));
+            return null;
+        }
         return $this->server->awaitDefinition($uri, $position, false);
     }
 
@@ -173,13 +205,18 @@ class TextDocument
      *
      * @param TextDocumentIdentifier $textDocument The text document
      * @param Position $position The position inside the text document
-     * @return Promise <Location|Location[]|null>
+     * @return ?Promise <Location|Location[]|null>
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
-    public function typeDefinition(TextDocumentIdentifier $textDocument, Position $position) : Promise
+    public function typeDefinition(TextDocumentIdentifier $textDocument, Position $position)
     {
         Logger::logInfo("Called textDocument/typeDefinition, uri={$textDocument->uri} position={$position->line}:{$position->character}");
-        $uri = Utils::pathToUri(Utils::uriToPath($textDocument->uri));
+        try {
+            $uri = Utils::pathToUri(Utils::uriToPath($textDocument->uri));
+        } catch (InvalidArgumentException $e) {
+            Logger::logError(\sprintf("Language server could not understand uri %s in %s: %s\n", $textDocument->uri, __METHOD__, $e->getMessage()));
+            return null;
+        }
         return $this->server->awaitDefinition($uri, $position, true);
     }
 
@@ -205,7 +242,43 @@ class TextDocument
             // (computing hover response may or may not slow down those clients)
             return null;
         }
-        $uri = Utils::pathToUri(Utils::uriToPath($textDocument->uri));
+        try {
+            $uri = Utils::pathToUri(Utils::uriToPath($textDocument->uri));
+        } catch (InvalidArgumentException $e) {
+            Logger::logError(\sprintf("Language server could not understand uri %s in %s: %s\n", $textDocument->uri, __METHOD__, $e->getMessage()));
+            return null;
+        }
         return $this->server->awaitHover($uri, $position);
+    }
+
+    /**
+     * Implements textDocument/completion, to compute completion items at a given cursor position.
+     *
+     * TODO: Implement support for the cancel request LSP operation?
+     *
+     * @param TextDocumentIdentifier $textDocument @phan-unused-param
+     * @param Position $position @phan-unused-param
+     * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
+     * @return ?Promise <CompletionItem[]|CompletionList>
+     */
+    public function completion(TextDocumentIdentifier $textDocument, Position $position, CompletionContext $context = null)
+    {
+        if (!Config::getValue('language_server_enable_completion')) {
+            // Placeholder to avoid a performance degradation on clients
+            // that aren't respecting the configuration.
+            //
+            // (computing completion response may or may not slow down those clients)
+            return null;
+        }
+        try {
+            $uri = Utils::pathToUri(Utils::uriToPath($textDocument->uri));
+        } catch (InvalidArgumentException $e) {
+            Logger::logError(\sprintf("Language server could not understand uri %s in %s: %s\n", $textDocument->uri, __METHOD__, $e->getMessage()));
+            return null;
+        }
+        // Workaround: Phan needs the cursor to be on the character that's within the expression in order to select it.
+        // So shift the cursor left by one.
+        $position->character = \max(0, $position->character - 1);
+        return $this->server->awaitCompletion($uri, $position, $context);
     }
 }

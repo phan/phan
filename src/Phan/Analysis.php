@@ -1,32 +1,40 @@
 <?php declare(strict_types=1);
+
 namespace Phan;
 
+use ast;
+use ast\Node;
+use CompileError;
+use InvalidArgumentException;
+use ParseError;
+use Phan\Analysis\DuplicateFunctionAnalyzer;
+use Phan\Analysis\ParameterTypesAnalyzer;
+use Phan\Analysis\ReferenceCountsAnalyzer;
+use Phan\Analysis\ThrowsTypesAnalyzer;
 use Phan\AST\ASTSimplifier;
 use Phan\AST\Parser;
 use Phan\AST\PhanAnnotationAdder;
 use Phan\AST\TolerantASTConverter\ParseException;
 use Phan\AST\Visitor\Element;
-use Phan\Analysis\DuplicateFunctionAnalyzer;
-use Phan\Analysis\ParameterTypesAnalyzer;
-use Phan\Analysis\ReturnTypesAnalyzer;
-use Phan\Analysis\ReferenceCountsAnalyzer;
-use Phan\Analysis\ThrowsTypesAnalyzer;
 use Phan\Daemon\Request;
+use Phan\Exception\FQSENException;
+use Phan\Exception\RecursionDepthException;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Library\FileCache;
+use Phan\Library\StringUtil;
 use Phan\Parse\ParseVisitor;
 use Phan\Plugin\ConfigPluginSet;
-
-use ast\Node;
-use CompileError;
-use InvalidArgumentException;
-use ParseError;
 use Throwable;
+
+use function strlen;
+
+use const STDERR;
 
 /**
  * This class is the entry point into the static analyzer.
@@ -65,7 +73,7 @@ class Analysis
         $original_file_path = $file_path;
         $code_base->setCurrentParsedFile($file_path);
         if ($is_php_internal_stub) {
-            /** @see \Phan\Language\FileRef->isPHPInternal() */
+            /** @see \Phan\Language\FileRef::isPHPInternal() */
             $file_path = 'internal';
         }
         $context = (new Context())->withFile($file_path);
@@ -84,7 +92,7 @@ class Analysis
         $file_contents = $cache_entry->getContents();
         if ($file_contents === '') {
             if ($is_php_internal_stub) {
-                throw new InvalidArgumentException("Unexpected empty php file for autoload_internal_extension_signatures: path=" . json_encode($original_file_path, JSON_UNESCAPED_SLASHES));
+                throw new InvalidArgumentException("Unexpected empty php file for autoload_internal_extension_signatures: path=" . StringUtil::jsonEncode($original_file_path));
             }
             // php-ast would return null for 0 byte files as an implementation detail.
             // Make Phan consistently emit this warning.
@@ -100,23 +108,23 @@ class Analysis
         }
         try {
             $node = Parser::parseCode($code_base, $context, null, $file_path, $file_contents, $suppress_parse_errors);
-        } catch (ParseError $e) {
+        } catch (ParseError $_) {
             return $context;
-        } catch (CompileError $e) {
+        } catch (CompileError $_) {
             return $context;
-        } catch (ParseException $e) {
+        } catch (ParseException $_) {
             return $context;
         }
 
         if (Config::getValue('dump_ast')) {
             echo $file_path . "\n"
-                . str_repeat("\u{00AF}", strlen($file_path))
+                . \str_repeat("\u{00AF}", strlen($file_path))
                 . "\n";
             Debug::printNode($node);
             return $context;
         }
 
-        if (empty($node)) {
+        if (!$node) {
             // php-ast would return an empty node for 0 byte files in older releases.
             Issue::maybeEmit(
                 $code_base,
@@ -160,6 +168,8 @@ class Analysis
      * returned context is the new context from within the
      * given node.
      *
+     * NOTE: This is called extremely frequently, so the real signature types were omitted for performance.
+     *
      * @param CodeBase $code_base
      * The global code base in which we store all
      * state
@@ -173,10 +183,10 @@ class Analysis
      * @return Context
      * The context from within the node is returned
      */
-    public static function parseNodeInContext(CodeBase $code_base, Context $context, Node $node) : Context
+    public static function parseNodeInContext(CodeBase $code_base, Context $context, Node $node)
     {
-        // Save a reference to the outer context
-        $outer_context = $context;
+        $kind = $node->kind;
+        $context->setLineNumberStart($node->lineno);
 
         // Visit the given node populating the code base
         // with anything we learn and get a new context
@@ -186,57 +196,64 @@ class Analysis
         // (E.g. on a large number of the analyzed project's vendor dependencies,
         // proportionally to the node count in the files), so code style was sacrificed for performance.
         // Equivalent to (new ParseVisitor(...))($node), which uses ParseVisitor->__invoke
-        $context = (new ParseVisitor(
+        $inner_context = (new ParseVisitor(
             $code_base,
-            $context->withLineNumberStart($node->lineno ?? 0)
-        ))->{Element::VISIT_LOOKUP_TABLE[$node->kind] ?? 'handleMissingNodeKind'}($node);
+            $context
+        ))->{Element::VISIT_LOOKUP_TABLE[$kind] ?? 'handleMissingNodeKind'}($node);
 
-        $kind = $node->kind;
-
-        // \ast\AST_GROUP_USE has \ast\AST_USE as a child.
+        // ast\AST_GROUP_USE has ast\AST_USE as a child.
         // We don't want to use block twice in the parse phase.
         // (E.g. `use MyNS\{const A, const B}` would lack the MyNs part if this were to recurse.
-        // And \ast\AST_DECLARE has AST_CONST_DECL as a child, so don't parse a constant declaration either.
-        if ($kind === \ast\AST_GROUP_USE || $kind === \ast\AST_DECLARE) {
-            return $context;
+        // And ast\AST_DECLARE has AST_CONST_DECL as a child, so don't parse a constant declaration either.
+        if ($kind === ast\AST_GROUP_USE) {
+            return $inner_context;
+        }
+        if ($kind === ast\AST_DECLARE) {
+            // Check for class declarations, etc. within the statements of a declare directive.
+            $child_node = $node->children['stmts'];
+            if ($child_node !== null) {
+                // Step into each child node and get an
+                // updated context for the node
+                return self::parseNodeInContext($code_base, $inner_context, $child_node);
+            }
+            return $inner_context;
         }
 
         // Recurse into each child node
-        $child_context = $context;
+        $child_context = $inner_context;
         foreach ($node->children as $child_node) {
             // Skip any non Node children.
-            if (!($child_node instanceof Node)) {
-                continue;
+            if (\is_object($child_node)) {
+                // Step into each child node and get an
+                // updated context for the node
+                $child_context = self::parseNodeInContext($code_base, $child_context, $child_node);
             }
-
-            // Step into each child node and get an
-            // updated context for the node
-            $child_context = self::parseNodeInContext($code_base, $child_context, $child_node);
         }
 
         // For closed context elements (that have an inner scope)
         // return the outer context instead of their inner context
         // after we finish parsing their children.
         if (\in_array($kind, [
-            \ast\AST_CLASS,
-            \ast\AST_METHOD,
-            \ast\AST_FUNC_DECL,
-            \ast\AST_CLOSURE,
+            ast\AST_CLASS,
+            ast\AST_METHOD,
+            ast\AST_FUNC_DECL,
+            ast\AST_CLOSURE,
         ], true)) {
-            return $outer_context;
+            return $context;
         }
-        if ($kind === \ast\AST_STMT_LIST) {
+        if ($kind === ast\AST_STMT_LIST) {
             // Workaround that ensures that the context from namespace blocks gets passed to the caller.
             return $child_context;
         }
 
         // Pass the context back up to our parent
-        return $context;
+        return $inner_context;
     }
 
     /**
      * Take a pass over all functions verifying various states.
      *
+     * @param ?array<string,mixed> $file_filter if non-null, limit analysis to functions and methods declared in this array
      * @return void
      */
     public static function analyzeFunctions(CodeBase $code_base, array $file_filter = null)
@@ -244,7 +261,7 @@ class Analysis
         $plugin_set = ConfigPluginSet::instance();
         $has_function_or_method_plugins = $plugin_set->hasAnalyzeFunctionPlugins() || $plugin_set->hasAnalyzeMethodPlugins();
         $show_progress = CLI::shouldShowProgress();
-        $analyze_function_or_method = function (FunctionInterface $function_or_method) use (
+        $analyze_function_or_method = static function (FunctionInterface $function_or_method) use (
             $code_base,
             $plugin_set,
             $has_function_or_method_plugins,
@@ -256,7 +273,7 @@ class Analysis
             // Phan always has to call this, to add default values to types of parameters.
             $function_or_method->ensureScopeInitialized($code_base);
 
-            // If there is an array limiting the set of files, skip this file if it's not in the list,
+            // If there is an array limiting the set of files, skip this file if it's not in the list.
             if (\is_array($file_filter) && !isset($file_filter[$function_or_method->getContext()->getFile()])) {
                 return;
             }
@@ -273,10 +290,9 @@ class Analysis
                 $function_or_method
             );
 
-            ReturnTypesAnalyzer::analyzeReturnTypes(
-                $code_base,
-                $function_or_method
-            );
+            // Infer more accurate return types
+            // For daemon mode/the language server, we also call this whenever we use the return type of a function/method.
+            $function_or_method->analyzeReturnTypes($code_base);
 
             ThrowsTypesAnalyzer::analyzeThrowsTypes(
                 $code_base,
@@ -343,43 +359,59 @@ class Analysis
     {
         $plugin_set = ConfigPluginSet::instance();
         foreach ($plugin_set->getReturnTypeOverrides($code_base) as $fqsen_string => $closure) {
-            if (\stripos($fqsen_string, '::') !== false) {
-                $fqsen = FullyQualifiedMethodName::fromFullyQualifiedString($fqsen_string);
-                $class_fqsen = $fqsen->getFullyQualifiedClassName();
-                // We have to call hasClassWithFQSEN before calling hasMethodWithFQSEN in order to autoload the internal function signatures.
-                // TODO: Move class autoloading into hasMethodWithFQSEN()?
-                if ($code_base->hasClassWithFQSEN($class_fqsen)) {
-                    // This is an override of a method.
-                    if ($code_base->hasMethodWithFQSEN($fqsen)) {
-                        $method = $code_base->getMethodByFQSEN($fqsen);
-                        $method->setDependentReturnTypeClosure($closure);
+            try {
+                if (\stripos($fqsen_string, '::') !== false) {
+                    $fqsen = FullyQualifiedMethodName::fromFullyQualifiedString($fqsen_string);
+                    $class_fqsen = $fqsen->getFullyQualifiedClassName();
+                    // We have to call hasClassWithFQSEN before calling hasMethodWithFQSEN in order to autoload the internal function signatures.
+                    // TODO: Move class autoloading into hasMethodWithFQSEN()?
+                    if ($code_base->hasClassWithFQSEN($class_fqsen)) {
+                        // This is an override of a method.
+                        if ($code_base->hasMethodWithFQSEN($fqsen)) {
+                            $method = $code_base->getMethodByFQSEN($fqsen);
+                            $method->setDependentReturnTypeClosure($closure);
+                        }
+                    }
+                } else {
+                    // This is an override of a function.
+                    $fqsen = FullyQualifiedFunctionName::fromFullyQualifiedString($fqsen_string);
+                    if ($code_base->hasFunctionWithFQSEN($fqsen)) {
+                        $function = $code_base->getFunctionByFQSEN($fqsen);
+                        $function->setDependentReturnTypeClosure($closure);
                     }
                 }
-            } else {
-                // This is an override of a function.
-                $fqsen = FullyQualifiedFunctionName::fromFullyQualifiedString($fqsen_string);
-                if ($code_base->hasFunctionWithFQSEN($fqsen)) {
-                    $function = $code_base->getFunctionByFQSEN($fqsen);
-                    $function->setDependentReturnTypeClosure($closure);
-                }
+            } catch (FQSENException $e) {
+                \fprintf(STDERR, "getReturnTypeOverrides returned an invalid FQSEN %s: %s\n", $fqsen_string, $e->getMessage());
+            } catch (InvalidArgumentException $e) {
+                \fprintf(STDERR, "getReturnTypeOverrides returned an invalid FQSEN %s: %s\n", $fqsen_string, $e->getMessage());
             }
         }
 
         foreach ($plugin_set->getAnalyzeFunctionCallClosures($code_base) as $fqsen_string => $closure) {
-            if (stripos($fqsen_string, '::') !== false) {
-                // This is an override of a method.
-                $fqsen = FullyQualifiedMethodName::fromFullyQualifiedString($fqsen_string);
-                if ($code_base->hasMethodWithFQSEN($fqsen)) {
-                    $method = $code_base->getMethodByFQSEN($fqsen);
-                    $method->setFunctionCallAnalyzer($closure);
+            try {
+                if (\stripos($fqsen_string, '::') !== false) {
+                    // This is an override of a method.
+                    list($class, $method_name) = \explode('::', $fqsen_string, 2);
+                    $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class);
+                    if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+                        continue;
+                    }
+                    $class = $code_base->getClassByFQSEN($class_fqsen);
+                    // Note: This is used because it will create methods such as __construct if they do not exist.
+                    if ($class->hasMethodWithName($code_base, $method_name, false)) {
+                        $method = $class->getMethodByName($code_base, $method_name);
+                        $method->setFunctionCallAnalyzer($closure);
+                    }
+                } else {
+                    // This is an override of a function.
+                    $fqsen = FullyQualifiedFunctionName::fromFullyQualifiedString($fqsen_string);
+                    if ($code_base->hasFunctionWithFQSEN($fqsen)) {
+                        $function = $code_base->getFunctionByFQSEN($fqsen);
+                        $function->setFunctionCallAnalyzer($closure);
+                    }
                 }
-            } else {
-                // This is an override of a function.
-                $fqsen = FullyQualifiedFunctionName::fromFullyQualifiedString($fqsen_string);
-                if ($code_base->hasFunctionWithFQSEN($fqsen)) {
-                    $function = $code_base->getFunctionByFQSEN($fqsen);
-                    $function->setFunctionCallAnalyzer($closure);
-                }
+            } catch (FQSENException $e) {
+                \fprintf(STDERR, "getAnalyzeFunctionCallClosures returned an invalid FQSEN %s\n", $e->getFQSEN());
             }
         }
     }
@@ -388,6 +420,7 @@ class Analysis
      * Take a pass over all classes/traits/interfaces
      * verifying various states.
      *
+     * @param ?array<string,mixed> $path_filter if non-null, limit analysis to classes in this array
      * @return void
      */
     public static function analyzeClasses(CodeBase $code_base, array $path_filter = null)
@@ -404,7 +437,11 @@ class Analysis
             }
         }
         foreach ($classes as $class) {
-            $class->analyze($code_base);
+            try {
+                $class->analyze($code_base);
+            } catch (RecursionDepthException $_) {
+                continue;
+            }
         }
     }
 
@@ -499,7 +536,7 @@ class Analysis
         }
 
         // Ensure we have some content
-        if (empty($node)) {
+        if (!$node) {
             Issue::maybeEmit(
                 $code_base,
                 $context,

@@ -1,10 +1,10 @@
 <?php
 
-class C {
+class C45 {
     private $x = 42;
     public function f() : int {
         return $this->x;
     }
 }
 
-$v = C::f();
+$v = C45::f();

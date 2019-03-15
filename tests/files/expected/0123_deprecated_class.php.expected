@@ -1,4 +1,3 @@
 %s:12 PhanDeprecatedClass Call to deprecated class \C defined at %s:5
 %s:13 PhanDeprecatedFunction Call to deprecated function \C::f() defined at %s:9
 %s:20 PhanDeprecatedFunction Call to deprecated function \f() defined at %s:18
-

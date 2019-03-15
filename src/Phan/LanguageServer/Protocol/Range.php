@@ -42,15 +42,23 @@ class Range
      */
     public function includes(Position $position): bool
     {
+        // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
         return $this->start->compare($position) <= 0 && $this->end->compare($position) >= 0;
     }
 
+    /**
+     * Creates a placeholder Range which spans the entire line of source code of $context.
+     */
     public static function fromContextOnSingleLine(FileRef $context) : Range
     {
         $lineno = $context->getLineNumberStart();
         return new Range(new Position($lineno - 1, 0), new Position($lineno, 0));
     }
 
+    /**
+     * Create a range from a serialized array
+     * @param array{start:array,end:array} $data
+     */
     public static function fromArray(array $data) : Range
     {
         return new self(

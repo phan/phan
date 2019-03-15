@@ -1,2 +1,1 @@
 %s:21 PhanTypeMismatchReturn Returning type 'literalstring' but h() is declared to return int
-

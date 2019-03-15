@@ -1,0 +1,3 @@
+%s:7 PhanUnusedVariable Unused definition of variable $myVal
+%s:8 PhanUndeclaredProperty Reference to undeclared property \MyClass22->foo (Did you mean \MyClass22->foo())
+%s:9 PhanUndeclaredProperty Reference to undeclared property \MyClass22->myVal (Did you mean $myVal)

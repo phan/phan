@@ -1,14 +1,20 @@
 <?php
 declare(strict_types=1);
+
 namespace Phan\Language\Element;
 
+use AssertionError;
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Issue;
 use Phan\Language\Context;
+use Phan\Language\Element\Comment\Assertion;
 use Phan\Language\Element\Comment\Builder;
-use Phan\Language\Element\Comment\Parameter as CommentParameter;
 use Phan\Language\Element\Comment\Method as CommentMethod;
-use Phan\Language\Element\Flags;
+use Phan\Language\Element\Comment\NullComment;
+use Phan\Language\Element\Comment\Parameter as CommentParameter;
+use Phan\Language\Element\Comment\Property as CommentProperty;
+use Phan\Language\Element\Comment\ReturnComment;
 use Phan\Language\Type;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
@@ -19,9 +25,7 @@ use Phan\Library\Option;
  * Handles extracting information(param types, return types, magic methods/properties, etc.) from phpdoc comments.
  * Instances of Comment contain the extracted information.
  *
- * TODO: Pass the doccomment line's index to the Element that will use the client,
- * so that it can be used for more precise line numbers (E.g. for where magic methods were declared,
- * where functions with no signature types but phpdoc types declared types that are invalid class names, etc.
+ * @see Builder for the logic to create an instance of this class.
  */
 class Comment
 {
@@ -29,7 +33,7 @@ class Comment
     const ON_VAR        = 2;
     const ON_PROPERTY   = 3;
     const ON_CONST      = 4;
-    // TODO: Handle closure.
+    // TODO: Add another type for closure. (e.g. (at)phan-closure-scope)
     const ON_METHOD     = 5;
     const ON_FUNCTION   = 6;
 
@@ -46,6 +50,12 @@ class Comment
         self::ON_VAR,
         self::ON_PROPERTY,
         self::ON_CONST,
+    ];
+
+    const HAS_TEMPLATE_ANNOTATION = [
+        self::ON_CLASS,
+        self::ON_FUNCTION,
+        self::ON_METHOD,
     ];
 
     const NAME_FOR_TYPE = [
@@ -66,77 +76,85 @@ class Comment
      * @var int - contains a subset of flags to set on elements
      * Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES
      * Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS
+     * Flags::IS_READ_ONLY
+     * Flags::IS_WRITE_ONLY
      * Flags::IS_DEPRECATED
      */
-    private $comment_flags = 0;
+    protected $comment_flags = 0;
 
     /**
      * @var array<int,CommentParameter>
      * A list of CommentParameters from var declarations
      */
-    private $variable_list = [];
+    protected $variable_list = [];
 
     /**
      * @var array<int,CommentParameter>
      * A list of CommentParameters from param declarations
      */
-    private $parameter_list = [];
+    protected $parameter_list = [];
 
     /**
      * @var array<string,CommentParameter>
      * A map from variable name to CommentParameters from
      * param declarations
      */
-    private $parameter_map = [];
+    protected $parameter_map = [];
 
     /**
      * @var array<int,TemplateType>
      * A list of template types parameterizing a generic class
      */
-    private $template_type_list = [];
+    protected $template_type_list = [];
 
     /**
      * @var Option<Type>|None
      * Classes may specify their inherited type explicitly
      * via `(at)inherits Type`.
      */
-    private $inherited_type;
+    protected $inherited_type;
 
     /**
-     * @var UnionType|null
-     * A UnionType defined by an (at)return directive
+     * @var ReturnComment|null
+     * the representation of an (at)return directive
      */
-    private $return_union_type = null;
+    protected $return_comment = null;
 
     /**
      * @var array<int,string>
      * A list of issue types to be suppressed
      */
-    private $suppress_issue_list = [];
+    protected $suppress_issue_list = [];
 
     /**
-     * @var array<string,CommentParameter>
+     * @var array<string,CommentProperty>
      * A mapping from magic property parameters to types.
      */
-    private $magic_property_map = [];
+    protected $magic_property_map = [];
 
     /**
      * @var array<string,CommentMethod>
      * A mapping from magic methods to parsed parameters, name, and return types.
      */
-    private $magic_method_map = [];
+    protected $magic_method_map = [];
 
     /**
      * @var UnionType a list of types for (at)throws annotations
      */
-    private $throw_union_type;
+    protected $throw_union_type;
 
     /**
      * @var Option<Type>|None
      * An optional class name defined by an (at)phan-closure-scope directive.
      * (overrides the class in which it is analyzed)
      */
-    private $closure_scope;
+    protected $closure_scope;
+
+    /**
+     * @var array<string,Assertion>
+     * An optional assertion on a parameter's type
+     */
+    protected $param_assertion_map = [];
 
     /**
      * A private constructor meant to ingest a parsed comment
@@ -159,12 +177,12 @@ class Comment
      * @param Option<Type>|None $inherited_type (Note: some issues with templates and narrowing signature types to phpdoc type, added None as a workaround)
      * An override on the type of the extended class
      *
-     * @param UnionType $return_union_type
+     * @param ?ReturnComment $return_comment
      *
      * @param array<int,string> $suppress_issue_list
      * A list of tags for error type to be suppressed
      *
-     * @param array<int,CommentParameter> $magic_property_list
+     * @param array<int,CommentProperty> $magic_property_list
      *
      * @param array<int,CommentMethod> $magic_method_list
      *
@@ -175,6 +193,9 @@ class Comment
      * to which a closure will be bound.
      *
      * @param UnionType $throw_union_type
+     *
+     * @param array<string,Assertion> $param_assertion_map
+     *
      * @internal
      */
     public function __construct(
@@ -183,27 +204,40 @@ class Comment
         array $parameter_list,
         array $template_type_list,
         Option $inherited_type,
-        UnionType $return_union_type,
+        $return_comment,
         array $suppress_issue_list,
         array $magic_property_list,
         array $magic_method_list,
         array $phan_overrides,
         Option $closure_scope,
-        UnionType $throw_union_type
+        UnionType $throw_union_type,
+        array $param_assertion_map,
+        CodeBase $code_base,
+        Context $context
     ) {
         $this->comment_flags = $comment_flags;
         $this->variable_list = $variable_list;
         $this->parameter_list = $parameter_list;
         $this->template_type_list = $template_type_list;
         $this->inherited_type = $inherited_type;
-        $this->return_union_type = $return_union_type;
+        $this->return_comment = $return_comment;
         $this->suppress_issue_list = $suppress_issue_list;
         $this->closure_scope = $closure_scope;
         $this->throw_union_type = $throw_union_type;
+        $this->param_assertion_map = $param_assertion_map;
 
         foreach ($this->parameter_list as $i => $parameter) {
             $name = $parameter->getName();
-            if (!empty($name)) {
+            if ($name) {
+                if (isset($this->parameter_map[$name])) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::CommentDuplicateParam,
+                        $context->getLineNumberStart(),
+                        $name
+                    );
+                }
                 // Add it to the named map
                 $this->parameter_map[$name] = $parameter;
 
@@ -213,19 +247,35 @@ class Comment
         }
         foreach ($magic_property_list as $property) {
             $name = $property->getName();
-            if (!empty($name)) {
+            if ($name) {
+                if (isset($this->magic_property_map[$name])) {
+                    // Emit warning for duplicates.
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::CommentDuplicateMagicProperty,
+                        $context->getLineNumberStart(),
+                        $name
+                    );
+                }
                 // Add it to the named map
-                // TODO: Detect duplicates, emit warning for duplicates.
-                // TODO(optional): Emit Issues when a property with only property-read is written to
-                // or vice versa.
                 $this->magic_property_map[$name] = $property;
             }
         }
         foreach ($magic_method_list as $method) {
             $name = $method->getName();
-            if (!empty($name)) {
+            if ($name) {
+                if (isset($this->magic_method_map[$name])) {
+                    // Emit warning for duplicates.
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::CommentDuplicateMagicMethod,
+                        $context->getLineNumberStart(),
+                        $name
+                    );
+                }
                 // Add it to the named map
-                // TODO: Detect duplicates, emit warning for duplicates.
                 $this->magic_method_map[$name] = $method;
             }
         }
@@ -244,7 +294,7 @@ class Comment
             case 'param':
                 foreach ($value as $parameter) {
                     $name = $parameter->getName();
-                    if (!empty($name)) {
+                    if ($name) {
                         // Add it to the named map
                         // TODO: could check that @phan-param is compatible with the original @param
                         $this->parameter_map[$name] = $parameter;
@@ -253,7 +303,7 @@ class Comment
                 return;
             case 'return':
                 // TODO: could check that @phan-return is compatible with the original @return
-                $this->return_union_type = $value;
+                $this->return_comment = $value;
                 return;
             case 'var':
                 // TODO: Remove pre-existing entries.
@@ -262,7 +312,7 @@ class Comment
             case 'property':
                 foreach ($value as $property) {
                     $name = $property->getName();
-                    if (!empty($name)) {
+                    if ($name) {
                         // Override or add the entry in the named map
                         $this->magic_property_map[$name] = $property;
                     }
@@ -271,17 +321,24 @@ class Comment
             case 'method':
                 foreach ($value as $method) {
                     $name = $method->getName();
-                    if (!empty($name)) {
+                    if ($name) {
                         // Override or add the entry in the named map
                         $this->magic_method_map[$name] = $method;
                     }
                 }
                 return;
+            case 'template':
+                $this->template_type_list = $value;
+                return;
+            case 'inherits':
+            case 'extends':
+                $this->inherited_type = $value;
+                return;
         }
     }
 
     /**
-     * @var array<int,CommentParameter>
+     * @param array<int,CommentParameter> $override_comment_vars
      * A list of CommentParameters from var declarations
      */
     private function mergeVariableList(array $override_comment_vars)
@@ -295,7 +352,7 @@ class Comment
                 unset($this->variable_list[$i]);
             }
         }
-        $this->variable_list = array_merge($this->variable_list, $override_comment_vars);
+        $this->variable_list = \array_merge($this->variable_list, $override_comment_vars);
     }
 
 
@@ -320,20 +377,7 @@ class Comment
 
         // Don't parse the comment if this doesn't need to.
         if (!$comment || !Config::getValue('read_type_annotations') || \strpos($comment, '@') === false) {
-            return new Comment(
-                0,
-                [],
-                [],
-                [],
-                new None(),
-                UnionType::empty(),
-                [],
-                [],
-                [],
-                [],
-                new None(),
-                UnionType::empty()
-            );
+            return NullComment::instance();
         }
 
         // @phan-suppress-next-line PhanAccessMethodInternal
@@ -379,6 +423,19 @@ class Comment
     }
 
     /**
+     * @internal
+     */
+    const FLAGS_FOR_PROPERTY = Flags::IS_NS_INTERNAL | Flags::IS_DEPRECATED | Flags::IS_READ_ONLY | Flags::IS_WRITE_ONLY;
+
+    /**
+     * Gets the subset of the bitmask that applies to properties.
+     */
+    public function getPhanFlagsForProperty() : int
+    {
+        return $this->comment_flags & self::FLAGS_FOR_PROPERTY;
+    }
+
+    /**
      * @return bool
      * Set to true if the comment contains a 'phan-forbid-undeclared-magic-properties'
      * directive.
@@ -404,17 +461,24 @@ class Comment
      */
     public function getReturnType() : UnionType
     {
-        return $this->return_union_type;
+        $return_comment = $this->return_comment;
+        if (!$return_comment) {
+            throw new AssertionError('Should check hasReturnUnionType');
+        }
+        return $return_comment->getType();
     }
 
     /**
-     * Sets A UnionType defined by a (at)return directive
-     * @return void
-     * @suppress PhanUnreferencedPublicMethod not used right now, but making it available for plugins
+     * @return int
+     * A line of a (at)return directive
      */
-    public function setReturnType(UnionType $return_union_type)
+    public function getReturnLineno() : int
     {
-        $this->return_union_type = $return_union_type;
+        $return_comment = $this->return_comment;
+        if (!$return_comment) {
+            throw new AssertionError('Should check hasReturnUnionType');
+        }
+        return $return_comment->getLineno();
     }
 
     /**
@@ -424,12 +488,12 @@ class Comment
      */
     public function hasReturnUnionType() : bool
     {
-        return !$this->return_union_type->isEmpty();
+        return $this->return_comment !== null;
     }
 
     /**
      * @return Option<Type>
-     * An optional Type defined by a (at)PhanClosureScope
+     * An optional Type defined by a (at)phan-closure-scope
      * directive specifying a single type.
      *
      * @suppress PhanPartialTypeMismatchReturn (Null)
@@ -451,9 +515,6 @@ class Comment
 
     /**
      * @return array<string,CommentParameter> (maps the names of parameters to their values. Does not include parameters which didn't provide names)
-     *
-     * @suppress PhanUnreferencedPublicMethod
-     * @suppress PhanPartialTypeMismatchReturn (Null)
      */
     public function getParameterMap() : array
     {
@@ -496,11 +557,11 @@ class Comment
         string $name,
         int $offset
     ) : bool {
-        if (!empty($this->parameter_map[$name])) {
+        if (isset($this->parameter_map[$name])) {
             return true;
         }
 
-        return !empty($this->parameter_list[$offset]);
+        return isset($this->parameter_list[$offset]);
     }
 
     /**
@@ -511,7 +572,7 @@ class Comment
         string $name,
         int $offset
     ) : CommentParameter {
-        if (!empty($this->parameter_map[$name])) {
+        if (isset($this->parameter_map[$name])) {
             return $this->parameter_map[$name];
         }
 
@@ -530,19 +591,19 @@ class Comment
     }
 
     /**
-     * @return CommentParameter
-     * The magic property with the given name. May or may not have a type.
+     * Returns the magic property with the given name.
+     * May or may not have a type.
      * @unused
      * @suppress PhanUnreferencedPublicMethod not used right now, but making it available for plugins
      */
     public function getMagicPropertyWithName(
         string $name
-    ) : CommentParameter {
+    ) : CommentProperty {
         return $this->magic_property_map[$name];
     }
 
     /**
-     * @return array<string,CommentParameter> map from parameter name to parameter
+     * @return array<string,CommentProperty> map from parameter name to parameter
      */
     public function getMagicPropertyMap() : array
     {
@@ -566,11 +627,19 @@ class Comment
     }
 
     /**
-     * @return array<int,CommentParameter>
+     * @return array<int,CommentParameter> the list of (at)var annotations
      */
     public function getVariableList() : array
     {
         return $this->variable_list;
+    }
+
+    /**
+     * @return array<string,Assertion> maps parameter names to assertions about those parameters
+     */
+    public function getParamAssertionMap() : array
+    {
+        return $this->param_assertion_map;
     }
 
     public function __toString() : string
@@ -591,8 +660,9 @@ class Comment
             $string  .= " * @param $parameter\n";
         }
 
-        if ($this->return_union_type) {
-            $string .= " * @return {$this->return_union_type}\n";
+        $return_comment = $this->return_comment;
+        if ($return_comment) {
+            $string .= " * @return {$return_comment->getType()}\n";
         }
         foreach ($this->throw_union_type->getTypeSet() as $type) {
             $string .= " * @throws {$type}\n";

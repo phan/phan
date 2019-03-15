@@ -1,18 +1,21 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language\Type;
 
+use InvalidArgumentException;
+use Phan\CodeBase;
+use Phan\Debug\Frame;
+use Phan\Exception\RecursionDepthException;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Language\UnionTypeBuilder;
-use Phan\CodeBase;
-
-use InvalidArgumentException;
-use RuntimeException;
 
 /**
+ * A temporary representation of `array<KeyType, T1|T2...>`
+ *
  * Callers should split this up into multiple GenericArrayType instances.
  *
- * This is generated from phpdoc array<int, T1|T2> where callers expect a subclass of Type.
+ * This is generated from phpdoc `array<int, T1|T2>` where callers expect a subclass of Type.
  */
 final class GenericMultiArrayType extends ArrayType implements MultiType, GenericArrayInterface
 {
@@ -90,8 +93,11 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
     }
 
     /**
+     * Public creator of GenericMultiArrayType instances
+     *
      * @param array<int,Type> $element_types
      * @param bool $is_nullable
+     * @param int $key_type
      * @return GenericMultiArrayType
      */
     public static function fromElementTypes(
@@ -137,7 +143,9 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
         return true;
     }
 
-    /** @var ?UnionType */
+    /**
+     * @var ?UnionType the normalized element union type. Computed from `$this->element_types`.
+     */
     private $element_types_union_type;
 
     /**
@@ -184,19 +192,66 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
         // is taller than some value we probably messed up
         // and should bail out.
         if ($recursion_depth >= 20) {
-            throw new RuntimeException("Recursion has gotten out of hand");
+            throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
         }
 
         // TODO: Use UnionType::merge from a future change?
         $result = new UnionTypeBuilder();
-        foreach ($this->element_types as $type) {
-            $result->addUnionType(
-                GenericArrayType::fromElementType(
-                    $type,
-                    $this->is_nullable,
-                    $this->key_type
-                )->asExpandedTypes($code_base, $recursion_depth + 1)
-            );
+        try {
+            foreach ($this->element_types as $type) {
+                $result->addUnionType(
+                    GenericArrayType::fromElementType(
+                        $type,
+                        $this->is_nullable,
+                        $this->key_type
+                    )->asExpandedTypes($code_base, $recursion_depth + 1)
+                );
+            }
+        } catch (RecursionDepthException $_) {
+            return ArrayType::instance($this->is_nullable)->asUnionType();
+        }
+        return $result->getUnionType();
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * The code base to use in order to find super classes, etc.
+     *
+     * @param $recursion_depth
+     * This thing has a tendency to run-away on me. This tracks
+     * how bad I messed up by seeing how far the expanded types
+     * go
+     *
+     * @return UnionType
+     * Expands class types to all inherited classes returning
+     * a superset of this type.
+     * @override
+     */
+    public function asExpandedTypesPreservingTemplate(
+        CodeBase $code_base,
+        int $recursion_depth = 0
+    ) : UnionType {
+        // We're going to assume that if the type hierarchy
+        // is taller than some value we probably messed up
+        // and should bail out.
+        if ($recursion_depth >= 20) {
+            throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
+        }
+
+        // TODO: Use UnionType::merge from a future change?
+        $result = new UnionTypeBuilder();
+        try {
+            foreach ($this->element_types as $type) {
+                $result->addUnionType(
+                    GenericArrayType::fromElementType(
+                        $type,
+                        $this->is_nullable,
+                        $this->key_type
+                    )->asExpandedTypesPreservingTemplate($code_base, $recursion_depth + 1)
+                );
+            }
+        } catch (RecursionDepthException $_) {
+            return ArrayType::instance($this->is_nullable)->asUnionType();
         }
         return $result->getUnionType();
     }

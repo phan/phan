@@ -1,34 +1,36 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Analysis;
 
+use ast;
+use ast\Node;
+use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\Element;
 use Phan\AST\Visitor\FlagVisitorImplementation;
-use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
+use Phan\Issue;
 use Phan\Language\Context;
-use Phan\Language\UnionType;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\StringType;
-use Phan\Issue;
-use ast\Node;
+use Phan\Language\UnionType;
 
 /**
- * TODO: Improve analysis of bitwise operations, warn if non-int is provided and consistently return int if it's guaranteed
+ * This visitor returns a Context with the updated changes caused by an assignment operation (e.g. changes to Variables, Variable types)
  *
- * TODO: Move many of these checks to AssignOperatorAnalysisVisitor
+ * TODO: Improve analysis of bitwise operations, warn if non-int is provided and consistently return int if it's guaranteed
  */
 class AssignOperatorFlagVisitor extends FlagVisitorImplementation
 {
 
     /**
-     * @var CodeBase
+     * @var CodeBase The code base within which we're operating
      */
     private $code_base;
 
     /**
-     * @var Context
+     * @var Context The context in which we are determining the union type of the result of an assignment operator
      */
     private $context;
 
@@ -80,14 +82,15 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
             $node->children['expr']
         );
 
-        if ($left->isType(ArrayType::instance(false))
-            || $right->isType(ArrayType::instance(false))
+        if ($left->isExclusivelyArray()
+            || $right->isExclusivelyArray()
         ) {
             Issue::maybeEmit(
                 $this->code_base,
                 $this->context,
                 Issue::TypeArrayOperator,
                 $node->lineno ?? 0,
+                PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$node->flags],
                 $left,
                 $right
             );
@@ -110,6 +113,23 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
         ]));
     }
 
+    /**
+     * @return UnionType
+     */
+    public function visitBinaryCoalesce(Node $node)
+    {
+        $var_node = $node->children['var'];
+        $new_node = new ast\Node(ast\AST_BINARY_OP, $node->lineno, [
+            'left' => $var_node,
+            'right' => $node->children['expr'],
+        ], ast\flags\BINARY_COALESCE);
+
+        return (new BinaryOperatorFlagVisitor(
+            $this->code_base,
+            $this->context,
+            true
+        ))->visitBinaryCoalesce($new_node);
+    }
     /**
      * @return UnionType for the `&` operator
      */
@@ -188,14 +208,16 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
         );
 
         // TODO: check for other invalid types
-        if ($left->isType(ArrayType::instance(false))
-            || $right->isType(ArrayType::instance(false))
+        if ($left->isExclusivelyArray()
+            || $right->isExclusivelyArray()
         ) {
+            // TODO: Move these checks into AssignOperatorAnalysisVisitor
             Issue::maybeEmit(
                 $this->code_base,
                 $this->context,
                 Issue::TypeArrayOperator,
                 $node->lineno ?? 0,
+                PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$node->flags],
                 $left,
                 $right
             );
@@ -316,5 +338,38 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
             IntType::instance(false),
             FloatType::instance(false)
         ]));
+    }
+
+    /** @override */
+    public function visitBinaryDiv(Node $_) : UnionType
+    {
+        // analyzed in AssignOperatorAnalysisVisitor
+        return FloatType::instance(false)->asUnionType();
+    }
+
+    /** @override */
+    public function visitBinaryMod(Node $_) : UnionType
+    {
+        // analyzed in AssignOperatorAnalysisVisitor
+        return IntType::instance(false)->asUnionType();
+    }
+
+    /** @override */
+    public function visitBinaryPow(Node $_) : UnionType
+    {
+        // analyzed in AssignOperatorAnalysisVisitor
+        return FloatType::instance(false)->asUnionType();
+    }
+
+    /** @override */
+    public function visitBinaryShiftLeft(Node $_) : UnionType
+    {
+        return IntType::instance(false)->asUnionType();
+    }
+
+    /** @override */
+    public function visitBinaryShiftRight(Node $_) : UnionType
+    {
+        return IntType::instance(false)->asUnionType();
     }
 }

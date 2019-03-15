@@ -1,0 +1,9 @@
+src/058_invalid_regex_replacement.php:5 PhanPluginInvalidPregRegexReplacement Call to \preg_replace was passed an invalid replacement reference '\\1' to pattern '/foo/i'
+src/058_invalid_regex_replacement.php:6 PhanPluginInvalidPregRegexReplacement Call to \preg_replace was passed an invalid replacement reference '$1' to pattern '/foo/i'
+src/058_invalid_regex_replacement.php:9 PhanPluginInvalidPregRegexReplacement Call to \preg_replace was passed an invalid replacement reference '$1' to pattern '/foo/i'
+src/058_invalid_regex_replacement.php:10 PhanPluginInvalidPregRegexReplacement Call to \preg_replace was passed an invalid replacement reference '\\11' to pattern '/foo/i'
+src/058_invalid_regex_replacement.php:11 PhanPluginInvalidPregRegexReplacement Call to \preg_replace was passed an invalid replacement reference '$11' to pattern '/foo/i'
+src/058_invalid_regex_replacement.php:12 PhanPluginInvalidPregRegex Call to \preg_replace was passed an invalid regex '/missingenddelimiter': No ending delimiter '/' found
+src/058_invalid_regex_replacement.php:14 PhanPluginInvalidPregRegexReplacement Call to \preg_replace was passed an invalid replacement reference '$2' to pattern '/(c|h)at/'
+src/058_invalid_regex_replacement.php:15 PhanPluginInvalidPregRegexReplacement Call to \preg_replace was passed an invalid replacement reference '\\2' to pattern '/(c|h)at/'
+src/058_invalid_regex_replacement.php:18 PhanPluginInvalidPregRegexReplacement Call to \preg_replace was passed an invalid replacement reference '\\2' to pattern '/(b)at/i' or '/(c|h)at/'

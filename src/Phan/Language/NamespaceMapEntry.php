@@ -1,20 +1,22 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language;
 
 use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
+use RuntimeException;
 
 /**
- * Tracks a `use Foo\Bar;` statement at the top of a class.
+ * Tracks a `use Foo\Bar;` statement inside of a namespace.
  */
 class NamespaceMapEntry implements \Serializable
 {
     /**
-     * @var FullyQualifiedGlobalStructuralElement
+     * @var FullyQualifiedGlobalStructuralElement the FQSEN of the
      */
     public $fqsen;
 
     /**
-     * @var string the original case sensitive name of the use statement
+     * @var string the original case-sensitive name of the use statement
      */
     public $original_name;
 
@@ -24,7 +26,7 @@ class NamespaceMapEntry implements \Serializable
     public $lineno;
 
     /**
-     * @var bool
+     * @var bool has this use statement been referenced during the parse/analysis phase?
      */
     public $is_used = false;
 
@@ -43,8 +45,8 @@ class NamespaceMapEntry implements \Serializable
      */
     public function serialize()
     {
-        return serialize([
-            get_class($this->fqsen),
+        return \serialize([
+            \get_class($this->fqsen),
             (string)$this->fqsen,
             $this->original_name,
             $this->lineno,
@@ -57,10 +59,13 @@ class NamespaceMapEntry implements \Serializable
      */
     public function unserialize($representation)
     {
-        list($fqsen_class, $fqsen, $this->original_name, $this->lineno, $this->is_used) = unserialize($representation);
-        if (!is_string($fqsen_class) || !is_subclass_of($fqsen_class, FullyQualifiedGlobalStructuralElement::class)) {
+        list($fqsen_class, $fqsen, $this->original_name, $this->lineno, $this->is_used) = \unserialize($representation);
+        if (!\is_string($fqsen_class)) {
+            throw new RuntimeException("Failed to unserialize a string from the representation");
+        }
+        if (!\is_subclass_of($fqsen_class, FullyQualifiedGlobalStructuralElement::class)) {
             // Should not happen
-            throw new \RuntimeException("Not a global fqsen: class " . var_export($fqsen_class));
+            throw new RuntimeException("Not a global fqsen: class " . $fqsen_class);
         }
         $this->fqsen = $fqsen_class::fromFullyQualifiedString($fqsen);
     }

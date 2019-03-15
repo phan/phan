@@ -1,4 +1,4 @@
-%s:9 PhanUndeclaredTypeParameter Parameter of undeclared type \UndefClass357A[]
-%s:9 PhanUndeclaredTypeParameter Parameter of undeclared type \UndefClass357B[][][]
-%s:9 PhanUndeclaredTypeParameter Parameter of undeclared type \UndefClass357C
-%s:9 PhanUndeclaredTypeReturnType Return type of test358 is undeclared type \UndefClass357D[]
+%s:9 PhanUndeclaredTypeParameter Parameter $a has undeclared type \UndefClass357A[]
+%s:9 PhanUndeclaredTypeParameter Parameter $b has undeclared type \UndefClass357B[][][]
+%s:9 PhanUndeclaredTypeParameter Parameter $c has undeclared type \UndefClass357C
+%s:9 PhanUndeclaredTypeReturnType Return type of test358() is undeclared type \UndefClass357D[]

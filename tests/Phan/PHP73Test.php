@@ -1,9 +1,12 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
 
 namespace Phan\Tests;
 
 use Phan\Config;
 
+/**
+ * Unit tests of Phan analysis targeting PHP 7.3 codebases
+ */
 final class PHP73Test extends AbstractPhanFileTest
 {
     const OVERRIDES = [
@@ -22,7 +25,7 @@ final class PHP73Test extends AbstractPhanFileTest
     /**
      * This reads all files in a test directory (e.g. `tests/files/src`), runs
      * the analyzer on each and compares the output
-     * to the files's counterpart in `tests/files/expected`
+     * to the files' counterpart in `tests/files/expected`
      *
      * @param string[] $test_file_list
      * @param string $expected_file_path
@@ -34,8 +37,9 @@ final class PHP73Test extends AbstractPhanFileTest
     public function testFiles($test_file_list, $expected_file_path, $config_file_path = null)
     {
         $skip_reason = null;
-        $main_path = basename(reset($test_file_list));
-        if (PHP_VERSION_ID < 70300) {
+        // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
+        $main_path = \basename(\reset($test_file_list));
+        if (\PHP_VERSION_ID < 70300) {
             $skip_reason = 'Skip PHP 7.3 is required';
         }
         if ($skip_reason !== null) {

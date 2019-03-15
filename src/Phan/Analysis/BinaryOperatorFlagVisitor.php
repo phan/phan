@@ -1,41 +1,55 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Analysis;
 
+use AssertionError;
+use ast;
+use ast\Node;
+use Closure;
 use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\Element;
 use Phan\AST\Visitor\FlagVisitorImplementation;
 use Phan\CodeBase;
+use Phan\Issue;
 use Phan\Language\Context;
-use Phan\Language\UnionType;
+use Phan\Language\FQSEN;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\FloatType;
-use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\LiteralIntType;
+use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\StringType;
-use Phan\Issue;
+use Phan\Language\UnionType;
 
-use AssertionError;
-use ast\Node;
-use Closure;
+use function is_int;
 
-// TODO: Improve analysis of bitwise operations, warn if non-int is provided and consistently return int if it's guaranteed
+/**
+ * This implements Phan's analysis of the type of binary operators (Node->kind=ast\AST_BINARY_OP).
+ * The visit* method invoked is based on Node->flags.
+ *
+ * This returns the union type of the binary operator.
+ * It emits issues as a side effect, usually based on $should_catch_issue_exception
+ *
+ * TODO: Improve analysis of bitwise operations, warn if non-int is provided and consistently return int if it's guaranteed
+ */
 final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
 {
 
     /**
-     * @var CodeBase
+     * @var CodeBase The code base within which we're operating
      */
     private $code_base;
 
     /**
-     * @var Context
+     * @var Context The context in which we are determining the union type of the result of a binary operator
      */
     private $context;
 
     /**
-     * @var bool
+     * @var bool should we catch issue exceptions while analyzing and proceed with the best guess at the resulting union type?
+     * If false, exceptions will be propagated to the caller.
      */
     private $should_catch_issue_exception;
 
@@ -85,8 +99,6 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      */
     public function visit(Node $node) : UnionType
     {
-        // TODO: % operator always returns int.
-
         $left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
@@ -105,25 +117,16 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         if ($left->isExclusivelyArray()
             || $right->isExclusivelyArray()
         ) {
-            Issue::maybeEmit(
-                $this->code_base,
-                $this->context,
-                Issue::TypeArrayOperator,
-                $node->lineno ?? 0,
-                $left,
-                $right
-            );
-
             return UnionType::empty();
         } elseif ($left->hasType(FloatType::instance(false))
             || $right->hasType(FloatType::instance(false))
         ) {
             if ($left->hasTypeMatchingCallback(
-                function (Type $type) : bool {
+                static function (Type $type) : bool {
                     return !($type instanceof FloatType);
                 }
             ) && $right->hasTypeMatchingCallback(
-                function (Type $type) : bool {
+                static function (Type $type) : bool {
                     return !($type instanceof FloatType);
                 }
             )) {
@@ -164,7 +167,37 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
     }
 
     /**
-     * Code can bitwise xor strings byte by byte in PHP
+     * Analyzes the `<<` operator.
+     *
+     * @param Node $node @phan-unused-param
+     * A node to check types on
+     *
+     * @return UnionType
+     * The resulting type(s) of the binary operation
+     */
+    public function visitBinaryShiftLeft(Node $node) : UnionType
+    {
+        // TODO: Any sanity checks should go here.
+        return IntType::instance(false)->asUnionType();
+    }
+
+    /**
+     * Analyzes the `>>` operator.
+     *
+     * @param Node $node @phan-unused-param
+     * A node to check types on
+     *
+     * @return UnionType
+     * The resulting type(s) of the binary operation
+     */
+    public function visitBinaryShiftRight(Node $node) : UnionType
+    {
+        // TODO: Any sanity checks should go here.
+        return IntType::instance(false)->asUnionType();
+    }
+
+    /**
+     * Code can bitwise xor strings byte by byte (or integers by value) in PHP
      * @override
      */
     public function visitBinaryBitwiseXor(Node $node) : UnionType
@@ -204,66 +237,145 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             $this->should_catch_issue_exception
         );
 
-        if ($left->isType(ArrayType::instance(false))
-            || $right->isType(ArrayType::instance(false))
-        ) {
-            Issue::maybeEmit(
-                $this->code_base,
-                $this->context,
-                Issue::TypeArrayOperator,
+        if ($left->hasNonNullIntType()) {
+            if ($right->hasNonNullIntType()) {
+                return $this->computeIntegerOperationResult($node, $left, $right);
+            }
+            if ($right->hasNonNullStringType()) {
+                $this->emitIssue(
+                    Issue::TypeMismatchBitwiseBinaryOperands,
+                    $node->lineno ?? 0,
+                    PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$node->flags],
+                    $left,
+                    $right
+                );
+            }
+        } elseif ($left->hasNonNullStringType()) {
+            if ($right->hasNonNullStringType()) {
+                return StringType::instance(false)->asUnionType();
+            }
+            if ($right->hasNonNullIntType()) {
+                $this->emitIssue(
+                    Issue::TypeMismatchBitwiseBinaryOperands,
+                    $node->lineno ?? 0,
+                    PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$node->flags],
+                    $left,
+                    $right
+                );
+            }
+        }
+        if (!$left->hasValidBitwiseOperand() || !$right->hasValidBitwiseOperand()) {
+            $this->emitIssue(
+                Issue::TypeInvalidBitwiseBinaryOperator,
                 $node->lineno ?? 0,
+                PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$node->flags],
                 $left,
                 $right
             );
+        }
 
-            return UnionType::empty();
-        } elseif ($left->hasNonNullIntType()
-            && $right->hasNonNullIntType()
-        ) {
-            return IntType::instance(false)->asUnionType();
-        } elseif ($left->hasNonNullStringType()
-            && $right->hasNonNullStringType()
-        ) {
-            return StringType::instance(false)->asUnionType();
+        return IntType::instance(false)->asUnionType();
+    }
+
+    private function computeIntegerOperationResult(
+        Node $node,
+        UnionType $left,
+        UnionType $right
+    ) : UnionType {
+        $left_value = $left->asSingleScalarValueOrNull();
+        if (is_int($left_value)) {
+            $right_value = $right->asSingleScalarValueOrNull();
+            if (is_int($right_value)) {
+                switch ($node->flags) {
+                    case ast\flags\BINARY_BITWISE_OR:
+                        return LiteralIntType::instanceForValue($left_value | $right_value, false)->asUnionType();
+                    case ast\flags\BINARY_BITWISE_AND:
+                        return LiteralIntType::instanceForValue($left_value & $right_value, false)->asUnionType();
+                    case ast\flags\BINARY_BITWISE_XOR:
+                        return LiteralIntType::instanceForValue($left_value ^ $right_value, false)->asUnionType();
+                    case ast\flags\BINARY_MUL:
+                        $value = $left_value * $right_value;
+                        return is_int($value) ? LiteralIntType::instanceForValue($value, false)->asUnionType()
+                                              : FloatType::instance(false)->asUnionType();
+                    case ast\flags\BINARY_SUB:
+                        $value = $left_value - $right_value;
+                        return is_int($value) ? LiteralIntType::instanceForValue($value, false)->asUnionType()
+                                              : FloatType::instance(false)->asUnionType();
+                    case ast\flags\BINARY_ADD:
+                        $value = $left_value + $right_value;
+                        return is_int($value) ? LiteralIntType::instanceForValue($value, false)->asUnionType()
+                                              : FloatType::instance(false)->asUnionType();
+                    case ast\flags\BINARY_POW:
+                        $value = $left_value ** $right_value;
+                        return is_int($value) ? LiteralIntType::instanceForValue($value, false)->asUnionType()
+                                              : FloatType::instance(false)->asUnionType();
+                }
+            }
         }
 
         return IntType::instance(false)->asUnionType();
     }
 
     /**
-     * @param Node $node
-     * A node to check types on
+     * @param string $issue_type
+     * The type of issue to emit such as Issue::ParentlessClass
      *
-     * @return UnionType
-     * The resulting type(s) of the binary operation
+     * @param int $lineno
+     * The line number where the issue was found
+     *
+     * @param int|string|FQSEN|UnionType|Type ...$parameters
+     * Template parameters for the issue's error message
+     *
+     * @return void
      */
-    public function visitBinaryBoolAnd(Node $node) : UnionType
-    {
-        return $this->visitBinaryBool($node);
+    protected function emitIssue(
+        string $issue_type,
+        int $lineno,
+        ...$parameters
+    ) {
+        Issue::maybeEmitWithParameters(
+            $this->code_base,
+            $this->context,
+            $issue_type,
+            $lineno,
+            $parameters
+        );
     }
 
     /**
-     * @param Node $node
+     * @param Node $unused_node
      * A node to check types on
      *
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visitBinaryBoolXor(Node $node) : UnionType
+    public function visitBinaryBoolAnd(Node $unused_node) : UnionType
     {
-        return $this->visitBinaryBool($node);
+        return BoolType::instance(false)->asUnionType();
     }
 
     /**
-     * @param Node $node
+     * @param Node $unused_node
      * A node to check types on
      *
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visitBinaryBoolOr(Node $node) : UnionType
+    public function visitBinaryBoolXor(Node $unused_node) : UnionType
     {
-        return $this->visitBinaryBool($node);
+        return BoolType::instance(false)->asUnionType();
+    }
+
+    /**
+     * @param Node $unused_node
+     * A node to check types on
+     *
+     * @return UnionType
+     * The resulting type(s) of the binary operation
+     */
+    public function visitBinaryBoolOr(Node $unused_node) : UnionType
+    {
+        return BoolType::instance(false)->asUnionType();
     }
 
     /**
@@ -282,8 +394,8 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             $this->context,
             $left_node,
             $this->should_catch_issue_exception
-        )->asSingleScalarValueOrNull() : $left_node;
-        if ($left_value === null) {
+        )->asSingleScalarValueOrNullOrSelf() : $left_node;
+        if (\is_object($left_value)) {
             return StringType::instance(false)->asUnionType();
         }
         $right_node = $node->children['right'];
@@ -292,8 +404,8 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             $this->context,
             $right_node,
             $this->should_catch_issue_exception
-        )->asSingleScalarValueOrNull() : $right_node;
-        if ($right_value === null) {
+        )->asSingleScalarValueOrNullOrSelf() : $right_node;
+        if (\is_object($right_value)) {
             return StringType::instance(false)->asUnionType();
         }
         return LiteralStringType::instanceForValue($left_value . $right_value, false)->asUnionType();
@@ -340,9 +452,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             && !$right->containsNullable()
             && !$left->hasAnyType($right->getTypeSet())  // TODO: Strict canCastToUnionType() variant?
         ) {
-            Issue::maybeEmit(
-                $this->code_base,
-                $this->context,
+            $this->emitIssue(
                 Issue::TypeComparisonFromArray,
                 $node->lineno ?? 0,
                 (string)$right->asNonLiteralType()
@@ -355,9 +465,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             && !$right->hasAnyType($left->getTypeSet())  // TODO: Strict canCastToUnionType() variant?
 
         ) {
-            Issue::maybeEmit(
-                $this->code_base,
-                $this->context,
+            $this->emitIssue(
                 Issue::TypeComparisonToArray,
                 $node->lineno ?? 0,
                 (string)$left->asNonLiteralType()
@@ -478,22 +586,20 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
     ) {
         if (!$left->isEmpty()) {
             if (!$left->hasTypeMatchingCallback($is_valid_type)) {
-                Issue::maybeEmit(
-                    $this->code_base,
-                    $this->context,
+                $this->emitIssue(
                     $left_issue_type,
                     $node->children['left']->lineno ?? $node->lineno,
+                    PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$node->flags],
                     $left
                 );
             }
         }
         if (!$right->isEmpty()) {
             if (!$right->hasTypeMatchingCallback($is_valid_type)) {
-                Issue::maybeEmit(
-                    $this->code_base,
-                    $this->context,
+                $this->emitIssue(
                     $right_issue_type,
                     $node->children['right']->lineno ?? $node->lineno,
+                    PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$node->flags],
                     $right
                 );
             }
@@ -527,7 +633,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
 
         // fast-track common cases
         if ($left->isNonNullIntType() && $right->isNonNullIntType()) {
-            return IntType::instance(false)->asUnionType();
+            return $this->computeIntegerOperationResult($node, $left, $right);
         }
 
         // If both left and right union types are arrays, then this is array
@@ -565,6 +671,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         if ($left->isNonNullNumberType() && $right->isNonNullNumberType()) {
             if (!$left->hasNonNullIntType() || !$right->hasNonNullIntType()) {
                 // Heuristic: If one or more of the sides is a float, the result is always a float.
+                // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
                 return $float_type->asUnionType();
             }
             return $int_or_float_union_type;
@@ -591,28 +698,23 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                     ArrayType::instance(false)->asUnionType()
                 )
             ) {
-                Issue::maybeEmit(
-                    $code_base,
-                    $context,
+                $this->emitIssue(
                     Issue::TypeInvalidRightOperand,
                     $node->lineno ?? 0
                 );
                 return UnionType::empty();
-            } elseif ($right_is_array
-                && !$left->canCastToUnionType($array_type->asUnionType())
-            ) {
-                Issue::maybeEmit(
-                    $code_base,
-                    $context,
+                // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
+            } elseif ($right_is_array && !$left->canCastToUnionType($array_type->asUnionType())) {
+                $this->emitIssue(
                     Issue::TypeInvalidLeftOperand,
                     $node->lineno ?? 0
                 );
                 return UnionType::empty();
-            } elseif ($left_is_array || $right_is_array) {
-                // If it is a '+' and we know one side is an array
-                // and the other is unknown, assume array
-                return $array_type->asUnionType();
             }
+            // If it is a '+' and we know one side is an array
+            // and the other is unknown, assume array
+            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
+            return $array_type->asUnionType();
         }
 
         return $int_or_float_union_type;
@@ -648,7 +750,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
 
         // fast-track common cases
         if ($left->isNonNullIntType() && $right->isNonNullIntType()) {
-            return IntType::instance(false)->asUnionType();
+            return $this->computeIntegerOperationResult($node, $left, $right);
         }
 
         $this->warnAboutInvalidUnionType(
@@ -676,6 +778,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         if ($left->isNonNullNumberType() && $right->isNonNullNumberType()) {
             if (!$left->hasNonNullIntType() || !$right->hasNonNullIntType()) {
                 // Heuristic: If one or more of the sides is a float, the result is always a float.
+                // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
                 return $float_type->asUnionType();
             }
             return $int_or_float_union_type;
@@ -730,35 +833,6 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
     {
         // TODO: Warn about invalid left or right side
         return IntType::instance(false)->asUnionType();
-    }
-
-    /**
-     * Common visitor for binary boolean operations
-     *
-     * @param Node $node
-     * A node to check types on
-     *
-     * @return UnionType
-     * The resulting type(s) of the binary operation
-     */
-    private function visitBinaryBool(Node $node) : UnionType
-    {
-        // TODO: Check for suspicious operations (E.g. always false, always true, always object)
-        $unused_left = UnionTypeVisitor::unionTypeFromNode(
-            $this->code_base,
-            $this->context,
-            $node->children['left'],
-            $this->should_catch_issue_exception
-        );
-
-        $unused_right = UnionTypeVisitor::unionTypeFromNode(
-            $this->code_base,
-            $this->context,
-            $node->children['right'],
-            $this->should_catch_issue_exception
-        );
-
-        return BoolType::instance(false)->asUnionType();
     }
 
     /**

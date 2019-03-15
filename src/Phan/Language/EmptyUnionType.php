@@ -1,18 +1,22 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language;
 
+use Closure;
+use Generator;
 use Phan\CodeBase;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
+use Phan\Language\Element\Clazz;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\IntType;
-use Phan\Language\FQSEN\FullyQualifiedClassName;
-use Generator;
+use Phan\Language\Type\TemplateType;
 
 /**
  * NOTE: there may also be instances of UnionType that are empty, due to the constructor being public
  *
- * @phan-file-suppress PhanPluginUnusedPublicFinalMethodArgument, PhanUnusedPublicFinalMethodParameter the results don't depend on passed in parameters
+ * @phan-file-suppress PhanUnusedPublicFinalMethodParameter the results don't depend on passed in parameters
  */
 final class EmptyUnionType extends UnionType
 {
@@ -116,6 +120,19 @@ final class EmptyUnionType extends UnionType
     }
 
     /**
+     * Returns the types for which is_bool($x) would be true.
+     *
+     * @return UnionType
+     * A UnionType with known bool types kept, other types filtered out.
+     *
+     * @see nonGenericArrayTypes
+     */
+    public function getTypesInBoolFamily() : UnionType
+    {
+        return $this;
+    }
+
+    /**
      * @param CodeBase $code_base
      * The code base to look up classes against
      *
@@ -157,6 +174,18 @@ final class EmptyUnionType extends UnionType
         return false;
     }
 
+    /** @override */
+    public function hasTemplateTypeRecursive() : bool
+    {
+        return false;
+    }
+
+    /** @override */
+    public function withoutTemplateTypeRecursive() : UnionType
+    {
+        return $this;
+    }
+
     /**
      * @return bool
      * True if this union type has any types that have generic
@@ -180,11 +209,43 @@ final class EmptyUnionType extends UnionType
     }
 
     /**
+     * @return bool
+     * True if this type has a type referencing the
+     * class context 'static' or 'self'.
+     */
+    public function hasStaticOrSelfType() : bool
+    {
+        return false;
+    }
+
+    /**
      * @return UnionType
      * A new UnionType with any references to 'static' resolved
      * in the given context.
      */
     public function withStaticResolvedInContext(
+        Context $context
+    ) : UnionType {
+        return $this;
+    }
+
+    /**
+     * @return UnionType
+     * A new UnionType *plus* any references to 'self' (but not 'static') resolved
+     * in the given context.
+     */
+    public function withAddedClassForResolvedSelf(
+        Context $context
+    ) : UnionType {
+        return $this;
+    }
+
+    /**
+     * @return UnionType
+     * A new UnionType with any references to 'self' (but not 'static') resolved
+     * in the given context. (the type of 'self' is replaced)
+     */
+    public function withSelfResolvedInContext(
         Context $context
     ) : UnionType {
         return $this;
@@ -242,6 +303,14 @@ final class EmptyUnionType extends UnionType
     }
 
     /**
+     * @return bool - True if empty or at least one type is NullType or nullable.
+     */
+    public function containsNullableOrIsEmpty() : bool
+    {
+        return true;
+    }
+
+    /**
      * @return bool - True if not empty, not possibly undefined, and at least one type is NullType or nullable.
      */
     public function containsNullableOrUndefined() : bool
@@ -257,6 +326,12 @@ final class EmptyUnionType extends UnionType
 
     /** @override */
     public function nullableClone() : UnionType
+    {
+        return $this;
+    }
+
+    /** @override */
+    public function withIsNullable(bool $is_nullable) : UnionType
     {
         return $this;
     }
@@ -323,71 +398,10 @@ final class EmptyUnionType extends UnionType
         return $this;
     }
 
-    /**
-     * @param UnionType $union_type
-     * A union type to compare against
-     *
-     * @param Context $context
-     * The context in which this type exists.
-     *
-     * @param CodeBase $code_base
-     * The code base in which both this and the given union
-     * types exist.
-     *
-     * @return bool
-     * True if each type within this union type can cast
-     * to the given union type.
-     */
-    // Currently unused and buggy, commenting this out.
-    /**
-    public function isExclusivelyNarrowedFormOrEquivalentTo(
-        UnionType $union_type,
-        Context $context,
-        CodeBase $code_base
-    ) : bool {
-
-        // Special rule: anything can cast to nothing
-        // and nothing can cast to anything
-        if ($union_type->isEmpty() || $this->isEmpty()) {
-            return true;
-        }
-
-        // Check to see if the types are equivalent
-        if ($this->isEqualTo($union_type)) {
-            return true;
-        }
-        // TODO: Allow casting MyClass<TemplateType> to MyClass (Without the template?
-
-        // Resolve 'static' for the given context to
-        // determine whats actually being referred
-        // to in concrete terms.
-        $other_resolved_type =
-            $union_type->withStaticResolvedInContext($context);
-        $other_resolved_type_set = $other_resolved_type->type_set;
-
-        // Convert this type to a set of resolved types to iterate over.
-        $this_resolved_type_set =
-            $this->withStaticResolvedInContext($context)->type_set;
-
-        // TODO: Need to resolve expanded union types (parents, interfaces) of classes *before* this is called.
-
-        // Test to see if every single type in this union
-        // type can cast to the given union type.
-        foreach ($this_resolved_type_set as $type) {
-            // First check if this contains the type as an optimization.
-            if ($other_resolved_type_set->contains($type)) {
-                continue;
-            }
-            $expanded_types = $type->asExpandedTypes($code_base);
-            if ($other_resolved_type->canCastToUnionType(
-                $expanded_types
-            )) {
-                continue;
-            }
-        }
-        return true;
+    public function isExclusivelyNarrowedFormOf(CodeBase $code_base, UnionType $other) : bool
+    {
+        return $other->isEmpty();
     }
-     */
 
     /**
      * @param Type[] $type_list
@@ -465,6 +479,13 @@ final class EmptyUnionType extends UnionType
         return true;  // Empty can cast to anything. See parent implementation.
     }
 
+    public function canCastToUnionTypeHandlingTemplates(
+        UnionType $target,
+        CodeBase $code_base
+    ) : bool {
+        return true;
+    }
+
     /**
      * @return bool
      * True if all types in this union are scalars
@@ -477,9 +498,17 @@ final class EmptyUnionType extends UnionType
     /**
      * @return bool
      * True if any types in this union are a printable scalar, or this is the empty union type
-     * @internal
      */
     public function hasPrintableScalar() : bool
+    {
+        return true;
+    }
+
+    /**
+     * @return bool
+     * True if any types in this union are a printable scalar, or this is the empty union type
+     */
+    public function hasValidBitwiseOperand() : bool
     {
         return true;
     }
@@ -564,7 +593,7 @@ final class EmptyUnionType extends UnionType
      * A memory efficient way to create a UnionType from a filter operation.
      * If this the filter preserves everything, returns $this instead
      */
-    public function makeFromFilter(\Closure $cb) : UnionType
+    public function makeFromFilter(Closure $cb) : UnionType
     {
         return $this;  // filtering empty results in empty
     }
@@ -574,8 +603,7 @@ final class EmptyUnionType extends UnionType
      * The context in which we're resolving this union
      * type.
      *
-     * @return \Generator
-     * @phan-return \Generator<FullyQualifiedClassName>
+     * @return Generator<FullyQualifiedClassName>
      * @suppress PhanTypeMismatchGeneratorYieldValue (deliberate empty stub code)
      *
      * A list of class FQSENs representing the non-native types
@@ -607,7 +635,7 @@ final class EmptyUnionType extends UnionType
      * The context in which we're resolving this union
      * type.
      *
-     * @return \Generator
+     * @return Generator<Clazz>
      *
      * A list of classes representing the non-native types
      * associated with this UnionType
@@ -624,9 +652,7 @@ final class EmptyUnionType extends UnionType
         CodeBase $code_base,
         Context $context
     ) {
-        if (false) {
-            yield;
-        }
+        yield from [];
     }
 
     /**
@@ -732,13 +758,52 @@ final class EmptyUnionType extends UnionType
      * @return bool
      * A UnionType with known callable types kept, other types filtered out.
      *
-     * @see $this->callableTypes()
+     * @see self::callableTypes()
      *
      * @override
      */
     public function hasCallableType() : bool
     {
         return false;  // has no types
+    }
+
+    /**
+     * Returns the types for which is_int($x) would be true.
+     *
+     * @return UnionType
+     * A UnionType with known int types kept, other types filtered out.
+     *
+     * @see nonGenericArrayTypes
+     */
+    public function intTypes() : UnionType
+    {
+        return $this;
+    }
+
+    /**
+     * Returns the types for which is_string($x) would be true.
+     *
+     * @return UnionType
+     * A UnionType with known string types kept, other types filtered out.
+     *
+     * @see nonGenericArrayTypes
+     */
+    public function stringTypes() : UnionType
+    {
+        return $this;
+    }
+
+    /**
+     * Returns the types for which is_numeric($x) is possibly true.
+     *
+     * @return UnionType
+     * A UnionType with known numeric types kept, other types filtered out.
+     *
+     * @see nonGenericArrayTypes
+     */
+    public function numericTypes() : UnionType
+    {
+        return $this;
     }
 
     /**
@@ -771,6 +836,11 @@ final class EmptyUnionType extends UnionType
         return $this;
     }
 
+    public function arrayTypes() : UnionType
+    {
+        return $this;
+    }
+
     /**
      * @return bool
      * True if this is exclusively generic types
@@ -784,7 +854,7 @@ final class EmptyUnionType extends UnionType
      * @return bool
      * True if any of the types in this UnionType made $matcher_callback return true
      */
-    public function hasTypeMatchingCallback(\Closure $matcher_callback) : bool
+    public function hasTypeMatchingCallback(Closure $matcher_callback) : bool
     {
         return false;
     }
@@ -793,7 +863,7 @@ final class EmptyUnionType extends UnionType
      * @return Type|false
      * Returns the first type in this UnionType made $matcher_callback return true
      */
-    public function findTypeMatchingCallback(\Closure $matcher_callback)
+    public function findTypeMatchingCallback(Closure $matcher_callback)
     {
         return false;  // empty, no types
     }
@@ -824,16 +894,26 @@ final class EmptyUnionType extends UnionType
     }
 
     /**
-     * @param \Closure $closure
+     * @param Closure(Type):Type $closure
      * A closure mapping `Type` to `Type`
      *
      * @return UnionType
      * A new UnionType with each type mapped through the
      * given closure
+     * @override
      */
-    public function asMappedUnionType(\Closure $closure) : UnionType
+    public function asMappedUnionType(Closure $closure) : UnionType
     {
         return $this;  // empty
+    }
+
+    /**
+     * @param Closure(UnionType):UnionType $closure
+     * @override
+     */
+    public function withMappedElementTypes(Closure $closure) : UnionType
+    {
+        return $this;
     }
 
     /**
@@ -882,6 +962,41 @@ final class EmptyUnionType extends UnionType
         CodeBase $code_base,
         int $recursion_depth = 0
     ) : UnionType {
+        return $this;
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * The code base to use in order to find super classes, etc.
+     *
+     * @param int $recursion_depth
+     * This thing has a tendency to run-away on me. This tracks
+     * how bad I messed up by seeing how far the expanded types
+     * go
+     *
+     * @return UnionType
+     * Expands all class types to all inherited classes returning
+     * a superset of this type.
+     */
+    public function asExpandedTypesPreservingTemplate(
+        CodeBase $code_base,
+        int $recursion_depth = 0
+    ) : UnionType {
+        return $this;
+    }
+
+    public function replaceWithTemplateTypes(UnionType $template_union_type) : UnionType
+    {
+        return $template_union_type;
+    }
+
+    public function hasTypeWithFQSEN(Type $other) : bool
+    {
+        return false;
+    }
+
+    public function getTypesWithFQSEN(Type $other) : UnionType
+    {
         return $this;
     }
 
@@ -946,6 +1061,12 @@ final class EmptyUnionType extends UnionType
     }
 
     /** @override */
+    public function withFlattenedArrayShapeTypeInstances() : UnionType
+    {
+        return $this;
+    }
+
+    /** @override */
     public function withFlattenedArrayShapeOrLiteralTypeInstances() : UnionType
     {
         return $this;
@@ -989,7 +1110,7 @@ final class EmptyUnionType extends UnionType
         return $this;
     }
 
-    public function canStrictCastToUnionType(UnionType $target) : bool
+    public function canStrictCastToUnionType(CodeBase $code_base, UnionType $target) : bool
     {
         return true;
     }
@@ -1004,6 +1125,7 @@ final class EmptyUnionType extends UnionType
         return false;
     }
 
+    /** @suppress PhanThrowTypeAbsentForCall */
     public function asGeneratorTemplateType() : Type
     {
         return Type::fromFullyQualifiedString('\Generator');
@@ -1090,5 +1212,65 @@ final class EmptyUnionType extends UnionType
     public function asSingleScalarValueOrNull()
     {
         return null;
+    }
+
+    public function asSingleScalarValueOrNullOrSelf()
+    {
+        return $this;
+    }
+
+    public function asValueOrNullOrSelf()
+    {
+        return $this;
+    }
+
+    public function asStringScalarValues() : array
+    {
+        return [];
+    }
+
+    public function asIntScalarValues() : array
+    {
+        return [];
+    }
+
+    public function asScalarValues() : array
+    {
+        return [];
+    }
+
+    public function containsDefiniteNonObjectType() : bool
+    {
+        return false;
+    }
+
+    public function containsDefiniteNonObjectAndNonClassType() : bool
+    {
+        return false;
+    }
+
+    public function containsDefiniteNonCallableType() : bool
+    {
+        return false;
+    }
+
+    public function hasPossiblyCallableType() : bool
+    {
+        return true;
+    }
+
+    public function getTypeAfterIncOrDec() : UnionType
+    {
+        return $this;
+    }
+
+    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type)
+    {
+        return null;
+    }
+
+    public function usesTemplateType(TemplateType $template_type) : bool
+    {
+        return false;
     }
 }

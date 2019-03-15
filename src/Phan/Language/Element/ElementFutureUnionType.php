@@ -1,32 +1,44 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language\Element;
 
+use Phan\Exception\IssueException;
 use Phan\Language\FutureUnionType;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
 
+/**
+ * Implements functionality of an element with a union type that is evaluated lazily.
+ *
+ * This lets Phan deal with elements (e.g. properties, constants)
+ * where the default type is another constant with a type
+ * that is not yet known during parsing.
+ */
 trait ElementFutureUnionType
 {
 
     /**
      * @var FutureUnionType|null
      * A FutureUnionType is evaluated lazily only when
-     * the type is actually needed. This lets us deal
-     * with constants who's default type is another
-     * constant who's type is not yet known during
-     * parsing.
+     * the type is actually needed.
+     * This lets Phan deal with elements (e.g. properties, constants)
+     * where the default type is another constant with a type
+     * that is not yet known during parsing.
      */
     protected $future_union_type = null;
 
     /**
-     * @param UnionType $type
      * Set the type of this element
+     * @param UnionType $type
      *
      * @return void
      */
     abstract public function setUnionType(UnionType $type);
 
     /**
+     * Sets a value that can be used once parsing/hydration is completed,
+     * to resolve the union type of this element.
+     *
      * @return void
      */
     public function setFutureUnionType(
@@ -39,8 +51,8 @@ trait ElementFutureUnionType
      * @return bool
      * Returns true if this element has an unresolved union type.
      *
-     * @internal - Mostly useful for Phan internals
-     *             (e.g. a property with an unresolved future union type can't have a template type)
+     * @internal because this is mostly useful for Phan internals
+     *           (e.g. a property with an unresolved future union type can't have a template type)
      */
     public function hasUnresolvedFutureUnionType() : bool
     {
@@ -55,17 +67,21 @@ trait ElementFutureUnionType
      */
     public function getFutureUnionType()
     {
-        if (empty($this->future_union_type)) {
+        $future_union_type = $this->future_union_type;
+        if ($future_union_type === null) {
             return null;
         }
 
         // null out the future_union_type before
         // we compute it to avoid unbounded
         // recursion
-        $future_union_type = $this->future_union_type;
         $this->future_union_type = null;
 
-        $union_type = $future_union_type->get();
+        try {
+            $union_type = $future_union_type->get();
+        } catch (IssueException $_) {
+            $union_type = UnionType::empty();
+        }
 
         // Don't set 'null' as the type if that's the default
         // given that its the default.

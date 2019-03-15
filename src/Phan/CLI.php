@@ -1,18 +1,46 @@
 <?php declare(strict_types=1);
+
 namespace Phan;
 
+use AssertionError;
+use InvalidArgumentException;
 use Phan\Config\Initializer;
+use Phan\Daemon\ExitException;
+use Phan\Exception\UsageException;
+use Phan\Language\Element\Comment\Builder;
+use Phan\Library\StringUtil;
 use Phan\Output\Collector\BufferingCollector;
 use Phan\Output\Filter\CategoryIssueFilter;
 use Phan\Output\Filter\ChainedIssueFilter;
 use Phan\Output\Filter\FileIssueFilter;
 use Phan\Output\Filter\MinimumSeverityFilter;
 use Phan\Output\PrinterFactory;
-
-use InvalidArgumentException;
+use Phan\Plugin\ConfigPluginSet;
+use Phan\Plugin\Internal\MethodSearcherPlugin;
+use ReflectionExtension;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
+use Symfony\Component\Console\Terminal;
+
+use function array_slice;
+use function count;
+use function in_array;
+use function is_array;
+use function is_resource;
+use function is_string;
+use function strlen;
+
+use const DIRECTORY_SEPARATOR;
+use const EXIT_FAILURE;
+use const EXIT_SUCCESS;
+use const FILE_IGNORE_NEW_LINES;
+use const FILE_SKIP_EMPTY_LINES;
+use const FILTER_VALIDATE_INT;
+use const FILTER_VALIDATE_IP;
+use const PHP_OS;
+use const STDERR;
+use const STR_PAD_LEFT;
 
 /**
  * Contains methods for parsing CLI arguments to Phan,
@@ -20,21 +48,21 @@ use Symfony\Component\Console\Output\StreamOutput;
  * for the analyzed project.
  *
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
- * @phan-file-suppress PhanPluginNoAssert TODO: Fix
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class CLI
 {
     /**
      * This should be updated to x.y.z-dev after every release, and x.y.z before a release.
      */
-    const PHAN_VERSION = '1.0.2-dev';
+    const PHAN_VERSION = '1.2.6';
 
     /**
      * List of short flags passed to getopt
      * still available: g,n,t,u,w
      * @internal
      */
-    const GETOPT_SHORT_OPTIONS = 'f:m:o:c:k:aeqbr:pid:3:y:l:xj:zhvs:';
+    const GETOPT_SHORT_OPTIONS = 'f:m:o:c:k:aeqbr:pid:3:y:l:xj:zhvs:SCP:I:';
 
     /**
      * List of long flags passed to getopt
@@ -42,6 +70,7 @@ class CLI
      */
     const GETOPT_LONG_OPTIONS = [
         'allow-polyfill-parser',
+        'automatic-fix',
         'backward-compatibility-checks',
         'color',
         'config-file:',
@@ -50,10 +79,12 @@ class CLI
         'daemonize-tcp-port:',
         'dead-code-detection',
         'directory:',
+        'disable-cache',
         'disable-plugins',
         'dump-ast',
         'dump-parsed-file-list',
         'dump-signatures-file:',
+        'find-signature:',
         'exclude-directory-list:',
         'exclude-file:',
         'extended-help',
@@ -61,6 +92,7 @@ class CLI
         'file-list-only:',
         'force-polyfill-parser',
         'help',
+        'help-annotations',
         'ignore-undeclared',
         'include-analysis-file-list:',
         'init',
@@ -74,6 +106,7 @@ class CLI
         'language-server-tcp-connect:',
         'language-server-tcp-server:',
         'language-server-verbose',
+        'language-server-disable-output-filter',
         'language-server-hide-category',
         'language-server-allow-missing-pcntl',
         'language-server-force-missing-pcntl',
@@ -81,6 +114,8 @@ class CLI
         'language-server-enable',
         'language-server-enable-go-to-definition',
         'language-server-enable-hover',
+        'language-server-enable-completion',
+        'language-server-completion-vscode',
         'markdown-issue-messages',
         'memory-limit:',
         'minimum-severity:',
@@ -96,11 +131,12 @@ class CLI
         'quick',
         'require-config-exists',
         'signature-compatibility',
+        'strict-method-checking',
         'strict-param-checking',
         'strict-property-checking',
         'strict-return-checking',
         'strict-type-checking',
-        'target-php-version',
+        'target-php-version:',
         'unused-variable-detection',
         'use-fallback-parser',
         'use-project-composer-autoloader',
@@ -108,7 +144,7 @@ class CLI
     ];
 
     /**
-     * @var OutputInterface
+     * @var OutputInterface used for outputting the formatted issue messages.
      */
     private $output;
 
@@ -147,26 +183,129 @@ class CLI
     private $config_file = null;
 
     /**
-     * Create and read command line arguments, configuring
-     * \Phan\Config as a side effect.
+     * @param string|string[] $value
+     * @return array<int,string>
      */
-    public function __construct()
+    public static function readCommaSeparatedListOrLists($value) : array
+    {
+        if (is_array($value)) {
+            $value = \implode(',', $value);
+        }
+        $value_set = [];
+        foreach (\explode(',', (string)$value) as $file) {
+            if ($file === '') {
+                continue;
+            }
+            $value_set[$file] = true;
+        }
+        return \array_map('strval', \array_keys($value_set));
+    }
+
+    /**
+     * @param array<string,mixed> $opts
+     * @param array<int,string> $argv
+     * @throws UsageException
+     */
+    private function checkAllArgsUsed(array $opts, array &$argv)
+    {
+        $pruneargv = [];
+        foreach ($opts as $opt => $value) {
+            foreach ($argv as $key => $chunk) {
+                $regex = '/^' . (isset($opt[1]) ? '--' : '-') . \preg_quote((string) $opt, '/') . '/';
+
+                if (in_array($chunk, is_array($value) ? $value : [$value])
+                    && $argv[$key - 1][0] == '-'
+                    || \preg_match($regex, $chunk)
+                ) {
+                    $pruneargv[] = $key;
+                }
+            }
+        }
+
+        while (count($pruneargv) > 0) {
+            $key = \array_pop($pruneargv);
+            unset($argv[$key]);
+        }
+
+        foreach ($argv as $arg) {
+            if ($arg[0] == '-') {
+                throw new UsageException("Unknown option '{$arg}'", EXIT_FAILURE);
+            }
+        }
+    }
+
+    /**
+     * Creates a CLI object from argv
+     */
+    public static function fromArgv() : CLI
     {
         global $argv;
 
         // Parse command line args
-        $opts = getopt(self::GETOPT_SHORT_OPTIONS, self::GETOPT_LONG_OPTIONS);
+        $opts = \getopt(self::GETOPT_SHORT_OPTIONS, self::GETOPT_LONG_OPTIONS);
         $opts = $opts ?? [];
 
+        try {
+            return new self($opts, $argv);
+        } catch (UsageException $e) {
+            self::usage($e->getMessage(), (int)$e->getCode(), $e->print_extended_help);
+            exit((int)$e->getCode());  // unreachable
+        } catch (ExitException $e) {
+            $message = $e->getMessage();
+            if ($message) {
+                \fwrite(STDERR, $message);
+            }
+            exit($e->getCode());
+        }
+    }
+
+    /**
+     * Create and read command line arguments, configuring
+     * \Phan\Config as a side effect.
+     *
+     * @param array<string,string|array<int,mixed>|false> $opts
+     * @param array<int,string> $argv
+     * @return CLI
+     * @throws ExitException
+     * @throws UsageException
+     * @internal - used for unit tests only
+     */
+    public static function fromRawValues(array $opts, array $argv)
+    {
+        return new self($opts, $argv);
+    }
+
+    /**
+     * Create and read command line arguments, configuring
+     * \Phan\Config as a side effect.
+     *
+     * @param array<string,string|array<int,mixed>|false> $opts
+     * @param array<int,string> $argv
+     * @return void
+     * @throws ExitException
+     * @throws UsageException
+     */
+    private function __construct(array $opts, array $argv)
+    {
         if (\array_key_exists('extended-help', $opts)) {
-            $this->usage('', EXIT_SUCCESS, true);  // --help prints help and calls exit(0)
+            throw new UsageException('', EXIT_SUCCESS, true);  // --help prints help and calls exit(0)
         }
         if (\array_key_exists('h', $opts) || \array_key_exists('help', $opts)) {
-            $this->usage();  // --help prints help and calls exit(0)
+            throw new UsageException();  // --help prints help and calls exit(0)
+        }
+        if (\array_key_exists('help-annotations', $opts)) {
+            $result = "See https://github.com/phan/phan/wiki/Annotating-Your-Source-Code for more details." . \PHP_EOL . \PHP_EOL;
+
+            $result .= "Annotations specific to Phan:" . \PHP_EOL;
+            // @phan-suppress-next-line PhanAccessClassConstantInternal
+            foreach (Builder::SUPPORTED_ANNOTATIONS as $key => $_) {
+                $result .= "- " . $key . \PHP_EOL;
+            }
+            throw new ExitException($result, EXIT_SUCCESS);
         }
         if (\array_key_exists('v', $opts ?? []) || \array_key_exists('version', $opts ?? [])) {
-            printf("Phan %s\n", self::PHAN_VERSION);
-            exit(EXIT_SUCCESS);
+            \printf("Phan %s\n", self::PHAN_VERSION);
+            throw new ExitException('', EXIT_SUCCESS);
         }
 
         // Determine the root directory of the project from which
@@ -174,7 +313,7 @@ class CLI
         $overridden_project_root_directory = $opts['d'] ?? $opts['project-root-directory'] ?? null;
         if (\is_string($overridden_project_root_directory)) {
             if (!\is_dir($overridden_project_root_directory)) {
-                $this->usage(\json_encode($overridden_project_root_directory) . ' is not a directory', EXIT_FAILURE);
+                throw new UsageException(StringUtil::jsonEncode($overridden_project_root_directory) . ' is not a directory', EXIT_FAILURE);
             }
             // Set the current working directory so that relative paths within the project will work.
             // TODO: Add an option to allow searching ancestor directories?
@@ -182,7 +321,7 @@ class CLI
         }
         $cwd = \getcwd();
         if (!is_string($cwd)) {
-            echo "Failed to find current working directory\n";
+            \fwrite(STDERR, "Failed to find current working directory\n");
             exit(1);
         }
         Config::setProjectRootDirectory($cwd);
@@ -192,15 +331,20 @@ class CLI
             if ($exit_code === 0) {
                 exit($exit_code);
             }
-            echo "\n";
-            // --init is currently in --extended-help
-            $this->usage('', $exit_code, true);
+            throw new UsageException('', $exit_code);
         }
 
         // Before reading the config, check for an override on
         // the location of the config file path.
         $config_file_override = $opts['k'] ?? $opts['config-file'] ?? null;
-        if (is_string($config_file_override)) {
+        if ($config_file_override !== null) {
+            if (!is_string($config_file_override)) {
+                // Doesn't work for a mix of -k and --config-file, but low priority
+                throw new ExitException("Expected exactly one file for --config-file, but saw " . StringUtil::jsonEncode($config_file_override) . "\n", 1);
+            }
+            if (!\is_file($config_file_override)) {
+                throw new ExitException("Could not find the config file override " . StringUtil::jsonEncode($config_file_override) . "\n", 1);
+            }
             $this->config_file = $config_file_override;
         }
 
@@ -208,7 +352,7 @@ class CLI
             Config::setValue('language_server_use_pcntl_fallback', true);
         } elseif (!isset($opts['language-server-require-pcntl'])) {
             // --language-server-allow-missing-pcntl is now the default
-            if (!extension_loaded('pcntl')) {
+            if (!\extension_loaded('pcntl')) {
                 Config::setValue('language_server_use_pcntl_fallback', true);
             }
         }
@@ -224,6 +368,7 @@ class CLI
         $mask = -1;
 
         foreach ($opts as $key => $value) {
+            $key = (string)$key;
             switch ($key) {
                 case 'r':
                 case 'file-list-only':
@@ -241,19 +386,21 @@ class CLI
                     $file_list = \is_array($value) ? $value : [$value];
                     foreach ($file_list as $file_name) {
                         if (!is_string($file_name)) {
-                            error_log("invalid argument for --file-list");
+                            \error_log("invalid argument for --file-list");
                             continue;
                         }
                         $file_path = Config::projectPath($file_name);
-                        if (is_file($file_path) && is_readable($file_path)) {
-                            /** @var array<int,string> */
-                            $this->file_list_in_config = array_merge(
-                                $this->file_list_in_config,
-                                file(Config::projectPath($file_name), FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES)
-                            );
-                        } else {
-                            error_log("Unable to read file $file_path");
+                        if (\is_file($file_path) && \is_readable($file_path)) {
+                            $lines = \file(Config::projectPath($file_name), FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+                            if (is_array($lines)) {
+                                $this->file_list_in_config = \array_merge(
+                                    $this->file_list_in_config,
+                                    $lines
+                                );
+                                continue;
+                            }
                         }
+                        \error_log("Unable to read file $file_path");
                     }
                     break;
                 case 'l':
@@ -262,12 +409,12 @@ class CLI
                         $directory_list = \is_array($value) ? $value : [$value];
                         foreach ($directory_list as $directory_name) {
                             if (!is_string($directory_name)) {
-                                error_log("Invalid --directory setting");
+                                \error_log("Invalid --directory setting");
                                 return;
                             }
-                            $this->file_list_in_config = array_merge(
+                            $this->file_list_in_config = \array_merge(
                                 $this->file_list,
-                                array_values($this->directoryNameToFileList(
+                                \array_values($this->directoryNameToFileList(
                                     $directory_name
                                 ))
                             );
@@ -279,22 +426,21 @@ class CLI
                     break;
                 case 'm':
                 case 'output-mode':
-                    if (!in_array($value, $factory->getTypes(), true)) {
-                        $this->usage(
-                            sprintf(
+                    if (!is_string($value) || !in_array($value, $factory->getTypes(), true)) {
+                        throw new UsageException(
+                            \sprintf(
                                 'Unknown output mode %s. Known values are [%s]',
-                                json_encode($value),
-                                implode(',', $factory->getTypes())
+                                StringUtil::jsonEncode($value),
+                                \implode(',', $factory->getTypes())
                             ),
                             EXIT_FAILURE
                         );
                     }
-
                     $printer_type = $value;
                     break;
                 case 'c':
                 case 'parent-constructor-required':
-                    Config::setValue('parent_constructor_required', explode(',', $value));
+                    Config::setValue('parent_constructor_required', \explode(',', $value));
                     break;
                 case 'q':
                 case 'quick':
@@ -318,26 +464,58 @@ class CLI
                 case 'dump-signatures-file':
                     Config::setValue('dump_signatures_file', $value);
                     break;
+                case 'find-signature':
+                    try {
+                        if (!is_string($value)) {
+                            throw new InvalidArgumentException("Expected a string, got " . \json_encode($value));
+                        }
+                        // @phan-suppress-next-line PhanAccessMethodInternal
+                        MethodSearcherPlugin::setSearchString($value);
+                    } catch (InvalidArgumentException $e) {
+                        throw new UsageException("Invalid argument '$value' to --find-signature. Error: " . $e->getMessage() . "\n", EXIT_FAILURE);
+                    }
+
+                    Config::setValue('plugins', \array_merge(
+                        Config::getValue('plugins'),
+                        [__DIR__ . '/Plugin/Internal/MethodSearcherPluginLoader.php']
+                    ));
+                    break;
+                case 'automatic-fix':
+                    Config::setValue('plugins', \array_merge(
+                        Config::getValue('plugins'),
+                        [__DIR__ . '/Plugin/Internal/IssueFixingPlugin.php']
+                    ));
+                    break;
                 case 'o':
                 case 'output':
-                    $this->output = new StreamOutput(fopen($value, 'w'));
+                    if (!is_string($value)) {
+                        throw new UsageException(\sprintf("Invalid arguments to --output: args=%s\n", StringUtil::jsonEncode($value)), EXIT_FAILURE);
+                    }
+                    $output_file = \fopen($value, 'w');
+                    if (!is_resource($output_file)) {
+                        throw new UsageException("Failed to open output file '$value'\n", EXIT_FAILURE);
+                    }
+                    $this->output = new StreamOutput($output_file);
                     break;
                 case 'i':
                 case 'ignore-undeclared':
-                    $mask ^= Issue::CATEGORY_UNDEFINED;
+                    $mask &= ~Issue::CATEGORY_UNDEFINED;
                     break;
                 case '3':
                 case 'exclude-directory-list':
-                    Config::setValue('exclude_analysis_directory_list', explode(',', $value));
+                    // @phan-suppress-next-line PhanPossiblyFalseTypeArgument
+                    Config::setValue('exclude_analysis_directory_list', self::readCommaSeparatedListOrLists($value));
                     break;
                 case 'exclude-file':
-                    Config::setValue('exclude_file_list', array_merge(
+                    Config::setValue('exclude_file_list', \array_merge(
                         Config::getValue('exclude_file_list'),
                         \is_array($value) ? $value : [$value]
                     ));
                     break;
+                case 'I':
                 case 'include-analysis-file-list':
-                    Config::setValue('include_analysis_file_list', explode(',', $value));
+                    // @phan-suppress-next-line PhanPossiblyFalseTypeArgument
+                    Config::setValue('include_analysis_file_list', self::readCommaSeparatedListOrLists($value));
                     break;
                 case 'j':
                 case 'processes':
@@ -372,21 +550,28 @@ class CLI
                 case 'language-server-hide-category':
                     Config::setValue('language_server_hide_category_of_issues', true);
                     break;
+                case 'disable-cache':
+                    Config::setValue('cache_polyfill_asts', false);
+                    break;
                 case 'disable-plugins':
                     // Slightly faster, e.g. for daemon mode with lowest latency (along with --quick).
                     Config::setValue('plugins', []);
                     break;
+                case 'P':
                 case 'plugin':
                     if (!is_array($value)) {
                         $value = [$value];
                     }
                     Config::setValue(
                         'plugins',
-                        array_unique(array_merge(Config::getValue('plugins'), $value))
+                        \array_unique(\array_merge(Config::getValue('plugins'), $value))
                     );
                     break;
                 case 'use-fallback-parser':
                     Config::setValue('use_fallback_parser', true);
+                    break;
+                case 'strict-method-checking':
+                    Config::setValue('strict_method_checking', true);
                     break;
                 case 'use-project-composer-autoloader':
                     Config::setValue('use_project_composer_autoloader', true);
@@ -400,7 +585,9 @@ class CLI
                 case 'strict-return-checking':
                     Config::setValue('strict_return_checking', true);
                     break;
+                case 'S':
                 case 'strict-type-checking':
+                    Config::setValue('strict_method_checking', true);
                     Config::setValue('strict_param_checking', true);
                     Config::setValue('strict_property_checking', true);
                     Config::setValue('strict_return_checking', true);
@@ -408,10 +595,17 @@ class CLI
                 case 's':
                 case 'daemonize-socket':
                     $this->checkCanDaemonize('unix', $key);
-                    $socket_dirname = realpath(dirname($value));
-                    if (!file_exists($socket_dirname) || !is_dir($socket_dirname)) {
-                        $msg = sprintf('Requested to create unix socket server in %s, but folder %s does not exist', json_encode($value), json_encode($socket_dirname));
-                        $this->usage($msg, 1);
+                    if (!is_string($value)) {
+                        throw new UsageException(\sprintf("Invalid arguments to --daemonize-socket: args=%s", StringUtil::jsonEncode($value)), EXIT_FAILURE);
+                    }
+                    $socket_dirname = \realpath(\dirname($value));
+                    if (!is_string($socket_dirname) || !\file_exists($socket_dirname) || !\is_dir($socket_dirname)) {
+                        $msg = \sprintf(
+                            'Requested to create Unix socket server in %s, but folder %s does not exist',
+                            StringUtil::jsonEncode($value),
+                            StringUtil::jsonEncode($socket_dirname)
+                        );
+                        throw new UsageException($msg, 1);
                     } else {
                         Config::setValue('daemonize_socket', $value);  // Daemonize. Assumes the file list won't change. Accepts requests over a Unix socket, or some other IPC mechanism.
                     }
@@ -420,9 +614,9 @@ class CLI
                 case 'daemonize-tcp-host':
                     $this->checkCanDaemonize('tcp', $key);
                     Config::setValue('daemonize_tcp', true);
-                    $host = filter_var($value, FILTER_VALIDATE_IP);
-                    if (strcasecmp($value, 'default') !== 0 && !$host) {
-                        $this->usage("daemonize-tcp-host must be the string 'default' or a valid hostname, got '$value'", 1);
+                    $host = \filter_var($value, FILTER_VALIDATE_IP);
+                    if (\strcasecmp($value, 'default') !== 0 && !$host) {
+                        throw new UsageException("daemonize-tcp-host must be the string 'default' or a valid hostname, got '$value'", 1);
                     }
                     if ($host) {
                         Config::setValue('daemonize_tcp_host', $host);
@@ -431,9 +625,9 @@ class CLI
                 case 'daemonize-tcp-port':
                     $this->checkCanDaemonize('tcp', $key);
                     Config::setValue('daemonize_tcp', true);
-                    $port = filter_var($value, FILTER_VALIDATE_INT);
-                    if (strcasecmp($value, 'default') !== 0 && !($port >= 1024 && $port <= 65535)) {
-                        $this->usage("daemonize-tcp-port must be the string 'default' or a value between 1024 and 65535, got '$value'", 1);
+                    $port = \filter_var($value, FILTER_VALIDATE_INT);
+                    if (\strcasecmp($value, 'default') !== 0 && !($port >= 1024 && $port <= 65535)) {
+                        throw new UsageException("daemonize-tcp-port must be the string 'default' or a value between 1024 and 65535, got '$value'", 1);
                     }
                     if ($port) {
                         Config::setValue('daemonize_tcp_port', $port);
@@ -458,8 +652,19 @@ class CLI
                 case 'language-server-enable-hover':
                     Config::setValue('language_server_enable_hover', true);
                     break;
+                case 'language-server-completion-vscode':
+                    break;
+                case 'language-server-enable-completion':
+                    Config::setValue(
+                        'language_server_enable_completion',
+                        isset($opts['language-server-completion-vscode']) ? Config::COMPLETION_VSCODE : true
+                    );
+                    break;
                 case 'language-server-verbose':
                     Config::setValue('language_server_debug_level', 'info');
+                    break;
+                case 'language-server-disable-output-filter':
+                    Config::setValue('language_server_disable_output_filter', true);
                     break;
                 case 'x':
                 case 'dead-code-detection':
@@ -471,11 +676,12 @@ class CLI
                 case 'allow-polyfill-parser':
                     // Just check if it's installed and of a new enough version.
                     // Assume that if there is an installation, it works, and warn later in ensureASTParserExists()
-                    if (!extension_loaded('ast')) {
+                    if (!\extension_loaded('ast')) {
                         Config::setValue('use_polyfill_parser', true);
                         break;
                     }
-                    if (version_compare((new \ReflectionExtension('ast'))->getVersion(), '0.1.5') < 0) {
+                    $ast_version = (new ReflectionExtension('ast'))->getVersion();
+                    if (\version_compare($ast_version, '0.1.5') < 0) {
                         Config::setValue('use_polyfill_parser', true);
                         break;
                     }
@@ -484,10 +690,10 @@ class CLI
                     Config::setValue('use_polyfill_parser', true);
                     break;
                 case 'memory-limit':
-                    if (preg_match('@^([1-9][0-9]*)([KMG])?$@', $value, $match)) {
-                        ini_set('memory_limit', $value);
+                    if (\preg_match('@^([1-9][0-9]*)([KMG])?$@', $value, $match)) {
+                        \ini_set('memory_limit', $value);
                     } else {
-                        fwrite(STDERR, "Invalid --memory-limit '$value', ignoring\n");
+                        \fwrite(STDERR, "Invalid --memory-limit '$value', ignoring\n");
                     }
                     break;
                 case 'print-memory-usage-summary':
@@ -496,18 +702,20 @@ class CLI
                 case 'markdown-issue-messages':
                     Config::setValue('markdown_issue_messages', true);
                     break;
+                case 'C':
                 case 'color':
                     Config::setValue('color_issue_messages', true);
                     break;
                 default:
-                    $this->usage("Unknown option '-$key'" . self::getFlagSuggestionString($key), EXIT_FAILURE);
-                    break;
+                    throw new UsageException("Unknown option '-$key'" . self::getFlagSuggestionString($key), EXIT_FAILURE);
             }
         }
 
+        self::checkPluginsExist();
         $this->ensureASTParserExists();
 
-        $printer = $factory->getPrinter($printer_type, $this->output);
+        $output = $this->output;
+        $printer = $factory->getPrinter($printer_type, $output);
         $filter  = new ChainedIssueFilter([
             new FileIssueFilter(new Phan()),
             new MinimumSeverityFilter($minimum_severity),
@@ -515,37 +723,13 @@ class CLI
         ]);
         $collector = new BufferingCollector($filter);
 
+        $this->checkAllArgsUsed($opts, $argv);
+
         Phan::setPrinter($printer);
         Phan::setIssueCollector($collector);
-
-        $pruneargv = [];
-        foreach ($opts as $opt => $value) {
-            foreach ($argv as $key => $chunk) {
-                $regex = '/^' . (isset($opt[1]) ? '--' : '-') . $opt . '/';
-
-                if (in_array($chunk, is_array($value) ? $value : [$value])
-                    && $argv[$key - 1][0] == '-'
-                    || preg_match($regex, $chunk)
-                ) {
-                    $pruneargv[] = $key;
-                }
-            }
-        }
-
-        while (count($pruneargv) > 0) {
-            $key = array_pop($pruneargv);
-            unset($argv[$key]);
-        }
-
-        foreach ($argv as $arg) {
-            if ($arg[0] == '-') {
-                $this->usage("Unknown option '{$arg}'", EXIT_FAILURE);
-            }
-        }
-
         if (!$this->file_list_only) {
             // Merge in any remaining args on the CLI
-            $this->file_list_in_config = array_merge(
+            $this->file_list_in_config = \array_merge(
                 $this->file_list_in_config,
                 array_slice($argv, 1)
             );
@@ -558,11 +742,33 @@ class CLI
         // way during analysis. With our parallelization mechanism, there
         // is no shared state between processes, making it impossible to
         // have a complete set of reference lists.
-        \assert(
-            Config::getValue('processes') === 1
-            || !Config::getValue('dead_code_detection'),
-            "We cannot run dead code detection on more than one core."
-        );
+        if (Config::getValue('processes') !== 1
+            && Config::getValue('dead_code_detection')) {
+            throw new AssertionError("We cannot run dead code detection on more than one core.");
+        }
+    }
+
+    private static function checkPluginsExist()
+    {
+        $all_plugins_exist = true;
+        foreach (Config::getValue('plugins') as $plugin_path_or_name) {
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            $plugin_file_name = ConfigPluginSet::normalizePluginPath($plugin_path_or_name);
+            if (!\is_file($plugin_file_name)) {
+                $details = $plugin_file_name === $plugin_path_or_name ? '' : ' (Referenced as ' . StringUtil::jsonEncode($plugin_path_or_name) . ')';
+                \fprintf(
+                    STDERR,
+                    "Phan could not find plugin %s%s\n",
+                    StringUtil::jsonEncode($plugin_file_name),
+                    $details
+                );
+                $all_plugins_exist = false;
+            }
+        }
+        if (!$all_plugins_exist) {
+            \fwrite(STDERR, "Exiting due to invalid plugin config.\n");
+            exit(1);
+        }
     }
 
     /**
@@ -575,21 +781,21 @@ class CLI
         if (!$this->file_list_only) {
             // Merge in any files given in the config
             /** @var array<int,string> */
-            $this->file_list = array_merge(
+            $this->file_list = \array_merge(
                 $this->file_list,
                 Config::getValue('file_list')
             );
 
             // Merge in any directories given in the config
             foreach (Config::getValue('directory_list') as $directory_name) {
-                $this->file_list = array_merge(
+                $this->file_list = \array_merge(
                     $this->file_list,
-                    array_values($this->directoryNameToFileList($directory_name))
+                    \array_values($this->directoryNameToFileList($directory_name))
                 );
             }
 
             // Don't scan anything twice
-            $this->file_list = array_unique($this->file_list);
+            $this->file_list = \array_unique($this->file_list);
         }
 
         // Exclude any files that should be excluded from
@@ -597,14 +803,14 @@ class CLI
         if (count(Config::getValue('exclude_file_list')) > 0) {
             $exclude_file_set = [];
             foreach (Config::getValue('exclude_file_list') as $file) {
-                $normalized_file = str_replace('\\', '/', $file);
+                $normalized_file = \str_replace('\\', '/', $file);
                 $exclude_file_set[$normalized_file] = true;
                 $exclude_file_set["./$normalized_file"] = true;
             }
 
-            $this->file_list = array_filter(
+            $this->file_list = \array_filter(
                 $this->file_list,
-                function (string $file) use ($exclude_file_set) : bool {
+                static function (string $file) use ($exclude_file_set) : bool {
                     // Handle edge cases such as 'mydir/subdir\subsubdir' on Windows, if mydir/subdir was in the Phan config.
                     return !isset($exclude_file_set[\str_replace('\\', '/', $file)]);
                 }
@@ -612,99 +818,36 @@ class CLI
         }
     }
 
-    /** @return void - exits on usage error */
+    /**
+     * @return void - exits on usage error
+     * @throws UsageException
+     */
     private function checkCanDaemonize(string $protocol, string $opt)
     {
         $opt = strlen($opt) >= 2 ? "--$opt" : "-$opt";
-        if (!in_array($protocol, stream_get_transports())) {
-            $this->usage("The $protocol:///path/to/file schema is not supported on this system, cannot create a daemon with $opt", 1);
+        if (!in_array($protocol, \stream_get_transports())) {
+            throw new UsageException("The $protocol:///path/to/file schema is not supported on this system, cannot create a daemon with $opt", 1);
         }
-        if (!Config::getValue('language_server_use_pcntl_fallback') && !function_exists('pcntl_fork')) {
-            $this->usage("The pcntl extension is not available to fork a new process, so $opt will not be able to create workers to respond to requests.", 1);
+        if (!Config::getValue('language_server_use_pcntl_fallback') && !\function_exists('pcntl_fork')) {
+            throw new UsageException("The pcntl extension is not available to fork a new process, so $opt will not be able to create workers to respond to requests.", 1);
         }
         if ($opt === '--daemonize-socket' && Config::getValue('daemonize_tcp')) {
-            $this->usage('Can specify --daemonize-socket or --daemonize-tcp-port only once', 1);
+            throw new UsageException('Can specify --daemonize-socket or --daemonize-tcp-port only once', 1);
         } elseif (($opt === '--daemonize-tcp-host' || $opt === '--daemonize-tcp-port') && Config::getValue('daemonize_socket')) {
-            $this->usage("Can specify --daemonize-socket or $opt only once", 1);
+            throw new UsageException("Can specify --daemonize-socket or $opt only once", 1);
         }
     }
 
     /**
      * @return array<int,string>
      * Get the set of files to analyze
-     * @suppress PhanPartialTypeMismatchReturn other types get inferred from assignments
      */
     public function getFileList() : array
     {
         return $this->file_list;
     }
 
-    // FIXME: If I stop using defined() in UnionTypeVisitor,
-    // this will warn about the undefined constant EXIT_SUCCESS when a
-    // user-defined constant is used in parse phase in a function declaration
-    private function usage(string $msg = '', int $exit_code = EXIT_SUCCESS, bool $print_extended_help = false)
-    {
-        global $argv;
-
-        if (!empty($msg)) {
-            echo "$msg\n";
-        }
-
-        echo <<<EOB
-Usage: {$argv[0]} [options] [files...]
- -f, --file-list <filename>
-  A file containing a list of PHP files to be analyzed
-
- -l, --directory <directory>
-  A directory that should be parsed for class and
-  method information. After excluding the directories
-  defined in --exclude-directory-list, the remaining
-  files will be statically analyzed for errors.
-
-  Thus, both first-party and third-party code being used by
-  your application should be included in this list.
-
-  You may include multiple `--directory DIR` options.
-
- --exclude-file <file>
-  A file that should not be parsed or analyzed (or read
-  at all). This is useful for excluding hopelessly
-  unanalyzable files.
-
- -3, --exclude-directory-list <dir_list>
-  A comma-separated list of directories that defines files
-  that will be excluded from static analysis, but whose
-  class and method information should be included.
-
-  Generally, you'll want to include the directories for
-  third-party code (such as "vendor/") in this list.
-
- --include-analysis-file-list <file_list>
-  A comma-separated list of files that will be included in
-  static analysis. All others won't be analyzed.
-
-  This is primarily intended for performing standalone
-  incremental analysis.
-
- -d, --project-root-directory </path/to/project>
-  Hunt for a directory named .phan in the provided directory
-  and read configuration file .phan/config.php from that path.
-
- -r, --file-list-only
-  A file containing a list of PHP files to be analyzed to the
-  exclusion of any other directories or files passed in. This
-  is unlikely to be useful.
-
- -k, --config-file
-  A path to a config file to load (instead of the default of
-  .phan/config.php).
-
- -m <mode>, --output-mode
-  Output mode from 'text', 'json', 'csv', 'codeclimate', 'checkstyle', or 'pylint'
-
- -o, --output <filename>
-  Output filename
-
+    const INIT_HELP = <<<'EOT'
  --init
    [--init-level=3]
    [--init-analyze-dir=path/to/src]
@@ -732,7 +875,79 @@ Usage: {$argv[0]} [options] [files...]
     and will not include those paths in the generated config.
   [--init-overwrite] will allow 'phan --init' to overwrite .phan/config.php.
 
- --color
+EOT;
+
+    // FIXME: If I stop using defined() in UnionTypeVisitor,
+    // this will warn about the undefined constant EXIT_SUCCESS when a
+    // user-defined constant is used in parse phase in a function declaration
+    private static function usage(string $msg = '', int $exit_code = EXIT_SUCCESS, bool $print_extended_help = false)
+    {
+        global $argv;
+
+        if ($msg !== '') {
+            echo "$msg\n";
+        }
+
+        $init_help = self::INIT_HELP;
+        echo <<<EOB
+Usage: {$argv[0]} [options] [files...]
+ -f, --file-list <filename>
+  A file containing a list of PHP files to be analyzed
+
+ -l, --directory <directory>
+  A directory that should be parsed for class and
+  method information. After excluding the directories
+  defined in --exclude-directory-list, the remaining
+  files will be statically analyzed for errors.
+
+  Thus, both first-party and third-party code being used by
+  your application should be included in this list.
+
+  You may include multiple `--directory DIR` options.
+
+ --exclude-file <file>
+  A file that should not be parsed or analyzed (or read
+  at all). This is useful for excluding hopelessly
+  unanalyzable files.
+
+ -3, --exclude-directory-list <dir_list>
+  A comma-separated list of directories that defines files
+  that will be excluded from static analysis, but whose
+  class and method information should be included.
+  (can be repeated, ignored if --include-analysis-directory-list is used)
+
+  Generally, you'll want to include the directories for
+  third-party code (such as "vendor/") in this list.
+
+ -I, --include-analysis-file-list <file_list>
+  A comma-separated list of files that will be included in
+  static analysis. All others won't be analyzed.
+  (can be repeated)
+
+  This is primarily intended for performing standalone
+  incremental analysis.
+
+ -d, --project-root-directory </path/to/project>
+  Hunt for a directory named `.phan` in the provided directory
+  and read configuration file `.phan/config.php` from that path.
+
+ -r, --file-list-only
+  A file containing a list of PHP files to be analyzed to the
+  exclusion of any other directories or files passed in. This
+  is unlikely to be useful.
+
+ -k, --config-file
+  A path to a config file to load (instead of the default of
+  `.phan/config.php`).
+
+ -m <mode>, --output-mode
+  Output mode from 'text', 'json', 'csv', 'codeclimate', 'checkstyle', or 'pylint'
+
+ -o, --output <filename>
+  Output filename
+
+$init_help
+ -C, --color
   Add colors to the outputted issues. Tested in Unix.
   This is recommended for only the default --output-mode ('text')
 
@@ -745,7 +960,7 @@ Usage: {$argv[0]} [options] [files...]
  -b, --backward-compatibility-checks
   Check for potential PHP 5 -> PHP 7 BC issues
 
- --target-php-version {7.0,7.1,7.2,7.3,native}
+ --target-php-version {7.0,7.1,7.2,7.3,7.4,native}
   The PHP version that the codebase will be checked for compatibility against.
   For best results, the PHP binary used to run Phan should have the same PHP version.
   (Phan relies on Reflection for some param counts
@@ -765,7 +980,7 @@ Usage: {$argv[0]} [options] [files...]
  -x, --dead-code-detection
   Emit issues for classes, methods, functions, constants and
   properties that are probably never referenced and can
-  possibly be removed. This implies `--unused-variable-detection`.
+  be removed. This implies `--unused-variable-detection`.
 
  --unused-variable-detection
   Emit issues for variables, parameters and closure use variables
@@ -780,25 +995,43 @@ Usage: {$argv[0]} [options] [files...]
   Analyze signatures for methods that are overrides to ensure
   compatibility with what they're overriding.
 
+ --disable-cache
+  Don't cache any ASTs from the polyfill/fallback.
+
+  ASTs from the native parser (php-ast) don't need to be cached.
+
+  This is useful if Phan will be run only once and php-ast is unavailable (e.g. in Travis)
+
  --disable-plugins
   Don't run any plugins. Slightly faster.
 
- --plugin <pluginName|path/to/Plugin.php>
-  Add an additional plugin to run. This flag can be repeated.
+ -P, --plugin <pluginName|path/to/Plugin.php>
+  Add a plugin to run. This flag can be repeated.
   (Either pass the name of the plugin or a relative/absolute path to the plugin)
 
+ --strict-method-checking
+  Warn if any type in a method invocation's object is definitely not an object,
+  or any type in an invoked expression is not a callable.
+  (Enables the config option `strict_method_checking`)
+
  --strict-param-checking
-  Enables the config option `strict_param_checking`.
+  Warn if any type in an argument's union type cannot be cast to
+  the parameter's expected union type.
+  (Enables the config option `strict_param_checking`)
 
  --strict-property-checking
-  Enables the config option `strict_property_checking`.
+  Warn if any type in a property assignment's union type
+  cannot be cast to a type in the property's declared union type.
+  (Enables the config option `strict_property_checking`)
 
  --strict-return-checking
-  Enables the config option `strict_return_checking`.
+  Warn if any type in a returned value's union type
+  cannot be cast to the declared return type.
+  (Enables the config option `strict_return_checking`)
 
- --strict-type-checking
+ -S, --strict-type-checking
   Equivalent to
-  `--strict-param-checking --strict-property-checking --strict-return-checking`.
+  `--strict-method-checking --strict-param-checking --strict-property-checking --strict-return-checking`.
 
  --use-fallback-parser
   If a file to be analyzed is syntactically invalid
@@ -841,7 +1074,7 @@ Usage: {$argv[0]} [options] [files...]
   `phan_client` can be used to communicate with the Phan Daemon.
 
  -v, --version
-  Print phan's version number
+  Print Phan's version number
 
  -h, --help
   This help information
@@ -866,6 +1099,15 @@ Extended help:
  --dump-signatures-file <filename>
   Emit JSON serialized signatures to the given file.
   This uses a method signature format similar to FunctionSignatureMap.php.
+
+ --automatic-fix
+  Automatically fix any issues Phan is capable of fixing.
+  NOTE: This is a work in progress and limited to a small subset of issues
+  (e.g. unused imports on their own line)
+
+ --find-signature 'paramUnionType1->paramUnionType2->returnUnionType'
+  Find a signature in the analyzed codebase that is similar to the argument.
+  See tool/phoogle for examples.
 
  --memory-limit <memory_limit>
   Sets the memory limit for analysis (per process).
@@ -905,12 +1147,27 @@ Extended help:
   Enables support for "Hover" in the Phan Language Server.
   Disabled by default.
 
+ --language-server-enable-completion
+  Enables support for "Completion" in the Phan Language Server.
+  Disabled by default.
+
+ --language-server-completion-vscode
+  Adds a workaround to make completion of variables and static properties
+  that are compatible with language clients such as VS Code.
+
  --language-server-verbose
   Emit verbose logging messages related to the language server implementation to stderr.
   This is useful when developing or debugging language server clients.
 
+ --language-server-disable-output-filter
+  Emit all issues detected from the language server (e.g. invalid phpdoc in parsed files),
+  not just issues in files currently open in the editor/IDE.
+  This can be very verbose and has more false positives.
+
+  This is useful when developing or debugging language server clients.
+
  --language-server-allow-missing-pcntl
-  Noop (This is the default behavior).
+  No-op (This is the default behavior).
   Allow the fallback that doesn't use pcntl (New and experimental) to be used if the pcntl extension is not installed.
   This is useful for running the language server on Windows.
 
@@ -925,8 +1182,10 @@ Extended help:
   Don't start the language server if PCNTL isn't installed (don't use the fallback). Useful for debugging.
 
  --require-config-exists
-  Exit immediately with an error code if .phan/config.php does not exist.
+  Exit immediately with an error code if `.phan/config.php` does not exist.
 
+ --help-annotations
+  Print details on annotations supported by Phan
 EOB;
         }
         exit($exit_code);
@@ -945,19 +1204,19 @@ EOB;
     public static function getFlagSuggestionString(
         string $key
     ) : string {
-        $trim = function (string $s) : string {
-            return rtrim($s, ':');
+        $trim = static function (string $s) : string {
+            return \rtrim($s, ':');
         };
-        $generate_suggestion = function (string $suggestion) : string {
+        $generate_suggestion = static function (string $suggestion) : string {
             return (strlen($suggestion) === 1 ? '-' : '--') . $suggestion;
         };
-        $generate_suggestion_text = function (string $suggestion, string ...$other_suggestions) use ($generate_suggestion) : string {
-            $suggestions = array_merge([$suggestion], $other_suggestions);
-            return ' (did you mean ' . implode(' or ', array_map($generate_suggestion, $suggestions)) . '?)';
+        $generate_suggestion_text = static function (string $suggestion, string ...$other_suggestions) use ($generate_suggestion) : string {
+            $suggestions = \array_merge([$suggestion], $other_suggestions);
+            return ' (did you mean ' . \implode(' or ', \array_map($generate_suggestion, $suggestions)) . '?)';
         };
-        $short_options = array_filter(array_map($trim, str_split(self::GETOPT_SHORT_OPTIONS)));
+        $short_options = \array_filter(\array_map($trim, \str_split(self::GETOPT_SHORT_OPTIONS)));
         if (strlen($key) === 1) {
-            $alternate = ctype_lower($key) ? strtoupper($key) : strtolower($key);
+            $alternate = \ctype_lower($key) ? \strtoupper($key) : \strtolower($key);
             if (in_array($alternate, $short_options)) {
                 return $generate_suggestion_text($alternate);
             }
@@ -965,29 +1224,29 @@ EOB;
         } elseif ($key === '') {
             return '';
         }
-        // include short options incase a typo is made like -aa instead of -a
-        $known_flags = array_merge(self::GETOPT_LONG_OPTIONS, $short_options);
+        // include short options in case a typo is made like -aa instead of -a
+        $known_flags = \array_merge(self::GETOPT_LONG_OPTIONS, $short_options);
 
-        $known_flags = array_map($trim, $known_flags);
+        $known_flags = \array_map($trim, $known_flags);
 
         $similarities = [];
 
-        $key_lower = strtolower($key);
+        $key_lower = \strtolower($key);
         foreach ($known_flags as $flag) {
-            if (strlen($flag) === 1 && stripos($key, $flag) === false) {
+            if (strlen($flag) === 1 && \stripos($key, $flag) === false) {
                 // Skip over suggestions of flags that have no common characters
                 continue;
             }
-            $distance = levenshtein($key_lower, strtolower($flag));
+            $distance = \levenshtein($key_lower, \strtolower($flag));
             // distance > 5 is to far off to be a typo
             if ($distance <= 5) {
                 $similarities[$flag] = $distance;
             }
         }
 
-        asort($similarities); // retain keys and sort descending
-        $similar_flags = array_keys($similarities);
-        $similarity_values = array_values($similarities);
+        \asort($similarities); // retain keys and sort descending
+        $similar_flags = \array_keys($similarities);
+        $similarity_values = \array_values($similarities);
 
         if (count($similar_flags) >= 2 && ($similarity_values[1] <= $similarity_values[0] + 1)) {
             // If the next-closest suggestion isn't close to as similar as the closest suggestion, just return the closest suggestion
@@ -1030,14 +1289,14 @@ EOB;
                         \RecursiveDirectoryIterator::FOLLOW_SYMLINKS
                     )
                 ),
-                function (\SplFileInfo $file_info) use ($file_extensions, $exclude_file_regex) : bool {
+                static function (\SplFileInfo $file_info) use ($file_extensions, $exclude_file_regex) : bool {
                     if (!in_array($file_info->getExtension(), $file_extensions, true)) {
                         return false;
                     }
 
                     if (!$file_info->isFile() || !$file_info->isReadable()) {
                         $file_path = $file_info->getRealPath();
-                        error_log("Unable to read file {$file_path}");
+                        \error_log("Unable to read file {$file_path}");
                         return false;
                     }
 
@@ -1051,18 +1310,18 @@ EOB;
                 }
             );
 
-            $file_list = array_keys(iterator_to_array($iterator));
+            $file_list = \array_keys(\iterator_to_array($iterator));
         } catch (\Exception $exception) {
-            error_log($exception->getMessage());
+            \error_log($exception->getMessage());
         }
 
         // Normalize leading './' in paths.
         $normalized_file_list = [];
         foreach ($file_list as $file_path) {
-            $file_path = preg_replace('@^(\.[/\\\\]+)+@', '', $file_path);
+            $file_path = \preg_replace('@^(\.[/\\\\]+)+@', '', $file_path);
             $normalized_file_list[$file_path] = $file_path;
         }
-        usort($normalized_file_list, function (string $a, string $b) : int {
+        \usort($normalized_file_list, static function (string $a, string $b) : int {
             // Sort lexicographically by paths **within the results for a directory**,
             // to work around some file systems not returning results lexicographically.
             // Keep directories together by replacing directory separators with the null byte
@@ -1073,12 +1332,16 @@ EOB;
         return $normalized_file_list;
     }
 
+    /**
+     * Returns true if the progress bar was requested and it makes sense to display.
+     */
     public static function shouldShowProgress() : bool
     {
         return Config::getValue('progress_bar') &&
             !Config::getValue('dump_ast') &&
             !Config::getValue('daemonize_tcp') &&
-            !Config::getValue('daemonize_socket');
+            !Config::getValue('daemonize_socket') &&
+            !Config::getValue('language_server_config');
     }
 
     /**
@@ -1095,11 +1358,11 @@ EOB;
         string $exclude_file_regex,
         string $path_name
     ) : bool {
-        // Make this behave the same way on linux/unix and on Windows.
+        // Make this behave the same way on Linux/Unix and on Windows.
         if (DIRECTORY_SEPARATOR === '\\') {
-            $path_name = str_replace(DIRECTORY_SEPARATOR, '/', $path_name);
+            $path_name = \str_replace(DIRECTORY_SEPARATOR, '/', $path_name);
         }
-        return preg_match($exclude_file_regex, $path_name) > 0;
+        return \preg_match($exclude_file_regex, $path_name) > 0;
     }
 
     /**
@@ -1123,10 +1386,10 @@ EOB;
         }
 
         // Bound the percentage to [0, 1]
-        $p = min(max($p, 0.0), 1.0);
+        $p = \min(\max($p, 0.0), 1.0);
 
         static $previous_update_time = 0.0;
-        $time = microtime(true);
+        $time = \microtime(true);
 
 
         // If not enough time has elapsed, then don't update the progress bar.
@@ -1139,53 +1402,95 @@ EOB;
 
         // If we're on windows, just print a dot to show we're
         // working
-        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-            fwrite(STDERR, '.');
+        if (\strtoupper(\substr(PHP_OS, 0, 3)) === 'WIN') {
+            \fwrite(STDERR, '.');
             return;
         }
-        $memory = memory_get_usage() / 1024 / 1024;
-        $peak = memory_get_peak_usage() / 1024 / 1024;
+        $memory = \memory_get_usage() / 1024 / 1024;
+        $peak = \memory_get_peak_usage() / 1024 / 1024;
 
-        $current = (int)($p * 60);
-        $rest = max(60 - $current, 0);
+        $left_side = \str_pad($msg, 10, ' ', STR_PAD_LEFT) .  ' ';
+        $right_side =
+               " " . \sprintf("%1$ 3d", (int)(100 * $p)) . "%" .
+               \sprintf(' %0.2dMB/%0.2dMB', $memory, $peak);
+
+        $columns = (new Terminal())->getWidth();
+        // strlen("  99% 999MB/999MB") == 17
+        $used_length = strlen($left_side) + \max(17, strlen($right_side));
+        $remaining_length = $columns - $used_length;
+        $remaining_length = \min(60, \max(0, $remaining_length));
+        if ($remaining_length > 0) {
+            $progress_bar = self::renderInnerProgressBar($remaining_length, $p);
+        } else {
+            $progress_bar = '';
+            $right_side = \ltrim($right_side);
+        }
 
         // Build up a string, then make a single call to fwrite(). Should be slightly faster and smoother to render to the console.
-        $msg = str_pad($msg, 10, ' ', STR_PAD_LEFT) .
-               ' ' .
-               str_repeat("\u{2588}", $current) .
-               str_repeat("\u{2591}", $rest) .
-               " " . sprintf("%1$ 3d", (int)(100 * $p)) . "%" .
-               sprintf(' %0.2dMB/%0.2dMB', $memory, $peak) . "\r";
-        fwrite(STDERR, $msg);
+        $msg = $left_side .
+               $progress_bar .
+               $right_side .
+               "\r";
+        \fwrite(STDERR, $msg);
     }
 
     /**
-     * Look for a .phan/config file up to a few directories
+     * Renders a unicode progress bar that goes from light (left) to dark (right)
+     * The length in the console is the positive integer $length
+     * @see https://en.wikipedia.org/wiki/Block_Elements
+     */
+    private static function renderInnerProgressBar(int $length, float $p) : string
+    {
+        $current_float = $p * $length;
+        $current = (int)$current_float;
+        $rest = \max($length - $current, 0);
+        // The left-most characters are "Light shade"
+        $progress_bar = \str_repeat("\u{2588}", $current);
+        $delta = $current_float - $current;
+        if ($delta > 1.0 / 3) {
+            // The between character is "Full block" or "Medium shade" or "solid shade".
+            // The remaining characters on the right are "Full block" (darkest)
+            $first = $delta > 2.0 / 3 ? "\u{2593}" : "\u{2592}";
+            $progress_bar .= $first . \str_repeat("\u{2591}", $rest - 1);
+        } else {
+            $progress_bar .= \str_repeat("\u{2591}", $rest);
+        }
+        return $progress_bar;
+    }
+
+    /**
+     * Look for a `.phan/config` file up to a few directories
      * up the hierarchy and apply anything in there to
      * the configuration.
+     * @throws UsageException
      */
     private function maybeReadConfigFile(bool $require_config_exists)
     {
 
         // If the file doesn't exist here, try a directory up
+        $config_file_name = $this->config_file;
         $config_file_name =
-            !empty($this->config_file)
-            ? realpath($this->config_file)
-            : implode(DIRECTORY_SEPARATOR, [
+            $config_file_name
+            ? \realpath($config_file_name)
+            : \implode(DIRECTORY_SEPARATOR, [
                 Config::getProjectRootDirectory(),
                 '.phan',
                 'config.php'
             ]);
 
         // Totally cool if the file isn't there
-        if ($config_file_name === false || !file_exists($config_file_name)) {
+        if ($config_file_name === false || !\file_exists($config_file_name)) {
             if ($require_config_exists) {
                 // But if the CLI option --require-config-exists is provided, exit immediately.
                 // (Include extended help documenting that option)
                 if ($config_file_name !== false) {
-                    $this->usage("Could not find a config file at '$config_file_name', but --require-config-exists was set", EXIT_FAILURE, true);
+                    throw new UsageException("Could not find a config file at '$config_file_name', but --require-config-exists was set", EXIT_FAILURE, true);
                 } else {
-                    $this->usage(sprintf("Could not figure out the path for config file '%s', but --require-config-exists was set", $this->config_file), EXIT_FAILURE, true);
+                    $msg = \sprintf(
+                        "Could not figure out the path for config file %s, but --require-config-exists was set",
+                        StringUtil::encodeValue($this->config_file)
+                    );
+                    throw new UsageException($msg, EXIT_FAILURE, true);
                 }
             }
             return;
@@ -1203,17 +1508,21 @@ EOB;
     /**
      * This will assert that ast\parse_code or a polyfill can be called.
      * @return void
+     * @throws AssertionError on failure
      */
     private function ensureASTParserExists()
     {
         if (Config::getValue('use_polyfill_parser')) {
             return;
         }
-        assert(
-            extension_loaded('ast'),
-            // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-            'The php-ast extension must be loaded in order for Phan to work. See https://github.com/phan/phan#getting-it-running for more details. Alternately, invoke Phan with the CLI option --allow-polyfill-parser (which is noticeably slower)'
-        );
+        if (!\extension_loaded('ast')) {
+            \fwrite(
+                STDERR,
+                // phpcs:ignore Generic.Files.LineLength.MaxExceeded
+                "The php-ast extension must be loaded in order for Phan to work. See https://github.com/phan/phan#getting-started for more details. Alternately, invoke Phan with the CLI option --allow-polyfill-parser (which is noticeably slower)\n"
+            );
+            exit(EXIT_FAILURE);
+        }
 
         try {
             // Split up the opening PHP tag to fix highlighting in vim.
@@ -1222,14 +1531,14 @@ EOB;
                 Config::AST_VERSION
             );
         } catch (\LogicException $_) {
-            assert(
-                false,
+            \fwrite(
+                STDERR,
                 'Unknown AST version ('
                 . Config::AST_VERSION
                 . ') in configuration. '
-                . 'You may need to rebuild the latest '
-                . 'version of the php-ast extension.'
+                . "You may need to rebuild the latest version of the php-ast extension.\n"
             );
+            exit(EXIT_FAILURE);
         }
 
         // Workaround for https://github.com/nikic/php-ast/issues/79
@@ -1238,16 +1547,31 @@ EOB;
                 '<' . '?php syntaxerror',
                 Config::AST_VERSION
             );
-            assert(
-                false,
+            \fwrite(
+                STDERR,
                 'Expected ast\\parse_code to throw ParseError on invalid inputs. Configured AST version: '
                 . Config::AST_VERSION
                 . '. '
-                . 'You may need to rebuild the latest '
-                . 'version of the php-ast extension.'
+                . "You may need to rebuild the latest version of the php-ast extension.\n"
             );
+            exit(EXIT_FAILURE);
         } catch (\ParseError $_) {
             // error message may validate with locale and version, don't validate that.
         }
+    }
+
+    /**
+     * Returns a string that can be used to check if dev-master versions changed (approximately).
+     *
+     * This is useful for checking if caches (e.g. of ASTs) should be invalidated.
+     */
+    public static function getDevelopmentVersionId() : string
+    {
+        $news_path = \dirname(__DIR__) . '/NEWS.md';
+        $version = self::PHAN_VERSION;
+        if (\file_exists($news_path)) {
+            $version .= '-' . \filesize($news_path);
+        }
+        return $version;
     }
 }

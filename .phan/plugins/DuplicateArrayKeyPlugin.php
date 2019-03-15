@@ -1,14 +1,13 @@
 <?php declare(strict_types=1);
 
-use Phan\AST\ContextNode;
-use Phan\Exception\CodeBaseException;
-use Phan\Exception\IssueException;
-use Phan\Exception\NodeException;
+use ast\Node;
+use Phan\AST\ASTHasher;
+use Phan\AST\ASTReverter;
+use Phan\AST\UnionTypeVisitor;
 use Phan\Issue;
 use Phan\PluginV2;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
 use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use ast\Node;
+use Phan\PluginV2\PostAnalyzeNodeCapability;
 
 /**
  * Checks for duplicate/equivalent array keys and case statements, as well as arrays mixing `key => value, with `value,`.
@@ -38,6 +37,8 @@ class DuplicateArrayKeyPlugin extends PluginV2 implements PostAnalyzeNodeCapabil
  */
 class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
 {
+    const HASH_PREFIX = "\x00__phan_dnu_";
+
     // Do not define the visit() method unless a plugin has code and needs to visit most/all node types.
 
     /**
@@ -63,14 +64,22 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
                 continue;  // This is `default:`. php --syntax-check already checks for duplicates.
             }
             // Skip array entries without literal keys. (Do it before resolving the key value)
-            $case_cond = $this->tryToResolveKey($case_cond);
-
             if (!is_scalar($case_cond)) {
-                // Skip non-literal keys.
-                continue;
+                $case_cond = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $case_cond)->asSingleScalarValueOrNullOrSelf();
+                if (is_object($case_cond)) {
+                    // Skip non-literal keys.
+                    continue;
+                }
             }
-            if (isset($case_constant_set[$case_cond])) {
-                $normalized_case_cond = self::normalizeKey($case_cond);
+            if (is_string($case_cond)) {
+                $cond_key = "s$case_cond";
+            } elseif (is_int($case_cond)) {
+                $cond_key = $case_cond;
+            } else {
+                $cond_key = json_encode($case_cond);
+            }
+            if (isset($case_constant_set[$cond_key])) {
+                $normalized_case_cond = self::normalizeSwitchKey($case_cond);
                 $this->emitPluginIssue(
                     $this->code_base,
                     clone($this->context)->withLineNumberStart($case_node->lineno),
@@ -82,7 +91,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
                     15071
                 );
             }
-            $case_constant_set[$case_cond] = true;
+            $case_constant_set[$cond_key] = $case_node->lineno;
         }
     }
 
@@ -114,25 +123,18 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
                 $has_entry_without_key = true;
                 continue;
             }
-            $key = $this->tryToResolveKey($key);
-
             if (!is_scalar($key)) {
-                // Skip non-literal keys.
-                continue;
+                $key = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $key)->asSingleScalarValueOrNullOrSelf();
+                if (is_object($key)) {
+                    $key = self::HASH_PREFIX . ASTHasher::hash($entry->children['key']);
+                }
             }
+
             if (isset($key_set[$key])) {
-                $normalized_key = self::normalizeKey($key);
-                $this->emitPluginIssue(
-                    $this->code_base,
-                    clone($this->context)->withLineNumberStart($entry->lineno ?? $node->lineno),
-                    'PhanPluginDuplicateArrayKey',
-                    "Duplicate/Equivalent array key value({STRING_LITERAL}) detected in array - the earlier entry will be ignored.",
-                    [(string)$normalized_key],
-                    Issue::SEVERITY_NORMAL,
-                    Issue::REMEDIATION_A,
-                    15071
-                );
+                // @phan-suppress-next-line PhanPartialTypeMismatchArgument
+                $this->warnAboutDuplicateArrayKey($node, $entry, $key);
             }
+            // @phan-suppress-next-line PhanTypeMismatchDimAssignment
             $key_set[$key] = true;
         }
         if ($has_entry_without_key && count($key_set) > 0) {
@@ -150,43 +152,52 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
-     * @param int|string|float|array|Node $key (not actually an array)
-     * @return int|string|float|Node|array|bool|null - If possible, converted to a scalar.
+     * @param int|string|float|bool|null $key
      */
-    private function tryToResolveKey($key)
+    private function warnAboutDuplicateArrayKey(Node $node, Node $entry, $key)
     {
-        if (!($key instanceof ast\Node)) {
-            return $key;
-        }
-        $kind = $key->kind;
-        if (!in_array($kind, [\ast\AST_CLASS_CONST, \ast\AST_CONST, \ast\AST_MAGIC_CONST], true)) {
-            return $key;
-        }
-        // if key is constant, take it in account
-        $context_node = new ContextNode($this->code_base, $this->context, $key);
-        try {
-            if ($kind === \ast\AST_CLASS_CONST) {
-                $key = $context_node->getClassConst()->getNodeForValue();
-            } elseif ($kind === \ast\AST_CONST) {
-                $key = $context_node->getConst()->getNodeForValue();
-            } else {
-                $key = $context_node->getValueForMagicConst();
-            }
-            return $key ?? '';
-        } catch (IssueException $e) {
-            // This is redundant, but do it anyway
-            Issue::maybeEmitInstance(
+        if (is_string($key) && strncmp($key, self::HASH_PREFIX, strlen(self::HASH_PREFIX)) === 0) {
+            $this->emitPluginIssue(
                 $this->code_base,
-                $this->context,
-                $e->getIssueInstance()
+                clone($this->context)->withLineNumberStart($entry->lineno ?? $node->lineno),
+                'PhanPluginDuplicateArrayKeyExpression',
+                "Duplicate dynamic array key expression ({CODE}) detected in array - the earlier entry will be ignored if the expression had the same value.",
+                [ASTReverter::toShortString($entry->children['key'])],
+                Issue::SEVERITY_NORMAL,
+                Issue::REMEDIATION_A,
+                15071
             );
-        } catch (CodeBaseException $_) {
-            // e.g. Can't find the class (ignore)
-        } catch (NodeException $_) {
-            // E.g. Can't figure out constant class in node
-            // (ignore)
+            return;
         }
-        return $key;
+        $normalized_key = self::normalizeKey($key);
+        $this->emitPluginIssue(
+            $this->code_base,
+            clone($this->context)->withLineNumberStart($entry->lineno ?? $node->lineno),
+            'PhanPluginDuplicateArrayKey',
+            "Duplicate/Equivalent array key value({STRING_LITERAL}) detected in array - the earlier entry will be ignored.",
+            [(string)$normalized_key],
+            Issue::SEVERITY_NORMAL,
+            Issue::REMEDIATION_A,
+            15071
+        );
+    }
+
+    /**
+     * Converts a key to the value it would be if used as a case.
+     * E.g. 0, 0.5, and "0" all become the same value(0) when used as an array key.
+     *
+     * @param int|string|float|bool|null $key - The array key literal to be normalized.
+     * @return string - The normalized representation.
+     */
+    private static function normalizeSwitchKey($key) : string
+    {
+        if (is_int($key)) {
+            return (string)$key;
+        } elseif (!is_string($key)) {
+            return (string)json_encode($key);
+        }
+        $tmp = [$key => true];
+        return var_export(key($tmp), true);
     }
 
     /**
@@ -196,13 +207,16 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
      * @param int|string|float|bool|null $key - The array key literal to be normalized.
      * @return string - The normalized representation.
      */
-    private static function normalizeKey($key) : string
+    private static function normalizeKey($key)
     {
+        if (is_int($key)) {
+            return (string)$key;
+        }
         $tmp = [$key => true];
         return var_export(key($tmp), true);
     }
 }
 
 // Every plugin needs to return an instance of itself at the
-// end of the file in which its defined.
+// end of the file in which it's defined.
 return new DuplicateArrayKeyPlugin();

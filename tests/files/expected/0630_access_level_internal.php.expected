@@ -1,0 +1,1 @@
+%s:3 PhanAccessSignatureMismatchInternal Access level to function count() : int must be compatible with internal function count() : int

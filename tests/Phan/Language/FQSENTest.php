@@ -12,19 +12,26 @@ use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Tests\BaseTest;
 
+/**
+ * Unit tests of various FQSEN subclasses.
+ * @phan-file-suppress PhanThrowTypeAbsentForCall
+ */
 final class FQSENTest extends BaseTest
 {
 
-    /** @var Context|null */
+    /** @var Context the context within which this unit test will run */
     protected $context = null;
 
     protected function setUp()
     {
+        // Deliberately not calling parent::setUp()
         $this->context = new Context();
     }
 
     protected function tearDown()
     {
+        // Deliberately not calling parent::tearDown()
+        // @phan-suppress-next-line PhanTypeMismatchProperty
         $this->context = null;
     }
 

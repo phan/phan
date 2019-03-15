@@ -1,10 +1,14 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Analysis;
 
 use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Element\Clazz;
 
+/**
+ * Analyzer that checks for duplicate classes/traits/interfaces.
+ */
 class DuplicateClassAnalyzer
 {
     /**

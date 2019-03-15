@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-use Phan\PluginV2;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
-use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
 use ast\Node;
+use Phan\PluginV2;
+use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV2\PostAnalyzeNodeCapability;
 
 /**
  * This plugin checks for occurrences of `assert(cond)` for Phan's self-analysis.
@@ -19,7 +19,7 @@ use ast\Node;
  *
  * A plugin file must
  *
- * - Contain a class that inherits from \Phan\Plugin
+ * - Contain a class that inherits from \Phan\PluginV2
  *
  * - End by returning an instance of that class.
  *
@@ -73,6 +73,7 @@ class NoAssertVisitor extends PluginAwarePostAnalysisVisitor
             $this->code_base,
             $this->context,
             'PhanPluginNoAssert',
+            // phpcs:ignore Generic.Files.LineLength.MaxExceeded
             'assert() is discouraged. Although phan supports using assert() for type annotations, PHP\'s documentation recommends assertions only for debugging, and assert() has surprising behaviors.',
             []
         );
@@ -80,5 +81,5 @@ class NoAssertVisitor extends PluginAwarePostAnalysisVisitor
 }
 
 // Every plugin needs to return an instance of itself at the
-// end of the file in which its defined.
+// end of the file in which it's defined.
 return new NoAssertPlugin();

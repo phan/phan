@@ -1,11 +1,15 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
+
 namespace Phan\Tests\Analysis;
 
 use Phan\Analysis\ParameterTypesAnalyzer;
 use Phan\Config;
-use Phan\Tests\BaseTest;
 use Phan\Language\UnionType;
+use Phan\Tests\BaseTest;
 
+/**
+ * Unit tests of helper methods of ParameterTypesAnalyzer
+ */
 final class ParameterTypesAnalyzerTest extends BaseTest
 {
     public function setUp()
@@ -29,6 +33,9 @@ final class ParameterTypesAnalyzerTest extends BaseTest
 
         $msg = "Expected normalizeNarrowedParamType($phpdoc_return_type, $real_return_type) to be $expected_type_string";
         $this->assertSame($expected_type_string, (string)$actual_normalized_type, $msg);
+        if ($actual_normalized_type === null) {
+            throw new \AssertionError("Saw null actual_normalized_type");
+        }
         $this->assertTrue($actual_normalized_type->isEqualTo($expected_type), $msg);
     }
 

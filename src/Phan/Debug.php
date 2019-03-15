@@ -1,8 +1,10 @@
 <?php declare(strict_types=1);
+
 namespace Phan;
 
-use ast\Node;
+use ast;
 use ast\flags;
+use ast\Node;
 use Phan\Analysis\BlockExitStatusChecker;
 
 /**
@@ -47,11 +49,13 @@ class Debug
      * Print the name of a node to the terminal
      *
      * @suppress PhanUnreferencedPublicMethod
+     * @param Node|string|null $node
+     * @param int $indent
      * @return void
      */
     public static function printNodeName($node, $indent = 0)
     {
-        print str_repeat("\t", $indent);
+        print \str_repeat("\t", $indent);
         print self::nodeName($node);
         print "\n";
     }
@@ -64,7 +68,7 @@ class Debug
      */
     public static function print(string $message, int $indent = 0)
     {
-        print str_repeat("\t", $indent);
+        print \str_repeat("\t", $indent);
         print $message . "\n";
     }
 
@@ -89,7 +93,7 @@ class Debug
             // For placeholders created by tolerant-php-parser-to-php-ast
             return "string ($kind)";
         }
-        return \ast\get_kind_name($kind);
+        return ast\get_kind_name($kind);
     }
 
     /**
@@ -106,15 +110,13 @@ class Debug
      *
      * @return string
      * A string representation of an AST node
-     *
-     * @phan-suppress PhanPartialTypeMismatchArgument handle impossible arrays?
      */
     public static function nodeToString(
         $node,
         $name = null,
         int $indent = 0
     ) : string {
-        $string = str_repeat("\t", $indent);
+        $string = \str_repeat("\t", $indent);
 
         if ($name !== null) {
             $string .= "$name => ";
@@ -124,7 +126,7 @@ class Debug
             return $string . $node . "\n";
         }
 
-        if (!$node) {
+        if ($node === null) {
             return $string . 'null' . "\n";
         }
 
@@ -136,7 +138,7 @@ class Debug
         $string .= self::nodeName($node);
 
         $string .= ' ['
-            . (is_int($kind) ? self::astFlagDescription($node->flags ?? 0, $kind) : 'unknown')
+            . (\is_int($kind) ? self::astFlagDescription($node->flags ?? 0, $kind) : 'unknown')
             . ']';
 
         if (isset($node->lineno)) {
@@ -167,7 +169,7 @@ class Debug
      *
      * @return string
      *
-     * @see self::formatFlags for a similar function also printing the integer flag value.
+     * @see self::formatFlags() for a similar function also printing the integer flag value.
      */
     public static function astFlagDescription(int $flags, int $kind) : string
     {
@@ -187,7 +189,7 @@ class Debug
             }
         }
 
-        return implode('|', $flag_names);
+        return \implode('|', $flag_names);
     }
 
     /**
@@ -212,8 +214,8 @@ class Debug
                     $names[] = $name;
                 }
             }
-            if (!empty($names)) {
-                return implode(" | ", $names) . " ($flags)";
+            if (\count($names) > 0) {
+                return \implode(" | ", $names) . " ($flags)";
             }
         }
         return (string) $flags;
@@ -228,16 +230,21 @@ class Debug
      */
     public static function backtrace(int $levels = 0)
     {
-        $bt = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $levels + 1);
+        $bt = \debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS, $levels + 1);
         foreach ($bt as $level => $context) {
             if (!$level) {
                 continue;
             }
-            echo "#" . ($level - 1) . " {$context['file']}:{$context['line']} {$context['class']} ";
-            if (!empty($context['type'])) {
+            $file = $context['file'] ?? 'unknown';
+            $line = $context['line'] ?? 1;
+            $class = $context['class'] ?? 'global';
+            $function = $context['function'] ?? '';
+
+            echo "#" . ($level - 1) . " $file:$line $class ";
+            if (isset($context['type'])) {
                 echo $context['class'] . $context['type'];
             }
-            echo $context['function'];
+            echo $function;
             echo "\n";
         }
     }
@@ -245,11 +252,13 @@ class Debug
     /**
      * Dumps abstract syntax tree
      * Source: https://github.com/nikic/php-ast/blob/master/util.php
+     * @param Node|string|int|float|null $ast
+     * @param int $options (self::AST_DUMP_*)
      */
     public static function astDump($ast, int $options = 0) : string
     {
         if ($ast instanceof Node) {
-            $result = \ast\get_kind_name($ast->kind);
+            $result = ast\get_kind_name($ast->kind);
 
             if ($options & self::AST_DUMP_LINENOS) {
                 $result .= " @ $ast->lineno";
@@ -259,14 +268,14 @@ class Debug
                 }
             }
 
-            if (\ast\kind_uses_flags($ast->kind)) {
+            if (ast\kind_uses_flags($ast->kind)) {
                 $flags_without_phan_additions = $ast->flags & ~BlockExitStatusChecker::STATUS_BITMASK;
                 if ($flags_without_phan_additions != 0) {
                     $result .= "\n    flags: " . self::formatFlags($ast->kind, $ast->flags);
                 }
             }
             foreach ($ast->children as $i => $child) {
-                $result .= "\n    $i: " . str_replace("\n", "\n    ", self::astDump($child, $options));
+                $result .= "\n    $i: " . \str_replace("\n", "\n    ", self::astDump($child, $options));
             }
             return $result;
         } elseif ($ast === null) {
@@ -337,32 +346,32 @@ class Debug
         ];
 
         $exclusive = [
-            \ast\AST_NAME => [
+            ast\AST_NAME => [
                 flags\NAME_FQ => 'NAME_FQ',
                 flags\NAME_NOT_FQ => 'NAME_NOT_FQ',
                 flags\NAME_RELATIVE => 'NAME_RELATIVE',
             ],
-            \ast\AST_CLASS => [
+            ast\AST_CLASS => [
                 flags\CLASS_ABSTRACT => 'CLASS_ABSTRACT',
                 flags\CLASS_FINAL => 'CLASS_FINAL',
                 flags\CLASS_TRAIT => 'CLASS_TRAIT',
                 flags\CLASS_INTERFACE => 'CLASS_INTERFACE',
                 flags\CLASS_ANONYMOUS => 'CLASS_ANONYMOUS',
             ],
-            \ast\AST_PARAM => [
+            ast\AST_PARAM => [
                 flags\PARAM_REF => 'PARAM_REF',
                 flags\PARAM_VARIADIC => 'PARAM_VARIADIC',
             ],
-            \ast\AST_TYPE => $types,
-            \ast\AST_CAST => $types,
-            \ast\AST_UNARY_OP => [
+            ast\AST_TYPE => $types,
+            ast\AST_CAST => $types,
+            ast\AST_UNARY_OP => [
                 flags\UNARY_BOOL_NOT => 'UNARY_BOOL_NOT',
                 flags\UNARY_BITWISE_NOT => 'UNARY_BITWISE_NOT',
                 flags\UNARY_MINUS => 'UNARY_MINUS',
                 flags\UNARY_PLUS => 'UNARY_PLUS',
                 flags\UNARY_SILENCE => 'UNARY_SILENCE',
             ],
-            \ast\AST_BINARY_OP => $shared_binary_ops + [
+            ast\AST_BINARY_OP => $shared_binary_ops + [
                 flags\BINARY_BOOL_AND => 'BINARY_BOOL_AND',
                 flags\BINARY_BOOL_OR => 'BINARY_BOOL_OR',
                 flags\BINARY_BOOL_XOR => 'BINARY_BOOL_XOR',
@@ -377,22 +386,8 @@ class Debug
                 flags\BINARY_SPACESHIP => 'BINARY_SPACESHIP',
                 flags\BINARY_COALESCE => 'BINARY_COALESCE',
             ],
-            \ast\AST_ASSIGN_OP => $shared_binary_ops + [
-                // Old version 10 flags
-                flags\ASSIGN_BITWISE_OR => 'ASSIGN_BITWISE_OR',
-                flags\ASSIGN_BITWISE_AND => 'ASSIGN_BITWISE_AND',
-                flags\ASSIGN_BITWISE_XOR => 'ASSIGN_BITWISE_XOR',
-                flags\ASSIGN_CONCAT => 'ASSIGN_CONCAT',
-                flags\ASSIGN_ADD => 'ASSIGN_ADD',
-                flags\ASSIGN_SUB => 'ASSIGN_SUB',
-                flags\ASSIGN_MUL => 'ASSIGN_MUL',
-                flags\ASSIGN_DIV => 'ASSIGN_DIV',
-                flags\ASSIGN_MOD => 'ASSIGN_MOD',
-                flags\ASSIGN_POW => 'ASSIGN_POW',
-                flags\ASSIGN_SHIFT_LEFT => 'ASSIGN_SHIFT_LEFT',
-                flags\ASSIGN_SHIFT_RIGHT => 'ASSIGN_SHIFT_RIGHT',
-            ],
-            \ast\AST_MAGIC_CONST => [
+            ast\AST_ASSIGN_OP => $shared_binary_ops,
+            ast\AST_MAGIC_CONST => [
                 flags\MAGIC_LINE => 'MAGIC_LINE',
                 flags\MAGIC_FILE => 'MAGIC_FILE',
                 flags\MAGIC_DIR => 'MAGIC_DIR',
@@ -402,30 +397,30 @@ class Debug
                 flags\MAGIC_CLASS => 'MAGIC_CLASS',
                 flags\MAGIC_TRAIT => 'MAGIC_TRAIT',
             ],
-            \ast\AST_USE => $use_types,
-            \ast\AST_GROUP_USE => $use_types,
-            \ast\AST_USE_ELEM => $use_types,
-            \ast\AST_INCLUDE_OR_EVAL => [
+            ast\AST_USE => $use_types,
+            ast\AST_GROUP_USE => $use_types,
+            ast\AST_USE_ELEM => $use_types,
+            ast\AST_INCLUDE_OR_EVAL => [
                 flags\EXEC_EVAL => 'EXEC_EVAL',
                 flags\EXEC_INCLUDE => 'EXEC_INCLUDE',
                 flags\EXEC_INCLUDE_ONCE => 'EXEC_INCLUDE_ONCE',
                 flags\EXEC_REQUIRE => 'EXEC_REQUIRE',
                 flags\EXEC_REQUIRE_ONCE => 'EXEC_REQUIRE_ONCE',
             ],
-            \ast\AST_ARRAY => [
+            ast\AST_ARRAY => [
                 flags\ARRAY_SYNTAX_LIST => 'ARRAY_SYNTAX_LIST',
                 flags\ARRAY_SYNTAX_LONG => 'ARRAY_SYNTAX_LONG',
                 flags\ARRAY_SYNTAX_SHORT => 'ARRAY_SYNTAX_SHORT',
             ],
-            \ast\AST_CLOSURE_VAR => [
+            ast\AST_CLOSURE_VAR => [
                 flags\CLOSURE_USE_REF => 'CLOSURE_USE_REF',
-            ]
+            ],
         ];
 
         $combinable = [];
-        $combinable[\ast\AST_METHOD] = $combinable[\ast\AST_FUNC_DECL] = $combinable[\ast\AST_CLOSURE]
-            = $combinable[\ast\AST_PROP_DECL] = $combinable[\ast\AST_CLASS_CONST_DECL]
-            = $combinable[\ast\AST_TRAIT_ALIAS] = $modifiers;
+        $combinable[ast\AST_METHOD] = $combinable[ast\AST_FUNC_DECL] = $combinable[ast\AST_CLOSURE]
+            = $combinable[ast\AST_PROP_DECL] = $combinable[ast\AST_CLASS_CONST_DECL]
+            = $combinable[ast\AST_TRAIT_ALIAS] = $modifiers;
 
         return [$exclusive, $combinable];
     }

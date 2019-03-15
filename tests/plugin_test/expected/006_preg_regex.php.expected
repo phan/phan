@@ -15,3 +15,5 @@ src/006_preg_regex.php:21 PhanUnusedClosureParameter Parameter $x is never used
 src/006_preg_regex.php:22 PhanPluginInvalidPregRegex Call to \preg_replace_callback_array was passed an invalid regex '0': Delimiter must not be alphanumeric or backslash
 src/006_preg_regex.php:22 PhanTypeMismatchArgumentInternal Argument 1 (pattern) is array{0:Closure(mixed):'i'} but \preg_replace_callback_array() takes array<string,callable(array):string>
 src/006_preg_regex.php:22 PhanUnusedClosureParameter Parameter $x is never used
+src/006_preg_regex.php:26 PhanPluginInvalidPregRegex Call to \preg_match was passed an invalid regex '/^(a/': Compilation failed: missing ) at offset 3
+src/006_preg_regex.php:29 PhanPluginInvalidPregRegex Call to \preg_match was passed an invalid regex '/^(a/': Compilation failed: missing ) at offset 3

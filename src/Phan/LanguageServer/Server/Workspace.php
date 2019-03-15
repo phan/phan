@@ -1,5 +1,5 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Phan\LanguageServer\Server;
 
@@ -19,17 +19,19 @@ use Phan\LanguageServer\Utils;
 class Workspace
 {
     /**
-     * @var LanguageClient
+     * @var LanguageClient represents the client of this language server.
      */
     public $client;
 
     /**
-     * @var LanguageServer
+     * @var LanguageServer represents the LSP related functionality of the Phan Language Server.
      */
     public $server;
 
     /**
-     * @var FileMapping
+     * @var FileMapping this tracks the state of files opened and edited in the client.
+     *
+     * Any entries in this object should override the state of the files on disk.
      */
     public $file_mapping;
 
@@ -82,6 +84,7 @@ class Workspace
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      *
      * @param array $settings @phan-unused-param
+     * @phan-param array<string,mixed> $settings @phan-unused-param NOTE: reflection-docblock does not support generic arrays
      * @return void (unimplemented)
      */
     public function didChangeConfiguration($settings)

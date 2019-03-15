@@ -2,11 +2,12 @@
 
 namespace Phan\Plugin\Internal;
 
+use ast\Node;
+use Closure;
 use Phan\Language\Context;
 use Phan\PluginV2;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
 use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use ast\Node;
+use Phan\PluginV2\PostAnalyzeNodeCapability;
 
 /**
  * This plugin checks for the definition of a region selected by a user.
@@ -14,7 +15,7 @@ use ast\Node;
 class NodeSelectionPlugin extends PluginV2 implements PostAnalyzeNodeCapability
 {
     /**
-     * @param ?Closure(Context,Node):void $closure
+     * @param ?Closure(Context,Node,array<int,Node>):void $closure
      * @return void
      * TODO: Fix false positive TypeMismatchDeclaredParam with Closure $closure = null in this method
      */
@@ -41,19 +42,22 @@ class NodeSelectionPlugin extends PluginV2 implements PostAnalyzeNodeCapability
  */
 class NodeSelectionVisitor extends PluginAwarePostAnalysisVisitor
 {
-    /** @var ?Closure(Context,Node):void $closure */
+    /** @var ?Closure(Context,Node,Node[]):void $closure */
     public static $closure = null;
 
     // A plugin's visitors should not override visit() unless they need to.
 
     /**
+     * This is the catch-all for Nodes with kinds that don't have specialized methods
      * @param Node $node
      * A node to check
      *
+     * @param array<int,Node> $parent_node_list
+     *
      * @return void
-     * @see ConfigPluginSet->prepareNodeSelectionPlugin() for how this is called
+     * @see ConfigPluginSet::prepareNodeSelectionPlugin() for how this is called
      */
-    public function visitCommonImplementation(Node $node)
+    public function visitCommonImplementation(Node $node, array $parent_node_list)
     {
         if (!\property_exists($node, 'isSelected')) {
             return;
@@ -64,10 +68,10 @@ class NodeSelectionVisitor extends PluginAwarePostAnalysisVisitor
             // fwrite(STDERR, "Calling NodeSelectionVisitor without a closure\n");
             return;
         }
-        $closure($this->context, $node);
+        $closure($this->context, $node, $parent_node_list);
     }
 }
 
 // Every plugin needs to return an instance of itself at the
-// end of the file in which its defined.
+// end of the file in which it's defined.
 return new NodeSelectionPlugin();

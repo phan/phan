@@ -1,9 +1,10 @@
 <?php declare(strict_types=1);
+
 namespace Phan\PluginV2;
 
+use ast\Node;
 use Phan\CodeBase;
 use Phan\Language\Context;
-use ast\Node;
 
 /**
  * AfterAnalyzeFileCapability is used when you want to perform checks after analyzing a file
@@ -12,6 +13,8 @@ use ast\Node;
 interface AfterAnalyzeFileCapability
 {
     /**
+     * This method is called after Phan analyzes a file.
+     *
      * @param CodeBase $code_base
      * The code base in which the node exists
      *

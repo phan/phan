@@ -23,8 +23,8 @@ class Tuple2 {
         $e0,
         $e1
     ) {
-        $this->$e0 = $e0;
-        $this->$e1 = $e1;
+        $this->e0 = $e0;
+        $this->e1 = $e1;
     }
 
     /** @return T0 */
@@ -66,4 +66,3 @@ f($tuple_a->getE0(), $tuple_a->getE1());
 
 f($tuple_a->e1, $tuple_a->e0);
 f($tuple_a->getE1(), $tuple_a->getE0());
-

@@ -3,10 +3,10 @@
 namespace Phan\Tests;
 
 // Grab these before we define our own classes
-$internal_class_name_list = get_declared_classes();
-$internal_interface_name_list = get_declared_interfaces();
-$internal_trait_name_list = get_declared_traits();
-$internal_function_name_list = get_defined_functions()['internal'];
+$internal_class_name_list = \get_declared_classes();
+$internal_interface_name_list = \get_declared_interfaces();
+$internal_trait_name_list = \get_declared_traits();
+$internal_function_name_list = \get_defined_functions()['internal'];
 
 use Phan\Analysis;
 use Phan\CodeBase;
@@ -14,10 +14,14 @@ use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 
+/**
+ * Unit tests of Phan's analysis creating the expected element representations on snippets of code.
+ * @phan-file-suppress PhanThrowTypeAbsentForCall
+ */
 final class AnalyzerTest extends BaseTest
 {
     /**
-     * @var CodeBase
+     * @var CodeBase represents the known state of the test code base we're analyzing.
      */
     private $code_base;
 

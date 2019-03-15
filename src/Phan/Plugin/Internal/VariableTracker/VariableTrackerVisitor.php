@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Plugin\Internal\VariableTracker;
 
+use AssertionError;
+use ast;
+use ast\Node;
 use Phan\Analysis\BlockExitStatusChecker;
 use Phan\AST\AnalysisVisitor;
 use Phan\AST\Visitor\Element;
-use ast\Node;
-use ast;  // TODO: Figure out why Phan isn't warning about Phan\Plugin\Internal\VariableTracker\ast\AST_VAR without this.
-
-use AssertionError;
 use function is_string;
 
 /**
@@ -26,11 +26,19 @@ use function is_string;
 final class VariableTrackerVisitor extends AnalysisVisitor
 {
     /**
+     * This shared graph instance maps definitions of variables (in a function-like context)
+     * to the uses of that variable.
+     *
      * @var VariableGraph
      */
     public static $variable_graph;
 
-    /** @var VariableTrackingScope */
+    /**
+     * This represents the status of variables in the current scope
+     * (e.g. which variable definitions are available to be used, etc.)
+     *
+     * @var VariableTrackingScope
+     */
     private $scope;
 
     public function __construct(VariableTrackingScope $scope)
@@ -84,7 +92,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
             $this->scope = $this->analyze($this->scope, $expr);
         }
         $var_node = $node->children['var'];
-        if ($var_node->kind === \ast\AST_VAR) {
+        if ($var_node instanceof Node && $var_node->kind === \ast\AST_VAR) {
             $name = $var_node->children['name'];
             if (is_string($name)) {
                 self::$variable_graph->recordVariableUsage($name, $var_node, $this->scope);
@@ -96,6 +104,8 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     /**
      * @return VariableTrackingScope
      * @override
+     *
+     * TODO: Analyze $x++, $x--
      */
     public function visitAssignOp(Node $node)
     {
@@ -113,7 +123,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
                 if (!is_string($name)) {
                     break;
                 }
-                // The left hand node ($var_node) is the usage of this variable
+                // The left-hand node ($var_node) is the usage of this variable
                 self::$variable_graph->recordVariableUsage($name, $var_node, $this->scope);
                 // And the whole assignment operation is the redefinition of this variable
                 self::$variable_graph->recordVariableDefinition($name, $node, $this->scope);
@@ -145,6 +155,9 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         return $this->analyzeAssignmentTarget($node->children['var'], false);
     }
 
+    /**
+     * @param Node|int|string|float|null $node
+     */
     private function analyzeAssignmentTarget($node, bool $is_ref) : VariableTrackingScope
     {
         // TODO: Push onto the node list?
@@ -240,6 +253,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     }
 
     /**
+     * @param Node|string|int|float|null $child_node
      * @return VariableTrackingScope
      */
     private function analyzeWhenValidNode(VariableTrackingScope $scope, $child_node)
@@ -381,7 +395,8 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     public function visitForeach(Node $node)
     {
         $expr_node = $node->children['expr'];
-        $outer_scope = $this->analyzeWhenValidNode($this->scope, $expr_node);
+        $outer_scope_unbranched = $this->analyzeWhenValidNode($this->scope, $expr_node);
+        $outer_scope = new VariableTrackingBranchScope($outer_scope_unbranched);
 
         // Replace the scope with the inner scope
         $this->scope = new VariableTrackingLoopScope($outer_scope);
@@ -401,7 +416,9 @@ final class VariableTrackerVisitor extends AnalysisVisitor
 
         // Merge inner scope into outer scope
         // @phan-suppress-next-line PhanTypeMismatchArgument
-        return $outer_scope->mergeInnerLoopScope($inner_scope, self::$variable_graph);
+        $outer_scope = $outer_scope->mergeInnerLoopScope($inner_scope, self::$variable_graph);
+
+        return $outer_scope_unbranched->mergeWithSingleBranchScope($outer_scope);
     }
 
     /**
@@ -411,62 +428,85 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      */
     public function visitWhile(Node $node)
     {
-        $outer_scope = $this->scope;
+        $outer_scope_unbranched = $this->analyzeWhenValidNode($this->scope, $node->children['cond']);
+        $outer_scope = new VariableTrackingBranchScope($outer_scope_unbranched);
 
         $inner_scope = new VariableTrackingLoopScope($outer_scope);
-        $inner_scope = $this->analyzeWhenValidNode($inner_scope, $node->children['cond']);
         $inner_scope = $this->analyze($inner_scope, $node->children['stmts']);
+        $inner_scope = $this->analyzeWhenValidNode($inner_scope, $node->children['cond']);
+        '@phan-var VariableTrackingLoopScope $inner_scope';
 
         // Merge inner scope into outer scope
-        // @phan-suppress-next-line PhanTypeMismatchArgument
-        return $outer_scope->mergeInnerLoopScope($inner_scope, self::$variable_graph);
+        $outer_scope = $outer_scope->mergeInnerLoopScope($inner_scope, self::$variable_graph);
+        return $outer_scope_unbranched->mergeWithSingleBranchScope($outer_scope);
     }
 
     /**
      * Analyzes `do { stmts } while (cond);`
+     *
+     * TODO: Fix https://github.com/phan/phan/issues/2029
+     *
+     * @param Node $node a node of type AST_DO_WHILE
      * @return VariableTrackingScope
      * @override
      */
     public function visitDoWhile(Node $node)
     {
-        $outer_scope = $this->scope;
+        $outer_scope_unbranched = $this->scope;
+        $outer_scope = new VariableTrackingBranchScope($outer_scope_unbranched);
 
         $inner_scope = new VariableTrackingLoopScope($outer_scope);
         $inner_scope = $this->analyze($inner_scope, $node->children['stmts']);
         $inner_scope = $this->analyzeWhenValidNode($inner_scope, $node->children['cond']);
+        '@phan-var VariableTrackingLoopScope $inner_scope';
 
         // Merge inner scope into outer scope
-        // @phan-suppress-next-line PhanTypeMismatchArgument
-        return $outer_scope->mergeInnerLoopScope($inner_scope, self::$variable_graph);
+        $outer_scope = $outer_scope->mergeInnerLoopScope($inner_scope, self::$variable_graph);
+        '@phan-var VariableTrackingLoopScope $inner_scope';
+        return $outer_scope_unbranched->mergeWithSingleBranchScope($outer_scope);
     }
 
     /**
      * Analyzes `for (init; cond; loop) { stmts }`
+     * @param Node $node a node of type AST_FOR
      * @return VariableTrackingScope
      * @override
      */
     public function visitFor(Node $node)
     {
-        $outer_scope = $this->analyzeWhenValidNode($this->scope, $node->children['init']);
+        $outer_scope_unbranched = $this->analyzeWhenValidNode($this->scope, $node->children['init']);
+        $outer_scope_unbranched = $this->analyzeWhenValidNode($outer_scope_unbranched, $node->children['cond']);
+        $outer_scope = new VariableTrackingBranchScope($outer_scope_unbranched);
 
         $inner_scope = new VariableTrackingLoopScope($outer_scope);
-        // TODO: If the graph analysis is removed, look into making this stop analyzing 'loop' twice
-        $inner_scope = $this->analyzeWhenValidNode($inner_scope, $node->children['loop']);
+        $loop_node = $node->children['loop'];
+        if ($loop_node instanceof Node) {
+            $loop_scope = $this->analyze(new VariableTrackingBranchScope($inner_scope), $loop_node);
+            // @phan-suppress-next-line PhanTypeMismatchArgument
+            $inner_scope = $inner_scope->mergeWithSingleBranchScope($loop_scope);
+        }
+        // TODO: If the graph analysis is improved, look into making this stop analyzing 'loop' twice
         $inner_scope = $this->analyzeWhenValidNode($inner_scope, $node->children['cond']);
         $inner_scope = $this->analyze($inner_scope, $node->children['stmts']);
-        $inner_scope = $this->analyzeWhenValidNode($inner_scope, $node->children['loop']);
+        if ($loop_node instanceof Node) {
+            $loop_scope = $this->analyze(new VariableTrackingBranchScope($inner_scope), $loop_node);
+            // @phan-suppress-next-line PhanTypeMismatchArgument
+            $inner_scope = $inner_scope->mergeWithSingleBranchScope($loop_scope);
+        }
 
         // Merge inner scope into outer scope
         // @phan-suppress-next-line PhanTypeMismatchArgument
-        return $outer_scope->mergeInnerLoopScope($inner_scope, self::$variable_graph);
+        $outer_scope = $outer_scope->mergeInnerLoopScope($inner_scope, self::$variable_graph);
+        return $outer_scope_unbranched->mergeWithSingleBranchScope($outer_scope);
     }
 
     /**
-     * @param Node $node a node of kind AST_IF
      * Analyzes if statements.
+     *
+     * @param Node $node a node of kind AST_IF
      * @return VariableTrackingScope
      *
-     * @see BlockAnalysisVisitor->visitIf (TODO: Use BlockExitStatusChecker)
+     * @see BlockAnalysisVisitor::visitIf()
      * @override
      */
     public function visitIf(Node $node)
@@ -510,16 +550,15 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         }
 
         // Merge inner scope into outer scope
-        // @phan-suppress-next-line PhanPartialTypeMismatchArgument
         return $outer_scope->mergeBranchScopeList($inner_scope_list, $merge_parent_scope, []);
     }
 
     /**
-     * @param Node $node a node of kind AST_SWITCH
      * Analyzes switch statements.
+     *
+     * @param Node $node a node of kind AST_SWITCH
      * @return VariableTrackingScope
      *
-     * @see BlockAnalysisVisitor->visitSwitchList (TODO: Use BlockExitStatusChecker)
      * @override
      */
     public function visitSwitchList(Node $node)
@@ -562,16 +601,15 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         }
 
         // Merge inner scope into outer scope
-        // @phan-suppress-next-line PhanPartialTypeMismatchArgument
         return $outer_scope->mergeBranchScopeList($inner_scope_list, $merge_parent_scope, $inner_exiting_scope_list);
     }
 
     /**
-     * @param Node $node a node of kind AST_CATCH_LIST
-     * Analyzes catch statement lists.
+     * Analyzes try nodes and their catch statement lists and finally blocks.
+     *
+     * @param Node $node a node of kind AST_TRY
      * @return VariableTrackingScope
      *
-     * @see BlockAnalysisVisitor->visitTry (TODO: Use BlockExitStatusChecker)
      * @override
      */
     public function visitTry(Node $node)
@@ -584,11 +622,14 @@ final class VariableTrackerVisitor extends AnalysisVisitor
 
         // TODO: Use BlockExitStatusChecker, like BlockAnalysisVisitor
         // TODO: Optimize
-        $main_scope = $outer_scope->mergeBranchScopeList([$try_scope], true, []);
+        $main_scope = $outer_scope->mergeWithSingleBranchScope($try_scope);
 
         $catch_node_list = $node->children['catches']->children;
-        if (count($catch_node_list) > 0) {
-            $main_scope = $this->analyze($main_scope, $node->children['catches']);
+        if (\count($catch_node_list) > 0) {
+            $catches_scope = new VariableTrackingBranchScope($main_scope);
+            $catches_scope = $this->analyze($catches_scope, $node->children['catches']);
+            // @phan-suppress-next-line PhanTypeMismatchArgument
+            $main_scope = $main_scope->mergeWithSingleBranchScope($catches_scope);
         }
         $finally_node = $node->children['finally'];
         if ($finally_node !== null) {
@@ -598,11 +639,10 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param Node $node a node of kind AST_CATCH_LIST
      * Analyzes catch statement lists.
+     * @param Node $node a node of kind AST_CATCH_LIST
      * @return VariableTrackingScope
      *
-     * @see BlockAnalysisVisitor->visitTry (TODO: Use BlockExitStatusChecker)
      * @override
      */
     public function visitCatchList(Node $node)
@@ -628,11 +668,10 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param Node $node a node of kind AST_CATCH_LIST
      * Analyzes catch statement lists.
+     * @param Node $node a node of kind AST_CATCH
      * @return VariableTrackingScope
      *
-     * @see BlockAnalysisVisitor->visitTry (TODO: Use BlockExitStatusChecker)
      * @override
      */
     public function visitCatch(Node $node)

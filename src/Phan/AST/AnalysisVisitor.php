@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Phan\AST;
 
 use Phan\AST\Visitor\KindVisitorImplementation;
@@ -6,11 +7,16 @@ use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\FQSEN;
-use Phan\Language\UnionType;
 use Phan\Language\Type;
+use Phan\Language\UnionType;
 use Phan\Suggestion;
 
-// TODO: Move to AST\Visitor?
+/**
+ * A visitor used for analysis.
+ *
+ * In addition to calling the corresponding visit*() method for the passed in \ast\Node's kind,
+ * this contains helper methods to emit issues.
+ */
 abstract class AnalysisVisitor extends KindVisitorImplementation
 {
     /**

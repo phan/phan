@@ -1,0 +1,2 @@
+%s:2 PhanSyntaxError Cannot use empty array elements in arrays
+%s:2 PhanTypeConversionFromArray array to string conversion

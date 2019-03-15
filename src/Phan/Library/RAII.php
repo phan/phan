@@ -1,18 +1,22 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Library;
 
 use Closure;
 
 /**
- * Implements Resource Acquizition Is Initialization.
- * An unused variable in the local scope can be used to call this.
+ * Implements Resource Acquisition Is Initialization.
+ * A defined but unused variable in a function/method scope can be used to create this,
+ * and the passed in finalizer closure will be called when that function/method returns.
  *
  * Note: This assumes that the garbage collector eagerly calls __destruct.
  * This may not be the case in alternate PHP implementations.
+ *
+ * @see https://en.wikipedia.org/wiki/Resource_acquisition_is_initialization
  */
 class RAII
 {
-    /** @var Closure():void */
+    /** @var null|Closure():void this is called exactly once, either during __destruct (when the variable goes out of scope) or manually */
     private $finalizer;
 
     /**
@@ -24,6 +28,7 @@ class RAII
     }
 
     /**
+     * Calls the finalizer, unless it has already been called.
      * @return void
      */
     public function callFinalizerOnce()
@@ -31,6 +36,7 @@ class RAII
         $finalizer = $this->finalizer;
         if ($finalizer) {
             $finalizer();
+            $this->finalizer = null;
         }
     }
 

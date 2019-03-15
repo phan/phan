@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Phan\AST\Visitor;
 
 use ast\Node;
@@ -11,6 +12,10 @@ use ast\Node;
 abstract class FlagVisitorImplementation implements FlagVisitor
 {
 
+    /**
+     * This is called to analyze nodes in FlagVisitorImplementation subclasses
+     * that don't define more specific `visit*()` methods for the Node's kind.
+     */
     abstract public function visit(Node $node);
 
     public function visitBinaryAdd(Node $node)
@@ -338,16 +343,25 @@ abstract class FlagVisitorImplementation implements FlagVisitor
         return $this->visit($node);
     }
 
+    /**
+     * Visit a node with kind `ast\AST_UNARY_OP` and flags `ast\flags\UNARY_MINUS`
+     */
     public function visitUnaryMinus(Node $node)
     {
         return $this->visit($node);
     }
 
+    /**
+     * Visit a node with kind `ast\AST_UNARY_OP` and flags `ast\flags\UNARY_PLUS`
+     */
     public function visitUnaryPlus(Node $node)
     {
         return $this->visit($node);
     }
 
+    /**
+     * Visit a node with kind `ast\AST_UNARY_OP` and flags `ast\flags\UNARY_SILENCE`
+     */
     public function visitUnarySilence(Node $node)
     {
         return $this->visit($node);

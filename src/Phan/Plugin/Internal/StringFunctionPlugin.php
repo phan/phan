@@ -1,15 +1,16 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Plugin\Internal;
 
+use ast;
+use ast\Node;
+use Closure;
 use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
 use Phan\PluginV2;
 use Phan\PluginV2\AnalyzeFunctionCallCapability;
-use ast;
-use ast\Node;
-use Closure;
 
 /**
  * NOTE: This is automatically loaded by phan. Do not include it in a config.
@@ -67,8 +68,9 @@ final class StringFunctionPlugin extends PluginV2 implements
     private static function getAnalyzeFunctionCallClosuresStatic() : array
     {
         $make_order_warner = static function (int $expected_const_pos, int $expected_variable_pos) : Closure {
-            $expected_arg_count = 1 + (int)max($expected_const_pos, $expected_variable_pos);
+            $expected_arg_count = 1 + (int)\max($expected_const_pos, $expected_variable_pos);
             /**
+             * @param array<int,Node|int|float|string> $args
              * @return void
              */
             return static function (

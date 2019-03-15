@@ -1,15 +1,13 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Phan\LanguageServer;
 
-use Phan\LanguageServer\Logger;
-use Phan\LanguageServer\Protocol\Message;
 use AdvancedJsonRpc\Message as MessageBody;
-use Sabre\Event\Loop;
-use Sabre\Event\Emitter;
-
 use Exception;
+use Phan\LanguageServer\Protocol\Message;
+use Sabre\Event\Emitter;
+use Sabre\Event\Loop;
 
 /**
  * Source: https://github.com/felixfbecker/php-language-server/tree/master/src/ProtocolStreamReader.php
@@ -19,23 +17,24 @@ class ProtocolStreamReader extends Emitter implements ProtocolReader
     const PARSE_HEADERS = 1;
     const PARSE_BODY = 2;
 
-    /** @var resource */
+    /** @var resource the input stream resource for data from the client. */
     private $input;
+
     /**
      * This is checked by ProtocolStreamReader so that it will stop reading from streams in the forked process.
      * There could be buffered bytes in stdin/over TCP, those would be processed by TCP if it were not for this check.
      * @var bool
      */
     private $is_accepting_new_requests = true;
-    /** @var int */
+    /** @var int (self::PARSE_*) the state of the parsing state machine */
     private $parsing_mode = self::PARSE_HEADERS;
-    /** @var string */
+    /** @var string the intermediate state of the buffer */
     private $buffer = '';
-    /** @var string[] */
+    /** @var string[] the headers that were parsed during the PARSE_HEADERS phase */
     private $headers = [];
-    /** @var int */
+    /** @var int the content-length that we are expecting */
     private $content_length;
-    /** @var bool */
+    /** @var bool was a close notification sent to the listeners already? */
     private $did_emit_close = false;
 
     /**
@@ -50,7 +49,7 @@ class ProtocolStreamReader extends Emitter implements ProtocolReader
         });
 
         Loop\addReadStream($this->input, function () {
-            if (feof($this->input)) {
+            if (\feof($this->input)) {
                 // If stream_select reported a status change for this stream,
                 // but the stream is EOF, it means it was closed.
                 $this->emitClose();
@@ -73,9 +72,8 @@ class ProtocolStreamReader extends Emitter implements ProtocolReader
      */
     private function readMessages() : int
     {
-        $c = '';
         $emitted_messages = 0;
-        while (($c = fgetc($this->input)) !== false && $c !== '') {
+        while (($c = \fgetc($this->input)) !== false && $c !== '') {
             $this->buffer .= $c;
             switch ($this->parsing_mode) {
                 case self::PARSE_HEADERS:
@@ -83,14 +81,14 @@ class ProtocolStreamReader extends Emitter implements ProtocolReader
                         $this->parsing_mode = self::PARSE_BODY;
                         $this->content_length = (int)$this->headers['Content-Length'];
                         $this->buffer = '';
-                    } elseif (substr($this->buffer, -2) === "\r\n") {
-                        $parts = explode(':', $this->buffer);
-                        $this->headers[$parts[0]] = trim($parts[1]);
+                    } elseif (\substr($this->buffer, -2) === "\r\n") {
+                        $parts = \explode(':', $this->buffer);
+                        $this->headers[$parts[0]] = \trim($parts[1]);
                         $this->buffer = '';
                     }
                     break;
                 case self::PARSE_BODY:
-                    if (strlen($this->buffer) === $this->content_length) {
+                    if (\strlen($this->buffer) === $this->content_length) {
                         if (!$this->is_accepting_new_requests) {
                             // If we fork, don't read any bytes in the input buffer from the worker process.
                             $this->emitClose();

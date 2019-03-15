@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
+
 namespace Phan\AST;
 
 use ast\Node;
-
-use function md5;
 use function is_int;
 use function is_string;
+use function md5;
 
 /**
  * This converts a PHP AST Node into a hash.
@@ -14,9 +14,10 @@ use function is_string;
 class ASTHasher
 {
     /**
+     * @param string|int|float|null $node
      * @return string a 16-byte binary key
      */
-    public static function hash_key($node)
+    public static function hashKey($node)
     {
         if (is_string($node)) {
             return md5('s' . $node, true);
@@ -29,12 +30,13 @@ class ASTHasher
     }
 
     /**
+     * @param Node|string|int|float|null $node
      * @return string a 16-byte binary key
      */
     public static function hash($node)
     {
         if (!($node instanceof Node)) {
-            // hash_key
+            // hashKey
             if (is_string($node)) {
                 return md5('s' . $node, true);
             }
@@ -44,13 +46,14 @@ class ASTHasher
             return md5('f' . $node, true);
         }
         // @phan-suppress-next-line PhanUndeclaredProperty
-        return $node->hash ?? ($node->hash = self::compute_hash($node));
+        return $node->hash ?? ($node->hash = self::computeHash($node));
     }
 
     /**
+     * @param Node $node
      * @return string a 16-byte binary key
      */
-    private static function compute_hash($node)
+    private static function computeHash($node)
     {
         $str = 'N' . $node->kind . ':' . ($node->flags & 0xfffff);
         foreach ($node->children as $key => $child) {
@@ -58,7 +61,7 @@ class ASTHasher
             if ($key === 'phan_nf') {
                 continue;
             }
-            $str .= self::hash_key($key);
+            $str .= self::hashKey($key);
             $str .= self::hash($child);
         }
         return md5($str, true);

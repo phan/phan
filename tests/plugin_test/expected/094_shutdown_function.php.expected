@@ -1,0 +1,3 @@
+src/094_shutdown_function.php:3 PhanUndeclaredFunctionInCallable Call to undeclared function notafunction in callable
+src/094_shutdown_function.php:4 PhanUndeclaredClassInCallable Reference to undeclared class \MissingClass in callable \MissingClass::notafunction
+src/094_shutdown_function.php:6 PhanUndeclaredStaticMethodInCallable Reference to undeclared static method \stdClass::notafunction2 in callable

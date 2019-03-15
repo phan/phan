@@ -1,11 +1,16 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
+
 namespace Phan\Output\Printer;
 
 use Phan\Issue;
 use Phan\IssueInstance;
+use Phan\Library\StringUtil;
 use Phan\Output\BufferedPrinterInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * This prints issues in the CodeClimate zero byte separated JSON format to the configured OutputInterface.
+ */
 final class CodeClimatePrinter implements BufferedPrinterInterface
 {
 
@@ -13,10 +18,10 @@ final class CodeClimatePrinter implements BufferedPrinterInterface
     const CODECLIMATE_SEVERITY_CRITICAL = 'critical';
     const CODECLIMATE_SEVERITY_NORMAL = 'normal';
 
-    /** @var  OutputInterface */
+    /** @var OutputInterface an output that zero byte separated JSON can be written to.  */
     private $output;
 
-    /** @var array<int,array> */
+    /** @var array<int,array> a list of associative arrays with codeclimate issue fields. */
     private $messages = [];
 
     /** @param IssueInstance $instance */
@@ -29,7 +34,7 @@ final class CodeClimatePrinter implements BufferedPrinterInterface
             'categories' => ['Bug Risk'],
             'severity' => self::mapSeverity($instance->getIssue()->getSeverity()),
             'location' => [
-                'path' => preg_replace('/^\/code\//', '', $instance->getFile()),
+                'path' => \preg_replace('/^\/code\//', '', $instance->getFile()),
                 'lines' => [
                     'begin' => $instance->getLine(),
                     'end' => $instance->getLine(),
@@ -64,7 +69,7 @@ final class CodeClimatePrinter implements BufferedPrinterInterface
         // See https://github.com/codeclimate/spec/blob/master/SPEC.md#output
         // for details on the CodeClimate output format
         foreach ($this->messages as $message) {
-            $encoded_message = json_encode($message, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\0";
+            $encoded_message = StringUtil::jsonEncode($message) . "\0";
             $this->output->write($encoded_message, false, OutputInterface::OUTPUT_RAW);
         }
         $this->messages = [];

@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Phan\PluginV2;
 
 use Phan\CodeBase;
@@ -8,10 +9,11 @@ use Phan\Language\Element\UnaddressableTypedElement;
 use Phan\Language\FQSEN;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
-use Phan\PluginV2\SuppressionCapability;
 use Phan\Suggestion;
 
 /**
+ * Plugins can implement this to suppress issues in additional ways.
+ *
  * @see \Phan\Plugin\Internal\BuiltinSuppressionPlugin for an example of how to implement a plugin with this functionality
  */
 interface SuppressionCapability
@@ -63,7 +65,8 @@ interface SuppressionCapability
      *
      * @param string $file_path the file to check for suppressions of
      *
-     * @return array<string,array<int,int>> Maps 0 or more issue types to a *list* of lines that this plugin is going to suppress.
+     * @return array<string,array<int,int>> Maps 0 or more issue types to a *map* of lines that this plugin is going to suppress.
+     * The keys of the map are the lines being suppressed, and the values are the lines *causing* the suppressions (if extracted from comments or nodes)
      *
      * An empty array can be returned if this is unknown.
      */

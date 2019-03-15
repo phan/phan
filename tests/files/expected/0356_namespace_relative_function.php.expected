@@ -3,5 +3,5 @@
 %s:9 PhanTypeMismatchArgument Argument 1 (x) is 2 but \test356() takes string defined at %s:4
 %s:14 PhanTypeMismatchArgument Argument 1 (x) is 2 but \test356() takes string defined at %s:4
 %s:15 PhanTypeMismatchArgument Argument 1 (x) is 2 but \test356() takes string defined at %s:4
-%s:16 PhanUndeclaredFunction Call to undeclared function \NS355\test356()
-%s:23 PhanUndeclaredFunction Call to undeclared function \inNS356()
+%s:16 PhanUndeclaredFunction Call to undeclared function \NS355\test356() (Did you mean \test356())
+%s:23 PhanUndeclaredFunction Call to undeclared function \inNS356() (Did you mean \NS355\inNS356())

@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
+use ast\Node;
 use Phan\Analysis\BlockExitStatusChecker;
 use Phan\PluginV2;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
 use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use ast\Node;
+use Phan\PluginV2\PostAnalyzeNodeCapability;
 
 /**
  * This file checks for syntactically unreachable statements in
@@ -18,7 +18,7 @@ use ast\Node;
  *
  * A plugin file must
  *
- * - Contain a class that inherits from \Phan\Plugin
+ * - Contain a class that inherits from \Phan\PluginV2
  *
  * - End by returning an instance of that class.
  *
@@ -68,7 +68,6 @@ final class UnreachableCodeVisitor extends PluginAwarePostAnalysisVisitor
     public function visitStmtList(Node $node)
     {
         $child_nodes = $node->children;
-        // Debug::printNode($node);
 
         $last_node_index = count($child_nodes) - 1;
         foreach ($child_nodes as $i => $node) {
@@ -81,7 +80,7 @@ final class UnreachableCodeVisitor extends PluginAwarePostAnalysisVisitor
             if (!($node instanceof Node)) {
                 continue;
             }
-            if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($node)) {
+            if (!BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($node)) {
                 continue;
             }
             // Skip over empty statements and scalar statements.
@@ -97,7 +96,7 @@ final class UnreachableCodeVisitor extends PluginAwarePostAnalysisVisitor
                 }
                 $context = clone($this->context)->withLineNumberStart($next_node->lineno);
                 if ($this->context->isInFunctionLikeScope()) {
-                    if ($this->context->getFunctionLikeInScope($this->code_base)->hasSuppressIssue('PhanPluginUnreachableCode')) {
+                    if ($this->context->getFunctionLikeInScope($this->code_base)->checkHasSuppressIssueAndIncrementCount('PhanPluginUnreachableCode')) {
                         // don't emit the below issue.
                         break;
                     }
@@ -116,5 +115,5 @@ final class UnreachableCodeVisitor extends PluginAwarePostAnalysisVisitor
     }
 }
 // Every plugin needs to return an instance of itself at the
-// end of the file in which its defined.
+// end of the file in which it's defined.
 return new UnreachableCodePlugin();

@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language\Element;
 
 /**
@@ -29,16 +30,26 @@ class TraitAliasSource
         $this->alias_visibility_flags = $alias_visibility_flags;
     }
 
+    /**
+     * Returns the name of the method which this is an alias of.
+     */
     public function getSourceMethodName() : string
     {
         return $this->source_method_name;
     }
 
+    /**
+     * Returns the line number where this trait method alias was created
+     * (in the class using traits).
+     */
     public function getAliasLineno() : int
     {
         return $this->alias_lineno;
     }
 
+    /**
+     * Returns the overridden visibility modifier, or 0 if the visibility didn't change
+     */
     public function getAliasVisibilityFlags() : int
     {
         return $this->alias_visibility_flags;

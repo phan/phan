@@ -1,23 +1,42 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Daemon;
 
 use Closure;
 use Phan\Analysis;
+use Phan\AST\TolerantASTConverter\TolerantASTConverter;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Daemon;
 use Phan\Daemon\Transport\Responder;
 use Phan\Language\FileRef;
 use Phan\Language\Type;
+use Phan\LanguageServer\CompletionRequest;
 use Phan\LanguageServer\FileMapping;
 use Phan\LanguageServer\GoToDefinitionRequest;
+use Phan\LanguageServer\NodeInfoRequest;
 use Phan\Library\FileCache;
+use Phan\Library\StringUtil;
 use Phan\Output\IssuePrinterInterface;
+use Phan\Output\Printer\FilteringPrinter;
 use Phan\Output\PrinterFactory;
 use Symfony\Component\Console\Output\BufferedOutput;
 
+use function count;
+use function get_class;
+use function in_array;
+use function is_array;
+use function is_string;
+use function strlen;
+
+use const DEBUG_BACKTRACE_IGNORE_ARGS;
+use const SIGCHLD;
+use const SORT_STRING;
+use const WNOHANG;
+
 /**
  * Represents the state of a client request to a daemon, and contains methods for sending formatted responses.
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class Request
 {
@@ -26,6 +45,7 @@ class Request
     const PARAM_METHOD = 'method';
     const PARAM_FILES  = 'files';
     const PARAM_FORMAT = 'format';
+    const PARAM_COLOR  = 'color';
     const PARAM_TEMPORARY_FILE_MAPPING_CONTENTS = 'temporary_file_mapping_contents';
 
     // success codes
@@ -42,42 +62,66 @@ class Request
     /** @var Responder|null - Null after the response is sent. */
     private $responder;
 
-    /** @var array{method:string,files:array<int,string>,format:string,temporary_file_mapping_contents:array<string,string>} */
-    private $config;
+    /**
+     * @var array{method:string,files:array<int,string>,format:string,temporary_file_mapping_contents:array<string,string>}
+     *
+     * The configuration passed in with the request to the daemon.
+     */
+    private $request_config;
 
-    /** @var BufferedOutput */
+    /** @var BufferedOutput this collects the serialized issues emitted by this worker to be sent back to the master process */
     private $buffered_output;
 
-    /** @var string */
+    /** @var string the method of the daemon being invoked */
     private $method;
 
-    /** @var array<int,string>|null */
+    /** @var array<int,string>|null the list of files the client has requested to be analyzed */
     private $files = null;
 
+    /**
+     * A set of process ids of child processes
+     * @var array<int,true>
+     */
     private static $child_pids = [];
 
+    /**
+     * A set of process ids of child processes
+     * @var array<int,int>
+     */
     private static $exited_pid_status = [];
 
 
-    /** @var ?GoToDefinitionRequest */
-    private $most_recent_definition_request;
-    /** @var bool */
+    /**
+     * The most recent Language Server Protocol request to look up what an element is
+     * (e.g. "go to definition", "go to type definition", "hover")
+     *
+     * @var ?NodeInfoRequest
+     */
+    private $most_recent_node_info_request;
+
+    /**
+     * If true, this process will exit() after finishing.
+     * If false, this class will instead throw ExitException to be caught by the caller
+     * (E.g. if pcntl is unavailable)
+     *
+     * @var bool
+     */
     private $should_exit;
 
     /**
      * @param array{method:string,files:array<int,string>,format:string,temporary_file_mapping_contents:array<string,string>} $config
-     * @param ?GoToDefinitionRequest $most_recent_definition_request
+     * @param ?NodeInfoRequest $most_recent_node_info_request
      */
-    private function __construct(Responder $responder, array $config, $most_recent_definition_request, bool $should_exit)
+    private function __construct(Responder $responder, array $config, $most_recent_node_info_request, bool $should_exit)
     {
         $this->responder = $responder;
-        $this->config = $config;
+        $this->request_config = $config;
         $this->buffered_output = new BufferedOutput();
         $this->method = $config[self::PARAM_METHOD];
         if ($this->method === self::METHOD_ANALYZE_FILES) {
             $this->files = $config[self::PARAM_FILES];
         }
-        $this->most_recent_definition_request = $most_recent_definition_request;
+        $this->most_recent_node_info_request = $most_recent_node_info_request;
         $this->should_exit = $should_exit;
     }
 
@@ -86,9 +130,22 @@ class Request
      */
     public function shouldUseMappingPolyfill(string $file_path) : bool
     {
-        $most_recent_definition_request = $this->most_recent_definition_request;
-        if ($most_recent_definition_request) {
-            return $most_recent_definition_request->getPath() === Config::projectPath($file_path);
+        $most_recent_node_info_request = $this->most_recent_node_info_request;
+        if ($most_recent_node_info_request) {
+            return $most_recent_node_info_request->getPath() === Config::projectPath($file_path);
+        }
+        return false;
+    }
+
+    /**
+     * @param string $file_path an absolute or relative path to be analyzed
+     */
+    public function shouldAddPlaceholdersForPath(string $file_path) : bool
+    {
+        $most_recent_node_info_request = $this->most_recent_node_info_request;
+        if ($most_recent_node_info_request) {
+            return $most_recent_node_info_request->getPath() === Config::projectPath($file_path) &&
+                $most_recent_node_info_request instanceof CompletionRequest;
         }
         return false;
     }
@@ -98,9 +155,9 @@ class Request
      */
     public function getTargetByteOffset(string $file_contents) : int
     {
-        $most_recent_definition_request = $this->most_recent_definition_request;
-        if ($most_recent_definition_request) {
-            $position = $most_recent_definition_request->getPosition();
+        $most_recent_node_info_request = $this->most_recent_node_info_request;
+        if ($most_recent_node_info_request) {
+            $position = $most_recent_node_info_request->getPosition();
             return $position->toOffset($file_contents);
         }
         return -1;
@@ -121,68 +178,137 @@ class Request
 
     /**
      * @param Responder $responder (e.g. a socket to write a response on)
-     * @param array<int,string> $filenames absolute path of file(s) to analyze
+     * @param array<int,string> $file_names absolute path of file(s) to analyze
      * @param CodeBase $code_base (for refreshing parse state)
      * @param Closure $file_path_lister (for refreshing parse state)
      * @param FileMapping $file_mapping object tracking the overrides made by a client.
-     * @param ?GoToDefinitionRequest $most_recent_definition_request contains a promise that we want the resolution of
+     * @param ?NodeInfoRequest $most_recent_node_info_request contains a promise that we want the resolution of
      * @param bool $should_exit - If this is true, calling $this->exit() will terminate the program. If false, ExitException will be thrown.
      */
     public static function makeLanguageServerAnalysisRequest(
         Responder $responder,
-        array $filenames,
+        array $file_names,
         CodeBase $code_base,
         Closure $file_path_lister,
         FileMapping $file_mapping,
-        $most_recent_definition_request,
+        $most_recent_node_info_request,
         bool $should_exit
     ) : Request {
         FileCache::clear();
         $file_mapping_contents = self::normalizeFileMappingContents($file_mapping->getOverrides(), $error_message);
+        if ($most_recent_node_info_request instanceof CompletionRequest) {
+            $file_mapping_contents = self::adjustFileMappingContentsForCompletionRequest($file_mapping_contents, $most_recent_node_info_request);
+        }
         // Use the temporary contents if they're available
-        Request::reloadFilePathListForDaemon($code_base, $file_path_lister, $file_mapping_contents);
+        Request::reloadFilePathListForDaemon($code_base, $file_path_lister, $file_mapping_contents, $file_names);
         if ($error_message !== null) {
             Daemon::debugf($error_message);
-        };
+        }
         $result = new self(
             $responder,
             [
                 self::PARAM_FORMAT => 'json',
                 self::PARAM_METHOD => self::METHOD_ANALYZE_FILES,
-                self::PARAM_FILES => $filenames,
+                self::PARAM_FILES => $file_names,
                 self::PARAM_TEMPORARY_FILE_MAPPING_CONTENTS => $file_mapping_contents,
             ],
-            $most_recent_definition_request,
+            $most_recent_node_info_request,
             $should_exit
         );
         return $result;
     }
 
+    /**
+     * When a user types :: or -> and requests code completion at the end of a line,
+     * then add __INCOMPLETE_PROPERTY__ or __INCOMPLETE_CLASS_CONST__ so that this
+     * can get parsed and completed.
+     * @param array<string,string> $file_mapping_contents old map from relative file paths to contents.
+     * @return array<string,string>
+     */
+    private static function adjustFileMappingContentsForCompletionRequest(
+        array $file_mapping_contents,
+        CompletionRequest $completion_request
+    ) {
+        $file = FileRef::getProjectRelativePathForPath($completion_request->getPath());
+        // fwrite(STDERR, "\nSaw $file in " . json_encode(array_keys($file_mapping_contents)) . "\n");
+        $contents = $file_mapping_contents[$file] ?? null;
+        if ($contents) {
+            $position = $completion_request->getPosition();
+            $lines = \explode("\n", $contents);
+            $line = $lines[$position->line] ?? null;
+            // $len = strlen($line ?? ''); fwrite(STDERR, "Looking at $line : $position of $len\n");
+            if (is_string($line) && strlen($line) === $position->character + 1 && $position->character > 0) {
+                // fwrite(STDERR, "cursor at the end of the line\n");
+                if (\preg_match('/(::|->)$/', $line, $matches)) {
+                    // fwrite(STDERR, "Updating the file\n");
+                    if ($matches[1] === '::') {
+                        $addition = TolerantASTConverter::INCOMPLETE_CLASS_CONST;
+                    } else {
+                        $addition = TolerantASTConverter::INCOMPLETE_PROPERTY;
+                    }
+                    $lines[$position->line] .= $addition;
+                    $new_contents = \implode("\n", $lines);
+                    $file_mapping_contents[$file] = $new_contents;
+                    // fwrite(STDERR, "Going to complete\n$new_contents\n====\nA");
+                }
+            }
+        }
+        return $file_mapping_contents;
+    }
+
+    /**
+     * Returns a printer that will be used to send JSON serialized data to the daemon client (i.e. `phan_client`).
+     */
     public function getPrinter() : IssuePrinterInterface
     {
-        // TODO: check $this->config['format']
+        $this->handleClientColorOutput();
+
         $factory = new PrinterFactory();
-        $format = $this->config['format'] ?? 'json';
+        $format = $this->request_config[self::PARAM_FORMAT] ?? 'json';
         if (!in_array($format, $factory->getTypes())) {
             $this->sendJSONResponse([
                 "status" => self::STATUS_INVALID_FORMAT,
             ]);
             exit(0);
         }
-        return $factory->getPrinter($format, $this->buffered_output);
+        // In both the Language Server and the Daemon,
+        // this deliberately sends only analysis results of the files that are currently open.
+        //
+        // Otherwise, there might be an overwhelming number of issues to solve in some projects before using this in the IDE (e.g. PhanUnreferencedUseNormal)
+        $printer = $factory->getPrinter($format, $this->buffered_output);
+        $files = $this->request_config[self::PARAM_FILES] ?? null;
+        if (is_array($files) && count($files) > 0 && !Config::getValue('language_server_disable_output_filter')) {
+            return new FilteringPrinter($files, $printer);
+        }
+        return $printer;
+    }
+
+    /**
+     * Handle a request created by the client with `phan_client --color`
+     */
+    private function handleClientColorOutput()
+    {
+        // Back up the original state: If pcntl isn't used, we don't want subsequent requests to be accidentally colorized.
+        static $original_color = null;
+        if ($original_color === null) {
+            $original_color = (bool)Config::getValue('color_issue_messages');
+        }
+        $new_color = $this->request_config[self::PARAM_COLOR] ?? $original_color;
+        Config::setValue('color_issue_messages', $new_color);
     }
 
     /**
      * Respond with issues in the requested format
      * @return void
+     * @see LanguageServer::handleJSONResponseFromWorker() for one possible usage of this
      */
     public function respondWithIssues(int $issue_count)
     {
         $raw_issues = $this->buffered_output->fetch();
-        if (($this->config[self::PARAM_FORMAT] ?? null) === 'json') {
-            $issues = json_decode($raw_issues, true);
+        if (($this->request_config[self::PARAM_FORMAT] ?? null) === 'json') {
+            $issues = \json_decode($raw_issues, true);
             if (!\is_array($issues)) {
-                $issues = "(Failed to decode) " . json_last_error_msg() . ': ' . $raw_issues;
+                $issues = "(Failed to decode) " . \json_last_error_msg() . ': ' . $raw_issues;
             }
         } else {
             $issues = $raw_issues;
@@ -192,8 +318,12 @@ class Request
             "issue_count" => $issue_count,
             "issues" => $issues,
         ];
-        if ($this->most_recent_definition_request) {
-            $response['definitions'] = $this->most_recent_definition_request->getDefinitionLocations();
+        $most_recent_node_info_request = $this->most_recent_node_info_request;
+        if ($most_recent_node_info_request instanceof GoToDefinitionRequest) {
+            $response['definitions'] = $most_recent_node_info_request->getDefinitionLocations();
+            $response['hover_response'] = $most_recent_node_info_request->getHoverResponse();
+        } elseif ($most_recent_node_info_request instanceof CompletionRequest) {
+            $response['completions'] = $most_recent_node_info_request->getCompletions();
         }
         $this->sendJSONResponse($response);
     }
@@ -220,7 +350,7 @@ class Request
             return $analyze_file_path_list;
         }
 
-        $analyze_file_path_set = array_flip($analyze_file_path_list);
+        $analyze_file_path_set = \array_flip($analyze_file_path_list);
         $filtered_files = [];
         foreach ($this->files as $file) {
             // Must be relative to project, allow absolute paths to be passed in.
@@ -231,10 +361,10 @@ class Request
             } else {
                 // TODO: Reload file list once before processing request?
                 // TODO: Change this to also support analyzing files that would normally be parsed but not analyzed?
-                Daemon::debugf("Failed to find requested file '%s' in parsed file list", $file, json_encode($analyze_file_path_list));
+                Daemon::debugf("Failed to find requested file '%s' in parsed file list", $file, StringUtil::jsonEncode($analyze_file_path_list));
             }
         }
-        Daemon::debugf("Returning file set: %s", json_encode($filtered_files));
+        Daemon::debugf("Returning file set: %s", StringUtil::jsonEncode($filtered_files));
         return $filtered_files;
     }
 
@@ -244,20 +374,20 @@ class Request
      */
     public function getTemporaryFileMapping() : array
     {
-        $mapping = $this->config[self::PARAM_TEMPORARY_FILE_MAPPING_CONTENTS] ?? [];
+        $mapping = $this->request_config[self::PARAM_TEMPORARY_FILE_MAPPING_CONTENTS] ?? [];
         if (!is_array($mapping)) {
             $mapping = [];
         }
-        Daemon::debugf("Have the following files in mapping: %s", json_encode(array_keys($mapping)));
+        Daemon::debugf("Have the following files in mapping: %s", StringUtil::jsonEncode(\array_keys($mapping)));
         return $mapping;
     }
 
     /**
-     * @return ?GoToDefinitionRequest
+     * @return ?NodeInfoRequest
      */
-    public function getMostRecentGoToDefinitionRequest()
+    public function getMostRecentNodeInfoRequest()
     {
-        return $this->most_recent_definition_request;
+        return $this->most_recent_node_info_request;
     }
 
     /**
@@ -265,10 +395,10 @@ class Request
      */
     public function rejectLanguageServerRequestsRequiringAnalysis()
     {
-        $most_recent_definition_request = $this->most_recent_definition_request;
-        if ($most_recent_definition_request) {
-            $most_recent_definition_request->finalize();
-            $this->most_recent_definition_request = null;
+        $most_recent_node_info_request = $this->most_recent_node_info_request;
+        if ($most_recent_node_info_request) {
+            $most_recent_node_info_request->finalize();
+            $this->most_recent_node_info_request = null;
         }
     }
 
@@ -297,7 +427,7 @@ class Request
         if ($responder) {
             $responder->sendResponseAndClose([
                 'status' => self::STATUS_ERROR_UNKNOWN,
-                'message' => 'failed to send a response - Possibly encountered an exception. See daemon output.' . json_encode(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS)),
+                'message' => 'failed to send a response - Possibly encountered an exception. See daemon output: ' . StringUtil::jsonEncode(\debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS)),
             ]);
             $this->responder = null;
         }
@@ -311,19 +441,20 @@ class Request
      */
     public static function childSignalHandler($signo, $status = null, $pid = null)
     {
+        // test
         if ($signo !== SIGCHLD) {
             return;
         }
         if (!$pid) {
-            $pid = pcntl_waitpid(-1, $status, WNOHANG);
+            $pid = \pcntl_waitpid(-1, $status, WNOHANG);
         }
-        Daemon::debugf("Got signal pid=%s", json_encode($pid));
+        Daemon::debugf("Got signal pid=%s", StringUtil::jsonEncode($pid));
 
         while ($pid > 0) {
             if (\array_key_exists($pid, self::$child_pids)) {
-                $exit_code = pcntl_wexitstatus($status);
+                $exit_code = \pcntl_wexitstatus($status);
                 if ($exit_code != 0) {
-                    error_log(sprintf("child process %d exited with status %d\n", $pid, $exit_code));
+                    \error_log(\sprintf("child process %d exited with status %d\n", $pid, $exit_code));
                 } else {
                     Daemon::debugf("child process %d completed successfully", $pid);
                 }
@@ -331,19 +462,21 @@ class Request
             } elseif ($pid > 0) {
                 self::$exited_pid_status[$pid] = $status;
             }
-            $pid = pcntl_waitpid(-1, $status, WNOHANG);
+            $pid = \pcntl_waitpid(-1, $status, WNOHANG);
         }
     }
 
     /**
      * @param array<string,string> $file_mapping_contents
      * @param ?string &$error_message @phan-output-reference
+     * @return array<string,string>
      */
     public static function normalizeFileMappingContents($file_mapping_contents, &$error_message) : array
     {
         $error_message = null;
         if (!\is_array($file_mapping_contents)) {
             $error_message = 'Invalid value of temporary_file_mapping_contents';
+            return [];
         }
         $new_file_mapping_contents = [];
         foreach ($file_mapping_contents ?? [] as $file => $contents) {
@@ -360,7 +493,7 @@ class Request
     }
     /**
      * @param CodeBase $code_base
-     * @param \Closure $file_path_lister
+     * @param \Closure $file_path_lister lists all files that will be parsed by Phan
      * @param Responder $responder
      * @return ?Request - non-null if this is a worker process with work to do. null if request failed or this is the master.
      */
@@ -379,6 +512,7 @@ class Request
         }
         $new_file_mapping_contents = [];
         $method = $request['method'] ?? '';
+        $files = null;
         switch ($method) {
             case 'analyze_all':
                 // Analyze the default list of files. No expected params.
@@ -386,14 +520,13 @@ class Request
             case 'analyze_file':
                 $method = 'analyze_files';
                 $request = [
-                self::PARAM_METHOD => $method,
-                self::PARAM_FILES => [$request['file']],
-                self::PARAM_FORMAT => $request[self::PARAM_FORMAT] ?? 'json',
+                    self::PARAM_METHOD => $method,
+                    self::PARAM_FILES => [$request['file']],
+                    self::PARAM_FORMAT => $request[self::PARAM_FORMAT] ?? 'json',
                 ];
                 // Fall through, this is an alias of analyze_files
             case 'analyze_files':
                 // Analyze the list of strings provided in "files"
-                // TODO: Actually do that.
                 $files = $request[self::PARAM_FILES] ?? null;
                 $request[self::PARAM_FORMAT] = $request[self::PARAM_FORMAT] ?? 'json';
                 $error_message = null;
@@ -427,7 +560,7 @@ class Request
                 break;
                 // TODO(optional): add APIs to resolve types of variables/properties/etc (e.g. accept byte offset or line/column offset)
             default:
-                $message = sprintf("expected method to be analyze_all or analyze_files, got %s", json_encode($method));
+                $message = \sprintf("expected method to be analyze_all or analyze_files, got %s", StringUtil::jsonEncode($method));
                 Daemon::debugf($message);
                 $responder->sendResponseAndClose([
                     'status'  => self::STATUS_INVALID_METHOD,
@@ -437,7 +570,7 @@ class Request
         }
 
         // Re-parse the file list
-        self::reloadFilePathListForDaemon($code_base, $file_path_lister, $new_file_mapping_contents);
+        self::reloadFilePathListForDaemon($code_base, $file_path_lister, $new_file_mapping_contents, $files);
 
         // Analyze the files that are open in the IDE (If pcntl is available, the analysis is done in a forked process)
 
@@ -454,12 +587,12 @@ class Request
             return $request_obj;
         }
 
-        $fork_result = pcntl_fork();
+        $fork_result = \pcntl_fork();
         if ($fork_result < 0) {
-            error_log("The daemon failed to fork. Going to terminate");
+            \error_log("The daemon failed to fork. Going to terminate");
         } elseif ($fork_result == 0) {
             Daemon::debugf("This is the fork");
-            self::$child_pids = [];
+            self::handleBecomingChildAnalysisProcess();
             // @phan-suppress-next-line PhanPartialTypeMismatchArgument pre-existing
             $request_obj = new self($responder, $request, null, true);
             $temporary_file_mapping = $request_obj->getTemporaryFileMapping();
@@ -469,28 +602,46 @@ class Request
             return $request_obj;
         } else {
             $pid = $fork_result;
-            $status = self::$exited_pid_status[$pid] ?? null;
-            if (isset($status)) {
-                Daemon::debugf("child process %d already exited", $pid);
-                self::childSignalHandler(SIGCHLD, $status, $pid);
-                unset(self::$exited_pid_status[$pid]);
-            } else {
-                self::$child_pids[$pid] = true;
-            }
-
-            // TODO: Use http://php.net/manual/en/book.inotify.php if available, watch all directories if available.
-            // Daemon continues to execute.
-            self::$child_pids[] = $fork_result;
-            Daemon::debugf("Created a child pid %d", $fork_result);
+            self::handleBecomingParentOfChildAnalysisProcess($pid);
         }
         return null;
     }
 
     /**
-     * Reloads the file path list.
+     * @param int $pid the child PID of this process that is performing analysis
      * @return void
      */
-    public static function reloadFilePathListForDaemon(CodeBase $code_base, \Closure $file_path_lister, array $file_mapping_contents)
+    public static function handleBecomingParentOfChildAnalysisProcess(int $pid)
+    {
+        $status = self::$exited_pid_status[$pid] ?? null;
+        if (isset($status)) {
+            Daemon::debugf("child process %d already exited", $pid);
+            self::childSignalHandler(SIGCHLD, $status, $pid);
+            unset(self::$exited_pid_status[$pid]);
+        } else {
+            self::$child_pids[$pid] = true;
+        }
+
+        // TODO: Use http://php.net/manual/en/book.inotify.php if available, watch all directories if available.
+        // Daemon continues to execute.
+        Daemon::debugf("Created a child pid %d", $pid);
+    }
+
+    /**
+     * @return void
+     */
+    public static function handleBecomingChildAnalysisProcess()
+    {
+        self::$child_pids = [];
+    }
+
+    /**
+     * Reloads the file path list.
+     * @param array<string,string> $file_mapping_contents maps relative paths to file contents
+     * @param ?array<int,string> $file_names
+     * @return void
+     */
+    public static function reloadFilePathListForDaemon(CodeBase $code_base, \Closure $file_path_lister, array $file_mapping_contents, array $file_names = null)
     {
         $old_count = $code_base->getParsedFilePathCount();
 
@@ -500,11 +651,11 @@ class Request
             // Parse the files in lexicographic order.
             // If there are duplicate class/function definitions,
             // this ensures they are added to the maps in the same order.
-            sort($file_list, SORT_STRING);
+            \sort($file_list, SORT_STRING);
         }
 
-        $changed_or_added_files = $code_base->updateFileList($file_list, $file_mapping_contents);
-        // Daemon::debugf("Parsing modified files: New files = %s", json_encode($changed_or_added_files));
+        $changed_or_added_files = $code_base->updateFileList($file_list, $file_mapping_contents, $file_names);
+        // Daemon::debugf("Parsing modified files: New files = %s", StringUtil::jsonEncode($changed_or_added_files));
         if (count($changed_or_added_files) > 0 || $code_base->getParsedFilePathCount() !== $old_count) {
             // Only clear memoizations if it is determined at least one file to parse was added/removed/modified.
             // - file path count changes if files were deleted or added
@@ -519,8 +670,8 @@ class Request
             $code_base->flushDependenciesForFile($file_path);
 
             // If the file is gone, no need to continue
-            $real = realpath($file_path);
-            if ($real === false || !file_exists($real)) {
+            $real = \realpath($file_path);
+            if ($real === false || !\file_exists($real)) {
                 Daemon::debugf("file $file_path does not exist");
                 continue;
             }
@@ -529,7 +680,7 @@ class Request
                 // Parse the file
                 Analysis::parseFile($code_base, $file_path, false, $file_mapping_contents[$file_path] ?? null);
             } catch (\Throwable $throwable) {
-                error_log(sprintf("Analysis::parseFile threw %s for %s: %s\n%s", get_class($throwable), $file_path, $throwable->getMessage(), $throwable->getTraceAsString()));
+                \error_log(\sprintf("Analysis::parseFile threw %s for %s: %s\n%s", get_class($throwable), $file_path, $throwable->getMessage(), $throwable->getTraceAsString()));
             }
         }
         Daemon::debugf("Done parsing modified files");
@@ -549,7 +700,7 @@ class Request
         }
 
         // too verbose
-        Daemon::debugf("Parsing temporary file mapping contents: New contents = %s", json_encode($temporary_file_mapping_contents));
+        Daemon::debugf("Parsing temporary file mapping contents: New contents = %s", StringUtil::jsonEncode($temporary_file_mapping_contents));
 
         $changes_to_add = [];
         foreach ($temporary_file_mapping_contents as $file_name => $contents) {
@@ -557,7 +708,7 @@ class Request
                 $changes_to_add[$file_name] = $contents;
             }
         }
-        Daemon::debugf("Done setting temporary file contents: Will replace contents of the following files: %s", json_encode(array_keys($changes_to_add)));
+        Daemon::debugf("Done setting temporary file contents: Will replace contents of the following files: %s", StringUtil::jsonEncode(\array_keys($changes_to_add)));
         if (count($changes_to_add) === 0) {
             return;
         }
@@ -569,8 +720,8 @@ class Request
             $code_base->flushDependenciesForFile($file_path);
 
             // If the file is gone, no need to continue
-            $real = realpath($file_path);
-            if ($real === false || !file_exists($real)) {
+            $real = \realpath($file_path);
+            if ($real === false || !\file_exists($real)) {
                 Daemon::debugf("file $file_path no longer exists on disk, but we tried to replace it?");
                 continue;
             }
@@ -579,7 +730,7 @@ class Request
                 // Parse the file
                 Analysis::parseFile($code_base, $file_path, false, $new_contents);
             } catch (\Throwable $throwable) {
-                error_log(sprintf("Analysis::parseFile threw %s for %s: %s\n%s", get_class($throwable), $file_path, $throwable->getMessage(), $throwable->getTraceAsString()));
+                \error_log(\sprintf("Analysis::parseFile threw %s for %s: %s\n%s", get_class($throwable), $file_path, $throwable->getMessage(), $throwable->getTraceAsString()));
             }
         }
     }

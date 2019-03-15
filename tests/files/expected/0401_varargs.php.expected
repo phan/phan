@@ -2,4 +2,3 @@
 %s:14 PhanTypeMismatchArgument Argument 1 (a1) is 2 but \test_varargs401() takes \stdClass defined at %s:3
 %s:15 PhanTypeMismatchUnpackValue Attempting to unpack a value of type 2 which does not contain any subtypes of iterable (such as array or Traversable)
 %s:16 PhanTypeMismatchUnpackValue Attempting to unpack a value of type \stdClass which does not contain any subtypes of iterable (such as array or Traversable)
-

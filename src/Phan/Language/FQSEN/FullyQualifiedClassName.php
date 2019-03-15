@@ -1,9 +1,13 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language\FQSEN;
 
+use Phan\Exception\FQSENException;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Memoize;
+
+use function preg_match;
 
 /**
  * A Fully-Qualified Class Name
@@ -39,9 +43,40 @@ class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement
      */
     public static function fromType(Type $type) : FullyQualifiedClassName
     {
+        // @phan-suppress-next-line PhanThrowTypeAbsentForCall
         return self::fromFullyQualifiedString(
             $type->asFQSENString()
         );
+    }
+
+    /** @internal */
+    const VALID_CLASS_REGEX = '/^\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*$/';
+
+    /**
+     * Asserts that something is a valid class FQSEN in PHPDoc.
+     * Use this for FQSENs passed in from the analyzed code.
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public static function isValidClassFQSEN(string $type) : bool
+    {
+        return preg_match(self::VALID_CLASS_REGEX, $type) > 0;
+    }
+
+    /**
+     * Parses a FQSEN from a string
+     *
+     * @param $fully_qualified_string
+     * An fully qualified string like '\Namespace\Class'
+     *
+     * @return static
+     *
+     * @throws FQSENException on failure.
+     * @deprecated use self::fromFullyQualifiedString()
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public static function fromFullyQualifiedUserProvidedString(string $fully_qualified_string) : FullyQualifiedClassName
+    {
+        return self::fromFullyQualifiedString($fully_qualified_string);
     }
 
     /**
@@ -50,6 +85,7 @@ class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement
      */
     public function asType() : Type
     {
+        // @phan-suppress-next-line PhanThrowTypeAbsentForCall the creation of FullyQualifiedClassName checks for FQSENException.
         return Type::fromFullyQualifiedString(
             $this->__toString()
         );
@@ -70,7 +106,8 @@ class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement
      */
     public static function getStdClassFQSEN() : FullyQualifiedClassName
     {
-        return self::memoizeStatic(__METHOD__, function () : FullyQualifiedClassName {
+        return self::memoizeStatic(__METHOD__, static function () : FullyQualifiedClassName {
+            // @phan-suppress-next-line PhanThrowTypeAbsentForCall
             return self::fromFullyQualifiedString("\stdClass");
         });
     }

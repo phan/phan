@@ -1,0 +1,1 @@
+src/092_isset_plugin_hang.php:7 PhanUnreferencedPublicMethod Possibly zero references to public method \TestPhan::test()

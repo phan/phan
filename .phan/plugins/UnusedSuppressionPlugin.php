@@ -1,5 +1,6 @@
 <?php declare(strict_types=1);
 
+use ast\Node;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
@@ -10,14 +11,13 @@ use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
 use Phan\Plugin\ConfigPluginSet;
 use Phan\PluginV2;
-use Phan\PluginV2\BeforeAnalyzeFileCapability;
 use Phan\PluginV2\AnalyzeClassCapability;
 use Phan\PluginV2\AnalyzeFunctionCapability;
-use Phan\PluginV2\AnalyzePropertyCapability;
 use Phan\PluginV2\AnalyzeMethodCapability;
+use Phan\PluginV2\AnalyzePropertyCapability;
+use Phan\PluginV2\BeforeAnalyzeFileCapability;
 use Phan\PluginV2\FinalizeProcessCapability;
 use Phan\PluginV2\SuppressionCapability;
-use ast\Node;
 
 /**
  * Check for unused (at)suppress annotations.
@@ -45,6 +45,10 @@ class UnusedSuppressionPlugin extends PluginV2 implements
      */
     private $elements_for_postponed_analysis = [];
 
+    /**
+     * @var string[] a list of files where checks for unused suppressions was postponed
+     * (Because of non-quick mode, we may emit issues in a file after analysis has run on that file)
+     */
     private $files_for_postponed_analysis = [];
 
     /**
@@ -58,7 +62,7 @@ class UnusedSuppressionPlugin extends PluginV2 implements
 
     /**
      * @param CodeBase $code_base
-     * The code base in which the function exists
+     * The code base in which the element exists
      *
      * @param AddressableElement $element
      * Any element such as function, method, class
@@ -81,15 +85,19 @@ class UnusedSuppressionPlugin extends PluginV2 implements
 
         // Check to see if any are unused
         foreach ($suppress_issue_list as $issue_type => $use_count) {
-            if (0 === $use_count) {
-                $this->emitIssue(
-                    $code_base,
-                    $element->getContext(),
-                    'UnusedSuppression',
-                    "Element {FUNCTIONLIKE} suppresses issue {ISSUETYPE} but does not use it",
-                    [(string)$element->getFQSEN(), $issue_type]
-                );
+            if (0 !== $use_count) {
+                continue;
             }
+            if (in_array($issue_type, self::getUnusedSuppressionIgnoreList())) {
+                continue;
+            }
+            self::emitIssue(
+                $code_base,
+                $element->getContext(),
+                'UnusedSuppression',
+                "Element {FUNCTIONLIKE} suppresses issue {ISSUETYPE} but does not use it",
+                [(string)$element->getFQSEN(), $issue_type]
+            );
         }
     }
 
@@ -155,7 +163,7 @@ class UnusedSuppressionPlugin extends PluginV2 implements
 
     /**
      * @param CodeBase $unused_code_base
-     * The code base in which the function exists
+     * The code base in which the property exists
      *
      * @param Property $property
      * A property being analyzed
@@ -180,7 +188,7 @@ class UnusedSuppressionPlugin extends PluginV2 implements
     public function finalizeProcess(CodeBase $code_base)
     {
         foreach ($this->elements_for_postponed_analysis as $element) {
-            $this->analyzeAddressableElement($code_base, $element);
+            self::analyzeAddressableElement($code_base, $element);
         }
         $this->analyzePluginSuppressions($code_base);
     }
@@ -200,6 +208,14 @@ class UnusedSuppressionPlugin extends PluginV2 implements
     }
 
     /**
+     * @return array<int,string>
+     */
+    private static function getUnusedSuppressionIgnoreList() : array
+    {
+        return Config::getValue('plugin_config')['unused_suppression_ignore_list'] ?? [];
+    }
+
+    /**
      * @return void
      */
     private function analyzePluginSuppressionsForFile(CodeBase $code_base, SuppressionCapability $plugin, string $relative_file_path)
@@ -215,8 +231,10 @@ class UnusedSuppressionPlugin extends PluginV2 implements
         $plugin_suppressions = $plugin->getIssueSuppressionList($code_base, $absolute_file_path);
         $plugin_successful_suppressions = $this->plugin_active_suppression_list[$plugin_class][$absolute_file_path] ?? null;
 
+        $unused_suppression_ignore_list = self::getUnusedSuppressionIgnoreList();
+
         foreach ($plugin_suppressions as $issue_type => $line_list) {
-            foreach ($line_list as $lineno) {
+            foreach ($line_list as $lineno => $lineno_of_comment) {
                 if (isset($plugin_successful_suppressions[$issue_type][$lineno])) {
                     continue;
                 }
@@ -224,19 +242,21 @@ class UnusedSuppressionPlugin extends PluginV2 implements
                 $issue_kind = 'UnusedPluginSuppression';
                 $message = 'Plugin {STRING_LITERAL} suppresses issue {ISSUETYPE} on this line but this suppression is unused or suppressed elsewhere';
                 if ($lineno === 0) {
-                    $lineno = 1;
                     $issue_kind = 'UnusedPluginFileSuppression';
                     $message = 'Plugin {STRING_LITERAL} suppresses issue {ISSUETYPE} in this file but this suppression is unused or suppressed elsewhere';
                 }
-                if (isset($plugin_suppressions['UnusedSuppression'][$lineno])) {
+                if (isset($plugin_suppressions['UnusedSuppression'][$lineno_of_comment])) {
                     continue;
                 }
-                if (isset($plugin_suppressions[$issue_kind][$lineno])) {
+                if (isset($plugin_suppressions[$issue_kind][$lineno_of_comment])) {
                     continue;
                 }
-                $this->emitIssue(
+                if (in_array($issue_type, $unused_suppression_ignore_list, true)) {
+                    continue;
+                }
+                self::emitIssue(
                     $code_base,
-                    (new Context())->withFile($relative_file_path)->withLineNumberStart($lineno),
+                    (new Context())->withFile($relative_file_path)->withLineNumberStart($lineno_of_comment),
                     $issue_kind,
                     $message,
                     [$plugin_name, $issue_type]
@@ -257,6 +277,8 @@ class UnusedSuppressionPlugin extends PluginV2 implements
     }
 
     /**
+     * Record the fact that $plugin caused suppressions in $file_path for issue $issue_type due to an annotation around $line
+     *
      * @return void
      * @internal
      */
@@ -273,5 +295,5 @@ class UnusedSuppressionPlugin extends PluginV2 implements
 }
 
 // Every plugin needs to return an instance of itself at the
-// end of the file in which its defined.
+// end of the file in which it's defined.
 return new UnusedSuppressionPlugin();

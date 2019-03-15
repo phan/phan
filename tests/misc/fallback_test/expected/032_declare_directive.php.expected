@@ -1,0 +1,2 @@
+src/032_declare_directive.php:2 PhanSyntaxError syntax error, unexpected 'class' (T_CLASS)
+src/032_declare_directive.php:5 PhanTypeMismatchArgumentInternal Argument 1 (string) is \C89 but \strlen() takes string

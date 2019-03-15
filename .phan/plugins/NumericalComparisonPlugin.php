@@ -1,12 +1,16 @@
 <?php declare(strict_types=1);
 
+use ast\Node;
 use Phan\AST\UnionTypeVisitor;
 use Phan\Language\Context;
 use Phan\PluginV2;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
 use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use ast\Node;
+use Phan\PluginV2\PostAnalyzeNodeCapability;
 
+/**
+ * This plugin enforces that loose equality is used for numeric operands (e.g. `2 == 2.0`),
+ * and that strict equality is used for non-numeric operands (e.g. `"2" === "2e0"` is false).
+ */
 class NumericalComparisonPlugin extends PluginV2 implements PostAnalyzeNodeCapability
 {
 
@@ -21,6 +25,11 @@ class NumericalComparisonPlugin extends PluginV2 implements PostAnalyzeNodeCapab
     }
 }
 
+/**
+ * This visitor checks binary operators to check that
+ * loose equality is used for numeric operands (e.g. `2 == 2.0`),
+ * and that strict equality is used for non-numeric operands (e.g. `"2" === "2e0"` is false).
+ */
 class NumericalComparisonVisitor extends PluginAwarePostAnalysisVisitor
 {
     /** define equal operator list */
@@ -40,7 +49,7 @@ class NumericalComparisonVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @override
      */
-    public function visitBinaryop(Node $node) : Context
+    public function visitBinaryOp(Node $node) : Context
     {
         // get the types of left and right values
         $left_node = $node->children['left'];
@@ -55,7 +64,7 @@ class NumericalComparisonVisitor extends PluginAwarePostAnalysisVisitor
             ) {
                 $this->emit(
                     'PhanPluginNumericalComparison',
-                    "non numerical values compared by the operators '==' or '!=='",
+                    "non numerical values compared by the operators '==' or '!='",
                     []
                 );
             }

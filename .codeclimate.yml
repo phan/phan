@@ -1,5 +1,4 @@
 ---
-# TODO: Fix https://github.com/phan/phan/issues/826
 engines:
   duplication:
     enabled: true
@@ -10,8 +9,13 @@ engines:
     enabled: false
   phpmd:
     enabled: true
+    config:
+      # cleancode : most rules are not practical
+      # unused is false positives (Phan's own dead code detection is used in CI)
+      # controversial is the opposite of Phan's naming conventions
+      rulesets: "codesize,naming,design"
     checks:
-      Controversial/CamelCaseVariableName:
+      Naming/LongVariable:
         enabled: false
   phan:
     enabled: false

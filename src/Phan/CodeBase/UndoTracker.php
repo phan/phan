@@ -1,9 +1,14 @@
 <?php declare(strict_types=1);
+
 namespace Phan\CodeBase;
 
+use Closure;
 use Phan\CodeBase;
 use Phan\Daemon;
 use Phan\Phan;
+
+use function count;
+use function in_array;
 
 /**
  * UndoTracker maps a file path to a list of operations(e.g. Closures) that must be executed to
@@ -16,6 +21,7 @@ use Phan\Phan;
  *
  * (We don't garbage collect reference cycles, so this attempts to work in a way that avoids cycles.
  *  Haven't verified that it does that as expected, yet)
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class UndoTracker
 {
@@ -28,7 +34,7 @@ class UndoTracker
 
     /**
      * @var array<string,array<int,Closure>> operations to undo for a current path
-     * @phan-var array<string,array<int,Closure(CodeBase)>>
+     * @phan-var array<string,array<int,Closure(CodeBase):void>>
      */
     private $undo_operations_for_path = [];
 
@@ -51,7 +57,7 @@ class UndoTracker
      */
     public function getParsedFilePathList() : array
     {
-        return array_keys($this->file_modification_state);
+        return \array_keys($this->file_modification_state);
     }
 
     /**
@@ -82,29 +88,29 @@ class UndoTracker
      */
     public static function getFileState(string $path)
     {
-        clearstatcache(true, $path);  // TODO: does this work properly with symlinks? seems to.
-        $real = realpath($path);
+        \clearstatcache(true, $path);  // TODO: does this work properly with symlinks? seems to.
+        $real = \realpath($path);
         if (!$real) {
             return null;
         }
-        if (!file_exists($real)) {
+        if (!\file_exists($real)) {
             return null;
         }
-        $stat = @stat($real);  // Double check: suppress to prevent phan's error_handler from terminating on error.
+        $stat = @\stat($real);  // Double check: suppress to prevent Phan's error_handler from terminating on error.
         if (!$stat) {
             return null;  // It was missing or unreadable.
         }
-        return sprintf('%d_%d', $stat['mtime'], $stat['size']);
+        return \sprintf('%d_%d', $stat['mtime'], $stat['size']);
     }
 
     /**
-     * Called when a file is unparseable.
+     * Called when a file is unparsable.
      * Removes the classes and functions, etc. from an older version of the file, if one exists.
      * @return void
      */
-    public function recordUnparseableFile(CodeBase $code_base, string $current_parsed_file)
+    public function recordUnparsableFile(CodeBase $code_base, string $current_parsed_file)
     {
-        Daemon::debugf("%s was unparseable, had a syntax error", $current_parsed_file);
+        Daemon::debugf("%s was unparsable, had a syntax error", $current_parsed_file);
         Phan::getIssueCollector()->removeIssuesForFiles([$current_parsed_file]);
         $this->undoFileChanges($code_base, $current_parsed_file);
         unset($this->file_modification_state[$current_parsed_file]);
@@ -145,9 +151,11 @@ class UndoTracker
      * @param CodeBase $code_base - code base owning this tracker
      * @param array<int,string> $new_file_list
      * @param array<string,string> $file_mapping_contents
+     * @param ?(string[]) $reanalyze_files files to re-parse before re-running analysis.
+     *                    This fixes #1921
      * @return array<int,string> - Subset of $new_file_list which changed on disk and has to be parsed again. Automatically unparses the old versions of files which were modified.
      */
-    public function updateFileList(CodeBase $code_base, array $new_file_list, array $file_mapping_contents)
+    public function updateFileList(CodeBase $code_base, array $new_file_list, array $file_mapping_contents, array $reanalyze_files = null)
     {
         $new_file_set = [];
         foreach ($new_file_list as $path) {
@@ -171,13 +179,14 @@ class UndoTracker
                 unset($this->file_modification_state[$path]);
                 continue;
             }
+            // TODO: Always invalidate the parsed file if we're about to analyze it?
             if (isset($file_mapping_contents[$path])) {
                 // TODO: Move updateFileList to be called before fork()?
-                $new_state = 'daemon:' . sha1($file_mapping_contents[$path]);
+                $new_state = 'daemon:' . \sha1($file_mapping_contents[$path]);
             } else {
                 $new_state = self::getFileState($path);
             }
-            if ($new_state !== $state) {
+            if ($new_state !== $state || in_array($path, $reanalyze_files ?? [])) {
                 $removed_file_list[] = $path;
                 $this->undoFileChanges($code_base, $path);
                 // TODO: This will call stat() twice as much as necessary for the modified files. Not important.

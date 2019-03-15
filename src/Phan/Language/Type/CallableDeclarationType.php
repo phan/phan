@@ -1,9 +1,13 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language\Type;
 
 use Phan\Language\Type;
 
-final class CallableDeclarationType extends FunctionLikeDeclarationType
+/**
+ * Phan's representation for types such as `callable(MyClass):MyOtherClass`
+ */
+final class CallableDeclarationType extends FunctionLikeDeclarationType implements CallableInterface
 {
     /** @override */
     const NAME = 'callable';

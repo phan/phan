@@ -1,3 +1,3 @@
 %s:3 PhanUndeclaredClassMethod Call to method __construct from undeclared class \Stub
 %s:4 PhanUndeclaredClassConstant Reference to constant TYPE_STRING from undeclared class \Stub
-
+%s:4 PhanUndeclaredClassProperty Reference to instance property type from undeclared class \Stub

@@ -8,7 +8,7 @@ function main379(string $value) {
     $e = 2.718;
     $e::$value = 2.71828;  // should warn
     $four = 4;
-    $four->$value = 5;  // should warn about left hand side, even for dynamic property access
+    $four->$value = 5;  // should warn about left-hand side, even for dynamic property access
 
     $eleven = 11;
     echo $eleven::value . "\n";  // should warn

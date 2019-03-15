@@ -1,2 +1,2 @@
-%s:18 PhanUndeclaredTypeReturnType Return type of returns_nullable_class is undeclared type \NullableClass
+%s:18 PhanUndeclaredTypeReturnType Return type of returns_nullable_class() is undeclared type \NullableClass
 %s:26 PhanTypeMismatchReturn Returning type object but returns_array() is declared to return array

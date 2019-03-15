@@ -1,18 +1,17 @@
 <?php declare(strict_types=1);
 
+use ast\Node;
 use Phan\Config;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Method;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
 use Phan\PluginV2;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
 use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-
-use ast\Node;
+use Phan\PluginV2\PostAnalyzeNodeCapability;
 
 /**
- * Mark all phpunit test cases as used for dead code detection during Phan's self analysis.
+ * Mark all phpunit test cases as used for dead code detection during Phan's self-analysis.
  *
  * Implements the following capabilities
  * (This choice of capability makes this plugin efficiently analyze only classes that are in the analyzed file list)
@@ -34,15 +33,21 @@ class PHPUnitNotDeadCodePlugin extends PluginV2 implements PostAnalyzeNodeCapabi
     }
 }
 
+/**
+ * This visitor visits classes (After all class/method definitions are parsed and analyzed)
+ * and, for subclasses of PHPUnit test cases,
+ * marks the phpunit test cases, (at)dataProviders, and special PHPUnit subclass properties as being referenced (i.e. not dead code)
+ */
 class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
 {
-    /** @var FullyQualifiedClassName */
+    /** @var FullyQualifiedClassName for the base class of all PHPUnit tests */
     private static $phpunit_test_case_fqsen;
 
-    /** @var Type */
+    /** @var Type for the base class of all PHPUnit tests */
     private static $phpunit_test_case_type;
 
-    private static $did_warn_unused = false;
+    /** @var bool did this plugin already warn that TestCase was missing? */
+    private static $did_warn_missing_class = false;
 
     /**
      * This is called after the parse phase is completely finished, so $this->code_base contains all class definitions
@@ -56,14 +61,15 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
         }
         $code_base = $this->code_base;
         if (!$code_base->hasClassWithFQSEN(self::$phpunit_test_case_fqsen)) {
-            if (!self::$did_warn_unused) {
-                fprintf(STDERR, "Using plugin %s but could not find PHPUnit\Framework\TestCase\n", __CLASS__);
-                self::$did_warn_unused = true;
+            if (!self::$did_warn_missing_class) {
+                fprintf(STDERR, "Using plugin %s but could not find PHPUnit\Framework\TestCase\n", self::class);
+                self::$did_warn_missing_class = true;
             }
             return;
         }
         // This assumes PreOrderAnalysisVisitor->visitClass is called first.
         $context = $this->context;
+        // @phan-suppress-next-line PhanThrowTypeAbsentForCall definitely in class scope in visitClass
         $class = $context->getClassInScope($code_base);
         if (!$class->getFQSEN()->asType()->asExpandedTypes($code_base)->hasType(self::$phpunit_test_case_type)) {
             // This isn't a phpunit test case.
@@ -108,10 +114,15 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
         if (preg_match('/@dataProvider\s+' . self::WORD_REGEX . '/', $method->getNode()->children['docComment'] ?? '', $match)) {
             $data_provider_name = $match[1];
             if ($class->hasMethodWithName($this->code_base, $data_provider_name)) {
+                // @phan-suppress-next-line PhanThrowTypeAbsentForCall checked for existence
                 $class->getMethodByName($this->code_base, $data_provider_name)->addReference($this->context);
             }
         }
     }
+
+    /**
+     * @return bool true if $method is a PHPUnit test case
+     */
     protected static function isTestCase(Method $method) : bool
     {
         if (!$method->isPublic()) {
@@ -127,7 +138,9 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
+     * Static initializer for this plugin - Gets called below before any methods can be used
      * @return void
+     * @suppress PhanThrowTypeAbsentForCall this FQSEN is valid
      */
     public static function init()
     {
@@ -139,5 +152,5 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
 PHPUnitNotDeadPluginVisitor::init();
 
 // Every plugin needs to return an instance of itself at the
-// end of the file in which its defined.
+// end of the file in which it's defined.
 return new PHPUnitNotDeadCodePlugin();

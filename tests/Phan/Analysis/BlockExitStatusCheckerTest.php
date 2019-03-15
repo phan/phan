@@ -1,10 +1,14 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
+
 namespace Phan\Tests\Analysis;
 
 use Phan\Analysis\BlockExitStatusChecker;
 use Phan\Config;
 use Phan\Tests\BaseTest;
 
+/**
+ * Unit tests of BlockExitStatusChecker on various AST Nodes
+ */
 final class BlockExitStatusCheckerTest extends BaseTest
 {
 
@@ -45,12 +49,12 @@ final class BlockExitStatusCheckerTest extends BaseTest
                     $parts[] = 'return';
                     break;
                 default:
-                    $parts[] = sprintf("invalid(1<<%d)", (int)round(log($bit, 2)));
+                    $parts[] = \sprintf("invalid(1<<%d)", (int)\round(\log($bit, 2)));
                     break;
             }
         }
         // Return the representation of possible values, with "proceed" (low order bit) first, and "return" (high order bit) last.
-        return implode("/", $parts);
+        return \implode("/", $parts);
     }
 
     /**
@@ -60,9 +64,12 @@ final class BlockExitStatusCheckerTest extends BaseTest
     {
         $ast = \ast\parse_code("<" . "?php " . $code_snippet, Config::AST_VERSION);
         $status_code = (new BlockExitStatusChecker())($ast);
-        $this->assertSame($expected_status_representation, $this->representStatus($status_code), sprintf("Unexpected status 0x%x\nCode:\n%s\n", $status_code, $code_snippet));
+        $this->assertSame($expected_status_representation, $this->representStatus($status_code), \sprintf("Unexpected status 0x%x\nCode:\n%s\n", $status_code, $code_snippet));
     }
 
+    /**
+     * @return array<int,array{0:string,1:string}>
+     */
     public function exitStatusProvider() : array
     {
         return [

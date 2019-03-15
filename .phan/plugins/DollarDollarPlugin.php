@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-use Phan\PluginV2;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
-use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
 use ast\Node;
+use Phan\PluginV2;
+use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV2\PostAnalyzeNodeCapability;
 
 /**
  * This plugin checks for occurrences of `$$x`,
@@ -18,7 +18,7 @@ use ast\Node;
  *
  * A plugin file must
  *
- * - Contain a class that inherits from \Phan\Plugin
+ * - Contain a class that inherits from \Phan\PluginV2
  *
  * - End by returning an instance of that class.
  *
@@ -74,5 +74,5 @@ class DollarDollarVisitor extends PluginAwarePostAnalysisVisitor
 }
 
 // Every plugin needs to return an instance of itself at the
-// end of the file in which its defined.
+// end of the file in which it's defined.
 return new DollarDollarPlugin();

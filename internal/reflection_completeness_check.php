@@ -1,17 +1,26 @@
 #!/usr/bin/env php
 <?php
+declare(strict_types=1);
+
 /**
  * This checks that the function signatures are complete.
  * TODO: Expand to checking classes (methods, and properties)
  * TODO: Refactor the scripts in internal/ to reuse more code.
+ * @phan-file-suppress PhanNativePHPSyntaxCheckPlugin, UnusedPluginFileSuppression caused by inline HTML before declare
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 
 use Phan\Config;
-use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\UnionType;
 
+/**
+ * Checks if Phan has internal signatures for all elements of PHP modules
+ * (e.g. php-ast, redis)
+ * that the running PHP binary has Reflection information for.
+ */
 class ReflectionCompletenessCheck
 {
     const EXCLUDED_FUNCTIONS = [
@@ -41,7 +50,12 @@ class ReflectionCompletenessCheck
                 if (array_key_exists($function_name, self::EXCLUDED_FUNCTIONS)) {
                     continue;
                 }
-                $fqsen = FullyQualifiedFunctionName::fromFullyQualifiedString($function_name);
+                try {
+                    $fqsen = FullyQualifiedFunctionName::fromFullyQualifiedString($function_name);
+                } catch (Exception $e) {
+                    echo "Obtained invalid reflection function '$function_name' from reflection, ignoring: " . $e->getMessage() . "\n";
+                    continue;
+                }
                 $map_list = UnionType::internalFunctionSignatureMapForFQSEN($fqsen);
                 if (!$map_list) {
                     $stub_signature = self::stubSignatureToString(self::createStubSignature($reflection_function));
@@ -56,7 +70,11 @@ class ReflectionCompletenessCheck
      */
     private static function getInternalClasses() : Generator
     {
-        $classes = get_declared_classes();
+        $classes = array_merge(
+            get_declared_classes(),
+            get_declared_interfaces(),
+            get_declared_traits()
+        );
         sort($classes);
         foreach ($classes as $class_name) {
             if (array_key_exists(strtolower($class_name), self::EXCLUDED_CLASS_NAMES)) {
@@ -78,6 +96,7 @@ class ReflectionCompletenessCheck
                     continue;
                 }
                 $method_name = $reflection_method->getName();
+                // @phan-suppress-next-line PhanThrowTypeAbsentForCall should not happen for FQSENs of internal modules
                 $method_fqsen = FullyQualifiedMethodName::fromFullyQualifiedString($class_name . '::' . $method_name);
                 $map_list = UnionType::internalFunctionSignatureMapForFQSEN($method_fqsen);
                 if (!$map_list) {
@@ -111,7 +130,9 @@ class ReflectionCompletenessCheck
         return $signature;
     }
 
-    // TODO: Deduplicate this code.
+    /**
+     * @param array<int|string,string> $stub Phan's internal signature info
+     */
     private static function stubSignatureToString(array $stub) : string
     {
         $result = "['$stub[0]'";

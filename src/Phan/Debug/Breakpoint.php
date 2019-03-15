@@ -1,7 +1,11 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Debug;
 
-readline_completion_function(function (string $input) : array {
+/**
+ * @return array<int,string>
+ */
+\readline_completion_function(static function (string $input) : array {
     $matches = [];
     foreach (\get_declared_classes() as $class_name) {
         if (\strpos($class_name, $input) == 0) {
@@ -14,13 +18,13 @@ readline_completion_function(function (string $input) : array {
 print "\n";
 do {
     /** @var string|null */
-    $input = readline("breakpoint> ");
+    $input = \readline("breakpoint> ");
 
-    if (is_string($input)) {
-        readline_add_history($input);
+    if (\is_string($input)) {
+        \readline_add_history($input);
     }
 
-    if (in_array($input, [
+    if (\in_array($input, [
         'quit',
         'exit',
         'continue',

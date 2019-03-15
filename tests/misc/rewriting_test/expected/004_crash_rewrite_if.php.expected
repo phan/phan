@@ -1,0 +1,3 @@
+src/004_crash_rewrite_if.php:2 PhanInvalidNode Expected left side of assignment to be a variable
+src/004_crash_rewrite_if.php:2 PhanSyntaxError syntax error, unexpected '='
+src/004_crash_rewrite_if.php:2 PhanUndeclaredVariable Variable $p2 is undeclared

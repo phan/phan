@@ -1,4 +1,4 @@
-# This tests against the supported versions of Phan 0.12.x (PHP 7.0, 7.1, 7.2)
+# This tests against the supported versions of Phan 1.x.y (PHP 7.0, 7.1, 7.2)
 # The project name is the same as the build id used, e.g. https://www.appveyor.com/docs/environment-variables/
 
 version: '{branch}.{build}'
@@ -7,17 +7,29 @@ clone_folder: C:\projects\phan
 clone_depth: 1
 # Test 32-bit builds
 platform: x86
+
+# Test with a given PHP version
+# 1. (PHP_VERSION is the only version tested of PHP_EXT_VERSION, and it can only be built with VC_VERSION)
+# 2. Also, run tests with a variety of supported php-ast versions. Phan should work properly with php-ast 0.1.5+ and 1.0.0+
 environment:
   matrix:
-    - PHP_EXT_VERSION: '7.0'
-      PHP_VERSION: '7.0.30'
-      VC_VERSION: 14
-    - PHP_EXT_VERSION: '7.1'
-      PHP_VERSION: '7.1.19'
-      VC_VERSION: 14
-    - PHP_EXT_VERSION: '7.2'
-      PHP_VERSION: '7.2.7'
+    - PHP_EXT_VERSION: '7.3'
+      PHP_VERSION: '7.3.2'
       VC_VERSION: 15
+      PHP_AST_VERSION: 1.0.0
+    - PHP_EXT_VERSION: '7.1'
+      PHP_VERSION: '7.1.26'
+      VC_VERSION: 14
+      PHP_AST_VERSION: 0.1.7
+      PHAN_RUN_INTEGRATION_TEST: 1
+    - PHP_EXT_VERSION: '7.2'
+      PHP_VERSION: '7.2.15'
+      VC_VERSION: 15
+      PHP_AST_VERSION: 1.0.0
+    - PHP_EXT_VERSION: '7.0'
+      PHP_VERSION: '7.0.33'
+      VC_VERSION: 14
+      PHP_AST_VERSION: 0.1.5
 
 init:
     - SET PATH=c:\projects\php;C:\projects\composer;%PATH%
@@ -31,8 +43,6 @@ cache:
 branches:
   only:
     - master
-    - 0.8
-    - 0.9
 
 install:
 - cmd: choco feature enable -n=allowGlobalConfirmation
@@ -53,9 +63,9 @@ build_script:
 
     cd C:\projects\php\ext
 
-    SET AST_ZIP_BASENAME=php_ast-0.1.6-%PHP_EXT_VERSION%-nts-vc%VC_VERSION%-x86.zip
+    SET AST_ZIP_BASENAME=php_ast-%PHP_AST_VERSION%-%PHP_EXT_VERSION%-nts-vc%VC_VERSION%-x86.zip
 
-    curl -fsS https://windows.php.net/downloads/pecl/releases/ast/0.1.6/%AST_ZIP_BASENAME% -o %AST_ZIP_BASENAME%
+    curl -fsS https://windows.php.net/downloads/pecl/releases/ast/%PHP_AST_VERSION%/%AST_ZIP_BASENAME% -o %AST_ZIP_BASENAME%
 
     7z x %AST_ZIP_BASENAME% php_ast.dll -y >nul
 
@@ -90,7 +100,9 @@ test_script:
 - cmd: cd C:\projects\phan
 - cmd: php C:\projects\composer\composer.phar install --classmap-authoritative --prefer-dist
 - cmd: php phan --plugin InvokePHPNativeSyntaxCheckPlugin
-- cmd: .\vendor\bin\phpunit --verbose
+# Run phpunit tests in parallel on all available processors (2 on appveyor).
+# If running this step with Wine or symlinks, then use paratest --phpunit vendor/phpunit/phpunit/phpunit --verbose instead.
+- cmd: .\vendor\bin\paratest.bat --processes 2 --phpunit .\vendor\phpunit\phpunit\phpunit
 # Verify that a phar can be built and executed under windows
 - cmd: mkdir build
 - cmd: php -d phar.readonly=0 internal/package.php

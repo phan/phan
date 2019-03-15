@@ -35,7 +35,12 @@ test_vararg_within_function();
 test_vararg_within_function(42);
 
 accept_array(test_misc(2, []));  // Correct, should infer type was array.
-accept_int(test_misc(2, []));  // Wrong (TODO: better error message for variadic)
+accept_int(test_misc(2, []));  // Wrong (better error message for variadic)
+// NOTE: Phan generally stores union types it infers in non-quick mode to use elsewhere.
+// The addition of unrelated array types to this simple function is a consequence of that.
+accept_int(test_misc(2, $argv));
+accept_int(test_misc(rand(0,1) > 0, $argv));  // Should warn
+accept_int(test_misc());  // Should warn
 test_ints_phpdoc(3);
 
 /**

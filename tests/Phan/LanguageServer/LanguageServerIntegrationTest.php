@@ -1,18 +1,23 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
+
 namespace Phan\Tests\LanguageServer;
 
-use Phan\Tests\BaseTest;
-
+use InvalidArgumentException;
 use Phan\Issue;
 use Phan\LanguageServer\LanguageServer;
 use Phan\LanguageServer\Protocol\ClientCapabilities;
+use Phan\LanguageServer\Protocol\CompletionItemKind;
+use Phan\LanguageServer\Protocol\CompletionTriggerKind;
 use Phan\LanguageServer\Protocol\MarkupContent;
 use Phan\LanguageServer\Protocol\Position;
 use Phan\LanguageServer\Protocol\TextDocumentIdentifier;
 use Phan\LanguageServer\ProtocolStreamReader;
 use Phan\LanguageServer\Utils;
-use InvalidArgumentException;
+use Phan\Tests\BaseTest;
+use RuntimeException;
 use stdClass;
+use function is_array;
+use function strlen;
 
 /**
  * Integration Tests of functionality of the Language Server.
@@ -20,7 +25,8 @@ use stdClass;
  * Note: This test file is not enabled in CI because they may hang indefinitely.
  * (integration test timeouts weren't implemented or tested yet).
  *
- * @phan-file-suppress PhanThrowTypeAbsent, PhanThrowTypeAbsentForCall it's a test
+ * @phan-file-suppress PhanThrowTypeAbsent it's a test
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 final class LanguageServerIntegrationTest extends BaseTest
 {
@@ -28,51 +34,118 @@ final class LanguageServerIntegrationTest extends BaseTest
     // There are separate config settings to make the language server emit debug messages.
     const DEBUG_ENABLED = false;
 
+    /**
+     * Returns the path of the folder used for these integration tests
+     */
     public static function getLSPFolder() : string
     {
-        return dirname(dirname(__DIR__)) . '/misc/lsp';
+        return \dirname(\dirname(__DIR__)) . '/misc/lsp';
     }
 
+    /**
+     * Returns the path of the file being analyzed.
+     * This has elements that the language server will return Positions of in some of the tests.
+     *
+     * The contents of this file will be "edited" (without changing the file on disk) by the mocked client.
+     */
     public static function getLSPPath() : string
     {
         return self::getLSPFolder() . '/src/example.php';
     }
 
-    // Incrementing message id for language client requests.
-    // Each test case has its own instance property $this->messageId
+    /**
+     * Incrementing message id for language client requests.
+     * Each test case has its own instance property $this->messageId
+     * @var int
+     */
     private $messageId = 0;
 
     /**
+     * @param array{vscode_compatible_completions?:bool} $option_array
      * @return array{0:resource,1:resource,2:resource} [$proc, $proc_in, $proc_out]
      */
-    private function createPhanDaemon(bool $pcntlEnabled)
+    private function createPhanLanguageServer(bool $pcntlEnabled, bool $prefer_stdio = true, array $option_array = [])
     {
-        if (getenv('PHAN_RUN_INTEGRATION_TEST') != '1') {
+        if (\getenv('PHAN_RUN_INTEGRATION_TEST') != '1') {
             $this->markTestSkipped('skipping integration tests - set PHAN_RUN_INTEGRATION_TEST=1 to allow');
         }
-        if (!function_exists('proc_open')) {
+        if (!\function_exists('proc_open')) {
             $this->markTestSkipped('proc_open not available');
         }
 
-        if ($pcntlEnabled && !function_exists('pcntl_fork')) {
+        if ($pcntlEnabled && !\function_exists('pcntl_fork')) {
             $this->markTestSkipped('requires pcntl extension');
         }
-        $command = sprintf(
-            '%s -d %s --quick --language-server-on-stdin --language-server-enable-hover --language-server-enable-go-to-definition %s',
-            escapeshellarg(__DIR__ . '/../../../phan'),
-            escapeshellarg(self::getLSPFolder()),
+        $is_windows = \DIRECTORY_SEPARATOR === "\\";
+        if ($is_windows) {
+            // Work around 'The filename, directory name, or volume label syntax is incorrect.', include the path to the PHP binary used to run this test.
+            // Might not work with file names including spaces?
+            // @see InvokePHPNativeSyntaxCheckPlugin
+
+            $escaped_command = \PHP_BINARY . " " . \escapeshellarg(__DIR__ . '/../../../src/phan.php');
+            // XXX create an OOP language client abstraction for this test, with shutdown() methods
+            $use_stdio = false;
+        } else {
+            $escaped_command = \escapeshellarg(__DIR__ . '/../../../phan');
+            // Most of the tests for unix/linux will use stdio - A tiny number will use TCP
+            // to properly test that TCP is working.
+            $use_stdio = $prefer_stdio;
+        }
+        if ($use_stdio) {
+            $options = '--language-server-on-stdin';
+        } else {
+            $address = '127.0.0.1:14846';
+            $options = '--language-server-tcp-connect ' . $address;
+
+            $tcpServer = \stream_socket_server('tcp://' . $address, $errno, $errstr);
+            if ($tcpServer === false) {
+                $this->fail("Could not listen on $address. Error $errno\n$errstr");
+            }
+        }
+        if ($option_array['vscode_compatible_completions'] ?? false) {
+            $options = "$options --language-server-completion-vscode";
+        }
+        $command = \sprintf(
+            '%s -d %s --quick --use-fallback-parser %s --language-server-enable-hover --language-server-enable-completion --language-server-enable-go-to-definition %s',
+            $escaped_command,
+            \escapeshellarg(self::getLSPFolder()),
+            $options,
             ($pcntlEnabled ? '' : '--language-server-force-missing-pcntl')
         );
-        $proc = proc_open(
-            $command,
-            [
-                0 => ['pipe', 'r'],
-                1 => ['pipe', 'w'],
-                2 => STDERR,  // Pass stderr from this process directly to output stderr so it doesn't get buffered up or ignored
-            ],
-            $pipes
-        );
-        list($proc_in, $proc_out) = $pipes;
+        if ($use_stdio) {
+            $proc = \proc_open(
+                $command,
+                [
+                    0 => ['pipe', 'r'],
+                    1 => ['pipe', 'w'],
+                    2 => \STDERR,  // Pass stderr from this process directly to output stderr so it doesn't get buffered up or ignored
+                ],
+                $pipes
+            );
+            list($proc_in, $proc_out) = $pipes;
+        } else {
+            $proc = \proc_open(
+                $command,
+                [
+                    1 => \STDERR,
+                    2 => \STDERR,  // Pass stderr from this process directly to output stderr so it doesn't get buffered up or ignored
+                ],
+                $pipes
+            );
+            if (!$proc) {
+                throw new RuntimeException("Failed to create a proc");
+            }
+            '@phan-var-force resource $tcpServer';
+            $socket = \stream_socket_accept($tcpServer, 5);
+            if (!$socket) {
+                \proc_close($proc);
+                throw new RuntimeException("Failed to receive a connection from language server in 5 seconds");
+            }
+            // Don't set this to async - the rest of this test assumes synchronous streams.
+            // stream_set_blocking($socket, false);
+            $proc_in = $socket;
+            $proc_out = $socket;
+        }
         $this->debugLog("Created a process\n");
         return [
             $proc,
@@ -82,24 +155,61 @@ final class LanguageServerIntegrationTest extends BaseTest
     }
 
     /**
-     * @dataProvider pcntlEnabledProvider
+     * @return array<int,array{0:bool,1:bool}>
      */
-    public function testInitialize(bool $pcntlEnabled)
+    public function initializeProvider() : array
+    {
+        $results = [
+            [false, true],
+            [true, true],
+        ];
+        if (\DIRECTORY_SEPARATOR !== "\\") {
+            $results[] = [true, false];
+        }
+
+        return $results;
+    }
+
+    /**
+     * @dataProvider initializeProvider
+     */
+    public function testInitialize(bool $pcntlEnabled, bool $prefer_stdio)
     {
         // TODO: Move this into an OOP abstraction, add time limits, etc.
-        list ($proc, $proc_in, $proc_out) = $this->createPhanDaemon($pcntlEnabled);
+        list($proc, $proc_in, $proc_out) = $this->createPhanLanguageServer($pcntlEnabled, $prefer_stdio);
         try {
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);
             $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeExitNotification($proc_in);
         } finally {
-            fclose($proc_in);
+            $this->performCleanLanguageServerShutdown($proc, $proc_in, $proc_out);
+        }
+    }
+
+    /**
+     * @param resource $proc result of proc_open
+     * @param resource $proc_in input stream
+     * @param resource $proc_out output stream
+     */
+    private function performCleanLanguageServerShutdown($proc, $proc_in, $proc_out)
+    {
+        try {
             // TODO: Make these pipes async if they aren't already
-            $unread_contents = fread($proc_out, 10000);
-            $this->assertSame('', $unread_contents);
-            fclose($proc_out);
-            proc_close($proc);
+            if ($proc_in === $proc_out) {
+                // This is synchronous TCP
+                $unread_contents = \fread($proc_out, 10000);
+                $this->assertSame('', $unread_contents);
+                \fclose($proc_in);
+            } else {
+                // this is stdio
+                \fclose($proc_in);
+                $unread_contents = \fread($proc_out, 10000);
+                $this->assertSame('', $unread_contents);
+                \fclose($proc_out);
+            }
+        } finally {
+            \proc_close($proc);
         }
     }
 
@@ -109,7 +219,7 @@ final class LanguageServerIntegrationTest extends BaseTest
     public function testGenerateDiagnostics(bool $pcntlEnabled)
     {
         // TODO: Move this into an OOP abstraction, add time limits, etc.
-        list($proc, $proc_in, $proc_out) = $this->createPhanDaemon($pcntlEnabled);
+        list($proc, $proc_in, $proc_out) = $this->createPhanLanguageServer($pcntlEnabled);
         try {
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);
@@ -142,71 +252,568 @@ EOT;
             $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeExitNotification($proc_in);
         } finally {
-            fclose($proc_in);
-            // TODO: Make these pipes async if they aren't already
-            $unread_contents = fread($proc_out, 10000);
-            $this->assertSame('', $unread_contents);
-            fclose($proc_out);
-            proc_close($proc);
+            $this->performCleanLanguageServerShutdown($proc, $proc_in, $proc_out);
         }
     }
 
     public function testDefinitionInSameFile()
     {
         // TODO: Move this into an OOP abstraction, add time limits, etc.
-        list($proc, $proc_in, $proc_out) = $this->createPhanDaemon(true);
+        list($proc, $proc_in, $proc_out) = $this->createPhanLanguageServer(true);
         try {
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);
             $new_file_contents = <<<'EOT'
-<?php  // line 0
+<?php namespace { // line 0
 class MyExample {
+    public function __construct() {}
     const MyConst = 2;
 }
-echo MyExample::MyConst;  // line 4
+echo MyExample::MyConst;  // line 5
+$x = new MyExample();
+echo MyExample::class;
+class MyExampleWithoutConstructor { }
+$y = new MyExampleWithoutConstructor();
+// Some comment referring to \MyExample  at line 10
+function my_other_global_function() {}
+my_other_global_function();
+// Some comment referring to \\\my_other_global_function() - Current implementation only works when followed by a node
+// Should not crash if there are too many backslashes
+// line 15 - Can refer to constant MY_GLOBAL_CONSTANT
+const MY_GLOBAL_CONSTANT = [2,3];
+$z = MY_GLOBAL_CONSTANT;
+
+
+
+}
+// line 20
+namespace Ns {
+}
 EOT;
             $this->writeDidChangeNotificationToDefaultFile($proc_in, $new_file_contents);
             $this->assertHasEmptyPublishDiagnosticsNotification($proc_out);
 
+            $id = 2;
             // Request the definition of the class "MyExample" with the cursor in the middle of that word
             // NOTE: Line numbers are 0-based for Position
-            $definition_response = $this->writeDefinitionRequestAndAwaitResponse($proc_in, $proc_out, new Position(4, 6));
-
-            $this->assertSame([
-                'result' => [
-                    [
-                        'uri' => $this->getDefaultFileURI(),
-                        'range' => [
-                            'start' => ['line' => 1, 'character' => 0],
-                            'end'   => ['line' => 2, 'character' => 0],
+            $assert_has_definition = function (Position $position, int $line) use ($proc_in, $proc_out, &$id) {
+                $definition_response = $this->writeDefinitionRequestAndAwaitResponse($proc_in, $proc_out, $position);
+                $this->assertSame([
+                    'result' => [
+                        [
+                            'uri' => $this->getDefaultFileURI(),
+                            'range' => [
+                                'start' => ['line' => $line,     'character' => 0],
+                                'end'   => ['line' => $line + 1, 'character' => 0],
+                            ],
                         ],
                     ],
-                ],
-                'id' => 2,
-                'jsonrpc' => '2.0',
-            ], $definition_response);
+                    'id' => $id++,
+                    'jsonrpc' => '2.0',
+                ], $definition_response, "Unexpected result at $position");
+            };
+
+            $assert_has_definition(new Position(5, 6), 1);
+            $assert_has_definition(new Position(5, 15), 3);
+            // new MyExample() gives location of MyExample::__construct at "new"
+            $assert_has_definition(new Position(6, 5), 2);
+            // new MyExample() gives location of MyExample::__construct at "MyExample"
+            $assert_has_definition(new Position(6, 17), 2);
+            // Foo::class gives location of "class Foo"
+            $assert_has_definition(new Position(7, 17), 1);
+            // new MyExampleWithoutConstructor() gives the location of "class MyExampleWithoutConstructor"
+            $assert_has_definition(new Position(9, 9), 8);
+            // Referring to a class in a comment works.
+            $assert_has_definition(new Position(10, 31), 1);
+            // A function call can be located
+            $assert_has_definition(new Position(12, 0), 11);
+            // A function name in a comment can be located
+            $assert_has_definition(new Position(13, 32), 11);
+            // A global constant name can be located (in comments and code)
+            $assert_has_definition(new Position(15, 50), 16);
+            $assert_has_definition(new Position(17, 5), 16);
 
             $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeExitNotification($proc_in);
         } finally {
-            fclose($proc_in);
-            // TODO: Make these pipes async if they aren't already
-            $unread_contents = fread($proc_out, 10000);
-            $this->assertSame('', $unread_contents);
-            fclose($proc_out);
-            proc_close($proc);
+            $this->performCleanLanguageServerShutdown($proc, $proc_in, $proc_out);
         }
     }
 
     /**
-     * @param int $expected_definition_line 0-based line number
-     * @param ?int $expected_definition_line null for nothing
+     * Tests the completion provider for the given $position with pcntl enabled or disabled
+     * @param array<int,array> $expected_completions
+     */
+    public function runTestCompletionWithPcntlSetting(
+        Position $position,
+        array $expected_completions,
+        bool $for_vscode,
+        string $file_contents,
+        bool $pcntl_enabled
+    ) {
+        $this->messageId = 0;
+        list($proc, $proc_in, $proc_out) = $this->createPhanLanguageServer($pcntl_enabled, true, ['vscode_compatible_completions' => $for_vscode]);
+        try {
+            /*
+            // This block can be uncommented when developing tests for completions
+            $line_contents = explode("\n", $file_contents)[$position->line];
+            $completion_cursor = substr($line_contents, 0, $position->character) . '<>' . substr($line_contents, $position->character);
+            fwrite(STDERR, "Checking at $completion_cursor\n");
+             */
+
+            $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
+            $this->writeInitializedNotification($proc_in);
+            $this->writeDidChangeNotificationToDefaultFile($proc_in, $file_contents);
+            $this->assertHasNonEmptyPublishDiagnosticsNotification($proc_out);
+
+            // Request the definition of the class "MyExample" with the cursor in the middle of that word
+            // NOTE: Line numbers are 0-based for Position
+            // TODO: Should I shift this back a character in the request?
+            $completion_response = $this->writeCompletionRequestAndAwaitResponse($proc_in, $proc_out, $position);
+
+            $expected_completion_response = [
+                'result' => [
+                    'isIncomplete' => false,
+                    'items' => $expected_completions,
+                ],
+                'id' => 2,
+                'jsonrpc' => '2.0',
+            ];
+            $this->assertEquals($expected_completion_response, $completion_response, "Failed completions at $position->line:$position->character");
+            $this->assertSame($expected_completion_response, $completion_response);
+
+            $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
+            $this->writeExitNotification($proc_in);
+        } finally {
+            $this->performCleanLanguageServerShutdown($proc, $proc_in, $proc_out);
+        }
+    }
+
+    /**
+     * @param array<int,array> $expected_completions
+     */
+    private function runTestCompletionWithAndWithoutPcntl(Position $position, array $expected_completions, bool $for_vscode, string $file_contents)
+    {
+        if (\function_exists('pcntl_fork')) {
+            $this->runTestCompletionWithPcntlSetting($position, $expected_completions, $for_vscode, $file_contents, true);
+        }
+        $this->runTestCompletionWithPcntlSetting($position, $expected_completions, $for_vscode, $file_contents, false);
+    }
+
+    /**
+     * @param array<int,array> $expected_completions
+     * @dataProvider completionBasicProvider
+     */
+    public function testCompletionBasic(Position $position, array $expected_completions, bool $for_vscode = false)
+    {
+        $this->runTestCompletionWithAndWithoutPcntl($position, $expected_completions, $for_vscode, self::COMPLETION_BASIC_FILE_CONTENTS);
+    }
+
+    // Here, we use a prefix of M9 to avoid suggesting MYSQLI_...
+    const COMPLETION_BASIC_FILE_CONTENTS = <<<'EOT'
+<?php namespace { // line 0
+class M9Example {
+    public static $myVar = 2;
+    public $myInstanceVar = 3;
+    public static function my_static_function () {}
+    const my_class_const = ['literalString'];  // line 5
+}
+
+
+
+echo M9Example::$  // line 10
+echo M9Example::$my
+echo M9Example::
+;
+
+function M9GlobalFunction() : array {  // line 15
+    return [];
+}
+const M9GlobalConst = 42;
+define('M9OtherGlobalConst', 43);
+echo M9  // line 20
+echo "test\n";
+echo InnerNS\M
+
+}  // end global namespace
+// line 25
+
+
+namespace InnerNS {
+
+// line 30
+const M9AnotherConst = 33;
+class M9InnerClass {}
+/** @return array<int,int>  */
+function M9InnerFunction() { return [2]; }
+// line 35
+}
+namespace Other {
+function M9InnerFunction($first_arg, \M9Example $second_arg) {
+    // here, we look for completions
+    if (rand(0, 1) > 0) {  // line 40
+        echo \M9Example::
+        return $second_arg;
+    } else {
+        echo $second_arg->
+        return $first_arg;
+    }
+}
+}
+EOT;
+
+    /**
+     * @param string $property_label
+     * @param ?string $property_insert_text
+     * @param ?string $insert_text_for_substr
+     * @param bool $for_vscode
+     * @return array<int,array{0:Position,1:array,2:bool}>
+     */
+    private function createCompletionBasicTestCases(string $property_label, $property_insert_text, $insert_text_for_substr, bool $for_vscode) : array
+    {
+        // A static property
+        $property_completion_item = [
+            'label' => $property_label,
+            'kind' => CompletionItemKind::PROPERTY,
+            'detail' => 'int',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => $property_insert_text,
+        ];
+        $my_class_constant_item = [
+            'label' => 'my_class_const',
+            'kind' => CompletionItemKind::VARIABLE,
+            'detail' => "array{0:'literalString'}",
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $my_class_class_item = [
+            'label' => 'class',
+            'kind' => CompletionItemKind::VARIABLE,
+            'detail' => "'M9Example'",
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $my_static_function_item = [
+            'label' => 'my_static_function',
+            'kind' => CompletionItemKind::METHOD,
+            'detail' => 'mixed',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $my_instance_property_item = [
+            'label' => 'myInstanceVar',
+            'kind' => CompletionItemKind::PROPERTY,
+            'detail' => 'int',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $my_class_item = [
+            'label' => 'M9Example',
+            'kind' => CompletionItemKind::CLASS_,
+            'detail' => '\M9Example',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $my_global_constant_item = [
+            'label' => 'M9GlobalConst',
+            'kind' => CompletionItemKind::VARIABLE,
+            'detail' => '42',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $my_other_global_constant_item = [
+            'label' => 'M9OtherGlobalConst',
+            'kind' => CompletionItemKind::VARIABLE,
+            'detail' => '43',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $my_global_function_item = [
+            'label' => 'M9GlobalFunction',
+            'kind' => CompletionItemKind::FUNCTION,
+            'detail' => 'array',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        // These completions are returned to the language client in alphabetical order
+        $static_property_completions = [
+            $property_completion_item,
+        ];
+        $static_property_completions_substr = [
+            \array_merge($property_completion_item, ['insertText' => $insert_text_for_substr]),
+        ];
+        $all_static_completions = [
+            $my_class_class_item,
+            $my_class_constant_item,
+            $my_static_function_item,
+            $property_completion_item,
+        ];
+        $all_instance_completions = [
+            $my_static_function_item,
+            $my_instance_property_item,
+        ];
+        $all_constant_completions = [
+            $my_class_item,
+            $my_global_constant_item,
+            $my_global_function_item,
+            $my_other_global_constant_item,
+        ];
+
+        return [
+            [new Position(10, 17), $static_property_completions, $for_vscode],
+            [new Position(11, 19), $static_property_completions_substr, $for_vscode],
+            [new Position(12, 16), $all_static_completions, $for_vscode],
+            [new Position(20, 7), $all_constant_completions, $for_vscode],
+            [new Position(41, 25), $all_static_completions, $for_vscode],
+            [new Position(44, 26), $all_instance_completions, $for_vscode],
+        ];
+    }
+    /**
+     * @return array<int,array{0:Position,1:array,2:bool}>
+     */
+    public function completionBasicProvider() : array
+    {
+        return \array_merge(
+            $this->createCompletionBasicTestCases('myVar', 'myVar', 'Var', false),
+            $this->createCompletionBasicTestCases('$myVar', null, null, true)
+        );
+    }
+
+    /**
+     * @param array<int,array> $expected_completions
+     * @dataProvider completionVariableProvider
+     */
+    public function testCompletionVariable(Position $position, array $expected_completions, bool $for_vscode = false)
+    {
+        $this->runTestCompletionWithAndWithoutPcntl($position, $expected_completions, $for_vscode, self::COMPLETION_VARIABLE_FILE_CONTENTS);
+    }
+
+    // Here, we use a prefix of M9 to avoid suggesting MYSQLI_...
+    const COMPLETION_VARIABLE_FILE_CONTENTS = <<<'EOT'
+<?php  // line 0
+
+namespace LSP {
+
+/**
+ * @property int $myMagicProperty  line 5
+ * @phan-forbid-undeclared-magic-properties (should not affect suggestions)
+ */
+class M9Class {
+    public static $myStaticProp = 2;
+    public $myPublicVar = 3;  // line 10
+    /** @var string another variable */
+    public $otherPublicVar;
+    public $otherPublicInt = 0;
+    protected $myProtected = 3;
+    private $myPrivate = 3;  // line 15
+
+
+    public function myInstanceMethod() {}
+    public static function my_static_method() : array { return $_SERVER; }
+    // line 20
+
+    protected function myProtectedMethod() {}
+    private $myPrivateInstanceVar = 3;  // line 5
+    public static function my_other_static_method () : void {}
+    const my_class_const = ['literalString'];  // line 25
+
+    public function __get(string $x) {
+        return strlen($x);
+    }
+    // line 30
+
+    public static function main() {
+        $myLocalVar = new self();
+        echo $myLocalVar->
+        // line 35
+        $mUnrelated = 3; $myVar = 4;
+        echo $my
+        echo $_S
+
+        // line 40
+    }
+}
+
+
+// line 45
+$j = new M9Class;
+echo $j->otherP
+echo $j->my
+
+}  // end namespace LSP
+EOT;
+
+    /**
+     * @param string $variablePrefix expected prefix for labels of variables
+     * @return array<int,array{0:Position,1:array,2:bool}>
+     */
+    private function createCompletionVariableTestCases(string $variablePrefix, bool $for_vscode) : array
+    {
+        $otherPublicVarPropertyItem = [
+            'label' => 'otherPublicVar',
+            'kind' => CompletionItemKind::PROPERTY,
+            'detail' => 'string',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $otherPublicPropertyItem = [
+            'label' => 'otherPublicInt',
+            'kind' => CompletionItemKind::PROPERTY,
+            'detail' => 'int',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $myMagicPropertyItem = [
+            'label' => 'myMagicProperty',
+            'kind' => CompletionItemKind::PROPERTY,
+            'detail' => 'int',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $myPublicVarItem = [
+            'label' => 'myPublicVar',
+            'kind' => CompletionItemKind::PROPERTY,
+            'detail' => 'int',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $myInstanceMethodItem = [
+            'label' => 'myInstanceMethod',
+            'kind' => CompletionItemKind::METHOD,
+            'detail' => 'mixed',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $myStaticMethodItem = [
+            'label' => 'my_static_method',
+            'kind' => CompletionItemKind::METHOD,
+            'detail' => 'array',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $myOtherStaticMethodItem = [
+            'label' => 'my_other_static_method',
+            'kind' => CompletionItemKind::METHOD,
+            'detail' => 'void',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $publicM9OtherCompletions = [
+            $otherPublicPropertyItem,
+            $otherPublicVarPropertyItem,
+        ];
+        $publicM9MyCompletions = [
+            $myOtherStaticMethodItem,
+            $myStaticMethodItem,
+            $myInstanceMethodItem,
+            $myMagicPropertyItem,
+            $myPublicVarItem,
+        ];
+
+        $myLocalVarItem = [
+            'label' => $variablePrefix . 'myLocalVar',
+            'kind' => CompletionItemKind::VARIABLE,
+            'detail' => '\LSP\M9Class',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $myVarItem = [
+            'label' => $variablePrefix . 'myVar',
+            'kind' => CompletionItemKind::VARIABLE,
+            'detail' => '4',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $localVariableCompletions = [
+            $myLocalVarItem,
+            $myVarItem,
+        ];
+        $serverSuperglobal = [
+            'label' => $variablePrefix . '_SERVER',
+            'kind' => CompletionItemKind::VARIABLE,
+            'detail' => 'array<string,mixed>',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $sessionSuperglobal = [
+            'label' => $variablePrefix . '_SESSION',
+            'kind' => CompletionItemKind::VARIABLE,
+            'detail' => 'array<string,mixed>',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $superGlobalVariableCompletions = [
+            $serverSuperglobal,
+            $sessionSuperglobal,
+        ];
+
+        return [
+            [new Position(37, 16), $localVariableCompletions, $for_vscode],
+            [new Position(38, 16), $superGlobalVariableCompletions, $for_vscode],
+            [new Position(47, 15), $publicM9OtherCompletions, $for_vscode],
+            [new Position(48, 11), $publicM9MyCompletions, $for_vscode],
+        ];
+    }
+
+    /**
+     * @return array<int,array{0:Position,1:array,2:bool}>
+     */
+    public function completionVariableProvider() : array
+    {
+        return \array_merge(
+            $this->createCompletionVariableTestCases('', false),
+            $this->createCompletionVariableTestCases('$', true)
+        );
+    }
+
+    /**
+     * @param ?int $expected_definition_line 0-based line number (null for nothing)
      *
      * @dataProvider definitionInOtherFileProvider
      */
     public function testDefinitionInOtherFile(string $new_file_contents, Position $position, string $expected_definition_uri, $expected_definition_line, string $requested_uri = null)
     {
-        if (function_exists('pcntl_fork')) {
+        if (\function_exists('pcntl_fork')) {
             $this->runTestDefinitionInOtherFileWithPcntlSetting($new_file_contents, $position, $expected_definition_uri, $expected_definition_line, $requested_uri, true);
         }
         $this->runTestDefinitionInOtherFileWithPcntlSetting($new_file_contents, $position, $expected_definition_uri, $expected_definition_line, $requested_uri, false);
@@ -219,7 +826,7 @@ EOT;
      */
     public function testTypeDefinitionInOtherFile(string $new_file_contents, Position $position, string $expected_definition_uri, $expected_definition_line, string $requested_uri = null)
     {
-        if (function_exists('pcntl_fork')) {
+        if (\function_exists('pcntl_fork')) {
             $this->runTestTypeDefinitionInOtherFileWithPcntlSetting($new_file_contents, $position, $expected_definition_uri, $expected_definition_line, $requested_uri, true);
         }
         $this->runTestTypeDefinitionInOtherFileWithPcntlSetting($new_file_contents, $position, $expected_definition_uri, $expected_definition_line, $requested_uri, false);
@@ -227,13 +834,14 @@ EOT;
 
     /**
      * @dataProvider hoverInOtherFileProvider
+     * @param ?string $expected_hover_markup
      */
     public function testHoverInOtherFile(string $new_file_contents, Position $position, $expected_hover_markup, string $requested_uri = null, bool $require_php71_or_newer = false)
     {
-        if (PHP_VERSION_ID < 70100 && $require_php71_or_newer) {
+        if (\PHP_VERSION_ID < 70100 && $require_php71_or_newer) {
             $this->markTestSkipped('This test requires php 7.1');
         }
-        if (function_exists('pcntl_fork')) {
+        if (\function_exists('pcntl_fork')) {
             $this->runTestHoverInOtherFileWithPcntlSetting(
                 $new_file_contents,
                 $position,
@@ -263,6 +871,31 @@ function example(MyClass $arg) {
     $c = new ExampleClass();
     $c->counter += 1;
     var_export(ExampleClass::HTTP_500);  // line 10
+    var_export($c);
+    var_export($c->descriptionlessProp); var_export(ExampleClass::$typelessProp);
+}
+/**
+ * @param string|false $strVal line 15 description text
+ * @param array<string,stdClass> $arrVal
+ */
+function example2($strVal, array $arrVal) {
+    var_export($strVal);
+    var_export($arrVal);  // line 20
+    $strVal = (string)$strVal;
+    echo strlen($strVal);
+    $n = ast\parse_code($strVal, 50);
+}
+function test(ExampleClass $c) {  // line 25
+    var_export($c->propWithDefault);
+    echo JSON_PRETTY_PRINT;
+    if (rand() % 2 > 0) { throw new AssertionError('some condition failed'); }
+    $n = ast\parse_code('<?php $x = 2;', 50);
+    var_export($n->kind);  // line 30
+    var_export($_ENV);
+    $y = new class extends ArrayObject { public function count() : int {return 0;} };  // no comment
+    var_export($y->count());
+    $z = new class extends ArrayObject {};
+    var_export($z->count());
 }
 EOT;
         return [
@@ -314,6 +947,8 @@ EOT
 ```php
 public static function myMethod() : \MyOtherClass
 ```
+
+`@return MyOtherClass` details
 EOT
             ],
             [
@@ -332,10 +967,10 @@ EOT
                 new Position(7, 4),  // MY_NAMESPACED_CONST
                 <<<'EOT'
 ```php
-function global_function_with_comment(int $x, $y)
+function global_function_with_comment(int $x, ?string $y) : void
 ```
 
-This has a mix of comments and annotations, annotations are excluded from hover
+This has a mix of comments and annotations, annotations are included in hover
 
 - Markup in comments is preserved,
   and leading whitespace is as well.
@@ -349,7 +984,7 @@ EOT
 public $counter
 ```
 
-@var int this tracks a count
+`@var int` this tracks a count
 EOT
             ],
             [
@@ -360,7 +995,189 @@ EOT
 const HTTP_500 = 500
 ```
 
-@var int value of an HTTP response code
+`@var int` value of an HTTP response code
+EOT
+                ,
+                null,
+                true
+            ],
+            [
+                $example_file_contents,
+                new Position(11, 16),  // $c
+                <<<'EOT'
+```php
+class ExampleClass
+```
+
+description of ExampleClass
+EOT
+                ,
+                null,
+                true
+            ],
+            [
+                $example_file_contents,
+                new Position(12, 24),  // ExampleClass->descriptionlessProp
+                <<<'EOT'
+```php
+public $descriptionlessProp
+```
+
+`@var array<string, \stdClass>`
+EOT
+                ,
+                null,
+                true
+            ],
+            [
+                $example_file_contents,
+                new Position(12, 70),  // ExampleClass->typelessProp
+                <<<'EOT'
+```php
+public static $typelessProp
+```
+
+This has no type
+EOT
+                ,
+                null,
+                true
+            ],
+            [
+                $example_file_contents,
+                new Position(19, 15),  // $strVal
+                '`false|string` line 15 description text',
+                null,
+                true
+            ],
+            [
+                $example_file_contents,
+                new Position(20, 20),  // $arrVal
+                '`array<string,\stdClass>`',
+                null,
+                true
+            ],
+            [
+                $example_file_contents,
+                new Position(22, 10),  // strlen
+                <<<'EOT'
+```php
+function strlen(string $string) : int
+```
+
+Get string length
+EOT
+                ,
+                null,
+                true
+            ],
+            // Currently, the namespace is left out from the hover text
+            [
+                $example_file_contents,
+                new Position(23, 14),  // ast\parse_code
+                <<<'EOT'
+```php
+namespace ast;
+function parse_code(string $code, int $version, string $filename = default) : \ast\Node
+```
+
+Parses code string and returns AST root node.
+EOT
+                ,
+                null,
+                true
+            ],
+            [
+                $example_file_contents,
+                new Position(26, 20),  // ExampleClass->propWithDefault
+                <<<'EOT'
+```php
+public $propWithDefault
+```
+
+`@var array{0:2,1:3}` This has a default
+EOT
+                ,
+                null,
+                true
+            ],
+            [
+                $example_file_contents,
+                new Position(27, 12),  // JSON_PRETTY_PRINT
+                <<<'EOT'
+```php
+const JSON_PRETTY_PRINT = 128
+```
+
+Use whitespace in returned data to format it. Available since PHP 5.4.0.
+EOT
+                ,
+                null,
+                true
+            ],
+            [
+                $example_file_contents,
+                new Position(28, 45),  // AssertionError
+                <<<'EOT'
+```php
+public function __construct()
+```
+
+Construct an instance of `\AssertionError`.
+
+`AssertionError` is thrown when an assertion made via `assert` fails.
+EOT
+                ,
+                null,
+                true
+            ],
+            [
+                $example_file_contents,
+                new Position(30, 20),  // ast\Node->children
+                <<<'EOT'
+```php
+public $kind
+```
+
+AST Node Kind. Values are one of `ast\AST_*` constants.
+EOT
+                ,
+                null,
+                true
+            ],
+            [
+                $example_file_contents,
+                new Position(31, 18),  // $_ENV
+                <<<'EOT'
+`array<string,string>` An associative array of variables passed to the current script via the environment method.
+EOT
+                ,
+                null,
+                true
+            ],
+            [
+                $example_file_contents,
+                new Position(33, 22),  // ArrayObject->count() (override)
+                <<<'EOT'
+```php
+public function count() : int
+```
+
+Get the number of public properties in the ArrayObject
+EOT
+                ,
+                null,
+                true
+            ],
+            [
+                $example_file_contents,
+                new Position(35, 22),  // ArrayObject->count() (inherited)
+                <<<'EOT'
+```php
+public function count() : int
+```
+
+Get the number of public properties in the ArrayObject
 EOT
                 ,
                 null,
@@ -374,7 +1191,7 @@ EOT
      */
     private static function shouldExpectDiagnosticNotificationForURI($requested_uri) : bool
     {
-        if ($requested_uri && basename(dirname($requested_uri)) !== 'src') {
+        if ($requested_uri && \basename(\dirname($requested_uri)) !== 'src') {
             return false;
         }
         return true;
@@ -396,7 +1213,7 @@ EOT
 
         $this->messageId = 0;
         // TODO: Move this into an OOP abstraction, add time limits, etc.
-        list($proc, $proc_in, $proc_out) = $this->createPhanDaemon($pcntl_enabled);
+        list($proc, $proc_in, $proc_out) = $this->createPhanLanguageServer($pcntl_enabled);
         try {
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);
@@ -407,7 +1224,7 @@ EOT
 
             // Request the definition of the class "MyExample" with the cursor in the middle of that word
             // NOTE: Line numbers are 0-based for Position
-            $perform_definition_request = /** @return array */ function () use ($proc_in, $proc_out, $position, $requested_uri) {
+            $perform_definition_request = /** @return array<string,mixed> */ function () use ($proc_in, $proc_out, $position, $requested_uri) {
                 return $this->writeDefinitionRequestAndAwaitResponse($proc_in, $proc_out, $position, $requested_uri);
             };
             $definition_response = $perform_definition_request();
@@ -432,9 +1249,9 @@ EOT
                 'jsonrpc' => '2.0',
             ];
 
-            $cur_line = explode("\n", $new_file_contents)[$position->line] ?? '';
+            $cur_line = \explode("\n", $new_file_contents)[$position->line] ?? '';
 
-            $message = "Unexpected definition for {$position->line}:{$position->character} (0-based) on line \"" . $cur_line . '"';
+            $message = "Unexpected definition for {$position->line}:{$position->character} (0-based) on line \"" . $cur_line . '"' . ' at "' . \substr($cur_line, $position->character, 10) . '"';
             $this->assertEquals($expected_definition_response, $definition_response, $message);  // slightly better diff view than assertSame
             $this->assertSame($expected_definition_response, $definition_response, $message);
 
@@ -450,16 +1267,10 @@ EOT
             $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeExitNotification($proc_in);
         } catch (\Throwable $e) {
-            fwrite(STDERR, "Unexpected exception in " . __METHOD__ . ": " . $e->getMessage());
+            \fwrite(\STDERR, "Unexpected exception in " . __METHOD__ . ": " . $e->getMessage());
             throw $e;
         } finally {
-            // TODO: Reusable abstraction of opening and closing the language server
-            fclose($proc_in);
-            // TODO: Make these pipes async if they aren't already
-            $unread_contents = fread($proc_out, 10000);
-            $this->assertSame('', $unread_contents);
-            fclose($proc_out);
-            proc_close($proc);
+            $this->performCleanLanguageServerShutdown($proc, $proc_in, $proc_out);
         }
     }
 
@@ -479,7 +1290,7 @@ EOT
 
         $this->messageId = 0;
         // TODO: Move this into an OOP abstraction, add time limits, etc.
-        list($proc, $proc_in, $proc_out) = $this->createPhanDaemon($pcntl_enabled);
+        list($proc, $proc_in, $proc_out) = $this->createPhanLanguageServer($pcntl_enabled);
         try {
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);
@@ -490,7 +1301,7 @@ EOT
 
             // Request the definition of the class "MyExample" with the cursor in the middle of that word
             // NOTE: Line numbers are 0-based for Position
-            $perform_definition_request = /** @return array */ function () use ($proc_in, $proc_out, $position, $requested_uri) {
+            $perform_definition_request = /** @return array<string,mixed> */ function () use ($proc_in, $proc_out, $position, $requested_uri) {
                 return $this->writeTypeDefinitionRequestAndAwaitResponse($proc_in, $proc_out, $position, $requested_uri);
             };
             $definition_response = $perform_definition_request();
@@ -515,9 +1326,15 @@ EOT
                 'jsonrpc' => '2.0',
             ];
 
-            $cur_line = explode("\n", $new_file_contents)[$position->line] ?? '';
+            $cur_line = \explode("\n", $new_file_contents)[$position->line] ?? '';
 
-            $message = "Unexpected type definition for {$position->line}:{$position->character} (0-based) on line " . json_encode($cur_line);
+            $message = \sprintf(
+                "Unexpected type definition for %d:%d (0-based) on line %s at \"%s\"",
+                $position->line,
+                $position->character,
+                (string)\json_encode($cur_line),
+                (string)\substr($cur_line, $position->character, 10)
+            );
             $this->assertEquals($expected_definition_response, $definition_response, $message);  // slightly better diff view than assertSame
             $this->assertSame($expected_definition_response, $definition_response, $message);
 
@@ -533,15 +1350,10 @@ EOT
             $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeExitNotification($proc_in);
         } catch (\Throwable $e) {
-            fwrite(STDERR, "Unexpected exception in " . __METHOD__ . ": " . $e->getMessage());
+            \fwrite(\STDERR, "Unexpected exception in " . __METHOD__ . ": " . $e->getMessage());
             throw $e;
         } finally {
-            fclose($proc_in);
-            // TODO: Make these pipes async if they aren't already
-            $unread_contents = fread($proc_out, 10000);
-            $this->assertSame('', $unread_contents);
-            fclose($proc_out);
-            proc_close($proc);
+            $this->performCleanLanguageServerShutdown($proc, $proc_in, $proc_out);
         }
     }
 
@@ -560,7 +1372,7 @@ EOT
 
         $this->messageId = 0;
         // TODO: Move this into an OOP abstraction, add time limits, etc.
-        list($proc, $proc_in, $proc_out) = $this->createPhanDaemon($pcntl_enabled);
+        list($proc, $proc_in, $proc_out) = $this->createPhanLanguageServer($pcntl_enabled);
         try {
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);
@@ -571,7 +1383,7 @@ EOT
 
             // Request the definition of the class "MyExample" with the cursor in the middle of that word
             // NOTE: Line numbers are 0-based for Position
-            $perform_hover_request = /** @return array */ function () use ($proc_in, $proc_out, $position, $requested_uri) {
+            $perform_hover_request = /** @return array<string,mixed> */ function () use ($proc_in, $proc_out, $position, $requested_uri) {
                 return $this->writeHoverRequestAndAwaitResponse($proc_in, $proc_out, $position, $requested_uri);
             };
             $hover_response = $perform_hover_request();
@@ -593,9 +1405,15 @@ EOT
                 'jsonrpc' => '2.0',
             ];
 
-            $cur_line = explode("\n", $new_file_contents)[$position->line] ?? '';
+            $cur_line = \explode("\n", $new_file_contents)[$position->line] ?? '';
 
-            $message = "Unexpected type definition for {$position->line}:{$position->character} (0-based) on line " . json_encode($cur_line);
+            $message = \sprintf(
+                "Unexpected hover response for %d:%d (0-based) on line %s at \"%s\"",
+                $position->line,
+                $position->character,
+                (string)\json_encode($cur_line),
+                (string)\substr($cur_line, $position->character, 10)
+            );
             $this->assertEquals($expected_hover_response, $hover_response, $message);  // slightly better diff view than assertSame
             $this->assertSame($expected_hover_response, $hover_response, $message);
 
@@ -611,15 +1429,10 @@ EOT
             $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeExitNotification($proc_in);
         } catch (\Throwable $e) {
-            fwrite(STDERR, "Unexpected exception in " . __METHOD__ . ": " . $e->getMessage());
+            \fwrite(\STDERR, "Unexpected exception in " . __METHOD__ . ": " . $e->getMessage());
             throw $e;
         } finally {
-            fclose($proc_in);
-            // TODO: Make these pipes async if they aren't already
-            $unread_contents = fread($proc_out, 10000);
-            $this->assertSame('', $unread_contents);
-            fclose($proc_out);
-            proc_close($proc);
+            $this->performCleanLanguageServerShutdown($proc, $proc_in, $proc_out);
         }
     }
 
@@ -854,13 +1667,30 @@ EOT;
     {
         $requested_uri = $requested_uri ?? $this->getDefaultFileURI();
         $diagnostics_response = $this->awaitResponse($proc_out);
-        $this->assertSame('textDocument/publishDiagnostics', $diagnostics_response['method']);
+        $error_message = "Unexpected response: " . \json_encode($diagnostics_response);
+        $this->assertSame('textDocument/publishDiagnostics', $diagnostics_response['method'] ?? null, $error_message);
+        $uri = $diagnostics_response['params']['uri'];
+        $this->assertSame($uri, $requested_uri, $error_message);
+        $diagnostics = $diagnostics_response['params']['diagnostics'];
+        $this->assertSame([], $diagnostics, $error_message);
+    }
+
+    /**
+     * @param resource $proc_out
+     * @return void
+     */
+    private function assertHasNonEmptyPublishDiagnosticsNotification($proc_out, string $requested_uri = null)
+    {
+        $requested_uri = $requested_uri ?? $this->getDefaultFileURI();
+        $diagnostics_response = $this->awaitResponse($proc_out);
+        $this->assertSame('textDocument/publishDiagnostics', $diagnostics_response['method'] ?? null, "Unexpected response: " . \json_encode($diagnostics_response));
         $uri = $diagnostics_response['params']['uri'];
         $this->assertSame($uri, $requested_uri);
         $diagnostics = $diagnostics_response['params']['diagnostics'];
-        $this->assertSame([], $diagnostics);
+        $this->assertNotSame([], $diagnostics);
     }
 
+    /** @return array<int,array> */
     public function pcntlEnabledProvider() : array
     {
         return [
@@ -870,13 +1700,14 @@ EOT;
     }
 
     /**
+     * @param array<string,mixed> $diagnostic
      * @return void
      */
     private function assertSameDiagnostic(array $diagnostic, string $issue_type, int $expected_lineno, string $message)
     {
         $issue = Issue::fromType($issue_type);
 
-        $expected_message = sprintf(
+        $expected_message = \sprintf(
             '%s %s %s',
             $issue->getCategoryName(),
             $issue->getType(),
@@ -914,7 +1745,7 @@ EOT;
         $params = [
             'capabilities' => new ClientCapabilities(),
             'rootPath' => '/ignored',
-            'processId' => getmypid(),
+            'processId' => \getmypid(),
         ];
         $this->writeMessage($proc_in, 'initialize', $params);
         $response = $this->awaitResponse($proc_out);
@@ -927,6 +1758,10 @@ EOT;
                         'willSave' => null,
                         'willSaveWaitUntil' => null,
                         'save' => ['includeText' => true],
+                    ],
+                    'completionProvider' => [
+                        'resolveProvider' => false,
+                        'triggerCharacters' => ['$', '>'],
                     ],
                     'definitionProvider' => true,
                     'typeDefinitionProvider' => true,
@@ -942,7 +1777,7 @@ EOT;
     /**
      * @param resource $proc_in
      * @param resource $proc_out
-     * @return array the response
+     * @return array<string,mixed> the response
      * @throws InvalidArgumentException
      */
     private function writeDefinitionRequestAndAwaitResponse($proc_in, $proc_out, Position $position, string $requested_uri = null)
@@ -969,7 +1804,38 @@ EOT;
     /**
      * @param resource $proc_in
      * @param resource $proc_out
-     * @return array the response
+     * @return array<string,mixed> the response
+     * @throws InvalidArgumentException
+     */
+    private function writeCompletionRequestAndAwaitResponse($proc_in, $proc_out, Position $position, string $requested_uri = null)
+    {
+        $requested_uri = $requested_uri ?? $this->getDefaultFileURI();
+        // Implementation detail: We simultaneously emit a notification with new diagnostics
+        // and the response for the definition request at the same time, even if files didn't change.
+
+        // NOTE: That could probably be refactored, but there's not much benefit to doing that.
+        $params = [
+            'textDocument' => new TextDocumentIdentifier($requested_uri),
+            'position' => $position,
+            'context' => [
+                'triggerKind' => CompletionTriggerKind::TRIGGER_CHARACTER,
+                'triggerCharacter' => '$',
+            ],
+        ];
+        $this->writeMessage($proc_in, 'textDocument/completion', $params);
+        if (self::shouldExpectDiagnosticNotificationForURI($requested_uri)) {
+            $this->assertHasNonEmptyPublishDiagnosticsNotification($proc_out, $requested_uri);
+        }
+
+        $response = $this->awaitResponse($proc_out);
+
+        return $response;
+    }
+
+    /**
+     * @param resource $proc_in
+     * @param resource $proc_out
+     * @return array<string,mixed> the response
      * @throws InvalidArgumentException
      */
     private function writeTypeDefinitionRequestAndAwaitResponse($proc_in, $proc_out, Position $position, string $requested_uri = null)
@@ -996,7 +1862,7 @@ EOT;
     /**
      * @param resource $proc_in
      * @param resource $proc_out
-     * @return array the response
+     * @return array<string,mixed> the response
      * @throws InvalidArgumentException
      */
     private function writeHoverRequestAndAwaitResponse($proc_in, $proc_out, Position $position, string $requested_uri = null)
@@ -1049,7 +1915,7 @@ EOT;
         $params = [
             'capabilities' => new stdClass(),
             'rootPath' => '/ignored',
-            'processId' => getmypid(),
+            'processId' => \getmypid(),
         ];
         $this->writeNotification($proc_in, 'initialized', $params);
     }
@@ -1101,8 +1967,7 @@ EOT;
      * @param resource $proc_out
      * Based on ProtocolStreamReader::readMessages()
      * TODO: Add timeout logic, etc.
-     * @suppress PhanPluginUnusedVariable $parsing_mode
-     * @return array
+     * @return array<string,mixed>
      */
     private function awaitResponse($proc_out) : array
     {
@@ -1110,9 +1975,8 @@ EOT;
         $content_length = 0;
         $headers = [];
         '@phan-var array<string,string> $headers';
-        $c = false;
         $parsing_mode = ProtocolStreamReader::PARSE_HEADERS;
-        while (($c = fgetc($proc_out)) !== false && $c !== '') {
+        while (($c = \fgetc($proc_out)) !== false && $c !== '') {
             $buffer .= $c;
             switch ($parsing_mode) {
                 case ProtocolStreamReader::PARSE_HEADERS:
@@ -1120,19 +1984,19 @@ EOT;
                         $parsing_mode = ProtocolStreamReader::PARSE_BODY;
                         $content_length = (int)$headers['Content-Length'];
                         if (!$content_length) {
-                            throw new InvalidArgumentException('Failed to read json. Response headers: ' . json_encode($headers));
+                            throw new InvalidArgumentException('Failed to read json. Response headers: ' . \json_encode($headers));
                         }
                         $buffer = '';
-                    } elseif (substr($buffer, -2) === "\r\n") {
-                        $parts = explode(':', $buffer);
-                        $headers[$parts[0]] = trim($parts[1]);
+                    } elseif (\substr($buffer, -2) === "\r\n") {
+                        $parts = \explode(':', $buffer);
+                        $headers[$parts[0]] = \trim($parts[1]);
                         $buffer = '';
                     }
                     break;
                 case ProtocolStreamReader::PARSE_BODY:
                     if (strlen($buffer) === $content_length) {
                         // If we fork, don't read any bytes in the input buffer from the worker process.
-                        $result = json_decode($buffer, true);
+                        $result = \json_decode($buffer, true);
                         if (!is_array($result)) {
                             throw new InvalidArgumentException("Invalid decoded buffer: value=$buffer");
                         }
@@ -1141,7 +2005,7 @@ EOT;
                     break;
             }
         }
-        throw new InvalidArgumentException('Failed to read a full response: ' . json_encode($buffer));
+        throw new InvalidArgumentException('Failed to read a full response: ' . \json_encode($buffer));
         // TODO: parse headers and body the same way the language client does
     }
 
@@ -1182,8 +2046,8 @@ EOT;
     {
         if (self::DEBUG_ENABLED) {
             echo $message;
-            flush();
-            ob_flush();
+            \flush();
+            \ob_flush();
         }
     }
     // TODO: Test the ability to create a Request
@@ -1195,12 +2059,12 @@ EOT;
      */
     private function writeEncodedBody($proc_in, array $body)
     {
-        $body_raw = json_encode($body, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\r\n";
-        $raw = sprintf(
+        $body_raw = \json_encode($body, \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE) . "\r\n";
+        $raw = \sprintf(
             "Content-Length: %d\r\nContent-Type: application/vscode-jsonrpc; charset=utf-8\r\n\r\n%s",
             strlen($body_raw),
             $body_raw
         );
-        fwrite($proc_in, $raw);
+        \fwrite($proc_in, $raw);
     }
 }

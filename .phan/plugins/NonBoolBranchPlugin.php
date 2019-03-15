@@ -1,28 +1,37 @@
 <?php declare(strict_types=1);
+
 // .phan/plugins/NonBoolBranchPlugin.php
 
+use ast\Node;
 use Phan\AST\UnionTypeVisitor;
 use Phan\Exception\IssueException;
 use Phan\Language\Context;
 use Phan\PluginV2;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
-use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use ast\Node;
+use Phan\PluginV2\PluginAwarePreAnalysisVisitor;
+use Phan\PluginV2\PreAnalyzeNodeCapability;
 
-class NonBoolBranchPlugin extends PluginV2 implements PostAnalyzeNodeCapability
+/**
+ * This plugin warns if an expression which has types other than `bool` is used in an if/else if.
+ *
+ * Note that the 'simplify_ast' setting's default of true will interfere with this plugin.
+ */
+class NonBoolBranchPlugin extends PluginV2 implements PreAnalyzeNodeCapability
 {
     /**
-     * @return string - name of PluginAwarePostAnalysisVisitor subclass
+     * @return string - name of PluginAwarePreAnalysisVisitor subclass
      *
      * @override
      */
-    public static function getPostAnalyzeNodeVisitorClassName() : string
+    public static function getPreAnalyzeNodeVisitorClassName() : string
     {
         return NonBoolBranchVisitor::class;
     }
 }
 
-class NonBoolBranchVisitor extends PluginAwarePostAnalysisVisitor
+/**
+ * This visitor checks if statements for conditions ('cond') that are non-booleans.
+ */
+class NonBoolBranchVisitor extends PluginAwarePreAnalysisVisitor
 {
     // A plugin's visitors should not override visit() unless they need to.
 
@@ -36,8 +45,8 @@ class NonBoolBranchVisitor extends PluginAwarePostAnalysisVisitor
         foreach ($node->children as $if_node) {
             $condition = $if_node->children['cond'];
 
-            // dig nodes to avoid NOT('!') operator's converting its value to boolean type
-            // Also, use right hand side of $x = (expr)
+            // dig nodes to avoid the NOT('!') operation converting its value to a boolean type.
+            // Also, use right-hand side of assignments such as `$x = (expr)`
             while (($condition instanceof Node) && (
                 ($condition->flags === ast\flags\UNARY_BOOL_NOT && $condition->kind === ast\AST_UNARY_OP)
                 || (\in_array($condition->kind, [\ast\AST_ASSIGN, \ast\AST_ASSIGN_REF], true)))
@@ -59,7 +68,7 @@ class NonBoolBranchVisitor extends PluginAwarePostAnalysisVisitor
             } catch (IssueException $_) {
                 return $this->context;
             }
-            if (!$union_type->isExclusivelyBoolTypes()) {
+            if (!$union_type->isEmpty() && !$union_type->isExclusivelyBoolTypes()) {
                 $this->emit(
                     'PhanPluginNonBoolBranch',
                     'Non bool value of type {TYPE} evaluated in if clause',

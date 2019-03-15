@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language\Type;
 
 use Phan\CodeBase;
@@ -6,6 +7,11 @@ use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Language\UnionTypeBuilder;
 
+/**
+ * Phan's representation of the type for `array`.
+ * @see ArrayShapeType for the representation of `array{key:string}`
+ * @see GenericArrayType for the representation of `MyClass[]`, `array<string,MyClass>`, etc.
+ */
 class ArrayType extends IterableType
 {
     /** @phan-override */
@@ -71,8 +77,8 @@ class ArrayType extends IterableType
     /**
      * E.g. array{0:int} + array{0:string,1:float} becomes array{0:int,1:float}
      *
-     * @param UnionType $left the left hand side (e.g. of a `+` operator). Keys from these array shapes take precedence.
-     * @param UnionType $right the right hand side (e.g. of a `+` operator).
+     * @param UnionType $left the left-hand side (e.g. of a `+` operator). Keys from these array shapes take precedence.
+     * @param UnionType $right the right-hand side (e.g. of a `+` operator).
      * @return UnionType with ArrayType subclass(es)
      */
     public static function combineArrayTypesOverriding(UnionType $left, UnionType $right) : UnionType
@@ -128,9 +134,9 @@ class ArrayType extends IterableType
     /**
      * E.g. string|array{0:T1|T2,1:float} + [0 => int] becomes string|array{0:int, 1:float}
      *
-     * TODO: Remove any top level native types that can't have offsets, e.g. IntType, null, etc.
+     * TODO: Remove any top-level native types that can't have offsets, e.g. IntType, null, etc.
      *
-     * @param UnionType $left the left hand side (e.g. of a isset check).
+     * @param UnionType $left the left-hand side (e.g. of an isset check).
      * @param int|string|float|bool $field_dim_value (Ideally int|string)
      * @param UnionType $field_type
      * @return UnionType with ArrayType subclass(es)
@@ -157,7 +163,7 @@ class ArrayType extends IterableType
     /**
      * Overridden in subclasses
      *
-     * @param int $key_type @phan-unused-param (TODO: Use?)
+     * @param int $key_type
      * Corresponds to the type of the array keys. Set this to a GenericArrayType::KEY_* constant.
      *
      * @return Type
@@ -168,8 +174,7 @@ class ArrayType extends IterableType
      */
     public function asGenericArrayType(int $key_type) : Type
     {
-        // TODO: Allow one more level of nesting? E.g. array->array[], but array[]->array[]
-        return ArrayType::instance(false);
+        return GenericArrayType::fromElementType($this, false, $key_type);
     }
 
     protected function canCastToNonNullableType(Type $type) : bool
@@ -192,6 +197,27 @@ class ArrayType extends IterableType
         }
         return $result;
          */
+    }
+
+    /**
+     * Returns true if this contains a type that is definitely nullable or a non-object.
+     * e.g. returns true false, array, int
+     *      returns false for callable, object, iterable, T, etc.
+     */
+    public function isDefiniteNonObjectType() : bool
+    {
+        return true;
+    }
+
+    /**
+     * Check if this type can satisfy a comparison (<, <=, >, >=)
+     * @param int|string|float|bool|null $scalar
+     * @param int $flags (e.g. \ast\flags\BINARY_IS_SMALLER)
+     * @internal
+     */
+    public function canSatisfyComparison($scalar, int $flags) : bool
+    {
+        return parent::performComparison([], $scalar, $flags);
     }
 }
 // Trigger the autoloader for GenericArrayType so that it won't be called

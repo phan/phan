@@ -2,9 +2,17 @@
 
 namespace Phan\Language;
 
+/**
+ * Utilities to build a union type.
+ * Mostly used internally when the number of types in the resulting union type may be large.
+ *
+ * @see UnionType::withType()
+ * @see UnionType::withoutType()
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
+ */
 final class UnionTypeBuilder
 {
-    /** @var array<int,Type> */
+    /** @var array<int,Type> the list of unique types in this builder instance. */
     private $type_set;
 
     /** @param array<int,Type> $type_set (must be unique) */
@@ -45,7 +53,7 @@ final class UnionTypeBuilder
         $i = \array_search($type, $this->type_set, true);
         if ($i !== false) {
             // equivalent to unset($new_type_set[$i]) but fills in the gap in array keys.
-            // TODO: How do other versions affect performance on large projects?
+            // TODO: How do other ways of unsetting the type affect performance on large projects?
             $replacement_type = \array_pop($this->type_set);
             if ($replacement_type !== $type) {
                 // @phan-suppress-next-line PhanPartialTypeMismatchProperty $replacement_type is guaranteed to not be false
@@ -54,6 +62,9 @@ final class UnionTypeBuilder
         }
     }
 
+    /**
+     * Checks if this currently contains an empty list of types
+     */
     public function isEmpty() : bool
     {
         return \count($this->type_set) === 0;
@@ -61,7 +72,6 @@ final class UnionTypeBuilder
 
     /**
      * @return array<int,Type>
-     * @suppress PhanPartialTypeMismatchReturn additional types were inferred
      */
     public function getTypeSet() : array
     {
@@ -69,7 +79,7 @@ final class UnionTypeBuilder
     }
 
     /**
-     * @suppress PhanPartialTypeMismatchArgument
+     * Build and return the UnionType for the unique type set that this was building.
      */
     public function getUnionType() : UnionType
     {

@@ -1,5 +1,6 @@
 <?php declare(strict_types=1);
 
+use ast\Node;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
@@ -7,7 +8,6 @@ use Phan\PluginV2;
 use Phan\PluginV2\AfterAnalyzeFileCapability;
 use Phan\PluginV2\BeforeAnalyzeFileCapability;
 use Phan\PluginV2\FinalizeProcessCapability;
-use ast\Node;
 
 /**
  * This plugin invokes the equivalent of `php --no-php-ini --syntax-check $analyzed_file_path`.
@@ -21,6 +21,8 @@ use ast\Node;
  *      This can replace the default binary (PHP_BINARY) with an array of absolute path or program names(in $PATH)
  *       E.g. have 'plugin_config' => ['php_native_syntax_check_binaries' => ['php72', 'php70', 'php56']]
  * Note: This may cause Phan to take over twice as long. This is recommended for use with `--processes N`.
+ *
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
     AfterAnalyzeFileCapability,
@@ -30,12 +32,15 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
     const LINE_NUMBER_REGEX = "@ on line ([1-9][0-9]*)$@";
     const STDIN_FILENAME_REGEX = "@ in (Standard input code|-)@";
 
-    /** @var array<int,InvokeExecutionPromise> */
+    /**
+     * @var array<int,InvokeExecutionPromise>
+     * A list of invoked processes that this plugin created.
+     * This plugin creates 0 or more processes(up to a maximum number can run at a time)
+     * and then waits for the execution of those processes to finish.
+     */
     private $processes = [];
 
     /**
-     * TODO: Disable in LSP mode?
-     *
      * @param CodeBase $code_base @phan-unused-param
      * The code base in which the node exists
      *
@@ -61,8 +66,6 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
     }
 
     /**
-     * TODO: Disable in LSP mode?
-     *
      * @param CodeBase $code_base
      * The code base in which the node exists
      *
@@ -87,7 +90,6 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
     }
 
     /**
-     * @suppress PhanPartialTypeMismatchArgument
      * @throws Error if a syntax check process fails to shut down
      */
     private function awaitIncompleteProcesses(CodeBase $code_base, int $max_incomplete_processes)
@@ -97,14 +99,16 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
                 continue;
             }
             unset($this->processes[$i]);
-            $this->handleError($code_base, $process);
+            self::handleError($code_base, $process);
         }
         $max_incomplete_processes = max(0, $max_incomplete_processes);
         while (count($this->processes) > $max_incomplete_processes) {
             $process = array_pop($this->processes);
-            unset($this->processes[$i]);
+            if (!$process) {
+                throw new AssertionError("Process list should be non-empty");
+            }
             $process->blockingRead();
-            $this->handleError($code_base, $process);
+            self::handleError($code_base, $process);
         }
     }
 
@@ -136,7 +140,7 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
         $check_error_message = preg_replace(self::STDIN_FILENAME_REGEX, '', $check_error_message);
 
 
-        $this->emitIssue(
+        self::emitIssue(
             $code_base,
             clone($context)->withLineNumberStart($lineno),
             'PhanNativePHPSyntaxCheckPlugin',
@@ -150,27 +154,32 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
     }
 }
 
+/**
+ * This wraps a `php --syntax-check` process,
+ * and contains methods to start the process and await the result
+ * (and check for failures)
+ */
 class InvokeExecutionPromise
 {
     /** @var string path to the php binary invoked */
     private $binary;
 
-    /** @var bool */
+    /** @var bool is the process finished executing */
     private $done = false;
 
-    /** @var resource */
+    /** @var resource the result of `proc_open()` */
     private $process;
 
-    /** @var array{0:resource,1:resource,2:resource} */
+    /** @var array{0:resource,1:resource,2:resource} stdin, stdout, stderr */
     private $pipes;
 
-    /** @var ?string */
+    /** @var ?string an error message */
     private $error = null;
 
-    /** @var string */
+    /** @var string the raw bytes from stdout with serialized data */
     private $raw_stdout = '';
 
-    /** @var Context */
+    /** @var Context has the file name being analyzed */
     private $context;
 
     public function __construct(string $binary, string $file_contents, Context $context)
@@ -189,9 +198,7 @@ class InvokeExecutionPromise
 
             // Possibly https://bugs.php.net/bug.php?id=51800
             // NOTE: Work around this by writing from the original file. This may not work as expected in LSP mode
-            if (DIRECTORY_SEPARATOR === "\\") {
-                $abs_path = str_replace("/", "\\", $abs_path);
-            }
+            $abs_path = str_replace("/", "\\", $abs_path);
 
             $cmd .= ' < ' . escapeshellarg($abs_path);
 
@@ -272,6 +279,9 @@ class InvokeExecutionPromise
         }
     }
 
+    /**
+     * @return bool false if an error was encountered when trying to read more output from the syntax check process.
+     */
     public function read() : bool
     {
         if ($this->done) {
@@ -280,6 +290,9 @@ class InvokeExecutionPromise
         $stdout = $this->pipes[1];
         while (!feof($stdout)) {
             $bytes = fread($stdout, 4096);
+            if ($bytes === false) {
+                break;
+            }
             if (strlen($bytes) === 0) {
                 break;
             }
@@ -332,11 +345,17 @@ class InvokeExecutionPromise
         return $this->error;
     }
 
+    /**
+     * Returns the context containing the name of the file being syntax checked
+     */
     public function getContext() : Context
     {
         return $this->context;
     }
 
+    /**
+     * @return string the path to the PHP interpreter binary. (e.g. `/usr/bin/php`)
+     */
     public function getBinary() : string
     {
         return $this->binary;
@@ -344,5 +363,5 @@ class InvokeExecutionPromise
 }
 
 // Every plugin needs to return an instance of itself at the
-// end of the file in which its defined.
+// end of the file in which it's defined.
 return new InvokePHPNativeSyntaxCheckPlugin();

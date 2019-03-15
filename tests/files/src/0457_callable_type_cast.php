@@ -65,12 +65,12 @@ expects_cb_void(function() : void { echo "invoked\n"; });  // valid
 expects_cb_void(function($extra) : void { echo "invoked $extra\n"; });  // invalid
 expects_cb_void(function() : int { echo "invoked\n"; return 2; });  // invalid
 expects_cb_void(function(int $extra) { echo "invoked $extra\n"; });  // invalid
-
 /**
  * @param callable(string...):void $fn
  */
 function expects_cb_void_variadic(callable $fn) {
-    $fn('arg1', 'arg2');  // valid. TODO: Warn for third arg being non-string
+    $fn('arg1', 'arg2');  // valid.
+    $fn('arg1', 'arg2', null);  // TODO: Warn for third arg being non-string
     $fn();  // valid
     $fn(['arg']);  // should warn
 }

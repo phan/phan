@@ -1,0 +1,3 @@
+%s:6 PhanUndeclaredStaticProperty Static property 'missing' on \Example534 is undeclared
+%s:7 PhanNoopProperty Unused property
+%s:8 PhanUndeclaredClassStaticProperty Reference to static property missing from undeclared class \Missing534

@@ -37,5 +37,5 @@ function f241_8() { return []; }
 /** @return ?string[] */
 function f241_9() { return null; }
 
-/** @return Tuple<int,string> */
+/** @return TupleOfNullableTest241<int,string> */
 function f241_10() { return null; }

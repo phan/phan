@@ -1,0 +1,5 @@
+src/060_strict_method_check.php:12 PhanPossiblyNonClassMethodCall Call to method count on type \ArrayObject|null that could be a non-object
+src/060_strict_method_check.php:13 PhanPossiblyNonClassMethodCall Call to method count on type \ArrayObject|false that could be a non-object
+src/060_strict_method_check.php:16 PhanPossiblyNonClassMethodCall Call to method count on type ?\ArrayObject that could be a non-object
+src/060_strict_method_check.php:18 PhanPossiblyNonClassMethodCall Call to method count on type \ArrayObject|array that could be a non-object
+src/060_strict_method_check.php:19 PhanNonClassMethodCall Call to method count on non-class type bool

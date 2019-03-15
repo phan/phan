@@ -1,22 +1,25 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Phan\LanguageServer\Protocol;
 
 use AdvancedJsonRpc\Message as MessageBody;
 
 /**
+ * This represents a notification, request, or response from the Language Server Protocol,
+ * which uses JSON-RPC 2.
+ *
  * Source: https://github.com/felixfbecker/php-language-server/tree/master/src/Protocol/Message.php
  */
 class Message
 {
     /**
-     * @var ?\AdvancedJsonRpc\Message
+     * @var ?\AdvancedJsonRpc\Message the optional decoded message body for this message
      */
     public $body;
 
     /**
-     * @var array<string,string>
+     * @var array<string,string> the headers associated with this message (e.g. Content-Length)
      */
     public $headers;
 
@@ -29,11 +32,12 @@ class Message
     public static function parse(string $msg): Message
     {
         $obj = new self();
-        $parts = explode("\r\n", $msg);
-        $obj->body = MessageBody::parse(array_pop($parts));
+        $parts = \explode("\r\n", $msg);
+        // @phan-suppress-next-line PhanPossiblyFalseTypeArgument
+        $obj->body = MessageBody::parse(\array_pop($parts));
         foreach ($parts as $line) {
             if ($line) {
-                $pair = explode(': ', $line);
+                $pair = \explode(': ', $line);
                 $obj->headers[$pair[0]] = $pair[1];
             }
         }
@@ -56,7 +60,7 @@ class Message
     public function __toString(): string
     {
         $body = (string)$this->body;
-        $contentLength = strlen($body);
+        $contentLength = \strlen($body);
         $this->headers['Content-Length'] = (string)$contentLength;
         $headers = '';
         foreach ($this->headers as $name => $value) {

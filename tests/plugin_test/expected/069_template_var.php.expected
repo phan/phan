@@ -1,0 +1,15 @@
+src/069_template_var.php:11 PhanUnusedVariable Unused definition of variable $a
+src/069_template_var.php:12 PhanPluginDollarDollar $$ Variables are not allowed.
+src/069_template_var.php:13 PhanTypeMismatchArgumentInternal Argument 1 (string) is T but \strlen() takes string
+src/069_template_var.php:15 PhanTypeMismatchReturn Returning type array{0:T} but test_var_creation() is declared to return T
+src/069_template_var.php:24 PhanUnusedGlobalFunctionParameter Parameter $y is never used
+src/069_template_var.php:27 PhanPluginDollarDollar $$ Variables are not allowed.
+src/069_template_var.php:28 PhanTypeMismatchArgumentInternal Argument 1 (string) is TInner but \strlen() takes string
+src/069_template_var.php:30 PhanTypeMismatchArgumentInternal Argument 1 (string) is TInner but \strlen() takes string
+src/069_template_var.php:32 PhanTypeMismatchReturn Returning type array{0:TInner} but test_inline_var_creation() is declared to return array<string,TInner>
+src/069_template_var.php:44 PhanTemplateTypeNotUsedInFunctionReturn Template type TOther not used in return value of function/method test_inline_var_creation()
+src/069_template_var.php:47 PhanPluginDollarDollar $$ Variables are not allowed.
+src/069_template_var.php:48 PhanTypeMismatchArgumentInternal Argument 1 (string) is TInner but \strlen() takes string
+src/069_template_var.php:50 PhanTypeMismatchArgumentInternal Argument 1 (string) is TInner but \strlen() takes string
+src/069_template_var.php:60 PhanTypeMismatchReturn Returning type TOther but test_inline_var_creation() is declared to return TInner
+src/069_template_var.php:63 PhanTypeMismatchReturn Returning type array{0:TInner} but test_inline_var_creation() is declared to return TInner

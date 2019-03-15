@@ -1,9 +1,12 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
+
 namespace Phan\Tests;
 
 use Phan\ForkPool;
 
 /**
+ * Unit test of the ForkPool
+ *
  * @requires extension pcntl
  */
 final class ForkPoolTest extends BaseTest
@@ -25,13 +28,20 @@ final class ForkPoolTest extends BaseTest
         $pool = new ForkPool(
             $data,
             /** @return void */
-            function () {
+            static function () {
             },
-            /** @return void */
-            function ($unused_i, $data) use (&$worker_data) {
+            /**
+             * @param int $unused_i
+             * @param array<int,mixed> $data
+             * @return void
+             */
+            static function ($unused_i, $data) use (&$worker_data) {
                 $worker_data[] = $data;
             },
-            function () use (&$worker_data) : array {
+            /**
+             * @return array<int,array>
+             */
+            static function () use (&$worker_data) : array {
                 return $worker_data;
             }
         );
@@ -47,14 +57,23 @@ final class ForkPoolTest extends BaseTest
         $did_startup = false;
         $pool = new ForkPool(
             [[1], [2], [3], [4]],
-            /** @return void */
-            function () use (&$did_startup) {
+            /**
+             * @return void
+             */
+            static function () use (&$did_startup) {
                 $did_startup = true;
             },
-            /** @return void */
-            function ($unused_i, $unused_data) {
+            /**
+             * @param int $unused_i
+             * @param mixed $unused_data
+             * @return void
+             */
+            static function ($unused_i, $unused_data) {
             },
-            function () use (&$did_startup) : array {
+            /**
+             * @return array{0:bool}
+             */
+            static function () use (&$did_startup) : array {
                 return [$did_startup];
             }
         );

@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language\Element;
 
 use Phan\Language\FileRef;
@@ -7,11 +8,13 @@ use Phan\Language\UnionType;
 /**
  * Any PHP structural element that also has a type and is
  * does not store a reference to its context (such as a variable).
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 abstract class UnaddressableTypedElement
 {
     /**
      * @var FileRef
+     * Reference to the file and line number in which the structural element lives
      */
     private $file_ref;
 
@@ -22,12 +25,12 @@ abstract class UnaddressableTypedElement
     private $name;
 
     /**
-     * @var UnionType|null
+     * @var UnionType
      * A set of types satisfied by this typed structural
      * element.
-     * Prefer using getUnionType() - getUnionType() is overridden by VariadicParameter
+     * Prefer using getUnionType() over $this->type - getUnionType() is overridden by VariadicParameter
      */
-    protected $type = null;
+    protected $type;
 
     /**
      * @var int
@@ -40,7 +43,7 @@ abstract class UnaddressableTypedElement
 
     /**
      * @var int
-     * The Phan flags property contains node specific flags that
+     * This property contains node specific flags that
      * are internal to Phan.
      */
     private $phan_flags = 0;
@@ -207,4 +210,6 @@ abstract class UnaddressableTypedElement
     {
         return $this->file_ref;
     }
+
+    abstract public function __toString() : string;
 }

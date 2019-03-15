@@ -1,0 +1,1 @@
+src/056_while_loop.php:6 PhanUnusedVariable Unused definition of variable $c

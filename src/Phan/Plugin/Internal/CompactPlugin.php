@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Plugin\Internal;
 
+use ast\Node;
 use Phan\AST\ContextNode;
 use Phan\CodeBase;
 use Phan\Issue;
@@ -9,7 +11,6 @@ use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\PluginV2;
 use Phan\PluginV2\AnalyzeFunctionCallCapability;
-use ast\Node;
 
 /**
  * NOTE: This is automatically loaded by phan. Do not include it in a config.
@@ -37,6 +38,7 @@ final class CompactPlugin extends PluginV2 implements
     private static function getAnalyzeFunctionCallClosuresStatic() : array
     {
         /**
+         * @param array<int,Node|int|float|string> $args
          * @return void
          */
         $compact_callback = static function (
@@ -45,7 +47,7 @@ final class CompactPlugin extends PluginV2 implements
             Func $unused_func,
             array $args
         ) {
-            $maybe_emit_issue = function (string $variable_name, $arg = null) use ($code_base, $context) {
+            $maybe_emit_issue = static function (string $variable_name, $arg = null) use ($code_base, $context) {
                 if (!$context->getScope()->hasVariableWithName($variable_name)) {
                     Issue::maybeEmitWithParameters(
                         $code_base,

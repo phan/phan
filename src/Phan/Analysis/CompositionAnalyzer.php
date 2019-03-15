@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Analysis;
 
 use Phan\CodeBase;
@@ -7,11 +8,16 @@ use Phan\Issue;
 use Phan\Language\Element\Clazz;
 use Phan\Language\UnionType;
 
+use function count;
+
+/**
+ * This analyzer checks if the signatures of inherited properties match
+ */
 class CompositionAnalyzer
 {
 
     /**
-     * Check to see if signatures match
+     * Check to see if the signatures of inherited properties match
      *
      * @return void
      */
@@ -101,91 +107,5 @@ class CompositionAnalyzer
                 );
             }
         }
-
-        // TODO: This has too much overlap with PhanParamSignatureMismatch
-        //       and we should figure out how to merge it.
-
-        /*
-        // Get the Class's FQSEN
-        $fqsen = $class->getFQSEN();
-
-        $method_map =
-            $code_base->getMethodMapByFullyQualifiedClassName($fqsen);
-
-        // For each method, find out every inherited class that defines it
-        // and check to see if the types line up.
-        foreach ($method_map as $i => $method) {
-
-            $method_union_type = $method->getUnionType();
-
-            // We don't need to analyze constructors for signature
-            // compatibility
-            if ($method->getName() == '__construct') {
-                continue;
-            }
-
-            // Get the method parameter list
-
-            // Check for that method on each inherited
-            // class/trait/interface
-            foreach ($inherited_class_list as $inherited_class) {
-
-                // Skip anything that doesn't define this method
-                if (!$inherited_class->hasMethodWithName($code_base, $method->getName())) {
-                    continue;
-                }
-
-                $inherited_method =
-                    $inherited_class->getMethodByName($code_base, $method->getName());
-
-                if ($method == $inherited_method) {
-                    continue;
-                }
-
-                // Figure out if this method return type can cast to the
-                // inherited definition's return type.
-                $is_compatible =
-                    $method_union_type->canCastToExpandedUnionType(
-                        $inherited_method->getUnionType(),
-                        $code_base
-                    );
-
-                $inherited_method_parameter_map =
-                    $inherited_method->getParameterList();
-
-                // Figure out if all of the parameter types line up
-                foreach ($method->getParameterList() as $i => $parameter) {
-                    $is_compatible = (
-                        $is_compatible
-                        && isset($inherited_method_parameter_map[$i])
-                        && $parameter->getUnionType()->canCastToExpandedUnionType(
-                            ($inherited_method_parameter_map[$i])->getUnionType(),
-                            $code_base
-                        )
-                    );
-                }
-
-                if ($is_compatible) {
-                    continue;
-                }
-
-                // Don't emit an issue if the method suppresses the issue
-                if ($method->checkHasSuppressIssueAndIncrementCount(Issue::IncompatibleCompositionMethod)) {
-                    continue;
-                }
-
-                Issue::maybeEmit(
-                    $code_base,
-                    $method->getContext(),
-                    Issue::IncompatibleCompositionMethod,
-                    $method->getFileRef()->getLineNumberStart(),
-                    (string)$method,
-                    (string)$inherited_method,
-                    $inherited_method->getFileRef()->getFile(),
-                    $inherited_method->getFileRef()->getLineNumberStart()
-                );
-            }
-        }
-        */
     }
 }

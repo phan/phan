@@ -1,9 +1,10 @@
 <?php
+declare(strict_types=1);
 
-use \Phan\Issue;
+use Phan\Issue;
 
 /**
- * This configuration will be read and overlayed on top of the
+ * This configuration will be read and overlaid on top of the
  * default configuration. Command line arguments will be applied
  * after this file is read.
  *
@@ -25,11 +26,14 @@ use \Phan\Issue;
  * '-d' flag.
  */
 return [
-    // Supported values: '7.0', '7.1', '7.2', '7.3', null.
-    // If this is set to null,
+    // Supported values: `'5.6'`, `'7.0'`, `'7.1'`, `'7.2'`, `'7.3'`, `null`.
+    // If this is set to `null`,
     // then Phan assumes the PHP version which is closest to the minor version
-    // of the php executable used to execute phan.
-    "target_php_version" => null,
+    // of the php executable used to execute Phan.
+    //
+    // Note that the **only** effect of choosing `'5.6'` is to infer that functions removed in php 7.0 exist.
+    // (See `backward_compatibility_checks` for additional options)
+    'target_php_version' => null,
 
     // Default: true. If this is set to true,
     // and target_php_version is newer than the version used to run Phan,
@@ -41,11 +45,11 @@ return [
     // If true, missing properties will be created when
     // they are first seen. If false, we'll report an
     // error message.
-    "allow_missing_properties" => false,
+    'allow_missing_properties' => false,
 
     // Allow null to be cast as any type and for any
     // type to be cast to null.
-    "null_casts_as_any_type" => false,
+    'null_casts_as_any_type' => false,
 
     // Allow null to be cast as any array-like type
     // This is an incremental step in migrating away from null_casts_as_any_type.
@@ -56,6 +60,13 @@ return [
     // This is an incremental step in migrating away from null_casts_as_any_type.
     // If null_casts_as_any_type is true, this has no effect.
     'array_casts_as_null' => false,
+
+    // If enabled, Phan will warn if **any** type in a method's object expression
+    // is definitely not an object,
+    // or if **any** type in an invoked expression is not a callable.
+    // Setting this to true will introduce numerous false positives
+    // (and reveal some bugs).
+    'strict_method_checking' => true,
 
     // If enabled, Phan will warn if **any** type in the argument's type
     // cannot be cast to a type in the parameter's expected type.
@@ -69,7 +80,7 @@ return [
     // (For self-analysis, Phan has a large number of suppressions and file-level suppressions, due to \ast\Node being difficult to type check)
     'strict_property_checking' => true,
 
-    // If enabled, Phan will warn if **any** type in the return statement's type
+    // If enabled, Phan will warn if **any** type in the return statement's union type
     // cannot be cast to a type in the method's declared return type.
     // Setting this to true will introduce a large number of false positives (and some bugs).
     // (For self-analysis, Phan has a large number of suppressions and file-level suppressions, due to \ast\Node being difficult to type check)
@@ -108,10 +119,9 @@ return [
     // slow.
     'check_docblock_signature_return_type_match' => true,
 
-    // If true, check to make sure the return type declared
-    // in the doc-block (if any) matches the return type
-    // declared in the method signature. This process is
-    // slow.
+    // If true, check to make sure the param types declared
+    // in the doc-block (if any) matches the param types
+    // declared in the method signature.
     'check_docblock_signature_param_type_match' => true,
 
     // (*Requires check_docblock_signature_param_type_match to be true*)
@@ -183,9 +193,14 @@ return [
     // to be tracked.
     'force_tracking_references' => false,
 
+    // Enable this to warn about harmless redundant use for classes and namespaces such as `use Foo\bar` in namespace Foo.
+    //
+    // Note: This does not affect warnings about redundant uses in the global namespace.
+    'warn_about_redundant_use_namespaced_class' => true,
+
     // If true, then run a quick version of checks that takes less time.
     // False by default.
-    "quick_mode" => false,
+    'quick_mode' => false,
 
     // If true, then before analysis, try to simplify AST into a form
     // which improves Phan's type inference in edge cases.
@@ -195,7 +210,7 @@ return [
     //
     // E.g. rewrites `if ($a = value() && $a > 0) {...}`
     // into $a = value(); if ($a) { if ($a > 0) {...}}`
-    "simplify_ast" => true,
+    'simplify_ast' => true,
 
     // If true, Phan will read `class_alias` calls in the global scope,
     // then (1) create aliases from the *parsed* files if no class definition was found,
@@ -216,18 +231,27 @@ return [
     // If enabled (and warn_about_undocumented_throw_statements is enabled),
     // warn about function/closure/method calls that have (at)throws
     // without the invoking method documenting that exception.
-    // TODO: Enable for self-analysis
-    'warn_about_undocumented_exceptions_thrown_by_invoked_functions' => false,
+    'warn_about_undocumented_exceptions_thrown_by_invoked_functions' => true,
 
     // If this is a list, Phan will not warn about lack of documentation of (at)throws
     // for any of the listed classes or their subclasses.
     // This setting only matters when warn_about_undocumented_throw_statements is true.
     // The default is the empty array (Warn about every kind of Throwable)
     'exception_classes_with_optional_throws_phpdoc' => [
+        'LogicException',
         'RuntimeException',
+        'InvalidArgumentException',
         'AssertionError',
         'TypeError',
+        'Phan\Exception\IssueException',  // TODO: Make Phan aware that some arguments suppress certain issues
+        'Phan\AST\TolerantASTConverter\InvalidNodeException',  // This is used internally in TolerantASTConverter
+
+        // TODO: Undo the suppressions for the below categories of issues:
+        'Phan\Exception\CodeBaseException',
     ],
+
+    // Increase this to properly analyze require_once statements
+    'max_literal_string_type_length' => 1000,
 
     // Setting this to true makes the process assignment for file analysis
     // as predictable as possible, using consistent hashing.
@@ -253,181 +277,41 @@ return [
     // here to inhibit them from being reported
     'suppress_issue_types' => [
         'PhanUnreferencedClosure',  // False positives seen with closures in arrays, TODO: move closure checks closer to what is done by unused variable plugin
-        'PhanPossiblyFalseTypeArgument',
-        'PhanPossiblyFalseTypeArgumentInternal',
-        'PhanPossiblyNullTypeArgument',
-        'PhanPossiblyNullTypeArgumentInternal',
-        'PhanPossiblyNullTypeReturn',
+        'PhanPluginNoCommentOnProtectedMethod',
+        'PhanPluginDescriptionlessCommentOnProtectedMethod',
+        'PhanPluginNoCommentOnPrivateMethod',
+        'PhanPluginDescriptionlessCommentOnPrivateMethod',
     ],
 
     // If empty, no filter against issues types will be applied.
     // If non-empty, only issues within the list will be emitted
     // by Phan.
+    //
+    // See https://github.com/phan/phan/wiki/Issue-Types-Caught-by-Phan
+    // for the full list of issues that Phan detects.
+    //
+    // Phan is capable of detecting hundreds of types of issues.
+    // Projects should almost always use `suppress_issue_types` instead.
     'whitelist_issue_types' => [
-        // 'PhanAccessClassConstantInternal',
-        // 'PhanAccessClassConstantPrivate',
-        // 'PhanAccessClassConstantProtected',
-        // 'PhanAccessClassInternal',
-        // 'PhanAccessConstantInternal',
-        // 'PhanAccessMethodInternal',
-        // 'PhanAccessMethodPrivate',
-        // 'PhanAccessMethodPrivateWithCallMagicMethod',
-        // 'PhanAccessMethodProtected',
-        // 'PhanAccessMethodProtectedWithCallMagicMethod',
-        // 'PhanAccessNonStaticToStatic',
-        // 'PhanAccessOwnConstructor',
-        // 'PhanAccessPropertyInternal',
-        // 'PhanAccessPropertyPrivate',
-        // 'PhanAccessPropertyProtected',
-        // 'PhanAccessPropertyStaticAsNonStatic',
-        // 'PhanAccessSignatureMismatch',
-        // 'PhanAccessSignatureMismatchInternal',
-        // 'PhanAccessStaticToNonStatic',
-        // 'PhanClassContainsAbstractMethod',
-        // 'PhanClassContainsAbstractMethodInternal',
-        // 'PhanCommentParamOnEmptyParamList',
-        // 'PhanCommentParamWithoutRealParam',
-        // 'PhanCompatibleExpressionPHP7',
-        // 'PhanCompatiblePHP7',
-        // 'PhanContextNotObject',
-        // 'PhanDeprecatedClass',
-        // 'PhanDeprecatedFunction',
-        // 'PhanDeprecatedFunctionInternal',
-        // 'PhanDeprecatedInterface',
-        // 'PhanDeprecatedProperty',
-        // 'PhanDeprecatedTrait',
-        // 'PhanEmptyFile',
-        // 'PhanGenericConstructorTypes',
-        // 'PhanGenericGlobalVariable',
-        // 'PhanIncompatibleCompositionMethod',
-        // 'PhanIncompatibleCompositionProp',
-        // 'PhanInvalidCommentForDeclarationType',
-        // 'PhanMismatchVariadicComment',
-        // 'PhanMismatchVariadicParam',
-        // 'PhanMisspelledAnnotation',
-        // 'PhanNonClassMethodCall',
-        // 'PhanNoopArray',
-        // 'PhanNoopClosure',
-        // 'PhanNoopConstant',
-        // 'PhanNoopProperty',
-        // 'PhanNoopVariable',
-        // 'PhanParamRedefined',
-        // 'PhanParamReqAfterOpt',
-        // 'PhanParamSignatureMismatch',
-        // 'PhanParamSignatureMismatchInternal',
-        // 'PhanParamSignaturePHPDocMismatchHasNoParamType',
-        // 'PhanParamSignaturePHPDocMismatchHasParamType',
-        // 'PhanParamSignaturePHPDocMismatchParamIsNotReference',
-        // 'PhanParamSignaturePHPDocMismatchParamIsReference',
-        // 'PhanParamSignaturePHPDocMismatchParamNotVariadic',
-        // 'PhanParamSignaturePHPDocMismatchParamType',
-        // 'PhanParamSignaturePHPDocMismatchParamVariadic',
-        // 'PhanParamSignaturePHPDocMismatchReturnType',
-        // 'PhanParamSignaturePHPDocMismatchTooFewParameters',
-        // 'PhanParamSignaturePHPDocMismatchTooManyRequiredParameters',
-        // 'PhanParamSignatureRealMismatchHasNoParamType',
-        // 'PhanParamSignatureRealMismatchHasNoParamTypeInternal',
-        // 'PhanParamSignatureRealMismatchHasParamType',
-        // 'PhanParamSignatureRealMismatchHasParamTypeInternal',
-        // 'PhanParamSignatureRealMismatchParamIsNotReference',
-        // 'PhanParamSignatureRealMismatchParamIsNotReferenceInternal',
-        // 'PhanParamSignatureRealMismatchParamIsReference',
-        // 'PhanParamSignatureRealMismatchParamIsReferenceInternal',
-        // 'PhanParamSignatureRealMismatchParamNotVariadic',
-        // 'PhanParamSignatureRealMismatchParamNotVariadicInternal',
-        // 'PhanParamSignatureRealMismatchParamType',
-        // 'PhanParamSignatureRealMismatchParamTypeInternal',
-        // 'PhanParamSignatureRealMismatchParamVariadic',
-        // 'PhanParamSignatureRealMismatchParamVariadicInternal',
-        // 'PhanParamSignatureRealMismatchReturnType',
-        // 'PhanParamSignatureRealMismatchReturnTypeInternal',
-        // 'PhanParamSignatureRealMismatchTooFewParameters',
-        // 'PhanParamSignatureRealMismatchTooFewParametersInternal',
-        // 'PhanParamSignatureRealMismatchTooManyRequiredParameters',
-        // 'PhanParamSignatureRealMismatchTooManyRequiredParametersInternal',
-        // 'PhanParamSpecial1',
-        // 'PhanParamSpecial2',
-        // 'PhanParamSpecial3',
-        // 'PhanParamSpecial4',
-        // 'PhanParamTooFew',
-        // 'PhanParamTooFewInternal',
-        // 'PhanParamTooMany',
-        // 'PhanParamTooManyInternal',
-        // 'PhanParamTypeMismatch',
-        // 'PhanParentlessClass',
-        // 'PhanRedefineClass',
-        // 'PhanRedefineClassAlias',
-        // 'PhanRedefineClassInternal',
-        // 'PhanRedefineFunction',
-        // 'PhanRedefineFunctionInternal',
-        // 'PhanRequiredTraitNotAdded',
-        // 'PhanStaticCallToNonStatic',
-        // 'PhanSyntaxError',
-        // 'PhanTemplateTypeConstant',
-        // 'PhanTemplateTypeStaticMethod',
-        // 'PhanTemplateTypeStaticProperty',
-        // 'PhanTraitParentReference',
-        // 'PhanTypeArrayOperator',
-        // 'PhanTypeArraySuspicious',
-        // 'PhanTypeComparisonFromArray',
-        // 'PhanTypeComparisonToArray',
-        // 'PhanTypeConversionFromArray',
-        // 'PhanTypeInstantiateAbstract',
-        // 'PhanTypeInstantiateInterface',
-        // 'PhanTypeInvalidClosureScope',
-        // 'PhanTypeInvalidLeftOperand',
-        // 'PhanTypeInvalidRightOperand',
-        // 'PhanTypeMismatchArgument',
-        // 'PhanTypeMismatchArgumentInternal',
-        // 'PhanTypeMismatchDeclaredParam',
-        // 'PhanTypeMismatchDeclaredReturn',
-        // 'PhanTypeMismatchDefault',
-        // 'PhanTypeMismatchForeach',
-        // 'PhanTypeMismatchProperty',
-        // 'PhanTypeMismatchReturn',
-        // 'PhanTypeMissingReturn',
-        // 'PhanTypeNonVarPassByRef',
-        // 'PhanTypeParentConstructorCalled',
-        // 'PhanTypeSuspiciousIndirectVariable',
-        // 'PhanTypeVoidAssignment',
-        // 'PhanUnanalyzable',
-        // 'PhanUndeclaredAliasedMethodOfTrait',
         // 'PhanUndeclaredClass',
-        // 'PhanUndeclaredClassAliasOriginal',
-        // 'PhanUndeclaredClassCatch',
-        // 'PhanUndeclaredClassConstant',
-        // 'PhanUndeclaredClassInstanceof',
-        // 'PhanUndeclaredClassMethod',
-        // 'PhanUndeclaredClassReference',
-        // 'PhanUndeclaredClosureScope',
-        // 'PhanUndeclaredConstant',
-        // 'PhanUndeclaredExtendedClass',
-        // 'PhanUndeclaredFunction',
-        // 'PhanUndeclaredInterface',
-        // 'PhanUndeclaredMethod',
-        // 'PhanUndeclaredProperty',
-        // 'PhanUndeclaredStaticMethod',
-        // 'PhanUndeclaredStaticProperty',
-        // 'PhanUndeclaredTrait',
-        // 'PhanUndeclaredTypeParameter',
-        // 'PhanUndeclaredTypeProperty',
-        // 'PhanUndeclaredTypeReturnType',
-        // 'PhanUndeclaredVariable',
-        // 'PhanUndeclaredVariableDim',
-        // 'PhanUnextractableAnnotation',
-        // 'PhanUnextractableAnnotationPart',
-        // 'PhanUnreferencedClass',
-        // 'PhanUnreferencedConstant',
-        // 'PhanUnreferencedMethod',
-        // 'PhanUnreferencedProperty',
-        // 'PhanVariableUseClause',
     ],
 
     // A list of files to include in analysis
     'file_list' => [
         'phan',
         'phan_client',
+        'plugins/codeclimate/engine',
         'tool/make_stubs',
+        'internal/dump_fallback_ast.php',
+        'internal/internalsignatures.php',
+        'internal/package.php',
+        'internal/reflection_completeness_check.php',
+        'internal/sanitycheck.php',
+        'internal/update_wiki_config_types.php',
+        'internal/update_wiki_issue_types.php',
+        'vendor/phpdocumentor/type-resolver/src/Types/ContextFactory.php',
+        'vendor/phpdocumentor/reflection-docblock/src/DocBlockFactory.php',
+        'vendor/phpdocumentor/reflection-docblock/src/DocBlock.php',
         // 'vendor/phpunit/phpunit/src/Framework/TestCase.php',
     ],
 
@@ -439,6 +323,21 @@ return [
     // can't be removed for whatever reason.
     // (e.g. '@Test\.php$@', or '@vendor/.*/(tests|Tests)/@')
     'exclude_file_regex' => '@^vendor/.*/(tests?|Tests?)/@',
+
+    // Enable this to enable checks of require/include statements referring to valid paths.
+    'enable_include_path_checks' => true,
+
+    // A list of include paths to check when checking if `require_once`, `include`, etc. are valid.
+    //
+    // To refer to the directory of the file being analyzed, use `'.'`
+    // To refer to the project root directory, you must use \Phan\Config::getProjectRootDirectory()
+    //
+    // (E.g. `['.', \Phan\Config::getProjectRootDirectory() . '/src/folder-added-to-include_path']`)
+    'include_paths' => ['.'],
+
+    // Enable this to warn about the use of relative paths in `require_once`, `include`, etc.
+    // Relative paths are harder to reason about, and opcache may have issues with relative paths in edge cases.
+    'warn_about_relative_include_statement' => true,
 
     // A file list that defines files that will be excluded
     // from parsing and analysis and will not be read at all.
@@ -461,8 +360,8 @@ return [
     // Thus, both first-party and third-party code being used by
     // your application should be included in this list.
     'directory_list' => [
+        'internal/lib',
         'src',
-        'internal',
         'tests/Phan',
         'vendor/composer',
         'vendor/felixfbecker/advanced-json-rpc/lib',
@@ -485,13 +384,13 @@ return [
     // information should be included.
     //
     // Generally, you'll want to include the directories for
-    // third-party code (such as "vendor/") in this list.
+    // third-party code (such as 'vendor/') in this list.
     //
     // n.b.: If you'd like to parse but not analyze 3rd
     //       party code, directories containing that code
     //       should be added to the `directory_list` as
     //       to `exclude_analysis_directory_list`.
-    "exclude_analysis_directory_list" => [
+    'exclude_analysis_directory_list' => [
         'vendor/'
     ],
 
@@ -506,6 +405,7 @@ return [
     'autoload_internal_extension_signatures' => [
         'ast'         => '.phan/internal_stubs/ast.phan_php',
         'ctype'       => '.phan/internal_stubs/ctype.phan_php',
+        'igbinary'    => '.phan/internal_stubs/igbinary.phan_php',
         'pcntl'       => '.phan/internal_stubs/pcntl.phan_php',
         'posix'       => '.phan/internal_stubs/posix.phan_php',
         'readline'    => '.phan/internal_stubs/readline.phan_php',
@@ -533,6 +433,9 @@ return [
         // The maximum number of `php --syntax-check` processes to run at any point in time (Minimum: 1).
         // This may be temporarily higher if php_native_syntax_check_binaries has more elements than this process count.
         'php_native_syntax_check_max_processes' => 4,
+
+        // blacklist of methods to warn about for HasPHPDocPlugin
+        'has_phpdoc_method_ignore_regex' => '@^Phan\\\\Tests\\\\.*::(test.*|.*Provider)$@',
     ],
 
     // A list of plugin files to execute
@@ -540,21 +443,36 @@ return [
     // or relative/absolute paths to the plugin (Relative to the project root).
     'plugins' => [
         'AlwaysReturnPlugin',
-        'DemoPlugin',
         'DollarDollarPlugin',
         'UnreachableCodePlugin',
         'DuplicateArrayKeyPlugin',
         'PregRegexCheckerPlugin',
         'PrintfCheckerPlugin',
+        'PHPUnitAssertionPlugin',  // analyze assertSame/assertInstanceof/assertTrue/assertFalse
+        'UseReturnValuePlugin',
 
         // UnknownElementTypePlugin warns about unknown types in element signatures.
         'UnknownElementTypePlugin',
         'DuplicateExpressionPlugin',
+        // warns about carriage returns("\r"), trailing whitespace, and tabs in PHP files.
+        'WhitespacePlugin',
+        ////////////////////////////////////////////////////////////////////////
+        // Plugins for Phan's self-analysis
+        ////////////////////////////////////////////////////////////////////////
+
         // TODO: warn about the usage of assert() for Phan's self-analysis. See https://github.com/phan/phan/issues/288
         'NoAssertPlugin',
 
-        // 'SleepCheckerPlugin' is useful for projects which heavily use the __sleep() method. Phan doesn't use __sleep().
+        'HasPHPDocPlugin',
 
+        // This should only be enabled if the code being analyzed contains Phan plugins.
+        '.phan/plugins/PhanSelfCheckPlugin.php',
+
+        ////////////////////////////////////////////////////////////////////////
+        // End plugins for Phan's self-analysis
+        ////////////////////////////////////////////////////////////////////////
+
+        // 'SleepCheckerPlugin' is useful for projects which heavily use the __sleep() method. Phan doesn't use __sleep().
         // InvokePHPNativeSyntaxCheckPlugin invokes 'php --no-php-ini --syntax-check ${abs_path_to_analyzed_file}.php' and reports any error messages.
         // Using this can cause phan's overall analysis time to more than double.
         // 'InvokePHPNativeSyntaxCheckPlugin',

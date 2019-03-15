@@ -1,3 +1,3 @@
-%s:3 PhanUndeclaredTypeParameter Parameter of undeclared type \A\Closure (Did you mean class \Closure)
+%s:3 PhanUndeclaredTypeParameter Parameter $c has undeclared type \A\Closure (Did you mean class \Closure)
 %s:4 PhanTypeMismatchArgument Argument 1 (c) is Closure():void but \A\f() takes \A\Closure defined at %s:3
 %s:14 PhanTypeMismatchArgument Argument 1 (c) is callable but \C\f() takes \Closure defined at %s:13

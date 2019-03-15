@@ -1,15 +1,20 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language\Element;
 
+use Closure;
 use Phan\Exception\IssueException;
 use Phan\Language\Context;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Scope\PropertyScope;
 use Phan\Language\UnionType;
-
-use Closure;
 use TypeError;
 
+/**
+ * Phan's representation of a class/trait/interface's property (including magic and dynamic properties)
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
+ */
 class Property extends ClassElement
 {
     use ElementFutureUnionType;
@@ -73,7 +78,6 @@ class Property extends ClassElement
      * @return FullyQualifiedPropertyName the FQSEN with the original definition (Even if this is private/protected and inherited from a trait). Used for dead code detection.
      *                                    Inheritance tests use getDefiningFQSEN() so that access checks won't break.
      *
-     * @suppress PhanUnreferencedPublicMethod this is used, but the invocation could be one of multiple classes.
      * @suppress PhanPartialTypeMismatchReturn TODO: Allow subclasses to make property types more specific
      */
     public function getRealDefiningFQSEN() : FullyQualifiedPropertyName
@@ -81,7 +85,10 @@ class Property extends ClassElement
         return $this->real_defining_fqsen ?? $this->getDefiningFQSEN();
     }
 
-    private function getVisibilityName() : string
+    /**
+     * Returns the visibility for this property (for issue messages and stubs)
+     */
+    public function getVisibilityName() : string
     {
         if ($this->isPrivate()) {
             return 'private';
@@ -135,6 +142,15 @@ class Property extends ClassElement
     }
 
     /**
+     * @return string the representation of this FQSEN for issue messages.
+     * @override
+     */
+    public function getRepresentationForIssue() : string
+    {
+        return $this->asPropertyFQSENString();
+    }
+
+    /**
      * Override the default getter to fill in a future
      * union type if available.
      * @throws IssueException if getFutureUnionType fails.
@@ -172,6 +188,10 @@ class Property extends ClassElement
     }
 
 
+    /**
+     * Returns a stub declaration for this property that can be used to build a class stub
+     * in `tool/make_stubs`.
+     */
     public function toStub() : string
     {
         $string = '    ' . $this->getVisibilityName() . ' ';
@@ -187,7 +207,8 @@ class Property extends ClassElement
     }
 
     /**
-     * @internal - Used by daemon mode to restore an element to the state it had before parsing.
+     * Used by daemon mode to restore an element to the state it had before parsing.
+     * @internal
      * @return ?Closure
      */
     public function createRestoreCallback()
@@ -268,6 +289,20 @@ class Property extends ClassElement
     }
 
     /**
+     * @internal
+     */
+    const _IS_DYNAMIC_OR_MAGIC = Flags::IS_FROM_PHPDOC | Flags::IS_DYNAMIC_PROPERTY;
+
+    /**
+     * Equivalent to $this->isDynamic() || $this->isFromPHPDoc()
+     * i.e. this is a property that is not created from an AST_PROP_ELEM Node.
+     */
+    public function isDynamicOrFromPHPDoc() : bool
+    {
+        return ($this->getPhanFlags() & self::_IS_DYNAMIC_OR_MAGIC) !== 0;
+    }
+
+    /**
      * @return bool
      * True if this is a magic phpdoc property (declared via (at)property (-read,-write,) on class declaration phpdoc)
      */
@@ -279,6 +314,7 @@ class Property extends ClassElement
     /**
      * @param bool $from_phpdoc - True if this is a magic phpdoc property (declared via (at)property (-read,-write,) on class declaration phpdoc)
      * @return void
+     * @suppress PhanUnreferencedPublicMethod the caller now just sets all phan flags at once (including IS_READ_ONLY)
      */
     public function setIsFromPHPDoc(bool $from_phpdoc)
     {
@@ -291,9 +327,55 @@ class Property extends ClassElement
         );
     }
 
+    /**
+     * Record whether this property contains `static` anywhere in the original union type.
+     *
+     * @param bool $has_static
+     * @return void
+     */
+    public function setHasStaticInUnionType(bool $has_static)
+    {
+        $this->setPhanFlags(
+            Flags::bitVectorWithState(
+                $this->getPhanFlags(),
+                Flags::HAS_STATIC_UNION_TYPE,
+                $has_static
+            )
+        );
+    }
+
+    /**
+     * Does this property contain `static` anywhere in the original union type?
+     */
+    public function getHasStaticInUnionType() : bool
+    {
+        return $this->getPhanFlagsHasState(Flags::HAS_STATIC_UNION_TYPE);
+    }
+
+    /**
+     * Was this property undeclared (and created at runtime)?
+     */
     public function isDynamicProperty() : bool
     {
         return $this->getPhanFlagsHasState(Flags::IS_DYNAMIC_PROPERTY);
+    }
+
+    /**
+     * Is this parameter declared in a way hinting that it should only be written to?
+     * (E.g. magic properties declared as (at)property-read, regular properties with (at)phan-read-only)
+     */
+    public function isReadOnly() : bool
+    {
+        return $this->getPhanFlagsHasState(Flags::IS_READ_ONLY);
+    }
+
+    /**
+     * Is this parameter declared in a way hinting that it should only be written to?
+     * (E.g. magic properties declared as (at)property-write, regular properties with (at)phan-write-only)
+     */
+    public function isWriteOnly() : bool
+    {
+        return $this->getPhanFlagsHasState(Flags::IS_WRITE_ONLY);
     }
 
     /**
@@ -308,5 +390,24 @@ class Property extends ClassElement
                 $is_dynamic
             )
         );
+    }
+
+    /**
+     * @return void
+     */
+    public function inheritStaticUnionType(FullyQualifiedClassName $old, FullyQualifiedClassName $new)
+    {
+        $union_type = $this->getUnionType();
+        foreach ($union_type->getTypeSet() as $type) {
+            if (!$type->isObjectWithKnownFQSEN()) {
+                continue;
+            }
+            if (FullyQualifiedClassName::fromType($type) === $old) {
+                $union_type = $union_type
+                    ->withoutType($type)
+                    ->withType($new->asType()->withIsNullable($type->getIsNullable()));
+            }
+        }
+        $this->setUnionType($union_type);
     }
 }

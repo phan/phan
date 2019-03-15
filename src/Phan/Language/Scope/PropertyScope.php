@@ -1,10 +1,24 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language\Scope;
 
+use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
+use Phan\Language\Scope;
 
+/**
+ * Represents the Scope of the Context of a class's property declaration.
+ */
 class PropertyScope extends ClosedScope
 {
+    public function __construct(
+        Scope $parent_scope,
+        FullyQualifiedPropertyName $fqsen
+    ) {
+        $this->parent_scope = $parent_scope;
+        $this->fqsen = $fqsen;
+        $this->flags = $parent_scope->flags;
+    }
 
     /**
      * @return bool
@@ -28,7 +42,7 @@ class PropertyScope extends ClosedScope
 
     /**
      * @return FullyQualifiedPropertyName
-     * Get the FullyQualifiedPropertyName of the class who's scope
+     * Get the FullyQualifiedPropertyName of the class whose scope
      * we're in.
      * @override
      */
@@ -41,5 +55,24 @@ class PropertyScope extends ClosedScope
         }
 
         throw new \AssertionError("FQSEN must be a FullyQualifiedPropertyName");
+    }
+
+    /**
+     * @return FullyQualifiedClassName
+     * Crawl the scope hierarchy to get a class FQSEN.
+     */
+    public function getClassFQSEN() : FullyQualifiedClassName
+    {
+        return $this->parent_scope->getClassFQSEN();
+    }
+
+    /**
+     * @return ?FullyQualifiedClassName
+     * Crawl the scope hierarchy to get a class FQSEN.
+     * Return null if there is no class FQSEN.
+     */
+    public function getClassFQSENOrNull()
+    {
+        return $this->parent_scope->getClassFQSENOrNull();
     }
 }

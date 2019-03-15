@@ -2,35 +2,42 @@
 
 namespace Phan\Config;
 
+use ast\Node;
+use Composer\Semver\Constraint\ConstraintInterface;
+use Composer\Semver\VersionParser;
 use Phan\AST\Parser;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Issue;
 use Phan\Language\Context;
-
-use ast\Node;
-use Composer\Semver\VersionParser;
-use Composer\Semver\Constraint\ConstraintInterface;
 use TypeError;
+use function count;
+use function is_array;
+use function is_int;
+use function is_null;
+use function is_string;
+use const FILTER_VALIDATE_INT;
+use const STDERR;
 
 /**
  * This class is used by 'phan --init' to generate a phan config for a composer project.
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class Initializer
 {
     /**
-     * @param array{init-overwrite:mixed=,init-no-composer:mixed=,init-level:string=} $opts
+     * @param array{init-overwrite?:mixed,init-no-composer?:mixed,init-level?:(int|string)} $opts
      * Returns a process exit code for `phan --init`
      */
     public static function initPhanConfig(array $opts) : int
     {
         Config::setValue('use_polyfill_parser', true);
-        $cwd = getcwd();
+        $cwd = \getcwd();
 
         $config_path = "$cwd/.phan/config.php";
         if (!isset($opts['init-overwrite'])) {
-            if (file_exists($config_path)) {
-                printf("phan --init refuses to run: The Phan config already exists at '$config_path'\n(Can pass --init-overwrite to force Phan to overwrite that file)\n");
+            if (\file_exists($config_path)) {
+                \fwrite(STDERR, "phan --init refuses to run: The Phan config already exists at '$config_path'\n(Can pass --init-overwrite to force Phan to overwrite that file)\n");
                 return 1;
             }
         }
@@ -39,38 +46,43 @@ class Initializer
             $vendor_path = null;
         } else {
             $composer_json_path = "$cwd/composer.json";
-            if (!file_exists($composer_json_path)) {
-                printf("phan --init assumes that there will be a composer.json file (at '$composer_json_path')\n(Can pass --init-no-composer if this is not a composer project)\n");
+            if (!\file_exists($composer_json_path)) {
+                \fwrite(STDERR, "phan --init assumes that there will be a composer.json file (at '$composer_json_path')\n(Can pass --init-no-composer if this is not a composer project)\n");
                 return 1;
             }
-            $composer_settings = json_decode(file_get_contents($composer_json_path), true);
+            $contents = \file_get_contents($composer_json_path);
+            if (!$contents) {
+                \fwrite(STDERR, "phan --init failed to read contents of $composer_json_path\n");
+                return 1;
+            }
+            $composer_settings = \json_decode($contents, true);
             if (!is_array($composer_settings)) {
-                printf("Failed to load '%s'\n", $composer_json_path);
+                \fwrite(STDERR, "Failed to load '$composer_json_path'\n");
                 return 1;
             }
 
             $vendor_path = $composer_settings['config']['vendor-dir'] ?? "$cwd/vendor";
 
-            if (!is_dir($vendor_path)) {
-                printf("phan --init assumes that 'composer.phar install' was run already (expected to find '$vendor_path')\n");
+            if (!\is_dir($vendor_path)) {
+                \fwrite(STDERR, "phan --init assumes that 'composer.phar install' was run already (expected to find '$vendor_path')\n");
                 return 1;
             }
         }
         $phan_settings = self::createPhanSettingsForComposerSettings($composer_settings, $vendor_path, $opts);
         if (!($phan_settings instanceof InitializedSettings)) {
-            echo "phan --init failed to generate settings\n";
+            \fwrite(STDERR, "phan --init failed to generate settings\n");
             return 1;
         }
 
-        $phan_dir = dirname($config_path);
-        if (!file_exists($phan_dir)) {
-            if (!mkdir($phan_dir)) {
+        $phan_dir = \dirname($config_path);
+        if (!\file_exists($phan_dir)) {
+            if (!\mkdir($phan_dir)) {
                 echo "Failed to create directory '$phan_dir'\n";
                 return 1;
             }
         }
         $settings_file_contents = self::generatePhanConfigFileContents($phan_settings);
-        file_put_contents($config_path, $settings_file_contents);
+        \file_put_contents($config_path, $settings_file_contents);
         echo "Successfully initialized '$config_path' with the following contents\n\n";
         echo $settings_file_contents;
         return 0;
@@ -79,14 +91,15 @@ class Initializer
     /**
      * @return array<string,string[]> maps a config name to a list of comment lines about that config
      */
-    private static function computeCommentNameDocumentationMap() : array
+    public static function computeCommentNameDocumentationMap() : array
     {
         // Hackish way of extracting comment lines from Config::DEFAULT_CONFIGURATION
-        $config_file_lines = explode("\n", file_get_contents(dirname(__DIR__) . '/Config.php'));
+        // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
+        $config_file_lines = \explode("\n", \file_get_contents(\dirname(__DIR__) . '/Config.php'));
         $prev_lines = [];
         $result = [];
         foreach ($config_file_lines as $line) {
-            if (preg_match("/^        (['\"])([a-z0-9A-Z_]+)\\1\s*=>/", $line, $matches)) {
+            if (\preg_match("/^        (['\"])([a-z0-9A-Z_]+)\\1\s*=>/", $line, $matches)) {
                 $config_name = $matches[2];
                 if (count($prev_lines) > 0) {
                     $result[$config_name] = $prev_lines;
@@ -94,16 +107,19 @@ class Initializer
                 $prev_lines = [];
                 continue;
             }
-            if (preg_match('@^\s*//@', $line)) {
-                $prev_lines[] = trim($line);
+            if (\preg_match('@^\s*//@', $line)) {
+                $prev_lines[] = \trim($line);
             } else {
-                // @phan-suppress-next-line PhanPluginUnusedVariable (used in loop)
                 $prev_lines = [];
             }
         }
         return $result;
     }
 
+    /**
+     * Returns indented PHP comment lines to use for the comment on $setting_name.
+     * Returns the empty string if nothing could be generated.
+     */
     public static function generateCommentForSetting(string $setting_name) : string
     {
         static $comment_source = null;
@@ -111,15 +127,17 @@ class Initializer
             $comment_source = self::computeCommentNameDocumentationMap();
         }
         $lines = $comment_source[$setting_name] ?? null;
-        if (empty($lines)) {
+        if ($lines === null) {
             return '';
         }
-        return implode('', array_map(function (string $line) : string {
+        return \implode('', \array_map(static function (string $line) : string {
             return "    $line\n";
         }, $lines));
     }
 
     /**
+     * @param string $setting_name
+     * @param string|int|float|bool|array|null $setting_value
      * @param array<int,string> $additional_comment_lines
      */
     public static function generateEntrySnippetForSetting(string $setting_name, $setting_value, array $additional_comment_lines) : string
@@ -129,7 +147,7 @@ class Initializer
             $source .= "    // $line\n";
         }
         $source .= '    ';
-        $source .= var_export($setting_name, true) . ' => ';
+        $source .= \var_export($setting_name, true) . ' => ';
         if (is_array($setting_value)) {
             if (count($setting_value) > 0) {
                 $source .= "[\n";
@@ -137,14 +155,14 @@ class Initializer
                     if (!is_int($key)) {
                         throw new TypeError("Expected setting default for $setting_name to have consecutive integer keys");
                     }
-                    $source .= '        ' . var_export($element, true) . ",\n";
+                    $source .= '        ' . \var_export($element, true) . ",\n";
                 }
                 $source .= "    ],\n";
             } else {
                 $source .= "[],\n";
             }
         } else {
-            $encoded_value = var_export($setting_value, true);
+            $encoded_value = \var_export($setting_value, true);
             if ($setting_name === 'minimum_severity') {
                 switch ($setting_value) {
                     case Issue::SEVERITY_LOW:
@@ -164,6 +182,9 @@ class Initializer
         return $source;
     }
 
+    /**
+     * Returns a string containing the full source to use for the generated `.phan/config.php`
+     */
     public static function generatePhanConfigFileContents(InitializedSettings $settings_object) : string
     {
         $phan_settings = $settings_object->settings;
@@ -185,7 +206,7 @@ use Phan\Issue;
  * - Look at 'plugins' and add or remove plugins if appropriate (see https://github.com/phan/phan/tree/master/.phan/plugins#plugins)
  * - Add global suppressions for pre-existing issues to suppress_issue_types (https://github.com/phan/phan/wiki/Tutorial-for-Analyzing-a-Large-Sloppy-Code-Base)
  *
- * This configuration will be read and overlayed on top of the
+ * This configuration will be read and overlaid on top of the
  * default configuration. Command line arguments will be applied
  * after this file is read.
  *
@@ -223,30 +244,32 @@ EOT;
         'average' => 3,
         'normal'  => 3,
         'weak'    => 4,
-        'weakest' => 3,
+        'weakest' => 5,
     ];
 
     /**
      * @param array<string,mixed> $composer_settings (can be empty for --init-no-composer)
      * @param ?string $vendor_path (can be null for --init-no-composer)
-     * @param array{init-overwrite:mixed=,init-no-composer:mixed=,init-level:string=} $opts parsed from getopt
+     * @param array{init-analyze-file?:string,init-overwrite?:mixed,init-no-composer?:mixed,init-level?:(int|string)} $opts parsed from getopt
      * @return ?InitializedSettings
+     * @internal
      */
-    private static function createPhanSettingsForComposerSettings(array $composer_settings, $vendor_path, array $opts)
+    public static function createPhanSettingsForComposerSettings(array $composer_settings, $vendor_path, array $opts)
     {
         $level = $opts['init-level'] ?? 3;
-        $level = self::LEVEL_MAP[strtolower((string)$level)] ?? $level;
-        if (filter_var($level, FILTER_VALIDATE_INT) === false) {
+        $level = self::LEVEL_MAP[\strtolower((string)$level)] ?? $level;
+        if (\filter_var($level, FILTER_VALIDATE_INT) === false) {
             echo "Invalid --init-level=$level\n";
             return null;
         }
-        $level = max(1, min(5, (int)$level));
+        $level = \max(1, \min(5, (int)$level));
+        $is_strongest_level = $level === 1;
         $is_strong_or_weaker_level = $level >= 2;
         $is_average_level = $level >= 3;
         $is_weak_level    = $level >= 4;
         $is_weakest_level = $level >= 5;
 
-        $cwd = getcwd();
+        $cwd = \getcwd();
         list($project_directory_list, $project_file_list) = self::extractAutoloadFilesAndDirectories('', $composer_settings);
         if ($vendor_path !== null && count($project_directory_list) === 0 && count($project_file_list) === 0) {
             echo "phan --init expects composer.json to contain 'autoload' psr-4 directories\n";
@@ -266,10 +289,12 @@ EOT;
                 'AlwaysReturnPlugin',
                 'DollarDollarPlugin',
                 'DuplicateArrayKeyPlugin',
+                'DuplicateExpressionPlugin',
                 'PregRegexCheckerPlugin',
                 'PrintfCheckerPlugin',
                 'SleepCheckerPlugin',
                 'UnreachableCodePlugin',
+                'UseReturnValuePlugin',
             ];
         }
 
@@ -286,6 +311,11 @@ EOT;
             'scalar_array_key_cast'    => $is_average_level,
             // TODO: Migrate to a smaller subset scalar_implicit_partial as analysis gets stricter?
             'scalar_implicit_partial'  => [],
+            'strict_method_checking'   => !$is_average_level,
+            // strict param/return checking has a lot of false positives. Limit it to the strongest analysis level.
+            'strict_param_checking'    => $is_strongest_level,
+            'strict_return_checking'   => $is_strongest_level,
+            'strict_property_checking' => $is_strongest_level,
             'ignore_undeclared_variables_in_global_scope' => $is_average_level,
             'ignore_undeclared_functions_with_known_signatures' => $is_strong_or_weaker_level,
             'backward_compatibility_checks' => false,  // this is slow
@@ -307,6 +337,7 @@ EOT;
             'exclude_analysis_directory_list' => $vendor_path !== null ? [
                 'vendor/'
             ] : [],
+            'enable_include_path_checks' => !$is_weak_level,
             'processes' => 1,
             'analyzed_file_extensions' => ['php'],
             'autoload_internal_extension_signatures' => [],
@@ -319,38 +350,39 @@ EOT;
         // TODO: Figure out which require-dev directories can be skipped
         $require_directories = $composer_settings['require'] ?? [];
         $require_dev_directories = $composer_settings['require-dev'] ?? [];
-        foreach (array_merge($require_directories, $require_dev_directories) as $requirement => $_) {
-            if (substr_count($requirement, '/') !== 1) {
+        foreach (\array_merge($require_directories, $require_dev_directories) as $requirement => $_) {
+            if (\substr_count($requirement, '/') !== 1) {
                 // e.g. ext-ast, php >= 7.0, etc.
                 continue;
             }
             $path_to_require = "$vendor_path/$requirement";
-            if (!is_dir($path_to_require)) {
-                $requirement = strtolower($requirement);
+            if (!\is_dir($path_to_require)) {
+                $requirement = \strtolower($requirement);
                 $path_to_require = "$vendor_path/$requirement";
-                if (!is_dir($path_to_require)) {
+                if (!\is_dir($path_to_require)) {
                     echo "Warning: $path_to_require does not exist, continuing\n";
                     continue;
                 }
             }
             $path_to_composer_json = "$path_to_require/composer.json";
-            if (!file_exists($path_to_composer_json)) {
+            if (!\file_exists($path_to_composer_json)) {
                 echo "Warning: $path_to_composer_json does not exist, continuing\n";
                 continue;
             }
-            $library_composer_settings = json_decode(file_get_contents($path_to_composer_json), true);
+            // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
+            $library_composer_settings = \json_decode(\file_get_contents($path_to_composer_json), true);
             if (!is_array($library_composer_settings)) {
                 echo "Warning: $path_to_composer_json is invalid JSON, continuing\n";
                 continue;
             }
 
             list($library_directory_list, $library_file_list) = self::extractAutoloadFilesAndDirectories("vendor/$requirement", $library_composer_settings);
-            $phan_directory_list = array_merge($phan_directory_list, $library_directory_list);
-            $phan_file_list = array_merge($phan_file_list, $library_file_list);
+            $phan_directory_list = \array_merge($phan_directory_list, $library_directory_list);
+            $phan_file_list = \array_merge($phan_file_list, $library_file_list);
         }
         foreach (self::getArrayOption($opts, 'init-analyze-dir') as $extra_dir) {
             $path_to_require = "$cwd/$extra_dir";
-            if (!is_dir($path_to_require)) {
+            if (!\is_dir($path_to_require)) {
                 echo "phan --init-analyze-dir was given a missing/invalid relative directory '$extra_dir'\n";
                 return null;
             }
@@ -364,7 +396,7 @@ EOT;
         }
         foreach (self::getArrayOption($opts, 'init-analyze-file') as $extra_file) {
             $path_to_require = "$cwd/$extra_file";
-            if (!is_file($path_to_require)) {
+            if (!\is_file($path_to_require)) {
                 echo "phan --init-analyze-file was given a missing/invalid relative file '$extra_file'\n";
                 return null;
             }
@@ -375,15 +407,16 @@ EOT;
             echo "phan --init failed to find any directories or files to analyze, giving up.\n";
             return null;
         }
-        sort($phan_directory_list);
-        sort($phan_file_list);
+        \sort($phan_directory_list);
+        \sort($phan_file_list);
 
-        $phan_settings['directory_list'] = array_unique($phan_directory_list);
-        $phan_settings['file_list'] = array_unique($phan_file_list);
+        $phan_settings['directory_list'] = \array_unique($phan_directory_list);
+        $phan_settings['file_list'] = \array_unique($phan_file_list);
         return new InitializedSettings($phan_settings, $comments, $level);
     }
 
     /**
+     * @param array<string,mixed> $composer_settings parsed from composer.json
      * @return array{0:?string,1:array<int,string>}
      */
     public static function determineTargetPHPVersion(array $composer_settings) : array
@@ -406,7 +439,7 @@ EOT;
         } else {
             return [null, ['TODO: Choose a target_php_version for this project, or leave as null and remove this comment']];
         }
-        return [$version_guess, ['Automatically inferred from composer.json requirement for "php" of ' . json_encode($php_version_constraint)]];
+        return [$version_guess, ['Automatically inferred from composer.json requirement for "php" of ' . \json_encode($php_version_constraint)]];
     }
 
     private static function parseConstraintsForRange(string $constraints) : ConstraintInterface
@@ -415,6 +448,7 @@ EOT;
     }
 
     /**
+     * @param array<string,mixed> $composer_settings settings parsed from composer.json
      * @return array<int,array<int,string>> [$directory_list, $file_list]
      */
     private static function extractAutoloadFilesAndDirectories(string $relative_dir, array $composer_settings)
@@ -422,7 +456,7 @@ EOT;
         $directory_list = [];
         $file_list = [];
         $autoload_setting = $composer_settings['autoload'] ?? [];
-        $autoload_directories = array_merge(
+        $autoload_directories = \array_merge(
             $autoload_setting['psr-4'] ?? [],
             $autoload_setting['psr-0'] ?? [],
             $autoload_setting['classmap'] ?? []
@@ -438,24 +472,25 @@ EOT;
                     continue;
                 }
                 $composer_lib_relative_path = "$relative_dir/$lib";
-                $composer_lib_absolute_path = getcwd() . "/$composer_lib_relative_path";
-                if (!file_exists($composer_lib_absolute_path)) {
+                $composer_lib_absolute_path = \getcwd() . "/$composer_lib_relative_path";
+                if (!\file_exists($composer_lib_absolute_path)) {
                     echo "Warning: could not find '$composer_lib_relative_path'\n";
                     continue;
                 }
 
-                if (is_dir($composer_lib_absolute_path)) {
-                    $directory_list[] = trim($composer_lib_relative_path, '/');
-                } elseif (is_file($composer_lib_relative_path)) {
-                    $file_list[] = trim($composer_lib_relative_path, '/');
+                if (\is_dir($composer_lib_absolute_path)) {
+                    $directory_list[] = \trim($composer_lib_relative_path, '/');
+                } elseif (\is_file($composer_lib_relative_path)) {
+                    $file_list[] = \trim($composer_lib_relative_path, '/');
                 }
             }
         }
-        return [array_unique($directory_list), array_unique($file_list)];
+        return [\array_unique($directory_list), \array_unique($file_list)];
     }
 
     /**
-     * @return array
+     * @param array<string,mixed> $opts
+     * @return array<int,string>
      */
     private static function getArrayOption(array $opts, string $key)
     {
@@ -466,18 +501,27 @@ EOT;
         return is_array($values) ? $values : [];
     }
 
+    /**
+     * Returns true if there is at least one statement that is parseable and not an inline HTML echo statement.
+     *
+     * This indicates that $relative_path points to a PHP binary file that should be analyzed.
+     */
     public static function isPHPBinary(string $relative_path) : bool
     {
-        $cwd = getcwd();
+        $cwd = \getcwd();
         $absolute_path = "$cwd/$relative_path";
-        if (!file_exists($absolute_path)) {
-            printf("Failed to find '%s', continuing\n", $absolute_path);
+        if (!\file_exists($absolute_path)) {
+            \printf("Failed to find '%s', continuing\n", $absolute_path);
             return false;
         }
-        $contents = file_get_contents($absolute_path);
+        $contents = \file_get_contents($absolute_path);
+        if (!is_string($contents)) {
+            \printf("Failed to read '%s', continuing\n", $absolute_path);
+            return false;
+        }
         try {
             // PHP binaries can have many forms, may begin with #/usr/bin/env php.
-            // We assume that if it's parseable and contains at least one PHP executable line, it's valid.
+            // We assume that if it's parsable and contains at least one PHP executable line, it's valid.
             $ast = Parser::parseCode(
                 new CodeBase([], [], [], [], []),
                 new Context(),

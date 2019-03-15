@@ -9,16 +9,18 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Scope\ClassScope;
 use Phan\Language\Scope\FunctionLikeScope;
-use Phan\Tests\BaseTest;
 use Phan\Parse\ParseVisitor;
+use Phan\Tests\BaseTest;
 
 /**
- * @phan-file-suppress PhanPartialTypeMismatchArgument TODO: phpunit lib
+ * Unit tests of Context and scopes
+ * @phan-file-suppress PhanThrowTypeAbsentForCall
+ * @phan-file-suppress PhanPartialTypeMismatchArgument
  */
 final class ContextTest extends BaseTest
 {
 
-    /** @var CodeBase|null */
+    /** @var CodeBase The code base within which this unit test is running */
     protected $code_base = null;
 
     protected function setUp()
@@ -30,7 +32,7 @@ final class ContextTest extends BaseTest
     protected function tearDown()
     {
         // Deliberately not calling parent::tearDown()
-        $this->code_base = new CodeBase([], [], [], [], []);
+        // @phan-suppress-next-line PhanTypeMismatchProperty
         $this->code_base = null;
     }
 
@@ -41,10 +43,12 @@ final class ContextTest extends BaseTest
         $context_namespace =
             $context->withNamespace('\A');
 
+        $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString('\\A\\B');
         $context_class = $context_namespace->withScope(
             new ClassScope(
                 $context_namespace->getScope(),
-                FullyQualifiedClassName::fromFullyQualifiedString('\\A\\B')
+                $class_fqsen,
+                0
             )
         );
 

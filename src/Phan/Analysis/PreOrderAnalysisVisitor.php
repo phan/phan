@@ -1,13 +1,18 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Analysis;
 
+use AssertionError;
+use ast;
+use ast\Node;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
-use Phan\Exception\UnanalyzableException;
 use Phan\Exception\NodeException;
+use Phan\Exception\RecursionDepthException;
+use Phan\Exception\UnanalyzableException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Context;
@@ -19,13 +24,16 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\Scope\ClosureScope;
 use Phan\Language\Type;
-use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 
-use ast\Node;
-use AssertionError;
-
+/**
+ * PreOrderAnalysisVisitor is where we do the pre-order part of the analysis
+ * during Phan's analysis phase.
+ *
+ * This is called in pre-order by BlockAnalysisVisitor
+ * (i.e. this is called before visiting all children of the current node)
+ */
 class PreOrderAnalysisVisitor extends ScopeVisitor
 {
     /**
@@ -52,7 +60,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     }
 
     /**
-     * Visit a node with kind `\ast\AST_CLASS`
+     * Visit a node with kind `ast\AST_CLASS`
      *
      * @param Node $node
      * A node to parse
@@ -69,7 +77,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      */
     public function visitClass(Node $node) : Context
     {
-        if ($node->flags & \ast\flags\CLASS_ANONYMOUS) {
+        if ($node->flags & ast\flags\CLASS_ANONYMOUS) {
             $class_name =
                 (new ContextNode(
                     $this->code_base,
@@ -80,9 +88,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             $class_name = (string)$node->children['name'];
         }
 
-        if (empty($class_name)) {
+        if (!$class_name) {
             // Should only occur with --use-fallback-parser
-            // Class name
             throw new UnanalyzableException($node, "Class name cannot be empty");
         }
 
@@ -91,6 +98,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         // Hunt for the alternate of this class defined
         // in this file
         do {
+            // @phan-suppress-next-line PhanThrowTypeMismatchForCall
             $class_fqsen = FullyQualifiedClassName::fromStringInContext(
                 $class_name,
                 $this->context
@@ -117,7 +125,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     }
 
     /**
-     * Visit a node with kind `\ast\AST_METHOD`
+     * Visit a node with kind `ast\AST_METHOD`
      *
      * @param Node $node
      * A node to parse
@@ -155,6 +163,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             $method_name
         );
         $method->ensureScopeInitialized($code_base);
+        // Fix #2504 - add flags to ensure that DimOffset warnings aren't emitted inside closures
+        Analyzable::ensureDidAnnotate($node);
 
         // Parse the comment above the method to get
         // extra meta information about the method.
@@ -175,7 +185,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         }
 
         // Add $this to the scope of non-static methods
-        if (!($node->flags & \ast\flags\MODIFIER_STATIC)) {
+        if (!($node->flags & ast\flags\MODIFIER_STATIC)) {
             if (!($clazz->getInternalScope()->hasVariableWithName('this'))) {
                 throw new AssertionError("Classes must have a \$this variable.");
             }
@@ -208,7 +218,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     }
 
     /**
-     * Visit a node with kind `\ast\AST_FUNC_DECL`
+     * Visit a node with kind `ast\AST_FUNC_DECL`
      *
      * @param Node $node
      * A node to parse
@@ -227,7 +237,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
 
         // This really ought not to throw given that
         // we already successfully parsed the code
-        // base
+        // base (the AST names should be valid)
+        // @phan-suppress-next-line PhanThrowTypeMismatchForCall
         $canonical_function = (new ContextNode(
             $code_base,
             $original_context,
@@ -255,18 +266,20 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         }
 
         $function->ensureScopeInitialized($code_base);
+        // Fix #2504 - add flags to ensure that DimOffset warnings aren't emitted inside closures
+        Analyzable::ensureDidAnnotate($node);
 
         $context = $original_context->withScope(
             $function->getInternalScope()
         );
 
         // Parse the comment above the function to get
-        // extra meta information about the method.
+        // extra meta information about the function.
         // TODO: Investigate caching information from Comment::fromStringInContext?
         $comment = $function->getComment();
 
-        // For any @var references in the method declaration,
-        // add them as variables to the method's scope
+        // For any @var references in the function declaration,
+        // add them as variables to the function's scope
         if ($comment !== null) {
             foreach ($comment->getVariableList() as $parameter) {
                 $context->addScopeVariable(
@@ -338,7 +351,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         Func $func
     ) {
         // skip adding $this to internal scope if the closure is a static one
-        if ($func->getFlags() == \ast\flags\MODIFIER_STATIC) {
+        if ($func->getFlags() == ast\flags\MODIFIER_STATIC) {
             return;
         }
 
@@ -368,7 +381,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
 
 
     /**
-     * Visit a node with kind `\ast\AST_CLOSURE`
+     * Visit a node with kind `ast\AST_CLOSURE`
      *
      * @param Node $node
      * A node to parse
@@ -382,11 +395,13 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         $code_base = $this->code_base;
         $context = $this->context;
         $closure_fqsen = FullyQualifiedFunctionName::fromClosureInContext(
-            $context->withLineNumberStart($node->lineno ?? 0),
+            $context->withLineNumberStart($node->lineno),
             $node
         );
         $func = $code_base->getFunctionByFQSEN($closure_fqsen);
         $func->ensureScopeInitialized($code_base);
+        // Fix #2504 - add flags to ensure that DimOffset warnings aren't emitted inside closures
+        Analyzable::ensureDidAnnotate($node);
 
         // If we have a 'this' variable in our current scope,
         // pass it down into the closure
@@ -395,15 +410,13 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         // Make the closure reachable by FQSEN from anywhere
         $code_base->addFunction($func);
 
-        if (!empty($node->children['uses'])
-            && $node->children['uses']->kind == \ast\AST_CLOSURE_USES
-        ) {
+        if (($node->children['uses']->kind ?? null) == ast\AST_CLOSURE_USES) {
             $uses = $node->children['uses'];
             foreach ($uses->children as $use) {
-                if (!($use instanceof Node) || $use->kind != \ast\AST_CLOSURE_VAR) {
+                if (!($use instanceof Node) || $use->kind != ast\AST_CLOSURE_VAR) {
                     $this->emitIssue(
                         Issue::VariableUseClause,
-                        $node->lineno ?? 0
+                        $node->lineno
                     );
                     continue;
                 }
@@ -414,7 +427,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                     $use->children['name']
                 ))->getVariableName();
 
-                if (empty($variable_name)) {
+                if (!$variable_name) {
                     continue;
                 }
 
@@ -426,12 +439,12 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 )) {
                     // If this is not pass-by-reference variable we
                     // have a problem
-                    if (!($use->flags & \ast\flags\PARAM_REF)) {
+                    if (!($use->flags & ast\flags\PARAM_REF)) {
                         Issue::maybeEmitWithParameters(
                             $this->code_base,
                             clone($context)->withLineNumberStart($use->lineno),
                             Issue::UndeclaredVariable,
-                            $node->lineno ?? 0,
+                            $node->lineno,
                             [$variable_name],
                             IssueFixSuggester::suggestVariableTypoFix($this->code_base, $context, $variable_name)
                         );
@@ -457,7 +470,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                     // If this isn't a pass-by-reference variable, we
                     // clone the variable so state within this scope
                     // doesn't update the outer scope
-                    if (!($use->flags & \ast\flags\PARAM_REF)) {
+                    if (!($use->flags & ast\flags\PARAM_REF)) {
                         $variable = clone($variable);
                     }
                 }
@@ -520,10 +533,14 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         }
         if (!$func->isReturnTypeUndefined()) {
             $func_return_type = $func->getUnionType();
-            $func_return_type_can_cast = $func_return_type->canCastToExpandedUnionType(
-                Type::fromNamespaceAndName('\\', 'Generator', false)->asUnionType(),
-                $this->code_base
-            );
+            try {
+                $func_return_type_can_cast = $func_return_type->canCastToExpandedUnionType(
+                    Type::fromNamespaceAndName('\\', 'Generator', false)->asUnionType(),
+                    $this->code_base
+                );
+            } catch (RecursionDepthException $_) {
+                return;
+            }
             if (!$func_return_type_can_cast) {
                 // At least one of the documented return types must
                 // be Generator, Iterable, or Traversable.
@@ -531,9 +548,9 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 // the check is done exactly once.
                 $this->emitIssue(
                     Issue::TypeMismatchReturn,
-                    $node->lineno ?? 0,
+                    $node->lineno,
                     '\\Generator',
-                    $func->getName(),
+                    $func->getNameForIssue(),
                     (string)$func_return_type
                 );
             }
@@ -549,10 +566,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      */
     public function visitAssign(Node $node) : Context
     {
-        // In php 7.0, a **valid** parsed AST would be an \ast\AST_LIST.
-        // However, --force-polyfill-parser will emit \ast\AST_ARRAY.
         $var_node = $node->children['var'];
-        if (Config::get_closest_target_php_version_id() < 70100 && $var_node instanceof Node && $var_node->kind === \ast\AST_ARRAY) {
+        if (Config::get_closest_target_php_version_id() < 70100 && $var_node instanceof Node && $var_node->kind === ast\AST_ARRAY) {
             $this->analyzeArrayAssignBackwardsCompatibility($var_node);
         }
         return $this->context;
@@ -582,78 +597,45 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
 
         // Check the expression type to make sure it's
         // something we can iterate over
-        if ($expression_union_type->isScalar()) {
-            $this->emitIssue(
-                Issue::TypeMismatchForeach,
-                $node->lineno ?? 0,
-                (string)$expression_union_type
-            );
-        }
+        $this->checkCanIterate($expression_union_type, $node);
 
         $value_node = $node->children['value'];
         if (!($value_node instanceof Node)) {
             return $context;
         }
-        if ($value_node->kind == \ast\AST_ARRAY) {
+        if ($value_node->kind == ast\AST_ARRAY) {
             if (Config::get_closest_target_php_version_id() < 70100) {
                 $this->analyzeArrayAssignBackwardsCompatibility($value_node);
             }
-            $this->inferTypesForForeachArrayDestructuring($expression_union_type->genericArrayElementTypes(), $value_node);
-
-        // Otherwise, read the value as regular variable and
-        // add it to the scope
-        } else {
-            // Filter out the non-generic types of the
-            // expression
-            $non_generic_expression_union_type =
-                $expression_union_type->iterableValueUnionType($code_base);
-
-            // Create a variable for the value
-            $variable = Variable::fromNodeInContext(
-                $value_node,
-                $context,
-                $code_base,
-                false
-            );
-
-            // If we were able to figure out the type and it's
-            // a generic type, then set its element types as
-            // the type of the variable
-            if (!$non_generic_expression_union_type->isEmpty()) {
-                $variable->setUnionType($non_generic_expression_union_type);
-            }
-
-            // Add the variable to the scope
-            $context->addScopeVariable($variable);
         }
+
+        $context = (new AssignmentVisitor(
+            $code_base,
+            $context,
+            $value_node,
+            $expression_union_type->iterableValueUnionType($code_base)
+        ))->__invoke($value_node);
 
         // If there's a key, make a variable out of that too
         $key_node = $node->children['key'];
         if ($key_node instanceof Node) {
-            if ($key_node->kind == \ast\AST_LIST) {
-                throw new NodeException(
-                    $node,
+            if ($key_node->kind === ast\AST_ARRAY) {
+                $this->emitIssue(
+                    Issue::InvalidNode,
+                    $key_node->lineno,
                     "Can't use list() as a key element - aborting"
                 );
-            }
-
-            $variable = Variable::fromNodeInContext(
-                $key_node,
-                $context,
-                $code_base,
-                false
-            );
-            if (!$expression_union_type->isEmpty()) {
+            } else {
                 // TODO: Support Traversable<Key, T> then return Key.
                 // If we see array<int,T> or array<string,T> and no other array types, we're reasonably sure the foreach key is an integer or a string, so set it.
                 // (Or if we see iterable<int,T>
-                $union_type_of_array_key = $expression_union_type->iterableKeyUnionType($code_base);
-                if ($union_type_of_array_key !== null) {
-                    $variable->setUnionType($union_type_of_array_key);
-                }
+                $context = (new AssignmentVisitor(
+                    $code_base,
+                    $context,
+                    $key_node,
+                    $expression_union_type->iterableKeyUnionType($code_base)
+                ))->__invoke($key_node);
             }
-
-            $context->addScopeVariable($variable);
         }
 
         // Note that we're not creating a new scope, just
@@ -661,238 +643,85 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         return $context;
     }
 
+    /**
+     * @param UnionType $union_type the type of $node->children['expr']
+     * @param Node $node a node of kind AST_FOREACH
+     */
+    private function checkCanIterate(UnionType $union_type, Node $node)
+    {
+        if ($union_type->isScalar()) {
+            $this->emitIssue(
+                Issue::TypeMismatchForeach,
+                $node->children['expr']->lineno ?? $node->lineno,
+                (string)$union_type
+            );
+        }
+        foreach ($union_type->getTypeSet() as $type) {
+            try {
+                if ($type->asExpandedTypes($this->code_base)->hasTraversable()) {
+                    continue;
+                }
+            } catch (RecursionDepthException $_) {
+            }
+            if (!$type->isObjectWithKnownFQSEN()) {
+                continue;
+            }
+            $this->warnAboutNonTraversableType($node, $type);
+        }
+    }
+
+    private function warnAboutNonTraversableType(Node $node, Type $type)
+    {
+        $fqsen = FullyQualifiedClassName::fromType($type);
+        if (!$this->code_base->hasClassWithFQSEN($fqsen)) {
+            return;
+        }
+        if ($fqsen->__toString() === '\stdClass') {
+            // stdClass is the only non-Traversable that I'm aware of that's commonly traversed over.
+            return;
+        }
+        $class = $this->code_base->getClassByFQSEN($fqsen);
+        $status = $class->checkCanIterateFromContext(
+            $this->code_base,
+            $this->context
+        );
+        switch ($status) {
+            case Clazz::CAN_ITERATE_STATUS_NO_ACCESSIBLE_PROPERTIES:
+                $issue = Issue::TypeNoAccessiblePropertiesForeach;
+                break;
+            case Clazz::CAN_ITERATE_STATUS_NO_PROPERTIES:
+                $issue = Issue::TypeNoPropertiesForeach;
+                break;
+            default:
+                $issue = Issue::TypeSuspiciousNonTraversableForeach;
+                break;
+        }
+
+        $this->emitIssue(
+            $issue,
+            $node->children['expr']->lineno ?? $node->lineno,
+            $type
+        );
+    }
+
     private function analyzeArrayAssignBackwardsCompatibility(Node $node)
     {
-        if ($node->flags !== \ast\flags\ARRAY_SYNTAX_LIST) {
+        if ($node->flags !== ast\flags\ARRAY_SYNTAX_LIST) {
             $this->emitIssue(
                 Issue::CompatibleShortArrayAssignPHP70,
-                $node->lineno ?? 0
+                $node->lineno
             );
         }
         foreach ($node->children as $array_elem) {
             if (isset($array_elem->children['key'])) {
                 $this->emitIssue(
                     Issue::CompatibleKeyedArrayAssignPHP70,
-                    $array_elem->lineno ?? 0
+                    $array_elem->lineno
                 );
                 break;
             }
         }
     }
-
-    /**
-     * @return void
-     */
-    private function inferTypesForForeachArrayDestructuring(
-        UnionType $element_union_type,
-        Node $value_node
-    ) {
-        if ($element_union_type->hasTopLevelArrayShapeTypeInstances()) {
-            $this->inferTypesForShapedForeachArrayDestructuring($element_union_type, $value_node);
-        } else {
-            $this->inferTypesForGenericForeachArrayDestructuring($element_union_type, $value_node);
-        }
-    }
-
-    /**
-     * @param UnionType $element_union_type (The T[]|S[] types from the expression of the foreach)
-     * @param Node $value_node a node of type ast\AST_ARRAY that is in the foreach's `as` value
-     * @return void
-     */
-    private function inferTypesForShapedForeachArrayDestructuring(
-        UnionType $element_union_type,
-        Node $value_node
-    ) {
-        $key_set = [];
-
-        $expect_int_keys_lineno = false;
-        $expect_string_keys_lineno = false;
-
-        $fallback_second_order_element_type = null;
-        $get_fallback_second_order_element_type = function () use (&$fallback_second_order_element_type, $element_union_type) : UnionType {
-            return $fallback_second_order_element_type ?? ($fallback_second_order_element_type = $element_union_type->genericArrayElementTypes());
-        };
-        foreach ($value_node->children as $child_node) {
-            // $key_node = $child_node->children['key'] ?? null;
-            $value_elem_node = $child_node->children['value'] ?? null;
-
-            // for syntax like: foreach ([] as list(, $a));
-            if (!($value_elem_node instanceof Node)) {
-                continue;
-            }
-
-            // Get the key and value nodes for each
-            // array element we're assigning to
-            // TODO: Check key types are valid?
-            $key_node = $child_node->children['key'];
-            $key_value = null;
-
-            if ($key_node === null) {
-                $key_set[] = true;
-                \end($key_set);
-                $key_value = \key($key_set);
-
-                $expect_int_keys_lineno = $child_node->lineno;  // list($x, $y) = ... is equivalent to list(0 => $x, 1 => $y) = ...
-            } else {
-                if ($key_node instanceof Node) {
-                    $key_value = (new ContextNode($this->code_base, $this->context, $key_node))->getEquivalentPHPScalarValue();
-                } else {
-                    $key_value = $key_node;
-                }
-                if (\is_scalar($key_value)) {
-                    $key_set[$key_value] = true;
-                    if (\is_int($key_value)) {
-                        $expect_int_keys_lineno = $child_node->lineno;
-                    } elseif (\is_string($key_value)) {
-                        $expect_string_keys_lineno = $child_node->lineno;
-                    }
-                } else {
-                    $key_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $key_node);
-                    $key_type_enum = GenericArrayType::keyTypeFromUnionTypeValues($key_type);
-                    // TODO: Warn about types that can't cast to int|string
-                    if ($key_type_enum === GenericArrayType::KEY_INT) {
-                        $expect_int_keys_lineno = $child_node->lineno;
-                    } elseif ($key_type_enum === GenericArrayType::KEY_STRING) {
-                        $expect_string_keys_lineno = $child_node->lineno;
-                    }
-                }
-            }
-
-            $variable = Variable::fromNodeInContext(
-                $value_elem_node,
-                $this->context,
-                $this->code_base,
-                false
-            );
-
-            if (\is_scalar($key_value)) {
-                $second_order_non_generic_expression_union_type = UnionTypeVisitor::resolveArrayShapeElementTypesForOffset($element_union_type, $key_value);
-                if ($second_order_non_generic_expression_union_type === null) {
-                    $second_order_non_generic_expression_union_type = $get_fallback_second_order_element_type();
-                } elseif ($second_order_non_generic_expression_union_type === false) {
-                    $this->emitIssue(
-                        Issue::TypeInvalidDimOffsetArrayDestructuring,
-                        $child_node->lineno,
-                        json_encode($key_value),
-                        (string)$element_union_type
-                    );
-                    $second_order_non_generic_expression_union_type = $get_fallback_second_order_element_type();
-                }
-            } else {
-                $second_order_non_generic_expression_union_type = $get_fallback_second_order_element_type();
-            }
-
-            // If we were able to figure out the type and it's
-            // a generic type, then set its element types as
-            // the type of the variable
-            $variable->setUnionType(
-                $second_order_non_generic_expression_union_type
-            );
-
-            $this->context->addScopeVariable($variable);
-        }
-
-        $this->checkMismatchForeachArrayDestructuringKey($expect_int_keys_lineno, $expect_string_keys_lineno, $element_union_type);
-    }
-
-    /**
-     * @param UnionType $element_union_type (The T[]|S[] types from the expression of the foreach)
-     * @param Node $value_node a node of type ast\AST_ARRAY that is in the foreach's `as` value
-     * @return void
-     */
-    private function inferTypesForGenericForeachArrayDestructuring(
-        UnionType $element_union_type,
-        Node $value_node
-    ) {
-        $scalar_array_key_cast = Config::getValue('scalar_array_key_cast');
-        $expect_string_keys_lineno = false;
-        $expect_int_keys_lineno = false;
-
-        foreach ($value_node->children as $child_node) {
-            $value_elem_node = $child_node->children['value'] ?? null;
-
-            // for syntax like: foreach ([] as list(, $a));
-            if (!($value_elem_node instanceof Node)) {
-                continue;
-            }
-
-            $key_node = $child_node->children['key'];
-            if (!$scalar_array_key_cast) {
-                if ($key_node === null) {
-                    $expect_int_keys_lineno = $child_node->lineno;  // list($x, $y) = ... is equivalent to list(0 => $x, 1 => $y) = ...
-                } else {
-                    $key_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $key_node);
-                    $key_type_enum = GenericArrayType::keyTypeFromUnionTypeValues($key_type);
-                    // TODO: Warn about types that can't cast to int|string
-                    if ($key_type_enum === GenericArrayType::KEY_INT) {
-                        $expect_int_keys_lineno = $child_node->lineno;
-                    } elseif ($key_type_enum === GenericArrayType::KEY_STRING) {
-                        $expect_string_keys_lineno = $child_node->lineno;
-                    }
-                }
-            }
-
-            $variable = Variable::fromNodeInContext(
-                $value_elem_node,
-                $this->context,
-                $this->code_base,
-                false
-            );
-
-            // If we were able to figure out the type and it's
-            // a generic type, then set its element types as
-            // the type of the variable
-            if (!$element_union_type->isEmpty()) {
-                $second_order_non_generic_expression_union_type =
-                    $element_union_type->genericArrayElementTypes();
-
-                if (!$second_order_non_generic_expression_union_type->isEmpty()) {
-                    $variable->setUnionType(
-                        $second_order_non_generic_expression_union_type
-                    );
-                }
-            }
-
-            $this->context->addScopeVariable($variable);
-        }
-        // TODO: Issue::TypeMismatchArrayDestructuringKey,
-
-        $this->checkMismatchForeachArrayDestructuringKey($expect_int_keys_lineno, $expect_string_keys_lineno, $element_union_type);
-    }
-
-    /**
-     * TODO: Deduplicate these checks in a trait
-     * @param int|false $expect_int_keys_lineno
-     * @param int|false $expect_string_keys_lineno
-     * @param UnionType $element_union_type
-     * @return void
-     */
-    private function checkMismatchForeachArrayDestructuringKey($expect_int_keys_lineno, $expect_string_keys_lineno, UnionType $element_union_type)
-    {
-        if ($expect_int_keys_lineno !== false || $expect_string_keys_lineno !== false) {
-            $right_hand_key_type = GenericArrayType::keyTypeFromUnionTypeKeys($element_union_type);
-            if ($expect_int_keys_lineno !== false && ($right_hand_key_type & GenericArrayType::KEY_INT) === 0) {
-                Issue::maybeEmit(
-                    $this->code_base,
-                    $this->context,
-                    Issue::TypeMismatchArrayDestructuringKey,
-                    $expect_int_keys_lineno,
-                    'int',
-                    'string'
-                );
-            } elseif ($expect_string_keys_lineno !== false && ($right_hand_key_type & GenericArrayType::KEY_STRING) === 0) {
-                Issue::maybeEmit(
-                    $this->code_base,
-                    $this->context,
-                    Issue::TypeMismatchArrayDestructuringKey,
-                    $expect_string_keys_lineno,
-                    'string',
-                    'int'
-                );
-            }
-        }
-    }
-
 
     /**
      * @param Node $node
@@ -904,6 +733,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      */
     public function visitCatch(Node $node) : Context
     {
+        // @phan-suppress-next-line PhanThrowTypeAbsentForCall
         $union_type = UnionTypeVisitor::unionTypeFromClassNode(
             $this->code_base,
             $this->context,
@@ -911,16 +741,12 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         );
 
         try {
-            $class_list = (new ContextNode(
-                $this->code_base,
-                $this->context,
-                $node->children['class']
-            ))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME);
+            $class_list = \iterator_to_array($union_type->asClassList($this->code_base, $this->context));
 
             if (Config::get_closest_target_php_version_id() < 70100 && \count($class_list) > 1) {
                 $this->emitIssue(
                     Issue::CompatibleMultiExceptionCatchPHP70,
-                    $node->lineno ?? 0
+                    $node->lineno
                 );
             }
 
@@ -932,13 +758,13 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 $this->code_base,
                 $this->context,
                 Issue::UndeclaredClassCatch,
-                $node->lineno ?? 0,
+                $node->lineno,
                 [(string)$exception->getFQSEN()],
                 IssueFixSuggester::suggestSimilarClassForGenericFQSEN($this->code_base, $this->context, $exception->getFQSEN())
             );
         }
 
-        $throwable_type = Type::fromFullyQualifiedString('\Throwable');
+        $throwable_type = Type::throwableInstance();
         if ($union_type->isEmpty() || !$union_type->asExpandedTypes($this->code_base)->hasType($throwable_type)) {
             $union_type = $union_type->withType($throwable_type);
         }
@@ -949,7 +775,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             $node->children['var']
         ))->getVariableName();
 
-        if (!empty($variable_name)) {
+        if ($variable_name) {
             $variable = Variable::fromNodeInContext(
                 $node->children['var'],
                 $this->context,

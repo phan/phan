@@ -66,17 +66,29 @@ class Position
      */
     public function toOffset(string $content): int
     {
-        $lines = explode("\n", $content);
-        $slice = array_slice($lines, 0, $this->line);
+        $lines = \explode("\n", $content);
+        $slice = \array_slice($lines, 0, $this->line);
         // TODO: array_sum should infer sum of ints is typically an int
-        return ((int)array_sum(array_map('strlen', $slice))) + count($slice) + $this->character;
+        return ((int)\array_sum(\array_map('strlen', $slice))) + \count($slice) + $this->character;
     }
 
+    /**
+     * Creates a Position from a serialized array $data
+     * @param array{line:int,character?:?int} $data
+     */
     public static function fromArray(array $data) : Position
     {
         return new self(
             $data['line'],
             $data['character'] ?? null
         );
+    }
+
+    /**
+     * Used for debugging
+     */
+    public function __toString() : string
+    {
+        return "$this->line:$this->character";
     }
 }

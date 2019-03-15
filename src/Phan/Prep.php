@@ -1,8 +1,14 @@
 <?php declare(strict_types=1);
+
 namespace Phan;
 
 use ast\Node;
 
+/**
+ * A utility that can be used to scan a list of files and apply a closure to every node.
+ *
+ * This is not invoked by ./phan
+ */
 class Prep
 {
 
@@ -25,16 +31,11 @@ class Prep
         foreach ($file_list as $file_path) {
             // Convert the file to an Abstract Syntax Tree
             // before passing it on to the recursive version
-            // of this method
+            // of this method.
             $node = \ast\parse_file(
                 $file_path,
                 Config::AST_VERSION
             );
-
-            // Skip empty files
-            if (!$node) {
-                continue;
-            }
 
             self::scanNodeInFile($node, $file_path, $visit_node);
         }

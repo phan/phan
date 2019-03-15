@@ -1,0 +1,3 @@
+%s:2 PhanUndeclaredFunction Call to undeclared function \split()
+%s:3 PhanUndeclaredFunction Call to undeclared function \spliti()
+%s:4 PhanUndeclaredFunction Call to undeclared function \ereg()

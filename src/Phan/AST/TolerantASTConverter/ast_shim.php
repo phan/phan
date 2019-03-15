@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+
 /**
  * Based on PHPDoc stub file for ast extension from
  * https://github.com/nikic/php-ast/blob/master/ast_stub.php
@@ -15,6 +16,12 @@ declare(strict_types=1);
  * However, this file does not define any global functions such as
  * ast\parse_code() and ast\parse_file(). (to avoid confusion)
  *
+ * TODO: Make it so that constant values will be identical to php-ast
+ * for PHP 7.0-7.3
+ *
+ * @phan-file-suppress PhanUnreferencedConstant, UnusedPluginFileSuppression - Plugins may reference some of these constants
+ * @phan-file-suppress PhanPluginUnknownArrayPropertyType, PhanPluginUnknownArrayMethodParamType this is a stub
+ *
  * @author Tyson Andre
  */
 
@@ -22,7 +29,6 @@ declare(strict_types=1);
 namespace ast;
 
 const AST_ARG_LIST = 128;
-const AST_LIST = 255;
 const AST_ARRAY = 129;
 const AST_ENCAPS_LIST = 130;
 const AST_EXPR_LIST = 131;
@@ -50,12 +56,9 @@ const AST_TYPE = 1;
 const AST_VAR = 256;
 const AST_CONST = 257;
 const AST_UNPACK = 258;
-const AST_UNARY_PLUS = 259;
-const AST_UNARY_MINUS = 260;
 const AST_CAST = 261;
 const AST_EMPTY = 262;
 const AST_ISSET = 263;
-const AST_SILENCE = 264;
 const AST_SHELL_EXEC = 265;
 const AST_CLONE = 266;
 const AST_EXIT = 267;
@@ -87,15 +90,10 @@ const AST_ASSIGN = 517;
 const AST_ASSIGN_REF = 518;
 const AST_ASSIGN_OP = 519;
 const AST_BINARY_OP = 520;
-const AST_GREATER = 521;
-const AST_GREATER_EQUAL = 522;
-const AST_AND = 523;
-const AST_OR = 524;
 const AST_ARRAY_ELEM = 525;
 const AST_NEW = 526;
 const AST_INSTANCEOF = 527;
 const AST_YIELD = 528;
-const AST_COALESCE = 529;
 const AST_STATIC = 530;
 const AST_WHILE = 531;
 const AST_DO_WHILE = 532;
@@ -135,6 +133,10 @@ const MODIFIER_STATIC = 1;
 const MODIFIER_ABSTRACT = 2;
 const MODIFIER_FINAL = 4;
 const RETURNS_REF = 67108864;
+const FUNC_RETURNS_REF = 67108864;
+const FUNC_GENERATOR = 4194304;  // NOTE: Not set in all PHP versions.
+const ARRAY_ELEM_REF = 1;
+const CLOSURE_USE_REF = 1;
 const CLASS_ABSTRACT = 32;
 const CLASS_FINAL = 4;
 const CLASS_TRAIT = 128;
@@ -182,18 +184,6 @@ const BINARY_IS_GREATER = 256;
 const BINARY_IS_GREATER_OR_EQUAL = 257;
 const BINARY_SPACESHIP = 170;
 const BINARY_COALESCE = 260;
-const ASSIGN_BITWISE_OR = 31;
-const ASSIGN_BITWISE_AND = 32;
-const ASSIGN_BITWISE_XOR = 33;
-const ASSIGN_CONCAT = 30;
-const ASSIGN_ADD = 23;
-const ASSIGN_SUB = 24;
-const ASSIGN_MUL = 25;
-const ASSIGN_DIV = 26;
-const ASSIGN_MOD = 27;
-const ASSIGN_POW = 167;
-const ASSIGN_SHIFT_LEFT = 28;
-const ASSIGN_SHIFT_RIGHT = 29;
 const EXEC_EVAL = 1;
 const EXEC_INCLUDE = 2;
 const EXEC_INCLUDE_ONCE = 4;
@@ -217,10 +207,13 @@ const ARRAY_SYNTAX_SHORT = 3;
 
 namespace ast;
 
-if (!class_exists('\ast\Node')) {
+// The parse_file(), parse_code(), get_kind_name(), and kind_uses_flags() are deliberately omitted from this stub.
+// Use Phan\Debug and Phan\AST\Parser instead.
+
+if (!\class_exists('\ast\Node')) {
     /**
      * This class describes a single node in a PHP AST.
-     * @suppress PhanRedefineClassInternal TODO: why isn't this warning?
+     * @suppress PhanRedefineClassInternal
      */
     class Node
     {
@@ -251,5 +244,42 @@ if (!class_exists('\ast\Node')) {
             $this->children = $children;
             $this->lineno = $lineno;
         }
+    }
+}
+
+if (!\class_exists('ast\Metadata')) {
+    /**
+     * Metadata entry for a single AST kind, as returned by ast\get_metadata().
+     * @suppress PhanRedefineClassInternal
+     * @suppress PhanUnreferencedClass
+     */
+    class Metadata
+    {
+        /**
+         * @var int AST node kind (one of the ast\AST_* constants).
+         * @suppress PhanUnreferencedPublicProperty
+         */
+        public $kind;
+
+        /**
+         * @var string Name of the node kind (e.g. "AST_NAME").
+         * @suppress PhanUnreferencedPublicProperty
+         */
+        public $name;
+
+        /**
+         * @var array<int,string> Array of supported flags. The flags are given as names of constants, such as
+         *                        "ast\flags\TYPE_STRING".
+         * @suppress PhanUnreferencedPublicProperty
+         */
+        public $flags;
+
+        /**
+         * @var bool Whether the flags are exclusive or combinable. Exclusive flags should be checked
+         *           using ===, while combinable flags should be checked using &.
+         * @suppress PhanUnreferencedPublicProperty
+         */
+        // phpcs:ignore Phan.NamingConventions.ValidUnderscoreVariableName.MemberVarNotUnderscore
+        public $flagsCombinable;
     }
 }

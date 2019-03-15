@@ -1,0 +1,2 @@
+%s:30 PhanTypeMismatchArgument Argument 1 (p0) is 'key' but Closure(string[]):\stdClass takes string[] defined at %s:10
+%s:59 PhanTypeMismatchArgument Argument 1 (p0) is array{0:\stdClass} but Closure(array<int,string>):string takes array<int,string> defined at %s:47

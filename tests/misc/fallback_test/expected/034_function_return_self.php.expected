@@ -1,0 +1,1 @@
+src/034_function_return_self.php:3 PhanContextNotObjectUsingSelf Cannot use self as type when not in object context in \h34

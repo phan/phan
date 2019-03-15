@@ -1,14 +1,14 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
 
 namespace Phan\Tests\AST\TolerantASTConverter;
 
-use Phan\AST\TolerantASTConverter\TolerantASTConverterWithNodeMapping;
-use Phan\AST\TolerantASTConverter\TolerantASTConverter;
-use Phan\Config;
-use Phan\Tests\BaseTest;
-use InvalidArgumentException;
 use ast;
 use ast\Node;
+use InvalidArgumentException;
+use Phan\AST\TolerantASTConverter\TolerantASTConverter;
+use Phan\AST\TolerantASTConverter\TolerantASTConverterWithNodeMapping;
+use Phan\Config;
+use Phan\Tests\BaseTest;
 
 /**
  * Tests that the fallback works with ASTs, and can point an ast\Node to the original.
@@ -42,6 +42,9 @@ final class TolerantASTConverterWithNodeMappingTest extends BaseTest
         $this->assertEquals($expected_node, $selected_node);
     }
 
+    /**
+     * @param Node|string|int|float|null $node
+     */
     private function findSelectedNode($node) : Node
     {
         $candidates = [];
@@ -51,9 +54,9 @@ final class TolerantASTConverterWithNodeMappingTest extends BaseTest
     }
 
     /**
+     * @param Node|int|string|float|null $node
      * @param array<int,Node> &$candidates
      * @return void
-     * @suppress PhanUndeclaredProperty isSelected is dynamically added by Phan
      */
     private function findSelectedNodeInner($node, array &$candidates)
     {
@@ -80,9 +83,10 @@ final class TolerantASTConverterWithNodeMappingTest extends BaseTest
     {
         $converter = new TolerantASTConverterWithNodeMapping($byte_offset);
         $errors = [];
+        // @phan-suppress-next-line PhanThrowTypeAbsentForCall don't care in unit test
         $ast = $converter->parseCodeAsPHPAST($file_contents, TolerantASTConverter::AST_VERSION, $errors);
-        if (count($errors) > 0) {
-            throw new InvalidArgumentException("Unexpected errors: " . json_encode($errors));
+        if (\count($errors) > 0) {
+            throw new InvalidArgumentException("Unexpected errors: " . \json_encode($errors));
         }
         return $ast;
     }
@@ -94,7 +98,7 @@ final class TolerantASTConverterWithNodeMappingTest extends BaseTest
         $byte_offset = 0;
         while ($line > 1) {
             $line--;
-            $newline_pos = strpos($file_contents, "\n", $byte_offset);
+            $newline_pos = \strpos($file_contents, "\n", $byte_offset);
             if ($newline_pos === false) {
                 throw new \InvalidArgumentException("too many lines");
             }

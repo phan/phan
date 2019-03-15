@@ -1,23 +1,24 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Plugin\Internal;
 
-use Phan\CodeBase;
+use ast\Node;
+use Closure;
 use Phan\Analysis\ArgumentType;
 use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\AST\UnionTypeVisitor;
+use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
-use Phan\Language\Type\ClosureType;
 use Phan\Language\Type;
+use Phan\Language\Type\ClosureType;
 use Phan\Language\UnionType;
 use Phan\PluginV2;
 use Phan\PluginV2\AnalyzeFunctionCallCapability;
 use Phan\PluginV2\ReturnTypeOverrideCapability;
-use ast\Node;
-use Closure;
 
 /**
  * NOTE: This is automatically loaded by phan. Do not include it in a config.
@@ -30,15 +31,17 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
 {
 
     /**
-     * @param Node|int|string $arg_array_node
-     * @return ?array
+     * @param Node|int|string|float|null $arg_array_node
+     * @return ?array<int,Node|int|string|float>
      */
     private static function extractArrayArgs($arg_array_node)
     {
         if (($arg_array_node instanceof Node) && $arg_array_node->kind === \ast\AST_ARRAY) {
             $arguments = [];
-            // TODO: Sanity check keys.
             foreach ($arg_array_node->children as $child) {
+                if (!($child instanceof Node)) {
+                    continue;
+                }
                 $arguments[] = $child->children['value'];
             }
             return $arguments;
@@ -52,6 +55,9 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
      */
     private static function getReturnTypeOverridesStatic() : array
     {
+        /**
+         * @param array<int,Node|int|string|float> $args
+         */
         $call_user_func_callback = static function (
             CodeBase $code_base,
             Context $context,
@@ -80,6 +86,9 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
             }
             return $element_types;
         };
+        /**
+         * @param array<int,Node|int|string|float> $args
+         */
         $call_user_func_array_callback = static function (
             CodeBase $code_base,
             Context $context,
@@ -115,6 +124,9 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
             }
             return $element_types;
         };
+        /**
+         * @param array<int,Node|int|string|float> $args
+         */
         $from_callable_callback = static function (
             CodeBase $code_base,
             Context $context,
@@ -134,6 +146,9 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
             }
             return $closure_types;
         };
+        /**
+         * @param array<int,Node|int|float|string> $args
+         */
         $from_closure_callback = static function (
             CodeBase $code_base,
             Context $context,
@@ -144,7 +159,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
                 return ClosureType::instance(false)->asUnionType();
             }
             $types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0], true);
-            $types = $types->makeFromFilter(function (Type $type) : bool {
+            $types = $types->makeFromFilter(static function (Type $type) : bool {
                 if ($type instanceof ClosureType) {
                     return $type->hasKnownFQSEN();
                 }
@@ -173,6 +188,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
     private static function getAnalyzeFunctionCallClosuresStatic() : array
     {
         /**
+         * @param array<int,Node|int|string|float> $args
          * @return void
          */
         $call_user_func_callback = static function (
@@ -193,6 +209,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
         };
 
         /**
+         * @param array<int,Node|int|string|float> $args
          * @return void
          */
         $call_user_func_array_callback = static function (
@@ -256,12 +273,19 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
     }
 
     /**
-     * @phan-return Closure(mixed,int):UnionType
+     * This caches the arguments inferred as the union types of arguments passed to function calls.
+     * This is used in case there are multiple function-likes that need to be analyzed.
+     *
+     * TODO: Is this still needed?
+     * @return Closure(mixed,int):UnionType
      */
     public static function createNormalArgumentCache(CodeBase $code_base, Context $context) : Closure
     {
         $cache = [];
-        return function ($argument, int $i) use ($code_base, $context, &$cache) : UnionType {
+        /**
+         * @param Node|int|string|float|null $argument
+         */
+        return static function ($argument, int $i) use ($code_base, $context, &$cache) : UnionType {
             $argument_type = $cache[$i] ?? null;
             if (isset($argument_type)) {
                 return $argument_type;

@@ -1,12 +1,15 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Analysis;
 
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
+use Phan\Exception\RecursionDepthException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Element\Clazz;
+use Phan\Language\Element\Comment\Parameter as CommentParameter;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
@@ -15,19 +18,47 @@ use Phan\Language\Type\IterableType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
+use Phan\Language\Type\StaticOrSelfType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
+use function array_merge;
+use function strcasecmp;
 
+/**
+ * Analyzer of the parameters of function/closure/method signatures.
+ *
+ * This will modify union types of parameter declarations based on available information
+ * such as inheritance, parameter defaults, etc.
+ *
+ * This will also warn if inherited parameters are invalid.
+ *
+ * (Depends on configuration settings)
+ */
 class ParameterTypesAnalyzer
 {
 
     /**
-     * Check method parameters to make sure they're valid
+     * Check function, closure, and method parameters to make sure they're valid
+     *
+     * This will also warn if method parameters are incompatible with the parameters of ancestor methods.
      *
      * @return void
      */
     public static function analyzeParameterTypes(
+        CodeBase $code_base,
+        FunctionInterface $method
+    ) {
+        try {
+            self::analyzeParameterTypesInner($code_base, $method);
+        } catch (RecursionDepthException $_) {
+        }
+    }
+
+    /**
+     * @see analyzeParameterTypes
+     */
+    private static function analyzeParameterTypesInner(
         CodeBase $code_base,
         FunctionInterface $method
     ) {
@@ -43,24 +74,38 @@ class ParameterTypesAnalyzer
 
         // Look at each parameter to make sure their types
         // are valid
+        $is_optional_seen = false;
         foreach ($method->getParameterList() as $parameter) {
             $union_type = $parameter->getUnionType();
+
+            if ($parameter->isOptional()) {
+                $is_optional_seen = true;
+            } else {
+                if ($is_optional_seen) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $method->getContext(),
+                        Issue::ParamReqAfterOpt,
+                        $parameter->getFileRef()->getLineNumberStart()
+                    );
+                }
+            }
 
             // Look at each type in the parameter's Union Type
             foreach ($union_type->getReferencedClasses() as $outer_type => $type) {
                 // If it's a reference to self, its OK
-                if ($method instanceof Method && ($type->isSelfType() || $type->isStaticType())) {
+                if ($method instanceof Method && $type instanceof StaticOrSelfType) {
                     continue;
                 }
 
                 if ($type instanceof TemplateType) {
                     if ($method instanceof Method) {
-                        if ($method->isStatic()) {
+                        if ($method->isStatic() && !$method->declaresTemplateTypeInComment($type)) {
                             Issue::maybeEmit(
                                 $code_base,
                                 $method->getContext(),
                                 Issue::TemplateTypeStaticMethod,
-                                $method->getFileRef()->getLineNumberStart(),
+                                $parameter->getFileRef()->getLineNumberStart(),
                                 (string)$method->getFQSEN()
                             );
                         }
@@ -73,8 +118,8 @@ class ParameterTypesAnalyzer
                             $code_base,
                             $method->getContext(),
                             Issue::UndeclaredTypeParameter,
-                            $method->getFileRef()->getLineNumberStart(),
-                            [(string)$outer_type],
+                            $parameter->getFileRef()->getLineNumberStart(),
+                            [$parameter->getName(), (string)$outer_type],
                             IssueFixSuggester::suggestSimilarClass(
                                 $code_base,
                                 $method->getContext(),
@@ -88,13 +133,39 @@ class ParameterTypesAnalyzer
                 }
             }
         }
+        foreach ($method->getRealParameterList() as $parameter) {
+            $union_type = $parameter->getUnionType();
+            foreach ($union_type->getTypeSet() as $type) {
+                if (!$type->isObjectWithKnownFQSEN()) {
+                    continue;
+                }
+                $type_fqsen = FullyQualifiedClassName::fromType($type);
+                if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
+                    // We should have already warned
+                    continue;
+                }
+                $class = $code_base->getClassByFQSEN($type_fqsen);
+                if ($class->isTrait()) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $method->getContext(),
+                        Issue::TypeInvalidTraitParam,
+                        $parameter->getFileRef()->getLineNumberStart(),
+                        $method->getNameForIssue(),
+                        $parameter->getName(),
+                        $type_fqsen->__toString()
+                    );
+                }
+            }
+        }
 
         if ($method instanceof Method) {
             if ($method->getName() === '__construct') {
                 $class = $method->getClass($code_base);
                 if ($class->isGeneric()) {
                     $class->hydrate($code_base);
-                    self::analyzeGenericClassConstructor($code_base, $class, $method);
+                    // Call this to emit any warnings about missing template params
+                    $class->getGenericConstructorBuilder($code_base);
                 }
             }
             self::analyzeOverrideSignature($code_base, $method);
@@ -203,7 +274,8 @@ class ParameterTypesAnalyzer
         }
         $prev_index = -1;
         $prev_name = -1;
-        $expected_parameter_order = \array_flip(\array_keys($comment->getParameterMap()));
+        $comment_parameter_map = $comment->getParameterMap();
+        $expected_parameter_order = \array_flip(\array_keys($comment_parameter_map));
         foreach ($method->getParameterList() as $parameter) {
             $parameter_name = $parameter->getName();
             $parameter_index_in_comment = $expected_parameter_order[$parameter_name] ?? null;
@@ -211,18 +283,19 @@ class ParameterTypesAnalyzer
                 continue;
             }
             if ($parameter_index_in_comment < $prev_index) {
+                $comment_param = $comment_parameter_map[$parameter_name] ?? null;
+                $line = $comment_param ? $comment_param->getLineno() : $method->getFileRef()->getLineNumberStart();
                 Issue::maybeEmit(
                     $code_base,
                     $method->getContext(),
                     Issue::CommentParamOutOfOrder,
-                    $method->getFileRef()->getLineNumberStart(),
+                    $line,
                     $prev_name,
                     $parameter_name
                 );
                 return;
             }
             $prev_name = $parameter_name;
-            // @phan-suppress-next-line PhanPluginUnusedVariable
             $prev_index = $parameter_index_in_comment;
         }
     }
@@ -267,6 +340,10 @@ class ParameterTypesAnalyzer
         try {
             $o_method_list = $method->getOverriddenMethods($code_base);
         } catch (CodeBaseException $_) {
+            if (strcasecmp($method->getDefiningFQSEN()->getName(), $method->getFQSEN()->getName()) !== 0) {
+                // Give up, this is probably a renamed trait method that overrides another trait method.
+                return;
+            }
             // TODO: Remove if no edge cases are seen.
             Issue::maybeEmit(
                 $code_base,
@@ -294,9 +371,6 @@ class ParameterTypesAnalyzer
         if ($method->getDefiningFQSEN() !== $method->getFQSEN()) {
             return;
         }
-        if ($method->checkHasSuppressIssueAndIncrementCount(Issue::CommentOverrideOnNonOverrideMethod)) {
-            return;
-        }
         Issue::maybeEmit(
             $code_base,
             $method->getContext(),
@@ -306,52 +380,15 @@ class ParameterTypesAnalyzer
         );
     }
 
-    private static function analyzeGenericClassConstructor(CodeBase $code_base, Clazz $class, Method $method)
-    {
-        // Get the set of template type identifiers defined on
-        // the class
-        $template_type_identifiers = \array_keys(
-            $class->getTemplateTypeMap()
-        );
-
-        // Get the set of template type identifiers defined
-        // across all parameter types
-        $parameter_template_type_identifiers = [];
-        foreach ($method->getParameterList() as $parameter) {
-            foreach ($parameter->getUnionType()->getTypeSet() as $type) {
-                if ($type instanceof TemplateType) {
-                    $parameter_template_type_identifiers[] =
-                        $type->getName();
-                }
-            }
-        }
-
-        $missing_template_type_identifiers = \array_diff(
-            $template_type_identifiers,
-            $parameter_template_type_identifiers
-        );
-
-        if ($missing_template_type_identifiers) {
-            Issue::maybeEmit(
-                $code_base,
-                $method->getContext(),
-                Issue::GenericConstructorTypes,
-                $method->getFileRef()->getLineNumberStart(),
-                implode(',', $missing_template_type_identifiers),
-                (string)$class->getFQSEN()
-            );
-        }
-    }
-
     /**
      * Make sure signatures line up between methods and a method it overrides.
      *
      * @see https://en.wikipedia.org/wiki/Liskov_substitution_principle
      *
      * @param CodeBase $code_base
-     * @param Method $method the overriding method
-     * @param Clazz  $class the subclass where the overrides take place
-     * @param Method $o_method the overridden method method
+     * @param Method $method the overriding method.
+     * @param Clazz  $class the subclass where the overrides take place.
+     * @param Method $o_method the overridden method.
      */
     private static function analyzeOverrideSignatureForOverriddenMethod(
         CodeBase $code_base,
@@ -410,9 +447,9 @@ class ParameterTypesAnalyzer
         // template type parameters we may have
         if ($type_option->isDefined()) {
             $o_parameter_list =
-                \array_map(function (Parameter $parameter) use ($type_option, $code_base) : Parameter {
+                \array_map(static function (Parameter $parameter) use ($type_option, $code_base) : Parameter {
 
-                    if (!$parameter->getUnionType()->hasTemplateType()) {
+                    if (!$parameter->getUnionType()->hasTemplateTypeRecursive()) {
                         return $parameter;
                     }
 
@@ -434,7 +471,7 @@ class ParameterTypesAnalyzer
         // type parameters we may have
         $o_return_union_type = $o_method->getUnionType();
         if ($type_option->isDefined()
-            && $o_return_union_type->hasTemplateType()
+            && $o_return_union_type->hasTemplateTypeRecursive()
         ) {
             $o_return_union_type =
                 $o_return_union_type->withTemplateParameterTypeMap(
@@ -563,58 +600,50 @@ class ParameterTypesAnalyzer
 
         if (!$signatures_match) {
             if ($o_method->isPHPInternal()) {
-                if (!$method->checkHasSuppressIssueAndIncrementCount(Issue::ParamSignatureMismatchInternal)) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $method->getContext(),
-                        Issue::ParamSignatureMismatchInternal,
-                        $method->getFileRef()->getLineNumberStart(),
-                        $method,
-                        $o_method
-                    );
-                }
+                Issue::maybeEmit(
+                    $code_base,
+                    $method->getContext(),
+                    Issue::ParamSignatureMismatchInternal,
+                    $method->getFileRef()->getLineNumberStart(),
+                    $method,
+                    $o_method
+                );
             } else {
-                if (!$method->checkHasSuppressIssueAndIncrementCount(Issue::ParamSignatureMismatch)) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $method->getContext(),
-                        Issue::ParamSignatureMismatch,
-                        $method->getFileRef()->getLineNumberStart(),
-                        $method,
-                        $o_method,
-                        $o_method->getFileRef()->getFile(),
-                        $o_method->getFileRef()->getLineNumberStart()
-                    );
-                }
+                Issue::maybeEmit(
+                    $code_base,
+                    $method->getContext(),
+                    Issue::ParamSignatureMismatch,
+                    $method->getFileRef()->getLineNumberStart(),
+                    $method,
+                    $o_method,
+                    $o_method->getFileRef()->getFile(),
+                    $o_method->getFileRef()->getLineNumberStart()
+                );
             }
         }
 
         // Access must be compatible
         if ($o_method->isStrictlyMoreVisibileThan($method)) {
             if ($o_method->isPHPInternal()) {
-                if (!$method->checkHasSuppressIssueAndIncrementCount(Issue::AccessSignatureMismatchInternal)) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $method->getContext(),
-                        Issue::AccessSignatureMismatchInternal,
-                        $method->getFileRef()->getLineNumberStart(),
-                        $method,
-                        $o_method
-                    );
-                }
+                Issue::maybeEmit(
+                    $code_base,
+                    $method->getContext(),
+                    Issue::AccessSignatureMismatchInternal,
+                    $method->getFileRef()->getLineNumberStart(),
+                    $method,
+                    $o_method
+                );
             } else {
-                if (!$method->checkHasSuppressIssueAndIncrementCount(Issue::AccessSignatureMismatch)) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $method->getContext(),
-                        Issue::AccessSignatureMismatch,
-                        $method->getFileRef()->getLineNumberStart(),
-                        $method,
-                        $o_method,
-                        $o_method->getFileRef()->getFile(),
-                        $o_method->getFileRef()->getLineNumberStart()
-                    );
-                }
+                Issue::maybeEmit(
+                    $code_base,
+                    $method->getContext(),
+                    Issue::AccessSignatureMismatch,
+                    $method->getFileRef()->getLineNumberStart(),
+                    $method,
+                    $o_method,
+                    $o_method->getFileRef()->getFile(),
+                    $o_method->getFileRef()->getLineNumberStart()
+                );
             }
         }
     }
@@ -646,10 +675,6 @@ class ParameterTypesAnalyzer
         // Get the parameters for that method
         $o_parameter_list = $o_method->getRealParameterList();
 
-        // Map overridden method return type through any template
-        // type parameters we may have
-        $o_return_union_type = $o_method->getRealReturnType();
-
         // Make sure the count of parameters matches
         if ($method->getNumberOfRequiredRealParameters()
             > $o_method->getNumberOfRequiredRealParameters()
@@ -661,6 +686,7 @@ class ParameterTypesAnalyzer
                 Issue::ParamSignatureRealMismatchTooManyRequiredParameters,
                 Issue::ParamSignatureRealMismatchTooManyRequiredParametersInternal,
                 Issue::ParamSignaturePHPDocMismatchTooManyRequiredParameters,
+                null,
                 $method->getNumberOfRequiredRealParameters(),
                 $o_method->getNumberOfRequiredRealParameters()
             );
@@ -675,6 +701,7 @@ class ParameterTypesAnalyzer
                 Issue::ParamSignatureRealMismatchTooFewParameters,
                 Issue::ParamSignatureRealMismatchTooFewParametersInternal,
                 Issue::ParamSignaturePHPDocMismatchTooFewParameters,
+                null,
                 $method->getNumberOfRealParameters(),
                 $o_method->getNumberOfRealParameters()
             );
@@ -683,6 +710,8 @@ class ParameterTypesAnalyzer
         }
         $is_possibly_compatible = true;
 
+        // TODO: Stricter checks for parameter types when this is a magic method?
+        // - If the overriding method is magic, then compare the magic method phpdoc types against the phpdoc+real types  of the parent
         foreach ($method->getRealParameterList() as $i => $parameter) {
             $offset = $i + 1;
             // TODO: check if variadic
@@ -704,6 +733,7 @@ class ParameterTypesAnalyzer
                     ($is_reference ? Issue::ParamSignatureRealMismatchParamIsReference         : Issue::ParamSignatureRealMismatchParamIsNotReference),
                     ($is_reference ? Issue::ParamSignatureRealMismatchParamIsReferenceInternal : Issue::ParamSignatureRealMismatchParamIsNotReferenceInternal),
                     ($is_reference ? Issue::ParamSignaturePHPDocMismatchParamIsReference       : Issue::ParamSignaturePHPDocMismatchParamIsNotReference),
+                    self::guessCommentParamLineNumber($method, $parameter),
                     $offset
                 );
                 return;
@@ -720,6 +750,7 @@ class ParameterTypesAnalyzer
                     ($is_variadic ? Issue::ParamSignatureRealMismatchParamVariadic         : Issue::ParamSignatureRealMismatchParamNotVariadic),
                     ($is_variadic ? Issue::ParamSignatureRealMismatchParamVariadicInternal : Issue::ParamSignatureRealMismatchParamNotVariadicInternal),
                     ($is_variadic ? Issue::ParamSignaturePHPDocMismatchParamVariadic       : Issue::ParamSignaturePHPDocMismatchParamNotVariadic),
+                    self::guessCommentParamLineNumber($method, $parameter),
                     $offset
                 );
                 return;
@@ -739,6 +770,7 @@ class ParameterTypesAnalyzer
                             Issue::ParamSignatureRealMismatchHasNoParamType,
                             Issue::ParamSignatureRealMismatchHasNoParamTypeInternal,
                             Issue::ParamSignaturePHPDocMismatchHasNoParamType,
+                            self::guessCommentParamLineNumber($method, $parameter),
                             $offset,
                             (string)$o_parameter_union_type
                         );
@@ -753,6 +785,7 @@ class ParameterTypesAnalyzer
                         Issue::ParamSignatureRealMismatchHasParamType,
                         Issue::ParamSignatureRealMismatchHasParamTypeInternal,
                         Issue::ParamSignaturePHPDocMismatchHasParamType,
+                        self::guessCommentParamLineNumber($method, $parameter),
                         $offset,
                         (string)$parameter_union_type
                     );
@@ -783,6 +816,7 @@ class ParameterTypesAnalyzer
                             Issue::ParamSignatureRealMismatchParamType,
                             Issue::ParamSignatureRealMismatchParamTypeInternal,
                             Issue::ParamSignaturePHPDocMismatchParamType,
+                            self::guessCommentParamLineNumber($method, $parameter),
                             $offset,
                             (string)$parameter_union_type,
                             (string)$o_parameter_union_type
@@ -793,68 +827,119 @@ class ParameterTypesAnalyzer
             }
         }
 
-        $return_union_type = $method->getRealReturnType();
+        $o_return_union_type = $o_method->getRealReturnType();
+
+        $return_union_type = $method->isFromPHPDoc() ? $method->getUnionType() : $method->getRealReturnType();
         // If the parent has a return type, then return types should be equal.
         // A non-nullable return type can override a nullable return type of the same type.
         if (!$o_return_union_type->isEmpty()) {
             if (!($o_return_union_type->isEqualTo($return_union_type) || (
-                $o_return_union_type->containsNullable() && !($o_return_union_type->nonNullableClone()->isEqualTo($return_union_type)))
+                $o_return_union_type->containsNullable() && ($o_return_union_type->nonNullableClone()->isEqualTo($return_union_type)))
                 )) {
-                $is_possibly_compatible = false;
+                // There is one exception to this in php 7.1 - the pseudo-type "iterable" can replace ArrayAccess/array in a subclass
+                // TODO: Traversable and array work, but Iterator doesn't. Check for those specific cases?
+                $is_exception_to_rule = $return_union_type->hasIterable() &&
+                    $o_return_union_type->hasIterable() &&
+                    ($o_return_union_type->hasType(IterableType::instance(true)) ||
+                     $o_return_union_type->hasType(IterableType::instance(false)) && !$return_union_type->containsNullable());
+                if (!$is_exception_to_rule) {
+                    $is_possibly_compatible = false;
 
-                self::emitSignatureRealMismatchIssue(
-                    $code_base,
-                    $method,
-                    $o_method,
-                    Issue::ParamSignatureRealMismatchReturnType,
-                    Issue::ParamSignatureRealMismatchReturnTypeInternal,
-                    Issue::ParamSignaturePHPDocMismatchReturnType,
-                    (string)$return_union_type,
-                    (string)$o_return_union_type
-                );
+                    self::emitSignatureRealMismatchIssue(
+                        $code_base,
+                        $method,
+                        $o_method,
+                        Issue::ParamSignatureRealMismatchReturnType,
+                        Issue::ParamSignatureRealMismatchReturnTypeInternal,
+                        Issue::ParamSignaturePHPDocMismatchReturnType,
+                        null,
+                        (string)$return_union_type,
+                        (string)$o_return_union_type
+                    );
+                }
             }
         }
         if ($is_possibly_compatible) {
             if (Config::getValue('inherit_phpdoc_types')) {
-                self::inheritPHPDoc($method, $o_method);
+                self::inheritPHPDoc($code_base, $method, $o_method);
             }
         }
     }
 
     /**
+     * @return array<string,CommentParameter>
+     */
+    private static function extractCommentParameterMap(Method $method) : array
+    {
+        $comment = $method->getComment();
+        return $comment ? $comment->getParameterMap() : [];
+    }
+    /**
      * Inherit any missing phpdoc types for (at)return and (at)param of $method from $o_method.
-     * This is the default behaviour, see https://www.phpdoc.org/docs/latest/guides/inheritance.html
+     * This is the default behavior, see https://www.phpdoc.org/docs/latest/guides/inheritance.html
      *
      * @return void
      */
     private static function inheritPHPDoc(
+        CodeBase $code_base,
         Method $method,
         Method $o_method
     ) {
         // Get the parameters for that method
         $phpdoc_parameter_list = $method->getParameterList();
         $o_phpdoc_parameter_list = $o_method->getParameterList();
+        $comment_parameter_map = null;
         foreach ($phpdoc_parameter_list as $i => $parameter) {
-            $parameter_type = $parameter->getUnionType();
+            $parameter_type = $parameter->getNonVariadicUnionType();
             if (!$parameter_type->isEmpty()) {
-                continue;
+                $comment_parameter_map = $comment_parameter_map ?? self::extractCommentParameterMap($method);
+                $comment_parameter = $comment_parameter_map[$parameter->getName()] ?? null;
+                if ($comment_parameter) {
+                    $comment_parameter_type = $comment_parameter->getUnionType();
+                    if (!$comment_parameter_type->isEmpty()) {
+                        continue;
+                    }
+                }
             }
             $parent_parameter = $o_phpdoc_parameter_list[$i] ?? null;
             if ($parent_parameter) {
-                $parent_parameter_type = $parent_parameter->getUnionType();
+                $parent_parameter_type = $parent_parameter->getNonVariadicUnionType();
                 if ($parent_parameter_type->isEmpty()) {
                     continue;
                 }
-                $parameter->setUnionType($parent_parameter_type);
+                if ($parameter_type->isEmpty() || $parent_parameter_type->isExclusivelyNarrowedFormOf($code_base, $parameter_type)) {
+                    $parameter->setUnionType($parent_parameter_type);
+                }
             }
         }
 
-        $phpdoc_return_type = $method->getUnionType();
-        if ($phpdoc_return_type->isEmpty()) {
-            $parent_phpdoc_return_type = $o_method->getUnionType();
-            if (!$parent_phpdoc_return_type->isEmpty()) {
+        $parent_phpdoc_return_type = $o_method->getUnionType();
+        if (!$parent_phpdoc_return_type->isEmpty()) {
+            $phpdoc_return_type = $method->getUnionType();
+            if ($phpdoc_return_type->isEmpty()) {
                 $method->setUnionType($parent_phpdoc_return_type);
+            } else {
+                self::maybeInheritCommentReturnType($code_base, $method, $parent_phpdoc_return_type);
             }
+        }
+    }
+
+    /**
+     * @param Method $method a method which has a union type, but is permitted to inherit a more specific type.
+     * @param UnionType $inherited_union_type a non-empty union type
+     */
+    private static function maybeInheritCommentReturnType(CodeBase $code_base, Method $method, UnionType $inherited_union_type)
+    {
+        $comment = $method->getComment();
+        if ($comment && $comment->hasReturnUnionType()) {
+            if (!$comment->getReturnType()->isEmpty()) {
+                // This comment explicitly specified the desired return type.
+                // Give up on inheriting
+                return;
+            }
+        }
+        if ($inherited_union_type->isExclusivelyNarrowedFormOf($code_base, $method->getUnionType())) {
+            $method->setUnionType($inherited_union_type);
         }
     }
 
@@ -866,20 +951,27 @@ class ParameterTypesAnalyzer
      * @param Method $o_method the overridden method
      * @param string $issue_type the ParamSignatureRealMismatch* (issue type if overriding user-defined method)
      * @param string $internal_issue_type the ParamSignatureRealMismatch* (issue type if overriding internal method)
+     * @param string $phpdoc_issue_type the ParamSignaturePHPDocMismatch* (issue type if overriding internal method)
+     * @param ?int $lineno
      * @param int|string ...$args
      * @return void
      */
-    private static function emitSignatureRealMismatchIssue(CodeBase $code_base, Method $method, Method $o_method, string $issue_type, string $internal_issue_type, string $phpdoc_issue_type, ...$args)
-    {
+    private static function emitSignatureRealMismatchIssue(
+        CodeBase $code_base,
+        Method $method,
+        Method $o_method,
+        string $issue_type,
+        string $internal_issue_type,
+        string $phpdoc_issue_type,
+        $lineno,
+        ...$args
+    ) {
         if ($method->isFromPHPDoc() || $o_method->isFromPHPDoc()) {
-            if ($method->checkHasSuppressIssueAndIncrementCount($phpdoc_issue_type)) {
-                return;
-            }
             Issue::maybeEmit(
                 $code_base,
                 $method->getContext(),
                 $phpdoc_issue_type,
-                $method->getFileRef()->getLineNumberStart(),
+                $lineno ?? $method->getFileRef()->getLineNumberStart(),
                 $method->toRealSignatureString(),
                 $o_method->toRealSignatureString(),
                 ...array_merge($args, [
@@ -888,27 +980,21 @@ class ParameterTypesAnalyzer
                 ])
             );
         } elseif ($o_method->isPHPInternal()) {
-            if ($method->checkHasSuppressIssueAndIncrementCount($internal_issue_type)) {
-                return;
-            }
             Issue::maybeEmit(
                 $code_base,
                 $method->getContext(),
                 $internal_issue_type,
-                $method->getFileRef()->getLineNumberStart(),
+                $lineno ?? $method->getFileRef()->getLineNumberStart(),
                 $method->toRealSignatureString(),
                 $o_method->toRealSignatureString(),
                 ...$args
             );
         } else {
-            if ($method->checkHasSuppressIssueAndIncrementCount($issue_type)) {
-                return;
-            }
             Issue::maybeEmit(
                 $code_base,
                 $method->getContext(),
                 $issue_type,
-                $method->getFileRef()->getLineNumberStart(),
+                $lineno ?? $method->getFileRef()->getLineNumberStart(),
                 $method->toRealSignatureString(),
                 $o_method->toRealSignatureString(),
                 ...array_merge($args, [
@@ -927,7 +1013,7 @@ class ParameterTypesAnalyzer
         FunctionInterface $method
     ) {
         $phpdoc_parameter_map = $method->getPHPDocParameterTypeMap();
-        if (count($phpdoc_parameter_map) === 0) {
+        if (\count($phpdoc_parameter_map) === 0) {
             // nothing to check.
             return;
         }
@@ -970,18 +1056,16 @@ class ParameterTypesAnalyzer
             )
             ) {
                 $is_exclusively_narrowed = false;
-                if (!$method->checkHasSuppressIssueAndIncrementCount(Issue::TypeMismatchDeclaredParam)) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $context,
-                        Issue::TypeMismatchDeclaredParam,
-                        $context->getLineNumberStart(),
-                        $parameter->getName(),
-                        $method->getName(),
-                        $phpdoc_type->__toString(),
-                        $real_param_type->__toString()
-                    );
-                }
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::TypeMismatchDeclaredParam,
+                    self::guessCommentParamLineNumber($method, $parameter) ?: $context->getLineNumberStart(),
+                    $parameter->getName(),
+                    $method->getName(),
+                    $phpdoc_type->__toString(),
+                    $real_param_type->__toString()
+                );
             }
         }
         // TODO: test edge cases of variadic signatures
@@ -994,22 +1078,61 @@ class ParameterTypesAnalyzer
                     $param_to_modify->setUnionType($normalized_phpdoc_param_union_type);
                 }
             } else {
+                $comment = $method->getComment();
+                if ($comment === null) {
+                    return;
+                }
                 // This check isn't urgent to fix, and is specific to nullable casting rules,
                 // so use a different issue type.
-                if (!$method->checkHasSuppressIssueAndIncrementCount(Issue::TypeMismatchDeclaredParamNullable)) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $context,
-                        Issue::TypeMismatchDeclaredParamNullable,
-                        $context->getLineNumberStart(),
-                        $parameter->getName(),
-                        $method->getName(),
-                        $phpdoc_param_union_type->__toString(),
-                        $real_param_type->__toString()
-                    );
-                }
+                $param_name = $parameter->getName();
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::TypeMismatchDeclaredParamNullable,
+                    self::guessCommentParamLineNumber($method, $parameter) ?: $context->getLineNumberStart(),
+                    $param_name,
+                    $method->getName(),
+                    $phpdoc_param_union_type->__toString(),
+                    $real_param_type->__toString()
+                );
             }
         }
+    }
+
+    /**
+     * @return ?int
+     */
+    private static function guessCommentParamLineNumber(FunctionInterface $method, Parameter $param)
+    {
+        $comment = $method->getComment();
+        if ($comment === null) {
+            return null;
+        }
+        $parameter_map = $comment->getParameterMap();
+        $comment_param = $parameter_map[$param->getName()] ?? null;
+        if (!$comment_param) {
+            return null;
+        }
+        return $comment_param->getLineno();
+    }
+
+    /**
+     * Guesses the return number of a method's PHPDoc's (at)return statement.
+     * Returns null if that could not be found.
+     *
+     * @return ?int
+     * @internal
+     */
+    public static function guessCommentReturnLineNumber(FunctionInterface $method)
+    {
+        $comment = $method->getComment();
+        if ($comment === null) {
+            return null;
+        }
+        if (!$comment->hasReturnUnionType()) {
+            return null;
+        }
+        return $comment->getReturnLineno();
     }
 
     /**
@@ -1070,8 +1193,7 @@ class ParameterTypesAnalyzer
     {
         if ($method->isFromPHPDoc()) {
             // TODO: Track phpdoc methods separately from real methods
-            if ($method->checkHasSuppressIssueAndIncrementCount(Issue::AccessOverridesFinalMethodPHPDoc) ||
-                $class->checkHasSuppressIssueAndIncrementCount(Issue::AccessOverridesFinalMethodPHPDoc)) {
+            if ($class->checkHasSuppressIssueAndIncrementCount(Issue::AccessOverridesFinalMethodPHPDoc)) {
                 return;
             }
             Issue::maybeEmit(
@@ -1085,9 +1207,6 @@ class ParameterTypesAnalyzer
                 $o_method->getFileRef()->getLineNumberStart()
             );
         } elseif ($o_method->isPHPInternal()) {
-            if ($method->hasSuppressIssue(Issue::AccessOverridesFinalMethodInternal)) {
-                return;
-            }
             Issue::maybeEmit(
                 $code_base,
                 $method->getContext(),
@@ -1097,9 +1216,6 @@ class ParameterTypesAnalyzer
                 $o_method->getFQSEN()
             );
         } else {
-            if ($method->hasSuppressIssue(Issue::AccessOverridesFinalMethod)) {
-                return;
-            }
             Issue::maybeEmit(
                 $code_base,
                 $method->getContext(),

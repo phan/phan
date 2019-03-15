@@ -1,5 +1,8 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Daemon\Transport;
+
+use Phan\Library\StringUtil;
 
 /**
  * Instead of sending the data over a stream,
@@ -10,7 +13,7 @@ class CapturerResponder implements Responder
     /** @var array<string,mixed> the data for getRequestData() */
     private $request_data;
 
-    /** @var ?array the data sent via sendAndClose */
+    /** @var ?array<string,mixed> the data sent via sendAndClose */
     private $response_data;
 
     /** @param array<string,mixed> $data the data for getRequestData() */
@@ -34,14 +37,14 @@ class CapturerResponder implements Responder
      */
     public function sendResponseAndClose(array $data)
     {
-        if (is_array($this->response_data)) {
-            throw new \RuntimeException("Called sendResponseAndClose twice: data = " . json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+        if (\is_array($this->response_data)) {
+            throw new \RuntimeException("Called sendResponseAndClose twice: data = " . StringUtil::jsonEncode($data));
         }
         $this->response_data = $data;
     }
 
     /**
-     * @return ?array
+     * @return ?array<string,mixed> the raw response data that the analysis would have sent back serialized if this was actually a fork.
      */
     public function getResponseData()
     {

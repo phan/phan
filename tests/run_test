@@ -33,6 +33,7 @@ case "$TEST_SUITE" in
 			--dead-code-detection \
 			--polyfill-parse-all-element-doc-comments \
 			--force-polyfill-parser \
+			--disable-cache \
 			--memory-limit 1G
 		exit $?
 		;;
@@ -57,11 +58,21 @@ case "$TEST_SUITE" in
 		exit $?
 		;;
 	__FakeAllPHPUnitTests)
-		vendor/bin/phpunit
+		PROCESSORS=$(nproc || echo 2)
+		if [[ "$PROCESSORS" > 1 ]]; then
+			vendor/bin/paratest --processes "$PROCESSORS"
+		else
+			vendor/bin/phpunit
+		fi
 		exit $?
 		;;
 	__FakeConfigOverrideTest)
 		cd tests/misc/config_override_test
+		./test.sh
+		exit $?
+		;;
+	__FakeFixerTest)
+		cd tests/fixer_test
 		./test.sh
 		exit $?
 		;;

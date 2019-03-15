@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Plugin\Internal\VariableTracker;
 
 use ast\Node;
@@ -6,6 +7,7 @@ use function spl_object_id;
 
 /**
  * This represents a summary of all of the definitions and uses of all variable within a scope.
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 final class VariableGraph
 {
@@ -55,6 +57,7 @@ final class VariableGraph
     }
 
     /**
+     * Record the fact that $node is a definition of the variable with name $name in the scope $scope
      * @return void
      */
     public function recordVariableDefinition(string $name, Node $node, VariableTrackingScope $scope)
@@ -73,6 +76,11 @@ final class VariableGraph
      */
     public function recordVariableUsage(string $name, Node $node, VariableTrackingScope $scope)
     {
+        if (!\array_key_exists($name, $this->variable_types)) {
+            // Set this to 0 to record that the variable was used somewhere
+            // (it will be overridden later if there are flags to set)
+            $this->variable_types[$name] = 0;
+        }
         $defs_for_variable = $scope->getDefinition($name);
         if (!$defs_for_variable) {
             return;
@@ -87,6 +95,7 @@ final class VariableGraph
     }
 
     /**
+     * @param array<int,mixed> $loop_uses_of_own_variable any array that has node ids for uses of $def_id as keys
      * @return void
      */
     public function recordLoopSelfUsage(string $name, int $def_id, array $loop_uses_of_own_variable)
@@ -124,6 +133,7 @@ final class VariableGraph
      * Marks something as being a loop variable `$v` in `foreach ($arr as $k => $v)`
      * (Common false positive, since there's no way to avoid setting the value)
      *
+     * @param Node|string|int|float|null $node
      * @return void
      */
     public function markAsLoopValueNode($node)
@@ -145,6 +155,7 @@ final class VariableGraph
      * Marks something as being a loop variable `$v` in `foreach ($arr as $k => $v)`
      * (Common false positive, since there's no way to avoid setting the value)
      *
+     * @param Node|int|string|float|null $node
      * @return void
      */
     public function markAsCaughtException($node)

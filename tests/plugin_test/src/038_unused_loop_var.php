@@ -7,7 +7,7 @@ class ExampleLoopUnused {
         $prev_was_element = false;
         foreach ([2,3] as $item) {
             if ($item > 2) {
-                // @phan-suppress-next-line PhanPluginNonBoolBranch TODO: Investigate why
+                // should not warn
                 if (!$prev_was_element) {
                     $ast_items[] = null;
                     continue;

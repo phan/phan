@@ -1,0 +1,8 @@
+%s:64 PhanTypeExpectedObjectPropAccess Expected an object instance when accessing an instance property, but saw an expression with type string
+%s:65 PhanTypeSuspiciousEcho Suspicious argument \stdClass for an echo/print statement
+%s:66 PhanTypeSuspiciousEcho Suspicious argument \ArrayObject for an echo/print statement
+%s:69 PhanTypeMismatchArgument Argument 1 (v) is \ArrayAccess|\ArrayObject|\Countable|\IteratorAggregate|\Serializable|\Traversable|iterable but \SingletonList::hasValue() takes \stdClass defined at %s:37
+%s:71 PhanTypeMismatchArgument Argument 1 (p1) is \ArrayAccess|\ArrayObject|\Countable|\IteratorAggregate|\Serializable|\Traversable|iterable but \SingletonList::hasValueMagic() takes \stdClass defined at %s:7
+%s:73 PhanTypeMismatchArgumentInternal Argument 1 (string) is array<int,\stdClass> but \strlen() takes string
+%s:74 PhanTypeMismatchArgumentInternal Argument 1 (string) is array<int,\ArrayAccess>|array<int,\ArrayObject>|array<int,\Countable>|array<int,\IteratorAggregate>|array<int,\Serializable>|array<int,\Traversable>|array<int,iterable> but \strlen() takes string
+%s:77 PhanTypeMismatchArgument Argument 1 (v) is \stdClass but \NodeSingletonList::hasValue() takes \ast\Node defined at %s:37

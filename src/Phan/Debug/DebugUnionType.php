@@ -5,6 +5,8 @@ namespace Phan\Debug;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 
+use const DEBUG_BACKTRACE_IGNORE_ARGS;
+
 /**
  * Utility for debugging assignments to a given union type.
  * This can be used when creating a union type to figure out the causes of unexpected error messages.

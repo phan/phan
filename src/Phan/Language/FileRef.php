@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language;
 
 use Phan\Config;
@@ -78,7 +79,7 @@ class FileRef implements \Serializable
         );
 
         // Strip any beginning directory separators
-        if (0 === ($pos = \strpos($path, DIRECTORY_SEPARATOR))) {
+        if (0 === ($pos = \strpos($path, \DIRECTORY_SEPARATOR))) {
             // Work around substr being pedantic
             $path = (string)\substr($path, $pos + 1);
         }
@@ -96,11 +97,20 @@ class FileRef implements \Serializable
     }
 
     /**
+     * @return bool
+     * True if this object refers to the same file and line number.
+     */
+    public function equals(FileRef $other) : bool
+    {
+        return $this->getLineNumberStart() === $other->getLineNumberStart() && $this->getFile() === $other->getFile();
+    }
+
+    /**
      * @var int $line_number
      * The starting line number of the element within the file
      *
      * @return static
-     * This context with the given value is returned
+     * This context with the given line number is returned
      */
     public function withLineNumberStart(int $line_number)
     {
@@ -108,7 +118,19 @@ class FileRef implements \Serializable
         return $this;
     }
 
-    /*
+    /**
+     * @var int $line_number
+     * The starting line number of the element within the file
+     *
+     * @return void
+     * Both this and withLineNumberStart modify the original context.
+     */
+    public function setLineNumberStart(int $line_number)
+    {
+        $this->line_number_start = $line_number;
+    }
+
+    /**
      * @return int
      * The starting line number of the element within the file
      */
@@ -142,12 +164,15 @@ class FileRef implements \Serializable
 
     public function serialize()
     {
-        return (string)$this;
+        return $this->__toString();
     }
 
+    /**
+     * @param string $serialized
+     */
     public function unserialize($serialized)
     {
-        $map = explode(':', $serialized);
+        $map = \explode(':', $serialized);
         $this->file = $map[0];
         $this->line_number_start = (int)$map[1];
         $this->line_number_end = (int)($map[2] ?? 0);

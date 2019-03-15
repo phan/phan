@@ -1,13 +1,22 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Output\Filter;
 
 use Phan\IssueInstance;
 use Phan\Output\IssueFilterInterface;
 
+/**
+ * ChainedIssueFilter is a combination of 0 or more filters.
+ * It will reject an IssueInstance if any of the filters in the list reject that IssueInstance
+ */
 final class ChainedIssueFilter implements IssueFilterInterface
 {
 
-    /** @var IssueFilterInterface[] */
+    /**
+     * 0 or more filters. If any of these reject an IssueInstance,
+     * then this ChainedIssueFilter will reject the instance.
+     * @var IssueFilterInterface[]
+     */
     private $filters = [];
 
     /**

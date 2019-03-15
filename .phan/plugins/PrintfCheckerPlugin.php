@@ -2,6 +2,9 @@
 
 namespace Phan\Plugin\PrintfCheckerPlugin;  // Don't pollute the global namespace
 
+use ast;
+use ast\Node;
+use Phan\AST\ASTReverter;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
@@ -11,21 +14,26 @@ use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Type;
+use Phan\Language\Type\FalseType;
+use Phan\Language\Type\LiteralStringType;
+use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
+use Phan\Library\ConversionSpec;
 use Phan\PluginV2;
 use Phan\PluginV2\AnalyzeFunctionCallCapability;
-
-use ast\Node;
-use ast;
-
+use Phan\PluginV2\ReturnTypeOverrideCapability;
+use function count;
 use function implode;
+use function is_object;
+use function is_string;
+use function strcasecmp;
 use function var_export;
 
 /**
  * This plugin checks for invalid format strings and invalid uses of format strings in printf and sprintf, etc.
  * e.g. for printf("literal format %s", $arg)
  *
- * This uses ConversionSpec as a best effort at determining the the positions used by PHP format strings.
+ * This uses ConversionSpec as a heuristic to determine the positions used by PHP format strings.
  * Some edge cases may have been overlooked.
  *
  * This validates strings of the form
@@ -38,7 +46,7 @@ use function var_export;
  * TODO: Add optional verbose warnings about unanalyzable strings
  * TODO: Check if arg can cast to string.
  */
-class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapability
+class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapability, ReturnTypeOverrideCapability
 {
 
     // Pylint error codes for emitted issues.
@@ -51,6 +59,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
     const ERR_UNTRANSLATED_INCOMPATIBLE_ARGUMENT   = 1306;  // E.g. passing a string where an int is expected
     const ERR_UNTRANSLATED_INCOMPATIBLE_ARGUMENT_WEAK = 1307;  // E.g. passing an int where a string is expected
     const ERR_UNTRANSLATED_WIDTH_INSTEAD_OF_POSITION = 1308; // e.g. _('%1s'). Change to _('%1$1s' if you really mean that the width is 1, add positions for others ('%2$s', etc.)
+    const ERR_UNTRANSLATED_UNKNOWN_FORMAT_STRING   = 1310;
     const ERR_TRANSLATED_INCOMPATIBLE              = 1309;
     const ERR_TRANSLATED_HAS_MORE_ARGS             = 1311;
 
@@ -81,32 +90,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
             return new PrimitiveValue($ast_node);
         }
         switch ($ast_node->kind) {
-            case \ast\AST_CONST:
-                $name_node = $ast_node->children['name'];
-                if ($name_node->kind === \ast\AST_NAME) {
-                    $name = $name_node->children['name'];
-                    if (!\is_string($name)) {
-                        return null;
-                    }
-
-                    if (\strcasecmp($name, '__DIR__') === 0) {
-                        // Relative to the directory of that file... Hopefully doesn't contain a format specifier
-                        return new PrimitiveValue('(__DIR__ literal)');
-                    } elseif (\strcasecmp($name, '__FILE__') === 0) {
-                        // Relative to the directory of that file... Hopefully doesn't contain a format specifier
-                        return new PrimitiveValue('(__FILE__ literal)');
-                    } elseif (\defined($name)) {
-                        // TODO: This can be an array, which is almost definitely wrong in printf contexts
-                        // FIXME use GlobalConstant to retrieve the literal's value
-                        $value = \constant($name);
-                        if (!\is_scalar($value)) {
-                            return null;
-                        }
-                        return new PrimitiveValue($value);
-                    }
-                }
-                return null;
-        // TODO: Resolve class constant access when those are format strings. Same for PregRegexCheckerPlugin.
+            // TODO: Resolve class constant access when those are format strings. Same for PregRegexCheckerPlugin.
             case \ast\AST_CALL:
                 $name_node = $ast_node->children['expr'];
                 if ($name_node->kind === \ast\AST_NAME) {
@@ -114,34 +98,42 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                     // TODO: ngettext?
                     $name = $name_node->children['name'];
                     if (!\is_string($name)) {
-                        return null;
+                        break;
                     }
                     if ($name === '_' || strcasecmp($name, 'gettext') === 0) {
                         $child_arg = $ast_node->children['args']->children[0] ?? null;
                         if ($child_arg === null) {
-                            return null;
+                            break;
                         }
                         $prim = self::astNodeToPrimitive($code_base, $context, $child_arg);
                         if ($prim === null) {
-                            return null;
+                            break;
                         }
                         return new PrimitiveValue($prim->value, true);
                     }
                 }
-                return null;
+                break;
             case \ast\AST_BINARY_OP:
                 if ($ast_node->flags !== ast\flags\BINARY_CONCAT) {
-                    return null;
+                    break;
                 }
                 $left = $this->astNodeToPrimitive($code_base, $context, $ast_node->children['left']);
                 if ($left === null) {
-                    return null;
+                    break;
                 }
                 $right = $this->astNodeToPrimitive($code_base, $context, $ast_node->children['right']);
                 if ($right === null) {
-                    return null;
+                    break;
                 }
-                return $this->concatenateToPrimitive($left, $right);
+                $result = $this->concatenateToPrimitive($left, $right);
+                if ($result) {
+                    return $result;
+                }
+                break;
+        }
+        $result = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $ast_node)->asSingleScalarValueOrNullOrSelf();
+        if (!is_object($result)) {
+            return new PrimitiveValue($result);
         }
         // We don't know how to convert this to a primitive, give up.
         // (Subclasses may add their own logic first, then call self::astNodeToPrimitive)
@@ -169,6 +161,67 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
         return new PrimitiveValue($str);
     }
 
+    public function getReturnTypeOverrides(CodeBase $unused_code_base) : array
+    {
+        $string_union_type = StringType::instance(false)->asUnionType();
+        /**
+         * @param array<int,Node|string|int|float> $args the nodes for the arguments to the invocation
+         */
+        $sprintf_handler = static function (
+            CodeBase $code_base,
+            Context $context,
+            Func $unused_function,
+            array $args
+        ) use ($string_union_type) : UnionType {
+            if (count($args) < 1) {
+                return FalseType::instance(false)->asUnionType();
+            }
+            $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
+            $format_strings = [];
+            foreach ($union_type->getTypeSet() as $type) {
+                if (!$type instanceof LiteralStringType) {
+                    return $string_union_type;
+                }
+                $format_strings[] = $type->getValue();
+            }
+            if (count($format_strings) === 0) {
+                return $string_union_type;
+            }
+            $result_union_type = UnionType::empty();
+            foreach ($format_strings as $format_string) {
+                $min_width = 0;
+                foreach (ConversionSpec::extractAll($format_string) as $spec_group) {
+                    foreach ($spec_group as $spec) {
+                        $min_width += ($spec->width ?: 0);
+                    }
+                }
+                if (!LiteralStringType::canRepresentStringOfLength($min_width)) {
+                    return $string_union_type;
+                }
+                $sprintf_args = [];
+                for ($i = 1; $i < count($args); $i++) {
+                    $arg = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[$i])->asSingleScalarValueOrNullOrSelf();
+                    if (is_object($arg)) {
+                        return $string_union_type;
+                    }
+                    $sprintf_args[] = $arg;
+                }
+                $result = \with_disabled_phan_error_handler(
+                    /** @return string */
+                    static function () use ($format_string, $sprintf_args) {
+                        // @phan-suppress-next-line PhanPluginPrintfVariableFormatString
+                        return @\vsprintf($format_string, $sprintf_args);
+                    }
+                );
+                $result_union_type = $result_union_type->withType(Type::fromObject($result));
+            }
+            return $result_union_type;
+        };
+        return [
+            'sprintf'                     => $sprintf_handler,
+        ];
+    }
+
     /**
      * @param CodeBase $code_base @phan-unused-param
      * @return \Closure[]
@@ -177,6 +230,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
     {
         /**
          * Analyzes a printf-like function with a format directive in the first position.
+         * @param array<int,Node|string|int|float> $args the nodes for the arguments to the invocation
          * @return void
          */
         $printf_callback = function (
@@ -199,6 +253,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
         };
         /**
          * Analyzes a printf-like function with a format directive in the first position.
+         * @param array<int,Node|string|int|float> $args the nodes for the arguments to the invocation
          * @return void
          */
         $fprintf_callback = function (
@@ -221,6 +276,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
         };
         /**
          * Analyzes a printf-like function with a format directive in the first position.
+         * @param array<int,Node|int|string|float> $args
          * @return void
          */
         $vprintf_callback = function (
@@ -244,6 +300,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
         };
         /**
          * Analyzes a printf-like function with a format directive in the first position.
+         * @param array<int,Node|string|int|float> $args the nodes for the arguments to the invocation
          * @return void
          */
         $vfprintf_callback = function (
@@ -276,9 +333,9 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
         ];
     }
 
-    protected function encodeString(string $str) : string
+    protected static function encodeString(string $str) : string
     {
-        $result = \json_encode($str, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $result = \json_encode($str, \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE);
         if ($result !== false) {
             return $result;
         }
@@ -291,7 +348,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
      * @param Context $context
      * @param FunctionInterface $function
      * @param Node|array|string|float|int|bool|null $pattern_node
-     * @param Node[]|string[]|int[]|float[] $arg_nodes arguments following the format string. Null if the arguments could not be determined.
+     * @param ?(Node|string|int|float)[] $arg_nodes arguments following the format string. Null if the arguments could not be determined.
      * @return void
      * @suppress PhanPartialTypeMismatchArgument TODO: refactor into smaller functions
      */
@@ -300,14 +357,21 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
         // Given a node, extract the printf directive and whether or not it could be translated
         $primitive_for_fmtstr = $this->astNodeToPrimitive($code_base, $context, $pattern_node);
         if ($primitive_for_fmtstr === null) {
+            self::emitIssue(
+                $code_base,
+                $context,
+                'PhanPluginPrintfVariableFormatString',
+                'Code {CODE} has a dynamic format string that could not be inferred by Phan',
+                [ASTReverter::toShortString($pattern_node)],
+                Issue::SEVERITY_LOW,
+                Issue::REMEDIATION_B,
+                self::ERR_UNTRANSLATED_UNKNOWN_FORMAT_STRING
+            );
             // TODO: Add a verbose option
             return;
         }
         // Make sure that the untranslated format string is being used correctly.
         // If the format string will be translated, also check the translations.
-        //
-        // Outputs any errors found to log and stdout.
-        // Check that the untranslated format string is being used correctly.
 
         $fmt_str = $primitive_for_fmtstr->value;
         $is_translated = $primitive_for_fmtstr->is_translated;
@@ -334,8 +398,8 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
          *
          * @param int $issue_type_id An issue id for pylint
          */
-        $emit_issue = function (string $issue_type, string $issue_message_format, array $issue_message_args, int $severity, int $issue_type_id) use ($code_base, $context) {
-            $this->emitIssue(
+        $emit_issue = static function (string $issue_type, string $issue_message_format, array $issue_message_args, int $severity, int $issue_type_id) use ($code_base, $context) {
+            self::emitIssue(
                 $code_base,
                 $context,
                 $issue_type,
@@ -353,13 +417,13 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                 $largest_positional = \max(\array_keys($specs));
                 $examples = [];
                 foreach ($specs[$largest_positional] as $example_spec) {
-                    $examples[] = $this->encodeString($example_spec->directive);
+                    $examples[] = self::encodeString($example_spec->directive);
                 }
                 // emit issues with 1-based offsets
                 $emit_issue(
                     'PhanPluginPrintfNonexistentArgument',
                     'Format string {STRING_LITERAL} refers to nonexistent argument #{INDEX} in {STRING_LITERAL}',
-                    [$this->encodeString($fmt_str), $largest_positional, \implode(',', $examples)],
+                    [self::encodeString($fmt_str), $largest_positional, \implode(',', $examples)],
                     Issue::SEVERITY_NORMAL,
                     self::ERR_UNTRANSLATED_NONEXISTENT
                 );
@@ -368,7 +432,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
             $emit_issue(
                 "PhanPluginPrintfNoArguments",
                 "No format string arguments are given for {STRING_LITERAL}, consider using {FUNCTION} instead",
-                [$this->encodeString($fmt_str), $replacement_function_name],
+                [self::encodeString($fmt_str), $replacement_function_name],
                 Issue::SEVERITY_LOW,
                 self::ERR_UNTRANSLATED_USE_ECHO
             );
@@ -378,7 +442,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
             $emit_issue(
                 'PhanPluginPrintfNoSpecifiers',
                 'None of the formatting arguments passed alongside format string {STRING_LITERAL} are used',
-                [$this->encodeString($fmt_str)],
+                [self::encodeString($fmt_str)],
                 Issue::SEVERITY_LOW,
                 self::ERR_UNTRANSLATED_NONE_USED
             );
@@ -390,13 +454,13 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
             if ($largest_positional > \count($arg_nodes)) {
                 $examples = [];
                 foreach ($specs[$largest_positional] as $example_spec) {
-                    $examples[] = $this->encodeString($example_spec->directive);
+                    $examples[] = self::encodeString($example_spec->directive);
                 }
                 // emit issues with 1-based offsets
                 $emit_issue(
                     'PhanPluginPrintfNonexistentArgument',
                     'Format string {STRING_LITERAL} refers to nonexistent argument #{INDEX} in {STRING_LITERAL}',
-                    [$this->encodeString($fmt_str), $largest_positional, \implode(',', $examples)],
+                    [self::encodeString($fmt_str), $largest_positional, \implode(',', $examples)],
                     Issue::SEVERITY_NORMAL,
                     self::ERR_UNTRANSLATED_NONEXISTENT
                 );
@@ -404,7 +468,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                 $emit_issue(
                     'PhanPluginPrintfUnusedArgument',
                     'Format string {STRING_LITERAL} does not use provided argument #{INDEX}',
-                    [$this->encodeString($fmt_str), $largest_positional + 1],
+                    [self::encodeString($fmt_str), $largest_positional + 1],
                     Issue::SEVERITY_NORMAL,
                     self::ERR_UNTRANSLATED_UNUSED
                 );
@@ -421,24 +485,24 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
             foreach ($spec_group as $spec) {
                 $canonical = $spec->toCanonicalString();
                 $types[$canonical] = true;
-                if ($spec->padding_char === ' ' && ($spec->width === '' || empty($spec->position))) {
+                if ($spec->padding_char === ' ' && ($spec->width === '' || !$spec->position)) {
                     // Warn about "100% dollars" but not about "100%1$ 2dollars" (If both position and width were parsed, assume the padding was intentional)
                     $emit_issue(
                         'PhanPluginPrintfNotPercent',
                         // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                         "Format string {STRING_LITERAL} contains something that is not a percent sign, it will be treated as a format string '{STRING_LITERAL}' with padding. Use {DETAILS} for a literal percent sign, or '{STRING_LITERAL}' to be less ambiguous",
-                        [$this->encodeString($fmt_str), $spec->directive, '%%', $canonical],
+                        [self::encodeString($fmt_str), $spec->directive, '%%', $canonical],
                         Issue::SEVERITY_NORMAL,
                         self::ERR_UNTRANSLATED_NOT_PERCENT
                     );
                 }
-                if ($is_translated && !empty($spec->width) &&
+                if ($is_translated && $spec->width &&
                         ($spec->padding_char === '' || $spec->padding_char === ' ')) {
                     $intended_string = $spec->toCanonicalStringWithWidthAsPosition();
                     $emit_issue(
                         'PhanPluginPrintfWidthNotPosition',
                         "Format string {STRING_LITERAL} is specifying a width({STRING_LITERAL}) instead of a position({STRING_LITERAL})",
-                        [$this->encodeString($fmt_str), $this->encodeString($canonical), $this->encodeString($intended_string)],
+                        [self::encodeString($fmt_str), self::encodeString($canonical), self::encodeString($intended_string)],
                         Issue::SEVERITY_NORMAL,
                         self::ERR_UNTRANSLATED_WIDTH_INSTEAD_OF_POSITION
                     );
@@ -451,7 +515,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                 $emit_issue(
                     'PhanPluginPrintfIncompatibleSpecifier',
                     'Format string {STRING_LITERAL} refers to argument #{INDEX} in different ways: {DETAILS}',
-                    [$this->encodeString($fmt_str), $i, implode(',', array_keys($types))],
+                    [self::encodeString($fmt_str), $i, implode(',', \array_keys($types))],
                     Issue::SEVERITY_LOW,
                     self::ERR_UNTRANSLATED_INCOMPATIBLE_SPECIFIER
                 );
@@ -478,6 +542,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                 }
                 $expected_union_type = new UnionType();
                 foreach ($expected_set as $type_name => $_) {
+                    // @phan-suppress-next-line PhanThrowTypeAbsentForCall getExpectedUnionTypeName should only return valid union types
                     $expected_union_type = $expected_union_type->withType(Type::fromFullyQualifiedString($type_name));
                 }
                 if ($actual_union_type->canCastToUnionType($expected_union_type)) {
@@ -507,9 +572,10 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                     // This can be resolved by casting the arg to (string) manually in printf.
                     $emit_issue(
                         'PhanPluginPrintfIncompatibleArgumentTypeWeak',
+                        // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                         'Format string {STRING_LITERAL} refers to argument #{INDEX} as {DETAILS}, so type {TYPE} is expected. However, {FUNCTION} was passed the type {TYPE} (which is weaker than {TYPE})',
                         [
-                            $this->encodeString($fmt_str),
+                            self::encodeString($fmt_str),
                             $i,
                             $this->getSpecStringsRepresentation($spec_group),
                             $expected_union_type_string,
@@ -526,7 +592,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                         'PhanPluginPrintfIncompatibleArgumentType',
                         'Format string {STRING_LITERAL} refers to argument #{INDEX} as {DETAILS}, so type {TYPE} is expected, but {FUNCTION} was passed incompatible type {TYPE}',
                         [
-                            $this->encodeString($fmt_str),
+                            self::encodeString($fmt_str),
                             $i,
                             $this->getSpecStringsRepresentation($spec_group),
                             $expected_union_type_string,
@@ -552,11 +618,14 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
      */
     private function getSpecStringsRepresentation(array $specs) : string
     {
-        return \implode(',', \array_unique(\array_map(function (ConversionSpec $spec) : string {
+        return \implode(',', \array_unique(\array_map(static function (ConversionSpec $spec) : string {
             return $spec->directive;
         }, $specs)));
     }
 
+    /**
+     * @param array<string,true> $expected_set the types being checked for the ability to weakly cast to
+     */
     private function canWeakCast(UnionType $actual_union_type, array $expected_set) : bool
     {
         if (isset($expected_set['string'])) {
@@ -591,7 +660,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
      *                                         each position in the untranslated format string.
      * @return void
      */
-    protected function validateTranslations(CodeBase $code_base, Context $context, string $fmt_str, array $types_of_arg)
+    protected static function validateTranslations(CodeBase $code_base, Context $context, string $fmt_str, array $types_of_arg)
     {
         $translations = static::gettextForAllLocales($fmt_str);
         foreach ($translations as $locale => $translated_fmt_str) {
@@ -606,8 +675,8 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                 foreach ($spec_group as $spec) {
                     $canonical = $spec->toCanonicalString();
                     if (!isset($expected[$canonical])) {
-                        $expected_types = empty($expected) ? 'unused'
-                                                           : implode(',', array_keys($expected));
+                        $expected_types = $expected ? implode(',', \array_keys($expected))
+                                                    : 'unused';
 
                         if ($expected_types !== 'unused') {
                             $severity = Issue::SEVERITY_NORMAL;
@@ -618,19 +687,20 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                             $issue_type_id = self::ERR_TRANSLATED_HAS_MORE_ARGS;
                             $issue_type = 'PhanPluginPrintfTranslatedHasMoreArgs';
                         }
-                        $this->emitIssue(
+                        self::emitIssue(
                             $code_base,
                             $context,
                             $issue_type,
+                            // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                             'Translated string {STRING_LITERAL} has local {DETAILS} which refers to argument #{INDEX} as {STRING_LITERAL}, but the original format string treats it as {DETAILS} (ORIGINAL: {STRING_LITERAL}, TRANSLATION: {STRING_LITERAL})',
                             [
-                                $this->encodeString($fmt_str),
+                                self::encodeString($fmt_str),
                                 $locale,
                                 $i,
                                 $canonical,
                                 $expected_types,
-                                $this->encodeString($fmt_str),
-                                $this->encodeString($translated_fmt_str),
+                                self::encodeString($fmt_str),
+                                self::encodeString($translated_fmt_str),
                             ],
                             $severity,
                             Issue::REMEDIATION_B,
@@ -640,121 +710,6 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                 }
             }
         }
-    }
-}
-
-/**
- * An object representing a conversion specifier of a format string, such as "%1$d".
- */
-class ConversionSpec
-{
-    /** @var string Original text of the directive */
-    public $directive;
-    /** @var ?int Which argument this refers to, starting from 1 */
-    public $position;
-    /** @var string Character used for padding (commonly confused with $position) */
-    public $padding_char;
-    /** @var string indicates which side is used for alignment */
-    public $alignment;
-    /** @var string minimum width of output */
-    public $width;         // Minimum width of output.
-    /** @var string Type to print (s,d,f,etc.) */
-    public $arg_type;
-
-    /**
-     * Create a conversion specifier from a match.
-     * @param array $match groups in a match.
-     */
-    protected function __construct(array $match)
-    {
-        list($this->directive, $position_str, $this->padding_char, $this->alignment, $this->width, $unused_precision, $this->arg_type) = $match;
-        if ($position_str !== "") {
-            $this->position = \intval(\substr($position_str, 0, -1));
-        }
-    }
-
-    // A padding string regex may be a space or 0.
-    // Alternate padding specifiers may be specified by prefixing it with a single quote.
-    const PADDING_STRING_REGEX_PART = '[0 ]?|\'.';
-
-    /**
-     * Based on https://secure.php.net/manual/en/function.sprintf.php
-     */
-    const FORMAT_STRING_INNER_REGEX_PART =
-        '%'  // Every format string begins with a percent
-        . '(\d+\$)?'  // Optional n$ position specifier must go immediately after percent
-        . '(' . self::PADDING_STRING_REGEX_PART . ')'  // optional padding specifier
-        . '([+-]?)' // optional alignment specifier
-        . '(\d*)'  // optional width specifier
-        . '(\.\d*)?'   // Optional precision specifier in the form of a period followed by an optional decimal digit string
-        . '([bcdeEfFgGosuxX])';  // A type specifier
-
-
-    const FORMAT_STRING_REGEX = '/%%|' . self::FORMAT_STRING_INNER_REGEX_PART . '/';
-
-    /**
-     * Extract a list of directives from a format string.
-     * @param string $fmt_str a format string to extract directives from.
-     * @return array<int,array<int,ConversionSpec>> array(int position => array of ConversionSpec referring to arg at that position)
-     */
-    public static function extractAll($fmt_str) : array
-    {
-        // echo "format is $fmt_str\n";
-        $directives = [];
-        \preg_match_all(self::FORMAT_STRING_REGEX, (string) $fmt_str, $matches, PREG_SET_ORDER);
-        $unnamed_count = 0;
-        foreach ($matches as $match) {
-            if ($match[0] === '%%') {
-                continue;
-            }
-            $directive = new self($match);
-            if (!isset($directive->position)) {
-                $directive->position = ++$unnamed_count;
-            }
-            $directives[$directive->position][] = $directive;
-        }
-        \ksort($directives);
-        return $directives;
-    }
-
-    /**
-     * @return string an unambiguous way of referring to this conversion spec.
-     */
-    public function toCanonicalString() : string
-    {
-        return '%' . $this->position . '$' . $this->padding_char . $this->alignment . $this->width . $this->arg_type;
-    }
-
-    /**
-     * @return string the conversion spec if the width was used as a position instead.
-     */
-    public function toCanonicalStringWithWidthAsPosition() : string
-    {
-        return '%' . $this->width . '$' . $this->padding_char . $this->alignment . $this->arg_type;
-    }
-    const ARG_TYPE_LOOKUP = [
-        'b' => 'int',
-        'c' => 'int',
-        'd' => 'int',
-        'e' => 'float',
-        'E' => 'float',
-        'f' => 'float',
-        'F' => 'float',
-        'g' => 'float',
-        'G' => 'float',
-        'o' => 'int',
-        's' => 'string',
-        'u' => 'int',
-        'x' => 'int',
-        'X' => 'int',
-    ];
-
-    /**
-     * @return string the name of the union type expected for the arg for this conversion spec
-     */
-    public function getExpectedUnionTypeName() : string
-    {
-        return self::ARG_TYPE_LOOKUP[$this->arg_type] ?? 'string';
     }
 }
 

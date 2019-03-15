@@ -1,4 +1,4 @@
-src/048_redundant_binary_op.php:5 PhanReadOnlyPublicProperty Possibly zero write references to public property \A48::prop
+src/048_redundant_binary_op.php:5 PhanReadOnlyPublicProperty Possibly zero write references to public property \A48::$prop
 src/048_redundant_binary_op.php:8 PhanPluginDuplicateExpressionBinaryOp Both sides of the binary operator > are the same: (2 + 2)
 src/048_redundant_binary_op.php:9 PhanPluginDuplicateExpressionBinaryOp Both sides of the binary operator == are the same: $x->prop
 src/048_redundant_binary_op.php:10 PhanPluginDuplicateExpressionBinaryOp Both sides of the binary operator != are the same: A48::$prop

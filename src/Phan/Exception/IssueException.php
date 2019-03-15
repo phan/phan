@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Exception;
 
 use Exception;
@@ -20,7 +21,11 @@ use Phan\IssueInstance;
 class IssueException extends Exception
 {
 
-    /** @var IssueInstance */
+    /**
+     * @var IssueInstance
+     * An instance of an issue that was found but can't be
+     * reported on immediately.
+     */
     private $issue_instance;
 
     /**

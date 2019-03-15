@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Library\Hasher;
 
 use Phan\Library\Hasher;
@@ -10,8 +11,10 @@ use Phan\Library\Hasher;
  */
 class Consistent implements Hasher
 {
-    const VIRTUAL_COPY_COUNT = 16;  // Larger number means a more balanced distribution.
-    const MAX = 0x40000000;  // i.e. (1 << 30)
+    /** A larger number means a more balanced distribution. */
+    const VIRTUAL_COPY_COUNT = 16;
+    /** i.e. (1 << 30) */
+    const MAX = 0x40000000;
     /** @var array<int,int> - Sorted list of hash values, for binary search. */
     protected $hash_ring_ids;
     /** @var array<int,int> - Groups corresponding to hash values in hash_ring_ids */
@@ -56,7 +59,7 @@ class Consistent implements Hasher
     {
         $search_hash = self::generateKeyHash($key);
         $begin = 0;
-        $end = count($this->hash_ring_ids) - 1;
+        $end = \count($this->hash_ring_ids) - 1;
         while ($begin <= $end) {
             $pos = $begin + (($end - $begin) >> 1);
             $cur_val = $this->hash_ring_ids[$pos];
@@ -81,7 +84,7 @@ class Consistent implements Hasher
     }
 
     /**
-     * @return array<int,int>
+     * @return array<int,int> A list of VIRTUAL_COPY_COUNT hashes for group $i in the consistent hash ring.
      */
     public static function getHashesForGroup(int $group) : array
     {

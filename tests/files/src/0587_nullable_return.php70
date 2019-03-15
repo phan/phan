@@ -1,0 +1,4 @@
+<?php
+declare(strict_types=1);
+
+// This test is left out for php 7.0

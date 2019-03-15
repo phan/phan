@@ -1,12 +1,15 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
+
 namespace Phan\Tests\AST\TolerantASTConverter;
 
+use Phan\AST\TolerantASTConverter\NodeDumper;
+use Phan\AST\TolerantASTConverter\TolerantASTConverter;
+use Phan\Debug;
 use Phan\Tests\BaseTest;
 
-use Phan\AST\TolerantASTConverter\TolerantASTConverter;
-use Phan\AST\TolerantASTConverter\NodeDumper;
-use Phan\Debug;
-
+/**
+ * Various tests of the error-tolerant conversion mode of TolerantASTConverter
+ */
 final class ErrorTolerantConversionTest extends BaseTest
 {
     public function testIncompleteVar()
@@ -206,6 +209,8 @@ EOT;
 
     public function testMissingMember()
     {
+        // in 0.0.17, this starts trying to parse a typed property declaration
+        // and discards all of it because it's invalid.
         $incomplete_contents = <<<'EOT'
 <?php
 class Test {
@@ -218,8 +223,29 @@ EOT;
         $valid_contents = <<<'EOT'
 <?php
 class Test {
-} notAFunction()[];
+}
 function aFunction() {}
+EOT;
+        $this->runTestFallbackFromParser($incomplete_contents, $valid_contents, false);
+    }
+
+    public function testIncompleteTypedProperty()
+    {
+        $incomplete_contents = <<<'EOT'
+<?php
+class Test {
+    // Starting to input a typed property
+    public int
+    public function aFunction() {}
+}
+EOT;
+        $valid_contents = <<<'EOT'
+<?php
+class Test {
+    // Starting to input a typed property
+
+    public function aFunction() {}
+}
 EOT;
         $this->runTestFallbackFromParser($incomplete_contents, $valid_contents, false);
     }
@@ -254,6 +280,54 @@ function foo() {
 }
 EOT;
         $this->runTestFallbackFromParser($incomplete_contents, $valid_contents);
+    }
+
+    public function testIncompleteMethodCallBeforeIfWithPlaceholders()
+    {
+        $incomplete_contents = <<<'EOT'
+<?php
+$obj->
+if (true) {
+}
+$obj->
+if (true) {
+    echo "example";
+}
+EOT;
+        $valid_contents = <<<'EOT'
+<?php
+$obj->
+if (true)[];
+
+$obj->
+if (true);
+echo "example";
+EOT;
+        $this->runTestFallbackFromParser($incomplete_contents, $valid_contents, true);
+    }
+
+    public function testIncompleteMethodCallBeforeIfWithoutPlaceholders()
+    {
+        $incomplete_contents = <<<'EOT'
+<?php
+$obj->
+if (true) {
+}
+$obj->
+if (true) {
+    echo "example";
+}
+EOT;
+        $valid_contents = <<<'EOT'
+<?php
+$obj->
+if (true)[];
+
+$obj->
+if (true);
+echo "example";
+EOT;
+        $this->runTestFallbackFromParser($incomplete_contents, $valid_contents, false);
     }
 
 // Another test (Won't work with php-parser, might work with tolerant-php-parser
@@ -294,21 +368,22 @@ EOT;
     private function runTestFallbackFromParserForASTVersion(string $incomplete_contents, string $valid_contents, int $ast_version, bool $should_add_placeholders)
     {
         $ast = \ast\parse_code($valid_contents, $ast_version);
-        $this->assertInstanceOf('\ast\Node', $ast, 'Examples(for validContents) must be syntactically valid PHP parseable by php-ast');
+        $this->assertInstanceOf('\ast\Node', $ast, 'Examples(for validContents) must be syntactically valid PHP parsable by php-ast');
         $errors = [];
         $converter = new TolerantASTConverter();
         $converter->setShouldAddPlaceholders($should_add_placeholders);
         $php_parser_node = $converter->phpParserParse($incomplete_contents, $errors);
         $fallback_ast = $converter->phpParserToPhpAst($php_parser_node, $ast_version, $incomplete_contents);
         $this->assertInstanceOf('\ast\Node', $fallback_ast, 'The fallback must also return a tree of php-ast nodes');
-        $fallback_ast_repr = var_export($fallback_ast, true);
-        $original_ast_repr = var_export($ast, true);
+        $fallback_ast_repr = \var_export($fallback_ast, true);
+        $original_ast_repr = \var_export($ast, true);
 
         if ($fallback_ast_repr !== $original_ast_repr) {
             $placeholders_used_str = $should_add_placeholders ? 'Yes' : 'No';
             $dumper = new NodeDumper($incomplete_contents);
             $dumper->setIncludeTokenKind(true);
             $dumper->setIncludeOffset(true);
+            // @phan-suppress-next-line PhanThrowTypeAbsentForCall should not happen and unit test would fail
             $dump = $dumper->dumpTreeAsString($php_parser_node);
             $original_ast_dump = Debug::nodeToString($ast);
             $modified_ast_dump = Debug::nodeToString($fallback_ast);

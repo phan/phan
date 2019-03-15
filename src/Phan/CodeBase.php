@@ -1,11 +1,17 @@
 <?php declare(strict_types=1);
+
 namespace Phan;
 
+use AssertionError;
+use Closure;
+use Exception;
+use InvalidArgumentException;
 use Phan\ClassResolver\ClassResolverInterface;
 use Phan\ClassResolver\ComposerResolver;
 use Phan\ClassResolver\ReflectionResolver;
 use Phan\CodeBase\ClassMap;
 use Phan\CodeBase\UndoTracker;
+use Phan\Exception\FQSENException;
 use Phan\Exception\FileNotFoundException;
 use Phan\Exception\ClassNotFoundException;
 use Phan\Language\Context;
@@ -30,11 +36,14 @@ use Phan\Language\NamespaceMapEntry;
 use Phan\Language\UnionType;
 use Phan\Library\Map;
 use Phan\Library\Set;
-
+use Phan\Plugin\ConfigPluginSet;
 use ReflectionClass;
 
-use function strtolower;
+use function count;
 use function strlen;
+use function strtolower;
+
+use const STDERR;
 
 /**
  * A CodeBase represents the known state of a code base
@@ -46,7 +55,8 @@ use function strlen;
  * before any classes are loaded.
  *
  * # Example
- * ```
+ *
+ * ```php
  * // Grab these before we define our own classes
  * $internal_class_name_list = get_declared_classes();
  * $internal_interface_name_list = get_declared_interfaces();
@@ -61,79 +71,79 @@ use function strlen;
  *     $internal_trait_name_list,
  *     CodeBase::getPHPInternalConstantNameList(),
  *     $internal_function_name_list
- *  );
+ * );
  *
- *  // Do stuff ...
+ * // Do stuff ...
  * ```
  *
  * This supports undoing some operations in the parse phase,
  * for a background daemon analyzing single files. (Phan\CodeBase\UndoTracker)
  *
  * @phan-file-suppress PhanPartialTypeMismatchReturn the way generic objects is type hinted is inadequate, etc.
- * @phan-file-suppress PhanPluginNoAssert
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class CodeBase
 {
     /**
-     * @var Map
+     * @var Map<FullyQualifiedClassName,Clazz>
      * A map from FQSEN to an internal or user defined class
      *
-     * TODO: Improve phan's self analysis, allow the shorthand array access set syntax to be used without making bad inferences
+     * TODO: Improve Phan's self-analysis, allow the shorthand array access set syntax to be used without making bad inferences
      * (e.g. $this->fqsen_class_map[$fqsen] = $clazz;
      */
     private $fqsen_class_map;
 
     /**
-     * @var Map
+     * @var Map<FullyQualifiedClassName,Clazz>
      * A map from FQSEN to a user defined class
      */
     private $fqsen_class_map_user_defined;
 
     /**
-     * @var Map
+     * @var Map<FullyQualifiedClassName,Clazz>
      * A map from FQSEN to an internal class
      */
     private $fqsen_class_map_internal;
 
     /**
-     * @var Map
+     * @var Map<FullyQualifiedClassName,ReflectionClass>
      * A map from FQSEN to a ReflectionClass
      */
     private $fqsen_class_map_reflection;
 
     /**
-     * @var Map
+     * @var Map<FullyQualifiedClassName,ClassAliasRecord>
      * A map from FQSEN to set of ClassAliasRecord objects
      */
     private $fqsen_alias_map;
 
     /**
-     * @var Map
+     * @var Map<FullyQualifiedGlobalConstantName,GlobalConstant>
      * A map from FQSEN to a global constant
      */
     private $fqsen_global_constant_map;
 
     /**
-     * @var Map
+     * @var Map<FullyQualifiedFunctionName,Func>
      * A map from FQSEN to function
      */
     private $fqsen_func_map;
 
     /**
-     * @var Set
+     * @var Set<FullyQualifiedFunctionName>
      * A set of internal function FQSENs to lazily initialize.
      * Entries are removed as new entries get added to fqsen_func_map.
      */
     private $internal_function_fqsen_set;
 
     /**
-     * @var Set
+     * @var Set<Method>
      * The set of all methods
      */
     private $method_set;
 
     /**
-     * @var Map
+     * @var Map<FullyQualifiedClassName,ClassMap>
      * A map from FullyQualifiedClassName to a ClassMap,
      * an object that holds properties, methods and class
      * constants.
@@ -141,7 +151,7 @@ class CodeBase
     private $class_fqsen_class_map_map;
 
     /**
-     * @var array<string,Set>
+     * @var array<string,Set<Method>>
      * A map from a string method name to a Set of
      * Methods
      */
@@ -173,9 +183,18 @@ class CodeBase
     private $undo_tracker;
 
     /**
-     * @var bool
+     * @var bool is the undo tracker currently enabled?
+     *
+     * If the Phan Language Server or Daemon Mode is enabled,
+     * the undo tracker will be enabled prior to the analysis phase, and disabled afterwards.
      */
     private $has_enabled_undo_tracker = false;
+
+    /**
+     * @var bool should Phan expect files contents for any path to be changed frequently
+     * (i.e. running as Daemon or the language server)
+     */
+    private $expect_changes_to_file_contents = false;
 
     /**
      * @var ?string (The currently parsed or analyzed file, if any. Used only for the crash reporting output)
@@ -318,7 +337,6 @@ class CodeBase
     public function enableUndoTracking()
     {
         if ($this->has_enabled_undo_tracker) {
-            // @phan-suppress-next-line PhanThrowTypeAbsent should be impossible.
             throw new \RuntimeException("Undo tracking already enabled");
         }
         $this->has_enabled_undo_tracker = true;
@@ -336,6 +354,9 @@ class CodeBase
         $this->undo_tracker = null;
     }
 
+    /**
+     * @return bool is undo tracking enabled (i.e. are there closures that will revert the side effect of adding a file?)
+     */
     public function isUndoTrackingEnabled() : bool
     {
         return $this->undo_tracker !== null;
@@ -362,6 +383,7 @@ class CodeBase
     public function getParsedFilePathList() : array
     {
         if ($this->undo_tracker) {
+            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             return $this->undo_tracker->getParsedFilePathList();
         }
         throw new \RuntimeException("Calling getParsedFilePathList without an undo tracker");
@@ -373,6 +395,7 @@ class CodeBase
     public function getParsedFilePathCount() : int
     {
         if ($this->undo_tracker) {
+            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             return $this->undo_tracker->getParsedFilePathCount();
         }
         throw new \RuntimeException("Calling getParsedFilePathCount without an undo tracker");
@@ -386,8 +409,33 @@ class CodeBase
     {
         self::$current_file = $current_parsed_file;
         if ($this->undo_tracker) {
+            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             $this->undo_tracker->setCurrentParsedFile($current_parsed_file);
         }
+    }
+
+    /**
+     * Record that changes to file contents should be expected from now onwards, e.g. this is running as a language server or in daemon mode.
+     *
+     * E.g. this would disable caching ASTs of the polyfill/fallback to disk.
+     *
+     * @return void
+     */
+    public function setExpectChangesToFileContents()
+    {
+        $this->expect_changes_to_file_contents = true;
+    }
+
+    /**
+     * Returns true if changes to file contents should be expected frequently.
+     *
+     * E.g. this is called to check if Phan should disable caching ASTs of the polyfill/fallback to disk.
+     *
+     * @return bool
+     */
+    public function getExpectChangesToFileContents() : bool
+    {
+        return $this->expect_changes_to_file_contents;
     }
 
     /**
@@ -401,8 +449,9 @@ class CodeBase
     }
 
     /**
+     * Returns the most recently parsed or analyzed file.
      * @return ?string
-     * @internal - For use only by the phan error handler
+     * @internal - For use only by the phan error handler, to help with debugging crashes
      */
     public static function getMostRecentlyParsedOrAnalyzedFile()
     {
@@ -410,14 +459,15 @@ class CodeBase
     }
 
     /**
-     * Called when a file is unparseable.
+     * Called when a file is unparsable.
      * Removes the classes and functions, etc. from an older version of the file, if one exists.
      * @return void
      */
-    public function recordUnparseableFile(string $current_parsed_file)
+    public function recordUnparsableFile(string $current_parsed_file)
     {
         if ($this->undo_tracker) {
-            $this->undo_tracker->recordUnparseableFile($this, $current_parsed_file);
+            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
+            $this->undo_tracker->recordUnparsableFile($this, $current_parsed_file);
         }
     }
 
@@ -449,33 +499,46 @@ class CodeBase
         foreach ($const_name_list as $const_name) {
             if (!$const_name) {
                 // #1015 workaround for empty constant names ('' and '0').
-                fprintf(STDERR, "Saw constant with empty name of %s. There may be a bug in a PECL extension you are using (php -m will list those)\n", var_export($const_name, true));
+                \fprintf(STDERR, "Saw constant with empty name of %s. There may be a bug in a PECL extension you are using (php -m will list those)\n", \var_export($const_name, true));
                 continue;
             }
             try {
                 $const_obj = GlobalConstant::fromGlobalConstantName($const_name);
                 $this->addGlobalConstant($const_obj);
-            } catch (\InvalidArgumentException $e) {
-                // Workaround for windows bug in #1011
-                if (\strncmp($const_name, "\0__COMPILER_HALT_OFFSET__\0", 26) === 0) {
-                    continue;
-                }
-                fprintf(STDERR, "Failed to load global constant value for %s, continuing: %s\n", var_export($const_name, true), $e->getMessage());
+            } catch (FQSENException $e) {
+                $this->handleGlobalConstantException($const_name, $e);
+            } catch (InvalidArgumentException $e) {
+                $this->handleGlobalConstantException($const_name, $e);
             }
         }
+    }
+
+    private function handleGlobalConstantException(string $const_name, Exception $e)
+    {
+        // Workaround for windows bug in #1011
+        if (\strncmp($const_name, "\0__COMPILER_HALT_OFFSET__\0", 26) === 0) {
+            return;
+        }
+        // e.g. "\000apc_register_serializer-" APC_SERIALIZER_ABI
+        if (\strncmp($const_name, "\x00apc_", 5) === 0) {
+            return;
+        }
+        \fprintf(STDERR, "Failed to load global constant value for %s, continuing: %s\n", \var_export($const_name, true), $e->getMessage());
     }
 
     /**
      * @param array<int,string> $new_file_list
      * @param array<string,string> $file_mapping_contents maps relative path to absolute paths
+     * @param ?(string[]) $reanalyze_files files to re-analyze
      * @return array<int,string> - Subset of $new_file_list which changed on disk and has to be parsed again. Automatically unparses the old versions of files which were modified.
      */
-    public function updateFileList(array $new_file_list, array $file_mapping_contents = [])
+    public function updateFileList(array $new_file_list, array $file_mapping_contents = [], array $reanalyze_files = null)
     {
         if ($this->undo_tracker) {
             $this->invalidateDependentCacheEntries();
 
-            return $this->undo_tracker->updateFileList($this, $new_file_list, $file_mapping_contents);
+            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
+            return $this->undo_tracker->updateFileList($this, $new_file_list, $file_mapping_contents, $reanalyze_files);
         }
         throw new \RuntimeException("Calling updateFileList without undo tracker");
     }
@@ -489,6 +552,7 @@ class CodeBase
         if ($this->undo_tracker) {
             $this->invalidateDependentCacheEntries();
 
+            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             return $this->undo_tracker->beforeReplaceFileContents($this, $file_name);
         }
         throw new \RuntimeException("Calling replaceFileContents without undo tracker");
@@ -529,11 +593,12 @@ class CodeBase
     /**
      * @param string[] $internal_function_name_list
      * @return void
+     * @suppress PhanThrowTypeAbsentForCall
      */
     private function addInternalFunctionsByNames(array $internal_function_name_list)
     {
         foreach ($internal_function_name_list as $function_name) {
-            $this->internal_function_fqsen_set->attach(FullyQualifiedFunctionName::makeFromExtractedNamespaceAndName($function_name));
+            $this->internal_function_fqsen_set->attach(FullyQualifiedFunctionName::fromFullyQualifiedString($function_name));
         }
     }
 
@@ -599,6 +664,7 @@ class CodeBase
         // TODO: Restore the inner state of Clazz objects as well
         // (e.g. memoizations, types added in method/analysis phases, plugin changes, etc.
         // NOTE: Type::clearAllMemoizations is called elsewhere already.
+        // @phan-suppress-next-line PhanTypeSuspiciousNonTraversableForeach this is intentionally iterating over the private properties of $clone
         foreach ($clone as $key => $value) {
             $this->{$key} = $value;
         }
@@ -621,7 +687,7 @@ class CodeBase
         // Create a deep copy of this CodeBase
         $clone = clone($this);
         // make a deep copy of the NamespaceMapEntry objects within parsed_namespace_maps
-        $clone->parsed_namespace_maps = unserialize(serialize($clone->parsed_namespace_maps));
+        $clone->parsed_namespace_maps = \unserialize(\serialize($clone->parsed_namespace_maps));
         /** @var array<int,?Closure()> */
         $callbacks = [];
         // Create callbacks to restore classes
@@ -709,7 +775,8 @@ class CodeBase
         $this->fqsen_class_map->offsetSet($fqsen, $class);
         $this->fqsen_class_map_user_defined->offsetSet($fqsen, $class);
         if ($this->undo_tracker) {
-            $this->undo_tracker->recordUndo(function (CodeBase $inner) use ($fqsen) {
+            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
+            $this->undo_tracker->recordUndo(static function (CodeBase $inner) use ($fqsen) {
                 Daemon::debugf("Undoing addClass %s\n", $fqsen);
                 $inner->fqsen_class_map->offsetUnset($fqsen);
                 $inner->fqsen_class_map_user_defined->offsetUnset($fqsen);
@@ -734,7 +801,8 @@ class CodeBase
         // debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
         $this->parsed_namespace_maps[$file][$key] = $namespace_map;
         if ($this->undo_tracker) {
-            $this->undo_tracker->recordUndo(function (CodeBase $inner) use ($file, $key) {
+            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
+            $this->undo_tracker->recordUndo(static function (CodeBase $inner) use ($file, $key) {
                 Daemon::debugf("Undoing addParsedNamespaceMap file = %s namespace = %s\n", $file, $key);
                 unset($inner->parsed_namespace_maps[$file][$key]);
                 // Hack: addParsedNamespaceMap is called at least once per each file, so unset file-level suppressions at the same time in daemon mode
@@ -745,7 +813,7 @@ class CodeBase
 
     /**
      * This should be called in the analysis phase.
-     * It retrieves the NamespaceMapEntry built in the parse pharse
+     * It retrieves the NamespaceMapEntry built in the parse phase
      * (This is implemented this way to allow Phan to know if 'use Foo\Bar' was ever used and warn if it wasn't.)
      *
      * @param string $file the value of $context->getFile()
@@ -772,8 +840,13 @@ class CodeBase
     public function addReflectionClass(ReflectionClass $class)
     {
         // Map the FQSEN to the class
-        $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class->getName());
-        $this->fqsen_class_map_reflection->offsetSet($class_fqsen, $class);
+        try {
+            $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class->getName());
+            $this->fqsen_class_map_reflection->offsetSet($class_fqsen, $class);
+        } catch (FQSENException $_) {
+            // Fixes uncaught Phan\Exception\InvalidFQSENException for #2222
+            // Just give up on analyzing uses of the class "OCI-Lob" and anything similar - It's invalid because of the hyphen.
+        }
     }
 
     /**
@@ -805,7 +878,8 @@ class CodeBase
         if ($this->undo_tracker) {
             // TODO: Track a count of aliases instead? This doesn't work in daemon mode if multiple files add the same alias to the same class.
             // TODO: Allow .phan/config.php to specify aliases or precedences for aliases?
-            $this->undo_tracker->recordUndo(function (CodeBase $inner) use ($original, $alias_record) {
+            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
+            $this->undo_tracker->recordUndo(static function (CodeBase $inner) use ($original, $alias_record) {
                 $fqsen_alias_map = $inner->fqsen_alias_map[$original] ?? null;
                 if ($fqsen_alias_map) {
                     $fqsen_alias_map->detach($alias_record);
@@ -822,7 +896,9 @@ class CodeBase
      */
     public function resolveClassAliases()
     {
-        \assert(!$this->undo_tracker, 'should only call this after daemon mode is finished');
+        if ($this->undo_tracker) {
+            throw new AssertionError('should only call this after daemon mode is finished');
+        }
         // loop through fqsen_alias_map and add entries to fqsen_class_map.
         foreach ($this->fqsen_alias_map as $original_fqsen => $alias_set) {
             $this->resolveClassAliasesForAliasSet($original_fqsen, $alias_set);
@@ -838,8 +914,11 @@ class CodeBase
             // The original class does not exist.
             // Emit issues at the point of every single class_alias call with that original class.
             foreach ($alias_set as $alias_record) {
+                if (!($alias_record instanceof ClassAliasRecord)) {
+                    throw new AssertionError("Expected instances of ClassAliasRecord in alias_set");
+                }
                 $suggestion = IssueFixSuggester::suggestSimilarClass($this, $alias_record->context, $original_fqsen);
-                \assert($alias_record instanceof ClassAliasRecord);
+
                 Issue::maybeEmitWithParameters(
                     $this,
                     $alias_record->context,
@@ -854,7 +933,9 @@ class CodeBase
         // The original class exists. Attempt to create aliases of the original class.
         $class = $this->getClassByFQSEN($original_fqsen);
         foreach ($alias_set as $alias_record) {
-            \assert($alias_record instanceof ClassAliasRecord);
+            if (!($alias_record instanceof ClassAliasRecord)) {
+                throw new AssertionError("Expected instances of ClassAliasRecord in alias_set");
+            }
             $alias_fqsen = $alias_record->alias_fqsen;
             // Don't do anything if there is a real class, or if an earlier class_alias created an alias.
             if ($this->hasClassWithFQSEN($alias_fqsen)) {
@@ -1059,7 +1140,7 @@ class CodeBase
 
 
     /**
-     * @return Map
+     * @return Map<FullyQualifiedClassName,Clazz>
      * A map from FQSENs to classes which are internal.
      */
     public function getUserDefinedClassMap() : Map
@@ -1068,7 +1149,7 @@ class CodeBase
     }
 
     /**
-     * @return Map
+     * @return Map<FullyQualifiedClassName,Clazz>
      * A list of all classes which are internal.
      */
     public function getInternalClassMap() : Map
@@ -1104,14 +1185,15 @@ class CodeBase
         // method, map the name to the FQSEN so we can do hail-
         // mary references.
         if (Config::get_track_references()) {
-            if (empty($this->name_method_map[$method->getFQSEN()->getNameWithAlternateId()])) {
+            if (!isset($this->name_method_map[$method->getFQSEN()->getNameWithAlternateId()])) {
                 $this->name_method_map[$method->getFQSEN()->getNameWithAlternateId()] = new Set();
             }
             $this->name_method_map[$method->getFQSEN()->getNameWithAlternateId()]->attach($method);
         }
         if ($this->undo_tracker) {
             // The addClass's recordUndo should remove the class map. Only need to remove it from method_set
-            $this->undo_tracker->recordUndo(function (CodeBase $inner) use ($method) {
+            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
+            $this->undo_tracker->recordUndo(static function (CodeBase $inner) use ($method) {
                 $inner->method_set->detach($method);
             });
         }
@@ -1149,7 +1231,7 @@ class CodeBase
     }
 
     /**
-     * @return Method[]
+     * @return array<string,Method>
      * The set of methods associated with the given class
      */
     public function getMethodMapByFullyQualifiedClassName(
@@ -1161,25 +1243,26 @@ class CodeBase
     }
 
     /**
-     * @return Set
+     * @return Set<Method>
      * A set of all known methods with the given name
      */
     public function getMethodSetByName(string $name) : Set
     {
-        \assert(
-            Config::get_track_references(),
-            __METHOD__ . ' can only be called when dead code '
-            . ' detection (or force_tracking_references) is enabled.'
-        );
+        if (!Config::get_track_references()) {
+            throw new AssertionError(
+                __METHOD__ . ' can only be called when dead code '
+                . ' detection (or force_tracking_references) is enabled.'
+            );
+        }
 
         return $this->name_method_map[$name] ?? new Set();
     }
 
     /**
-     * @return Set
+     * @return Set<Func|Method>
      * The set of all methods and functions
      *
-     * @internal - this is slow and should be used only for debugging.
+     * This is slow and should be used only for debugging.
      */
     private function getFunctionAndMethodSet() : Set
     {
@@ -1191,7 +1274,7 @@ class CodeBase
     }
 
     /**
-     * @return Set
+     * @return Set<Method>
      * The set of all methods that Phan is tracking.
      */
     public function getMethodSet() : Set
@@ -1209,7 +1292,6 @@ class CodeBase
     public function exportFunctionAndMethodSet() : array
     {
         $result = [];
-        // @phan-suppress-next-line PhanDeprecatedFunction
         foreach ($this->getFunctionAndMethodSet() as $function_or_method) {
             if ($function_or_method->isPHPInternal()) {
                 continue;
@@ -1227,7 +1309,7 @@ class CodeBase
                     $name = '&' . $name;
                 }
                 if ($param->isOptional()) {
-                    $name = $name . '=';
+                    $name .= '=';
                 }
                 $signature[$name] = $param_type;
             }
@@ -1249,7 +1331,8 @@ class CodeBase
         $this->fqsen_func_map[$function->getFQSEN()] = $function;
 
         if ($this->undo_tracker) {
-            $this->undo_tracker->recordUndo(function (CodeBase $inner) use ($function) {
+            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
+            $this->undo_tracker->recordUndo(static function (CodeBase $inner) use ($function) {
                 Daemon::debugf("Undoing addFunction on %s\n", $function->getFQSEN());
                 unset($inner->fqsen_func_map[$function->getFQSEN()]);
             });
@@ -1290,7 +1373,7 @@ class CodeBase
     }
 
     /**
-     * @return Map
+     * @return Map<FullyQualifiedFunctionName,Func>
      */
     public function getFunctionMap() : Map
     {
@@ -1361,7 +1444,8 @@ class CodeBase
             $global_constant->getFQSEN()
         ] = $global_constant;
         if ($this->undo_tracker) {
-            $this->undo_tracker->recordUndo(function (CodeBase $inner) use ($global_constant) {
+            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
+            $this->undo_tracker->recordUndo(static function (CodeBase $inner) use ($global_constant) {
                 Daemon::debugf("Undoing addGlobalConstant on %s\n", $global_constant->getFQSEN());
                 unset($inner->fqsen_global_constant_map[$global_constant->getFQSEN()]);
             });
@@ -1392,7 +1476,7 @@ class CodeBase
     }
 
     /**
-     * @return Map
+     * @return Map<FullyQualifiedGlobalConstantName,GlobalConstant>
      */
     public function getGlobalConstantMap() : Map
     {
@@ -1487,7 +1571,7 @@ class CodeBase
     }
 
     /**
-     * @return Map
+     * @return Map<FullyQualifiedClassName,ClassMap>
      */
     public function getClassMapMap() : Map
     {
@@ -1554,6 +1638,7 @@ class CodeBase
                     $function->setRealParameterList(Parameter::listFromReflectionParameterList($reflection_function->getParameters()));
                 }
                 $this->addFunction($function);
+                $this->updatePluginsOnLazyLoadInternalFunction($function);
             }
 
             return true;
@@ -1564,11 +1649,17 @@ class CodeBase
                 new \ReflectionFunction($name)
             ) as $function) {
                 $this->addFunction($function);
+                $this->updatePluginsOnLazyLoadInternalFunction($function);
             }
 
             return true;
         }
         return false;
+    }
+
+    private function updatePluginsOnLazyLoadInternalFunction(Func $function)
+    {
+        ConfigPluginSet::instance()->handleLazyLoadInternalFunction($this, $function);
     }
 
     /**
@@ -1669,9 +1760,21 @@ class CodeBase
 
     /**
      * @var array<string,array<string,string>>|null
+     * Maps lowercase function name to (lowercase namespace => namespace)
+     */
+    private $namespaces_for_function_names = null;
+
+    /**
+     * @var array<string,array<string,string>>|null
      * Maps lowercase class name to (lowercase class => class)
      */
     private $class_names_in_namespace = null;
+
+    /**
+     * @var array<string,array<string,string>>|null
+     * Maps lowercase function name to (lowercase function => function)
+     */
+    private $function_names_in_namespace = null;
 
     /**
      * @var array<string,array<int,array<string,string>>>|null
@@ -1679,11 +1782,22 @@ class CodeBase
      */
     private $class_names_near_strlen_in_namespace = null;
 
+    /**
+     * @var array<string,array<int,array<string,string>>>|null
+     * Maps lowercase function name to (requested approximate length to (lowercase function => function))
+     */
+    private $function_names_near_strlen_in_namespace = null;
+
     private function invalidateDependentCacheEntries()
     {
+        // TODO: Should refactor suggestions logic into a separate class
         $this->namespaces_for_class_names = null;
+        $this->namespaces_for_function_names = null;
         $this->class_names_in_namespace = null;
+        $this->function_names_in_namespace = null;
         $this->class_names_near_strlen_in_namespace = null;
+        $this->function_names_near_strlen_in_namespace = null;
+        $this->constant_lookup_map_for_name = null;
     }
 
     /**
@@ -1692,6 +1806,14 @@ class CodeBase
     private function getNamespacesForClassNames()
     {
         return $this->namespaces_for_class_names ?? ($this->namespaces_for_class_names = $this->computeNamespacesForClassNames());
+    }
+
+    /**
+     * @return array<string,array<string,string>>
+     */
+    private function getNamespacesForFunctionNames()
+    {
+        return $this->namespaces_for_function_names ?? ($this->namespaces_for_function_names = $this->computeNamespacesForFunctionNames());
     }
 
     /**
@@ -1717,7 +1839,30 @@ class CodeBase
         foreach (clone($this->fqsen_class_map_reflection) as $reflection_class) {
             $namespace = '\\' . $reflection_class->getNamespaceName();
             // https://secure.php.net/manual/en/reflectionclass.getnamespacename.php
-            $suggestion_set[\strtolower($reflection_class->getShortName())][strtolower($namespace)] = $namespace;
+            $suggestion_set[strtolower($reflection_class->getShortName())][strtolower($namespace)] = $namespace;
+        }
+        return $suggestion_set;
+    }
+
+    /**
+     * @return array<string,array<string,string>> a list of namespaces which have each function name
+     */
+    private function computeNamespacesForFunctionNames() : array
+    {
+        $function_fqsen_list = [];
+        // NOTE: This helper performs shallow clones to avoid interfering with the iteration pointer
+        // in other iterations over these function maps
+        foreach (clone($this->fqsen_func_map) as $function_fqsen => $_) {
+            $function_fqsen_list[] = $function_fqsen;
+        }
+        foreach (clone($this->internal_function_fqsen_set) as $function_fqsen) {
+            $function_fqsen_list[] = $function_fqsen;
+        }
+
+        $suggestion_set = [];
+        foreach ($function_fqsen_list as $function_fqsen) {
+            $namespace = $function_fqsen->getNamespace();
+            $suggestion_set[strtolower($function_fqsen->getName())][strtolower($namespace)] = $namespace;
         }
         return $suggestion_set;
     }
@@ -1742,24 +1887,73 @@ class CodeBase
     /**
      * @return array<string,array<string,string>> a list of namespaces which have each class name
      */
-    private function getClassNamesInNamespace() : array
+    private function getClassNamesInNamespaceMap() : array
     {
         return $this->class_names_in_namespace ?? ($this->class_names_in_namespace = $this->computeClassNamesInNamespace());
     }
 
     /**
-     * This limits the suggested class names from getClassNamesInNamespace for $namespace_lower to
+     * @return array<string,array<string,string>> a list of namespaces which have each function name
+     */
+    private function getFunctionNamesInNamespaceMap() : array
+    {
+        return $this->function_names_in_namespace ?? ($this->function_names_in_namespace = $this->computeFunctionNamesInNamespace());
+    }
+
+    /**
+     * @return array<string,string> a list of class names in $namespace
+     */
+    public function getClassNamesOfNamespace(string $namespace) : array
+    {
+        $namespace = strtolower($namespace);
+        if (\substr($namespace, 0, 1) !== '\\') {
+            $namespace = "\\$namespace";
+        }
+        return $this->getClassNamesInNamespaceMap()[$namespace] ?? [];
+    }
+
+    /**
+     * @return array<string,string> a list of function names in $namespace
+     */
+    public function getFunctionNamesOfNamespace(string $namespace) : array
+    {
+        $namespace = strtolower($namespace);
+        if (\substr($namespace, 0, 1) !== '\\') {
+            $namespace = "\\$namespace";
+        }
+        return $this->getFunctionNamesInNamespaceMap()[$namespace] ?? [];
+    }
+
+    /**
+     * This limits the suggested class names from getClassNamesOfNamespace for $namespace_lower to
      * the names which are similar enough in length to be a potential suggestion
+     * @return array<string,string>
      */
     private function getSimilarLengthClassNamesForNamespace(string $namespace, int $strlen) : array
     {
-        $namespace = \strtolower($namespace);
-        $class_names = $this->getClassNamesInNamespace()[$namespace] ?? [];
+        $namespace = strtolower($namespace);
+        $class_names = $this->getClassNamesOfNamespace($namespace);
         if (count($class_names) === 0) {
-            return $class_names;
+            return [];
         }
         return $this->class_names_near_strlen_in_namespace[$namespace][$strlen]
             ?? ($this->class_names_near_strlen_in_namespace[$namespace][$strlen] = $this->computeSimilarLengthClassNamesForNamespace($class_names, $strlen));
+    }
+
+    /**
+     * This limits the suggested function names from getFunctionNamesOfNamespace for $namespace_lower to
+     * the names which are similar enough in length to be a potential suggestion
+     * @return array<string,string>
+     */
+    private function getSimilarLengthFunctionNamesForNamespace(string $namespace, int $strlen) : array
+    {
+        $namespace = strtolower($namespace);
+        $function_names = $this->getFunctionNamesOfNamespace($namespace);
+        if (count($function_names) === 0) {
+            return [];
+        }
+        return $this->function_names_near_strlen_in_namespace[$namespace][$strlen]
+            ?? ($this->function_names_near_strlen_in_namespace[$namespace][$strlen] = $this->computeSimilarLengthFunctionNamesForNamespace($function_names, $strlen));
     }
 
     /**
@@ -1781,6 +1975,17 @@ class CodeBase
     }
 
     /**
+     * For use with IssueFixSuggester::getSuggestionsForStringSet
+     * @param array<string,string> $function_names
+     * @return array<string,string> similar matches
+     */
+    private function computeSimilarLengthFunctionNamesForNamespace(array $function_names, int $strlen)
+    {
+        // Currently behaves the same way
+        return $this->computeSimilarLengthClassNamesForNamespace($function_names, $strlen);
+    }
+
+    /**
      * @return array<string,array<string,string>> maps namespace name to unique classes in that namespace.
      */
     private function computeClassNamesInNamespace() : array
@@ -1797,7 +2002,26 @@ class CodeBase
             $namespace = '\\' . $reflection_class->getNamespaceName();
             $name = '\\' . $reflection_class->getName();
             // https://secure.php.net/manual/en/reflectionclass.getnamespacename.php
-            $suggestion_set[\strtolower($namespace)][strtolower($name)] = $name;
+            $suggestion_set[strtolower($namespace)][strtolower($name)] = $name;
+        }
+        return $suggestion_set;
+    }
+
+    /**
+     * @return array<string,array<string,string>> maps namespace name to unique functions in that namespace.
+     */
+    private function computeFunctionNamesInNamespace() : array
+    {
+        $suggestion_set = [];
+        foreach (clone($this->fqsen_func_map) as $function_fqsen => $_) {
+            $namespace = $function_fqsen->getNamespace();
+            $name = $function_fqsen->getName();
+            $suggestion_set[strtolower($namespace)][strtolower($name)] = $name;
+        }
+        foreach (clone($this->internal_function_fqsen_set) as $function_fqsen) {
+            $namespace = $function_fqsen->getNamespace();
+            $name = $function_fqsen->getName();
+            $suggestion_set[strtolower($namespace)][strtolower($name)] = $name;
         }
         return $suggestion_set;
     }
@@ -1810,7 +2034,7 @@ class CodeBase
         Context $unused_context
     ) : array {
         $class_name = $missing_class->getName();
-        $class_name_lower = \strtolower($class_name);
+        $class_name_lower = strtolower($class_name);
         $namespaces_for_class_names = $this->getNamespacesForClassNames();
 
         $namespaces_for_class = $namespaces_for_class_names[$class_name_lower] ?? [];
@@ -1819,13 +2043,44 @@ class CodeBase
         }
         // We're looking for similar names, not identical ones
         unset($namespaces_for_class[strtolower($missing_class->getNamespace())]);
-        $namespaces_for_class = array_values($namespaces_for_class);
+        $namespaces_for_class = \array_values($namespaces_for_class);
 
-        usort($namespaces_for_class, 'strcmp');
+        \usort($namespaces_for_class, 'strcmp');
 
-        return array_map(function (string $namespace_name) use ($class_name) : FullyQualifiedClassName {
+        /** @suppress PhanThrowTypeAbsentForCall */
+        return \array_map(static function (string $namespace_name) use ($class_name) : FullyQualifiedClassName {
             return FullyQualifiedClassName::make($namespace_name, $class_name);
         }, $namespaces_for_class);
+    }
+
+    /**
+     * @return array<int,FullyQualifiedFunctionName> 0 or more namespaced function names found in this code base with the same name but different namespaces
+     */
+    public function suggestSimilarGlobalFunctionInOtherNamespace(
+        string $namespace,
+        string $function_name,
+        Context $unused_context,
+        bool $include_same_namespace = false
+    ) : array {
+        $function_name_lower = strtolower($function_name);
+        $namespaces_for_function_names = $this->getNamespacesForFunctionNames();
+
+        $namespaces_for_function = $namespaces_for_function_names[$function_name_lower] ?? [];
+        if (count($namespaces_for_function) === 0) {
+            return [];
+        }
+        if (!$include_same_namespace) {
+            // We're looking for similar names, not identical ones
+            unset($namespaces_for_function[strtolower($namespace)]);
+        }
+        $namespaces_for_function = \array_values($namespaces_for_function);
+
+        \usort($namespaces_for_function, 'strcmp');
+
+        /** @suppress PhanThrowTypeAbsentForCall */
+        return \array_map(static function (string $namespace_name) use ($function_name) : FullyQualifiedFunctionName {
+            return FullyQualifiedFunctionName::make($namespace_name, $function_name);
+        }, $namespaces_for_function);
     }
 
     /**
@@ -1850,6 +2105,97 @@ class CodeBase
         'true'      => 'true',
         // 'void' only makes sense for return type suggestions
     ];
+
+    /**
+     * @return array<int,FullyQualifiedFunctionName|string> 0 or more namespaced function names found in this code base
+     */
+    public function suggestSimilarGlobalFunctionInSameNamespace(
+        string $namespace,
+        string $name,
+        Context $context,
+        bool $suggest_in_global_namespace
+    ) : array {
+        $suggestions = $this->suggestSimilarGlobalFunctionForNamespaceAndName($namespace, $name, $context);
+        if ($namespace !== "\\" && $suggest_in_global_namespace) {
+            $suggestions = \array_merge(
+                $suggestions,
+                $this->suggestSimilarGlobalFunctionForNamespaceAndName("\\", $name, $context)
+            );
+        }
+        return $suggestions;
+    }
+
+    /**
+     * @return array<int,FullyQualifiedGlobalConstantName> an array of constants similar to the missing constant.
+     */
+    public function suggestSimilarConstantsToConstant(string $name)
+    {
+        $map = $this->getConstantLookupMapForName();
+        $results = $map[strtolower($name)] ?? [];
+        return \array_values($results);
+    }
+
+    /**
+     * @var ?array<string,array<string,FullyQualifiedGlobalConstantName>> maps lowercase name to FQSEN to constant
+     */
+    private $constant_lookup_map_for_name;
+
+    /** @return array<string,array<string,FullyQualifiedGlobalConstantName>> maps name to namespace to constant */
+    private function getConstantLookupMapForName() : array
+    {
+        return $this->constant_lookup_map_for_name ?? ($this->constant_lookup_map_for_name = $this->computeConstantLookupMapForName());
+    }
+
+    /** @return array<string,array<string,FullyQualifiedGlobalConstantName>> maps name to namespace to constant */
+    private function computeConstantLookupMapForName() : array
+    {
+        $result = [];
+        foreach ($this->fqsen_global_constant_map as $fqsen => $_) {
+            $result[strtolower($fqsen->getName())][$fqsen->__toString()] = $fqsen;
+        }
+        return $result;
+    }
+
+    /**
+     * @return array<int,FullyQualifiedFunctionName> 0 or more namespaced function names found in this code base
+     */
+    public function suggestSimilarGlobalFunctionForNamespaceAndName(
+        string $namespace,
+        string $name,
+        Context $unused_context
+    ) : array {
+        $function_name_lower = strtolower($name);
+
+        $function_names_in_namespace = $this->getSimilarLengthFunctionNamesForNamespace($namespace, strlen($function_name_lower));
+
+        if (count($function_names_in_namespace) > Config::getValue('suggestion_check_limit')) {
+            return [];
+        }
+
+        $suggestion_set = $function_names_in_namespace;
+        unset($suggestion_set[$function_name_lower]);
+        if (count($suggestion_set) === 0) {
+            return [];
+        }
+
+        // We're looking for similar names, not identical names
+        $suggested_function_names = \array_keys(
+            IssueFixSuggester::getSuggestionsForStringSet($function_name_lower, $suggestion_set)
+        );
+
+        if (\count($suggested_function_names) === 0) {
+            return [];
+        }
+        \usort($suggested_function_names, 'strcmp');
+
+        /**
+         * @suppress PhanThrowTypeAbsentForCall
+         */
+        return \array_map(static function (string $function_name_lower) use ($namespace, $function_names_in_namespace) : FullyQualifiedFunctionName {
+            $function_name = $function_names_in_namespace[$function_name_lower];
+            return FullyQualifiedFunctionName::make($namespace, $function_name);
+        }, $suggested_function_names);
+    }
 
     /**
      * @param int $class_suggest_type value from IssueFixSuggester::CLASS_SUGGEST_*
@@ -1894,19 +2240,19 @@ class CodeBase
         if (\count($suggested_class_names) === 0) {
             return [];
         }
-        usort($suggested_class_names, 'strcmp');
+        \usort($suggested_class_names, 'strcmp');
 
         /**
          * @return string|FullyQualifiedClassName
+         * @suppress PhanThrowTypeAbsentForCall
          */
-        return array_map(function (string $class_name_lower) use ($namespace, $class_names_in_namespace) {
+        return \array_map(static function (string $class_name_lower) use ($namespace, $class_names_in_namespace) {
             if (!\array_key_exists($class_name_lower, $class_names_in_namespace)) {
                 // This is a builtin type
                 return $class_name_lower;
             }
             $class_name = $class_names_in_namespace[$class_name_lower];
             return FullyQualifiedClassName::make($namespace, $class_name);
-            ;
         }, $suggested_class_names);
     }
 }

@@ -1,8 +1,14 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language\Type;
 
 use Phan\Language\Type;
+use Phan\Language\UnionType;
 
+/**
+ * Represents the type `string`.
+ * @see LiteralStringType for the representation of types for specific string literals
+ */
 class StringType extends ScalarType
 {
     /** @phan-override */
@@ -13,4 +19,30 @@ class StringType extends ScalarType
         // CallableDeclarationType is not a native type, we check separately here
         return parent::canCastToNonNullableType($type) || $type instanceof CallableDeclarationType;
     }
+
+    /** @override */
+    public function getIsPossiblyNumeric() : bool
+    {
+        return true;
+    }
+
+    /**
+     * Returns true if this contains a type that is definitely non-callable
+     * e.g. returns true for false, array, int
+     *      returns false for callable, string, array, object, iterable, T, etc.
+     */
+    public function isDefiniteNonCallableType() : bool
+    {
+        return false;
+    }
+
+    /**
+     * Returns the type after an expression such as `++$x`
+     */
+    public function getTypeAfterIncOrDec() : UnionType
+    {
+        return UnionType::fromFullyQualifiedString('int|string|float');
+    }
 }
+\class_exists(ClassStringType::class);
+\class_exists(CallableStringType::class);

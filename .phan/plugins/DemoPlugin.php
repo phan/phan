@@ -1,5 +1,6 @@
 <?php declare(strict_types=1);
 
+use ast\Node;
 use Phan\CodeBase;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
@@ -12,7 +13,6 @@ use Phan\PluginV2\AnalyzeMethodCapability;
 use Phan\PluginV2\AnalyzePropertyCapability;
 use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
 use Phan\PluginV2\PostAnalyzeNodeCapability;
-use ast\Node;
 
 /**
  * This file demonstrates plugins for Phan.
@@ -88,7 +88,7 @@ class DemoPlugin extends PluginV2 implements
         // the name is not allowed.
         // NOTE: Placeholders can be found in \Phan\Issue::uncolored_format_string_for_replace
         if ($class->getName() == 'Class') {
-            $this->emitIssue(
+            self::emitIssue(
                 $code_base,
                 $class->getContext(),
                 'DemoPluginClassName',
@@ -117,7 +117,7 @@ class DemoPlugin extends PluginV2 implements
         // method is `function`, and emit an issue if it is.
         // NOTE: Placeholders can be found in \Phan\Issue::uncolored_format_string_for_replace
         if ($method->getName() == 'function') {
-            $this->emitIssue(
+            self::emitIssue(
                 $code_base,
                 $method->getContext(),
                 'DemoPluginMethodName',
@@ -145,7 +145,7 @@ class DemoPlugin extends PluginV2 implements
         // As an example, we test to see if the name of the
         // function is `function`, and emit an issue if it is.
         if ($function->getName() == 'function') {
-            $this->emitIssue(
+            self::emitIssue(
                 $code_base,
                 $function->getContext(),
                 'DemoPluginFunctionName',
@@ -157,10 +157,10 @@ class DemoPlugin extends PluginV2 implements
 
     /**
      * @param CodeBase $code_base
-     * The code base in which the function exists
+     * The code base in which the property exists
      *
      * @param Property $property
-     * A function being analyzed
+     * A property being analyzed
      *
      * @return void
      *
@@ -171,9 +171,9 @@ class DemoPlugin extends PluginV2 implements
         Property $property
     ) {
         // As an example, we test to see if the name of the
-        // function is `foo`, and emit an issue if it is.
+        // property is `property`, and emit an issue if it is.
         if ($property->getName() == 'property') {
-            $this->emitIssue(
+            self::emitIssue(
                 $code_base,
                 $property->getContext(),
                 'DemoPluginPropertyName',
@@ -216,7 +216,7 @@ class DemoNodeVisitor extends PluginAwarePostAnalysisVisitor
 
         // If we can't figure out the name of the class,  don't
         // bother continuing.
-        if (empty($class_name)) {
+        if (!$class_name) {
             return;
         }
 
@@ -232,5 +232,5 @@ class DemoNodeVisitor extends PluginAwarePostAnalysisVisitor
 }
 
 // Every plugin needs to return an instance of itself at the
-// end of the file in which its defined.
+// end of the file in which it's defined.
 return new DemoPlugin();

@@ -1,0 +1,4 @@
+%s:2 PhanDeprecatedCaseInsensitiveDefine Creating case-insensitive constants with define() has been deprecated in PHP 7.3
+%s:3 PhanDeprecatedCaseInsensitiveDefine Creating case-insensitive constants with define() has been deprecated in PHP 7.3
+%s:4 PhanDeprecatedCaseInsensitiveDefine Creating case-insensitive constants with define() has been deprecated in PHP 7.3
+%s:4 PhanTypeMismatchArgumentInternal Argument 3 (case_insensitive) is 1 but \define() takes bool

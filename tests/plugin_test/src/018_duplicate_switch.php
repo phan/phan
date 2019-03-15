@@ -30,5 +30,8 @@ case '(test literal)': return 16;
 // Could analyze these later, but not doing that yet. For now, just check that this doesn't warn.
 case __FILE__: return 15;
 case __LINE__: return 15;
+case __LINE__ - 1: return 15;
+case '': return 15;
+case null: return 14;
 default: return 'default';
 };

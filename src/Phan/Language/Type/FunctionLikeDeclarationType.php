@@ -1,6 +1,9 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language\Type;
 
+use ast\Node;
+use Closure;
 use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\Element\AddressableElementInterface;
@@ -13,27 +16,41 @@ use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\Scope\ClosedScope;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
-use Closure;
-use ast\Node;
 
 /**
- * @phan-file-suppress PhanPluginUnusedPublicMethodArgument, PhanUnusedPublicMethodParameter
+ * Phan's base class for representations of `callable(MyClass):MyOtherClass` and `Closure(MyClass):MyOtherClass`
+ * @phan-file-suppress PhanUnusedPublicMethodParameter
  */
 abstract class FunctionLikeDeclarationType extends Type implements FunctionInterface
 {
     // Subclasses will override this
     const NAME = '';
 
-    /** @var FileRef */
+    /**
+     * The file and location where this function-like Type was declared.
+     * (e.g. in a doc comment, as a closure, etc).
+     * @var FileRef
+     */
     private $file_ref;
 
-    /** @var array<int,ClosureDeclarationParameter> */
+    /**
+     * Describes information that was parsed about the parameters of this function-like Type.
+     * (Name and UnionType)
+     * @var array<int,ClosureDeclarationParameter>
+     */
     private $params;
 
-    /** @var UnionType */
+    /**
+     * The return type of this function-like Type.
+     * @var UnionType
+     */
     private $return_type;
 
-    /** @var bool */
+    /**
+     * Does this function-like type return a reference?
+     * Currently only possible for real closures, not for callable declarations declared in phpdoc.
+     * @var bool
+     */
     private $returns_reference;
 
     // computed properties
@@ -44,7 +61,10 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     /** @var int see FunctionTrait */
     private $optional_param_count;
 
-    /** @var bool */
+    /**
+     * Is this a function declaration variadic?
+     * @var bool
+     */
     private $is_variadic;
     // end computed properties
 
@@ -114,19 +134,25 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     }
 
     /**
-     * @return ?ClosureDeclarationParameter
+     * @return ?ClosureDeclarationParameter the parameter which the argument at the index $i would be passed in as
      */
     public function getClosureParameterForArgument(int $i)
     {
         $result = $this->params[$i] ?? null;
         if (!$result) {
             // @phan-suppress-next-line PhanPossiblyFalseTypeReturn is_variadic implies at least one parameter exists.
-            return $this->is_variadic ? end($this->params) : null;
+            return $this->is_variadic ? \end($this->params) : null;
         }
         return $result;
     }
 
-    // TODO: Figure out why ?Closure():bool can't cast to ?Closure(): bool
+    /**
+     * Checks if this callable can cast to the other $type, ignoring whether these are nullable.
+     *
+     * It can be cast if this can be passed to any usage of $type and satisfy expectation about parameters and returned union types.
+     *
+     * -e.g. `Closure(mixed):SubClass` can be used when a `Closure(int):BaseClass` is expected.
+     */
     public function canCastToNonNullableFunctionLikeDeclarationType(FunctionLikeDeclarationType $type) : bool
     {
         if ($this->required_param_count > $type->required_param_count) {
@@ -156,9 +182,62 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     }
 
     /**
+     * Checks if this callable can cast to the other $type, ignoring whether these are nullable.
+     *
+     * It can be cast if this can be passed to any usage of $type and satisfy expectation about parameters and returned union types.
+     *
+     * -e.g. `Closure(mixed):T` can be used when a `Closure(int):\BaseClass` is expected.
+     *
+     * @see self::canCastToNonNullableType() - This is based on that.
+     */
+    protected function canCastToNonNullableTypeHandlingTemplates(Type $type, CodeBase $code_base) : bool
+    {
+        if (parent::canCastToNonNullableTypeHandlingTemplates($type, $code_base)) {
+            return true;
+        }
+        if (!($type instanceof FunctionLikeDeclarationType)) {
+            return false;
+        }
+        if ($this->required_param_count > $type->required_param_count) {
+            return false;
+        }
+        if ($this->getNumberOfParameters() < $type->getNumberOfParameters()) {
+            return false;
+        }
+        if ($this->returns_reference !== $type->returns_reference) {
+            return false;
+        }
+        // TODO: Allow nullable/null to cast to void?
+        if (!$this->return_type->canCastToUnionTypeHandlingTemplates($type->return_type, $code_base)) {
+            return false;
+        }
+        foreach ($this->params as $i => $param) {
+            $other_param = $type->getClosureParameterForArgument($i) ?? null;
+            if (!$other_param) {
+                break;
+            }
+            if (!$param->canCastToParameterHandlingTemplatesIgnoringVariadic($other_param, $code_base)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * @override (Don't include \Closure in the expanded types. It interferes with type casting checking)
      */
     public function asExpandedTypes(
+        CodeBase $unused_code_base,
+        int $unused_recursion_depth = 0
+    ) : UnionType {
+        return $this->asUnionType();
+    }
+
+    /**
+     * @override (Don't include \Closure in the expanded types. It interferes with type casting checking)
+     */
+    public function asExpandedTypesPreservingTemplate(
         CodeBase $unused_code_base,
         int $unused_recursion_depth = 0
     ) : UnionType {
@@ -189,6 +268,24 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
             $this->returns_reference,
             $is_nullable
         );
+    }
+
+    /**
+     * Returns true if this contains a type that is definitely non-callable
+     * e.g. returns true for false, array, int
+     *      returns false for callable, array, object, iterable, T, etc.
+     */
+    public function isDefiniteNonCallableType() : bool
+    {
+        return false;
+    }
+
+    /**
+     * @return ?FunctionInterface
+     */
+    public function asFunctionInterfaceOrNull(CodeBase $unused_codebase, Context $unused_context)
+    {
+        return $this;
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -333,11 +430,19 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     public function getFQSEN()
     {
         $hash = \substr(\md5($this->__toString()), 0, 12);
+        // @phan-suppress-next-line PhanThrowTypeAbsentForCall this is valid
         return FullyQualifiedFunctionName::fromFullyQualifiedString('\\closure_phpdoc' . $hash);
     }
 
     /** @override */
     public function getRepresentationForIssue() : string
+    {
+        // Represent this as "Closure(int):void" in issue messages instead of \closure_phpdoc_abcd123456Df
+        return $this->__toString();
+    }
+
+    /** @override */
+    public function getNameForIssue() : string
     {
         // Represent this as "Closure(int):void" in issue messages instead of \closure_phpdoc_abcd123456Df
         return $this->__toString();
@@ -417,7 +522,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     public function getParameterForCaller(int $i)
     {
         $list = $this->params;
-        if (count($list) === 0) {
+        if (\count($list) === 0) {
             return null;
         }
         $parameter = $list[$i] ?? null;
@@ -426,6 +531,19 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
             return $parameter->asNonVariadicRegularParameter($i);
         }
         return null;
+    }
+
+    /**
+     * @return Parameter|null
+     * @override
+     */
+    public function getRealParameterForCaller(int $i)
+    {
+        // FunctionLikeDeclarationType doesn't know if the phpdoc type is the real union type.
+        //
+        // This could instead call setUnionType and setDefaultValueType to the empty union type to avoid false positives about passing in null,
+        // but would miss some actual bugs.
+        return $this->getParameterForCaller($i);
     }
 
     /**
@@ -509,6 +627,11 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         throw new \AssertionError('unexpected call to ' . __METHOD__);
     }
 
+    public function addFunctionCallAnalyzer(Closure $analyzer)
+    {
+        throw new \AssertionError('unexpected call to ' . __METHOD__);
+    }
+
     public function setDependentReturnTypeClosure(Closure $analyzer)
     {
         throw new \AssertionError('unexpected call to ' . __METHOD__);
@@ -569,6 +692,11 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return $this->return_type;
     }
 
+    public function getUnionTypeWithUnmodifiedStatic() : UnionType
+    {
+        return $this->return_type;
+    }
+
     public function getSuppressIssueList() : array
     {
         // TODO: Inherit suppress issue list from phpdoc declaring this?
@@ -577,7 +705,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
 
     public function hasSuppressIssue(string $issue_type) : bool
     {
-        return in_array($issue_type, $this->getSuppressIssueList());
+        return \in_array($issue_type, $this->getSuppressIssueList(), true);
     }
 
     public function checkHasSuppressIssueAndIncrementCount(string $issue_type) : bool
@@ -617,7 +745,10 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     {
     }
 
-    public function setSuppressIssueList(array $issues)
+    /**
+     * @param array<int,string> $suppress_issue_list
+     */
+    public function setSuppressIssueList(array $suppress_issue_list)
     {
         throw new \AssertionError('should not call ' . __METHOD__);
     }
@@ -656,6 +787,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     public function getReturnTypeAsGeneratorTemplateType() : Type
     {
         // Probably unused
+        // @phan-suppress-next-line PhanThrowTypeAbsentForCall
         return Type::fromFullyQualifiedString('\Generator');
     }
 
@@ -677,12 +809,117 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
                 $fragment = "$signature $fragment";
             }
         }
-        $signature = static::NAME . '(' . implode(',', $fragments) . ')';
+        $signature = static::NAME . '(' . \implode(',', $fragments) . ')';
         if ($return_type) {
             // TODO: Make this unambiguous
             $signature .= ':' . $return_type;
         }
         return $signature;
+    }
+
+    public function analyzeReturnTypes(CodeBase $unused_code_base)
+    {
+        // do nothing
+    }
+
+    public function declaresTemplateTypeInComment(TemplateType $template_type) : bool
+    {
+        // not supported yet
+        return false;
+    }
+
+    /**
+     * Returns true for `T` and `T[]` and `\MyClass<T>`, but not `\MyClass<\OtherClass>` or `false`
+     */
+    public function hasTemplateTypeRecursive() : bool
+    {
+        if ($this->return_type->hasTemplateTypeRecursive()) {
+            return true;
+        }
+        foreach ($this->params as $param) {
+            if ($param->getNonVariadicUnionType()->hasTemplateTypeRecursive()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type)
+    {
+        // Create a closure to extract types for the template type from the return type and param types.
+        $closure = $this->getReturnTemplateTypeExtractorClosure($code_base, $template_type);
+        foreach ($this->params as $i => $param) {
+            $param_closure = $param->getNonVariadicUnionType()->getTemplateTypeExtractorClosure($code_base, $template_type);
+            if (!$param_closure) {
+                continue;
+            }
+            $closure = TemplateType::combineParameterClosures(
+                $closure,
+                static function (UnionType $union_type, Context $context) use ($code_base, $i, $param_closure) : UnionType {
+                    $result = UnionType::empty();
+                    foreach ($union_type->getTypeSet() as $type) {
+                        $func = $type->asFunctionInterfaceOrNull($code_base, $context);
+                        if (!$func) {
+                            continue;
+                        }
+                        $param = $func->getParameterForCaller($i);
+                        if ($param) {
+                            $result = $result->withUnionType($param_closure(
+                                $param->getNonVariadicUnionType(),
+                                $context
+                            ));
+                        }
+                    }
+                    return $result;
+                }
+            );
+        }
+        return $closure;
+    }
+
+    /**
+     * Extracts a closure to extract the template type from the return type, or returns null
+     * @return ?Closure(UnionType,Context):UnionType
+     */
+    private function getReturnTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type)
+    {
+        $return_closure = $this->getUnionType()->getTemplateTypeExtractorClosure($code_base, $template_type);
+        if (!$return_closure) {
+            return null;
+        }
+        return static function (UnionType $union_type, Context $context) use ($code_base, $return_closure) : UnionType {
+            $result = UnionType::empty();
+            foreach ($union_type->getTypeSet() as $type) {
+                $func = $type->asFunctionInterfaceOrNull($code_base, $context);
+                if ($func) {
+                    $result = $result->withUnionType($return_closure($func->getUnionType(), $context));
+                }
+            }
+            return $result;
+        };
+    }
+
+    /**
+     * @param array<string,UnionType> $template_parameter_type_map
+     */
+    public function withTemplateParameterTypeMap(
+        array $template_parameter_type_map
+    ) : UnionType {
+        $new_params = \array_map(static function (ClosureDeclarationParameter $param) use ($template_parameter_type_map) : ClosureDeclarationParameter {
+            return $param->withTemplateParameterTypeMap($template_parameter_type_map);
+        }, $this->params);
+        $new_return_type = $this->return_type->withTemplateParameterTypeMap($template_parameter_type_map);
+        if ($new_params === $this->params && $new_return_type === $this->return_type) {
+            // no change
+            return $this->asUnionType();
+        }
+        // Create ClosureDeclarationType or CallableDeclarationType
+        return (new static($this->file_ref, $new_params, $new_return_type, $this->returns_reference, $this->is_nullable))->asUnionType();
+    }
+
+    public function getCommentParamAssertionClosure(CodeBase $code_base)
+    {
+        return null;
     }
 
     ////////////////////////////////////////////////////////////////////////////////

@@ -1,0 +1,4 @@
+%s:37 PhanAccessPropertyInternal Cannot access internal property \OtherNS\OtherInternalClass::$internal_prop of namespace \OtherNS defined at %s:54 from namespace \
+%s:38 PhanAccessClassConstantInternal Cannot access internal class constant \OtherNS\OtherInternalClass::FOO defined at %s:58
+%s:39 PhanAccessMethodInternal Cannot access internal method \OtherNS\OtherInternalClass::test() of namespace \OtherNS defined at %s:62 from namespace \
+%s:40 PhanAccessMethodInternal Cannot access internal method \OtherNS\other_internal_function() of namespace \OtherNS defined at %s:47 from namespace \

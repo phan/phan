@@ -1,0 +1,5 @@
+%s:8 PhanTypeInvalidDimOffset Invalid offset "class" of array type array{mode:'Foo'}|string
+%s:8 PhanTypeInvalidDimOffset Invalid offset 0 of array type array{}
+%s:9 PhanNonClassMethodCall Call to method __construct on non-class type null
+%s:9 PhanTypeExpectedObjectOrClassName Expected an object instance or the name of a class but saw expression with type null
+%s:9 PhanUnusedVariable Unused definition of variable $test

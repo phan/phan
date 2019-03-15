@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Plugin\Internal\VariableTracker;
 
 /**
@@ -40,6 +41,9 @@ final class VariableTrackingLoopScope extends VariableTrackingBranchScope
     }
 
     /**
+     * Account for the definitions and uses of the child scopes with `break`/`continue` inside of this switch statement,
+     * using these to update the definition and uses of the outer scope of the `switch` node
+     *
      * @return void
      */
     public function flattenSwitchCaseScopes(VariableGraph $graph)

@@ -1,0 +1,15 @@
+src/064_callable_class_string.php:12 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is callable-string but \intdiv() takes int
+src/064_callable_class_string.php:17 PhanUndeclaredFunctionInCallable Call to undeclared function stdClass in callable
+src/064_callable_class_string.php:18 PhanEmptyFQSENInCallable Possible call to a function '' with an empty FQSEN.
+src/064_callable_class_string.php:20 PhanInvalidFQSENInClasslike Possible use of a classlike '\invalid class name' with an invalid FQSEN.
+src/064_callable_class_string.php:21 PhanUndeclaredClassReference Reference to undeclared class \Some\MissingClass
+src/064_callable_class_string.php:23 PhanEmptyFQSENInClasslike Possible use of a classlike '' with an empty FQSEN.
+src/064_callable_class_string.php:25 PhanEmptyFQSENInCallable Possible call to a function '' with an empty FQSEN.
+src/064_callable_class_string.php:27 PhanInvalidFQSENInCallable Possible call to a function 'an invalid function name' with an invalid FQSEN.
+src/064_callable_class_string.php:28 PhanTypeMismatchArgument Argument 1 (x) is 2 but \test_callable_string() takes callable-string defined at src/064_callable_class_string.php:7
+src/064_callable_class_string.php:38 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is class-string but \intdiv() takes int
+src/064_callable_class_string.php:42 PhanUndeclaredClassReference Reference to undeclared class \strlen
+src/064_callable_class_string.php:44 PhanEmptyFQSENInClasslike Possible use of a classlike '' with an empty FQSEN.
+src/064_callable_class_string.php:45 PhanInvalidFQSENInClasslike Possible use of a classlike '\ ' with an invalid FQSEN.
+src/064_callable_class_string.php:46 PhanInvalidFQSENInClasslike Possible use of a classlike '\Phan should warn about this' with an invalid FQSEN.
+src/064_callable_class_string.php:48 PhanUnreferencedFunction Possibly zero references to function \testCast()

@@ -1,12 +1,16 @@
 <?php declare(strict_types=1);
 
+use ast\Node;
 use Phan\AST\UnionTypeVisitor;
 use Phan\Language\Context;
 use Phan\PluginV2;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
 use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use ast\Node;
+use Phan\PluginV2\PostAnalyzeNodeCapability;
 
+/**
+ * This plugin checks for non-booleans in either side of logical arithmetic operators
+ * (e.g. &&, ||, xor)
+ */
 class NonBoolInLogicalArithPlugin extends PluginV2 implements PostAnalyzeNodeCapability
 {
 
@@ -21,6 +25,9 @@ class NonBoolInLogicalArithPlugin extends PluginV2 implements PostAnalyzeNodeCap
     }
 }
 
+/**
+ * This visitor checks boolean logical arithmetic operations for non-boolean expressions on either side.
+ */
 class NonBoolInLogicalArithVisitor extends PluginAwarePostAnalysisVisitor
 {
 
@@ -36,7 +43,7 @@ class NonBoolInLogicalArithVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @override
      */
-    public function visitBinaryop(Node $node) : Context
+    public function visitBinaryOp(Node $node) : Context
     {
         // check every boolean binary operation
         if (in_array($node->flags, self::BINARY_BOOL_OPERATORS, true)) {

@@ -1,27 +1,34 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language\Element;
 
+use AssertionError;
+use ast;
+use ast\flags;
+use ast\Node;
+use Phan\Analysis\Analyzable;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Issue;
-use Phan\Language\Scope\ClosureScope;
-use Phan\Language\Scope\FunctionLikeScope;
 use Phan\Language\Context;
+use Phan\Language\ElementContext;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use Phan\Language\Scope\ClosureScope;
+use Phan\Language\Scope\FunctionLikeScope;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
-
-use AssertionError;
-use ast\Node;
+use Phan\Memoize;
 
 /**
+ * Phan's representation of a closure or global function.
+ *
  * @phan-file-suppress PhanPartialTypeMismatchArgument
  */
 class Func extends AddressableElement implements FunctionInterface
 {
-    use \Phan\Analysis\Analyzable;
-    use \Phan\Memoize;
+    use Analyzable;
+    use Memoize;
     use FunctionTrait;
     use ClosedScopeElement;
 
@@ -53,6 +60,18 @@ class Func extends AddressableElement implements FunctionInterface
         FullyQualifiedFunctionName $fqsen,
         $parameter_list
     ) {
+        if ($fqsen->isClosure()) {
+            $internal_scope = new ClosureScope(
+                $context->getScope(),
+                $fqsen
+            );
+        } else {
+            $internal_scope = new FunctionLikeScope(
+                $context->getScope(),
+                $fqsen
+            );
+        }
+        $context = $context->withScope($internal_scope);
         parent::__construct(
             $context,
             $name,
@@ -61,17 +80,9 @@ class Func extends AddressableElement implements FunctionInterface
             $fqsen
         );
 
-        if ($fqsen->isClosure()) {
-            $this->setInternalScope(new ClosureScope(
-                $context->getScope(),
-                $fqsen
-            ));
-        } else {
-            $this->setInternalScope(new FunctionLikeScope(
-                $context->getScope(),
-                $fqsen
-            ));
-        }
+        // TODO: Is internal scope even necessary to track separately??
+        $this->setInternalScope($internal_scope);
+
         if ($parameter_list !== null) {
             $this->setParameterList($parameter_list);
         }
@@ -91,13 +102,13 @@ class Func extends AddressableElement implements FunctionInterface
     private static function getClosureOverrideFQSEN(
         CodeBase $code_base,
         Context $context,
-        Type $closure_scope,
+        Type $closure_scope_type,
         Node $node
     ) {
-        if ($node->kind !== \ast\AST_CLOSURE) {
+        if ($node->kind !== ast\AST_CLOSURE) {
             return null;
         }
-        if ($closure_scope->isNativeType()) {
+        if ($closure_scope_type->isNativeType()) {
             // TODO: Handle final internal classes (Can't call bindTo on those)
             // TODO: What about 'null' (for code planning to bindTo(null))
             // Emit an error
@@ -106,25 +117,19 @@ class Func extends AddressableElement implements FunctionInterface
                 $context,
                 Issue::TypeInvalidClosureScope,
                 $node->lineno ?? 0,
-                (string)$closure_scope
+                (string)$closure_scope_type
             );
             return null;
         } else {
             // TODO: handle 'parent'?
             // TODO: Check if isInClassScope
-            if ($closure_scope->isSelfType() || $closure_scope->isStaticType()) {
+            if ($closure_scope_type->isSelfType() || $closure_scope_type->isStaticType()) {
                 // nothing to do.
                 return null;
             }
         }
 
-        $class_fqsen = $closure_scope->asFQSEN();
-        if (!($class_fqsen instanceof FullyQualifiedClassName)) {
-            // shouldn't happen
-            return null;
-        }
-
-        return $class_fqsen;
+        return FullyQualifiedClassName::fromType($closure_scope_type);
     }
 
 
@@ -150,15 +155,6 @@ class Func extends AddressableElement implements FunctionInterface
         Node $node,
         FullyQualifiedFunctionName $fqsen
     ) : Func {
-        // @var array<int,Parameter>
-        // The list of parameters specified on the
-        // function
-        $parameter_list = Parameter::listFromNode(
-            $context,
-            $code_base,
-            $node->children['params']
-        );
-
         // Create the skeleton function object from what
         // we know so far
         $func = new Func(
@@ -167,7 +163,7 @@ class Func extends AddressableElement implements FunctionInterface
             UnionType::empty(),
             $node->flags ?? 0,
             $fqsen,
-            $parameter_list
+            null
         );
         $doc_comment = $node->children['docComment'] ?? '';
         $func->setDocComment($doc_comment);
@@ -181,6 +177,22 @@ class Func extends AddressableElement implements FunctionInterface
             $node->lineno ?? 0,
             Comment::ON_FUNCTION
         );
+
+        // Defer adding params to the local scope for user functions. (FunctionTrait::addParamsToScopeOfFunctionOrMethod)
+        // See PreOrderAnalysisVisitor->visitFuncDecl and visitClosure
+        $func->setComment($comment);
+
+        $element_context = new ElementContext($func);
+
+        // @var array<int,Parameter>
+        // The list of parameters specified on the
+        // method
+        $parameter_list = Parameter::listFromNode(
+            $element_context,
+            $code_base,
+            $node->children['params']
+        );
+        $func->setParameterList($parameter_list);
 
         // Redefine the function's internal scope to point to the new class before adding any variables to the scope.
 
@@ -213,13 +225,16 @@ class Func extends AddressableElement implements FunctionInterface
             // rescan it
             $func->setNode($node);
         }
+        foreach ($comment->getTemplateTypeList() as $template_type) {
+            $func->getInternalScope()->addTemplateType($template_type);
+        }
 
         // Keep an copy of the original parameter list, to check for fatal errors later on.
         $func->setRealParameterList($parameter_list);
 
         $func->setNumberOfRequiredParameters(\array_reduce(
             $parameter_list,
-            function (int $carry, Parameter $parameter) : int {
+            static function (int $carry, Parameter $parameter) : int {
                 return ($carry + ($parameter->isRequired() ? 1 : 0));
             },
             0
@@ -227,7 +242,7 @@ class Func extends AddressableElement implements FunctionInterface
 
         $func->setNumberOfOptionalParameters(\array_reduce(
             $parameter_list,
-            function (int $carry, Parameter $parameter) : int {
+            static function (int $carry, Parameter $parameter) : int {
                 return ($carry + ($parameter->isOptional() ? 1 : 0));
             },
             0
@@ -264,16 +279,29 @@ class Func extends AddressableElement implements FunctionInterface
 
             // FIXME properly handle self/static in closures declared within methods.
             if ($union_type->hasSelfType()) {
-                throw new AssertionError("Function unexpectedly referencing self in $context");
+                $union_type = $union_type->makeFromFilter(static function (Type $type) : bool {
+                    return !$type->isSelfType();
+                });
+                if ($context->isInClassScope()) {
+                    $union_type = $union_type->withType(
+                        $context->getClassFQSEN()->asType()
+                    );
+                } else {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::ContextNotObjectUsingSelf,
+                        $comment->getReturnLineno(),
+                        'self',
+                        $fqsen
+                    );
+                }
             }
 
             $func->setUnionType($func->getUnionType()->withUnionType($union_type));
             $func->setPHPDocReturnType($union_type);
         }
-
-        // Defer adding params to the local scope for user functions. (FunctionTrait::addParamsToScopeOfFunctionOrMethod)
-        // See PreOrderAnalysisVisitor->visitFuncDecl and visitClosure
-        $func->setComment($comment);
+        $element_context->freeElementReference();
 
         return $func;
     }
@@ -312,7 +340,7 @@ class Func extends AddressableElement implements FunctionInterface
 
         $string .= 'function ' . $this->getName();
 
-        $string .= '(' . implode(', ', $this->getParameterList()) . ')';
+        $string .= '(' . \implode(', ', $this->getParameterList()) . ')';
 
         if (!$this->getUnionType()->isEmpty()) {
             $string .= ' : ' . (string)$this->getUnionType();
@@ -329,7 +357,7 @@ class Func extends AddressableElement implements FunctionInterface
      */
     public function returnsRef() : bool
     {
-        return $this->getFlagsHasState(\ast\flags\RETURNS_REF);
+        return $this->getFlagsHasState(flags\FUNC_RETURNS_REF);
     }
 
     /**
@@ -341,23 +369,52 @@ class Func extends AddressableElement implements FunctionInterface
     }
 
     /**
+     * True if this is a closure
+     */
+    public function isClosure() : bool
+    {
+        return $this->getFQSEN()->isClosure();
+    }
+
+    /**
+     * Returns a string that can be used as a standalone PHP stub for this global function.
      * @suppress PhanUnreferencedPublicMethod (toStubInfo is used by callers for more flexibility)
      */
     public function toStub() : string
     {
         list($namespace, $string) = $this->toStubInfo();
         $namespace_text = $namespace === '' ? '' : "$namespace ";
-        $string = sprintf("namespace %s{\n%s}\n", $namespace_text, $string);
+        $string = \sprintf("namespace %s{\n%s}\n", $namespace_text, $string);
         return $string;
     }
 
     public function getMarkupDescription() : string
     {
-        list($unused_namespace, $text) = $this->toStubInfo();
-        return rtrim($text, "\n {}");
+        $fqsen = $this->getFQSEN();
+        $namespace = \ltrim($fqsen->getNamespace(), '\\');
+        $stub = '';
+        if ($namespace) {
+            $stub = "namespace $namespace;\n";
+        }
+        $stub .= 'function ';
+        if ($this->returnsRef()) {
+            $stub .= '&';
+        }
+        $stub .= $fqsen->getName();
+
+        $stub .= '(' . $this->getParameterStubText() . ')';
+
+        $return_type = $this->getUnionType();
+        if ($return_type && !$return_type->isEmpty()) {
+            $stub .= ' : ' . (string)$return_type;
+        }
+        return $stub;
     }
 
-    /** @return array{0:string,1:string} [string $namespace, string $text] */
+    /**
+     * Returns stub info for `tool/make_stubs`
+     * @return array{0:string,1:string} [string $namespace, string $text]
+     */
     public function toStubInfo() : array
     {
         $fqsen = $this->getFQSEN();
@@ -366,16 +423,62 @@ class Func extends AddressableElement implements FunctionInterface
             $stub .= '&';
         }
         $stub .= $fqsen->getName();
-        $stub .= '(' . implode(', ', array_map(function (Parameter $parameter) : string {
+
+        $stub .= '(' . $this->getRealParameterStubText() . ')';
+
+        $return_type = $this->real_return_type;
+        if ($return_type && !$return_type->isEmpty()) {
+            $stub .= ' : ' . (string)$return_type;
+        }
+        $stub .= " {}\n";
+        $namespace = \ltrim($fqsen->getNamespace(), '\\');
+        return [$namespace, $stub];
+    }
+
+    public function getUnionTypeWithUnmodifiedStatic() : UnionType
+    {
+        return $this->getUnionType();
+    }
+
+    /**
+     * @return string
+     * The fully-qualified structural element name of this
+     * structural element (or something else for closures and callables)
+     * @override
+     */
+    public function getRepresentationForIssue() : string
+    {
+        if ($this->isClosure()) {
+            return $this->getStubForClosure();
+        }
+        return $this->getFQSEN()->__toString() . '()';
+    }
+
+    private function getStubForClosure() : string
+    {
+        $stub = 'Closure';
+        if ($this->returnsRef()) {
+            $stub .= '&';
+        }
+        $stub .= '(' . \implode(', ', \array_map(static function (Parameter $parameter) : string {
             return $parameter->toStubString();
         }, $this->getRealParameterList())) . ')';
         if ($this->real_return_type && !$this->getRealReturnType()->isEmpty()) {
             $stub .= ' : ' . (string)$this->getRealReturnType();
         }
+        return $stub;
+    }
 
-        $stub .= ' {}' . "\n";
-
-        $namespace = ltrim($fqsen->getNamespace(), '\\');
-        return [$namespace, $stub];
+    /**
+     * @return string
+     * The name of this structural element (without namespace/class),
+     * or a string for FunctionLikeDeclarationType (or a closure) which lacks a real FQSEN
+     */
+    public function getNameForIssue() : string
+    {
+        if ($this->isClosure()) {
+            return $this->getStubForClosure();
+        }
+        return $this->getName() . '()';
     }
 }

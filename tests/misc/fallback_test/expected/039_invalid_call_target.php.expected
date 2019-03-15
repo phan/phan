@@ -1,0 +1,2 @@
+src/039_invalid_call_target.php:2 PhanNonClassMethodCall Call to method callMethod on non-class type 'a_string_literal'
+src/039_invalid_call_target.php:2 PhanSyntaxError syntax error, unexpected ';', expecting ']'

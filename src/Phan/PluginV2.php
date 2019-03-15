@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Phan;
 
 use Phan\PluginV2\IssueEmitter;
@@ -12,7 +13,7 @@ use Phan\PluginV2\IssueEmitter;
  * (And at least one of the interfaces corresponding to plugin capabilities)
  * and return an instance of themselves.
  *
- * @link https://github.com/phan/phan/wiki/Writing-Plugins-for-Phan has addititional resources for users writing a plugin.
+ * @link https://github.com/phan/phan/wiki/Writing-Plugins-for-Phan has additional resources for users writing a plugin.
  *
  * List of capabilities which a plugin may implement:
  *
@@ -69,6 +70,35 @@ use Phan\PluginV2\IssueEmitter;
  *     Called by UnusedSuppressionPlugin to check if the plugin's suppressions are no longer needed.
  *
  *     (implement \Phan\PluginV2\SuppressionCapability)
+ * 11. public function beforeAnalyze(CodeBase $code_base) : void
+ *
+ *     Called before analyzing a project (e.g. to run checks before analysis)
+ *     beforeAnalyze is invoked immediately before forking analysis workers and before starting the analysis phase.
+ *
+ *     (implement \Phan\PluginV2\BeforeAnalyzeCapability)
+ * 12. public function beforeAnalyzeFile(CodeBase $code_base, Context $context, string $file_contents, Node $node);
+ *
+ *     Called before analyzing a file (with the absolute path Config::projectPath($context->getFile())).
+ *     NOTE: This does not run on empty files.
+ *
+ *     (implement \Phan\PluginV2\BeforeAnalyzeFileCapability)
+ * 13. public function afterAnalyzeFile(CodeBase $code_base, Context $context, string $file_contents, Node $node);
+ *
+ *     This method is called after Phan analyzes a file.
+ *
+ *     (implement \Phan\PluginV2\AfterAnalyzeFileCapability)
+ * 14. public function handleLazyLoadInternalFunction(CodeBase $code_base, Func $function)
+ *
+ *     This method is called after Phan lazily loads a global internal function.
+ *     This is useful to handle functions getAnalyzeFunctionCallClosures did not pick up
+ *
+ *     (implement \Phan\PluginV2\HandleLazyLoadInternalFunctionCapability)
+ * 15. getAutomaticFixers() : array<string,Closure(CodeBase,FileCacheEntry,IssueInstance):(?FileEditSet)>
+ *
+ *     This method is called to fetch the issue names the plugin can sometimes automatically fix.
+ *     Returns a map from issue name to the closure to generate a fix for instances of that issue.
+ *
+ *     (implement \Phan\PluginV2\AutomaticFixCapability)
  *
  * TODO: Implement a way to notify plugins that a parsed file is no longer valid,
  * if the replacement for pcntl is being used.

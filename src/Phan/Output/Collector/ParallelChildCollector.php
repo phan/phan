@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Output\Collector;
 
+use AssertionError;
 use Phan\IssueInstance;
 use Phan\Output\IssueCollectorInterface;
 
@@ -9,13 +11,11 @@ use Phan\Output\IssueCollectorInterface;
  * but will send them all to a message queue for collection
  * by a ParallelParentCollector instead of holding on to
  * them itself.
- *
- * @phan-file-suppress PhanPluginNoAssert
  */
 class ParallelChildCollector implements IssueCollectorInterface
 {
     /**
-     * @var resource
+     * @var resource a message queue used to receive messages from the child processes in the worker group.
      */
     private $message_queue_resource;
 
@@ -27,26 +27,39 @@ class ParallelChildCollector implements IssueCollectorInterface
      */
     public function __construct()
     {
-        \assert(
-            extension_loaded('sysvsem'),
-            'PHP must be compiled with --enable-sysvsem in order to use -j(>=2).'
-        );
-
-        \assert(
-            extension_loaded('sysvmsg'),
-            'PHP must be compiled with --enable-sysvmsg in order to use -j(>=2).'
-        );
+        self::assertSharedMemoryCommunicationEnabled();
 
         // Create a message queue for this process group
-        $message_queue_key = posix_getpgid(posix_getpid());
+        $message_queue_key = \posix_getpgid(\posix_getpid());
         $this->message_queue_resource =
-            msg_get_queue($message_queue_key);
+            \msg_get_queue($message_queue_key);
+    }
+
+    /**
+     * Assert that the dependencies needed for communicating with the child or parent process are available.
+     * @throws AssertionError if PHP modules needed for shared communication aren't loaded
+     * @internal
+     */
+    final public static function assertSharedMemoryCommunicationEnabled()
+    {
+        if (!\extension_loaded('sysvsem')) {
+            throw new AssertionError(
+                'PHP must be compiled with --enable-sysvsem in order to use -j(>=2).'
+            );
+        }
+
+        if (!\extension_loaded('sysvmsg')) {
+            throw new AssertionError(
+                'PHP must be compiled with --enable-sysvmsg in order to use -j(>=2).'
+            );
+        }
     }
 
     /**
      * Collect issue
      * @param IssueInstance $issue
      * @return void
+     * @throws AssertionError if the message failed to be sent to the parent process
      */
     public function collectIssue(IssueInstance $issue)
     {
@@ -55,7 +68,7 @@ class ParallelChildCollector implements IssueCollectorInterface
         // Send messages along to the message queue
         // that is hopefully being listened to by a
         // ParallelParentCollector.
-        $success = msg_send(
+        $success = \msg_send(
             $this->message_queue_resource,
             ParallelParentCollector::MESSAGE_TYPE_ISSUE,
             $issue,
@@ -71,10 +84,9 @@ class ParallelChildCollector implements IssueCollectorInterface
 
         // Make sure that the message was successfully
         // sent
-        \assert(
-            $success,
-            "msg_send failed with error code '$error_code'"
-        );
+        if (!($success)) {
+            throw new AssertionError("msg_send failed with error code '$error_code'");
+        }
     }
 
     /**

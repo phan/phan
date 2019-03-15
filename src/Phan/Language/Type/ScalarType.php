@@ -1,12 +1,17 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language\Type;
 
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Language\Context;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
-use Phan\Language\Context;
 
+/**
+ * The base class for various scalar types (BoolType, StringType, ScalarRawType,
+ * NullType (null is technically not a scalar, but included), etc.
+ */
 abstract class ScalarType extends NativeType
 {
     public function isScalar() : bool
@@ -16,7 +21,12 @@ abstract class ScalarType extends NativeType
 
     public function isPrintableScalar() : bool
     {
-        return true;  // Overridden in subclass IterableType and ResourceType
+        return true;  // Overridden in subclass BoolType
+    }
+
+    public function isValidBitwiseOperand() : bool
+    {
+        return true;
     }
 
     public function isSelfType() : bool
@@ -65,7 +75,7 @@ abstract class ScalarType extends NativeType
      */
     protected function canCastToNonNullableType(Type $type) : bool
     {
-        // Scalars may be configured to always cast to eachother
+        // Scalars may be configured to always cast to each other.
         if ($type->isScalar()) {
             if (Config::getValue('scalar_implicit_cast')) {
                 return true;
@@ -126,5 +136,26 @@ abstract class ScalarType extends NativeType
     {
         return true;
     }
+
+    /**
+     * Returns true if this contains a type that is definitely nullable or a non-object.
+     * e.g. returns true false, array, int
+     *      returns false for callable, object, iterable, T, etc.
+     */
+    public function isDefiniteNonObjectType() : bool
+    {
+        return true;
+    }
+
+    /**
+     * Returns true if this contains a type that is definitely nullable or a non-object.
+     * e.g. returns true false, array, int
+     *      returns false for callable, object, iterable, T, etc.
+     */
+    public function isDefiniteNonCallableType() : bool
+    {
+        return true;
+    }
 }
 \class_exists(IntType::class);
+\class_exists(StringType::class);

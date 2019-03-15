@@ -1,4 +1,5 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
+
 namespace Phan\Output;
 
 use Phan\Output\Printer\CheckstylePrinter;
@@ -17,13 +18,17 @@ class PrinterFactory
 {
 
     /**
-     * @return array<int,string>
+     * @return array<int,string> the supported types of Printers
      */
     public function getTypes():array
     {
         return ['text', 'json', 'csv', 'codeclimate', 'checkstyle', 'pylint'];
     }
 
+    /**
+     * Return an IssuePrinterInterface of type $type that outputs issues to $output
+     * @param ?string $type the configured type of printer
+     */
     public function getPrinter($type, OutputInterface $output):IssuePrinterInterface
     {
         switch ($type) {

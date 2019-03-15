@@ -1,3 +1,2 @@
 %s:4 PhanUndeclaredProperty Reference to undeclared property \C->undef_prop_a
 %s:5 PhanUndeclaredProperty Reference to undeclared property \C->undef_prop_b
-

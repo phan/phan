@@ -1,11 +1,19 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language\Type;
 
 use Phan\CodeBase;
-use Phan\Language\UnionType;
+use Phan\Language\Context;
 use Phan\Language\Type;
-use Phan\Language\Type\ArrayType;
+use Phan\Language\UnionType;
 
+use function in_array;
+
+/**
+ * Phan's base class for native types such as IntType, ObjectType, etc.
+ *
+ * (i.e. not class instances, Closures, etc)
+ */
 abstract class NativeType extends Type
 {
     const NAME = '';
@@ -18,6 +26,7 @@ abstract class NativeType extends Type
      * If true, returns a nullable instance of this native type
      *
      * @return static
+     * Returns a nullable/non-nullable instance of this native type (possibly unchanged)
      */
     public static function instance(bool $is_nullable)
     {
@@ -123,12 +132,14 @@ abstract class NativeType extends Type
         /**
          * @return array<string,bool>
          */
-        $generate_row = function (string ...$permitted_cast_type_names) : array {
+        $generate_row = static function (string ...$permitted_cast_type_names) : array {
             return [
                 ArrayType::NAME    => in_array(ArrayType::NAME, $permitted_cast_type_names, true),
                 IterableType::NAME => in_array(IterableType::NAME, $permitted_cast_type_names, true),
                 BoolType::NAME     => in_array(BoolType::NAME, $permitted_cast_type_names, true),
                 CallableType::NAME => in_array(CallableType::NAME, $permitted_cast_type_names, true),
+                ClassStringType::NAME => in_array(ClassStringType::NAME, $permitted_cast_type_names, true),
+                CallableStringType::NAME => in_array(CallableStringType::NAME, $permitted_cast_type_names, true),
                 FalseType::NAME    => in_array(FalseType::NAME, $permitted_cast_type_names, true),
                 FloatType::NAME    => in_array(FloatType::NAME, $permitted_cast_type_names, true),
                 IntType::NAME      => in_array(IntType::NAME, $permitted_cast_type_names, true),
@@ -151,6 +162,8 @@ abstract class NativeType extends Type
             ArrayType::NAME    => $generate_row(ArrayType::NAME, IterableType::NAME, CallableType::NAME),
             BoolType::NAME     => $generate_row(BoolType::NAME, FalseType::NAME, TrueType::NAME, ScalarRawType::NAME),
             CallableType::NAME => $generate_row(CallableType::NAME),
+            CallableStringType::NAME => $generate_row(CallableStringType::NAME, CallableType::NAME, StringType::NAME),
+            ClassStringType::NAME => $generate_row(ClassStringType::NAME, CallableType::NAME, StringType::NAME),
             FalseType::NAME    => $generate_row(FalseType::NAME, BoolType::NAME, ScalarRawType::NAME),
             FloatType::NAME    => $generate_row(FloatType::NAME, ScalarRawType::NAME),
             IntType::NAME      => $generate_row(IntType::NAME, FloatType::NAME, ScalarRawType::NAME),
@@ -159,7 +172,7 @@ abstract class NativeType extends Type
             NullType::NAME     => $generate_row(NullType::NAME),
             ObjectType::NAME   => $generate_row(ObjectType::NAME),
             ResourceType::NAME => $generate_row(ResourceType::NAME),
-            StringType::NAME   => $generate_row(StringType::NAME, CallableType::NAME, ScalarRawType::NAME),
+            StringType::NAME   => $generate_row(StringType::NAME, CallableType::NAME, ScalarRawType::NAME, CallableStringType::NAME, ClassStringType::NAME),
             TrueType::NAME     => $generate_row(TrueType::NAME, BoolType::NAME, ScalarRawType::NAME),
             VoidType::NAME     => $generate_row(VoidType::NAME),
         ];
@@ -171,7 +184,7 @@ abstract class NativeType extends Type
         // non-fully-qualified names
         $string = $this->name;
 
-        if ($this->getIsNullable()) {
+        if ($this->is_nullable) {
             $string = '?' . $string;
         }
 
@@ -203,6 +216,26 @@ abstract class NativeType extends Type
         return $this->asUnionType();
     }
 
+    /**
+     * @param CodeBase $code_base @phan-unused-param
+     * The code base to use in order to find super classes, etc.
+     *
+     * @param int $recursion_depth @phan-unused-param
+     * This thing has a tendency to run-away on me. This tracks
+     * how bad I messed up by seeing how far the expanded types
+     * go
+     *
+     * @return UnionType
+     * Does nothing for Native Types, but GenericArrayType is an exception to that.
+     * @override
+     */
+    public function asExpandedTypesPreservingTemplate(
+        CodeBase $code_base,
+        int $recursion_depth = 0
+    ) : UnionType {
+        return $this->asUnionType();
+    }
+
     public function hasTemplateParameterTypes() : bool
     {
         return false;
@@ -221,6 +254,42 @@ abstract class NativeType extends Type
      */
     public function iterableValueUnionType(CodeBase $unused_code_base)
     {
+        return null;
+    }
+
+    /**
+     * @param array<string,UnionType> $unused_template_parameter_type_map
+     * @override
+     */
+    public function withTemplateParameterTypeMap(
+        array $unused_template_parameter_type_map
+    ) : UnionType {
+        return $this->asUnionType();
+    }
+
+    public function isTemplateSubtypeOf(Type $unused_type) : bool
+    {
+        return false;
+    }
+
+    /**
+     * Returns true for `T` and `T[]` and `\MyClass<T>`, but not `\MyClass<\OtherClass>` or `false`
+     *
+     * Overridden in subclasses.
+     */
+    public function hasTemplateTypeRecursive() : bool
+    {
+        return false;
+    }
+
+    public function getTemplateTypeExtractorClosure(CodeBase $unused_code_base, TemplateType $unused_template_type)
+    {
+        return null;
+    }
+
+    public function asFunctionInterfaceOrNull(CodeBase $unused_codebase, Context $unused_context)
+    {
+        // overridden in subclasses
         return null;
     }
 }

@@ -1,8 +1,8 @@
-%s:21 PhanUndeclaredTypeProperty Property \A487::x has undeclared type \avoid (Did you mean class \Avid)
+%s:21 PhanUndeclaredTypeProperty Property \A487->x has undeclared type \avoid (Did you mean class \Avid)
 %s:28 PhanTypeMissingReturn Method \A487::test_suggestions is declared to return \avoid but has no return value
-%s:28 PhanUndeclaredTypeParameter Parameter of undeclared type \avoid (Did you mean class \Avid)
-%s:28 PhanUndeclaredTypeReturnType Return type of test_suggestions is undeclared type \avoid (Did you mean class \Avid or void)
+%s:28 PhanUndeclaredTypeParameter Parameter $x has undeclared type \avoid (Did you mean class \Avid)
+%s:28 PhanUndeclaredTypeReturnType Return type of test_suggestions() is undeclared type \avoid (Did you mean class \Avid or void)
 %s:28 PhanUndeclaredTypeThrowsType @throws type of test_suggestions has undeclared type \avoid (Did you mean class \Avid)
-%s:40 PhanUndeclaredTypeParameter Parameter of undeclared type array<string,\imt>[] (Did you mean trait \Ime or class \Imf or class \Img or interface \Imi or interface \Imj or int)
-%s:40 PhanUndeclaredTypeReturnType Return type of test_throw_suggestions is undeclared type array<string,\imt>[] (Did you mean trait \Ime or class \Imf or class \Img or interface \Imi or interface \Imj or int)
+%s:40 PhanUndeclaredTypeParameter Parameter $x has undeclared type array<string,\imt>[] (Did you mean trait \Ime or class \Imf or class \Img or interface \Imi or interface \Imj or int)
+%s:40 PhanUndeclaredTypeReturnType Return type of test_throw_suggestions() is undeclared type array<string,\imt>[] (Did you mean trait \Ime or class \Imf or class \Img or interface \Imi or interface \Imj or int)
 %s:40 PhanUndeclaredTypeThrowsType @throws type of test_throw_suggestions has undeclared type \imt (Did you mean class \Imf or interface \Imi)

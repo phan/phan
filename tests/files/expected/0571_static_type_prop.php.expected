@@ -1,0 +1,12 @@
+%s:14 PhanStaticPropIsStaticType Static property \Chain::$static_prop_parent is declared to have type static, but the only instance is shared among all subclasses (Did you mean \Chain)
+%s:31 PhanTypeMismatchArgumentInternal Argument 1 (string) is \Chain|false but \strlen() takes string
+%s:32 PhanTypeMismatchArgumentInternal Argument 1 (string) is \Chain|\Request|null but \strlen() takes string
+%s:33 PhanTypeMismatchArgumentInternal Argument 1 (string) is ?\Request|?bool|\Chain|\Request but \strlen() takes string
+%s:34 PhanTypeMismatchArgumentInternal Argument 1 (string) is \Chain|\Request|false but \strlen() takes string
+%s:35 PhanTypeMismatchArgumentInternal Argument 1 (string) is \Chain|null but \strlen() takes string
+%s:36 PhanTypeMismatchArgumentInternal Argument 1 (string) is ?\Chain|?bool|\Chain but \strlen() takes string
+%s:37 PhanTypeMismatchArgumentInternal Argument 1 (string) is \Chain|\Fence|null but \strlen() takes string
+%s:38 PhanTypeMismatchArgumentInternal Argument 1 (string) is ?\Fence|?bool|\Chain|\Fence but \strlen() takes string
+%s:39 PhanTypeMismatchArgumentInternal Argument 1 (string) is \Chain|\Fence|false but \strlen() takes string
+%s:40 PhanTypeSuspiciousEcho Suspicious argument \Chain for an echo/print statement
+%s:41 PhanTypeSuspiciousEcho Suspicious argument \Chain for an echo/print statement

@@ -1,19 +1,25 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language\Type;
 
+use AssertionError;
+use Phan\CodeBase;
+use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\FQSEN;
 use Phan\Language\Type;
 
-use AssertionError;
-
+/**
+ * Phan's representation of `Closure` and of closures associated with a given function-like's FQSEN
+ * @see ClosureDeclarationType for representations created from PHPDoc `Closure(MyClass):MyOtherClass`.
+ */
 final class ClosureType extends Type
 {
     /** Not an override */
     const NAME = 'Closure';
 
     /**
-     * @var FQSEN|null
+     * @var FQSEN|null the FQSEN of the function-like from which this ClosureType was derived
      */
     private $fqsen;
 
@@ -33,6 +39,9 @@ final class ClosureType extends Type
         return $instance;
     }
 
+    /**
+     * Create an instance of Closure for the FQSEN of the passed in function/closure/method $func with FQSEN $fqsen
+     */
     public static function instanceWithClosureFQSEN(FQSEN $fqsen, FunctionInterface $func = null) : ClosureType
     {
         static $original_instance = null;
@@ -57,6 +66,10 @@ final class ClosureType extends Type
         // same as new static($this->namespace, $this->name, $this->template_parameter_type_list, $this->is_nullable);
     }
 
+    /**
+     * Is this a closure which points to a known FQSEN
+     * (in internal or parsed function-likes, classes, methods, closures, etc.
+     */
     public function hasKnownFQSEN() : bool
     {
         return $this->fqsen !== null;
@@ -67,11 +80,7 @@ final class ClosureType extends Type
      */
     public function asFQSEN() : FQSEN
     {
-        if (!empty($this->fqsen)) {
-            return $this->fqsen;
-        }
-
-        return parent::asFQSEN();
+        return $this->fqsen ?? parent::asFQSEN();
     }
 
     /**
@@ -84,8 +93,9 @@ final class ClosureType extends Type
         if ($type->isCallable()) {
             if ($type instanceof FunctionLikeDeclarationType) {
                 // Check if the function declaration is known and available. It's not available for the generic \Closure.
-                if ($this->func) {
-                    return $this->func->asFunctionLikeDeclarationType()->canCastToNonNullableFunctionLikeDeclarationType($type);
+                $func = $this->func;
+                if ($func) {
+                    return $func->asFunctionLikeDeclarationType()->canCastToNonNullableFunctionLikeDeclarationType($type);
                 }
             }
             return true;
@@ -98,7 +108,7 @@ final class ClosureType extends Type
      * @param bool $is_nullable
      * If true, returns a nullable instance of this closure type
      *
-     * @return static
+     * @return static an instance of this closure type with appropriate nullability
      */
     public static function instance(bool $is_nullable)
     {
@@ -117,7 +127,7 @@ final class ClosureType extends Type
 
         static $instance = null;
 
-        if (empty($instance)) {
+        if ($instance === null) {
             $instance = self::make('\\', self::NAME, [], false, Type::FROM_NODE);
         }
 
@@ -138,9 +148,41 @@ final class ClosureType extends Type
 
     public function __toString()
     {
-        if ($this->func) {
-            return $this->func->asFunctionLikeDeclarationType()->__toString();
+        $func = $this->func;
+        if ($func) {
+            $result = $func->asFunctionLikeDeclarationType()->__toString();
+        } else {
+            $result = '\Closure';
         }
-        return '\Closure';
+
+        return $this->is_nullable ? "?$result" : $result;
+    }
+
+    /**
+     * Returns true if this contains a type that is definitely non-callable
+     * e.g. returns true for false, array, int
+     *      returns false for callable, array, object, iterable, T, etc.
+     */
+    public function isDefiniteNonCallableType() : bool
+    {
+        return false;
+    }
+
+    /**
+     * Gets the function-like this type was created from.
+     *
+     * TODO: Uses of this may keep outdated data in language server mode.
+     * @return ?FunctionInterface
+     * @deprecated use asFunctionInterfaceOrNull
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public function getFunctionLikeOrNull()
+    {
+        return $this->func;
+    }
+
+    public function asFunctionInterfaceOrNull(CodeBase $unused_codebase, Context $unused_context)
+    {
+        return $this->func;
     }
 }

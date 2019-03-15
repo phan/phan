@@ -1,5 +1,8 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Library;
+
+use RuntimeException;
 
 /**
  * An LRU cache for the contents of files (FileCacheEntry), and data structures derived from contents of files.
@@ -17,15 +20,22 @@ final class FileCache
      */
     private static $cache_entries = [];
 
+    /**
+     * Sets the cache size to $max_size (or self::MINIMUM_CACHE_SIZE if that's larger).
+     * Entries will be removed until there are $max_size or fewer entries.
+     */
     public static function setMaxCacheSize(int $max_size)
     {
-        self::$max_size = max($max_size, self::MINIMUM_CACHE_SIZE);
+        self::$max_size = \max($max_size, self::MINIMUM_CACHE_SIZE);
         while (\count(self::$cache_entries) > self::$max_size) {
             \array_shift(self::$cache_entries);
         }
     }
 
     /**
+     * Adds an entry recording that $file_name has contents $file_contents,
+     * overwriting any previous entries
+     *
      * @return FileCacheEntry
      */
     public static function addEntry(string $file_name, string $contents) : FileCacheEntry
@@ -49,7 +59,8 @@ final class FileCache
     }
 
     /**
-     * @return ?FileCacheEntry
+     * @return ?FileCacheEntry if the entry exists in cache, return it.
+     * Otherwise, return null.
      */
     public static function getEntry(string $file_name)
     {
@@ -64,8 +75,9 @@ final class FileCache
     }
 
     /**
-     * @throws \RuntimeException if the file could not be loaded
-     * @return FileCacheEntry
+     * @param string $file_name an absolute path to a file on disk
+     * @return FileCacheEntry This will load the file from the filesystem if it could not be found.
+     * @throws RuntimeException if the file could not be loaded
      */
     public static function getOrReadEntry(string $file_name) : FileCacheEntry
     {
@@ -74,14 +86,14 @@ final class FileCache
             return $entry;
         }
         if (!\file_exists($file_name)) {
-            throw new \RuntimeException("FileCache::getOrReadEntry: unable to find '$file_name'\n");
+            throw new RuntimeException("FileCache::getOrReadEntry: unable to find '$file_name'\n");
         }
         if (!\is_readable($file_name)) {
-            throw new \RuntimeException("FileCache::getOrReadEntry: unable to read '$file_name'\n");
+            throw new RuntimeException("FileCache::getOrReadEntry: unable to read '$file_name'\n");
         }
-        $contents = file_get_contents($file_name);
+        $contents = \file_get_contents($file_name);
         if (!\is_string($contents)) {
-            throw new \RuntimeException("FileCache::getOrReadEntry: file_get_contents failed for '$file_name'\n");
+            throw new RuntimeException("FileCache::getOrReadEntry: file_get_contents failed for '$file_name'\n");
         }
         $entry = self::addEntry($file_name, $contents);
         return $entry;
@@ -101,6 +113,6 @@ final class FileCache
      */
     public static function getCachedFileList() : array
     {
-        return array_keys(self::$cache_entries);
+        return \array_keys(self::$cache_entries);
     }
 }

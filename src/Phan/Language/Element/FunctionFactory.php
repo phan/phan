@@ -1,13 +1,19 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language\Element;
 
 use Phan\Language\Context;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Type;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
 
+/**
+ * This returns internal function declarations for a given function/method FQSEN,
+ * using Reflection and/or Phan's internal function signature map.
+ */
 class FunctionFactory
 {
     /**
@@ -60,10 +66,11 @@ class FunctionFactory
         $context = new Context();
 
         $return_type = UnionType::fromStringInContext(
-            array_shift($signature),
+            $signature[0],
             $context,
             Type::FROM_TYPE
         );
+        unset($signature[0]);
 
         $func = new Func(
             $context,
@@ -78,23 +85,21 @@ class FunctionFactory
     }
 
     /**
-     * @return array<int,Method>
+     * @return array<int,Method> a list of 1 or more method signatures from a ReflectionMethod
+     * and Phan's alternate signatures for that method's FQSEN in FunctionSignatureMap.
      */
     public static function methodListFromReflectionClassAndMethod(
         Context $context,
         \ReflectionClass $class,
         \ReflectionMethod $reflection_method
     ) : array {
-        $method_fqsen = FullyQualifiedMethodName::fromStringInContext(
-            $reflection_method->getName(),
-            $context
+        $class_name = $class->getName();
+        $method_fqsen = FullyQualifiedMethodName::make(
+            // @phan-suppress-next-line PhanThrowTypeAbsentForCall
+            FullyQualifiedClassName::fromFullyQualifiedString($class_name),
+            $reflection_method->getName()
         );
 
-        $class_name = $class->getName();
-        $reflection_method = new \ReflectionMethod(
-            $class_name,
-            $reflection_method->name
-        );
 
         $method = new Method(
             $context,
@@ -110,7 +115,6 @@ class FunctionFactory
         );
 
         $method->setNumberOfOptionalParameters(
-            // @phan-suppress-next-line PhanPartialTypeMismatchArgument TODO: Make this consistently an int?
             $reflection_method->getNumberOfParameters()
             - $reflection_method->getNumberOfRequiredParameters()
         );
@@ -151,7 +155,11 @@ class FunctionFactory
         }
 
         $alternate_id = 0;
-        return \array_map(function ($map) use (
+        /**
+         * @param array<string,mixed> $map
+         * @suppress PhanPossiblyFalseTypeArgumentInternal, PhanPossiblyFalseTypeArgument
+         */
+        return \array_map(static function ($map) use (
             $function,
             &$alternate_id
         ) : FunctionInterface {
@@ -164,7 +172,7 @@ class FunctionFactory
             );
 
             // Set the return type if one is defined
-            if (!empty($map['return_type'])) {
+            if (isset($map['return_type'])) {
                 $alternate_function->setUnionType($map['return_type']);
             }
             $alternate_function->clearParameterList();
@@ -226,7 +234,7 @@ class FunctionFactory
             $alternate_function->setNumberOfRequiredParameters(
                 \array_reduce(
                     $alternate_function->getParameterList(),
-                    function (int $carry, Parameter $parameter) : int {
+                    static function (int $carry, Parameter $parameter) : int {
                         return ($carry + (
                             $parameter->isOptional() ? 0 : 1
                         ));

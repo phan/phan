@@ -1,18 +1,18 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Analysis;
 
+use AssertionError;
+use ast\Node;
 use Phan\AST\Visitor\KindVisitorImplementation;
 use Phan\Language\Context;
 use Phan\Language\Scope;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
-use ast\Node;
 
 /**
  * This will merge inferred variable types from multiple contexts in branched control structures
  * (E.g. if/elseif/else, try/catch, loops, ternary operators, etc.
- *
- * @phan-file-suppress PhanPluginNoAssert
  */
 class ContextMergeVisitor extends KindVisitorImplementation
 {
@@ -80,7 +80,9 @@ class ContextMergeVisitor extends KindVisitorImplementation
      */
     public function mergeTryContext(Node $node) : Context
     {
-        \assert(\count($this->child_context_list) === 1);
+        if (\count($this->child_context_list) !== 1) {
+            throw new AssertionError("Expected one child context in " . __METHOD__);
+        }
 
         // Get the list of scopes for each branch of the
         // conditional
@@ -117,12 +119,18 @@ class ContextMergeVisitor extends KindVisitorImplementation
         return false;
     }
 
+    /**
+     * Returns a context resulting from merging the possible variable types from the catch statements
+     * that will fall through.
+     */
     public function mergeCatchContext(Node $node) : Context
     {
-        \assert(\count($this->child_context_list) >= 2);  // first context is the try
+        if (\count($this->child_context_list) < 2) {
+            throw new AssertionError("Expected at least two contexts in " . __METHOD__);
+        }
         // Get the list of scopes for each branch of the
         // conditional
-        $scope_list = \array_map(function (Context $context) : Scope {
+        $scope_list = \array_map(static function (Context $context) : Scope {
             return $context->getScope();
         }, $this->child_context_list);
 
@@ -144,6 +152,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
             // $try_scope = $this->context->getScope();
         // } else {
             // If we don't have to worry about analyzing the finally statement, then assume that the entire try statement succeeded or the a catch statement succeeded.
+            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             $try_scope = \reset($this->child_context_list)->getScope();
         // }
 
@@ -203,7 +212,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
     {
         // Get the list of scopes for each branch of the
         // conditional
-        $scope_list = \array_map(function (Context $context) : Scope {
+        $scope_list = \array_map(static function (Context $context) : Scope {
             return $context->getScope();
         }, $this->child_context_list);
 
@@ -225,6 +234,9 @@ class ContextMergeVisitor extends KindVisitorImplementation
         return $this->combineScopeList($scope_list);
     }
 
+    /**
+     * @param array<mixed,Node|mixed> $children children of a Node of kind AST_IF
+     */
     private function hasElse(array $children) : bool
     {
         foreach ($children as $child_node) {
@@ -243,19 +255,25 @@ class ContextMergeVisitor extends KindVisitorImplementation
     public function combineChildContextList() : Context
     {
         $child_context_list = $this->child_context_list;
-        \assert(\count($child_context_list) >= 2);
-        $scope_list = \array_map(function (Context $context) : Scope {
+        if (\count($child_context_list) < 2) {
+            throw new AssertionError("Expected at least two child contexts in " . __METHOD__);
+        }
+        $scope_list = \array_map(static function (Context $context) : Scope {
             return $context->getScope();
         }, $child_context_list);
         return $this->combineScopeList($scope_list);
     }
 
     /**
+     * Returns a new scope which combines the parent scope with a list of 2 or more child scopes
+     * (one of those scopes is permitted to be the parent scope)
      * @param array<int,Scope> $scope_list
      */
     public function combineScopeList(array $scope_list) : Context
     {
-        \assert(\count($scope_list) >= 2);
+        if (\count($scope_list) < 2) {
+            throw new AssertionError("Expected at least two child contexts in " . __METHOD__);
+        }
         // Get a list of all variables in all scopes
         $variable_map = [];
         foreach ($scope_list as $scope) {
@@ -268,7 +286,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         // every branch
         $is_defined_on_all_branches =
             /** @return bool */
-            function (string $variable_name) use ($scope_list) {
+            static function (string $variable_name) use ($scope_list) {
                 foreach ($scope_list as $scope) {
                     if (!$scope->hasVariableWithName($variable_name)) {
                         return false;
@@ -281,7 +299,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         // the variable from every side of the branch
         $union_type =
             /** @return UnionType */
-            function (string $variable_name) use ($scope_list) {
+            static function (string $variable_name) use ($scope_list) {
                 $previous_type = null;
                 $type_list = [];
                 // Get a list of all variables with the given name from
@@ -297,10 +315,9 @@ class ContextMergeVisitor extends KindVisitorImplementation
                     if ($type !== $previous_type) {
                         $type_list[] = $type;
 
-                        // @phan-suppress-next-line PhanPluginUnusedVariable plugin doesn't handle loops well.
                         $previous_type = $type;
                     }
-                };
+                }
 
                 if (\count($type_list) < 2) {
                     $result = \reset($type_list) ?: UnionType::empty();

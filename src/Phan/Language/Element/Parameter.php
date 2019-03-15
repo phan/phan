@@ -1,6 +1,10 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language\Element;
 
+use AssertionError;
+use ast\Node;
+use InvalidArgumentException;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Exception\IssueException;
@@ -22,12 +26,12 @@ use Phan\Language\Type\TrueType;
 use Phan\Language\UnionType;
 use Phan\Parse\ParseVisitor;
 
-use AssertionError;
-use ast\Node;
-use InvalidArgumentException;
-
 /**
+ * Represents the information Phan has about a function-like's Parameter
+ * (e.g. of a function, closure, method, a PHPDoc closure/callable signature such as `Closure(MyClass=):void`, or phpdoc method.
+ *
  * @phan-file-suppress PhanPartialTypeMismatchArgument
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class Parameter extends Variable
 {
@@ -35,11 +39,11 @@ class Parameter extends Variable
     const REFERENCE_READ_WRITE = 2;
     const REFERENCE_WRITE_ONLY = 3;
 
-    // __construct inherited from Variable
+    // __construct(FileRef $file_ref, string $name, UnionType $type, int $flags) inherited from Variable
 
     /**
      * @var UnionType|null
-     * The type of the default value if any
+     * The type of the default value, if any
      */
     private $default_value_type = null;
 
@@ -126,6 +130,7 @@ class Parameter extends Variable
                 $this->default_value_future_type = null;
             }
         }
+        // @phan-suppress-next-line PhanPossiblyNullTypeReturn callers should check hasDefaultType
         return $this->default_value_type;
     }
 
@@ -148,7 +153,8 @@ class Parameter extends Variable
      */
     public function handleDefaultValueOfNull()
     {
-        if ($this->default_value_type->isType(NullType::instance(false))) {
+        $default_value_type = $this->default_value_type;
+        if ($default_value_type && $default_value_type->isType(NullType::instance(false))) {
             // If it isn't already nullable, convert the parameter type to nullable.
             $this->convertToNullable();
         }
@@ -174,25 +180,9 @@ class Parameter extends Variable
         Node $node
     ) : array {
         $parameter_list = [];
-        $is_optional_seen = false;
         foreach ($node->children as $child_node) {
             $parameter =
                 Parameter::fromNode($context, $code_base, $child_node);
-
-            if (!$parameter->isOptional() && $is_optional_seen) {
-                Issue::maybeEmit(
-                    $code_base,
-                    $context,
-                    Issue::ParamReqAfterOpt,
-                    $node->lineno ?? 0
-                );
-            } elseif ($parameter->isOptional()
-                && !$is_optional_seen
-                && $parameter->getNonVariadicUnionType()->isEmpty()
-            ) {
-                // @phan-suppress-next-line PhanPluginUnusedVariable
-                $is_optional_seen = true;
-            }
 
             $parameter_list[] = $parameter;
         }
@@ -207,9 +197,12 @@ class Parameter extends Variable
     public static function listFromReflectionParameterList(
         array $reflection_parameters
     ) : array {
-        return \array_map([__CLASS__, 'fromReflectionParameter'], $reflection_parameters);
+        return \array_map([self::class, 'fromReflectionParameter'], $reflection_parameters);
     }
 
+    /**
+     * Creates a parameter signature for a function-like from the name, type, etc. of the passed in reflection parameter
+     */
     public static function fromReflectionParameter(
         \ReflectionParameter $reflection_parameter
     ) : Parameter {
@@ -273,11 +266,7 @@ class Parameter extends Variable
     ) : Parameter {
         // Get the type of the parameter
         $type_node = $node->children['type'];
-        $union_type = UnionTypeVisitor::unionTypeFromNode(
-            $code_base,
-            $context,
-            $type_node
-        );
+        $union_type = $type_node ? (new UnionTypeVisitor($code_base, $context))->fromTypeInSignature($type_node) : UnionType::empty();
 
         // Create the skeleton parameter from what we know so far
         $parameter = Parameter::create(
@@ -458,6 +447,12 @@ class Parameter extends Variable
         return $this->getFlagsHasState(\ast\flags\PARAM_REF);
     }
 
+    /**
+     * Returns an enum value indicating how this reference parameter is changed by the caller.
+     *
+     * E.g. for REFERENCE_WRITE_ONLY, the reference parameter ignores the passed in value and always replaces it with another type.
+     * (added with (at)phan-output-parameter in PHPDoc or with special prefixes in FunctionSignatureMap.php)
+     */
     public function getReferenceType() : int
     {
         $flags = $this->getPhanFlags();
@@ -486,6 +481,13 @@ class Parameter extends Variable
         $this->enablePhanFlagBits(Flags::IS_PARAM_USING_NULLABLE_SYNTAX);
     }
 
+    /**
+     * Is this a parameter that uses the nullable `?` syntax in the actual declaration?
+     *
+     * E.g. this will be true for `?int $myParam = null`, but false for `int $myParam = null`
+     *
+     * This is needed to deal with edge cases of analysis.
+     */
     public function getIsUsingNullableSyntax() : bool
     {
         return $this->getPhanFlagsHasState(Flags::IS_PARAM_USING_NULLABLE_SYNTAX);
@@ -515,14 +517,19 @@ class Parameter extends Variable
             if ($default_value instanceof Node) {
                 $string .= ' = null';
             } else {
-                $string .= ' = ' . var_export($default_value, true);
+                $string .= ' = ' . \var_export($default_value, true);
             }
         }
 
         return $string;
     }
 
-    public function toStubString() : string
+    /**
+     * Convert this parameter to a stub that can be used by `tool/make_stubs`
+     *
+     * @param bool $is_internal is this being requested for the language server instead of real PHP code?
+     */
+    public function toStubString(bool $is_internal = false) : string
     {
         $string = '';
 
@@ -556,14 +563,24 @@ class Parameter extends Variable
             if ($default_value instanceof Node) {
                 $kind = $default_value->kind;
                 if ($kind === \ast\AST_NAME) {
-                    $default_repr = $default_value->children['name'];
+                    $default_repr = (string)$default_value->children['name'];
                 } elseif ($kind === \ast\AST_ARRAY) {
                     $default_repr = '[]';
                 } else {
                     $default_repr = 'null';
                 }
             } else {
-                $default_repr = var_export($this->getDefaultValue(), true);
+                $default_repr = \var_export($this->getDefaultValue(), true);
+            }
+            if (\strtolower($default_repr) === 'null') {
+                $default_repr = 'null';
+                // If we're certain the parameter isn't nullable,
+                // then render the default as `default`, not `null`
+                if ($is_internal) {
+                    if (!$union_type->isEmpty() && !$union_type->containsNullable()) {
+                        $default_repr = 'default';
+                    }
+                }
             }
             $string .= ' = ' . $default_repr;
         }
@@ -571,6 +588,12 @@ class Parameter extends Variable
         return $string;
     }
 
+    /**
+     * Converts this to a ClosureDeclarationParameter that can be used in FunctionLikeDeclarationType instances.
+     *
+     * E.g. when analyzing code such as `$x = Closure::fromCallable('some_function')`,
+     * this is used on parameters of `some_function()` to infer the create the parameter types of the inferred type.
+     */
     public function asClosureDeclarationParameter() : ClosureDeclarationParameter
     {
         $param_type = $this->getNonVariadicUnionType();
@@ -583,5 +606,14 @@ class Parameter extends Variable
             $this->isPassByReference(),
             $this->isOptional()
         );
+    }
+
+    /**
+     * @param FunctionInterface $function - The function that has this Parameter.
+     * @return Context a Context with the line number of this parameter
+     */
+    public function createContext(FunctionInterface $function) : Context
+    {
+        return clone($function->getContext())->withLineNumberStart($this->getFileRef()->getLineNumberStart());
     }
 }

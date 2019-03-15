@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
 
 namespace Phan\LanguageServer;
 
@@ -8,6 +8,8 @@ namespace Phan\LanguageServer;
  *
  * TODO: remove all overrides when a language client disconnects.
  * (Right now, we only have a single client, and shut down when the client disconnects)
+ *
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod TODO: Document
  */
 class FileMapping
 {
@@ -73,6 +75,11 @@ class FileMapping
         $this->removeOverride($path);
     }
 
+    /**
+     * Returns the file URI for the path $path.
+     *
+     * This will prefer to return the URI that the client first sent (that got converted to $path)
+     */
     public function getURIForPath(string $path) : string
     {
         return $this->uri_for_path[$path] ?? Utils::pathToUri($path);

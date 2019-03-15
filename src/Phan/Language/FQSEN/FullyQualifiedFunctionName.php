@@ -1,9 +1,11 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language\FQSEN;
 
-use Phan\Exception\EmptyFQSENException;
-use Phan\Language\Context;
 use ast\Node;
+use Phan\Exception\EmptyFQSENException;
+use Phan\Exception\FQSENException;
+use Phan\Language\Context;
 
 /**
  * A Fully-Qualified Function Name
@@ -34,13 +36,13 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement i
 
     /**
      * @param string $fqsen_string
-     * An FQSEN string like '\Namespace\Class'
+     * An FQSEN string like '\Namespace\myfunction'
      *
      * @param Context $context
      * The context in which the FQSEN string was found
      *
-     * @throws EmptyFQSENException
-     * if $fqsen_string has an empty name component.
+     * @throws FQSENException
+     * if $fqsen_string has an empty/invalid name component.
      */
     public static function fromStringInContext(
         string $fqsen_string,
@@ -60,7 +62,7 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement i
         $parts = \explode('\\', $fqsen_string);
         $name = \array_pop($parts);
 
-        if ($name === '') {
+        if ($name === '' || $name === false) {
             throw new EmptyFQSENException("The name cannot be empty", $fqsen_string);
         }
 
@@ -74,7 +76,7 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement i
 
         // For functions we don't use the context's namespace if
         // there is no NS on the call.
-        $namespace = \implode('\\', array_filter($parts));
+        $namespace = \implode('\\', \array_filter($parts));
 
         return static::make(
             $namespace,
@@ -83,17 +85,22 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement i
         );
     }
 
+    /**
+     * Generates a deterministic FQSEN for the closure of the passed in node.
+     * @param Node $node a Node type AST_CLOSURE, within the file $context->getFile()
+     */
     public static function fromClosureInContext(
         Context $context,
         Node $node
     ) : FullyQualifiedFunctionName {
         $hash_material =
             $context->getFile() . '|' .
-            $context->getLineNumberStart() . '|' .
+            $node->lineno . '|' .
             $node->children['__declId'];
 
-        $name = 'closure_' . substr(md5($hash_material), 0, 12);
+        $name = 'closure_' . \substr(\md5($hash_material), 0, 12);
 
+        // @phan-suppress-next-line PhanThrowTypeAbsentForCall this is valid
         return static::fromStringInContext(
             $name,
             $context

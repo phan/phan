@@ -1,7 +1,10 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
+
 namespace Phan\Tests;
 
 /**
+ * Unit test of analysis involving classes/functions/methods from the PHP module(extension) `intl`
+ *
  * @requires extension intl
  */
 final class IntlTest extends AbstractPhanFileTest
@@ -10,7 +13,7 @@ final class IntlTest extends AbstractPhanFileTest
     /**
      * This reads all files in `tests/intl_files/src`, runs
      * the analyzer on each and compares the output
-     * to the files's counterpart in
+     * to the files' counterpart in
      * `tests/intl_files/expected`
      *
      * @param string[] $test_file_list

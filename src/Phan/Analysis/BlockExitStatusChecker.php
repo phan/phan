@@ -1,14 +1,15 @@
 <?php declare(strict_types=1);
-namespace Phan\Analysis;
 
-use Phan\AST\Visitor\KindVisitorImplementation;
+namespace Phan\Analysis;
 
 use AssertionError;
 use ast\Node;
+use Phan\AST\Visitor\KindVisitorImplementation;
+
+use function count;
 
 /**
- * This simplifies a PHP AST into a form which is easier to analyze.
- * Precondition: The original \ast\Node objects are not modified.
+ * This checks what exit statuses are possible for AST nodes: `break;`, `continue;`, `throw`, `return`, proceeding, etc.
  *
  * This caches the status for AST nodes, so references to this object
  * should be removed once the source transformation of a file/function is complete.
@@ -27,7 +28,7 @@ use ast\Node;
  * TODO: Change to AnalysisVisitor if this ever emits issues.
  * TODO: Analyze switch (if there is a default) in another PR (And handle fallthrough)
  *
- * @phan-file-suppress PhanPluginUnusedPublicFinalMethodArgument, PhanUnusedPublicFinalMethodParameter
+ * @phan-file-suppress PhanUnusedPublicFinalMethodParameter
  * @phan-file-suppress PhanPartialTypeMismatchArgument
  */
 final class BlockExitStatusChecker extends KindVisitorImplementation
@@ -66,6 +67,11 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     {
     }
 
+    /**
+     * Computes the bitmask representing the possible ways this block of code might exit.
+     *
+     * This currently does not handle goto or `break N` comprehensively.
+     */
     public function check(Node $node = null) : int
     {
         if (!$node) {
@@ -87,6 +93,9 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         return self::STATUS_PROCEED;
     }
 
+    /**
+     * @param Node|string|int|float $cond
+     */
     private static function isTruthyLiteral($cond) : bool
     {
         if ($cond instanceof Node) {
@@ -95,7 +104,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
                 $cond_name = $cond->children['name'];
                 if ($cond_name->kind === \ast\AST_NAME) {
                     $cond_name_string = $cond_name->children['name'];
-                    return \is_string($cond_name_string) && strcasecmp($cond_name_string, 'true') === 0;
+                    return \is_string($cond_name_string) && \strcasecmp($cond_name_string, 'true') === 0;
                 }
             }
             return false;
@@ -202,7 +211,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         // Try to cover all possible cases, such as try { return throwsException(); } catch(Exception $e) { break; }
         foreach ($node->children as $catch_node) {
             $catch_node_status = $this->visitStmtList($catch_node->children['stmts']);
-            $combined_status = $combined_status | $catch_node_status;
+            $combined_status |= $catch_node_status;
         }
         // No idea.
         return $combined_status;
@@ -271,6 +280,9 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         return $status;
     }
 
+    /**
+     * @param array<mixed,Node|int|string|float> $siblings
+     */
     private function computeStatusOfSwitchCase(Node $case_node, int $index, array $siblings) : int
     {
         $status = $this->visitStmtList($case_node->children['stmts']);
@@ -385,7 +397,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     }
 
     /**
-     * A exit statement unconditionally exits (Assume expression passed in doesn't throw)
+     * An exit statement unconditionally exits (Assume expression passed in doesn't throw)
      * @return int the corresponding status code
      */
     public function visitExit(Node $node)
@@ -440,7 +452,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
             }
         } else {
             if (!\is_string($expression)) {
-                return self::STATUS_PROCEED;  // Probably impossible.
+                return self::STATUS_THROW;  // Probably impossible.
             }
             $function_name = $expression;
         }
@@ -450,6 +462,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         if ($function_name[0] === '\\') {
             $function_name = \substr($function_name, 1);
         }
+        // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
         if (\strcasecmp($function_name, 'trigger_error') === 0) {
             return $this->computeTriggerErrorStatusCodeForConstant($node->children['args']->children[1] ?? null);
         }
@@ -458,9 +471,13 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         return self::STATUS_PROCEED;
     }
 
+    /**
+     * @param Node|string|int|float $constant_ast
+     */
     private function computeTriggerErrorStatusCodeForConstant($constant_ast) : int
     {
         // return PROCEED if this can't be determined.
+        // TODO: Could check for integer literals
         if (!($constant_ast instanceof Node)) {
             return self::STATUS_PROCEED;
         }
@@ -611,11 +628,17 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         return self::STATUS_PROCEED | $maybe_status;
     }
 
+    /**
+     * Will the node $node unconditionally never fall through to the following statement?
+     */
     public static function willUnconditionallySkipRemainingStatements(Node $node) : bool
     {
         return ((new self())->__invoke($node) & self::STATUS_MAYBE_PROCEED) === 0;
     }
 
+    /**
+     * Will the node $node unconditionally throw or return (or exit),
+     */
     public static function willUnconditionallyThrowOrReturn(Node $node) : bool
     {
         return ((new self())->__invoke($node) & ~self::STATUS_THROW_OR_RETURN_BITMASK) === 0;

@@ -2,9 +2,13 @@
 
 namespace Phan\AST\TolerantASTConverter;
 
+use Exception;
 use Microsoft\PhpParser\Node;
 use Microsoft\PhpParser\Token;
 
+use function get_class;
+use function gettype;
+use function is_object;
 use function substr;
 
 /**
@@ -31,16 +35,17 @@ use function substr;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class NodeDumper
 {
-    /** @var string */
+    /** @var string the contents of the file containing the tolerant-php-parser node to be dumped. */
     private $file_contents;
-    /** @var bool */
+    /** @var bool whether we should print byte offsets along with the node */
     private $include_offset;
-    /** @var bool */
+    /** @var bool whether we should print the node kind of tokens*/
     private $include_token_kind;
-    /** @var string */
+    /** @var string the indentation string to print before each level of nodes (whitespace) */
     private $indent;
 
     // TODO: Pass an options array instead, or add setters?
@@ -73,20 +78,14 @@ class NodeDumper
         $this->indent = $indent;
     }
 
+    /**
+     * Converts the class name of $ast_node to a short string describing that class name.
+     * Removes the common `Microsoft\\PhpParser\\` prefix
+     */
     public function dumpClassName(Node $ast_node) : string
     {
         $name = get_class($ast_node);
-        if (stripos($name, 'Microsoft\\PhpParser\\') === 0) {
-            // Remove the PhpParser namespace
-            $name = (string)substr($name, 20);
-        }
-        return $name;
-    }
-
-    public function dumpTokenClassName(Token $ast_node) : string
-    {
-        $name = get_class($ast_node);
-        if (stripos($name, 'Microsoft\\PhpParser\\') === 0) {
+        if (\stripos($name, 'Microsoft\\PhpParser\\') === 0) {
             // Remove the PhpParser namespace
             $name = (string)substr($name, 20);
         }
@@ -94,10 +93,24 @@ class NodeDumper
     }
 
     /**
-     * @param Node|Token $ast_node
+     * Converts the class name of $ast_node to a short string describing that class name.
+     * Removes the common `Microsoft\\PhpParser\\` prefix
+     */
+    public function dumpTokenClassName(Token $ast_node) : string
+    {
+        $name = get_class($ast_node);
+        if (\stripos($name, 'Microsoft\\PhpParser\\') === 0) {
+            // Remove the PhpParser namespace
+            $name = (string)substr($name, 20);
+        }
+        return $name;
+    }
+
+    /**
+     * @param Node|Token|null $ast_node
      * @param string $padding (to be echoed before the current node
      * @return string
-     * @throws \InvalidArgumentException for invalid $ast_node values
+     * @throws Exception for invalid $ast_node values
      */
     public function dumpTreeAsString($ast_node, string $key = '', string $padding = '') : string
     {
@@ -124,7 +137,7 @@ class NodeDumper
                 $ast_node->getTokenKindNameFromValue($ast_node->kind),
                 $this->include_token_kind ? '(' . $ast_node->kind . ')' : '',
                 $this->include_offset ? ' (@' . $ast_node->start . ')' : '',
-                \json_encode(\substr($this->file_contents, $ast_node->fullStart, $ast_node->length))
+                \Phan\Library\StringUtil::jsonEncode(\substr($this->file_contents, $ast_node->fullStart, $ast_node->length))
             );
         } elseif (\is_scalar($ast_node) || $ast_node === null) {
             return \var_export($ast_node, true);
@@ -138,6 +151,7 @@ class NodeDumper
      * @param Node|Token $ast_node
      * @param string $padding (to be echoed before the current node
      * @return void
+     * @throws Exception for invalid $ast_node values
      * @suppress PhanUnreferencedPublicMethod
      */
     public function dumpTree($ast_node, string $key = '', string $padding = '')

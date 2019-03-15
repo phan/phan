@@ -1,12 +1,17 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Analysis;
 
+use AssertionError;
+use ast\Node;
+use Closure;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
+use Phan\Exception\RecursionDepthException;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
@@ -19,11 +24,14 @@ use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
 use Phan\PluginV2\StopParamAnalysisException;
 
-use AssertionError;
-use ast\Node;
+use function is_string;
 
 /**
+ * This visitor analyzes arguments of calls to methods, functions, and closures
+ * and emits issues for incorrect argument types.
+ *
  * @phan-file-suppress PhanPartialTypeMismatchArgument
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 final class ArgumentType
 {
@@ -110,30 +118,7 @@ final class ArgumentType
             }
 
             if (!$alternate_found) {
-                $max = $method->getNumberOfParameters();
-                if ($method->isPHPInternal()) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $context,
-                        Issue::ParamTooManyInternal,
-                        $node->lineno ?? 0,
-                        $argcount,
-                        $method->getRepresentationForIssue(),
-                        $max
-                    );
-                } else {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $context,
-                        Issue::ParamTooMany,
-                        $node->lineno ?? 0,
-                        $argcount,
-                        $method->getRepresentationForIssue(),
-                        $max,
-                        $method->getFileRef()->getFile(),
-                        $method->getFileRef()->getLineNumberStart()
-                    );
-                }
+                self::emitParamTooMany($code_base, $context, $method, $node, $argcount);
             }
         }
 
@@ -144,6 +129,40 @@ final class ArgumentType
             $arglist,
             $context
         );
+    }
+
+    private static function emitParamTooMany(
+        CodeBase $code_base,
+        Context $context,
+        FunctionInterface $method,
+        Node $node,
+        int $argcount
+    ) {
+        $max = $method->getNumberOfParameters();
+        $caused_by_variadic = $argcount === $max + 1 && (\end($node->children['args']->children)->kind ?? null) === \ast\AST_UNPACK;
+        if ($method->isPHPInternal()) {
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                $caused_by_variadic ? Issue::ParamTooManyUnpackInternal : Issue::ParamTooManyInternal,
+                $node->lineno ?? 0,
+                $caused_by_variadic ? $max : $argcount,
+                $method->getRepresentationForIssue(),
+                $max
+            );
+        } else {
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                $caused_by_variadic ? Issue::ParamTooManyUnpack : Issue::ParamTooMany,
+                $node->lineno ?? 0,
+                $caused_by_variadic ? $max : $argcount,
+                $method->getRepresentationForIssue(),
+                $max,
+                $method->getFileRef()->getFile(),
+                $method->getFileRef()->getLineNumberStart()
+            );
+        }
     }
 
     /**
@@ -214,7 +233,7 @@ final class ArgumentType
 
     /**
      * Figure out if any of the arguments are a call to unpack()
-     * @param array $children
+     * @param array<mixed,Node|int|string|float> $children
      */
     private static function isUnpack(array $children) : bool
     {
@@ -241,7 +260,7 @@ final class ArgumentType
      * @param CodeBase $code_base
      * The global code base
      *
-     * @param ?\Closure $get_argument_type (Node|string|int $node, int $i) -> UnionType
+     * @param Closure $get_argument_type (Node|string|int $node, int $i) -> UnionType
      * Fetches the types of individual arguments.
      */
     public static function analyzeForCallback(
@@ -249,7 +268,7 @@ final class ArgumentType
         array $arg_nodes,
         Context $context,
         CodeBase $code_base,
-        \Closure $get_argument_type
+        Closure $get_argument_type
     ) {
         // Special common cases where we want slightly
         // better multi-signature error messages
@@ -332,7 +351,7 @@ final class ArgumentType
      * @param Context $context
      * The context in which we see the call
      *
-     * @param \Closure $get_argument_type (Node|string|int $node, int $i) -> UnionType
+     * @param Closure $get_argument_type (Node|string|int $node, int $i) -> UnionType
      *
      * @return void
      */
@@ -341,7 +360,7 @@ final class ArgumentType
         FunctionInterface $method,
         array $arg_nodes,
         Context $context,
-        \Closure $get_argument_type
+        Closure $get_argument_type
     ) {
         // There's nothing reasonable we can do here
         if ($method instanceof Method) {
@@ -364,7 +383,7 @@ final class ArgumentType
             // Get the type of the argument. We'll check it against
             // the parameter in a moment
             $argument_type = $get_argument_type($argument, $i);
-            self::analyzeParameter($code_base, $context, $method, $argument_type, $argument->lineno ?? 0, $i);
+            self::analyzeParameter($code_base, $context, $method, $argument_type, $argument->lineno ?? $context->getLineNumberStart(), $i);
         }
     }
 
@@ -479,8 +498,12 @@ final class ArgumentType
     public static function analyzeParameter(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, int $lineno, int $i)
     {
         // Expand it to include all parent types up the chain
-        $argument_type_expanded =
-            $argument_type->asExpandedTypes($code_base);
+        try {
+            $argument_type_expanded =
+                $argument_type->asExpandedTypes($code_base);
+        } catch (RecursionDepthException $_) {
+            return;
+        }
 
         // Check the method to see if it has the correct
         // parameter types. If not, keep hunting through
@@ -522,9 +545,21 @@ final class ArgumentType
 
         $parameter_type = $alternate_parameter->getNonVariadicUnionType();
 
-        if ($parameter_type->hasTemplateType()) {
-            // Don't worry about template types
+        if ($parameter_type->hasTemplateTypeRecursive()) {
+            // Don't worry about **unresolved** template types.
+            // We resolve them if possible in ContextNode->getMethod()
             return;
+        }
+        if ($parameter_type->hasTemplateParameterTypes()) {
+            // TODO: Make the check for templates recursive
+            $argument_type_expanded_templates = $argument_type->asExpandedTypesPreservingTemplate($code_base);
+            if ($argument_type_expanded_templates->canCastToUnionTypeHandlingTemplates($parameter_type, $code_base)) {
+                // - can cast MyClass<\stdClass> to MyClass<mixed>
+                // - can cast Some<\stdClass> to Option<\stdClass>
+                // - cannot cast Some<\SomeOtherClass> to Option<\stdClass>
+                return;
+            }
+            // echo "Debug: $argument_type $argument_type_expanded_templates cannot cast to $parameter_type\n";
         }
 
         if ($method->isPHPInternal()) {
@@ -571,6 +606,9 @@ final class ArgumentType
 
     private static function analyzeParameterStrict(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, Variable $alternate_parameter, int $lineno, int $i)
     {
+        if ($alternate_parameter instanceof Parameter && $alternate_parameter->isPassByReference() && $alternate_parameter->getReferenceType() === Parameter::REFERENCE_WRITE_ONLY) {
+            return;
+        }
         $type_set = $argument_type->getTypeSet();
         if (\count($type_set) < 2) {
             throw new AssertionError("Expected to have at least two parameter types when checking if parameter types match in strict mode");
@@ -663,6 +701,8 @@ final class ArgumentType
      * Used to check if a place expecting a reference is actually getting a reference from a node.
      * Obvious types which are always references (properties, variables) must be checked for before calling this.
      *
+     * @param Node|string|int|float $node
+     *
      * @return bool - True if this node is a call to a function that may return a reference?
      */
     private static function isFunctionReturningReference(CodeBase $code_base, Context $context, $node) : bool
@@ -711,7 +751,7 @@ final class ArgumentType
                         }
                     }
                 } catch (IssueException $_) {
-                    // Swallow any issue esceptions here. They'll be caught elsewhere.
+                    // Swallow any issue exceptions here. They'll be caught elsewhere.
                 }
             }
         }

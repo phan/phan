@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Analysis;
 
 use Phan\CodeBase;
@@ -6,11 +7,14 @@ use Phan\Config;
 use Phan\Issue;
 use Phan\Language\Element\Clazz;
 
+/**
+ * Analyzer that checks if the constructor of the given Clazz calls the parent constructor.
+ */
 class ParentConstructorCalledAnalyzer
 {
 
     /**
-     * Check to see if the given Clazz is a duplicate
+     * Checks if the constructor of the given Clazz calls the parent constructor.
      *
      * @return void
      */

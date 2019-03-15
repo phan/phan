@@ -1,17 +1,20 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
+
 namespace Phan\Tests\Language;
 
-use Phan\Tests\BaseTest;
+use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Type;
-use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\ArrayShapeType;
+use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableDeclarationType;
+use Phan\Language\Type\CallableStringType;
 use Phan\Language\Type\CallableType;
-use Phan\Language\Type\ClosureType;
-use Phan\Language\Type\ClosureDeclarationType;
+use Phan\Language\Type\ClassStringType;
 use Phan\Language\Type\ClosureDeclarationParameter;
+use Phan\Language\Type\ClosureDeclarationType;
+use Phan\Language\Type\ClosureType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\FunctionLikeDeclarationType;
@@ -29,15 +32,19 @@ use Phan\Language\Type\StringType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
+use Phan\Tests\BaseTest;
+
+use function get_class;
 
 /**
  * Unit tests of Type
+ * @phan-file-suppress PhanThrowTypeAbsentForCall
  */
 final class TypeTest extends BaseTest
 {
     private function makePHPDocType(string $type_string) : Type
     {
-        $this->assertTrue(\preg_match('@^' . Type::type_regex_or_this . '$@', $type_string) > 0, "Failed to parse '$type_string'");
+        $this->assertRegExp('@^' . Type::type_regex_or_this . '$@', $type_string, "Failed to parse '$type_string'");
         return Type::fromStringInContext($type_string, new Context(), Type::FROM_PHPDOC);
     }
 
@@ -50,9 +57,12 @@ final class TypeTest extends BaseTest
 
     const DELIMITED_TYPE_REGEX_OR_THIS = '@^' . Type::type_regex_or_this . '$@';
 
+    /**
+     * Assert that all of $type_string is parseable as a single Type, and that that type is $expected_type.
+     */
     public function assertParsesAsType(Type $expected_type, string $type_string)
     {
-        $this->assertTrue(\preg_match(self::DELIMITED_TYPE_REGEX_OR_THIS, $type_string) > 0, "Failed to parse '$type_string'");
+        $this->assertRegExp(self::DELIMITED_TYPE_REGEX_OR_THIS, $type_string, "Failed to parse '$type_string'");
         $this->assertSameType($expected_type, self::makePHPDocType($type_string));
     }
 
@@ -133,7 +143,7 @@ final class TypeTest extends BaseTest
         $this->assertSameType($expected_generic_array_type, $generic_array_type);
         $this->assertSame('int[][]', (string)$expected_generic_array_type);
         $this->assertSameType($expected_generic_array_type, self::makePHPDocType('(int)[][]'));
-        // TODO: Parse (int[])[]?
+        $this->assertSameType($expected_generic_array_type, self::makePHPDocType('((int)[])[]'));
     }
 
     public function testTemplateTypes()
@@ -317,7 +327,7 @@ final class TypeTest extends BaseTest
 
     private function verifyClosureParam(FunctionLikeDeclarationType $expected_closure_type, string $union_type_string, string $normalized_type_string)
     {
-        $this->assertTrue(\preg_match(self::DELIMITED_TYPE_REGEX_OR_THIS, $union_type_string) > 0, "Failed to parse '$union_type_string'");
+        $this->assertRegExp(self::DELIMITED_TYPE_REGEX_OR_THIS, $union_type_string, "Failed to parse '$union_type_string'");
         $parsed_closure_type = self::makePHPDocType($union_type_string);
         $this->assertSame(get_class($expected_closure_type), get_class($parsed_closure_type), "expected closure/callable class for $normalized_type_string");
         $this->assertSame($normalized_type_string, (string)$parsed_closure_type, "failed parsing $union_type_string");
@@ -447,6 +457,7 @@ final class TypeTest extends BaseTest
         $this->assertTrue($from_type->canCastToType($to_type), "expected $from_type_string to be able to cast to $to_type_string");
     }
 
+    /** @return array<int,array> */
     public function canCastToTypeProvider() : array
     {
         return [
@@ -483,6 +494,7 @@ final class TypeTest extends BaseTest
         $this->assertFalse($from_type->canCastToType($to_type), "expected $from_type_string to be unable to cast to $to_type_string");
     }
 
+    /** @return array<int,array> */
     public function cannotCastToTypeProvider() : array
     {
         return [
@@ -515,19 +527,20 @@ final class TypeTest extends BaseTest
     /**
      * @dataProvider arrayShapeProvider
      */
-    public function testArrayShape($normalized_union_type_string, $type_string)
+    public function testArrayShape(string $normalized_union_type_string, string $type_string)
     {
-        $this->assertTrue(\preg_match('@^' . Type::type_regex . '$@', $type_string) > 0, "Failed to parse '$type_string' with type_regex");
-        $this->assertTrue(\preg_match('@^' . Type::type_regex_or_this . '$@', $type_string) > 0, "Failed to parse '$type_string' with type_regex_or_this");
+        $this->assertRegExp('@^' . Type::type_regex . '$@', $type_string, "Failed to parse '$type_string' with type_regex");
+        $this->assertRegExp('@^' . Type::type_regex_or_this . '$@', $type_string, "Failed to parse '$type_string' with type_regex_or_this");
         $actual_type = self::makePHPDocType($type_string);
         $expected_flattened_type = UnionType::fromStringInContext($normalized_union_type_string, new Context(), Type::FROM_PHPDOC);
         if (!$actual_type instanceof ArrayShapeType) {
-            throw new \RuntimeException(sprintf("Failed to create expected class for %s: saw %s instead of %s", $type_string, get_class($actual_type), ArrayShapeType::class));
+            throw new \RuntimeException(\sprintf("Failed to create expected class for %s: saw %s instead of %s", $type_string, get_class($actual_type), ArrayShapeType::class));
         }
         $actual_flattened_type = UnionType::of($actual_type->withFlattenedArrayShapeOrLiteralTypeInstances());
         $this->assertTrue($expected_flattened_type->isEqualTo($actual_flattened_type), "expected $actual_flattened_type to equal $expected_flattened_type");
     }
 
+    /** @return array<int,array> */
     public function arrayShapeProvider() : array
     {
         return [
@@ -550,6 +563,10 @@ final class TypeTest extends BaseTest
             [
                 'array<int,int>|array<int,string>',
                 'array{0:int,1:string}'
+            ],
+            [
+                'array<int,int>|array<int,string>|array<string,stdClass>',
+                'array{0:int, 1:string, key : stdClass}'
             ],
             [
                 'array<int,int>|array<int,stdClass>|array<int,string>',
@@ -582,20 +599,22 @@ final class TypeTest extends BaseTest
         ];
     }
 
-    /** @dataProvider unparseableTypeProvider */
-    public function testUnparseableType($type_string)
+    /** @dataProvider unparsableTypeProvider */
+    public function testUnparsableType(string $type_string)
     {
-        $this->assertFalse(\preg_match('@^' . Type::type_regex . '$@', $type_string) > 0, "Failed to parse '$type_string' with type_regex");
-        $this->assertFalse(\preg_match('@^' . Type::type_regex_or_this . '$@', $type_string) > 0, "Failed to parse '$type_string' with type_regex_or_this");
+        $this->assertNotRegExp('@^' . Type::type_regex . '$@', $type_string, "Failed to parse '$type_string' with type_regex");
+        $this->assertNotRegExp('@^' . Type::type_regex_or_this . '$@', $type_string, "Failed to parse '$type_string' with type_regex_or_this");
     }
 
-    public function unparseableTypeProvider() : array
+    /** @return array<int,array> */
+    public function unparsableTypeProvider() : array
     {
         return [
             ['array{'],
             ['{}'],
             ['array{,field:int}'],
             ['array{field:}'],
+            ['array{ field:int}'],
             ['array{::int}'],
             ["-'a'"],
             ["'@var'"],  // Ambiguous to support @, force hex escape
@@ -608,5 +627,75 @@ final class TypeTest extends BaseTest
     private static function createGenericArrayTypeWithMixedKey(Type $type, bool $is_nullable) : GenericArrayType
     {
         return GenericArrayType::fromElementType($type, $is_nullable, GenericArrayType::KEY_MIXED);
+    }
+
+    public function testClassString()
+    {
+        $class_string_type = Type::fromFullyQualifiedString('class-string');
+        $expected_class_string_type = ClassStringType::instance(false);
+        $this->assertSameType($expected_class_string_type, $class_string_type);
+        $this->assertSame('class-string', (string)$class_string_type);
+    }
+
+    public function testCallableString()
+    {
+        $callable_string_type = Type::fromFullyQualifiedString('?callable-string');
+        $expected_callable_string_type = CallableStringType::instance(true);
+        $this->assertSameType($expected_callable_string_type, $callable_string_type);
+        $this->assertSame('?callable-string', (string)$callable_string_type);
+    }
+
+    private function assertCannotCastToType(Type $source, Type $target, string $details)
+    {
+        $this->assertFalse($source->canCastToType($target), "expected type $source not to be able to cast to type $target when $details");
+    }
+
+    private function assertCanCastToType(Type $source, Type $target, string $details)
+    {
+        $this->assertTrue($source->canCastToType($target), "expected type $source to be able to cast to type $target when $details");
+    }
+
+    public function testCastingLiteralStringToInt()
+    {
+        $empty_string = LiteralStringType::instanceForValue('', false);
+        $zero_string = LiteralStringType::instanceForValue('0', false);
+        $decimal_string = LiteralStringType::instanceForValue('1234567890', false);
+        $float_string = LiteralStringType::instanceForValue('1.5', false);
+        $hex_string = LiteralStringType::instanceForValue('0x2', false);
+        $regular_string = LiteralStringType::instanceForValue('foo', false);
+        $int_type = IntType::instance(false);
+        $float_type = FloatType::instance(false);
+        $false_type = FalseType::instance(false);
+        $true_type = TrueType::instance(false);
+        try {
+            Config::setValue('scalar_implicit_cast', false);
+            foreach ([$int_type, $float_type] as $a_numeric_type) {
+                $this->assertCannotCastToType($empty_string, $a_numeric_type, 'scalar_implicit_cast is disabled');
+                $this->assertCannotCastToType($zero_string, $a_numeric_type, 'scalar_implicit_cast is disabled');
+                $this->assertCannotCastToType($decimal_string, $a_numeric_type, 'scalar_implicit_cast is disabled');
+                $this->assertCannotCastToType($hex_string, $a_numeric_type, 'scalar_implicit_cast is disabled');
+                $this->assertCannotCastToType($regular_string, $a_numeric_type, 'scalar_implicit_cast is disabled');
+                $this->assertCannotCastToType($float_string, $a_numeric_type, 'scalar_implicit_cast is disabled');
+            }
+            $this->assertCannotCastToType($empty_string, $true_type, 'scalar_implicit_cast is disabled');
+            $this->assertCannotCastToType($empty_string, $false_type, 'scalar_implicit_cast is disabled');
+            Config::setValue('scalar_implicit_cast', true);
+            foreach ([$int_type, $float_type] as $a_numeric_type) {
+                $this->assertCannotCastToType($empty_string, $a_numeric_type, 'scalar_implicit_cast is enabled');
+                $this->assertCanCastToType($zero_string, $a_numeric_type, 'scalar_implicit_cast is enabled');
+                $this->assertCanCastToType($decimal_string, $a_numeric_type, 'scalar_implicit_cast is enabled');
+                $this->assertCannotCastToType($hex_string, $a_numeric_type, 'scalar_implicit_cast is enabled');
+                $this->assertCannotCastToType($regular_string, $a_numeric_type, 'scalar_implicit_cast is enabled');
+            }
+            $this->assertCanCastToType($float_string, $float_type, 'scalar_implicit_cast is enabled');
+            $this->assertCannotCastToType($float_string, $int_type, 'scalar_implicit_cast is enabled');
+            $this->assertCannotCastToType($empty_string, $true_type, 'scalar_implicit_cast is disabled');
+            $this->assertCanCastToType($empty_string, $false_type, 'scalar_implicit_cast is disabled');
+            $this->assertCanCastToType($zero_string, $false_type, 'scalar_implicit_cast is disabled');
+            $this->assertCannotCastToType($regular_string, $false_type, 'scalar_implicit_cast is disabled');
+            $this->assertCanCastToType($regular_string, $true_type, 'scalar_implicit_cast is disabled');
+        } finally {
+            Config::setValue('scalar_implicit_cast', false);
+        }
     }
 }

@@ -1,0 +1,1 @@
+src/063_unused_dynamic_constant.php:8 PhanUnreferencedConstant Possibly zero references to global constant \foo\dynamic2

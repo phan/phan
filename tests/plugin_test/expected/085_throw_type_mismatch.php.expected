@@ -1,0 +1,2 @@
+src/085_throw_type_mismatch.php:15 PhanThrowTypeMismatch \NS626\C::main() throws \RuntimeException, but it only has declarations of '@throws \InvalidArgumentException'
+src/085_throw_type_mismatch.php:17 PhanThrowTypeMismatchForCall \NS626\C::main() throws \TypeError because it calls \NS626\C::throw(), but it only has declarations of '@throws \InvalidArgumentException'

@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language\Scope;
 
 use Phan\Language\Element\Variable;
@@ -7,15 +8,23 @@ use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Scope;
 
+/**
+ * A branch scope represents a scope created by branching off of the current scope
+ * (e.g. an if/elseif/else statement, a ternary conditional (`?:`) operator, etc.
+ */
 class BranchScope extends Scope
 {
+    public function __construct(Scope $scope)
+    {
+        parent::__construct($scope, null, $scope->flags);
+    }
 
     /**
      * @return bool
      * True if a variable with the given name is defined
      * within this scope
      *
-     * TODO: Allow unsetting a variable within a scope, and properly merge that
+     * TODO: Allow unsetting a variable within a scope, and properly account for that in this check.
      */
     public function hasVariableWithName(string $name) : bool
     {
@@ -46,15 +55,6 @@ class BranchScope extends Scope
     }
 
     /**
-     * @return bool
-     * True if we're in a class scope
-     */
-    public function isInClassScope() : bool
-    {
-        return $this->parent_scope->isInClassScope();
-    }
-
-    /**
      * @return FullyQualifiedClassName
      * Crawl the scope hierarchy to get a class FQSEN.
      */
@@ -64,20 +64,21 @@ class BranchScope extends Scope
     }
 
     /**
+     * @return ?FullyQualifiedClassName
+     * Crawl the scope hierarchy to get a class FQSEN.
+     * Return null if there is no class FQSEN.
+     */
+    public function getClassFQSENOrNull()
+    {
+        return $this->parent_scope->getClassFQSENOrNull();
+    }
+
+    /**
      * @return FullyQualifiedMethodName|FullyQualifiedFunctionName
      * Get the FQSEN for the closure, method or function we're in
      */
     public function getFunctionLikeFQSEN()
     {
         return $this->parent_scope->getFunctionLikeFQSEN();
-    }
-
-    /**
-     * @return bool
-     * True if we're in a class scope
-     */
-    public function isInFunctionLikeScope() : bool
-    {
-        return $this->parent_scope->isInFunctionLikeScope();
     }
 }

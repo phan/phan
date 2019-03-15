@@ -1,12 +1,16 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language\Type;
 
+use AssertionError;
 use Phan\Config;
 use Phan\Language\Type;
 
-use AssertionError;
-
-// Not sure if it made sense to extend BoolType, so not doing that.
+/**
+ * Represents the type `true`
+ * @see BoolType
+ * @see FalseType
+ */
 final class TrueType extends ScalarType
 {
     /** @phan-override */
@@ -63,4 +67,17 @@ final class TrueType extends ScalarType
     {
         return Config::getValue('scalar_implicit_cast');
     }
+
+    /**
+     * Check if this type can satisfy a comparison (<, <=, >, >=)
+     * @param int|string|float|bool|null $scalar
+     * @param int $flags (e.g. \ast\flags\BINARY_IS_SMALLER)
+     * @internal
+     */
+    public function canSatisfyComparison($scalar, int $flags) : bool
+    {
+        return self::performComparison(true, $scalar, $flags);
+    }
+
+    // public function getTypeAfterIncOrDec() : UnionType - doesn't need to be changed
 }

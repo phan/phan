@@ -1,0 +1,2 @@
+%s:5 PhanTypeMismatchArgument Argument 1 (x) is 2 but Closure(\stdClass $x) takes \stdClass defined at %s:2
+%s:10 PhanParamTooFewCallable Call with 0 arg(s) to Closure(\stdClass $x) : bool (as a provided callable) which requires 1 arg(s) defined at %s:11

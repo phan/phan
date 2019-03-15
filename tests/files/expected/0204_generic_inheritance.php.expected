@@ -5,4 +5,4 @@
 %s:50 PhanTypeMismatchArgument Argument 1 (p) is 42 but \f() takes bool defined at %s:3
 %s:55 PhanUndeclaredExtendedClass Class extends undeclared class \NotFound
 %s:58 PhanUndeclaredClass Reference to undeclared class \NotFound
-%s:67 PhanUndeclaredTypeParameter Parameter of undeclared type \NotFound
+%s:67 PhanUndeclaredTypeParameter Parameter $p has undeclared type \NotFound

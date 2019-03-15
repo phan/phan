@@ -1,5 +1,5 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Phan\LanguageServer;
 
@@ -16,9 +16,6 @@ class LanguageClient
      */
     public $textDocument;
 
-    /**
-     *
-     */
     public function __construct(ProtocolReader $reader, ProtocolWriter $writer)
     {
         $handler = new ClientHandler($reader, $writer);

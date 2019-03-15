@@ -1,7 +1,8 @@
 <?php declare(strict_types=1);
 
-use Phan\CodeBase;
+use ast\Node;
 use Phan\Analysis\BlockExitStatusChecker;
+use Phan\CodeBase;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
@@ -10,8 +11,6 @@ use Phan\Language\Type\VoidType;
 use Phan\PluginV2;
 use Phan\PluginV2\AnalyzeFunctionCapability;
 use Phan\PluginV2\AnalyzeMethodCapability;
-
-use ast\Node;
 
 /**
  * This file checks if a function, closure or method unconditionally returns.
@@ -30,7 +29,7 @@ use ast\Node;
  *
  * A plugin file must
  *
- * - Contain a class that inherits from \Phan\Plugin
+ * - Contain a class that inherits from \Phan\PluginV2
  *
  * - End by returning an instance of that class.
  *
@@ -74,8 +73,8 @@ final class AlwaysReturnPlugin extends PluginV2 implements
             return;
         }
         if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_list)) {
-            if (!$method->hasSuppressIssue('PhanPluginAlwaysReturnMethod')) {
-                $this->emitIssue(
+            if (!$method->checkHasSuppressIssueAndIncrementCount('PhanPluginAlwaysReturnMethod')) {
+                self::emitIssue(
                     $code_base,
                     $method->getContext(),
                     'PhanPluginAlwaysReturnMethod',
@@ -111,8 +110,8 @@ final class AlwaysReturnPlugin extends PluginV2 implements
             return;
         }
         if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_list)) {
-            if (!$function->hasSuppressIssue('PhanPluginAlwaysReturnFunction')) {
-                $this->emitIssue(
+            if (!$function->checkHasSuppressIssueAndIncrementCount('PhanPluginAlwaysReturnFunction')) {
+                self::emitIssue(
                     $code_base,
                     $function->getContext(),
                     'PhanPluginAlwaysReturnFunction',
@@ -162,5 +161,5 @@ final class AlwaysReturnPlugin extends PluginV2 implements
 }
 
 // Every plugin needs to return an instance of itself at the
-// end of the file in which its defined.
+// end of the file in which it's defined.
 return new AlwaysReturnPlugin();

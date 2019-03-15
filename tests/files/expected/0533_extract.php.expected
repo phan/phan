@@ -1,0 +1,4 @@
+%s:6 PhanUndeclaredVariable Variable $2 is undeclared
+%s:7 PhanTypeMismatchArgumentInternal Argument 1 (string) is \stdClass but \strlen() takes string
+%s:11 PhanTypeMismatchArgumentInternal Argument 1 (string) is \stdClass but \strlen() takes string
+%s:12 PhanTypeMismatchArgumentInternal Argument 1 (string) is array{} but \strlen() takes string

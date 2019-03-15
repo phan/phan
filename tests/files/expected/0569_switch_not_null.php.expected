@@ -1,0 +1,4 @@
+%s:8 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int
+%s:11 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is ?string but \intdiv() takes int
+%s:26 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is 'a'|'v1'|'v3' but \intdiv() takes int
+%s:33 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is 'v1'|'v2'|string but \intdiv() takes int

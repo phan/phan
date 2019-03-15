@@ -1,14 +1,21 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language\Element;
 
 use ast\Node;
 use Closure;
 
+/**
+ * Represents functionality common to GlobalConstant and ClassConstant
+ * for APIs Phan has for representations of constants.
+ *
+ * @see ConstantInterface - Classes using this trait use this interface
+ */
 trait ConstantTrait
 {
     use ElementFutureUnionType;
 
-    /** @var Node|string|float|int */
+    /** @var Node|string|float|int the node which defined the value of this constant. */
     protected $defining_node;
 
     /**
@@ -44,7 +51,8 @@ trait ConstantTrait
     }
 
     /**
-     * @internal - Used by daemon mode to restore an element to the state it had before parsing.
+     * Used by daemon mode to restore an element to the state it had before parsing.
+     * @internal
      * @return ?Closure
      */
     public function createRestoreCallback()

@@ -2,7 +2,7 @@
 <?php
 /**
  * Usage: phan_client -l path/to/file.php
- * Compatible with php 5.6, 7.0 and php 7.1.
+ * Compatible with php 5.6 and php 7.x
  * (The server itself requires a newer php version)
  *
  * See plugins/vim/snippet.vim for an example of a use of this program.
@@ -26,7 +26,6 @@
  *
  * TODO: tutorial or repo.
  *
- * @phan-file-suppress PhanPartialTypeMismatchArgument
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
  * @phan-file-suppress PhanPluginDuplicateConditionalNullCoalescing this can't use the `??` operator because it's compatible with php 5.6
  */
@@ -58,12 +57,12 @@ class PhanPHPLinter
         }
     }
 
-	/**
-	 * The main function of the phan_client binary.
-	 * See the doc comment of this file.
-	 *
-	 * @return void
-	 */
+    /**
+     * The main function of the phan_client binary.
+     * See the doc comment of this file.
+     *
+     * @return void
+     */
     public static function run()
     {
         error_reporting(E_ALL);
@@ -133,6 +132,7 @@ class PhanPHPLinter
         if (!$real) {
             self::debugError("Could not resolve $path\n");
         }
+        // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
         $dirname = dirname($real);
         $old_dirname = null;
         unset($real);
@@ -177,8 +177,29 @@ class PhanPHPLinter
             self::debugInfo("Not in a real project");
         }
         // The file is syntactically valid. Run phan.
+        $request = [
+            'method' => 'analyze_files',
+            'files' => $real_files,
+            'format' => 'json',
+        ];
+        if ($opts->output_mode) {
+            $request['format'] = $opts->output_mode;
+            $request['is_user_specified_format'] = true;
+        }
+        if ($opts->color) {
+            $request['color'] = true;
+        }
 
-        // TODO: Make TCP port configurable
+        if (count($temporary_file_mapping_contents) > 0) {
+            $request['temporary_file_mapping_contents'] = $temporary_file_mapping_contents;
+        }
+
+        $serialized_request = json_encode($request);
+        if (!is_string($serialized_request)) {
+            self::debugError("Could not serialize this request\n");
+            exit(1);
+        }
+
         // TODO: check if the folder is within a folder with subdirectory .phan/config.php
         // TODO: Check if there is a lock before attempting to connect?
         $client = @stream_socket_client($opts->url, $errno, $errstr, 20.0);
@@ -187,18 +208,7 @@ class PhanPHPLinter
             self::debugError("Phan daemon not running on " . ($opts->url));
             exit(0);
         }
-        $request = [
-            'method' => 'analyze_files',
-            'files' => $real_files,
-            'format' => 'json',
-        ];
-
-        if (count($temporary_file_mapping_contents) > 0) {
-            $request['temporary_file_mapping_contents'] = $temporary_file_mapping_contents;
-        }
-
-        // This used to use the 'phplike' format, but it doesn't work well with filtering files.
-        fwrite($client, json_encode($request));
+        fwrite($client, $serialized_request);
         stream_set_timeout($client, (int)floor(self::TIMEOUT_MS / 1000), 1000 * (self::TIMEOUT_MS % 1000));
         stream_socket_shutdown($client, STREAM_SHUT_WR);
         $response_lines = [];
@@ -216,30 +226,47 @@ class PhanPHPLinter
         }
         $status = isset($response['status']) ? $response['status'] : null;
         if ($status === 'ok') {
-            self::dumpJSONIssues($response, $file_mapping);
+            self::dumpJSONIssues($response, $file_mapping, $request);
         } else {
             self::debugError(sprintf("Invalid response from phan for %s: %s", $opts->url, $response_bytes));
         }
     }
 
     /**
-     * @param array[] $response
+     * @param array<string,mixed> $response
      * @param string[] $file_mapping
+     * @param array<string,mixed> $request
      * @return void
-     * @suppress PhanPluginUnusedVariable $did_debug false positive
      */
-    private static function dumpJSONIssues(array $response, array $file_mapping)
+    private static function dumpJSONIssues(array $response, array $file_mapping, array $request)
     {
         $did_debug = false;
         $lines = [];
         // if ($response['issue_count'] > 0)
         $issues = $response['issues'];
-        if (!\is_array($issues)) {
-            if (\is_string($issues)) {
-                self::debugError(sprintf("Invalid issues response from phan: %s\n", $issues));
-            } else {
-                self::debugError(sprintf("Invalid type for issues response from phan: %s\n", gettype($issues)));
+        $format = $request['format'];
+        if ($format === 'json') {
+            if (!\is_array($issues)) {
+                if (\is_string($issues)) {
+                    self::debugError(sprintf("Invalid issues response from phan: %s\n", $issues));
+                } else {
+                    self::debugError(sprintf("Invalid type for issues response from phan: %s\n", gettype($issues)));
+                }
+                return;
             }
+            if (isset($request['is_user_specified_format'])) {
+                // The user requested the raw JSON, not what `phan_client` converts it to
+                echo json_encode($issues) . "\n";
+                return;
+            }
+        } else {
+            // When formats other than 'json' are requested, the Phan daemon returns the issues as a raw string.
+            // (e.g. codeclimate returns a string with JSON separated by "\x00")
+            if (!\is_string($issues)) {
+                self::debugError(sprintf("Invalid type for issues response from phan: %s\n", gettype($issues)));
+                return;
+            }
+            echo $issues;
             return;
         }
         foreach ($issues as $issue) {
@@ -249,7 +276,7 @@ class PhanPHPLinter
             $pathInProject = $issue['location']['path'];  // relative path
             if (!isset($file_mapping[$pathInProject])) {
                 if (!$did_debug) {
-                    self::debugInfo(sprintf("Unexpected path for issue (expected %s): %s\n", json_encode($file_mapping), json_encode($issue)));
+                    self::debugInfo(sprintf("Unexpected path for issue (expected %s): %s\n", json_encode($file_mapping) ?: 'invalid', json_encode($issue) ?: 'invalid'));
                 }
                 $did_debug = true;
                 continue;
@@ -270,6 +297,10 @@ class PhanPHPLinter
     }
 }
 
+/**
+ * This represents the CLI options for Phan
+ * (and the logic to parse them and generate usage messages)
+ */
 class PhanPHPLinterOpts
 {
     /** @var string tcp:// or unix:// socket URL of the daemon. */
@@ -281,13 +312,21 @@ class PhanPHPLinterOpts
     /** @var string[]|null - optional, maps original files to temporary file path to use as a substitute. */
     public $temporary_file_map = null;
 
-    /** @var bool - unused. */
+    /** @var bool if true, enable verbose output. */
     public $verbose = false;
 
-    /** @var bool */
+    /** @var bool should this client request analysis from the Phan server when the file has syntax errors */
     public $use_fallback_parser;
 
-    /** @var bool */
+    /** @var ?string the output mode to use. If null, use the default from the daemon */
+    public $output_mode = null;
+
+    /** @var bool whether to color the output on the client */
+    public $color = false;
+
+    /**
+     * @var bool should this client print a usage text if an **unexpected** error occurred.
+     */
     private $print_usage_on_error = true;
 
     /**
@@ -321,8 +360,11 @@ Usage: {$argv[0]} [options] -l file.php [ -l file2.php]
   Useful if you wish to report errors while editing the file, even if the file is currently syntactically invalid.
 
  -l, --syntax-check <file.php>
-  Syntax check, and if the Phan daemon is running, analyze the following file (absolute path or relative to current working ditectory)
+  Syntax check, and if the Phan daemon is running, analyze the following file (absolute path or relative to current working directory)
   This will only analyze the file if a full phan check (with .phan/config.php) would analyze the file.
+
+ -m <mode>, --output-mode
+  Output mode from 'phan_client' (default), 'text', 'json', 'csv', 'codeclimate', 'checkstyle', or 'pylint'
 
  -t, --temporary-file-map '{"file.php":"/path/to/tmp/file_copy.php"}'
   A json mapping from original path to absolute temporary path (E.g. of a file that is still being edited)
@@ -356,7 +398,7 @@ EOB;
 
         // Parse command line args
         $optind = 0;
-        $shortopts = "s:p:l:t:f:vhd";
+        $shortopts = "s:p:l:t:f:m:vhd";
         $longopts = [
             'help',
             'daemonize-socket:',
@@ -366,6 +408,8 @@ EOB;
             'temporary-file-map:',
             'use-fallback-parser',
             'flycheck-file:',
+            'output-mode:',
+            'color',
             'verbose',
         ];
         $getopt_reflection = new ReflectionFunction('getopt');
@@ -377,7 +421,7 @@ EOB;
             $opts = getopt($shortopts, $longopts);
         }
         if (PHP_VERSION_ID >= 70100 && $optind < count($argv)) {
-            $this->usage(sprintf("Unexpected parameter %s", json_encode($argv[$optind])));
+            $this->usage(sprintf("Unexpected parameter %s", json_encode($argv[$optind]) ?: var_export($argv[$optind], true)));
         }
 
         // Check for this first, since the option parser may also emit debug output in the future.
@@ -396,10 +440,11 @@ EOB;
                         $this->usage('Can specify --daemonize-socket or --daemonize-tcp-port only once', 1);
                     }
                     // Check if the socket is valid after parsing the file list.
-                    $socket_dirname = realpath(dirname($value));
-                    if (!file_exists($socket_dirname) || !is_dir($socket_dirname)) {
+                    // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
+                    $socket_dirname = dirname(realpath($value));
+                    if (!is_string($socket_dirname) || !file_exists($socket_dirname) || !is_dir($socket_dirname)) {
                         // The client doesn't require that the file exists if the daemon isn't running, but we do require that the folder exists.
-                        $msg = sprintf('Configured to connect to unix socket server at socket %s, but folder %s does not exist', json_encode($value), json_encode($socket_dirname));
+                        $msg = sprintf('Configured to connect to Unix socket server at socket %s, but folder %s does not exist', json_encode($value) ?: 'invalid', json_encode($socket_dirname) ?: 'invalid');
                         $this->usage($msg, 1);
                     } else {
                         $this->url = sprintf('unix://%s/%s', $socket_dirname, basename($value));
@@ -453,14 +498,14 @@ EOB;
                 case 'l':
                 case 'syntax-check':
                     $path = $value;
-					if (!is_string($path)) {
+                    if (!is_string($path)) {
                         $this->print_usage_on_error = $print_usage_on_error;
-                        $this->usage(sprintf("Error: asked to analyze path %s which is not a string", json_encode($path)), 1);
+                        $this->usage(sprintf("Error: asked to analyze path %s which is not a string", json_encode($path) ?: 'invalid'), 1);
                         exit(1);
-					}
+                    }
                     if (!file_exists($path)) {
                         $this->print_usage_on_error = $print_usage_on_error;
-                        $this->usage(sprintf("Error: asked to analyze file %s which does not exist", json_encode($path)), 1);
+                        $this->usage(sprintf("Error: asked to analyze file %s which does not exist", json_encode($path) ?: 'invalid'), 1);
                         exit(1);
                     }
                     $this->file_list[] = $path;
@@ -476,6 +521,21 @@ EOB;
                 case 'v':
                 case 'verbose':
                     break;  // already parsed.
+                case 'color':
+                    $this->color = true;
+                    break;
+                case 'm':
+                case 'output-mode':
+                    if (!is_string($value) || !in_array($value, ['text', 'json', 'csv', 'codeclimate', 'checkstyle', 'pylint', 'phan_client'])) {
+                        $this->usage("Expected --output-mode {text,json,csv,codeclimate,checkstyle,pylint}, but got " . json_encode($value), 1);
+                        break;  // unreachable
+                    }
+                    if ($value === 'phan_client') {
+                        // We're requesting the default
+                        break;
+                    }
+                    $this->output_mode = $value;
+                    break;
                 default:
                     $this->usage("Unknown option '-$key'", 1);
                     break;
@@ -502,6 +562,7 @@ EOB;
 
     /**
      * prints error message if php doesn't support connecting to a daemon with a given protocol.
+     * @param string $protocol
      * @return void
      */
     private function checkCanConnectToDaemon($protocol)

@@ -1,6 +1,6 @@
 <?php
 
-// These method names deliberately have the wrong case, to verify that the detection is case sensitive.
+// These method names deliberately have the wrong case, to verify that the detection uses case-insensitive comparisons.
 class MyClass {
     // Wrong, return value is ignored
     public function __CONSTRUCT() {

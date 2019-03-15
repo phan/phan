@@ -20,8 +20,9 @@ namespace B510 {
         groupUseFn();  // fine
         MissingGroupUseFn();  // should report an error
         mixedCaseFn();  // should fail, this was not imported
-        A510\Inner\mixedCaseFn();
+        A510\Inner\mixedCaseFn();  // This should warn - This is \B510\A510\Inner\mixedCaseFn()
         Inner\mixedCaseFn();
         Inner\missingFn();  // should error
+        B510_Alias\Inner\mixedCaseFn();  // This should not warn
     }
 }

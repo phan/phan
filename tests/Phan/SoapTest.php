@@ -1,7 +1,10 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
+
 namespace Phan\Tests;
 
 /**
+ * Unit tests for the expected behavior when Phan analyzes code using the SOAP extension.
+ *
  * @requires extension soap
  */
 final class SoapTest extends AbstractPhanFileTest
@@ -10,7 +13,7 @@ final class SoapTest extends AbstractPhanFileTest
     /**
      * This reads all files in `tests/files/src`, runs
      * the analyzer on each and compares the output
-     * to the files's counterpart in
+     * to the files' counterpart in
      * `tests/files/expected`
      *
      * @param string[] $test_file_list

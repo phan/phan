@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+function usage() {
+	cat 1>&2 <<EOT
+Usage: $0 [options for phan]
+
+Dumps the markdown Phan would generate for each addressable element of the code.
+This is similar to what is sent to language server clients.
+
+This currently supports classes, methods, properties, and global functions.
+
+Notes:
+
+- Phan does not attempt to escape any embedded HTML/markdown within doc comments.
+  The output may contain any HTML tags, etc - clients should do any necessary escaping.
+- This tool and plugin may be renamed or removed, and the output format will likely change.
+- This deliberately doesn't include full info about union types, but it would be easy to add.
+EOT
+}
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+if [[ "$1" == "-h" || "$1" == "help" || "$1" == "--help" ]]; then
+	usage
+	exit 0
+fi
+
+"$DIR/../phan" --plugin "$DIR/../src/Phan/Plugin/Internal/DumpPHPDocPlugin.php" "$@"

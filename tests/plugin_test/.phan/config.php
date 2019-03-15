@@ -3,7 +3,7 @@
 use \Phan\Issue;
 
 /**
- * This configuration will be read and overlayed on top of the
+ * This configuration will be read and overlaid on top of the
  * default configuration. Command line arguments will be applied
  * after this file is read.
  *
@@ -14,20 +14,26 @@ use \Phan\Issue;
  * in addition to testing backwards compatibility checks and dead code detection.
  */
 return [
-    "target_php_version" => '7.1',
+    'target_php_version' => '7.1',
 
     // If true, missing properties will be created when
     // they are first seen. If false, we'll report an
     // error message.
-    "allow_missing_properties" => false,
+    'allow_missing_properties' => false,
 
     // Allow null to be cast as any type and for any
     // type to be cast to null.
-    "null_casts_as_any_type" => false,
+    'null_casts_as_any_type' => false,
 
     // If enabled, scalars (int, float, bool, string, null)
     // are treated as if they can cast to each other.
     'scalar_implicit_cast' => false,
+
+    // If enabled, Phan will warn if **any** type in the method's object
+    // is definitely not an object.
+    // Setting this to true will introduce numerous false positives
+    // (and reveal some bugs).
+    'strict_method_checking' => true,
 
     // If enabled, Phan will warn if **any** type in the argument's type
     // cannot be cast to a type in the parameter's expected type.
@@ -71,7 +77,7 @@ return [
 
     'globals_type_map' => ['test_global_exception' => 'Exception', 'test_global_error' => '\\Error'],
 
-    "quick_mode" => false,
+    'quick_mode' => false,
 
     'generic_types_enabled' => true,
 
@@ -92,8 +98,17 @@ return [
 
     'analyzed_file_extensions' => ['php'],
 
+    // Set this to true to enable the plugins that Phan uses to infer more accurate literal return types of `implode`, `implode`, and many other functions.
+    //
+    // Phan is slightly faster when these are disabled.
+    'enable_extended_internal_return_type_plugins' => true,
+
+    // This is a unit test of Phan itself, so don't cache it because the polyfill implementation may change before the next release.
+    'cache_polyfill_asts' => false,
+
     'plugin_config' => [
         'php_native_syntax_check_max_processes' => 4,
+        'unused_suppression_ignore_list' => ['Unused-Issue-In-Config'],
     ],
 
     // A list of plugin files to execute
@@ -113,7 +128,10 @@ return [
         'PrintfCheckerPlugin',
         'UnreachableCodePlugin',
         'UnusedSuppressionPlugin',
+        'UseReturnValuePlugin',
         'SleepCheckerPlugin',
         'DuplicateExpressionPlugin',
+        'SuspiciousParamOrderPlugin',
+        'WhitespacePlugin',
     ],
 ];

@@ -1,0 +1,1 @@
+src/067_throws_template.php:21 PhanTypeMismatchArgumentInternal Argument 1 (var) is \Exception|\Throwable but \count() takes \Countable|array

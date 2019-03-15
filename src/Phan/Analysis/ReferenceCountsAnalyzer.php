@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Analysis;
 
 use Phan\CLI;
@@ -12,20 +13,19 @@ use Phan\Language\Element\ClassElement;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
-use Phan\Library\Map;
 use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use Phan\Language\FQSEN\FullyQualifiedClassElement;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
-use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
+use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
-
+use Phan\Library\Map;
 use TypeError;
 
 /**
- * This emits PhanUnreferenced* issues for classlikes, constants, properties, and functions/methods.
+ * This emits PhanUnreferenced* issues for class-likes, constants, properties, and functions/methods.
  *
  * TODO: Make references to methods of interfaces also count as references to traits which are used by classes to implement those methods.
  * (Maybe track these in addMethod when checking for inheritance?)
@@ -198,7 +198,7 @@ class ReferenceCountsAnalyzer
             }
             if ($element instanceof ClassConstant) {
                 // should not warn about self::class
-                if (strcasecmp($element->getName(), 'class') === 0) {
+                if (\strcasecmp($element->getName(), 'class') === 0) {
                     continue;
                 }
             }
@@ -256,7 +256,7 @@ class ReferenceCountsAnalyzer
                 // Skip properties on classes that were derived from (at)property annotations on classes
                 // or were automatically generated for classes with __get or __set methods
                 // (or undeclared properties that were automatically added depending on configs)
-                if ($element->isDynamicProperty() || $element->isFromPHPDoc()) {
+                if ($element->isDynamicOrFromPHPDoc()) {
                     continue;
                 }
                 // TODO: may want to continue to skip `if ($defining_class->hasGetOrSetMethod($code_base)) {`
@@ -268,7 +268,7 @@ class ReferenceCountsAnalyzer
     }
 
     /**
-     * Check to see if the given Clazz is a duplicate
+     * Check to see if the given AddressableElement is a duplicate
      *
      * @return void
      */
@@ -321,6 +321,10 @@ class ReferenceCountsAnalyzer
                 return;
             }
             if ($element->getFQSEN()->isClosure()) {
+                if (self::hasSuppressionForUnreferencedClosure($code_base, $element)) {
+                    // $element->getContext() is the context within the closure - We also want to check the context of the function-like outside of the closure(s).
+                    return;
+                }
                 $issue_type = Issue::UnreferencedClosure;
             }
         }
@@ -369,8 +373,14 @@ class ReferenceCountsAnalyzer
             $element->getContext(),
             $issue_type,
             $element->getFileRef()->getLineNumberStart(),
-            (string)$element->getFQSEN()
+            $element->getRepresentationForIssue()
         );
+    }
+
+    private static function hasSuppressionForUnreferencedClosure(CodeBase $code_base, Func $func) : bool
+    {
+        $context = $func->getContext();
+        return $context->withScope($context->getScope()->getParentScope())->hasSuppressIssue($code_base, Issue::UnreferencedClosure);
     }
 
     private static function maybeWarnWriteOnlyProperty(CodeBase $code_base, Property $property)
@@ -396,7 +406,7 @@ class ReferenceCountsAnalyzer
             $property->getContext(),
             $issue_type,
             $property->getFileRef()->getLineNumberStart(),
-            (string)$property->getFQSEN()
+            $property->getRepresentationForIssue()
         );
     }
 
@@ -425,11 +435,14 @@ class ReferenceCountsAnalyzer
             $property->getContext(),
             $issue_type,
             $property->getFileRef()->getLineNumberStart(),
-            (string)$property->getFQSEN()
+            $property->getRepresentationForIssue()
         );
     }
 
     /**
+     * Find Elements with FQSENs that are the same as $element's FQSEN,
+     * apart from the alternate id.
+     * (i.e. duplicate declarations)
      * @return ?AddressableElement
      */
     public static function findAlternateReferencedElementDeclaration(
@@ -440,7 +453,7 @@ class ReferenceCountsAnalyzer
         if ($old_fqsen instanceof FullyQualifiedGlobalStructuralElement) {
             $fqsen = $old_fqsen->getCanonicalFQSEN();
             if ($fqsen === $old_fqsen) {
-                return null;  // $old_fqsen was not an alternaive
+                return null;  // $old_fqsen was not an alternative
             }
             if ($fqsen instanceof FullyQualifiedFunctionName) {
                 if ($code_base->hasFunctionWithFQSEN($fqsen)) {

@@ -1,17 +1,22 @@
 <?php
 declare(strict_types=1);
+
 namespace Phan\Language\Element\Comment;
 
 use Phan\Language\Context;
 use Phan\Language\Element\Variable;
 use Phan\Language\UnionType;
 
+/**
+ * Stores information Phan knows about the PHPDoc parameter of a given function-like.
+ * (e.g. of the doc comment of a method, function, closure, or magic method)
+ */
 class Parameter
 {
 
     /**
      * @var string
-     * The name of the parameter
+     * The name of the comment parameter
      */
     private $name;
 
@@ -20,6 +25,12 @@ class Parameter
      * The type of the parameter
      */
     private $type;
+
+    /**
+     * @var int
+     * Get the line number.
+     */
+    private $lineno;
 
     /**
      * @var bool
@@ -49,19 +60,21 @@ class Parameter
     public function __construct(
         string $name,
         UnionType $type,
+        int $lineno = 0,
         bool $is_variadic = false,
         bool $has_default_value = false,
         bool $is_output_reference = false
     ) {
         $this->name = $name;
         $this->type = $type;
+        $this->lineno = $lineno;
         $this->is_variadic = $is_variadic;
         $this->has_default_value = $has_default_value;
         $this->is_output_reference = $is_output_reference;
     }
 
     /**
-     *
+     * Returns this comment parameter as a real variable.
      */
     public function asVariable(
         Context $context,
@@ -76,7 +89,10 @@ class Parameter
     }
 
     /**
+     * Converts this parameter to a real parameter,
+     * using only the information from the comment.
      *
+     * Useful for comments extracted from (at)method, etc.
      */
     public function asRealParameter(
         Context $context
@@ -119,6 +135,14 @@ class Parameter
         return $this->type;
     }
 
+    /**
+     * @return int
+     * The line number of the parameter
+     */
+    public function getLineno() : int
+    {
+        return $this->lineno;
+    }
     /**
      * @return bool
      * Whether or not the parameter is variadic

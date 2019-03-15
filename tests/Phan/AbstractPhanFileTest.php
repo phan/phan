@@ -1,20 +1,29 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
+
 namespace Phan\Tests;
 
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Language\Type;
 use Phan\Output\Collector\BufferingCollector;
 use Phan\Output\Printer\PlainTextPrinter;
-use Phan\Language\Type;
 use Phan\Phan;
 use Phan\Plugin\ConfigPluginSet;
 use Symfony\Component\Console\Output\BufferedOutput;
+use function in_array;
+use function strlen;
 
+/**
+ * Base class for tests that contain
+ *
+ * - a src/ folder with analyzed PHP files, and
+ * - the expected/ folder of expected error (template) lines for the corresponding files.
+ */
 abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTestInterface
 {
     const EXPECTED_SUFFIX = '.expected';
 
-    /** @var CodeBase */
+    /** @var CodeBase represents the known state of the test code base we're analyzing. */
     private $code_base;
 
     /**
@@ -26,7 +35,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
     }
 
     /**
-     * @return string[][] Array of <filename => [filename]>
+     * @return array<string,array{0:array,1:string}> Array of <filename => [filename]>
      */
     abstract public function getTestFiles();
 
@@ -81,37 +90,35 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
      * Placeholder for getTestFiles dataProvider
      *
      * @param string $source_dir
-     * @return string[][]
+     * @return array<string,array{0:array,1:string}>
      */
-    protected function scanSourceFilesDir(string $source_dir, string $expected_dir)
+    final protected function scanSourceFilesDir(string $source_dir, string $expected_dir)
     {
-        // TODO: Make Phan know that array_filter with a single argument implies elements aren't falsey
-        $files = array_filter(
-            array_filter(
-                scandir($source_dir),
-                function ($filename) : bool {
-                    // Ignore directories and hidden files.
-                    return !in_array($filename, ['.', '..'], true) && substr($filename, 0, 1) !== '.' && preg_match('@\.php$@', $filename);
-                }
-            )
+        $files = \array_filter(
+            \scandir($source_dir) ?: [],
+            static function (string $filename) : bool {
+                // Ignore directories and hidden files.
+                return !in_array($filename, ['.', '..'], true) && \substr($filename, 0, 1) !== '.' && \preg_match('@\.php$@', $filename);
+            }
         );
 
         // NOTE: To avoid ParseError in php-ast
-        if (PHP_VERSION_ID < 70100) {
+        if (\PHP_VERSION_ID < 70100) {
             $suffix = '70';
-        } elseif (PHP_VERSION_ID < 70200) {
+        } elseif (\PHP_VERSION_ID < 70200) {
             $suffix = '71';
         } else {
             $suffix = '72';
         }
 
-        return array_combine(
+        return \array_combine(
             $files,
-            array_map(
-                function ($filename) use ($source_dir, $expected_dir, $suffix) : array {
+            \array_map(
+                /** @return array{0:array{0:string},1:string} */
+                static function (string $filename) use ($source_dir, $expected_dir, $suffix) : array {
                     return [
-                        [self::getFileForPHPVersion($source_dir . DIRECTORY_SEPARATOR . $filename, $suffix)],
-                        self::getFileForPHPVersion($expected_dir . DIRECTORY_SEPARATOR . $filename . self::EXPECTED_SUFFIX, $suffix),
+                        [self::getFileForPHPVersion($source_dir . \DIRECTORY_SEPARATOR . $filename, $suffix)],
+                        self::getFileForPHPVersion($expected_dir . \DIRECTORY_SEPARATOR . $filename . self::EXPECTED_SUFFIX, $suffix),
                     ];
                 },
                 $files
@@ -119,10 +126,10 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
         );
     }
 
-    protected function getFileForPHPVersion(string $path, string $suffix) : string
+    protected static function getFileForPHPVersion(string $path, string $suffix) : string
     {
         $suffix_path = $path . $suffix;
-        if (file_exists($suffix_path)) {
+        if (\file_exists($suffix_path)) {
             return $suffix_path;
         }
         return $path;
@@ -135,23 +142,24 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
     /**
      * This reads all files in a test directory (e.g. `tests/files/src`), runs
      * the analyzer on each and compares the output
-     * to the files's counterpart in `tests/files/expected`
+     * to the files' counterpart in `tests/files/expected`
      *
      * @param string[] $test_file_list
      * @param string $expected_file_path
      * @param ?string $config_file_path
      * @return void
+     * @suppress PhanThrowTypeAbsentForCall
      * @dataProvider getTestFiles
      */
     public function testFiles($test_file_list, $expected_file_path, $config_file_path = null)
     {
         $expected_output = '';
-        if (is_file($expected_file_path)) {
+        if (\is_file($expected_file_path)) {
             // Read the expected output
-            $expected_output =
-                trim(file_get_contents($expected_file_path));
+            // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
+            $expected_output = \trim(\file_get_contents($expected_file_path));
         }
-        if (!in_array(basename($expected_file_path), self::WHITELIST)) {
+        if (!in_array(\basename($expected_file_path), self::WHITELIST)) {
             $this->assertNotRegExp('@tests[/\\\\]files[/\\\\]@', $expected_output, 'Expected output should contain a %s placeholder instead of the relative path to the file');
         }
 
@@ -160,6 +168,8 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
             foreach (require($config_file_path) as $key => $value) {
                 Config::setValue($key, $value);
             }
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            ConfigPluginSet::reset();
         }
 
         $stream = new BufferedOutput();
@@ -169,7 +179,8 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
         Phan::setPrinter($printer);
         Phan::setIssueCollector(new BufferingCollector());
 
-        Phan::analyzeFileList($this->code_base, function () use ($test_file_list) : array {
+
+        Phan::analyzeFileList($this->code_base, /** @return array<int,string> */ static function () use ($test_file_list) : array {
             return $test_file_list;
         });
 
@@ -192,19 +203,19 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
             trim(file_get_contents($expected_file_path));
         */
 
-        $output    = preg_replace('/\r\n/', "\n", $output);
+        $output    = \preg_replace('/\r\n/', "\n", $output);
 
-        $wanted_re = preg_replace('/\r\n/', "\n", $expected_output);
+        $wanted_re = \preg_replace('/\r\n/', "\n", $expected_output);
         // do preg_quote, but miss out any %r delimited sections
         $temp = "";
         $r = "%r";
         $start_offset = 0;
         $length = strlen($wanted_re);
         while ($start_offset < $length) {
-            $start = strpos($wanted_re, $r, $start_offset);
+            $start = \strpos($wanted_re, $r, $start_offset);
             if ($start !== false) {
                 // we have found a start tag
-                $end = strpos($wanted_re, $r, $start + 2);
+                $end = \strpos($wanted_re, $r, $start + 2);
                 if ($end === false) {
                     // unbalanced tag, ignore it.
                     $end = $start = $length;
@@ -214,30 +225,31 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
                 $start = $end = $length;
             }
             // quote a non re portion of the string
-            $temp = $temp . preg_quote(substr($wanted_re, $start_offset, ($start - $start_offset)), '/');
+            // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
+            $temp .= \preg_quote(\substr($wanted_re, $start_offset, ($start - $start_offset)), '/');
             // add the re unquoted.
             if ($end > $start) {
-                $temp = $temp . '(' . substr($wanted_re, $start + 2, ($end - $start - 2)) . ')';
+                $temp .= '(' . \substr($wanted_re, $start + 2, ($end - $start - 2)) . ')';
             }
             $start_offset = $end + 2;
         }
         $wanted_re = $temp;
-        $wanted_re = str_replace(['%binary_string_optional%'], 'string', $wanted_re);
-        $wanted_re = str_replace(['%unicode_string_optional%'], 'string', $wanted_re);
-        $wanted_re = str_replace(['%unicode\|string%', '%string\|unicode%'], 'string', $wanted_re);
-        $wanted_re = str_replace(['%u\|b%', '%b\|u%'], '', $wanted_re);
+        $wanted_re = \str_replace(['%binary_string_optional%'], 'string', $wanted_re);
+        $wanted_re = \str_replace(['%unicode_string_optional%'], 'string', $wanted_re);
+        $wanted_re = \str_replace(['%unicode\|string%', '%string\|unicode%'], 'string', $wanted_re);
+        $wanted_re = \str_replace(['%u\|b%', '%b\|u%'], '', $wanted_re);
         // Stick to basics
-        $wanted_re = str_replace('%e', '\\' . DIRECTORY_SEPARATOR, $wanted_re);
-        $wanted_re = str_replace('%s', '[^\r\n]+', $wanted_re);
-        $wanted_re = str_replace('%S', '[^\r\n]*', $wanted_re);
-        $wanted_re = str_replace('%a', '.+', $wanted_re);
-        $wanted_re = str_replace('%A', '.*', $wanted_re);
-        $wanted_re = str_replace('%w', '\s*', $wanted_re);
-        $wanted_re = str_replace('%i', '[+-]?\d+', $wanted_re);
-        $wanted_re = str_replace('%d', '\d+', $wanted_re);
-        $wanted_re = str_replace('%x', '[0-9a-fA-F]+', $wanted_re);
-        $wanted_re = str_replace('%f', '[+-]?\.?\d+\.?\d*(?:[Ee][+-]?\d+)?', $wanted_re);
-        $wanted_re = str_replace('%c', '.', $wanted_re);
+        $wanted_re = \str_replace('%e', '\\' . \DIRECTORY_SEPARATOR, $wanted_re);
+        $wanted_re = \str_replace('%s', '[^\r\n]+', $wanted_re);
+        $wanted_re = \str_replace('%S', '[^\r\n]*', $wanted_re);
+        $wanted_re = \str_replace('%a', '.+', $wanted_re);
+        $wanted_re = \str_replace('%A', '.*', $wanted_re);
+        $wanted_re = \str_replace('%w', '\s*', $wanted_re);
+        $wanted_re = \str_replace('%i', '[+-]?\d+', $wanted_re);
+        $wanted_re = \str_replace('%d', '\d+', $wanted_re);
+        $wanted_re = \str_replace('%x', '[0-9a-fA-F]+', $wanted_re);
+        $wanted_re = \str_replace('%f', '[+-]?\.?\d+\.?\d*(?:[Ee][+-]?\d+)?', $wanted_re);
+        $wanted_re = \str_replace('%c', '.', $wanted_re);
         // %f allows two points "-.0.0" but that is the best *simple* expression
 
         $this->assertRegExp(
@@ -245,5 +257,12 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
             $output,
             "Unexpected output in {$test_file_list[0]}"
         );
+        if ($config_file_path) {
+            foreach (require($config_file_path) as $key => $_) {
+                Config::setValue($key, Config::DEFAULT_CONFIGURATION[$key]);
+            }
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            ConfigPluginSet::reset();
+        }
     }
 }

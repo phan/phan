@@ -1,0 +1,3 @@
+src/080_duplicate_key_expression.php:7 PhanPluginDuplicateArrayKeyExpression Duplicate dynamic array key expression ($x) detected in array - the earlier entry will be ignored if the expression had the same value.
+src/080_duplicate_key_expression.php:9 PhanPluginDuplicateArrayKeyExpression Duplicate dynamic array key expression (('prefix' . $x)) detected in array - the earlier entry will be ignored if the expression had the same value.
+src/080_duplicate_key_expression.php:10 PhanPluginDuplicateArrayKeyExpression Duplicate dynamic array key expression ((unknown)) detected in array - the earlier entry will be ignored if the expression had the same value.

@@ -1,5 +1,5 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Phan\LanguageServer;
 
@@ -7,23 +7,25 @@ use AdvancedJsonRpc;
 use Sabre\Event\Promise;
 
 /**
+ * Used to send notifications and requests to the language server client of the Phan Language Server.
+ *
  * Source: https://github.com/felixfbecker/php-language-server/tree/master/src/ClientHandler.php
  * See ../../../LICENSE.LANGUAGE_SERVER
  */
 class ClientHandler
 {
     /**
-     * @var ProtocolReader
+     * @var ProtocolReader used to read notifications, requests, and responses from the LSP client
      */
     public $protocolReader;
 
     /**
-     * @var ProtocolWriter
+     * @var ProtocolWriter used to send notifications, requests, and responses to the LSP client
      */
     public $protocolWriter;
 
     /**
-     * @var IdGenerator
+     * @var IdGenerator used to generate ids when sending requests to the client.
      */
     public $idGenerator;
 

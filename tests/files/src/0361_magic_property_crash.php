@@ -16,4 +16,9 @@ class Entity
 	 * @var string
 	 */
 	protected $privilege;
+
+	public function __get(string $name) {
+		return $this->{$name};
+	}
 }
+echo strlen((new Entity())->dataId);  // this is accessible outside the class and of type int

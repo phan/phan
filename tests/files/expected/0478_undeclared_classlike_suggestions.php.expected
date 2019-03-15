@@ -4,5 +4,5 @@
 %s:7 PhanUndeclaredInterface Class implements undeclared interface \ExampleInterface (Did you mean interface \NS2\ExampleInterface)
 %s:7 PhanUndeclaredTrait Class uses undeclared trait \ExampleTrait (Did you mean trait \NS2\ExampleTrait)
 %s:16 PhanUndeclaredClassConstant Reference to constant class from undeclared class \NS3\ClassWithRepeatedName (Did you mean class \ClassWithRepeatedName or class \NS2\ClassWithRepeatedName)
-%s:23 PhanUndeclaredClassCatch Catching undeclared class \NS2\Exception (Did you mean class \Exception)
-%s:26 PhanUndeclaredClassInstanceof Checking instanceof against undeclared class \NS2\InvalidArgumentException (Did you mean class \InvalidArgumentException)
+%s:23 PhanUndeclaredClassCatch Catching undeclared class \NS2\Exception (Did you mean %Sclass \Exception%S)
+%s:26 PhanUndeclaredClassInstanceof Checking instanceof against undeclared class \NS2\InvalidArgumentException (Did you mean %Sclass \InvalidArgumentException%S)

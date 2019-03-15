@@ -1,4 +1,3 @@
 %s:5 PhanParamTooFew Call with 0 arg(s) to \test() which requires 2 arg(s) defined at %s:2
 %s:6 PhanParamTooFew Call with 1 arg(s) to \test() which requires 2 arg(s) defined at %s:2
 %s:9 PhanParamTooMany Call with 4 arg(s) to \test() which only takes 3 arg(s) defined at %s:2
-

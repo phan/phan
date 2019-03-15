@@ -1,10 +1,11 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
+
 namespace Phan\Tests\Exception;
 
-use Phan\Tests\BaseTest;
+use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\IssueInstance;
-use Phan\Exception\IssueException;
+use Phan\Tests\BaseTest;
 
 /**
  * Tests of IssueException

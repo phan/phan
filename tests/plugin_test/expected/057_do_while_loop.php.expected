@@ -1,0 +1,1 @@
+src/057_do_while_loop.php:40 PhanUnusedVariable Unused definition of variable $a

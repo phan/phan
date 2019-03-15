@@ -1,3 +1,2 @@
 %s:42 PhanTypeMismatchArgument Argument 3 (arguments) is array{0:2} but \VariadicBug::foo() takes int|string defined at %s:16
 %s:44 PhanTypeMismatchArgument Argument 3 (arguments) is array{0:2} but \variadic_bug_260() takes int|string defined at %s:31
-

@@ -1,9 +1,14 @@
 <?php
 declare(strict_types=1);
+
 namespace Phan\Language\Element\Comment;
 
 use Phan\Language\UnionType;
 
+/**
+ * Phan's representation of a magic method
+ * (i.e. an (at)method declaration on a class-like's doc comment)
+ */
 class Method
 {
 
@@ -32,6 +37,12 @@ class Method
     private $is_static;
 
     /**
+     * @var int
+     * The line of this method
+     */
+    private $line;
+
+    /**
      * @param string $name
      * The name of the method
      *
@@ -43,17 +54,22 @@ class Method
      *
      * @param bool $is_static
      * Whether this method is static
+     *
+     * @param int $line
+     * The line of this method
      */
     public function __construct(
         string $name,
         UnionType $type,
         array $parameters,
-        bool $is_static
+        bool $is_static,
+        int $line
     ) {
         $this->name = $name;
         $this->type = $type;
         $this->parameters = $parameters;
         $this->is_static = $is_static;
+        $this->line = $line;
     }
 
     /**
@@ -93,13 +109,22 @@ class Method
 
     /**
      * @return int
+     * The line of this method
+     */
+    public function getLine() : int
+    {
+        return $this->line;
+    }
+
+    /**
+     * @return int
      * Number of required parameters of this method
      */
     public function getNumberOfRequiredParameters() : int
     {
-        return array_reduce(
+        return \array_reduce(
             $this->parameters,
-            function (int $carry, Parameter $parameter) : int {
+            static function (int $carry, Parameter $parameter) : int {
                 return ($carry + ($parameter->isRequired() ? 1 : 0));
             },
             0
@@ -112,9 +137,9 @@ class Method
      */
     public function getNumberOfOptionalParameters() : int
     {
-        return array_reduce(
+        return \array_reduce(
             $this->parameters,
-            function (int $carry, Parameter $parameter) : int {
+            static function (int $carry, Parameter $parameter) : int {
                 return ($carry + ($parameter->isOptional() ? 1 : 0));
             },
             0
@@ -131,7 +156,7 @@ class Method
         // Magic methods can't be by ref?
         $string .= $this->getName();
 
-        $string .= '(' . implode(', ', $this->getParameterList()) . ')';
+        $string .= '(' . \implode(', ', $this->getParameterList()) . ')';
 
         if (!$this->getUnionType()->isEmpty()) {
             $string .= ' : ' . (string)$this->getUnionType();

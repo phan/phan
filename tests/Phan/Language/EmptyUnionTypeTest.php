@@ -2,30 +2,31 @@
 
 namespace Phan\Tests\Language;
 
+use Closure;
+use Generator;
 use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\EmptyUnionType;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FalseType;
-use Phan\Language\Type\ObjectType;
-use Phan\Language\Type\MixedType;
-use Phan\Language\Type\IntType;
 use Phan\Language\Type\GenericArrayType;
+use Phan\Language\Type\IntType;
+use Phan\Language\Type\MixedType;
+use Phan\Language\Type\ObjectType;
+use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
 use Phan\Tests\BaseTest;
-
-use Closure;
-use Generator;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionParameter;
 use RuntimeException;
 use TypeError;
+use function count;
 
 /**
  * Checks that EmptyUnionType behaves the same way as an empty UnionType instance
- * @phan-file-suppress PhanThrowTypeAbsent it's a test
+ * @phan-file-suppress PhanThrowTypeAbsentForCall
  */
 final class EmptyUnionTypeTest extends BaseTest
 {
@@ -39,7 +40,7 @@ final class EmptyUnionTypeTest extends BaseTest
 
     public function testMethods()
     {
-        $this->assertTrue(class_exists(UnionType::class));  // Force the autoloader to load UnionType before attempting to load EmptyUnionType
+        $this->assertTrue(\class_exists(UnionType::class));  // Force the autoloader to load UnionType before attempting to load EmptyUnionType
         $failures = '';
         foreach ((new ReflectionClass(EmptyUnionType::class))->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
             if ($method->isStatic()) {
@@ -55,14 +56,16 @@ final class EmptyUnionTypeTest extends BaseTest
                 $failures .= "unexpected declaring class $actual_class for $method_name\n";
             }
         }
-        $this->assertSame('', $failures);
+        $this->assertSame('', \trim($failures));
     }
 
-    // Returns the test errors to show as a string, or the empty string on success
+    /**
+     * Returns the test errors to show as a string, or the empty string on success
+     */
     public function checkHasSameImplementationForEmpty(ReflectionMethod $method) : string
     {
         $method_name = $method->getName();
-        if (!method_exists(UnionType::class, $method_name)) {
+        if (!\method_exists(UnionType::class, $method_name)) {
             return '';
         }
 
@@ -77,11 +80,11 @@ final class EmptyUnionTypeTest extends BaseTest
             $expected_result = $empty_regular->{$method_name}(...$arg_list);
             $actual_result = $empty_regular->{$method_name}(...$arg_list);
             if ($expected_result instanceof Generator && $actual_result instanceof Generator) {
-                $expected_result = iterator_to_array($expected_result);
-                $actual_result = iterator_to_array($actual_result);
+                $expected_result = \iterator_to_array($expected_result);
+                $actual_result = \iterator_to_array($actual_result);
             }
             if ($expected_result !== $actual_result) {
-                $failures .= "Expected $method_name implementation to be the same for " . serialize($arg_list) . "\n";
+                $failures .= "Expected $method_name implementation to be the same for " . \serialize($arg_list) . "\n";
             }
         }
         return $failures;
@@ -108,7 +111,7 @@ final class EmptyUnionTypeTest extends BaseTest
             $new_list_of_arg_list = [];
             foreach ($possible_new_args as $arg) {
                 foreach ($list_of_arg_list as $prev_args) {
-                    $new_list_of_arg_list[] = array_merge($prev_args, [$arg]);
+                    $new_list_of_arg_list[] = \array_merge($prev_args, [$arg]);
                 }
             }
             $list_of_arg_list = $new_list_of_arg_list;
@@ -119,6 +122,11 @@ final class EmptyUnionTypeTest extends BaseTest
         return $list_of_arg_list;
     }
 
+    /**
+     * Helper method to determine what arguments to use
+     * to brute force test this parameter of EmptyUnionType
+     * @return array<int,mixed>
+     */
     public function getPossibleArgValues(ReflectionParameter $param) : array
     {
         $type = $param->getType();
@@ -159,12 +167,19 @@ final class EmptyUnionTypeTest extends BaseTest
                 ];
             case Closure::class:
                 return [
-                    function (...$unused_args) : bool {
+                    /** @param mixed ...$unused_args */
+                    static function (...$unused_args) : bool {
                         return false;
                     },
-                    function (...$unused_args) : bool {
+                    /** @param mixed ...$unused_args */
+                    static function (...$unused_args) : bool {
                         return true;
                     },
+                ];
+            case TemplateType::class:
+                return [
+                    TemplateType::instanceForId('T', false),
+                    TemplateType::instanceForId('TKey', true),
                 ];
             case '':
                 if ($param->getName() === 'field_key') {

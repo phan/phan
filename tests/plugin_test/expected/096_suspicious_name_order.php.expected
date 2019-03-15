@@ -1,0 +1,16 @@
+src/096_suspicious_name_order.php:12 PhanUnreferencedFunction Possibly zero references to function \test_caller()
+src/096_suspicious_name_order.php:13 PhanPluginSuspiciousParamOrder Suspicious order for arguments named second and first - These are being passed to parameters #1 ($first) and #2 ($second) of \test_order() defined at src/096_suspicious_name_order.php:3
+src/096_suspicious_name_order.php:14 PhanPluginSuspiciousParamOrder Suspicious order for arguments named second and third and first - These are being passed to parameters #1 ($first) and #2 ($second) and #3 ($third) of \test_order() defined at src/096_suspicious_name_order.php:3
+src/096_suspicious_name_order.php:15 PhanPluginSuspiciousParamOrder Suspicious order for arguments named second and first - These are being passed to parameters #1 ($first) and #2 ($second) of \test_order() defined at src/096_suspicious_name_order.php:3
+src/096_suspicious_name_order.php:16 PhanPluginSuspiciousParamOrder Suspicious order for arguments named getThird and getFirst - These are being passed to parameters #1 ($first) and #3 ($third) of \test_order() defined at src/096_suspicious_name_order.php:3
+src/096_suspicious_name_order.php:26 PhanUnreferencedFunction Possibly zero references to function \test_no_false_positive()
+src/096_suspicious_name_order.php:31 PhanPluginSuspiciousParamOrder Suspicious order for arguments named secondValue and objFirst - These are being passed to parameters #1 (\stdClass $first) and #2 (bool $second) of \some_check() defined at src/096_suspicious_name_order.php:19
+src/096_suspicious_name_order.php:31 PhanTypeMismatchArgument Argument 1 (first) is false but \some_check() takes \stdClass defined at src/096_suspicious_name_order.php:19
+src/096_suspicious_name_order.php:31 PhanTypeMismatchArgument Argument 2 (second) is \stdClass but \some_check() takes bool defined at src/096_suspicious_name_order.php:19
+src/096_suspicious_name_order.php:32 PhanPluginSuspiciousParamOrder Suspicious order for arguments named secondValue and third and objFirst - These are being passed to parameters #1 (\stdClass $first) and #2 (bool $second) and #3 (int $third) of \some_check_chain() defined at src/096_suspicious_name_order.php:22
+src/096_suspicious_name_order.php:32 PhanTypeMismatchArgument Argument 1 (first) is false but \some_check_chain() takes \stdClass defined at src/096_suspicious_name_order.php:22
+src/096_suspicious_name_order.php:32 PhanTypeMismatchArgument Argument 2 (second) is 1 but \some_check_chain() takes bool defined at src/096_suspicious_name_order.php:22
+src/096_suspicious_name_order.php:32 PhanTypeMismatchArgument Argument 3 (third) is \stdClass but \some_check_chain() takes int defined at src/096_suspicious_name_order.php:22
+src/096_suspicious_name_order.php:39 PhanTypeMismatchArgument Argument 2 (second) is 1 but \some_check_chain() takes bool defined at src/096_suspicious_name_order.php:22
+src/096_suspicious_name_order.php:39 PhanTypeMismatchArgument Argument 3 (third) is false but \some_check_chain() takes int defined at src/096_suspicious_name_order.php:22
+src/096_suspicious_name_order.php:44 PhanPluginSuspiciousParamOrderInternal Suspicious order for arguments named needle and haystack - These are being passed to parameters #1 (string $haystack) and #2 (int|string $needle) of \strpos()

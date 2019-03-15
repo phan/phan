@@ -10,7 +10,7 @@ if (rand() % 2 == 1) {
     }
 
     define('Const1A', 'x');
-    define('Const1B', 1);
+    define('Const1B', 1);  // NOTE: Phan tracks only the first definition of a constant it parses.
 
     class DuplicateClass001 {
         const C = true;

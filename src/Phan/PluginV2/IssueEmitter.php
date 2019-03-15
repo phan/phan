@@ -1,10 +1,17 @@
 <?php declare(strict_types=1);
+
 namespace Phan\PluginV2;
 
-use Phan\Language\Context;
 use Phan\CodeBase;
 use Phan\Issue;
 use Phan\IssueInstance;
+use Phan\Language\Context;
+use Phan\Language\Element\TypedElement;
+use Phan\Language\Element\UnaddressableTypedElement;
+use Phan\Language\FQSEN;
+use Phan\Language\Type;
+use Phan\Language\UnionType;
+use Phan\Suggestion;
 
 /**
  * A trait which allows plugins to emit issues with custom error messages
@@ -30,7 +37,7 @@ trait IssueEmitter
      * The list of placeholders for between braces can be found
      * in \Phan\Issue::UNCOLORED_FORMAT_STRING_FOR_TEMPLATE.
      *
-     * @param array<int,string|int|float> $issue_message_args
+     * @param array<int,string|int|float|Type|UnionType|FQSEN|TypedElement|UnaddressableTypedElement> $issue_message_args
      * The arguments for this issue format.
      * If this array is empty, $issue_message_args is kept in place
      *
@@ -44,9 +51,14 @@ trait IssueEmitter
      * Issue::REMEDIATION_F} with F being the hardest.
      *
      * @param int $issue_type_id An issue id for pylint
+     *
+     * @param ?Suggestion $suggestion
+     * If this plugin has suggestions on how to fix the issue,
+     * this can be added separately from the issue text.
+     *
      * @return void
      */
-    public function emitPluginIssue(
+    public static function emitPluginIssue(
         CodeBase $code_base,
         Context $context,
         string $issue_type,
@@ -54,7 +66,8 @@ trait IssueEmitter
         array $issue_message_args = [],
         int $severity = Issue::SEVERITY_NORMAL,
         int $remediation_difficulty = Issue::REMEDIATION_B,
-        int $issue_type_id = Issue::TYPE_ID_UNKNOWN
+        int $issue_type_id = Issue::TYPE_ID_UNKNOWN,
+        Suggestion $suggestion = null
     ) {
         $issue = new Issue(
             $issue_type,
@@ -69,7 +82,8 @@ trait IssueEmitter
             $issue,
             $context->getFile(),
             $context->getLineNumberStart(),
-            $issue_message_args
+            $issue_message_args,
+            $suggestion
         );
 
         Issue::maybeEmitInstance(

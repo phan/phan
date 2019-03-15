@@ -1,20 +1,25 @@
 <?php declare(strict_types=1);
-namespace Phan\AST\Visitor;
 
-use Phan\AST\Visitor\Element;
-use Phan\Debug;
+namespace Phan\AST\Visitor;
 
 use AssertionError;
 use ast\Node;
+use Phan\Debug;
+use const STDERR;
 
 /**
  * A visitor of AST nodes based on the node's kind value
  * which does nothing upon visiting a node of any kind
  * @phan-file-suppress PhanPluginUnknownMethodReturnType - TODO: Make this and FlagVisitorImplementation use Phan templates?
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 abstract class KindVisitorImplementation implements KindVisitor
 {
 
+    /**
+     * The fallback implementation for node kinds where the subclass visitor
+     * didn't override the more specific `visit*()` method.
+     */
     abstract public function visit(Node $node);
 
     /**
@@ -32,7 +37,7 @@ abstract class KindVisitorImplementation implements KindVisitor
      */
     public function handleMissingNodeKind(Node $node)
     {
-        fprintf(STDERR, "Unexpected Node kind. Node:\n%s\n", Debug::nodeToString($node));
+        \fprintf(STDERR, "Unexpected Node kind. Node:\n%s\n", Debug::nodeToString($node));
         throw new AssertionError('All node kinds must match');
     }
 
@@ -121,11 +126,6 @@ abstract class KindVisitorImplementation implements KindVisitor
         return $this->visit($node);
     }
 
-    public function visitCoalesce(Node $node)
-    {
-        return $this->visit($node);
-    }
-
     public function visitConst(Node $node)
     {
         return $this->visit($node);
@@ -197,16 +197,6 @@ abstract class KindVisitorImplementation implements KindVisitor
     }
 
     public function visitGlobal(Node $node)
-    {
-        return $this->visit($node);
-    }
-
-    public function visitGreater(Node $node)
-    {
-        return $this->visit($node);
-    }
-
-    public function visitGreaterEqual(Node $node)
     {
         return $this->visit($node);
     }
@@ -346,11 +336,6 @@ abstract class KindVisitorImplementation implements KindVisitor
         return $this->visit($node);
     }
 
-    public function visitUnaryMinus(Node $node)
-    {
-        return $this->visit($node);
-    }
-
     public function visitUnaryOp(Node $node)
     {
         return $this->visit($node);
@@ -377,12 +362,6 @@ abstract class KindVisitorImplementation implements KindVisitor
     }
 
     public function visitWhile(Node $node)
-    {
-        return $this->visit($node);
-    }
-
-
-    public function visitAnd(Node $node)
     {
         return $this->visit($node);
     }
@@ -442,11 +421,6 @@ abstract class KindVisitorImplementation implements KindVisitor
         return $this->visit($node);
     }
 
-    public function visitOr(Node $node)
-    {
-        return $this->visit($node);
-    }
-
     public function visitPostDec(Node $node)
     {
         return $this->visit($node);
@@ -472,11 +446,6 @@ abstract class KindVisitorImplementation implements KindVisitor
         return $this->visit($node);
     }
 
-    public function visitSilence(Node $node)
-    {
-        return $this->visit($node);
-    }
-
     public function visitThrow(Node $node)
     {
         return $this->visit($node);
@@ -498,11 +467,6 @@ abstract class KindVisitorImplementation implements KindVisitor
     }
 
     public function visitTry(Node $node)
-    {
-        return $this->visit($node);
-    }
-
-    public function visitUnaryPlus(Node $node)
     {
         return $this->visit($node);
     }

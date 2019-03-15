@@ -1,0 +1,2 @@
+%s:15 PhanTypeMismatchArgumentInternal Argument 1 (string) is array{field2:'value',field:string} but \strlen() takes string
+%s:16 PhanTypeMismatchArgumentInternal Argument 1 (string) is \stdClass but \strlen() takes string

@@ -16,12 +16,12 @@ use Phan\LanguageServer\Utils;
 class Location
 {
     /**
-     * @var string|null
+     * @var string|null the URI of the location
      */
     public $uri;
 
     /**
-     * @var Range|null
+     * @var Range|null the byte range of the location
      */
     public $range;
 
@@ -42,6 +42,10 @@ class Location
         return new self($uri, $range);
     }
 
+    /**
+     * Creates a Location from the unserialized data
+     * @param array{uri:string,range:array} $data
+     */
     public static function fromArray(array $data) : Location
     {
         return new self($data['uri'], Range::fromArray($data['range']));

@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
-namespace Phan\Plugin;
 
-use Phan\AST\Visitor\Element;
+namespace Phan\Plugin;
 
 use AssertionError;
 use Closure;
 use InvalidArgumentException;
+use Phan\AST\Visitor\Element;
 
 /**
  * Tracks the closures that need to be executed for the set of possible \ast\Node->kind values.
@@ -29,6 +29,8 @@ class ClosuresForKind
     }
 
     /**
+     * Record the fact that the resulting closure for Node kind $kind should invoke $c
+     *
      * @param int $kind - A valid value of a node kind
      * @param Closure $c
      * @return void
@@ -46,7 +48,7 @@ class ClosuresForKind
     }
 
     /**
-     * Record the fact that a Closure needs to be the given subset of values of node->kind
+     * Record the fact that the resulting Closure needs to call $c for the given subset of values of node->kind
      *
      * @param array<int,int> $kinds - A list of unique values of node kinds
      * @param Closure $c - The closure to execute on each of those kinds
@@ -80,7 +82,6 @@ class ClosuresForKind
                 $merged_closures[$kind] = $closure;
             }
         }
-        // @phan-suppress-next-line PhanPartialTypeMismatchReturn TODO: investigate
         return $merged_closures;
     }
 }

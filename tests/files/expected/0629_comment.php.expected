@@ -1,0 +1,4 @@
+%s:21 PhanTypeMismatchArgumentInternal Argument 1 (string) is array<string,string>|null but \strlen() takes string
+%s:45 PhanTypeMismatchArgumentInternal Argument 1 (string) is \stdClass[] but \strlen() takes string
+%s:46 PhanTypeMismatchReturn Returning type array{key:2} but acceptList() is declared to return array<int,\stdClass>
+%s:53 PhanTypeMismatchReturn Returning type array{0:int} but acceptList() is declared to return array<int,\stdClass>

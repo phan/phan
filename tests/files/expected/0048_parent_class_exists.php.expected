@@ -1,4 +1,3 @@
 %s:3 PhanUndeclaredExtendedClass Class extends undeclared class \A
 %s:6 PhanUndeclaredInterface Class implements undeclared interface \A
 %s:9 PhanUndeclaredTrait Class uses undeclared trait \A
-

@@ -2,24 +2,77 @@
 
 namespace Phan\AST;
 
+use ast\Node;
+use CompileError;
+use Error;
+use ParseError;
+use Phan\AST\TolerantASTConverter\ParseException;
+use Phan\AST\TolerantASTConverter\ParseResult;
 use Phan\AST\TolerantASTConverter\TolerantASTConverter;
 use Phan\AST\TolerantASTConverter\TolerantASTConverterWithNodeMapping;
-use Phan\AST\TolerantASTConverter\ParseException;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Daemon\Request;
 use Phan\Issue;
 use Phan\Language\Context;
+use Phan\Library\Cache;
+use Phan\Library\DiskCache;
 use Phan\Phan;
 use Phan\Plugin\ConfigPluginSet;
+use function error_reporting;
 
-use ast\Node;
-use CompileError;
-use Error;
-use ParseError;
-
+/**
+ * Parser parses the passed in PHP code based on configuration settings.
+ *
+ * It has options for error-tolerant parsing,
+ * annotating \ast\Nodes with additional information used by the language server
+ */
 class Parser
 {
+    /** @var ?Cache<ParseResult> */
+    private static $cache = null;
+
+    /**
+     * Creates a cache if Phan is configured to use caching in the current phase.
+     *
+     * @return ?Cache<ParseResult>
+     */
+    private static function maybeGetCache(CodeBase $code_base)
+    {
+        if ($code_base->getExpectChangesToFileContents()) {
+            return null;
+        }
+        if (!Config::getValue('cache_polyfill_asts')) {
+            return null;
+        }
+        return self::getCache();
+    }
+
+    /**
+     * @return Cache<ParseResult>
+     * @suppress PhanPartialTypeMismatchReturn
+     */
+    private static function getCache() : Cache
+    {
+        return self::$cache ?? self::$cache = self::makeNewCache();
+    }
+
+    /**
+     * @return DiskCache<ParseResult>
+     */
+    private static function makeNewCache() : DiskCache
+    {
+        $igbinary_version = \phpversion('igbinary') ?: '';
+        $use_igbinary = \version_compare($igbinary_version, '2.0.5') >= 0;
+
+        $user = \getenv('USERNAME') ?: \getenv('USER');
+        $directory = \sys_get_temp_dir() . '/phan';
+        if ($user) {
+            $directory .= "-$user";
+        }
+        return new DiskCache($directory, '-ast', ParseResult::class, $use_igbinary);
+    }
+
     /**
      * Parses the code. If $suppress_parse_errors is false, this also emits SyntaxError.
      *
@@ -27,7 +80,7 @@ class Parser
      * @param Context $context
      * @param ?Request $request (A daemon mode request if in daemon mode. May affect the parser used for $file_path)
      * @param string $file_path file path for error reporting
-     * @param string $file_contents file contents to pass to parser. May be overridden to ignore what is currently on disk.
+     * @param string $file_contents file contents to pass to parser. This may deliberately differ from what is currently on disk (e.g. for the language server mode or daemon mode)
      * @param bool $suppress_parse_errors (If true, don't emit SyntaxError)
      * @return ?Node
      * @throws ParseError
@@ -51,11 +104,21 @@ class Parser
                 // It may throw a ParseException, which is unintentionally not caught here.
                 return self::parseCodePolyfill($code_base, $context, $file_path, $file_contents, $suppress_parse_errors, $request);
             }
-            return \ast\parse_code(
-                $file_contents,
-                Config::AST_VERSION,
-                $file_path
-            );
+            // Suppress "declare(encoding=...) ignored because Zend multibyte feature is turned off by settings" (#1076)
+            // E_COMPILE_WARNING can't be caught by a PHP error handler,
+            // the errors are printed to stderr by default (can't be captured),
+            // and those errors might mess up language servers, etc. if ever printed to stdout
+            $original_error_reporting = error_reporting();
+            error_reporting($original_error_reporting & ~\E_COMPILE_WARNING);
+            try {
+                return \ast\parse_code(
+                    $file_contents,
+                    Config::AST_VERSION,
+                    $file_path
+                );
+            } finally {
+                error_reporting($original_error_reporting);
+            }
         } catch (ParseError $native_parse_error) {
             return self::handleParseError($code_base, $context, $file_path, $file_contents, $suppress_parse_errors, $native_parse_error);
         } catch (CompileError $native_parse_error) {
@@ -110,7 +173,6 @@ class Parser
         // But if the user would see the syntax error, go ahead and retry.
 
         $converter = new TolerantASTConverter();
-        $converter->setShouldAddPlaceholders(false);
         $converter->setPHPVersionId(Config::get_closest_target_php_version_id());
         $converter->setParseAllDocComments(Config::getValue('polyfill_parse_all_element_doc_comments'));
         $errors = [];
@@ -139,12 +201,11 @@ class Parser
     public static function parseCodePolyfill(CodeBase $code_base, Context $context, string $file_path, string $file_contents, bool $suppress_parse_errors, $request)
     {
         $converter = self::createConverter($file_path, $file_contents, $request);
-        $converter->setShouldAddPlaceholders(false);
         $converter->setPHPVersionId(Config::get_closest_target_php_version_id());
         $converter->setParseAllDocComments(Config::getValue('polyfill_parse_all_element_doc_comments'));
         $errors = [];
         try {
-            $node = $converter->parseCodeAsPHPAST($file_contents, Config::AST_VERSION, $errors);
+            $node = $converter->parseCodeAsPHPAST($file_contents, Config::AST_VERSION, $errors, self::maybeGetCache($code_base));
         } catch (\Exception $e) {
             // Generic fallback. TODO: log.
             throw new ParseException('Unexpected Exception of type ' . \get_class($e) . ': ' . $e->getMessage(), 0);
@@ -195,13 +256,17 @@ class Parser
     {
         if ($request && $request->shouldUseMappingPolyfill($file_path)) {
             // TODO: Rename to something better
-            return new TolerantASTConverterWithNodeMapping(
+            $converter = new TolerantASTConverterWithNodeMapping(
                 $request->getTargetByteOffset($file_contents),
-                function (Node $node) {
+                static function (Node $node) {
                     // @phan-suppress-next-line PhanAccessMethodInternal
                     ConfigPluginSet::instance()->prepareNodeSelectionPluginForNode($node);
                 }
             );
+            if ($request->shouldAddPlaceholdersForPath($file_path)) {
+                $converter->setShouldAddPlaceholders(true);
+            }
+            return $converter;
         }
 
         return new TolerantASTConverter();

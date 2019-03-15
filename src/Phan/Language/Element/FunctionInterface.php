@@ -1,24 +1,27 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language\Element;
 
+use ast\Node;
+use Closure;
 use Phan\CodeBase;
 use Phan\Language\Context;
-use Phan\Language\Type;
-use Phan\Language\Type\FunctionLikeDeclarationType;
-use Phan\Language\UnionType;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Scope\ClosedScope;
-use ast\Node;
+use Phan\Language\Type;
+use Phan\Language\Type\FunctionLikeDeclarationType;
+use Phan\Language\Type\TemplateType;
+use Phan\Language\UnionType;
 
 /**
- * Interface defining the behavior of both Methods
- *  and Functions
+ * Interface defining the behavior of both Methods and Functions
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 interface FunctionInterface extends AddressableElementInterface
 {
     /**
-     * An easy workaround to mark a functionlike as accepting an infinite number of optional parameters
+     * An easy workaround to mark a function-like as accepting an infinite number of optional parameters
      * TODO: Distinguish between __call and __callStatic invoked manually and via magic (See uses of this constant)
      */
     const INFINITE_PARAMETERS = 999999;
@@ -38,6 +41,15 @@ interface FunctionInterface extends AddressableElementInterface
     public function getRepresentationForIssue() : string;
 
     /**
+     * @return string
+     * The name of this structural element (without namespace/class),
+     * or a string for FunctionLikeDeclarationType (or a closure) which lacks a real FQSEN
+     */
+    public function getNameForIssue() : string;
+
+    /**
+     * Sets the scope within this function-like element's body,
+     * for tracking variables within the function-like.
      * @return void
      */
     public function setInternalScope(ClosedScope $internal_scope);
@@ -64,7 +76,7 @@ interface FunctionInterface extends AddressableElementInterface
     /**
      * @return int
      * The number of optional real parameters on this function/method.
-     * May differ from getNumberOfOptionalParameters()
+     * This may differ from getNumberOfOptionalParameters()
      * for internal modules lacking proper reflection info,
      * or if the installed module version's API changed from what Phan's stubs used,
      * or if a function/method uses variadics/func_get_arg*()
@@ -93,7 +105,7 @@ interface FunctionInterface extends AddressableElementInterface
     /**
      * @return int
      * The number of required real parameters on this function/method.
-     * May differ for internal modules lacking proper reflection info,
+     * This may differ for internal modules lacking proper reflection info,
      * or if the installed module version's API changed from what Phan's stubs used.
      */
     public function getNumberOfRequiredRealParameters() : int;
@@ -107,10 +119,12 @@ interface FunctionInterface extends AddressableElementInterface
     public function isReturnTypeUndefined() : bool;
 
     /**
-     * @param bool $is_return_type_undefined
-     * True if this method had no return type defined when it
+     * Sets whether this method had no return type defined when it
      * was defined (either in the signature itself or in the
      * docblock).
+     *
+     * @param bool $is_return_type_undefined
+     * True if it was undefined
      *
      * @return void
      */
@@ -159,6 +173,17 @@ interface FunctionInterface extends AddressableElementInterface
      * @return Parameter|null The parameter type that the **caller** observes.
      */
     public function getParameterForCaller(int $i);
+
+    /**
+     * Gets the $ith real parameter for the **caller**.
+     * In the case of variadic arguments, an infinite number of parameters exist.
+     * (The callee would see variadic arguments(T ...$args) as a single variable of type T[],
+     * while the caller sees a place expecting an expression of type T.
+     *
+     * @param int $i - offset of the parameter.
+     * @return Parameter|null The parameter type that the **caller** observes.
+     */
+    public function getRealParameterForCaller(int $i);
 
     /**
      * @param Parameter $parameter
@@ -227,9 +252,15 @@ interface FunctionInterface extends AddressableElementInterface
      * Analyze the node associated with this object
      * in the given context.
      * This function's parameter list may or may not have been modified.
+     * @param array<int,Parameter> $parameter_list
      */
     public function analyzeWithNewParams(Context $context, CodeBase $code_base, array $parameter_list) : Context;
 
+    /**
+     * @return string the namespace in which this function interface was declared.
+     *
+     * Used for checking (at)internal annotations, etc.
+     */
     public function getElementNamespace() : string;
 
     /**
@@ -282,7 +313,7 @@ interface FunctionInterface extends AddressableElementInterface
      * Returns a union type based on $args_node and $context
      * @param CodeBase $code_base
      * @param Context $context
-     * @param array<int,Node|int|string> $args
+     * @param array<int,Node|int|string|float> $args
      */
     public function getDependentReturnType(CodeBase $code_base, Context $context, array $args) : UnionType;
 
@@ -309,10 +340,17 @@ interface FunctionInterface extends AddressableElementInterface
     public function analyzeFunctionCall(CodeBase $code_base, Context $context, array $args);
 
     /**
-     * If callers need to invoke multiple closures, they should pass in a closure to invoke multiple closures.
+     * Make additional analysis logic of this function/method use $closure
+     * If callers need to invoke multiple closures, they should pass in a closure to invoke multiple closures or use addFunctionCallAnalyzer.
      * @return void
      */
     public function setFunctionCallAnalyzer(\Closure $closure);
+
+    /**
+     * If callers need to invoke multiple closures, they should pass in a closure to invoke multiple closures.
+     * @return void
+     */
+    public function addFunctionCallAnalyzer(\Closure $closure);
 
     /**
      * Initialize the inner scope of this method with variables created from the parameters.
@@ -337,6 +375,9 @@ interface FunctionInterface extends AddressableElementInterface
      */
     public function setComment(Comment $comment);
 
+    /**
+     * @return UnionType of 0 or more types from (at)throws annotations on this function-like
+     */
     public function getThrowsUnionType() : UnionType;
 
     /**
@@ -348,7 +389,7 @@ interface FunctionInterface extends AddressableElementInterface
 
     /**
      * Clone the parameter list, so that modifying the parameters on the first call won't modify the others.
-     * TODO: If they're immutable, they can be shared without cloning with less worry.
+     * TODO: If parameters were changed to be immutable, they can be shared without cloning with less worry.
      * @internal
      * @return void
      */
@@ -378,4 +419,30 @@ interface FunctionInterface extends AddressableElementInterface
      * Converts Generator|array<int,stdClass> to Generator<int,stdClass>, etc.
      */
     public function getReturnTypeAsGeneratorTemplateType() : Type;
+
+    /**
+     * Returns this function's union type without resolving `static` in the function declaration's context.
+     */
+    public function getUnionTypeWithUnmodifiedStatic() : UnionType;
+
+    /**
+     * Check this method's return types (phpdoc and real) to make sure they're valid,
+     * and infer a return type from the combination of the signature and phpdoc return types.
+     *
+     * @return void
+     */
+    public function analyzeReturnTypes(CodeBase $code_base);
+
+    /**
+     * Does this function/method declare an (at)template type for this type?
+     */
+    public function declaresTemplateTypeInComment(TemplateType $template_type) : bool;
+
+    /**
+     * Create any plugins that exist due to doc comment annotations.
+     * Must be called after adding this FunctionInterface to the $code_base, so that issues can be emitted if needed.
+     * @return ?Closure(CodeBase, Context, array):UnionType
+     * @internal
+     */
+    public function getCommentParamAssertionClosure(CodeBase $code_base);
 }

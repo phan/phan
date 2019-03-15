@@ -11,8 +11,8 @@ class C {
 class T {
     public $b = null;
     function fn($a) {
-      $this->b = new C;
-      echo $this->b->$a[1];
+        $this->b = new C;
+        echo $this->b->$a[1];
     }
 }
 $t = new T;

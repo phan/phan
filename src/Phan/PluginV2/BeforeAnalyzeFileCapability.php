@@ -1,9 +1,10 @@
 <?php declare(strict_types=1);
+
 namespace Phan\PluginV2;
 
+use ast\Node;
 use Phan\CodeBase;
 use Phan\Language\Context;
-use ast\Node;
 
 /**
  * BeforeAnalyzeFileCapability is used when you want to perform checks before analyzing a file
@@ -12,6 +13,8 @@ use ast\Node;
 interface BeforeAnalyzeFileCapability
 {
     /**
+     * This method is called before analyzing a file.
+     *
      * @param CodeBase $code_base
      * The code base in which the node exists
      *

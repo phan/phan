@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language\Type;
 
 use Phan\CodeBase;
@@ -6,13 +7,18 @@ use Phan\Language\Context;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 
+/**
+ * Represents the PHPDoc `mixed` type, which can cast to/from any type
+ *
+ * For purposes of analysis, there's usually no difference between mixed and nullable mixed.
+ */
 final class MixedType extends NativeType
 {
     /** @phan-override */
     const NAME = 'mixed';
 
     // mixed or ?mixed can cast to/from anything.
-    // For purposes of analysis, there's no difference between mixed and nullable mixed.
+    // For purposes of analysis, there's usually no difference between mixed and nullable mixed.
     public function canCastToType(Type $unused_type) : bool
     {
         return true;
@@ -46,11 +52,13 @@ final class MixedType extends NativeType
     }
 
     /**
-     * @param int $key_type @phan-unused-param
-     * (TODO: maybe use $key_type in the future?)
+     * @param int $key_type
      */
     public function asGenericArrayType(int $key_type) : Type
     {
+        if ($key_type === GenericArrayType::KEY_INT || $key_type === GenericArrayType::KEY_STRING) {
+            return GenericArrayType::fromElementType($this, false, $key_type);
+        }
         return ArrayType::instance(false);
     }
 
@@ -64,8 +72,28 @@ final class MixedType extends NativeType
         return true;  // It's possible.
     }
 
+    public function isValidBitwiseOperand() : bool
+    {
+        return true;
+    }
+
     public function isValidNumericOperand() : bool
     {
         return true;
+    }
+
+    public function isPossiblyObject() : bool
+    {
+        return true;  // It's possible.
+    }
+
+    public function isDefiniteNonObjectType() : bool
+    {
+        return false;
+    }
+
+    public function isDefiniteNonCallableType() : bool
+    {
+        return false;
     }
 }

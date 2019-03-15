@@ -2,14 +2,14 @@
 
 /** @param int|string $scalar */
 function example409($scalar) {
-    if (is_string($scalar) || strlen($scalar) > 100) {  // This is a bug, the right hand side would be called for integers
+    if (is_string($scalar) || strlen($scalar) > 100) {  // This is a bug, the right-hand side would be called for integers
         echo "Scalar is a long string\n";
     }
 }
 
 /** @param int|string $scalar */
 function example409b($scalar) {
-    if (!(is_string($scalar) && intdiv($scalar, 2) < 42)) {  // This is a bug, the right hand side would be called on a string
+    if (!(is_string($scalar) && intdiv($scalar, 2) < 42)) {  // This is a bug, the right-hand side would be called on a string
         echo "Scalar is a long string\n";
     }
 }

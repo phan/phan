@@ -1,12 +1,18 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language\Element;
 
+use InvalidArgumentException;
 use Phan\AST\ASTReverter;
+use Phan\Exception\FQSENException;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 
+/**
+ * Phan's representation of a global constant
+ */
 class GlobalConstant extends AddressableElement implements ConstantInterface
 {
     use ConstantTrait;
@@ -20,7 +26,7 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
     public function getUnionType() : UnionType
     {
         if (null !== ($union_type = $this->getFutureUnionType())) {
-            $this->setUnionType($this->getUnionType()->withUnionType($union_type));
+            $this->setUnionType(parent::getUnionType()->withUnionType($union_type));
         }
 
         return parent::getUnionType();
@@ -45,14 +51,17 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
      * A GlobalConstant structural element representing the given named
      * builtin constant.
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      * If reflection could not locate the builtin constant.
+     *
+     * @throws FQSENException
+     * If a module declares an invalid constant FQSEN
      */
     public static function fromGlobalConstantName(
         string $name
     ) : GlobalConstant {
         if (!\defined($name)) {
-            throw new \InvalidArgumentException(sprintf("This should not happen, defined(%s) is false, but the constant was returned by get_defined_constants()", var_export($name, true)));
+            throw new InvalidArgumentException(\sprintf("This should not happen, defined(%s) is false, but the constant was returned by get_defined_constants()", \var_export($name, true)));
         }
         $value = \constant($name);
         $constant_fqsen = FullyQualifiedGlobalConstantName::fromFullyQualifiedString(
@@ -70,13 +79,14 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
     }
 
     /**
+     * Returns a standalone stub of PHP code for this global constant.
      * @suppress PhanUnreferencedPublicMethod toStubInfo is used by callers instead
      */
     public function toStub() : string
     {
         list($namespace, $string) = $this->toStubInfo();
         $namespace_text = $namespace === '' ? '' : "$namespace ";
-        $string = sprintf("namespace %s{\n%s}\n", $namespace_text, $string);
+        $string = \sprintf("namespace %s{\n%s}\n", $namespace_text, $string);
         return $string;
     }
 
@@ -94,14 +104,14 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
         $fqsen = (string)$this->getFQSEN();
         $pos = \strrpos($fqsen, '\\');
         if ($pos !== false) {
-            $name = \substr($fqsen, $pos + 1);
+            $name = (string)\substr($fqsen, $pos + 1);
         } else {
             $name = $fqsen;
         }
 
         $is_defined = \defined($fqsen);
         if ($is_defined) {
-            $repr = \var_export(constant($fqsen), true);
+            $repr = \var_export(\constant($fqsen), true);
             $comment = '';
         } else {
             $repr = 'null';
@@ -112,7 +122,7 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
             $string = "const $name = $repr;$comment\n";
         } else {
             // Internal extension defined a constant with an invalid identifier.
-            $string = \sprintf("define(%s, %s);%s\n", var_export($name, true), $repr, $comment);
+            $string = \sprintf("define(%s, %s);%s\n", \var_export($name, true), $repr, $comment);
         }
         return [$namespace, $string];
     }

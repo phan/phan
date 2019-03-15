@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Library;
 
 /**
@@ -19,7 +20,7 @@ abstract class Tuple
     }
 
     /**
-     * @return array
+     * @return array{}
      * An array of all elements in this tuple.
      */
     abstract public function toArray() : array;

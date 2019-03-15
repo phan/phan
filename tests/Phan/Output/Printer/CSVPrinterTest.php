@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
 
 namespace Phan\Tests\Output\Printer;
 
@@ -8,6 +8,9 @@ use Phan\Output\Printer\CSVPrinter;
 use Phan\Tests\BaseTest;
 use Symfony\Component\Console\Output\BufferedOutput;
 
+/**
+ * Unit tests of CSVPrinter converting `IssueInstance`s to CSV text
+ */
 final class CSVPrinterTest extends BaseTest
 {
 
@@ -20,8 +23,8 @@ final class CSVPrinterTest extends BaseTest
         $printer->print(new IssueInstance(Issue::fromType(Issue::SyntaxError), 'test.php', 0, ["foo"]));
         $printer->flush();
 
-        $lines = array_map("str_getcsv", explode("\n", $output->fetch()));
-        $fields = array_combine($lines[0], $lines[1]);
+        $lines = \array_map("str_getcsv", \explode("\n", $output->fetch()));
+        $fields = \array_combine($lines[0], $lines[1]);
         $this->assertEquals("test.php", $fields["filename"]);
         $this->assertEquals(0, $fields["line"]);
         $this->assertEquals(10, $fields["severity_ord"]);
@@ -47,10 +50,11 @@ final class CSVPrinterTest extends BaseTest
         $printer->flush();
 
         $expected = 'test.php,0,10,critical,Syntax,PhanSyntaxError,' . $expected_message;
-        $actual = explode("\n", $output->fetch())[1]; // Ignore header
+        $actual = \explode("\n", $output->fetch())[1]; // Ignore header
         $this->assertEquals($expected, $actual);
     }
 
+    /** @return array<int,array> */
     public function specialCharacterCasesProvider() : array
     {
         return [
