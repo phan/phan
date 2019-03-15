@@ -7,7 +7,7 @@ use Phan\CodeBase;
 use Phan\IssueInstance;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
-use Phan\Plugin\Internal\IssueFixingPlugin\FileContents;
+use Phan\Library\FileCacheEntry;
 use Phan\Plugin\Internal\IssueFixingPlugin\FileEdit;
 use Phan\Plugin\Internal\IssueFixingPlugin\FileEditSet;
 use Phan\Plugin\Internal\IssueFixingPlugin\IssueFixer;
@@ -22,7 +22,7 @@ call_user_func(static function () {
      * @return ?FileEditSet
      * @suppress PhanAccessMethodInternal
      */
-    $fix = static function (CodeBase $code_base, FileContents $contents, IssueInstance $instance) {
+    $fix = static function (CodeBase $code_base, FileCacheEntry $contents, IssueInstance $instance) {
         $line = $instance->getLine();
         $expected_name = $instance->getTemplateParameters()[0];
         $edits = [];

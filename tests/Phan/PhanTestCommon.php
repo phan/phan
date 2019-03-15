@@ -31,7 +31,7 @@ abstract class PhanTestCommon extends AbstractPhanFileTest
      * @suppress PhanUndeclaredConstant
      * @return array<string,array{0:array{0:string},1:string}>
      */
-    public final function getAllTestFiles()
+    final public function getAllTestFiles()
     {
         static $results = null;
         return $results ?? $results = $this->scanSourceFilesDir(TEST_FILE_DIR, EXPECTED_DIR);

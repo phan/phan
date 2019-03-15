@@ -2,6 +2,7 @@
 
 namespace Phan\Plugin\Internal\IssueFixingPlugin;
 
+use AssertionError;
 use Microsoft\PhpParser;
 use Microsoft\PhpParser\FilePositionMap;
 use Microsoft\PhpParser\Parser;
@@ -9,6 +10,8 @@ use Microsoft\PhpParser\Parser;
 /**
  * Represents file contents to be edited,
  * and utilities for working with the contents in fixers.
+ *
+ * @deprecated - should not be used directly. Just use FileCacheEntry.
  */
 class FileContents
 {
@@ -24,6 +27,9 @@ class FileContents
 
     /** @var ?array<int,int> positions of each line (1-based) (computed lazily) */
     private $line_offset_map = null;
+
+    /** @var ?array<int,string> a 1-based array of lines */
+    private $lines;
 
     /**
      * Create a representation of the file contents.
@@ -118,5 +124,38 @@ class FileContents
         }
         $offsets[$line] = \strlen($contents);
         return $offsets;
+    }
+
+    /**
+     * @return array<int,string> a 1-based array of lines
+     */
+    public function getLines() : array
+    {
+        $lines = $this->lines;
+        if (\is_array($lines)) {
+            return $lines;
+        }
+        $lines = \preg_split("/^/m", $this->contents);
+        // TODO: Use a better way to not include false when arguments are both valid
+        if (!\is_array($lines)) {
+            throw new AssertionError("Expected lines to be an array");
+        }
+        unset($lines[0]);
+        $this->lines = $lines;
+        return $lines;
+    }
+
+
+    /**
+     * Helper method to get individual lines from a file.
+     * This is more efficient than using \SplFileObject if multiple lines may need to be fetched.
+     *
+     * @param int $lineno - A line number, starting with line 1
+     * @return ?string
+     */
+    public function getLine(int $lineno)
+    {
+        $lines = $this->getLines();
+        return $lines[$lineno] ?? null;
     }
 }

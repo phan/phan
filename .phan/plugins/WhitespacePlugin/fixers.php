@@ -3,7 +3,7 @@
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\IssueInstance;
-use Phan\Plugin\Internal\IssueFixingPlugin\FileContents;
+use Phan\Library\FileCacheEntry;
 use Phan\Plugin\Internal\IssueFixingPlugin\FileEdit;
 use Phan\Plugin\Internal\IssueFixingPlugin\FileEditSet;
 use Phan\Plugin\Internal\IssueFixingPlugin\IssueFixer;
@@ -16,7 +16,7 @@ return [
      * @return ?FileEditSet
      * @suppress PhanAccessMethodInternal
      */
-    WhitespacePlugin::Tab => static function (CodeBase $unused_code_base, FileContents $contents, IssueInstance $instance) {
+    WhitespacePlugin::Tab => static function (CodeBase $unused_code_base, FileCacheEntry $contents, IssueInstance $instance) {
         $spaces_per_tab = (int)(Config::getValue('plugin_config')['spaces_per_tab'] ?? 4);
         if ($spaces_per_tab <= 0) {
             $spaces_per_tab = 4;
@@ -69,7 +69,7 @@ return [
      * @return ?FileEditSet
      * @suppress PhanAccessMethodInternal
      */
-    WhitespacePlugin::WhitespaceTrailing => static function (CodeBase $unused_code_base, FileContents $contents, IssueInstance $instance) {
+    WhitespacePlugin::WhitespaceTrailing => static function (CodeBase $unused_code_base, FileCacheEntry $contents, IssueInstance $instance) {
         IssueFixer::debug("Calling trailing whitespace fixer {$instance->getFile()}\n");
         $raw_contents = $contents->getContents();
         $byte_offset = 0;
@@ -97,7 +97,7 @@ return [
      * @return ?FileEditSet
      * @suppress PhanAccessMethodInternal
      */
-    WhitespacePlugin::CarriageReturn => static function (CodeBase $unused_code_base, FileContents $contents, IssueInstance $instance) {
+    WhitespacePlugin::CarriageReturn => static function (CodeBase $unused_code_base, FileCacheEntry $contents, IssueInstance $instance) {
         IssueFixer::debug("Calling trailing whitespace fixer {$instance->getFile()}\n");
         $raw_contents = $contents->getContents();
         $byte_offset = 0;

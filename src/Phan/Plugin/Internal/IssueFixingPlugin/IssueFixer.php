@@ -14,6 +14,7 @@ use Phan\Config;
 use Phan\Issue;
 use Phan\IssueInstance;
 use Phan\Library\FileCache;
+use Phan\Library\FileCacheEntry;
 use Phan\Library\StringUtil;
 use RuntimeException;
 
@@ -120,14 +121,14 @@ class IssueFixer
     }
 
     /**
-     * @var array<string,callable(CodeBase,FileContents,IssueInstance):(?FileEditSet)>
+     * @var array<string,callable(CodeBase,FileCacheEntry,IssueInstance):(?FileEditSet)>
      */
     private static $fixer_closures = [];
 
     /**
      * Registers a fixer that can be used to generate a fix for $issue_name
      *
-     * @param callable(CodeBase,FileContents,IssueInstance):(?FileEditSet) $fixer
+     * @param callable(CodeBase,FileCacheEntry,IssueInstance):(?FileEditSet) $fixer
      *        this is neither a real type hint nor a real closure so that the implementation can optionally be moved to classes that aren't loaded by the PHP interpreter yet.
      * @return void
      */
@@ -137,7 +138,7 @@ class IssueFixer
     }
 
     /**
-     * @return array<string,callable(CodeBase,FileContents,IssueInstance):(?FileEditSet)>
+     * @return array<string,callable(CodeBase,FileCacheEntry,IssueInstance):(?FileEditSet)>
      */
     private static function createClosures() : array
     {
@@ -146,7 +147,7 @@ class IssueFixer
          */
         $handle_unreferenced_use = static function (
             CodeBase $unused_code_base,
-            FileContents $file_contents,
+            FileCacheEntry $file_contents,
             IssueInstance $issue_instance
         ) {
             // 1-based line
@@ -193,7 +194,7 @@ class IssueFixer
      * return arrays of Closures to fix fixable instances in their corresponding files.
      *
      * @param IssueInstance[] $instances
-     * @return array<string,array<int,Closure(CodeBase,FileContents):(?FileEditSet)>>
+     * @return array<string,array<int,Closure(CodeBase,FileCacheEntry):(?FileEditSet)>>
      */
     public static function computeFixersForInstances(array $instances)
     {
@@ -210,7 +211,7 @@ class IssueFixer
                  */
                 $fixers_for_files[$instance->getFile()][] = static function (
                     CodeBase $code_base,
-                    FileContents $file_contents
+                    FileCacheEntry $file_contents
                 ) use (
                     $closure,
                     $instance
@@ -225,7 +226,7 @@ class IssueFixer
 
     /**
      * @param string $file the file name, for debugging
-     * @param array<int,Closure(CodeBase,FileContents):(?FileEditSet)> $fixers one or more fixers. These return 0 edits if nothing works.
+     * @param array<int,Closure(CodeBase,FileCacheEntry):(?FileEditSet)> $fixers one or more fixers. These return 0 edits if nothing works.
      * @return ?string the new contents, if fixes could be applied
      */
     public static function computeNewContentForFixers(
@@ -236,7 +237,7 @@ class IssueFixer
     ) {
         // A tolerantparser ast node
 
-        $contents = new FileContents($raw_contents);
+        $contents = new FileCacheEntry($raw_contents);
 
         // $dumper = new \Phan\AST\TolerantASTConverter\NodeDumper($contents);
         // $dumper->setIncludeTokenKind(true);
