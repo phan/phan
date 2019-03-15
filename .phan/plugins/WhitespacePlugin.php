@@ -3,6 +3,7 @@
 use ast\Node;
 use Phan\CodeBase;
 use Phan\Language\Context;
+use Phan\Library\FileCacheEntry;
 use Phan\PluginV2;
 use Phan\PluginV2\AfterAnalyzeFileCapability;
 use Phan\PluginV2\AutomaticFixCapability;
@@ -75,7 +76,7 @@ class WhitespacePlugin extends PluginV2 implements
     }
 
     /**
-     * @return array<string,Closure(CodeBase,FileContents,IssueInstance):(?FileEditSet)>
+     * @return array<string,Closure(CodeBase,FileCacheEntry,IssueInstance):(?FileEditSet)>
      */
     public function getAutomaticFixers() : array
     {
