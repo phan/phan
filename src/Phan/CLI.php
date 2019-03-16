@@ -30,6 +30,7 @@ use function is_array;
 use function is_resource;
 use function is_string;
 use function strlen;
+use function str_repeat;
 
 use const DIRECTORY_SEPARATOR;
 use const EXIT_FAILURE;
@@ -1388,12 +1389,6 @@ EOB;
         }
         $previous_update_time = $time;
 
-        // If we're on windows, just print a dot to show we're
-        // working
-        if (\strtoupper(\substr(PHP_OS, 0, 3)) === 'WIN') {
-            \fwrite(STDERR, '.');
-            return;
-        }
         $memory = \memory_get_usage() / 1024 / 1024;
         $peak = \memory_get_peak_usage() / 1024 / 1024;
 
@@ -1432,18 +1427,48 @@ EOB;
         $current_float = $p * $length;
         $current = (int)$current_float;
         $rest = \max($length - $current, 0);
+
+        if (!self::doesTerminalSupportUtf8()) {
+            // Show a progress bar of "XXXX>------" in Windows when utf-8 is unsupported.
+            $progress_bar = str_repeat("X", $current);
+            $delta = $current_float - $current;
+            if ($delta > 0.5) {
+                $progress_bar .= ">" . str_repeat("-", $rest - 1);
+            } else {
+                $progress_bar .= str_repeat("-", $rest);
+            }
+            return $progress_bar;
+        }
         // The left-most characters are "Light shade"
-        $progress_bar = \str_repeat("\u{2588}", $current);
+        $progress_bar = str_repeat("\u{2588}", $current);
         $delta = $current_float - $current;
         if ($delta > 1.0 / 3) {
             // The between character is "Full block" or "Medium shade" or "solid shade".
             // The remaining characters on the right are "Full block" (darkest)
             $first = $delta > 2.0 / 3 ? "\u{2593}" : "\u{2592}";
-            $progress_bar .= $first . \str_repeat("\u{2591}", $rest - 1);
+            $progress_bar .= $first . str_repeat("\u{2591}", $rest - 1);
         } else {
-            $progress_bar .= \str_repeat("\u{2591}", $rest);
+            $progress_bar .= str_repeat("\u{2591}", $rest);
         }
         return $progress_bar;
+    }
+
+    /**
+     * Guess if the terminal supports utf-8.
+     * In some locales, windows is set to a non-utf-8 codepoint.
+     *
+     * @see https://github.com/phan/phan/issues/2572
+     * @see https://en.wikipedia.org/wiki/Code_page#Windows_code_pages
+     * @suppress PhanUndeclaredFunction, UnusedSuppression the function exists only in Windows.
+     */
+    public static function doesTerminalSupportUtf8() : bool
+    {
+        if (\strtoupper(\substr(PHP_OS, 0, 3)) === 'WIN') {
+            if (!function_exists('sapi_windows_cp_is_utf8') || !sapi_windows_cp_is_utf8()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
