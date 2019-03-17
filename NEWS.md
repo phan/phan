@@ -16,6 +16,7 @@ Bug fixes:
 + Make the codeclimate plugin analyze the correct directory. Update the dependencies of the codeclimate plugin. (#2139)
 + Fix false positive checking for undefined offset with `$foo['strVal']` when strings are in the union type of `$foo` (#2541)
 + Fix crash in analysis of `call_user_func` (#2576)
++ Fix a false positive PhanTypeInvalidDimOffset for `unset` on array fields in conditional branches. (#2591)
 
 09 Mar 2019, Phan 1.2.6
 -----------------------
