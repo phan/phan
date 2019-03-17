@@ -277,6 +277,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if (!\is_scalar($dim_value)) {
                 return;
             }
+            $variable = clone($variable);
+            $context->getScope()->addVariable($variable);
             $variable->setUnionType($variable->getUnionType()->withoutArrayShapeField($dim_value));
         }
     }
