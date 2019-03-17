@@ -2243,7 +2243,7 @@ return [
 'Ds\Deque::toArray' => ['array'],
 'Ds\Deque::unshift' => ['void', '...values='=>'mixed'],
 'Ds\Hashable::equals' => ['bool', 'obj'=>'mixed'],
-'Ds\Hashable::hash' => ['void'],
+'Ds\Hashable::hash' => ['mixed'],
 'Ds\Map::__construct' => ['void', 'values='=>'mixed'],
 'Ds\Map::allocate' => ['void', 'capacity'=>'int'],
 'Ds\Map::apply' => ['void', 'callback'=>'callable'],
