@@ -62,6 +62,10 @@ final class HasPHPDocPlugin extends PluginV2 implements
         CodeBase $code_base,
         Clazz $class
     ) {
+        if ($class->isAnonymous()) {
+            // Probably not useful in many cases to document a short anonymous class.
+            return;
+        }
         $doc_comment = $class->getDocComment();
         if (!$doc_comment) {
             self::emitIssue(

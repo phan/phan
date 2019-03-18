@@ -1908,6 +1908,15 @@ class Clazz extends AddressableElement
     }
 
     /**
+     * @return bool
+     * True if this class is anonymous
+     */
+    public function isAnonymous() : bool
+    {
+        return ($this->getFlags() & \ast\flags\CLASS_ANONYMOUS) > 0;
+    }
+
+    /**
      * @return FullyQualifiedClassName
      */
     public function getFQSEN() : FullyQualifiedClassName
