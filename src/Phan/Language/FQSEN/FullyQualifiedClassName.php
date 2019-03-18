@@ -111,13 +111,4 @@ class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement
             return self::fromFullyQualifiedString("\stdClass");
         });
     }
-
-    /**
-     * @return bool
-     * True if this FQSEN represents an anonymous class
-     */
-    public function isAnonymous() : bool
-    {
-        return (\preg_match('/^anonymous_class_/', $this->getName()) === 1);
-    }
 }

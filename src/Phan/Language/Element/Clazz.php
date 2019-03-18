@@ -1913,7 +1913,7 @@ class Clazz extends AddressableElement
      */
     public function isAnonymous() : bool
     {
-        return $this->getFQSEN()->isAnonymous();
+        return ($this->getFlags() & \ast\flags\CLASS_ANONYMOUS) > 0;
     }
 
     /**
