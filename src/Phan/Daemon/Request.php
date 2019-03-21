@@ -450,7 +450,8 @@ class Request
         }
         Daemon::debugf("Got signal pid=%s", StringUtil::jsonEncode($pid));
 
-        while ($pid > 0) {
+        // Add additional check for Phan - pid > 0 implies status is non-null
+        while ($pid > 0 && $status !== null) {
             if (\array_key_exists($pid, self::$child_pids)) {
                 $exit_code = \pcntl_wexitstatus($status);
                 if ($exit_code != 0) {

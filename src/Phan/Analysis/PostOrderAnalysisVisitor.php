@@ -278,7 +278,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 return;
             }
             $variable = clone($variable);
-            $context->getScope()->addVariable($variable);
+            $context->addScopeVariable($variable);
             $variable->setUnionType($variable->getUnionType()->withoutArrayShapeField($dim_value));
         }
     }
@@ -1045,7 +1045,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             } catch (NodeException $_) {
                 return $this->context;
             }
+            $variable = clone($variable);
             $variable->setUnionType($new_type);
+            $this->context->addScopeVariable($variable);
         }
         return $this->context;
     }
@@ -3154,9 +3156,26 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         if ($variable) {
+            $set_variable_type = function (UnionType $new_type) use ($context, $variable) {
+                if ($variable instanceof Variable) {
+                    $variable = clone($variable);
+                    $variable->setUnionType($new_type);
+                    $context->addScopeVariable($variable);
+                } else {
+                    // This is a Property
+                    // TODO: Do a better job of analyzing assignments to properties
+                    $variable->setUnionType($new_type);
+                }
+            };
             switch ($parameter->getReferenceType()) {
                 case Parameter::REFERENCE_WRITE_ONLY:
-                    $this->analyzeWriteOnlyReference($code_base, $context, $method, $variable, $argument_list, $parameter);
+                    if ($variable instanceof Variable) {
+                        $variable = clone($variable);
+                        $this->analyzeWriteOnlyReference($code_base, $context, $method, $variable, $argument_list, $parameter);
+                        $context->addScopeVariable($variable);
+                    } else {
+                        $this->analyzeWriteOnlyReference($code_base, $context, $method, $variable, $argument_list, $parameter);
+                    }
                     break;
                 case Parameter::REFERENCE_READ_WRITE:
                     $reference_parameter_type = $parameter->getNonVariadicUnionType();
@@ -3165,14 +3184,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         // if Phan doesn't know the variable type,
                         // then guess that the variable is the type of the reference
                         // when analyzing the following statements.
-                        $variable->setUnionType(
-                            $reference_parameter_type
-                        );
+                        $set_variable_type($reference_parameter_type);
                     } elseif (!$variable_type->canCastToUnionType($reference_parameter_type)) {
                         // Phan already warned about incompatible types.
                         // But analyze the following statements as if it could have been the type expected,
                         // to reduce false positives.
-                        $variable->setUnionType($variable->getUnionType()->withUnionType(
+                        $set_variable_type($variable->getUnionType()->withUnionType(
                             $reference_parameter_type
                         ));
                     }
@@ -3185,7 +3202,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $reference_parameter_type = $parameter->getNonVariadicUnionType();
                     // We have no idea what type of reference this is.
                     // Probably user defined code.
-                    $variable->setUnionType($variable->getUnionType()->withUnionType(
+                    $set_variable_type($variable->getUnionType()->withUnionType(
                         $reference_parameter_type
                     ));
                     break;

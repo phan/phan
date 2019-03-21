@@ -357,10 +357,11 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $context->addScopeVariable($variable);
             return;
         }
-        $variable = $context->getScope()->getVariableByName(
+        $variable = clone($context->getScope()->getVariableByName(
             $var_name
-        );
+        ));
         $variable->setUnionType($type);
+        $context->addScopeVariable($variable);
     }
 
     /**
@@ -835,7 +836,9 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                             $old_variable = $visitor->getVariableFromScope($switch_variable_node, $previous_child_context);
 
                             if ($old_variable) {
+                                $variable = clone($variable);
                                 $variable->setUnionType($variable->getUnionType()->withUnionType($old_variable->getUnionType()));
+                                $child_context->addScopeVariable($variable);
                             }
                         }
                     }
