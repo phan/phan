@@ -1,0 +1,2 @@
+%s:5 PhanTypeInvalidUnaryOperandIncOrDec Invalid operator: unary operand of (expr)++ is null (expected int or string or float)
+%s:7 PhanTypeMismatchArgumentInternal Argument 1 (string) is null but \strlen() takes string

@@ -17,6 +17,7 @@ Bug fixes:
 + Fix false positive checking for undefined offset with `$foo['strVal']` when strings are in the union type of `$foo` (#2541)
 + Fix crash in analysis of `call_user_func` (#2576)
 + Fix a false positive PhanTypeInvalidDimOffset for `unset` on array fields in conditional branches. (#2591)
++ Fix edge cases where types for variables inferred in one branch affect unrelated branches (#2593)
 
 09 Mar 2019, Phan 1.2.6
 -----------------------

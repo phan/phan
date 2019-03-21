@@ -460,7 +460,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                             false
                         );
                         // And add it to the scope of the parent (For https://github.com/phan/phan/issues/367)
-                        $context->getScope()->addVariable($variable);
+                        $context->addScopeVariable($variable);
                     }
                 } else {
                     $variable = $context->getScope()->getVariableByName(
