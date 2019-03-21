@@ -2462,7 +2462,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
             $parent_class_fqsen = $class->getParentClassFQSEN();
 
-            if (!$code_base->hasClassWithFQSEN($parent_class_fqsen)) {
+            if (!$code_base->hasClassWithFQSEN($parent_class_fqsen, true)) {
                 throw new IssueException(
                     Issue::fromType(Issue::UndeclaredClass)(
                         $context->getFile(),

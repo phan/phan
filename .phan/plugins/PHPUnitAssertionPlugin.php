@@ -33,7 +33,7 @@ class PHPUnitAssertionPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
     {
         // @phan-suppress-next-line PhanThrowTypeAbsentForCall
         $assert_class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString('PHPUnit\Framework\Assert');
-        if (!$code_base->hasClassWithFQSEN($assert_class_fqsen)) {
+        if (!$code_base->hasClassWithFQSEN($assert_class_fqsen, true)) {
             if (!getenv('PHAN_PHPUNIT_ASSERTION_PLUGIN_QUIET')) {
                 fwrite(STDERR, "PHPUnitAssertionPlugin failed to find class PHPUnit\Framework\Assert, giving up (set environment variable PHAN_PHPUNIT_ASSERTION_PLUGIN_QUIET=1 to ignore this)\n");
             }

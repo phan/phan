@@ -440,7 +440,7 @@ class Context extends FileRef
             throw new AssertionError("Must be in class scope to get class");
         }
 
-        if (!$code_base->hasClassWithFQSEN($this->getClassFQSEN())) {
+        if (!$code_base->hasClassWithFQSEN($this->getClassFQSEN(), false)) {
             throw new CodeBaseException(
                 $this->getClassFQSEN(),
                 "Cannot find class with FQSEN {$this->getClassFQSEN()} in context {$this}"

@@ -296,7 +296,8 @@ class CodeBase
 
         // Check if composer class loader is being used
         if (\Phan\Config::getValue('use_project_composer_autoloader')) {
-            $autoload_path = Config::projectPath(Config::getValue('composer_autoloader_path'));
+            $path = Config::getValue('composer_autoloader_path');
+            $autoload_path = $path[0] === '/' ? $path : Config::projectPath($path);
             $class_loader_class = $class_loader_class ?: ComposerResolver::class;
 
             if (!file_exists($autoload_path)) {
@@ -315,11 +316,23 @@ class CodeBase
     }
 
     /**
+     * Get the configured class resolver if set
+     *
      * @return null|ClassResolverInterface
      */
     public function getClassResolver()
     {
         return $this->class_resolver;
+    }
+
+    /**
+     * Returns true if a class resolver is registered
+     *
+     * @return bool
+     */
+    public function hasClassResolver(): bool
+    {
+        return $this->class_resolver instanceof ClassResolverInterface;
     }
 
     /**
@@ -910,7 +923,7 @@ class CodeBase
      */
     private function resolveClassAliasesForAliasSet(FullyQualifiedClassName $original_fqsen, Set $alias_set)
     {
-        if (!$this->hasClassWithFQSEN($original_fqsen)) {
+        if (!$this->hasClassWithFQSEN($original_fqsen, true)) {
             // The original class does not exist.
             // Emit issues at the point of every single class_alias call with that original class.
             foreach ($alias_set as $alias_record) {
@@ -960,12 +973,15 @@ class CodeBase
     }
 
     /**
+     * @param FullyQualifiedClassName $fqsen The fully qualified class name for the class
+     * @param bool $autoload If true, attempt to autoload the class via a registered class resolver if present
+     *
      * @return bool
      * True if a Clazz with the given FQSEN exists
      */
     public function hasClassWithFQSEN(
         FullyQualifiedClassName $fqsen,
-        bool $autoload = true
+        bool $autoload = false
     ) : bool {
         if ($this->fqsen_class_map->offsetExists($fqsen)) {
             return true;
@@ -975,7 +991,11 @@ class CodeBase
             return true;
         }
 
-        return $autoload && $this->class_resolver && $this->lazyLoadClassWithFQSEN($fqsen);
+        if (!$autoload || !$this->class_resolver) {
+            return false;
+        }
+
+        return $this->lazyLoadClassWithFQSEN($fqsen);
     }
 
     /**
@@ -1041,7 +1061,7 @@ class CodeBase
         } catch (\Throwable $throwable) {
             // Catch miscellaneous errors such as $throwable and print their stack traces.
             error_log("While parsing $file_path, caught: " . $throwable . "\n");
-            $this->recordUnparseableFile($file_path);
+            $this->recordUnparsableFile($file_path);
             return false;
         }
 
@@ -1049,9 +1069,19 @@ class CodeBase
         $this->setShouldHydrateRequestedElements($should_hydrate_requested_elements);
         $this->setCurrentParsedFile($current_parsed_file);
         $this->class_resolver_loaded[$class] = $this->fqsen_class_map->offsetExists($fqsen);
-        $this->class_resolver_parsed_files[$file_path] = true;
+        $this->class_resolver_parsed_files[$file_path] = $file_path;
 
         return $this->class_resolver_loaded[$class];
+    }
+
+    /**
+     * Get a list of the files that were successfully parsed by auto class resolution
+     *
+     * @return array<string>
+     */
+    public function getClassResolverParsedFiles(): array
+    {
+        return array_keys(array_filter($this->class_resolver_parsed_files));
     }
 
     /**

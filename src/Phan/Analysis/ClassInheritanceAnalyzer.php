@@ -91,7 +91,7 @@ class ClassInheritanceAnalyzer
         Clazz $clazz,
         string $issue_type
     ) : bool {
-        if (!$code_base->hasClassWithFQSEN($fqsen)) {
+        if (!$code_base->hasClassWithFQSEN($fqsen, true)) {
             $filter = null;
             switch ($issue_type) {
                 case Issue::UndeclaredExtendedClass:

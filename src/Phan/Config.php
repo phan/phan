@@ -704,6 +704,9 @@ class Config
         // Phan\ClassResolver\ClassResolverInterface
         'class_resolver' => null,
 
+        // If true, autoloaded files will also be analyzed
+        'analyze_autoloaded_files' => false,
+
         // Use the polyfill parser based on tolerant-php-parser instead of the possibly missing native implementation
         //
         // NOTE: This makes parsing several times slower than the native implementation.
