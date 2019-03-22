@@ -894,8 +894,8 @@ function test(ExampleClass $c) {  // line 25
     var_export($_ENV);
     $y = new class extends ArrayObject { public function count() : int {return 0;} };  // no comment
     var_export($y->count());
-    $z = new class extends ArrayObject {};
-    var_export($z->count());
+    $z = /** Documentation of anonymous class */ new class extends ArrayObject {};
+    var_export($z->count());  // line 35
 }
 EOT;
         return [
@@ -1178,6 +1178,20 @@ public function count() : int
 ```
 
 Get the number of public properties in the ArrayObject
+EOT
+                ,
+                null,
+                true
+            ],
+            [
+                $example_file_contents,
+                new Position(35, 16),  // Anonymous class
+                <<<'EOT'
+```php
+class anonymous_class
+```
+
+Documentation of anonymous class
 EOT
                 ,
                 null,

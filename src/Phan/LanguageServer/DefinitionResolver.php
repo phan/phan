@@ -368,6 +368,10 @@ class DefinitionResolver
             }
             $class = $code_base->getClassByFQSEN($class_fqsen);
             $method = $class->getMethodByName($code_base, '__construct');
+            if ($method->isPHPInternal() && !$class->isPHPInternal() && !$request->getIsHoverRequest()) {
+                $request->recordDefinitionElement($code_base, $class, false);
+                continue;
+            }
             // Note: Does the same thing (Return the class)
             // both for "Go To Definition" and "Go To Type Definition"
             $request->recordDefinitionElement($code_base, $method, false);
