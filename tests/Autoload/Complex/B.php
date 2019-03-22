@@ -1,12 +1,12 @@
 <?php
 
-namespace Tests\Autoload;
+namespace Tests\Autoload\Complex;
 
 /**
- * Class A
+ * Class B
  * Load interface via implements
  */
-class A extends \Exception implements InterfaceA
+class B implements InterfaceA
 {
     /**
      * @var D
@@ -32,6 +32,7 @@ class A extends \Exception implements InterfaceA
      * @param E $e Real parameter
      * @param F $f Doc parameter
      * @return G
+     * @deprecated No
      */
     public function foo(E $e, $f): G
     {

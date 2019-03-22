@@ -1,12 +1,12 @@
 <?php
 
-namespace Tests\Autoload;
+namespace Tests\Autoload\Complex;
 
 /**
- * Class B
+ * Class A
  * Load A via inheritance
  */
-class B extends A
+class A extends B
 {
     /** Load C via const */
     public const BAR = C::FOO;
@@ -14,8 +14,12 @@ class B extends A
     /**
      * Constructor
      */
-    public function __construct()
+    public function __construct(bool $foo)
     {
+        if ($foo) {
+            echo 'Foo';
+        }
+
         // Load D via new
         parent::__construct(new D, static::BAR);
     }

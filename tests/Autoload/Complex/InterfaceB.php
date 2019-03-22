@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Autoload;
+namespace Tests\Autoload\Complex;
 
 /**
  * Interface InterfaceB

@@ -951,7 +951,7 @@ class CodeBase
             }
             $alias_fqsen = $alias_record->alias_fqsen;
             // Don't do anything if there is a real class, or if an earlier class_alias created an alias.
-            if ($this->hasClassWithFQSEN($alias_fqsen)) {
+            if ($this->hasClassWithFQSEN($alias_fqsen, true)) {
                 // Emit a different issue type to make filtering out false positives easier.
                 $clazz = $this->getClassByFQSEN($alias_fqsen);
                 Issue::maybeEmit(
