@@ -2710,7 +2710,7 @@ class Issue
                 self::UnreferencedPrivateClassConstant,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
-                "Possibly zero references to public class constant {CONST}",
+                "Possibly zero references to private class constant {CONST}",
                 self::REMEDIATION_B,
                 6019
             ),

@@ -861,7 +861,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/plugin_test/expe
 ## PhanUnreferencedPrivateClassConstant
 
 ```
-Possibly zero references to public class constant {CONST}
+Possibly zero references to private class constant {CONST}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.2.3/tests/plugin_test/expected/083_unreferenced_class_element.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.2.3/tests/plugin_test/src/083_unreferenced_class_element.php#L4).
