@@ -7,6 +7,9 @@ New features(CLI,Configs)
 + Use a progress bar for `--progress-bar` on Windows instead of printing dots. (#2572)
   Use ASCII characters for the progress bar instead of UTF-8 if the code page isn't utf-8 or if Phan can't infer the terminal's code page (e.g. in PHP < 7.1)
 
+Language Server/Daemon mode:
++ Make "Go to Definition" work when the constructor of a user-defined class is inherited from an internal class. (#2598)
+
 Maintenance:
 + Update tolerant-php-parser version to 0.0.17
   (fix parsing of some edge cases, minor performance improvement, prepare to support php 7.4 in polyfill)

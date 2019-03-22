@@ -2657,7 +2657,11 @@ class Clazz extends AddressableElement
             $string .= 'class ';
         }
 
-        $string .= $fqsen->getName();
+        if ($this->isAnonymous()) {
+            $string .= 'anonymous_class';
+        } else {
+            $string .= $fqsen->getName();
+        }
         return $string;
     }
 
