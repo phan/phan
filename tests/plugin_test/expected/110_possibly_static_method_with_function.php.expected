@@ -1,0 +1,2 @@
+src/110_possibly_static_method_with_function.php:3 PhanPluginPossiblyStaticPublicMethod Public method \PSMClazz110::main can be static
+src/110_possibly_static_method_with_function.php:5 PhanUndeclaredVariable Variable $this is undeclared

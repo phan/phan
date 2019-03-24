@@ -124,9 +124,9 @@ final class PossiblyStaticMethodPlugin extends PluginV2 implements
             case ast\AST_VAR:
                 return $node->children['name'] !== 'this';
             case ast\AST_CLASS:
+            case ast\AST_FUNC_DECL:
                 return true;
             case ast\AST_CLOSURE:
-            case ast\AST_FUNC_DECL:
                 if ($node->flags & \ast\flags\MODIFIER_STATIC) {
                     return true;
                 }
