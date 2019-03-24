@@ -306,6 +306,18 @@ E.g. warns about invoking `function example($first, $second, $third)` as `exampl
 - **PhanPluginSuspiciousParamOrder**: `Suspicious order for arguments named {DETAILS} - These are being passed to parameters {DETAILS} of {FUNCTION} defined at {FILE}:{LINE}`
 - **PhanPluginSuspiciousParamOrderInternal**: `Suspicious order for arguments named {DETAILS} - These are being passed to parameters {DETAILS}`
 
+#### PossiblyStaticMethodPlugin.php
+
+Checks if a method can be made static without causing any errors.
+
+- **PhanPluginPossiblyStaticPublicMethod**: `Public method {PROPERTY} can be static` (Also exists for Private and Protected)
+
+Warnings may need to be completely disabled due to the large number of method declarations in a typical codebase:
+
+- Warnings are not emitted for methods that override methods in the parent class.
+- Warnings are not emitted for methods that are overridden in child classes.
+- Warnings can be suppressed based on the method FQSEN with `plugin_config => [..., 'possibly_static_method_ignore_regex' => (a PCRE regex)]`
+
 ### 4. Demo plugins:
 
 These files demonstrate plugins for Phan.
@@ -347,15 +359,3 @@ This is useful for developing Phan and Phan plugins.
 - **PhanPluginTooFewArgumentsForIssue**: `Too few arguments for issue {STRING_LITERAL}: expected {COUNT}, got {COUNT}`
 - **PhanPluginTooManyArgumentsForIssue**: `Too many arguments for issue {STRING_LITERAL}: expected {COUNT}, got {COUNT}`
 - **PhanPluginUnknownIssueType**: `Unknown issue type {STRING_LITERAL} in a call to {METHOD}(). (may be a false positive - check if the version of Phan running PhanSelfCheckPlugin is the same version that the analyzed codebase is using)`
-
-#### PossiblyStaticMethodPlugin.php
-
-Checks if a method can be made static without causing any errors.
-
-- **PhanPluginPossiblyStaticPublicMethod**: `Public method {PROPERTY} can be static` (Also exists for Private and Protected)
-
-Warnings may need to be completely disabled due to the large number of method declarations in a typical codebase:
-
-- Warnings are not emitted for methods that override methods in the parent class.
-- Warnings are not emitted for methods that are overridden in child classes.
-- Warnings can be suppressed based on the method FQSEN with `plugin_config => [..., 'possibly_static_method_ignore_regex' => (a PCRE regex)]`
