@@ -3,7 +3,7 @@ src/101_extended_return_inferences.php:12 PhanTypeMismatchArgument Argument 1 (x
 src/101_extended_return_inferences.php:13 PhanTypeMismatchArgument Argument 1 (x) is array{0:2} but \expect_zero() takes 0 defined at src/101_extended_return_inferences.php:8
 src/101_extended_return_inferences.php:14 PhanTypeMismatchArgument Argument 1 (x) is \stdClass but \expect_zero() takes 0 defined at src/101_extended_return_inferences.php:8
 src/101_extended_return_inferences.php:15 PhanTypeMismatchArgument Argument 1 (x) is '1' but \expect_zero() takes 0 defined at src/101_extended_return_inferences.php:8
-src/101_extended_return_inferences.php:16 PhanTypeMismatchArgument Argument 1 (x) is '1,2' but \expect_zero() takes 0 defined at src/101_extended_return_inferences.php:8
+src/101_extended_return_inferences.php:16 PhanTypeMismatchArgument Argument 1 (x) is '1\x2c2' but \expect_zero() takes 0 defined at src/101_extended_return_inferences.php:8
 src/101_extended_return_inferences.php:17 PhanTypeMismatchArgument Argument 1 (x) is '12' but \expect_zero() takes 0 defined at src/101_extended_return_inferences.php:8
 src/101_extended_return_inferences.php:18 PhanTypeMismatchArgument Argument 1 (x) is '0' but \expect_zero() takes 0 defined at src/101_extended_return_inferences.php:8
 src/101_extended_return_inferences.php:19 PhanTypeMismatchArgument Argument 1 (x) is 'tset' but \expect_zero() takes 0 defined at src/101_extended_return_inferences.php:8

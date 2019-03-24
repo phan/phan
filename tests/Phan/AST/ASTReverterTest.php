@@ -38,6 +38,10 @@ final class ASTReverterTest extends BaseTest
     {
         return [
             ["'2'"],
+            ['"a\tc\nb"'],
+            ['"\0"'],
+            ['"\07"', '"\7"'],
+            ['"\0072"', '"\0072"'],
             ['2'],
             ['false'],
             ['null'],

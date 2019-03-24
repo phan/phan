@@ -197,7 +197,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
             return (string)json_encode($key);
         }
         $tmp = [$key => true];
-        return var_export(key($tmp), true);
+        return ASTReverter::toShortString(key($tmp));
     }
 
     /**
@@ -213,7 +213,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
             return (string)$key;
         }
         $tmp = [$key => true];
-        return var_export(key($tmp), true);
+        return ASTReverter::toShortString(key($tmp));
     }
 }
 

@@ -107,8 +107,10 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
     public function __toString() : string
     {
         // TODO: Finalize escaping
+        // NOTE: Phan has issues with parsing commas in phpdoc, so don't suggest them.
+        // Support for commas should be restored when https://github.com/phan/phan/issues/2597 is fixed
         $inner = \preg_replace_callback(
-            '/[^- ,.\/?:;"!#$%^&*_+=a-zA-Z0-9_\x80-\xff]/',
+            '/[^- .\/?:;"!#$%^&*_+=a-zA-Z0-9_\x80-\xff]/',
             /**
              * @param array{0:string} $match
              * @return string
