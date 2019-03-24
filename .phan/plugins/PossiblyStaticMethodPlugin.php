@@ -130,6 +130,7 @@ final class PossiblyStaticMethodPlugin extends PluginV2 implements
                 if ($node->flags & \ast\flags\MODIFIER_STATIC) {
                     return true;
                 }
+                // fall through
             default:
                 foreach ($node->children as $child_node) {
                     if (!$this->nodeCanBeStatic($child_node)) {
