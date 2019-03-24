@@ -3,6 +3,9 @@ Phan NEWS
 ?? ??? 2019, Phan 1.2.8 (dev)
 -----------------------
 
+Maintenance:
++ Make escaped string arguments fit on a single line for more issue types.
+
 22 Mar 2019, Phan 1.2.7
 -----------------------
 

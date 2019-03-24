@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Phan\Library;
 
+use Phan\AST\ASTReverter;
+
 /**
  * StringUtil contains methods to simplify working with strings in Phan and its plugins.
  */
@@ -11,11 +13,16 @@ class StringUtil
     /**
      * Encode a scalar value in a compact, unambiguous representation for emitted issues.
      * The encoder used by encodeValue may change.
+     * This aims to fit on a single line.
      *
      * @param string|int|float|bool|null $value
      */
     public static function encodeValue($value) : string
     {
+        if (\is_string($value) && \preg_match('/([\0-\15\16-\37])/', $value)) {
+            // Use double quoted strings if this contains newlines, tabs, control characters, etc.
+            return '"' . ASTReverter::escapeInnerString($value, '"') . '"';
+        }
         return \var_export($value, true);
     }
 

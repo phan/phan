@@ -51,10 +51,51 @@ class ASTReverter
                 // use lowercase 'null' instead of 'NULL'
                 return 'null';
             }
-            // TODO: One-line representations for strings, minimal representations for floats, etc.
+            if (\is_string($node)) {
+                return self::escapeString($node);
+            }
+            // TODO: minimal representations for floats, etc.
             return \var_export($node, true);
         }
         return (self::$closure_map[$node->kind] ?? self::$noop)($node);
+    }
+
+    /**
+     * Escapes the inner contents to be suitable for a single-line single or double quoted string
+     *
+     * @see https://github.com/nikic/PHP-Parser/tree/master/lib/PhpParser/PrettyPrinter/Standard.php
+     */
+    public static function escapeString(string $string) : string {
+        if (\preg_match('/([\0-\15\16-\37])/', $string)) {
+            // Use double quoted strings if this contains newlines, tabs, control characters, etc.
+            return '"' . self::escapeInnerString($string, '"') . '"';
+        }
+        // Otherwise, use single quotes
+        return \var_export($string, true);
+    }
+
+    /**
+     * Escapes the inner contents to be suitable for a single-line double quoted string
+     *
+     * @see https://github.com/nikic/PHP-Parser/tree/master/lib/PhpParser/PrettyPrinter/Standard.php
+     */
+    public static function escapeInnerString(string $string, string $quote = null) : string {
+        if (null === $quote) {
+            // For doc strings, don't escape newlines
+            $escaped = \addcslashes($string, "\t\f\v$\\");
+        } else {
+            $escaped = \addcslashes($string, "\n\r\t\f\v$" . $quote . "\\");
+        }
+
+        // Escape other control characters
+        return \preg_replace_callback('/([\0-\10\16-\37])(?=([0-7]?))/', /** @param array<int,string> $matches */ function (array $matches) : string {
+            $oct = \decoct(\ord($matches[1]));
+            if ($matches[2] !== '') {
+                // If there is a trailing digit, use the full three character form
+                return '\\' . str_pad($oct, 3, '0', \STR_PAD_LEFT);
+            }
+            return '\\' . $oct;
+        }, $escaped);
     }
 
     /**
