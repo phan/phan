@@ -5,6 +5,8 @@ Phan NEWS
 
 Maintenance:
 + Make escaped string arguments fit on a single line for more issue types.
++ Rename `UseContantNoEffect` to `UseConstantNoEffect`.
++ Rename `AddressableElement::isStrictlyMoreVisibileThan()` to `isStrictlyMoreVisibleThan`.
 
 22 Mar 2019, Phan 1.2.7
 -----------------------

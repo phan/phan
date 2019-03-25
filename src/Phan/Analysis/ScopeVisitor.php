@@ -188,7 +188,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
             if ($target->getNamespace() !== '\\') {
                 return;
             }
-            $issue_type = Issue::UseContantNoEffect;
+            $issue_type = Issue::UseConstantNoEffect;
         } else {
             if ($target->getNamespace() !== '\\') {
                 if (!Config::getValue('warn_about_relative_include_statement')) {

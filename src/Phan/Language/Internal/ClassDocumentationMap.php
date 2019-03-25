@@ -390,6 +390,11 @@ The callback is guaranteed to be invoked only after its timeout has passed (not 
 The timer itself will do a best-effort at avoiding drift, that is, if a timer is configured to trigger every `10` seconds, then it will normally trigger at exactly `10` second intervals. If, however, the script cannot keep up with the timer because it takes longer than those `10` seconds to do) the timer will not fire more than once per event loop iteration.',
 'EvWatcher' => '`EvWatcher` is a base class for all watchers( `EvCheck` , `EvChild` etc.). Since `EvWatcher` \'s constructor is abstract , one can\'t(and don\'t need to) create EvWatcher objects directly.',
 'FANNConnection' => '`FANNConnection` is used for the neural network connection. The objects of this class are used in `fann_get_connection_array` and `fann_set_weight_array`.',
+'FFI' => 'FFI class provides access to a simple way to call native functions,
+access native variables and create/access data structures defined
+in C language.',
+'FFI\CData' => 'Proxy object that provides access to compiled structures.',
+'FFI\CType' => 'Class containing C type information.',
 'FilesystemIterator' => 'The Filesystem iterator',
 'FilterIterator' => 'This abstract iterator filters out unwanted values. This class should be extended to implement custom iterator filters. The `FilterIterator::accept` must be implemented in the subclass.',
 'finfo' => 'This class provides an object oriented interface into the fileinfo functions.',
@@ -434,7 +439,15 @@ $key = null;
 while ($key = $hashTable->nextkey($key))
 echo "Key: ".$key." value: ".$hashTable->get($key)."<br/>";',
 'http\Client' => 'The HTTP client. See http\Client\Curl’s options which is the only driver currently supported.',
+'http\Client\Curl\User' => 'Interface to an user event loop implementation for http\Client::configure()\'s $use_eventloop option.',
+'http\Client\Response' => 'The http\Client\Response class represents an HTTP message the client returns as answer from a server to an http\Client\Request.',
 'http\Cookie' => 'A class representing a list of cookies with specific attributes.',
+'http\Encoding\Stream' => 'Base class for encoding stream implementations.',
+'http\Encoding\Stream\Debrotli' => 'A [brotli](https://brotli.org) decoding stream.',
+'http\Encoding\Stream\Dechunk' => 'A stream decoding data encoded with chunked transfer encoding.',
+'http\Encoding\Stream\Deflate' => 'A deflate stream supporting deflate, zlib and gzip encodings.',
+'http\Encoding\Stream\Enbrotli' => 'A [brotli](https://brotli.org) encoding stream.',
+'http\Encoding\Stream\Inflate' => 'A inflate stream supporting deflate, zlib and gzip encodings.',
 'http\Env' => 'The http\Env class provides static methods to manipulate and inspect the server’s current request’s HTTP environment',
 'http\Env\Request' => 'The http\Env\Request class\' instances represent the server’s current HTTP request.
 
@@ -444,7 +457,25 @@ See http\Message for inherited members.',
 The http\Env\Response class\' instances represent the server’s current HTTP response.
 
 See http\Message for inherited members.',
+'http\Env\Url' => 'URL class using the HTTP environment by default.
+
+Always adds http\Url::FROM_ENV to the $flags constructor argument. See also http\Url.',
+'http\Exception' => 'The http extension\'s Exception interface.
+
+Use it to catch any Exception thrown by pecl/http.
+
+The individual exception classes extend their equally named native PHP extensions, if such exist, and implement this empty interface. For example the http\Exception\BadMethodCallException extends SPL\'s BadMethodCallException.',
+'http\Exception\BadConversionException' => 'A bad conversion (e.g. character conversion) was encountered.',
+'http\Exception\BadHeaderException' => 'A bad HTTP header was encountered.',
+'http\Exception\BadMessageException' => 'A bad HTTP message was encountered.',
+'http\Exception\BadMethodCallException' => 'A method was called on an object, which was in an invalid or unexpected state.',
+'http\Exception\BadQueryStringException' => 'A bad querystring was encountered.',
+'http\Exception\BadUrlException' => 'A bad HTTP URL was encountered.',
+'http\Exception\InvalidArgumentException' => 'One or more invalid arguments were passed to a method.',
+'http\Exception\RuntimeException' => 'A generic runtime exception.',
+'http\Exception\UnexpectedValueException' => 'An unexpected value was encountered.',
 'http\Header' => 'The http\Header class provides methods to manipulate, match, negotiate and serialize HTTP headers.',
+'http\Header\Parser' => 'The parser which is underlying http\Header and http\Message.',
 'http\Message' => 'The message class builds the foundation for any request and response message.
 
 See http\Client\Request and http\Client\Response, as well as http\Env\Request and http\Env\Response.',

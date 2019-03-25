@@ -64,6 +64,9 @@ Usage: $program_name command [...args]
   $program_name update-descriptions-svn path/to/phpdoc_svn_dir
     Update Phan's descriptions for functions/methods based on the docs.php.net source repo.
 
+  $program_name update-descriptions-stubs path/to/stubs_dir
+    Update Phan's descriptions for functions/methods based on a checkout of a directory with stubs for extensions.
+
 EOT;
         fwrite(STDERR, $msg);
         exit($exit_code);

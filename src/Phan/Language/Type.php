@@ -3136,18 +3136,18 @@ class Type
         }
         $closure = null;
         foreach ($this->template_parameter_type_list as $i => $actual_template_union_type) {
-            $inner_extracter_closure = $actual_template_union_type->getTemplateTypeExtractorClosure($code_base, $template_type);
-            if (!$inner_extracter_closure) {
+            $inner_extractor_closure = $actual_template_union_type->getTemplateTypeExtractorClosure($code_base, $template_type);
+            if (!$inner_extractor_closure) {
                 continue;
             }
             $closure = TemplateType::combineParameterClosures(
                 $closure,
-                static function (UnionType $type, Context $context) use ($inner_extracter_closure, $i) : UnionType {
+                static function (UnionType $type, Context $context) use ($inner_extractor_closure, $i) : UnionType {
                     $result = UnionType::empty();
                     foreach ($type->getTypeSet() as $inner_type) {
                         $replacement_type = $inner_type->template_parameter_type_list[$i] ?? null;
                         if ($replacement_type) {
-                            $result = $result->withUnionType($inner_extracter_closure($replacement_type, $context));
+                            $result = $result->withUnionType($inner_extractor_closure($replacement_type, $context));
                         }
                     }
                     return $result;
