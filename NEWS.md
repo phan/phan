@@ -8,6 +8,9 @@ Maintenance:
 + Rename `UseContantNoEffect` to `UseConstantNoEffect`.
 + Rename `AddressableElement::isStrictlyMoreVisibileThan()` to `isStrictlyMoreVisibleThan`.
 
+Plugins:
++ Fix edge case where `WhitespacePlugin` would not detect trailing whitespace.
+
 22 Mar 2019, Phan 1.2.7
 -----------------------
 

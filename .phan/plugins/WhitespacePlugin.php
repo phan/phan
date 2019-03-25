@@ -43,7 +43,7 @@ class WhitespacePlugin extends PluginV2 implements
         string $file_contents,
         Node $node
     ) {
-        if (!preg_match('/[\r\t]|[ \t]$/', $file_contents)) {
+        if (!preg_match('/[\r\t]|[ \t]\r?$/m', $file_contents)) {
             // Typical case: no errors
             return;
         }
