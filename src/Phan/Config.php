@@ -699,11 +699,6 @@ class Config
         // This config option can be defined to set the path to a custom location, relative to the project root
         'composer_autoloader_path' => 'vendor/autoload.php',
 
-        // A custom class resolver can be defined instead of the default Composer resolver. This class name can be a
-        // value of 'composer' or 'reflection', or must be a loaded fully qualified class name and conform to
-        // Phan\ClassResolver\ClassResolverInterface
-        'class_resolver' => null,
-
         // Use the polyfill parser based on tolerant-php-parser instead of the possibly missing native implementation
         //
         // NOTE: This makes parsing several times slower than the native implementation.

@@ -8,12 +8,9 @@ use Exception;
 use InvalidArgumentException;
 use Phan\ClassResolver\ClassResolverInterface;
 use Phan\ClassResolver\ComposerResolver;
-use Phan\ClassResolver\ReflectionResolver;
 use Phan\CodeBase\ClassMap;
 use Phan\CodeBase\UndoTracker;
 use Phan\Exception\FQSENException;
-use Phan\Exception\FileNotFoundException;
-use Phan\Exception\ClassNotFoundException;
 use Phan\Language\Context;
 use Phan\Language\Element\ClassAliasRecord;
 use Phan\Language\Element\ClassConstant;
@@ -212,17 +209,11 @@ class CodeBase
 
     /**
      * Hash map of classes that have been loaded via class resolution, to ensure double resolution is not performed.
+     * Key is the class name, value is either the file or false if class was not found
      *
-     * @var array<string,bool>
+     * @var array<string,bool|string>
      */
     private $class_resolver_loaded = [];
-
-    /**
-     * Hash map of parsed classes that have been loaded via class resolution, to ensure double parsing is not performed.
-     *
-     * @var array<string,bool>
-     */
-    private $class_resolver_parsed_files = [];
 
     /**
      * Initialize a new CodeBase
@@ -268,50 +259,17 @@ class CodeBase
     /**
      * Initialization hook called after the CLI args are parsed and Config has been initialized
      *
-     * @throws FileNotFoundException If the using `use_project_composer_autoloader` and the configured
-     *                               `composer_autoloader_path` does not resolve to a file
-     * @throws ClassNotFoundException If the configured `class_resolver` class does not exist or not loaded
      * @return void
      */
-    public function init()
+    public function init(): void
     {
-        $class_loader_class = Config::getValue('class_resolver');
-
-        // Support aliases
-        switch ($class_loader_class) {
-            case 'composer':
-                $class_loader_class = ComposerResolver::class;
-                break;
-            case 'reflection':
-                $class_loader_class = ReflectionResolver::class;
-                break;
-        }
-
-        // Check class is defined
-        if ($class_loader_class && !class_exists($class_loader_class)) {
-            throw new ClassNotFoundException(
-                sprintf('The configured `class_resolver` "%s" does not exist or is not loaded', $class_loader_class)
-            );
-        }
-
         // Check if composer class loader is being used
-        if (\Phan\Config::getValue('use_project_composer_autoloader')) {
+        if (Config::getValue('use_project_composer_autoloader')) {
             $path = Config::getValue('composer_autoloader_path');
             $autoload_path = $path[0] === '/' ? $path : Config::projectPath($path);
-            $class_loader_class = $class_loader_class ?: ComposerResolver::class;
-
-            if (!file_exists($autoload_path)) {
-                throw new FileNotFoundException(
-                    sprintf('The composer autoload file was not found in "%s"', $autoload_path)
-                );
-            }
 
             $autoloader = require $autoload_path;
-            $this->setClassResolver(new $class_loader_class($autoloader));
-
-        // Check for a custom class resolver
-        } elseif ($class_loader_class) {
-            $this->setClassResolver(new $class_loader_class);
+            $this->setClassResolver(new ComposerResolver($autoloader));
         }
     }
 
@@ -1005,18 +963,13 @@ class CodeBase
     private function lazyLoadClassWithFQSEN(
         FullyQualifiedClassName $fqsen
     ) : bool {
-        if (!$this->class_resolver) {
-            return false;
-        }
-
-        // @todo fix this, how do we handle the same class name but different fqsen
-        if ($fqsen->getAlternateId() !== 0) {
+        if ($this->class_resolver) {
             return false;
         }
 
         $class = $fqsen->getNamespacedName();
         if (isset($this->class_resolver_loaded[$class])) {
-            return $this->class_resolver_loaded[$class];
+            return $this->class_resolver_loaded[$class] !== false;
         }
 
         // Resolve the file for the class
@@ -1030,17 +983,12 @@ class CodeBase
         if (!$file_path || !file_exists($file_path)) {
             Issue::maybeEmit(
                 $this,
-                (new Context())->withFile($file_path),
+                (new Context())->withFile($file),
                 Issue::AutoloaderMissingFile,
                 0,
                 $class,
                 $file
             );
-            return false;
-        }
-
-        // Check if this file has previously been processed, if it has and the FQSEN not found, we should return false
-        if (isset($this->class_resolver_parsed_files[$file_path])) {
             return false;
         }
 
@@ -1068,20 +1016,14 @@ class CodeBase
         // Reset temp state
         $this->setShouldHydrateRequestedElements($should_hydrate_requested_elements);
         $this->setCurrentParsedFile($current_parsed_file);
-        $this->class_resolver_loaded[$class] = $this->fqsen_class_map->offsetExists($fqsen);
-        $this->class_resolver_parsed_files[$file_path] = $file_path;
 
-        return $this->class_resolver_loaded[$class];
-    }
+        // Ensure this class was loaded successfully
+        if (!$this->fqsen_class_map->offsetExists($fqsen)) {
+            return $this->class_resolver_loaded[$class] = false;
+        }
 
-    /**
-     * Get a list of the files that were successfully parsed by auto class resolution
-     *
-     * @return array<string>
-     */
-    public function getClassResolverParsedFiles(): array
-    {
-        return array_keys(array_filter($this->class_resolver_parsed_files));
+        $this->class_resolver_loaded[$class] = $file_path;
+        return true;
     }
 
     /**
