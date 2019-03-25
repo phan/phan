@@ -67,4 +67,12 @@ class HasTypeCondition implements BinaryCondition
         }
         return $visitor->analyzeClassAssertion($object, $class_string) ?? $visitor->getContext();
     }
+
+    /**
+     * @suppress PhanUnusedPublicMethodParameter
+     */
+    public function analyzeCall(ConditionVisitorInterface $visitor, $call_node, $expr)
+    {
+        return null;
+    }
 }

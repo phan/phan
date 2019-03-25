@@ -438,7 +438,7 @@ trait ConditionVisitorUtil
         $context = $context ?? $this->context;
 
         $var_name = $var_node->children['name'] ?? null;
-        // http://php.net/manual/en/types.comparisons.php#types.comparisions-loose
+        // http://php.net/manual/en/types.comparisons.php#types.comparisions-loose @phan-suppress-current-line PhanPluginPossibleTypoComment, UnusedSuppression
         if (\is_string($var_name)) {
             try {
                 if ($expr instanceof Node) {
@@ -553,6 +553,7 @@ trait ConditionVisitorUtil
                 if ($name === 'get_class') {
                     return $condition->analyzeClassCheck($this, $var_node->children['args']->children[0] ?? null, $expr_node);
                 }
+                return $condition->analyzeCall($this, $var_node, $expr_node);
             }
         }
         $tmp = $var_node;

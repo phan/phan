@@ -188,7 +188,6 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                 return $this->analyzeAndUpdateToBeIdentical($node->children['left'], $node->children['right']);
             case flags\BINARY_IS_NOT_IDENTICAL:
                 $this->checkVariablesDefined($node);
-                // TODO: Add a different function for IS_NOT_EQUAL, e.g. analysis of != null should be different from !== null (First would remove FalseType)
                 return $this->analyzeAndUpdateToBeNotIdentical($node->children['left'], $node->children['right']);
             case flags\BINARY_IS_NOT_EQUAL:
                 return $this->analyzeAndUpdateToBeNotEqual($node->children['left'], $node->children['right']);

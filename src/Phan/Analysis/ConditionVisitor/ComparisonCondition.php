@@ -44,4 +44,11 @@ class ComparisonCondition implements BinaryCondition
     {
         return $visitor->getContext();
     }
+
+    /**
+     * @suppress PhanUnusedPublicMethodParameter
+     */
+    public function analyzeCall(ConditionVisitorInterface $visitor, $call_node, $expr) {
+        return null;
+    }
 }

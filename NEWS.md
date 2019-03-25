@@ -3,6 +3,9 @@ Phan NEWS
 ?? ??? 2019, Phan 1.2.8 (dev)
 -----------------------
 
+New features(Analysis):
++ Support analyzing `if (false !== is_string($var))` and similar complex conditions (#2613)
+
 Maintenance:
 + Make escaped string arguments fit on a single line for more issue types.
 + Rename `UseContantNoEffect` to `UseConstantNoEffect`.

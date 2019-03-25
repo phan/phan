@@ -3,7 +3,10 @@
 namespace Phan\Analysis\ConditionVisitor;
 
 use ast\Node;
+use Phan\Analysis\ConditionVisitor;
 use Phan\Analysis\ConditionVisitorInterface;
+use Phan\Analysis\NegatedConditionVisitor;
+use Phan\AST\UnionTypeVisitor;
 use Phan\Language\Context;
 
 /**
@@ -36,5 +39,33 @@ class NotEqualsCondition implements BinaryCondition
     public function analyzeClassCheck(ConditionVisitorInterface $visitor, $object, $expr) : Context
     {
         return $visitor->getContext();
+    }
+
+    /**
+     * @suppress PhanUnusedPublicMethodParameter
+     */
+    public function analyzeCall(ConditionVisitorInterface $visitor, $call_node, $expr)
+    {
+        if (!$expr instanceof Node) {
+            return null;
+        }
+        $code_base = $visitor->getCodeBase();
+        $context = $visitor->getContext();
+        $value = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $expr)->asSingleScalarValueOrNullOrSelf();
+        if (is_object($value)) {
+            return null;
+        }
+        $is_true = $value == true;
+        $is_false = $value == false;
+        if ($is_true === $is_false) {
+            return null;
+        }
+        if ($is_true) {
+            // e.g. `if (is_string($x) != true)`
+            return (new NegatedConditionVisitor($code_base, $context))->visitCall($call_node);
+        } else {
+            // e.g. `if (is_string($x) != false)`
+            return (new ConditionVisitor($code_base, $context))->visitCall($call_node);
+        }
     }
 }

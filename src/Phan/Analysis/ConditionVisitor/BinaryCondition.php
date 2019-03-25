@@ -28,4 +28,13 @@ interface BinaryCondition
      * @return Context
      */
     public function analyzeClassCheck(ConditionVisitorInterface $visitor, $object, $expr) : Context;
+
+    /**
+     * Assert that this condition applies to the function call $call_node (i.e. is_string($object) OPERATION $expr)
+     *
+     * @param Node $call_node a node of kind AST_CALL
+     * @param Node|string|int|float $expr
+     * @return ?Context
+     */
+    public function analyzeCall(ConditionVisitorInterface $visitor, $call_node, $expr);
 }

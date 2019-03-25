@@ -68,4 +68,9 @@ class NotHasTypeCondition implements BinaryCondition
         // Unimplemented, Not likely to be commonly used.
         return $visitor->getContext();
     }
+
+    public function analyzeCall(ConditionVisitorInterface $unused_visitor, $unused_call_node, $unused_expr)
+    {
+        return null;
+    }
 }
