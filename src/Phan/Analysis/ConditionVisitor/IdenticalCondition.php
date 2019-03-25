@@ -3,7 +3,10 @@
 namespace Phan\Analysis\ConditionVisitor;
 
 use ast\Node;
+use Phan\AST\UnionTypeVisitor;
+use Phan\Analysis\ConditionVisitor;
 use Phan\Analysis\ConditionVisitorInterface;
+use Phan\Analysis\NegatedConditionVisitor;
 use Phan\Language\Context;
 
 /**
@@ -34,5 +37,25 @@ class IdenticalCondition implements BinaryCondition
     public function analyzeClassCheck(ConditionVisitorInterface $visitor, $object, $expr) : Context
     {
         return $visitor->analyzeClassAssertion($object, $expr) ?? $visitor->getContext();
+    }
+
+    public function analyzeCall(ConditionVisitorInterface $visitor, $call_node, $expr)
+    {
+        if (!$expr instanceof Node) {
+            return null;
+        }
+        $code_base = $visitor->getCodeBase();
+        $context = $visitor->getContext();
+        $value = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $expr)->asSingleScalarValueOrNullOrSelf();
+        if (!is_bool($value)) {
+            return null;
+        }
+        if ($value) {
+            // e.g. `if (is_string($x) === true)`
+            return (new ConditionVisitor($code_base, $context))->visitCall($call_node);
+        } else {
+            // e.g. `if (is_string($x) === false)`
+            return (new NegatedConditionVisitor($code_base, $context))->visitCall($call_node);
+        }
     }
 }
