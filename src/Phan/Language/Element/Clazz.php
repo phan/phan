@@ -765,7 +765,7 @@ class Clazz extends AddressableElement
             return;
         }
 
-        if ($inherited_property->isStrictlyMoreVisibileThan($overriding_property)) {
+        if ($inherited_property->isStrictlyMoreVisibleThan($overriding_property)) {
             if ($inherited_property->isPHPInternal()) {
                 if (!$overriding_property->checkHasSuppressIssueAndIncrementCount(Issue::PropertyAccessSignatureMismatchInternal)) {
                     Issue::maybeEmit(
@@ -1195,7 +1195,7 @@ class Clazz extends AddressableElement
         ClassConstant $overriding_constant
     ) {
         // Traits don't have constants, thankfully, so the logic is simple.
-        if ($inherited_constant->isStrictlyMoreVisibileThan($overriding_constant)) {
+        if ($inherited_constant->isStrictlyMoreVisibleThan($overriding_constant)) {
             if ($inherited_constant->isPHPInternal()) {
                 if (!$overriding_constant->checkHasSuppressIssueAndIncrementCount(Issue::ConstantAccessSignatureMismatchInternal)) {
                     Issue::maybeEmit(

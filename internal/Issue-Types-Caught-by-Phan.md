@@ -1056,7 +1056,7 @@ Unused definition of variable ${VARIABLE} as the value of a foreach loop that in
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0480_array_access_iteration.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.2/tests/files/src/0480_array_access_iteration.php#L15).
 
-## PhanUseContantNoEffect
+## PhanUseConstantNoEffect
 
 NOTE: this deliberately warns only about use statements in the global namespace,
 and not for `namespace MyNs; use function MyNs\PHP_VERSION_ID;`,

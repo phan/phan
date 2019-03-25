@@ -623,7 +623,7 @@ class ParameterTypesAnalyzer
         }
 
         // Access must be compatible
-        if ($o_method->isStrictlyMoreVisibileThan($method)) {
+        if ($o_method->isStrictlyMoreVisibleThan($method)) {
             if ($o_method->isPHPInternal()) {
                 Issue::maybeEmit(
                     $code_base,

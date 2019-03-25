@@ -334,7 +334,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
      * @return bool true if this element's visibility
      *                   is strictly more visible than $other (public > protected > private)
      */
-    public function isStrictlyMoreVisibileThan(AddressableElementInterface $other) : bool
+    public function isStrictlyMoreVisibleThan(AddressableElementInterface $other) : bool
     {
         return false;
     }

@@ -1434,7 +1434,7 @@ trait FunctionTrait
             // Shouldn't happen
             return;
         }
-        $parameter_extracter_map = [];
+        $parameter_extractor_map = [];
         $has_all_templates = true;
         foreach ($template_type_list as $template_type) {
             if (!$this->isTemplateTypeUsed($template_type)) {
@@ -1449,8 +1449,8 @@ trait FunctionTrait
                 $has_all_templates = false;
                 continue;
             }
-            $parameter_extracter = $this->getTemplateTypeExtractorClosure($code_base, $template_type);
-            if (!$parameter_extracter) {
+            $parameter_extractor = $this->getTemplateTypeExtractorClosure($code_base, $template_type);
+            if (!$parameter_extractor) {
                 Issue::maybeEmit(
                     $code_base,
                     $context,
@@ -1462,7 +1462,7 @@ trait FunctionTrait
                 $has_all_templates = false;
                 continue;
             }
-            $parameter_extracter_map[$template_type->getName()] = $parameter_extracter;
+            $parameter_extractor_map[$template_type->getName()] = $parameter_extractor;
         }
         if (!$has_all_templates) {
             return;
@@ -1471,7 +1471,7 @@ trait FunctionTrait
          * Resolve the template types based on the parameters passed to the function
          * @param array<int,Node|mixed> $args
          */
-        $analyzer = static function (CodeBase $code_base, Context $context, FunctionInterface $function, array $args) use ($parameter_extracter_map) : UnionType {
+        $analyzer = static function (CodeBase $code_base, Context $context, FunctionInterface $function, array $args) use ($parameter_extractor_map) : UnionType {
             $args_types = \array_map(
                 /**
                  * @param mixed $node
@@ -1482,7 +1482,7 @@ trait FunctionTrait
                 $args
             );
             $template_type_map = [];
-            foreach ($parameter_extracter_map as $name => $closure) {
+            foreach ($parameter_extractor_map as $name => $closure) {
                 $template_type_map[$name] = $closure ? $closure($args_types, $context) : UnionType::empty();
             }
             return $function->getUnionType()->withTemplateParameterTypeMap($template_type_map);

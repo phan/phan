@@ -309,7 +309,7 @@ class Issue
     const UseNormalNoEffect             = 'PhanUseNormalNoEffect';
     const UseNormalNamespacedNoEffect   = 'PhanUseNormalNamespacedNoEffect';
     const UseFunctionNoEffect           = 'PhanUseFunctionNoEffect';
-    const UseContantNoEffect           = 'PhanUseContantNoEffect';
+    const UseConstantNoEffect           = 'PhanUseConstantNoEffect';
 
     const UnusedVariable                        = 'PhanUnusedVariable';
     const UnusedPublicMethodParameter           = 'PhanUnusedPublicMethodParameter';
@@ -2867,7 +2867,7 @@ class Issue
                 6049
             ),
             new Issue(
-                self::UseContantNoEffect,
+                self::UseConstantNoEffect,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
                 'The use statement for constant {CONST} has no effect',
