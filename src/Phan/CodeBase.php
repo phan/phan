@@ -949,7 +949,7 @@ class CodeBase
             return true;
         }
 
-        if (!$autoload || !$this->class_resolver) {
+        if (!$autoload || !$this->hasClassResolver()) {
             return false;
         }
 
@@ -963,7 +963,8 @@ class CodeBase
     private function lazyLoadClassWithFQSEN(
         FullyQualifiedClassName $fqsen
     ) : bool {
-        if ($this->class_resolver) {
+        $resolver = $this->getClassResolver();
+        if (!$resolver) {
             return false;
         }
 
@@ -973,7 +974,7 @@ class CodeBase
         }
 
         // Resolve the file for the class
-        if (!$file = $this->class_resolver->fileForClass($fqsen)) {
+        if (!$file = $resolver->fileForClass($fqsen)) {
             return false;
         }
 
