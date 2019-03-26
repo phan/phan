@@ -359,7 +359,7 @@ class Phan implements IgnoredFilesFilterInterface
                 $code_base->resolveClassAliases();
             }
 
-            // If a class resolver is registered, only analyse the whitelisted files
+            // If a class resolver is registered, only analyse the $analyze_file_path_list files
             if ($code_base->hasClassResolver()) {
                 $include = Config::getValue('include_analysis_file_list');
                 Config::setValue('include_analysis_file_list', array_merge($include, $analyze_file_path_list));

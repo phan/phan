@@ -8,6 +8,8 @@ if ((int)phpversion()[0] < 7) {
     exit(1);
 }
 
+$a = __DIR__ . '/../../../autoload.php';
+
 if (!(file_exists(__DIR__ . '/../vendor/autoload.php') || file_exists(__DIR__ . '/../../../autoload.php'))) {
     fwrite(
         STDERR,

@@ -960,7 +960,7 @@ class CodeBase
      * @return bool
      * True if the class was able to be lazy loaded
      */
-    private function lazyLoadClassWithFQSEN(
+    public function lazyLoadClassWithFQSEN(
         FullyQualifiedClassName $fqsen
     ) : bool {
         $resolver = $this->getClassResolver();
