@@ -981,6 +981,18 @@ Parameter ${PARAMETER} is never used
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/misc/fallback_test/expected/010_functions8.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.2/tests/misc/fallback_test/src/010_functions8.php#L2).
 
+## PhanUnusedGotoLabel
+
+Note: Phan does not understand the effects of "goto" on control flow.
+
+Phan also does not check for missing "goto" labels - This can be done with `InvokePHPNativeSyntaxCheckPlugin`
+
+```
+Unused goto label {CODE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0648_goto_label_unused.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0648_goto_label_unused.php#L3).
+
 ## PhanUnusedPrivateFinalMethodParameter
 
 ```

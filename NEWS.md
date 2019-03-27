@@ -5,6 +5,8 @@ Phan NEWS
 
 New features(Analysis):
 + Support analyzing `if (false !== is_string($var))` and similar complex conditions (#2613)
++ Emit `PhanUnusedGotoLabel` for labels without a corresponding `goto` in the same function scope. (#2617)
+  (note that Phan does not understand the effects of goto on control flow)
 
 Maintenance:
 + Make escaped string arguments fit on a single line for more issue types.
