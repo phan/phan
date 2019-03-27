@@ -330,7 +330,8 @@ Checks for complex variable access expressions `$$x`, which may be hard to read,
   - Analyze Symfony doc comment annotations.
   - Mark elements in inline doc comments (which Phan doesn't parse) as referencing types from `use statements` as not dead code.
 
-- https://github.com/TysonAndre/PhanTypoCheckPlugin checks of calls to `gettext()` by default, and can optionally check all strings.
+- https://github.com/TysonAndre/PhanTypoCheck checks all tokens of PHP files for typos, including within string literals.
+  It is also able to analyze calls to `gettext()`.
 
 ### 6. Self-analysis plugins:
 
