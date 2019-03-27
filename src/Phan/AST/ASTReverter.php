@@ -65,7 +65,8 @@ class ASTReverter
      *
      * @see https://github.com/nikic/PHP-Parser/tree/master/lib/PhpParser/PrettyPrinter/Standard.php
      */
-    public static function escapeString(string $string) : string {
+    public static function escapeString(string $string) : string
+    {
         if (\preg_match('/([\0-\15\16-\37])/', $string)) {
             // Use double quoted strings if this contains newlines, tabs, control characters, etc.
             return '"' . self::escapeInnerString($string, '"') . '"';
@@ -79,7 +80,8 @@ class ASTReverter
      *
      * @see https://github.com/nikic/PHP-Parser/tree/master/lib/PhpParser/PrettyPrinter/Standard.php
      */
-    public static function escapeInnerString(string $string, string $quote = null) : string {
+    public static function escapeInnerString(string $string, string $quote = null) : string
+    {
         if (null === $quote) {
             // For doc strings, don't escape newlines
             $escaped = \addcslashes($string, "\t\f\v$\\");
@@ -88,7 +90,7 @@ class ASTReverter
         }
 
         // Escape other control characters
-        return \preg_replace_callback('/([\0-\10\16-\37])(?=([0-7]?))/', /** @param array<int,string> $matches */ function (array $matches) : string {
+        return \preg_replace_callback('/([\0-\10\16-\37])(?=([0-7]?))/', /** @param array<int,string> $matches */ static function (array $matches) : string {
             $oct = \decoct(\ord($matches[1]));
             if ($matches[2] !== '') {
                 // If there is a trailing digit, use the full three character form
