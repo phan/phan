@@ -14,6 +14,9 @@ Maintenance:
 Plugins:
 + Fix edge case where `WhitespacePlugin` would not detect trailing whitespace.
 
+Bug fixes:
++ Catch and handle "Cannot access parent when not in object context" when parsing global functions incorrectly using `parent` parameter type. (#2619)
+
 22 Mar 2019, Phan 1.2.7
 -----------------------
 

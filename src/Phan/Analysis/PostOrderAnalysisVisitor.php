@@ -3156,7 +3156,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         if ($variable) {
-            $set_variable_type = function (UnionType $new_type) use ($context, $variable) {
+            $set_variable_type = static function (UnionType $new_type) use ($context, $variable) {
                 if ($variable instanceof Variable) {
                     $variable = clone($variable);
                     $variable->setUnionType($new_type);
