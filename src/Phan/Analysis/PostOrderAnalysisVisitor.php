@@ -3712,6 +3712,24 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
+     * Visit a node of kind AST_LABEL to check for unused labels.
+     * @override
+     */
+    public function visitLabel(Node $node) : Context
+    {
+        $label = $node->children['name'];
+        $used_labels = GotoAnalyzer::getLabelSet($this->parent_node_list);
+        if (!isset($used_labels[$label])) {
+            $this->emitIssue(
+                Issue::UnusedGotoLabel,
+                $node->lineno,
+                $label
+            );
+        }
+        return $this->context;
+    }
+
+    /**
      * @return void
      */
     private function warnBreakOrContinueWithoutLoop(Node $node)
