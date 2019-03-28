@@ -10,6 +10,7 @@ use Phan\Issue;
 use Phan\Language\Element\AddressableElement;
 use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\ClassElement;
+use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
@@ -326,6 +327,11 @@ class ReferenceCountsAnalyzer
                     return;
                 }
                 $issue_type = Issue::UnreferencedClosure;
+            }
+        } elseif ($element instanceof Clazz) {
+            if ($element->isAnonymous()) {
+                // This can't be referenced by name in type signatures, etc.
+                return;
             }
         }
 
