@@ -43,7 +43,7 @@ class GotoAnalyzer
         $nodes = [];
         while (true) {
             $kind = $node->kind;
-            fprintf(STDERR, "Processing node of kind %s\n", ast\get_kind_name($kind));
+            // fprintf(STDERR, "Processing node of kind %s\n", ast\get_kind_name($kind));
             switch ($kind) {
                 case ast\AST_FUNC_DECL:
                 case ast\AST_CLOSURE:
