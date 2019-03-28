@@ -2,6 +2,7 @@
 
 namespace Phan\Language\Type;
 
+use Generator;
 use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\Type;
@@ -291,6 +292,16 @@ abstract class NativeType extends Type
     {
         // overridden in subclasses
         return null;
+    }
+
+    /**
+     * @return Generator<mixed,Type>
+     */
+    public function getReferencedClasses() : Generator
+    {
+        if (false) {
+            yield $this;
+        }
     }
 }
 \class_exists(ArrayType::class);

@@ -4,6 +4,7 @@ namespace Phan\Language\Type;
 
 use ast\Node;
 use Closure;
+use Generator;
 use InvalidArgumentException;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
@@ -695,5 +696,13 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
         return static function (UnionType $array_type, Context $context) use ($closure) : UnionType {
             return $closure($array_type->genericArrayElementTypes(), $context);
         };
+    }
+
+    /**
+     * @return Generator<void,Type> (void => $inner_type)
+     */
+    public function getReferencedClasses() : Generator
+    {
+        return $this->element_type->getReferencedClasses();
     }
 }

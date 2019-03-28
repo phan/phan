@@ -1,0 +1,4 @@
+%s:13 PhanUndeclaredTypeParameter Parameter $cb has undeclared type Closure(\CheckUndeclared\Undeclared,bool):mixed
+%s:13 PhanUndeclaredTypeReturnType Return type of test() is undeclared type Closure(\CheckUndeclared\Undeclared):\CheckUndeclared\UndeclaredClass2
+%s:13 PhanUndeclaredTypeThrowsType @throws type of test has undeclared type callable(\CheckUndeclared\Undeclared3):void
+%s:19 PhanUndeclaredTypeProperty Property \CheckUndeclared\Foo->prop has undeclared type Closure(\CheckUndeclared\Undeclared,bool):mixed

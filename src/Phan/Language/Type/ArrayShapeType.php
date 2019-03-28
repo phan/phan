@@ -4,6 +4,7 @@ namespace Phan\Language\Type;
 
 use Closure;
 use Exception;
+use Generator;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Debug\Frame;
@@ -774,5 +775,30 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         }
 
         return null;
+    }
+
+    /**
+     * @return Generator<mixed,Type> (void => $inner_type)
+     */
+    public function getReferencedClasses() : Generator
+    {
+        // Whether union types or types have been seen already for this ArrayShapeType
+        $seen = [];
+        foreach ($this->field_types as $type) {
+            $id = \spl_object_id($type);
+            if (isset($seen[$id])) {
+                continue;
+            }
+            $seen[$id] = true;
+
+            foreach ($type->getReferencedClasses() as $inner_type) {
+                $id = \spl_object_id($inner_type);
+                if (isset($seen[$id])) {
+                    continue;
+                }
+                $seen[$id] = true;
+                yield $inner_type;
+            }
+        }
     }
 }
