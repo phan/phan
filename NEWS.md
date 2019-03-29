@@ -17,6 +17,8 @@ Maintenance:
 
 Plugins:
 + Fix edge case where `WhitespacePlugin` would not detect trailing whitespace.
++ Detect `PhanPluginDuplicateSwitchCaseLooseEquality` in `DuplicateArrayKeyPlugin`. (#2310)
+  Warn about cases of switch cases that are loosely equivalent to earlier cases, and which might get unexpectedly missed because of that (e.g. `0` and `'foo'`)
 
 Bug fixes:
 + Catch and handle "Cannot access parent when not in object context" when parsing global functions incorrectly using `parent` parameter type. (#2619)

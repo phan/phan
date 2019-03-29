@@ -61,6 +61,9 @@ Warns about common errors in php array keys and switch statements. Has the follo
 - **PhanPluginDuplicateSwitchCase**: a duplicate or equivalent case statement.
 
   (E.g `switch ($x) { case 2: echo "A\n"; break; case 2: echo "B\n"; break;}` duplicates the key `2`. The later case statements are ignored.)
+- **PhanPluginDuplicateSwitchCaseLooseEquality**: a case statement that is loosely equivalent to an earlier case statement.
+
+  (E.g `switch ('foo') { case 0: echo "0\n"; break; case 'foo': echo "foo\n"; break;}` has `0 == 'foo'`, and echoes `0` because of that)
 - **PhanPluginMixedKeyNoKey**: mixing array entries of the form [key => value,] with entries of the form [value,].
 
   (E.g. `['key' => 'value', 'othervalue']` is often found in code because the key for `'othervalue'` was forgotten)
