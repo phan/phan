@@ -8,7 +8,6 @@ use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Element\Clazz;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
-use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\TemplateType;
 
 /**
@@ -41,49 +40,44 @@ class PropertyTypesAnalyzer
 
             // Look at each type in the parameter's Union Type
             foreach ($union_type->withFlattenedArrayShapeOrLiteralTypeInstances()->getTypeSet() as $outer_type) {
-                $type = $outer_type;
-                // TODO: Expand this to ArrayShapeType
-                while ($type instanceof GenericArrayType) {
-                    $type = $type->genericArrayElementType();
-                }
+                foreach ($outer_type->getReferencedClasses() as $type) {
+                    // If it's a reference to self, its OK
+                    if ($type->isSelfType()) {
+                        continue;
+                    }
 
-                // If its a native type or a reference to
-                // self, its OK
-                if ($type->isNativeType() || $type->isSelfType()) {
-                    continue;
-                }
+                    if ($type instanceof TemplateType) {
+                        if ($property->isStatic()) {
+                            Issue::maybeEmit(
+                                $code_base,
+                                $property->getContext(),
+                                Issue::TemplateTypeStaticProperty,
+                                $property->getFileRef()->getLineNumberStart(),
+                                $property->asPropertyFQSENString()
+                            );
+                        }
+                        continue;
+                    }
 
-                if ($type instanceof TemplateType) {
-                    if ($property->isStatic()) {
-                        Issue::maybeEmit(
+                    // Make sure the class exists
+                    $type_fqsen = FullyQualifiedClassName::fromType($type);
+
+                    if (!$code_base->hasClassWithFQSEN($type_fqsen)
+                        && !($type instanceof TemplateType)
+                        && (
+                            !$property->hasDefiningFQSEN()
+                            || $property->getDefiningFQSEN() == $property->getFQSEN()
+                        )
+                    ) {
+                        Issue::maybeEmitWithParameters(
                             $code_base,
                             $property->getContext(),
-                            Issue::TemplateTypeStaticProperty,
+                            Issue::UndeclaredTypeProperty,
                             $property->getFileRef()->getLineNumberStart(),
-                            $property->asPropertyFQSENString()
+                            [$property->asPropertyFQSENString(), (string)$outer_type],
+                            IssueFixSuggester::suggestSimilarClass($code_base, $property->getContext(), $type_fqsen, null, 'Did you mean', IssueFixSuggester::CLASS_SUGGEST_CLASSES_AND_TYPES)
                         );
                     }
-                    continue;
-                }
-
-                // Make sure the class exists
-                $type_fqsen = FullyQualifiedClassName::fromType($type);
-
-                if (!$code_base->hasClassWithFQSEN($type_fqsen)
-                    && !($type instanceof TemplateType)
-                    && (
-                        !$property->hasDefiningFQSEN()
-                        || $property->getDefiningFQSEN() == $property->getFQSEN()
-                    )
-                ) {
-                    Issue::maybeEmitWithParameters(
-                        $code_base,
-                        $property->getContext(),
-                        Issue::UndeclaredTypeProperty,
-                        $property->getFileRef()->getLineNumberStart(),
-                        [$property->asPropertyFQSENString(), (string)$outer_type],
-                        IssueFixSuggester::suggestSimilarClass($code_base, $property->getContext(), $type_fqsen, null, 'Did you mean', IssueFixSuggester::CLASS_SUGGEST_CLASSES_AND_TYPES)
-                    );
                 }
             }
         }

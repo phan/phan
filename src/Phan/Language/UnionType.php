@@ -3409,15 +3409,9 @@ class UnionType implements Serializable
     public function getReferencedClasses() : Generator
     {
         foreach ($this->withFlattenedArrayShapeOrLiteralTypeInstances()->getTypeSet() as $outer_type) {
-            $type = $outer_type;
-
-            while ($type instanceof GenericArrayType) {
-                $type = $type->genericArrayElementType();
+            foreach ($outer_type->getReferencedClasses() as $type) {
+                yield $outer_type => $type;
             }
-            if ($type->isNativeType()) {
-                continue;
-            }
-            yield $outer_type => $type;
         }
     }
 

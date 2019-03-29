@@ -3,10 +3,10 @@
 namespace Phan\Analysis\ConditionVisitor;
 
 use ast\Node;
-use Phan\AST\UnionTypeVisitor;
 use Phan\Analysis\ConditionVisitor;
 use Phan\Analysis\ConditionVisitorInterface;
 use Phan\Analysis\NegatedConditionVisitor;
+use Phan\AST\UnionTypeVisitor;
 use Phan\Language\Context;
 
 /**

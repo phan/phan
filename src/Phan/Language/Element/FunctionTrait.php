@@ -1267,43 +1267,38 @@ trait FunctionTrait
 
         // Look at each type in the function's return union type
         foreach ($return_type->withFlattenedArrayShapeOrLiteralTypeInstances()->getTypeSet() as $outer_type) {
-            $type = $outer_type;
-            // TODO: Expand this to ArrayShapeType, add unit test of `@return array{key:MissingClazz}`
-            while ($type instanceof GenericArrayType) {
-                $type = $type->genericArrayElementType();
-            }
-
-            // If its a native type or a reference to
-            // self, its OK
-            if ($type->isNativeType() || ($this instanceof Method && $type instanceof StaticOrSelfType)) {
-                continue;
-            }
-
-            if ($type instanceof TemplateType) {
-                if ($this instanceof Method) {
-                    if ($this->isStatic() && !$this->declaresTemplateTypeInComment($type)) {
-                        Issue::maybeEmit(
-                            $code_base,
-                            $context,
-                            Issue::TemplateTypeStaticMethod,
-                            $this->getFileRef()->getLineNumberStart(),
-                            (string)$this->getFQSEN()
-                        );
-                    }
+            foreach ($outer_type->getReferencedClasses() as $type) {
+                // If its a reference to self, its OK
+                if ($this instanceof Method && $type instanceof StaticOrSelfType) {
+                    continue;
                 }
-                continue;
-            }
-            // Make sure the class exists
-            $type_fqsen = FullyQualifiedClassName::fromType($type);
-            if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
-                Issue::maybeEmitWithParameters(
-                    $code_base,
-                    $this->getContext(),
-                    Issue::UndeclaredTypeReturnType,
-                    $this->getFileRef()->getLineNumberStart(),
-                    [$this->getNameForIssue(), (string)$outer_type],
-                    IssueFixSuggester::suggestSimilarClass($code_base, $this->getContext(), $type_fqsen, null, 'Did you mean', IssueFixSuggester::CLASS_SUGGEST_CLASSES_AND_TYPES_AND_VOID)
-                );
+
+                if ($type instanceof TemplateType) {
+                    if ($this instanceof Method) {
+                        if ($this->isStatic() && !$this->declaresTemplateTypeInComment($type)) {
+                            Issue::maybeEmit(
+                                $code_base,
+                                $context,
+                                Issue::TemplateTypeStaticMethod,
+                                $this->getFileRef()->getLineNumberStart(),
+                                (string)$this->getFQSEN()
+                            );
+                        }
+                    }
+                    continue;
+                }
+                // Make sure the class exists
+                $type_fqsen = FullyQualifiedClassName::fromType($type);
+                if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
+                    Issue::maybeEmitWithParameters(
+                        $code_base,
+                        $this->getContext(),
+                        Issue::UndeclaredTypeReturnType,
+                        $this->getFileRef()->getLineNumberStart(),
+                        [$this->getNameForIssue(), (string)$outer_type],
+                        IssueFixSuggester::suggestSimilarClass($code_base, $this->getContext(), $type_fqsen, null, 'Did you mean', IssueFixSuggester::CLASS_SUGGEST_CLASSES_AND_TYPES_AND_VOID)
+                    );
+                }
             }
         }
         if (Config::getValue('check_docblock_signature_return_type_match') && !$real_return_type->isEmpty() && ($phpdoc_return_type instanceof UnionType) && !$phpdoc_return_type->isEmpty()) {

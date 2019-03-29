@@ -6,6 +6,7 @@ use AssertionError;
 use ast\flags;
 use Closure;
 use Error;
+use Generator;
 use InvalidArgumentException;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
@@ -3188,5 +3189,19 @@ class Type
             return null;
         }
         return $class->getMethodByName($code_base, '__invoke');
+    }
+
+    /**
+     * Gets the inner Types in this Type (or subclass of Type) that can refer to classes.
+     *
+     * For a regular Type, that's the Type.
+     *
+     * @return Generator<mixed,Type>
+     *
+     * TODO: Also support template types
+     */
+    public function getReferencedClasses() : Generator
+    {
+        yield $this;
     }
 }

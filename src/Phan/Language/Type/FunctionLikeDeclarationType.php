@@ -4,6 +4,7 @@ namespace Phan\Language\Type;
 
 use ast\Node;
 use Closure;
+use Generator;
 use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\Element\AddressableElementInterface;
@@ -286,6 +287,18 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     public function asFunctionInterfaceOrNull(CodeBase $unused_codebase, Context $unused_context)
     {
         return $this;
+    }
+
+    /**
+     * @return Generator<mixed,Type> (void => $inner_type)
+     * @override
+     */
+    public function getReferencedClasses() : Generator
+    {
+        foreach ($this->params as $param) {
+            yield from $param->getNonVariadicUnionType()->getReferencedClasses();
+        }
+        yield from $this->return_type->getReferencedClasses();
     }
 
     ////////////////////////////////////////////////////////////////////////////////

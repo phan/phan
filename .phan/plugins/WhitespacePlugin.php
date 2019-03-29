@@ -2,8 +2,10 @@
 
 use ast\Node;
 use Phan\CodeBase;
+use Phan\IssueInstance;
 use Phan\Language\Context;
 use Phan\Library\FileCacheEntry;
+use Phan\Plugin\Internal\IssueFixingPlugin\FileEditSet;
 use Phan\PluginV2;
 use Phan\PluginV2\AfterAnalyzeFileCapability;
 use Phan\PluginV2\AutomaticFixCapability;
