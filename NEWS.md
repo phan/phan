@@ -9,6 +9,8 @@ New features(Analysis):
   (note that Phan does not understand the effects of goto on control flow)
 + Don't emit `PhanUnreferencedClass` for anonymous classes (#2604)
 + Detect undeclared types in phpdoc callables and closures (#2562)
++ Warn about unreferenced PHPDoc `@property`/`@property-read`/`@property-write` annotations in `--dead-code-detection`.
+  New issue types: `PhanWriteOnlyPHPDocProperty`, `PhanReadOnlyPHPDocProperty`, `PhanUnreferencedPHPDocProperty`.
 
 Maintenance:
 + Make escaped string arguments fit on a single line for more issue types.

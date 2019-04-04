@@ -294,7 +294,7 @@ class Property extends ClassElement
     const _IS_DYNAMIC_OR_MAGIC = Flags::IS_FROM_PHPDOC | Flags::IS_DYNAMIC_PROPERTY;
 
     /**
-     * Equivalent to $this->isDynamic() || $this->isFromPHPDoc()
+     * Equivalent to $this->isDynamicProperty() || $this->isFromPHPDoc()
      * i.e. this is a property that is not created from an AST_PROP_ELEM Node.
      */
     public function isDynamicOrFromPHPDoc() : bool

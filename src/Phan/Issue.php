@@ -292,12 +292,15 @@ class Issue
     const UnreferencedPublicProperty    = 'PhanUnreferencedPublicProperty';
     const UnreferencedProtectedProperty = 'PhanUnreferencedProtectedProperty';
     const UnreferencedPrivateProperty   = 'PhanUnreferencedPrivateProperty';
+    const UnreferencedPHPDocProperty    = 'PhanUnreferencedPHPDocProperty';
     const ReadOnlyPublicProperty        = 'PhanReadOnlyPublicProperty';
     const ReadOnlyProtectedProperty     = 'PhanReadOnlyProtectedProperty';
     const ReadOnlyPrivateProperty       = 'PhanReadOnlyPrivateProperty';
+    const ReadOnlyPHPDocProperty        = 'PhanReadOnlyPHPDocProperty';
     const WriteOnlyPublicProperty       = 'PhanWriteOnlyPublicProperty';
     const WriteOnlyProtectedProperty    = 'PhanWriteOnlyProtectedProperty';
     const WriteOnlyPrivateProperty      = 'PhanWriteOnlyPrivateProperty';
+    const WriteOnlyPHPDocProperty       = 'PhanWriteOnlyPHPDocProperty';
     const UnreferencedConstant          = 'PhanUnreferencedConstant';
     const UnreferencedPublicClassConstant = 'PhanUnreferencedPublicClassConstant';
     const UnreferencedProtectedClassConstant = 'PhanUnreferencedProtectedClassConstant';
@@ -2628,6 +2631,14 @@ class Issue
                 6014
             ),
             new Issue(
+                self::UnreferencedPHPDocProperty,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero references to PHPDoc @property {PROPERTY}",
+                self::REMEDIATION_B,
+                6056
+            ),
+            new Issue(
                 self::UnreferencedProtectedProperty,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
@@ -2668,6 +2679,14 @@ class Issue
                 6034
             ),
             new Issue(
+                self::ReadOnlyPHPDocProperty,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero write references to PHPDoc @property {PROPERTY}",
+                self::REMEDIATION_B,
+                6058
+            ),
+            new Issue(
                 self::WriteOnlyPublicProperty,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
@@ -2690,6 +2709,14 @@ class Issue
                 "Possibly zero read references to private property {PROPERTY}",
                 self::REMEDIATION_B,
                 6027
+            ),
+            new Issue(
+                self::WriteOnlyPHPDocProperty,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero read references to PHPDoc @property {PROPERTY}",
+                self::REMEDIATION_B,
+                6057
             ),
             new Issue(
                 self::UnreferencedPublicClassConstant,

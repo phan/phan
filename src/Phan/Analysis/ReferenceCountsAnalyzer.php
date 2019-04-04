@@ -257,7 +257,7 @@ class ReferenceCountsAnalyzer
                 // Skip properties on classes that were derived from (at)property annotations on classes
                 // or were automatically generated for classes with __get or __set methods
                 // (or undeclared properties that were automatically added depending on configs)
-                if ($element->isDynamicOrFromPHPDoc()) {
+                if ($element->isDynamicProperty()) {
                     continue;
                 }
                 // TODO: may want to continue to skip `if ($defining_class->hasGetOrSetMethod($code_base)) {`
@@ -301,7 +301,9 @@ class ReferenceCountsAnalyzer
                     $issue_type = Issue::UnreferencedPublicMethod;
                 }
             } elseif ($element instanceof Property) {
-                if ($element->isPrivate()) {
+                if ($element->isFromPHPDoc()) {
+                    $issue_type = Issue::UnreferencedPHPDocProperty;
+                } elseif ($element->isPrivate()) {
                     $issue_type = Issue::UnreferencedPrivateProperty;
                 } elseif ($element->isProtected()) {
                     $issue_type = Issue::UnreferencedProtectedProperty;
@@ -391,7 +393,13 @@ class ReferenceCountsAnalyzer
 
     private static function maybeWarnWriteOnlyProperty(CodeBase $code_base, Property $property)
     {
-        if ($property->isPrivate()) {
+        if ($property->isWriteOnly()) {
+            // Handle annotations such as property-write and phan-write-only
+            return;
+        }
+        if ($property->isFromPHPDoc()) {
+            $issue_type = Issue::WriteOnlyPHPDocProperty;
+        } elseif ($property->isPrivate()) {
             $issue_type = Issue::WriteOnlyPrivateProperty;
         } elseif ($property->isProtected()) {
             $issue_type = Issue::WriteOnlyProtectedProperty;
@@ -418,8 +426,13 @@ class ReferenceCountsAnalyzer
 
     private static function maybeWarnReadOnlyProperty(CodeBase $code_base, Property $property)
     {
-        // TODO: Should this handle annotations such as property-read?
-        if ($property->isPrivate()) {
+        if ($property->isReadOnly()) {
+            // Handle annotations such as property-read and phan-read-only.
+            return;
+        }
+        if ($property->isFromPHPDoc()) {
+            $issue_type = Issue::ReadOnlyPHPDocProperty;
+        } elseif ($property->isPrivate()) {
             $issue_type = Issue::ReadOnlyPrivateProperty;
         } elseif ($property->isProtected()) {
             $issue_type = Issue::ReadOnlyProtectedProperty;

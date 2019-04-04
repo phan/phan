@@ -768,6 +768,14 @@ $a = 42;
 $a;
 ```
 
+## PhanReadOnlyPHPDocProperty
+
+```
+Possibly zero write references to PHPDoc @property {PROPERTY}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/108_magic_property_unreferenced.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/108_magic_property_unreferenced.php#L9).
+
 ## PhanReadOnlyPrivateProperty
 
 These issues are emitted when the analyzed file list contains at least one read operation
@@ -857,6 +865,14 @@ Possibly zero references to function {FUNCTION}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/plugin_test/expected/047_crash.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.2/tests/plugin_test/src/047_crash.php#L11).
+
+## PhanUnreferencedPHPDocProperty
+
+```
+Possibly zero references to PHPDoc @property {PROPERTY}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/108_magic_property_unreferenced.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/108_magic_property_unreferenced.php#L5).
 
 ## PhanUnreferencedPrivateClassConstant
 
@@ -1109,6 +1125,14 @@ The use statement for class/namespace {CLASS} in the global namespace has no eff
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0553_unreferenced_use.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.2/tests/files/src/0553_unreferenced_use.php#L5).
+
+## PhanWriteOnlyPHPDocProperty
+
+```
+Possibly zero read references to PHPDoc @property {PROPERTY}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/108_magic_property_unreferenced.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/108_magic_property_unreferenced.php#L8).
 
 ## PhanWriteOnlyPrivateProperty
 
