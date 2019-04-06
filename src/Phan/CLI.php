@@ -1396,7 +1396,7 @@ EOB;
                \sprintf(' %0.2dMB/%0.2dMB', $memory, $peak);
 
         static $columns = null;
-        if ( $columns === null ) {
+        if ($columns === null) {
             // Only call this once per process, since it can be rather expensive
             $columns = (new Terminal())->getWidth();
         }

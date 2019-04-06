@@ -110,7 +110,8 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param array<int,mixed> $values_to_check scalar constant values of case statements
      */
-    private static function areAllSwitchCasesTheSameType(array $values_to_check) : bool {
+    private static function areAllSwitchCasesTheSameType(array $values_to_check) : bool
+    {
         $categories = 0;
         foreach ($values_to_check as $value) {
             if (is_int($value)) {
@@ -145,7 +146,8 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
      * @param array<int,mixed> $values_to_check
      * @param array<int,mixed> $children an array of scalars
      */
-    private function extendedLooseEqualityCheck(array $values_to_check, $children) {
+    private function extendedLooseEqualityCheck(array $values_to_check, $children)
+    {
         $numeric_set = [];
         $fuzzy_numeric_set = [];
         foreach ($values_to_check as $i => $value) {
