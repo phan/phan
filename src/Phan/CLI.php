@@ -1395,7 +1395,11 @@ EOB;
                " " . \sprintf("%1$ 3d", (int)(100 * $p)) . "%" .
                \sprintf(' %0.2dMB/%0.2dMB', $memory, $peak);
 
-        $columns = (new Terminal())->getWidth();
+        static $columns = null;
+        if ( $columns === null ) {
+            // Only call this once per process, since it can be rather expensive
+            $columns = (new Terminal())->getWidth();
+        }
         // strlen("  99% 999MB/999MB") == 17
         $used_length = strlen($left_side) + \max(17, strlen($right_side));
         $remaining_length = $columns - $used_length;
