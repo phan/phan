@@ -299,7 +299,7 @@ class IssueFixer
         \usort($all_edits, static function (FileEdit $a, FileEdit $b) : int {
             return ($a->replace_start <=> $b->replace_start)
                 ?: ($a->replace_end <=> $b->replace_end)
-                ?: strcmp($a->new_text, $b->new_text);
+                ?: \strcmp($a->new_text, $b->new_text);
         });
         self::debug("Going to apply these fixes for $file: " . StringUtil::jsonEncode($all_edits) . "\n");
         $last_end = 0;

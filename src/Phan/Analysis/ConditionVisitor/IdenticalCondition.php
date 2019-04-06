@@ -47,7 +47,7 @@ class IdenticalCondition implements BinaryCondition
         $code_base = $visitor->getCodeBase();
         $context = $visitor->getContext();
         $value = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $expr)->asSingleScalarValueOrNullOrSelf();
-        if (!is_bool($value)) {
+        if (!\is_bool($value)) {
             return null;
         }
         if ($value) {

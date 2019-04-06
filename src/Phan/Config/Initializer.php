@@ -482,7 +482,7 @@ EOT;
                     continue;
                 }
 
-                $composer_lib_relative_path = preg_replace('@(/\.)+$@', '', $composer_lib_relative_path);
+                $composer_lib_relative_path = \preg_replace('@(/\.)+$@', '', $composer_lib_relative_path);
                 if (\is_dir($composer_lib_absolute_path)) {
                     $directory_list[] = \trim($composer_lib_relative_path, '/');
                 } elseif (\is_file($composer_lib_relative_path)) {
@@ -503,12 +503,12 @@ EOT;
      */
     public static function filterDirectoryAndFileList(array $directory_list, array $file_list) : array
     {
-        sort($directory_list);
-        sort($file_list);
+        \sort($directory_list);
+        \sort($file_list);
         if (count($directory_list) > 0) {
             $filter = self::createNotInDirectoryFilter($directory_list);
-            $directory_list = array_filter($directory_list, $filter);
-            $file_list = array_filter($file_list, $filter);
+            $directory_list = \array_filter($directory_list, $filter);
+            $file_list = \array_filter($file_list, $filter);
         }
         return [
             \array_values(\array_unique($directory_list)),
@@ -522,10 +522,10 @@ EOT;
      */
     private static function createNotInDirectoryFilter(array $directory_list) : Closure
     {
-        $parts = array_map(static function (string $path) : string { return preg_quote($path, '@'); }, $directory_list);
-        $prefix_filter = '@^(' . implode($parts, '|') . ')[\\\\/]@';
+        $parts = \array_map(static function (string $path) : string { return \preg_quote($path, '@'); }, $directory_list);
+        $prefix_filter = '@^(' . \implode($parts, '|') . ')[\\\\/]@';
         return static function (string $path) use ($prefix_filter) : bool  {
-            return !preg_match($prefix_filter, $path);
+            return !\preg_match($prefix_filter, $path);
         };
     }
 

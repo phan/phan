@@ -1466,7 +1466,7 @@ EOB;
     public static function doesTerminalSupportUtf8() : bool
     {
         if (\strtoupper(\substr(PHP_OS, 0, 3)) === 'WIN') {
-            if (!function_exists('sapi_windows_cp_is_utf8') || !sapi_windows_cp_is_utf8()) {
+            if (!\function_exists('sapi_windows_cp_is_utf8') || !sapi_windows_cp_is_utf8()) {
                 return false;
             }
         }
