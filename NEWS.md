@@ -24,6 +24,7 @@ Plugins:
 
 Bug fixes:
 + Catch and handle "Cannot access parent when not in object context" when parsing global functions incorrectly using `parent` parameter type. (#2619)
++ Improve the performance of `--progress-bar` when the terminal width can't be computed by symfony (#2634)
 
 22 Mar 2019, Phan 1.2.7
 -----------------------
