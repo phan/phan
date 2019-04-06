@@ -198,13 +198,21 @@ if (!class_exists(CompileError::class)) {
 if (extension_loaded('ast')) {
     // Warn if the php-ast version is too low.
     $ast_version = (new ReflectionExtension('ast'))->getVersion();
-    if (PHP_VERSION_ID >= 70400) {
-        if (version_compare($ast_version, '1.0.0') <= 0) {
+    if (version_compare($ast_version, '1.0.0') <= 0) {
+        if (PHP_VERSION_ID >= 70400) {
             fwrite(STDERR, "Phan is being run with php-ast version $ast_version.\n");
             fwrite(STDERR, "However, when run with PHP 7.4+, Phan requires php-ast 1.0.1 or newer. Older versions of php-ast will crash Phan.\n");
             fwrite(STDERR, "Alternately, to run this version of Phan with PHP 7.4 without upgrading php-ast, uninstall/disable php-ast in php.ini,"
                . " then add the CLI option --allow-polyfill-parser (which is noticeably slower)\n");
             exit(EXIT_FAILURE);
+        }
+        if (!getenv('PHAN_SUPPRESS_AST_UPGRADE_NOTICE')) {
+            fprintf(
+                STDERR,
+                "A future major version of Phan will require php-ast 1.0.1+ for AST version 70. php-ast %s is installed." . PHP_EOL,
+                $ast_version
+            );
+            fwrite(STDERR, "(Set PHAN_SUPPRESS_AST_UPGRADE_NOTICE=1 to suppress this message)" . PHP_EOL);
         }
     }
     if (version_compare($ast_version, '0.1.5') < 0) {

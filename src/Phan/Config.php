@@ -35,7 +35,7 @@ class Config
      * Older versions are likely to have edge cases we no longer support,
      * and version 50 got rid of Decl.
      *
-     * TODO: Also enable support for version 60 once there is a stable php-ast 1.0.0 release. (Issue #2038)
+     * TODO: Switch to version 70 in the next major Phan release.
      */
     const AST_VERSION = 50;
 

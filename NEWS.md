@@ -3,6 +3,10 @@ Phan NEWS
 ?? ??? 2019, Phan 1.2.9 (dev)
 -----------------------
 
+Maintenance:
++ Print a message to stderr if the installed php-ast version is older than 1.0.1.
+  A future major Phan version of Phan will probably depend on AST version 70 to support new syntax found in PHP 7.4.
+
 06 Apr 2019, Phan 1.2.8
 -----------------------
 
