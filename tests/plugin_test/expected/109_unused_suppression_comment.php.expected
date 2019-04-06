@@ -1,0 +1,2 @@
+src/109_unused_suppression_comment.php:13 PhanUnextractableAnnotation Saw unextractable annotation for comment '* @var int'
+src/109_unused_suppression_comment.php:17 UnusedSuppression Element \NS650\example2 suppresses issue PhanParamTooMany but does not use it
