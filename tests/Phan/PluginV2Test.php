@@ -18,8 +18,8 @@ final class PluginV2Test extends BaseTest
         $this->assertInternalType('string', $comment);
 
         $capabilities = [];
-        foreach (scandir(dirname(__DIR__, 2) . '/src/Phan/PluginV2') as $file) {
-            if (!preg_match('/^(\w+Capability)\.php$/', $file, $matches)) {
+        foreach (\scandir(\dirname(__DIR__, 2) . '/src/Phan/PluginV2') as $file) {
+            if (!\preg_match('/^(\w+Capability)\.php$/', $file, $matches)) {
                 continue;
             }
             $capabilities[] = $matches[1];
@@ -27,7 +27,7 @@ final class PluginV2Test extends BaseTest
         $this->assertNotEmpty($capabilities);
         $missing_capabilities = [];
         foreach ($capabilities as $capability) {
-            if (strpos($comment, $capability) === false) {
+            if (\strpos($comment, $capability) === false) {
                 $missing_capabilities[] = $capability;
             }
         }

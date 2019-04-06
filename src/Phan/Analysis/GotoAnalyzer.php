@@ -19,7 +19,7 @@ class GotoAnalyzer
     {
         // Find the AST_STMT_LIST that is the root of the function-like
         $prev_node = null;
-        for ($i = count($parent_node_list) - 1; $i >= 0; $i--) {
+        for ($i = \count($parent_node_list) - 1; $i >= 0; $i--) {
             $node = $parent_node_list[$i];
             if (\in_array($node->kind, [ast\AST_FUNC_DECL, ast\AST_CLOSURE, ast\AST_METHOD], true)) {
                 break;
@@ -60,10 +60,10 @@ class GotoAnalyzer
                         }
                     }
             }
-            if (count($nodes) === 0) {
+            if (\count($nodes) === 0) {
                 return $result;
             }
-            $node = array_pop($nodes);
+            $node = \array_pop($nodes);
         }
     }
 }

@@ -3,7 +3,6 @@
 namespace Phan\Tests;
 
 use Phan\Config;
-use Phan\Config\Initializer;
 
 /**
  * Unit tests of Phan's analysis creating the expected element representations on snippets of code.
@@ -14,23 +13,6 @@ final class ConfigTest extends BaseTest
     public function testDefaultsValid()
     {
         $this->assertSame([], Config::getConfigErrors(Config::DEFAULT_CONFIGURATION), 'default configuration should be valid');
-    }
-
-    public function testInitializesValid()
-    {
-        for ($init_level = 1; $init_level <= 5; $init_level++) {
-            // @phan-suppress-next-line PhanAccessMethodInternal
-            $settings = Initializer::createPhanSettingsForComposerSettings(
-                [],
-                null,
-                [
-                    'init-level' => $init_level,
-                    'init-analyze-dir' => '.',
-                ]
-            )->settings;
-
-            $this->assertSame([], Config::getConfigErrors($settings), "configuration overrides for --init-level $init_level should be valid");
-        }
     }
 
     public function testWarnsInvalid()

@@ -52,7 +52,7 @@ class NotEqualsCondition implements BinaryCondition
         $code_base = $visitor->getCodeBase();
         $context = $visitor->getContext();
         $value = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $expr)->asSingleScalarValueOrNullOrSelf();
-        if (is_object($value)) {
+        if (\is_object($value)) {
             return null;
         }
         $is_true = $value == true;

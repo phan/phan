@@ -3,6 +3,9 @@ Phan NEWS
 ?? ??? 2019, Phan 1.2.8 (dev)
 -----------------------
 
+New features(CLI):
++ Fix edge cases initializing directory list and target versions of config files (#2629, #2160)
+
 New features(Analysis):
 + Support analyzing `if (false !== is_string($var))` and similar complex conditions. (#2613)
 + Emit `PhanUnusedGotoLabel` for labels without a corresponding `goto` in the same function scope. (#2617)
