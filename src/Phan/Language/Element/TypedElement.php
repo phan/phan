@@ -268,10 +268,12 @@ abstract class TypedElement implements TypedElementInterface
     }
 
     /**
-     * @param string[] $suppress_issue_list
-     * Set the set of issue names to suppress
+     * @param string[] $suppress_issue_list a list
+     * Set the list of issue names to suppress
      *
      * @return void
+     * @deprecated
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function setSuppressIssueList(array $suppress_issue_list)
     {
@@ -279,6 +281,18 @@ abstract class TypedElement implements TypedElementInterface
         foreach ($suppress_issue_list as $issue_name) {
             $this->suppress_issue_list[$issue_name] = 0;
         }
+    }
+
+    /**
+     * Set the set of issue names to suppress.
+     * If the values are 0, the suppressions haven't been used yet.
+     *
+     * @param array<string,int> $suppress_issue_set
+     * @return void
+     */
+    public function setSuppressIssueSet(array $suppress_issue_set)
+    {
+        $this->suppress_issue_list = $suppress_issue_set;
     }
 
     /**

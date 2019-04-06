@@ -462,7 +462,7 @@ class Method extends ClassElement implements FunctionInterface
         // Set whether or not the comment indicates that the method is intended
         // to override another method.
         $method->setIsOverrideIntended($comment->isOverrideIntended());
-        $method->setSuppressIssueList($comment->getSuppressIssueList());
+        $method->setSuppressIssueSet($comment->getSuppressIssueSet());
 
         if ($method->getIsMagicCall() || $method->getIsMagicCallStatic()) {
             $method->setNumberOfOptionalParameters(FunctionInterface::INFINITE_PARAMETERS);

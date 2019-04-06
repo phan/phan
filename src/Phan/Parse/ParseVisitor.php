@@ -167,8 +167,8 @@ class ParseVisitor extends ScopeVisitor
             $class->setIsDeprecated($comment->isDeprecated());
             $class->setIsNSInternal($comment->isNSInternal());
 
-            $class->setSuppressIssueList(
-                $comment->getSuppressIssueList()
+            $class->setSuppressIssueSet(
+                $comment->getSuppressIssueSet()
             );
 
             // Depends on code_base for checking existence of __get and __set.
@@ -495,8 +495,8 @@ class ParseVisitor extends ScopeVisitor
             // Add the property to the class
             $class->addProperty($this->code_base, $property, new None());
 
-            $property->setSuppressIssueList(
-                $comment->getSuppressIssueList()
+            $property->setSuppressIssueSet(
+                $comment->getSuppressIssueSet()
             );
 
             // Look for any @var declarations
@@ -658,7 +658,7 @@ class ParseVisitor extends ScopeVisitor
             $constant->setIsDeprecated($comment->isDeprecated());
             $constant->setIsNSInternal($comment->isNSInternal());
             $constant->setIsOverrideIntended($comment->isOverrideIntended());
-            $constant->setSuppressIssueList($comment->getSuppressIssueList());
+            $constant->setSuppressIssueSet($comment->getSuppressIssueSet());
             $value_node = $child_node->children['value'];
             if ($value_node instanceof Node) {
                 try {

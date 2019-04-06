@@ -55,9 +55,9 @@ final class Builder
     /** @var ?ReturnComment the (at)return annotation details */
     public $return_comment;
     /**
-     * @var array<int,string> the list of issue names from (at)suppress annotations
+     * @var array<string,int> the set of issue names from (at)suppress annotations
      */
-    public $suppress_issue_list = [];
+    public $suppress_issue_set = [];
     /** @var array<int,Property> the list of (at)property annotations (and property-read, property-write) */
     public $magic_property_list = [];
     /** @var array<int,Method> the list of (at)method annotations */
@@ -318,7 +318,7 @@ final class Builder
             \array_values($this->template_type_list),
             $this->inherited_type,
             $this->return_comment,
-            $this->suppress_issue_list,
+            $this->suppress_issue_set,
             $this->magic_property_list,
             $this->magic_method_list,
             $this->phan_overrides,
@@ -554,7 +554,9 @@ final class Builder
     {
         $suppress_issue_types = $this->suppressIssuesFromCommentLine($line);
         if (count($suppress_issue_types) > 0) {
-            \array_push($this->suppress_issue_list, ...$suppress_issue_types);
+            foreach ($suppress_issue_types as $issue_type) {
+                $this->suppress_issue_set[$issue_type] = 0;
+            }
         } else {
             $this->emitIssue(
                 Issue::UnextractableAnnotation,
@@ -644,7 +646,7 @@ final class Builder
                 // See BuiltinSuppressionPlugin
                 return;
             case 'phan-suppress':
-                $this->parsePhanSuppress($i, $line);
+                $this->maybeParseSuppress($i, $line);
                 return;
             case 'phan-property':
             case 'phan-property-read':
@@ -722,20 +724,6 @@ final class Builder
         '@phan-var' => '',
         '@phan-write-only' => '',
     ];
-
-    private function parsePhanSuppress(int $i, string $line)
-    {
-        $suppress_issue_types = $this->suppressIssuesFromCommentLine($line);
-        if (count($suppress_issue_types) > 0) {
-            \array_push($this->suppress_issue_list, ...$suppress_issue_types);
-        } else {
-            $this->emitIssue(
-                Issue::UnextractableAnnotation,
-                $this->guessActualLineLocation($i),
-                \trim($line)
-            );
-        }
-    }
 
     private function parsePhanProperty(int $i, string $line)
     {
@@ -1229,7 +1217,9 @@ final class Builder
     protected function emitDeferredIssues()
     {
         foreach ($this->issues as list($issue_type, $issue_lineno, $parameters)) {
-            if (\in_array($issue_type, $this->suppress_issue_list, true)) {
+            if (\array_key_exists($issue_type, $this->suppress_issue_set)) {
+                // Record that this suppression has been used.
+                $this->suppress_issue_set[$issue_type] = 1;
                 continue;
             }
             Issue::maybeEmitWithParameters(

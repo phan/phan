@@ -760,8 +760,17 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
 
     /**
      * @param array<int,string> $suppress_issue_list
+     * @deprecated
      */
     public function setSuppressIssueList(array $suppress_issue_list)
+    {
+        throw new \AssertionError('should not call ' . __METHOD__);
+    }
+
+    /**
+     * @param array<int,string> $suppress_issue_list
+     */
+    public function setSuppressIssueSet(array $suppress_issue_list)
     {
         throw new \AssertionError('should not call ' . __METHOD__);
     }

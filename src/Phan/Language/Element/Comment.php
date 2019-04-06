@@ -121,10 +121,10 @@ class Comment
     protected $return_comment = null;
 
     /**
-     * @var array<int,string>
-     * A list of issue types to be suppressed
+     * @var array<string,int>
+     * A set of issue types to be suppressed
      */
-    protected $suppress_issue_list = [];
+    protected $suppress_issue_set = [];
 
     /**
      * @var array<string,CommentProperty>
@@ -179,8 +179,8 @@ class Comment
      *
      * @param ?ReturnComment $return_comment
      *
-     * @param array<int,string> $suppress_issue_list
-     * A list of tags for error type to be suppressed
+     * @param array<string,int> $suppress_issue_set
+     * A set of tags for error type to be suppressed
      *
      * @param array<int,CommentProperty> $magic_property_list
      *
@@ -205,7 +205,7 @@ class Comment
         array $template_type_list,
         Option $inherited_type,
         $return_comment,
-        array $suppress_issue_list,
+        array $suppress_issue_set,
         array $magic_property_list,
         array $magic_method_list,
         array $phan_overrides,
@@ -221,7 +221,7 @@ class Comment
         $this->template_type_list = $template_type_list;
         $this->inherited_type = $inherited_type;
         $this->return_comment = $return_comment;
-        $this->suppress_issue_list = $suppress_issue_list;
+        $this->suppress_issue_set = $suppress_issue_set;
         $this->closure_scope = $closure_scope;
         $this->throw_union_type = $throw_union_type;
         $this->param_assertion_map = $param_assertion_map;
@@ -543,10 +543,21 @@ class Comment
     /**
      * @return array<int,string>
      * A set of issue names like 'PhanUnreferencedPublicMethod' to suppress
+     * @deprecated
      */
     public function getSuppressIssueList() : array
     {
-        return $this->suppress_issue_list;
+        return array_keys($this->suppress_issue_set);
+    }
+
+    /**
+     * @return array<string,int>
+     * A set of issue names like 'PhanUnreferencedPublicMethod' to suppress.
+     * If the values of fields are 0, the suppressions were not used yet.
+     */
+    public function getSuppressIssueSet() : array
+    {
+        return $this->suppress_issue_set;
     }
 
     /**

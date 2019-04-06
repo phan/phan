@@ -256,8 +256,8 @@ class Func extends AddressableElement implements FunctionInterface
         // the namespace.
         $func->setIsNSInternal($comment->isNSInternal());
 
-        $func->setSuppressIssueList(
-            $comment->getSuppressIssueList()
+        $func->setSuppressIssueSet(
+            $comment->getSuppressIssueSet()
         );
 
         // Take a look at function return types

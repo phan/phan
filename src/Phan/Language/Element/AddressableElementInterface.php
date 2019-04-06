@@ -110,13 +110,23 @@ interface AddressableElementInterface extends TypedElementInterface
     public function setIsDeprecated(bool $is_deprecated);
 
     /**
-     * Set the set of issue names ($suppress_issue_list) to suppress
+     * Set the list of issue names ($suppress_issue_list) to suppress
      *
      * @param array<int,string> $suppress_issue_list
      *
      * @return void
+     * @deprecated
      */
     public function setSuppressIssueList(array $suppress_issue_list);
+
+    /**
+     * Set the set of issue names ($suppress_issue_list) to suppress
+     *
+     * @param array<string,int> $suppress_issue_set
+     *
+     * @return void
+     */
+    public function setSuppressIssueSet(array $suppress_issue_set);
 
     /**
      * @return array<string,int>
