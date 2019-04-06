@@ -4,11 +4,11 @@ Phan NEWS
 -----------------------
 
 New features(Analysis):
-+ Support analyzing `if (false !== is_string($var))` and similar complex conditions (#2613)
++ Support analyzing `if (false !== is_string($var))` and similar complex conditions. (#2613)
 + Emit `PhanUnusedGotoLabel` for labels without a corresponding `goto` in the same function scope. (#2617)
   (note that Phan does not understand the effects of goto on control flow)
-+ Don't emit `PhanUnreferencedClass` for anonymous classes (#2604)
-+ Detect undeclared types in phpdoc callables and closures (#2562)
++ Don't emit `PhanUnreferencedClass` for anonymous classes. (#2604)
++ Detect undeclared types in phpdoc callables and closures. (#2562)
 + Warn about unreferenced PHPDoc `@property`/`@property-read`/`@property-write` annotations in `--dead-code-detection`.
   New issue types: `PhanWriteOnlyPHPDocProperty`, `PhanReadOnlyPHPDocProperty`, `PhanUnreferencedPHPDocProperty`.
 
@@ -20,11 +20,11 @@ Maintenance:
 Plugins:
 + Fix edge case where `WhitespacePlugin` would not detect trailing whitespace.
 + Detect `PhanPluginDuplicateSwitchCaseLooseEquality` in `DuplicateArrayKeyPlugin`. (#2310)
-  Warn about cases of switch cases that are loosely equivalent to earlier cases, and which might get unexpectedly missed because of that (e.g. `0` and `'foo'`)
+  Warn about cases of switch cases that are loosely equivalent to earlier cases, and which might get unexpectedly missed because of that. (e.g. `0` and `'foo'`)
 
 Bug fixes:
 + Catch and handle "Cannot access parent when not in object context" when parsing global functions incorrectly using `parent` parameter type. (#2619)
-+ Improve the performance of `--progress-bar` when the terminal width can't be computed by symfony (#2634)
++ Improve the performance of `--progress-bar` when the terminal width can't be computed by symfony. (#2634)
 
 22 Mar 2019, Phan 1.2.7
 -----------------------
