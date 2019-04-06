@@ -395,7 +395,7 @@ This category of issue is emitted when there are compatibility issues. They will
 Declaring an autoloader with function __autoload() was deprecated in PHP 7.2 and will become a fatal error in PHP 8.0. Use spl_autoload_register() instead (supported since PHP 5.1).
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/000_plugins.php.expected#L20) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/000_plugins.php#L64).
+e.g. [this issue](https://github.com/phan/phan/tree/1.2.8/tests/plugin_test/expected/000_plugins.php.expected#L20) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.2.8/tests/plugin_test/src/000_plugins.php#L64).
 
 ## PhanCompatibleExpressionPHP7
 
@@ -639,7 +639,7 @@ This will be emitted for the following code.
 Unused array offset fetch
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/expected/062_test.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/src/062_test.php#L2).
+e.g. [this issue](https://github.com/phan/phan/tree/1.2.8/tests/misc/fallback_test/expected/062_test.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.2.8/tests/misc/fallback_test/src/062_test.php#L2).
 
 ## PhanNoopBinaryOperator
 
@@ -774,7 +774,7 @@ $a;
 Possibly zero write references to PHPDoc @property {PROPERTY}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/108_magic_property_unreferenced.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/108_magic_property_unreferenced.php#L9).
+e.g. [this issue](https://github.com/phan/phan/tree/1.2.8/tests/plugin_test/expected/108_magic_property_unreferenced.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.2.8/tests/plugin_test/src/108_magic_property_unreferenced.php#L9).
 
 ## PhanReadOnlyPrivateProperty
 
@@ -872,7 +872,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/plugin_test/expe
 Possibly zero references to PHPDoc @property {PROPERTY}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/108_magic_property_unreferenced.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/108_magic_property_unreferenced.php#L5).
+e.g. [this issue](https://github.com/phan/phan/tree/1.2.8/tests/plugin_test/expected/108_magic_property_unreferenced.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.2.8/tests/plugin_test/src/108_magic_property_unreferenced.php#L5).
 
 ## PhanUnreferencedPrivateClassConstant
 
@@ -1007,7 +1007,7 @@ Phan also does not check for missing "goto" labels - This can be done with `Invo
 Unused goto label {CODE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0648_goto_label_unused.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0648_goto_label_unused.php#L3).
+e.g. [this issue](https://github.com/phan/phan/tree/1.2.8/tests/files/expected/0648_goto_label_unused.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.2.8/tests/files/src/0648_goto_label_unused.php#L3).
 
 ## PhanUnusedPrivateFinalMethodParameter
 
@@ -1132,7 +1132,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0
 Possibly zero read references to PHPDoc @property {PROPERTY}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/108_magic_property_unreferenced.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/108_magic_property_unreferenced.php#L8).
+e.g. [this issue](https://github.com/phan/phan/tree/1.2.8/tests/plugin_test/expected/108_magic_property_unreferenced.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.2.8/tests/plugin_test/src/108_magic_property_unreferenced.php#L8).
 
 ## PhanWriteOnlyPrivateProperty
 
@@ -1630,7 +1630,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0
 Class constant {CONST} defined at {FILE}:{LINE} was previously defined at {FILE}:{LINE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0639_duplicate_const_prop.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0639_duplicate_const_prop.php#L9).
+e.g. [this issue](https://github.com/phan/phan/tree/1.2.8/tests/files/expected/0639_duplicate_const_prop.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.2.8/tests/files/src/0639_duplicate_const_prop.php#L9).
 
 ## PhanRedefineClassInternal
 
@@ -1681,7 +1681,7 @@ function strlen() {}
 Property ${PROPERTY} defined at {FILE}:{LINE} was previously defined at {FILE}:{LINE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0639_duplicate_const_prop.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0639_duplicate_const_prop.php#L5).
+e.g. [this issue](https://github.com/phan/phan/tree/1.2.8/tests/files/expected/0639_duplicate_const_prop.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.2.8/tests/files/src/0639_duplicate_const_prop.php#L5).
 
 ## PhanRedefinedExtendedClass
 
@@ -2014,7 +2014,7 @@ NOTE: This is only emitted for the functions that `enable_extended_internal_retu
 Saw a call to an internal function {FUNCTION}() with what would be invalid arguments in strict mode, when trying to infer the return value literal type: {DETAILS}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/101_extended_return_inferences.php.expected#L12) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/101_extended_return_inferences.php#L22).
+e.g. [this issue](https://github.com/phan/phan/tree/1.2.8/tests/plugin_test/expected/101_extended_return_inferences.php.expected#L12) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.2.8/tests/plugin_test/src/101_extended_return_inferences.php#L22).
 
 ## PhanTypeExpectedObject
 
