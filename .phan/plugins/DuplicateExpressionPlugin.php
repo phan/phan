@@ -161,6 +161,44 @@ class RedundantNodeVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
+     * @param Node $node
+     * An assignment operation node to analyze
+     *
+     * @return void
+     * @override
+     */
+    public function visitAssignRef(Node $node)
+    {
+        $this->visitAssign($node);
+    }
+
+    /**
+     * @param Node $node
+     * An assignment operation node to analyze
+     *
+     * @return void
+     * @override
+     */
+    public function visitAssign(Node $node)
+    {
+        $var = $node->children['var'];
+        $expr = $node->children['expr'];
+        if (ASTHasher::hash($var) === ASTHasher::hash($expr)) {
+            $this->emitPluginIssue(
+                $this->code_base,
+                $this->context,
+                'PhanPluginDuplicateExpressionAssignment',
+                'Both sides of the assignment {OPERATOR} are the same: {CODE}',
+                [
+                    $node->kind === ast\AST_ASSIGN_REF ? '=&' : '=',
+                    ASTReverter::toShortString($var),
+                ]
+            );
+            return;
+        }
+    }
+
+    /**
      * Compute result of a binary operator for a PhanPluginBothLiteralsBinaryOp warning
      * @param int|string|float|bool|null $left left hand side of operation
      * @param int|string|float|bool|null $right right hand side of operation
