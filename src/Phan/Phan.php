@@ -272,14 +272,14 @@ class Phan implements IgnoredFilesFilterInterface
                 if (!is_array($language_server_config)) {
                     throw new AssertionError("Language server config must be an array");
                 }
-                LanguageServerLogger::logInfo(sprintf("Starting accepting connections on the language server (pid=%d)", getmypid()));
+                LanguageServerLogger::logInfo(sprintf("Starting accepting connections on the language server (pid=%s)", getmypid() ?: 'unknown'));
                 $request = LanguageServer::run($code_base, $file_path_lister, $language_server_config);
                 if (!$request) {
                     // TODO: Add a way to cleanly shut down.
                     fwrite(STDERR, "Finished serving requests, exiting\n");
                     exit(2);
                 }
-                LanguageServerLogger::logInfo(sprintf("language server (pid=%d) accepted connection", getmypid()));
+                LanguageServerLogger::logInfo(sprintf("language server (pid=%s) accepted connection", getmypid() ?: 'unknown'));
             }
             self::setPrinter($request->getPrinter());
 

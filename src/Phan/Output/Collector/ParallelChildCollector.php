@@ -29,10 +29,27 @@ class ParallelChildCollector implements IssueCollectorInterface
     {
         self::assertSharedMemoryCommunicationEnabled();
 
+        $this->message_queue_resource = self::getQueueForProcessGroup();
+    }
+
+    /**
+     * @return resource the result of msg_get_queue()
+     * @throws AssertionError if this could not create a resource with msg_get_queue.
+     * @internal
+     */
+    public static function getQueueForProcessGroup()
+    {
         // Create a message queue for this process group
         $message_queue_key = \posix_getpgid(\posix_getpid());
-        $this->message_queue_resource =
-            \msg_get_queue($message_queue_key);
+        if (!is_int($message_queue_key)) {
+            throw new AssertionError('Expected posix_getpgid to return a valid id');
+        }
+
+        $resource = \msg_get_queue($message_queue_key);
+        if (!$resource) {
+            throw new AssertionError('Expected msg_get_queue to return a valid resource');
+        }
+        return $resource;
     }
 
     /**
