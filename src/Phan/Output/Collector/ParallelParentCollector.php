@@ -48,9 +48,8 @@ class ParallelParentCollector implements IssueCollectorInterface
         $this->base_collector = $base_collector;
 
         // Create a message queue for this process group
-        $message_queue_key = \posix_getpgid(\posix_getpid());
         $this->message_queue_resource =
-            \msg_get_queue($message_queue_key);
+            ParallelChildCollector::getQueueForProcessGroup();
 
         // Listen for ALARMS that indicate we should flush
         // the queue
