@@ -6,6 +6,10 @@ Phan NEWS
 New features(Analysis):
 + Fix false positive UnusedSuppression when a doc comment suppresses an issue about itself. (#2571)
 
+Plugins:
++ Warn about assignments where the left and right hand side are the same expression in `DuplicateExpressionPlugin` (#2641)
+  New issue type: `PhanPluginDuplicateExpressionAssignment`
+
 Maintenance:
 + Print a message to stderr if the installed php-ast version is older than 1.0.1.
   A future major Phan version of Phan will probably depend on AST version 70 to support new syntax found in PHP 7.4.

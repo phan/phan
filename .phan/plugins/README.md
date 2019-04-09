@@ -281,6 +281,7 @@ Warns about elements containing unknown types (function/method/closure return ty
 This plugin checks for duplicate expressions in a statement
 that are likely to be a bug. (e.g. `expr1 == expr`)
 
+- **PhanPluginDuplicateExpressionAssignment**: `Both sides of the assignment {OPERATOR} are the same: {CODE}`
 - **PhanPluginDuplicateExpressionBinaryOp**: `Both sides of the binary operator {OPERATOR} are the same: {CODE}`
 - **PhanPluginDuplicateConditionalTernaryDuplication**: `"X ? X : Y" can usually be simplified to "X ?: Y". The duplicated expression X was {CODE}`
 - **PhanPluginDuplicateConditionalNullCoalescing**: `"isset(X) ? X : Y" can usually be simplified to "X ?? Y" in PHP 7. The duplicated expression X was {CODE}`
