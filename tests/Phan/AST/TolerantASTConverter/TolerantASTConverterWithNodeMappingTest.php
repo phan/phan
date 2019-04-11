@@ -38,7 +38,7 @@ final class TolerantASTConverterWithNodeMappingTest extends BaseTest
         $ast = $this->parseASTWithDefaultOptions($file_contents, $byte_offset);
         // TODO: Create a reusable abstraction in Util to walk / filter nodes from the AST
         $selected_node = $this->findSelectedNode($ast);
-        $this->assertEquals(\Phan\Debug::nodeToString($expected_node), \Phan\Debug::nodeToString($selected_node));
+        $this->assertSame(\Phan\Debug::nodeToString($expected_node), \Phan\Debug::nodeToString($selected_node));
         $this->assertEquals($expected_node, $selected_node);
     }
 

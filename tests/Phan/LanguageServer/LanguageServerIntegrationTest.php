@@ -379,7 +379,7 @@ EOT;
                 'id' => 2,
                 'jsonrpc' => '2.0',
             ];
-            $this->assertEquals($expected_completion_response, $completion_response, "Failed completions at $position->line:$position->character");
+            $this->assertSame($expected_completion_response, $completion_response, "Failed completions at $position->line:$position->character");
             $this->assertSame($expected_completion_response, $completion_response);
 
             $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
@@ -1266,7 +1266,7 @@ EOT
             $cur_line = \explode("\n", $new_file_contents)[$position->line] ?? '';
 
             $message = "Unexpected definition for {$position->line}:{$position->character} (0-based) on line \"" . $cur_line . '"' . ' at "' . \substr($cur_line, $position->character, 10) . '"';
-            $this->assertEquals($expected_definition_response, $definition_response, $message);  // slightly better diff view than assertSame
+            $this->assertSame($expected_definition_response, $definition_response, $message);  // slightly better diff view than assertSame
             $this->assertSame($expected_definition_response, $definition_response, $message);
 
             // This operation should be idempotent.
@@ -1275,7 +1275,7 @@ EOT
             $expected_definition_response['id'] = 3;
 
             $definition_response = $perform_definition_request();
-            $this->assertEquals($expected_definition_response, $definition_response, $message);  // slightly better diff view than assertSame
+            $this->assertSame($expected_definition_response, $definition_response, $message);  // slightly better diff view than assertSame
             $this->assertSame($expected_definition_response, $definition_response, $message);
 
             $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
@@ -1349,7 +1349,7 @@ EOT
                 (string)\json_encode($cur_line),
                 (string)\substr($cur_line, $position->character, 10)
             );
-            $this->assertEquals($expected_definition_response, $definition_response, $message);  // slightly better diff view than assertSame
+            $this->assertSame($expected_definition_response, $definition_response, $message);  // slightly better diff view than assertSame
             $this->assertSame($expected_definition_response, $definition_response, $message);
 
             // This operation should be idempotent.
@@ -1358,7 +1358,7 @@ EOT
             $expected_definition_response['id'] = 3;
 
             $definition_response = $perform_definition_request();
-            $this->assertEquals($expected_definition_response, $definition_response, $message);  // slightly better diff view than assertSame
+            $this->assertSame($expected_definition_response, $definition_response, $message);  // slightly better diff view than assertSame
             $this->assertSame($expected_definition_response, $definition_response, $message);
 
             $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
@@ -1428,7 +1428,7 @@ EOT
                 (string)\json_encode($cur_line),
                 (string)\substr($cur_line, $position->character, 10)
             );
-            $this->assertEquals($expected_hover_response, $hover_response, $message);  // slightly better diff view than assertSame
+            $this->assertSame($expected_hover_response, $hover_response, $message);  // slightly better diff view than assertSame
             $this->assertSame($expected_hover_response, $hover_response, $message);
 
             // This operation should be idempotent.
@@ -1437,7 +1437,7 @@ EOT
             $expected_hover_response['id'] = 3;
 
             $hover_response = $perform_hover_request();
-            $this->assertEquals($expected_hover_response, $hover_response, $message);  // slightly better diff view than assertSame
+            $this->assertSame($expected_hover_response, $hover_response, $message);  // slightly better diff view than assertSame
             $this->assertSame($expected_hover_response, $hover_response, $message);
 
             $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
@@ -1743,8 +1743,8 @@ EOT;
             'source' => 'Phan',
             'message' => $expected_message,
         ];
-        // assertEquals has a better diff view than assertSame, so run it first.
-        $this->assertEquals($expected_diagnostic, $diagnostic);
+        // assertSame has a better diff view than assertSame, so run it first.
+        $this->assertSame($expected_diagnostic, $diagnostic);
         $this->assertSame($expected_diagnostic, $diagnostic);
     }
 

@@ -4,7 +4,8 @@ Phan NEWS
 -----------------------
 
 New features(Analysis):
-+ Fix false positive UnusedSuppression when a doc comment suppresses an issue about itself. (#2571)
++ Fix false positive `UnusedSuppression` when a doc comment suppresses an issue about itself. (#2571)
++ Improve analysis of argument unpacking with reference parameters, fix false positive `PhanTypeNonVarPassByRef` (#2646)
 
 Maintenance:
 + Print a message to stderr if the installed php-ast version is older than 1.0.1.

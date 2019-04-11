@@ -120,7 +120,7 @@ final class TypeTest extends BaseTest
         if ($extra) {
             $message .= ": $extra";
         }
-        $this->assertEquals($expected, $actual, $message);
+        $this->assertSame($expected, $actual, $message);
         $this->assertSame($expected, $actual, $message);
     }
 

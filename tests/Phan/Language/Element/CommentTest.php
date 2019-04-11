@@ -327,7 +327,7 @@ EOT;
         $this->assertTrue($scope_option->isDefined());
         $scope_type = $scope_option->get();
         $expected_type = Type::fromFullyQualifiedString('MyNS\MyClass');
-        $this->assertEquals($expected_type, $scope_type);
+        $this->assertSame($expected_type, $scope_type);
         $this->assertSame($expected_type, $scope_type);
     }
 

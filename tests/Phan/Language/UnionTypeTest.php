@@ -226,11 +226,11 @@ final class UnionTypeTest extends BaseTest
             false
         );
 
-        $this->assertEquals(
+        $this->assertSame(
             $type->genericArrayElementType()->__toString(),
             "int[]"
         );
-        $this->assertEquals(
+        $this->assertSame(
             $type->genericArrayElementUnionType()->__toString(),
             "int[]"
         );
@@ -241,7 +241,7 @@ final class UnionTypeTest extends BaseTest
         $type = Type::fromFullyQualifiedString("int[][]");
         $this->assertInstanceOf(GenericArrayType::class, $type);
 
-        $this->assertEquals(
+        $this->assertSame(
             $type->genericArrayElementType()->__toString(),
             "int[]"
         );
@@ -261,7 +261,7 @@ final class UnionTypeTest extends BaseTest
         string $code_stub,
         string $type_name
     ) {
-        $this->assertEquals(
+        $this->assertSame(
             $type_name,
             $this->typeStringFromCode('<' . '?php ' . $code_stub . ';')
         );

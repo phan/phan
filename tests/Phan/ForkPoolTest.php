@@ -46,7 +46,7 @@ final class ForkPoolTest extends BaseTest
             }
         );
 
-        $this->assertEquals($data, $pool->wait());
+        $this->assertSame($data, $pool->wait());
     }
 
     /**
@@ -78,7 +78,7 @@ final class ForkPoolTest extends BaseTest
             }
         );
 
-        $this->assertEquals(
+        $this->assertSame(
             [[true], [true], [true], [true]],
             $pool->wait()
         );

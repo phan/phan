@@ -58,6 +58,6 @@ final class ASTSimplifierTest extends AbstractPhanFileTest
         $this->assertSame(\ast\AST_STMT_LIST, $actual->kind, 'should return an AST of kind AST_STMT_LIST');
         $actual_repr = Debug::astDump($actual);
         $expected_repr = Debug::astDump($expected);
-        $this->assertEquals($expected_repr, $actual_repr, 'Expected the AST representation to be the same as the expected source\'s after transformations');
+        $this->assertSame($expected_repr, $actual_repr, 'Expected the AST representation to be the same as the expected source\'s after transformations');
     }
 }
