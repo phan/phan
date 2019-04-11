@@ -305,6 +305,6 @@ final class FQSENTest extends BaseTest
         FQSEN $fqsen,
         string $string
     ) {
-        $this->assertEquals($string, (string)$fqsen);
+        $this->assertSame($string, (string)$fqsen);
     }
 }

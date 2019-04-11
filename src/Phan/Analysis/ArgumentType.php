@@ -387,6 +387,16 @@ final class ArgumentType
         }
     }
 
+    /**
+     * These node types are guaranteed to be usable as references
+     * @internal
+     */
+    const REFERENCE_NODE_KINDS = [
+        \ast\AST_VAR,
+        \ast\AST_DIM,
+        \ast\AST_PROP,
+        \ast\AST_STATIC_PROP,
+    ];
 
     /**
      * @param CodeBase $code_base
@@ -434,21 +444,15 @@ final class ArgumentType
             // If this is a pass-by-reference parameter, make sure
             // we're passing an allowable argument
             if ($parameter->isPassByReference()) {
-                if ((!$argument instanceof Node)
-                    || ($argument_kind !== \ast\AST_VAR
-                        && $argument_kind !== \ast\AST_DIM
-                        && $argument_kind !== \ast\AST_PROP
-                        && $argument_kind !== \ast\AST_STATIC_PROP
-                    )
-                ) {
-                    $is_possible_reference = self::isFunctionReturningReference($code_base, $context, $argument);
+                if ((!$argument instanceof Node) || !\in_array($argument_kind, self::REFERENCE_NODE_KINDS, true)) {
+                    $is_possible_reference = self::isExpressionReturningReference($code_base, $context, $argument);
 
                     if (!$is_possible_reference) {
                         Issue::maybeEmit(
                             $code_base,
                             $context,
                             Issue::TypeNonVarPassByRef,
-                            $node->lineno ?? 0,
+                            $argument->lineno ?? $node->lineno ?? 0,
                             ($i + 1),
                             $method->getRepresentationForIssue()
                         );
@@ -468,7 +472,7 @@ final class ArgumentType
                             $code_base,
                             $context,
                             Issue::ContextNotObject,
-                            $node->lineno ?? 0,
+                            $argument->lineno ?? $node->lineno ?? 0,
                             "$variable_name"
                         );
                     }
@@ -483,6 +487,58 @@ final class ArgumentType
                 $argument,
                 true
             );
+            self::analyzeParameter($code_base, $context, $method, $argument_type, $argument->lineno ?? $node->lineno ?? 0, $i);
+            if ($argument_kind === \ast\AST_UNPACK) {
+                self::analyzeRemainingParametersForVariadic($code_base, $context, $method, $i + 1, $node, $argument, $argument_type);
+            }
+        }
+    }
+
+    /**
+     * @return void
+     */
+    private static function analyzeRemainingParametersForVariadic(
+        CodeBase $code_base,
+        Context $context,
+        FunctionInterface $method,
+        int $start_index,
+        Node $node,
+        Node $argument,
+        UnionType $argument_type
+    ) {
+        // Only check any remaining p
+        $param_count = $method->getNumberOfRequiredParameters();
+        for ($i = $start_index; $i < $param_count; $i++) {
+            // Get the parameter associated with this argument
+            $parameter = $method->getParameterForCaller($i);
+
+            // Shouldn't be possible?
+            if (!$parameter) {
+                return;
+            }
+
+            $argument_kind = $argument->kind ?? 0;
+
+            // If this is a pass-by-reference parameter, make sure
+            // we're passing an allowable argument
+            if ($parameter->isPassByReference()) {
+                if ((!$argument instanceof Node) || !\in_array($argument_kind, self::REFERENCE_NODE_KINDS, true)) {
+                    $is_possible_reference = self::isExpressionReturningReference($code_base, $context, $argument);
+
+                    if (!$is_possible_reference) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::TypeNonVarPassByRef,
+                            $argument->lineno ?? $node->lineno ?? 0,
+                            ($i + 1),
+                            $method->getRepresentationForIssue()
+                        );
+                    }
+                }
+                // Omit ContextNotObject check, this was checked for the first matching parameter
+            }
+
             self::analyzeParameter($code_base, $context, $method, $argument_type, $argument->lineno ?? $node->lineno ?? 0, $i);
         }
     }
@@ -705,12 +761,18 @@ final class ArgumentType
      *
      * @return bool - True if this node is a call to a function that may return a reference?
      */
-    private static function isFunctionReturningReference(CodeBase $code_base, Context $context, $node) : bool
+    private static function isExpressionReturningReference(CodeBase $code_base, Context $context, $node) : bool
     {
         if (!($node instanceof Node)) {
             return false;
         }
         $node_kind = $node->kind;
+        if (\in_array($node_kind, self::REFERENCE_NODE_KINDS, true)) {
+            return true;
+        }
+        if ($node_kind === \ast\AST_UNPACK) {
+            return self::isExpressionReturningReference($code_base, $context, $node->children['expr']);
+        }
         if ($node_kind === \ast\AST_CALL) {
             foreach ((new ContextNode(
                 $code_base,
