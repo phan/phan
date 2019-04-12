@@ -30,7 +30,8 @@
         "felixfbecker/advanced-json-rpc": "^3.0.3",
         "microsoft/tolerant-php-parser": "0.0.17",
         "sabre/event": "^5.0",
-        "symfony/console": "^2.3|^3.0|~4.0"
+        "symfony/console": "^2.3|^3.0|~4.0",
+        "symfony/polyfill-mbstring": "^1.11.0"
     },
     "suggest": {
         "ext-ast": "Needed for parsing ASTs (unless --use-fallback-parser is used). 1.0.1+ is recommended, php-ast ^0.1.5|^1.0.0 is needed.",

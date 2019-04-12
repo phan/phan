@@ -36,6 +36,8 @@ define('EXIT_ISSUES_FOUND', EXIT_FAILURE);
 
 // Throw exceptions so asserts can be linked to the code being analyzed
 ini_set('assert.exception', '1');
+// Set a substitute character for StringUtil::asUtf8()
+ini_set('mbstring.substitute_character', (string)0xFFFD);
 
 // Explicitly set each option in case INI is set otherwise
 assert_options(ASSERT_ACTIVE, true);

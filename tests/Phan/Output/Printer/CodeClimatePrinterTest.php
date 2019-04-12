@@ -33,4 +33,17 @@ final class CodeClimatePrinterTest extends BaseTest
         // phpcs:enable
         $this->assertSame($expected_output, $output->fetch());
     }
+
+    // Should replace invalid utf-8 with placeholders in the resulting JSON
+    public function testPrintInvalidUtf8()
+    {
+        $output = new BufferedOutput();
+
+        $printer = new CodeClimatePrinter();
+        $printer->configureOutput($output);
+        $printer->print(new IssueInstance(Issue::fromType(Issue::UndeclaredVariableDim), 'dim.php', 10, ["a\x80b"]));
+        $expected_output = '{"type":"issue","check_name":"PhanUndeclaredVariableDim","description":"Variable $a�b was undeclared, but array fields are being added to it.","categories":["Bug Risk"],"severity":"info","location":{"path":"dim.php","lines":{"begin":10,"end":10}}}' . "\x00";
+        $printer->flush();
+        $this->assertSame($expected_output, $output->fetch());
+    }
 }
