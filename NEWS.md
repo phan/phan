@@ -7,6 +7,7 @@ New features(Analysis):
 + Fix false positive `UnusedSuppression` when a doc comment suppresses an issue about itself. (#2571)
 + Improve analysis of argument unpacking with reference parameters, fix false positive `PhanTypeNonVarPassByRef` (#2646)
 + In issue descriptions and suggestions, replace invalid utf-8 (and literal newlines) with placeholders (#2645)
++ Suggest typo fixes in `PhanMisspelledAnnotation` for `@phan-*` annotations. (#2640)
 
 Plugins:
 + Warn about assignments where the left and right hand side are the same expression in `DuplicateExpressionPlugin` (#2641)

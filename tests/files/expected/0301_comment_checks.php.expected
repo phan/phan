@@ -2,6 +2,7 @@
 %s:5 PhanInvalidCommentForDeclarationType The phpdoc comment for @param cannot occur on a class
 %s:6 PhanInvalidCommentForDeclarationType The phpdoc comment for @return cannot occur on a class
 %s:7 PhanMisspelledAnnotation Saw misspelled annotation @phan-forbid-this-is-a-typo. The annotations that this version of Phan supports can be seen by running 'phan --help-annotations' or by visiting https://github.com/phan/phan/wiki/Annotating-Your-Source-Code
+%s:8 PhanMisspelledAnnotation Saw misspelled annotation @phan-forbid-undeclared-magic-method. The annotations that this version of Phan supports can be seen by running 'phan --help-annotations' or by visiting https://github.com/phan/phan/wiki/Annotating-Your-Source-Code (Did you mean @phan-forbid-undeclared-magic-methods)
 %s:12 PhanUnextractableAnnotationPart Saw unextractable annotation for a fragment of comment '* @method foo(string$invalidType $param1)': 'string$invalidType $param1'
 %s:13 PhanUnextractableAnnotation Saw unextractable annotation for comment '* @method unmatched('
 %s:15 PhanUnextractableAnnotation Saw unextractable annotation for comment '* @property int (Can't parse the variable name, so silently ignore)'

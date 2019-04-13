@@ -606,7 +606,7 @@ class IssueFixSuggester
      * @param array<string,mixed> $potential_candidates
      * @return array<string,mixed> a subset of $potential_candidates
      */
-    public static function getSuggestionsForStringSet(string $target, array $potential_candidates)
+    public static function getSuggestionsForStringSet(string $target, array $potential_candidates) : array
     {
         if (count($potential_candidates) === 0) {
             return [];
