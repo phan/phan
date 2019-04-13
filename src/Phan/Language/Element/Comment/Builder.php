@@ -6,6 +6,7 @@ namespace Phan\Language\Element\Comment;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Issue;
+use Phan\IssueFixSuggester;
 use Phan\Language\Context;
 use Phan\Language\Element\Comment;
 use Phan\Language\Element\Flags;
@@ -19,6 +20,7 @@ use Phan\Library\FileCache;
 use Phan\Library\None;
 use Phan\Library\Option;
 use Phan\Library\Some;
+use Phan\Suggestion;
 
 use function count;
 
@@ -80,7 +82,7 @@ final class Builder
      * A list of issues detected in the comment being built.
      * This is stored instead of immediately emitting the issue because later lines might suppress these issues.
      *
-     * @var array<int,array{0:string,1:int,2:array<int,mixed>}>
+     * @var array<int,array{0:string,1:int,2:array<int,mixed>,3:?Suggestion}>
      */
     private $issues = [];
 
@@ -684,14 +686,29 @@ final class Builder
                 $this->maybeParsePhanAssert($i, $line);
                 return;
             default:
-                $this->emitIssue(
+                $this->emitIssueWithSuggestion(
                     Issue::MisspelledAnnotation,
                     $this->guessActualLineLocation($i),
-                    '@' . $case_sensitive_type,
-                    "The annotations that this version of Phan supports can be seen by running 'phan --help-annotations' or by visiting https://github.com/phan/phan/wiki/Annotating-Your-Source-Code"
+                    [
+                        '@' . $case_sensitive_type,
+                        "The annotations that this version of Phan supports can be seen by running 'phan --help-annotations' or by visiting https://github.com/phan/phan/wiki/Annotating-Your-Source-Code",
+                    ],
+                    self::generateSuggestionForMisspelledAnnotation($case_sensitive_type)
                 );
                 return;
         }
+    }
+
+    /**
+     * @return ?Suggestion
+     */
+    private static function generateSuggestionForMisspelledAnnotation(string $annotation)
+    {
+        $suggestions = IssueFixSuggester::getSuggestionsForStringSet('@' . $annotation, self::SUPPORTED_ANNOTATIONS);
+        if (!$suggestions) {
+            return null;
+        }
+        return Suggestion::fromString('Did you mean ' . implode(' or ', array_keys($suggestions)));
     }
 
     /**
@@ -1210,13 +1227,42 @@ final class Builder
         $this->issues[] = [
             $issue_type,
             $issue_lineno,
-            $parameters
+            $parameters,
+            null,
+        ];
+    }
+
+    /**
+     * @param string $issue_type
+     * The type of issue to emit such as Issue::ParentlessClass
+     *
+     * @param int $issue_lineno
+     * The line number where the issue was found
+     *
+     * @param array<int,int|string|FQSEN|UnionType|Type> $parameters
+     * Template parameters for the issue's error message
+     *
+     * @param ?Suggestion $suggestion
+     *
+     * @return void
+     */
+    protected function emitIssueWithSuggestion(
+        string $issue_type,
+        int $issue_lineno,
+        array $parameters,
+        Suggestion $suggestion = null
+    ) {
+        $this->issues[] = [
+            $issue_type,
+            $issue_lineno,
+            $parameters,
+            $suggestion
         ];
     }
 
     protected function emitDeferredIssues()
     {
-        foreach ($this->issues as list($issue_type, $issue_lineno, $parameters)) {
+        foreach ($this->issues as list($issue_type, $issue_lineno, $parameters, $suggestion)) {
             if (\array_key_exists($issue_type, $this->suppress_issue_set)) {
                 // Record that this suppression has been used.
                 $this->suppress_issue_set[$issue_type] = 1;
@@ -1227,7 +1273,8 @@ final class Builder
                 $this->context,
                 $issue_type,
                 $issue_lineno,
-                $parameters
+                $parameters,
+                $suggestion
             );
         }
         $this->issues = [];

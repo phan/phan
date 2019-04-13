@@ -5,7 +5,7 @@
  * @param int $invalidPlaceForInt
  * @return int
  * @phan-forbid-this-is-a-typo
- *
+ * @phan-forbid-undeclared-magic-method
  * Doesn't warn about the unparsable template, but silently ignores it.
  * @template [NotMatchingRegex]
  *
