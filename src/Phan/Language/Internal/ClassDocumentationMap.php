@@ -440,6 +440,9 @@ while ($key = $hashTable->nextkey($key))
 echo "Key: ".$key." value: ".$hashTable->get($key)."<br/>";',
 'http\Client' => 'The HTTP client. See http\Client\Curl’s options which is the only driver currently supported.',
 'http\Client\Curl\User' => 'Interface to an user event loop implementation for http\Client::configure()\'s $use_eventloop option.',
+'http\Client\Request' => 'The http\Client\Request class provides an HTTP message implementation tailored to represent a request message to be sent by the client.
+
+See http\Client::enqueue().',
 'http\Client\Response' => 'The http\Client\Response class represents an HTTP message the client returns as answer from a server to an http\Client\Request.',
 'http\Cookie' => 'A class representing a list of cookies with specific attributes.',
 'http\Encoding\Stream' => 'Base class for encoding stream implementations.',
