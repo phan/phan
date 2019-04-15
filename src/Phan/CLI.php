@@ -1245,6 +1245,30 @@ EOB;
     }
 
     /**
+     * Checks if a file (not a folder) which has potentially not yet been created on disk should be parsed.
+     * @param string $file_path a relative path to a file within the project
+     */
+    public static function shouldParse(string $file_path) : bool
+    {
+        $exclude_file_regex = Config::getValue('exclude_file_regex');
+        if ($exclude_file_regex && self::isPathExcludedByRegex($exclude_file_regex, $file_path)) {
+            return false;
+        }
+        $file_extensions = Config::getValue('analyzed_file_extensions');
+
+        if (!\is_array($file_extensions) || count($file_extensions) === 0) {
+            return false;
+        }
+        $extension = pathinfo($file_path, PATHINFO_EXTENSION);
+        if (!$extension || !in_array($extension, $file_extensions)) {
+            return false;
+        }
+
+        $directory_regex = Config::getValue('__directory_regex');
+        return $directory_regex && preg_match($directory_regex, $file_path) > 0;
+    }
+
+    /**
      * @param string $directory_name
      * The name of a directory to scan for files ending in `.php`.
      *

@@ -9,6 +9,9 @@ New features(Analysis):
 + In issue descriptions and suggestions, replace invalid utf-8 (and literal newlines) with placeholders (#2645)
 + Suggest typo fixes in `PhanMisspelledAnnotation` for `@phan-*` annotations. (#2640)
 
+Language Server/Daemon mode:
++ Analyze new but unsaved files, if they would be analyzed by Phan once they actually were saved to disk.
+
 Plugins:
 + Warn about assignments where the left and right hand side are the same expression in `DuplicateExpressionPlugin` (#2641)
   New issue type: `PhanPluginDuplicateExpressionAssignment`
