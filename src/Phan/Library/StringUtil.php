@@ -51,14 +51,16 @@ class StringUtil
     /**
      * Coerce $str to valid utf-8
      */
-    public static function asUtf8(string $str) : string {
+    public static function asUtf8(string $str) : string
+    {
         return \mb_convert_encoding($str, 'UTF-8', 'UTF-8') ?: $str;
     }
 
     /**
      * Coerce $str to valid utf-8 and replace newlines with placeholders
      */
-    public static function asSingleLineUtf8(string $str) : string {
+    public static function asSingleLineUtf8(string $str) : string
+    {
         return \str_replace(["\n", "\r"], "�", self::asUtf8($str));
     }
 }

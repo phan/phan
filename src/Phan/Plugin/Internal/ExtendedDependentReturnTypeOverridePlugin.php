@@ -77,7 +77,7 @@ final class ExtendedDependentReturnTypeOverridePlugin extends PluginV2 implement
                 }
                 try {
                     $result = \with_disabled_phan_error_handler(/** @return mixed */ static function () use ($function, $values) {
-                        return $function(...$values);
+                        return @$function(...$values);
                     });
                 } catch (Throwable $e) {
                     Issue::maybeEmit(

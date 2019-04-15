@@ -196,6 +196,9 @@ class Config
         //       to `exclude_analysis_directory_list`.
         'exclude_analysis_directory_list' => [],
 
+        // This is set internally by Phan based on exclude_analysis_directory_list
+        '__exclude_analysis_regex' => null,
+
         // A file list that defines files that will be included
         // in static analysis, to the exclusion of others.
         'include_analysis_file_list' => [],
@@ -1018,7 +1021,29 @@ class Config
                     self::$configuration['allow_method_param_type_widening'] = self::$closest_target_php_version_id >= 70200;
                 }
                 break;
+            case 'exclude_analysis_directory_list':
+                self::$configuration['__exclude_analysis_regex'] = self::generateDirectoryListRegex($value);
+                break;
         }
+    }
+
+    /**
+     * @param string[] $value
+     * @return ?string
+     */
+    private static function generateDirectoryListRegex(array $value)
+    {
+        if (!$value) {
+            return null;
+        }
+        $parts = array_map(static function (string $path) : string {
+            $path = \str_replace('\\', '/', $path);  // Normalize \\ to / in configs
+            $path = \rtrim($path, '\//');  // remove trailing / from directory
+            $path = \preg_replace('@^(\./)+@', '', $path);  // Remove any number of leading ./ sections
+            return \preg_quote($path, '@');  // Quote this
+        }, $value);
+
+        return '@^(\./)*(' . implode('|', $parts) . ')([/\\\\]|$)@';
     }
 
     private static function computeClosestTargetPHPVersionId(string $version) : int
