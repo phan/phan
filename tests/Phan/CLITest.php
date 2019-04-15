@@ -126,9 +126,17 @@ final class CLITest extends BaseTest
             ],
             [
                 [
+                    '__exclude_analysis_regex' => '@^(\./)*(src/b\.php|src/a\.php)([/\\\\]|$)@',
                     'exclude_analysis_directory_list' => ['src/b.php','src/a.php'],
                 ],
                 ['3' => 'src/b.php,src/a.php'],
+            ],
+            [
+                [
+                    '__exclude_analysis_regex' => '@^(\./)*(src\@old|\.\./src/other)([/\\\\]|$)@',
+                    'exclude_analysis_directory_list' => ['src@old/','./../src/other'],
+                ],
+                ['3' => 'src@old/,./../src/other'],
             ],
             [
                 ['include_analysis_file_list' => ['src/a.php', 'src/b.php']],

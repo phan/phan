@@ -38,11 +38,11 @@ use function is_string;
 use function json_encode;
 use function memory_get_peak_usage;
 use function memory_get_usage;
+use function preg_match;
 use function realpath;
 use function sort;
 use function sprintf;
 use function str_replace;
-use function strpos;
 use function var_export;
 use const EXIT_FAILURE;
 use const EXIT_SUCCESS;
@@ -578,9 +578,9 @@ class Phan implements IgnoredFilesFilterInterface
         }
 
         $file_path = str_replace('\\', '/', $file_path);
-        foreach (Config::getValue('exclude_analysis_directory_list') as $directory) {
-            if (0 === strpos($file_path, $directory)
-                || 0 === strpos($file_path, "./$directory")) {
+        $exclude_analysis_regex = Config::getValue('__exclude_analysis_regex');
+        if ($exclude_analysis_regex) {
+            if (preg_match($exclude_analysis_regex, $file_path)) {
                 return true;
             }
         }
