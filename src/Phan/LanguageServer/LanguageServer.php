@@ -6,6 +6,7 @@ use AdvancedJsonRpc;
 use AssertionError;
 use Closure;
 use Exception;
+use Phan\CLI;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Daemon\ExitException;
@@ -535,17 +536,20 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      * Gets URIs (and corresponding paths) which the language server client needs Phan to re-analyze.
      * This excludes any files that aren't in files and directories of .phan/config.php
      *
-     * @return array<string,string> maps relative path to the file URI.
+     * @return array{0:array<string,string>,1:array<int,string>}
+     * First element maps relative path to the file URI.
+     * Second element is the result of file_path_lister (unless there's nothing to analyze)
      */
     private function getFilteredURIsToAnalyze() : array
     {
         $uris_to_analyze = $this->analyze_request_set;
         if (\count($uris_to_analyze) === 0) {
-            return [];
+            return [[], []];
         }
         $this->analyze_request_set = [];
 
         // Always recompute the file list from the directory list : see src/phan.php
+        // The caller will reuse the cached file list.
         $file_path_list = ($this->file_path_lister)(true);
         $filtered_uris_to_analyze = [];
         foreach ($uris_to_analyze as $path_to_analyze => $uri) {
@@ -555,12 +559,18 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             }
             $relative_path_to_analyze = FileRef::getProjectRelativePathForPath($path_to_analyze);
             if (!\in_array($uri, $file_path_list) && !\in_array($relative_path_to_analyze, $file_path_list)) {
-                Logger::logInfo("Path '$relative_path_to_analyze' (URI '$uri') not in parse list, skipping");
-                continue;
+                // fwrite(STDERR, "Checking if should parse missing $relative_path_to_analyze for $uri\n");
+                if (CLI::shouldParse($relative_path_to_analyze)) {
+                    $file_path_list[] = $relative_path_to_analyze;
+                    Logger::logInfo("Path '$relative_path_to_analyze' (URI '$uri') was not in list - adding it");
+                } else {
+                    Logger::logInfo("Path '$relative_path_to_analyze' (URI '$uri') not in parse list, skipping");
+                    continue;
+                }
             }
             $filtered_uris_to_analyze[$relative_path_to_analyze] = $uri;
         }
-        return $filtered_uris_to_analyze;
+        return [$filtered_uris_to_analyze, $file_path_list];
     }
 
     /**
@@ -568,7 +578,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      */
     private function finalizeAnalyzingURIs()
     {
-        $uris_to_analyze = $this->getFilteredURIsToAnalyze();
+        list($uris_to_analyze, $file_path_list) = $this->getFilteredURIsToAnalyze();
         // TODO: Add a better abstraction of
         if (\count($uris_to_analyze) === 0) {
             // Discard any node info requests, we haven't created a request yet.
@@ -643,7 +653,10 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             new StreamResponder($child_stream, false),
             $paths_to_analyze,
             $this->code_base,
-            $this->file_path_lister,
+            /** @return array<int,string> */
+            static function (bool $unused_recompute_file_list = false) use ($file_path_list) : array {
+                return $file_path_list;
+            },
             $this->file_mapping,
             $this->most_recent_node_info_request,
             true  // We are the fork. Call exit() instead of throwing ExitException

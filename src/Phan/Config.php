@@ -144,6 +144,9 @@ class Config
         // your application should be included in this list.
         'directory_list' => [],
 
+        // For internal use by Phan to quickly check for membership in directory_list.
+        '__directory_regex' => null,
+
         // List of case-insensitive file extensions supported by Phan.
         // (e.g. `['php', 'html', 'htm']`)
         'analyzed_file_extensions' => ['php'],
@@ -1023,6 +1026,9 @@ class Config
                 break;
             case 'exclude_analysis_directory_list':
                 self::$configuration['__exclude_analysis_regex'] = self::generateDirectoryListRegex($value);
+                break;
+            case 'directory_list':
+                self::$configuration['__directory_regex'] = self::generateDirectoryListRegex($value);
                 break;
         }
     }

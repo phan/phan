@@ -670,16 +670,21 @@ class Request
             // of this file
             $code_base->flushDependenciesForFile($file_path);
 
-            // If the file is gone, no need to continue
-            $real = \realpath($file_path);
-            if ($real === false || !\file_exists($real)) {
-                Daemon::debugf("file $file_path does not exist");
-                continue;
+            // If we have an override for the contents of this file, assume it's open in the IDE.
+            // (even if it doesn't exist on disk)
+            $file_contents_override = $file_mapping_contents[$file_path] ?? null;
+            if (!is_string($file_contents_override)) {
+                // If the file is gone, no need to continue
+                $real = \realpath($file_path);
+                if ($real === false || !\file_exists($real)) {
+                    Daemon::debugf("file $file_path does not exist");
+                    continue;
+                }
             }
             Daemon::debugf("Parsing %s yet again", $file_path);
             try {
                 // Parse the file
-                Analysis::parseFile($code_base, $file_path, false, $file_mapping_contents[$file_path] ?? null);
+                Analysis::parseFile($code_base, $file_path, false, $file_contents_override);
             } catch (\Throwable $throwable) {
                 \error_log(\sprintf("Analysis::parseFile threw %s for %s: %s\n%s", get_class($throwable), $file_path, $throwable->getMessage(), $throwable->getTraceAsString()));
             }

@@ -224,6 +224,9 @@ class ConfigEntry
      */
     public function isHidden() : bool
     {
+        if (strncmp($this->config_name, '__', 2) === 0) {
+            return true;
+        }
         return $this->category === self::CATEGORY_HIDDEN_CLI_ONLY;
     }
 
