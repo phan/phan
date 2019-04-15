@@ -411,7 +411,7 @@ class CLI
                                 return;
                             }
                             $this->file_list_in_config = \array_merge(
-                                $this->file_list,
+                                $this->file_list_in_config,
                                 \array_values($this->directoryNameToFileList(
                                     $directory_name
                                 ))
