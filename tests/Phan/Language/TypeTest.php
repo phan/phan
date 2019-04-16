@@ -479,6 +479,7 @@ final class TypeTest extends BaseTest
             ['?Closure(int):int', '?Closure'],
             ['?Closure(int):int', '?callable'],
             ['?Closure', '?Closure(int):int'],
+            ['?Closure(\'0,2\'):int', '?Closure(string):int'],
             ['?callable(int):int', '?callable'],
             ['?callable', '?callable(int):int'],
         ];
@@ -507,6 +508,8 @@ final class TypeTest extends BaseTest
             ['?Closure(int):int', '?Closure(int):void'],
             ['?Closure(int):int', 'Closure(int):int'],
             ['?Closure(int):int', '?Closure(string):int'],
+            ['?Closure(int):int', '?Closure(\'0,2\'):int'],
+            ['?Closure(\'0,2\',\'other\'):int', '?Closure(string):int'],
             ['?callable(int):int', '?callable(int):void'],
             ['?callable(int):int', 'callable(int):int'],
             ['?callable(int):int', '?callable(string):int'],
@@ -533,6 +536,7 @@ final class TypeTest extends BaseTest
         $this->assertRegExp('@^' . Type::type_regex_or_this . '$@', $type_string, "Failed to parse '$type_string' with type_regex_or_this");
         $actual_type = self::makePHPDocType($type_string);
         $expected_flattened_type = UnionType::fromStringInContext($normalized_union_type_string, new Context(), Type::FROM_PHPDOC);
+        $this->assertSame($normalized_union_type_string, $expected_flattened_type->__toString());
         if (!$actual_type instanceof ArrayShapeType) {
             throw new \RuntimeException(\sprintf("Failed to create expected class for %s: saw %s instead of %s", $type_string, get_class($actual_type), ArrayShapeType::class));
         }
@@ -565,11 +569,11 @@ final class TypeTest extends BaseTest
                 'array{0:int,1:string}'
             ],
             [
-                'array<int,int>|array<int,string>|array<string,stdClass>',
+                'array<int,int>|array<int,string>|array<string,\stdClass>',
                 'array{0:int, 1:string, key : stdClass}'
             ],
             [
-                'array<int,int>|array<int,stdClass>|array<int,string>',
+                'array<int,\stdClass>|array<int,int>|array<int,string>',
                 'array{0:int,1:string,2:stdClass}'
             ],
             [
@@ -595,6 +599,10 @@ final class TypeTest extends BaseTest
             [
                 'array<string,array{innerField:int}>',
                 'array{field:array{innerField:int}}'
+            ],
+            [
+                'array<string,array{0:\'test\x2cother\',1:\'x\'}>',
+                'array{field:array{0:\'test,other\',1:\'x\'}}'
             ],
         ];
     }
