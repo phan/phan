@@ -22,6 +22,8 @@ Maintenance:
 
 Bug fixes:
 + Fix edge cases in how Phan checks if files are in `exclude_analysis_directory_list` (#2651)
++ Fix crash parsing comma in string literal in array shape (#2597)
+  (e.g. `@param array{0:'test,other'} $x`)
 
 06 Apr 2019, Phan 1.2.8
 -----------------------

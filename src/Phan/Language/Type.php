@@ -2896,6 +2896,44 @@ class Type
 
             // e.g. we're breaking up T1<T2<X,Y>> into "T1<T2<X" and "Y>>"
         }
+        if (\strpos($list_string, "'") !== false) {
+            return self::joinQuotedStrings($results);
+        }
+        return $results;
+    }
+
+    /**
+     * Heuristic to handle literal commas in single quoted strings inside of templates/array shapes.
+     *
+     * @param array<int,string> $results
+     * @return array<int,string>
+     */
+    private static function joinQuotedStrings(array $results) : array
+    {
+        // Preserve the original count: This will change if results are combined.
+        $N = count($results);
+        // Iterate by offset (manually) to avoid unexpected behavior of unset of subsequent elements in foreach
+        for ($i = 0; $i < $N;) {
+            $part = $results[$i];
+            if (\substr_count($part, "'") % 2 === 0) {
+                $i++;
+                continue;
+            }
+            // This has an odd number of single quotes. Combine it with other parts until the total number of single quotes is even, or throw.
+            for ($j = $i + 1; $j < $N; $j++) {
+                $other = $results[$j];
+                unset($results[$j]);
+                $results[$i] .= ",$other";
+                if (\substr_count($other, "'") % 2 !== 0) {
+                    $i = $j + 1;
+                    continue 2;
+                }
+            }
+            throw new InvalidArgumentException("Unmatched \"'\" of $part in " . implode(',', $results));
+        }
+        if ($N !== count($results)) {
+            return \array_values($results);
+        }
         return $results;
     }
 
