@@ -506,7 +506,11 @@ final class ArgumentType
         Node $argument,
         UnionType $argument_type
     ) {
-        // Only check any remaining p
+        // Check the remaining required parameters for this variadic argument.
+        // To avoid false positives, don't check optional parameters for now.
+
+        // TODO: Could do better (e.g. warn about too few/many params, warn about individual types)
+        // if the array shape type is known or available in phpdoc.
         $param_count = $method->getNumberOfRequiredParameters();
         for ($i = $start_index; $i < $param_count; $i++) {
             // Get the parameter associated with this argument
