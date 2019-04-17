@@ -178,7 +178,7 @@ abstract class ClassElement extends AddressableElement
 
     /**
      * @return bool
-     * True if this method overrides another method
+     * True if this element overrides another element
      */
     public function getIsOverride() : bool
     {
@@ -186,10 +186,10 @@ abstract class ClassElement extends AddressableElement
     }
 
     /**
-     * Sets whether this method overrides another method
+     * Sets whether this element overrides another element
      *
      * @param bool $is_override
-     * True if this method overrides another method
+     * True if this element overrides another element
      *
      * @return void
      */
@@ -204,7 +204,7 @@ abstract class ClassElement extends AddressableElement
 
     /**
      * @return bool
-     * True if this is a static method
+     * True if this is a static element
      */
     public function isStatic() : bool
     {

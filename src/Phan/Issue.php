@@ -317,8 +317,10 @@ class Issue
     const UnusedVariable                        = 'PhanUnusedVariable';
     const UnusedPublicMethodParameter           = 'PhanUnusedPublicMethodParameter';
     const UnusedPublicFinalMethodParameter      = 'PhanUnusedPublicFinalMethodParameter';
+    const UnusedPublicNoOverrideMethodParameter = 'PhanUnusedPublicNoOverrideMethodParameter';
     const UnusedProtectedMethodParameter        = 'PhanUnusedProtectedMethodParameter';
     const UnusedProtectedFinalMethodParameter   = 'PhanUnusedProtectedFinalMethodParameter';
+    const UnusedProtectedNoOverrideMethodParameter = 'PhanUnusedProtectedNoOverrideMethodParameter';
     const UnusedPrivateMethodParameter          = 'PhanUnusedPrivateMethodParameter';
     const UnusedPrivateFinalMethodParameter     = 'PhanUnusedPrivateFinalMethodParameter';
     const UnusedClosureUseVariable              = 'PhanUnusedClosureUseVariable';
@@ -2799,12 +2801,28 @@ class Issue
                 6037
             ),
             new Issue(
+                self::UnusedPublicNoOverrideMethodParameter,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Parameter ${PARAMETER} is never used',
+                self::REMEDIATION_B,
+                6060
+            ),
+            new Issue(
                 self::UnusedProtectedMethodParameter,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
                 'Parameter ${PARAMETER} is never used',
                 self::REMEDIATION_B,
                 6038
+            ),
+            new Issue(
+                self::UnusedProtectedNoOverrideMethodParameter,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Parameter ${PARAMETER} is never used',
+                self::REMEDIATION_B,
+                6059
             ),
             new Issue(
                 self::UnusedProtectedFinalMethodParameter,
@@ -4056,8 +4074,9 @@ class Issue
 
     /**
      * @param array<int,mixed> $parameters
+     * @internal
      */
-    private static function shouldSuppressIssue(
+    public static function shouldSuppressIssue(
         CodeBase $code_base,
         Context $context,
         string $issue_type,

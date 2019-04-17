@@ -5,10 +5,12 @@ namespace Phan\Plugin\Internal;
 use AssertionError;
 use ast;
 use ast\Node;
+use Exception;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
+use Phan\Language\Element\Method;
 use Phan\Language\Element\Variable;
 use Phan\Plugin\Internal\VariableTracker\VariableGraph;
 use Phan\Plugin\Internal\VariableTracker\VariableTrackerVisitor;
@@ -137,6 +139,24 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
         return $result;
     }
 
+    private function methodHasOverrides() : bool
+    {
+        if (Config::getValue('unused_variable_detection_assume_override_exists')) {
+            return true;
+        }
+        try {
+            $method = $this->context->getFunctionLikeInScope($this->code_base);
+            if (!($method instanceof Method)) {
+                // should never happen
+                return false;
+            }
+
+            return $method->getIsOverride() || $method->getIsOverriddenByAnother();
+        } catch (Exception $_) {
+            // should not happen
+            return false;
+        }
+    }
     /**
      * @return string
      */
@@ -155,9 +175,21 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
         if ($flags & ast\flags\MODIFIER_PRIVATE) {
             return $final ? Issue::UnusedPrivateFinalMethodParameter : Issue::UnusedPrivateMethodParameter;
         } elseif ($flags & ast\flags\MODIFIER_PROTECTED) {
-            return $final ? Issue::UnusedProtectedFinalMethodParameter : Issue::UnusedProtectedMethodParameter;
+            if ($final) {
+                return Issue::UnusedProtectedFinalMethodParameter;
+            }
+            if (!$this->methodHasOverrides()) {
+                return Issue::UnusedProtectedNoOverrideMethodParameter;
+            }
+            return Issue::UnusedProtectedMethodParameter;
         }
-        return $final ? Issue::UnusedPublicFinalMethodParameter : Issue::UnusedPublicMethodParameter;
+        if ($final) {
+            return Issue::UnusedPublicFinalMethodParameter;
+        }
+        if (!$this->methodHasOverrides()) {
+            return Issue::UnusedPublicNoOverrideMethodParameter;
+        }
+        return Issue::UnusedPublicMethodParameter;
     }
 
     private function isParameterFinal(int $flags) : bool
@@ -208,14 +240,22 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
                 }
                 $line = $graph->def_lines[$variable_name][$definition_id] ?? 1;
                 $issue_type = $issue_overrides_for_definition_ids[$definition_id] ?? Issue::UnusedVariable;
+                // Choose a more precise issue type
                 if ($issue_type === Issue::UnusedPublicMethodParameter) {
                     // Narrow down issues about parameters into more specific issues
                     $doc_comment = $method_node->children['docComment'] ?? null;
                     if ($doc_comment && \preg_match('/@param[^$]*\$' . \preg_quote($variable_name) . '\b.*@phan-unused-param\b/', $doc_comment)) {
                         // Don't warn about parameters marked with phan-unused-param
-                        break;
+                        continue;
                     }
                     $issue_type = $this->getParameterCategory($method_node);
+                    if (strpos($issue_type, 'NoOverride') === false && strpos($issue_type, 'MethodParameter') !== false) {
+                        $alternate_issue_type = str_replace('MethodParameter', 'NoOverrideMethodParameter', $issue_type);
+                        // @phan-suppress-next-line PhanAccessMethodInternal
+                        if (Issue::shouldSuppressIssue($this->code_base, $this->context, $alternate_issue_type, $line, [$variable_name], null)) {
+                            continue;
+                        }
+                    }
                 } elseif ($graph->isLoopValueDefinitionId($definition_id)) {
                     $issue_type = Issue::UnusedVariableValueOfForeachWithKey;
                 } elseif ($graph->isCaughtException($definition_id)) {
@@ -227,6 +267,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
                     $issue_type,
                     $line,
                     [$variable_name],
+                    // compute the suggestion for $variable_name based on the $issue_type
                     self::makeSuggestion($graph, $variable_name, $issue_type)
                 );
             }

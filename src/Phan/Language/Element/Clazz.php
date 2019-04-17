@@ -1436,16 +1436,22 @@ class Clazz extends AddressableElement
             // TODO: Consider all permutations of abstract and real methods on classes, interfaces, and traits.
             $existing_method =
                 $code_base->getMethodByFQSEN($method_fqsen);
+            $existing_method_defining_fqsen = $existing_method->getDefiningFQSEN();
             // Note: For private/protected methods, the defining FQSEN is set to the FQSEN of the inheriting class.
             // So, when multiple traits are inherited, they may identical defining FQSENs, but some may be abstract, and others may be implemented.
-            if ($method->getDefiningFQSEN() === $existing_method->getDefiningFQSEN() && $method->isAbstract() === $existing_method->isAbstract()) {
-                return;
+            if ($method->getDefiningFQSEN() === $existing_method_defining_fqsen) {
+                if ($method->isAbstract() === $existing_method->isAbstract()) {
+                    return;
+                }
+            } else {
+                self::markMethodAsOverridden($code_base, $existing_method_defining_fqsen);
             }
 
             if ($method->isAbstract() || !$existing_method->isAbstract() || $existing_method->getIsNewConstructor()) {
                 // TODO: What if both of these are abstract, and those get combined into an abstract class?
                 //       Should phan check compatibility of the abstract methods it inherits?
                 $existing_method->setIsOverride(true);
+                self::markMethodAsOverridden($code_base, $method->getDefiningFQSEN());
 
                 // Don't add the method
                 return;
@@ -3194,5 +3200,14 @@ class Clazz extends AddressableElement
             return $ancestor_class->getPropertyByName($code_base, $name);
         }
         return null;
+    }
+
+    private static function markMethodAsOverridden(CodeBase $code_base, FullyQualifiedMethodName $method_fqsen)
+    {
+        if (!$code_base->hasMethodWithFQSEN($method_fqsen)) {
+            return;
+        }
+        $method = $code_base->getMethodByFQSEN($method_fqsen);
+        $method->setIsOverriddenByAnother(true);
     }
 }

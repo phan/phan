@@ -1041,6 +1041,12 @@ Parameter ${PARAMETER} is never used
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0056_aggressive_return_types.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.2/tests/files/src/0056_aggressive_return_types.php#L3).
 
+## PhanUnusedProtectedNoOverrideMethodParameter
+
+```
+Parameter ${PARAMETER} is never used
+```
+
 ## PhanUnusedPublicFinalMethodParameter
 
 ```
@@ -1056,6 +1062,12 @@ Parameter ${PARAMETER} is never used
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/plugin_test/expected/047_crash.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.2/tests/plugin_test/src/047_crash.php#L6).
+
+## PhanUnusedPublicNoOverrideMethodParameter
+
+```
+Parameter ${PARAMETER} is never used
+```
 
 ## PhanUnusedVariable
 

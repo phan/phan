@@ -78,6 +78,7 @@ class ConfigEntry
         'prefer_narrowed_phpdoc_return_type' => self::CATEGORY_ANALYSIS,
         'dead_code_detection' => self::CATEGORY_DEAD_CODE_DETECTION,
         'unused_variable_detection' => self::CATEGORY_DEAD_CODE_DETECTION,
+        'unused_variable_detection_assume_override_exists' => self::CATEGORY_DEAD_CODE_DETECTION,
         'force_tracking_references' => self::CATEGORY_DEAD_CODE_DETECTION,
         'dead_code_detection_prefer_false_negative' => self::CATEGORY_DEAD_CODE_DETECTION,
         'warn_about_redundant_use_namespaced_class' => self::CATEGORY_DEAD_CODE_DETECTION,
