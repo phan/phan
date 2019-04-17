@@ -8,6 +8,8 @@ New features(Analysis):
 + Improve analysis of argument unpacking with reference parameters, fix false positive `PhanTypeNonVarPassByRef` (#2646)
 + In issue descriptions and suggestions, replace invalid utf-8 (and literal newlines) with placeholders (#2645)
 + Suggest typo fixes in `PhanMisspelledAnnotation` for `@phan-*` annotations. (#2640)
++ Emit `PhanUnreferencedClass` when the only references to a class or its elements are within that class.
+  Previously, it would fail to be emitted when a class referenced itself.
 
 Language Server/Daemon mode:
 + Analyze new but unsaved files, if they would be analyzed by Phan once they actually were saved to disk.

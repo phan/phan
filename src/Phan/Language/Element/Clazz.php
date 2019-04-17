@@ -22,6 +22,7 @@ use Phan\IssueFixSuggester;
 use Phan\Language\Context;
 use Phan\Language\Element\Comment\Property as CommentProperty;
 use Phan\Language\ElementContext;
+use Phan\Language\FileRef;
 use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
@@ -2281,6 +2282,33 @@ class Clazz extends AddressableElement
     }
 
     /**
+     * @param FileRef $file_ref
+     * A reference to a location in which this typed structural
+     * element is referenced.
+     *
+     * @return void
+     * @override
+     */
+    public function addReference(FileRef $file_ref)
+    {
+        if (Config::get_track_references()) {
+            // Currently, we don't need to track references to PHP-internal methods/functions/constants
+            // such as PHP_VERSION, strlen(), Closure::bind(), etc.
+            // This may change in the future.
+            if ($this->isPHPInternal()) {
+                return;
+            }
+            if ($file_ref instanceof Context) {
+                if ($file_ref->getClassFQSENOrNull() === $this->fqsen) {
+                    // Don't count references declared within MyClass as references to MyClass for dead code detection
+                    return;
+                }
+            }
+            $this->reference_list[$file_ref->__toString()] = $file_ref;
+        }
+    }
+
+    /**
      * Add properties, constants and methods from the given
      * class to this.
      *
@@ -2511,15 +2539,18 @@ class Clazz extends AddressableElement
          * total reference count for all elements
          * @param array<string,AddressableElement> $list
          */
-        $list_count = static function (array $list) use ($code_base) : int {
-            return \array_reduce($list, static function (
+        $list_count = function (array $list) : int {
+            return \array_reduce($list, function (
                 int $count,
-                AddressableElement $element
-            ) use ($code_base) : int {
-                return (
-                    $count
-                    + $element->getReferenceCount($code_base)
-                );
+                ClassElement $element
+            ) : int {
+                foreach ($element->reference_list as $reference) {
+                    if ($reference instanceof Context && $reference->getClassFQSENOrNull() === $this->fqsen) {
+                        continue;
+                    }
+                    $count++;
+                }
+                return $count;
             }, 0);
         };
 

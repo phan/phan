@@ -1,1 +1,2 @@
+src/021_param_default.php:3 PhanUnreferencedClass Possibly zero references to class \Example21
 src/021_param_default.php:5 PhanUnreferencedPublicClassConstant Possibly zero references to public class constant \Example21::D21

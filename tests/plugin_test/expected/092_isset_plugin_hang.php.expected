@@ -1,1 +1,2 @@
+src/092_isset_plugin_hang.php:4 PhanUnreferencedClass Possibly zero references to class \TestPhan
 src/092_isset_plugin_hang.php:7 PhanUnreferencedPublicMethod Possibly zero references to public method \TestPhan::test()
