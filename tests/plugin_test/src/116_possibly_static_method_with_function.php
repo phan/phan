@@ -1,5 +1,5 @@
 <?php
-class PSMClazz110 {
+class PSMClazz116 {
     public function main() {
         function inner_global_function() {
             var_export($this);
@@ -7,4 +7,4 @@ class PSMClazz110 {
         inner_global_function();
     }
 }
-(new PSMClazz110())->main();
+(new PSMClazz116())->main();

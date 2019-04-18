@@ -1,6 +1,6 @@
 <?php
 
-class PSMClazz108 {
+class PSMClazz114 {
     public function examplePublic() {
         (function() {
             var_export($this);
@@ -26,4 +26,4 @@ class PSMClazz108 {
     }
 }
 
-(new PSMClazz108())->main();
+(new PSMClazz114())->main();

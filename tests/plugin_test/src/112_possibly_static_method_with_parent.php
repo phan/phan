@@ -1,6 +1,6 @@
 <?php
 
-class PSMBase106 {
+class PSMBase112 {
     public function examplePublic() {}
 
     protected function exampleProtected() {}
@@ -14,7 +14,7 @@ class PSMBase106 {
     }
 }
 
-class PSMChild106 extends PSMBase106 {
+class PSMChild112 extends PSMBase112 {
     public function examplePublic() {}
 
     protected function exampleProtected() {}
@@ -28,5 +28,5 @@ class PSMChild106 extends PSMBase106 {
     }
 }
 
-(new PSMBase106())->main();
-(new PSMChild106())->main();
+(new PSMBase112())->main();
+(new PSMChild112())->main();

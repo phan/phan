@@ -1,3 +1,0 @@
-src/107_possibly_static_method_with_static_closure.php:5 PhanPluginPossiblyStaticPublicMethod Public method \PSMClazz107::examplePublic can be static
-src/107_possibly_static_method_with_static_closure.php:11 PhanPluginPossiblyStaticProtectedMethod Protected method \PSMClazz107::exampleProtected can be static
-src/107_possibly_static_method_with_static_closure.php:17 PhanPluginPossiblyStaticPrivateMethod Private method \PSMClazz107::examplePrivate can be static

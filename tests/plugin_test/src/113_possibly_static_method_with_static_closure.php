@@ -1,7 +1,7 @@
 <?php
 // @phan-file-suppress PhanPluginUndeclaredVariableIsset
 
-class PSMClazz107 {
+class PSMClazz113 {
     public function examplePublic() {
         (static function() {
             var_export(isset($this));
@@ -27,4 +27,4 @@ class PSMClazz107 {
     }
 }
 
-(new PSMClazz107())->main();
+(new PSMClazz113())->main();

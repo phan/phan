@@ -1,6 +1,6 @@
 <?php
 
-class PSMClazz109 {
+class PSMClazz115 {
     public function examplePublic() {
         (function() {})();
     }
@@ -20,4 +20,4 @@ class PSMClazz109 {
     }
 }
 
-(new PSMClazz109())->main();
+(new PSMClazz115())->main();

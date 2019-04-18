@@ -1,0 +1,3 @@
+src/112_possibly_static_method_with_parent.php:4 PhanPluginPossiblyStaticPublicMethod Public method \PSMBase112::examplePublic can be static
+src/112_possibly_static_method_with_parent.php:6 PhanPluginPossiblyStaticProtectedMethod Protected method \PSMBase112::exampleProtected can be static
+src/112_possibly_static_method_with_parent.php:8 PhanPluginPossiblyStaticPrivateMethod Private method \PSMBase112::examplePrivate can be static
