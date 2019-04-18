@@ -316,6 +316,11 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
         $function_like_fqsens = UnionTypeVisitor::functionLikeListFromNodeAndContext($code_base, $context, $this->value, true);
         return $function_like_fqsens[0] ?? null;
     }
+
+    public function isValidNumericOperand() : bool
+    {
+        return filter_var($this->value, FILTER_VALIDATE_FLOAT) !== false;
+    }
 }
 
 LiteralStringType::init();
