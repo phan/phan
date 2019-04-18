@@ -20,4 +20,6 @@ function testString(string $s, int $i, float $f) {
     echo -$f;
     echo strlen(+"1.2");  // infers float
     echo strlen(-"1.3");  // infers float
+    echo "hello, " + "world!";
+    echo "hello, " / "world!";
 }

@@ -2130,11 +2130,6 @@ class UnionTypeVisitor extends AnalysisVisitor
             $this->warnAboutInvalidUnaryOp(
                 $node,
                 static function (Type $type) : bool {
-                    if ($type instanceof LiteralStringType) {
-                        // Strings are invalid if they're not numeric
-                        return \is_numeric($type->getValue());
-                    }
-                    // TODO: Stricten this to warn about 'string's based on user config.
                     return $type->isValidNumericOperand();
                 },
                 $result,
@@ -2146,12 +2141,8 @@ class UnionTypeVisitor extends AnalysisVisitor
             $this->warnAboutInvalidUnaryOp(
                 $node,
                 static function (Type $type) : bool {
-                    if ($type instanceof LiteralStringType) {
-                        // Strings are invalid if they're not numeric
-                        return \is_numeric($type->getValue());
-                    }
                     // NOTE: Don't be as strict because this is a way to cast to a number
-                    return $type->isValidNumericOperand();
+                    return $type->isValidNumericOperand() || \get_class($type) === StringType::class;
                 },
                 $result,
                 '+',

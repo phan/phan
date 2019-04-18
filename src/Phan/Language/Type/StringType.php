@@ -2,6 +2,7 @@
 
 namespace Phan\Language\Type;
 
+use Phan\Config;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 
@@ -42,6 +43,18 @@ class StringType extends ScalarType
     public function getTypeAfterIncOrDec() : UnionType
     {
         return UnionType::fromFullyQualifiedString('int|string|float');
+    }
+
+    public function isValidNumericOperand() : bool
+    {
+        if (Config::getValue('scalar_implicit_cast')) {
+            return true;
+        }
+        $string_casts = Config::getValue('scalar_implicit_partial')['string'] ?? null;
+        if (!is_array($string_casts)) {
+            return false;
+        }
+        return \in_array('int', $string_casts, true) || \in_array('float', $string_casts, true);
     }
 }
 \class_exists(ClassStringType::class);
