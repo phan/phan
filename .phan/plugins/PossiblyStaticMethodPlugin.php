@@ -63,6 +63,10 @@ final class PossiblyStaticMethodPlugin extends PluginV2 implements
             // This method can't be static unless its parent is also static.
             return;
         }
+        if ($method->getIsOverriddenByAnother()) {
+            // Changing this method causes a fatal error.
+            return;
+        }
         $method_filter = Config::getValue('plugin_config')['possibly_static_method_ignore_regex'] ?? null;
         if (is_string($method_filter)) {
             $fqsen_string = ltrim((string)$method->getFQSEN(), '\\');
