@@ -2,6 +2,7 @@
 
 namespace Phan\Analysis;
 
+use ast;
 use ast\flags;
 use ast\Node;
 use Closure;
@@ -36,7 +37,6 @@ use ReflectionMethod;
  * A visitor that takes a Context and a Node for a condition and returns a Context that has been updated with that condition.
  *
  * @phan-file-suppress PhanUnusedClosureParameter
- * TODO: Make $x != null remove FalseType and NullType from $x
  * TODO: if (a || b || c || d) might get really slow, due to creating both ConditionVisitor and NegatedConditionVisitor
  */
 class ConditionVisitor extends KindVisitorImplementation implements ConditionVisitorInterface
@@ -93,7 +93,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
      */
     private function checkVariablesDefined(Node $node)
     {
-        while ($node->kind === \ast\AST_UNARY_OP) {
+        while ($node->kind === ast\AST_UNARY_OP) {
             $node = $node->children['expr'];
             if (!($node instanceof Node)) {
                 return;
@@ -110,20 +110,20 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
     }
 
     /**
-     * Check if variables from within a generic condition are defined.
+     * Check if variables from within isset are defined.
      * @param Node $node
      * A node to parse
      * @return void
      */
     private function checkVariablesDefinedInIsset(Node $node)
     {
-        while ($node->kind === \ast\AST_UNARY_OP) {
+        while ($node->kind === ast\AST_UNARY_OP) {
             $node = $node->children['expr'];
             if (!($node instanceof Node)) {
                 return;
             }
         }
-        if ($node->kind === \ast\AST_DIM) {
+        if ($node->kind === ast\AST_DIM) {
             $this->checkArrayAccessDefined($node);
             return;
         }
@@ -311,7 +311,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         if (!($var_node instanceof Node)) {
             return $context;
         }
-        if (($var_node->kind ?? null) !== \ast\AST_VAR) {
+        if (($var_node->kind ?? null) !== ast\AST_VAR) {
             return $this->checkComplexIsset($var_node);
         }
 
@@ -337,7 +337,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
     {
         // TODO: isset($obj->prop['offset']) should imply $obj is not null (removeNullFromVariable)
         $context = $this->context;
-        if ($var_node->kind === \ast\AST_DIM) {
+        if ($var_node->kind === ast\AST_DIM) {
             $expr_node = $var_node;
             do {
                 $parent_node = $expr_node;
@@ -345,9 +345,9 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                 if (!($expr_node instanceof Node)) {
                     return $context;
                 }
-            } while ($expr_node->kind === \ast\AST_DIM);
+            } while ($expr_node->kind === ast\AST_DIM);
 
-            if ($expr_node->kind === \ast\AST_VAR) {
+            if ($expr_node->kind === ast\AST_VAR) {
                 $var_name = $expr_node->children['name'];
                 if (!\is_string($var_name)) {
                     return $context;
@@ -430,7 +430,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
 
     /**
      * @param Node $node
-     * A node to parse, with kind \ast\AST_VAR
+     * A node to parse, with kind ast\AST_VAR
      *
      * @return Context
      * A new or an unchanged context resulting from
@@ -455,12 +455,27 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         //$this->checkVariablesDefined($node);
         // Only look at things of the form
         // `$variable instanceof ClassName`
+        $context = $this->context;
+        $class_node = $node->children['class'];
+        if (!($class_node instanceof Node)) {
+            return $context;
+        }
         $expr_node = $node->children['expr'];
-        if (!($expr_node instanceof Node) || $expr_node->kind !== \ast\AST_VAR) {
-            return $this->context;
+        if (!($expr_node instanceof Node) || $expr_node->kind !== ast\AST_VAR) {
+            return $this->modifyComplexExpression(
+                $expr_node,
+                /**
+                 * @param array<int,mixed> $args
+                 * @return void
+                 */
+                function (CodeBase $code_base, Context $context, Variable $variable, array $args) use ($class_node) {
+                    $this->setInstanceofVariableType($variable, $class_node);
+                },
+                $context,
+                []
+            );
         }
 
-        $context = $this->context;
 
         try {
             // Get the variable we're operating on
@@ -468,38 +483,9 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             if (\is_null($variable)) {
                 return $context;
             }
-
-            // Get the type that we're checking it against
-            $class_node = $node->children['class'];
-            if (!($class_node instanceof Node)) {
-                return $context;
-            }
-            $type = UnionTypeVisitor::unionTypeFromNode(
-                $this->code_base,
-                $this->context,
-                $class_node
-            );
             // Make a copy of the variable
             $variable = clone($variable);
-            $object_types = $type->objectTypes();
-            if (!$object_types->isEmpty()) {
-                // See https://secure.php.net/instanceof -
-
-                // Add the type to the variable
-                $variable->setUnionType(self::calculateNarrowedUnionType($this->code_base, $variable->getUnionType(), $object_types));
-            } else {
-                if ($class_node->kind !== \ast\AST_NAME &&
-                        !$type->canCastToUnionType(StringType::instance(false)->asUnionType())) {
-                    Issue::maybeEmit(
-                        $this->code_base,
-                        $context,
-                        Issue::TypeInvalidInstanceof,
-                        $context->getLineNumberStart(),
-                        (string)$type->asNonLiteralType()
-                    );
-                }
-                self::analyzeIsObjectAssertion($variable);
-            }
+            $this->setInstanceofVariableType($variable, $class_node);
             // Overwrite the variable with its new type
             $context = $context->withScopeVariable(
                 $variable
@@ -511,6 +497,39 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         }
 
         return $context;
+    }
+
+    /**
+     * Modifies the union type of $variable in place
+     */
+    private function setInstanceofVariableType(Variable $variable, Node $class_node) {
+        // Get the type that we're checking it against
+        $type = UnionTypeVisitor::unionTypeFromNode(
+            $this->code_base,
+            $this->context,
+            $class_node
+        );
+        $object_types = $type->objectTypes();
+        if (!$object_types->isEmpty()) {
+            // We know that the variable is the provided object type (or a subclass)
+            // See https://secure.php.net/instanceof -
+
+            // Add the type to the variable
+            $variable->setUnionType(self::calculateNarrowedUnionType($this->code_base, $variable->getUnionType(), $object_types));
+        } else {
+            // We know that variable is some sort of object if this condition is true.
+            if ($class_node->kind !== ast\AST_NAME &&
+                    !$type->canCastToUnionType(StringType::instance(false)->asUnionType())) {
+                Issue::maybeEmit(
+                    $this->code_base,
+                    $this->context,
+                    Issue::TypeInvalidInstanceof,
+                    $this->context->getLineNumberStart(),
+                    (string)$type->asNonLiteralType()
+                );
+            }
+            self::analyzeIsObjectAssertion($variable);
+        }
     }
 
     /**
@@ -776,26 +795,32 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         $args = $node->children['args']->children;
         $first_arg = $args[0] ?? null;
 
+        // Translate the function name into the UnionType it asserts
+        static $map = null;
+
+        if ($map === null) {
+            $map = self::initTypeModifyingClosuresForVisitCall();
+        }
+
         // Only look at things of the form
         // `\is_string($variable)`
-        if (!($first_arg instanceof Node && $first_arg->kind === \ast\AST_VAR)) {
+        if (!($first_arg instanceof Node && $first_arg->kind === ast\AST_VAR)) {
             if (\strcasecmp($raw_function_name, 'array_key_exists') === 0 && \count($args) === 2) {
                 // @phan-suppress-next-line PhanPartialTypeMismatchArgument
                 return $this->analyzeArrayKeyExists($args);
             }
-            return $this->context;
+            $type_modification_callback = $map[\strtolower($raw_function_name)] ?? null;
+            if (!$type_modification_callback) {
+                return $this->context;
+            }
+            // @phan-suppress-next-line PhanPartialTypeMismatchArgument
+            return $this->modifyComplexExpression($first_arg, $type_modification_callback, $this->context, $args);
         }
 
         if (\count($args) !== 1) {
             if (!(\strcasecmp($raw_function_name, 'is_a') === 0 && \count($args) === 2)) {
                 return $this->context;
             }
-        }
-        // Translate the function name into the UnionType it asserts
-        static $map = null;
-
-        if ($map === null) {
-            $map = self::initTypeModifyingClosuresForVisitCall();
         }
 
         $function_name = \strtolower($raw_function_name);
@@ -847,7 +872,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         if (!($var_node instanceof Node)) {
             return $context;
         }
-        if ($var_node->kind !== \ast\AST_VAR) {
+        if ($var_node->kind !== ast\AST_VAR) {
             return $context;
         }
         $var_name = $var_node->children['name'];
@@ -882,7 +907,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             return $this->context;
         }
         // Should always be a node for valid ASTs, tolerant-php-parser may produce invalid nodes
-        if ($var_node->kind === \ast\AST_VAR) {
+        if ($var_node->kind === ast\AST_VAR) {
             // Don't emit notices for if (empty($x)) {}, etc.
             return $this->removeTruthyFromVariable($var_node, $this->context, true);
         }

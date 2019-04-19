@@ -18,6 +18,7 @@ New features(Analysis):
   Setting `unused_variable_detection_assume_override_exists` to true in `.phan/config.php` can be used to continue emitting the old issue names instead of `*NoOverride*` equivalents.
 + Warn about more numeric operations(+, /, etc) on unknown strings and non-numeric literal strings (#2656)
   The settings `scalar_implicit_cast` and `scalar_implicit_partial` affect this for the `string` union type but not for literals.
++ Improve types inferred from checks such as `if (is_array($var['field'])) { use($var['field']); }` and `if ($var['field'] instanceof stdClass) {...}` (#2601)
 
 Language Server/Daemon mode:
 + Analyze new but unsaved files, if they would be analyzed by Phan once they actually were saved to disk.

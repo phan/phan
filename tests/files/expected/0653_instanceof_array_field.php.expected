@@ -1,0 +1,10 @@
+%s:10 PhanUndeclaredMethod Call to undeclared method \ArrayAccess::someMethod
+%s:13 PhanTypeMismatchArgumentInternal Argument 1 (string) is object but \strlen() takes string
+%s:22 PhanNonClassMethodCall Call to method count on non-class type null
+%s:22 PhanTypeInvalidDimOffset Invalid offset "field" of array type array{0:\Countable}
+%s:25 PhanUndeclaredMethod Call to undeclared method \stdClass::count
+%s:36 PhanNonClassMethodCall Call to method count on non-class type null
+%s:36 PhanTypeInvalidDimOffset Invalid offset 4 of array type array{5:\Countable}
+%s:39 PhanUndeclaredMethod Call to undeclared method \stdClass::count
+%s:47 PhanTypeMismatchReturn Returning type \stdClass but check_var_negate() is declared to return string
+%s:49 PhanTypeMismatchReturn Returning type int but check_var_negate() is declared to return string

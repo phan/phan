@@ -4,6 +4,7 @@ namespace Phan\Analysis;
 
 use ast;
 use ast\Node;
+use Closure;
 use Phan\Analysis\ConditionVisitor\BinaryCondition;
 use Phan\Analysis\ConditionVisitor\ComparisonCondition;
 use Phan\Analysis\ConditionVisitor\IdenticalCondition;
@@ -205,14 +206,17 @@ trait ConditionVisitorUtil
     final protected function updateVariableWithConditionalFilter(
         Node $var_node,
         Context $context,
-        \Closure $should_filter_cb,
-        \Closure $filter_union_type_cb,
+        Closure $should_filter_cb,
+        Closure $filter_union_type_cb,
         bool $suppress_issues
     ) : Context {
         try {
             // Get the variable we're operating on
             $variable = $this->getVariableFromScope($var_node, $context);
             if (\is_null($variable)) {
+                if ($var_node->kind === ast\AST_DIM) {
+                    return $this->updateDimExpressionWithConditionalFilter($var_node, $context, $should_filter_cb, $filter_union_type_cb, $suppress_issues);
+                }
                 return $context;
             }
 
@@ -233,6 +237,65 @@ trait ConditionVisitorUtil
             $context = $context->withScopeVariable(
                 $variable
             );
+        } catch (IssueException $exception) {
+            if (!$suppress_issues) {
+                Issue::maybeEmitInstance($this->code_base, $context, $exception->getIssueInstance());
+            }
+        } catch (\Exception $_) {
+            // Swallow it
+        }
+        return $context;
+    }
+
+    /**
+     * @param Node $node a node of kind ast\AST_DIM
+     */
+    final protected function updateDimExpressionWithConditionalFilter(
+        Node $node,
+        Context $context,
+        Closure $should_filter_cb,
+        Closure $filter_union_type_cb,
+        bool $suppress_issues
+    ) : Context {
+        $var = $node->children['expr'];
+        $dim = $node->children['dim'];
+        if (!($var instanceof Node) || $var->kind !== ast\AST_VAR) {
+            // TODO: Handle more than one level of nesting
+            return $context;
+        }
+        $var_name = $var->children['name'];
+        if (!is_string($var_name)) {
+            return $context;
+        }
+        if ($dim instanceof Node) {
+            $dim = UnionTypeVisitor::unionTypeFromNode($this->code_base, $context, $dim)->asSingleScalarValueOrNullOrSelf();
+            if ($dim instanceof Node) {
+                return $context;
+            }
+        }
+        try {
+            // Get the type of the field we're operating on
+            $old_field_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $context, $node);
+            if (!$should_filter_cb($old_field_type)) {
+                return $context;
+            }
+
+            // Give the field an unused stub name and compute the new type
+            $new_field_type = $filter_union_type_cb($old_field_type);
+            if ($old_field_type->isEqualTo($new_field_type)) {
+                return $context;
+            }
+
+            return (new AssignmentVisitor(
+                $this->code_base,
+                // We clone the original context to avoid affecting the original context for the elseif.
+                // AssignmentVisitor modifies the provided context in place.
+                //
+                // There is a difference between `if (is_string($x['field']))` and `$x['field'] = remove_string_types($x['field'])` for the way the `elseif` should be analyzed.
+                $context->withClonedScope(),
+                $node,
+                $new_field_type
+            ))->__invoke($node);
         } catch (IssueException $exception) {
             if (!$suppress_issues) {
                 Issue::maybeEmitInstance($this->code_base, $context, $exception->getIssueInstance());
@@ -750,7 +813,8 @@ trait ConditionVisitorUtil
     {
         if (\count($args) >= 1) {
             $arg = $args[0];
-            return ($arg instanceof Node) && ($arg->kind === ast\AST_VAR);
+            // Phan also supports `if (!is_array($x['field']))`
+            return ($arg instanceof Node) && (\in_array($arg->kind, [ast\AST_VAR, ast\AST_DIM], true));
         }
         return false;
     }
@@ -819,5 +883,67 @@ trait ConditionVisitorUtil
     public function getContext() : Context
     {
         return $this->context;
+    }
+
+    /**
+     * @param Node|mixed $node
+     * @param Closure(CodeBase,Context,Variable,array<int,mixed>):void $type_modification_callback
+     *        A closure acting on a Variable instance (not really a variable) to modify its type
+     * @param Context $context
+     * @param array<int,mixed> $args
+     * @return Context
+     */
+    protected function modifyComplexExpression($node, Closure $type_modification_callback, Context $context, array $args) : Context
+    {
+        if (!$node instanceof Node) {
+            return $context;
+        }
+        if ($node->kind === ast\AST_DIM) {
+            return $this->modifyComplexDimExpression($node, $type_modification_callback, $context, $args);
+        }
+        return $context;
+    }
+
+    /**
+     * @param Node $node a node of kind ast\AST_DIM (e.g. the argument of is_array($x['field']))
+     * @param Closure(CodeBase,Context,Variable,array<int,mixed>):void $type_modification_callback
+     *        A closure acting on a Variable instance (not really a variable) to modify its type
+     *
+     *        This is a function such as is_array, is_null (questionable),
+     * @param Context $context
+     * @param array<int,mixed> $args
+     * @return Context
+     */
+    protected function modifyComplexDimExpression(Node $node, Closure $type_modification_callback, Context $context, array $args)
+    {
+        $var = $node->children['expr'];
+        if (!($var instanceof Node) || $var->kind !== ast\AST_VAR) {
+            // TODO: Handle more than one level of nesting
+            return $context;
+        }
+        $var_name = $var->children['name'];
+        if (!is_string($var_name)) {
+            return $context;
+        }
+        // Give the field an unused stub name and compute the new type
+        $old_field_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $context, $node);
+        $field_variable = new Variable($context, "__phan", $old_field_type, 0);
+        $type_modification_callback($this->code_base, $context, $field_variable, $args);
+        $new_field_type = $field_variable->getUnionType();
+        if ($new_field_type->isEqualTo($old_field_type)) {
+            return $context;
+        }
+        // Treat if (is_array($x['field'])) similarly to `$x['field'] = some_function_returning_array()
+        // (But preserve anything known about array types of $x['field'])
+        return (new AssignmentVisitor(
+            $this->code_base,
+            // We clone the original context to avoid affecting the original context for the elseif.
+            // AssignmentVisitor modifies the provided context in place.
+            //
+            // There is a difference between `if (is_string($x['field']))` and `$x['field'] = (some string)` for the way the `elseif` should be analyzed.
+            $context->withClonedScope(),
+            $node,
+            $new_field_type
+        ))->__invoke($node);
     }
 }

@@ -355,8 +355,30 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
         // `$variable instanceof ClassName`
         $expr_node = $node->children['expr'];
         $context = $this->context;
-        if (!($expr_node instanceof Node) || $expr_node->kind !== \ast\AST_VAR) {
+        if (!($expr_node instanceof Node)) {
             return $context;
+        }
+        $class_node = $node->children['class'];
+        if (!($class_node instanceof Node)) {
+            return $context;
+        }
+        if ($expr_node->kind !== \ast\AST_VAR) {
+            return $this->modifyComplexExpression(
+                $expr_node,
+                /**
+                 * @param array<int,mixed> $args
+                 * @return void
+                 * @suppress PhanUnusedClosureParameter
+                 */
+                function (CodeBase $code_base, Context $context, Variable $variable, array $args) use ($class_node) {
+                    $union_type = $this->computeNegatedInstanceofType($variable->getUnionType(), $class_node);
+                    if ($union_type) {
+                        $variable->setUnionType($union_type);
+                    }
+                },
+                $context,
+                []
+            );
         }
 
         $code_base = $this->code_base;
@@ -369,23 +391,16 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
             }
 
             // Get the type that we're checking it against
-            $class_node = $node->children['class'];
-            $right_hand_union_type = UnionTypeVisitor::unionTypeFromNode(
-                $code_base,
-                $context,
-                $class_node
-            )->objectTypes();
-
-            if ($right_hand_union_type->typeCount() !== 1) {
+            $new_variable_type = $this->computeNegatedInstanceofType($variable->getUnionType(), $class_node);
+            if (!$new_variable_type) {
+                // We don't know what it asserted it wasn't.
                 return $context;
             }
-            $right_hand_type = $right_hand_union_type->getTypeSet()[0];
 
             // TODO: Assert that instanceof right-hand type is valid in NegatedConditionVisitor as well
 
             // Make a copy of the variable
             $variable = clone($variable);
-            $new_variable_type = $variable->getUnionType()->withoutSubclassesOf($code_base, $right_hand_type);
             // See https://secure.php.net/instanceof -
             $variable->setUnionType($new_variable_type);
 
@@ -400,6 +415,26 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
         }
 
         return $context;
+    }
+
+    /**
+     * Compute the type of $union_type after asserting `!(expr instanceof $class_node)`
+     * @param Node|mixed $class_node
+     * @return ?UnionType
+     */
+    private function computeNegatedInstanceofType(UnionType $union_type, $class_node)
+    {
+        $right_hand_union_type = UnionTypeVisitor::unionTypeFromNode(
+            $this->code_base,
+            $this->context,
+            $class_node
+        )->objectTypes();
+
+        if ($right_hand_union_type->typeCount() !== 1) {
+            return null;
+        }
+        $right_hand_type = $right_hand_union_type->getTypeSet()[0];
+        return $union_type->withoutSubclassesOf($this->code_base, $right_hand_type);
     }
 
     /*

@@ -299,6 +299,20 @@ class Context extends FileRef
     }
 
     /**
+     * @return Context
+     *
+     * A new context with the a clone of the current scope.
+     * This is useful when using AssignmentVisitor for things that aren't actually assignment operations.
+     * (AssignmentVisitor modifies the passed in scope variables in place)
+     */
+    public function withClonedScope() : Context
+    {
+        $context = clone($this);
+        $context->scope = clone($context->scope);
+        return $context;
+    }
+
+    /**
      * @param Variable $variable
      * A variable to add to the scope for the new
      * context
