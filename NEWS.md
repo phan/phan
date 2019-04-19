@@ -33,9 +33,13 @@ Plugins:
 + Warn about assignments where the left and right hand side are the same expression in `DuplicateExpressionPlugin` (#2641)
   New issue type: `PhanPluginDuplicateExpressionAssignment`
 
-Maintenance:
+Deprecations:
 + Print a message to stderr if the installed php-ast version is older than 1.0.1.
   A future major Phan version of Phan will probably depend on AST version 70 to support new syntax found in PHP 7.4.
++ Print a message to stderr if the installed PHP version is 7.0.
+  A future major version of Phan will require PHP 7.1+ to run.
+
+  Phan will still continue to support setting `target_php_version` to `'7.0'` and `--target-php-version 7.0` in that release.
 
 Bug fixes:
 + Fix edge cases in how Phan checks if files are in `exclude_analysis_directory_list` (#2651)

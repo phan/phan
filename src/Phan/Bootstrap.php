@@ -202,10 +202,10 @@ if (extension_loaded('ast')) {
     $ast_version = (new ReflectionExtension('ast'))->getVersion();
     if (version_compare($ast_version, '1.0.0') <= 0) {
         if (PHP_VERSION_ID >= 70400) {
-            fwrite(STDERR, "Phan is being run with php-ast version $ast_version.\n");
-            fwrite(STDERR, "However, when run with PHP 7.4+, Phan requires php-ast 1.0.1 or newer. Older versions of php-ast will crash Phan.\n");
+            fwrite(STDERR, "Phan is being run with php-ast version $ast_version." . PHP_EOL);
+            fwrite(STDERR, "However, when run with PHP 7.4+, Phan requires php-ast 1.0.1 or newer. Older versions of php-ast will crash Phan." . PHP_EOL);
             fwrite(STDERR, "Alternately, to run this version of Phan with PHP 7.4 without upgrading php-ast, uninstall/disable php-ast in php.ini,"
-               . " then add the CLI option --allow-polyfill-parser (which is noticeably slower)\n");
+               . " then add the CLI option --allow-polyfill-parser (which is noticeably slower)" . PHP_EOL);
             exit(EXIT_FAILURE);
         }
         if (!getenv('PHAN_SUPPRESS_AST_UPGRADE_NOTICE')) {
@@ -218,6 +218,17 @@ if (extension_loaded('ast')) {
         }
     }
     if (version_compare($ast_version, '0.1.5') < 0) {
-        fprintf(STDERR, "Phan supports php-ast version 0.1.5 or newer, but the installed php-ast version is %s. You may see bugs in some edge cases\n", $ast_version);
+        fprintf(STDERR, "Phan supports php-ast version 0.1.5 or newer, but the installed php-ast version is %s. You may see bugs in some edge cases" . PHP_EOL, $ast_version);
+    }
+}
+if (PHP_VERSION_ID < 70100) {
+    if (!getenv('PHAN_SUPPRESS_PHP_UPGRADE_NOTICE')) {
+        fprintf(
+            STDERR,
+            "A future major version of Phan will require PHP 7.1+ to run, but PHP %s is installed." . PHP_EOL,
+            PHP_VERSION
+        );
+        fwrite(STDERR, "PHP 7.0 reached its end of life in December 2018." . PHP_EOL);
+        fwrite(STDERR, "(Set PHAN_SUPPRESS_PHP_UPGRADE_NOTICE=1 to suppress this message)" . PHP_EOL);
     }
 }
