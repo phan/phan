@@ -2124,7 +2124,7 @@ class Type
             );
             $additional_union_type = $clazz->getAdditionalTypes();
             if ($additional_union_type !== null) {
-                $union_type = $union_type->withUnionType($additional_union_type);
+                $union_type = $union_type->withUnionType($additional_union_type->withIsNullable($this->is_nullable));
             }
 
             // Recurse up the tree to include all types
@@ -2154,7 +2154,7 @@ class Type
             foreach ($fqsen_aliases as $alias_fqsen_record) {
                 $alias_fqsen = $alias_fqsen_record->alias_fqsen;
                 $recursive_union_type_builder->addType(
-                    $alias_fqsen->asType()
+                    $alias_fqsen->asType()->withIsNullable($this->is_nullable)
                 );
             }
 
@@ -2214,7 +2214,7 @@ class Type
 
             $additional_union_type = $clazz->getAdditionalTypes();
             if ($additional_union_type !== null) {
-                $union_type = $union_type->withUnionType($additional_union_type);
+                $union_type = $union_type->withUnionType($additional_union_type->withIsNullable($this->is_nullable));
             }
 
             $representation = $this->__toString();
@@ -2245,7 +2245,7 @@ class Type
             foreach ($fqsen_aliases as $alias_fqsen_record) {
                 $alias_fqsen = $alias_fqsen_record->alias_fqsen;
                 $recursive_union_type_builder->addType(
-                    $alias_fqsen->asType()
+                    $alias_fqsen->asType()->withIsNullable($this->is_nullable)
                 );
             }
 

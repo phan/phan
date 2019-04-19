@@ -23,7 +23,7 @@ class MarkupDescription
      */
     public static function buildForElement(
         AddressableElementInterface $element,
-        CodeBase $code_base = null
+        CodeBase $code_base
     ) : string {
         // TODO: Use the doc comments of the ancestors if unavailable or if (at)inheritDoc is used.
         $markup = $element->getMarkupDescription();

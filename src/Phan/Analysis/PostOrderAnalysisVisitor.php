@@ -1235,7 +1235,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 // but don't allow subclasses to cast to subclasses on a separate branch of the inheritance tree
                 if (!$this->checkCanCastToReturnType($code_base, $expression_type, $method_return_type)) {
                     $this->emitIssue(
-                        Issue::TypeMismatchReturn,
+                        $this->checkCanCastToReturnTypeIfWasNonNullInstead($code_base, $expression_type, $method_return_type) ? Issue::TypeMismatchReturnNullable : Issue::TypeMismatchReturn,
                         $lineno,
                         (string)$expression_type,
                         $method->getNameForIssue(),
@@ -1289,7 +1289,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // but don't allow subclasses to cast to subclasses on a separate branch of the inheritance tree
             if (!$this->checkCanCastToReturnType($code_base, $expression_type, $expected_return_type)) {
                 $this->emitIssue(
-                    Issue::TypeMismatchReturn,
+                    $this->checkCanCastToReturnTypeIfWasNonNullInstead($code_base, $expression_type, $expected_return_type) ? Issue::TypeMismatchReturnNullable : Issue::TypeMismatchReturn,
                     $lineno,
                     (string)$expression_type,
                     $method->getNameForIssue(),
@@ -1493,6 +1493,18 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         } catch (RecursionDepthException $_) {
             return false;
         }
+    }
+
+    /**
+     * Precondition: checkCanCastToReturnType is false
+     */
+    private function checkCanCastToReturnTypeIfWasNonNullInstead(CodeBase $code_base, UnionType $expression_type, UnionType $method_return_type) : bool
+    {
+        $nonnull_expression_type = $expression_type->nonNullableClone();
+        if ($nonnull_expression_type === $expression_type || $nonnull_expression_type->isEmpty()) {
+            return false;
+        }
+        return $this->checkCanCastToReturnType($code_base, $nonnull_expression_type, $method_return_type);
     }
 
     /**
@@ -3481,6 +3493,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if (!$nearest_function_like) {
             return;
         }
+        // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this is never null
         if (ReachabilityChecker::willUnconditionallyBeReached($nearest_function_like->children['stmts'], $argument_list_node)) {
             $this->emitIssue(
                 Issue::InfiniteRecursion,

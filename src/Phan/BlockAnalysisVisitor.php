@@ -831,8 +831,10 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     $visitor = new ConditionVisitor($this->code_base, $child_context);
                     $child_context = $switch_variable_condition($child_context, $cond_node);
                     if ($previous_child_context !== null) {
+                        // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this being non-null is implied by switch_variable_condition
                         $variable = $visitor->getVariableFromScope($switch_variable_node, $child_context);
                         if ($variable) {
+                            // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this being non-null is implied by switch_variable_condition
                             $old_variable = $visitor->getVariableFromScope($switch_variable_node, $previous_child_context);
 
                             if ($old_variable) {
@@ -853,6 +855,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             // We can improve analysis of `case` blocks by using
             // a BlockExitStatusChecker to avoid propagating invalid inferences.
             $stmts_node = $child_node->children['stmts'];
+            // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this is never null
             $block_exit_status = (new BlockExitStatusChecker())->__invoke($stmts_node);
             // equivalent to !willUnconditionallyThrowOrReturn()
             $previous_child_context = null;
@@ -1003,6 +1006,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             // to reduce false positives.
             // (Variables will be available in `catch` and `finally`)
             // This is mitigated by finally and catch blocks being unaware of new variables from try{} blocks.
+            // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this is never null
             if (BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($child_node->children['stmts'])) {
                 // e.g. "if (!is_string($x)) { return; }"
                 $excluded_elem_count++;

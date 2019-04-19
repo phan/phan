@@ -21,6 +21,9 @@ New features(Analysis):
 + Improve types inferred from checks such as `if (is_array($var['field'])) { use($var['field']); }` and `if ($var['field'] instanceof stdClass) {...}` (#2601)
 + Infer that $varName is non-null and an object for conditions such as `if (isset($varName->field['prop']))`
 + Be more consistent about warning when passing `?SomeClass` to a parameter expecting non-null `SomeClass`.
++ Add `PhanTypeMismatchArgumentNullable*` and `PhanTypeMismatchReturnNullable` when the main reason the type check failed was nullability
+
+  Previously, Phan would fail to detect that some nullable class instances were incompatible with the non-null expected types in some cases.
 
 Language Server/Daemon mode:
 + Analyze new but unsaved files, if they would be analyzed by Phan once they actually were saved to disk.

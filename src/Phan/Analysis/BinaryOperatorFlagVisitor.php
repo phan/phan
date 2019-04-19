@@ -612,6 +612,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      *
      * @return UnionType
      * The resulting type(s) of the binary operation
+     * @suppress PhanTypeMismatchArgumentNullable false positives for static initializing
      */
     public function visitBinaryAdd(Node $node) : UnionType
     {
@@ -681,11 +682,13 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             !$left->genericArrayElementTypes()->isEmpty()
             && $left->nonArrayTypes()->isEmpty()
         ) || $left->isType($array_type);
+        // @phan-suppress-previous-line PhanTypeMismatchArgumentNullable false positive for static initialization
 
         $right_is_array = (
             !$right->genericArrayElementTypes()->isEmpty()
             && $right->nonArrayTypes()->isEmpty()
         ) || $right->isType($array_type);
+        // @phan-suppress-previous-line PhanTypeMismatchArgumentNullable false positive for static initialization
 
         if ($left_is_array || $right_is_array) {
             if ($left_is_array && $right_is_array) {

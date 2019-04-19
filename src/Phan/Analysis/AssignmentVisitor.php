@@ -1251,12 +1251,14 @@ class AssignmentVisitor extends AnalysisVisitor
                         'int'
                     );
                 } else {
+                    // @phan-suppress-next-line PhanTypeMismatchArgumentNullable false positive for static
                     if ($right_type->canCastToUnionType($string_array_type)) {
                         // e.g. $a = 'aaa'; $a[0] = 'x';
                         // (Currently special casing this, not handling deeper dimensions)
                         return StringType::instance(false)->asUnionType();
                     }
                 }
+            // @phan-suppress-next-line PhanTypeMismatchArgumentNullable false positive for static
             } elseif (!$assign_type->hasType($mixed_type) && !$assign_type->hasType($simple_xml_element_type)) {
                 // Imitate the check in UnionTypeVisitor, don't warn for mixed, etc.
                 $this->emitIssue(

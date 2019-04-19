@@ -546,7 +546,8 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
     /**
      * Modifies the union type of $variable in place
      */
-    private function setInstanceofVariableType(Variable $variable, Node $class_node) {
+    private function setInstanceofVariableType(Variable $variable, Node $class_node)
+    {
         // Get the type that we're checking it against
         $type = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,

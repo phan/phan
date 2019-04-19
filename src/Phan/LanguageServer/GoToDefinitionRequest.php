@@ -390,16 +390,16 @@ final class GoToDefinitionRequest extends NodeInfoRequest
      */
     public function finalize()
     {
-        $promise = $this->promise;
-        if ($promise) {
-            if ($this->request_type === self::REQUEST_HOVER) {
-                $result = $this->hover_response;
-            } else {
-                $result = $this->locations ? \array_values($this->locations) : null;
-            }
-            $promise->fulfill($result);
-            $this->promise = null;
+        if ($this->fulfilled) {
+            return;
         }
+        $this->fulfilled = true;
+        if ($this->request_type === self::REQUEST_HOVER) {
+            $result = $this->hover_response;
+        } else {
+            $result = $this->locations ? \array_values($this->locations) : null;
+        }
+        $this->promise->fulfill($result);
     }
 
     /**
@@ -420,10 +420,10 @@ final class GoToDefinitionRequest extends NodeInfoRequest
 
     public function __destruct()
     {
-        $promise = $this->promise;
-        if ($promise) {
-            $promise->reject(new Exception('Failed to send a valid textDocument/completion result'));
-            $this->promise = null;
+        if ($this->fulfilled) {
+            return;
         }
+        $this->fulfilled = true;
+        $this->promise->reject(new Exception('Failed to send a valid textDocument/completion result'));
     }
 }

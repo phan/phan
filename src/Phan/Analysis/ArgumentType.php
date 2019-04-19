@@ -639,7 +639,8 @@ final class ArgumentType
             Issue::maybeEmit(
                 $code_base,
                 $context,
-                Issue::TypeMismatchArgumentInternal,
+                // @phan-suppress-next-line PhanAccessMethodInternal
+                $argument_type_expanded->canCastToUnionTypeIfNonNull($parameter_type) ? Issue::TypeMismatchArgumentNullableInternal : Issue::TypeMismatchArgumentInternal,
                 $lineno,
                 ($i + 1),
                 $alternate_parameter->getName(),
@@ -652,7 +653,8 @@ final class ArgumentType
         Issue::maybeEmit(
             $code_base,
             $context,
-            Issue::TypeMismatchArgument,
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            $argument_type_expanded->canCastToUnionTypeIfNonNull($parameter_type) ? Issue::TypeMismatchArgumentNullable : Issue::TypeMismatchArgument,
             $lineno,
             ($i + 1),
             $alternate_parameter->getName(),

@@ -120,7 +120,9 @@ class Issue
     const TypeInvalidThrowsIsInterface           = 'PhanTypeInvalidThrowsIsInterface';
     const TypeMagicVoidWithReturn                = 'PhanTypeMagicVoidWithReturn';
     const TypeMismatchArgument                   = 'PhanTypeMismatchArgument';
+    const TypeMismatchArgumentNullable           = 'PhanTypeMismatchArgumentNullable';
     const TypeMismatchArgumentInternal           = 'PhanTypeMismatchArgumentInternal';
+    const TypeMismatchArgumentNullableInternal   = 'PhanTypeMismatchArgumentNullableInternal';
     const PartialTypeMismatchArgument            = 'PhanPartialTypeMismatchArgument';
     const PartialTypeMismatchArgumentInternal    = 'PhanPartialTypeMismatchArgumentInternal';
     const PossiblyNullTypeArgument  = 'PhanPossiblyNullTypeArgument';
@@ -147,6 +149,7 @@ class Issue
     const PossiblyFalseTypeMismatchProperty = 'PhanPossiblyFalseTypeMismatchProperty';
     const PartialTypeMismatchProperty = 'PhanPartialTypeMismatchProperty';
     const TypeMismatchReturn        = 'PhanTypeMismatchReturn';
+    const TypeMismatchReturnNullable = 'PhanTypeMismatchReturnNullable';
     const PartialTypeMismatchReturn = 'PhanPartialTypeMismatchReturn';
     const PossiblyNullTypeReturn  = 'PhanPossiblyNullTypeReturn';
     const PossiblyFalseTypeReturn  = 'PhanPossiblyFalseTypeReturn';
@@ -1176,12 +1179,28 @@ class Issue
                 10003
             ),
             new Issue(
+                self::TypeMismatchArgumentNullable,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} defined at {FILE}:{LINE} (expected type to be non-nullable)",
+                self::REMEDIATION_B,
+                10105
+            ),
+            new Issue(
                 self::TypeMismatchArgumentInternal,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
                 "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE}",
                 self::REMEDIATION_B,
                 10004
+            ),
+            new Issue(
+                self::TypeMismatchArgumentNullableInternal,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} (expected type to be non-nullable)",
+                self::REMEDIATION_B,
+                10106
             ),
             new Issue(
                 self::TypeMismatchGeneratorYieldValue,
@@ -1262,6 +1281,14 @@ class Issue
                 "Returning type {TYPE} but {FUNCTIONLIKE} is declared to return {TYPE}",
                 self::REMEDIATION_B,
                 10005
+            ),
+            new Issue(
+                self::TypeMismatchReturnNullable,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Returning type {TYPE} but {FUNCTIONLIKE} is declared to return {TYPE} (expected returned value to be non-nullable)",
+                self::REMEDIATION_B,
+                10107
             ),
             new Issue(
                 self::PartialTypeMismatchReturn,

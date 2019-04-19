@@ -934,7 +934,8 @@ trait ConditionVisitorUtil
      * @param Node|mixed $node
      * @return ?string the name of the variable in a chain of field accesses such as $varName['field'][$i]
      */
-    private static function getVarNameOfDimNode($node) {
+    private static function getVarNameOfDimNode($node)
+    {
         // Loop to support getting the var name in is_array($x['field'][0])
         while (true) {
             if (!($node instanceof Node)) {

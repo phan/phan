@@ -1655,6 +1655,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         if (!$this->context->getScope()->hasVariableWithName($variable_name)) {
             if (Variable::isHardcodedVariableInScopeWithName($variable_name, $this->context->isInGlobalScope())) {
+                // @phan-suppress-next-line PhanTypeMismatchReturnNullable variable existence was checked
                 return Variable::getUnionTypeOfHardcodedGlobalVariableWithName($variable_name);
             }
             if (!Config::getValue('ignore_undeclared_variables_in_global_scope')

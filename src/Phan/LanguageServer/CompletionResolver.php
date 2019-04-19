@@ -389,6 +389,7 @@ class CompletionResolver
                 new Variable(
                     $context,
                     $superglobal_name,
+                    // @phan-suppress-next-line PhanTypeMismatchArgumentNullable
                     Variable::getUnionTypeOfHardcodedGlobalVariableWithName($superglobal_name),
                     0
                 ),

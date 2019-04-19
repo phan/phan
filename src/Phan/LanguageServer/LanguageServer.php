@@ -186,16 +186,20 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         $reader->on('message', function (Message $msg) {
             /** @suppress PhanUndeclaredProperty Request->body->id is a request with an id */
             coroutine(function () use ($msg) : \Generator {
-                // Ignore responses, this is the handler for requests and notifications
-                if (AdvancedJsonRpc\Response::isResponse($msg->body)) {
+                $body = $msg->body;
+                if (!$body) {
                     return;
                 }
-                Logger::logInfo('Received message in coroutine: ' . (string)$msg->body);
+                // Ignore responses, this is the handler for requests and notifications
+                if (AdvancedJsonRpc\Response::isResponse($body)) {
+                    return;
+                }
+                Logger::logInfo('Received message in coroutine: ' . (string)$body);
                 $result = null;
                 $error = null;
                 try {
                     // Invoke the method handler to get a result
-                    $result = yield $this->dispatch($msg->body);
+                    $result = yield $this->dispatch($body);
                 } catch (AdvancedJsonRpc\Error $e) {
                     Logger::logInfo('Saw error: ' . $e->getMessage());
                     // If a ResponseError is thrown, send it back in the Response
@@ -212,11 +216,11 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
                 }
                 // Only send a Response for a Request
                 // Notifications do not send Responses
-                if (AdvancedJsonRpc\Request::isRequest($msg->body)) {
+                if (AdvancedJsonRpc\Request::isRequest($body)) {
                     if ($error !== null) {
-                        $responseBody = new AdvancedJsonRpc\ErrorResponse($msg->body->id, $error);
+                        $responseBody = new AdvancedJsonRpc\ErrorResponse($body->id, $error);
                     } else {
-                        $responseBody = new AdvancedJsonRpc\SuccessResponse($msg->body->id, $result);
+                        $responseBody = new AdvancedJsonRpc\SuccessResponse($body->id, $result);
                     }
                     $this->protocolWriter->write(new Message($responseBody));
                 }
@@ -752,7 +756,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         $most_recent_node_info_request = $this->most_recent_node_info_request;
         if ($most_recent_node_info_request) {
             if ($most_recent_node_info_request instanceof GoToDefinitionRequest) {
-                // @phan-suppress-next-line PhanPossiblyNullTypeArgument
+                // @phan-suppress-next-line PhanPossiblyNullTypeArgument, PhanPartialTypeMismatchArgument
                 $most_recent_node_info_request->recordDefinitionLocationList($response_data['definitions'] ?? null);
                 $most_recent_node_info_request->setHoverResponse($response_data['hover_response'] ?? null);
             } elseif ($most_recent_node_info_request instanceof CompletionRequest) {
