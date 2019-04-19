@@ -257,21 +257,9 @@ trait ConditionVisitorUtil
         Closure $filter_union_type_cb,
         bool $suppress_issues
     ) : Context {
-        $var = $node->children['expr'];
-        $dim = $node->children['dim'];
-        if (!($var instanceof Node) || $var->kind !== ast\AST_VAR) {
-            // TODO: Handle more than one level of nesting
-            return $context;
-        }
-        $var_name = $var->children['name'];
+        $var_name = self::getVarNameOfDimNode($node->children['expr']);
         if (!is_string($var_name)) {
             return $context;
-        }
-        if ($dim instanceof Node) {
-            $dim = UnionTypeVisitor::unionTypeFromNode($this->code_base, $context, $dim)->asSingleScalarValueOrNullOrSelf();
-            if ($dim instanceof Node) {
-                return $context;
-            }
         }
         try {
             // Get the type of the field we're operating on
@@ -916,12 +904,7 @@ trait ConditionVisitorUtil
      */
     protected function modifyComplexDimExpression(Node $node, Closure $type_modification_callback, Context $context, array $args)
     {
-        $var = $node->children['expr'];
-        if (!($var instanceof Node) || $var->kind !== ast\AST_VAR) {
-            // TODO: Handle more than one level of nesting
-            return $context;
-        }
-        $var_name = $var->children['name'];
+        $var_name = $this->getVarNameOfDimNode($node->children['expr']);
         if (!is_string($var_name)) {
             return $context;
         }
@@ -945,5 +928,33 @@ trait ConditionVisitorUtil
             $node,
             $new_field_type
         ))->__invoke($node);
+    }
+
+    /**
+     * @param Node|mixed $node
+     * @return ?string the name of the variable in a chain of field accesses such as $varName['field'][$i]
+     */
+    private static function getVarNameOfDimNode($node) {
+        // Loop to support getting the var name in is_array($x['field'][0])
+        while (true) {
+            if (!($node instanceof Node)) {
+                return null;
+            }
+            if ($node->kind === ast\AST_VAR) {
+                break;
+            }
+            if ($node->kind === ast\AST_DIM) {
+                $node = $node->children['expr'];
+                if (!$node instanceof Node) {
+                    return null;
+                }
+                continue;
+            }
+
+            // TODO: Handle more than one level of nesting
+            return null;
+        }
+        $var_name = $node->children['name'];
+        return is_string($var_name) ? $var_name : null;
     }
 }

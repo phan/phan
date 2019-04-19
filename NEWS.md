@@ -19,6 +19,8 @@ New features(Analysis):
 + Warn about more numeric operations(+, /, etc) on unknown strings and non-numeric literal strings (#2656)
   The settings `scalar_implicit_cast` and `scalar_implicit_partial` affect this for the `string` union type but not for literals.
 + Improve types inferred from checks such as `if (is_array($var['field'])) { use($var['field']); }` and `if ($var['field'] instanceof stdClass) {...}` (#2601)
++ Infer that $varName is non-null and an object for conditions such as `if (isset($varName->field['prop']))`
++ Be more consistent about warning when passing `?SomeClass` to a parameter expecting non-null `SomeClass`.
 
 Language Server/Daemon mode:
 + Analyze new but unsaved files, if they would be analyzed by Phan once they actually were saved to disk.

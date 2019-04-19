@@ -2120,7 +2120,7 @@ class Type
             $clazz = $code_base->getClassByFQSEN($class_fqsen);
 
             $union_type = $union_type->withUnionType(
-                $clazz->getUnionType()
+                $clazz->getUnionType()->withIsNullable($this->is_nullable)
             );
             $additional_union_type = $clazz->getAdditionalTypes();
             if ($additional_union_type !== null) {
@@ -2202,7 +2202,7 @@ class Type
             $clazz = $code_base->getClassByFQSEN($class_fqsen);
 
             $union_type = $union_type->withUnionType(
-                $clazz->getUnionType()
+                $clazz->getUnionType()->withIsNullable($this->is_nullable)
             );
 
             if (count($this->template_parameter_type_list) > 0) {
@@ -2586,12 +2586,9 @@ class Type
 
         // Test to see if this (or any ancestor types) can cast to the given union type.
         $expanded_types = $this_resolved->asExpandedTypes($code_base);
-        if ($expanded_types->canCastToUnionType(
+        return $expanded_types->canCastToUnionType(
             $union_type
-        )) {
-            return true;
-        }
-        return false;
+        );
     }
 
     /**

@@ -22,7 +22,7 @@ function foo(array $options)
 function foo2(array $options)
 {
     if (is_string($options['hooks'][0])) {
-        echo intdiv($options['hooks'], 2);  // should infer string|array - both can have an integer field
+        echo intdiv($options['hooks'], 2);  // TODO(optional): could infer string|array|array{0:string} instead. - both can have an integer field. This isn't a common edge case in practice.
     }
 }
 
