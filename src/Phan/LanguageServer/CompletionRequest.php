@@ -63,11 +63,8 @@ final class CompletionRequest extends NodeInfoRequest
     public function recordCompletionList($completions)
     {
         if ($completions instanceof CompletionItem || isset($completions['label'])) {
-            // Written this way so that Phan can infer $completions is not a CompletionItem
-            // FIXME: There was a regression in the analysis of negation of `instanceof`
             $completions = [$completions];
         }
-        // @phan-suppress-next-line PhanTypeSuspiciousNonTraversableForeach
         foreach ($completions ?? [] as $completion) {
             if (is_array($completion)) {
                 $completion = CompletionItem::fromArray($completion);
