@@ -964,7 +964,7 @@ class UnionType implements Serializable
         $new_variable_type = $this;
 
         foreach ($this->type_set as $type) {
-            if ($type->asExpandedTypes($code_base)->hasType($object_type)) {
+            if ($type->withIsNullable(false)->asExpandedTypes($code_base)->hasType($object_type)) {
                 $new_variable_type = $new_variable_type->withoutType($type);
             }
         }

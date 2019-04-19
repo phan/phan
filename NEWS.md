@@ -24,6 +24,7 @@ New features(Analysis):
 + Add `PhanTypeMismatchArgumentNullable*` and `PhanTypeMismatchReturnNullable` when the main reason the type check failed was nullability
 
   Previously, Phan would fail to detect that some nullable class instances were incompatible with the non-null expected types in some cases.
++ Improve analysis of negation of `instanceof` checks on nullable types. (#2663)
 
 Language Server/Daemon mode:
 + Analyze new but unsaved files, if they would be analyzed by Phan once they actually were saved to disk.
