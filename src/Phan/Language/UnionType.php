@@ -1688,6 +1688,27 @@ class UnionType implements Serializable
     }
 
     /**
+     * Precondition: $this->canCastToUnionType() is false.
+     *
+     * This tells us if it would have succeeded if the source type was not nullable.
+     *
+     * @internal
+     */
+    public function canCastToUnionTypeIfNonNull(UnionType $target) : bool
+    {
+        $non_null = $this->nonNullableClone();
+        if ($non_null === $this) {
+            // This wasn't nullable in the first place
+            return false;
+        }
+        if ($non_null->isEmpty()) {
+            // This was exclusively null - It should be a full TypeMismatch
+            return false;
+        }
+        return $non_null->canCastToUnionType($target);
+    }
+
+    /**
      * @param UnionType $target
      * A type to check to see if this can cast to it.
      *
@@ -2414,6 +2435,7 @@ class UnionType implements Serializable
      * @param CodeBase $code_base (for detecting the iterable value types of `class MyIterator extends Iterator`)
      *
      * @return UnionType
+     * @suppress PhanTypeMismatchArgumentNullable false positive in static init
      */
     public function iterableValueUnionType(CodeBase $code_base) : UnionType
     {
@@ -2459,6 +2481,7 @@ class UnionType implements Serializable
      * Takes `array{field:int,other:string}` and returns `int|string`
      *
      * @return UnionType
+     * @suppress PhanTypeMismatchArgumentNullable false positive in static init
      */
     public function genericArrayElementTypes() : UnionType
     {
@@ -3069,6 +3092,7 @@ class UnionType implements Serializable
      * @param UnionTypeBuilder $builder (Containing only non-nullable values)
      * @return void
      * @var int $bool_id
+     * @suppress PhanTypeMismatchArgumentNullable false positive in static init
      */
     private static function convertToTypeSetWithNormalizedNonNullableBools(UnionTypeBuilder $builder)
     {
@@ -3093,6 +3117,7 @@ class UnionType implements Serializable
      * Removes ?false|?true types and adds ?bool
      *
      * @param UnionTypeBuilder $builder (Containing only non-nullable values)
+     * @suppress PhanTypeMismatchArgumentNullable false positive in static init
      */
     private static function convertToTypeSetWithNormalizedNullableBools(UnionTypeBuilder $builder)
     {

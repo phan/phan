@@ -479,6 +479,19 @@ final class EmptyUnionType extends UnionType
         return true;  // Empty can cast to anything. See parent implementation.
     }
 
+    /**
+     * Precondition: $this->canCastToUnionType() is false.
+     *
+     * This tells us if it would have succeeded if the source type was not nullable.
+     *
+     * @internal
+     * @override
+     */
+    public function canCastToUnionTypeIfNonNull(UnionType $target) : bool
+    {
+        return false;
+    }
+
     public function canCastToUnionTypeHandlingTemplates(
         UnionType $target,
         CodeBase $code_base

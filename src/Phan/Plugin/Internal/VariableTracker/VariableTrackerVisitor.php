@@ -22,6 +22,8 @@ use function is_string;
  * TODO: Improve analysis within the ternary operator (cond() ? ($x = 2) : ($x = 3);
  * TODO: Support unset
  * TODO: Fix tests/files/src/0426_inline_var_force.php
+ *
+ * @phan-file-suppress PhanTypeMismatchArgumentNullable child nodes as used here are non-null
  */
 final class VariableTrackerVisitor extends AnalysisVisitor
 {

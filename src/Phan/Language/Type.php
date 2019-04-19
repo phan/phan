@@ -2120,11 +2120,11 @@ class Type
             $clazz = $code_base->getClassByFQSEN($class_fqsen);
 
             $union_type = $union_type->withUnionType(
-                $clazz->getUnionType()
+                $clazz->getUnionType()->withIsNullable($this->is_nullable)
             );
             $additional_union_type = $clazz->getAdditionalTypes();
             if ($additional_union_type !== null) {
-                $union_type = $union_type->withUnionType($additional_union_type);
+                $union_type = $union_type->withUnionType($additional_union_type->withIsNullable($this->is_nullable));
             }
 
             // Recurse up the tree to include all types
@@ -2154,7 +2154,7 @@ class Type
             foreach ($fqsen_aliases as $alias_fqsen_record) {
                 $alias_fqsen = $alias_fqsen_record->alias_fqsen;
                 $recursive_union_type_builder->addType(
-                    $alias_fqsen->asType()
+                    $alias_fqsen->asType()->withIsNullable($this->is_nullable)
                 );
             }
 
@@ -2202,7 +2202,7 @@ class Type
             $clazz = $code_base->getClassByFQSEN($class_fqsen);
 
             $union_type = $union_type->withUnionType(
-                $clazz->getUnionType()
+                $clazz->getUnionType()->withIsNullable($this->is_nullable)
             );
 
             if (count($this->template_parameter_type_list) > 0) {
@@ -2214,7 +2214,7 @@ class Type
 
             $additional_union_type = $clazz->getAdditionalTypes();
             if ($additional_union_type !== null) {
-                $union_type = $union_type->withUnionType($additional_union_type);
+                $union_type = $union_type->withUnionType($additional_union_type->withIsNullable($this->is_nullable));
             }
 
             $representation = $this->__toString();
@@ -2245,7 +2245,7 @@ class Type
             foreach ($fqsen_aliases as $alias_fqsen_record) {
                 $alias_fqsen = $alias_fqsen_record->alias_fqsen;
                 $recursive_union_type_builder->addType(
-                    $alias_fqsen->asType()
+                    $alias_fqsen->asType()->withIsNullable($this->is_nullable)
                 );
             }
 
@@ -2586,12 +2586,9 @@ class Type
 
         // Test to see if this (or any ancestor types) can cast to the given union type.
         $expanded_types = $this_resolved->asExpandedTypes($code_base);
-        if ($expanded_types->canCastToUnionType(
+        return $expanded_types->canCastToUnionType(
             $union_type
-        )) {
-            return true;
-        }
-        return false;
+        );
     }
 
     /**

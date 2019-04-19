@@ -13,11 +13,12 @@ use Phan\Tests\CodeBaseAwareTestInterface;
  */
 final class MethodSearcherPluginTest extends BaseTest implements CodeBaseAwareTestInterface
 {
-    /** @var CodeBase|null The code base within which this unit test is operating */
+    /** @var CodeBase The code base within which this unit test is operating */
     private $code_base = null;
 
     public function setCodeBase(CodeBase $code_base = null)
     {
+        // @phan-suppress-next-line PhanTypeMismatchProperty
         $this->code_base = $code_base;
     }
 
@@ -28,7 +29,7 @@ final class MethodSearcherPluginTest extends BaseTest implements CodeBaseAwareTe
     {
         $actual_signature_type = UnionType::fromFullyQualifiedString($actual);
         $desired_signature_type = UnionType::fromFullyQualifiedString($desired);
-        // @phan-suppress-next-line PhanAccessMethodInternal, PhanPossiblyNullTypeArgument
+        // @phan-suppress-next-line PhanAccessMethodInternal
         $this->assertSame($expected_score, MethodSearcherPlugin::getTypeMatchingBonus($this->code_base, $actual_signature_type, $desired_signature_type));
     }
 

@@ -210,6 +210,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         $combined_status = 0;
         // Try to cover all possible cases, such as try { return throwsException(); } catch(Exception $e) { break; }
         foreach ($node->children as $catch_node) {
+            // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this is never null for catch nodes
             $catch_node_status = $this->visitStmtList($catch_node->children['stmts']);
             $combined_status |= $catch_node_status;
         }
@@ -285,6 +286,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      */
     private function computeStatusOfSwitchCase(Node $case_node, int $index, array $siblings) : int
     {
+        // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this is never null
         $status = $this->visitStmtList($case_node->children['stmts']);
         if (($status & self::STATUS_PROCEED) === 0) {
             // Check if the current switch case will not fall through.
@@ -536,6 +538,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         $has_if_elems_for_all_cases = false;
         $combined_statuses = 0;
         foreach ($node->children as $child_node) {
+            // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this is never null
             $status = $this->visitStmtList($child_node->children['stmts']);
             $combined_statuses |= $status;
 
@@ -559,6 +562,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      */
     public function visitDoWhile(Node $node)
     {
+        // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this is never null
         $inner_status = $this->visitStmtList($node->children['stmts']);
         if (($inner_status & ~self::STATUS_THROW_OR_RETURN_BITMASK) === 0) {
             // The inner block throws or returns before the end can be reached.
@@ -589,6 +593,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         if ($status) {
             return $status;
         }
+        // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this is never null
         $status = $this->visitStmtList($node->children['stmts']);
         $node->flags = $status;
         return $status;

@@ -21,8 +21,13 @@ abstract class NodeInfoRequest
     protected $path;
     /** @var Position the position of the cursor within $this->uri where information is being requested. */
     protected $position;
-    /** @var Promise|null this should be resolve()d with the requested information, or null on failure or if the request was aborted */
+    /** @var Promise this should be resolve()d with the requested information, or resolve()d with null (or rejected) on failure or if the request was aborted */
     protected $promise;
+
+    /**
+     * @var bool
+     */
+    protected $fulfilled = false;
 
     public function __construct(
         string $uri,
@@ -63,7 +68,7 @@ abstract class NodeInfoRequest
         return $this->position;
     }
 
-    /** @return ?Promise */
+    /** @return Promise */
     final public function getPromise()
     {
         return $this->promise;

@@ -401,12 +401,12 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * @param Type|null $parent_type
+     * @param Type $parent_type
      * The type of the parent (extended) class of this class.
      *
      * @return void
      */
-    public function setParentType(Type $parent_type = null)
+    public function setParentType(Type $parent_type)
     {
         if ($parent_type && $this->getInternalScope()->hasAnyTemplateType()) {
             // Get a reference to the local list of templated
@@ -1009,6 +1009,7 @@ class Clazz extends AddressableElement
 
         // If the property exists and is accessible, return it
         if ($is_property_accessible) {
+            // @phan-suppress-next-line PhanTypeMismatchReturnNullable is_property_accessible ensures that this is non-null
             return $property;
         }
 

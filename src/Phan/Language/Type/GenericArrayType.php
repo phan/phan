@@ -486,6 +486,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
 
     /**
      * @return UnionType a union type corresponding to $key_type
+     * @suppress PhanTypeMismatchReturnNullable false positive with static init
      */
     public static function unionTypeForKeyType(int $key_type, int $behavior = self::CONVERT_KEY_MIXED_TO_INT_OR_STRING_UNION_TYPE) : UnionType
     {

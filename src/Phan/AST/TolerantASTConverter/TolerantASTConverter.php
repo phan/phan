@@ -696,6 +696,7 @@ class TolerantASTConverter
                     $n->staticModifier !== null,
                     static::phpParserParamsToAstParams($n->parameters, $start_line),
                     static::phpParserClosureUsesToAstClosureUses($n->anonymousFunctionUseClause->useVariableNameList ?? null, $start_line),
+                    // @phan-suppress-next-line PhanTypeMismatchArgumentNullable return_null_on_empty is false.
                     static::phpParserStmtlistToAstNode($n->compoundStatementOrSemicolon->statements, self::getStartLine($n->compoundStatementOrSemicolon), false),
                     $ast_return_type,
                     $start_line,
@@ -1127,7 +1128,8 @@ class TolerantASTConverter
                 return static::astStmtCatch(
                     $catch_list_node,
                     static::variableTokenToString($n->variableName),
-                    static::phpParserStmtlistToAstNode($n->compoundStatement, $start_line, true),
+                    // @phan-suppress-next-line PhanTypeMismatchArgumentNullable return_null_on_empty is false.
+                    static::phpParserStmtlistToAstNode($n->compoundStatement, $start_line, false),
                     $start_line
                 );
             },
@@ -1297,6 +1299,7 @@ class TolerantASTConverter
                 //return static::phpParserStmtlistToAstNode($n->statements, $start_line);
             },
             'Microsoft\PhpParser\Node\FinallyClause' => static function (PhpParser\Node\FinallyClause $n, int $start_line) : ast\Node {
+                // @phan-suppress-next-line PhanTypeMismatchReturnNullable return_null_on_empty is false.
                 return static::phpParserStmtlistToAstNode($n->compoundStatement, $start_line, false);
             },
             /**
@@ -1535,6 +1538,7 @@ class TolerantASTConverter
             'Microsoft\PhpParser\Node\Statement\TryStatement' => static function (PhpParser\Node\Statement\TryStatement $n, int $start_line) : ast\Node {
                 $finally_clause = $n->finallyClause;
                 return static::astNodeTry(
+                    // @phan-suppress-next-line PhanTypeMismatchArgumentNullable return_null_on_empty is false.
                     static::phpParserStmtlistToAstNode($n->compoundStatement, $start_line, false), // $n->try
                     static::phpParserCatchlistToAstCatchlist($n->catchClauses ?? [], $start_line),
                     $finally_clause !== null ? static::phpParserStmtlistToAstNode($finally_clause->compoundStatement, self::getStartLine($finally_clause), false) : null,
@@ -1556,7 +1560,8 @@ class TolerantASTConverter
             'Microsoft\PhpParser\Node\Statement\WhileStatement' => static function (PhpParser\Node\Statement\WhileStatement $n, int $start_line) : ast\Node {
                 return static::astNodeWhile(
                     static::phpParserNodeToAstNode($n->expression),
-                    static::phpParserStmtlistToAstNode($n->statements, $start_line, true),
+                    // @phan-suppress-next-line PhanTypeMismatchArgumentNullable return_null_on_empty is false.
+                    static::phpParserStmtlistToAstNode($n->statements, $start_line, false),
                     $start_line
                 );
             },
@@ -2320,10 +2325,11 @@ class TolerantASTConverter
     {
         $if_elem = static::astIfElem(
             static::phpParserNodeToAstNode($node->expression),
+            // @phan-suppress-next-line PhanTypeMismatchArgumentNullable return_null_on_empty is false.
             static::phpParserStmtlistToAstNode(
                 $node->statements,
                 self::getStartLineOfStatementOrStatements($node->statements) ?: $start_line,
-                true
+                false
             ),
             $start_line
         );
@@ -2332,6 +2338,7 @@ class TolerantASTConverter
             $if_elem_line = self::getStartLine($else_if);
             $if_elem = static::astIfElem(
                 static::phpParserNodeToAstNode($else_if->expression),
+                // @phan-suppress-next-line PhanTypeMismatchArgumentNullable return_null_on_empty is false.
                 static::phpParserStmtlistToAstNode(
                     $else_if->statements,
                     self::getStartLineOfStatementOrStatements($else_if->statements)
@@ -2345,7 +2352,8 @@ class TolerantASTConverter
             $parser_else_line = self::getStartLineOfStatementOrStatements($parser_else_node->statements);
             $if_elems[] = static::astIfElem(
                 null,
-                static::phpParserStmtlistToAstNode($parser_else_node->statements, $parser_else_line),
+                // @phan-suppress-next-line PhanTypeMismatchArgumentNullable return_null_on_empty is false.
+                static::phpParserStmtlistToAstNode($parser_else_node->statements, $parser_else_line, false),
                 $parser_else_line
             );
         }

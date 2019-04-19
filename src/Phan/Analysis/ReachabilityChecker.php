@@ -253,6 +253,7 @@ final class ReachabilityChecker extends KindVisitorImplementation
                 return $result;
             }
         }
+        // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this is never null
         $result = $this->__invoke($node->children['stmts']);
         if ($result !== null) {
             // This is a conditional; it's not guaranteed to work

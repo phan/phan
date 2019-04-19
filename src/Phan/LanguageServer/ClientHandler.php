@@ -58,10 +58,14 @@ class ClientHandler
              * @suppress PhanUndeclaredProperty taken care of by isResponse checks on msg->body
              */
             $listener = function (Protocol\Message $msg) use ($id, $promise, &$listener) {
-                if (AdvancedJsonRpc\Response::isResponse($msg->body) && $msg->body->id === $id) {
+                $body = $msg->body;
+                if (!$body) {
+                    return;
+                }
+                if (AdvancedJsonRpc\Response::isResponse($body) && $body->id === $id) {
                     // Received a response
                     $this->protocolReader->removeListener('message', $listener);
-                    if (AdvancedJsonRpc\SuccessResponse::isSuccessResponse($msg->body)) {
+                    if (AdvancedJsonRpc\SuccessResponse::isSuccessResponse($body)) {
                         $promise->fulfill($msg->body->result);
                     } else {
                         $promise->reject($msg->body->error);
