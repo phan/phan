@@ -1234,13 +1234,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 // We allow base classes to cast to subclasses, and subclasses to cast to base classes,
                 // but don't allow subclasses to cast to subclasses on a separate branch of the inheritance tree
                 if (!self::checkCanCastToReturnType($code_base, $expression_type, $method_return_type)) {
-                    $this->emitIssue(
-                        self::checkCanCastToReturnTypeIfWasNonNullInstead($code_base, $expression_type, $method_return_type) ? Issue::TypeMismatchReturnNullable : Issue::TypeMismatchReturn,
-                        $lineno,
-                        (string)$expression_type,
-                        $method->getNameForIssue(),
-                        (string)$method_return_type
-                    );
+                    $this->emitTypeMismatchReturnIssue($expression_type, $method, $method_return_type, $lineno);
                 } elseif (Config::get_strict_return_checking() && $expression_type->typeCount() > 1) {
                     self::analyzeReturnStrict($code_base, $method, $expression_type, $method_return_type, $lineno);
                 }
@@ -1261,6 +1255,30 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         return $context;
+    }
+
+    /**
+     * Emits Issue::TypeMismatchReturnNullable or TypeMismatchReturn, unless suppressed
+     * @return void
+     */
+    private function emitTypeMismatchReturnIssue(UnionType $expression_type, FunctionInterface $method, UnionType $method_return_type, int $lineno)
+    {
+        if (self::checkCanCastToReturnTypeIfWasNonNullInstead($this->code_base, $expression_type, $method_return_type)) {
+            if ($this->shouldSuppressIssue(Issue::TypeMismatchReturn, $lineno)) {
+                // Suppressing TypeMismatchReturn also suppresses TypeMismatchReturnNullable
+                return;
+            }
+            $issue_type = Issue::TypeMismatchReturnNullable;
+        } else {
+            $issue_type = Issue::TypeMismatchReturn;
+        }
+        $this->emitIssue(
+            $issue_type,
+            $lineno,
+            (string)$expression_type,
+            $method->getNameForIssue(),
+            (string)$method_return_type
+        );
     }
 
     /**
@@ -1288,13 +1306,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // We allow base classes to cast to subclasses, and subclasses to cast to base classes,
             // but don't allow subclasses to cast to subclasses on a separate branch of the inheritance tree
             if (!self::checkCanCastToReturnType($code_base, $expression_type, $expected_return_type)) {
-                $this->emitIssue(
-                    self::checkCanCastToReturnTypeIfWasNonNullInstead($code_base, $expression_type, $expected_return_type) ? Issue::TypeMismatchReturnNullable : Issue::TypeMismatchReturn,
-                    $lineno,
-                    (string)$expression_type,
-                    $method->getNameForIssue(),
-                    (string)$expected_return_type
-                );
+                $this->emitTypeMismatchReturnIssue($expression_type, $method, $expected_return_type, $lineno);
             } elseif (Config::get_strict_return_checking() && $expression_type->typeCount() > 1) {
                 self::analyzeReturnStrict($code_base, $method, $expression_type, $expected_return_type, $lineno);
             }

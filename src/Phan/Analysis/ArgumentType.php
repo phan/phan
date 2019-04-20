@@ -636,11 +636,48 @@ final class ArgumentType
                     // Swallow "Cannot find class", go on to emit issue
                 }
             }
+        }
+        // Check suppressions and emit the issue
+        self::warnInvalidArgumentType($code_base, $context, $method, $alternate_parameter, $argument_type_expanded, $lineno, $i);
+    }
+
+    /**
+     * @return void
+     */
+    private static function warnInvalidArgumentType(
+        CodeBase $code_base,
+        Context $context,
+        FunctionInterface $method,
+        Parameter $alternate_parameter,
+        UnionType $argument_type_expanded,
+        int $lineno,
+        int $i
+    ) {
+        $parameter_type = $alternate_parameter->getNonVariadicUnionType();
+        /**
+         * @return ?string
+         */
+        $choose_issue_type = static function (string $issue_type, string $nullable_issue_type) use ($argument_type_expanded, $parameter_type, $code_base, $context, $lineno) {
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            if (!$argument_type_expanded->canCastToUnionTypeIfNonNull($parameter_type)) {
+                return $issue_type;
+            }
+            if (Issue::shouldSuppressIssue($code_base, $context, $issue_type, $lineno, [])) {
+                return null;
+            }
+            return $nullable_issue_type;
+        };
+
+        if ($method->isPHPInternal()) {
+            $issue_type = $choose_issue_type(Issue::TypeMismatchArgumentInternal, Issue::TypeMismatchArgumentNullableInternal);
+            if (!$issue_type) {
+                return;
+            }
             Issue::maybeEmit(
                 $code_base,
                 $context,
                 // @phan-suppress-next-line PhanAccessMethodInternal
-                $argument_type_expanded->canCastToUnionTypeIfNonNull($parameter_type) ? Issue::TypeMismatchArgumentNullableInternal : Issue::TypeMismatchArgumentInternal,
+                $issue_type,
                 $lineno,
                 ($i + 1),
                 $alternate_parameter->getName(),
@@ -650,11 +687,14 @@ final class ArgumentType
             );
             return;
         }
+        $issue_type = $choose_issue_type(Issue::TypeMismatchArgument, Issue::TypeMismatchArgumentNullable);
+        if (!$issue_type) {
+            return;
+        }
         Issue::maybeEmit(
             $code_base,
             $context,
-            // @phan-suppress-next-line PhanAccessMethodInternal
-            $argument_type_expanded->canCastToUnionTypeIfNonNull($parameter_type) ? Issue::TypeMismatchArgumentNullable : Issue::TypeMismatchArgument,
+            $issue_type,
             $lineno,
             ($i + 1),
             $alternate_parameter->getName(),
@@ -718,7 +758,7 @@ final class ArgumentType
             Issue::maybeEmit(
                 $code_base,
                 $context,
-                self::getStrictIssueType($mismatch_type_set, true),
+                self::getStrictArgumentIssueType($mismatch_type_set, true),
                 $lineno,
                 ($i + 1),
                 $alternate_parameter->getName(),
@@ -732,7 +772,7 @@ final class ArgumentType
         Issue::maybeEmit(
             $code_base,
             $context,
-            self::getStrictIssueType($mismatch_type_set, false),
+            self::getStrictArgumentIssueType($mismatch_type_set, false),
             $lineno,
             ($i + 1),
             $alternate_parameter->getName(),
@@ -745,7 +785,7 @@ final class ArgumentType
         );
     }
 
-    private static function getStrictIssueType(UnionType $union_type, bool $is_internal) : string
+    private static function getStrictArgumentIssueType(UnionType $union_type, bool $is_internal) : string
     {
         if ($union_type->typeCount() === 1) {
             $type = $union_type->getTypeSet()[0];
