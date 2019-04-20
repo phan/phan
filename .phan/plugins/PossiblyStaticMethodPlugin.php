@@ -6,6 +6,7 @@ use Phan\Config;
 use Phan\Language\Element\Method;
 use Phan\PluginV2;
 use Phan\PluginV2\AnalyzeMethodCapability;
+use Phan\PluginV2\FinalizeProcessCapability;
 
 /**
  * This file checks if a method can be made static without causing any errors.
@@ -15,6 +16,9 @@ use Phan\PluginV2\AnalyzeMethodCapability;
  * - analyzeMethod
  *   Once all classes are parsed, this method will be called
  *   on every method in the code base
+ *
+ * - finalizeProcess
+ *   Once the analysis phase is complete, this method will be called
  *
  * A plugin file must
  *
@@ -29,8 +33,15 @@ use Phan\PluginV2\AnalyzeMethodCapability;
  * add them to the corresponding section of README.md
  */
 final class PossiblyStaticMethodPlugin extends PluginV2 implements
-    AnalyzeMethodCapability
+    AnalyzeMethodCapability,
+    FinalizeProcessCapability
 {
+
+    /**
+     * @var Method[] a list of methods where checks were postponed
+     */
+    private $methods_for_postponed_analysis = [];
+
     /**
      * @param CodeBase $code_base
      * The code base in which the method exists
@@ -39,10 +50,8 @@ final class PossiblyStaticMethodPlugin extends PluginV2 implements
      * A method being analyzed
      *
      * @return void
-     *
-     * @override
      */
-    public function analyzeMethod(
+    private static function analyzePostponedMethod(
         CodeBase $code_base,
         Method $method
     ) {
@@ -75,12 +84,12 @@ final class PossiblyStaticMethodPlugin extends PluginV2 implements
             }
         }
 
-        $stmts_list = $this->getStatementListToAnalyze($method);
+        $stmts_list = self::getStatementListToAnalyze($method);
         if ($stmts_list === null) {
             // check for abstract methods, etc.
             return;
         }
-        if ($this->nodeCanBeStatic($stmts_list)) {
+        if (self::nodeCanBeStatic($stmts_list)) {
             $visibility_upper = ucfirst($method->getVisibilityName());
             self::emitIssue(
                 $code_base,
@@ -96,7 +105,7 @@ final class PossiblyStaticMethodPlugin extends PluginV2 implements
      * @param Method $method
      * @return ?Node - returns null if there's no statement list to analyze
      */
-    private function getStatementListToAnalyze(Method $method)
+    private static function getStatementListToAnalyze(Method $method)
     {
         if (!$method->hasNode()) {
             return null;
@@ -112,12 +121,12 @@ final class PossiblyStaticMethodPlugin extends PluginV2 implements
      * @param Node|int|string|float|null $node
      * @return bool - returns true if the node allows its method to be static
      */
-    private function nodeCanBeStatic($node)
+    private static function nodeCanBeStatic($node)
     {
         if (!($node instanceof Node)) {
             if (is_array($node)) {
                 foreach ($node as $child_node) {
-                    if (!$this->nodeCanBeStatic($child_node)) {
+                    if (!self::nodeCanBeStatic($child_node)) {
                         return false;
                     }
                 }
@@ -137,11 +146,43 @@ final class PossiblyStaticMethodPlugin extends PluginV2 implements
                 // fall through
             default:
                 foreach ($node->children as $child_node) {
-                    if (!$this->nodeCanBeStatic($child_node)) {
+                    if (!self::nodeCanBeStatic($child_node)) {
                         return false;
                     }
                 }
                 return true;
+        }
+    }
+
+    /**
+     * @param CodeBase $unused_code_base
+     * The code base in which the method exists
+     *
+     * @param Method $method
+     * A method being analyzed
+     *
+     * @return void
+     *
+     * @override
+     */
+    public function analyzeMethod(
+        CodeBase $unused_code_base,
+        Method $method
+    ) {
+        $fqsen = $method->getFQSEN();
+        $this->methods_for_postponed_analysis[(string) $fqsen] = $method;
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * The code base being analyzed
+     *
+     * @override
+     */
+    public function finalizeProcess(CodeBase $code_base)
+    {
+        foreach ($this->methods_for_postponed_analysis as $method) {
+            self::analyzePostponedMethod($code_base, $method);
         }
     }
 }
