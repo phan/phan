@@ -1,5 +1,11 @@
 Phan NEWS
 
+?? Apr 2019, Phan 1.3.1 (dev)
+-----------------------
+
+New features(Analysis):
++ Fix false positive `PhanTypeMismatchReturnNullable` and `PhanTypeMismatchArgumentNullable` introduced in 1.3.0 (#2667)
+
 19 Apr 2019, Phan 1.3.0
 -----------------------
 
