@@ -99,7 +99,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
                         if (!$xml) {
                             continue;
                         }
-                        $real_function_name = $this->getFunctionNameFromXML($xml);
+                        $real_function_name = self::getFunctionNameFromXML($xml);
                         if (!$real_function_name) {
                             continue;
                         }
@@ -117,7 +117,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     /**
      * @return array<string,string>
      */
-    private function scandirForXML(string $dir) : array
+    private static function scandirForXML(string $dir) : array
     {
         $result = [];
         foreach (static::scandir($dir) as $basename) {
@@ -456,7 +456,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
                 static::info("Failed to parse information for $class_name::$method_name_lc from '$method_xml_path'\n");
                 continue;
             }
-            $case_sensitive_method_name = $this->getMethodNameFromXML($xml);
+            $case_sensitive_method_name = self::getMethodNameFromXML($xml);
             if (!$case_sensitive_method_name) {
                 static::info("Failed to parse method name for '$class_name::$method_name_lc' in '$method_xml_path'\n");
                 continue;
@@ -549,7 +549,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     }
 
     /** @return ?string */
-    private function getFunctionNameFromXML(SimpleXMLElement $xml)
+    private static function getFunctionNameFromXML(SimpleXMLElement $xml)
     {
         $name = $xml->xpath('/a:refentry/a:refnamediv/a:refname') ?: [];
         if (count($name) === 0) {
@@ -570,7 +570,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     }
 
     /** @return ?string */
-    private function getMethodNameFromXML(SimpleXMLElement $xml)
+    private static function getMethodNameFromXML(SimpleXMLElement $xml)
     {
         $name = $xml->xpath('/a:refentry/a:refnamediv/a:refname') ?: [];
         if (count($name) === 0) {
@@ -610,7 +610,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         $function_description = $function_description_list[0];
         // $function_return_type = $function_description->type;
         $return_type = static::toTypeString($function_description->type);
-        $params = $this->extractMethodParams($function_description->methodparam);
+        $params = self::extractMethodParams($function_description->methodparam);
         $result = array_merge([$return_type], $params);
         return $result;
     }
@@ -618,7 +618,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     /**
      * @return array<string,string>
      */
-    private function extractMethodParams(SimpleXMLElement $param)
+    private static function extractMethodParams(SimpleXMLElement $param)
     {
         if ($param->count() === 0) {
             return [];

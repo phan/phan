@@ -44,7 +44,7 @@ final class MiscParamPlugin extends PluginV2 implements
      * @return array<string,Closure>
      * @phan-return array<string,Closure(CodeBase,Context,FunctionInterface,array):void>
      */
-    private function getAnalyzeFunctionCallClosuresStatic() : array
+    private static function getAnalyzeFunctionCallClosuresStatic() : array
     {
         $stop_exception = new StopParamAnalysisException();
 

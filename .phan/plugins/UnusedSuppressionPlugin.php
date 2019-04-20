@@ -70,7 +70,7 @@ class UnusedSuppressionPlugin extends PluginV2 implements
      *
      * @return void
      */
-    private function analyzeAddressableElement(
+    private static function analyzeAddressableElement(
         CodeBase $code_base,
         AddressableElement $element
     ) {

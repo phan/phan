@@ -332,7 +332,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         if (self::isTruthyLiteral($node->children['cond'])) {
             // Use a special case to analyze "while (1) {exprs}" or "for (; true; ) {exprs}"
             // TODO: identify infinite loops, mark those as STATUS_NO_PROCEED or STATUS_RETURN.
-            return $this->computeDerivedStatusOfInfiniteLoop($inner_status);
+            return self::computeDerivedStatusOfInfiniteLoop($inner_status);
         }
         // This is (to our awareness) **not** an infinite loop
 
@@ -355,7 +355,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         if (count($cond_nodes) === 0 || self::isTruthyLiteral(\end($cond_nodes))) {
             // Use a special case to analyze "while (1) {exprs}" or "for (; true; ) {exprs}"
             // TODO: identify infinite loops, mark those as STATUS_NO_PROCEED or STATUS_RETURN.
-            return $this->computeDerivedStatusOfInfiniteLoop($inner_status);
+            return self::computeDerivedStatusOfInfiniteLoop($inner_status);
         }
         // This is (to our awareness) **not** an infinite loop
 
@@ -375,7 +375,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
 
     // Logic to determine status of "while (1) {exprs}" or "for (; true; ) {exprs}"
     // TODO: identify infinite loops, mark those as STATUS_NO_PROCEED or STATUS_RETURN.
-    private function computeDerivedStatusOfInfiniteLoop(int $inner_status) : int
+    private static function computeDerivedStatusOfInfiniteLoop(int $inner_status) : int
     {
         $status = $inner_status & ~self::UNEXITABLE_LOOP_INNER_STATUS;
         if ($status === 0) {
@@ -466,7 +466,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         }
         // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
         if (\strcasecmp($function_name, 'trigger_error') === 0) {
-            return $this->computeTriggerErrorStatusCodeForConstant($node->children['args']->children[1] ?? null);
+            return self::computeTriggerErrorStatusCodeForConstant($node->children['args']->children[1] ?? null);
         }
         // TODO: Could allow .phan/config.php or plugins to define additional behaviors, e.g. for methods.
         // E.g. if (!$var) {HttpFramework::generate_302_and_die(); }
@@ -476,7 +476,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     /**
      * @param Node|string|int|float $constant_ast
      */
-    private function computeTriggerErrorStatusCodeForConstant($constant_ast) : int
+    private static function computeTriggerErrorStatusCodeForConstant($constant_ast) : int
     {
         // return PROCEED if this can't be determined.
         // TODO: Could check for integer literals

@@ -1592,7 +1592,7 @@ trait FunctionTrait
                 return $union_type;
             };
         }
-        return $this->createClosureForUnionTypeExtractorAndAssertionType($union_type_extractor, $assertion->assertion_type, $i);
+        return self::createClosureForUnionTypeExtractorAndAssertionType($union_type_extractor, $assertion->assertion_type, $i);
     }
 
     /**
@@ -1601,7 +1601,7 @@ trait FunctionTrait
      * @param Closure(CodeBase, Context, array):UnionType $union_type_extractor
      * @return ?Closure(CodeBase, Context, FunctionInterface, array):void
      */
-    public function createClosureForUnionTypeExtractorAndAssertionType(Closure $union_type_extractor, int $assertion_type, int $i)
+    public static function createClosureForUnionTypeExtractorAndAssertionType(Closure $union_type_extractor, int $assertion_type, int $i)
     {
         switch ($assertion_type) {
             case Assertion::IS_OF_TYPE:

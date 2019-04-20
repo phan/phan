@@ -129,7 +129,7 @@ final class CallableParamPlugin extends PluginV2 implements
      * @return array<string,\Closure>
      * @phan-return array<string,Closure(CodeBase,Context,FunctionInterface,array):void>
      */
-    private function getAnalyzeFunctionCallClosuresStatic(CodeBase $code_base) : array
+    private static function getAnalyzeFunctionCallClosuresStatic(CodeBase $code_base) : array
     {
         $result = [];
         $add_callable_checker_closure = static function (FunctionInterface $function) use (&$result) {

@@ -410,12 +410,12 @@ class CodeBase
             } catch (FQSENException $e) {
                 $this->handleGlobalConstantException($const_name, $e);
             } catch (InvalidArgumentException $e) {
-                $this->handleGlobalConstantException($const_name, $e);
+                self::handleGlobalConstantException($const_name, $e);
             }
         }
     }
 
-    private function handleGlobalConstantException(string $const_name, Exception $e)
+    private static function handleGlobalConstantException(string $const_name, Exception $e)
     {
         // Workaround for windows bug in #1011
         if (\strncmp($const_name, "\0__COMPILER_HALT_OFFSET__\0", 26) === 0) {
@@ -1757,7 +1757,7 @@ class CodeBase
             return [];
         }
         return $this->class_names_near_strlen_in_namespace[$namespace][$strlen]
-            ?? ($this->class_names_near_strlen_in_namespace[$namespace][$strlen] = $this->computeSimilarLengthClassNamesForNamespace($class_names, $strlen));
+            ?? ($this->class_names_near_strlen_in_namespace[$namespace][$strlen] = self::computeSimilarLengthClassNamesForNamespace($class_names, $strlen));
     }
 
     /**
@@ -1773,7 +1773,7 @@ class CodeBase
             return [];
         }
         return $this->function_names_near_strlen_in_namespace[$namespace][$strlen]
-            ?? ($this->function_names_near_strlen_in_namespace[$namespace][$strlen] = $this->computeSimilarLengthFunctionNamesForNamespace($function_names, $strlen));
+            ?? ($this->function_names_near_strlen_in_namespace[$namespace][$strlen] = self::computeSimilarLengthFunctionNamesForNamespace($function_names, $strlen));
     }
 
     /**
@@ -1781,7 +1781,7 @@ class CodeBase
      * @param array<string,string> $class_names
      * @return array<string,string> similar matches
      */
-    private function computeSimilarLengthClassNamesForNamespace(array $class_names, int $strlen)
+    private static function computeSimilarLengthClassNamesForNamespace(array $class_names, int $strlen)
     {
         $max_levenshtein_distance = (int)(1 + $strlen / 6);
         $results = [];

@@ -5,6 +5,14 @@ Phan NEWS
 
 New features(Analysis):
 + Fix false positive `PhanTypeMismatchReturnNullable` and `PhanTypeMismatchArgumentNullable` introduced in 1.3.0 (#2667)
++ Emit `PhanPossiblyNullTypeMismatchProperty` instead of `PhanTypeMismatchProperty` when assigning `?T`
+  to a property expecting a compatible but non-nullable type.
+
+  (The same issue was already emitted when the internal union type representation was `T|null` (not `?T`) and strict property type checking was enabled)
+
+Plugins:
++ Add `PossiblyStaticMethodPlugin` to detect instance methods that can be changed to static methods (#2609)
++ Fix edge cases checking if left/right-hand side of binary operations are numbers in `NumericalComparisonPlugin`
 
 19 Apr 2019, Phan 1.3.0
 -----------------------
