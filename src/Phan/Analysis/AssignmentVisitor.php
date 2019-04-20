@@ -835,14 +835,26 @@ class AssignmentVisitor extends AnalysisVisitor
                 && !($this->right_type->hasTypeInBoolFamily() && $property_union_type->hasTypeInBoolFamily())
                 && !$clazz->getHasDynamicProperties($this->code_base)
             ) {
-                // TODO: optionally, change the message from "::" to "->"?
-                $this->emitIssue(
-                    Issue::TypeMismatchProperty,
-                    $node->lineno ?? 0,
-                    (string)$this->right_type,
-                    $property->getRepresentationForIssue(),
-                    (string)$property_union_type
-                );
+                if ($this->right_type->nonNullableClone()->canCastToExpandedUnionType($property_union_type, $this->code_base) &&
+                        !$this->right_type->isType(NullType::instance(false))) {
+                    $this->emitIssue(
+                        Issue::PossiblyNullTypeMismatchProperty,
+                        $node->lineno ?? 0,
+                        (string)$this->right_type,
+                        $property->getRepresentationForIssue(),
+                        (string)$property_union_type,
+                        'null'
+                    );
+                } else {
+                    // TODO: optionally, change the message from "::" to "->"?
+                    $this->emitIssue(
+                        Issue::TypeMismatchProperty,
+                        $node->lineno ?? 0,
+                        (string)$this->right_type,
+                        $property->getRepresentationForIssue(),
+                        (string)$property_union_type
+                    );
+                }
                 return $this->context;
             }
 
