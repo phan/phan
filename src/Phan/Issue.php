@@ -4101,7 +4101,6 @@ class Issue
 
     /**
      * @param array<int,mixed> $parameters
-     * @internal
      */
     public static function shouldSuppressIssue(
         CodeBase $code_base,

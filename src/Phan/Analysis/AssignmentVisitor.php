@@ -837,9 +837,12 @@ class AssignmentVisitor extends AnalysisVisitor
             ) {
                 if ($this->right_type->nonNullableClone()->canCastToExpandedUnionType($property_union_type, $this->code_base) &&
                         !$this->right_type->isType(NullType::instance(false))) {
+                    if ($this->shouldSuppressIssue(Issue::TypeMismatchProperty, $node->lineno)) {
+                        return $this->context;
+                    }
                     $this->emitIssue(
                         Issue::PossiblyNullTypeMismatchProperty,
-                        $node->lineno ?? 0,
+                        $node->lineno,
                         (string)$this->right_type,
                         $property->getRepresentationForIssue(),
                         (string)$property_union_type,
@@ -849,7 +852,7 @@ class AssignmentVisitor extends AnalysisVisitor
                     // TODO: optionally, change the message from "::" to "->"?
                     $this->emitIssue(
                         Issue::TypeMismatchProperty,
-                        $node->lineno ?? 0,
+                        $node->lineno,
                         (string)$this->right_type,
                         $property->getRepresentationForIssue(),
                         (string)$property_union_type
@@ -931,9 +934,13 @@ class AssignmentVisitor extends AnalysisVisitor
             // No mismatches
             return;
         }
+        if ($this->shouldSuppressIssue(Issue::TypeMismatchProperty, $node->lineno)) {
+            // TypeMismatchProperty also suppresses PhanPossiblyNullTypeMismatchProperty, etc.
+            return;
+        }
 
         $this->emitIssue(
-            self::getStrictIssueType($mismatch_type_set),
+            self::getStrictPropertyMismatchIssueType($mismatch_type_set),
             $node->lineno ?? 0,
             (string)$this->right_type,
             $property->getRepresentationForIssue(),
@@ -942,7 +949,7 @@ class AssignmentVisitor extends AnalysisVisitor
         );
     }
 
-    private static function getStrictIssueType(UnionType $union_type) : string
+    private static function getStrictPropertyMismatchIssueType(UnionType $union_type) : string
     {
         if ($union_type->typeCount() === 1) {
             $type = $union_type->getTypeSet()[0];

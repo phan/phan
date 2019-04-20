@@ -104,4 +104,21 @@ abstract class AnalysisVisitor extends KindVisitorImplementation
             $suggestion
         );
     }
+
+    /**
+     * Check if an issue type (different from the one being emitted) should be suppressed.
+     *
+     * This is useful for ensuring that TypeMismatchProperty also suppresses PhanPossiblyNullTypeMismatchProperty,
+     * for example.
+     */
+    protected function shouldSuppressIssue(string $issue_type, int $lineno) : bool
+    {
+        return Issue::shouldSuppressIssue(
+            $this->code_base,
+            $this->context,
+            $issue_type,
+            $lineno,
+            []
+        );
+    }
 }
