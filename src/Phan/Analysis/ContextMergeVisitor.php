@@ -89,7 +89,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         $context = $this->context;
         $try_context = $this->child_context_list[0];
 
-        if ($this->willRemainingStatementsBeAnalyzedAsIfTryMightFail($node)) {
+        if (self::willRemainingStatementsBeAnalyzedAsIfTryMightFail($node)) {
             return $this->combineScopeList([
                 $context->getScope(),
                 $try_context->getScope()
@@ -98,7 +98,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         return $try_context;
     }
 
-    private function willRemainingStatementsBeAnalyzedAsIfTryMightFail(Node $node) : bool
+    private static function willRemainingStatementsBeAnalyzedAsIfTryMightFail(Node $node) : bool
     {
         if ($node->children['finally'] !== null) {
             // We want to analyze finally as if the try block (and one or more of the catch blocks) was or wasn't executed.
@@ -218,7 +218,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
             return $context->getScope();
         }, $this->child_context_list);
 
-        $has_else = $this->hasElse($node->children);
+        $has_else = self::hasElse($node->children);
 
         // If we're not guaranteed to hit at least one
         // branch, mark the incoming scope as a possibility
@@ -239,7 +239,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
     /**
      * @param array<mixed,Node|mixed> $children children of a Node of kind AST_IF
      */
-    private function hasElse(array $children) : bool
+    private static function hasElse(array $children) : bool
     {
         foreach ($children as $child_node) {
             if ($child_node instanceof Node

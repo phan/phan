@@ -34,7 +34,7 @@ final class DumpPHPDocPlugin extends PluginV2 implements
      */
     private $stubs = [];
 
-    private function generatePHPMarkdownBlock(string $php_snippet) : string
+    private static function generatePHPMarkdownBlock(string $php_snippet) : string
     {
         $php_snippet = \trim($php_snippet);
         return "```php\n$php_snippet\n```";

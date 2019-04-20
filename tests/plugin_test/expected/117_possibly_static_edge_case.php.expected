@@ -1,0 +1,3 @@
+src/117_possibly_static_edge_case.php:21 PhanPluginPossiblyStaticPublicMethod Public method \PSMSubclass117::f2 can be static
+src/117_possibly_static_edge_case.php:31 PhanPluginPossiblyStaticPublicMethod Public method \PSMSubclass117::f4 can be static
+src/117_possibly_static_edge_case.php:36 PhanPluginPossiblyStaticPublicMethod Public method \PSMSubclass117::f4b can be static

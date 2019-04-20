@@ -105,7 +105,7 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
      * A distance of 0 means they are similar (e.g. foo and getFoo()),
      * and 1 means there are no letters in common (bar and foo)
      */
-    private function computeDistance(string $a, string $b) : float
+    private static function computeDistance(string $a, string $b) : float
     {
         $la = strlen($a);
         $lb = strlen($b);

@@ -59,7 +59,7 @@ final class AlwaysReturnPlugin extends PluginV2 implements
         CodeBase $code_base,
         Method $method
     ) {
-        $stmts_list = $this->getStatementListToAnalyze($method);
+        $stmts_list = self::getStatementListToAnalyze($method);
         if ($stmts_list === null) {
             // check for abstract methods, generators, etc.
             return;
@@ -69,7 +69,7 @@ final class AlwaysReturnPlugin extends PluginV2 implements
             return;
         }
 
-        if (self::returnTypeOfFunctionLikeAllowsNullNull($method)) {
+        if (self::returnTypeOfFunctionLikeAllowsNull($method)) {
             return;
         }
         if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_list)) {
@@ -100,13 +100,13 @@ final class AlwaysReturnPlugin extends PluginV2 implements
         CodeBase $code_base,
         Func $function
     ) {
-        $stmts_list = $this->getStatementListToAnalyze($function);
+        $stmts_list = self::getStatementListToAnalyze($function);
         if ($stmts_list === null) {
             // check for abstract methods, generators, etc.
             return;
         }
 
-        if (self::returnTypeOfFunctionLikeAllowsNullNull($function)) {
+        if (self::returnTypeOfFunctionLikeAllowsNull($function)) {
             return;
         }
         if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_list)) {
@@ -126,7 +126,7 @@ final class AlwaysReturnPlugin extends PluginV2 implements
      * @param Func|Method $func
      * @return ?Node - returns null if there's no statement list to analyze
      */
-    private function getStatementListToAnalyze($func)
+    private static function getStatementListToAnalyze($func)
     {
         if (!$func->hasNode()) {
             return null;
@@ -146,7 +146,7 @@ final class AlwaysReturnPlugin extends PluginV2 implements
      * @return bool - Is void(absence of a return type) an acceptable return type.
      * NOTE: projects can customize this as needed.
      */
-    private function returnTypeOfFunctionLikeAllowsNullNull(FunctionInterface $func) : bool
+    private static function returnTypeOfFunctionLikeAllowsNull(FunctionInterface $func) : bool
     {
         $real_return_type = $func->getRealReturnType();
         if (!$real_return_type->isEmpty() && !$real_return_type->isType(VoidType::instance(false))) {

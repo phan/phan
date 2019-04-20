@@ -204,7 +204,7 @@ class CLI
      * @param array<int,string> $argv
      * @throws UsageException
      */
-    private function checkAllArgsUsed(array $opts, array &$argv)
+    private static function checkAllArgsUsed(array $opts, array &$argv)
     {
         $pruneargv = [];
         foreach ($opts as $opt => $value) {
@@ -589,7 +589,7 @@ class CLI
                     break;
                 case 's':
                 case 'daemonize-socket':
-                    $this->checkCanDaemonize('unix', $key);
+                    self::checkCanDaemonize('unix', $key);
                     if (!is_string($value)) {
                         throw new UsageException(\sprintf("Invalid arguments to --daemonize-socket: args=%s", StringUtil::jsonEncode($value)), EXIT_FAILURE);
                     }
@@ -707,7 +707,7 @@ class CLI
         }
 
         self::checkPluginsExist();
-        $this->ensureASTParserExists();
+        self::ensureASTParserExists();
 
         $output = $this->output;
         $printer = $factory->getPrinter($printer_type, $output);
@@ -718,7 +718,7 @@ class CLI
         ]);
         $collector = new BufferingCollector($filter);
 
-        $this->checkAllArgsUsed($opts, $argv);
+        self::checkAllArgsUsed($opts, $argv);
 
         Phan::setPrinter($printer);
         Phan::setIssueCollector($collector);
@@ -785,7 +785,7 @@ class CLI
             foreach (Config::getValue('directory_list') as $directory_name) {
                 $this->file_list = \array_merge(
                     $this->file_list,
-                    \array_values($this->directoryNameToFileList($directory_name))
+                    \array_values(self::directoryNameToFileList($directory_name))
                 );
             }
 
@@ -817,7 +817,7 @@ class CLI
      * @return void - exits on usage error
      * @throws UsageException
      */
-    private function checkCanDaemonize(string $protocol, string $opt)
+    private static function checkCanDaemonize(string $protocol, string $opt)
     {
         $opt = strlen($opt) >= 2 ? "--$opt" : "-$opt";
         if (!in_array($protocol, \stream_get_transports())) {
@@ -1278,7 +1278,7 @@ EOB;
      * @throws InvalidArgumentException
      * if there is nothing to analyze
      */
-    private function directoryNameToFileList(
+    private static function directoryNameToFileList(
         string $directory_name
     ) : array {
         $file_list = [];
@@ -1549,7 +1549,7 @@ EOB;
      * @return void
      * @throws AssertionError on failure
      */
-    private function ensureASTParserExists()
+    private static function ensureASTParserExists()
     {
         if (Config::getValue('use_polyfill_parser')) {
             return;

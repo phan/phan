@@ -125,7 +125,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                 if ($right === null) {
                     break;
                 }
-                $result = $this->concatenateToPrimitive($left, $right);
+                $result = self::concatenateToPrimitive($left, $right);
                 if ($result) {
                     return $result;
                 }
@@ -148,7 +148,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
      * @param PrimitiveValue $right the value on the right.
      * @return ?PrimitiveValue
      */
-    protected function concatenateToPrimitive(PrimitiveValue $left, PrimitiveValue $right)
+    protected static function concatenateToPrimitive(PrimitiveValue $left, PrimitiveValue $right)
     {
         // Combining untranslated strings with anything will cause problems.
         if ($left->is_translated) {
@@ -568,7 +568,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                 }
 
                 $expected_union_type_string = (string)$expected_union_type;
-                if ($this->canWeakCast($actual_union_type, $expected_set)) {
+                if (self::canWeakCast($actual_union_type, $expected_set)) {
                     // This can be resolved by casting the arg to (string) manually in printf.
                     $emit_issue(
                         'PhanPluginPrintfIncompatibleArgumentTypeWeak',
@@ -577,7 +577,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                         [
                             self::encodeString($fmt_str),
                             $i,
-                            $this->getSpecStringsRepresentation($spec_group),
+                            self::getSpecStringsRepresentation($spec_group),
                             $expected_union_type_string,
                             $function->getName(),
                             (string)$actual_union_type,
@@ -594,7 +594,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                         [
                             self::encodeString($fmt_str),
                             $i,
-                            $this->getSpecStringsRepresentation($spec_group),
+                            self::getSpecStringsRepresentation($spec_group),
                             $expected_union_type_string,
                             $function->getName(),
                             (string)$actual_union_type,
@@ -616,7 +616,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
     /**
      * @param ConversionSpec[] $specs
      */
-    private function getSpecStringsRepresentation(array $specs) : string
+    private static function getSpecStringsRepresentation(array $specs) : string
     {
         return \implode(',', \array_unique(\array_map(static function (ConversionSpec $spec) : string {
             return $spec->directive;
@@ -626,7 +626,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
     /**
      * @param array<string,true> $expected_set the types being checked for the ability to weakly cast to
      */
-    private function canWeakCast(UnionType $actual_union_type, array $expected_set) : bool
+    private static function canWeakCast(UnionType $actual_union_type, array $expected_set) : bool
     {
         if (isset($expected_set['string'])) {
             static $string_weak_types;

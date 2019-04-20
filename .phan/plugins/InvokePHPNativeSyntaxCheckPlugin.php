@@ -124,7 +124,7 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
     /**
      * @return void
      */
-    private function handleError(CodeBase $code_base, InvokeExecutionPromise $process)
+    private static function handleError(CodeBase $code_base, InvokeExecutionPromise $process)
     {
         $check_error_message = $process->getError();
         if (!is_string($check_error_message)) {

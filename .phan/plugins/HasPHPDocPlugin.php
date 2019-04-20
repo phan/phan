@@ -262,7 +262,7 @@ final class HasPHPDocPlugin extends PluginV2 implements
         }
     }
 
-    private function getDocCommentRepresentation(string $doc_comment) : string
+    private static function getDocCommentRepresentation(string $doc_comment) : string
     {
         return (string)json_encode(MarkupDescription::getDocCommentWithoutWhitespace($doc_comment), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }

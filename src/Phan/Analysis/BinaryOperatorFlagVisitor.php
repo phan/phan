@@ -239,7 +239,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
 
         if ($left->hasNonNullIntType()) {
             if ($right->hasNonNullIntType()) {
-                return $this->computeIntegerOperationResult($node, $left, $right);
+                return self::computeIntegerOperationResult($node, $left, $right);
             }
             if ($right->hasNonNullStringType()) {
                 $this->emitIssue(
@@ -277,7 +277,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         return IntType::instance(false)->asUnionType();
     }
 
-    private function computeIntegerOperationResult(
+    private static function computeIntegerOperationResult(
         Node $node,
         UnionType $left,
         UnionType $right
@@ -634,7 +634,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
 
         // fast-track common cases
         if ($left->isNonNullIntType() && $right->isNonNullIntType()) {
-            return $this->computeIntegerOperationResult($node, $left, $right);
+            return self::computeIntegerOperationResult($node, $left, $right);
         }
 
         // If both left and right union types are arrays, then this is array
@@ -753,7 +753,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
 
         // fast-track common cases
         if ($left->isNonNullIntType() && $right->isNonNullIntType()) {
-            return $this->computeIntegerOperationResult($node, $left, $right);
+            return self::computeIntegerOperationResult($node, $left, $right);
         }
 
         $this->warnAboutInvalidUnionType(

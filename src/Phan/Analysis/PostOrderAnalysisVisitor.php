@@ -1153,7 +1153,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         if (!$return_type->isEmpty()
             && !$func->getHasReturn()
-            && !$this->declOnlyThrows($node)
+            && !self::declOnlyThrows($node)
             && !$return_type->hasType(VoidType::instance(false))
             && !$return_type->hasType(NullType::instance(false))
         ) {
@@ -1233,9 +1233,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if (!$method->isReturnTypeUndefined()) {
                 // We allow base classes to cast to subclasses, and subclasses to cast to base classes,
                 // but don't allow subclasses to cast to subclasses on a separate branch of the inheritance tree
-                if (!$this->checkCanCastToReturnType($code_base, $expression_type, $method_return_type)) {
+                if (!self::checkCanCastToReturnType($code_base, $expression_type, $method_return_type)) {
                     $this->emitIssue(
-                        $this->checkCanCastToReturnTypeIfWasNonNullInstead($code_base, $expression_type, $method_return_type) ? Issue::TypeMismatchReturnNullable : Issue::TypeMismatchReturn,
+                        self::checkCanCastToReturnTypeIfWasNonNullInstead($code_base, $expression_type, $method_return_type) ? Issue::TypeMismatchReturnNullable : Issue::TypeMismatchReturn,
                         $lineno,
                         (string)$expression_type,
                         $method->getNameForIssue(),
@@ -1287,9 +1287,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         foreach ($this->getReturnTypes($context, $node->children['expr'], $node->lineno) as $lineno => $expression_type) {
             // We allow base classes to cast to subclasses, and subclasses to cast to base classes,
             // but don't allow subclasses to cast to subclasses on a separate branch of the inheritance tree
-            if (!$this->checkCanCastToReturnType($code_base, $expression_type, $expected_return_type)) {
+            if (!self::checkCanCastToReturnType($code_base, $expression_type, $expected_return_type)) {
                 $this->emitIssue(
-                    $this->checkCanCastToReturnTypeIfWasNonNullInstead($code_base, $expression_type, $expected_return_type) ? Issue::TypeMismatchReturnNullable : Issue::TypeMismatchReturn,
+                    self::checkCanCastToReturnTypeIfWasNonNullInstead($code_base, $expression_type, $expected_return_type) ? Issue::TypeMismatchReturnNullable : Issue::TypeMismatchReturn,
                     $lineno,
                     (string)$expression_type,
                     $method->getNameForIssue(),
@@ -1477,7 +1477,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         return $context;
     }
 
-    private function checkCanCastToReturnType(CodeBase $code_base, UnionType $expression_type, UnionType $method_return_type) : bool
+    private static function checkCanCastToReturnType(CodeBase $code_base, UnionType $expression_type, UnionType $method_return_type) : bool
     {
         if ($method_return_type->hasTemplateParameterTypes()) {
             // Perform a check that does a better job understanding rules of templates.
@@ -1498,13 +1498,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     /**
      * Precondition: checkCanCastToReturnType is false
      */
-    private function checkCanCastToReturnTypeIfWasNonNullInstead(CodeBase $code_base, UnionType $expression_type, UnionType $method_return_type) : bool
+    private static function checkCanCastToReturnTypeIfWasNonNullInstead(CodeBase $code_base, UnionType $expression_type, UnionType $method_return_type) : bool
     {
         $nonnull_expression_type = $expression_type->nonNullableClone();
         if ($nonnull_expression_type === $expression_type || $nonnull_expression_type->isEmpty()) {
             return false;
         }
-        return $this->checkCanCastToReturnType($code_base, $nonnull_expression_type, $method_return_type);
+        return self::checkCanCastToReturnType($code_base, $nonnull_expression_type, $method_return_type);
     }
 
     /**
@@ -2380,7 +2380,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 && !$has_interface_class
                 && !$return_type->isEmpty()
                 && !$method->getHasReturn()
-                && !$this->declOnlyThrows($node)
+                && !self::declOnlyThrows($node)
                 && !$return_type->hasType(VoidType::instance(false))
                 && !$return_type->hasType(NullType::instance(false))
             ) {
@@ -2445,7 +2445,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         if (!$return_type->isEmpty()
             && !$method->getHasReturn()
-            && !$this->declOnlyThrows($node)
+            && !self::declOnlyThrows($node)
             && !$return_type->hasType(VoidType::instance(false))
             && !$return_type->hasType(NullType::instance(false))
         ) {
@@ -3015,7 +3015,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // passing a variable in, see if we should pass
             // the parameter and variable types to each other
             if ($parameter->isPassByReference()) {
-                $this->analyzePassByReferenceArgument(
+                self::analyzePassByReferenceArgument(
                     $code_base,
                     $context,
                     $argument,
@@ -3114,7 +3114,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      *
      * @return void
      */
-    private function analyzePassByReferenceArgument(
+    private static function analyzePassByReferenceArgument(
         CodeBase $code_base,
         Context $context,
         Node $argument,
@@ -3183,10 +3183,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 case Parameter::REFERENCE_WRITE_ONLY:
                     if ($variable instanceof Variable) {
                         $variable = clone($variable);
-                        $this->analyzeWriteOnlyReference($code_base, $context, $method, $variable, $argument_list, $parameter);
+                        self::analyzeWriteOnlyReference($code_base, $context, $method, $variable, $argument_list, $parameter);
                         $context->addScopeVariable($variable);
                     } else {
-                        $this->analyzeWriteOnlyReference($code_base, $context, $method, $variable, $argument_list, $parameter);
+                        self::analyzeWriteOnlyReference($code_base, $context, $method, $variable, $argument_list, $parameter);
                     }
                     break;
                 case Parameter::REFERENCE_READ_WRITE:
@@ -3226,7 +3226,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * @param Property|Variable $variable
      * @param array<int,Node|string|int|float> $argument_list
      */
-    private function analyzeWriteOnlyReference(
+    private static function analyzeWriteOnlyReference(
         CodeBase $code_base,
         Context $context,
         FunctionInterface $method,
@@ -3773,7 +3773,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * @return bool
      * True when the decl can only throw an exception or return or exit()
      */
-    private function declOnlyThrows(Node $node) : bool
+    private static function declOnlyThrows(Node $node) : bool
     {
         // Work around fallback parser generating methods without statements list.
         // Otherwise, 'stmts' would always be a Node due to preconditions.

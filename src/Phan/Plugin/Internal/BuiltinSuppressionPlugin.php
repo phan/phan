@@ -195,7 +195,7 @@ final class BuiltinSuppressionPlugin extends PluginV2 implements
      * @return Generator<array{0:string,1:int,2:int,3:string,4:string}>
      * yields [$comment_text, $comment_start_line, $comment_start_offset, $comment_name, $kind_list_text];
      */
-    private function yieldSuppressionComments(
+    private static function yieldSuppressionComments(
         string $file_contents
     ) {
         foreach (\token_get_all($file_contents) as $token) {

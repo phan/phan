@@ -299,7 +299,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 $type_string = $group[2];
                 $var_name = $group[16];
                 $type = UnionType::fromStringInContext($type_string, $context, Type::FROM_PHPDOC);
-                $this->createVarForInlineComment($code_base, $context, $var_name, $type, $annotation_name === 'phan-var-force');
+                self::createVarForInlineComment($code_base, $context, $var_name, $type, $annotation_name === 'phan-var-force');
             }
         }
 
@@ -331,7 +331,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * @return void
      * @see ConditionVarUtil::getVariableFromScope()
      */
-    private function createVarForInlineComment(CodeBase $code_base, Context $context, string $var_name, UnionType $type, bool $create_variable)
+    private static function createVarForInlineComment(CodeBase $code_base, Context $context, string $var_name, UnionType $type, bool $create_variable)
     {
         if (!$context->getScope()->hasVariableWithName($var_name)) {
             if (Variable::isHardcodedVariableInScopeWithName($var_name, $context->isInGlobalScope())) {
