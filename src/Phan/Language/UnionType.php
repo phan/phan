@@ -1524,6 +1524,7 @@ class UnionType implements Serializable
         if (\count($target_type_set) === 0) {
             return true;
         }
+        $target = $target->asNormalizedTypes();
 
         // T overlaps with T, a future call to Type->canCastToType will pass.
         if ($this->hasCommonType($target)) {
@@ -1619,9 +1620,11 @@ class UnionType implements Serializable
         }
 
         // T overlaps with T, a future call to Type->canCastToType will pass.
+        $target = $target->asNormalizedTypes();
         if ($this->hasCommonType($target)) {
             return true;
         }
+
         static $float_type;
         static $int_type;
         static $mixed_type;
