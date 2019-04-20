@@ -1,0 +1,1 @@
+%s:4 PhanTypeMismatchReturnNullable Returning type ?\stdClass but foo656() is declared to return \stdClass (expected returned value to be non-nullable)
