@@ -1069,6 +1069,8 @@ e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/plugin_test/expe
 Parameter ${PARAMETER} is never used
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/1.3.0/tests/plugin_test/expected/047_crash.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.3.0/tests/plugin_test/src/047_crash.php#L6).
+
 ## PhanUnusedVariable
 
 Phan has various checks (See the `unused_variable_detection` config)
@@ -2424,6 +2426,22 @@ This will be emitted for the code
 strlen(42);
 ```
 
+## PhanTypeMismatchArgumentNullable
+
+```
+Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} defined at {FILE}:{LINE} (expected type to be non-nullable)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/1.3.0/tests/files/expected/0086_conditional_instanceof_type.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.3.0/tests/files/src/0086_conditional_instanceof_type.php#L14).
+
+## PhanTypeMismatchArgumentNullableInternal
+
+```
+Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} (expected type to be non-nullable)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/1.3.0/tests/files/expected/0152_closure_casts_callable.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.3.0/tests/files/src/0152_closure_casts_callable.php#L4).
+
 ## PhanTypeMismatchArrayDestructuringKey
 
 ```
@@ -2565,6 +2583,14 @@ This issue is emitted from the following code
 ```php
 class G { function f() : int { return 'string'; } }
 ```
+
+## PhanTypeMismatchReturnNullable
+
+```
+Returning type {TYPE} but {FUNCTIONLIKE} is declared to return {TYPE} (expected returned value to be non-nullable)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/1.3.0/tests/files/expected/0656_nullable_return.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.3.0/tests/files/src/0656_nullable_return.php#L4).
 
 ## PhanTypeMismatchUnpackKey
 
