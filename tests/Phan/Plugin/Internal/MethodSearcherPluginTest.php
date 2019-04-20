@@ -18,7 +18,7 @@ final class MethodSearcherPluginTest extends BaseTest implements CodeBaseAwareTe
 
     public function setCodeBase(CodeBase $code_base = null)
     {
-        // @phan-suppress-next-line PhanTypeMismatchProperty
+        // @phan-suppress-next-line PhanPossiblyNullTypeMismatchProperty
         $this->code_base = $code_base;
     }
 

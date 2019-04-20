@@ -26,7 +26,7 @@ class Position
     public $character;
 
     /**
-     * @suppress PhanTypeMismatchProperty
+     * @suppress PhanPossiblyNullTypeMismatchProperty
      */
     public function __construct(int $line = null, int $character = null)
     {

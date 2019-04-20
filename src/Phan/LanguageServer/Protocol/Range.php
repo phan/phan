@@ -27,7 +27,7 @@ class Range
      */
     public $end;
 
-    /** @suppress PhanTypeMismatchProperty anything useful will be non-null */
+    /** @suppress PhanPossiblyNullTypeMismatchProperty anything useful will be non-null */
     public function __construct(Position $start = null, Position $end = null)
     {
         $this->start = $start;
