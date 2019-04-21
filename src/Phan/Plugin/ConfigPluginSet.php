@@ -752,9 +752,17 @@ final class ConfigPluginSet extends PluginV2 implements
     public static function normalizePluginPath(string $plugin_file_name) : string
     {
         if (\preg_match('@^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$@', $plugin_file_name) > 0) {
-            return \dirname(__DIR__, 3) . '/.phan/plugins/' . $plugin_file_name . '.php';
+            return self::getBuiltinPluginDirectory() . '/' . $plugin_file_name . '.php';
         }
         return $plugin_file_name;
+    }
+
+    /**
+     * Returns the path to the plugins bundled with Phan.
+     */
+    public static function getBuiltinPluginDirectory() : string
+    {
+        return \dirname(__DIR__, 3) . '/.phan/plugins';
     }
 
     /**

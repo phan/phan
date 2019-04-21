@@ -1,5 +1,11 @@
 Phan NEWS
 
+?? ??? 2019, Phan 1.3.2 (dev)
+-----------------------
+
+New features(CLI):
++ Suggest similarly named plugins if `--plugin SomePluginName` refers to a built-in plugin that doesn't exist.
+
 20 Apr 2019, Phan 1.3.1
 -----------------------
 
