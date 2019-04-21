@@ -750,7 +750,12 @@ class CLI
             // @phan-suppress-next-line PhanAccessMethodInternal
             $plugin_file_name = ConfigPluginSet::normalizePluginPath($plugin_path_or_name);
             if (!\is_file($plugin_file_name)) {
-                $details = $plugin_file_name === $plugin_path_or_name ? '' : ' (Referenced as ' . StringUtil::jsonEncode($plugin_path_or_name) . ')';
+                if ($plugin_file_name === $plugin_path_or_name) {
+                    $details = '';
+                } else {
+                    $details = ' (Referenced as ' . StringUtil::jsonEncode($plugin_path_or_name) . ')';
+                    $details .= self::getPluginSuggestionText($plugin_path_or_name);
+                }
                 \fprintf(
                     STDERR,
                     "Phan could not find plugin %s%s\n",
@@ -764,6 +769,27 @@ class CLI
             \fwrite(STDERR, "Exiting due to invalid plugin config.\n");
             exit(1);
         }
+    }
+
+    /**
+     * @internal (visible for tests)
+     */
+    public static function getPluginSuggestionText(string $plugin_path_or_name) : string
+    {
+        $plugin_dirname = ConfigPluginSet::getBuiltinPluginDirectory();
+        $candidates = [];
+        foreach (\scandir($plugin_dirname) as $basename) {
+            if (substr($basename, -4) !== '.php') {
+                continue;
+            }
+            $plugin_name = substr($basename, 0, -4);
+            $candidates[$plugin_name] = $plugin_name;
+        }
+        $suggestions = IssueFixSuggester::getSuggestionsForStringSet($plugin_path_or_name, $candidates);
+        if (!$suggestions) {
+            return '';
+        }
+        return ' (Did you mean ' . implode(' or ', $suggestions) . '?)';
     }
 
     /**

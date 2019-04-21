@@ -226,4 +226,20 @@ final class CLITest extends BaseTest
             [['v' => false]],
         ];
     }
+
+    public function testGetPluginSuggestionText()
+    {
+        $this->assertSame(
+            ' (Did you mean DuplicateArrayKeyPlugin?)',
+            CLI::getPluginSuggestionText('DuplicateArrayKeysPlugin')
+        );
+        $this->assertSame(
+            ' (Did you mean HasPHPDocPlugin?)',
+            CLI::getPluginSuggestionText('hasphpdocplugin')
+        );
+        $this->assertSame(
+            '',
+            CLI::getPluginSuggestionText('thisisnotsimilartoaplugin')
+        );
+    }
 }
