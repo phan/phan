@@ -6,6 +6,9 @@ Phan NEWS
 New features(CLI):
 + Suggest similarly named plugins if `--plugin SomePluginName` refers to a built-in plugin that doesn't exist.
 
+New features(Analysis):
++ Fix false positives with dead code detection for internal stubs in `autoload_internal_extension_signatures`. (#2605)
+
 20 Apr 2019, Phan 1.3.1
 -----------------------
 
