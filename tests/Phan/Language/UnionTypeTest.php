@@ -655,6 +655,32 @@ final class UnionTypeTest extends BaseTest
         $this->assertSame([IntType::instance(false), StringType::instance(false)], $field_union_type->getTypeSet());
     }
 
+    public function testSymbolInArrayShape()
+    {
+        $union_type = self::makePHPDocUnionType('array{key\x0a\\\\line\x3a:int}');
+        $this->assertSame(1, $union_type->typeCount());
+        $types = $union_type->getTypeSet();
+        $type = \reset($types);
+
+        $this->assertInstanceOf(ArrayShapeType::class, $type);
+        $this->assertSame(["key\n\\line:"], array_keys($type->getFieldTypes()));
+        $this->assertSame('array{key\n\\\\line\x3a:int}', (string)$type);
+        $this->assertSame('array<string,int>', (string)$union_type->withFlattenedArrayShapeOrLiteralTypeInstances());
+        $field_union_type = $type->getFieldTypes()["key\n\\line:"];
+        $this->assertFalse($field_union_type->getIsPossiblyUndefined());
+        $this->assertSame('int', (string)$field_union_type);
+    }
+
+    public function testBackslashInArrayShape()
+    {
+        $union_type = self::makePHPDocUnionType('array{\n:0,\r:1,\t:2,\\\\:3}');
+        $this->assertSame('array{\n:0,\r:1,\t:2,\\\\:3}', (string)$union_type);
+        $type = $union_type->getTypeSet()[0];
+        $this->assertInstanceOf(ArrayShapeType::class, $type);
+        $this->assertSame(["\n", "\r", "\t", "\\"], array_keys($type->getFieldTypes()));
+
+    }
+
     private static function createGenericArrayTypeWithMixedKey(Type $type, bool $is_nullable) : GenericArrayType
     {
         return GenericArrayType::fromElementType($type, $is_nullable, GenericArrayType::KEY_MIXED);
