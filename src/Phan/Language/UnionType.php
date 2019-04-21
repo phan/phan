@@ -1239,11 +1239,13 @@ class UnionType implements Serializable
     /**
      * @return UnionType result of removing truthy types from this value
      * (e.g. converts `0|1|bool|\stdClass` to `0|false`)
+     * (e.g. converts `?\stdClass` to `null`)
      */
     public function nonTruthyClone() : UnionType
     {
         $builder = new UnionTypeBuilder();
         $did_change = false;
+        $has_null = false;
         foreach ($this->type_set as $type) {
             if (!$type->getIsPossiblyTruthy()) {
                 $builder->addType($type);
@@ -1251,6 +1253,9 @@ class UnionType implements Serializable
             }
             $did_change = true;
             if ($type->getIsAlwaysTruthy()) {
+                if ($type->getIsNullable()) {
+                    $has_null = true;
+                }
                 // don't add null/false to the resulting type
                 continue;
             }
@@ -1258,7 +1263,13 @@ class UnionType implements Serializable
             // add non-nullable equivalents, and replace BoolType with non-nullable TrueType
             $builder->addType($type->asNonTruthyType());
         }
-        return $did_change ? $builder->getUnionType() : $this;
+        if (!$did_change) {
+            return $this;
+        }
+        if ($has_null) {
+            $builder->addType(NullType::instance(false));
+        }
+        return $builder->getUnionType()->asNormalizedTypes();
     }
 
     /**

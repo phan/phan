@@ -488,6 +488,35 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
 
     /**
      * @param Node $node
+     * A node to parse, with kind ast\AST_PROP (e.g. `if ($this->prop_name)`)
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitProp(Node $node) : Context
+    {
+        $expr_node = $node->children['expr'];
+        if (!($expr_node instanceof Node)) {
+            return $this->context;
+        }
+        if ($expr_node->kind !== ast\AST_VAR || $expr_node->children['name'] !== 'this') {
+            return $this->context;
+        }
+        if (!\is_string($node->children['prop'])) {
+            return $this->context;
+        }
+        return $this->modifyPropertyOfThisSimple(
+            $node,
+            static function (UnionType $type) : UnionType {
+                return $type->nonFalseyClone();
+            },
+            $this->context
+        );
+    }
+
+    /**
+     * @param Node $node
      * A node to parse
      *
      * @return Context
