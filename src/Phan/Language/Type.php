@@ -99,7 +99,7 @@ class Type
         '(\??)(callable-string|class-string|[a-zA-Z_\x7f-\xff\\\][a-zA-Z0-9_\x7f-\xff\\\]*|\$this)';
 
     const shape_key_regex =
-        '[-._a-zA-Z0-9\x7f-\xff]+\??';
+        '(?:[-.\/^;$%*+_a-zA-Z0-9\x7f-\xff]|\\\\(?:[nrt\\\\]|x[0-9a-fA-F]{2}))+\??';
 
     /**
      * A literal integer or string.
@@ -1391,6 +1391,9 @@ class Type
     {
         $result = [];
         foreach ($shape_components as $key => $component_string) {
+            if (\is_string($key) && \strpos($key, '\\') !== false) {
+                $key = ArrayShapeType::unescapeKey($key);
+            }
             if (\is_string($key) && \substr($key, -1) === '?') {
                 if (\substr($component_string, -1) === '=') {
                     $component_string = \substr($component_string, 0, -1);

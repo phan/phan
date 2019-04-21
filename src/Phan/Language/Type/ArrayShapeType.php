@@ -418,10 +418,33 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         return true;
     }
 
+    /**
+     * @internal - For use within ArrayShapeType
+     */
+    const ESCAPE_CHARACTER_LOOKUP = [
+        "\n" => '\\n',
+        "\r" => '\\r',
+        "\t" => '\\t',
+        "\\" => '\\\\',
+    ];
+
+    /**
+     * @internal - For use within ArrayShapeType
+     */
+    const UNESCAPE_CHARACTER_LOOKUP = [
+        '\\n' => "\n",
+        '\\r' => "\r",
+        '\\t' => "\t",
+        '\\\\' => "\\",
+    ];
+
     public function __toString() : string
     {
         $parts = [];
         foreach ($this->field_types as $key => $value) {
+            if (\is_string($key)) {
+                $key = self::escapeKey($key);
+            }
             $value_repr = $value->__toString();
             if (\substr($value_repr, -1) === '=') {
                 // convert {key:type=} to {key?:type} in representation.
@@ -431,6 +454,25 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
             }
         }
         return ($this->is_nullable ? '?' : '') . 'array{' . \implode(',', $parts) . '}';
+    }
+
+    /**
+     * Escape the key for display purposes
+     */
+    public static function escapeKey(string $key) : string
+    {
+        return \preg_replace_callback(
+            '([^-./^;$%*+_a-zA-Z0-9\x7f-\xff])',
+            /**
+             * @param array{0:string} $match
+             * @return string
+             */
+            static function (array $match) {
+                $c = $match[0];
+                return self::ESCAPE_CHARACTER_LOOKUP[$c] ?? \sprintf('\\x%02x', \ord($c));
+            },
+            $key
+        );
     }
 
     /**
@@ -800,5 +842,29 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
                 yield $inner_type;
             }
         }
+    }
+
+    /**
+     * Convert an escaped key to an unescaped key
+     */
+    public static function unescapeKey(string $escaped_key) : string
+    {
+        return \preg_replace_callback(
+            '/\\\\(?:[nrt\\\\]|x[0-9a-fA-F]{2})/',
+            /** @param array{0:string} $matches */
+            static function (array $matches) : string {
+                $x = $matches[0];
+                if (\strlen($x) === 2) {
+                    // Parses \\, \n, \t, and \r
+                    return self::UNESCAPE_CHARACTER_LOOKUP[$x];
+                }
+                // convert 2 hex bytes to a single character
+                // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal, PhanPartialTypeMismatchArgumentInternal
+                return \chr(\hexdec(\substr($x, 2)));
+            },
+            // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
+            $escaped_key
+        );
+
     }
 }

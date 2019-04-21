@@ -8,6 +8,9 @@ New features(CLI):
 
 New features(Analysis):
 + Fix false positives with dead code detection for internal stubs in `autoload_internal_extension_signatures`. (#2605)
++ Add a way to escape/unescape array shape keys (newlines, binary data, etc) (#1664)
+
+  e.g. `@return array{\n\r\t\x01\\:true}` in phpdoc would correspond to `return ["\n\r\t\x01\\" => true];`
 
 20 Apr 2019, Phan 1.3.1
 -----------------------
