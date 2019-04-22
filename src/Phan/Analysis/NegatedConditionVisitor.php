@@ -344,28 +344,27 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      */
     private function analyzeArrayKeyExistsNegation(array $args) : Context
     {
-        $context = $this->context;
         if (\count($args) !== 2) {
-            return $context;
+            return $this->context;
         }
         $var_node = $args[1];
-        if (($var_node->kind ?? null) !== ast\AST_VAR) {
-            return $context;
+        if (!($var_node instanceof Node)) {
+            return $this->context;
         }
-        $var_name = $var_node->children['name'];
-        if (!\is_string($var_name)) {
-            return $context;
-        }
-        if (!$context->getScope()->hasVariableWithName($var_name)) {
-            return $context;
-        }
-        $variable = $context->getScope()->getVariableByName($var_name);
-
-        if ($variable->getUnionType()->hasTopLevelArrayShapeTypeInstances()) {
-            $context = $this->withNullOrUnsetArrayShapeTypes($variable, $args[0], $context, true);
-            $this->context = $context;
-        }
-        return $context;
+        return $this->updateVariableWithConditionalFilter(
+            $var_node,
+            $this->context,
+            static function (UnionType $_) : bool {
+                return true;
+            },
+            function (UnionType $type) use ($args) : UnionType {
+                if ($type->hasTopLevelArrayShapeTypeInstances()) {
+                    return $this->withNullOrUnsetArrayShapeTypes($type, $args[0], $this->context, true);
+                }
+                return $type;
+            },
+            true
+        );
     }
 
     // TODO: empty, isset
@@ -748,7 +747,12 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                 $var_node_union_type = $variable->getUnionType();
 
                 if ($var_node_union_type->hasTopLevelArrayShapeTypeInstances()) {
-                    $context = $this->withNullOrUnsetArrayShapeTypes($variable, $parent_node->children['dim'], $context, false);
+                    $new_union_type = $this->withNullOrUnsetArrayShapeTypes($var_node_union_type, $parent_node->children['dim'], $context, false);
+                    if ($new_union_type !== $var_node_union_type) {
+                        $variable = clone($variable);
+                        $variable->setUnionType($new_union_type);
+                        $context = $context->withScopeVariable($variable);
+                    }
                     $this->context = $context;
                 }
             }
@@ -761,45 +765,33 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
     }
 
     /**
-     * @param Variable $variable the variable being modified by inferences from isset or array_key_exists
+     * @param UnionType $union_type the union type being modified by inferences from negated isset or array_key_exists
      * @param Node|string|float|int|bool $dim_node represents the dimension being accessed. (E.g. can be a literal or an AST_CONST, etc.
      * @param Context $context the context with inferences made prior to this condition
      */
-    private function withNullOrUnsetArrayShapeTypes(Variable $variable, $dim_node, Context $context, bool $remove_offset) : Context
+    private function withNullOrUnsetArrayShapeTypes(UnionType $union_type, $dim_node, Context $context, bool $remove_offset) : UnionType
     {
-        $dim_value = $dim_node instanceof Node ? (new ContextNode($this->code_base, $this->context, $dim_node))->getEquivalentPHPScalarValue() : $dim_node;
+        $dim_value = $dim_node instanceof Node ? (new ContextNode($this->code_base, $context, $dim_node))->getEquivalentPHPScalarValue() : $dim_node;
         // TODO: detect and warn about null
         if (!\is_scalar($dim_value)) {
-            return $context;
+            return $union_type;
         }
 
-        $union_type = $variable->getUnionType();
         $dim_union_type = UnionTypeVisitor::resolveArrayShapeElementTypesForOffset($union_type, $dim_value);
         if (!$dim_union_type) {
             // There are other types, this dimension does not exist yet.
             // Whether or not the union type already has array shape types, don't change the type
-            return $context;
+            return $union_type;
+        }
+        if ($remove_offset) {
+            return $union_type->withoutArrayShapeField($dim_value);
         } else {
-            $variable = clone($variable);
-
             static $null_and_possibly_undefined = null;
             if ($null_and_possibly_undefined === null) {
                 $null_and_possibly_undefined = NullType::instance(false)->asUnionType()->withIsPossiblyUndefined(true);
             }
 
-            if ($remove_offset) {
-                $new_union_type = $union_type->withoutArrayShapeField($dim_value);
-            } else {
-                $new_union_type = ArrayType::combineArrayShapeTypesWithField($union_type, $dim_value, $null_and_possibly_undefined);
-            }
-            $variable->setUnionType($new_union_type);
-
-            // Overwrite the variable with its new type in this
-            // scope without overwriting other scopes
-            return $context->withScopeVariable(
-                $variable
-            );
-            // TODO finish
+            return ArrayType::combineArrayShapeTypesWithField($union_type, $dim_value, $null_and_possibly_undefined);
         }
     }
 
