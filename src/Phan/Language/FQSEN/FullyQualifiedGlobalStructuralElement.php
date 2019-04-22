@@ -394,15 +394,10 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
      */
     public function __toString() : string
     {
-        $as_string = $this->as_string;
-        if ($as_string === null) {
-            $as_string = static::toString(
-                $this->getNamespace(),
-                $this->getName(),
-                $this->getAlternateId()
-            );
-            $this->as_string = $as_string;
-        }
-        return $as_string;
+        return $this->as_string ?? $this->as_string = static::toString(
+            $this->getNamespace(),
+            $this->getName(),
+            $this->getAlternateId()
+        );
     }
 }

@@ -143,11 +143,10 @@ class IssueInstance
     /** @return ?string */
     public function getSuggestionMessage()
     {
-        $suggestion = $this->suggestion;
-        if (!$suggestion) {
+        if (!$this->suggestion) {
             return null;
         }
-        $text = $suggestion->getMessage();
+        $text = $this->suggestion->getMessage();
         if (!$text) {
             return null;
         }

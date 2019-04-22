@@ -442,10 +442,9 @@ final class ConfigPluginSet extends PluginV2 implements
                 $parameters,
                 $suggestion
             )) {
-                $unused_suppression_plugin = $this->unused_suppression_plugin;
-                if ($unused_suppression_plugin) {
+                if ($this->unused_suppression_plugin) {
                     // @phan-suppress-next-line PhanAccessMethodInternal
-                    $unused_suppression_plugin->recordPluginSuppression($plugin, $context->getFile(), $issue_type, $lineno);
+                    $this->unused_suppression_plugin->recordPluginSuppression($plugin, $context->getFile(), $issue_type, $lineno);
                 }
                 return true;
             }
@@ -641,8 +640,7 @@ final class ConfigPluginSet extends PluginV2 implements
      */
     public function prepareNodeSelectionPluginForNode(Node $node)
     {
-        $node_selection_plugin = $this->node_selection_plugin;
-        if (!$node_selection_plugin) {
+        if (!$this->node_selection_plugin) {
             \fwrite(STDERR, "Error: " . __METHOD__ . " called before node selection plugin was created\n");
             return;
         }

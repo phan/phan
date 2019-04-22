@@ -198,8 +198,7 @@ class ContextNode
      */
     public function getTraitAdaptationsMap(array $trait_fqsen_list) : array
     {
-        $node = $this->node;
-        if (!($node instanceof Node)) {
+        if (!($this->node instanceof Node)) {
             return [];
         }
 
@@ -1824,12 +1823,11 @@ class ContextNode
      */
     public function getUnqualifiedNameForAnonymousClass() : string
     {
-        $node = $this->node;
-        if (!($node instanceof Node)) {
+        if (!($this->node instanceof Node)) {
             throw new AssertionError('$this->node must be a node');
         }
 
-        if (!($node->flags & ast\flags\CLASS_ANONYMOUS)) {
+        if (!($this->node->flags & ast\flags\CLASS_ANONYMOUS)) {
             throw new AssertionError('Node must be an anonymous class node');
         }
 

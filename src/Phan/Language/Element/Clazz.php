@@ -464,9 +464,8 @@ class Clazz extends AddressableElement
      */
     public function getParentTypeOption()
     {
-        $parent_type = $this->parent_type;
-        if ($parent_type !== null) {
-            return new Some($parent_type);
+        if ($this->parent_type !== null) {
+            return new Some($this->parent_type);
         }
 
         return new None();
@@ -2643,9 +2642,8 @@ class Clazz extends AddressableElement
         $implements_types = [];
         $parent_implements_types = [];
 
-        $parent_type = $this->parent_type;
-        if ($parent_type) {
-            $extend_types[] = FullyQualifiedClassName::fromType($parent_type);
+        if ($this->parent_type) {
+            $extend_types[] = FullyQualifiedClassName::fromType($this->parent_type);
             $parent_class = $this->getParentClass($code_base);
             $parent_implements_types = $parent_class->interface_fqsen_list;
         }
@@ -3048,14 +3046,13 @@ class Clazz extends AddressableElement
         if (\count($template_parameter_type_map) === 0) {
             return UnionType::empty();
         }
-        $parent_type = $this->parent_type;
-        if ($parent_type === null) {
+        if ($this->parent_type === null) {
             return UnionType::empty();
         }
-        if (!$parent_type->hasTemplateParameterTypes()) {
+        if (!$this->parent_type->hasTemplateParameterTypes()) {
             return UnionType::empty();
         }
-        $parent_template_parameter_type_list = $parent_type->getTemplateParameterTypeList();
+        $parent_template_parameter_type_list = $this->parent_type->getTemplateParameterTypeList();
         $changed = false;
         foreach ($parent_template_parameter_type_list as $i => $template_type) {
             $new_template_type = $template_type->withTemplateParameterTypeMap($template_parameter_type_map);
@@ -3068,7 +3065,7 @@ class Clazz extends AddressableElement
         if (!$changed) {
             return UnionType::empty();
         }
-        return Type::fromType($parent_type, $parent_template_parameter_type_list)->asUnionType();
+        return Type::fromType($this->parent_type, $parent_template_parameter_type_list)->asUnionType();
     }
 
     /**

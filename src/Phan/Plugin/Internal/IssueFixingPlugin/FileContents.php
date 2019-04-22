@@ -131,9 +131,8 @@ class FileContents
      */
     public function getLines() : array
     {
-        $lines = $this->lines;
-        if (\is_array($lines)) {
-            return $lines;
+        if (\is_array($this->lines)) {
+            return $this->lines;
         }
         $lines = \preg_split("/^/m", $this->contents);
         // TODO: Use a better way to not include false when arguments are both valid

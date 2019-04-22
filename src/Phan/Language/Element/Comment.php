@@ -461,11 +461,10 @@ class Comment
      */
     public function getReturnType() : UnionType
     {
-        $return_comment = $this->return_comment;
-        if (!$return_comment) {
+        if (!$this->return_comment) {
             throw new AssertionError('Should check hasReturnUnionType');
         }
-        return $return_comment->getType();
+        return $this->return_comment->getType();
     }
 
     /**
@@ -474,11 +473,10 @@ class Comment
      */
     public function getReturnLineno() : int
     {
-        $return_comment = $this->return_comment;
-        if (!$return_comment) {
+        if (!$this->return_comment) {
             throw new AssertionError('Should check hasReturnUnionType');
         }
-        return $return_comment->getLineno();
+        return $this->return_comment->getLineno();
     }
 
     /**
@@ -671,9 +669,8 @@ class Comment
             $string  .= " * @param $parameter\n";
         }
 
-        $return_comment = $this->return_comment;
-        if ($return_comment) {
-            $string .= " * @return {$return_comment->getType()}\n";
+        if ($this->return_comment) {
+            $string .= " * @return {$this->return_comment->getType()}\n";
         }
         foreach ($this->throw_union_type->getTypeSet() as $type) {
             $string .= " * @throws {$type}\n";
