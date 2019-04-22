@@ -752,6 +752,10 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                     $this->context = $context;
                 }
             }
+        } elseif ($var_node->kind === ast\AST_PROP) {
+            $context = $this->modifyPropertySimple($var_node, static function (UnionType $_) : UnionType {
+                return NullType::instance(false)->asUnionType();
+            }, $context);
         }
         return $context;
     }

@@ -220,11 +220,11 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         // Aside: If left/right is not a node, left/right is a literal such as a number/string, and is either always truthy or always falsey.
         // Inside of this conditional may be dead or redundant code.
         if ($left instanceof Node) {
-            $this->context = $this($left);
+            $this->context = $this->__invoke($left);
         }
         // TODO: Warn if !$left
         if ($right instanceof Node) {
-            return $this($right);
+            return $this->__invoke($right);
         }
         return $this->context;
     }
@@ -249,13 +249,13 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             if ($left) {
                 return $this->context;
             }
-            return $this($right);
+            return $this->__invoke($right);
         }
         if (!($right instanceof Node)) {
             if ($right) {
                 return $this->context;
             }
-            return $this($left);
+            return $this->__invoke($left);
         }
         $code_base = $this->code_base;
         $context = $this->context;
@@ -345,6 +345,9 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         if ($is_object) {
             $variable = clone($context->getScope()->getVariableByName($var_name));
             $this->analyzeIsObjectAssertion($variable);
+            $context = $this->modifyPropertySimple($var_node, static function (UnionType $type) : UnionType {
+                return $type->nonNullableClone();
+            }, $context);
             return $context->withScopeVariable($variable);
         }
         return $this->removeNullFromVariable($var_node, $context, true);
@@ -1012,7 +1015,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         // Only analyze the last expression in the expression list for conditions.
         $last_expression = \end($node->children);
         if ($last_expression instanceof Node) {
-            return $this($last_expression);
+            return $this->__invoke($last_expression);
         } else {
             // Other code should warn about this invalid AST
             return $this->context;
