@@ -204,6 +204,8 @@ trait ConditionVisitorUtil
      * Note: It's expected that $should_filter_cb returns false on the new UnionType of that variable.
      *
      * @param Node $var_node a node of kind ast\AST_VAR, ast\AST_PROP, or ast\AST_DIM
+     * @param Closure(UnionType):bool $should_filter_cb
+     * @param Closure(UnionType):UnionType $filter_union_type_cb
      */
     final protected function updateVariableWithConditionalFilter(
         Node $var_node,
