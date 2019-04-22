@@ -130,9 +130,8 @@ class Request
      */
     public function shouldUseMappingPolyfill(string $file_path) : bool
     {
-        $most_recent_node_info_request = $this->most_recent_node_info_request;
-        if ($most_recent_node_info_request) {
-            return $most_recent_node_info_request->getPath() === Config::projectPath($file_path);
+        if ($this->most_recent_node_info_request) {
+            return $this->most_recent_node_info_request->getPath() === Config::projectPath($file_path);
         }
         return false;
     }
@@ -142,10 +141,8 @@ class Request
      */
     public function shouldAddPlaceholdersForPath(string $file_path) : bool
     {
-        $most_recent_node_info_request = $this->most_recent_node_info_request;
-        if ($most_recent_node_info_request) {
-            return $most_recent_node_info_request->getPath() === Config::projectPath($file_path) &&
-                $most_recent_node_info_request instanceof CompletionRequest;
+        if ($this->most_recent_node_info_request instanceof CompletionRequest) {
+            return $this->most_recent_node_info_request->getPath() === Config::projectPath($file_path);
         }
         return false;
     }
@@ -155,9 +152,8 @@ class Request
      */
     public function getTargetByteOffset(string $file_contents) : int
     {
-        $most_recent_node_info_request = $this->most_recent_node_info_request;
-        if ($most_recent_node_info_request) {
-            $position = $most_recent_node_info_request->getPosition();
+        if ($this->most_recent_node_info_request) {
+            $position = $this->most_recent_node_info_request->getPosition();
             return $position->toOffset($file_contents);
         }
         return -1;
@@ -395,9 +391,8 @@ class Request
      */
     public function rejectLanguageServerRequestsRequiringAnalysis()
     {
-        $most_recent_node_info_request = $this->most_recent_node_info_request;
-        if ($most_recent_node_info_request) {
-            $most_recent_node_info_request->finalize();
+        if ($this->most_recent_node_info_request) {
+            $this->most_recent_node_info_request->finalize();
             $this->most_recent_node_info_request = null;
         }
     }
@@ -412,20 +407,18 @@ class Request
      */
     public function sendJSONResponse(array $response)
     {
-        $responder = $this->responder;
-        if (!$responder) {
+        if (!$this->responder) {
             Daemon::debugf("Already sent response");
             return;
         }
-        $responder->sendResponseAndClose($response);
+        $this->responder->sendResponseAndClose($response);
         $this->responder = null;
     }
 
     public function __destruct()
     {
-        $responder = $this->responder;
-        if ($responder) {
-            $responder->sendResponseAndClose([
+        if ($this->responder) {
+            $this->responder->sendResponseAndClose([
                 'status' => self::STATUS_ERROR_UNKNOWN,
                 'message' => 'failed to send a response - Possibly encountered an exception. See daemon output: ' . StringUtil::jsonEncode(\debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS)),
             ]);

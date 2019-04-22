@@ -2,6 +2,7 @@
 
 namespace Phan\Analysis;
 
+use ast;
 use ast\flags;
 use ast\Node;
 use Closure;
@@ -85,7 +86,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      */
     private function checkVariablesDefined(Node $node)
     {
-        while ($node->kind === \ast\AST_UNARY_OP) {
+        while ($node->kind === ast\AST_UNARY_OP) {
             $node = $node->children['expr'];
             if (!($node instanceof Node)) {
                 return;
@@ -310,6 +311,35 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
     }
 
     /**
+     * @param Node $node
+     * A node to parse, with kind ast\AST_PROP (e.g. `if (!$this->prop_name)`)
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitProp(Node $node) : Context
+    {
+        $expr_node = $node->children['expr'];
+        if (!($expr_node instanceof Node)) {
+            return $this->context;
+        }
+        if ($expr_node->kind !== ast\AST_VAR || $expr_node->children['name'] !== 'this') {
+            return $this->context;
+        }
+        if (!\is_string($node->children['prop'])) {
+            return $this->context;
+        }
+        return $this->modifyPropertyOfThisSimple(
+            $node,
+            static function (UnionType $type) : UnionType {
+                return $type->nonTruthyClone();
+            },
+            $this->context
+        );
+    }
+
+    /**
      * @param array<int,Node|string|int|float> $args
      */
     private function analyzeArrayKeyExistsNegation(array $args) : Context
@@ -319,7 +349,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
             return $context;
         }
         $var_node = $args[1];
-        if (($var_node->kind ?? null) !== \ast\AST_VAR) {
+        if (($var_node->kind ?? null) !== ast\AST_VAR) {
             return $context;
         }
         $var_name = $var_node->children['name'];
@@ -362,7 +392,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
         if (!($class_node instanceof Node)) {
             return $context;
         }
-        if ($expr_node->kind !== \ast\AST_VAR) {
+        if ($expr_node->kind !== ast\AST_VAR) {
             return $this->modifyComplexExpression(
                 $expr_node,
                 /**
@@ -681,7 +711,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
         if (!($var_node instanceof Node)) {
             return $this->context;
         }
-        if (($var_node->kind ?? null) !== \ast\AST_VAR) {
+        if (($var_node->kind ?? null) !== ast\AST_VAR) {
             return $this->checkComplexIsset($var_node);
         }
         // if (!isset($x))
@@ -695,7 +725,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
     public function checkComplexIsset(Node $var_node)
     {
         $context = $this->context;
-        if ($var_node->kind === \ast\AST_DIM) {
+        if ($var_node->kind === ast\AST_DIM) {
             $expr_node = $var_node;
             do {
                 $parent_node = $expr_node;
@@ -703,9 +733,9 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                 if (!($expr_node instanceof Node)) {
                     return $context;
                 }
-            } while ($expr_node->kind === \ast\AST_DIM);
+            } while ($expr_node->kind === ast\AST_DIM);
 
-            if ($expr_node->kind === \ast\AST_VAR) {
+            if ($expr_node->kind === ast\AST_VAR) {
                 $var_name = $expr_node->children['name'];
                 if (!\is_string($var_name)) {
                     return $context;
@@ -785,7 +815,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
             return $context;
         }
         // e.g. if (!empty($x))
-        if ($var_node->kind === \ast\AST_VAR) {
+        if ($var_node->kind === ast\AST_VAR) {
             // Don't check if variables are defined - don't emit notices for if (!empty($x)) {}, etc.
             $var_name = $var_node->children['name'];
             if (\is_string($var_name)) {
@@ -815,7 +845,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
     {
         $context = $this->context;
         // TODO: !empty($obj->prop['offset']) should imply $obj is not null (removeNullFromVariable)
-        if ($var_node->kind === \ast\AST_DIM) {
+        if ($var_node->kind === ast\AST_DIM) {
             $expr_node = $var_node;
             do {
                 $parent_node = $expr_node;
@@ -823,9 +853,9 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                 if (!($expr_node instanceof Node)) {
                     return $context;
                 }
-            } while ($expr_node->kind === \ast\AST_DIM);
+            } while ($expr_node->kind === ast\AST_DIM);
 
-            if ($expr_node->kind === \ast\AST_VAR) {
+            if ($expr_node->kind === ast\AST_VAR) {
                 $var_name = $expr_node->children['name'];
                 if (!\is_string($var_name)) {
                     return $context;

@@ -7,6 +7,11 @@ New features(CLI):
 + Suggest similarly named plugins if `--plugin SomePluginName` refers to a built-in plugin that doesn't exist.
 
 New features(Analysis):
++ Support locally tracking assignments to and conditionals on `$this->prop` inside of function scopes. (#805, #204)
+
+  This supports only one level of nesting.
+
+  Properties are deliberately tracked for just the variable `$this` (which can't be reassigned), and not other variables.
 + Fix false positives with dead code detection for internal stubs in `autoload_internal_extension_signatures`. (#2605)
 + Add a way to escape/unescape array shape keys (newlines, binary data, etc) (#1664)
 

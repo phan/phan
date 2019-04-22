@@ -153,6 +153,10 @@ class Debug
         $string .= "\n";
 
         foreach ($node->children as $name => $child_node) {
+            if (\is_string($name) && \strncmp($name, 'phan', 4) === 0) {
+                // Dynamic property added by Phan
+                continue;
+            }
             $string .= self::nodeToString(
                 $child_node,
                 $name,

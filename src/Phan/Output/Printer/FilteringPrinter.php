@@ -72,9 +72,8 @@ final class FilteringPrinter implements BufferedPrinterInterface
      */
     public function flush()
     {
-        $printer = $this->printer;
-        if ($printer instanceof BufferedPrinterInterface) {
-            $printer->flush();
+        if ($this->printer instanceof BufferedPrinterInterface) {
+            $this->printer->flush();
         }
     }
 }

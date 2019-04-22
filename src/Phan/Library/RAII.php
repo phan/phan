@@ -33,9 +33,8 @@ class RAII
      */
     public function callFinalizerOnce()
     {
-        $finalizer = $this->finalizer;
-        if ($finalizer) {
-            $finalizer();
+        if ($this->finalizer) {
+            ($this->finalizer)();
             $this->finalizer = null;
         }
     }

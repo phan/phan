@@ -19,6 +19,7 @@ use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Scope\GlobalScope;
+use Phan\Language\Type\ArrayShapeType;
 use RuntimeException;
 
 /**
@@ -798,5 +799,117 @@ class Context extends FileRef
         foreach ($other as $k => $v) {
             $this->{$k} = $v;
         }
+    }
+
+    /**
+     * This name is internally used by Phan to track the properties of $this similarly to the way array shapes are represented.
+     */
+    const VAR_NAME_THIS_PROPERTIES = "phan\0\$this";
+
+    /**
+     * Analyzes the side effects of setting the type of $this->property to $type
+     */
+    public function withThisPropertySetToType(Property $property, UnionType $type) : Context
+    {
+        $old_union_type = $property->getUnionType();
+        if ($this->scope->hasVariableWithName(self::VAR_NAME_THIS_PROPERTIES)) {
+            $variable = clone($this->scope->getVariableByName(self::VAR_NAME_THIS_PROPERTIES));
+            $old_type = $variable->getUnionType();
+            $override_type = ArrayShapeType::fromFieldTypes([$property->getName() => $type], false);
+            $override_type = self::addArrayShapeTypes($override_type, $old_type->getTypeSet());
+
+            $variable->setUnionType($override_type->asUnionType());
+        } else {
+            // There is nothing inferred about any type
+
+            if ($old_union_type->isEqualTo($type)) {
+                // And this new type is what we already inferred, so there's nothing to do
+                return $this;
+            }
+            $override_type = ArrayShapeType::fromFieldTypes([$property->getName() => $type], false);
+            $variable = new Variable(
+                $this,
+                self::VAR_NAME_THIS_PROPERTIES,
+                $override_type->asUnionType(),
+                0
+            );
+        }
+        return $this->withScopeVariable($variable);
+    }
+
+    /**
+     * Analyzes the side effects of setting the type of $this->property_name to $type
+     *
+     * The caller should check if it is necessary to do this.
+     */
+    public function withThisPropertySetToTypeByName(string $property_name, UnionType $type) : Context
+    {
+        if ($this->scope->hasVariableWithName(self::VAR_NAME_THIS_PROPERTIES)) {
+            $variable = clone($this->scope->getVariableByName(self::VAR_NAME_THIS_PROPERTIES));
+            $old_type = $variable->getUnionType();
+            $override_type = ArrayShapeType::fromFieldTypes([$property_name => $type], false);
+            $override_type = self::addArrayShapeTypes($override_type, $old_type->getTypeSet());
+
+            $variable->setUnionType($override_type->asUnionType());
+        } else {
+            // There is nothing inferred about any type
+
+            $override_type = ArrayShapeType::fromFieldTypes([$property_name => $type], false);
+            $variable = new Variable(
+                $this,
+                self::VAR_NAME_THIS_PROPERTIES,
+                $override_type->asUnionType(),
+                0
+            );
+        }
+        return $this->withScopeVariable($variable);
+    }
+
+    /**
+     * @param array<int,Type> $type_set
+     */
+    private static function addArrayShapeTypes(ArrayShapeType $override_type, array $type_set) : ArrayShapeType
+    {
+        if (!$type_set) {
+            return $override_type;
+        }
+        $array_shape_type_set = [];
+        foreach ($type_set as $type) {
+            if ($type instanceof ArrayShapeType) {
+                $array_shape_type_set[] = $type;
+            }
+        }
+        if ($array_shape_type_set) {
+            // Add in all of the locally known types for other properties
+            $override_type = ArrayShapeType::combineWithPrecedence($override_type, ArrayShapeType::union($array_shape_type_set));
+        }
+        return $override_type;
+    }
+
+    /**
+     * @return ?UnionType
+     */
+    public function getThisPropertyIfOverridden(string $name)
+    {
+        if (!$this->scope->hasVariableWithName(self::VAR_NAME_THIS_PROPERTIES)) {
+            return null;
+        }
+        $types = $this->scope->getVariableByName(self::VAR_NAME_THIS_PROPERTIES)->getUnionType();
+        if ($types->isEmpty()) {
+            return null;
+        }
+
+        $result = UnionType::empty();
+        foreach ($types->getTypeSet() as $type) {
+            if (!$type instanceof ArrayShapeType) {
+                return null;
+            }
+            $extra = $type->getFieldTypes()[$name] ?? null;
+            if (!$extra || $extra->getIsPossiblyUndefined()) {
+                return null;
+            }
+            $result = $result->withUnionType($extra);
+        }
+        return $result;
     }
 }

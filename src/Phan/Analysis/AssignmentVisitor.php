@@ -766,6 +766,8 @@ class AssignmentVisitor extends AnalysisVisitor
 
     /**
      * This analyzes an assignment to an instance or static property.
+     *
+     * @param Node $node the left hand side of the assignment
      */
     private function analyzePropAssignment(Clazz $clazz, Property $property, Node $node) : Context
     {
@@ -827,6 +829,9 @@ class AssignmentVisitor extends AnalysisVisitor
             // stdClass is an exception to this, for issues such as https://github.com/phan/phan/pull/700
             return $this->context;
         } else {
+            if (($node->children['expr']->kind ?? null) === \ast\AST_VAR && $node->children['expr']->children['name'] === 'this') {
+                $this->handleThisPropertyAssignmentInLocalScope($property);
+            }
             // This is a regular assignment, not an assignment to an offset
             if (!$this->right_type->canCastToExpandedUnionType(
                 $property_union_type,
@@ -870,6 +875,17 @@ class AssignmentVisitor extends AnalysisVisitor
         $this->addTypesToProperty($property, $node);
 
         return $this->context;
+    }
+
+    /**
+     * Modifies $this->context (if needed) to track the assignment to a property of $this within a function-like.
+     * This handles conditional branches.
+     *
+     * @return void
+     */
+    private function handleThisPropertyAssignmentInLocalScope(Property $property)
+    {
+        $this->context = $this->context->withThisPropertySetToType($property, $this->right_type);
     }
 
     private function analyzeAssignmentToReadOnlyProperty(Property $property, Node $node)

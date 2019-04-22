@@ -157,14 +157,13 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      */
     private function computeGenericArrayTypeInstances() : array
     {
-        $field_types = $this->field_types;
-        if (\count($field_types) === 0) {
+        if (\count($this->field_types) === 0) {
             // there are 0 fields, so we know nothing about the field types (and there's no way to indicate an empty array yet)
             return [ArrayType::instance($this->is_nullable)];
         }
 
         $union_type_builder = new UnionTypeBuilder();
-        foreach ($field_types as $key => $field_union_type) {
+        foreach ($this->field_types as $key => $field_union_type) {
             foreach ($field_union_type->getTypeSet() as $type) {
                 $union_type_builder->addType(GenericArrayType::fromElementType(
                     $type->asNonLiteralType(),

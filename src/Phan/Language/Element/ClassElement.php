@@ -71,11 +71,10 @@ abstract class ClassElement extends AddressableElement
      */
     public function getDefiningFQSEN() : FullyQualifiedClassElement
     {
-        $defining_fqsen = $this->defining_fqsen;
-        if ($defining_fqsen === null) {
+        if ($this->defining_fqsen === null) {
             throw new AssertionError('should check hasDefiningFQSEN');
         }
-        return $defining_fqsen;
+        return $this->defining_fqsen;
     }
 
     /**

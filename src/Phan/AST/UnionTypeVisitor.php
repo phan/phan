@@ -1825,7 +1825,6 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $this->context,
                 $node
             ))->getProperty($is_static);
-            $union_type = $property->getUnionType()->withStaticResolvedInContext($property->getContext());
 
             if ($property->isWriteOnly()) {
                 $this->emitIssue(
@@ -1837,13 +1836,26 @@ class UnionTypeVisitor extends AnalysisVisitor
                 );
             }
 
+            $expr_node = $node->children['expr'] ?? null;
+            if ($expr_node instanceof Node &&
+                    $expr_node->kind === ast\AST_VAR &&
+                    $expr_node->children['name'] === 'this') {
+                $override_union_type = $this->context->getThisPropertyIfOverridden($property->getName());
+                if ($override_union_type) {
+                    // There was an earlier expression such as `$this->prop = 2;`
+                    // fwrite(STDERR, "Saw override '$override_union_type' for $property\n");
+                    return $override_union_type;
+                }
+            }
+
+            $union_type = $property->getUnionType()->withStaticResolvedInContext($property->getContext());
             // Map template types to concrete types
             if ($union_type->hasTemplateTypeRecursive()) {
                 // Get the type of the object calling the property
                 $expression_type = UnionTypeVisitor::unionTypeFromNode(
                     $this->code_base,
                     $this->context,
-                    $node->children['expr']
+                    $expr_node
                 );
 
                 $union_type = $union_type->withTemplateParameterTypeMap(
