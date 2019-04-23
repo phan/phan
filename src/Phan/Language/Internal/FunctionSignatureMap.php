@@ -13611,7 +13611,7 @@ return [
 'stats_stat_innerproduct' => ['float', 'arr1'=>'array', 'arr2'=>'array'],
 'stats_stat_noncentral_t' => ['float', 'par1'=>'float', 'par2'=>'float', 'par3'=>'float', 'which'=>'int'],
 'stats_stat_paired_t' => ['float', 'arr1'=>'array', 'arr2'=>'array'],
-'stats_stat_percentile' => ['float', 'df'=>'float', 'xnonc'=>'float'],
+'stats_stat_percentile' => ['float', 'arr'=>'array', 'perc'=>'float'],
 'stats_stat_powersum' => ['float', 'arr'=>'array', 'power'=>'float'],
 'stats_variance' => ['float', 'a'=>'array', 'sample='=>'bool'],
 'Stomp::__construct' => ['void', 'broker='=>'string', 'username='=>'string', 'password='=>'string', 'headers='=>'array'],
