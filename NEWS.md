@@ -17,6 +17,12 @@ New features(Analysis):
 
   e.g. `@return array{\n\r\t\x01\\:true}` in phpdoc would correspond to `return ["\n\r\t\x01\\" => true];`
 
+Plugins:
++ Add `FFIAnalysisPlugin` to avoid false positives in uses of PHP 7.4's `FFI\CData`  (#2659)
+  (C data of scalar types may be read and assigned as regular PHP data. `$x = FFI::new(“int”); $x = 42;`)
+
+  Note that this is only implemented for variables right now.
+
 20 Apr 2019, Phan 1.3.1
 -----------------------
 

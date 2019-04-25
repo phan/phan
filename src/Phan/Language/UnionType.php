@@ -3650,9 +3650,9 @@ class UnionType implements Serializable
             case ArrayShapeType::class:
                 return $type->asArrayLiteralOrNull() ?? $this;
             case LiteralIntType::class:
-                return $type->getIsNullable() ? $this : $type->getValue();
+                return $type->getValue();
             case LiteralStringType::class:
-                return $type->getIsNullable() ? $this : $type->getValue();
+                return $type->getValue();
             case FalseType::class:
                 return false;
             case TrueType::class:
