@@ -118,6 +118,7 @@ class PassByReferenceVariable extends Variable
     /**
      * Get the argument passed in to this object.
      * @return TypedElement|UnaddressableTypedElement
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function getElement()
     {
