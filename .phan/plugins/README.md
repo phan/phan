@@ -39,6 +39,12 @@ or if the relevant parts of the codebase fixed the bug/added annotations)
 The setting `'plugin_config' => ['unused_suppression_ignore_list' => ['FlakyPluginIssueName']]` can be used in `.phan/config.php`
 to make this plugin avoid emitting `Unused*Suppression` for a list of issue names.
 
+#### FFIAnalysisPlugin.php
+
+This is only necessary if you are using [PHP 7.4's FFI (Foreign Function Interface) support](https://wiki.php.net/rfc/ffi)
+
+This makes Phan infer that assignments to variables that originally contained CData will continue to be CData.
+
 ### 2. General-Use Plugins
 
 These plugins are useful across a wide variety of code styles, and should give low false positives.
