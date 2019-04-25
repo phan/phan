@@ -114,4 +114,13 @@ class PassByReferenceVariable extends Variable
     {
         return $this->element->isPHPInternal();
     }
+
+    /**
+     * Get the argument passed in to this object.
+     * @return TypedElement|UnaddressableTypedElement
+     */
+    public function getElement()
+    {
+        return $this->element;
+    }
 }
