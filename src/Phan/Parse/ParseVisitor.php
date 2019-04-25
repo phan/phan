@@ -86,6 +86,7 @@ class ParseVisitor extends ScopeVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
+     * @throws FQSENException if the node has invalid names
      */
     public function visitClass(Node $node) : Context
     {
@@ -228,7 +229,7 @@ class ParseVisitor extends ScopeVisitor
                 );
 
                 // Set the parent for the class
-                $class->setParentType($parent_fqsen->asType());
+                $class->setParentType($parent_fqsen->asType(), $extends_node->lineno);
             }
 
             // If the class explicitly sets its overriding extension type,
@@ -240,19 +241,14 @@ class ParseVisitor extends ScopeVisitor
 
             // Add any implemented interfaces
             if (isset($node->children['implements'])) {
-                // @phan-suppress-next-line PhanThrowTypeAbsentForCall should be impossible
-                $interface_list = (new ContextNode(
-                    $this->code_base,
-                    $this->context,
-                    $node->children['implements']
-                ))->getQualifiedNameList();
-
-                foreach ($interface_list as $name) {
+                foreach ($node->children['implements']->children as $name_node) {
+                    $name = (string)UnionTypeVisitor::unionTypeFromClassNode($this->code_base, $this->context, $name_node);
                     $class->addInterfaceClassFQSEN(
                         // @phan-suppress-next-line PhanThrowTypeAbsentForCall should be impossible
                         FullyQualifiedClassName::fromFullyQualifiedString(
                             $name
-                        )
+                        ),
+                        $name_node->lineno
                     );
                 }
             }
@@ -289,7 +285,7 @@ class ParseVisitor extends ScopeVisitor
 
         // Add each trait to the class
         foreach ($trait_fqsen_list as $trait_fqsen) {
-            $class->addTraitFQSEN($trait_fqsen);
+            $class->addTraitFQSEN($trait_fqsen, $node->children['traits']->lineno ?? 0);
         }
 
         // Get the adaptations for those traits

@@ -94,6 +94,7 @@ class ContextNode
      *
      * @return array<int,string>
      * @throws FQSENException if the node has invalid names
+     * @suppress PhanUnreferencedPublicMethod this used to be used
      */
     public function getQualifiedNameList() : array
     {

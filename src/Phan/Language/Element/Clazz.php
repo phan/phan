@@ -69,6 +69,13 @@ class Clazz extends AddressableElement
     private $parent_type = null;
 
     /**
+     * @var int
+     * The line number of the parent of this class if it extends
+     * anything, else 0 if unknown/missing.
+     */
+    private $parent_type_lineno = 0;
+
+    /**
      * @var array<int,FullyQualifiedClassName>
      * A possibly empty list of interfaces implemented
      * by this class
@@ -76,10 +83,22 @@ class Clazz extends AddressableElement
     private $interface_fqsen_list = [];
 
     /**
+     * @var array<int,int>
+     * Line numbers for indices of interface_fqsen_list.
+     */
+    private $interface_fqsen_lineno = [];
+
+    /**
      * @var array<int,FullyQualifiedClassName>
      * A possibly empty list of traits used by this class
      */
     private $trait_fqsen_list = [];
+
+    /**
+     * @var array<int,int>
+     * Line numbers for indices of trait_fqsen_list
+     */
+    private $trait_fqsen_lineno = [];
 
     /**
      * @var array<string,TraitAdaptations>
@@ -406,7 +425,7 @@ class Clazz extends AddressableElement
      *
      * @return void
      */
-    public function setParentType(Type $parent_type)
+    public function setParentType(Type $parent_type, int $lineno = 0)
     {
         if ($parent_type && $this->getInternalScope()->hasAnyTemplateType()) {
             // Get a reference to the local list of templated
@@ -444,6 +463,7 @@ class Clazz extends AddressableElement
         }
 
         $this->parent_type = $parent_type;
+        $this->parent_type_lineno = $lineno;
 
         // Add the parent to the union type of this class
         $this->addAdditionalType($parent_type);
@@ -649,8 +669,9 @@ class Clazz extends AddressableElement
      * @param FullyQualifiedClassName $fqsen
      * @return void
      */
-    public function addInterfaceClassFQSEN(FullyQualifiedClassName $fqsen)
+    public function addInterfaceClassFQSEN(FullyQualifiedClassName $fqsen, int $lineno = 0)
     {
+        $this->interface_fqsen_lineno[count($this->interface_fqsen_list)] = $lineno;
         $this->interface_fqsen_list[] = $fqsen;
 
         // Add the interface to the union type of this
@@ -1736,8 +1757,9 @@ class Clazz extends AddressableElement
     /**
      * @return void
      */
-    public function addTraitFQSEN(FullyQualifiedClassName $fqsen)
+    public function addTraitFQSEN(FullyQualifiedClassName $fqsen, int $lineno = 0)
     {
+        $this->trait_fqsen_lineno[count($this->trait_fqsen_list)] = $lineno;
         $this->trait_fqsen_list[] = $fqsen;
 
         // Add the trait to the union type of this class
@@ -2056,7 +2078,7 @@ class Clazz extends AddressableElement
         }
         $this->importConstantsFromAncestorClasses($code_base);
 
-        foreach ($this->getInterfaceFQSENList() as $fqsen) {
+        foreach ($this->getInterfaceFQSENList() as $i => $fqsen) {
             if (!$code_base->hasClassWithFQSEN($fqsen)) {
                 continue;
             }
@@ -2064,7 +2086,7 @@ class Clazz extends AddressableElement
             $ancestor = $code_base->getClassByFQSEN($fqsen);
 
             if (!$ancestor->isInterface()) {
-                $this->emitWrongInheritanceCategoryWarning($code_base, $ancestor, 'Interface');
+                $this->emitWrongInheritanceCategoryWarning($code_base, $ancestor, 'Interface', $this->interface_fqsen_lineno[$i] ?? 0);
             }
 
             $this->importAncestorClass(
@@ -2074,14 +2096,14 @@ class Clazz extends AddressableElement
             );
         }
 
-        foreach ($this->getTraitFQSENList() as $fqsen) {
+        foreach ($this->getTraitFQSENList() as $i => $fqsen) {
             if (!$code_base->hasClassWithFQSEN($fqsen)) {
                 continue;
             }
 
             $ancestor = $code_base->getClassByFQSEN($fqsen);
             if (!$ancestor->isTrait()) {
-                $this->emitWrongInheritanceCategoryWarning($code_base, $ancestor, 'Trait');
+                $this->emitWrongInheritanceCategoryWarning($code_base, $ancestor, 'Trait', $this->trait_fqsen_lineno[$i] ?? 0);
             }
 
             $this->importAncestorClass(
@@ -2168,7 +2190,7 @@ class Clazz extends AddressableElement
         $parent = $this->getParentClass($code_base);
 
         if ($parent->isTrait() || $parent->isInterface()) {
-            $this->emitWrongInheritanceCategoryWarning($code_base, $parent, 'Class');
+            $this->emitWrongInheritanceCategoryWarning($code_base, $parent, 'Class', $this->parent_type_lineno);
         }
         if ($parent->isFinal()) {
             $this->emitExtendsFinalClassWarning($code_base, $parent);
@@ -2190,7 +2212,8 @@ class Clazz extends AddressableElement
     private function emitWrongInheritanceCategoryWarning(
         CodeBase $code_base,
         Clazz $ancestor,
-        string $expected_inheritance_category
+        string $expected_inheritance_category,
+        int $lineno
     ) {
         $context = $this->getContext();
         if ($ancestor->isPHPInternal()) {
@@ -2199,7 +2222,7 @@ class Clazz extends AddressableElement
                     $code_base,
                     $context,
                     Issue::AccessWrongInheritanceCategoryInternal,
-                    $context->getLineNumberStart(),
+                    $lineno ?: $context->getLineNumberStart(),
                     (string)$ancestor,
                     $expected_inheritance_category
                 );
@@ -2210,7 +2233,7 @@ class Clazz extends AddressableElement
                     $code_base,
                     $context,
                     Issue::AccessWrongInheritanceCategory,
-                    $context->getLineNumberStart(),
+                    $lineno ?: $context->getLineNumberStart(),
                     (string)$ancestor,
                     $ancestor->getFileRef()->getFile(),
                     $ancestor->getFileRef()->getLineNumberStart(),
@@ -2234,7 +2257,7 @@ class Clazz extends AddressableElement
                     $code_base,
                     $context,
                     Issue::AccessExtendsFinalClassInternal,
-                    $context->getLineNumberStart(),
+                    $this->parent_type_lineno ?: $context->getLineNumberStart(),
                     (string)$ancestor->getFQSEN()
                 );
             }
@@ -2244,7 +2267,7 @@ class Clazz extends AddressableElement
                     $code_base,
                     $context,
                     Issue::AccessExtendsFinalClass,
-                    $context->getLineNumberStart(),
+                    $this->parent_type_lineno ?: $context->getLineNumberStart(),
                     (string)$ancestor->getFQSEN(),
                     $ancestor->getFileRef()->getFile(),
                     $ancestor->getFileRef()->getLineNumberStart()
