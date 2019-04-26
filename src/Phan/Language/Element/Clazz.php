@@ -1467,8 +1467,6 @@ class Clazz extends AddressableElement
             // Note: For private/protected methods, the defining FQSEN is set to the FQSEN of the inheriting class.
             // So, when multiple traits are inherited, they may identical defining FQSENs, but some may be abstract, and others may be implemented.
             if ($method->getDefiningFQSEN() === $existing_method_defining_fqsen) {
-                $method->setIsOverride(true);
-                $existing_method->setIsOverriddenByAnother(true);
                 if ($method->isAbstract() === $existing_method->isAbstract()) {
                     return;
                 }
