@@ -223,7 +223,9 @@ class Method extends ClassElement implements FunctionInterface
         if ($this->isFinal()) {
             return true;
         }
-        return Config::getValue('assume_no_external_class_overrides') && !$this->getIsOverriddenByAnother();
+        return Config::getValue('assume_no_external_class_overrides')
+            && !$this->getIsOverriddenByAnother()
+            && !$this->isAbstract();
     }
 
     /**
