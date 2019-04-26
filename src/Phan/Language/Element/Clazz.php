@@ -120,6 +120,12 @@ class Clazz extends AddressableElement
     private $additional_union_types = null;
 
     /**
+     * An additional id to disambiguate classes on the same line
+     * https://github.com/phan/phan/issues/1988
+     */
+    private $decl_id = 0;
+
+    /**
      * @param Context $context
      * The context in which the structural element lives
      *
@@ -3230,5 +3236,23 @@ class Clazz extends AddressableElement
         }
         $method = $code_base->getMethodByFQSEN($method_fqsen);
         $method->setIsOverriddenByAnother(true);
+    }
+
+    /**
+     * Sets the declaration id of the node containing this user-defined class
+     * @return void
+     */
+    public function setDeclId(int $id)
+    {
+        $this->decl_id = $id;
+    }
+
+    /**
+     * Gets the declaration id of the node containing this user-defined class.
+     * Returns 0 for internal classes.
+     */
+    public function getDeclId() : int
+    {
+        return $this->decl_id;
     }
 }

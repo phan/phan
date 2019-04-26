@@ -116,6 +116,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             );
         } while ($this->context->getProjectRelativePath()
                 != $clazz->getFileRef()->getProjectRelativePath()
+            || $node->children['__declId'] != $clazz->getDeclId()
             || $this->context->getLineNumberStart() != $clazz->getFileRef()->getLineNumberStart()
         );
 

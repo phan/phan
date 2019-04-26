@@ -134,6 +134,7 @@ class ParseVisitor extends ScopeVisitor
             $node->flags ?? 0,
             $class_fqsen
         );
+        $class->setDeclId($node->children['__declId']);
         $class->setDidFinishParsing(false);
         try {
             // Set the scope of the class's context to be the
