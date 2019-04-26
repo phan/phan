@@ -864,6 +864,5 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
             // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
             $escaped_key
         );
-
     }
 }

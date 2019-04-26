@@ -5,8 +5,8 @@ use ast\Node;
 use Phan\Language\Element\Variable;
 use Phan\Language\UnionType;
 use Phan\PluginV2;
-use Phan\PluginV2\PluginAwarePreAnalysisVisitor;
 use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV2\PluginAwarePreAnalysisVisitor;
 use Phan\PluginV2\PostAnalyzeNodeCapability;
 use Phan\PluginV2\PreAnalyzeNodeCapability;
 
@@ -93,10 +93,10 @@ class FFIPreAnalysisVisitor extends PluginAwarePreAnalysisVisitor
     private static function containsFFICDataType(UnionType $union_type) : int
     {
         foreach ($union_type->getTypeSet() as $type) {
-            if (strcasecmp('\FFI', $type->getNamespace()) !== 0)  {
+            if (strcasecmp('\FFI', $type->getNamespace()) !== 0) {
                 continue;
             }
-            if (strcasecmp('CData', $type->getName()) !== 0)  {
+            if (strcasecmp('CData', $type->getName()) !== 0) {
                 continue;
             }
             if ($type->getIsNullable()) {
@@ -128,7 +128,8 @@ class FFIPostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
         }
     }
 
-    private function analyzeFFIAssign(Node $node) {
+    private function analyzeFFIAssign(Node $node)
+    {
         $var_name = $node->children['var']->children['name'] ?? null;
         if (!is_string($var_name)) {
             return;
@@ -136,7 +137,7 @@ class FFIPostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
         $cdata_type = UnionType::fromFullyQualifiedString('\FFI\CData');
         $scope = $this->context->getScope();
         // @phan-suppress-next-line PhanUndeclaredProperty
-        if ($node->is_ffi !== FFIPreAnalysisVisitor::ENTIRELY_FFI_CDATA)  {
+        if ($node->is_ffi !== FFIPreAnalysisVisitor::ENTIRELY_FFI_CDATA) {
             if ($scope->hasVariableWithName($var_name)) {
                 $cdata_type = $cdata_type->withUnionType($scope->getVariableByName($var_name)->getUnionType());
             }

@@ -678,7 +678,6 @@ final class UnionTypeTest extends BaseTest
         $type = $union_type->getTypeSet()[0];
         $this->assertInstanceOf(ArrayShapeType::class, $type);
         $this->assertSame(["\n", "\r", "\t", "\\"], array_keys($type->getFieldTypes()));
-
     }
 
     private static function createGenericArrayTypeWithMixedKey(Type $type, bool $is_nullable) : GenericArrayType

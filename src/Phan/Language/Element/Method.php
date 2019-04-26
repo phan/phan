@@ -216,6 +216,18 @@ class Method extends ClassElement implements FunctionInterface
 
     /**
      * @return bool
+     * True if this should be analyzed as if it is a final method
+     */
+    public function isEffectivelyFinal() : bool
+    {
+        if ($this->isFinal()) {
+            return true;
+        }
+        return Config::getValue('assume_no_external_class_overrides') && !$this->getIsOverriddenByAnother();
+    }
+
+    /**
+     * @return bool
      * True if this method returns a reference
      */
     public function returnsRef() : bool

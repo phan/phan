@@ -3,8 +3,11 @@ Phan NEWS
 ?? ??? 2019, Phan 1.3.2 (dev)
 -----------------------
 
-New features(CLI):
+New features(CLI, Configs):
 + Suggest similarly named plugins if `--plugin SomePluginName` refers to a built-in plugin that doesn't exist.
++ Add `assume_no_external_class_overrides` - When enabled, Phan will more aggressively assume class elements aren't overridden.
+  - e.g. infer that non-final methods without return statements have type `void`.
+  Disabled by default.
 
 New features(Analysis):
 + Support locally tracking assignments to and conditionals on `$this->prop` inside of function scopes. (#805, #204)

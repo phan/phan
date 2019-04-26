@@ -260,9 +260,8 @@ class IssueFixSuggester
     }
 
     /**
-     * @param ?\Closure $filter
+     * @param ?\Closure(FullyQualifiedClassName):bool $filter
      * @return ?Suggestion
-     * TODO: Figure out why ?Closure(NS\X):bool can't cast to ?Closure(NS\X):bool
      */
     public static function suggestSimilarClassForGenericFQSEN(CodeBase $code_base, Context $context, FQSEN $fqsen, $filter = null, string $prefix = 'Did you mean')
     {
