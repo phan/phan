@@ -348,7 +348,7 @@ trait ConditionVisitorUtil
         bool $suppress_issues
     ) : Context {
         if ($var_node->kind === ast\AST_PROP) {
-            return $this->modifyPropertySimple($var_node, function (UnionType $unused) use ($new_union_type) : UnionType{
+            return $this->modifyPropertySimple($var_node, static function (UnionType $unused) use ($new_union_type) : UnionType {
                 return $new_union_type;
             }, $context);
         }

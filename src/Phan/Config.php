@@ -418,6 +418,12 @@ class Config
         // This is useful in situations when parsing only a subset of the available files.
         'unused_variable_detection_assume_override_exists' => false,
 
+        // Set this to true in order to aggressively assume class elements aren't overridden when analyzing uses of classes.
+        // This is useful for standalone applications which have all code analyzed by Phan.
+        //
+        // Currently, this just affects inferring that methods without return statements have type `void`
+        'assume_no_external_class_overrides' => false,
+
         // Set to true in order to force tracking references to elements
         // (functions/methods/consts/protected).
         //

@@ -1347,7 +1347,7 @@ trait FunctionTrait
             }
         }
         if ($return_type->isEmpty() && !$this->getHasReturn()) {
-            if ($this instanceof Func || ($this instanceof Method && ($this->isPrivate() || $this->isFinal() || $this->getIsMagicAndVoid() || $this->getClass($code_base)->isFinal()))) {
+            if ($this instanceof Func || ($this instanceof Method && ($this->isPrivate() || $this->isEffectivelyFinal() || $this->getIsMagicAndVoid() || $this->getClass($code_base)->isFinal()))) {
                 $this->setUnionType(VoidType::instance(false)->asUnionType());
             }
         }
