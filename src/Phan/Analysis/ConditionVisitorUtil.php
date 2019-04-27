@@ -819,7 +819,7 @@ trait ConditionVisitorUtil
                 $context,
                 $var_name,
                 UnionType::empty(),
-                $var_node->flags
+                0
             );
             $context->addScopeVariable($variable);
             return $variable;
