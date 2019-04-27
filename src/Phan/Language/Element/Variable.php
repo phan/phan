@@ -135,7 +135,7 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
                 ->withLineNumberStart($node->lineno ?? 0),
             $variable_name,
             $union_type,
-            $node->flags ?? 0
+            0
         );
 
         return $variable;

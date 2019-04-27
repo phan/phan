@@ -822,7 +822,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                         $context->withLineNumberStart($var_node->lineno ?? 0),
                         $var_name,
                         UnionType::empty(),
-                        $var_node->flags ?? 0
+                        0
                     )));
                 }
                 return $this->removeFalseyFromVariable($var_node, $context, true);
@@ -865,7 +865,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                         $context->withLineNumberStart($expr_node->lineno ?? 0),
                         $var_name,
                         ArrayType::instance(false)->asUnionType(),
-                        $expr_node->flags
+                        0
                     )));
                     return $context;
                 }

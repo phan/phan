@@ -648,7 +648,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 $this->context,
                 $dim,
                 $this->right_type,
-                $node->flags ?? 0
+                0
             );
 
             $this->context->addGlobalScopeVariable(
