@@ -242,4 +242,31 @@ final class CLITest extends BaseTest
             CLI::getPluginSuggestionText('thisisnotsimilartoaplugin')
         );
     }
+
+    public function testSameVersionAsNEWS()
+    {
+        $news = file_get_contents(dirname(__DIR__, 2) . '/NEWS.md');
+        $this->assertTrue(is_string($news));
+        $versions = [];
+        $lines = explode("\n", $news);
+        foreach ($lines as $i => $line) {
+            if (preg_match('@^-----@', $line)) {
+                $version_line = $lines[$i - 1];
+                if (preg_match('@\b(\d+\.\d+\.\d+)(.*\(dev\))?@', $version_line, $matches)) {
+                    $version = $matches[1] . (!empty($matches[2]) ? '-dev' : '');
+                    $versions[] = $version;
+                } else {
+                    $this->fail("Could not parse version line $version_line");
+                }
+            }
+        }
+        $first_version = $versions[0];
+        $this->assertSame(CLI::PHAN_VERSION, $first_version, 'expected NEWS.md and CLI::PHAN_VERSION to have the same version');
+        foreach ($versions as $i => $version) {
+            if ($i == 0) {
+                continue;
+            }
+            $this->assertLessThan(0, version_compare($version, $versions[$i - 1]), "unexpected order of $version and {$versions[$i - 1]}");
+        }
+    }
 }
