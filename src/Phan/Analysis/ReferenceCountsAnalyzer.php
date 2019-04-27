@@ -162,7 +162,7 @@ class ReferenceCountsAnalyzer
         int &$i
     ) {
         foreach ($element_list as $element) {
-            CLI::progress('dead code', (++$i) / $total_count);
+            CLI::progress('dead code', (++$i) / $total_count, $element);
             // Don't worry about internal elements
             if ($element->isPHPInternal() || $element->getContext()->isPHPInternal()) {
                 // The extra check of the context is necessary for code in internal_stubs
@@ -189,7 +189,7 @@ class ReferenceCountsAnalyzer
         int &$i
     ) {
         foreach ($element_list as $element) {
-            CLI::progress('dead code', (++$i) / $total_count);
+            CLI::progress('dead code', (++$i) / $total_count, $element);
             // Don't worry about internal elements
             if ($element->isPHPInternal()) {
                 continue;

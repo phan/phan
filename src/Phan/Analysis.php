@@ -322,12 +322,12 @@ class Analysis
         // Plugins may also analyze user-defined methods here.
         $i = 0;
         if ($show_progress) {
-            CLI::progress('function', 0.0);
+            CLI::progress('function', 0.0, null);
         }
         $function_map = $code_base->getFunctionMap();
         foreach ($function_map as $function) {  // iterate, ignoring $fqsen
             if ($show_progress) {
-                CLI::progress('function', (++$i) / (\count($function_map)));
+                CLI::progress('function', (++$i) / (\count($function_map)), $function);
             }
             $analyze_function_or_method($function);
         }
@@ -337,14 +337,14 @@ class Analysis
         $i = 0;
         $method_set = $code_base->getMethodSet();
         if ($show_progress) {
-            CLI::progress('method', 0.0);
+            CLI::progress('method', 0.0, null);
         }
         foreach ($method_set as $method) {
             if ($show_progress) {
                 // I suspect that method analysis is hydrating some of the classes,
                 // adding even more inherited methods to the end of the set.
                 // This recalculation is needed so that the progress bar is accurate.
-                CLI::progress('method', (++$i) / (\count($method_set)));
+                CLI::progress('method', (++$i) / (\count($method_set)), $method);
             }
             $analyze_function_or_method($method);
         }

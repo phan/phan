@@ -89,6 +89,9 @@ Usage: ./phan [options] [files...]
  -p, --progress-bar
   Show progress bar
 
+ -D, --debug
+  Print debugging output to stderr. Useful for looking into performance issues or crashes.
+
  -q, --quick
   Quick mode - doesn't recurse into all function calls
 
@@ -222,6 +225,11 @@ Extended help:
  --dump-signatures-file <filename>
   Emit JSON serialized signatures to the given file.
   This uses a method signature format similar to FunctionSignatureMap.php.
+
+ --automatic-fix
+  Automatically fix any issues Phan is capable of fixing.
+  NOTE: This is a work in progress and limited to a small subset of issues
+  (e.g. unused imports on their own line)
 
  --find-signature 'paramUnionType1->paramUnionType2->returnUnionType'
   Find a signature in the analyzed codebase that is similar to the argument.

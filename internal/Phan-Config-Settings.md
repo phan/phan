@@ -192,6 +192,15 @@ This will also check if final methods are overridden, etc.
 
 (Default: `true`)
 
+## assume_no_external_class_overrides
+
+Set this to true in order to aggressively assume class elements aren't overridden when analyzing uses of classes.
+This is useful for standalone applications which have all code analyzed by Phan.
+
+Currently, this just affects inferring that methods without return statements have type `void`
+
+(Default: `false`)
+
 ## autoload_internal_extension_signatures
 
 You can put paths to stubs of internal extensions in this config option.
