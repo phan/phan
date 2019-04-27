@@ -1262,20 +1262,20 @@ EOB;
             }
             $distance = \levenshtein($key_lower, \strtolower($flag));
             // distance > 5 is to far off to be a typo
+            // Make sure that if two flags have the same distance, ties are sorted alphabetically
             if ($distance <= 5) {
-                $similarities[$flag] = $distance;
+                $similarities[$flag] = [$distance, "x" . strtolower($flag), $flag];
             }
         }
 
         \asort($similarities); // retain keys and sort descending
-        $similar_flags = \array_keys($similarities);
         $similarity_values = \array_values($similarities);
 
-        if (count($similar_flags) >= 2 && ($similarity_values[1] <= $similarity_values[0] + 1)) {
+        if (count($similarity_values) >= 2 && ($similarity_values[1][0] <= $similarity_values[0][0] + 1)) {
             // If the next-closest suggestion isn't close to as similar as the closest suggestion, just return the closest suggestion
-            return $generate_suggestion_text($similar_flags[0], $similar_flags[1]);
-        } elseif (count($similar_flags) >= 1) {
-            return $generate_suggestion_text($similar_flags[0]);
+            return $generate_suggestion_text($similarity_values[0][2], $similarity_values[1][2]);
+        } elseif (count($similarity_values) >= 1) {
+            return $generate_suggestion_text($similarity_values[0][2]);
         }
         return '';
     }
