@@ -7,7 +7,9 @@ use InvalidArgumentException;
 use Phan\Config\Initializer;
 use Phan\Daemon\ExitException;
 use Phan\Exception\UsageException;
+use Phan\Language\Element\AddressableElement;
 use Phan\Language\Element\Comment\Builder;
+use Phan\Language\FQSEN;
 use Phan\Library\StringUtil;
 use Phan\Output\Collector\BufferingCollector;
 use Phan\Output\Filter\CategoryIssueFilter;
@@ -54,14 +56,14 @@ class CLI
     /**
      * This should be updated to x.y.z-dev after every release, and x.y.z before a release.
      */
-    const PHAN_VERSION = '1.3.1';
+    const PHAN_VERSION = '1.3.2-dev';
 
     /**
      * List of short flags passed to getopt
      * still available: g,n,t,u,w
      * @internal
      */
-    const GETOPT_SHORT_OPTIONS = 'f:m:o:c:k:aeqbr:pid:3:y:l:xj:zhvs:SCP:I:';
+    const GETOPT_SHORT_OPTIONS = 'f:m:o:c:k:aeqbr:pid:3:y:l:xj:zhvs:SCP:I:D';
 
     /**
      * List of long flags passed to getopt
@@ -77,6 +79,7 @@ class CLI
         'daemonize-tcp-host:',
         'daemonize-tcp-port:',
         'dead-code-detection',
+        'debug',
         'directory:',
         'disable-cache',
         'disable-plugins',
@@ -451,6 +454,10 @@ class CLI
                 case 'p':
                 case 'progress-bar':
                     Config::setValue('progress_bar', true);
+                    break;
+                case 'D':
+                case 'debug':
+                    Config::setValue('debug_output', true);
                     break;
                 case 'a':
                 case 'dump-ast':
@@ -975,6 +982,9 @@ $init_help
  -p, --progress-bar
   Show progress bar
 
+ -D, --debug
+  Print debugging output to stderr. Useful for looking into performance issues or crashes.
+
  -q, --quick
   Quick mode - doesn't recurse into all function calls
 
@@ -1252,20 +1262,20 @@ EOB;
             }
             $distance = \levenshtein($key_lower, \strtolower($flag));
             // distance > 5 is to far off to be a typo
+            // Make sure that if two flags have the same distance, ties are sorted alphabetically
             if ($distance <= 5) {
-                $similarities[$flag] = $distance;
+                $similarities[$flag] = [$distance, "x" . strtolower($flag), $flag];
             }
         }
 
         \asort($similarities); // retain keys and sort descending
-        $similar_flags = \array_keys($similarities);
         $similarity_values = \array_values($similarities);
 
-        if (count($similar_flags) >= 2 && ($similarity_values[1] <= $similarity_values[0] + 1)) {
+        if (count($similarity_values) >= 2 && ($similarity_values[1][0] <= $similarity_values[0][0] + 1)) {
             // If the next-closest suggestion isn't close to as similar as the closest suggestion, just return the closest suggestion
-            return $generate_suggestion_text($similar_flags[0], $similar_flags[1]);
-        } elseif (count($similar_flags) >= 1) {
-            return $generate_suggestion_text($similar_flags[0]);
+            return $generate_suggestion_text($similarity_values[0][2], $similarity_values[1][2]);
+        } elseif (count($similarity_values) >= 1) {
+            return $generate_suggestion_text($similarity_values[0][2]);
         }
         return '';
     }
@@ -1374,11 +1384,27 @@ EOB;
      */
     public static function shouldShowProgress() : bool
     {
-        return Config::getValue('progress_bar') &&
+        return (Config::getValue('progress_bar') || Config::getValue('debug_output')) &&
             !Config::getValue('dump_ast') &&
-            !Config::getValue('daemonize_tcp') &&
-            !Config::getValue('daemonize_socket') &&
-            !Config::getValue('language_server_config');
+            !self::isDaemonOrLanguageServer();
+    }
+
+    /**
+     * Returns true if this is a daemon or language server responding to requests
+     */
+    public static function isDaemonOrLanguageServer() : bool
+    {
+        return Config::getValue('daemonize_tcp') ||
+            Config::getValue('daemonize_socket') ||
+            Config::getValue('language_server_config');
+    }
+
+    /**
+     * Should this show --debug output
+     */
+    public static function shouldShowDebugOutput() : bool
+    {
+        return Config::getValue('debug_output') && !self::isDaemonOrLanguageServer();
     }
 
     /**
@@ -1402,6 +1428,11 @@ EOB;
         return \preg_match($exclude_file_regex, $path_name) > 0;
     }
 
+    // Bound the percentage to [0, 1]
+    private static function boundPercentage(float $p) : float {
+        return \min(\max($p, 0.0), 1.0);
+    }
+
     /**
      * Update a progress bar on the screen
      *
@@ -1412,18 +1443,26 @@ EOB;
      * @param float $p
      * The percentage to display
      *
+     * @param ?(string|FQSEN|AddressableElement) $details
+     * Details about what is being analyzed within the phase for $msg
+     *
      * @return void
      */
     public static function progress(
         string $msg,
-        float $p
+        float $p,
+        $details = null
     ) {
+        if (self::shouldShowDebugOutput()) {
+            self::debugProgress($msg, $p, $details);
+            return;
+        }
         if (!self::shouldShowProgress()) {
             return;
         }
 
         // Bound the percentage to [0, 1]
-        $p = \min(\max($p, 0.0), 1.0);
+        $p = self::boundPercentage($p);
 
         static $previous_update_time = 0.0;
         $time = \microtime(true);
@@ -1467,6 +1506,43 @@ EOB;
                $right_side .
                "\r";
         \fwrite(STDERR, $msg);
+    }
+
+    /**
+     * @return void
+     * @param ?(string|FQSEN|AddressableElement) $details
+     */
+    public static function debugProgress(string $msg, float $p, $details)
+    {
+        $pct = \sprintf("%d%%", (int)(100 * self::boundPercentage($p)));
+
+        if ($details === null) {
+            return;
+        }
+        if ($details instanceof AddressableElement) {
+            $details = $details->getFQSEN();
+        }
+        switch ($msg) {
+            case 'parse':
+            case 'analyze':
+                $line = "Going to $msg '$details' ($pct)";
+                break;
+            case 'method':
+            case 'function':
+                $line = "Going to analyze $msg $details() ($pct)";
+                break;
+            default:
+                $line = "In $msg phase, processing '$details' ($pct)";
+                break;
+        }
+        self::debugOutput($line);
+    }
+
+    /**
+     * @return void
+     */
+    public static function debugOutput(string $line) {
+        \fwrite(STDERR, $line . "\n");
     }
 
     /**

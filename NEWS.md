@@ -4,6 +4,8 @@ Phan NEWS
 -----------------------
 
 New features(CLI, Configs):
++ Add `--debug`/`-D` flag to generate verbose debug output.
+  This is useful when looking into poor performance or unexpected behavior (e.g. infinite loops or crashes).
 + Suggest similarly named plugins if `--plugin SomePluginName` refers to a built-in plugin that doesn't exist.
 + Add `assume_no_external_class_overrides` - When enabled, Phan will more aggressively assume class elements aren't overridden.
   - e.g. infer that non-final methods without return statements have type `void`.

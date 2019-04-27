@@ -147,6 +147,9 @@ class Config
         // For internal use by Phan to quickly check for membership in directory_list.
         '__directory_regex' => null,
 
+        // Whether to enable debugging output to stderr
+        'debug_output' => false,
+
         // List of case-insensitive file extensions supported by Phan.
         // (e.g. `['php', 'html', 'htm']`)
         'analyzed_file_extensions' => ['php'],
