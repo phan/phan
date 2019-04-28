@@ -1,5 +1,12 @@
 Phan NEWS
 
+?? ??? 2019, Phan 1.3.3 (dev)
+-----------------------
+
+New features(Analysis):
++ Emit `PhanDeprecatedClassConstant` for code using a constant marked with `@deprecated`.
+
+
 28 Apr 2019, Phan 1.3.2
 -----------------------
 

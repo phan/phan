@@ -2887,9 +2887,7 @@ class TolerantASTConverter
             $decl_children['__declId'] = $decl_id;
         }
         $node = new ast\Node($kind, $flags, $decl_children, $lineno);
-        if (\is_int($end_lineno)) {
-            $node->endLineno = $end_lineno;
-        }
+        $node->endLineno = $end_lineno;
         return $node;
     }
 

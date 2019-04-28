@@ -267,9 +267,7 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
             }
             if (\is_array($pattern)) {
                 foreach ($pattern as $child_pattern => $_) {
-                    if (\is_scalar($child_pattern)) {
-                        self::analyzePattern($code_base, $context, $function, (string)$child_pattern);
-                    }
+                    self::analyzePattern($code_base, $context, $function, (string)$child_pattern);
                 }
                 return;
             }

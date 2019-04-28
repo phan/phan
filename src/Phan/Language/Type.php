@@ -18,7 +18,7 @@ use Phan\Exception\InvalidFQSENException;
 use Phan\Exception\IssueException;
 use Phan\Exception\RecursionDepthException;
 use Phan\Issue;
-use Phan\Language\Element\Comment;
+use Phan\Language\Element\Comment\Builder;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\ArrayShapeType;
@@ -1417,6 +1417,7 @@ class Type
      * @return array<int,ClosureDeclarationParameter> The types for the representations of types, in the given $context
      *
      * @see Comment::magicParamFromMagicMethodParamString() - This is similar but has minor differences, such as references
+     * @suppress PhanAccessClassConstantInternal
      */
     private static function closureParamComponentStringsToParams(array $param_components, Context $context, int $source) : array
     {
@@ -1426,7 +1427,7 @@ class Type
                 // TODO: warn
                 continue;
             }
-            if (preg_match('/^(' . UnionType::union_type_regex . ')?\s*(&\s*)?(?:(\.\.\.)\s*)?(?:\$' . Comment::WORD_REGEX . ')?((?:\s*=.*)?)$/', $param_string, $param_match)) {
+            if (preg_match('/^(' . UnionType::union_type_regex . ')?\s*(&\s*)?(?:(\.\.\.)\s*)?(?:\$' . Builder::WORD_REGEX . ')?((?:\s*=.*)?)$/', $param_string, $param_match)) {
                 // Note: a closure declaration can be by reference, unlike (at)method
                 $union_type_string = $param_match[1] ?: 'mixed';
                 $union_type = UnionType::fromStringInContext(
@@ -2059,10 +2060,6 @@ class Type
 
         return $this->memoize(__METHOD__, /** @return array<string,UnionType> */ function () use ($code_base) : array {
             $fqsen = FullyQualifiedClassName::fromType($this);
-
-            if (!($fqsen instanceof FullyQualifiedClassName)) {
-                return [];
-            }
 
             if (!$code_base->hasClassWithFQSEN($fqsen)) {
                 return [];

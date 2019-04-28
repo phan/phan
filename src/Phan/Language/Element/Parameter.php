@@ -10,6 +10,7 @@ use Phan\CodeBase;
 use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Context;
+use Phan\Language\Element\Comment\Builder;
 use Phan\Language\FileRef;
 use Phan\Language\FutureUnionType;
 use Phan\Language\Type;
@@ -536,6 +537,7 @@ class Parameter extends Variable
      * Convert this parameter to a stub that can be used by `tool/make_stubs`
      *
      * @param bool $is_internal is this being requested for the language server instead of real PHP code?
+     * @suppress PhanAccessClassConstantInternal
      */
     public function toStubString(bool $is_internal = false) : string
     {
@@ -555,11 +557,11 @@ class Parameter extends Variable
         }
 
         $name = $this->getName();
-        if (!\preg_match('@' . Comment::WORD_REGEX . '@', $name)) {
+        if (!\preg_match('@' . Builder::WORD_REGEX . '@', $name)) {
             // Some PECL extensions have invalid parameter names.
             // Replace invalid characters with U+FFFD replacement character.
             $name = \preg_replace('@[^a-zA-Z0-9_\x7f-\xff]@', '�', $name);
-            if (!\preg_match('@' . Comment::WORD_REGEX . '@', $name)) {
+            if (!\preg_match('@' . Builder::WORD_REGEX . '@', $name)) {
                 $name = '_' . $name;
             }
         }

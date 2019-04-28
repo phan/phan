@@ -7,6 +7,8 @@ use Phan\Language\Context;
 use Phan\Language\Element\AddressableElement;
 use Phan\Language\Element\UnaddressableTypedElement;
 use Phan\Language\FQSEN;
+use Phan\Library\None;
+use Phan\Library\Some;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Library\StringUtil;
@@ -39,6 +41,13 @@ class Frame
             if ($value instanceof \Closure) {
                 return 'Closure';
             }
+            if ($value instanceof Some) {
+                return 'Some(' . self::encodeValue($value->get()) . ')';
+            }
+            if ($value instanceof None) {
+                return 'None';
+            }
+
             if ($value instanceof AddressableElement
                 || $value instanceof UnaddressableTypedElement
                 || $value instanceof UnionType

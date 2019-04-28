@@ -521,12 +521,12 @@ final class ArgumentType
                 return;
             }
 
-            $argument_kind = $argument->kind ?? 0;
+            $argument_kind = $argument->kind;
 
             // If this is a pass-by-reference parameter, make sure
             // we're passing an allowable argument
             if ($parameter->isPassByReference()) {
-                if ((!$argument instanceof Node) || !\in_array($argument_kind, self::REFERENCE_NODE_KINDS, true)) {
+                if (!\in_array($argument_kind, self::REFERENCE_NODE_KINDS, true)) {
                     $is_possible_reference = self::isExpressionReturningReference($code_base, $context, $argument);
 
                     if (!$is_possible_reference) {
@@ -543,7 +543,7 @@ final class ArgumentType
                 // Omit ContextNotObject check, this was checked for the first matching parameter
             }
 
-            self::analyzeParameter($code_base, $context, $method, $argument_type, $argument->lineno ?? $node->lineno ?? 0, $i);
+            self::analyzeParameter($code_base, $context, $method, $argument_type, $argument->lineno, $i);
         }
     }
 

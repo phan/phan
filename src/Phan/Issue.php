@@ -217,6 +217,7 @@ class Issue
     const DeprecatedFunction        = 'PhanDeprecatedFunction';
     const DeprecatedFunctionInternal = 'PhanDeprecatedFunctionInternal';
     const DeprecatedProperty        = 'PhanDeprecatedProperty';
+    const DeprecatedClassConstant   = 'PhanDeprecatedClassConstant';
     const DeprecatedCaseInsensitiveDefine = 'PhanDeprecatedCaseInsensitiveDefine';
 
     // Issue::CATEGORY_PARAMETER
@@ -446,7 +447,7 @@ class Issue
     const CATEGORY_COMPATIBLE        = 1 << 3;
     /** This category of issue is for when you're doing stuff out of the context in which you're allowed to do it, e.g. referencing `self` or `parent` when not in a class, interface or trait. */
     const CATEGORY_CONTEXT           = 1 << 4;
-    /** This category of issue comes up when you're accessing deprecated elements (as marked by the `@deprecated` comment). */
+    /** This category of issue comes up when you're accessing deprecated elements (as marked by the `(at)deprecated` comment). */
     const CATEGORY_DEPRECATED        = 1 << 5;
     /** Issues in this category are emitted when you have reasonable code but it isn't doing anything. */
     const CATEGORY_NOOP              = 1 << 6;
@@ -2065,6 +2066,14 @@ class Issue
                 "Reference to deprecated property {PROPERTY} defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 5002
+            ),
+            new Issue(
+                self::DeprecatedClassConstant,
+                self::CATEGORY_DEPRECATED,
+                self::SEVERITY_NORMAL,
+                "Reference to deprecated property {PROPERTY} defined at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                5007
             ),
             new Issue(
                 self::DeprecatedInterface,

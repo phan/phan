@@ -8,7 +8,6 @@ use Phan\Language\Element\Comment\Builder;
 use Phan\Language\UnionType;
 
 use function count;
-use function is_string;
 
 /**
  * APIs for generating markup (markdown) description of elements
@@ -368,7 +367,7 @@ class MarkupDescription
 
         foreach ($lines as $i => $line) {
             $line = self::trimLine($line);
-            if (!is_string($line) || \preg_match('/^\s*@/', $line) > 0) {
+            if (\preg_match('/^\s*@/', $line) > 0) {
                 $saw_phpdoc_tag = true;
                 if (count($results) === 0) {
                     // Special cases:

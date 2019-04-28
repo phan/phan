@@ -364,9 +364,6 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         $var_node = $node;
         $parent_node = $node;
         while (true) {
-            if (!($var_node instanceof Node)) {
-                return $context;
-            }
             $kind = $var_node->kind;
             if ($kind === ast\AST_VAR) {
                 break;
