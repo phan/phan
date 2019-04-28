@@ -1,6 +1,6 @@
 Phan NEWS
 
-?? ??? 2019, Phan 1.3.2 (dev)
+28 Apr 2019, Phan 1.3.2
 -----------------------
 
 New features(CLI, Configs):
@@ -14,7 +14,7 @@ New features(CLI, Configs):
 New features(Analysis):
 + Support locally tracking assignments to and conditionals on `$this->prop` inside of function scopes. (#805, #204)
 
-  This supports only one level of nesting.
+  This supports only one level of nesting. (i.e. Phan will not track `$this->prop->subProp` or `$this->prop['field']`)
 
   Properties are deliberately tracked for just the variable `$this` (which can't be reassigned), and not other variables.
 + Fix false positives with dead code detection for internal stubs in `autoload_internal_extension_signatures`. (#2605)
