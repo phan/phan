@@ -2384,30 +2384,28 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             throw new AssertionError("Function found where method expected");
         }
 
-        if ($method instanceof Method) {
-            $has_interface_class = false;
-            try {
-                $class = $method->getClass($this->code_base);
-                $has_interface_class = $class->isInterface();
-            } catch (Exception $_) {
-            }
+        $has_interface_class = false;
+        try {
+            $class = $method->getClass($this->code_base);
+            $has_interface_class = $class->isInterface();
+        } catch (Exception $_) {
+        }
 
-            if (!$method->isAbstract()
-                && !$method->isFromPHPDoc()
-                && !$has_interface_class
-                && !$return_type->isEmpty()
-                && !$method->getHasReturn()
-                && !self::declOnlyThrows($node)
-                && !$return_type->hasType(VoidType::instance(false))
-                && !$return_type->hasType(NullType::instance(false))
-            ) {
-                $this->emitIssue(
-                    Issue::TypeMissingReturn,
-                    $node->lineno,
-                    (string)$method->getFQSEN(),
-                    (string)$return_type
-                );
-            }
+        if (!$method->isAbstract()
+            && !$method->isFromPHPDoc()
+            && !$has_interface_class
+            && !$return_type->isEmpty()
+            && !$method->getHasReturn()
+            && !self::declOnlyThrows($node)
+            && !$return_type->hasType(VoidType::instance(false))
+            && !$return_type->hasType(NullType::instance(false))
+        ) {
+            $this->emitIssue(
+                Issue::TypeMissingReturn,
+                $node->lineno,
+                (string)$method->getFQSEN(),
+                (string)$return_type
+            );
         }
 
         if ($method->getHasReturn() && $method->getIsMagicAndVoid()) {

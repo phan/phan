@@ -1795,6 +1795,15 @@ class ContextNode
                     $constant->getFileRef()->getLineNumberStart()
                 );
             }
+            if ($constant->isDeprecated()) {
+                $this->emitIssue(
+                    Issue::DeprecatedClassConstant,
+                    $node->lineno,
+                    (string)$constant->getFQSEN(),
+                    $constant->getFileRef()->getFile(),
+                    $constant->getFileRef()->getLineNumberStart()
+                );
+            }
 
             return $constant;
         }

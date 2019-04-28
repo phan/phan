@@ -405,7 +405,7 @@ class Func extends AddressableElement implements FunctionInterface
         $stub .= '(' . $this->getParameterStubText() . ')';
 
         $return_type = $this->getUnionType();
-        if ($return_type && !$return_type->isEmpty()) {
+        if (!$return_type->isEmpty()) {
             $stub .= ' : ' . (string)$return_type;
         }
         return $stub;

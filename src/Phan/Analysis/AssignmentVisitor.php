@@ -576,7 +576,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 $dim_node
             );
             $dim_value = $dim_type->asSingleScalarValueOrNullOrSelf();
-        } elseif (\is_scalar($dim_node) && $dim_node !== null) {
+        } elseif (\is_scalar($dim_node)) {
             $dim_value = $dim_node;
             $dim_type = Type::fromObject($dim_node)->asUnionType();
         } else {

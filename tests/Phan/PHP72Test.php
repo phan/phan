@@ -50,6 +50,9 @@ class PHP72Test extends AbstractPhanFileTest
                     break;
             }
         }
+        if (PHP_VERSION_ID < 70100 && $main_path === '0007_deprecated_class_constant.php') {
+            $skip_reason = 'Skip comments on class constants not supported in php < 7.1';
+        }
         if (\PHP_VERSION_ID >= 80000) {
             switch ($main_path) {
                 case '0006_deprecated_create_internal_function.php':

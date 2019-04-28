@@ -3,7 +3,7 @@
 namespace Phan\AST\TolerantASTConverter;
 
 use ast;
-use Microsoft\PHPParser\Diagnostic;
+use Microsoft\PhpParser\Diagnostic;
 
 /**
  * All details about the results of parsing.

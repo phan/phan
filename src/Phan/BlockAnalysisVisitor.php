@@ -17,7 +17,6 @@ use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\Element;
 use Phan\Exception\IssueException;
 use Phan\Language\Context;
-use Phan\Language\Element\Comment;
 use Phan\Language\Element\Comment\Builder;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
@@ -280,7 +279,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
 
     const PHAN_VAR_REGEX =
-        '/@(phan-var(?:-force)?)\b\s*(' . UnionType::union_type_regex . ')\s*&?\\$' . Comment::WORD_REGEX . '/';
+        '/@(phan-var(?:-force)?)\b\s*(' . UnionType::union_type_regex . ')\s*&?\\$' . Builder::WORD_REGEX . '/';
+    // @phan-suppress-previous-line PhanAccessClassConstantInternal
 
     /**
      * Parses annotations such as "(at)phan-var int $myVar" and "(at)phan-var-force ?MyClass $varName" annotations from inline string literals.

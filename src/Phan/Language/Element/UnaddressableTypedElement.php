@@ -98,6 +98,17 @@ abstract class UnaddressableTypedElement
     }
 
     /**
+     * @return UnionType
+     * Get the type of this structural element
+     *
+     * @suppress PhanUnreferencedPublicMethod possibly used by PassByReferenceVariable
+     */
+    public function getNonVariadicUnionType() : UnionType
+    {
+        return $this->type;
+    }
+
+    /**
      * @param UnionType $type
      * Set the type of this element
      *

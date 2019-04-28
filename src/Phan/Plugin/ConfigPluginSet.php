@@ -1125,7 +1125,7 @@ final class ConfigPluginSet extends PluginV2 implements
         foreach ($plugin_set as $plugin) {
             // Don't use instanceof, avoid triggering class autoloader unnecessarily.
             // (load one less file)
-            if (\get_class($plugin) === 'UnusedSuppressionPlugin') {
+            if (\get_class($plugin) === UnusedSuppressionPlugin::class) {
                 return $plugin;
             }
         }
