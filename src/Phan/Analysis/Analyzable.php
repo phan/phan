@@ -18,17 +18,18 @@ trait Analyzable
 {
 
     /**
-     * The maximum recursion depth we can use for this analyzable
-     */
-    const MAX_RECURSION_DEPTH = 3;
-
-    /**
      * @var Node
      * The AST Node defining this object. We keep a
      * reference to this so that we can come to it
      * and
      */
     private $node = null;
+
+    /**
+     * @var int
+     * The maximum recursion depth we can use for this analyzable. Treat it as a constant.
+     */
+    private static MAX_RECURSION_DEPTH = 3;
 
     /**
      * @var int
