@@ -18,6 +18,11 @@ trait Analyzable
 {
 
     /**
+     * The maximum recursion depth we can use for this analyzable
+     */
+    const MAX_RECURSION_DEPTH = 3;
+
+    /**
      * @var Node
      * The AST Node defining this object. We keep a
      * reference to this so that we can come to it
@@ -119,7 +124,7 @@ trait Analyzable
         }
         // Don't go deeper than one level in
         // TODO: Due to optimizations in checking for duplicate parameter lists, it should now be possible to increase this depth limit.
-        if (self::$recursion_depth >= 2) {
+        if (self::$recursion_depth >= self::MAX_RECURSION_DEPTH) {
             return $context;
         }
 
