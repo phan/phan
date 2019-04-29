@@ -29,7 +29,7 @@ trait Analyzable
      * @var int
      * The maximum recursion depth we can use for this analyzable. Treat it as a constant.
      */
-    private static MAX_RECURSION_DEPTH = 3;
+    private static $max_recursion_depth = 3;
 
     /**
      * @var int
@@ -125,7 +125,7 @@ trait Analyzable
         }
         // Don't go deeper than one level in
         // TODO: Due to optimizations in checking for duplicate parameter lists, it should now be possible to increase this depth limit.
-        if (self::$recursion_depth >= self::MAX_RECURSION_DEPTH) {
+        if (self::$recursion_depth >= self::$max_recursion_depth) {
             return $context;
         }
 
