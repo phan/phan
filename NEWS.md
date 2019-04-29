@@ -3,6 +3,10 @@ Phan NEWS
 ?? ??? 2019, Phan 1.3.3 (dev)
 -----------------------
 
+New features(CLI, Configs):
++ Make the progress bar guaranteed to display 100% at the end of the analysis phase (#2694)
+  Print a newline to stderr once Phan is done updating the progress bar.
+
 New features(Analysis):
 + Emit `PhanDeprecatedClassConstant` for code using a constant marked with `@deprecated`.
 

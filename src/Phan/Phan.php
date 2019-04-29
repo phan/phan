@@ -481,6 +481,9 @@ class Phan implements IgnoredFilesFilterInterface
             $is_issue_found =
                 0 !== $issue_count;
 
+            // Indicate that --progress-bar or --debug has finished, if needed.
+            CLI::endProgressBar();
+
             // Collect all issues, blocking
             self::display();
 
@@ -499,7 +502,6 @@ class Phan implements IgnoredFilesFilterInterface
             }
             throw $e;
         }
-
 
         if ($request instanceof Request) {
             $request->respondWithIssues($issue_count);

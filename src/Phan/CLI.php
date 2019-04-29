@@ -1472,7 +1472,11 @@ EOB;
         // Making the update frequency based on time (instead of the number of files)
         // prevents the terminal from rapidly flickering while processing small files.
         if ($time - $previous_update_time < Config::getValue('progress_bar_sample_interval')) {
-            return;
+            // Make sure to output 100% if this is one of the last phases, to avoid confusion.
+            // https://github.com/phan/phan/issues/2694
+            if ($p < 1.0 || in_array($msg, ['parse', 'method', 'function'], true)) {
+                return;
+            }
         }
         $previous_update_time = $time;
 
@@ -1506,6 +1510,29 @@ EOB;
                $right_side .
                "\r";
         \fwrite(STDERR, $msg);
+    }
+
+    /**
+     * Print an end to progress bars or debug output
+     * @return void
+     */
+    public static function endProgressBar()
+    {
+        static $did_end = false;
+        if ($did_end) {
+            // Overkill as a sanity check
+            return;
+        }
+        $did_end = true;
+        if (self::shouldShowDebugOutput()) {
+            fwrite(STDERR, "Phan's analysis is complete\n");
+            return;
+        }
+        if (self::shouldShowProgress()) {
+            // Print a newline to stderr to visuall separate stderr from stdout
+            fwrite(STDERR, PHP_EOL);
+            fflush(STDOUT);
+        }
     }
 
     /**
