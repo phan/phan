@@ -27,7 +27,8 @@ trait Analyzable
 
     /**
      * @var int
-     * The maximum recursion depth we can use for this analyzable. Treat it as a constant.
+     * The maximum recursion depth we can use for this analyzable.
+     * @suppress PhanReadOnlyPrivateProperty Treat it as a constant.
      */
     private static $max_recursion_depth = 3;
 
