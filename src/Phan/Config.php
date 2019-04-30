@@ -257,6 +257,14 @@ class Config
         // `string` instead of an `int` as declared.
         'quick_mode' => false,
 
+        // The maximum recursion depth that can be reached when analyzing the code.
+        // This setting only takes effect when quick_mode is disabled.
+        // A higher limit will make the analysis more accurate, but could possibly
+        // make it harder to track the code bit where a detected issue originates.
+        // As long as this is kept relatively low, performance is usually not affected
+        // by changing this setting.
+        'maximum_recursion_depth' => 2,
+
         // If enabled, check all methods that override a
         // parent method to make sure its signature is
         // compatible with the parent's.

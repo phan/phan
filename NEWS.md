@@ -6,6 +6,9 @@ Phan NEWS
 New features(CLI, Configs):
 + Make the progress bar guaranteed to display 100% at the end of the analysis phase (#2694)
   Print a newline to stderr once Phan is done updating the progress bar.
++ Add `maximum_recursion_depth` - This setting specifies the maximum recursion depth that
+  can be reached during re-analysis.
+  Default is 2.
 
 New features(Analysis):
 + Emit `PhanDeprecatedClassConstant` for code using a constant marked with `@deprecated`.

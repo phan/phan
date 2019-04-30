@@ -117,9 +117,8 @@ trait Analyzable
                 return $context;
             }
         }
-        // Don't go deeper than one level in
-        // TODO: Due to optimizations in checking for duplicate parameter lists, it should now be possible to increase this depth limit.
-        if (self::$recursion_depth >= 2) {
+        // Stop upon reaching the maximum depth
+        if (self::$recursion_depth >= self::getMaxRecursionDepth()) {
             return $context;
         }
 
@@ -142,5 +141,13 @@ trait Analyzable
     public function getRecursionDepth() : int
     {
         return self::$recursion_depth;
+    }
+
+    /**
+     * Gets the maximum recursion depth.
+     */
+    public static function getMaxRecursionDepth() : int
+    {
+        return Config::getValue('maximum_recursion_depth');
     }
 }
