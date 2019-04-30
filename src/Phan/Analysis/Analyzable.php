@@ -143,7 +143,7 @@ trait Analyzable
         return self::$recursion_depth;
     }
 
-	/**
+    /**
      * Gets the maximum recursion depth.
      */
     public static function getMaxRecursionDepth() : int
