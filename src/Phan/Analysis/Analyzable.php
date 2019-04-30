@@ -27,13 +27,6 @@ trait Analyzable
 
     /**
      * @var int
-     * The maximum recursion depth we can use for this analyzable.
-     * @suppress PhanReadOnlyPrivateProperty Treat it as a constant.
-     */
-    private static $max_recursion_depth = 3;
-
-    /**
-     * @var int
      * The depth of recursion on this analyzable
      * object
      */
@@ -124,9 +117,8 @@ trait Analyzable
                 return $context;
             }
         }
-        // Don't go deeper than one level in
-        // TODO: Due to optimizations in checking for duplicate parameter lists, it should now be possible to increase this depth limit.
-        if (self::$recursion_depth >= self::$max_recursion_depth) {
+        // Stop upon reaching the maximum depth
+        if (self::$recursion_depth >= self::getMaxRecursionDepth()) {
             return $context;
         }
 
@@ -149,5 +141,13 @@ trait Analyzable
     public function getRecursionDepth() : int
     {
         return self::$recursion_depth;
+    }
+
+	/**
+     * Gets the maximum recursion depth.
+     */
+    public static function getMaxRecursionDepth() : int
+    {
+        return Config::getValue('maximum_recursion_depth');
     }
 }
