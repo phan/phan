@@ -56,7 +56,7 @@ class CLI
     /**
      * This should be updated to x.y.z-dev after every release, and x.y.z before a release.
      */
-    const PHAN_VERSION = '1.3.3-dev';
+    const PHAN_VERSION = '2.0.0-dev';
 
     /**
      * List of short flags passed to getopt
@@ -683,7 +683,7 @@ class CLI
                         break;
                     }
                     $ast_version = (new ReflectionExtension('ast'))->getVersion();
-                    if (\version_compare($ast_version, '0.1.5') < 0) {
+                    if (\version_compare($ast_version, '1.0.0') <= 0) {
                         Config::setValue('use_polyfill_parser', true);
                         break;
                     }
@@ -1705,6 +1705,7 @@ EOB;
                 . Config::AST_VERSION
                 . ') in configuration. '
                 . "You may need to rebuild the latest version of the php-ast extension.\n"
+                . "(You are using php-ast " . (new ReflectionExtension('ast'))->getVersion() . ", but " . Config::MINIMUM_AST_EXTENSION_VERSION . " or newer is required. Alternately, test with --force-polyfill-parser (which is noticeably slower))\n"
             );
             exit(EXIT_FAILURE);
         }

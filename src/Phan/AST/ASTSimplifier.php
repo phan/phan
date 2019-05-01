@@ -198,6 +198,7 @@ class ASTSimplifier
                 return self::isExpressionWithoutSideEffects($node->children['left']) &&
                     self::isExpressionWithoutSideEffects($node->children['right']);
             case \ast\AST_CLASS_CONST:
+            case \ast\AST_CLASS_NAME:
                 return self::isExpressionWithoutSideEffects($node->children['class']);
             default:
                 return false;

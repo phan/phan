@@ -32,12 +32,11 @@ class Config
 {
     /**
      * The version of the AST (defined in php-ast) that we're using.
-     * Older versions are likely to have edge cases we no longer support,
-     * and version 50 got rid of Decl.
-     *
-     * TODO: Switch to version 70 in the next major Phan release.
+     * @see https://github.com/nikic/php-ast#ast-versioning
      */
-    const AST_VERSION = 50;
+    const AST_VERSION = 70;
+
+    const MINIMUM_AST_EXTENSION_VERSION = '1.0.1';
 
     /**
      * The version of the Phan plugin system.

@@ -82,6 +82,11 @@ interface KindVisitor
     public function visitClassConstDecl(Node $node);
 
     /**
+     * Visit a node with kind `\ast\AST_CLASS_NAME`
+     */
+    public function visitClassName(Node $node);
+
+    /**
      * Visit a node with kind `\ast\AST_CLOSURE`
      */
     public function visitClosure(Node $node);
@@ -250,6 +255,11 @@ interface KindVisitor
      * Visit a node with kind `\ast\AST_PROP_DECL`
      */
     public function visitPropDecl(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_PROP_GROUP`
+     */
+    public function visitPropGroup(Node $node);
 
     /**
      * Visit a node with kind `\ast\AST_PROP_ELEM`

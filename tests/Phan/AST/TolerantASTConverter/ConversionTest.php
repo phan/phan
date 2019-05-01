@@ -95,12 +95,12 @@ final class ConversionTest extends BaseTest
         $paths = $this->scanSourceDirForPHP($source_dir);
 
         self::sortByTokenCount($paths);
-        $supports50 = self::hasNativeASTSupport(50);
-        if (!$supports50) {
-            throw new RuntimeException("Version 50 is not natively supported");
+        $supports70 = self::hasNativeASTSupport(70);
+        if (!$supports70) {
+            throw new RuntimeException("Version 70 is not natively supported");
         }
         foreach ($paths as $path) {
-            $tests[] = [$path, 50];
+            $tests[] = [$path, 70];
         }
         return $tests;
     }
