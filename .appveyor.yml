@@ -44,6 +44,7 @@ cache:
 branches:
   only:
     - master
+    - v2
 
 install:
 - cmd: choco feature enable -n=allowGlobalConfirmation
