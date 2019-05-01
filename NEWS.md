@@ -13,6 +13,8 @@ New features(CLI, Configs):
 New features(Analysis):
 + Emit `PhanDeprecatedClassConstant` for code using a constant marked with `@deprecated`.
 
+Plugins:
++ Add more forms of checks such as `$x !== null ? $x : null` to `PhanPluginDuplicateConditionalNullCoalescing` (#2691)
 
 28 Apr 2019, Phan 1.3.2
 -----------------------

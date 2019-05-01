@@ -1,0 +1,5 @@
+src/118_more_isset_checks.php:2 PhanUnreferencedFunction Possibly zero references to function \example118()
+src/118_more_isset_checks.php:3 PhanPluginDuplicateConditionalNullCoalescing "isset(X) ? X : Y" can usually be simplified to "X ?? Y" in PHP 7. The duplicated expression X was $arg
+src/118_more_isset_checks.php:4 PhanPluginDuplicateConditionalNullCoalescing "!is_null(X) ? X : Y" can usually be simplified to "X ?? Y" in PHP 7. The duplicated expression X was $arg
+src/118_more_isset_checks.php:5 PhanPluginDuplicateConditionalNullCoalescing "X !== null ? X : Y" can usually be simplified to "X ?? Y" in PHP 7. The duplicated expression X was $arg
+src/118_more_isset_checks.php:6 PhanPluginDuplicateConditionalNullCoalescing "null !== X ? X : Y" can usually be simplified to "X ?? Y" in PHP 7. The duplicated expression X was $arg

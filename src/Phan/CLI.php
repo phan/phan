@@ -1429,7 +1429,8 @@ EOB;
     }
 
     // Bound the percentage to [0, 1]
-    private static function boundPercentage(float $p) : float {
+    private static function boundPercentage(float $p) : float
+    {
         return \min(\max($p, 0.0), 1.0);
     }
 
@@ -1568,7 +1569,8 @@ EOB;
     /**
      * @return void
      */
-    public static function debugOutput(string $line) {
+    public static function debugOutput(string $line)
+    {
         \fwrite(STDERR, $line . "\n");
     }
 
