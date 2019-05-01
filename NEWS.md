@@ -1,5 +1,15 @@
 Phan NEWS
 
+?? ??? 2019, Phan 2.0.0 (dev)
+-----------------------
+
+Backwards Incompatible Changes:
++ Require php-ast 1.0.1 or newer (or the absense of php-ast with `--allow-polyfill-parser`)
+  Phan switched from using [AST version 50 to version 70](https://github.com/nikic/php-ast#ast-versioning).
+
+Plugins:
++ Third party plugins may need to be upgraded to support changes in AST version 70, e.g. the new node kinds `AST_PROP_GROUP` and `AST_CLASS_NAME`
+
 ?? ??? 2019, Phan 1.3.3 (dev)
 -----------------------
 
