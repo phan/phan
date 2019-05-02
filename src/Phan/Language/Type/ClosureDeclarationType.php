@@ -29,4 +29,13 @@ final class ClosureDeclarationType extends FunctionLikeDeclarationType
 
         return parent::canCastToNonNullableType($type);
     }
+
+    /**
+     * Returns the corresponding type that would be used in a signature
+     * @override
+     */
+    public function asSignatureType() : Type
+    {
+        return ClosureType::instance($this->is_nullable);
+    }
 }

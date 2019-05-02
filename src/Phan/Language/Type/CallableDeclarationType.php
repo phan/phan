@@ -37,4 +37,13 @@ final class CallableDeclarationType extends FunctionLikeDeclarationType implemen
     {
         return true;
     }
+
+    /**
+     * Returns the corresponding type that would be used in a signature
+     * @override
+     */
+    public function asSignatureType() : Type
+    {
+        return CallableType::instance($this->is_nullable);
+    }
 }

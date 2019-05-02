@@ -1286,4 +1286,9 @@ final class EmptyUnionType extends UnionType
     {
         return false;
     }
+
+    public function isVoidType() : bool
+    {
+        return false;
+    }
 }

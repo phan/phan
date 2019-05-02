@@ -171,4 +171,12 @@ final class TemplateType extends Type
         // Overridden in subclasses
         return null;
     }
+
+    /**
+     * @override
+     */
+    public function canUseInRealSignature() : bool
+    {
+        return false;
+    }
 }

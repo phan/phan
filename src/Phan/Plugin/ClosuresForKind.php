@@ -65,7 +65,7 @@ class ClosuresForKind
      * @param Closure $flattener
      * @return array<int,Closure> (Maps a subset of node kinds to a closure to execute for that node kind.)
      */
-    public function getFlattenedClosures(Closure $flattener)
+    public function getFlattenedClosures(Closure $flattener) : array
     {
         \ksort($this->closures);
         $merged_closures = [];

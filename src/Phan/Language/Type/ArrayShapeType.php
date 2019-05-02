@@ -865,4 +865,13 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
             $escaped_key
         );
     }
+
+    /**
+     * Returns the corresponding type that would be used in a signature
+     * @override
+     */
+    public function asSignatureType() : Type
+    {
+        return ArrayType::instance($this->is_nullable);
+    }
 }

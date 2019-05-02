@@ -3239,4 +3239,24 @@ class Type
     {
         yield $this;
     }
+
+    /**
+     * Returns true if this type or a parent type can be used in a signature.
+     * Returns false for template types, resources, object, etc.
+     */
+    public function canUseInRealSignature() : bool
+    {
+        return true;
+    }
+
+    /**
+     * Returns the corresponding type that would be used in a signature
+     */
+    public function asSignatureType() : Type
+    {
+        if ($this->template_parameter_type_list) {
+            return self::fromType($this, []);
+        }
+        return $this;
+    }
 }

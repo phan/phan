@@ -195,6 +195,11 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
     {
         return self::performComparison($this->value, $scalar, $flags);
     }
+
+    public function asSignatureType() : Type
+    {
+        return IntType::instance($this->is_nullable);
+    }
 }
 
 LiteralIntType::init();

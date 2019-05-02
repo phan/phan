@@ -37,6 +37,7 @@ use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\TrueType;
+use Phan\Language\Type\VoidType;
 use Serializable;
 use function substr;
 
@@ -3840,6 +3841,20 @@ class UnionType implements Serializable
             $template_type->getName() => UnionType::fromFullyQualifiedString('mixed'),
         ]);
         return !$this->isEqualTo($new_union_type);
+    }
+
+    /**
+     * @return bool
+     * True if this is the void type
+     * @see self::isVoid()
+     */
+    public function isVoidType() : bool
+    {
+        $type_set = $this->type_set;
+        if (\count($type_set) !== 1) {
+            return false;
+        }
+        return \reset($type_set) instanceof VoidType;
     }
 }
 

@@ -706,4 +706,13 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
     {
         return $this->element_type->getReferencedClasses();
     }
+
+    /**
+     * Returns the corresponding type that would be used in a signature
+     * @override
+     */
+    public function asSignatureType() : Type
+    {
+        return ArrayType::instance($this->is_nullable);
+    }
 }
