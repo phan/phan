@@ -48,4 +48,10 @@ final class ObjectType extends NativeType
     {
         return true;
     }
+
+    public function canUseInRealSignature() : bool
+    {
+        // Callers should check this separately if they want to support php 7.2
+        return false;
+    }
 }

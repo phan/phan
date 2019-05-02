@@ -321,6 +321,11 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
     {
         return filter_var($this->value, FILTER_VALIDATE_FLOAT) !== false;
     }
+
+    public function asSignatureType() : Type
+    {
+        return StringType::instance($this->is_nullable);
+    }
 }
 
 LiteralStringType::init();

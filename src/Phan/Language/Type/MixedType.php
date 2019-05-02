@@ -96,4 +96,9 @@ final class MixedType extends NativeType
     {
         return false;
     }
+
+    public function canUseInRealSignature() : bool
+    {
+        return false;
+    }
 }

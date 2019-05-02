@@ -9,6 +9,10 @@ Backwards Incompatible Changes:
 
 Plugins:
 + Third party plugins may need to be upgraded to support changes in AST version 70, e.g. the new node kinds `AST_PROP_GROUP` and `AST_CLASS_NAME`
++ Add `PHPDocToRealTypesPlugin` to suggest real types to replace (or use alongside) phpdoc return types.
+  This does not check that the phpdoc types are correct.
+
+  `--automatic-fix` can be used to automate making these changes for issues that are not suppressed.
 
 ?? ??? 2019, Phan 1.3.3 (dev)
 -----------------------
