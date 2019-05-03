@@ -303,7 +303,7 @@ class RedundantNodeVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param int|string $true_node_hash
      */
-    private function checkBinaryOpOfConditional(Node $cond_node, $true_node_hash)
+    private function checkBinaryOpOfConditional(Node $cond_node, $true_node_hash) : void
     {
         if ($cond_node->flags !== ast\flags\BINARY_IS_NOT_IDENTICAL) {
             return;
@@ -324,7 +324,7 @@ class RedundantNodeVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param int|string $true_node_hash
      */
-    private function checkUnaryOpOfConditional(Node $cond_node, $true_node_hash)
+    private function checkUnaryOpOfConditional(Node $cond_node, $true_node_hash) : void
     {
         if ($cond_node->flags !== ast\flags\UNARY_BOOL_NOT) {
             return;
@@ -362,7 +362,7 @@ class RedundantNodeVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param ?(Node|string|int|float) $x_node
      */
-    private function warnDuplicateConditionalNullCoalescing(string $expr, $x_node)
+    private function warnDuplicateConditionalNullCoalescing(string $expr, $x_node) : void
     {
         $this->emitPluginIssue(
             $this->code_base,
