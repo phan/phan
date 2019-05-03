@@ -68,12 +68,6 @@ class Comment
     ];
 
     /**
-     * @deprecated use Builder::WORD_REGEX
-     */
-    const WORD_REGEX = '([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)';
-    // @phan-suppress-previous-line PhanUnreferencedPublicClassConstant
-
-    /**
      * @var int - contains a subset of flags to set on elements
      * Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES
      * Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS
@@ -537,16 +531,6 @@ class Comment
     public function getInheritedTypeOption() : Option
     {
         return $this->inherited_type;
-    }
-
-    /**
-     * @return array<int,string>
-     * A set of issue names like 'PhanUnreferencedPublicMethod' to suppress
-     * @deprecated
-     */
-    public function getSuppressIssueList() : array
-    {
-        return array_keys($this->suppress_issue_set);
     }
 
     /**
