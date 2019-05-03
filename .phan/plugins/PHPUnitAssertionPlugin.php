@@ -59,7 +59,7 @@ class PHPUnitAssertionPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
      * @return ?Closure(CodeBase, Context, FunctionInterface, array):void
      * @suppress PhanAccessClassConstantInternal, PhanAccessMethodInternal
      */
-    private function createClosureForMethod(CodeBase $code_base, Method $method, string $name)
+    private function createClosureForMethod(CodeBase $code_base, Method $method, string $name) : ?\Closure
     {
         // TODO: Add a helper method which will convert a doc comment and a stub php function source code to a closure for a param index (or indices)
         switch (\strtolower($name)) {
@@ -233,6 +233,7 @@ class PHPUnitAssertionPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
                     1
                 );
         }
+        return null;
     }
 }
 

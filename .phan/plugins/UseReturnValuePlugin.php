@@ -870,7 +870,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
      * For `$x = +foo();` the parent node is AST_ASSIGN.
      * @return ?Node
      */
-    private function findNonUnaryParentNodeNode()
+    private function findNonUnaryParentNodeNode() : ?\ast\Node
     {
         $parent = end($this->parent_node_list);
         if (!$parent) {
@@ -1051,7 +1051,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         return is_string($name) && strcasecmp($name, 'true') === 0;
     }
 
-    private function quickWarn(string $fqsen, Node $node)
+    private function quickWarn(string $fqsen, Node $node) : void
     {
         $fqsen_key = strtolower(ltrim($fqsen, "\\"));
         $result = UseReturnValuePlugin::HARDCODED_FQSENS[$fqsen_key] ?? false;

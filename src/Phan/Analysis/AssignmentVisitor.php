@@ -238,7 +238,7 @@ class AssignmentVisitor extends AnalysisVisitor
      * @return void
      * @see self::visitArray()
      */
-    private function analyzeShapedArrayAssignment(Node $node)
+    private function analyzeShapedArrayAssignment(Node $node) : void
     {
         // Figure out the type of elements in the list
         $fallback_element_type = null;
@@ -329,7 +329,7 @@ class AssignmentVisitor extends AnalysisVisitor
     private function analyzeValueNodeOfShapedArray(
         UnionType $element_type,
         $value_node
-    ) {
+    ) : void {
         if (!$value_node instanceof Node) {
             return;
         }
@@ -394,7 +394,7 @@ class AssignmentVisitor extends AnalysisVisitor
      * @return void
      * @see self::visitArray()
      */
-    private function analyzeGenericArrayAssignment(Node $node)
+    private function analyzeGenericArrayAssignment(Node $node) : void
     {
         // Figure out the type of elements in the list
         $right_type = $this->right_type;
@@ -507,7 +507,7 @@ class AssignmentVisitor extends AnalysisVisitor
      * @param int|false $expect_string_keys_lineno
      * @return void
      */
-    private function checkMismatchArrayDestructuringKey($expect_int_keys_lineno, $expect_string_keys_lineno)
+    private function checkMismatchArrayDestructuringKey($expect_int_keys_lineno, $expect_string_keys_lineno) : void
     {
         if ($expect_int_keys_lineno !== false || $expect_string_keys_lineno !== false) {
             $right_hand_key_type = GenericArrayType::keyTypeFromUnionTypeKeys($this->right_type);
@@ -883,12 +883,12 @@ class AssignmentVisitor extends AnalysisVisitor
      *
      * @return void
      */
-    private function handleThisPropertyAssignmentInLocalScope(Property $property)
+    private function handleThisPropertyAssignmentInLocalScope(Property $property) : void
     {
         $this->context = $this->context->withThisPropertySetToType($property, $this->right_type);
     }
 
-    private function analyzeAssignmentToReadOnlyProperty(Property $property, Node $node)
+    private function analyzeAssignmentToReadOnlyProperty(Property $property, Node $node) : void
     {
         $is_from_phpdoc = $property->isFromPHPDoc();
         $context = $property->getContext();
@@ -912,7 +912,7 @@ class AssignmentVisitor extends AnalysisVisitor
         );
     }
 
-    private function analyzePropertyAssignmentStrict(Property $property, UnionType $assignment_type, Node $node)
+    private function analyzePropertyAssignmentStrict(Property $property, UnionType $assignment_type, Node $node) : void
     {
         $type_set = $assignment_type->getTypeSet();
         if (\count($type_set) < 2) {
@@ -984,7 +984,7 @@ class AssignmentVisitor extends AnalysisVisitor
      *
      * @return void
      */
-    private function addTypesToProperty(Property $property, Node $node)
+    private function addTypesToProperty(Property $property, Node $node) : void
     {
         $original_property_types = $property->getUnionType();
         if ($original_property_types->isEmpty()) {

@@ -11,7 +11,7 @@ class Shim
      * Loads the AST shim and any constants that are missing from older php-ast versions.
      * @return void
      */
-    public static function load()
+    public static function load() : void
     {
         if (!class_exists('\ast\Node')) {
             // Fix for https://github.com/phan/phan/issues/2287

@@ -146,7 +146,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
      * @param array<int,mixed> $values_to_check
      * @param array<int,mixed> $children an array of scalars
      */
-    private function extendedLooseEqualityCheck(array $values_to_check, $children)
+    private function extendedLooseEqualityCheck(array $values_to_check, $children) : void
     {
         $numeric_set = [];
         $fuzzy_numeric_set = [];
@@ -237,7 +237,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param int|string|float|bool|null $key
      */
-    private function warnAboutDuplicateArrayKey(Node $node, Node $entry, $key)
+    private function warnAboutDuplicateArrayKey(Node $node, Node $entry, $key) : void
     {
         if (is_string($key) && strncmp($key, self::HASH_PREFIX, strlen(self::HASH_PREFIX)) === 0) {
             $this->emitPluginIssue(
@@ -290,7 +290,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
      * @param int|string|float|bool|null $key - The array key literal to be normalized.
      * @return string - The normalized representation.
      */
-    private static function normalizeKey($key)
+    private static function normalizeKey($key) : string
     {
         if (is_int($key)) {
             return (string)$key;

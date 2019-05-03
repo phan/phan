@@ -56,7 +56,7 @@ final class CSVPrinter implements BufferedPrinterInterface
         $this->initStream();
     }
 
-    private function initStream()
+    private function initStream() : void
     {
         // Because fputcsv works on file pointers we need to do a bit
         // of dancing around with a memory stream.

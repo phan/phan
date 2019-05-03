@@ -94,7 +94,7 @@ trait Memoize
      *
      * @return void
      */
-    protected function memoizeFlushAll()
+    protected function memoizeFlushAll() : void
     {
         $this->memoized_data = [];
     }

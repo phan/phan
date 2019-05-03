@@ -57,7 +57,7 @@ class ClientHandler
             /**
              * @suppress PhanUndeclaredProperty taken care of by isResponse checks on msg->body
              */
-            $listener = function (Protocol\Message $msg) use ($id, $promise, &$listener) {
+            $listener = function (Protocol\Message $msg) use ($id, $promise, &$listener) : void {
                 $body = $msg->body;
                 if (!$body) {
                     return;

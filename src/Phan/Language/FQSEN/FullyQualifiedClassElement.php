@@ -249,7 +249,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
      */
     public function __toString() : string
     {
-        $fqsen_string = $this->memoize(__METHOD__, /** @return string */ function () {
+        $fqsen_string = $this->memoize(__METHOD__, /** @return string */ function () : string {
             return self::toString(
                 $this->getFullyQualifiedClassName(),
                 $this->getName(),

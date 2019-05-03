@@ -17,7 +17,7 @@ class ASTHasher
      * @param string|int|float|null $node
      * @return string a 16-byte binary key
      */
-    public static function hashKey($node)
+    public static function hashKey($node) : string
     {
         if (is_string($node)) {
             return md5('s' . $node, true);
@@ -33,7 +33,7 @@ class ASTHasher
      * @param Node|string|int|float|null $node
      * @return string a 16-byte binary key
      */
-    public static function hash($node)
+    public static function hash($node) : string
     {
         if (!($node instanceof Node)) {
             // hashKey
@@ -53,7 +53,7 @@ class ASTHasher
      * @param Node $node
      * @return string a 16-byte binary key
      */
-    private static function computeHash($node)
+    private static function computeHash($node) : string
     {
         $str = 'N' . $node->kind . ':' . ($node->flags & 0xfffff);
         foreach ($node->children as $key => $child) {

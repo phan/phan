@@ -492,7 +492,7 @@ class Type
      *
      * @return void
      */
-    public static function clearAllMemoizations()
+    public static function clearAllMemoizations() : void
     {
         // Clear anything that has memoized state
         foreach (self::$canonical_object_map as $type) {
@@ -610,7 +610,7 @@ class Type
                  * @param mixed $value
                  * @return UnionType
                  */
-                static function ($value) {
+                static function ($value) : \Phan\Language\UnionType {
                     return self::fromObjectExtended($value)->asUnionType();
                 },
                 $array
@@ -892,7 +892,7 @@ class Type
      * @param array<int,string> $template_parameter_type_name_list
      * @return array<int,UnionType>
      */
-    private static function createTemplateParameterTypeList(array $template_parameter_type_name_list)
+    private static function createTemplateParameterTypeList(array $template_parameter_type_name_list) : array
     {
         return \array_map(static function (string $type_name) : UnionType {
             return UnionType::fromFullyQualifiedString($type_name);
@@ -1302,7 +1302,7 @@ class Type
         CodeBase $code_base,
         Context $context,
         string $string
-    ) {
+    ) : void {
         // Note: Because of the regex, the namespace should be either empty or '\\'
         if (preg_match('/^\??\\\\/', $string) > 0) {
             // This is fully qualified
@@ -1969,7 +1969,7 @@ class Type
 
     // TODO: Use a template-based abstraction so that this boilerplate can be removed
     /** @return ?UnionType */
-    private function keyTypeOfTraversable()
+    private function keyTypeOfTraversable() : ?\Phan\Language\UnionType
     {
         $template_type_list = $this->template_parameter_type_list;
         if (count($template_type_list) === 2) {
@@ -1979,7 +1979,7 @@ class Type
     }
 
     /** @return ?UnionType */
-    private function valueTypeOfTraversable()
+    private function valueTypeOfTraversable() : ?\Phan\Language\UnionType
     {
         $template_type_list = $this->template_parameter_type_list;
         $count = count($template_type_list);
@@ -1991,7 +1991,7 @@ class Type
 
 
     /** @return ?UnionType */
-    private function keyTypeOfGenerator()
+    private function keyTypeOfGenerator() : ?\Phan\Language\UnionType
     {
         $template_type_list = $this->template_parameter_type_list;
         if (count($template_type_list) >= 2 && count($template_type_list) <= 4) {
@@ -2001,7 +2001,7 @@ class Type
     }
 
     /** @return ?UnionType */
-    private function valueTypeOfGenerator()
+    private function valueTypeOfGenerator() : ?\Phan\Language\UnionType
     {
         $template_type_list = $this->template_parameter_type_list;
         if (count($template_type_list) >= 2 && count($template_type_list) <= 4) {
@@ -2043,7 +2043,7 @@ class Type
      * The set of types filling in template parameter types defined
      * on the class specified by this type.
      */
-    public function getTemplateParameterTypeList()
+    public function getTemplateParameterTypeList() : array
     {
         return $this->template_parameter_type_list;
     }
@@ -2055,7 +2055,7 @@ class Type
      * @return array<string,UnionType>
      * A map from template type identifier to a concrete type
      */
-    public function getTemplateParameterTypeMap(CodeBase $code_base)
+    public function getTemplateParameterTypeMap(CodeBase $code_base) : array
     {
 
         return $this->memoize(__METHOD__, /** @return array<string,UnionType> */ function () use ($code_base) : array {
@@ -2104,7 +2104,7 @@ class Type
         if ($recursion_depth >= 20) {
             throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
         }
-        $union_type = $this->memoize(__METHOD__, /** @return UnionType */ function () use ($code_base, $recursion_depth) {
+        $union_type = $this->memoize(__METHOD__, /** @return UnionType */ function () use ($code_base, $recursion_depth) : \Phan\Language\UnionType {
             $union_type = $this->asUnionType();
 
             $class_fqsen = $this->asFQSEN();
@@ -2186,7 +2186,7 @@ class Type
         if ($recursion_depth >= 20) {
             throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
         }
-        $union_type = $this->memoize(__METHOD__, /** @return UnionType */ function () use ($code_base, $recursion_depth) {
+        $union_type = $this->memoize(__METHOD__, /** @return UnionType */ function () use ($code_base, $recursion_depth) : \Phan\Language\UnionType {
             $union_type = $this->asUnionType();
 
             $class_fqsen = $this->asFQSEN();
@@ -2692,7 +2692,7 @@ class Type
      */
     private static function typeStringComponents(
         string $type_string
-    ) {
+    ) : \Phan\Library\Tuple5 {
         // This doesn't depend on any configs; the result can be safely cached.
         static $cache = [];
         return $cache[$type_string] ?? ($cache[$type_string] = self::typeStringComponentsInner($type_string));
@@ -2710,7 +2710,7 @@ class Type
      */
     private static function typeStringComponentsInner(
         string $type_string
-    ) {
+    ) : \Phan\Library\Tuple5 {
         // Check to see if we have template parameter types
         $template_parameter_type_name_list = [];
         $shape_components = null;

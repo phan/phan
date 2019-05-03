@@ -29,7 +29,7 @@ final class IssueFixingPluginTest extends BaseTest implements CodeBaseAwareTestI
      * @param IssueInstance[] $instances
      * @dataProvider computeAndApplyFixesProvider
      */
-    public function testComputeAndApplyFixes(string $expected_contents, string $original_contents, array $instances)
+    public function testComputeAndApplyFixes(string $expected_contents, string $original_contents, array $instances) : void
     {
         $fixers = IssueFixer::computeFixersForInstances($instances);
         //var_export($instances);
@@ -89,7 +89,7 @@ EOT
      * @param FileEdit[] $all_edits
      * @dataProvider computeNewContentsProvider
      */
-    public function testComputeNewContents($expected_contents, string $contents, array $all_edits)
+    public function testComputeNewContents($expected_contents, string $contents, array $all_edits) : void
     {
         $this->assertSame($expected_contents, IssueFixer::computeNewContents(self::FILE, $contents, $all_edits));
     }

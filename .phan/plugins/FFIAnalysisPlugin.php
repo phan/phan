@@ -128,7 +128,7 @@ class FFIPostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
         }
     }
 
-    private function analyzeFFIAssign(Node $node)
+    private function analyzeFFIAssign(Node $node) : void
     {
         $var_name = $node->children['var']->children['name'] ?? null;
         if (!is_string($var_name)) {

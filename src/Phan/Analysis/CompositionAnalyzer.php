@@ -24,7 +24,7 @@ class CompositionAnalyzer
     public static function analyzeComposition(
         CodeBase $code_base,
         Clazz $class
-    ) {
+    ) : void {
         // Get the list of all inherited classes.
         $inherited_class_list =
             $class->getAncestorClassList($code_base);

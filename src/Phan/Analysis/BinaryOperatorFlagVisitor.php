@@ -82,7 +82,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      * @throws AssertionError
      * @suppress PhanUnreferencedPrivateMethod this is referenced by __invoke
      */
-    private function handleMissing(Node $node)
+    private function handleMissing(Node $node) : void
     {
         throw new AssertionError("All flags must match. Found " . Element::flagDescription($node));
     }
@@ -332,7 +332,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         string $issue_type,
         int $lineno,
         ...$parameters
-    ) {
+    ) : void {
         Issue::maybeEmitWithParameters(
             $this->code_base,
             $this->context,
@@ -418,7 +418,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    private function visitBinaryOpCommon(Node $node)
+    private function visitBinaryOpCommon(Node $node) : \Phan\Language\UnionType
     {
         $left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
@@ -583,7 +583,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         UnionType $right,
         string $left_issue_type,
         string $right_issue_type
-    ) {
+    ) : void {
         if (!$left->isEmpty()) {
             if (!$left->hasTypeMatchingCallback($is_valid_type)) {
                 $this->emitIssue(

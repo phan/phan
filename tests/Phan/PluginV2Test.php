@@ -12,7 +12,7 @@ use ReflectionClass;
  */
 final class PluginV2Test extends BaseTest
 {
-    public function testDocumentation()
+    public function testDocumentation() : void
     {
         $comment = (new ReflectionClass(PluginV2::class))->getDocComment();
         $this->assertIsString($comment);

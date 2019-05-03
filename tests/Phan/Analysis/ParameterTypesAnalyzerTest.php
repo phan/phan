@@ -23,7 +23,7 @@ final class ParameterTypesAnalyzerTest extends BaseTest
         string $expected_type_string,
         string $phpdoc_return_type_string,
         string $real_return_type_string
-    ) {
+    ) : void {
         $expected_type = UnionType::fromFullyQualifiedString($expected_type_string);
         $phpdoc_return_type = UnionType::fromFullyQualifiedString($phpdoc_return_type_string);
         $real_return_type = UnionType::fromFullyQualifiedString($real_return_type_string);
@@ -42,7 +42,7 @@ final class ParameterTypesAnalyzerTest extends BaseTest
     private function assertNullNarrowedType(
         string $phpdoc_return_type_string,
         string $real_return_type_string
-    ) {
+    ) : void {
         $phpdoc_return_type = UnionType::fromFullyQualifiedString($phpdoc_return_type_string);
         $real_return_type = UnionType::fromFullyQualifiedString($real_return_type_string);
 
@@ -53,7 +53,7 @@ final class ParameterTypesAnalyzerTest extends BaseTest
         $this->assertNull($actual_normalized_type, $msg);
     }
 
-    public function testNormalizeNarrowedParamType()
+    public function testNormalizeNarrowedParamType() : void
     {
         $this->assertSameNarrowedType('int', 'int', 'int');
         $this->assertSameNarrowedType('array<int,string>', 'array<int,string>', 'array');

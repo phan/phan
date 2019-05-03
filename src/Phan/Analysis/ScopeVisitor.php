@@ -174,7 +174,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
         return $context;
     }
 
-    private function maybeWarnSameNamespaceUse(string $alias, FullyQualifiedGlobalStructuralElement $target, int $flags, int $lineno)
+    private function maybeWarnSameNamespaceUse(string $alias, FullyQualifiedGlobalStructuralElement $target, int $flags, int $lineno) : void
     {
         if (\strcasecmp($alias, $target->getName()) !== 0) {
             return;
@@ -212,7 +212,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
         FQSEN $target,
         int $target_php_version,
         int $lineno
-    ) {
+    ) : void {
         $alias_lower = \strtolower($alias);
         if ($target_php_version < 70100) {
             if ($alias_lower === 'void') {

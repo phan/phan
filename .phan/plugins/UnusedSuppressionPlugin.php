@@ -73,7 +73,7 @@ class UnusedSuppressionPlugin extends PluginV2 implements
     private static function analyzeAddressableElement(
         CodeBase $code_base,
         AddressableElement $element
-    ) {
+    ) : void {
         // Get the set of suppressed issues on the element
         $suppress_issue_list =
             $element->getSuppressIssueList();
@@ -193,7 +193,7 @@ class UnusedSuppressionPlugin extends PluginV2 implements
         $this->analyzePluginSuppressions($code_base);
     }
 
-    private function analyzePluginSuppressions(CodeBase $code_base)
+    private function analyzePluginSuppressions(CodeBase $code_base) : void
     {
         $suppression_plugin_set = ConfigPluginSet::instance()->getSuppressionPluginSet();
         if (count($suppression_plugin_set) === 0) {
@@ -218,7 +218,7 @@ class UnusedSuppressionPlugin extends PluginV2 implements
     /**
      * @return void
      */
-    private function analyzePluginSuppressionsForFile(CodeBase $code_base, SuppressionCapability $plugin, string $relative_file_path)
+    private function analyzePluginSuppressionsForFile(CodeBase $code_base, SuppressionCapability $plugin, string $relative_file_path) : void
     {
         $absolute_file_path = Config::projectPath($relative_file_path);
         $plugin_class = \get_class($plugin);
@@ -287,7 +287,7 @@ class UnusedSuppressionPlugin extends PluginV2 implements
         string $file_path,
         string $issue_type,
         int $line
-    ) {
+    ) : void {
         $file_name = Config::projectPath($file_path);
         $plugin_class = \get_class($plugin);
         $this->plugin_active_suppression_list[$plugin_class][$file_name][$issue_type][$line] = $line;

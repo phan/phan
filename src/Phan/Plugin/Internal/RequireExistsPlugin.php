@@ -65,7 +65,7 @@ class RequireExistsVisitor extends PluginAwarePostAnalysisVisitor
         $this->checkPathExistsInContext($node, $path);
     }
 
-    private function analyzeEval(Node $node)
+    private function analyzeEval(Node $node) : void
     {
         $expr = $node->children['expr'];
         $type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $expr);
@@ -81,7 +81,7 @@ class RequireExistsVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * Check if the path provided to include()/require_once()/etc is valid.
      */
-    private function checkPathExistsInContext(Node $node, string $relative_path)
+    private function checkPathExistsInContext(Node $node, string $relative_path) : void
     {
         $absolute_path = $this->getAbsolutePath($node, $relative_path);
         if (!file_exists($absolute_path)) {

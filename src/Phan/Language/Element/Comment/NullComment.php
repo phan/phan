@@ -35,7 +35,7 @@ final class NullComment extends Comment
      * Ensures the static property is set, for users of this class
      * @internal
      */
-    public static function init()
+    public static function init() : void
     {
         self::$instance = new NullComment();
     }

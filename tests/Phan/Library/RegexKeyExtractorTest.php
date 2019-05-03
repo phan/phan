@@ -18,7 +18,7 @@ final class RegexKeyExtractorTest extends BaseTest
      * @return void
      * @dataProvider getKeysProvider
      */
-    public function testGetKeys(string $regex, array $expected_keys)
+    public function testGetKeys(string $regex, array $expected_keys) : void
     {
         $expected = self::toArraySet($expected_keys);
         $actual = RegexKeyExtractor::getKeys($regex);

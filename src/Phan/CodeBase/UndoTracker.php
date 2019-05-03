@@ -72,7 +72,7 @@ class UndoTracker
      * @param ?string $current_parsed_file
      * @return void
      */
-    public function setCurrentParsedFile($current_parsed_file)
+    public function setCurrentParsedFile($current_parsed_file) : void
     {
         if (\is_string($current_parsed_file)) {
             Daemon::debugf("Recording file modification state for %s", $current_parsed_file);
@@ -86,7 +86,7 @@ class UndoTracker
     /**
      * @return ?string - This string should change when the file is modified. Returns null if the file somehow doesn't exist
      */
-    public static function getFileState(string $path)
+    public static function getFileState(string $path) : ?string
     {
         \clearstatcache(true, $path);  // TODO: does this work properly with symlinks? seems to.
         $real = \realpath($path);
@@ -108,7 +108,7 @@ class UndoTracker
      * Removes the classes and functions, etc. from an older version of the file, if one exists.
      * @return void
      */
-    public function recordUnparsableFile(CodeBase $code_base, string $current_parsed_file)
+    public function recordUnparsableFile(CodeBase $code_base, string $current_parsed_file) : void
     {
         Daemon::debugf("%s was unparsable, had a syntax error", $current_parsed_file);
         Phan::getIssueCollector()->removeIssuesForFiles([$current_parsed_file]);
@@ -120,7 +120,7 @@ class UndoTracker
      * Undoes all of the changes for the relative path at $path
      * @return void
      */
-    private function undoFileChanges(CodeBase $code_base, string $path)
+    private function undoFileChanges(CodeBase $code_base, string $path) : void
     {
         Daemon::debugf("Undoing file changes for $path");
         foreach ($this->undo_operations_for_path[$path] ?? [] as $undo_operation) {
@@ -135,7 +135,7 @@ class UndoTracker
      *
      * @return void
      */
-    public function recordUndo(\Closure $undo_operation)
+    public function recordUndo(\Closure $undo_operation) : void
     {
         $file = $this->current_parsed_file;
         if (!\is_string($file)) {
@@ -155,7 +155,7 @@ class UndoTracker
      *                    This fixes #1921
      * @return array<int,string> - Subset of $new_file_list which changed on disk and has to be parsed again. Automatically unparses the old versions of files which were modified.
      */
-    public function updateFileList(CodeBase $code_base, array $new_file_list, array $file_mapping_contents, array $reanalyze_files = null)
+    public function updateFileList(CodeBase $code_base, array $new_file_list, array $file_mapping_contents, array $reanalyze_files = null) : array
     {
         $new_file_set = [];
         foreach ($new_file_list as $path) {
@@ -207,7 +207,7 @@ class UndoTracker
      * @param string $file_path
      * @return bool - true if the file existed
      */
-    public function beforeReplaceFileContents(CodeBase $code_base, string $file_path)
+    public function beforeReplaceFileContents(CodeBase $code_base, string $file_path) : bool
     {
         if (!isset($this->file_modification_state[$file_path])) {
             Daemon::debugf("Tried to replace contents of '$file_path', but that path does not yet exist");

@@ -152,7 +152,7 @@ class ASTSimplifier
      * @param Node ...$new_statements
      * @return void
      */
-    private static function replaceLastNodeWithNodeList(array &$nodes, Node... $new_statements)
+    private static function replaceLastNodeWithNodeList(array &$nodes, Node... $new_statements) : void
     {
         if (\array_pop($nodes) === false) {
             throw new AssertionError("Saw an unexpected empty node list");

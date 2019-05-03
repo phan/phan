@@ -58,12 +58,12 @@ trait Profile
     /**
      * Initialize the profiler
      */
-    private static function initialize()
+    private static function initialize() : void
     {
 
         // Create a shutdown function to emit the log when we're
         // all done
-        \register_shutdown_function(static function () {
+        \register_shutdown_function(static function () : void {
             $label_metric_map = [];
 
             // Compute whatever metric we care about

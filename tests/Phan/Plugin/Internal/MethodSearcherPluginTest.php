@@ -25,7 +25,7 @@ final class MethodSearcherPluginTest extends BaseTest implements CodeBaseAwareTe
     /**
      * @dataProvider getTypeMatchingBonusProvider
      */
-    public function testGetTypeMatchingBonus(float $expected_score, string $actual, string $desired)
+    public function testGetTypeMatchingBonus(float $expected_score, string $actual, string $desired) : void
     {
         $actual_signature_type = UnionType::fromFullyQualifiedString($actual);
         $desired_signature_type = UnionType::fromFullyQualifiedString($desired);
@@ -53,7 +53,7 @@ final class MethodSearcherPluginTest extends BaseTest implements CodeBaseAwareTe
      * @param array<int,string> $desired
      * @dataProvider matchesParamTypesProvider
      */
-    public function testMatchesParamTypes(float $expected_score, array $actual, array $desired)
+    public function testMatchesParamTypes(float $expected_score, array $actual, array $desired) : void
     {
         $actual_signature_types = \array_map('\Phan\Language\UnionType::fromFullyQualifiedString', $actual);
         $desired_signature_types = \array_map('\Phan\Language\UnionType::fromFullyQualifiedString', $desired);

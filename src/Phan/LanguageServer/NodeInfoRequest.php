@@ -69,7 +69,7 @@ abstract class NodeInfoRequest
     }
 
     /** @return Promise */
-    final public function getPromise()
+    final public function getPromise() : \Sabre\Event\Promise
     {
         return $this->promise;
     }

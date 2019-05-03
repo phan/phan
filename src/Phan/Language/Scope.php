@@ -115,7 +115,7 @@ abstract class Scope
      * (e.g. a FullyQualifiedFunctionName, FullyQualifiedClassName, etc.)
      * @suppress PhanPossiblyNullTypeReturn, PhanPartialTypeMismatchReturn callers should call hasFQSEN
      */
-    public function getFQSEN()
+    public function getFQSEN() : \Phan\Language\FQSEN
     {
         return $this->fqsen;
     }
@@ -283,7 +283,7 @@ abstract class Scope
      *
      * TODO: Make this work properly and merge properly when the variable is in a branch (BranchScope)
      */
-    public function unsetVariable(string $variable_name)
+    public function unsetVariable(string $variable_name) : void
     {
         unset($this->variable_map[$variable_name]);
     }
@@ -391,7 +391,7 @@ abstract class Scope
      *
      * @return void
      */
-    public function addTemplateType(TemplateType $template_type)
+    public function addTemplateType(TemplateType $template_type) : void
     {
         $this->template_type_map[$template_type->getName()] = $template_type;
     }

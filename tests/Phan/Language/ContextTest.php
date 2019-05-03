@@ -36,7 +36,7 @@ final class ContextTest extends BaseTest
         $this->code_base = null;
     }
 
-    public function testSimple()
+    public function testSimple() : void
     {
         $context = new Context();
 
@@ -65,7 +65,7 @@ final class ContextTest extends BaseTest
         $this->assertNotEmpty($context_method);
     }
 
-    public function testClassContext()
+    public function testClassContext() : void
     {
         $code = "<?php
             class C {

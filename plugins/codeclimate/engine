@@ -19,7 +19,7 @@ use Phan\Output\PrinterFactory;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Phan\Phan;
 
-call_user_func(static function () use ($code_base) {
+call_user_func(static function () use ($code_base) : void {
     // Create our CLI interface and load arguments
     chdir('/code');
     $cli = CLI::fromArgv();
@@ -71,7 +71,7 @@ call_user_func(static function () use ($code_base) {
     /**
      * @param string $file_path
      */
-    $queue_file = function ($file_path) use (&$include_paths, $file_extensions) {
+    $queue_file = function ($file_path) use (&$include_paths, $file_extensions) : void {
         $file_info = new SplFileInfo($file_path);
 
         if (in_array($file_info->getExtension(), $file_extensions))
@@ -84,7 +84,7 @@ call_user_func(static function () use ($code_base) {
     /**
      * @param string $dir_path
      */
-    $queue_with_include_paths = function ($dir_path) use (&$include_paths, &$queue_with_include_paths, &$queue_file) {
+    $queue_with_include_paths = function ($dir_path) use (&$include_paths, &$queue_with_include_paths, &$queue_file) : void {
         foreach (scandir($dir_path) as $f) {
             if ($f !== '.' and $f !== '..') {
                 if (is_dir("$dir_path/$f")) {
@@ -134,7 +134,7 @@ call_user_func(static function () use ($code_base) {
 
     // Analyze the file list provided via the CLI
     // @phan-suppress-next-line PhanThrowTypeAbsentForCall if this throws, it's not recoverable.
-    Phan::analyzeFileList($code_base, /** @return string[] */ static function () use($include_paths) {
+    Phan::analyzeFileList($code_base, /** @return string[] */ static function () use($include_paths) : array {
         return $include_paths;
     });
 });

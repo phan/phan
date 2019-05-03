@@ -41,9 +41,9 @@ dump_main();
  * @return void
  * @throws Exception if it can't render the AST
  */
-function dump_main()
+function dump_main() : void
 {
-    $print_help = static function (int $exit_code) {
+    $print_help = static function (int $exit_code) : void {
         global $argv;
         $help = <<<"EOB"
 Usage: php [--help|-h|help] [--php-ast] {$argv[0]} 'snippet'
@@ -104,7 +104,7 @@ EOB;
  * Parses $expr and echoes the compact AST representation to stdout.
  * @return void
  */
-function dump_expr_as_ast(string $expr, bool $with_placeholders, bool $native)
+function dump_expr_as_ast(string $expr, bool $with_placeholders, bool $native) : void
 {
     if ($native) {
         $ast_data = ast\parse_code($expr, \Phan\Config::AST_VERSION);
@@ -121,7 +121,7 @@ function dump_expr_as_ast(string $expr, bool $with_placeholders, bool $native)
  * @return void
  * @throws Exception
  */
-function dump_expr(string $expr)
+function dump_expr(string $expr) : void
 {
     // Instantiate new parser instance
     $parser = new Parser();

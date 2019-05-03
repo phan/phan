@@ -91,7 +91,7 @@ class Parameter extends Variable
      *
      * @return void
      */
-    public function setDefaultValueType(UnionType $type)
+    public function setDefaultValueType(UnionType $type) : void
     {
         $this->default_value_type = $type;
     }
@@ -102,7 +102,7 @@ class Parameter extends Variable
      *
      * @return void
      */
-    public function setDefaultValueFutureType(FutureUnionType $type)
+    public function setDefaultValueFutureType(FutureUnionType $type) : void
     {
         $this->default_value_future_type = $type;
     }
@@ -141,7 +141,7 @@ class Parameter extends Variable
      *
      * @return void
      */
-    public function setDefaultValue($value)
+    public function setDefaultValue($value) : void
     {
         $this->default_value = $value;
     }
@@ -152,7 +152,7 @@ class Parameter extends Variable
      * (E.g. `int $x = null` and `?int $x = null` are equivalent.
      * @return void
      */
-    public function handleDefaultValueOfNull()
+    public function handleDefaultValueOfNull() : void
     {
         if ($this->default_value_type && $this->default_value_type->isType(NullType::instance(false))) {
             // If it isn't already nullable, convert the parameter type to nullable.
@@ -234,7 +234,7 @@ class Parameter extends Variable
      * @param Node|string|float|int $node
      * @return ?UnionType - Returns if we know the exact type of $node and can easily resolve it
      */
-    private static function maybeGetKnownDefaultValueForNode($node)
+    private static function maybeGetKnownDefaultValueForNode($node) : ?\Phan\Language\UnionType
     {
         if (!($node instanceof Node)) {
             return Type::nonLiteralFromObject($node)->asUnionType();
@@ -428,7 +428,7 @@ class Parameter extends Variable
      *
      * @return void
      */
-    public function addUnionType(UnionType $union_type)
+    public function addUnionType(UnionType $union_type) : void
     {
         parent::setUnionType(self::getUnionType()->withUnionType($union_type));
     }
@@ -441,7 +441,7 @@ class Parameter extends Variable
      *
      * @return void
      */
-    public function addType(Type $type)
+    public function addType(Type $type) : void
     {
         parent::setUnionType(self::getUnionType()->withType($type));
     }
@@ -476,7 +476,7 @@ class Parameter extends Variable
     /**
      * @return void
      */
-    public function setIsOutputReference()
+    public function setIsOutputReference() : void
     {
         $this->enablePhanFlagBits(Flags::IS_WRITE_REFERENCE);
         $this->disablePhanFlagBits(Flags::IS_READ_REFERENCE);
@@ -485,7 +485,7 @@ class Parameter extends Variable
     /**
      * @return void
      */
-    private function setIsUsingNullableSyntax()
+    private function setIsUsingNullableSyntax() : void
     {
         $this->enablePhanFlagBits(Flags::IS_PARAM_USING_NULLABLE_SYNTAX);
     }

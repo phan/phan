@@ -30,7 +30,7 @@ class Logger
      * @param array<string,string> $headers
      * @return void
      */
-    public static function logRequest(array $headers, string $buffer)
+    public static function logRequest(array $headers, string $buffer) : void
     {
         if (!self::shouldLog()) {
             return;
@@ -43,7 +43,7 @@ class Logger
      * @param array<string,mixed> $headers
      * @return void
      */
-    public static function logResponse(array $headers, string $buffer)
+    public static function logResponse(array $headers, string $buffer) : void
     {
         if (!self::shouldLog()) {
             return;
@@ -60,7 +60,7 @@ class Logger
      *
      * @return void
      */
-    public static function logInfo(string $msg)
+    public static function logInfo(string $msg) : void
     {
         if (!self::shouldLog()) {
             return;
@@ -74,7 +74,7 @@ class Logger
      * to the configured log file (defaults to STDERR)
      * @return void
      */
-    public static function logError(string $msg)
+    public static function logError(string $msg) : void
     {
         $file = self::getLogFile();
         \fwrite($file, $msg . "\n");
@@ -98,7 +98,7 @@ class Logger
      * @return void
      * @suppress PhanUnreferencedPublicMethod this is made available for debugging issues
      */
-    public static function setLogFile($new_file)
+    public static function setLogFile($new_file) : void
     {
         if (!\is_resource($new_file)) {
             throw new \TypeError("Expected newFile to be a resource, got " . \gettype($new_file));

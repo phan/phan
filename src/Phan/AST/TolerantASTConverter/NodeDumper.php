@@ -58,13 +58,13 @@ class NodeDumper
     }
 
     /** @return void */
-    public function setIncludeOffset(bool $include_offset)
+    public function setIncludeOffset(bool $include_offset) : void
     {
         $this->include_offset = $include_offset;
     }
 
     /** @return void */
-    public function setIncludeTokenKind(bool $include_token_kind)
+    public function setIncludeTokenKind(bool $include_token_kind) : void
     {
         $this->include_token_kind = $include_token_kind;
     }
@@ -73,7 +73,7 @@ class NodeDumper
      * @return void
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function setIndent(string $indent)
+    public function setIndent(string $indent) : void
     {
         $this->indent = $indent;
     }
@@ -154,7 +154,7 @@ class NodeDumper
      * @throws Exception for invalid $ast_node values
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function dumpTree($ast_node, string $key = '', string $padding = '')
+    public function dumpTree($ast_node, string $key = '', string $padding = '') : void
     {
         echo $this->dumpTreeAsString($ast_node, $key, $padding);
     }

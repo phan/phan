@@ -183,7 +183,7 @@ class Analysis
      * @return Context
      * The context from within the node is returned
      */
-    public static function parseNodeInContext(CodeBase $code_base, Context $context, Node $node)
+    public static function parseNodeInContext(CodeBase $code_base, Context $context, Node $node) : \Phan\Language\Context
     {
         $kind = $node->kind;
         $context->setLineNumberStart($node->lineno);
@@ -256,7 +256,7 @@ class Analysis
      * @param ?array<string,mixed> $file_filter if non-null, limit analysis to functions and methods declared in this array
      * @return void
      */
-    public static function analyzeFunctions(CodeBase $code_base, array $file_filter = null)
+    public static function analyzeFunctions(CodeBase $code_base, array $file_filter = null) : void
     {
         $plugin_set = ConfigPluginSet::instance();
         $has_function_or_method_plugins = $plugin_set->hasAnalyzeFunctionPlugins() || $plugin_set->hasAnalyzeMethodPlugins();
@@ -266,7 +266,7 @@ class Analysis
             $plugin_set,
             $has_function_or_method_plugins,
             $file_filter
-        ) {
+        ) : void {
             if ($function_or_method->isPHPInternal()) {
                 return;
             }
@@ -355,7 +355,7 @@ class Analysis
      *
      * @return void
      */
-    public static function loadMethodPlugins(CodeBase $code_base)
+    public static function loadMethodPlugins(CodeBase $code_base) : void
     {
         $plugin_set = ConfigPluginSet::instance();
         foreach ($plugin_set->getReturnTypeOverrides($code_base) as $fqsen_string => $closure) {
@@ -423,7 +423,7 @@ class Analysis
      * @param ?array<string,mixed> $path_filter if non-null, limit analysis to classes in this array
      * @return void
      */
-    public static function analyzeClasses(CodeBase $code_base, array $path_filter = null)
+    public static function analyzeClasses(CodeBase $code_base, array $path_filter = null) : void
     {
         $classes = $code_base->getUserDefinedClassMap();
         if (\is_array($path_filter)) {
@@ -451,7 +451,7 @@ class Analysis
      *
      * @return void
      */
-    public static function analyzeDeadCode(CodeBase $code_base)
+    public static function analyzeDeadCode(CodeBase $code_base) : void
     {
         // Check to see if dead code detection is enabled. Keep
         // in mind that the results here are just a guess and
@@ -574,7 +574,7 @@ class Analysis
         CodeBase $code_base,
         Context $context,
         Throwable $e
-    ) {
+    ) : void {
         Issue::maybeEmit(
             $code_base,
             $context,

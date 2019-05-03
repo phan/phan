@@ -44,11 +44,11 @@ class ProtocolStreamReader extends Emitter implements ProtocolReader
     {
         $this->input = $input;
 
-        $this->on('close', function () {
+        $this->on('close', function () : void {
             Loop\removeReadStream($this->input);
         });
 
-        Loop\addReadStream($this->input, function () {
+        Loop\addReadStream($this->input, function () : void {
             if (\feof($this->input)) {
                 // If stream_select reported a status change for this stream,
                 // but the stream is EOF, it means it was closed.
@@ -131,7 +131,7 @@ class ProtocolStreamReader extends Emitter implements ProtocolReader
     /**
      * @return void
      */
-    private function emitClose()
+    private function emitClose() : void
     {
         if ($this->did_emit_close) {
             return;

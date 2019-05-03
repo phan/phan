@@ -73,7 +73,7 @@ final class BufferingCollector implements IssueCollectorInterface
      *
      * @return void
      */
-    public function flush()
+    public function flush() : void
     {
         $this->issues = [];
     }

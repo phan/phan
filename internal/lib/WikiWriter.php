@@ -26,7 +26,7 @@ class WikiWriter
      * Append $text to the buffer of text to save.
      * @return void
      */
-    public function append(string $text)
+    public function append(string $text) : void
     {
         $this->contents .= $text;
         if ($this->print_to_stdout) {

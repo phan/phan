@@ -44,7 +44,7 @@ class ASTReverter
      * @param Node|string|int|float|bool|null $node
      * @return string
      */
-    public static function toShortString($node)
+    public static function toShortString($node) : string
     {
         if (!($node instanceof Node)) {
             if ($node === null) {
@@ -105,7 +105,7 @@ class ASTReverter
      *
      * @return void
      */
-    public static function init()
+    public static function init() : void
     {
         self::$noop = static function (Node $_) : string {
             return '(unknown)';

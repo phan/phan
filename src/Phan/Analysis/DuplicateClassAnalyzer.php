@@ -19,7 +19,7 @@ class DuplicateClassAnalyzer
     public static function analyzeDuplicateClass(
         CodeBase $code_base,
         Clazz $clazz
-    ) {
+    ) : void {
         // Determine if its a duplicate by looking to see if
         // the FQSEN is suffixed with an alternate ID.
 

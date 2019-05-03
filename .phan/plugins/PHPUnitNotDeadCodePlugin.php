@@ -109,7 +109,7 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
      *
      * @return void
      */
-    private function markDataProvidersAsReferenced(Clazz $class, Method $method)
+    private function markDataProvidersAsReferenced(Clazz $class, Method $method) : void
     {
         if (preg_match('/@dataProvider\s+' . self::WORD_REGEX . '/', $method->getNode()->children['docComment'] ?? '', $match)) {
             $data_provider_name = $match[1];
@@ -142,7 +142,7 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
      * @return void
      * @suppress PhanThrowTypeAbsentForCall this FQSEN is valid
      */
-    public static function init()
+    public static function init() : void
     {
         $fqsen = FullyQualifiedClassName::make('\\PHPUnit\Framework', 'TestCase');
         self::$phpunit_test_case_fqsen = $fqsen;

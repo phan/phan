@@ -40,7 +40,7 @@ class Consistent implements Hasher
     /**
      * @return array<int,int> maps points in the field to the corresponding group (for consistent hashing)
      */
-    private static function generateMap(int $group_count)
+    private static function generateMap(int $group_count) : array
     {
         $map = [];
         for ($group = 0; $group < $group_count; $group++) {

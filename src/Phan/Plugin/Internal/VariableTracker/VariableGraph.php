@@ -60,7 +60,7 @@ final class VariableGraph
      * Record the fact that $node is a definition of the variable with name $name in the scope $scope
      * @return void
      */
-    public function recordVariableDefinition(string $name, Node $node, VariableTrackingScope $scope)
+    public function recordVariableDefinition(string $name, Node $node, VariableTrackingScope $scope) : void
     {
         // TODO: Measure performance against SplObjectHash
         $id = \spl_object_id($node);
@@ -74,7 +74,7 @@ final class VariableGraph
     /**
      * @return void
      */
-    public function recordVariableUsage(string $name, Node $node, VariableTrackingScope $scope)
+    public function recordVariableUsage(string $name, Node $node, VariableTrackingScope $scope) : void
     {
         if (!\array_key_exists($name, $this->variable_types)) {
             // Set this to 0 to record that the variable was used somewhere
@@ -98,7 +98,7 @@ final class VariableGraph
      * @param array<int,mixed> $loop_uses_of_own_variable any array that has node ids for uses of $def_id as keys
      * @return void
      */
-    public function recordLoopSelfUsage(string $name, int $def_id, array $loop_uses_of_own_variable)
+    public function recordLoopSelfUsage(string $name, int $def_id, array $loop_uses_of_own_variable) : void
     {
         foreach ($loop_uses_of_own_variable as $node_id => $_) {
             $this->def_uses[$name][$def_id][$node_id] = true;
@@ -108,7 +108,7 @@ final class VariableGraph
     /**
      * @return void
      */
-    public function markAsReference(string $name)
+    public function markAsReference(string $name) : void
     {
         $this->markBitForVariableName($name, self::IS_REFERENCE);
     }
@@ -116,7 +116,7 @@ final class VariableGraph
     /**
      * @return void
      */
-    public function markAsStaticVariable(string $name)
+    public function markAsStaticVariable(string $name) : void
     {
         $this->markBitForVariableName($name, self::IS_STATIC);
     }
@@ -124,7 +124,7 @@ final class VariableGraph
     /**
      * @return void
      */
-    public function markAsGlobalVariable(string $name)
+    public function markAsGlobalVariable(string $name) : void
     {
         $this->markBitForVariableName($name, self::IS_GLOBAL);
     }
@@ -136,7 +136,7 @@ final class VariableGraph
      * @param Node|string|int|float|null $node
      * @return void
      */
-    public function markAsLoopValueNode($node)
+    public function markAsLoopValueNode($node) : void
     {
         if ($node instanceof Node) {
             $this->loop_def_ids[spl_object_id($node)] = true;
@@ -158,7 +158,7 @@ final class VariableGraph
      * @param Node|int|string|float|null $node
      * @return void
      */
-    public function markAsCaughtException($node)
+    public function markAsCaughtException($node) : void
     {
         if ($node instanceof Node) {
             $this->caught_exception_ids[spl_object_id($node)] = true;
@@ -176,7 +176,7 @@ final class VariableGraph
     /**
      * @return void
      */
-    private function markBitForVariableName(string $name, int $bit)
+    private function markBitForVariableName(string $name, int $bit) : void
     {
         $this->variable_types[$name] = (($this->variable_types[$name] ?? 0) | $bit);
     }

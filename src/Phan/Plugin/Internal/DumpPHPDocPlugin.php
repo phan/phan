@@ -67,7 +67,7 @@ final class DumpPHPDocPlugin extends PluginV2 implements
         );
     }
 
-    private function recordStub(AddressableElement $element, string $header_text, string $doc_comment_markup = null)
+    private function recordStub(AddressableElement $element, string $header_text, string $doc_comment_markup = null) : void
     {
         if (Phan::isExcludedAnalysisFile($element->getFileRef()->getFile())) {
             return;

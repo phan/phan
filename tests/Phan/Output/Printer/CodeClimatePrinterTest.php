@@ -14,7 +14,7 @@ use Symfony\Component\Console\Output\BufferedOutput;
 final class CodeClimatePrinterTest extends BaseTest
 {
 
-    public function testPrintOutput()
+    public function testPrintOutput() : void
     {
         $output = new BufferedOutput();
 
@@ -35,7 +35,7 @@ final class CodeClimatePrinterTest extends BaseTest
     }
 
     // Should replace invalid utf-8 with placeholders in the resulting JSON
-    public function testPrintInvalidUtf8()
+    public function testPrintInvalidUtf8() : void
     {
         $output = new BufferedOutput();
 

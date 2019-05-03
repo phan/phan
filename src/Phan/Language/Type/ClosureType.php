@@ -174,7 +174,7 @@ final class ClosureType extends Type
      * @deprecated use asFunctionInterfaceOrNull
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function getFunctionLikeOrNull()
+    public function getFunctionLikeOrNull() : ?\Phan\Language\Element\FunctionInterface
     {
         return $this->func;
     }

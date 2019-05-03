@@ -91,7 +91,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
      * A node to parse
      * @return void
      */
-    private function checkVariablesDefined(Node $node)
+    private function checkVariablesDefined(Node $node) : void
     {
         while ($node->kind === ast\AST_UNARY_OP) {
             $node = $node->children['expr'];
@@ -115,7 +115,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
      * A node to parse
      * @return void
      */
-    private function checkVariablesDefinedInIsset(Node $node)
+    private function checkVariablesDefinedInIsset(Node $node) : void
     {
         while ($node->kind === ast\AST_UNARY_OP) {
             $node = $node->children['expr'];
@@ -143,7 +143,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
      *
      * TODO: Add to NegatedConditionVisitor
      */
-    private function checkArrayAccessDefined(Node $node)
+    private function checkArrayAccessDefined(Node $node) : void
     {
         $code_base = $this->code_base;
         $context = $this->context;
@@ -528,7 +528,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                  * @param array<int,mixed> $args
                  * @return void
                  */
-                function (CodeBase $code_base, Context $context, Variable $variable, array $args) use ($class_node) {
+                function (CodeBase $code_base, Context $context, Variable $variable, array $args) use ($class_node) : void {
                     $this->setInstanceofVariableType($variable, $class_node);
                 },
                 $context,
@@ -562,7 +562,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
     /**
      * Modifies the union type of $variable in place
      */
-    private function setInstanceofVariableType(Variable $variable, Node $class_node)
+    private function setInstanceofVariableType(Variable $variable, Node $class_node) : void
     {
         // Get the type that we're checking it against
         $type = UnionTypeVisitor::unionTypeFromNode(
@@ -627,7 +627,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
      * @param Variable $variable (Node argument in a call to is_object)
      * @return void
      */
-    private static function analyzeIsObjectAssertion(Variable $variable)
+    private static function analyzeIsObjectAssertion(Variable $variable) : void
     {
         // Change the type to match is_object relationship
         // If we already have the `object` type or generic object types, then keep those
@@ -668,7 +668,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
              * @param array<int,Node|mixed> $args
              * @return void
              */
-            return static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $args) use ($asserted_union_type, $asserted_union_type_set, $empty_type) {
+            return static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $args) use ($asserted_union_type, $asserted_union_type_set, $empty_type) : void {
                 $new_types = $empty_type;
                 foreach ($variable->getUnionType()->getTypeSet() as $type) {
                     $type = $type->withIsNullable(false);
@@ -690,7 +690,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
              * @param array<int,Node|mixed> $args
              * @return void
              */
-            return static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $args) use ($asserted_union_type) {
+            return static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $args) use ($asserted_union_type) : void {
                 // Otherwise, overwrite the type for any simple
                 // primitive types.
                 $variable->setUnionType($asserted_union_type);
@@ -702,7 +702,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
          * @param array<int,Node|mixed> $args
          * @return void
          */
-        $array_callback = static function (CodeBase $code_base, Context $context, Variable $variable, array $args) use ($array_type) {
+        $array_callback = static function (CodeBase $code_base, Context $context, Variable $variable, array $args) use ($array_type) : void {
             // Change the type to match the is_a relationship
             // If we already have generic array types, then keep those
             // (E.g. T[]|false becomes T[], ?array|null becomes array)
@@ -724,14 +724,14 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
          * @param array<int,Node|mixed> $args
          * @return void
          */
-        $object_callback = static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $args) {
+        $object_callback = static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $args) : void {
             self::analyzeIsObjectAssertion($variable);
         };
         /**
          * @param array<int,Node|mixed> $args
          * @return void
          */
-        $is_a_callback = static function (CodeBase $code_base, Context $context, Variable $variable, array $args) use ($object_callback) {
+        $is_a_callback = static function (CodeBase $code_base, Context $context, Variable $variable, array $args) use ($object_callback) : void {
             $class_name = $args[1] ?? null;
             if ($class_name instanceof Node) {
                 $class_name = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $class_name)->asSingleScalarValueOrNull();
@@ -759,7 +759,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
          * @param array<int,Node|mixed> $args
          * @return void
          */
-        $scalar_callback = static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $args) {
+        $scalar_callback = static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $args) : void {
             // Change the type to match the is_a relationship
             // If we already have possible scalar types, then keep those
             // (E.g. T|false becomes bool, T becomes int|float|bool|string|null)
@@ -786,7 +786,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
              * @param array<int,Node|mixed> $args
              * @return void
              */
-            return static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $args) use ($method, $default_if_empty) {
+            return static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $args) use ($method, $default_if_empty) : void {
                 // Change the type to match the is_a relationship
                 // If we already have possible callable types, then keep those
                 // (E.g. Closure|false becomes Closure)

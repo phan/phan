@@ -246,7 +246,7 @@ trait FunctionTrait
      *
      * @return void
      */
-    public function setNumberOfOptionalParameters(int $number)
+    public function setNumberOfOptionalParameters(int $number) : void
     {
         $this->number_of_optional_parameters = $number;
     }
@@ -303,7 +303,7 @@ trait FunctionTrait
      *
      * @return void
      */
-    public function setNumberOfRequiredParameters(int $number)
+    public function setNumberOfRequiredParameters(int $number) : void
     {
         $this->number_of_required_parameters = $number;
     }
@@ -329,7 +329,7 @@ trait FunctionTrait
      */
     public function setIsReturnTypeUndefined(
         bool $is_return_type_undefined
-    ) {
+    ) : void {
         $this->setPhanFlags(Flags::bitVectorWithState(
             $this->getPhanFlags(),
             Flags::IS_RETURN_TYPE_UNDEFINED,
@@ -363,7 +363,7 @@ trait FunctionTrait
      *
      * @return void
      */
-    public function setHasReturn(bool $has_return)
+    public function setHasReturn(bool $has_return) : void
     {
         $this->setPhanFlags(Flags::bitVectorWithState(
             $this->getPhanFlags(),
@@ -379,7 +379,7 @@ trait FunctionTrait
      *
      * @return void
      */
-    public function setHasYield(bool $has_yield)
+    public function setHasYield(bool $has_yield) : void
     {
         // TODO: In a future release of php-ast, this information will be part of the function node's flags.
         // (PHP 7.1+ only, not supported in PHP 7.0)
@@ -393,6 +393,8 @@ trait FunctionTrait
     /**
      * @return array<int,Parameter>
      * A list of parameters on the method
+     *
+     * TODO: Figure out why adding this causes failures elsewhere (combination with interface?)
      */
     public function getParameterList()
     {
@@ -437,7 +439,7 @@ trait FunctionTrait
      * @param int $i - offset of the parameter.
      * @return Parameter|null The parameter type that the **caller** observes.
      */
-    public function getParameterForCaller(int $i)
+    public function getParameterForCaller(int $i) : ?\Phan\Language\Element\Parameter
     {
         $list = $this->parameter_list;
         if (count($list) === 0) {
@@ -464,7 +466,7 @@ trait FunctionTrait
      * @return Parameter|null The real parameter type (from php signature) that the **caller** observes.
      * @suppress PhanUnreferencedPublicMethod false positive - this is referenced in FunctionInterface.
      */
-    public function getRealParameterForCaller(int $i)
+    public function getRealParameterForCaller(int $i) : ?\Phan\Language\Element\Parameter
     {
         $list = $this->real_parameter_list;
         if (count($list) === 0) {
@@ -490,7 +492,7 @@ trait FunctionTrait
      * @return void
      * @internal
      */
-    public function setParameterList(array $parameter_list)
+    public function setParameterList(array $parameter_list) : void
     {
         $this->parameter_list = $parameter_list;
         if ($this->parameter_list_hash === null) {
@@ -501,7 +503,7 @@ trait FunctionTrait
     /**
      * Called to lazily initialize properties of $this derived from $this->parameter_list
      */
-    private function initParameterListInfo()
+    private function initParameterListInfo() : void
     {
         $parameter_list = $this->parameter_list;
         $this->parameter_list_hash = self::computeParameterListHash($parameter_list);
@@ -547,7 +549,7 @@ trait FunctionTrait
     public function getRealParameterList()
     {
         // Excessive cloning, to ensure that this stays immutable.
-        return \array_map(/** @return Parameter */ static function (Parameter $param) {
+        return \array_map(/** @return Parameter */ static function (Parameter $param) : \Phan\Language\Element\Parameter {
             return clone($param);
         }, $this->real_parameter_list);
     }
@@ -558,9 +560,9 @@ trait FunctionTrait
      *
      * @return void
      */
-    public function setRealParameterList(array $parameter_list)
+    public function setRealParameterList(array $parameter_list) : void
     {
-        $this->real_parameter_list = \array_map(/** @return Parameter */ static function (Parameter $param) {
+        $this->real_parameter_list = \array_map(/** @return Parameter */ static function (Parameter $param) : \Phan\Language\Element\Parameter {
             return clone($param);
         }, $parameter_list);
 
@@ -583,7 +585,7 @@ trait FunctionTrait
      *
      * @return void
      */
-    public function setRealReturnType(UnionType $union_type)
+    public function setRealReturnType(UnionType $union_type) : void
     {
         // TODO: was `self` properly resolved already? What about in subclasses?
         $this->real_return_type = $union_type;
@@ -612,7 +614,7 @@ trait FunctionTrait
      * @internal
      * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
-    public function appendParameter(Parameter $parameter)
+    public function appendParameter(Parameter $parameter) : void
     {
         $this->parameter_list[] = $parameter;
     }
@@ -624,7 +626,7 @@ trait FunctionTrait
      * @internal
      * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
-    public function clearParameterList()
+    public function clearParameterList() : void
     {
         $this->parameter_list = [];
         $this->parameter_list_hash = null;
@@ -654,7 +656,7 @@ trait FunctionTrait
         CodeBase $code_base,
         FunctionInterface $function,
         Comment $comment
-    ) {
+    ) : void {
         if ($function->isPHPInternal()) {
             return;
         }
@@ -715,7 +717,7 @@ trait FunctionTrait
         Comment $comment,
         int $parameter_offset,
         Parameter $parameter
-    ) {
+    ) : void {
         if ($function->isPHPInternal()) {
             return;
         }
@@ -837,7 +839,7 @@ trait FunctionTrait
      * @return void
      * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
-    public function setPHPDocParameterTypeMap(array $parameter_map)
+    public function setPHPDocParameterTypeMap(array $parameter_map) : void
     {
         $this->phpdoc_parameter_type_map = $parameter_map;
     }
@@ -848,7 +850,7 @@ trait FunctionTrait
      * @return void
      * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
-    public function recordOutputReferenceParamName(string $parameter_name)
+    public function recordOutputReferenceParamName(string $parameter_name) : void
     {
         $this->phpdoc_output_references[] = $parameter_name;
     }
@@ -866,7 +868,7 @@ trait FunctionTrait
      * @return array<string,UnionType> maps a subset of param names to the unmodified phpdoc parameter types.
      * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
-    public function getPHPDocParameterTypeMap()
+    public function getPHPDocParameterTypeMap() : array
     {
         return $this->phpdoc_parameter_type_map;
     }
@@ -875,7 +877,7 @@ trait FunctionTrait
      * @param ?UnionType $type the raw phpdoc union type
      * @return void
      */
-    public function setPHPDocReturnType($type)
+    public function setPHPDocReturnType($type) : void
     {
         $this->phpdoc_return_type = $type;
     }
@@ -884,7 +886,7 @@ trait FunctionTrait
      * @return ?UnionType the raw phpdoc union type
      * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
-    public function getPHPDocReturnType()
+    public function getPHPDocReturnType() : ?\Phan\Language\UnionType
     {
         return $this->phpdoc_return_type;
     }
@@ -990,7 +992,7 @@ trait FunctionTrait
     /**
      * @return void
      */
-    public function setDependentReturnTypeClosure(Closure $closure)
+    public function setDependentReturnTypeClosure(Closure $closure) : void
     {
         $this->return_type_callback = $closure;
     }
@@ -1013,7 +1015,7 @@ trait FunctionTrait
      * @return void
      * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
-    public function analyzeFunctionCall(CodeBase $code_base, Context $context, array $args)
+    public function analyzeFunctionCall(CodeBase $code_base, Context $context, array $args) : void
     {
         // @phan-suppress-next-line PhanTypePossiblyInvalidCallable - Callers should check hasFunctionCallAnalyzer
         ($this->function_call_analyzer_callback)($code_base, $context, $this, $args);
@@ -1024,7 +1026,7 @@ trait FunctionTrait
      * If callers need to invoke multiple closures, they should pass in a closure to invoke multiple closures or use addFunctionCallAnalyzer.
      * @return void
      */
-    public function setFunctionCallAnalyzer(Closure $closure)
+    public function setFunctionCallAnalyzer(Closure $closure) : void
     {
         $this->function_call_analyzer_callback = $closure;
     }
@@ -1033,7 +1035,7 @@ trait FunctionTrait
      * Make additional analysis logic of this function/method use $closure in addition to any other closures.
      * @return void
      */
-    public function addFunctionCallAnalyzer(Closure $closure)
+    public function addFunctionCallAnalyzer(Closure $closure) : void
     {
         $old_closure = $this->function_call_analyzer_callback;
         if ($old_closure) {
@@ -1045,7 +1047,7 @@ trait FunctionTrait
     /**
      * @return ?Comment - Not set for internal functions/methods
      */
-    public function getComment()
+    public function getComment() : ?\Phan\Language\Element\Comment
     {
         return $this->comment;
     }
@@ -1054,7 +1056,7 @@ trait FunctionTrait
      * @param Comment $comment
      * @return void
      */
-    public function setComment(Comment $comment)
+    public function setComment(Comment $comment) : void
     {
         $this->comment = $comment;
     }
@@ -1075,7 +1077,7 @@ trait FunctionTrait
      *
      * @return void
      */
-    public function ensureScopeInitialized(CodeBase $code_base)
+    public function ensureScopeInitialized(CodeBase $code_base) : void
     {
         if ($this->is_inner_scope_initialized) {
             return;
@@ -1116,7 +1118,7 @@ trait FunctionTrait
         }
         $union_type = $this->getUnionType();
 
-        return function () use ($clone_this, $union_type) {
+        return function () use ($clone_this, $union_type) : void {
             $this->memoizeFlushAll();
             // @phan-suppress-next-line PhanTypeSuspiciousNonTraversableForeach this is intentionally iterating over private properties of the clone.
             foreach ($clone_this as $key => $value) {
@@ -1132,7 +1134,7 @@ trait FunctionTrait
      * @internal
      * @return void
      */
-    public function cloneParameterList()
+    public function cloneParameterList() : void
     {
         $this->setParameterList(
             \array_map(
@@ -1228,7 +1230,7 @@ trait FunctionTrait
      *
      * @return void
      */
-    public function analyzeReturnTypes(CodeBase $code_base)
+    public function analyzeReturnTypes(CodeBase $code_base) : void
     {
         if ($this->did_analyze_return_types) {
             return;
@@ -1250,7 +1252,7 @@ trait FunctionTrait
      */
     abstract public function getUnionTypeWithUnmodifiedStatic() : UnionType;
 
-    private function analyzeReturnTypesInner(CodeBase $code_base)
+    private function analyzeReturnTypesInner(CodeBase $code_base) : void
     {
         if ($this->isPHPInternal()) {
             // nothing to do, no known Node
@@ -1416,7 +1418,7 @@ trait FunctionTrait
     /**
      * @param TemplateType[] $template_type_list
      */
-    private function addClosureForDependentTemplateType(CodeBase $code_base, Context $context, array $template_type_list)
+    private function addClosureForDependentTemplateType(CodeBase $code_base, Context $context, array $template_type_list) : void
     {
         if ($this->hasDependentReturnType()) {
             // We already added this or this conflicts with a plugin.
@@ -1487,7 +1489,7 @@ trait FunctionTrait
      *
      * @return ?Closure(array<int,Node|string|int|float|UnionType>, Context):UnionType
      */
-    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type, int $skip_index = null)
+    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type, int $skip_index = null) : ?\Closure
     {
         $closure = null;
         foreach ($this->parameter_list as $i => $parameter) {
@@ -1525,7 +1527,7 @@ trait FunctionTrait
      * Returns the index of the parameter with name $name.
      * @return ?int
      */
-    public function getParamIndexForName(string $name)
+    public function getParamIndexForName(string $name) : ?int
     {
         foreach ($this->getParameterList() as $i => $param) {
             if ($param->getName() === $name) {
@@ -1543,7 +1545,7 @@ trait FunctionTrait
      * @return ?Closure(CodeBase, Context, FunctionInterface, array):void
      * @internal
      */
-    private function getPluginForParamAssertionMap(CodeBase $code_base, array $param_assertion_map)
+    private function getPluginForParamAssertionMap(CodeBase $code_base, array $param_assertion_map) : ?\Closure
     {
         $closure = null;
         foreach ($param_assertion_map as $param_name => $assertion) {
@@ -1573,13 +1575,13 @@ trait FunctionTrait
      * @suppress PhanAccessPropertyInternal
      * @internal
      */
-    public function createClosureForAssertion(CodeBase $code_base, Assertion $assertion, int $i)
+    public function createClosureForAssertion(CodeBase $code_base, Assertion $assertion, int $i) : ?\Closure
     {
         $union_type = $assertion->union_type;
         if ($union_type->hasTemplateTypeRecursive()) {
             $union_type_extractor = $this->makeAssertionUnionTypeExtractor($code_base, $union_type, $i);
             if (!$union_type_extractor) {
-                return;
+                return null;
             }
         } else {
             /**
@@ -1598,14 +1600,14 @@ trait FunctionTrait
      * @param Closure(CodeBase, Context, array):UnionType $union_type_extractor
      * @return ?Closure(CodeBase, Context, FunctionInterface, array):void
      */
-    public static function createClosureForUnionTypeExtractorAndAssertionType(Closure $union_type_extractor, int $assertion_type, int $i)
+    public static function createClosureForUnionTypeExtractorAndAssertionType(Closure $union_type_extractor, int $assertion_type, int $i) : ?\Closure
     {
         switch ($assertion_type) {
             case Assertion::IS_OF_TYPE:
                 /**
                  * @param array<int,Node|mixed> $args
                  */
-                return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($i, $union_type_extractor) {
+                return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($i, $union_type_extractor) : void {
                     $arg = $args[$i] ?? null;
                     if (!($arg instanceof Node)) {
                         return;
@@ -1619,7 +1621,7 @@ trait FunctionTrait
                 /**
                  * @param array<int,Node|mixed> $args
                  */
-                return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($i, $union_type_extractor) {
+                return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($i, $union_type_extractor) : void {
                     $arg = $args[$i] ?? null;
                     if (!($arg instanceof Node)) {
                         return;
@@ -1633,7 +1635,7 @@ trait FunctionTrait
                 /**
                  * @param array<int,Node|mixed> $args
                  */
-                return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($i) {
+                return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($i) : void {
                     $arg = $args[$i] ?? null;
                     if (!($arg instanceof Node)) {
                         return;
@@ -1646,7 +1648,7 @@ trait FunctionTrait
                 /**
                  * @param array<int,Node|mixed> $args
                  */
-                return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($i) {
+                return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($i) : void {
                     $arg = $args[$i] ?? null;
                     if (!($arg instanceof Node)) {
                         return;
@@ -1665,7 +1667,7 @@ trait FunctionTrait
      *
      * @return ?Closure(CodeBase, Context, array):UnionType
      */
-    private function makeAssertionUnionTypeExtractor(CodeBase $code_base, UnionType $type, int $asserted_param_index)
+    private function makeAssertionUnionTypeExtractor(CodeBase $code_base, UnionType $type, int $asserted_param_index) : ?\Closure
     {
         $comment = $this->getComment();
         if (!$comment) {
@@ -1705,7 +1707,7 @@ trait FunctionTrait
      * @internal
      * @suppress PhanUnreferencedPublicMethod referenced in FunctionTrait
      */
-    public function getCommentParamAssertionClosure(CodeBase $code_base)
+    public function getCommentParamAssertionClosure(CodeBase $code_base) : ?\Closure
     {
         $comment = $this->getComment();
         if (!$comment) {

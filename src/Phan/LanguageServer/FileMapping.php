@@ -32,7 +32,7 @@ class FileMapping
     /**
      * @return array<string,string> maps the absolute paths on disks to the currently edited versions of those files.
      */
-    public function getOverrides()
+    public function getOverrides() : array
     {
         return $this->overrides;
     }
@@ -42,7 +42,7 @@ class FileMapping
      * @param ?string $new_contents
      * @return void
      */
-    public function addOverrideURI(string $uri, $new_contents)
+    public function addOverrideURI(string $uri, $new_contents) : void
     {
         $path = Utils::uriToPath($uri);
         if ($new_contents === null) {
@@ -57,7 +57,7 @@ class FileMapping
      * @param ?string $new_contents
      * @return void
      */
-    public function addOverride(string $path, $new_contents)
+    public function addOverride(string $path, $new_contents) : void
     {
         if ($new_contents === null) {
             $this->removeOverride($path);
@@ -69,7 +69,7 @@ class FileMapping
     /**
      * @return void
      */
-    public function removeOverrideURI(string $uri)
+    public function removeOverrideURI(string $uri) : void
     {
         $path = Utils::uriToPath($uri);
         $this->removeOverride($path);
@@ -88,7 +88,7 @@ class FileMapping
     /**
      * @return void
      */
-    public function removeOverride(string $path)
+    public function removeOverride(string $path) : void
     {
         unset($this->uri_for_path[$path]);
         unset($this->overrides[$path]);

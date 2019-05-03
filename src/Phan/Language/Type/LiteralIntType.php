@@ -33,7 +33,7 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
     /**
      * @return LiteralIntType a unique LiteralIntType for $value (and the nullability)
      */
-    public static function instanceForValue(int $value, bool $is_nullable)
+    public static function instanceForValue(int $value, bool $is_nullable) : \Phan\Language\Type\LiteralIntType
     {
         if ($is_nullable) {
             static $nullable_cache = [];
@@ -68,7 +68,7 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
     /**
      * Called at the bottom of the file to ensure static properties are set for quick access.
      */
-    public static function init()
+    public static function init() : void
     {
         self::$non_nullable_int_type = IntType::instance(false);
         self::$nullable_int_type = IntType::instance(true);

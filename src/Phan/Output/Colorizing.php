@@ -178,7 +178,7 @@ class Colorizing
     /**
      * @return ?string - null if there is no valid color
      */
-    private static function colorForTemplate(string $template_type)
+    private static function colorForTemplate(string $template_type) : ?string
     {
         if (self::$color_scheme === null) {
             self::initColorScheme();
@@ -189,7 +189,7 @@ class Colorizing
     /**
      * Initialize the color scheme, merging it with Config::color_scheme
      */
-    private static function initColorScheme()
+    private static function initColorScheme() : void
     {
         self::$color_scheme = self::DEFAULT_COLOR_FOR_TEMPLATE;
         foreach (Config::getValue('color_scheme') ?? [] as $template_type => $color_name) {

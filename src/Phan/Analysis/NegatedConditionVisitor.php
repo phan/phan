@@ -84,7 +84,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      * A node to parse
      * @return void
      */
-    private function checkVariablesDefined(Node $node)
+    private function checkVariablesDefined(Node $node) : void
     {
         while ($node->kind === ast\AST_UNARY_OP) {
             $node = $node->children['expr'];
@@ -399,7 +399,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                  * @return void
                  * @suppress PhanUnusedClosureParameter
                  */
-                function (CodeBase $code_base, Context $context, Variable $variable, array $args) use ($class_node) {
+                function (CodeBase $code_base, Context $context, Variable $variable, array $args) use ($class_node) : void {
                     $union_type = $this->computeNegatedInstanceofType($variable->getUnionType(), $class_node);
                     if ($union_type) {
                         $variable->setUnionType($union_type);
@@ -451,7 +451,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      * @param Node|mixed $class_node
      * @return ?UnionType
      */
-    private function computeNegatedInstanceofType(UnionType $union_type, $class_node)
+    private function computeNegatedInstanceofType(UnionType $union_type, $class_node) : ?\Phan\Language\UnionType
     {
         $right_hand_union_type = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
@@ -721,7 +721,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      * Analyze expressions such as $x['offset'] inside of a negated isset type check
      * @return Context
      */
-    public function checkComplexIsset(Node $var_node)
+    public function checkComplexIsset(Node $var_node) : \Phan\Language\Context
     {
         $context = $this->context;
         if ($var_node->kind === ast\AST_DIM) {
@@ -839,7 +839,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
     /**
      * @return Context
      */
-    private function checkComplexNegatedEmpty(Node $var_node)
+    private function checkComplexNegatedEmpty(Node $var_node) : \Phan\Language\Context
     {
         $context = $this->context;
         // TODO: !empty($obj->prop['offset']) should imply $obj is not null (removeNullFromVariable)

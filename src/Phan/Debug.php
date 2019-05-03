@@ -25,7 +25,7 @@ class Debug
      * @suppress PhanUnreferencedPublicMethod
      * @return void
      */
-    public static function mark()
+    public static function mark() : void
     {
         print "mark\n";
     }
@@ -40,7 +40,7 @@ class Debug
      *
      * @suppress PhanUnreferencedPublicMethod
      */
-    public static function printNode($node)
+    public static function printNode($node) : void
     {
         print self::nodeToString($node);
     }
@@ -53,7 +53,7 @@ class Debug
      * @param int $indent
      * @return void
      */
-    public static function printNodeName($node, $indent = 0)
+    public static function printNodeName($node, $indent = 0) : void
     {
         print \str_repeat("\t", $indent);
         print self::nodeName($node);
@@ -66,7 +66,7 @@ class Debug
      * @return void
      * @suppress PhanUnreferencedPublicMethod
      */
-    public static function print(string $message, int $indent = 0)
+    public static function print(string $message, int $indent = 0) : void
     {
         print \str_repeat("\t", $indent);
         print $message . "\n";
@@ -232,7 +232,7 @@ class Debug
      *
      * @suppress PhanUnreferencedPublicMethod
      */
-    public static function backtrace(int $levels = 0)
+    public static function backtrace(int $levels = 0) : void
     {
         $bt = \debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS, $levels + 1);
         foreach ($bt as $level => $context) {

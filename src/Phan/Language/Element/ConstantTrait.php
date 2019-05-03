@@ -35,7 +35,7 @@ trait ConstantTrait
      * @param Node|string|float|int $node Either a node or a constant to be used as the value of the constant.
      * @return void
      */
-    public function setNodeForValue($node)
+    public function setNodeForValue($node) : void
     {
         $this->defining_node = $node;
     }
@@ -65,7 +65,7 @@ trait ConstantTrait
         }
         // If this refers to a class constant in another file,
         // the resolved union type might change if that file changes.
-        return function () use ($future_union_type) {
+        return function () use ($future_union_type) : void {
             $this->future_union_type = $future_union_type;
             // Probably don't need to call setUnionType(mixed) again...
         };

@@ -92,7 +92,7 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
     /**
      * @throws Error if a syntax check process fails to shut down
      */
-    private function awaitIncompleteProcesses(CodeBase $code_base, int $max_incomplete_processes)
+    private function awaitIncompleteProcesses(CodeBase $code_base, int $max_incomplete_processes) : void
     {
         foreach ($this->processes as $i => $process) {
             if (!$process->read()) {
@@ -124,7 +124,7 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
     /**
      * @return void
      */
-    private static function handleError(CodeBase $code_base, InvokeExecutionPromise $process)
+    private static function handleError(CodeBase $code_base, InvokeExecutionPromise $process) : void
     {
         $check_error_message = $process->getError();
         if (!is_string($check_error_message)) {
@@ -244,7 +244,7 @@ class InvokeExecutionPromise
      * @return void
      * See https://bugs.php.net/bug.php?id=39598
      */
-    private static function streamPutContents($stream, string $file_contents)
+    private static function streamPutContents($stream, string $file_contents) : void
     {
         try {
             while (strlen($file_contents) > 0) {
@@ -320,7 +320,7 @@ class InvokeExecutionPromise
      * @return void
      * @throws Error if reading failed
      */
-    public function blockingRead()
+    public function blockingRead() : void
     {
         if ($this->done) {
             return;
@@ -337,7 +337,7 @@ class InvokeExecutionPromise
      * @return ?string
      * @throws RangeException if this was called before the process finished
      */
-    public function getError()
+    public function getError() : ?string
     {
         if (!$this->done) {
             throw new RangeException("Called " . __METHOD__ . " too early");

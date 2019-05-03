@@ -17,7 +17,7 @@ use Phan\Tests\BaseTest;
  */
 final class LanguageServerTest extends BaseTest
 {
-    public function testInitialize()
+    public function testInitialize() : void
     {
         $mock_file_path_lister = /** @return array{} */ static function () : array {
             return [];

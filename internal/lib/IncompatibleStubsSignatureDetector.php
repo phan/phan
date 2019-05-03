@@ -60,7 +60,7 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
      * @return void
      * @suppress PhanPluginMixedKeyNoKey
      */
-    public function selfTest()
+    public function selfTest() : void
     {
         $failures = 0;
         $failures += $this->expectFunctionLikeSignaturesMatch('strlen', ['int', 'string' => 'string']);
@@ -125,7 +125,7 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
      *
      * @return void
      */
-    public function initStubs()
+    public function initStubs() : void
     {
         if ($this->initialized) {
             return;

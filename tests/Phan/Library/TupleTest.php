@@ -11,7 +11,7 @@ use Phan\Tests\BaseTest;
  */
 final class TupleTest extends BaseTest
 {
-    public function testSimple1()
+    public function testSimple1() : void
     {
         $x = new Tuple1('value');
         $this->assertSame('value', $x->_0);
@@ -19,7 +19,7 @@ final class TupleTest extends BaseTest
         $this->assertSame(1, $x->arity());
     }
 
-    public function testSimple2()
+    public function testSimple2() : void
     {
         $x = new Tuple2('value', 42);
         $this->assertSame('value', $x->_0);

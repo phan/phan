@@ -122,7 +122,7 @@ abstract class UnaddressableTypedElement
     /**
      * @return void
      */
-    protected function convertToNullable()
+    protected function convertToNullable() : void
     {
         // Avoid a redundant clone of nonNullableClone()
         $type = $this->type;
@@ -200,7 +200,7 @@ abstract class UnaddressableTypedElement
     /**
      * @return void
      */
-    public function enablePhanFlagBits(int $new_bits)
+    public function enablePhanFlagBits(int $new_bits) : void
     {
         $this->phan_flags |= $new_bits;
     }
@@ -208,7 +208,7 @@ abstract class UnaddressableTypedElement
     /**
      * @return void
      */
-    public function disablePhanFlagBits(int $new_bits)
+    public function disablePhanFlagBits(int $new_bits) : void
     {
         $this->phan_flags &= (~$new_bits);
     }

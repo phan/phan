@@ -35,7 +35,7 @@ final class FQSENTest extends BaseTest
         $this->context = null;
     }
 
-    public function testFullyQualifiedClassName()
+    public function testFullyQualifiedClassName() : void
     {
         $this->assertFQSENEqual(
             FullyQualifiedClassName::make('Name\\Space', 'A'),
@@ -83,7 +83,7 @@ final class FQSENTest extends BaseTest
         );
     }
 
-    public function testFullyQualifiedMethodName()
+    public function testFullyQualifiedMethodName() : void
     {
         $this->assertFQSENEqual(
             FullyQualifiedMethodName::make(
@@ -130,7 +130,7 @@ final class FQSENTest extends BaseTest
         );
     }
 
-    public function testFullyQualifiedPropertyName()
+    public function testFullyQualifiedPropertyName() : void
     {
         $this->assertFQSENEqual(
             FullyQualifiedPropertyName::make(
@@ -177,7 +177,7 @@ final class FQSENTest extends BaseTest
         );
     }
 
-    public function testFullyQualifiedClassConstantName()
+    public function testFullyQualifiedClassConstantName() : void
     {
         $this->assertFQSENEqual(
             FullyQualifiedClassConstantName::make(
@@ -224,7 +224,7 @@ final class FQSENTest extends BaseTest
         );
     }
 
-    public function testFullyQualifiedGlobalConstantName()
+    public function testFullyQualifiedGlobalConstantName() : void
     {
         $this->assertFQSENEqual(
             FullyQualifiedGlobalConstantName::make(
@@ -261,7 +261,7 @@ final class FQSENTest extends BaseTest
         );
     }
 
-    public function testFullyQualifiedFunctionName()
+    public function testFullyQualifiedFunctionName() : void
     {
         $this->assertFQSENEqual(
             FullyQualifiedFunctionName::make(
@@ -304,7 +304,7 @@ final class FQSENTest extends BaseTest
     public function assertFQSENEqual(
         FQSEN $fqsen,
         string $string
-    ) {
+    ) : void {
         $this->assertSame($string, (string)$fqsen);
     }
 }

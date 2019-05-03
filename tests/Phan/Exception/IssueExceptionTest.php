@@ -12,7 +12,7 @@ use Phan\Tests\BaseTest;
  */
 final class IssueExceptionTest extends BaseTest
 {
-    public function testToString()
+    public function testToString() : void
     {
         $issue = new Issue(
             "PhanPlaceholderIssue",

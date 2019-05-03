@@ -68,7 +68,7 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
      * @param Node|string|int|float|null $arg_node
      * @return ?string
      */
-    private static function extractName($arg_node)
+    private static function extractName($arg_node) : ?string
     {
         if (!$arg_node instanceof Node) {
             return null;
@@ -116,7 +116,7 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
      * @param array<int,Node|string|int|float|null> $args
      * @return void
      */
-    private function checkCall(FunctionInterface $function, array $args, Node $node)
+    private function checkCall(FunctionInterface $function, array $args, Node $node) : void
     {
         $arg_names = [];
         foreach ($args as $i => $arg_node) {
@@ -220,7 +220,7 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
      * @param array<int,int> $values
      * @return array<int,int>
      */
-    private static function normalizeCycle(array $values, int $next)
+    private static function normalizeCycle(array $values, int $next) : array
     {
         $pos = array_search($next, $values);
         $values = array_slice($values, $pos ?: 0);

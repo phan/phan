@@ -98,7 +98,7 @@ class FileContents
      * @return ?int the byte offset of the start of the given line (1-based)
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function getLineOffset(int $line)
+    public function getLineOffset(int $line) : ?int
     {
         if ($this->line_offset_map === null) {
             $this->line_offset_map = self::computeLineOffsetMap($this->contents);
@@ -152,7 +152,7 @@ class FileContents
      * @param int $lineno - A line number, starting with line 1
      * @return ?string
      */
-    public function getLine(int $lineno)
+    public function getLine(int $lineno) : ?string
     {
         $lines = $this->getLines();
         return $lines[$lineno] ?? null;

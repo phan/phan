@@ -56,7 +56,7 @@ final class ArgumentType
         Node $node,
         Context $context,
         CodeBase $code_base
-    ) {
+    ) : void {
         self::checkIsDeprecatedOrInternal($code_base, $context, $method);
         if ($method->hasFunctionCallAnalyzer()) {
             try {
@@ -137,7 +137,7 @@ final class ArgumentType
         FunctionInterface $method,
         Node $node,
         int $argcount
-    ) {
+    ) : void {
         $max = $method->getNumberOfParameters();
         $caused_by_variadic = $argcount === $max + 1 && (\end($node->children['args']->children)->kind ?? null) === \ast\AST_UNPACK;
         if ($method->isPHPInternal()) {
@@ -168,7 +168,7 @@ final class ArgumentType
     /**
      * @return void
      */
-    private static function checkIsDeprecatedOrInternal(CodeBase $code_base, Context $context, FunctionInterface $method)
+    private static function checkIsDeprecatedOrInternal(CodeBase $code_base, Context $context, FunctionInterface $method) : void
     {
         // Special common cases where we want slightly
         // better multi-signature error messages
@@ -269,7 +269,7 @@ final class ArgumentType
         Context $context,
         CodeBase $code_base,
         Closure $get_argument_type
-    ) {
+    ) : void {
         // Special common cases where we want slightly
         // better multi-signature error messages
         self::checkIsDeprecatedOrInternal($code_base, $context, $method);
@@ -361,7 +361,7 @@ final class ArgumentType
         array $arg_nodes,
         Context $context,
         Closure $get_argument_type
-    ) {
+    ) : void {
         // There's nothing reasonable we can do here
         if ($method instanceof Method) {
             if ($method->getIsMagicCall() || $method->getIsMagicCallStatic()) {
@@ -418,7 +418,7 @@ final class ArgumentType
         FunctionInterface $method,
         Node $node,
         Context $context
-    ) {
+    ) : void {
         // There's nothing reasonable we can do here
         if ($method instanceof Method) {
             if ($method->getIsMagicCall() || $method->getIsMagicCallStatic()) {
@@ -505,7 +505,7 @@ final class ArgumentType
         Node $node,
         Node $argument,
         UnionType $argument_type
-    ) {
+    ) : void {
         // Check the remaining required parameters for this variadic argument.
         // To avoid false positives, don't check optional parameters for now.
 
@@ -555,7 +555,7 @@ final class ArgumentType
      * @param int $lineno
      * @return void
      */
-    public static function analyzeParameter(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, int $lineno, int $i)
+    public static function analyzeParameter(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, int $lineno, int $i) : void
     {
         // Expand it to include all parent types up the chain
         try {
@@ -652,12 +652,12 @@ final class ArgumentType
         UnionType $argument_type_expanded,
         int $lineno,
         int $i
-    ) {
+    ) : void {
         $parameter_type = $alternate_parameter->getNonVariadicUnionType();
         /**
          * @return ?string
          */
-        $choose_issue_type = static function (string $issue_type, string $nullable_issue_type) use ($argument_type_expanded, $parameter_type, $code_base, $context, $lineno) {
+        $choose_issue_type = static function (string $issue_type, string $nullable_issue_type) use ($argument_type_expanded, $parameter_type, $code_base, $context, $lineno) : ?string {
             // @phan-suppress-next-line PhanAccessMethodInternal
             if (!$argument_type_expanded->canCastToUnionTypeIfNonNull($parameter_type)) {
                 return $issue_type;
@@ -706,7 +706,7 @@ final class ArgumentType
         );
     }
 
-    private static function analyzeParameterStrict(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, Variable $alternate_parameter, int $lineno, int $i)
+    private static function analyzeParameterStrict(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, Variable $alternate_parameter, int $lineno, int $i) : void
     {
         if ($alternate_parameter instanceof Parameter && $alternate_parameter->isPassByReference() && $alternate_parameter->getReferenceType() === Parameter::REFERENCE_WRITE_ONLY) {
             return;

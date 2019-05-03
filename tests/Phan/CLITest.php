@@ -39,7 +39,7 @@ final class CLITest extends BaseTest
     /**
      * @dataProvider getFlagSuggestionStringProvider
      */
-    public function testGetFlagSuggestionString(string $flag, string $expected_message)
+    public function testGetFlagSuggestionString(string $flag, string $expected_message) : void
     {
         $this->assertSame($expected_message, CLI::getFlagSuggestionString($flag));
     }
@@ -75,7 +75,7 @@ final class CLITest extends BaseTest
      * @throws ExitException
      * @dataProvider setsConfigOptionsProvider
      */
-    public function testSetsConfigOptions(array $expected_changed_options, array $opts, array $extra = [])
+    public function testSetsConfigOptions(array $expected_changed_options, array $opts, array $extra = []) : void
     {
         $opts += ['project-root-directory' => \dirname(__DIR__) . '/misc/config/'];
         $expected_changed_options += [
@@ -203,7 +203,7 @@ final class CLITest extends BaseTest
      * @param array<string,mixed> $opts
      * @dataProvider versionOptProvider
      */
-    public function testVersionOpt(array $opts)
+    public function testVersionOpt(array $opts) : void
     {
         \ob_start();
         try {
@@ -227,7 +227,7 @@ final class CLITest extends BaseTest
         ];
     }
 
-    public function testGetPluginSuggestionText()
+    public function testGetPluginSuggestionText() : void
     {
         $this->assertSame(
             ' (Did you mean DuplicateArrayKeyPlugin?)',
@@ -243,7 +243,7 @@ final class CLITest extends BaseTest
         );
     }
 
-    public function testSameVersionAsNEWS()
+    public function testSameVersionAsNEWS() : void
     {
         $news = file_get_contents(dirname(__DIR__, 2) . '/NEWS.md');
         $this->assertTrue(is_string($news));

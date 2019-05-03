@@ -195,7 +195,7 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
      */
     public static function getUnionTypeOfHardcodedGlobalVariableWithName(
         string $name
-    ) {
+    ) : ?\Phan\Language\UnionType {
         if (\array_key_exists($name, self::_BUILTIN_GLOBAL_TYPES)) {
             // More efficient than using context.
             return UnionType::fromFullyQualifiedString(self::_BUILTIN_GLOBAL_TYPES[$name]);

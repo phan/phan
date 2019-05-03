@@ -175,7 +175,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * Set this element as being `internal`.
      * @return void
      */
-    public function setIsNSInternal(bool $is_internal)
+    public function setIsNSInternal(bool $is_internal) : void
     {
         $this->setPhanFlags(Flags::bitVectorWithState(
             $this->getPhanFlags(),
@@ -314,7 +314,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * @param ?string $doc_comment the 'docComment' for this element, if any exists.
      * @return void
      */
-    public function setDocComment(string $doc_comment = null)
+    public function setDocComment(string $doc_comment = null) : void
     {
         $this->doc_comment = $doc_comment;
     }

@@ -89,7 +89,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
      * @param Closure(UnionType):UnionType $get_type
      * @return Context
      */
-    private function updateTargetVariableWithType(Node $node, Closure $get_type)
+    private function updateTargetVariableWithType(Node $node, Closure $get_type) : \Phan\Language\Context
     {
         try {
             $variable_name = (new ContextNode(
@@ -363,7 +363,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         UnionType $right,
         string $left_issue_type,
         string $right_issue_type
-    ) {
+    ) : void {
         if (!$left->isEmpty()) {
             if (!$left->hasTypeMatchingCallback($is_valid_type)) {
                 Issue::maybeEmit(
@@ -506,7 +506,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         });
     }
 
-    private function analyzeBinaryShift(Node $node)
+    private function analyzeBinaryShift(Node $node) : void
     {
         $left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
@@ -531,7 +531,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         );
     }
 
-    private function warnForInvalidOperandsOfNumericOp(Node $node)
+    private function warnForInvalidOperandsOfNumericOp(Node $node) : void
     {
         $left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,

@@ -32,7 +32,7 @@ class ElementContext extends Context
      * (Phan runs without garbage collection for performance reasons)
      * @return void
      */
-    public function freeElementReference()
+    public function freeElementReference() : void
     {
         $this->element = null;
     }

@@ -258,7 +258,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @param Node|string|int|float|null $child_node
      * @return VariableTrackingScope
      */
-    private function analyzeWhenValidNode(VariableTrackingScope $scope, $child_node)
+    private function analyzeWhenValidNode(VariableTrackingScope $scope, $child_node) : \Phan\Plugin\Internal\VariableTracker\VariableTrackingScope
     {
         if ($child_node instanceof Node) {
             return $this->analyze($scope, $child_node);
@@ -272,7 +272,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @param Node $child_node - The node which will be analyzed to create the updated context.
      * @return VariableTrackingScope
      */
-    private function analyze(VariableTrackingScope $scope, Node $child_node)
+    private function analyze(VariableTrackingScope $scope, Node $child_node) : \Phan\Plugin\Internal\VariableTracker\VariableTrackingScope
     {
         // Modify the original object instead of creating a new BlockAnalysisVisitor.
         // this is slightly more efficient, especially if a large number of unchanged parameters would exist.

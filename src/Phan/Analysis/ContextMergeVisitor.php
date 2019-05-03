@@ -288,7 +288,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         // every branch
         $is_defined_on_all_branches =
             /** @return bool */
-            static function (string $variable_name) use ($scope_list) {
+            static function (string $variable_name) use ($scope_list) : bool {
                 foreach ($scope_list as $scope) {
                     if (!$scope->hasVariableWithName($variable_name)) {
                         return false;
@@ -301,7 +301,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         // the variable from every side of the branch
         $union_type =
             /** @return UnionType */
-            static function (string $variable_name) use ($scope_list) {
+            static function (string $variable_name) use ($scope_list) : \Phan\Language\UnionType {
                 $previous_type = null;
                 $type_list = [];
                 // Get a list of all variables with the given name from
