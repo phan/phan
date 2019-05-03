@@ -36,14 +36,13 @@ AST_STMT_LIST [] #1
 \t\t\t\t\t\ttype => AST_TYPE [TYPE_LONG] #3
 \t\t\t\t\t\tname => x
 \t\t\t\t\t\tdefault => 2
-\t\t\t\tuses => null
 \t\t\t\tstmts => AST_STMT_LIST [] #3
 \t\t\t\treturnType => null
 \t\t\t\t__declId => 0
 \t\t__declId => 1
 
 EOT;
-        $ast = \ast\parse_code($actual_code, 50);
+        $ast = \ast\parse_code($actual_code, 70);
         $actual_ast_repr = Debug::nodeToString($ast);
         $this->assertSame($expected_ast_repr, $actual_ast_repr);
     }

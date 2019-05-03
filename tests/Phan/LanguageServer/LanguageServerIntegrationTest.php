@@ -883,13 +883,13 @@ function example2($strVal, array $arrVal) {
     var_export($arrVal);  // line 20
     $strVal = (string)$strVal;
     echo strlen($strVal);
-    $n = ast\parse_code($strVal, 50);
+    $n = ast\parse_code($strVal, 70);
 }
 function test(ExampleClass $c) {  // line 25
     var_export($c->propWithDefault);
     echo JSON_PRETTY_PRINT;
     if (rand() % 2 > 0) { throw new AssertionError('some condition failed'); }
-    $n = ast\parse_code('<?php $x = 2;', 50);
+    $n = ast\parse_code('<?php $x = 2;', 70);
     var_export($n->kind);  // line 30
     var_export($_ENV);
     $y = new class extends ArrayObject { public function count() : int {return 0;} };  // no comment
