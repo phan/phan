@@ -68,7 +68,7 @@ trait FunctionTrait
      *
      * @return void
      */
-    abstract public function setPhanFlags(int $phan_flags);
+    abstract public function setPhanFlags(int $phan_flags) : void;
 
     /**
      * @return string
@@ -1098,7 +1098,7 @@ trait FunctionTrait
     }
 
     /** @return void */
-    abstract public function memoizeFlushAll();
+    abstract public function memoizeFlushAll() : void;
 
     /** @return UnionType union type this function-like's declared return type (from PHPDoc, signatures, etc.)  */
     abstract public function getUnionType() : UnionType;
