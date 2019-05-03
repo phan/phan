@@ -111,7 +111,7 @@ function dump_expr_as_ast(string $expr, bool $with_placeholders, bool $native)
     } else {
         $converter = new \Phan\AST\TolerantASTConverter\TolerantASTConverter();
         $converter->setShouldAddPlaceholders($with_placeholders);
-        $ast_data = $converter->parseCodeAsPHPAST($expr, 50);
+        $ast_data = $converter->parseCodeAsPHPAST($expr, \Phan\Config::AST_VERSION);
     }
     echo \Phan\Debug::nodeToString($ast_data);
 }
