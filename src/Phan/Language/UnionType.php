@@ -389,7 +389,7 @@ class UnionType implements Serializable
      * @return UnionType
      * A UnionType with 0 or 1 nullable/non-nullable Types
      */
-    public static function fromReflectionType($reflection_type) : UnionType
+    public static function fromReflectionType(?\ReflectionType $reflection_type) : UnionType
     {
         if ($reflection_type !== null) {
             return Type::fromReflectionType($reflection_type)->asUnionType();
@@ -473,7 +473,7 @@ class UnionType implements Serializable
          * @param string|null $type_name
          * @return UnionType|null
          */
-        $get_for_global_context = static function ($type_name) : ?\Phan\Language\UnionType {
+        $get_for_global_context = static function (?string $type_name) : ?\Phan\Language\UnionType {
             if (!$type_name) {
                 return null;
             }

@@ -89,7 +89,7 @@ EOT
      * @param FileEdit[] $all_edits
      * @dataProvider computeNewContentsProvider
      */
-    public function testComputeNewContents($expected_contents, string $contents, array $all_edits) : void
+    public function testComputeNewContents(?string $expected_contents, string $contents, array $all_edits) : void
     {
         $this->assertSame($expected_contents, IssueFixer::computeNewContents(self::FILE, $contents, $all_edits));
     }

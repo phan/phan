@@ -32,7 +32,7 @@ final class ConfigInitializerTest extends BaseTest
      * @param ?string $expected_version
      * @dataProvider determineTargetPHPVersionProvider
      */
-    public function testDetermineTargetPHPVersion($expected_version, string $php_string) : void
+    public function testDetermineTargetPHPVersion(?string $expected_version, string $php_string) : void
     {
         $actual = Initializer::determineTargetPHPVersion(['require' => ['php' => $php_string]])[0];
         $this->assertSame($expected_version, $actual);

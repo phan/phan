@@ -56,7 +56,7 @@ class ConversionSpec
      * with a format string of $fmt_str.
      * @param string $fmt_str
      */
-    public static function computeExpectedArgumentCount($fmt_str) : int
+    public static function computeExpectedArgumentCount(string $fmt_str) : int
     {
         $result = 0;
         foreach (self::extractAll($fmt_str) as $i => $_) {
@@ -70,7 +70,7 @@ class ConversionSpec
      * @param string $fmt_str a format string to extract directives from.
      * @return array<int,array<int,ConversionSpec>> array(int position => array of ConversionSpec referring to arg at that position)
      */
-    public static function extractAll($fmt_str) : array
+    public static function extractAll(string $fmt_str) : array
     {
         // echo "format is $fmt_str\n";
         $directives = [];

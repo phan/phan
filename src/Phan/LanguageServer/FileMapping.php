@@ -42,7 +42,7 @@ class FileMapping
      * @param ?string $new_contents
      * @return void
      */
-    public function addOverrideURI(string $uri, $new_contents) : void
+    public function addOverrideURI(string $uri, ?string $new_contents) : void
     {
         $path = Utils::uriToPath($uri);
         if ($new_contents === null) {
@@ -57,7 +57,7 @@ class FileMapping
      * @param ?string $new_contents
      * @return void
      */
-    public function addOverride(string $path, $new_contents) : void
+    public function addOverride(string $path, ?string $new_contents) : void
     {
         if ($new_contents === null) {
             $this->removeOverride($path);

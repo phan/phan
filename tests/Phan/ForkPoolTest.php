@@ -31,11 +31,12 @@ final class ForkPoolTest extends BaseTest
             static function () : void {
             },
             /**
+             * This is called on every value of the arrays passed to workers
              * @param int $unused_i
-             * @param array<int,mixed> $data
+             * @param int $data
              * @return void
              */
-            static function ($unused_i, $data) use (&$worker_data) : void {
+            static function (int $unused_i, int $data) use (&$worker_data) : void {
                 $worker_data[] = $data;
             },
             /**
@@ -68,7 +69,7 @@ final class ForkPoolTest extends BaseTest
              * @param mixed $unused_data
              * @return void
              */
-            static function ($unused_i, $unused_data) : void {
+            static function (int $unused_i, $unused_data) : void {
             },
             /**
              * @return array{0:bool}

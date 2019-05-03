@@ -158,7 +158,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
      * @param PhpParser\Node $parser_node
      * @return bool|PhpParser\Node|PhpParser\Token (Returns $parser_node if that node was what the cursor is pointing directly to)
      */
-    private static function findNodeAtOffsetRecursive($parser_node, int $offset)
+    private static function findNodeAtOffsetRecursive(\Microsoft\PhpParser\Node $parser_node, int $offset)
     {
         foreach ($parser_node->getChildNodesAndTokens() as $key => $node_or_token) {
             if ($node_or_token instanceof Token) {

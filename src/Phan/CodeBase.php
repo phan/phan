@@ -307,7 +307,7 @@ class CodeBase
      * @param string|null $current_parsed_file
      * @return void
      */
-    public function setCurrentParsedFile($current_parsed_file) : void
+    public function setCurrentParsedFile(?string $current_parsed_file) : void
     {
         self::$current_file = $current_parsed_file;
         if ($this->undo_tracker) {
@@ -345,7 +345,7 @@ class CodeBase
      * @param string|null $current_analyzed_file
      * @return void
      */
-    public function setCurrentAnalyzedFile($current_analyzed_file) : void
+    public function setCurrentAnalyzedFile(?string $current_analyzed_file) : void
     {
         self::$current_file = $current_analyzed_file;
     }

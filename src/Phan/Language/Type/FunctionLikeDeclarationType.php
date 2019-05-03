@@ -688,7 +688,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     /**
      * @param ?UnionType $union_type the raw phpdoc union type
      */
-    public function setPHPDocReturnType($union_type)
+    public function setPHPDocReturnType(?UnionType $union_type) : void
     {
         throw new \AssertionError('unexpected call to ' . __METHOD__);
     }

@@ -440,7 +440,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      *
      * @return Context (The unmodified $context, or a different Context instance with modifications)
      */
-    private function analyzeAndGetUpdatedContext($context, $node, $child_node) : \Phan\Language\Context
+    private function analyzeAndGetUpdatedContext(\Phan\Language\Context $context, \ast\Node $node, \ast\Node $child_node) : \Phan\Language\Context
     {
         // Modify the original object instead of creating a new BlockAnalysisVisitor.
         // this is slightly more efficient, especially if a large number of unchanged parameters would exist.

@@ -323,7 +323,7 @@ class Phan implements IgnoredFilesFilterInterface
      */
     public static function finishAnalyzingRemainingStatements(
         CodeBase $code_base,
-        $request,
+        ?\Phan\Daemon\Request $request,
         array $analyze_file_path_list,
         array $temporary_file_mapping
     ) : bool {

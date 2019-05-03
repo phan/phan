@@ -135,7 +135,7 @@ final class StringUtil
      * @return string String with escape sequences parsed
      * @throws InvalidNodeException for invalid code points
      */
-    public static function parseEscapeSequences($str, $quote) : string
+    public static function parseEscapeSequences($str, ?string $quote) : string
     {
         if (!is_string($str)) {
             // Invalid AST input; give up
@@ -151,7 +151,7 @@ final class StringUtil
              * @param array<int,string> $matches
              * @return string
              */
-            static function ($matches) : string {
+            static function (array $matches) : string {
                 $str = $matches[1];
 
                 if (isset(self::REPLACEMENTS[$str])) {

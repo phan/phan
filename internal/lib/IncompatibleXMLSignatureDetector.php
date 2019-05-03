@@ -595,7 +595,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
      * @param ?SimpleXMLElement $xml
      * @return ?array<mixed,string>
      */
-    private function parseFunctionLikeSignatureForXML(string $function_name, $xml) : ?array
+    private function parseFunctionLikeSignatureForXML(string $function_name, ?\SimpleXMLElement $xml) : ?array
     {
         if (!$xml) {
             return null;
@@ -702,7 +702,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         /**
          * @param array<int,string> $matches
          */
-        return preg_replace_callback('/&([-a-zA-Z_.0-9]+);/', static function ($matches) use ($entities) : string {
+        return preg_replace_callback('/&([-a-zA-Z_.0-9]+);/', static function (array $matches) use ($entities) : string {
             $entity_name = $matches[1];
             if (isset($entities[strtolower($entity_name)])) {
                 return "BEGINENTITY{$entity_name}ENDENTITY";

@@ -255,7 +255,7 @@ EOT;
      * @return ?InitializedSettings
      * @internal
      */
-    public static function createPhanSettingsForComposerSettings(array $composer_settings, $vendor_path, array $opts) : ?\Phan\Config\InitializedSettings
+    public static function createPhanSettingsForComposerSettings(array $composer_settings, ?string $vendor_path, array $opts) : ?\Phan\Config\InitializedSettings
     {
         $level = $opts['init-level'] ?? 3;
         $level = self::LEVEL_MAP[\strtolower((string)$level)] ?? $level;

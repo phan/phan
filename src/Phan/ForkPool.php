@@ -230,7 +230,7 @@ class ForkPool
          * @param string $data
          * @return mixed[]
          */
-        return \array_values(\array_map(function ($data) : array {
+        return \array_values(\array_map(function (string $data) : array {
             $result = \unserialize($data);
             if (!\is_array($result)) {
                 \error_log("Child terminated without returning a serialized array (threw or crashed - not enough memory?): response type=" . gettype($result));

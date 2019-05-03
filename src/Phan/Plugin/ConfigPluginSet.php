@@ -693,7 +693,7 @@ final class ConfigPluginSet extends PluginV2 implements
      * @param ?Request $request
      * @return ?RAII
      */
-    public function addTemporaryAnalysisPlugin(CodeBase $code_base, $request) : ?\Phan\Library\RAII
+    public function addTemporaryAnalysisPlugin(CodeBase $code_base, ?\Phan\Daemon\Request $request) : ?\Phan\Library\RAII
     {
         if (!$request) {
             return null;
@@ -895,7 +895,7 @@ final class ConfigPluginSet extends PluginV2 implements
      * @param array<int,PluginV2> $plugin_set
      * @return void
      */
-    private static function registerIssueFixerClosures($plugin_set) : void
+    private static function registerIssueFixerClosures(array $plugin_set) : void
     {
         if (!Config::isIssueFixingPluginEnabled()) {
             // Don't load these if we won't need them.

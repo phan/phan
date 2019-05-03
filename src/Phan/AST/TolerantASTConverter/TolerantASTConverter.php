@@ -300,7 +300,7 @@ class TolerantASTConverter
      * Throws RuntimeException|Exception if the statement list is invalid
      * @suppress PhanThrowTypeAbsentForCall|PhanThrowTypeMismatchForCall
      */
-    private static function phpParserStmtlistToAstNode($parser_nodes, $lineno, bool $return_null_on_empty = false) : ?\ast\Node
+    private static function phpParserStmtlistToAstNode($parser_nodes, ?int $lineno, bool $return_null_on_empty = false) : ?\ast\Node
     {
         if ($parser_nodes instanceof PhpParser\Node\Statement\CompoundStatementNode) {
             $parser_nodes = $parser_nodes->statements;
@@ -1619,9 +1619,9 @@ class TolerantASTConverter
      * @param ?ast\Node $finally_node
      */
     private static function astNodeTry(
-        $try_node,
-        $catches_node,
-        $finally_node,
+        \ast\Node $try_node,
+        ?\ast\Node $catches_node,
+        ?\ast\Node $finally_node,
         int $start_line
     ) : ast\Node {
         // Return fields of $node->children in the same order as php-ast
@@ -1638,7 +1638,7 @@ class TolerantASTConverter
     /**
      * @param ast\Node $stmts
      */
-    private static function astStmtCatch(ast\Node $types, string $var, $stmts, int $lineno) : ast\Node
+    private static function astStmtCatch(ast\Node $types, string $var, \ast\Node $stmts, int $lineno) : ast\Node
     {
         return new ast\Node(
             ast\AST_CATCH,
@@ -1809,7 +1809,7 @@ class TolerantASTConverter
      * @param string $name
      * @param ?ast\Node|?int|?string|?float $default
      */
-    private static function astNodeParam(bool $is_nullable, bool $by_ref, bool $variadic, $type, $name, $default, int $line) : ast\Node
+    private static function astNodeParam(bool $is_nullable, bool $by_ref, bool $variadic, ?\ast\Node $type, string $name, $default, int $line) : ast\Node
     {
         if ($is_nullable) {
             $type = new ast\Node(
@@ -1832,7 +1832,7 @@ class TolerantASTConverter
     }
 
     /** @param ?PhpParser\Node\DelimitedList\ParameterDeclarationList $parser_params */
-    private static function phpParserParamsToAstParams($parser_params, int $line) : ast\Node
+    private static function phpParserParamsToAstParams(?\Microsoft\PhpParser\node\delimitedlist\parameterdeclarationlist $parser_params, int $line) : ast\Node
     {
         $new_params = [];
         foreach ($parser_params->children ?? [] as $parser_node) {
@@ -1875,7 +1875,7 @@ class TolerantASTConverter
      * @return ?ast\Node
      */
     private static function phpParserClosureUsesToAstClosureUses(
-        $uses,
+        ?\Microsoft\PhpParser\node\delimitedlist\usevariablenamelist $uses,
         int $line
     ) : ?\ast\Node {
         if (count($uses->children ?? []) === 0) {
@@ -1983,12 +1983,12 @@ class TolerantASTConverter
         bool $by_ref,
         bool $static,
         ast\Node $params,
-        $uses,
+        ?\ast\Node $uses,
         ast\Node $stmts,
-        $return_type,
+        ?\ast\Node $return_type,
         int $start_line,
         int $end_line,
-        $doc_comment
+        ?string $doc_comment
     ) : ast\Node {
         return static::newAstDecl(
             ast\AST_CLOSURE,
@@ -2016,11 +2016,11 @@ class TolerantASTConverter
         bool $by_ref,
         string $name,
         ast\Node $params,
-        $return_type,
-        $stmts,
+        ?\ast\Node $return_type,
+        ?\ast\Node $stmts,
         int $line,
         int $end_line,
-        $doc_comment
+        ?string $doc_comment
     ) : ast\Node {
         return static::newAstDecl(
             ast\AST_FUNC_DECL,
@@ -2042,7 +2042,7 @@ class TolerantASTConverter
      * @param ?Token $flags
      * @throws InvalidArgumentException if the class flags were unexpected
      */
-    private static function phpParserClassModifierToAstClassFlags($flags) : int
+    private static function phpParserClassModifierToAstClassFlags(?\Microsoft\PhpParser\Token $flags) : int
     {
         if ($flags === null) {
             return 0;
@@ -2061,7 +2061,7 @@ class TolerantASTConverter
      * @param ?PhpParser\Node\InterfaceBaseClause $node
      * @return ?ast\Node
      */
-    private static function interfaceBaseClauseToNode($node) : ?\ast\Node
+    private static function interfaceBaseClauseToNode(?\Microsoft\PhpParser\node\interfacebaseclause $node) : ?\ast\Node
     {
         if (!$node instanceof PhpParser\Node\InterfaceBaseClause) {
             // TODO: real placeholder?
@@ -2093,13 +2093,13 @@ class TolerantASTConverter
      */
     private static function astStmtClass(
         int $flags,
-        $name,
-        $extends,
-        $implements,
-        $stmts,
+        ?string $name,
+        ?\ast\Node $extends,
+        ?\Microsoft\PhpParser\node\classinterfaceclause $implements,
+        ?\ast\Node $stmts,
         int $line,
         int $end_line,
-        $doc_comment
+        ?string $doc_comment
     ) : ast\Node {
 
         // NOTE: `null` would be an anonymous class.
@@ -2155,7 +2155,7 @@ class TolerantASTConverter
     /**
      * @param ?PhpParser\Node\DelimitedList\ArgumentExpressionList $args
      */
-    private static function phpParserArgListToAstArgList($args, int $line) : ast\Node
+    private static function phpParserArgListToAstArgList(?\Microsoft\PhpParser\node\delimitedlist\argumentexpressionlist $args, int $line) : ast\Node
     {
         $ast_args = [];
         foreach ($args->children ?? [] as $arg) {
@@ -2171,7 +2171,7 @@ class TolerantASTConverter
      * @param ?int $kind
      * @throws InvalidArgumentException if the token kind was somehow invalid
      */
-    private static function phpParserNamespaceUseKindToASTUseFlags($kind) : int
+    private static function phpParserNamespaceUseKindToASTUseFlags(?int $kind) : int
     {
         switch ($kind ?? 0) {
             case TokenKind::FunctionKeyword:
@@ -2225,7 +2225,7 @@ class TolerantASTConverter
      * @param ?string $alias
      * @return ast\Node
      */
-    private static function astStmtUse($type, string $name, $alias, int $line) : ast\Node
+    private static function astStmtUse(?int $type, string $name, ?string $alias, int $line) : ast\Node
     {
         $use_inner = new ast\Node(ast\AST_USE_ELEM, 0, ['name' => $name, 'alias' => $alias], $line);
         return new ast\Node(
@@ -2241,7 +2241,7 @@ class TolerantASTConverter
      * @param ?string $prefix
      * @param array<int,ast\Node> $uses
      */
-    private static function astStmtGroupUse($type, $prefix, array $uses, int $line) : ast\Node
+    private static function astStmtGroupUse(?int $type, ?string $prefix, array $uses, int $line) : ast\Node
     {
         $flags = static::phpParserNamespaceUseKindToASTUseFlags($type);
         $uses = new ast\Node(ast\AST_USE, 0, $uses, $line);
@@ -2276,7 +2276,7 @@ class TolerantASTConverter
      * @param ast\Node $stmts
      * @param int $line
      */
-    private static function astIfElem($cond, $stmts, int $line) : ast\Node
+    private static function astIfElem($cond, \ast\Node $stmts, int $line) : ast\Node
     {
         return new ast\Node(ast\AST_IF_ELEM, 0, ['cond' => $cond, 'stmts' => $stmts], $line);
     }
@@ -2429,7 +2429,7 @@ class TolerantASTConverter
      * @throws InvalidNodeException if the type can't be converted to a valid AST
      * @throws InvalidArgumentException if the passed in class is completely unexpected
      */
-    private static function phpParserPropelemToAstPropelem($n, $doc_comment) : ast\Node
+    private static function phpParserPropelemToAstPropelem($n, ?string $doc_comment) : ast\Node
     {
         if ($n instanceof PhpParser\Node\Expression\AssignmentExpression) {
             $name_node = $n->leftOperand;
@@ -2463,7 +2463,7 @@ class TolerantASTConverter
     /**
      * @param ?string $doc_comment
      */
-    private static function phpParserConstelemToAstConstelem(PhpParser\Node\ConstElement $n, $doc_comment) : ast\Node
+    private static function phpParserConstelemToAstConstelem(PhpParser\Node\ConstElement $n, ?string $doc_comment) : ast\Node
     {
         $start_line = self::getStartLine($n);
         $children = [
@@ -2578,7 +2578,7 @@ class TolerantASTConverter
     /**
      * @param ?string $first_doc_comment
      */
-    private static function phpParserDeclareListToAstDeclares(PhpParser\Node\DeclareDirective $declare, int $start_line, $first_doc_comment) : ast\Node
+    private static function phpParserDeclareListToAstDeclares(PhpParser\Node\DeclareDirective $declare, int $start_line, ?string $first_doc_comment) : ast\Node
     {
         $ast_declare_elements = [];
         if ($declare->name->length > 0 && $declare->literal->length > 0) {
@@ -2601,7 +2601,7 @@ class TolerantASTConverter
     /**
      * @param ?ast\Node $stmts
      */
-    private static function astStmtDeclare(ast\Node $declares, $stmts, int $start_line) : ast\Node
+    private static function astStmtDeclare(ast\Node $declares, ?\ast\Node $stmts, int $start_line) : ast\Node
     {
         $children = [
             'declares' => $declares,
@@ -2614,7 +2614,7 @@ class TolerantASTConverter
      * @param string|ast\Node $expr
      * @param ast\Node $args
      */
-    private static function astNodeCall($expr, $args, int $start_line) : ast\Node
+    private static function astNodeCall($expr, \ast\Node $args, int $start_line) : ast\Node
     {
         if (\is_string($expr)) {
             if (substr($expr, 0, 1) === '\\') {
@@ -2626,8 +2626,8 @@ class TolerantASTConverter
     }
 
     /**
-     * @param ast\Node $expr
-     * @param ast\Node $method
+     * @param ast\Node|string $expr (can parse non-nodes, but they'd cause runtime errors)
+     * @param ast\Node|string $method
      */
     private static function astNodeMethodCall($expr, $method, ast\Node $args, int $start_line) : ast\Node
     {
@@ -2636,7 +2636,7 @@ class TolerantASTConverter
 
     /**
      * @param ast\Node|string $class
-     * @param ast\Node $method
+     * @param ast\Node|string $method
      */
     private static function astNodeStaticCall($class, $method, ast\Node $args, int $start_line) : ast\Node
     {

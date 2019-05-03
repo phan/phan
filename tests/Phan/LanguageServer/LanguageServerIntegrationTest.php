@@ -469,7 +469,7 @@ EOT;
      * @param bool $for_vscode
      * @return array<int,array{0:Position,1:array,2:bool}>
      */
-    private function createCompletionBasicTestCases(string $property_label, $property_insert_text, $insert_text_for_substr, bool $for_vscode) : array
+    private function createCompletionBasicTestCases(string $property_label, ?string $property_insert_text, ?string $insert_text_for_substr, bool $for_vscode) : array
     {
         // A static property
         $property_completion_item = [
@@ -811,7 +811,7 @@ EOT;
      *
      * @dataProvider definitionInOtherFileProvider
      */
-    public function testDefinitionInOtherFile(string $new_file_contents, Position $position, string $expected_definition_uri, $expected_definition_line, string $requested_uri = null) : void
+    public function testDefinitionInOtherFile(string $new_file_contents, Position $position, string $expected_definition_uri, ?int $expected_definition_line, string $requested_uri = null) : void
     {
         if (\function_exists('pcntl_fork')) {
             $this->runTestDefinitionInOtherFileWithPcntlSetting($new_file_contents, $position, $expected_definition_uri, $expected_definition_line, $requested_uri, true);
@@ -824,7 +824,7 @@ EOT;
      *
      * @dataProvider typeDefinitionInOtherFileProvider
      */
-    public function testTypeDefinitionInOtherFile(string $new_file_contents, Position $position, string $expected_definition_uri, $expected_definition_line, string $requested_uri = null) : void
+    public function testTypeDefinitionInOtherFile(string $new_file_contents, Position $position, string $expected_definition_uri, ?int $expected_definition_line, string $requested_uri = null) : void
     {
         if (\function_exists('pcntl_fork')) {
             $this->runTestTypeDefinitionInOtherFileWithPcntlSetting($new_file_contents, $position, $expected_definition_uri, $expected_definition_line, $requested_uri, true);
@@ -836,7 +836,7 @@ EOT;
      * @dataProvider hoverInOtherFileProvider
      * @param ?string $expected_hover_markup
      */
-    public function testHoverInOtherFile(string $new_file_contents, Position $position, $expected_hover_markup, string $requested_uri = null, bool $require_php71_or_newer = false) : void
+    public function testHoverInOtherFile(string $new_file_contents, Position $position, ?string $expected_hover_markup, string $requested_uri = null, bool $require_php71_or_newer = false) : void
     {
         if (\PHP_VERSION_ID < 70100 && $require_php71_or_newer) {
             $this->markTestSkipped('This test requires php 7.1');
@@ -1203,7 +1203,7 @@ EOT
     /**
      * @param ?string $requested_uri
      */
-    private static function shouldExpectDiagnosticNotificationForURI($requested_uri) : bool
+    private static function shouldExpectDiagnosticNotificationForURI(?string $requested_uri) : bool
     {
         if ($requested_uri && \basename(\dirname($requested_uri)) !== 'src') {
             return false;
@@ -1219,8 +1219,8 @@ EOT
         string $new_file_contents,
         Position $position,
         string $expected_definition_uri,
-        $expected_definition_line,
-        $requested_uri,
+        ?int $expected_definition_line,
+        ?string $requested_uri,
         bool $pcntl_enabled
     ) : void {
         $requested_uri = $requested_uri ?? $this->getDefaultFileURI();
@@ -1296,8 +1296,8 @@ EOT
         string $new_file_contents,
         Position $position,
         string $expected_definition_uri,
-        $expected_definition_line,
-        $requested_uri,
+        ?int $expected_definition_line,
+        ?string $requested_uri,
         bool $pcntl_enabled
     ) : void {
         $requested_uri = $requested_uri ?? $this->getDefaultFileURI();
@@ -1378,8 +1378,8 @@ EOT
     public function runTestHoverInOtherFileWithPcntlSetting(
         string $new_file_contents,
         Position $position,
-        $expected_hover_string,
-        $requested_uri,
+        ?string $expected_hover_string,
+        ?string $requested_uri,
         bool $pcntl_enabled
     ) : void {
         $requested_uri = $requested_uri ?? $this->getDefaultFileURI();

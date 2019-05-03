@@ -146,7 +146,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
      * @param array<int,mixed> $values_to_check
      * @param array<int,mixed> $children an array of scalars
      */
-    private function extendedLooseEqualityCheck(array $values_to_check, $children) : void
+    private function extendedLooseEqualityCheck(array $values_to_check, array $children) : void
     {
         $numeric_set = [];
         $fuzzy_numeric_set = [];

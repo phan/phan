@@ -21,7 +21,7 @@ final class CheckstylePrinterTest extends BaseTest
      *
      * @dataProvider invalidUTF8StringsProvider
      */
-    public function testUTF8CharactersDoNotCauseDOMAttrToFail($string) : void
+    public function testUTF8CharactersDoNotCauseDOMAttrToFail(string $string) : void
     {
         $output = new BufferedOutput();
 

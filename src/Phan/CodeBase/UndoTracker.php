@@ -72,7 +72,7 @@ class UndoTracker
      * @param ?string $current_parsed_file
      * @return void
      */
-    public function setCurrentParsedFile($current_parsed_file) : void
+    public function setCurrentParsedFile(?string $current_parsed_file) : void
     {
         if (\is_string($current_parsed_file)) {
             Daemon::debugf("Recording file modification state for %s", $current_parsed_file);

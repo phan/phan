@@ -483,7 +483,7 @@ class Analysis
     public static function analyzeFile(
         CodeBase $code_base,
         string $file_path,
-        $request,
+        ?\Phan\Daemon\Request $request,
         string $override_contents = null
     ) : Context {
         // Set the file on the context

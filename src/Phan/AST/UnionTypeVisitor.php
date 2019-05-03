@@ -662,7 +662,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * This preserves `self` and `static`
      * @param Node $node
      */
-    public function fromTypeInSignature($node) : UnionType
+    public function fromTypeInSignature(\ast\Node $node) : UnionType
     {
         $is_nullable = $node->kind === ast\AST_NULLABLE_TYPE;
         if ($is_nullable) {
@@ -2746,7 +2746,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @return array<int,FullyQualifiedMethodName>
      * A list of CallableTypes associated with the given node
      */
-    private function methodFQSENListFromObjectAndMethodName($class_or_expr, $method_name) : array
+    private function methodFQSENListFromObjectAndMethodName($class_or_expr, string $method_name) : array
     {
         $code_base = $this->code_base;
         $context = $this->context;

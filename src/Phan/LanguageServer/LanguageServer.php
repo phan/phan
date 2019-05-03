@@ -275,7 +275,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
                  * @param int|null $pid
                  * @return void
                  */
-                static function ($signo, $status = null, $pid = null) use (&$got_signal) : void {
+                static function (int $signo, ?int $status = null, ?int $pid = null) use (&$got_signal) : void {
                     $got_signal = true;
                     Request::childSignalHandler($signo, $status, $pid);
                 }
@@ -800,7 +800,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      * @param array{type:string,description:string,suggestion?:string,severity:int,location:array{path:string,lines:array{begin:int,end:int}}} $issue
      * @return null[]|string[]|Diagnostic[] - On success, returns [string $uri, Diagnostic $diagnostic]
      */
-    private static function generateDiagnostic($issue) : array
+    private static function generateDiagnostic(array $issue) : array
     {
         if ($issue['type'] !== 'issue') {
             return [null, null];
@@ -835,7 +835,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      * @return int
      * A DiagnosticSeverity constant used by the language server protocol.
      */
-    public static function diagnosticSeverityFromPhanSeverity($severity) : int
+    public static function diagnosticSeverityFromPhanSeverity(int $severity) : int
     {
         switch ($severity) {
             case Issue::SEVERITY_LOW:

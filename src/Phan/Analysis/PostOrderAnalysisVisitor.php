@@ -3107,7 +3107,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      *
      * @param ?Parameter $real_parameter the real parameter type from the type signature
      */
-    private function createPassByReferenceArgumentInCall(Node $argument, Parameter $parameter, $real_parameter) : void
+    private function createPassByReferenceArgumentInCall(Node $argument, Parameter $parameter, ?\Phan\Language\Element\Parameter $real_parameter) : void
     {
         if ($argument->kind == ast\AST_VAR) {
             // We don't do anything with the new variable; just create it
@@ -3169,7 +3169,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         array $argument_list,
         FunctionInterface $method,
         Parameter $parameter,
-        $real_parameter
+        ?\Phan\Language\Element\Parameter $real_parameter
     ) : void {
         $variable = null;
         $kind = $argument->kind;

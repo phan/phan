@@ -128,7 +128,7 @@ function with_disabled_phan_error_handler(Closure $closure)
  * @param int $errline
  * @return bool
  */
-function phan_error_handler($errno, $errstr, $errfile, $errline) : bool
+function phan_error_handler(int $errno, string $errstr, string $errfile, int $errline) : bool
 {
     global $__no_echo_phan_errors;
     if ($__no_echo_phan_errors) {

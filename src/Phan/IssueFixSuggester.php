@@ -48,7 +48,7 @@ class IssueFixSuggester
         /**
          * @param FullyQualifiedClassName $alternate_fqsen
          */
-        return static function ($alternate_fqsen) use ($code_base, $class_closure) : bool {
+        return static function (\Phan\Language\FQSEN\FullyQualifiedClassName $alternate_fqsen) use ($code_base, $class_closure) : bool {
             if (!($alternate_fqsen instanceof FullyQualifiedClassName)) {
                 return false;
             }
@@ -143,7 +143,7 @@ class IssueFixSuggester
         CodeBase $code_base,
         Context $context,
         FullyQualifiedClassName $class_fqsen,
-        $filter = null,
+        ?\Closure $filter = null,
         string $prefix = null,
         int $class_suggest_type = self::CLASS_SUGGEST_ONLY_CLASSES
     ) : ?\Phan\Suggestion {
@@ -263,7 +263,7 @@ class IssueFixSuggester
      * @param ?\Closure(FullyQualifiedClassName):bool $filter
      * @return ?Suggestion
      */
-    public static function suggestSimilarClassForGenericFQSEN(CodeBase $code_base, Context $context, FQSEN $fqsen, $filter = null, string $prefix = 'Did you mean') : ?\Phan\Suggestion
+    public static function suggestSimilarClassForGenericFQSEN(CodeBase $code_base, Context $context, FQSEN $fqsen, ?\Closure $filter = null, string $prefix = 'Did you mean') : ?\Phan\Suggestion
     {
         if (Config::getValue('disable_suggestions')) {
             return null;

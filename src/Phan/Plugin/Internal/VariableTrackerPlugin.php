@@ -215,7 +215,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
     private function warnAboutVariableGraph(
         Node $method_node,
         VariableGraph $graph,
-        $issue_overrides_for_definition_ids
+        array $issue_overrides_for_definition_ids
     ) : void {
         foreach ($graph->def_uses as $variable_name => $def_uses_for_variable) {
             if ($variable_name === 'this') {

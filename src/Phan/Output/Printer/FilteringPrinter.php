@@ -26,7 +26,7 @@ final class FilteringPrinter implements BufferedPrinterInterface
     /**
      * @param string $file
      */
-    private static function normalize($file) : string
+    private static function normalize(string $file) : string
     {
         return \str_replace(\DIRECTORY_SEPARATOR, "//", (string)$file);
     }
