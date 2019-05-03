@@ -14,6 +14,34 @@ ini_set("memory_limit", '-1');
 define('CLASS_DIR', __DIR__ . '/../');
 set_include_path(get_include_path() . PATH_SEPARATOR . CLASS_DIR);
 
+if (extension_loaded('ast')) {
+    // Warn if the php-ast version is too low.
+    $ast_version = (new ReflectionExtension('ast'))->getVersion();
+    if (version_compare($ast_version, '1.0.0') <= 0) {
+        fprintf(
+            STDERR,
+            "ERROR: Phan 2.x requires php-ast 1.0.1+ because it depends on AST version 70. php-ast %s is installed." . PHP_EOL,
+            $ast_version
+        );
+        fwrite(
+            STDERR,
+            "Exiting without analyzing files." . PHP_EOL
+        );
+        exit(1);
+    }
+}
+if (PHP_VERSION_ID < 70100) {
+    fprintf(
+        STDERR,
+        "Phan 2.0 requires PHP 7.1+ to run, but PHP %s is installed." . PHP_EOL,
+        PHP_VERSION
+    );
+    fwrite(STDERR, "PHP 7.0 reached its end of life in December 2018." . PHP_EOL);
+    fwrite(STDERR, "Exiting without analyzing code." . PHP_EOL);
+    // The version of vendor libraries this depends on will also require php 7.1
+    exit(1);
+}
+
 // Use the composer autoloader
 $found_autoloader = false;
 foreach ([
@@ -111,6 +139,11 @@ function phan_error_handler($errno, $errstr, $errfile, $errline)
         // Don't execute the PHP internal error handler
         return true;
     }
+    if ($errno === E_USER_DEPRECATED && preg_match('/^Passing a command as string when creating a /', $errstr)) {
+        // Suppress deprecation notices running `vendor/bin/paratest`.
+        // Don't execute the PHP internal error handler.
+        return true;
+    }
     if ($errno === E_DEPRECATED && preg_match('/ast\\\\parse_/', $errstr)) {
         static $did_warn = false;
         if (!$did_warn) {
@@ -194,33 +227,5 @@ if (!class_exists(CompileError::class)) {
     // phpcs:ignore PSR1.Classes.ClassDeclaration.MissingNamespace
     class CompileError extends Error
     {
-    }
-}
-
-if (extension_loaded('ast')) {
-    // Warn if the php-ast version is too low.
-    $ast_version = (new ReflectionExtension('ast'))->getVersion();
-    if (version_compare($ast_version, '1.0.0') <= 0) {
-        fprintf(
-            STDERR,
-            "ERROR: Phan 2.x requires php-ast 1.0.1+ because it depends on AST version 70. php-ast %s is installed." . PHP_EOL,
-            $ast_version
-        );
-        fwrite(
-            STDERR,
-            "Exiting without analyzing files." . PHP_EOL
-        );
-        exit(1);
-    }
-}
-if (PHP_VERSION_ID < 70100) {
-    if (!getenv('PHAN_SUPPRESS_PHP_UPGRADE_NOTICE')) {
-        fprintf(
-            STDERR,
-            "A future major version of Phan will require PHP 7.1+ to run, but PHP %s is installed." . PHP_EOL,
-            PHP_VERSION
-        );
-        fwrite(STDERR, "PHP 7.0 reached its end of life in December 2018." . PHP_EOL);
-        fwrite(STDERR, "(Set PHAN_SUPPRESS_PHP_UPGRADE_NOTICE=1 to suppress this message)" . PHP_EOL);
     }
 }

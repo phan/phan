@@ -15,7 +15,7 @@ final class PluginV2Test extends BaseTest
     public function testDocumentation()
     {
         $comment = (new ReflectionClass(PluginV2::class))->getDocComment();
-        $this->assertInternalType('string', $comment);
+        $this->assertIsString($comment);
 
         $capabilities = [];
         foreach (\scandir(\dirname(__DIR__, 2) . '/src/Phan/PluginV2') as $file) {
