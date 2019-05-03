@@ -51,7 +51,7 @@ class StringType extends ScalarType
             return true;
         }
         $string_casts = Config::getValue('scalar_implicit_partial')['string'] ?? null;
-        if (!is_array($string_casts)) {
+        if (!\is_array($string_casts)) {
             return false;
         }
         return \in_array('int', $string_casts, true) || \in_array('float', $string_casts, true);

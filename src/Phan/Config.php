@@ -1063,14 +1063,14 @@ class Config
         if (!$value) {
             return null;
         }
-        $parts = array_map(static function (string $path) : string {
+        $parts = \array_map(static function (string $path) : string {
             $path = \str_replace('\\', '/', $path);  // Normalize \\ to / in configs
             $path = \rtrim($path, '\//');  // remove trailing / from directory
             $path = \preg_replace('@^(\./)+@', '', $path);  // Remove any number of leading ./ sections
             return \preg_quote($path, '@');  // Quote this
         }, $value);
 
-        return '@^(\./)*(' . implode('|', $parts) . ')([/\\\\]|$)@';
+        return '@^(\./)*(' . \implode('|', $parts) . ')([/\\\\]|$)@';
     }
 
     private static function computeClosestTargetPHPVersionId(string $version) : int

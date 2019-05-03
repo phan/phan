@@ -2926,7 +2926,7 @@ class Type
                     continue 2;
                 }
             }
-            throw new InvalidArgumentException("Unmatched \"'\" of $part in " . implode(',', $results));
+            throw new InvalidArgumentException("Unmatched \"'\" of $part in " . \implode(',', $results));
         }
         if ($N !== count($results)) {
             return \array_values($results);

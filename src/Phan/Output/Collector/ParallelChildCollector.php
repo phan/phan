@@ -41,7 +41,7 @@ class ParallelChildCollector implements IssueCollectorInterface
     {
         // Create a message queue for this process group
         $message_queue_key = \posix_getpgid(\posix_getpid());
-        if (!is_int($message_queue_key)) {
+        if (!\is_int($message_queue_key)) {
             throw new AssertionError('Expected posix_getpgid to return a valid id');
         }
 
