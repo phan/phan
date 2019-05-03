@@ -26,7 +26,7 @@ class Fixers {
         CodeBase $unused_code_base,
         FileCacheEntry $contents,
         IssueInstance $instance
-    ) {
+    ) : ?\Phan\Plugin\Internal\IssueFixingPlugin\FileEditSet {
         $params = $instance->getTemplateParameters();
         $return_type = $params[0];
         $name = $params[1];
@@ -42,13 +42,13 @@ class Fixers {
     /**
      * @return ?FileEditSet
      */
-    private static function computeEditsForReturnTypeDeclaration(FunctionLike $declaration, string $return_type)
+    private static function computeEditsForReturnTypeDeclaration(FunctionLike $declaration, string $return_type) : ?\Phan\Plugin\Internal\IssueFixingPlugin\FileEditSet
     {
         if (!$return_type) {
             return null;
         }
         // @phan-suppress-next-line PhanUndeclaredProperty
-        $close_bracket = $declaration->closeParen;
+        $close_bracket = $declaration->anonymousFunctionUseClause->closeParen ?? $declaration->closeParen;
         if (!$close_bracket) {
             return null;
         }
@@ -65,7 +65,7 @@ class Fixers {
         FileCacheEntry $contents,
         int $line,
         string $name
-    ) {
+    ) : ?\Microsoft\PhpParser\FunctionLike {
         $candidates = [];
         foreach ($contents->getNodesAtLine($line) as $node) {
             fwrite(STDERR, "Saw " . get_class($node) . "\n");

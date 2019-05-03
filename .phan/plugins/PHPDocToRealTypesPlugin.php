@@ -11,6 +11,7 @@ use Phan\PluginV2;
 use Phan\PluginV2\AnalyzeMethodCapability;
 use Phan\PluginV2\AnalyzeFunctionCapability;
 use Phan\PluginV2\AutomaticFixCapability;
+use Phan\PluginV2\BeforeAnalyzeCapability;
 use PHPDocToRealTypesPlugin\Fixers;
 
 /**
@@ -21,11 +22,15 @@ use PHPDocToRealTypesPlugin\Fixers;
 class PHPDocToRealTypesPlugin extends PluginV2 implements
     AnalyzeFunctionCapability,
     AnalyzeMethodCapability,
-    AutomaticFixCapability
+    AutomaticFixCapability,
+    BeforeAnalyzeCapability
 {
     const CanUsePHP71Void = 'PhanPluginCanUsePHP71Void';
     const CanUseReturnType = 'PhanPluginCanUseReturnType';
     const CanUseNullableReturnType = 'PhanPluginCanUseNullableReturnType';
+
+    /** @var array<string,Method> */
+    private $deferred_analysis_methods;
 
     /**
      * @return array<string,Closure(CodeBase,FileCacheEntry,IssueInstance):(?FileEditSet)>
@@ -45,7 +50,7 @@ class PHPDocToRealTypesPlugin extends PluginV2 implements
         $this->analyzeFunctionLike($code_base, $function);
     }
 
-    public function analyzeMethod(CodeBase $code_base, Method $method)
+    public function analyzeMethod(CodeBase $unused_code_base, Method $method)
     {
         if ($method->getIsMagic() || $method->isPHPInternal()) {
             return;
@@ -53,14 +58,20 @@ class PHPDocToRealTypesPlugin extends PluginV2 implements
         if ($method->getFQSEN() !== $method->getDefiningFQSEN()) {
             return;
         }
-        if ($method->getIsOverride() || $method->getIsOverriddenByAnother()) {
-            // TODO: Consider allowing this
-            return;
-        }
-        $this->analyzeFunctionLike($code_base, $method);
+        $this->deferred_analysis_methods[$method->getFQSEN()->__toString()] = $method;
     }
 
-    private function analyzeFunctionLike(CodeBase $code_base, FunctionInterface $method)
+    public function beforeAnalyze(CodeBase $code_base) {
+        foreach ($this->deferred_analysis_methods as $method) {
+            if ($method->getIsOverride() || $method->getIsOverriddenByAnother()) {
+                // TODO: Consider allowing this
+                continue;
+            }
+            $this->analyzeFunctionLike($code_base, $method);
+        }
+    }
+
+    private function analyzeFunctionLike(CodeBase $code_base, FunctionInterface $method) : void
     {
         if (!$method->getRealReturnType()->isEmpty()) {
             return;
