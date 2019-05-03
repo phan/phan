@@ -57,7 +57,7 @@ class ProtocolStreamWriter implements ProtocolWriter
      *
      * @return void
      */
-    private function flush()
+    private function flush() : void
     {
         $keepWriting = true;
         while ($keepWriting) {

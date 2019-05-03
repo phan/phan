@@ -14,7 +14,7 @@ use Symfony\Component\Console\Output\BufferedOutput;
 final class JSONPrinterTest extends BaseTest
 {
 
-    public function testPrintOutput()
+    public function testPrintOutput() : void
     {
         $output = new BufferedOutput();
 

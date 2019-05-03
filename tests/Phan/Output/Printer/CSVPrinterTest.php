@@ -14,7 +14,7 @@ use Symfony\Component\Console\Output\BufferedOutput;
 final class CSVPrinterTest extends BaseTest
 {
 
-    public function testHeaderCorrespondsToData()
+    public function testHeaderCorrespondsToData() : void
     {
         $output = new BufferedOutput();
 
@@ -40,7 +40,7 @@ final class CSVPrinterTest extends BaseTest
      *
      * @dataProvider specialCharacterCasesProvider
      */
-    public function testSpecialCharactersAreProperlyEncoded($string, $expected_message)
+    public function testSpecialCharactersAreProperlyEncoded($string, $expected_message) : void
     {
         $output = new BufferedOutput();
 

@@ -30,7 +30,7 @@ class CompletionResolver
      * and "go to type definition" in their implementations,
      * based on $request->getIsTypeDefinitionRequest()
      */
-    public static function createCompletionClosure(CompletionRequest $request, CodeBase $code_base)
+    public static function createCompletionClosure(CompletionRequest $request, CodeBase $code_base) : \Closure
     {
         // TODO: Could use the parent node list
         // (e.g. don't use a method with a void return as an argument to another function)
@@ -126,7 +126,7 @@ class CompletionResolver
         Node $node,
         bool $is_static,
         $incomplete_prop_name
-    ) {
+    ) : void {
         if (!is_string($incomplete_prop_name)) {
             return;
         }
@@ -171,7 +171,7 @@ class CompletionResolver
         Context $context,
         Node $node,
         $constant_name
-    ) {
+    ) : void {
         if (!is_string($constant_name)) {
             return;
         }
@@ -220,7 +220,7 @@ class CompletionResolver
         Node $node,
         bool $is_static,
         $incomplete_method_name
-    ) {
+    ) : void {
         if (!is_string($incomplete_method_name)) {
             return;
         }
@@ -261,7 +261,7 @@ class CompletionResolver
         Context $context,
         Node $node,
         string $incomplete_constant_name
-    ) {
+    ) : void {
         // TODO: Limit this check to constants that are visible from the current namespace, with the shortest name from the alias map
         // TODO: Use the alias map
         $current_namespace = \ltrim($context->getNamespace(), "\\");
@@ -293,7 +293,7 @@ class CompletionResolver
         Context $context,
         Node $node,
         string $incomplete_class_name
-    ) {
+    ) : void {
         // TODO: Use the alias map
         // TODO: Remove the namespace
         // fwrite(STDERR, "Looking up classes in " . $context->getNamespace() . "\n");
@@ -329,7 +329,7 @@ class CompletionResolver
         Context $context,
         Node $node,
         string $incomplete_function_name
-    ) {
+    ) : void {
         // TODO: Include FQSENs which have a namespace matching what was typed so far
         $current_namespace = \ltrim($context->getNamespace(), "\\");
 
@@ -363,7 +363,7 @@ class CompletionResolver
         CodeBase $code_base,
         Context $context,
         string $incomplete_variable_name
-    ) {
+    ) : void {
         $variable_candidates = $context->getScope()->getVariableMap();
         $prefix = CompletionRequest::useVSCodeCompletion() ? '$' : '';
         // TODO: Use the alias map

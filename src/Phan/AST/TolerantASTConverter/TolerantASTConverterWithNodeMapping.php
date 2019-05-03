@@ -136,7 +136,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
      *
      * @return void
      */
-    private static function findNodeAtOffset(PhpParser\Node $parser_node, int $offset)
+    private static function findNodeAtOffset(PhpParser\Node $parser_node, int $offset) : void
     {
         self::$closest_node_or_token = null;
         self::$closest_node_or_token_symbol = null;
@@ -265,7 +265,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
      * @param PhpParser\Node|Token $n @phan-unused-param the tolerant-php-parser node that generated the $ast_node
      * @param mixed $ast_node the node that was selected because it was under the cursor
      */
-    private static function markNodeAsSelected($n, $ast_node)
+    private static function markNodeAsSelected($n, $ast_node) : void
     {
         // fwrite(STDERR, "Marking corresponding node as flagged: " . json_encode($n) . "\n" . \Phan\Debug::nodeToString($ast_node) . "\n");
         // fflush(STDERR);
@@ -308,7 +308,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
      * TODO: Support variables?
      * TODO: Implement support for going to function definitions if no class could be found
      */
-    private static function extractFragmentFromCommentLike()
+    private static function extractFragmentFromCommentLike() : ?string
     {
         $offset = self::$desired_byte_offset;
         $contents = self::$file_contents;

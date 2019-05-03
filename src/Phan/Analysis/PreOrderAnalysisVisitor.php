@@ -313,7 +313,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     /**
      * @return ?FullyQualifiedClassName
      */
-    private static function getOverrideClassFQSEN(CodeBase $code_base, Func $func)
+    private static function getOverrideClassFQSEN(CodeBase $code_base, Func $func) : ?\Phan\Language\FQSEN\FullyQualifiedClassName
     {
         $closure_scope = $func->getInternalScope();
         if ($closure_scope instanceof ClosureScope) {
@@ -350,7 +350,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         CodeBase $code_base,
         Context $context,
         Func $func
-    ) {
+    ) : void {
         // skip adding $this to internal scope if the closure is a static one
         if ($func->getFlags() == ast\flags\MODIFIER_STATIC) {
             return;
@@ -521,7 +521,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      * Emit an Issue if the documented return type is incompatible with that.
      * @return void
      */
-    private function setReturnTypeOfGenerator(FunctionInterface $func, Node $node)
+    private function setReturnTypeOfGenerator(FunctionInterface $func, Node $node) : void
     {
         // Currently, there is no way to describe the types passed to
         // a Generator in phpdoc.
@@ -648,7 +648,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      * @param UnionType $union_type the type of $node->children['expr']
      * @param Node $node a node of kind AST_FOREACH
      */
-    private function checkCanIterate(UnionType $union_type, Node $node)
+    private function checkCanIterate(UnionType $union_type, Node $node) : void
     {
         if ($union_type->isScalar()) {
             $this->emitIssue(
@@ -671,7 +671,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         }
     }
 
-    private function warnAboutNonTraversableType(Node $node, Type $type)
+    private function warnAboutNonTraversableType(Node $node, Type $type) : void
     {
         $fqsen = FullyQualifiedClassName::fromType($type);
         if (!$this->code_base->hasClassWithFQSEN($fqsen)) {
@@ -705,7 +705,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         );
     }
 
-    private function analyzeArrayAssignBackwardsCompatibility(Node $node)
+    private function analyzeArrayAssignBackwardsCompatibility(Node $node) : void
     {
         if ($node->flags !== ast\flags\ARRAY_SYNTAX_LIST) {
             $this->emitIssue(

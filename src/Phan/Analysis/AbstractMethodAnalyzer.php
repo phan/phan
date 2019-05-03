@@ -21,7 +21,7 @@ class AbstractMethodAnalyzer
     public static function analyzeAbstractMethodsAreImplemented(
         CodeBase $code_base,
         Clazz $class
-    ) {
+    ) : void {
         // Don't worry about internal classes
         if ($class->isPHPInternal()) {
             return;

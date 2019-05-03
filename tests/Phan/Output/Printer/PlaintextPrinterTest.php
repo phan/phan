@@ -24,7 +24,7 @@ final class PlainTextPrinterTest extends BaseTest
     /**
      * Sanity check of output without color codes
      */
-    public function testPrintUncolorizedOutput()
+    public function testPrintUncolorizedOutput() : void
     {
         $output = new BufferedOutput();
 
@@ -46,7 +46,7 @@ final class PlainTextPrinterTest extends BaseTest
     /**
      * Sanity check that the expected color codes are emitted.
      */
-    public function testPrintColorizedOutput()
+    public function testPrintColorizedOutput() : void
     {
         Config::setValue('color_issue_messages', true);
         $output = new BufferedOutput();

@@ -22,7 +22,7 @@ class WikiIssueTypeUpdater
     /** @var array<string,array>|null an example for a subset of the issue types */
     private static $examples;
 
-    private static function printUsageAndExit(int $exit_code = 1)
+    private static function printUsageAndExit(int $exit_code = 1) : void
     {
         global $argv;
         $program = $argv[0];
@@ -87,7 +87,7 @@ EOT;
      * @return void
      * @throws InvalidArgumentException (uncaught) if the documented issue types can't be found.
      */
-    public static function main()
+    public static function main() : void
     {
         global $argv;
         if (count($argv) !== 1) {
@@ -133,7 +133,7 @@ EOT;
      * @param array<string,string> $old_text_for_section
      * @throws InvalidArgumentException
      */
-    private static function documentIssueCategorySection(WikiWriter $writer, Issue $issue, array $old_text_for_section)
+    private static function documentIssueCategorySection(WikiWriter $writer, Issue $issue, array $old_text_for_section) : void
     {
         $category = $issue->getCategory();
         if (!$category) {
@@ -156,7 +156,7 @@ EOT;
     /**
      * @param array<string,string> $old_text_for_section
      */
-    private static function documentIssue(WikiWriter $writer, Issue $issue, array $old_text_for_section)
+    private static function documentIssue(WikiWriter $writer, Issue $issue, array $old_text_for_section) : void
     {
         // TODO: Print each severity as we see it?
         $header = '## ' . $issue->getType();
@@ -182,7 +182,7 @@ EOT;
         }
     }
 
-    private static function debugLog(string $message)
+    private static function debugLog(string $message) : void
     {
         // Uncomment the below line to enable debugging
         if (self::$verbose) {

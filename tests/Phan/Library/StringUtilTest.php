@@ -10,12 +10,12 @@ use Phan\Tests\BaseTest;
  */
 final class StringUtilTest extends BaseTest
 {
-    public function testJsonEncode()
+    public function testJsonEncode() : void
     {
         $this->assertSame("{}", StringUtil::jsonEncode(new \stdClass()));
     }
 
-    public function testAsSingleLineUtf8()
+    public function testAsSingleLineUtf8() : void
     {
         $this->assertSame("a�b�", StringUtil::asSingleLineUtf8("a\nb\n"));
         $this->assertSame("��", StringUtil::asSingleLineUtf8("\x80\x81"));
@@ -23,7 +23,7 @@ final class StringUtilTest extends BaseTest
         $this->assertSame("0", StringUtil::asSingleLineUtf8("0"));
     }
 
-    public function testEncodeValue()
+    public function testEncodeValue() : void
     {
         $this->assertSame("'0'", StringUtil::encodeValue("0"));
         $this->assertSame("''", StringUtil::encodeValue(""));
@@ -31,7 +31,7 @@ final class StringUtilTest extends BaseTest
         $this->assertSame('"\0"', StringUtil::encodeValue("\x00"));
     }
 
-    public function testEncodeValueList()
+    public function testEncodeValueList() : void
     {
         $this->assertSame('"\0","a\nb",\'x\'', StringUtil::encodeValueList(',', ["\0", "a\nb", "x"]));
         $this->assertSame('', StringUtil::encodeValueList(',', []));

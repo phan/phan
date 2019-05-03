@@ -10,12 +10,12 @@ use Phan\Config;
  */
 final class ConfigTest extends BaseTest
 {
-    public function testDefaultsValid()
+    public function testDefaultsValid() : void
     {
         $this->assertSame([], Config::getConfigErrors(Config::DEFAULT_CONFIGURATION), 'default configuration should be valid');
     }
 
-    public function testWarnsInvalid()
+    public function testWarnsInvalid() : void
     {
         $config = \array_merge(
             Config::DEFAULT_CONFIGURATION,
@@ -38,7 +38,7 @@ final class ConfigTest extends BaseTest
      * @dataProvider warnsEnableCompletionProvider
      * @param mixed $value
      */
-    public function testWarnsEnableCompletion($value, string ...$expected_errors)
+    public function testWarnsEnableCompletion($value, string ...$expected_errors) : void
     {
         $config = ['language_server_enable_completion' => $value];
         $this->assertSame($expected_errors, Config::getConfigErrors($config));

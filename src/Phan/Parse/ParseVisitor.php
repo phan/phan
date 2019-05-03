@@ -881,7 +881,7 @@ class ParseVisitor extends ScopeVisitor
         return $this->context;
     }
 
-    private function analyzeDefine(Node $node)
+    private function analyzeDefine(Node $node) : void
     {
         $args = $node->children['args'];
         if (\count($args->children) < 2) {
@@ -950,7 +950,7 @@ class ParseVisitor extends ScopeVisitor
      * Analyze a node for syntax backward compatibility, if that option is enabled
      * @return void
      */
-    private function analyzeBackwardCompatibility(Node $node)
+    private function analyzeBackwardCompatibility(Node $node) : void
     {
         if (Config::get_backward_compatibility_checks()) {
             (new ContextNode(
@@ -1234,7 +1234,7 @@ class ParseVisitor extends ScopeVisitor
         string $comment_string,
         bool $use_future_union_type,
         bool $is_fully_qualified = false
-    ) {
+    ) : void {
         $i = \strrpos($name, '\\');
         if ($i !== false) {
             $name_fragment = (string)\substr($name, $i + 1);
@@ -1361,7 +1361,7 @@ class ParseVisitor extends ScopeVisitor
      * @param Node $node - An AST_CALL node with name 'class_alias' to attempt to resolve
      * @return void
      */
-    private function recordClassAlias(Node $node)
+    private function recordClassAlias(Node $node) : void
     {
         $args = $node->children['args']->children;
         if (\count($args) < 2 || \count($args) > 3) {
@@ -1478,7 +1478,7 @@ class ParseVisitor extends ScopeVisitor
      *
      * @internal
      */
-    public static function checkIsAllowedInConstExpr($n)
+    public static function checkIsAllowedInConstExpr($n) : void
     {
         if (!($n instanceof Node)) {
             return;

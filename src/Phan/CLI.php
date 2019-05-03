@@ -207,7 +207,7 @@ class CLI
      * @param array<int,string> $argv
      * @throws UsageException
      */
-    private static function checkAllArgsUsed(array $opts, array &$argv)
+    private static function checkAllArgsUsed(array $opts, array &$argv) : void
     {
         $pruneargv = [];
         foreach ($opts as $opt => $value) {
@@ -271,7 +271,7 @@ class CLI
      * @throws UsageException
      * @internal - used for unit tests only
      */
-    public static function fromRawValues(array $opts, array $argv)
+    public static function fromRawValues(array $opts, array $argv) : \Phan\CLI
     {
         return new self($opts, $argv);
     }
@@ -750,7 +750,7 @@ class CLI
         }
     }
 
-    private static function checkPluginsExist()
+    private static function checkPluginsExist() : void
     {
         $all_plugins_exist = true;
         foreach (Config::getValue('plugins') as $plugin_path_or_name) {
@@ -802,7 +802,7 @@ class CLI
     /**
      * @return void
      */
-    public function recomputeFileList()
+    public function recomputeFileList() : void
     {
         $this->file_list = $this->file_list_in_config;
 
@@ -850,7 +850,7 @@ class CLI
      * @return void - exits on usage error
      * @throws UsageException
      */
-    private static function checkCanDaemonize(string $protocol, string $opt)
+    private static function checkCanDaemonize(string $protocol, string $opt) : void
     {
         $opt = strlen($opt) >= 2 ? "--$opt" : "-$opt";
         if (!in_array($protocol, \stream_get_transports())) {
@@ -908,7 +908,7 @@ EOT;
     // FIXME: If I stop using defined() in UnionTypeVisitor,
     // this will warn about the undefined constant EXIT_SUCCESS when a
     // user-defined constant is used in parse phase in a function declaration
-    private static function usage(string $msg = '', int $exit_code = EXIT_SUCCESS, bool $print_extended_help = false)
+    private static function usage(string $msg = '', int $exit_code = EXIT_SUCCESS, bool $print_extended_help = false) : void
     {
         global $argv;
 
@@ -1452,7 +1452,7 @@ EOB;
         string $msg,
         float $p,
         $details = null
-    ) {
+    ) : void {
         if (self::shouldShowDebugOutput()) {
             self::debugProgress($msg, $p, $details);
             return;
@@ -1516,7 +1516,7 @@ EOB;
      * Print an end to progress bars or debug output
      * @return void
      */
-    public static function endProgressBar()
+    public static function endProgressBar() : void
     {
         static $did_end = false;
         if ($did_end) {
@@ -1539,7 +1539,7 @@ EOB;
      * @return void
      * @param ?(string|FQSEN|AddressableElement) $details
      */
-    public static function debugProgress(string $msg, float $p, $details)
+    public static function debugProgress(string $msg, float $p, $details) : void
     {
         $pct = \sprintf("%d%%", (int)(100 * self::boundPercentage($p)));
 
@@ -1568,7 +1568,7 @@ EOB;
     /**
      * @return void
      */
-    public static function debugOutput(string $line) {
+    public static function debugOutput(string $line) : void {
         \fwrite(STDERR, $line . "\n");
     }
 
@@ -1632,7 +1632,7 @@ EOB;
      * the configuration.
      * @throws UsageException
      */
-    private function maybeReadConfigFile(bool $require_config_exists)
+    private function maybeReadConfigFile(bool $require_config_exists) : void
     {
 
         // If the file doesn't exist here, try a directory up
@@ -1678,7 +1678,7 @@ EOB;
      * @return void
      * @throws AssertionError on failure
      */
-    private static function ensureASTParserExists()
+    private static function ensureASTParserExists() : void
     {
         if (Config::getValue('use_polyfill_parser')) {
             return;

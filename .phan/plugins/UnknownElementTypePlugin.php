@@ -91,7 +91,7 @@ class UnknownElementTypePlugin extends PluginV2 implements
         string $message_for_empty,
         string $issue_type_for_unknown_array,
         string $message_for_unknown_array
-    ) {
+    ) : void {
         $union_type = $element->getUnionType();
         if ($union_type->isEmpty()) {
             self::emitIssue(

@@ -56,7 +56,7 @@ class RegexKeyExtractor
         return $matcher->getMatchKeys();
     }
 
-    private function consumeUntil(string $next_char)
+    private function consumeUntil(string $next_char) : void
     {
         $end = strpos($this->pattern, $next_char, $this->offset);
         if ($end === false) {
@@ -68,7 +68,7 @@ class RegexKeyExtractor
     /**
      * @throws InvalidArgumentException if an invalid pattern was seen
      */
-    private function extractGroup()
+    private function extractGroup() : void
     {
         $pattern = $this->pattern;
         if ($pattern[$this->offset] === '?') {
@@ -146,7 +146,7 @@ class RegexKeyExtractor
         throw new InvalidArgumentException('Reached the end of the pattern before extracting the group');
     }
 
-    private function extractCombinationGroup()
+    private function extractCombinationGroup() : void
     {
         $original_matches = $this->matches;
         $possible_matches = $original_matches;

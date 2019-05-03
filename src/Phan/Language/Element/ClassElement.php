@@ -117,7 +117,7 @@ abstract class ClassElement extends AddressableElement
      */
     public function setDefiningFQSEN(
         FullyQualifiedClassElement $defining_fqsen
-    ) {
+    ) : void {
         $this->defining_fqsen = $defining_fqsen;
     }
 
@@ -192,7 +192,7 @@ abstract class ClassElement extends AddressableElement
      *
      * @return void
      */
-    public function setIsOverride(bool $is_override)
+    public function setIsOverride(bool $is_override) : void
     {
         $this->setPhanFlags(Flags::bitVectorWithState(
             $this->getPhanFlags(),

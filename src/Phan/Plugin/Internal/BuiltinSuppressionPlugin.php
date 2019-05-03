@@ -197,7 +197,7 @@ final class BuiltinSuppressionPlugin extends PluginV2 implements
      */
     private static function yieldSuppressionComments(
         string $file_contents
-    ) {
+    ) : \Generator {
         foreach (\token_get_all($file_contents) as $token) {
             if (!\is_array($token)) {
                 continue;

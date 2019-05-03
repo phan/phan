@@ -108,7 +108,7 @@ class UnionType implements Serializable
      * @param Type[] $type_list
      * @return UnionType
      */
-    public static function of(array $type_list)
+    public static function of(array $type_list) : \Phan\Language\UnionType
     {
         $n = \count($type_list);
         if ($n === 0) {
@@ -126,7 +126,7 @@ class UnionType implements Serializable
      * @return UnionType
      * @suppress PhanPossiblyNonClassMethodCall
      */
-    protected static function ofUniqueTypes(array $type_list)
+    protected static function ofUniqueTypes(array $type_list) : \Phan\Language\UnionType
     {
         $n = \count($type_list);
         if ($n === 0) {
@@ -144,7 +144,7 @@ class UnionType implements Serializable
     /**
      * @return EmptyUnionType (Real return type omitted for performance)
      */
-    public static function empty()
+    public static function empty() : \Phan\Language\EmptyUnionType
     {
         return self::$empty_instance;
     }
@@ -153,7 +153,7 @@ class UnionType implements Serializable
      * @return void
      * @internal
      */
-    public static function init()
+    public static function init() : void
     {
         if (\is_null(self::$empty_instance)) {
             self::$empty_instance = EmptyUnionType::instance();
@@ -266,7 +266,7 @@ class UnionType implements Serializable
     /**
      * @return array<int,string>
      */
-    private static function extractTypePartsForStringInContext(string $type_string)
+    private static function extractTypePartsForStringInContext(string $type_string) : array
     {
         static $cache = [];
         $parts = $cache[$type_string] ?? null;
@@ -3109,7 +3109,7 @@ class UnionType implements Serializable
      * @var int $bool_id
      * @suppress PhanTypeMismatchArgumentNullable false positive in static init
      */
-    private static function convertToTypeSetWithNormalizedNonNullableBools(UnionTypeBuilder $builder)
+    private static function convertToTypeSetWithNormalizedNonNullableBools(UnionTypeBuilder $builder) : void
     {
         static $true_type = null;
         static $false_type = null;
@@ -3134,7 +3134,7 @@ class UnionType implements Serializable
      * @param UnionTypeBuilder $builder (Containing only non-nullable values)
      * @suppress PhanTypeMismatchArgumentNullable false positive in static init
      */
-    private static function convertToTypeSetWithNormalizedNullableBools(UnionTypeBuilder $builder)
+    private static function convertToTypeSetWithNormalizedNullableBools(UnionTypeBuilder $builder) : void
     {
         static $true_type = null;
         static $false_type = null;

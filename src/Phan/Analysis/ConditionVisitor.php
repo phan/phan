@@ -91,7 +91,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
      * A node to parse
      * @return void
      */
-    private function checkVariablesDefined(Node $node)
+    private function checkVariablesDefined(Node $node) : void
     {
         while ($node->kind === ast\AST_UNARY_OP) {
             $node = $node->children['expr'];
@@ -115,7 +115,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
      * A node to parse
      * @return void
      */
-    private function checkVariablesDefinedInIsset(Node $node)
+    private function checkVariablesDefinedInIsset(Node $node) : void
     {
         while ($node->kind === ast\AST_UNARY_OP) {
             $node = $node->children['expr'];
@@ -143,7 +143,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
      *
      * TODO: Add to NegatedConditionVisitor
      */
-    private function checkArrayAccessDefined(Node $node)
+    private function checkArrayAccessDefined(Node $node) : void
     {
         $code_base = $this->code_base;
         $context = $this->context;
@@ -562,7 +562,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
     /**
      * Modifies the union type of $variable in place
      */
-    private function setInstanceofVariableType(Variable $variable, Node $class_node)
+    private function setInstanceofVariableType(Variable $variable, Node $class_node) : void
     {
         // Get the type that we're checking it against
         $type = UnionTypeVisitor::unionTypeFromNode(
@@ -627,7 +627,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
      * @param Variable $variable (Node argument in a call to is_object)
      * @return void
      */
-    private static function analyzeIsObjectAssertion(Variable $variable)
+    private static function analyzeIsObjectAssertion(Variable $variable) : void
     {
         // Change the type to match is_object relationship
         // If we already have the `object` type or generic object types, then keep those

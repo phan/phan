@@ -137,7 +137,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     /**
      * @return ?ClosureDeclarationParameter the parameter which the argument at the index $i would be passed in as
      */
-    public function getClosureParameterForArgument(int $i)
+    public function getClosureParameterForArgument(int $i) : ?\Phan\Language\Type\ClosureDeclarationParameter
     {
         $result = $this->params[$i] ?? null;
         if (!$result) {
@@ -903,7 +903,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
      * Extracts a closure to extract the template type from the return type, or returns null
      * @return ?Closure(UnionType,Context):UnionType
      */
-    private function getReturnTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type)
+    private function getReturnTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type) : ?\Closure
     {
         $return_closure = $this->getUnionType()->getTemplateTypeExtractorClosure($code_base, $template_type);
         if (!$return_closure) {

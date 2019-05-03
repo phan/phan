@@ -38,7 +38,7 @@ final class EmptyUnionTypeTest extends BaseTest
         'getIsPossiblyUndefined',
     ];
 
-    public function testMethods()
+    public function testMethods() : void
     {
         $this->assertTrue(\class_exists(UnionType::class));  // Force the autoloader to load UnionType before attempting to load EmptyUnionType
         $failures = '';

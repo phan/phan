@@ -20,7 +20,7 @@ final class FrameTest extends BaseTest
     /**
      * @param mixed $value
      */
-    private function assertHasEncodedValue(string $expected, $value)
+    private function assertHasEncodedValue(string $expected, $value) : void
     {
         $this->assertSame($expected, Frame::encodeValue($value), 'unexpected result of encodeValue');
     }
@@ -28,7 +28,7 @@ final class FrameTest extends BaseTest
     /**
      * @throws \Exception
      */
-    public function testToString()
+    public function testToString() : void
     {
         $this->assertHasEncodedValue('[0, "", false, null]', [0, '', false, null]);
         $this->assertHasEncodedValue('[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]', \range(1, 10));

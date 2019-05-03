@@ -166,7 +166,7 @@ abstract class TypedElement implements TypedElementInterface
      *
      * @return void
      */
-    public function setFlags(int $flags)
+    public function setFlags(int $flags) : void
     {
         $this->flags = $flags;
     }
@@ -197,7 +197,7 @@ abstract class TypedElement implements TypedElementInterface
      *
      * @return void
      */
-    public function setPhanFlags(int $phan_flags)
+    public function setPhanFlags(int $phan_flags) : void
     {
         $this->phan_flags = $phan_flags;
     }
@@ -207,7 +207,7 @@ abstract class TypedElement implements TypedElementInterface
      *
      * @return void
      */
-    public function enablePhanFlagBits(int $bits)
+    public function enablePhanFlagBits(int $bits) : void
     {
         $this->phan_flags |= $bits;
     }
@@ -218,7 +218,7 @@ abstract class TypedElement implements TypedElementInterface
      * @return void
      * @suppress PhanUnreferencedPublicMethod keeping this for consistency
      */
-    public function disablePhanFlagBits(int $bits)
+    public function disablePhanFlagBits(int $bits) : void
     {
         $this->phan_flags &= (~$bits);
     }
@@ -258,7 +258,7 @@ abstract class TypedElement implements TypedElementInterface
      *
      * @return void
      */
-    public function setIsDeprecated(bool $is_deprecated)
+    public function setIsDeprecated(bool $is_deprecated) : void
     {
         $this->setPhanFlags(Flags::bitVectorWithState(
             $this->getPhanFlags(),
@@ -275,7 +275,7 @@ abstract class TypedElement implements TypedElementInterface
      * @deprecated
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function setSuppressIssueList(array $suppress_issue_list)
+    public function setSuppressIssueList(array $suppress_issue_list) : void
     {
         $this->suppress_issue_list = [];
         foreach ($suppress_issue_list as $issue_name) {
@@ -290,7 +290,7 @@ abstract class TypedElement implements TypedElementInterface
      * @param array<string,int> $suppress_issue_set
      * @return void
      */
-    public function setSuppressIssueSet(array $suppress_issue_set)
+    public function setSuppressIssueSet(array $suppress_issue_set) : void
     {
         $this->suppress_issue_list = $suppress_issue_set;
     }
@@ -307,7 +307,7 @@ abstract class TypedElement implements TypedElementInterface
      * Increments the number of times $issue_name was suppressed.
      * @return void
      */
-    public function incrementSuppressIssueCount(string $issue_name)
+    public function incrementSuppressIssueCount(string $issue_name) : void
     {
         ++$this->suppress_issue_list[$issue_name];
     }
@@ -352,7 +352,7 @@ abstract class TypedElement implements TypedElementInterface
     /**
      * @return void
      */
-    private function setIsPHPInternal(bool $is_internal)
+    private function setIsPHPInternal(bool $is_internal) : void
     {
         $this->setPhanFlags(
             Flags::bitVectorWithState(

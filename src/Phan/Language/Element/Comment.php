@@ -289,7 +289,7 @@ class Comment
      * @param mixed $value
      * @return void
      */
-    private function applyOverride(string $key, $value)
+    private function applyOverride(string $key, $value) : void
     {
         switch ($key) {
             case 'param':
@@ -342,7 +342,7 @@ class Comment
      * @param array<int,CommentParameter> $override_comment_vars
      * A list of CommentParameters from var declarations
      */
-    private function mergeVariableList(array $override_comment_vars)
+    private function mergeVariableList(array $override_comment_vars) : void
     {
         $known_names = [];
         foreach ($override_comment_vars as $override_var) {

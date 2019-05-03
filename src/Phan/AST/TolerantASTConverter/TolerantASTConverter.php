@@ -161,13 +161,13 @@ class TolerantASTConverter
     }
 
     /** @return void */
-    public function setShouldAddPlaceholders(bool $value)
+    public function setShouldAddPlaceholders(bool $value) : void
     {
         $this->instance_should_add_placeholders = $value;
     }
 
     /** @return void */
-    public function setPHPVersionId(int $value)
+    public function setPHPVersionId(int $value) : void
     {
         $this->instance_php_version_id_parsing = $value;
     }
@@ -176,7 +176,7 @@ class TolerantASTConverter
      * Parse all doc comments, even the ones the current php version's php-ast would be incapable of providing.
      * @return void
      */
-    public function setParseAllDocComments(bool $value)
+    public function setParseAllDocComments(bool $value) : void
     {
         $this->instance_parse_all_doc_comments = $value;
     }
@@ -218,7 +218,7 @@ class TolerantASTConverter
      * @return ast\Node
      * @throws InvalidArgumentException if the requested AST version is invalid.
      */
-    public function parseCodeAsPHPASTUncached(string $file_contents, int $version, array &$errors = [])
+    public function parseCodeAsPHPASTUncached(string $file_contents, int $version, array &$errors = []) : \ast\Node
     {
         // Aside: this can be implemented as a stub.
         $parser_node = static::phpParserParse($file_contents, $errors);
@@ -246,7 +246,7 @@ class TolerantASTConverter
      * @return ast\Node
      * @throws InvalidArgumentException if the provided AST version isn't valid
      */
-    public function phpParserToPhpast(PhpParser\Node $parser_node, int $ast_version, string $file_contents)
+    public function phpParserToPhpast(PhpParser\Node $parser_node, int $ast_version, string $file_contents) : \ast\Node
     {
         if (!\in_array($ast_version, self::SUPPORTED_AST_VERSIONS)) {
             throw new \InvalidArgumentException(sprintf("Unexpected version: want %s, got %d", implode(', ', self::SUPPORTED_AST_VERSIONS), $ast_version));
@@ -258,7 +258,7 @@ class TolerantASTConverter
     }
 
     /** @return void */
-    protected function startParsing(string $file_contents)
+    protected function startParsing(string $file_contents) : void
     {
         self::$decl_id = 0;
         self::$should_add_placeholders = $this->instance_should_add_placeholders;
@@ -300,7 +300,7 @@ class TolerantASTConverter
      * Throws RuntimeException|Exception if the statement list is invalid
      * @suppress PhanThrowTypeAbsentForCall|PhanThrowTypeMismatchForCall
      */
-    private static function phpParserStmtlistToAstNode($parser_nodes, $lineno, bool $return_null_on_empty = false)
+    private static function phpParserStmtlistToAstNode($parser_nodes, $lineno, bool $return_null_on_empty = false) : ?\ast\Node
     {
         if ($parser_nodes instanceof PhpParser\Node\Statement\CompoundStatementNode) {
             $parser_nodes = $parser_nodes->statements;
@@ -1877,7 +1877,7 @@ class TolerantASTConverter
     private static function phpParserClosureUsesToAstClosureUses(
         $uses,
         int $line
-    ) {
+    ) : ?\ast\Node {
         if (count($uses->children ?? []) === 0) {
             return null;
         }
@@ -1897,7 +1897,7 @@ class TolerantASTConverter
     /**
      * @return ?string
      */
-    private static function resolveDocCommentForClosure(PhpParser\Node\Expression\AnonymousFunctionCreationExpression $node)
+    private static function resolveDocCommentForClosure(PhpParser\Node\Expression\AnonymousFunctionCreationExpression $node) : ?string
     {
         $doc_comment = $node->getDocCommentText();
         if ($doc_comment) {
@@ -2061,7 +2061,7 @@ class TolerantASTConverter
      * @param ?PhpParser\Node\InterfaceBaseClause $node
      * @return ?ast\Node
      */
-    private static function interfaceBaseClauseToNode($node)
+    private static function interfaceBaseClauseToNode($node) : ?\ast\Node
     {
         if (!$node instanceof PhpParser\Node\InterfaceBaseClause) {
             // TODO: real placeholder?
@@ -2655,7 +2655,7 @@ class TolerantASTConverter
      * @param string|PhpParser\Node|null|array $comments
      * @return ?string the doc comment, or null
      */
-    private static function extractPhpdocComment($comments)
+    private static function extractPhpdocComment($comments) : ?string
     {
         if (\is_string($comments)) {
             return $comments;
@@ -2664,6 +2664,9 @@ class TolerantASTConverter
             // TODO: Extract only the substring with doc comment text?
             return $comments->getDocCommentText() ?: null;
         }
+        return null;
+        // TODO: Could extract comments from elsewhere
+        /*
         if ($comments === null) {
             return null;
         }
@@ -2673,6 +2676,7 @@ class TolerantASTConverter
         if (\count($comments) === 0) {
             return null;
         }
+         */
     }
 
     private static function phpParserListToAstList(PhpParser\Node\Expression\ListIntrinsicExpression $n, int $start_line) : ast\Node
@@ -2750,7 +2754,7 @@ class TolerantASTConverter
      *
      * (and various other exceptions)
      */
-    private static function phpParserMemberAccessExpressionToAstProp(PhpParser\Node\Expression\MemberAccessExpression $n, int $start_line)
+    private static function phpParserMemberAccessExpressionToAstProp(PhpParser\Node\Expression\MemberAccessExpression $n, int $start_line) : ?\ast\Node
     {
         // TODO: Check for incomplete tokens?
         $member_name = $n->memberName;

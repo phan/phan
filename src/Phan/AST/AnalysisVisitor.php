@@ -64,7 +64,7 @@ abstract class AnalysisVisitor extends KindVisitorImplementation
         string $issue_type,
         int $lineno,
         ...$parameters
-    ) {
+    ) : void {
         Issue::maybeEmitWithParameters(
             $this->code_base,
             $this->context,
@@ -94,7 +94,7 @@ abstract class AnalysisVisitor extends KindVisitorImplementation
         int $lineno,
         array $parameters,
         $suggestion
-    ) {
+    ) : void {
         Issue::maybeEmitWithParameters(
             $this->code_base,
             $this->context,

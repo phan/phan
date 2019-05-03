@@ -627,7 +627,7 @@ class Issue
     /**
      * @return array<string,Issue>
      */
-    public static function issueMap()
+    public static function issueMap() : array
     {
         static $error_map;
 
@@ -3740,7 +3740,7 @@ class Issue
      * @param array<int,Issue> $error_list
      * @return void
      */
-    private static function sanityCheckErrorList(array $error_list)
+    private static function sanityCheckErrorList(array $error_list) : void
     {
         $error_map = [];
         $unique_type_id_set = [];
@@ -3935,7 +3935,7 @@ class Issue
         string $file,
         int $line,
         ...$template_parameters
-    ) {
+    ) : void {
         self::emitWithParameters(
             $type,
             $file,
@@ -3968,7 +3968,7 @@ class Issue
         int $line,
         array $template_parameters,
         Suggestion $suggestion = null
-    ) {
+    ) : void {
         $issue = self::fromType($type);
 
         self::emitInstance(
@@ -3984,7 +3984,7 @@ class Issue
      */
     public static function emitInstance(
         IssueInstance $issue_instance
-    ) {
+    ) : void {
         Phan::getIssueCollector()->collectIssue($issue_instance);
     }
 
@@ -4004,7 +4004,7 @@ class Issue
         CodeBase $code_base,
         Context $context,
         IssueInstance $issue_instance
-    ) {
+    ) : void {
         // If this issue type has been suppressed in
         // the config, ignore it
 
@@ -4049,7 +4049,7 @@ class Issue
         string $issue_type,
         int $lineno,
         ...$parameters
-    ) {
+    ) : void {
         self::maybeEmitWithParameters(
             $code_base,
             $context,
@@ -4087,7 +4087,7 @@ class Issue
         int $lineno,
         array $parameters,
         Suggestion $suggestion = null
-    ) {
+    ) : void {
         if (self::shouldSuppressIssue(
             $code_base,
             $context,

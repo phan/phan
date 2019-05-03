@@ -43,7 +43,7 @@ class PhanAnnotationAdder
     private static $closures_for_kind;
 
     /** @return void */
-    public static function init()
+    public static function init() : void
     {
         if (\is_array(self::$closures_for_kind)) {
             return;
@@ -62,7 +62,7 @@ class PhanAnnotationAdder
      * @param array<mixed,Node|string|float|int|null> $children (should all be Nodes or null)
      * @param int $bit_set
      */
-    private static function markArrayElements($children, $bit_set)
+    private static function markArrayElements($children, $bit_set) : void
     {
         foreach ($children as $node) {
             if ($node instanceof Node) {
@@ -75,7 +75,7 @@ class PhanAnnotationAdder
      * @param Node $node
      * @param int $bit_set the bits to add to the flags
      */
-    private static function markNode($node, $bit_set)
+    private static function markNode($node, $bit_set) : void
     {
         $kind = $node->kind;
         if (\array_key_exists($kind, self::FLAGS_NODE_TYPE_SET)) {
@@ -88,7 +88,7 @@ class PhanAnnotationAdder
         }
     }
 
-    private static function initInner()
+    private static function initInner() : void
     {
         /**
          * @param Node $node
@@ -168,7 +168,7 @@ class PhanAnnotationAdder
      * @param Node|array|int|string|float|bool|null $node
      * @return void
      */
-    public static function applyFull($node)
+    public static function applyFull($node) : void
     {
         if ($node instanceof Node) {
             $closure = self::$closures_for_kind[$node->kind] ?? null;
@@ -185,7 +185,7 @@ class PhanAnnotationAdder
      * @param Node|string|int|float|null $node
      * @return void
      */
-    private static function applyToScopeInner($node)
+    private static function applyToScopeInner($node) : void
     {
         if ($node instanceof Node) {
             $kind = $node->kind;
@@ -207,7 +207,7 @@ class PhanAnnotationAdder
      * @param Node $node a node beginning a scope such as AST_FUNC, AST_STMT_LIST, AST_METHOD, etc. (Assumes these nodes don't have any annotations.
      * @return void
      */
-    public static function applyToScope(Node $node)
+    public static function applyToScope(Node $node) : void
     {
         foreach ($node->children as $inner) {
             self::applyToScopeInner($inner);

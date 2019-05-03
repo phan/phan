@@ -255,7 +255,7 @@ EOT;
      * @return ?InitializedSettings
      * @internal
      */
-    public static function createPhanSettingsForComposerSettings(array $composer_settings, $vendor_path, array $opts)
+    public static function createPhanSettingsForComposerSettings(array $composer_settings, $vendor_path, array $opts) : ?\Phan\Config\InitializedSettings
     {
         $level = $opts['init-level'] ?? 3;
         $level = self::LEVEL_MAP[\strtolower((string)$level)] ?? $level;
@@ -455,7 +455,7 @@ EOT;
      * @param array<string,mixed> $composer_settings settings parsed from composer.json
      * @return array<int,array<int,string>> [$directory_list, $file_list]
      */
-    private static function extractAutoloadFilesAndDirectories(string $relative_dir, array $composer_settings)
+    private static function extractAutoloadFilesAndDirectories(string $relative_dir, array $composer_settings) : array
     {
         $directory_list = [];
         $file_list = [];
@@ -535,7 +535,7 @@ EOT;
      * @param array<string,mixed> $opts
      * @return array<int,string>
      */
-    private static function getArrayOption(array $opts, string $key)
+    private static function getArrayOption(array $opts, string $key) : array
     {
         $values = $opts[$key] ?? [];
         if (is_string($values)) {

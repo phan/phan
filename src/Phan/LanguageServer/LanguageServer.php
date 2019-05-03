@@ -261,7 +261,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      *
      * @suppress PhanUndeclaredConstant, UnusedSuppression (pcntl unavailable on Windows)
      */
-    public static function run(CodeBase $code_base, \Closure $file_path_lister, array $options)
+    public static function run(CodeBase $code_base, \Closure $file_path_lister, array $options) : ?\Phan\Daemon\Request
     {
         if (!$code_base->isUndoTrackingEnabled()) {
             throw new AssertionError("Expected undo tracking to be enabled");
@@ -419,6 +419,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
                     return $most_recent_request;
                 /* } */
             }
+            return null;
         } else {
             if ($options['stdin'] !== true) {
                 throw new AssertionError("Expected either 'stdin', 'tcp-server', or 'tcp' as the language server communication option");
@@ -442,7 +443,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      * Asynchronously analyze the given URI.
      * @return void
      */
-    public function analyzeURIAsync(string $uri)
+    public function analyzeURIAsync(string $uri) : void
     {
         $path_to_analyze = Utils::uriToPath($uri);
         Logger::logInfo("Called analyzeURIAsync, uri=$uri, path=$path_to_analyze");
@@ -526,7 +527,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         return $request->getPromise();
     }
 
-    private function discardPreviousNodeInfoRequest()
+    private function discardPreviousNodeInfoRequest() : void
     {
         $prev_node_info_request = $this->most_recent_node_info_request;
         if ($prev_node_info_request) {
@@ -580,7 +581,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     /**
      * @return void
      */
-    private function finalizeAnalyzingURIs()
+    private function finalizeAnalyzingURIs() : void
     {
         list($uris_to_analyze, $file_path_list) = $this->getFilteredURIsToAnalyze();
         // TODO: Add a better abstraction of
@@ -682,7 +683,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      *
      * @suppress PhanAccessMethodInternal
      */
-    private function finishAnalyzingURIsWithoutPcntl(array $uris_to_analyze)
+    private function finishAnalyzingURIsWithoutPcntl(array $uris_to_analyze) : void
     {
         $paths_to_analyze = \array_keys($uris_to_analyze);
         Logger::logInfo('in ' . __METHOD__ . ' paths: ' . StringUtil::jsonEncode($paths_to_analyze));
@@ -751,7 +752,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      * @return void
      * @see Request::respondWithIssues() for where $response_data is serialized
      */
-    private function handleJSONResponseFromWorker(array $uris_to_analyze, array $response_data)
+    private function handleJSONResponseFromWorker(array $uris_to_analyze, array $response_data) : void
     {
         $most_recent_node_info_request = $this->most_recent_node_info_request;
         if ($most_recent_node_info_request) {
@@ -976,7 +977,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      * @suppress PhanUnreferencedPublicMethod
      * @return void
      */
-    public function initialized()
+    public function initialized() : void
     {
         Logger::logInfo("Called initialized on language server, currently a no-op");
     }
@@ -988,7 +989,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      *
      * @return void
      */
-    public function shutdown()
+    public function shutdown() : void
     {
         // TODO: Does phan need to do anything else except respond?
         Logger::logInfo("Called shutdown on language server");
@@ -999,7 +1000,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      *
      * @return void
      */
-    public function exit()
+    public function exit() : void
     {
         // This is handled by the main process. No forks are active.
         Logger::logInfo("Called exit on language server");

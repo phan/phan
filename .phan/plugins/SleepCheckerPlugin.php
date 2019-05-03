@@ -67,7 +67,7 @@ class SleepCheckerVisitor extends PluginAwarePostAnalysisVisitor
      * @param array<string,true> $sleep_properties
      * @return void
      */
-    private function warnAboutTransientSleepProperties(array $sleep_properties)
+    private function warnAboutTransientSleepProperties(array $sleep_properties) : void
     {
         if (count($sleep_properties) === 0) {
             // Give up, failed to extract property names
@@ -115,7 +115,7 @@ class SleepCheckerVisitor extends PluginAwarePostAnalysisVisitor
      * @param array<string,true> $sleep_properties
      * @return void
      */
-    private function analyzeStatementsOfSleep($node, array &$sleep_properties = [])
+    private function analyzeStatementsOfSleep($node, array &$sleep_properties = []) : void
     {
         if (!($node instanceof Node)) {
             if (is_array($node)) {
@@ -150,7 +150,7 @@ class SleepCheckerVisitor extends PluginAwarePostAnalysisVisitor
      * @param int $lineno
      * @param array<string,true> $sleep_properties
      */
-    private function analyzeReturnValue($expr_node, int $lineno, array &$sleep_properties)
+    private function analyzeReturnValue($expr_node, int $lineno, array &$sleep_properties) : void
     {
         $context = clone($this->context)->withLineNumberStart($lineno);
         if (!($expr_node instanceof Node)) {

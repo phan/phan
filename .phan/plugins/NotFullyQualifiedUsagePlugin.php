@@ -123,7 +123,7 @@ class NotFullyQualifiedUsageVisitor extends PluginAwarePostAnalysisVisitor
         $this->warnNotFullyQualifiedFunctionCall($function_name, $expression);
     }
 
-    private function warnNotFullyQualifiedFunctionCall(string $function_name, Node $expression)
+    private function warnNotFullyQualifiedFunctionCall(string $function_name, Node $expression) : void
     {
         if (array_key_exists(strtolower($function_name), self::OPTIMIZABLE_FUNCTIONS)) {
             $issue_type = self::NotFullyQualifiedOptimizableFunctionCall;
@@ -183,7 +183,7 @@ class NotFullyQualifiedUsageVisitor extends PluginAwarePostAnalysisVisitor
         $this->warnNotFullyQualifiedConstantUsage($constant_name, $expression);
     }
 
-    private function warnNotFullyQualifiedConstantUsage(string $constant_name, Node $expression)
+    private function warnNotFullyQualifiedConstantUsage(string $constant_name, Node $expression) : void
     {
         $this->emitPluginIssue(
             $this->code_base,

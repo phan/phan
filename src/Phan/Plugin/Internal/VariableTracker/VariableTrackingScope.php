@@ -38,7 +38,7 @@ class VariableTrackingScope
      *
      * @return void
      */
-    public function recordDefinition(string $variable_name, Node $node)
+    public function recordDefinition(string $variable_name, Node $node) : void
     {
         // Create a new definition for variable_name.
         // Replace the definitions for $variable_name.
@@ -50,7 +50,7 @@ class VariableTrackingScope
      *
      * @return void
      */
-    public function recordDefinitionById(string $variable_name, int $node_id)
+    public function recordDefinitionById(string $variable_name, int $node_id) : void
     {
         // Create a new definition for variable_name.
         // Replace the definitions for $variable_name.
@@ -65,7 +65,7 @@ class VariableTrackingScope
      * @suppress PhanUnreferencedPublicMethod used by reference
      * @return void
      */
-    public function recordUsage(string $variable_name, Node $node)
+    public function recordUsage(string $variable_name, Node $node) : void
     {
         $node_id = spl_object_id($node);
         // Create a new usage for variable_name.
@@ -82,7 +82,7 @@ class VariableTrackingScope
      *
      * @return void
      */
-    public function recordUsageById(string $variable_name, int $node_id)
+    public function recordUsageById(string $variable_name, int $node_id) : void
     {
         // Create a new usage for variable_name.
         if (($this->defs[$variable_name][$node_id] ?? false) !== true) {
@@ -157,7 +157,7 @@ class VariableTrackingScope
         VariableTrackingLoopScope $inner_loop_scope,
         VariableTrackingBranchScope $alternate_scope,
         VariableGraph $graph
-    ) {
+    ) : void {
         // Need to flatten these to the same level
         // The LoopScope might have been cloned, so just keep going until the closest loop scope.
         // TODO: Look at this, see if this way of merging definitions and usages will miss any false positives
@@ -177,7 +177,7 @@ class VariableTrackingScope
         VariableTrackingLoopScope $inner_loop_scope,
         VariableTrackingBranchScope $alternate_scope,
         VariableGraph $graph
-    ) {
+    ) : void {
         // Need to flatten these to the same level
         // The LoopScope might have been cloned, so just keep going until the closest loop scope.
         // TODO: Look at this, see if this way of merging definitions and usages will miss any false positives
@@ -196,7 +196,7 @@ class VariableTrackingScope
         VariableTrackingScope $result,
         VariableTrackingBranchScope $scope,
         VariableGraph $graph
-    ) {
+    ) : void {
         // @phan-suppress-next-line PhanUndeclaredProperty
         $parent_scope = $result->parent_scope ?? $result;
         foreach ($scope->getDefinitionsRecursively() as $variable_name => $defs) {
@@ -217,7 +217,7 @@ class VariableTrackingScope
     /**
      * @param array<string,array<int,bool>> $uses
      */
-    private function mergeUses(array $uses)
+    private function mergeUses(array $uses) : void
     {
         foreach ($uses as $variable_name => $def_id_set) {
             if (!isset($this->uses[$variable_name])) {

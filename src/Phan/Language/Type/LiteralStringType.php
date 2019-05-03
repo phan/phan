@@ -167,7 +167,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
     /**
      * Called at the bottom of the file to ensure static properties are set for quick access.
      */
-    public static function init()
+    public static function init() : void
     {
         self::$non_nullable_string_type = StringType::instance(false);
         self::$nullable_string_type = StringType::instance(true);

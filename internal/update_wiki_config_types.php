@@ -258,7 +258,7 @@ class WikiConfigUpdater
      */
     private static $verbose = false;
 
-    private static function printUsageAndExit(int $exit_code = 1)
+    private static function printUsageAndExit(int $exit_code = 1) : void
     {
         global $argv;
         $program = $argv[0];
@@ -332,7 +332,7 @@ EOT;
      * @return void
      * @throws InvalidArgumentException (uncaught) if the documented issue types can't be found.
      */
-    public static function main()
+    public static function main() : void
     {
         global $argv;
         if (count($argv) !== 1) {
@@ -377,7 +377,7 @@ EOT;
      * @param array<string,string> $old_text_for_section
      * @throws InvalidArgumentException
      */
-    private static function documentConfigCategorySection(WikiWriter $writer, ConfigEntry $config_entry, array $old_text_for_section)
+    private static function documentConfigCategorySection(WikiWriter $writer, ConfigEntry $config_entry, array $old_text_for_section) : void
     {
         $category = $config_entry->getCategory();
         if (!$category) {
@@ -397,7 +397,7 @@ EOT;
         }
     }
 
-    private static function documentConfig(WikiWriter $writer, ConfigEntry $config_entry)
+    private static function documentConfig(WikiWriter $writer, ConfigEntry $config_entry) : void
     {
         $header = '## ' . $config_entry->getConfigName();
 
@@ -416,7 +416,7 @@ EOT;
         $writer->append($placeholder);
     }
 
-    private static function debugLog(string $message)
+    private static function debugLog(string $message) : void
     {
         // Uncomment the below line to enable debugging
         if (self::$verbose) {

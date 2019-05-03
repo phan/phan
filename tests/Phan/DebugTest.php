@@ -9,7 +9,7 @@ use Phan\Debug;
  */
 final class DebugTest extends BaseTest
 {
-    public function testNodeToString()
+    public function testNodeToString() : void
     {
         $this->assertSame("2\n", Debug::nodeToString(2));
         $this->assertSame("example\n", Debug::nodeToString('example'));

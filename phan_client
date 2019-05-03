@@ -41,7 +41,7 @@ class PhanPHPLinter
      * @param string $msg
      * @return void
      */
-    private static function debugError($msg)
+    private static function debugError($msg) : void
     {
         error_log($msg);
     }
@@ -50,7 +50,7 @@ class PhanPHPLinter
      * @param string $msg
      * @return void
      */
-    private static function debugInfo($msg)
+    private static function debugInfo($msg) : void
     {
         if (self::$verbose) {
             self::debugError($msg);
@@ -63,7 +63,7 @@ class PhanPHPLinter
      *
      * @return void
      */
-    public static function run()
+    public static function run() : void
     {
         error_reporting(E_ALL);
         // TODO: check for .phan/lock to see if daemon is running?
@@ -238,7 +238,7 @@ class PhanPHPLinter
      * @param array<string,mixed> $request
      * @return void
      */
-    private static function dumpJSONIssues(array $response, array $file_mapping, array $request)
+    private static function dumpJSONIssues(array $response, array $file_mapping, array $request) : void
     {
         $did_debug = false;
         $lines = [];
@@ -334,7 +334,7 @@ class PhanPHPLinterOpts
      * @param int $exit_code - process exit code.
      * @return void - exits with $exit_code
      */
-    public function usage($msg = '', $exit_code = 0)
+    public function usage($msg = '', $exit_code = 0) : void
     {
         if (!$msg || $this->print_usage_on_error) {
             global $argv;
@@ -565,7 +565,7 @@ EOB;
      * @param string $protocol
      * @return void
      */
-    private function checkCanConnectToDaemon($protocol)
+    private function checkCanConnectToDaemon($protocol) : void
     {
         $opt = $protocol === 'unix' ? '--daemonize-socket' : '--daemonize-tcp-port';
         if (!in_array($protocol, stream_get_transports())) {

@@ -35,7 +35,7 @@ trait ConstantTrait
      * @param Node|string|float|int $node Either a node or a constant to be used as the value of the constant.
      * @return void
      */
-    public function setNodeForValue($node)
+    public function setNodeForValue($node) : void
     {
         $this->defining_node = $node;
     }

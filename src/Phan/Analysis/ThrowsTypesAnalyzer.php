@@ -30,7 +30,7 @@ class ThrowsTypesAnalyzer
     public static function analyzeThrowsTypes(
         CodeBase $code_base,
         FunctionInterface $method
-    ) {
+    ) : void {
         try {
             foreach ($method->getThrowsUnionType()->getTypeSet() as $type) {
                 // TODO: When analyzing the method body, only check the valid exceptions
@@ -49,7 +49,7 @@ class ThrowsTypesAnalyzer
         CodeBase $code_base,
         FunctionInterface $method,
         Type $type
-    ) {
+    ) : bool {
         /**
          * @param array<int,int|string|Type> $args
          */
@@ -131,7 +131,7 @@ class ThrowsTypesAnalyzer
         CodeBase $code_base,
         Context $context,
         FullyQualifiedClassName $type_fqsen
-    ) {
+    ) : ?\Phan\Suggestion {
         return IssueFixSuggester::suggestSimilarClass(
             $code_base,
             $context,

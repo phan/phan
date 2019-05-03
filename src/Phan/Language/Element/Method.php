@@ -105,7 +105,7 @@ class Method extends ClassElement implements FunctionInterface
      * Sets hasTemplateType to true if it finds any template types in the parameters or methods
      * @return void
      */
-    public function checkForTemplateTypes()
+    public function checkForTemplateTypes() : void
     {
         if ($this->getUnionType()->hasTemplateTypeRecursive()) {
             $this->recordHasTemplateType();
@@ -133,7 +133,7 @@ class Method extends ClassElement implements FunctionInterface
      * @param bool $from_phpdoc - True if this is a magic phpdoc method
      * @return void
      */
-    public function setIsFromPHPDoc(bool $from_phpdoc)
+    public function setIsFromPHPDoc(bool $from_phpdoc) : void
     {
         $this->setPhanFlags(
             Flags::bitVectorWithState(
@@ -159,7 +159,7 @@ class Method extends ClassElement implements FunctionInterface
 
      * @return void
      */
-    public function setIsOverrideIntended(bool $is_override_intended)
+    public function setIsOverrideIntended(bool $is_override_intended) : void
     {
         $this->setPhanFlags(
             Flags::bitVectorWithState(
@@ -187,7 +187,7 @@ class Method extends ClassElement implements FunctionInterface
      *
      * @return void
      */
-    public function setIsOverriddenByAnother(bool $is_overridden_by_another)
+    public function setIsOverriddenByAnother(bool $is_overridden_by_another) : void
     {
         $this->setPhanFlags(Flags::bitVectorWithState(
             $this->getPhanFlags(),
@@ -830,7 +830,7 @@ class Method extends ClassElement implements FunctionInterface
         return $this->getPhanFlagsHasState(Flags::HAS_TEMPLATE_TYPE);
     }
 
-    private function recordHasTemplateType()
+    private function recordHasTemplateType() : void
     {
         $this->setPhanFlags($this->getPhanFlags() | Flags::HAS_TEMPLATE_TYPE);
     }

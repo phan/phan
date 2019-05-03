@@ -21,7 +21,7 @@ class DuplicateFunctionAnalyzer
     public static function analyzeDuplicateFunction(
         CodeBase $code_base,
         FunctionInterface $method
-    ) {
+    ) : void {
         $fqsen = $method->getFQSEN();
 
         if (!$fqsen->isAlternate()) {

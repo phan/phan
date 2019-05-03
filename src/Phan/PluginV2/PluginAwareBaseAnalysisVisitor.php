@@ -62,7 +62,7 @@ abstract class PluginAwareBaseAnalysisVisitor extends AnalysisVisitor
         int $severity = Issue::SEVERITY_NORMAL,
         int $remediation_difficulty = Issue::REMEDIATION_B,
         int $issue_type_id = Issue::TYPE_ID_UNKNOWN
-    ) {
+    ) : void {
         $this->emitPluginIssue(
             $this->code_base,
             $this->context,

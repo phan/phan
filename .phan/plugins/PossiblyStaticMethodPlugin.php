@@ -56,7 +56,7 @@ final class PossiblyStaticMethodPlugin extends PluginV2 implements
     private static function analyzePostponedMethod(
         CodeBase $code_base,
         Method $method
-    ) {
+    ) : void {
         if ($method->getIsOverride()) {
             // This method can't be static unless its parent is also static.
             return;
@@ -87,7 +87,7 @@ final class PossiblyStaticMethodPlugin extends PluginV2 implements
      * @param Method $method
      * @return ?Node - returns null if there's no statement list to analyze
      */
-    private static function getStatementListToAnalyze(Method $method)
+    private static function getStatementListToAnalyze(Method $method) : ?\ast\Node
     {
         if (!$method->hasNode()) {
             return null;
@@ -106,7 +106,7 @@ final class PossiblyStaticMethodPlugin extends PluginV2 implements
      * @param Node|int|string|float|null $node
      * @return bool - returns true if the node allows its method to be static
      */
-    private static function nodeCanBeStatic(CodeBase $code_base, Method $method, $node)
+    private static function nodeCanBeStatic(CodeBase $code_base, Method $method, $node) : bool
     {
         if (!($node instanceof Node)) {
             if (is_array($node)) {

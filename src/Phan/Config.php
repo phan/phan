@@ -840,14 +840,14 @@ class Config
      */
     public static function setProjectRootDirectory(
         string $project_root_directory
-    ) {
+    ) : void {
         self::$project_root_directory = $project_root_directory;
     }
 
     /**
      * @return void
      */
-    public static function init()
+    public static function init() : void
     {
         static $did_init = false;
         if ($did_init) {
@@ -857,7 +857,7 @@ class Config
         self::initOnce();
     }
 
-    private static function initOnce()
+    private static function initOnce() : void
     {
         // Trigger magic setters
         foreach (self::$configuration as $name => $v) {
@@ -977,7 +977,7 @@ class Config
      * @return void
      * @internal - this should only be used in unit tests.
      */
-    public static function reset()
+    public static function reset() : void
     {
         self::$configuration = self::DEFAULT_CONFIGURATION;
         // Trigger magic behavior
@@ -989,7 +989,7 @@ class Config
      * @param mixed $value
      * @return void
      */
-    public static function setValue(string $name, $value)
+    public static function setValue(string $name, $value) : void
     {
         self::$configuration[$name] = $value;
         switch ($name) {
@@ -1058,7 +1058,7 @@ class Config
      * @param string[] $value
      * @return ?string
      */
-    private static function generateDirectoryListRegex(array $value)
+    private static function generateDirectoryListRegex(array $value) : ?string
     {
         if (!$value) {
             return null;
@@ -1326,7 +1326,7 @@ class Config
      * Prints errors to stderr if any config options are definitely invalid.
      * @return void
      */
-    public static function warnIfInvalid()
+    public static function warnIfInvalid() : void
     {
         $errors = self::getConfigErrors(self::$configuration);
         foreach ($errors as $error) {

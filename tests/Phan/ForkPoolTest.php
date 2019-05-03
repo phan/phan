@@ -15,7 +15,7 @@ final class ForkPoolTest extends BaseTest
      * Test that workers are able to send their data back
      * to the parent process.
      */
-    public function testBasicForkJoin()
+    public function testBasicForkJoin() : void
     {
         $data = [
             [1, 2, 3, 4],
@@ -52,7 +52,7 @@ final class ForkPoolTest extends BaseTest
     /**
      * Test that the startup function works.
      */
-    public function testStartupFunction()
+    public function testStartupFunction() : void
     {
         $did_startup = false;
         $pool = new ForkPool(

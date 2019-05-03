@@ -68,7 +68,7 @@ trait IssueEmitter
         int $remediation_difficulty = Issue::REMEDIATION_B,
         int $issue_type_id = Issue::TYPE_ID_UNKNOWN,
         Suggestion $suggestion = null
-    ) {
+    ) : void {
         $issue = new Issue(
             $issue_type,
             Issue::CATEGORY_PLUGIN,

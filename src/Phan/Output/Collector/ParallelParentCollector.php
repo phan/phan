@@ -86,7 +86,7 @@ class ParallelParentCollector implements IssueCollectorInterface
      * base collector
      * @return void
      */
-    public function readQueuedIssues()
+    public function readQueuedIssues() : void
     {
         // Get the status of the queue
         $status = \msg_stat_queue(

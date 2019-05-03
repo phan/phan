@@ -311,7 +311,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
      *
      * @return void
      */
-    private static function analyzeFunctionAndNormalArgumentList(CodeBase $code_base, Context $context, array $function_like_list, array $arguments)
+    private static function analyzeFunctionAndNormalArgumentList(CodeBase $code_base, Context $context, array $function_like_list, array $arguments) : void
     {
         $get_argument_type = self::createNormalArgumentCache($code_base, $context);
         foreach ($function_like_list as $function_like) {

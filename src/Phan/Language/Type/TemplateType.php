@@ -139,7 +139,7 @@ final class TemplateType extends Type
      * @param ?Closure(mixed, Context):UnionType $right
      * @return ?Closure(mixed, Context):UnionType
      */
-    public static function combineParameterClosures($left, $right)
+    public static function combineParameterClosures($left, $right) : ?\Closure
     {
         if (!$left) {
             return $right;

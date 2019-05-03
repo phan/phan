@@ -11,7 +11,7 @@ use Phan\Config\Initializer;
  */
 final class ConfigInitializerTest extends BaseTest
 {
-    public function testInitializesValid()
+    public function testInitializesValid() : void
     {
         for ($init_level = 1; $init_level <= 5; $init_level++) {
             // @phan-suppress-next-line PhanAccessMethodInternal
@@ -32,7 +32,7 @@ final class ConfigInitializerTest extends BaseTest
      * @param ?string $expected_version
      * @dataProvider determineTargetPHPVersionProvider
      */
-    public function testDetermineTargetPHPVersion($expected_version, string $php_string)
+    public function testDetermineTargetPHPVersion($expected_version, string $php_string) : void
     {
         $actual = Initializer::determineTargetPHPVersion(['require' => ['php' => $php_string]])[0];
         $this->assertSame($expected_version, $actual);
@@ -63,7 +63,7 @@ final class ConfigInitializerTest extends BaseTest
      * @param array<int,string> $files
      * @dataProvider filterDirectoryAndFileListProvider
      */
-    public function testFilterDirectoryAndFileList(array $expected_dirs, array $expected_files, array $dirs, array $files)
+    public function testFilterDirectoryAndFileList(array $expected_dirs, array $expected_files, array $dirs, array $files) : void
     {
         $this->assertSame([$expected_dirs, $expected_files], Initializer::filterDirectoryAndFileList($dirs, $files));
     }

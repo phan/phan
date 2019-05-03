@@ -112,7 +112,7 @@ class ClassConstant extends ClassElement implements ConstantInterface
 
      * @return void
      */
-    public function setIsOverrideIntended(bool $is_override_intended)
+    public function setIsOverrideIntended(bool $is_override_intended) : void
     {
         $this->setPhanFlags(
             Flags::bitVectorWithState(

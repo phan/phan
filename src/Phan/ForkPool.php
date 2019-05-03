@@ -180,7 +180,7 @@ class ForkPool
      *
      * @return array[]
      */
-    private function readResultsFromChildren()
+    private function readResultsFromChildren() : array
     {
         // Create an array of all active streams, indexed by
         // resource id.
@@ -244,7 +244,7 @@ class ForkPool
      * Wait for all child processes to complete
      * @return array[]
      */
-    public function wait()
+    public function wait() : array
     {
         // Read all the streams from child processes into an array.
         $content = $this->readResultsFromChildren();

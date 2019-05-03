@@ -104,7 +104,7 @@ class Func extends AddressableElement implements FunctionInterface
         Context $context,
         Type $closure_scope_type,
         Node $node
-    ) {
+    ) : ?\Phan\Language\FQSEN\FullyQualifiedClassName {
         if ($node->kind !== ast\AST_CLOSURE) {
             return null;
         }

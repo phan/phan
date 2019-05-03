@@ -36,7 +36,7 @@ class Daemon
      *
      * @throws Exception if analysis fails unexpectedly
      */
-    public static function run(CodeBase $code_base, Closure $file_path_lister)
+    public static function run(CodeBase $code_base, Closure $file_path_lister) : ?\Phan\Daemon\Request
     {
         if (Config::getValue('language_server_use_pcntl_fallback')) {
             self::runWithoutPcntl($code_base, $file_path_lister);
@@ -131,7 +131,7 @@ class Daemon
      *
      * @throws Exception if analysis failed in an unexpected way
      */
-    private static function runWithoutPcntl(CodeBase $code_base, Closure $file_path_lister)
+    private static function runWithoutPcntl(CodeBase $code_base, Closure $file_path_lister) : void
     {
         // This is a single threaded server, it only analyzes one TCP request at a time
         $socket_server = self::createDaemonStreamSocketServer();
@@ -201,7 +201,7 @@ class Daemon
      * @return void
      * @throws Exception if analysis throws
      */
-    private static function analyzeDaemonRequestOnMainThread(CodeBase $code_base, Request $request)
+    private static function analyzeDaemonRequestOnMainThread(CodeBase $code_base, Request $request) : void
     {
         $restore_point = $code_base->createRestorePoint();
 
@@ -260,7 +260,7 @@ class Daemon
      * @param mixed ...$args - printf args @phan-unused-param
      * @return void
      */
-    public static function debugf(string $format, ...$args)
+    public static function debugf(string $format, ...$args) : void
     {
         /*
         if (count($args) > 0) {

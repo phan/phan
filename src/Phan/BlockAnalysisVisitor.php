@@ -239,7 +239,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * @param int|float|string|null $child_node (probably not null)
      * @return void
      */
-    private function handleScalarStmt(Node $node, Context $context, $child_node)
+    private function handleScalarStmt(Node $node, Context $context, $child_node) : void
     {
         if (\is_string($child_node)) {
             if (\strpos($child_node, '@phan-') !== false) {
@@ -289,7 +289,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * Modifies the type of the variable (in the scope of $context) to be identical to the annotated union type.
      * @return void
      */
-    private function analyzeSubstituteVarAssert(CodeBase $code_base, Context $context, string $text)
+    private function analyzeSubstituteVarAssert(CodeBase $code_base, Context $context, string $text) : void
     {
         $has_known_annotations = false;
         if (\preg_match_all(self::PHAN_VAR_REGEX, $text, $matches, \PREG_SET_ORDER) > 0) {
@@ -331,7 +331,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * @return void
      * @see ConditionVarUtil::getVariableFromScope()
      */
-    private static function createVarForInlineComment(CodeBase $code_base, Context $context, string $var_name, UnionType $type, bool $create_variable)
+    private static function createVarForInlineComment(CodeBase $code_base, Context $context, string $var_name, UnionType $type, bool $create_variable) : void
     {
         if (!$context->getScope()->hasVariableWithName($var_name)) {
             if (Variable::isHardcodedVariableInScopeWithName($var_name, $context->isInGlobalScope())) {
@@ -440,7 +440,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      *
      * @return Context (The unmodified $context, or a different Context instance with modifications)
      */
-    private function analyzeAndGetUpdatedContext($context, $node, $child_node)
+    private function analyzeAndGetUpdatedContext($context, $node, $child_node) : \Phan\Language\Context
     {
         // Modify the original object instead of creating a new BlockAnalysisVisitor.
         // this is slightly more efficient, especially if a large number of unchanged parameters would exist.
@@ -1173,7 +1173,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * @param Context $context
      * @return void
      */
-    private function checkUnreachableCatch(array $catch_nodes, Context $context)
+    private function checkUnreachableCatch(array $catch_nodes, Context $context) : void
     {
         if (count($catch_nodes) <= 1) {
             return;

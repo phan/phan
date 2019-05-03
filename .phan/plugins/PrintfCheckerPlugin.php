@@ -68,7 +68,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
      * @param string $fmt_str @phan-unused-param
      * @return string[] mapping locale to the translation (e.g. ['fr_FR' => 'Bonjour'] for $fmt_str == 'Hello')
      */
-    protected static function gettextForAllLocales(string $fmt_str)
+    protected static function gettextForAllLocales(string $fmt_str) : array
     {
         return [];
     }
@@ -83,7 +83,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
      * @param bool|int|string|float|Node|array|null $ast_node
      * @return ?PrimitiveValue
      */
-    protected function astNodeToPrimitive(CodeBase $code_base, Context $context, $ast_node)
+    protected function astNodeToPrimitive(CodeBase $code_base, Context $context, $ast_node) : ?\Phan\Plugin\PrintfCheckerPlugin\PrimitiveValue
     {
         // Base case: convert primitive tokens such as numbers and strings.
         if (!($ast_node instanceof Node)) {
@@ -148,7 +148,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
      * @param PrimitiveValue $right the value on the right.
      * @return ?PrimitiveValue
      */
-    protected static function concatenateToPrimitive(PrimitiveValue $left, PrimitiveValue $right)
+    protected static function concatenateToPrimitive(PrimitiveValue $left, PrimitiveValue $right) : ?\Phan\Plugin\PrintfCheckerPlugin\PrimitiveValue
     {
         // Combining untranslated strings with anything will cause problems.
         if ($left->is_translated) {
@@ -352,7 +352,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
      * @return void
      * @suppress PhanPartialTypeMismatchArgument TODO: refactor into smaller functions
      */
-    protected function analyzePrintfPattern(CodeBase $code_base, Context $context, FunctionInterface $function, $pattern_node, $arg_nodes)
+    protected function analyzePrintfPattern(CodeBase $code_base, Context $context, FunctionInterface $function, $pattern_node, $arg_nodes) : void
     {
         // Given a node, extract the printf directive and whether or not it could be translated
         $primitive_for_fmtstr = $this->astNodeToPrimitive($code_base, $context, $pattern_node);
@@ -660,7 +660,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
      *                                         each position in the untranslated format string.
      * @return void
      */
-    protected static function validateTranslations(CodeBase $code_base, Context $context, string $fmt_str, array $types_of_arg)
+    protected static function validateTranslations(CodeBase $code_base, Context $context, string $fmt_str, array $types_of_arg) : void
     {
         $translations = static::gettextForAllLocales($fmt_str);
         foreach ($translations as $locale => $translated_fmt_str) {

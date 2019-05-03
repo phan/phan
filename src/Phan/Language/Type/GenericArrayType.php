@@ -448,7 +448,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
         CodeBase $code_base,
         UnionTypeBuilder $union_type_builder,
         FullyQualifiedClassName $class_fqsen
-    ) {
+    ) : void {
         $fqsen_aliases = $code_base->getClassAliasesByFQSEN($class_fqsen);
         foreach ($fqsen_aliases as $alias_fqsen_record) {
             $alias_fqsen = $alias_fqsen_record->alias_fqsen;

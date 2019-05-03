@@ -76,7 +76,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
         CodeBase $code_base,
         AddressableElementInterface $element,
         bool $resolve_type_definition_if_needed
-    ) {
+    ) : void {
         if ($this->getIsTypeDefinitionRequest() && $resolve_type_definition_if_needed) {
             if (!($element instanceof Clazz)) {
                 $this->recordTypeOfElement($code_base, $element->getContext(), $element);
@@ -89,7 +89,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
     private function recordFinalDefinitionElement(
         CodeBase $code_base,
         AddressableElementInterface $element
-    ) {
+    ) : void {
         if ($this->request_type === self::REQUEST_HOVER) {
             if ($this->hover_response === null) {
                 $this->setHoverMarkdown(MarkupDescription::buildForElement($element, $code_base));
@@ -100,7 +100,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
         $this->recordDefinitionContext($element->getContext());
     }
 
-    private function setHoverMarkdown(string $markdown)
+    private function setHoverMarkdown(string $markdown) : void
     {
         $this->hover_response = new Hover(
             new MarkupContent(
@@ -118,7 +118,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
         CodeBase $code_base,
         Context $context,
         TypedElementInterface $element
-    ) {
+    ) : void {
         $union_type = $element->getUnionType();
         $type_set = $union_type->getTypeSet();
         $description = null;
@@ -200,7 +200,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
         CodeBase $code_base,
         Context $context,
         Variable $variable
-    ) {
+    ) : ?string {
         $variable_name = $variable->getName();
         $description = self::GLOBAL_DESCRIPTIONS[$variable_name] ?? null;
         if ($description) {
@@ -234,7 +234,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
         CodeBase $code_base,
         Context $context,
         Variable $variable
-    ) {
+    ) : void {
         $this->recordTypeOfElement($code_base, $context, $variable);
     }
 
@@ -245,7 +245,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
         CodeBase $code_base,
         Context $context,
         TypedElementInterface $element
-    ) {
+    ) : void {
         if ($this->getIsHoverRequest()) {
             $this->recordHoverTextForElementType($code_base, $context, $element);
             return;
@@ -282,7 +282,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
     private function recordDefinitionOfTypeFQSEN(
         CodeBase $code_base,
         FQSEN $type_fqsen
-    ) {
+    ) : void {
         $record_definition = function (AddressableElementInterface $element) use ($code_base) : void {
             if (!$element->isPHPInternal()) {
                 if ($this->getIsHoverRequest()) {
@@ -318,7 +318,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
      * Record the location in which the Node or Token (that the client is requesting information about)
      * had the requested information defined (e.g. Definition, Type Definition, element that has information used to generate hover response, etc.)
      */
-    public function recordDefinitionContext(FileRef $context)
+    public function recordDefinitionContext(FileRef $context) : void
     {
         if ($context->isPHPInternal()) {
             // We don't have complete stubs to show the user for internal functions such as is_string(), etc.
@@ -331,7 +331,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
     /**
      * @return void
      */
-    public function recordDefinitionLocation(Location $location)
+    public function recordDefinitionLocation(Location $location) : void
     {
         $this->locations[$location->uri . ':' . \json_encode($location->range)] = $location;
     }
@@ -340,7 +340,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
      * @param Location|array<string,mixed>|array<int,Location|array> $locations
      * @return void
      */
-    public function recordDefinitionLocationList($locations)
+    public function recordDefinitionLocationList($locations) : void
     {
         if ($locations instanceof Location || isset($locations['uri'])) {
             $locations = [$locations];
@@ -365,7 +365,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
     /**
      * @return ?Hover
      */
-    public function getHoverResponse()
+    public function getHoverResponse() : ?\Phan\LanguageServer\Protocol\Hover
     {
         return $this->hover_response;
     }
@@ -375,7 +375,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
      *
      * @param ?Hover|?array $hover
      */
-    public function setHoverResponse($hover)
+    public function setHoverResponse($hover) : void
     {
         if (is_array($hover)) {
             $hover = Hover::fromArray($hover);

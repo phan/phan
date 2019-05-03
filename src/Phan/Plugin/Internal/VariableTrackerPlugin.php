@@ -72,7 +72,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @return void
      */
-    private function analyzeMethodLike(Node $node)
+    private function analyzeMethodLike(Node $node) : void
     {
         // \Phan\Debug::printNode($node);
         $stmts_node = $node->children['stmts'] ?? null;
@@ -160,7 +160,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @return string
      */
-    private function getParameterCategory(Node $method_node)
+    private function getParameterCategory(Node $method_node) : string
     {
         $kind = $method_node->kind;
         if ($kind === ast\AST_CLOSURE) {
@@ -216,7 +216,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
         Node $method_node,
         VariableGraph $graph,
         $issue_overrides_for_definition_ids
-    ) {
+    ) : void {
         foreach ($graph->def_uses as $variable_name => $def_uses_for_variable) {
             if ($variable_name === 'this') {
                 continue;
@@ -277,7 +277,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @return ?Suggestion
      */
-    private static function makeSuggestion(VariableGraph $graph, string $variable_name, string $issue_type)
+    private static function makeSuggestion(VariableGraph $graph, string $variable_name, string $issue_type) : ?\Phan\Suggestion
     {
         if ($issue_type !== Issue::UnusedVariable) {
             return null;

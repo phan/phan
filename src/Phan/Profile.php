@@ -58,7 +58,7 @@ trait Profile
     /**
      * Initialize the profiler
      */
-    private static function initialize()
+    private static function initialize() : void
     {
 
         // Create a shutdown function to emit the log when we're

@@ -33,7 +33,7 @@ class ClassMap
     /**
      * @return void
      */
-    public function addClassConstant(ClassConstant $constant)
+    public function addClassConstant(ClassConstant $constant) : void
     {
         $this->class_constant_map[
             $constant->getFQSEN()->getNameWithAlternateId()
@@ -67,7 +67,7 @@ class ClassMap
     /**
      * @return void
      */
-    public function addProperty(Property $property)
+    public function addProperty(Property $property) : void
     {
         $this->property_map[
             $property->getFQSEN()->getNameWithAlternateId()
@@ -101,7 +101,7 @@ class ClassMap
     /**
      * @return void
      */
-    public function addMethod(Method $method)
+    public function addMethod(Method $method) : void
     {
         $this->method_map[\strtolower(
             $method->getFQSEN()->getNameWithAlternateId()

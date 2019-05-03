@@ -97,7 +97,7 @@ final class CallableParamPlugin extends PluginV2 implements
     /**
      * @return ?Closure(CodeBase,Context,FunctionInterface,array):void
      */
-    private static function generateClosureForFunctionInterface(FunctionInterface $function)
+    private static function generateClosureForFunctionInterface(FunctionInterface $function) : ?\Closure
     {
         $callable_params = [];
         $class_params = [];

@@ -39,7 +39,7 @@ abstract class IncompatibleSignatureDetectorBase
     /**
      * @return void (does not return)
      */
-    protected static function printUsageAndExit(int $exit_code = 1)
+    protected static function printUsageAndExit(int $exit_code = 1) : void
     {
         global $argv;
         $program_name = $argv[0];
@@ -77,7 +77,7 @@ EOT;
      *
      * @return void
      */
-    protected function updatePHPDocSummaries()
+    protected function updatePHPDocSummaries() : void
     {
         $this->updatePHPDocPropertySummaries();
         $this->updatePHPDocFunctionSummaries();
@@ -95,7 +95,7 @@ EOT;
      * @param array<string,T> $new
      * @return array<string,T>
      */
-    public static function mergeSignatureMaps(array $old, array $new)
+    public static function mergeSignatureMaps(array $old, array $new) : array
     {
         $normalized_old = [];
         foreach ($old as $key => $_) {
@@ -115,7 +115,7 @@ EOT;
     /**
      * @return void
      */
-    protected function updatePHPDocPropertySummaries()
+    protected function updatePHPDocPropertySummaries() : void
     {
         $old_property_documentation = $this->readPropertyDocumentationMap();
         $new_property_documentation = $this->getAvailablePropertyPHPDocSummaries();
@@ -136,7 +136,7 @@ EOT;
     /**
      * @return void
      */
-    protected function updatePHPDocFunctionSummaries()
+    protected function updatePHPDocFunctionSummaries() : void
     {
         $old_function_documentation = $this->readFunctionDocumentationMap();
         $new_function_documentation = $this->getAvailableMethodPHPDocSummaries();
@@ -157,7 +157,7 @@ EOT;
     /**
      * @return void
      */
-    protected function updatePHPDocConstantSummaries()
+    protected function updatePHPDocConstantSummaries() : void
     {
         $old_constant_documentation = $this->readConstantDocumentationMap();
         $new_constant_documentation = $this->getAvailableConstantPHPDocSummaries();
@@ -178,7 +178,7 @@ EOT;
     /**
      * @return void
      */
-    protected function updatePHPDocClassSummaries()
+    protected function updatePHPDocClassSummaries() : void
     {
         $old_class_documentation = $this->readClassDocumentationMap();
         $new_class_documentation = $this->getAvailableClassPHPDocSummaries();
@@ -198,7 +198,7 @@ EOT;
 
 
     /** @return void */
-    public function updateFunctionSignatures()
+    public function updateFunctionSignatures() : void
     {
         $phan_signatures = static::readSignatureMap();
         $new_signatures = [];
@@ -219,7 +219,7 @@ EOT;
      * @param array<mixed,string> $arguments_from_phan
      * @return array<mixed,string>
      */
-    private function updateSignature(string $function_like_name, array $arguments_from_phan)
+    private function updateSignature(string $function_like_name, array $arguments_from_phan) : array
     {
         $return_type = $arguments_from_phan[0];
         $arguments_from_svn = null;
@@ -260,7 +260,7 @@ EOT;
 
 
     /** @return void */
-    public function addMissingFunctionLikeSignatures()
+    public function addMissingFunctionLikeSignatures() : void
     {
         $phan_signatures = static::readSignatureMap();
         $this->addMissingGlobalFunctionSignatures($phan_signatures);
@@ -275,7 +275,7 @@ EOT;
      * @param array<string,array<int|string,string>> &$phan_signatures
      * @return void
      */
-    protected function addMissingGlobalFunctionSignatures(array &$phan_signatures)
+    protected function addMissingGlobalFunctionSignatures(array &$phan_signatures) : void
     {
         $phan_signatures_lc = static::getLowercaseSignatureMap($phan_signatures);
         foreach ($this->getAvailableGlobalFunctionSignatures() as $function_name => $method_signature) {
@@ -298,7 +298,7 @@ EOT;
      * @param array<string,array<int|string,string>> &$phan_signatures
      * @return void
      */
-    protected function addMissingMethodSignatures(array &$phan_signatures)
+    protected function addMissingMethodSignatures(array &$phan_signatures) : void
     {
         $phan_signatures_lc = static::getLowercaseSignatureMap($phan_signatures);
         foreach ($this->getAvailableMethodSignatures() as $method_name => $method_signature) {
@@ -333,7 +333,7 @@ EOT;
      * @return ?array<mixed,string>
      * @throws InvalidArgumentException
      */
-    public function parseFunctionLikeSignature(string $method_name)
+    public function parseFunctionLikeSignature(string $method_name) : ?array
     {
         if (isset($this->aliases[$method_name])) {
             $method_name = $this->aliases[$method_name];
@@ -359,7 +359,7 @@ EOT;
      * @param string $msg @phan-unused-param
      * @return void
      */
-    protected static function debug(string $msg)
+    protected static function debug(string $msg) : void
     {
         // uncomment the below line to see debug output
         // fwrite(STDERR, $msg);
@@ -368,7 +368,7 @@ EOT;
     /**
      * @return void
      */
-    protected static function info(string $msg)
+    protected static function info(string $msg) : void
     {
         // comment out the below line to hide debug output
         fwrite(STDERR, $msg);
@@ -378,7 +378,7 @@ EOT;
      * @param array<string,mixed> &$phan_signatures
      * @return void
      */
-    public static function sortSignatureMap(array &$phan_signatures)
+    public static function sortSignatureMap(array &$phan_signatures) : void
     {
         uksort($phan_signatures, static function (string $a, string $b) : int {
             $a = strtolower(str_replace("'", "\x0", $a));
@@ -492,7 +492,7 @@ EOT;
      * @param array<string,array<int|string,string>> $phan_signatures
      * @return void
      */
-    public static function saveSignatureMap(string $new_signature_path, array $phan_signatures, bool $include_header = true)
+    public static function saveSignatureMap(string $new_signature_path, array $phan_signatures, bool $include_header = true) : void
     {
         $contents = static::serializeSignatures($phan_signatures);
         if ($include_header) {
@@ -519,7 +519,7 @@ EOT;
      * @param array<string,string> $phan_documentation
      * @return void
      */
-    public static function savePropertyDocumentationMap(string $new_documentation_path, array $phan_documentation, bool $include_header = true)
+    public static function savePropertyDocumentationMap(string $new_documentation_path, array $phan_documentation, bool $include_header = true) : void
     {
         $contents = static::serializeDocumentation($phan_documentation);
         if ($include_header) {
@@ -532,7 +532,7 @@ EOT;
      * @param array<string,string> $phan_documentation
      * @return void
      */
-    public static function saveFunctionDocumentationMap(string $new_documentation_path, array $phan_documentation, bool $include_header = true)
+    public static function saveFunctionDocumentationMap(string $new_documentation_path, array $phan_documentation, bool $include_header = true) : void
     {
         $contents = static::serializeDocumentation($phan_documentation);
         if ($include_header) {
@@ -545,7 +545,7 @@ EOT;
      * @param array<string,string> $phan_documentation
      * @return void
      */
-    public static function saveConstantDocumentationMap(string $new_documentation_path, array $phan_documentation, bool $include_header = true)
+    public static function saveConstantDocumentationMap(string $new_documentation_path, array $phan_documentation, bool $include_header = true) : void
     {
         $contents = static::serializeDocumentation($phan_documentation);
         if ($include_header) {
@@ -558,7 +558,7 @@ EOT;
      * @param array<string,string> $phan_documentation
      * @return void
      */
-    public static function saveClassDocumentationMap(string $new_documentation_path, array $phan_documentation, bool $include_header = true)
+    public static function saveClassDocumentationMap(string $new_documentation_path, array $phan_documentation, bool $include_header = true) : void
     {
         $contents = static::serializeDocumentation($phan_documentation);
         if ($include_header) {

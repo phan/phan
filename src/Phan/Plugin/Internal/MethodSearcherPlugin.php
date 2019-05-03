@@ -45,7 +45,7 @@ final class MethodSearcherPlugin extends PluginV2 implements
      *
      * @throws InvalidArgumentException
      */
-    public static function setSearchString(string $search_string)
+    public static function setSearchString(string $search_string) : void
     {
         // XXX improve parsing this
         $parts = \array_map('trim', \explode('->', $search_string));
@@ -112,7 +112,7 @@ final class MethodSearcherPlugin extends PluginV2 implements
     public static function getReplacementTypesForFullyQualifiedClassName(
         CodeBase $code_base,
         Type $type
-    ) {
+    ) : array {
         $fqsen = FullyQualifiedClassName::fromType($type);
         if ($code_base->hasClassWithFQSEN($fqsen)) {
             return [$type];
@@ -127,7 +127,7 @@ final class MethodSearcherPlugin extends PluginV2 implements
         }, $fqsens);
     }
 
-    private static function addMissingNamespacesToTypes(CodeBase $code_base)
+    private static function addMissingNamespacesToTypes(CodeBase $code_base) : void
     {
         $original_param_types = self::$param_types;
         $original_return_type = self::$return_type;
@@ -189,7 +189,7 @@ final class MethodSearcherPlugin extends PluginV2 implements
         exit(\EXIT_SUCCESS);
     }
 
-    private function checkFunction(CodeBase $code_base, FunctionInterface $function)
+    private function checkFunction(CodeBase $code_base, FunctionInterface $function) : void
     {
         $result = $this->functionMatchesSignature($code_base, $function);
         if ($result) {

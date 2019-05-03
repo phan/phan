@@ -162,7 +162,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     /**
      * @return array<string,array<string,string>>
      */
-    private function populateFoldersForClassNameList()
+    private function populateFoldersForClassNameList() : array
     {
         $this->folders_for_class_name_list = [];
         // TODO: Extract inheritance from classname.xml
@@ -175,7 +175,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         return $this->folders_for_class_name_list;
     }
 
-    private function populateFoldersRecursively(string $subpath)
+    private function populateFoldersRecursively(string $subpath) : void
     {
         $extension_directory = "$this->reference_directory/$subpath";
         foreach (static::scandir($extension_directory) as $subsubpath) {
@@ -193,7 +193,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     /**
      * @return array<string,SimpleXMLElement>
      */
-    private function getClassXMLFiles()
+    private function getClassXMLFiles() : array
     {
         return $this->memoize(__METHOD__, /** @return array<string,SimpleXMLElement> */ function () : array {
             $remaining_folders = [
@@ -237,7 +237,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     /**
      * @return Generator<string>
      */
-    private function getPossibleFilesInReferenceDirectory(string $folder_in_reference_directory)
+    private function getPossibleFilesInReferenceDirectory(string $folder_in_reference_directory) : \Generator
     {
         $file = $this->reference_directory . '/' . $folder_in_reference_directory . '.xml';
         yield $file;
@@ -280,7 +280,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
      *
      * @return void
      */
-    public static function main()
+    public static function main() : void
     {
         error_reporting(E_ALL);
         ini_set('memory_limit', '2G');
@@ -355,7 +355,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
      * Sort the signature map and save to to $filename.sorted
      * @return void
      */
-    public static function sortSignatureMapInPlace()
+    public static function sortSignatureMapInPlace() : void
     {
         $phan_signatures = static::readSignatureMap();
         static::sortSignatureMap($phan_signatures);
@@ -367,7 +367,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     /**
      * @suppress PhanPluginMixedKeyNoKey
      */
-    private function selfTest()
+    private function selfTest() : void
     {
         $this->expectFunctionLikeSignaturesMatch('strlen', ['int', 'string' => 'string']);
         $this->expectFunctionLikeSignaturesMatch('ob_clean', ['void']);
@@ -381,7 +381,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     /**
      * @param array<int|string,string> $expected
      */
-    private function expectFunctionLikeSignaturesMatch(string $function_name, array $expected)
+    private function expectFunctionLikeSignaturesMatch(string $function_name, array $expected) : void
     {
         $actual = $this->parseFunctionLikeSignature($function_name);
         if ($expected !== $actual) {
@@ -393,7 +393,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     /**
      * @return ?SimpleXMLElement the simple xml for the global function $function_name
      */
-    public function getSimpleXMLForFunctionSignature(string $function_name)
+    public function getSimpleXMLForFunctionSignature(string $function_name) : ?\SimpleXMLElement
     {
         $function_name_lc = strtolower($function_name);
         $function_name_file_map = $this->getFilesForFunctionNameList();
@@ -431,7 +431,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
      * Returns the SimpleXMLElement with the documentation of each method in $class_name.
      * @return ?array<string,SimpleXMLElement>
      */
-    public function getMethodsForClassName(string $class_name)
+    public function getMethodsForClassName(string $class_name) : ?array
     {
         $class_name_lc = strtolower($class_name);
         $class_name_file_map = $this->getFoldersForClassNameList();
@@ -503,7 +503,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     private $simple_xml_cache = [];
 
     /** @return ?SimpleXMLElement */
-    private function getSimpleXMLForFile(string $file_path)
+    private function getSimpleXMLForFile(string $file_path) : ?\SimpleXMLElement
     {
         if (array_key_exists($file_path, $this->simple_xml_cache)) {
             return $this->simple_xml_cache[$file_path];
@@ -520,7 +520,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     }
 
     /** @return ?SimpleXMLElement */
-    private function getSimpleXMLForFileUncached(string $file_path)
+    private function getSimpleXMLForFileUncached(string $file_path) : ?\SimpleXMLElement
     {
         $signature_file_contents = $this->fileGetContents($file_path);
         if (!is_string($signature_file_contents)) {
@@ -533,7 +533,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     /**
      * @return ?SimpleXMLElement
      */
-    private function getSimpleXMLForFileContents(string $signature_file_contents, string $file_path)
+    private function getSimpleXMLForFileContents(string $signature_file_contents, string $file_path) : ?\SimpleXMLElement
     {
         // Not sure if there's a good way of using an external entity file in PHP.
         $signature_file_contents = $this->normalizeEntityFile($signature_file_contents);
@@ -549,7 +549,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     }
 
     /** @return ?string */
-    private static function getFunctionNameFromXML(SimpleXMLElement $xml)
+    private static function getFunctionNameFromXML(SimpleXMLElement $xml) : ?string
     {
         $name = $xml->xpath('/a:refentry/a:refnamediv/a:refname') ?: [];
         if (count($name) === 0) {
@@ -570,7 +570,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     }
 
     /** @return ?string */
-    private static function getMethodNameFromXML(SimpleXMLElement $xml)
+    private static function getMethodNameFromXML(SimpleXMLElement $xml) : ?string
     {
         $name = $xml->xpath('/a:refentry/a:refnamediv/a:refname') ?: [];
         if (count($name) === 0) {
@@ -595,7 +595,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
      * @param ?SimpleXMLElement $xml
      * @return ?array<mixed,string>
      */
-    private function parseFunctionLikeSignatureForXML(string $function_name, $xml)
+    private function parseFunctionLikeSignatureForXML(string $function_name, $xml) : ?array
     {
         if (!$xml) {
             return null;
@@ -618,7 +618,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     /**
      * @return array<string,string>
      */
-    private static function extractMethodParams(SimpleXMLElement $param)
+    private static function extractMethodParams(SimpleXMLElement $param) : array
     {
         if ($param->count() === 0) {
             return [];
@@ -688,7 +688,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     /**
      * @return array<string,true>
      */
-    private function getKnownEntities()
+    private function getKnownEntities() : array
     {
         if (!is_array($this->known_entities)) {
             $this->known_entities = $this->computeKnownEntities();
@@ -738,7 +738,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
      * Normalize the extracted XML and convert it to markdown/HTML.
      * @return ?string - Returns null if this is just a placeholder
      */
-    private static function convertXMLToMarkdown(string $text)
+    private static function convertXMLToMarkdown(string $text) : ?string
     {
         $result = preg_replace_callback(
             '/BEGINENTITY(\S*)ENDENTITY/',
@@ -769,7 +769,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
      * Normalize the extracted XML and convert it to markdown/HTML for a summary.
      * @return ?string - Returns null if this is just a placeholder
      */
-    private static function normalizeExtractedXMLSummary(string $text)
+    private static function normalizeExtractedXMLSummary(string $text) : ?string
     {
         $result = preg_replace('/\s+/m', ' ', self::convertXMLToMarkdown($text) ?? '');
         if (!$result) {
@@ -931,7 +931,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     /**
      * @return ?string
      */
-    private static function convertXMLElementToMarkdown(SimpleXMLElement $element)
+    private static function convertXMLElementToMarkdown(SimpleXMLElement $element) : ?string
     {
         $xml = (string)$element->asXML();
         if (strpos($xml, '<xref') !== false) {
@@ -993,7 +993,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
      * @param array<int,SimpleXMLElement> $description_paragraphs
      * @return ?string
      */
-    private static function extractDescriptionFromParagraphElements(array $description_paragraphs)
+    private static function extractDescriptionFromParagraphElements(array $description_paragraphs) : ?string
     {
         $lines = [];
         foreach ($description_paragraphs as $element) {

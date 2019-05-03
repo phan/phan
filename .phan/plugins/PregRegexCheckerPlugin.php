@@ -32,7 +32,7 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
 
 
     /** @return void */
-    private static function analyzePattern(CodeBase $code_base, Context $context, Func $function, string $pattern)
+    private static function analyzePattern(CodeBase $code_base, Context $context, Func $function, string $pattern) : void
     {
         /**
          * @suppress PhanParamSuspiciousOrder 100% deliberate use of varying regex and constant $subject for preg_match
@@ -143,7 +143,7 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
      * @param string[] $patterns 1 or more regex patterns
      * @param Node|string|int|float $replacement_node
      */
-    private static function analyzeReplacementTemplate(CodeBase $code_base, Context $context, array $patterns, $replacement_node)
+    private static function analyzeReplacementTemplate(CodeBase $code_base, Context $context, array $patterns, $replacement_node) : void
     {
         $replacement_templates = self::extractStringsFromStringOrArray($code_base, $context, $replacement_node);
         $pattern_keys = null;

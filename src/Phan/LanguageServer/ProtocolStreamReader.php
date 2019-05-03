@@ -131,7 +131,7 @@ class ProtocolStreamReader extends Emitter implements ProtocolReader
     /**
      * @return void
      */
-    private function emitClose()
+    private function emitClose() : void
     {
         if ($this->did_emit_close) {
             return;

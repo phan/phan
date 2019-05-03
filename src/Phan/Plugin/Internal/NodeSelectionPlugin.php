@@ -19,7 +19,7 @@ class NodeSelectionPlugin extends PluginV2 implements PostAnalyzeNodeCapability
      * @return void
      * TODO: Fix false positive TypeMismatchDeclaredParam with Closure $closure = null in this method
      */
-    public function setNodeSelectorClosure($closure)
+    public function setNodeSelectorClosure($closure) : void
     {
         NodeSelectionVisitor::$closure = $closure;
     }
@@ -57,7 +57,7 @@ class NodeSelectionVisitor extends PluginAwarePostAnalysisVisitor
      * @return void
      * @see ConfigPluginSet::prepareNodeSelectionPlugin() for how this is called
      */
-    public function visitCommonImplementation(Node $node, array $parent_node_list)
+    public function visitCommonImplementation(Node $node, array $parent_node_list) : void
     {
         if (!\property_exists($node, 'isSelected')) {
             return;

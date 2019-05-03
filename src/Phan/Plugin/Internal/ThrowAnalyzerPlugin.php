@@ -129,7 +129,7 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
         FunctionInterface $analyzed_function,
         UnionType $union_type,
         FunctionInterface $call = null
-    ) {
+    ) : void {
         foreach ($union_type->getTypeSet() as $type) {
             $expanded_type = $type->asExpandedTypes($this->code_base);
             if (!$this->shouldWarnAboutThrowType($expanded_type)) {

@@ -198,7 +198,7 @@ class PhanSelfCheckPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
     /**
      * @return ?Issue
      */
-    private static function getIssueOrWarn(CodeBase $code_base, Context $context, FunctionInterface $function, string $issue_type)
+    private static function getIssueOrWarn(CodeBase $code_base, Context $context, FunctionInterface $function, string $issue_type) : ?\Phan\Issue
     {
         try {
             return Issue::fromType($issue_type);
@@ -214,7 +214,7 @@ class PhanSelfCheckPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
         }
     }
 
-    private static function checkIssueTemplateUsage(CodeBase $code_base, Context $context, string $issue_message_template, int $issue_message_arg_count)
+    private static function checkIssueTemplateUsage(CodeBase $code_base, Context $context, string $issue_message_template, int $issue_message_arg_count) : void
     {
         $issue_message_format_string = Issue::templateToFormatString($issue_message_template);
         $expected_arg_count = ConversionSpec::computeExpectedArgumentCount($issue_message_format_string);
@@ -246,7 +246,7 @@ class PhanSelfCheckPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
      * @param Node|mixed $arg
      * @return ?int
      */
-    private static function computeArraySize(CodeBase $code_base, Context $context, $arg)
+    private static function computeArraySize(CodeBase $code_base, Context $context, $arg) : ?int
     {
         if ($arg === null) {
             return 0;

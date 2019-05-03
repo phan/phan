@@ -51,7 +51,7 @@ final class ConversionTest extends BaseTest
     /**
      * @return bool does php-ast support $ast_version
      */
-    public static function hasNativeASTSupport(int $ast_version)
+    public static function hasNativeASTSupport(int $ast_version) : bool
     {
         try {
             ast\parse_code('', $ast_version);
@@ -67,7 +67,7 @@ final class ConversionTest extends BaseTest
      * @param string[] $files
      * @return void
      */
-    private static function sortByTokenCount(array &$files)
+    private static function sortByTokenCount(array &$files) : void
     {
         $token_counts = [];
         foreach ($files as $file) {
@@ -87,7 +87,7 @@ final class ConversionTest extends BaseTest
      *
      * @return array{0:string,1:int}[] array of [string $file_path, int $ast_version]
      */
-    public function astValidFileExampleProvider()
+    public function astValidFileExampleProvider() : array
     {
         $tests = [];
         // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
@@ -109,7 +109,7 @@ final class ConversionTest extends BaseTest
      * @param ast\Node|int|string|float|null $node
      * @return void
      */
-    private static function normalizeOriginalAST($node)
+    private static function normalizeOriginalAST($node) : void
     {
         if ($node instanceof ast\Node) {
             $kind = $node->kind;
@@ -149,7 +149,7 @@ final class ConversionTest extends BaseTest
     }
 
     /** @dataProvider astValidFileExampleProvider */
-    public function testFallbackFromParser(string $file_name, int $ast_version)
+    public function testFallbackFromParser(string $file_name, int $ast_version) : void
     {
         $test_folder_name = \basename(\dirname($file_name));
         if (\PHP_VERSION_ID < 70100 && $test_folder_name === 'php71_or_newer') {

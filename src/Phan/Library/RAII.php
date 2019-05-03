@@ -31,7 +31,7 @@ class RAII
      * Calls the finalizer, unless it has already been called.
      * @return void
      */
-    public function callFinalizerOnce()
+    public function callFinalizerOnce() : void
     {
         if ($this->finalizer) {
             ($this->finalizer)();

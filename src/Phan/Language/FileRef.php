@@ -69,7 +69,7 @@ class FileRef implements \Serializable
      * root directory
      * @see Config::getProjectRootDirectory() for converting paths to absolute paths
      */
-    public static function getProjectRelativePathForPath($cwd_relative_path)
+    public static function getProjectRelativePathForPath($cwd_relative_path) : string
     {
         // Get a path relative to the project root
         $path = \str_replace(
@@ -125,7 +125,7 @@ class FileRef implements \Serializable
      * @return void
      * Both this and withLineNumberStart modify the original context.
      */
-    public function setLineNumberStart(int $line_number)
+    public function setLineNumberStart(int $line_number) : void
     {
         $this->line_number_start = $line_number;
     }
