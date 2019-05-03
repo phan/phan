@@ -90,7 +90,6 @@ final class FalseType extends ScalarType
     }
 
     // public function getTypeAfterIncOrDec() : UnionType - doesn't need to be changed
-    //
     /**
      * Returns the corresponding type that would be used in a signature
      * @override

@@ -87,7 +87,7 @@ class PassByReferenceVariable extends Variable
         return $this->element->getPhanFlagsHasState($bits);
     }
 
-    public function setPhanFlags(int $phan_flags)
+    public function setPhanFlags(int $phan_flags) : void
     {
         $this->element->setPhanFlags($phan_flags);
     }

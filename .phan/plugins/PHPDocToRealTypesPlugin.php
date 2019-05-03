@@ -2,14 +2,14 @@
 
 use Phan\CodeBase;
 use Phan\IssueInstance;
-use Phan\Language\Element\Method;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
+use Phan\Language\Element\Method;
 use Phan\Library\FileCacheEntry;
 use Phan\Plugin\Internal\IssueFixingPlugin\FileEditSet;
 use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeMethodCapability;
 use Phan\PluginV2\AnalyzeFunctionCapability;
+use Phan\PluginV2\AnalyzeMethodCapability;
 use Phan\PluginV2\AutomaticFixCapability;
 use Phan\PluginV2\BeforeAnalyzePhaseCapability;
 use PHPDocToRealTypesPlugin\Fixers;
@@ -61,7 +61,8 @@ class PHPDocToRealTypesPlugin extends PluginV2 implements
         $this->deferred_analysis_methods[$method->getFQSEN()->__toString()] = $method;
     }
 
-    public function beforeAnalyzePhase(CodeBase $code_base) {
+    public function beforeAnalyzePhase(CodeBase $code_base)
+    {
         foreach ($this->deferred_analysis_methods as $method) {
             if ($method->getIsOverride() || $method->getIsOverriddenByAnother()) {
                 // TODO: Consider allowing this

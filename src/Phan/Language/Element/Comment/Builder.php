@@ -708,7 +708,7 @@ final class Builder
         if (!$suggestions) {
             return null;
         }
-        return Suggestion::fromString('Did you mean ' . implode(' or ', array_keys($suggestions)));
+        return Suggestion::fromString('Did you mean ' . \implode(' or ', \array_keys($suggestions)));
     }
 
     /**

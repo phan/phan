@@ -68,7 +68,7 @@ trait FunctionTrait
      *
      * @return void
      */
-    abstract public function setPhanFlags(int $phan_flags);
+    abstract public function setPhanFlags(int $phan_flags) : void;
 
     /**
      * @return string
@@ -394,7 +394,8 @@ trait FunctionTrait
      * @return array<int,Parameter>
      * A list of parameters on the method
      *
-     * TODO: Figure out why adding this causes failures elsewhere (combination with interface?)
+     * @suppress PhanPluginCanUseReturnType
+     * FIXME: Figure out why adding `: array` causes failures elsewhere (combination with interface?)
      */
     public function getParameterList()
     {
@@ -545,6 +546,9 @@ trait FunctionTrait
     /**
      * @return array<int,Parameter> $parameter_list
      * A list of parameters (not from phpdoc) that were set on this method. The parameters will be cloned.
+     *
+     * @suppress PhanPluginCanUseReturnType
+     * FIXME: Figure out why adding `: array` causes failures elsewhere (combination with interface?)
      */
     public function getRealParameterList()
     {
@@ -1094,7 +1098,7 @@ trait FunctionTrait
     }
 
     /** @return void */
-    abstract public function memoizeFlushAll();
+    abstract public function memoizeFlushAll() : void;
 
     /** @return UnionType union type this function-like's declared return type (from PHPDoc, signatures, etc.)  */
     abstract public function getUnionType() : UnionType;

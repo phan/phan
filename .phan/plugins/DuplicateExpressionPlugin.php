@@ -282,17 +282,95 @@ class RedundantNodeVisitor extends PluginAwarePostAnalysisVisitor
             );
             return;
         }
-        if ($cond_node instanceof Node && $cond_node->kind === ast\AST_ISSET) {
-            if (ASTHasher::hash($cond_node->children['var']) === $true_node_hash) {
-                $this->emitPluginIssue(
-                    $this->code_base,
-                    $this->context,
-                    'PhanPluginDuplicateConditionalNullCoalescing',
-                    '"isset(X) ? X : Y" can usually be simplified to "X ?? Y" in PHP 7. The duplicated expression X was {CODE}',
-                    [ASTReverter::toShortString($cond_node->children['var'])]
-                );
+        if (!$cond_node instanceof Node) {
+            return;
+        }
+        switch ($cond_node->kind) {
+            case ast\AST_ISSET:
+                if (ASTHasher::hash($cond_node->children['var']) === $true_node_hash) {
+                    $this->warnDuplicateConditionalNullCoalescing('isset(X) ? X : Y', $node->children['true']);
+                }
+                break;
+            case ast\AST_BINARY_OP:
+                $this->checkBinaryOpOfConditional($cond_node, $true_node_hash);
+                break;
+            case ast\AST_UNARY_OP:
+                $this->checkUnaryOpOfConditional($cond_node, $true_node_hash);
+                break;
+        }
+    }
+
+    /**
+     * @param int|string $true_node_hash
+     */
+    private function checkBinaryOpOfConditional(Node $cond_node, $true_node_hash) : void
+    {
+        if ($cond_node->flags !== ast\flags\BINARY_IS_NOT_IDENTICAL) {
+            return;
+        }
+        $left_node = $cond_node->children['left'];
+        $right_node = $cond_node->children['right'];
+        if (self::isNullConstantNode($left_node)) {
+            if (ASTHasher::hash($right_node) === $true_node_hash) {
+                $this->warnDuplicateConditionalNullCoalescing('null !== X ? X : Y', $right_node);
+            }
+        } elseif (self::isNullConstantNode($right_node)) {
+            if (ASTHasher::hash($left_node) === $true_node_hash) {
+                $this->warnDuplicateConditionalNullCoalescing('X !== null ? X : Y', $left_node);
             }
         }
+    }
+
+    /**
+     * @param int|string $true_node_hash
+     */
+    private function checkUnaryOpOfConditional(Node $cond_node, $true_node_hash) : void
+    {
+        if ($cond_node->flags !== ast\flags\UNARY_BOOL_NOT) {
+            return;
+        }
+        $expr = $cond_node->children['expr'];
+        if (!$expr instanceof Node) {
+            return;
+        }
+        if ($expr->kind === ast\AST_CALL) {
+            $function = $expr->children['expr'];
+            if ($function->kind !== ast\AST_NAME || strcasecmp((string)($function->children['name'] ?? ''), 'is_null') !== 0) {
+                return;
+            }
+            $args = $expr->children['args']->children;
+            if (count($args) !== 1) {
+                return;
+            }
+            if (ASTHasher::hash($args[0]) === $true_node_hash) {
+                $this->warnDuplicateConditionalNullCoalescing('!is_null(X) ? X : Y', $args[0]);
+            }
+        }
+    }
+
+    /**
+     * @param Node|mixed $node
+     */
+    private static function isNullConstantNode($node) : bool
+    {
+        if (!$node instanceof Node) {
+            return false;
+        }
+        return $node->kind === ast\AST_CONST && strcasecmp((string)$node->children['name']->children['name'] ?? '', 'null') === 0;
+    }
+
+    /**
+     * @param ?(Node|string|int|float) $x_node
+     */
+    private function warnDuplicateConditionalNullCoalescing(string $expr, $x_node) : void
+    {
+        $this->emitPluginIssue(
+            $this->code_base,
+            $this->context,
+            'PhanPluginDuplicateConditionalNullCoalescing',
+            '"' . $expr . '" can usually be simplified to "X ?? Y" in PHP 7. The duplicated expression X was {CODE}',
+            [ASTReverter::toShortString($x_node)]
+        );
     }
 }
 

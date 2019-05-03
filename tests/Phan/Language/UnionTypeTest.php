@@ -663,7 +663,7 @@ final class UnionTypeTest extends BaseTest
         $type = \reset($types);
 
         $this->assertInstanceOf(ArrayShapeType::class, $type);
-        $this->assertSame(["key\n\\line:"], array_keys($type->getFieldTypes()));
+        $this->assertSame(["key\n\\line:"], \array_keys($type->getFieldTypes()));
         $this->assertSame('array{key\n\\\\line\x3a:int}', (string)$type);
         $this->assertSame('array<string,int>', (string)$union_type->withFlattenedArrayShapeOrLiteralTypeInstances());
         $field_union_type = $type->getFieldTypes()["key\n\\line:"];
@@ -677,7 +677,7 @@ final class UnionTypeTest extends BaseTest
         $this->assertSame('array{\n:0,\r:1,\t:2,\\\\:3}', (string)$union_type);
         $type = $union_type->getTypeSet()[0];
         $this->assertInstanceOf(ArrayShapeType::class, $type);
-        $this->assertSame(["\n", "\r", "\t", "\\"], array_keys($type->getFieldTypes()));
+        $this->assertSame(["\n", "\r", "\t", "\\"], \array_keys($type->getFieldTypes()));
     }
 
     private static function createGenericArrayTypeWithMixedKey(Type $type, bool $is_nullable) : GenericArrayType

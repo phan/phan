@@ -70,7 +70,6 @@ final class CommentTest extends BaseTest
         $this->assertSame([], $comment->getParameterList());
         $this->assertSame([], $comment->getParameterMap());
         // @phan-suppress-next-line PhanDeprecatedFunction
-        $this->assertSame([], $comment->getSuppressIssueList());
         $this->assertSame([], $comment->getSuppressIssueSet());
         $this->assertFalse($comment->hasParameterWithNameOrOffset('bar', 0));
         $this->assertSame([], $comment->getVariableList());

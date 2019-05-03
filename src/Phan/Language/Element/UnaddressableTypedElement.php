@@ -192,7 +192,7 @@ abstract class UnaddressableTypedElement
      * @return void
      * @suppress PhanUnreferencedPublicMethod potentially used in the future
      */
-    public function setPhanFlags(int $phan_flags)
+    public function setPhanFlags(int $phan_flags) : void
     {
         $this->phan_flags = $phan_flags;
     }

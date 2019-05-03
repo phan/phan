@@ -786,17 +786,17 @@ class CLI
         $plugin_dirname = ConfigPluginSet::getBuiltinPluginDirectory();
         $candidates = [];
         foreach (\scandir($plugin_dirname) as $basename) {
-            if (substr($basename, -4) !== '.php') {
+            if (\substr($basename, -4) !== '.php') {
                 continue;
             }
-            $plugin_name = substr($basename, 0, -4);
+            $plugin_name = \substr($basename, 0, -4);
             $candidates[$plugin_name] = $plugin_name;
         }
         $suggestions = IssueFixSuggester::getSuggestionsForStringSet($plugin_path_or_name, $candidates);
         if (!$suggestions) {
             return '';
         }
-        return ' (Did you mean ' . implode(' or ', $suggestions) . '?)';
+        return ' (Did you mean ' . \implode(' or ', $suggestions) . '?)';
     }
 
     /**
@@ -1264,7 +1264,7 @@ EOB;
             // distance > 5 is to far off to be a typo
             // Make sure that if two flags have the same distance, ties are sorted alphabetically
             if ($distance <= 5) {
-                $similarities[$flag] = [$distance, "x" . strtolower($flag), $flag];
+                $similarities[$flag] = [$distance, "x" . \strtolower($flag), $flag];
             }
         }
 
@@ -1295,13 +1295,13 @@ EOB;
         if (!\is_array($file_extensions) || count($file_extensions) === 0) {
             return false;
         }
-        $extension = pathinfo($file_path, PATHINFO_EXTENSION);
+        $extension = \pathinfo($file_path, \PATHINFO_EXTENSION);
         if (!$extension || !in_array($extension, $file_extensions)) {
             return false;
         }
 
         $directory_regex = Config::getValue('__directory_regex');
-        return $directory_regex && preg_match($directory_regex, $file_path) > 0;
+        return $directory_regex && \preg_match($directory_regex, $file_path) > 0;
     }
 
     /**
@@ -1429,7 +1429,8 @@ EOB;
     }
 
     // Bound the percentage to [0, 1]
-    private static function boundPercentage(float $p) : float {
+    private static function boundPercentage(float $p) : float
+    {
         return \min(\max($p, 0.0), 1.0);
     }
 
@@ -1525,13 +1526,13 @@ EOB;
         }
         $did_end = true;
         if (self::shouldShowDebugOutput()) {
-            fwrite(STDERR, "Phan's analysis is complete\n");
+            \fwrite(STDERR, "Phan's analysis is complete\n");
             return;
         }
         if (self::shouldShowProgress()) {
             // Print a newline to stderr to visuall separate stderr from stdout
-            fwrite(STDERR, PHP_EOL);
-            fflush(STDOUT);
+            \fwrite(STDERR, \PHP_EOL);
+            \fflush(\STDOUT);
         }
     }
 
@@ -1568,7 +1569,8 @@ EOB;
     /**
      * @return void
      */
-    public static function debugOutput(string $line) : void {
+    public static function debugOutput(string $line) : void
+    {
         \fwrite(STDERR, $line . "\n");
     }
 

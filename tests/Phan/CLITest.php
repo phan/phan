@@ -245,14 +245,14 @@ final class CLITest extends BaseTest
 
     public function testSameVersionAsNEWS() : void
     {
-        $news = file_get_contents(dirname(__DIR__, 2) . '/NEWS.md');
-        $this->assertTrue(is_string($news));
+        $news = \file_get_contents(\dirname(__DIR__, 2) . '/NEWS.md');
+        $this->assertTrue(\is_string($news));
         $versions = [];
-        $lines = explode("\n", $news);
+        $lines = \explode("\n", $news);
         foreach ($lines as $i => $line) {
-            if (preg_match('@^-----@', $line)) {
+            if (\preg_match('@^-----@', $line)) {
                 $version_line = $lines[$i - 1];
-                if (preg_match('@\b(\d+\.\d+\.\d+)(.*\(dev\))?@', $version_line, $matches)) {
+                if (\preg_match('@\b(\d+\.\d+\.\d+)(.*\(dev\))?@', $version_line, $matches)) {
                     $version = $matches[1] . (!empty($matches[2]) ? '-dev' : '');
                     $versions[] = $version;
                 } else {
@@ -266,7 +266,7 @@ final class CLITest extends BaseTest
             if ($i == 0) {
                 continue;
             }
-            $this->assertLessThan(0, version_compare($version, $versions[$i - 1]), "unexpected order of $version and {$versions[$i - 1]}");
+            $this->assertLessThan(0, \version_compare($version, $versions[$i - 1]), "unexpected order of $version and {$versions[$i - 1]}");
         }
     }
 }

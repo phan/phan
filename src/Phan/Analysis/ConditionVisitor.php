@@ -388,7 +388,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             return $context;
         }
         $var_name = $var_node->children['name'];
-        if (!is_string($var_name)) {
+        if (!\is_string($var_name)) {
             return $context;
         }
         if ($has_prop_access) {

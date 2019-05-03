@@ -324,6 +324,16 @@ Warnings may need to be completely disabled due to the large number of method de
 - Warnings are not emitted for methods that are overridden in child classes.
 - Warnings can be suppressed based on the method FQSEN with `plugin_config => [..., 'possibly_static_method_ignore_regex' => (a PCRE regex)]`
 
+#### PHPDocToRealTypesPlugin.php
+
+This plugin suggests real types that can be used instead of phpdoc types.
+Currently, this just checks return types.
+This also supports `--automatic-fix` to add those types.
+
+- **PhanPluginCanUseReturnType**: `Can use {TYPE} as a return type of {METHOD}`
+- **PhanPluginCanUseNullableReturnType**: `Can use {TYPE} as a return type of {METHOD}` (useful if there is a minimum php version of 7.1)
+- **PhanPluginCanUsePHP71Void**: `Can use php 7.1's void as a return type of {METHOD}` (useful if there is a minimum php version of 7.1)
+
 ### 4. Demo plugins:
 
 These files demonstrate plugins for Phan.

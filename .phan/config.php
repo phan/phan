@@ -468,9 +468,10 @@ return [
         'NoAssertPlugin',
 
         'HasPHPDocPlugin',
+        'PHPDocToRealTypesPlugin',
 
         // This should only be enabled if the code being analyzed contains Phan plugins.
-        '.phan/plugins/PhanSelfCheckPlugin.php',
+        'PhanSelfCheckPlugin',
 
         ////////////////////////////////////////////////////////////////////////
         // End plugins for Phan's self-analysis
