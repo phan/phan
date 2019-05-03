@@ -31,7 +31,6 @@ class Fixers
         $params = $instance->getTemplateParameters();
         $return_type = $params[0];
         $name = $params[1];
-        \fwrite(\STDERR, "TODO: Add $return_type to $name\n");
         // @phan-suppress-next-line PhanPartialTypeMismatchArgument
         $declaration = self::findFunctionLikeDeclaration($contents, $instance->getLine(), $name);
         if (!$declaration) {
@@ -69,15 +68,12 @@ class Fixers
     ) : ?\Microsoft\PhpParser\FunctionLike {
         $candidates = [];
         foreach ($contents->getNodesAtLine($line) as $node) {
-            \fwrite(\STDERR, "Saw " . \get_class($node) . "\n");
             if ($node instanceof FunctionDeclaration || $node instanceof MethodDeclaration) {
-                echo "Processing node";
                 $name_node = $node->name;
                 if (!$name_node) {
                     continue;
                 }
                 $declaration_name = (new NodeUtils($contents->getContents()))->tokenToString($name_node);
-                echo "Comparing $declaration_name to $name\n";
                 if ($declaration_name === $name) {
                     $candidates[] = $node;
                 }
