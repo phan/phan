@@ -266,7 +266,7 @@ class Analysis
             $plugin_set,
             $has_function_or_method_plugins,
             $file_filter
-        ) {
+        ) : void {
             if ($function_or_method->isPHPInternal()) {
                 return;
             }

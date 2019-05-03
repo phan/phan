@@ -610,7 +610,7 @@ class Type
                  * @param mixed $value
                  * @return UnionType
                  */
-                static function ($value) {
+                static function ($value) : \Phan\Language\UnionType {
                     return self::fromObjectExtended($value)->asUnionType();
                 },
                 $array
@@ -2104,7 +2104,7 @@ class Type
         if ($recursion_depth >= 20) {
             throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
         }
-        $union_type = $this->memoize(__METHOD__, /** @return UnionType */ function () use ($code_base, $recursion_depth) {
+        $union_type = $this->memoize(__METHOD__, /** @return UnionType */ function () use ($code_base, $recursion_depth) : \Phan\Language\UnionType {
             $union_type = $this->asUnionType();
 
             $class_fqsen = $this->asFQSEN();
@@ -2186,7 +2186,7 @@ class Type
         if ($recursion_depth >= 20) {
             throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
         }
-        $union_type = $this->memoize(__METHOD__, /** @return UnionType */ function () use ($code_base, $recursion_depth) {
+        $union_type = $this->memoize(__METHOD__, /** @return UnionType */ function () use ($code_base, $recursion_depth) : \Phan\Language\UnionType {
             $union_type = $this->asUnionType();
 
             $class_fqsen = $this->asFQSEN();

@@ -473,7 +473,7 @@ class UnionType implements Serializable
          * @param string|null $type_name
          * @return UnionType|null
          */
-        $get_for_global_context = static function ($type_name) {
+        $get_for_global_context = static function ($type_name) : ?\Phan\Language\UnionType {
             if (!$type_name) {
                 return null;
             }
@@ -676,7 +676,7 @@ class UnionType implements Serializable
              * @param array<string,UnionType> $map
              * @return array<string,UnionType>
              */
-            static function (array $map, Type $type) use ($code_base) {
+            static function (array $map, Type $type) use ($code_base) : array {
                 return \array_merge(
                     $type->getTemplateParameterTypeMap($code_base),
                     $map

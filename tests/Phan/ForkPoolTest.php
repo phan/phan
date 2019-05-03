@@ -28,14 +28,14 @@ final class ForkPoolTest extends BaseTest
         $pool = new ForkPool(
             $data,
             /** @return void */
-            static function () {
+            static function () : void {
             },
             /**
              * @param int $unused_i
              * @param array<int,mixed> $data
              * @return void
              */
-            static function ($unused_i, $data) use (&$worker_data) {
+            static function ($unused_i, $data) use (&$worker_data) : void {
                 $worker_data[] = $data;
             },
             /**
@@ -60,7 +60,7 @@ final class ForkPoolTest extends BaseTest
             /**
              * @return void
              */
-            static function () use (&$did_startup) {
+            static function () use (&$did_startup) : void {
                 $did_startup = true;
             },
             /**
@@ -68,7 +68,7 @@ final class ForkPoolTest extends BaseTest
              * @param mixed $unused_data
              * @return void
              */
-            static function ($unused_i, $unused_data) {
+            static function ($unused_i, $unused_data) : void {
             },
             /**
              * @return array{0:bool}

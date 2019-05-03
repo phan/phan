@@ -657,7 +657,7 @@ final class ArgumentType
         /**
          * @return ?string
          */
-        $choose_issue_type = static function (string $issue_type, string $nullable_issue_type) use ($argument_type_expanded, $parameter_type, $code_base, $context, $lineno) {
+        $choose_issue_type = static function (string $issue_type, string $nullable_issue_type) use ($argument_type_expanded, $parameter_type, $code_base, $context, $lineno) : ?string {
             // @phan-suppress-next-line PhanAccessMethodInternal
             if (!$argument_type_expanded->canCastToUnionTypeIfNonNull($parameter_type)) {
                 return $issue_type;

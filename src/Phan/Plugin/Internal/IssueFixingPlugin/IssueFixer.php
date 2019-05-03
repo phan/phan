@@ -149,7 +149,7 @@ class IssueFixer
             CodeBase $unused_code_base,
             FileCacheEntry $file_contents,
             IssueInstance $issue_instance
-        ) {
+        ) : ?\Phan\Plugin\Internal\IssueFixingPlugin\FileEditSet {
             // 1-based line
             $line = $issue_instance->getLine();
             $edits = [];
@@ -215,7 +215,7 @@ class IssueFixer
                 ) use (
                     $closure,
                     $instance
-) {
+) : ?\Phan\Plugin\Internal\IssueFixingPlugin\FileEditSet {
                     self::debug("Calling for $instance\n");
                     return $closure($code_base, $file_contents, $instance);
                 };

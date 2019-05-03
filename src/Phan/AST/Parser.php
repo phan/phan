@@ -258,7 +258,7 @@ class Parser
             // TODO: Rename to something better
             $converter = new TolerantASTConverterWithNodeMapping(
                 $request->getTargetByteOffset($file_contents),
-                static function (Node $node) {
+                static function (Node $node) : void {
                     // @phan-suppress-next-line PhanAccessMethodInternal
                     ConfigPluginSet::instance()->prepareNodeSelectionPluginForNode($node);
                 }

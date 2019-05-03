@@ -19,7 +19,7 @@ $file_list = $cli->getFileList();
 
 // This is an example visitor. Do whatever you like here
 // to scan all nodes.
-$visit_node = static function (\ast\Node $node, string $file_path) {
+$visit_node = static function (\ast\Node $node, string $file_path) : void {
 
     // Take a look at Phan\AST\Visitor\Element to see all
     // of the kinds of nodes

@@ -174,7 +174,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         parent::__construct($this, '/');
         $this->protocolReader = $reader;
         $this->file_mapping = new FileMapping();
-        $reader->on('close', function () {
+        $reader->on('close', function () : void {
             if (!$this->is_accepting_new_requests) {
                 // This is the forked process, which forced the ProtocolReader to close. Don't exit().
                 // Instead, carry on and analyze the input files.
@@ -183,7 +183,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             $this->shutdown();
             $this->exit();
         });
-        $reader->on('message', function (Message $msg) {
+        $reader->on('message', function (Message $msg) : void {
             /** @suppress PhanUndeclaredProperty Request->body->id is a request with an id */
             coroutine(function () use ($msg) : \Generator {
                 $body = $msg->body;
@@ -227,7 +227,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             })->otherwise('\\Phan\\LanguageServer\\Utils::crash');
         });
 
-        $reader->on('readMessageGroup', function () {
+        $reader->on('readMessageGroup', function () : void {
             $this->finalizeAnalyzingURIs();
         });
 
@@ -275,7 +275,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
                  * @param int|null $pid
                  * @return void
                  */
-                static function ($signo, $status = null, $pid = null) use (&$got_signal) {
+                static function ($signo, $status = null, $pid = null) use (&$got_signal) : void {
                     $got_signal = true;
                     Request::childSignalHandler($signo, $status, $pid);
                 }

@@ -82,7 +82,7 @@ final class StringFunctionPlugin extends PluginV2 implements
                 $expected_const_pos,
                 $expected_variable_pos,
                 $expected_arg_count
-) {
+) : void {
                 if (\count($args) < $expected_arg_count) {
                     return;
                 }

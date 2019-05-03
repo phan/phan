@@ -37,7 +37,7 @@ class CompletionResolver
         /**
          * @param array<int,Node> $unused_parent_node_list
          */
-        return static function (Context $context, Node $node, array $unused_parent_node_list) use ($request, $code_base) {
+        return static function (Context $context, Node $node, array $unused_parent_node_list) use ($request, $code_base) : void {
             // @phan-suppress-next-line PhanUndeclaredProperty this is overridden
             $selected_fragment = $node->selectedFragment ?? null;
             if (is_string($selected_fragment)) {

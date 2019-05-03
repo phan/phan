@@ -466,7 +466,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
              * @param array{0:string} $match
              * @return string
              */
-            static function (array $match) {
+            static function (array $match) : string {
                 $c = $match[0];
                 return self::ESCAPE_CHARACTER_LOOKUP[$c] ?? \sprintf('\\x%02x', \ord($c));
             },

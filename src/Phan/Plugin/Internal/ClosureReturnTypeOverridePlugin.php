@@ -196,7 +196,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
             Context $context,
             Func $unused_function,
             array $args
-        ) {
+        ) : void {
             if (\count($args) < 1) {
                 return;
             }
@@ -217,7 +217,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
             Context $context,
             Func $unused_function,
             array $args
-        ) {
+        ) : void {
             if (\count($args) < 2) {
                 return;
             }

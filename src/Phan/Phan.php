@@ -371,6 +371,8 @@ class Phan implements IgnoredFilesFilterInterface
 
             Analysis::loadMethodPlugins($code_base);
 
+            ConfigPluginSet::instance()->beforeAnalyzePhase($code_base);
+
             // Filter out any files that are to be excluded from
             // analysis
             $analyze_file_path_list = array_filter(

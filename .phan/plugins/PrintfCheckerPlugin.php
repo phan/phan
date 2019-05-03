@@ -207,7 +207,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                     $sprintf_args[] = $arg;
                 }
                 $result = \with_disabled_phan_error_handler(
-                    /** @return string */
+                    /** @return string|false */
                     static function () use ($format_string, $sprintf_args) {
                         // @phan-suppress-next-line PhanPluginPrintfVariableFormatString
                         return @\vsprintf($format_string, $sprintf_args);
@@ -238,7 +238,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
             Context $context,
             Func $function,
             array $args
-        ) {
+        ) : void {
             // TODO: Resolve global constants and class constants?
             // TODO: Check for AST_UNPACK
             $pattern = $args[0] ?? null;
@@ -261,7 +261,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
             Context $context,
             Func $function,
             array $args
-        ) {
+        ) : void {
             if (\count($args) < 2) {
                 return;
             }
@@ -284,7 +284,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
             Context $context,
             Func $function,
             array $args
-        ) {
+        ) : void {
             if (\count($args) < 2) {
                 return;
             }
@@ -308,7 +308,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
             Context $context,
             Func $function,
             array $args
-        ) {
+        ) : void {
             if (\count($args) < 3) {
                 return;
             }
@@ -398,7 +398,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
          *
          * @param int $issue_type_id An issue id for pylint
          */
-        $emit_issue = static function (string $issue_type, string $issue_message_format, array $issue_message_args, int $severity, int $issue_type_id) use ($code_base, $context) {
+        $emit_issue = static function (string $issue_type, string $issue_message_format, array $issue_message_args, int $severity, int $issue_type_id) use ($code_base, $context) : void {
             self::emitIssue(
                 $code_base,
                 $context,

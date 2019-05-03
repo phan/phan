@@ -132,7 +132,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
             // Don't bother generating hover text if there are no known types or descriptions, maybe a subsequent call will have types
             return;
         }
-        $maybe_set_markdown_to_union_type = function () use ($union_type, $description) {
+        $maybe_set_markdown_to_union_type = function () use ($union_type, $description) : void {
             if ($this->hover_response === null) {
                 $markdown = \sprintf('`%s`', (string)$union_type);
                 if ($description) {
@@ -283,7 +283,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
         CodeBase $code_base,
         FQSEN $type_fqsen
     ) {
-        $record_definition = function (AddressableElementInterface $element) use ($code_base) {
+        $record_definition = function (AddressableElementInterface $element) use ($code_base) : void {
             if (!$element->isPHPInternal()) {
                 if ($this->getIsHoverRequest()) {
                     $this->recordDefinitionElement($code_base, $element, false);

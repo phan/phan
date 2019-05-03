@@ -195,7 +195,7 @@ function getUnionTypeStringForReflectionType(ReflectionType $reflection_type = n
  * @return void
  * @throws InvalidArgumentException for invalid return types
  */
-function check_fields(string $function_name, array $fields, array $signatures)
+function check_fields(string $function_name, array $fields, array $signatures) : void
 {
     $return_type = $fields[0];  // TODO: Check type
     if (!is_string($return_type)) {
@@ -383,7 +383,7 @@ function check_fields(string $function_name, array $fields, array $signatures)
 /**
  * Load Phan's function signatures and check that they are compatible with Reflection's real function/method signatures
  */
-function main_check_fields()
+function main_check_fields() : void
 {
     error_reporting(E_ALL);
 

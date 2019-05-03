@@ -399,7 +399,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                  * @return void
                  * @suppress PhanUnusedClosureParameter
                  */
-                function (CodeBase $code_base, Context $context, Variable $variable, array $args) use ($class_node) {
+                function (CodeBase $code_base, Context $context, Variable $variable, array $args) use ($class_node) : void {
                     $union_type = $this->computeNegatedInstanceofType($variable->getUnionType(), $class_node);
                     if ($union_type) {
                         $variable->setUnionType($union_type);

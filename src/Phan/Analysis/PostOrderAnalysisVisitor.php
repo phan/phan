@@ -3216,7 +3216,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         if ($variable) {
-            $set_variable_type = static function (UnionType $new_type) use ($context, $variable) {
+            $set_variable_type = static function (UnionType $new_type) use ($context, $variable) : void {
                 if ($variable instanceof Variable) {
                     $variable = clone($variable);
                     $variable->setUnionType($new_type);
@@ -3358,7 +3358,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         try {
             // Even though we don't modify the parameter list, we still need to know the types
             // -- as an optimization, we don't run quick mode again if the types didn't change?
-            $parameter_list = \array_map(/** @return Parameter */ static function (Parameter $parameter) {
+            $parameter_list = \array_map(/** @return Parameter */ static function (Parameter $parameter) : \Phan\Language\Element\Parameter {
                 return clone($parameter);
             }, $method->getParameterList());
 

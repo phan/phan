@@ -88,7 +88,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     /** @return array<string,array<string,string>> a set of unique file names */
     private function getFilesForFunctionNameList() : array
     {
-        return $this->memoize(__METHOD__, /** @return array<string,array<string,string>> */ function () {
+        return $this->memoize(__METHOD__, /** @return array<string,array<string,string>> */ function () : array {
             $files_for_function_name_list = [];
             $reference_directory = $this->reference_directory;
             foreach (static::scandir($reference_directory) as $subpath) {
@@ -829,7 +829,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     {
         return $this->memoize(__METHOD__, /** @return array<string,string> */ function () : array {
             $method_name_map = [];
-            $maybe_add_refpurpose = static function (string $name, SimpleXMLElement $xml) use (&$method_name_map) {
+            $maybe_add_refpurpose = static function (string $name, SimpleXMLElement $xml) use (&$method_name_map) : void {
                 $refpurpose = $xml->xpath('//a:refentry/a:refnamediv/a:refpurpose');
                 if (is_array($refpurpose) && count($refpurpose) === 1) {
                     $refpurpose = $refpurpose[0];

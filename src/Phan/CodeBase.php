@@ -678,7 +678,7 @@ class CodeBase
         $this->fqsen_class_map_user_defined->offsetSet($fqsen, $class);
         if ($this->undo_tracker) {
             // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
-            $this->undo_tracker->recordUndo(static function (CodeBase $inner) use ($fqsen) {
+            $this->undo_tracker->recordUndo(static function (CodeBase $inner) use ($fqsen) : void {
                 Daemon::debugf("Undoing addClass %s\n", $fqsen);
                 $inner->fqsen_class_map->offsetUnset($fqsen);
                 $inner->fqsen_class_map_user_defined->offsetUnset($fqsen);
@@ -704,7 +704,7 @@ class CodeBase
         $this->parsed_namespace_maps[$file][$key] = $namespace_map;
         if ($this->undo_tracker) {
             // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
-            $this->undo_tracker->recordUndo(static function (CodeBase $inner) use ($file, $key) {
+            $this->undo_tracker->recordUndo(static function (CodeBase $inner) use ($file, $key) : void {
                 Daemon::debugf("Undoing addParsedNamespaceMap file = %s namespace = %s\n", $file, $key);
                 unset($inner->parsed_namespace_maps[$file][$key]);
                 // Hack: addParsedNamespaceMap is called at least once per each file, so unset file-level suppressions at the same time in daemon mode
@@ -781,7 +781,7 @@ class CodeBase
             // TODO: Track a count of aliases instead? This doesn't work in daemon mode if multiple files add the same alias to the same class.
             // TODO: Allow .phan/config.php to specify aliases or precedences for aliases?
             // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
-            $this->undo_tracker->recordUndo(static function (CodeBase $inner) use ($original, $alias_record) {
+            $this->undo_tracker->recordUndo(static function (CodeBase $inner) use ($original, $alias_record) : void {
                 $fqsen_alias_map = $inner->fqsen_alias_map[$original] ?? null;
                 if ($fqsen_alias_map) {
                     $fqsen_alias_map->detach($alias_record);
@@ -1013,7 +1013,7 @@ class CodeBase
         if ($this->undo_tracker) {
             // The addClass's recordUndo should remove the class map. Only need to remove it from method_set
             // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
-            $this->undo_tracker->recordUndo(static function (CodeBase $inner) use ($method) {
+            $this->undo_tracker->recordUndo(static function (CodeBase $inner) use ($method) : void {
                 $inner->method_set->detach($method);
             });
         }
@@ -1152,7 +1152,7 @@ class CodeBase
 
         if ($this->undo_tracker) {
             // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
-            $this->undo_tracker->recordUndo(static function (CodeBase $inner) use ($function) {
+            $this->undo_tracker->recordUndo(static function (CodeBase $inner) use ($function) : void {
                 Daemon::debugf("Undoing addFunction on %s\n", $function->getFQSEN());
                 unset($inner->fqsen_func_map[$function->getFQSEN()]);
             });
@@ -1265,7 +1265,7 @@ class CodeBase
         ] = $global_constant;
         if ($this->undo_tracker) {
             // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
-            $this->undo_tracker->recordUndo(static function (CodeBase $inner) use ($global_constant) {
+            $this->undo_tracker->recordUndo(static function (CodeBase $inner) use ($global_constant) : void {
                 Daemon::debugf("Undoing addGlobalConstant on %s\n", $global_constant->getFQSEN());
                 unset($inner->fqsen_global_constant_map[$global_constant->getFQSEN()]);
             });

@@ -547,7 +547,7 @@ trait FunctionTrait
     public function getRealParameterList()
     {
         // Excessive cloning, to ensure that this stays immutable.
-        return \array_map(/** @return Parameter */ static function (Parameter $param) {
+        return \array_map(/** @return Parameter */ static function (Parameter $param) : \Phan\Language\Element\Parameter {
             return clone($param);
         }, $this->real_parameter_list);
     }
@@ -560,7 +560,7 @@ trait FunctionTrait
      */
     public function setRealParameterList(array $parameter_list)
     {
-        $this->real_parameter_list = \array_map(/** @return Parameter */ static function (Parameter $param) {
+        $this->real_parameter_list = \array_map(/** @return Parameter */ static function (Parameter $param) : \Phan\Language\Element\Parameter {
             return clone($param);
         }, $parameter_list);
 
@@ -1116,7 +1116,7 @@ trait FunctionTrait
         }
         $union_type = $this->getUnionType();
 
-        return function () use ($clone_this, $union_type) {
+        return function () use ($clone_this, $union_type) : void {
             $this->memoizeFlushAll();
             // @phan-suppress-next-line PhanTypeSuspiciousNonTraversableForeach this is intentionally iterating over private properties of the clone.
             foreach ($clone_this as $key => $value) {
@@ -1605,7 +1605,7 @@ trait FunctionTrait
                 /**
                  * @param array<int,Node|mixed> $args
                  */
-                return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($i, $union_type_extractor) {
+                return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($i, $union_type_extractor) : void {
                     $arg = $args[$i] ?? null;
                     if (!($arg instanceof Node)) {
                         return;
@@ -1619,7 +1619,7 @@ trait FunctionTrait
                 /**
                  * @param array<int,Node|mixed> $args
                  */
-                return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($i, $union_type_extractor) {
+                return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($i, $union_type_extractor) : void {
                     $arg = $args[$i] ?? null;
                     if (!($arg instanceof Node)) {
                         return;
@@ -1633,7 +1633,7 @@ trait FunctionTrait
                 /**
                  * @param array<int,Node|mixed> $args
                  */
-                return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($i) {
+                return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($i) : void {
                     $arg = $args[$i] ?? null;
                     if (!($arg instanceof Node)) {
                         return;
@@ -1646,7 +1646,7 @@ trait FunctionTrait
                 /**
                  * @param array<int,Node|mixed> $args
                  */
-                return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($i) {
+                return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($i) : void {
                     $arg = $args[$i] ?? null;
                     if (!($arg instanceof Node)) {
                         return;

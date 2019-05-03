@@ -3041,7 +3041,7 @@ class Clazz extends AddressableElement
         $original_this = clone($this);
         $original_union_type = $this->getUnionType();
 
-        return function () use ($original_union_type, $original_this) {
+        return function () use ($original_union_type, $original_this) : void {
             // @phan-suppress-next-line PhanTypeSuspiciousNonTraversableForeach this is intentionally iterating over private properties of the clone.
             foreach ($original_this as $key => $value) {
                 $this->{$key} = $value;

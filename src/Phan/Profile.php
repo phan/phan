@@ -63,7 +63,7 @@ trait Profile
 
         // Create a shutdown function to emit the log when we're
         // all done
-        \register_shutdown_function(static function () {
+        \register_shutdown_function(static function () : void {
             $label_metric_map = [];
 
             // Compute whatever metric we care about

@@ -16,7 +16,7 @@ return [
      * @return ?FileEditSet
      * @suppress PhanAccessMethodInternal
      */
-    WhitespacePlugin::Tab => static function (CodeBase $unused_code_base, FileCacheEntry $contents, IssueInstance $instance) {
+    WhitespacePlugin::Tab => static function (CodeBase $unused_code_base, FileCacheEntry $contents, IssueInstance $instance) : ?\Phan\Plugin\Internal\IssueFixingPlugin\FileEditSet {
         $spaces_per_tab = (int)(Config::getValue('plugin_config')['spaces_per_tab'] ?? 4);
         if ($spaces_per_tab <= 0) {
             $spaces_per_tab = 4;
@@ -25,7 +25,7 @@ return [
         /**
          * @return Generator<FileEdit>
          */
-        $compute_edits = static function (string $line_contents, int $byte_offset) use ($spaces_per_tab) {
+        $compute_edits = static function (string $line_contents, int $byte_offset) use ($spaces_per_tab) : \Generator {
             preg_match_all('/\t+/', $line_contents, $matches, PREG_OFFSET_CAPTURE);
 
             $effective_space_count = 0;
@@ -69,7 +69,7 @@ return [
      * @return ?FileEditSet
      * @suppress PhanAccessMethodInternal
      */
-    WhitespacePlugin::WhitespaceTrailing => static function (CodeBase $unused_code_base, FileCacheEntry $contents, IssueInstance $instance) {
+    WhitespacePlugin::WhitespaceTrailing => static function (CodeBase $unused_code_base, FileCacheEntry $contents, IssueInstance $instance) : ?\Phan\Plugin\Internal\IssueFixingPlugin\FileEditSet {
         IssueFixer::debug("Calling trailing whitespace fixer {$instance->getFile()}\n");
         $raw_contents = $contents->getContents();
         $byte_offset = 0;
@@ -97,7 +97,7 @@ return [
      * @return ?FileEditSet
      * @suppress PhanAccessMethodInternal
      */
-    WhitespacePlugin::CarriageReturn => static function (CodeBase $unused_code_base, FileCacheEntry $contents, IssueInstance $instance) {
+    WhitespacePlugin::CarriageReturn => static function (CodeBase $unused_code_base, FileCacheEntry $contents, IssueInstance $instance) : ?\Phan\Plugin\Internal\IssueFixingPlugin\FileEditSet {
         IssueFixer::debug("Calling trailing whitespace fixer {$instance->getFile()}\n");
         $raw_contents = $contents->getContents();
         $byte_offset = 0;

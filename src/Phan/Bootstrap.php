@@ -81,7 +81,7 @@ assert_options(ASSERT_CALLBACK, '');  // Can't explicitly set ASSERT_CALLBACK to
  * Print more of the backtrace than is done by default
  * @suppress PhanAccessMethodInternal
  */
-set_exception_handler(static function (Throwable $throwable) {
+set_exception_handler(static function (Throwable $throwable) : void {
     error_log("$throwable\n");
     if (class_exists(CodeBase::class, false)) {
         $most_recent_file = CodeBase::getMostRecentlyParsedOrAnalyzedFile();
@@ -128,7 +128,7 @@ function with_disabled_phan_error_handler(Closure $closure)
  * @param int $errline
  * @return bool
  */
-function phan_error_handler($errno, $errstr, $errfile, $errline)
+function phan_error_handler($errno, $errstr, $errfile, $errline) : bool
 {
     global $__no_echo_phan_errors;
     if ($__no_echo_phan_errors) {

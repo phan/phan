@@ -15,7 +15,7 @@ use Phan\CodeBase;
 interface BeforeAnalyzePhaseCapability
 {
     /**
-     * This method is called before analyzing a project.
+     * This method is called before analyzing a project and after analyzing methods.
      *
      * @param CodeBase $code_base
      * The code base of the project.

@@ -613,7 +613,7 @@ final class ConfigPluginSet extends PluginV2 implements
         /**
          * @param array<int,Node|mixed> $args
          */
-        return static function (CodeBase $code_base, Context $context, FunctionInterface $func, array $args) use ($a, $b) {
+        return static function (CodeBase $code_base, Context $context, FunctionInterface $func, array $args) use ($a, $b) : void {
             $a($code_base, $context, $func, $args);
             $b($code_base, $context, $func, $args);
         };
@@ -680,7 +680,7 @@ final class ConfigPluginSet extends PluginV2 implements
         /**
          * @param array<int,Node|mixed> $parent_node_list
          */
-        $closure = static function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list = []) {
+        $closure = static function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list = []) : void {
             $visitor = new NodeSelectionVisitor($code_base, $context);
             $visitor->visitCommonImplementation($node, $parent_node_list);
         };
@@ -726,7 +726,7 @@ final class ConfigPluginSet extends PluginV2 implements
         }
          */
 
-        return new RAII(function () use ($old_post_analyze_node_plugin_set) {
+        return new RAII(function () use ($old_post_analyze_node_plugin_set) : void {
             $this->post_analyze_node_plugin_set = $old_post_analyze_node_plugin_set;
             $this->node_selection_plugin = null;
         });
@@ -743,7 +743,7 @@ final class ConfigPluginSet extends PluginV2 implements
              * @param array<int,Node> $parent_node_list
              * @suppress PhanInfiniteRecursion the old plugin is referring to a different closure
              */
-            $this->post_analyze_node_plugin_set[$kind] = static function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list = []) use ($old_plugin_for_kind, $new_plugin) {
+            $this->post_analyze_node_plugin_set[$kind] = static function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list = []) use ($old_plugin_for_kind, $new_plugin) : void {
                 $old_plugin_for_kind($code_base, $context, $node, $parent_node_list);
                 $new_plugin($code_base, $context, $node, $parent_node_list);
             };
@@ -938,7 +938,7 @@ final class ConfigPluginSet extends PluginV2 implements
          * @param array<int,Closure> $closure_list
          */
         return $closures_for_kind->getFlattenedClosures(static function (array $closure_list) : \Closure {
-            return static function (CodeBase $code_base, Context $context, Node $node) use ($closure_list) {
+            return static function (CodeBase $code_base, Context $context, Node $node) use ($closure_list) : void {
                 foreach ($closure_list as $closure) {
                     $closure($code_base, $context, $node);
                 }
@@ -997,7 +997,7 @@ final class ConfigPluginSet extends PluginV2 implements
              * @param array<int,Node> $parent_node_list
              * @phan-closure-scope PluginAwarePreAnalysisVisitor
              */
-            return (static function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list = []) {
+            return (static function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list = []) : void {
                 $visitor = new static($code_base, $context);
                 // @phan-suppress-next-line PhanUndeclaredProperty checked via $has_parent_node_list
                 $visitor->parent_node_list = $parent_node_list;
@@ -1011,7 +1011,7 @@ final class ConfigPluginSet extends PluginV2 implements
              * @phan-closure-scope PluginAwarePreAnalysisVisitor
              * @param array<int,Node> $unused_parent_node_list
              */
-            return (static function (CodeBase $code_base, Context $context, Node $node, array $unused_parent_node_list = []) {
+            return (static function (CodeBase $code_base, Context $context, Node $node, array $unused_parent_node_list = []) : void {
                 $visitor = new static($code_base, $context);
                 $fn_name = Element::VISIT_LOOKUP_TABLE[$node->kind];
                 $visitor->{$fn_name}($node);
@@ -1038,7 +1038,7 @@ final class ConfigPluginSet extends PluginV2 implements
             /**
              * @param array<int,Node> $parent_node_list
              */
-            return static function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list = []) use ($closure_list) {
+            return static function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list = []) use ($closure_list) : void {
                 foreach ($closure_list as $closure) {
                     $closure($code_base, $context, $node, $parent_node_list);
                 }
@@ -1102,7 +1102,7 @@ final class ConfigPluginSet extends PluginV2 implements
              * @phan-closure-scope PluginAwarePostAnalysisVisitor
              * @param array<int,Node> $parent_node_list
              */
-            return (static function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list = []) {
+            return (static function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list = []) : void {
                 $visitor = new static($code_base, $context);
                 // @phan-suppress-next-line PhanUndeclaredProperty checked via $has_parent_node_list
                 $visitor->parent_node_list = $parent_node_list;
@@ -1116,7 +1116,7 @@ final class ConfigPluginSet extends PluginV2 implements
              * @phan-closure-scope PluginAwarePostAnalysisVisitor
              * @param array<int,Node> $unused_parent_node_list
              */
-            return (static function (CodeBase $code_base, Context $context, Node $node, array $unused_parent_node_list = []) {
+            return (static function (CodeBase $code_base, Context $context, Node $node, array $unused_parent_node_list = []) : void {
                 $visitor = new static($code_base, $context);
                 $fn_name = Element::VISIT_LOOKUP_TABLE[$node->kind];
                 $visitor->{$fn_name}($node);
