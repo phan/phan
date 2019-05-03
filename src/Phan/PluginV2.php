@@ -73,9 +73,11 @@ use Phan\PluginV2\IssueEmitter;
  * 11. public function beforeAnalyze(CodeBase $code_base) : void
  *
  *     Called before analyzing a project (e.g. to run checks before analysis)
- *     beforeAnalyze is invoked immediately before forking analysis workers and before starting the analysis phase.
+ *     beforeAnalyze is invoked immediately before analyzing methods and before forking analysis workers and before starting the analysis phase.
  *
  *     (implement \Phan\PluginV2\BeforeAnalyzeCapability)
+ *
+ *     Most plugins should use BeforeAnalyzePhaseCapability instead.
  * 12. public function beforeAnalyzeFile(CodeBase $code_base, Context $context, string $file_contents, Node $node);
  *
  *     Called before analyzing a file (with the absolute path Config::projectPath($context->getFile())).
@@ -99,6 +101,12 @@ use Phan\PluginV2\IssueEmitter;
  *     Returns a map from issue name to the closure to generate a fix for instances of that issue.
  *
  *     (implement \Phan\PluginV2\AutomaticFixCapability)
+ * 16. public function beforeAnalyzePhase(CodeBase $code_base) : void
+ *
+ *     Called before analyzing a project (e.g. to run checks before analysis)
+ *     beforeAnalyze is invoked immediately after analyzing methods and before forking analysis workers and before starting the analysis phase.
+ *
+ *     (implement \Phan\PluginV2\BeforeAnalyzePhaseCapability)
  *
  * TODO: Implement a way to notify plugins that a parsed file is no longer valid,
  * if the replacement for pcntl is being used.
