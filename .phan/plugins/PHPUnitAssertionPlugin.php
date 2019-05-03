@@ -77,6 +77,13 @@ class PHPUnitAssertionPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
                     new Assertion(UnionType::empty(), 'unusedParamName', Assertion::IS_FALSE),
                     0
                 );
+                // TODO: Rest of https://github.com/sebastianbergmann/phpunit/issues/3368
+            case 'assertisstring':
+                return $method->createClosureForAssertion(
+                    $code_base,
+                    new Assertion(UnionType::fromFullyQualifiedString('string'), 'unusedParamName', Assertion::IS_OF_TYPE),
+                    0
+                );
             case 'assertnull':
                 return $method->createClosureForAssertion(
                     $code_base,

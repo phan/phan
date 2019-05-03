@@ -248,6 +248,9 @@ return [
 
         // TODO: Undo the suppressions for the below categories of issues:
         'Phan\Exception\CodeBaseException',
+        // phpunit
+        'PHPUnit\Framework\ExpectationFailedException',
+        'SebastianBergmann\RecursionContext\InvalidArgumentException',
     ],
 
     // Increase this to properly analyze require_once statements

@@ -27,7 +27,7 @@ final class PhanTestListener implements TestListener
 {
     use TestListenerDefaultImplementation;
 
-    public function startTest(Test $test)
+    public function startTest(Test $test) : void
     {
         if ($test instanceof CodeBaseAwareTestInterface) {
             // We're holding a static reference to the
@@ -58,7 +58,7 @@ final class PhanTestListener implements TestListener
     /**
      * @param float $time @phan-unused-param
      */
-    public function endTest(Test $test, $time)
+    public function endTest(Test $test, float $time) : void
     {
         if ($test instanceof CodeBaseAwareTestInterface) {
             $test->setCodeBase(null);
