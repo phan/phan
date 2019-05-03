@@ -203,4 +203,9 @@ final class NullType extends ScalarType
     {
         return IntType::instance(false)->asUnionType();
     }
+
+    public function canUseInRealSignature() : bool
+    {
+        return false;
+    }
 }
