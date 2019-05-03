@@ -2,6 +2,7 @@
 
 namespace PHPDocToRealTypesPlugin;
 
+use Microsoft\PhpParser;
 use Microsoft\PhpParser\FunctionLike;
 use Microsoft\PhpParser\Node\Expression\AnonymousFunctionCreationExpression;
 use Microsoft\PhpParser\Node\MethodDeclaration;
@@ -40,9 +41,28 @@ class Fixers
     }
 
     /**
+     * Add a missing param type to the real signature
      * @return ?FileEditSet
      */
-    private static function computeEditsForReturnTypeDeclaration(FunctionLike $declaration, string $return_type) : ?\Phan\Plugin\Internal\IssueFixingPlugin\FileEditSet
+    public static function fixParamType(
+        CodeBase $unused_code_base,
+        FileCacheEntry $contents,
+        IssueInstance $instance
+    ) : ?FileEditSet {
+        $params = $instance->getTemplateParameters();
+        $param_type = $params[0];
+        $param_name = $params[1];
+        $method_name = $params[2];
+        // @phan-suppress-next-line PhanPartialTypeMismatchArgument
+        $declaration = self::findFunctionLikeDeclaration($contents, $instance->getLine(), $method_name);
+        if (!$declaration) {
+            return null;
+        }
+        return self::computeEditsForParamTypeDeclaration($contents, $declaration, (string)$param_name, (string)$param_type);
+
+    }
+
+    private static function computeEditsForReturnTypeDeclaration(FunctionLike $declaration, string $return_type) : ?FileEditSet
     {
         if (!$return_type) {
             return null;
@@ -56,6 +76,29 @@ class Fixers
         $last_byte_index = $close_bracket->getEndPosition();
         $file_edit = new FileEdit($last_byte_index, $last_byte_index, " : $return_type");
         return new FileEditSet([$file_edit]);
+    }
+
+    private static function computeEditsForParamTypeDeclaration(FileCacheEntry $contents, FunctionLike $declaration, string $param_name, string $param_type) : ?FileEditSet
+    {
+        if (!$param_type) {
+            return null;
+        }
+        // @phan-suppress-next-line PhanUndeclaredProperty
+        $parameter_node_list = $declaration->parameters->children ?? [];
+        foreach ($parameter_node_list as $param) {
+            if (!$param instanceof PhpParser\Node\Parameter) {
+                continue;
+            }
+            $declaration_name = (new NodeUtils($contents->getContents()))->tokenToString($param->variableName);
+            if ($declaration_name !== $param_name)  {
+                continue;
+            }
+            $token = $param->byRefToken ?? $param->dotDotDotToken ?? $param->variableName;
+            $token_start_index = $token->start;
+            $file_edit = new FileEdit($token_start_index, $token_start_index, "$param_type ");
+            return new FileEditSet([$file_edit]);
+        }
+        return null;
     }
 
     /**
