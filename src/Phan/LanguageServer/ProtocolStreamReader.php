@@ -117,9 +117,6 @@ class ProtocolStreamReader extends Emitter implements ProtocolReader
         return $emitted_messages;
     }
 
-    /**
-     * @return void
-     */
     public function stopAcceptingNewRequests() : void
     {
         $this->is_accepting_new_requests = false;

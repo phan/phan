@@ -301,9 +301,6 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
         return $context;
     }
 
-    /**
-     * @return Context
-     */
     public function visitVar(Node $node) : \Phan\Language\Context
     {
         $this->checkVariablesDefined($node);

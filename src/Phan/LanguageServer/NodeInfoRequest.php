@@ -39,7 +39,6 @@ abstract class NodeInfoRequest
         $this->promise = new Promise();
     }
 
-    /** @return void */
     abstract public function finalize() : void;
 
     /**

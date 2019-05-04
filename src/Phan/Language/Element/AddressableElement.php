@@ -281,9 +281,6 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
         $this->hydrateOnce($code_base);
     }
 
-    /**
-     * @return void
-     */
     protected function hydrateOnce(CodeBase $unused_code_base) : void
     {
         // Do nothing unless overridden

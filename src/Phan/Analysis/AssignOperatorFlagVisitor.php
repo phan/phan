@@ -113,9 +113,6 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
         ]));
     }
 
-    /**
-     * @return UnionType
-     */
     public function visitBinaryCoalesce(Node $node) : \Phan\Language\UnionType
     {
         $var_node = $node->children['var'];

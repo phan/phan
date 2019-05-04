@@ -17,8 +17,5 @@ use Sabre\Event\EmitterInterface;
  */
 interface ProtocolReader extends EmitterInterface
 {
-    /**
-     * @return void
-     */
     public function stopAcceptingNewRequests() : void;
 }
