@@ -6,9 +6,9 @@ use ast\Node;
 use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\AST\ASTHasher;
 use Phan\AST\ASTReverter;
-use Phan\PluginV2;
-use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV3\PostAnalyzeNodeCapability;
 
 /**
  * This plugin checks for duplicate expressions in a statement
@@ -25,7 +25,7 @@ use Phan\PluginV2\PostAnalyzeNodeCapability;
  *
  * A plugin file must
  *
- * - Contain a class that inherits from \Phan\PluginV2
+ * - Contain a class that inherits from \Phan\PluginV3
  *
  * - End by returning an instance of that class.
  *
@@ -35,7 +35,7 @@ use Phan\PluginV2\PostAnalyzeNodeCapability;
  * Note: When adding new plugins,
  * add them to the corresponding section of README.md
  */
-class DuplicateExpressionPlugin extends PluginV2 implements PostAnalyzeNodeCapability
+class DuplicateExpressionPlugin extends PluginV3 implements PostAnalyzeNodeCapability
 {
 
     /**

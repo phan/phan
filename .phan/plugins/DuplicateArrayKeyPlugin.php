@@ -5,16 +5,16 @@ use Phan\AST\ASTHasher;
 use Phan\AST\ASTReverter;
 use Phan\AST\UnionTypeVisitor;
 use Phan\Issue;
-use Phan\PluginV2;
-use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV3\PostAnalyzeNodeCapability;
 
 /**
  * Checks for duplicate/equivalent array keys and case statements, as well as arrays mixing `key => value, with `value,`.
  *
  * @see DollarDollarPlugin for generic plugin documentation.
  */
-class DuplicateArrayKeyPlugin extends PluginV2 implements PostAnalyzeNodeCapability
+class DuplicateArrayKeyPlugin extends PluginV3 implements PostAnalyzeNodeCapability
 {
     /**
      * @return string - name of PluginAwarePostAnalysisVisitor subclass

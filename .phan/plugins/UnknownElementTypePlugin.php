@@ -9,15 +9,15 @@ use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
-use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeFunctionCapability;
-use Phan\PluginV2\AnalyzeMethodCapability;
-use Phan\PluginV2\AnalyzePropertyCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\AnalyzeFunctionCapability;
+use Phan\PluginV3\AnalyzeMethodCapability;
+use Phan\PluginV3\AnalyzePropertyCapability;
 
 /**
  * This file checks if any elements in the codebase have undeclared types.
  */
-class UnknownElementTypePlugin extends PluginV2 implements
+class UnknownElementTypePlugin extends PluginV3 implements
     AnalyzeFunctionCapability,
     AnalyzeMethodCapability,
     AnalyzePropertyCapability

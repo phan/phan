@@ -6,16 +6,16 @@ use ast\Node;
 use Phan\AST\UnionTypeVisitor;
 use Phan\Exception\IssueException;
 use Phan\Language\Context;
-use Phan\PluginV2;
-use Phan\PluginV2\PluginAwarePreAnalysisVisitor;
-use Phan\PluginV2\PreAnalyzeNodeCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\PluginAwarePreAnalysisVisitor;
+use Phan\PluginV3\PreAnalyzeNodeCapability;
 
 /**
  * This plugin warns if an expression which has types other than `bool` is used in an if/else if.
  *
  * Note that the 'simplify_ast' setting's default of true will interfere with this plugin.
  */
-class NonBoolBranchPlugin extends PluginV2 implements PreAnalyzeNodeCapability
+class NonBoolBranchPlugin extends PluginV3 implements PreAnalyzeNodeCapability
 {
     /**
      * @return string - name of PluginAwarePreAnalysisVisitor subclass

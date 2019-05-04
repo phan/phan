@@ -8,10 +8,10 @@ use Phan\Exception\CodeBaseException;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
-use Phan\PluginV2;
-use Phan\PluginV2\FinalizeProcessCapability;
-use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\FinalizeProcessCapability;
+use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV3\PostAnalyzeNodeCapability;
 
 /**
  * A plugin that checks for invocations of functions/methods where the return value should be used.
@@ -33,7 +33,7 @@ use Phan\PluginV2\PostAnalyzeNodeCapability;
  *
  *   For dynamic checks, use this value instead of the default of 98 (should be between 0.01 and 100)
  */
-class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability, FinalizeProcessCapability
+class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability, FinalizeProcessCapability
 {
     // phpcs:disable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
     // this is deliberate for issue names

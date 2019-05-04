@@ -5,15 +5,15 @@ use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\Exception\CodeBaseException;
 use Phan\Language\Element\FunctionInterface;
-use Phan\PluginV2;
-use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV3\PostAnalyzeNodeCapability;
 
 /**
  * A plugin that checks if calls to a function or method pass in arguments in a suspicious order.
  * E.g. calling `function example($offset, $count)` as `example($count, $offset)`
  */
-class SuspiciousParamOrderPlugin extends PluginV2 implements PostAnalyzeNodeCapability
+class SuspiciousParamOrderPlugin extends PluginV3 implements PostAnalyzeNodeCapability
 {
     /**
      * @return string - name of PluginAwarePostAnalysisVisitor subclass

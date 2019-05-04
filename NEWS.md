@@ -8,6 +8,7 @@ Backwards Incompatible Changes:
   Phan switched from using [AST version 50 to version 70](https://github.com/nikic/php-ast#ast-versioning).
 
 Plugins:
++ Change `PluginV2` to `PluginV3` because type signatures are stricter (and incompatible with existing plugins) and some of Phan's methods will be removed, changed, or renamed.
 + Third party plugins may need to be upgraded to support changes in AST version 70, e.g. the new node kinds `AST_PROP_GROUP` and `AST_CLASS_NAME`
 + Add `PHPDocToRealTypesPlugin` to suggest real types to replace (or use alongside) phpdoc return types.
   This does not check that the phpdoc types are correct.

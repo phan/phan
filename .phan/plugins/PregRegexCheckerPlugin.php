@@ -10,8 +10,8 @@ use Phan\Language\Type\IterableType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Library\RegexKeyExtractor;
 use Phan\Library\StringUtil;
-use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeFunctionCallCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\AnalyzeFunctionCallCapability;
 
 /**
  * This plugin checks for invalid regexes in calls to preg_match. (And all of the other internal PCRE functions).
@@ -23,7 +23,7 @@ use Phan\PluginV2\AnalyzeFunctionCallCapability;
  * - getAnalyzeFunctionCallClosures
  *   This method returns a map from function/method FQSEN to closures that are called on invocations of those closures.
  */
-class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapability
+class PregRegexCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapability
 {
     // Skip over analyzing regex keys that couldn't be resolved.
     // Don't try to convert values to PHP data (should be closures)

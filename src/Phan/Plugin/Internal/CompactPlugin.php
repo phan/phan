@@ -9,13 +9,13 @@ use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
-use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeFunctionCallCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\AnalyzeFunctionCallCapability;
 
 /**
  * NOTE: This is automatically loaded by phan. Do not include it in a config.
  */
-final class CompactPlugin extends PluginV2 implements
+final class CompactPlugin extends PluginV3 implements
     AnalyzeFunctionCallCapability
 {
 

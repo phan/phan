@@ -4,18 +4,18 @@ declare(strict_types=1);
 use ast\Node;
 use Phan\Language\Element\Variable;
 use Phan\Language\UnionType;
-use Phan\PluginV2;
-use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use Phan\PluginV2\PluginAwarePreAnalysisVisitor;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
-use Phan\PluginV2\PreAnalyzeNodeCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV3\PluginAwarePreAnalysisVisitor;
+use Phan\PluginV3\PostAnalyzeNodeCapability;
+use Phan\PluginV3\PreAnalyzeNodeCapability;
 
 /**
  * This plugin modifies Phan's analysis of code using FFI\CData variables.
  *
  * A plugin file must
  *
- * - Contain a class that inherits from \Phan\PluginV2
+ * - Contain a class that inherits from \Phan\PluginV3
  *
  * - End by returning an instance of that class.
  *
@@ -27,7 +27,7 @@ use Phan\PluginV2\PreAnalyzeNodeCapability;
  * Note: When adding new plugins,
  * add them to the corresponding section of README.md
  */
-class FFIAnalysisPlugin extends PluginV2 implements PostAnalyzeNodeCapability, PreAnalyzeNodeCapability
+class FFIAnalysisPlugin extends PluginV3 implements PostAnalyzeNodeCapability, PreAnalyzeNodeCapability
 {
     /**
      * @return class-string - name of PluginAwarePostAnalysisVisitor subclass

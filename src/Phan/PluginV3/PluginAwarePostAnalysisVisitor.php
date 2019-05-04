@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace Phan\PluginV2;
+namespace Phan\PluginV3;
+
+// use ast\Node;
 
 /**
- * For plugins which define their own pre-order analysis behaviors in the analysis phase.
- * Called on a node before PluginAwarePreAnalysisVisitor implementations.
- *
- * Public APIs for use by plugins:
+ * For plugins which define their own post-order analysis behaviors in the analysis phase.
+ * Called on a node after PluginAwarePreAnalysisVisitor implementations.
  *
  * - visit<VisitSuffix>(...) (Override these methods)
  * - emitPluginIssue(CodeBase $code_base, Config $config, ...) (Call these methods)
@@ -19,7 +19,7 @@ namespace Phan\PluginV2;
  * - Phan is able to figure out which methods a subclass implements, and only call the plugin's visitor for those types,
  *   but only when the plugin's visitor does not override the fallback visit() method.
  */
-abstract class PluginAwarePreAnalysisVisitor extends PluginAwareBaseAnalysisVisitor
+abstract class PluginAwarePostAnalysisVisitor extends PluginAwareBaseAnalysisVisitor
 {
     // Subclasses should declare protected $parent_node_list as an instance property if they need to know the list.
 

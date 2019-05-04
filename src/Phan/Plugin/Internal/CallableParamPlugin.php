@@ -14,9 +14,9 @@ use Phan\Language\Type;
 use Phan\Language\Type\CallableInterface;
 use Phan\Language\Type\ClassStringType;
 use Phan\Plugin\ConfigPluginSet;
-use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeFunctionCallCapability;
-use Phan\PluginV2\HandleLazyLoadInternalFunctionCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\AnalyzeFunctionCallCapability;
+use Phan\PluginV3\HandleLazyLoadInternalFunctionCapability;
 use function count;
 
 /**
@@ -25,7 +25,7 @@ use function count;
  * TODO: Analyze returning callables (function() : callable) for any callables that are returned as literals?
  * This would be difficult.
  */
-final class CallableParamPlugin extends PluginV2 implements
+final class CallableParamPlugin extends PluginV3 implements
     AnalyzeFunctionCallCapability,
     HandleLazyLoadInternalFunctionCapability
 {

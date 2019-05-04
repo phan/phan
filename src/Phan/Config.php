@@ -43,7 +43,7 @@ class Config
      * Plugin files that wish to be backwards compatible may check this and
      * return different classes based on its existence and
      * the results of version_compare.
-     * PluginV2 will correspond to 2.x.y, PluginV3 will correspond to 3.x.y, etc.
+     * PluginV3 will correspond to 2.x.y, PluginV3 will correspond to 3.x.y, etc.
      * New features increment minor versions, and bug fixes increment patch versions.
      * @suppress PhanUnreferencedPublicClassConstant
      */

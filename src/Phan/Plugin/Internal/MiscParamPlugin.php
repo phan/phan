@@ -26,9 +26,9 @@ use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use Phan\Parse\ParseVisitor;
-use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeFunctionCallCapability;
-use Phan\PluginV2\StopParamAnalysisException;
+use Phan\PluginV3;
+use Phan\PluginV3\AnalyzeFunctionCallCapability;
+use Phan\PluginV3\StopParamAnalysisException;
 use function count;
 
 /**
@@ -37,7 +37,7 @@ use function count;
  * TODO: Analyze returning callables (function() : callable) for any callables that are returned as literals?
  * This would be difficult.
  */
-final class MiscParamPlugin extends PluginV2 implements
+final class MiscParamPlugin extends PluginV3 implements
     AnalyzeFunctionCallCapability
 {
     /**

@@ -9,8 +9,8 @@ use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
-use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeFunctionCallCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\AnalyzeFunctionCallCapability;
 
 /**
  * NOTE: This is automatically loaded by phan. Do not include it in a config.
@@ -20,7 +20,7 @@ use Phan\PluginV2\AnalyzeFunctionCallCapability;
  *
  * e.g. explode($var, ':') or strpos(':', $x)
  */
-final class StringFunctionPlugin extends PluginV2 implements
+final class StringFunctionPlugin extends PluginV3 implements
     AnalyzeFunctionCallCapability
 {
     /**

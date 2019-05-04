@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Phan\PluginV2;
+namespace Phan\PluginV3;
 
 use Phan\CodeBase;
 use Phan\Language\Element\Clazz;

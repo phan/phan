@@ -73,10 +73,10 @@ In the parse phase, all code is parsed in order to build maps from FQSENs to ele
 This contains implementation details for working with the set of plugins loaded by the user (ConfigPluginSet).
 `Plugin/Internal` also contains plugins Phan loads automatically (e.g. for improving analysis of `array_map`, `call_user_func`, etc.)
 
-### PluginV2
+### PluginV3
 
-This contains the current implementation (v2) of the plugin system.
-`*Capability.php` contains capabilities that PluginV2 instances can extend.
+This contains the current implementation (v3) of the plugin system.
+`*Capability.php` contains capabilities that PluginV3 instances can extend.
 See https://github.com/phan/phan/wiki/Writing-Plugins-for-Phan for more information on plugin development.
 
 Files
@@ -156,12 +156,20 @@ Implementations such as `./phan` or the code climate integration call into this.
 
 ### Plugin.php
 
-Deprecated version of plugin system, use PluginV2 instead.
+Deprecated version of plugin system, use PluginV3 instead.
 
 ### PluginV2.php
 
+TODO: Reintroduce PluginV2 and its capabilities to Phan 2.0 in terms of PluginV3 to make migration easier.
+
+This is deprecated, and should only be used if the plugin needs to continue to support Phan 1.x.
+
+### PluginV3.php
+
+Introduced in Phan 2.0
+
 Plugins must extend this class
-(And at least one of the interfaces corresponding to plugin capabilities in PluginV2 folder)
+(And at least one of the interfaces corresponding to plugin capabilities in PluginV3 folder)
 and return an instance of themselves.
 
 ### Prep.php

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Phan\PluginV2;
+namespace Phan\PluginV3;
 
 use Phan\CodeBase;
 
@@ -11,7 +11,7 @@ interface FinalizeProcessCapability
 {
     /**
      * This is called after the other forms of analysis are finished running.
-     * Useful if a PluginV2 needs to aggregate results of analysis.
+     * Useful if a PluginV3 needs to aggregate results of analysis.
      * This may be used to emit additional issues.
      *
      * This is run once per forked analysis process.

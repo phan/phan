@@ -17,8 +17,8 @@ use Phan\Language\Type\StringType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
-use Phan\PluginV2;
-use Phan\PluginV2\ReturnTypeOverrideCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\ReturnTypeOverrideCapability;
 
 use function count;
 use function is_int;
@@ -32,7 +32,7 @@ use function is_string;
  *
  * e.g. explode($var, ':') or strpos(':', $x)
  */
-final class DependentReturnTypeOverridePlugin extends PluginV2 implements
+final class DependentReturnTypeOverridePlugin extends PluginV3 implements
     ReturnTypeOverrideCapability
 {
     /**

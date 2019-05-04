@@ -6,9 +6,9 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Element\Method;
 use Phan\Language\ElementContext;
-use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeMethodCapability;
-use Phan\PluginV2\FinalizeProcessCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\AnalyzeMethodCapability;
+use Phan\PluginV3\FinalizeProcessCapability;
 
 /**
  * This file checks if a method can be made static without causing any errors.
@@ -24,7 +24,7 @@ use Phan\PluginV2\FinalizeProcessCapability;
  *
  * A plugin file must
  *
- * - Contain a class that inherits from \Phan\PluginV2
+ * - Contain a class that inherits from \Phan\PluginV3
  *
  * - End by returning an instance of that class.
  *
@@ -34,7 +34,7 @@ use Phan\PluginV2\FinalizeProcessCapability;
  * Note: When adding new plugins,
  * add them to the corresponding section of README.md
  */
-final class PossiblyStaticMethodPlugin extends PluginV2 implements
+final class PossiblyStaticMethodPlugin extends PluginV3 implements
     AnalyzeMethodCapability,
     FinalizeProcessCapability
 {

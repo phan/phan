@@ -15,9 +15,9 @@ use Phan\Language\Element\Variable;
 use Phan\Plugin\Internal\VariableTracker\VariableGraph;
 use Phan\Plugin\Internal\VariableTracker\VariableTrackerVisitor;
 use Phan\Plugin\Internal\VariableTracker\VariableTrackingScope;
-use Phan\PluginV2;
-use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV3\PostAnalyzeNodeCapability;
 use Phan\Suggestion;
 use function count;
 use function is_string;
@@ -27,7 +27,7 @@ use function strlen;
  * NOTE: This is automatically loaded by phan based on config settings.
  * Do not include it in the 'plugins' config.
  */
-final class VariableTrackerPlugin extends PluginV2 implements
+final class VariableTrackerPlugin extends PluginV3 implements
     PostAnalyzeNodeCapability
 {
 

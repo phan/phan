@@ -450,10 +450,6 @@ class Request
     public static function normalizeFileMappingContents(array $file_mapping_contents, ?string &$error_message) : array
     {
         $error_message = null;
-        if (!\is_array($file_mapping_contents)) {
-            $error_message = 'Invalid value of temporary_file_mapping_contents';
-            return [];
-        }
         $new_file_mapping_contents = [];
         foreach ($file_mapping_contents ?? [] as $file => $contents) {
             if (!\is_string($file)) {

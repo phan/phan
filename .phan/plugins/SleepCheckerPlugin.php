@@ -5,9 +5,9 @@ use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\Config;
 use Phan\Language\Type\StringType;
-use Phan\PluginV2;
-use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV3\PostAnalyzeNodeCapability;
 
 /**
  * This plugin checks uses of __sleep()
@@ -19,7 +19,7 @@ use Phan\PluginV2\PostAnalyzeNodeCapability;
  * It is assumed without being checked that plugins aren't
  * mangling state within the passed code base or context.
  */
-class SleepCheckerPlugin extends PluginV2 implements PostAnalyzeNodeCapability
+class SleepCheckerPlugin extends PluginV3 implements PostAnalyzeNodeCapability
 {
 
     /**

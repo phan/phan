@@ -12,8 +12,8 @@ use Phan\Language\Type;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\UnionType;
-use Phan\PluginV2;
-use Phan\PluginV2\BeforeAnalyzeCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\BeforeAnalyzeCapability;
 use TypeError;
 use function count;
 
@@ -24,7 +24,7 @@ use function count;
  *
  * @internal
  */
-final class MethodSearcherPlugin extends PluginV2 implements
+final class MethodSearcherPlugin extends PluginV3 implements
     BeforeAnalyzeCapability
 {
     /** @var array<int,UnionType> the param type we're looking for. */

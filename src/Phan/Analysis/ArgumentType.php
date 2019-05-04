@@ -22,7 +22,7 @@ use Phan\Language\Type;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
-use Phan\PluginV2\StopParamAnalysisException;
+use Phan\PluginV3\StopParamAnalysisException;
 
 use function is_string;
 

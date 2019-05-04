@@ -6,9 +6,9 @@ use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Method;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
-use Phan\PluginV2;
-use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV3\PostAnalyzeNodeCapability;
 
 /**
  * Mark all phpunit test cases as used for dead code detection during Phan's self-analysis.
@@ -20,9 +20,9 @@ use Phan\PluginV2\PostAnalyzeNodeCapability;
  *   Returns the name of a class extending PluginAwarePostAnalysisVisitor, which will be used to analyze nodes in the analysis phase.
  *   If the PluginAwarePostAnalysisVisitor subclass has an instance property called parent_node_list,
  *   Phan will automatically set that property to the list of parent nodes (The nodes deepest in the AST are at the end of the list)
- *   (implement \Phan\PluginV2\PostAnalyzeNodeCapability)
+ *   (implement \Phan\PluginV3\PostAnalyzeNodeCapability)
  */
-class PHPUnitNotDeadCodePlugin extends PluginV2 implements PostAnalyzeNodeCapability
+class PHPUnitNotDeadCodePlugin extends PluginV3 implements PostAnalyzeNodeCapability
 {
     /**
      * @override

@@ -9,11 +9,11 @@ use Phan\Language\Element\Method;
 use Phan\Library\FileCacheEntry;
 use Phan\Library\StringUtil;
 use Phan\Plugin\Internal\IssueFixingPlugin\FileEditSet;
-use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeFunctionCapability;
-use Phan\PluginV2\AnalyzeMethodCapability;
-use Phan\PluginV2\AutomaticFixCapability;
-// use Phan\PluginV2\AutomaticFixCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\AnalyzeFunctionCapability;
+use Phan\PluginV3\AnalyzeMethodCapability;
+use Phan\PluginV3\AutomaticFixCapability;
+// use Phan\PluginV3\AutomaticFixCapability;
 use PHPDocRedundantPlugin\Fixers;
 
 /**
@@ -26,7 +26,7 @@ use PHPDocRedundantPlugin\Fixers;
  *
  * It does not check if the change is safe to make.
  */
-class PHPDocRedundantPlugin extends PluginV2 implements
+class PHPDocRedundantPlugin extends PluginV3 implements
     AnalyzeFunctionCapability,
     AnalyzeMethodCapability,
     AutomaticFixCapability

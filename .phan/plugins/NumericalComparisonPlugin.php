@@ -3,15 +3,15 @@
 use ast\Node;
 use Phan\AST\UnionTypeVisitor;
 use Phan\Language\Context;
-use Phan\PluginV2;
-use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV3\PostAnalyzeNodeCapability;
 
 /**
  * This plugin enforces that loose equality is used for numeric operands (e.g. `2 == 2.0`),
  * and that strict equality is used for non-numeric operands (e.g. `"2" === "2e0"` is false).
  */
-class NumericalComparisonPlugin extends PluginV2 implements PostAnalyzeNodeCapability
+class NumericalComparisonPlugin extends PluginV3 implements PostAnalyzeNodeCapability
 {
 
     /**

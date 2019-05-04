@@ -9,8 +9,8 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\UnionType;
-use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeFunctionCallCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\AnalyzeFunctionCallCapability;
 
 /**
  * Mark PHPUnit helper assertions as having side effects.
@@ -24,7 +24,7 @@ use Phan\PluginV2\AnalyzeFunctionCallCapability;
  *
  * NOTE: This will probably be rewritten
  */
-class PHPUnitAssertionPlugin extends PluginV2 implements AnalyzeFunctionCallCapability
+class PHPUnitAssertionPlugin extends PluginV3 implements AnalyzeFunctionCallCapability
 {
     /**
      * @override

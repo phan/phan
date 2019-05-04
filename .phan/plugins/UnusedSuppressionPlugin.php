@@ -10,14 +10,14 @@ use Phan\Language\Element\Func;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
 use Phan\Plugin\ConfigPluginSet;
-use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeClassCapability;
-use Phan\PluginV2\AnalyzeFunctionCapability;
-use Phan\PluginV2\AnalyzeMethodCapability;
-use Phan\PluginV2\AnalyzePropertyCapability;
-use Phan\PluginV2\BeforeAnalyzeFileCapability;
-use Phan\PluginV2\FinalizeProcessCapability;
-use Phan\PluginV2\SuppressionCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\AnalyzeClassCapability;
+use Phan\PluginV3\AnalyzeFunctionCapability;
+use Phan\PluginV3\AnalyzeMethodCapability;
+use Phan\PluginV3\AnalyzePropertyCapability;
+use Phan\PluginV3\BeforeAnalyzeFileCapability;
+use Phan\PluginV3\FinalizeProcessCapability;
+use Phan\PluginV3\SuppressionCapability;
 
 /**
  * Check for unused (at)suppress annotations.
@@ -25,7 +25,7 @@ use Phan\PluginV2\SuppressionCapability;
  * NOTE! This plugin only produces correct results when Phan
  *       is run on a single processor (via the `-j1` flag).
  */
-class UnusedSuppressionPlugin extends PluginV2 implements
+class UnusedSuppressionPlugin extends PluginV3 implements
     BeforeAnalyzeFileCapability,
     AnalyzeClassCapability,
     AnalyzeFunctionCapability,
