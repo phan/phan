@@ -96,6 +96,8 @@ class Fixers
 
     /**
      * @suppress PhanThrowTypeAbsentForCall
+     * @suppress PhanUndeclaredClassMethod
+     * @suppress PhanUnusedSuppression false positive for PhpTokenizer due to https://github.com/Microsoft/tolerant-php-parser/issues/292
      */
     private static function getDocCommentToken(PhpParser\Node $node) : ?Token
     {
@@ -111,29 +113,6 @@ class Fixers
             if ($token->kind === TokenKind::DocCommentToken) {
                 return $token;
             }
-        }
-        return null;
-    }
-
-    private static function computeEditsForParamTypeDeclaration(FileCacheEntry $contents, FunctionLike $declaration, string $param_name, string $param_type) : ?FileEditSet
-    {
-        if (!$param_type) {
-            return null;
-        }
-        // @phan-suppress-next-line PhanUndeclaredProperty
-        $parameter_node_list = $declaration->parameters->children ?? [];
-        foreach ($parameter_node_list as $param) {
-            if (!$param instanceof PhpParser\Node\Parameter) {
-                continue;
-            }
-            $declaration_name = (new NodeUtils($contents->getContents()))->tokenToString($param->variableName);
-            if ($declaration_name !== $param_name) {
-                continue;
-            }
-            $token = $param->byRefToken ?? $param->dotDotDotToken ?? $param->variableName;
-            $token_start_index = $token->start;
-            $file_edit = new FileEdit($token_start_index, $token_start_index, "$param_type ");
-            return new FileEditSet([$file_edit]);
         }
         return null;
     }
