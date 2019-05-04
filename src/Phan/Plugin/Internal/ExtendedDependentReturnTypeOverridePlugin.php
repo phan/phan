@@ -14,8 +14,8 @@ use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
-use Phan\PluginV2;
-use Phan\PluginV2\ReturnTypeOverrideCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\ReturnTypeOverrideCapability;
 use Throwable;
 
 use function count;
@@ -26,7 +26,7 @@ use function count;
  * This internal plugin will aggressively infer return types
  * for certain methods if all arguments are known literal values (e.g. str_replace, implode)
  */
-final class ExtendedDependentReturnTypeOverridePlugin extends PluginV2 implements
+final class ExtendedDependentReturnTypeOverridePlugin extends PluginV3 implements
     ReturnTypeOverrideCapability
 {
     /**

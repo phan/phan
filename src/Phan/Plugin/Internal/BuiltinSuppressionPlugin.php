@@ -13,8 +13,8 @@ use Phan\Language\FQSEN;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Library\FileCache;
-use Phan\PluginV2;
-use Phan\PluginV2\SuppressionCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\SuppressionCapability;
 use Phan\Suggestion;
 
 /**
@@ -22,7 +22,7 @@ use Phan\Suggestion;
  *
  * NOTE: This is automatically loaded by phan. Do not include it in a config.
  */
-final class BuiltinSuppressionPlugin extends PluginV2 implements
+final class BuiltinSuppressionPlugin extends PluginV3 implements
     SuppressionCapability
 {
     /**

@@ -2,9 +2,9 @@
 
 use ast\Node;
 use Phan\Config;
-use Phan\PluginV2;
-use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV3\PostAnalyzeNodeCapability;
 
 /**
  * This warns if references to global functions or global constants are not fully qualified.
@@ -15,7 +15,7 @@ use Phan\PluginV2\PostAnalyzeNodeCapability;
  *   This method returns a class that is called on every AST node from every
  *   file being analyzed
  */
-class NotFullyQualifiedUsagePlugin extends PluginV2 implements PostAnalyzeNodeCapability
+class NotFullyQualifiedUsagePlugin extends PluginV3 implements PostAnalyzeNodeCapability
 {
 
     /**

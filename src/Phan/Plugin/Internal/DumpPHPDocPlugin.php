@@ -10,19 +10,19 @@ use Phan\Language\Element\MarkupDescription;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
 use Phan\Phan;
-use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeClassCapability;
-use Phan\PluginV2\AnalyzeFunctionCapability;
-use Phan\PluginV2\AnalyzeMethodCapability;
-use Phan\PluginV2\AnalyzePropertyCapability;
-use Phan\PluginV2\FinalizeProcessCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\AnalyzeClassCapability;
+use Phan\PluginV3\AnalyzeFunctionCapability;
+use Phan\PluginV3\AnalyzeMethodCapability;
+use Phan\PluginV3\AnalyzePropertyCapability;
+use Phan\PluginV3\FinalizeProcessCapability;
 
 /**
  * This file dumps Phan's inferred signatures and markup descriptions as markdown.
  *
  * NOTE: This is automatically loaded by phan. Do not include it in a config.
  */
-final class DumpPHPDocPlugin extends PluginV2 implements
+final class DumpPHPDocPlugin extends PluginV3 implements
     AnalyzeClassCapability,
     AnalyzeFunctionCapability,
     AnalyzeMethodCapability,

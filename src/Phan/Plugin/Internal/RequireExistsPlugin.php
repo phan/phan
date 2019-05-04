@@ -11,9 +11,9 @@ use Phan\Config;
 use Phan\Issue;
 use Phan\Language\Type\StringType;
 use Phan\Library\Paths;
-use Phan\PluginV2;
-use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV3\PostAnalyzeNodeCapability;
 
 use function file_exists;
 use function is_file;
@@ -21,7 +21,7 @@ use function is_file;
 /**
  * Analyzes require/include/require_once/include_once statements to check if the file exists
  */
-class RequireExistsPlugin extends PluginV2 implements PostAnalyzeNodeCapability
+class RequireExistsPlugin extends PluginV3 implements PostAnalyzeNodeCapability
 {
     public static function getPostAnalyzeNodeVisitorClassName() : string
     {

@@ -4,10 +4,10 @@ use ast\Node;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
-use Phan\PluginV2;
-use Phan\PluginV2\AfterAnalyzeFileCapability;
-use Phan\PluginV2\BeforeAnalyzeFileCapability;
-use Phan\PluginV2\FinalizeProcessCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\AfterAnalyzeFileCapability;
+use Phan\PluginV3\BeforeAnalyzeFileCapability;
+use Phan\PluginV3\FinalizeProcessCapability;
 
 /**
  * This plugin invokes the equivalent of `php --no-php-ini --syntax-check $analyzed_file_path`.
@@ -24,7 +24,7 @@ use Phan\PluginV2\FinalizeProcessCapability;
  *
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
-class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
+class InvokePHPNativeSyntaxCheckPlugin extends PluginV3 implements
     AfterAnalyzeFileCapability,
     BeforeAnalyzeFileCapability,
     FinalizeProcessCapability

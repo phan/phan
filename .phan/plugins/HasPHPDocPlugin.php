@@ -7,11 +7,11 @@ use Phan\Language\Element\Func;
 use Phan\Language\Element\MarkupDescription;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
-use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeClassCapability;
-use Phan\PluginV2\AnalyzeFunctionCapability;
-use Phan\PluginV2\AnalyzeMethodCapability;
-use Phan\PluginV2\AnalyzePropertyCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\AnalyzeClassCapability;
+use Phan\PluginV3\AnalyzeFunctionCapability;
+use Phan\PluginV3\AnalyzeMethodCapability;
+use Phan\PluginV3\AnalyzePropertyCapability;
 
 /**
  * This file checks if an element (class or property) has a PHPDoc comment,
@@ -31,7 +31,7 @@ use Phan\PluginV2\AnalyzePropertyCapability;
  *
  * A plugin file must
  *
- * - Contain a class that inherits from \Phan\PluginV2
+ * - Contain a class that inherits from \Phan\PluginV3
  *
  * - End by returning an instance of that class.
  *
@@ -41,7 +41,7 @@ use Phan\PluginV2\AnalyzePropertyCapability;
  * Note: When adding new plugins,
  * add them to the corresponding section of README.md
  */
-final class HasPHPDocPlugin extends PluginV2 implements
+final class HasPHPDocPlugin extends PluginV3 implements
     AnalyzeClassCapability,
     AnalyzeFunctionCapability,
     AnalyzeMethodCapability,

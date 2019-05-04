@@ -6,14 +6,14 @@ use Phan\IssueInstance;
 use Phan\Language\Context;
 use Phan\Library\FileCacheEntry;
 use Phan\Plugin\Internal\IssueFixingPlugin\FileEditSet;
-use Phan\PluginV2;
-use Phan\PluginV2\AfterAnalyzeFileCapability;
-use Phan\PluginV2\AutomaticFixCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\AfterAnalyzeFileCapability;
+use Phan\PluginV3\AutomaticFixCapability;
 
 /**
  * This plugin checks the whitespace in analyzed PHP files for (1) tabs, (2) windows newlines, and (3) trailing whitespace.
  */
-class WhitespacePlugin extends PluginV2 implements
+class WhitespacePlugin extends PluginV3 implements
     AfterAnalyzeFileCapability,
     AutomaticFixCapability
 {

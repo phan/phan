@@ -49,9 +49,6 @@ class IssueFixSuggester
          * @param FullyQualifiedClassName $alternate_fqsen
          */
         return static function (\Phan\Language\FQSEN\FullyQualifiedClassName $alternate_fqsen) use ($code_base, $class_closure) : bool {
-            if (!($alternate_fqsen instanceof FullyQualifiedClassName)) {
-                return false;
-            }
             if (!$code_base->hasClassWithFQSEN($alternate_fqsen)) {
                 return false;
             }

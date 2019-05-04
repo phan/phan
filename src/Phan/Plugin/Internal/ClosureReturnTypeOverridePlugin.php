@@ -16,16 +16,16 @@ use Phan\Language\Element\Method;
 use Phan\Language\Type;
 use Phan\Language\Type\ClosureType;
 use Phan\Language\UnionType;
-use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeFunctionCallCapability;
-use Phan\PluginV2\ReturnTypeOverrideCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\AnalyzeFunctionCallCapability;
+use Phan\PluginV3\ReturnTypeOverrideCapability;
 
 /**
  * NOTE: This is automatically loaded by phan. Do not include it in a config.
  *
  * TODO: Refactor this.
  */
-final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
+final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
     AnalyzeFunctionCallCapability,
     ReturnTypeOverrideCapability
 {

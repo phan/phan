@@ -6,14 +6,14 @@ use Error;
 use Phan\CodeBase;
 use Phan\Phan;
 use Phan\Plugin\Internal\IssueFixingPlugin\IssueFixer;
-use Phan\PluginV2;
-use Phan\PluginV2\FinalizeProcessCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\FinalizeProcessCapability;
 
 /**
  * This plugin fixes a small number of issues automatically.
  * This uses heuristics to guess where the fix should be applied.
  */
-class IssueFixingPlugin extends PluginV2 implements
+class IssueFixingPlugin extends PluginV3 implements
     FinalizeProcessCapability
 {
     /**

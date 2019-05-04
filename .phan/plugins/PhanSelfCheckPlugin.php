@@ -15,8 +15,8 @@ use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Library\ConversionSpec;
 use Phan\Library\StringUtil;
-use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeFunctionCallCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\AnalyzeFunctionCallCapability;
 use function count;
 use function is_string;
 
@@ -29,7 +29,7 @@ use function is_string;
  *
  * NOTE: This does not check Issue::fromType($typename)(...args)
  */
-class PhanSelfCheckPlugin extends PluginV2 implements AnalyzeFunctionCallCapability
+class PhanSelfCheckPlugin extends PluginV3 implements AnalyzeFunctionCallCapability
 {
     const TooManyArgumentsForIssue = 'PhanPluginTooManyArgumentsForIssue';
     const TooFewArgumentsForIssue = 'PhanPluginTooFewArgumentsForIssue';
@@ -179,7 +179,7 @@ class PhanSelfCheckPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
             '\Phan\Language\Element\Comment\Builder::emitIssue' => $make_type_and_parameters_callback(0, 2),
         ];
         // @phan-suppress-next-line PhanThrowTypeAbsentForCall
-        $emit_plugin_issue_fqsen = FullyQualifiedMethodName::fromFullyQualifiedString('\Phan\PluginV2\IssueEmitter::emitPluginIssue');
+        $emit_plugin_issue_fqsen = FullyQualifiedMethodName::fromFullyQualifiedString('\Phan\PluginV3\IssueEmitter::emitPluginIssue');
         // @phan-suppress-next-line PhanThrowTypeAbsentForCall
         $analysis_visitor_fqsen = FullyQualifiedMethodName::fromFullyQualifiedString('\Phan\AST\AnalysisVisitor::emitIssue');
 

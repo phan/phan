@@ -1468,7 +1468,7 @@ trait FunctionTrait
             );
             $template_type_map = [];
             foreach ($parameter_extractor_map as $name => $closure) {
-                $template_type_map[$name] = $closure ? $closure($args_types, $context) : UnionType::empty();
+                $template_type_map[$name] = $closure($args_types, $context);
             }
             return $function->getUnionType()->withTemplateParameterTypeMap($template_type_map);
         };

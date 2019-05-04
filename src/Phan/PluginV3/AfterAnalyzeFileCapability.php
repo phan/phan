@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Phan\PluginV2;
+namespace Phan\PluginV3;
 
 use ast\Node;
 use Phan\CodeBase;

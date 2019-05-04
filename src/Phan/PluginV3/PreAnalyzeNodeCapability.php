@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Phan\PluginV2;
+namespace Phan\PluginV3;
 
 /**
  * Plugins can implement this to specify a visitor to pre-analyze a node in the analysis phase.

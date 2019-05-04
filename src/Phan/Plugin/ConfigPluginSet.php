@@ -41,25 +41,25 @@ use Phan\Plugin\Internal\RequireExistsPlugin;
 use Phan\Plugin\Internal\StringFunctionPlugin;
 use Phan\Plugin\Internal\ThrowAnalyzerPlugin;
 use Phan\Plugin\Internal\VariableTrackerPlugin;
-use Phan\PluginV2;
-use Phan\PluginV2\AfterAnalyzeFileCapability;
-use Phan\PluginV2\AnalyzeClassCapability;
-use Phan\PluginV2\AnalyzeFunctionCallCapability;
-use Phan\PluginV2\AnalyzeFunctionCapability;
-use Phan\PluginV2\AnalyzeMethodCapability;
-use Phan\PluginV2\AnalyzePropertyCapability;
-use Phan\PluginV2\AutomaticFixCapability;
-use Phan\PluginV2\BeforeAnalyzeCapability;
-use Phan\PluginV2\BeforeAnalyzeFileCapability;
-use Phan\PluginV2\BeforeAnalyzePhaseCapability;
-use Phan\PluginV2\FinalizeProcessCapability;
-use Phan\PluginV2\HandleLazyLoadInternalFunctionCapability;
-use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use Phan\PluginV2\PluginAwarePreAnalysisVisitor;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
-use Phan\PluginV2\PreAnalyzeNodeCapability;
-use Phan\PluginV2\ReturnTypeOverrideCapability;
-use Phan\PluginV2\SuppressionCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\AfterAnalyzeFileCapability;
+use Phan\PluginV3\AnalyzeClassCapability;
+use Phan\PluginV3\AnalyzeFunctionCallCapability;
+use Phan\PluginV3\AnalyzeFunctionCapability;
+use Phan\PluginV3\AnalyzeMethodCapability;
+use Phan\PluginV3\AnalyzePropertyCapability;
+use Phan\PluginV3\AutomaticFixCapability;
+use Phan\PluginV3\BeforeAnalyzeCapability;
+use Phan\PluginV3\BeforeAnalyzeFileCapability;
+use Phan\PluginV3\BeforeAnalyzePhaseCapability;
+use Phan\PluginV3\FinalizeProcessCapability;
+use Phan\PluginV3\HandleLazyLoadInternalFunctionCapability;
+use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV3\PluginAwarePreAnalysisVisitor;
+use Phan\PluginV3\PostAnalyzeNodeCapability;
+use Phan\PluginV3\PreAnalyzeNodeCapability;
+use Phan\PluginV3\ReturnTypeOverrideCapability;
+use Phan\PluginV3\SuppressionCapability;
 use Phan\Suggestion;
 use ReflectionException;
 use ReflectionProperty;
@@ -81,7 +81,7 @@ use const STDERR;
  *
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod TODO: Document
  */
-final class ConfigPluginSet extends PluginV2 implements
+final class ConfigPluginSet extends PluginV3 implements
     AfterAnalyzeFileCapability,
     AnalyzeClassCapability,
     AnalyzeFunctionCapability,
@@ -96,7 +96,7 @@ final class ConfigPluginSet extends PluginV2 implements
     SuppressionCapability
 {
 
-    /** @var array<int,PluginV2>|null - Cached plugin set for this instance. Lazily generated. */
+    /** @var array<int,PluginV3>|null - Cached plugin set for this instance. Lazily generated. */
     private $plugin_set;
 
     /**
@@ -787,7 +787,7 @@ final class ConfigPluginSet extends PluginV2 implements
         if (!is_null($this->plugin_set)) {
             return;
         }
-        $load_plugin = static function (string $plugin_file_name) : PluginV2 {
+        $load_plugin = static function (string $plugin_file_name) : PluginV3 {
             $plugin_file_name = self::normalizePluginPath($plugin_file_name);
 
             try {
@@ -812,8 +812,8 @@ final class ConfigPluginSet extends PluginV2 implements
                 throw new AssertionError("Plugins must return an instance of the plugin. The plugin at $plugin_file_name does not.");
             }
 
-            if (!($plugin_instance instanceof PluginV2)) {
-                throw new AssertionError("Plugins must extend \Phan\PluginV2. The plugin at $plugin_file_name does not.");
+            if (!($plugin_instance instanceof PluginV3)) {
+                throw new AssertionError("Plugins must extend \Phan\PluginV3. The plugin at $plugin_file_name does not.");
             }
 
             return $plugin_instance;
@@ -883,7 +883,7 @@ final class ConfigPluginSet extends PluginV2 implements
     }
 
     /**
-     * @param array<int,PluginV2> $plugin_set
+     * @param array<int,PluginV3> $plugin_set
      * @return void
      */
     private static function registerIssueFixerClosures(array $plugin_set) : void
@@ -913,7 +913,7 @@ final class ConfigPluginSet extends PluginV2 implements
     }
 
     /**
-     * @param array<int,PluginV2> $plugin_set
+     * @param array<int,PluginV3> $plugin_set
      * @return array<int,Closure(CodeBase,Context,Node,array<int,Node>=):void>
      *         Returned value maps ast\Node->kind to [function(CodeBase $code_base, Context $context, Node $node, array<int,Node> $parent_node_list = []): void]
      */
@@ -1011,7 +1011,7 @@ final class ConfigPluginSet extends PluginV2 implements
     }
 
     /**
-     * @param array<int,PluginV2> $plugin_set
+     * @param array<int,PluginV3> $plugin_set
      * @return array<int,\Closure> - [function(CodeBase $code_base, Context $context, Node $node, array<int,Node> $parent_node_list = []): void]
      */
     private static function filterPostAnalysisPlugins(array $plugin_set) : array
@@ -1117,7 +1117,7 @@ final class ConfigPluginSet extends PluginV2 implements
 
     /**
      * @template T
-     * @param array<int,PluginV2> $plugin_set
+     * @param array<int,PluginV3> $plugin_set
      * @param class-string<T> $interface_name
      * @return array<int,T>
      * @suppress PhanPartialTypeMismatchReturn unable to infer this
@@ -1134,7 +1134,7 @@ final class ConfigPluginSet extends PluginV2 implements
     }
 
     /**
-     * @param PluginV2[] $plugin_set
+     * @param PluginV3[] $plugin_set
      * @return ?UnusedSuppressionPlugin
      */
     private static function findUnusedSuppressionPlugin(array $plugin_set) : ?\UnusedSuppressionPlugin

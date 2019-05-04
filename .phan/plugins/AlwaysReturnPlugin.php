@@ -8,9 +8,9 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\VoidType;
-use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeFunctionCapability;
-use Phan\PluginV2\AnalyzeMethodCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\AnalyzeFunctionCapability;
+use Phan\PluginV3\AnalyzeMethodCapability;
 
 /**
  * This file checks if a function, closure or method unconditionally returns.
@@ -29,7 +29,7 @@ use Phan\PluginV2\AnalyzeMethodCapability;
  *
  * A plugin file must
  *
- * - Contain a class that inherits from \Phan\PluginV2
+ * - Contain a class that inherits from \Phan\PluginV3
  *
  * - End by returning an instance of that class.
  *
@@ -39,7 +39,7 @@ use Phan\PluginV2\AnalyzeMethodCapability;
  * Note: When adding new plugins,
  * add them to the corresponding section of README.md
  */
-final class AlwaysReturnPlugin extends PluginV2 implements
+final class AlwaysReturnPlugin extends PluginV3 implements
     AnalyzeFunctionCapability,
     AnalyzeMethodCapability
 {

@@ -7,11 +7,11 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Library\FileCacheEntry;
 use Phan\Plugin\Internal\IssueFixingPlugin\FileEditSet;
-use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeFunctionCapability;
-use Phan\PluginV2\AnalyzeMethodCapability;
-use Phan\PluginV2\AutomaticFixCapability;
-use Phan\PluginV2\BeforeAnalyzePhaseCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\AnalyzeFunctionCapability;
+use Phan\PluginV3\AnalyzeMethodCapability;
+use Phan\PluginV3\AutomaticFixCapability;
+use Phan\PluginV3\BeforeAnalyzePhaseCapability;
 use PHPDocToRealTypesPlugin\Fixers;
 
 /**
@@ -19,7 +19,7 @@ use PHPDocToRealTypesPlugin\Fixers;
  *
  * It does not check if the change is safe to make.
  */
-class PHPDocToRealTypesPlugin extends PluginV2 implements
+class PHPDocToRealTypesPlugin extends PluginV3 implements
     AnalyzeFunctionCapability,
     AnalyzeMethodCapability,
     AutomaticFixCapability,

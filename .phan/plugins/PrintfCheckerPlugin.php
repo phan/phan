@@ -19,9 +19,9 @@ use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use Phan\Library\ConversionSpec;
-use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeFunctionCallCapability;
-use Phan\PluginV2\ReturnTypeOverrideCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\AnalyzeFunctionCallCapability;
+use Phan\PluginV3\ReturnTypeOverrideCapability;
 use function count;
 use function implode;
 use function is_object;
@@ -46,7 +46,7 @@ use function var_export;
  * TODO: Add optional verbose warnings about unanalyzable strings
  * TODO: Check if arg can cast to string.
  */
-class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapability, ReturnTypeOverrideCapability
+class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapability, ReturnTypeOverrideCapability
 {
 
     // Pylint error codes for emitted issues.

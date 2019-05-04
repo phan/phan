@@ -15,14 +15,14 @@ use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
-use Phan\PluginV2;
-use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV3\PostAnalyzeNodeCapability;
 
 /**
  * Analyzes throw statements and compares them against the phpdoc (at)throws annotations
  */
-class ThrowAnalyzerPlugin extends PluginV2 implements PostAnalyzeNodeCapability
+class ThrowAnalyzerPlugin extends PluginV3 implements PostAnalyzeNodeCapability
 {
     /**
      * This is invalidated every time this plugin is loaded (e.g. for tests)
