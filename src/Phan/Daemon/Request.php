@@ -414,7 +414,10 @@ class Request
         }
     }
 
-    public static function childSignalHandler(int $signo, ?int $status = null, ?int $pid = null) : void
+    /**
+     * @param ?(int|array) $status
+     */
+    public static function childSignalHandler(int $signo, $status = null, ?int $pid = null) : void
     {
         // test
         if ($signo !== SIGCHLD) {
@@ -425,9 +428,10 @@ class Request
         }
         Daemon::debugf("Got signal pid=%s", StringUtil::jsonEncode($pid));
 
-        // Add additional check for Phan - pid > 0 implies status is non-null
+        // Add additional check for Phan - pid > 0 implies status is non-null and an integer
         while ($pid > 0 && $status !== null) {
             if (\array_key_exists($pid, self::$child_pids)) {
+                // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal
                 $exit_code = \pcntl_wexitstatus($status);
                 if ($exit_code != 0) {
                     \error_log(\sprintf("child process %d exited with status %d\n", $pid, $exit_code));
@@ -436,6 +440,7 @@ class Request
                 }
                 unset(self::$child_pids[$pid]);
             } elseif ($pid > 0) {
+                // @phan-suppress-next-line PhanPartialTypeMismatchProperty
                 self::$exited_pid_status[$pid] = $status;
             }
             $pid = \pcntl_waitpid(-1, $status, WNOHANG);
