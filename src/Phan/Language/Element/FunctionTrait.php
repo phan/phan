@@ -1097,8 +1097,9 @@ trait FunctionTrait
      * Creates a callback that can restore this element to the state it had before parsing.
      * @internal - Used by daemon mode
      * @return Closure
+     * @suppress PhanTypeMismatchDeclaredReturnNullable overriding phpdoc type deliberately so that this works in php 7.1
      */
-    public function createRestoreCallback() : \Closure
+    public function createRestoreCallback() : ?Closure
     {
         $clone_this = clone($this);
         foreach ($clone_this->parameter_list as $i => $parameter) {
