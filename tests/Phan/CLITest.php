@@ -21,7 +21,7 @@ final class CLITest extends BaseTest
     /**
      * @suppress PhanAccessMethodInternal
      */
-    public function setUp()
+    public function setUp() : void
     {
         parent::setUp();
         Config::reset();
@@ -30,7 +30,7 @@ final class CLITest extends BaseTest
     /**
      * @suppress PhanAccessMethodInternal
      */
-    public function tearDown()
+    public function tearDown() : void
     {
         parent::tearDown();
         Config::reset();

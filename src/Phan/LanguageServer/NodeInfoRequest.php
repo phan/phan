@@ -40,7 +40,7 @@ abstract class NodeInfoRequest
     }
 
     /** @return void */
-    abstract public function finalize();
+    abstract public function finalize() : void;
 
     /**
      * Returns the file URL for which info is being requested

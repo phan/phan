@@ -535,7 +535,7 @@ class UnionType implements Serializable
      *
      * @return UnionType
      */
-    public function withType(Type $type)
+    public function withType(Type $type) : \Phan\Language\UnionType
     {
         $type_set = $this->type_set;
         if (\count($type_set) === 0) {
@@ -558,7 +558,7 @@ class UnionType implements Serializable
      *
      * @return UnionType
      */
-    public function withoutType(Type $type)
+    public function withoutType(Type $type) : \Phan\Language\UnionType
     {
         // Copy the array $this->type_set
         $type_set = $this->type_set;
@@ -588,7 +588,7 @@ class UnionType implements Serializable
      *
      * @return UnionType
      */
-    public function withUnionType(UnionType $union_type)
+    public function withUnionType(UnionType $union_type) : \Phan\Language\UnionType
     {
         // Precondition: Both UnionTypes have lists of unique types.
         $type_set = $this->type_set;
@@ -1997,7 +1997,7 @@ class UnionType implements Serializable
      */
     public function asClassFQSENList(
         Context $context
-    ) {
+    ) : \Generator {
         // Iterate over each viable class type to see if any
         // have the constant we're looking for
         foreach ($this->type_set as $class_type) {
@@ -2050,7 +2050,7 @@ class UnionType implements Serializable
     public function asClassList(
         CodeBase $code_base,
         Context $context
-    ) {
+    ) : \Generator {
         // Iterate over each viable class type to see if any
         // have the constant we're looking for
         foreach ($this->type_set as $class_type) {
@@ -3812,7 +3812,7 @@ class UnionType implements Serializable
      *
      * @return ?Closure(UnionType, Context):UnionType a closure to map types to the template type wherever it was in the original union type
      */
-    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type)
+    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type) : ?\Closure
     {
         $closure = null;
         foreach ($this->type_set as $type) {

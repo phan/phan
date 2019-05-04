@@ -65,7 +65,7 @@ final class UnreachableCodeVisitor extends PluginAwarePostAnalysisVisitor
      *
      * @override
      */
-    public function visitStmtList(Node $node)
+    public function visitStmtList(Node $node) : void
     {
         $child_nodes = $node->children;
 

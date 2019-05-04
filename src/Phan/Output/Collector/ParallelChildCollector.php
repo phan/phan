@@ -78,7 +78,7 @@ class ParallelChildCollector implements IssueCollectorInterface
      * @return void
      * @throws AssertionError if the message failed to be sent to the parent process
      */
-    public function collectIssue(IssueInstance $issue)
+    public function collectIssue(IssueInstance $issue) : void
     {
         $error_code = 0;
 
@@ -126,7 +126,7 @@ class ParallelChildCollector implements IssueCollectorInterface
      *
      * @override
      */
-    public function removeIssuesForFiles(array $files)
+    public function removeIssuesForFiles(array $files) : void
     {
         return;  // Never going to be called - daemon mode isn't combined with parallel execution.
     }
@@ -135,7 +135,7 @@ class ParallelChildCollector implements IssueCollectorInterface
      * This method has no effect on a ParallelChildCollector.
      * @return void
      */
-    public function reset()
+    public function reset() : void
     {
     }
 }

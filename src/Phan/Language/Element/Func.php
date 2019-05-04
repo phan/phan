@@ -306,7 +306,10 @@ class Func extends AddressableElement implements FunctionInterface
         return $func;
     }
 
-    public function getFQSEN() : FullyQualifiedFunctionName
+    /**
+     * @return FullyQualifiedFunctionName
+     */
+    public function getFQSEN()
     {
         return $this->fqsen;
     }

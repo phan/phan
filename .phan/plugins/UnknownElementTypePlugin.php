@@ -49,7 +49,7 @@ class UnknownElementTypePlugin extends PluginV2 implements
     public function analyzeMethod(
         CodeBase $code_base,
         Method $method
-    ) {
+    ) : void {
         if ($method->getFQSEN() !== $method->getRealDefiningFQSEN()) {
             return;
         }
@@ -126,7 +126,7 @@ class UnknownElementTypePlugin extends PluginV2 implements
     public function analyzeFunction(
         CodeBase $code_base,
         Func $function
-    ) {
+    ) : void {
         // NOTE: Placeholders can be found in \Phan\Issue::uncolored_format_string_for_replace
         if ($function->getUnionType()->isEmpty()) {
             if ($function->getFQSEN()->isClosure()) {
@@ -208,7 +208,7 @@ class UnknownElementTypePlugin extends PluginV2 implements
     public function analyzeProperty(
         CodeBase $code_base,
         Property $property
-    ) {
+    ) : void {
         if ($property->getFQSEN() !== $property->getRealDefiningFQSEN()) {
             return;
         }

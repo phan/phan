@@ -31,7 +31,7 @@ final class CommentTest extends BaseTest
         'read_magic_method_annotations' => true,
     ];
 
-    protected function setUp()
+    protected function setUp() : void
     {
         Phan::setIssueCollector(new BufferingCollector());
         $this->code_base = new CodeBase([], [], [], [], []);
@@ -44,7 +44,7 @@ final class CommentTest extends BaseTest
     /**
      * @suppress PhanTypeMismatchProperty
      */
-    protected function tearDown()
+    protected function tearDown() : void
     {
         $this->code_base = null;
         foreach ($this->old_values as $key => $value) {

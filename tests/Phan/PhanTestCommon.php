@@ -12,7 +12,7 @@ use Phan\Plugin\ConfigPluginSet;
  */
 abstract class PhanTestCommon extends AbstractPhanFileTest
 {
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass() : void
     {
         parent::setUpBeforeClass();
 

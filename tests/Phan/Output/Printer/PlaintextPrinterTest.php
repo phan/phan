@@ -15,7 +15,7 @@ use Symfony\Component\Console\Output\BufferedOutput;
 final class PlainTextPrinterTest extends BaseTest
 {
 
-    public function tearDown()
+    public function tearDown() : void
     {
         parent::tearDown();
         Config::setValue('color_issue_messages', false);

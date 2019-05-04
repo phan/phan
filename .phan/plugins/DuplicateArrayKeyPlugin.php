@@ -49,7 +49,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
      *
      * @override
      */
-    public function visitSwitchList(Node $node)
+    public function visitSwitchList(Node $node) : void
     {
         $children = $node->children;
         if (count($children) <= 1) {
@@ -186,7 +186,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
      *
      * @override
      */
-    public function visitArray(Node $node)
+    public function visitArray(Node $node) : void
     {
         $children = $node->children;
         if (count($children) <= 1) {

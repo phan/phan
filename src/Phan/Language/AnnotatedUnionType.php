@@ -79,7 +79,7 @@ class AnnotatedUnionType extends UnionType
      * @return UnionType
      * @override
      */
-    public function withType(Type $type)
+    public function withType(Type $type) : \Phan\Language\UnionType
     {
         return parent::withType($type)->withIsPossiblyUndefined(false);
     }
@@ -90,7 +90,7 @@ class AnnotatedUnionType extends UnionType
      * @return UnionType
      * @override
      */
-    public function withoutType(Type $type)
+    public function withoutType(Type $type) : \Phan\Language\UnionType
     {
         return parent::withoutType($type)->withIsPossiblyUndefined(false);
     }
@@ -101,7 +101,7 @@ class AnnotatedUnionType extends UnionType
      * @return UnionType
      * @override
      */
-    public function withUnionType(UnionType $union_type)
+    public function withUnionType(UnionType $union_type) : \Phan\Language\UnionType
     {
         return parent::withUnionType($union_type)->withIsPossiblyUndefined(false);
     }

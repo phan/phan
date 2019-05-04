@@ -245,7 +245,7 @@ abstract class NativeType extends Type
     /**
      * @return ?UnionType returns the iterable value's union type if this is a subtype of iterable, null otherwise.
      */
-    public function iterableKeyUnionType(CodeBase $unused_code_base)
+    public function iterableKeyUnionType(CodeBase $unused_code_base) : ?\Phan\Language\UnionType
     {
         return null;
     }
@@ -253,7 +253,7 @@ abstract class NativeType extends Type
     /**
      * @return ?UnionType returns the iterable value's union type if this is a subtype of iterable, null otherwise.
      */
-    public function iterableValueUnionType(CodeBase $unused_code_base)
+    public function iterableValueUnionType(CodeBase $unused_code_base) : ?\Phan\Language\UnionType
     {
         return null;
     }
@@ -283,12 +283,12 @@ abstract class NativeType extends Type
         return false;
     }
 
-    public function getTemplateTypeExtractorClosure(CodeBase $unused_code_base, TemplateType $unused_template_type)
+    public function getTemplateTypeExtractorClosure(CodeBase $unused_code_base, TemplateType $unused_template_type) : ?\Closure
     {
         return null;
     }
 
-    public function asFunctionInterfaceOrNull(CodeBase $unused_codebase, Context $unused_context)
+    public function asFunctionInterfaceOrNull(CodeBase $unused_codebase, Context $unused_context) : ?\Phan\Language\Element\FunctionInterface
     {
         // overridden in subclasses
         return null;

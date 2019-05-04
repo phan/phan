@@ -38,7 +38,7 @@ class RequireExistsVisitor extends PluginAwarePostAnalysisVisitor
      * @return void
      * @override
      */
-    public function visitIncludeOrEval(Node $node)
+    public function visitIncludeOrEval(Node $node) : void
     {
         if ($node->flags === ast\flags\EXEC_EVAL) {
             $this->analyzeEval($node);

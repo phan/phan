@@ -20,7 +20,7 @@ final class CSVPrinter implements BufferedPrinterInterface
     /** @var resource in-memory stream for fputcsv() */
     private $stream;
 
-    public function print(IssueInstance $instance)
+    public function print(IssueInstance $instance) : void
     {
         \fputcsv($this->stream, [
             $instance->getFile(),
@@ -34,7 +34,7 @@ final class CSVPrinter implements BufferedPrinterInterface
     }
 
     /** flush printer buffer */
-    public function flush()
+    public function flush() : void
     {
         \fseek($this->stream, 0);
         $contents = \stream_get_contents($this->stream);
@@ -46,7 +46,7 @@ final class CSVPrinter implements BufferedPrinterInterface
         $this->initStream();
     }
 
-    public function configureOutput(OutputInterface $output)
+    public function configureOutput(OutputInterface $output) : void
     {
         $this->output = $output;
         $this->initStream();

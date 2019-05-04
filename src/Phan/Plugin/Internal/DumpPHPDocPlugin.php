@@ -54,7 +54,7 @@ final class DumpPHPDocPlugin extends PluginV2 implements
     public function analyzeClass(
         CodeBase $unused_code_base,
         Clazz $class
-    ) {
+    ) : void {
         if ($class->getFQSEN()->isAlternate()) {
             return;
         }
@@ -95,7 +95,7 @@ final class DumpPHPDocPlugin extends PluginV2 implements
     public function analyzeProperty(
         CodeBase $unused_code_base,
         Property $property
-    ) {
+    ) : void {
         if ($property->isDynamicProperty()) {
             // Dynamic properties don't have declarations or phpdoc.
             return;
@@ -132,7 +132,7 @@ final class DumpPHPDocPlugin extends PluginV2 implements
     public function analyzeMethod(
         CodeBase $unused_code_base,
         Method $method
-    ) {
+    ) : void {
         if ($method->isFromPHPDoc()) {
             // Phan does not track descriptions of (at)method.
             return;
@@ -178,7 +178,7 @@ final class DumpPHPDocPlugin extends PluginV2 implements
     public function analyzeFunction(
         CodeBase $code_base,
         Func $function
-    ) {
+    ) : void {
         if ($function->isPHPInternal()) {
             // This isn't user-defined, there's no reason to warn or way to change it.
             return;
@@ -212,7 +212,7 @@ final class DumpPHPDocPlugin extends PluginV2 implements
      * Executed before the analysis phase starts.
      * @override
      */
-    public function finalizeProcess(CodeBase $unused_code_base)
+    public function finalizeProcess(CodeBase $unused_code_base) : void
     {
         \ksort($this->stubs);
         echo "# Phan Signatures\n\n";

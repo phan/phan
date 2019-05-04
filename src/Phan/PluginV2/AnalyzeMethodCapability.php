@@ -25,5 +25,5 @@ interface AnalyzeMethodCapability
     public function analyzeMethod(
         CodeBase $code_base,
         Method $method
-    );
+    ) : void;
 }

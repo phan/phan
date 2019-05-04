@@ -39,7 +39,7 @@ abstract class ClassElement extends AddressableElement
      * @override
      * @suppress PhanParamSignatureMismatch deliberately more specific
      */
-    public function setFQSEN(FQSEN $fqsen)
+    public function setFQSEN(FQSEN $fqsen) : void
     {
         if (!($fqsen instanceof FullyQualifiedClassElement)) {
             throw new TypeError('Expected $fqsen to be a subclass of Phan\Language\Element\FullyQualifiedClassElement');

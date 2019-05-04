@@ -30,7 +30,7 @@ interface TypedElementInterface
      *
      * @return void
      */
-    public function setUnionType(UnionType $type);
+    public function setUnionType(UnionType $type) : void;
 
     /**
      * @return FileRef

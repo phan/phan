@@ -30,7 +30,7 @@ final class VariableTrackingLoopScope extends VariableTrackingBranchScope
      * @param bool $exits
      * @return void
      */
-    public function recordSkippedScope(VariableTrackingBranchScope $skipped_loop_scope, bool $exits)
+    public function recordSkippedScope(VariableTrackingBranchScope $skipped_loop_scope, bool $exits) : void
     {
         if ($exits) {
             $this->skipped_exiting_loop_scopes[] = $skipped_loop_scope;

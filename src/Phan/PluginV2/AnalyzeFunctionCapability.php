@@ -25,5 +25,5 @@ interface AnalyzeFunctionCapability
     public function analyzeFunction(
         CodeBase $code_base,
         Func $function
-    );
+    ) : void;
 }

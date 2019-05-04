@@ -23,5 +23,5 @@ interface BeforeAnalyzeCapability
      */
     public function beforeAnalyze(
         CodeBase $code_base
-    );
+    ) : void;
 }

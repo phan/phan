@@ -260,7 +260,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitCall(Node $node)
+    public function visitCall(Node $node) : \Phan\Language\Context
     {
         $raw_function_name = self::getFunctionName($node);
         if (!\is_string($raw_function_name)) {
@@ -304,7 +304,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
     /**
      * @return Context
      */
-    public function visitVar(Node $node)
+    public function visitVar(Node $node) : \Phan\Language\Context
     {
         $this->checkVariablesDefined($node);
         return $this->removeTruthyFromVariable($node, $this->context, false);

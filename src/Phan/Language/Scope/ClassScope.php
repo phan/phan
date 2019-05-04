@@ -70,7 +70,7 @@ class ClassScope extends ClosedScope
      * Get the FullyQualifiedClassName of the class whose scope
      * we're in. This subclass does not return null.
      */
-    public function getClassFQSENOrNull()
+    public function getClassFQSENOrNull() : \Phan\Language\FQSEN\FullyQualifiedClassName
     {
         $fqsen = $this->getFQSEN();
 

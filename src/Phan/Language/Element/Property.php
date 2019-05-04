@@ -211,7 +211,7 @@ class Property extends ClassElement
      * @internal
      * @return ?Closure
      */
-    public function createRestoreCallback()
+    public function createRestoreCallback() : ?\Closure
     {
         $future_union_type = $this->future_union_type;
         if ($future_union_type === null) {
@@ -262,7 +262,7 @@ class Property extends ClassElement
      * @override
      * @return void
      */
-    public function copyReferencesFrom(AddressableElement $element)
+    public function copyReferencesFrom(AddressableElement $element) : void
     {
         if ($this === $element) {
             // Should be impossible

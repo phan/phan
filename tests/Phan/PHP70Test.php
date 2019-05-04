@@ -19,7 +19,7 @@ class PHP70Test extends AbstractPhanFileTest
         ],
     ];
 
-    public function setUp()
+    public function setUp() : void
     {
         parent::setUp();
         foreach (self::OVERRIDES as $key => $value) {
@@ -30,7 +30,7 @@ class PHP70Test extends AbstractPhanFileTest
     /**
      * @suppress PhanUndeclaredConstant
      */
-    public function getTestFiles()
+    public function getTestFiles() : array
     {
         return $this->scanSourceFilesDir(PHP70_TEST_FILE_DIR, PHP70_EXPECTED_DIR);
     }

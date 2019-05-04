@@ -198,7 +198,7 @@ final class PossiblyStaticMethodPlugin extends PluginV2 implements
     public function analyzeMethod(
         CodeBase $unused_code_base,
         Method $method
-    ) {
+    ) : void {
         // 1. Perform any checks that can be done immediately to rule out being able
         //    to convert this to a static method
         if ($method->isStatic()) {
@@ -238,7 +238,7 @@ final class PossiblyStaticMethodPlugin extends PluginV2 implements
      *
      * @override
      */
-    public function finalizeProcess(CodeBase $code_base)
+    public function finalizeProcess(CodeBase $code_base) : void
     {
         foreach ($this->methods_for_postponed_analysis as $method) {
             self::analyzePostponedMethod($code_base, $method);

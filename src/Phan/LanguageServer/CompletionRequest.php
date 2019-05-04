@@ -171,7 +171,7 @@ final class CompletionRequest extends NodeInfoRequest
         return \array_values($this->completions);
     }
 
-    public function finalize()
+    public function finalize() : void
     {
         if ($this->fulfilled) {
             return;

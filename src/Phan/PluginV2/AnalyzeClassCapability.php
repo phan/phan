@@ -25,5 +25,5 @@ interface AnalyzeClassCapability
     public function analyzeClass(
         CodeBase $code_base,
         Clazz $class
-    );
+    ) : void;
 }

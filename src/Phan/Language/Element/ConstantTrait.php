@@ -55,7 +55,7 @@ trait ConstantTrait
      * @internal
      * @return ?Closure
      */
-    public function createRestoreCallback()
+    public function createRestoreCallback() : ?\Closure
     {
         $future_union_type = $this->future_union_type;
         if ($future_union_type === null) {

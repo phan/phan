@@ -25,7 +25,7 @@ final class AnalyzerTest extends BaseTest
      */
     private $code_base;
 
-    protected function setUp()
+    protected function setUp() : void
     {
         $this->code_base = new CodeBase(
             [], // $this->class_name_list,

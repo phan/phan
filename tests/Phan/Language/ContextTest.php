@@ -23,13 +23,13 @@ final class ContextTest extends BaseTest
     /** @var CodeBase The code base within which this unit test is running */
     protected $code_base = null;
 
-    protected function setUp()
+    protected function setUp() : void
     {
         // Deliberately not calling parent::setUp()
         $this->code_base = new CodeBase([], [], [], [], []);
     }
 
-    protected function tearDown()
+    protected function tearDown() : void
     {
         // Deliberately not calling parent::tearDown()
         // @phan-suppress-next-line PhanTypeMismatchProperty

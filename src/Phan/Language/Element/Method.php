@@ -575,7 +575,7 @@ class Method extends ClassElement implements FunctionInterface
         $this->defining_method_for_type_fetching = $original_method;
     }
 
-    public function setUnionType(UnionType $union_type)
+    public function setUnionType(UnionType $union_type) : void
     {
         $this->defining_method_for_type_fetching = null;
         parent::setUnionType($union_type);

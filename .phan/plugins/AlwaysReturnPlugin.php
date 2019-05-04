@@ -58,7 +58,7 @@ final class AlwaysReturnPlugin extends PluginV2 implements
     public function analyzeMethod(
         CodeBase $code_base,
         Method $method
-    ) {
+    ) : void {
         $stmts_list = self::getStatementListToAnalyze($method);
         if ($stmts_list === null) {
             // check for abstract methods, generators, etc.
@@ -99,7 +99,7 @@ final class AlwaysReturnPlugin extends PluginV2 implements
     public function analyzeFunction(
         CodeBase $code_base,
         Func $function
-    ) {
+    ) : void {
         $stmts_list = self::getStatementListToAnalyze($function);
         if ($stmts_list === null) {
             // check for abstract methods, generators, etc.

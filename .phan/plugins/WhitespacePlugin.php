@@ -44,7 +44,7 @@ class WhitespacePlugin extends PluginV2 implements
         Context $context,
         string $file_contents,
         Node $node
-    ) {
+    ) : void {
         if (!preg_match('/[\r\t]|[ \t]\r?$/m', $file_contents)) {
             // Typical case: no errors
             return;

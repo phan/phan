@@ -418,7 +418,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     /**
      * @return ?array<mixed,string>
      */
-    public function parseFunctionSignature(string $function_name)
+    public function parseFunctionSignature(string $function_name) : ?array
     {
         $xml = $this->getSimpleXMLForFunctionSignature($function_name);
         if ($xml === null) {
@@ -476,7 +476,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     /**
      * @return ?array<mixed,string>
      */
-    public function parseMethodSignature(string $class_name, string $method_name)
+    public function parseMethodSignature(string $class_name, string $method_name) : ?array
     {
         $class_name_lc = strtolower($class_name);
         $method_name_lc = strtolower($method_name);

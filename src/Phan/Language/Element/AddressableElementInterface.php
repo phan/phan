@@ -25,7 +25,7 @@ interface AddressableElementInterface extends TypedElementInterface
      * @param FQSEN $fqsen
      * @return void
      */
-    public function setFQSEN(FQSEN $fqsen);
+    public function setFQSEN(FQSEN $fqsen) : void;
 
     /**
      * @return bool true if this element's visibility
@@ -58,7 +58,7 @@ interface AddressableElementInterface extends TypedElementInterface
      * @param FileRef $file_ref
      * @return void
      */
-    public function addReference(FileRef $file_ref);
+    public function addReference(FileRef $file_ref) : void;
 
     /**
      * @return FileRef[]
@@ -86,7 +86,7 @@ interface AddressableElementInterface extends TypedElementInterface
     /**
      * @return ?string the 'docComment' for this element, if any exists.
      */
-    public function getDocComment();
+    public function getDocComment() : ?string;
 
     /**
      * @return Context
@@ -107,7 +107,7 @@ interface AddressableElementInterface extends TypedElementInterface
      *
      * @return void
      */
-    public function setIsDeprecated(bool $is_deprecated);
+    public function setIsDeprecated(bool $is_deprecated) : void;
 
     /**
      * Set the set of issue names ($suppress_issue_list) to suppress
@@ -116,7 +116,7 @@ interface AddressableElementInterface extends TypedElementInterface
      *
      * @return void
      */
-    public function setSuppressIssueSet(array $suppress_issue_set);
+    public function setSuppressIssueSet(array $suppress_issue_set) : void;
 
     /**
      * @return array<string,int>
@@ -128,7 +128,7 @@ interface AddressableElementInterface extends TypedElementInterface
      * Increments the number of times $issue_name was suppressed.
      * @return void
      */
-    public function incrementSuppressIssueCount(string $issue_name);
+    public function incrementSuppressIssueCount(string $issue_name) : void;
 
     /**
      * return bool
@@ -159,5 +159,5 @@ interface AddressableElementInterface extends TypedElementInterface
      *
      * @return void
      */
-    public function hydrate(CodeBase $code_base);
+    public function hydrate(CodeBase $code_base) : void;
 }

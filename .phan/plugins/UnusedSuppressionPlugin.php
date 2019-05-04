@@ -115,7 +115,7 @@ class UnusedSuppressionPlugin extends PluginV2 implements
     public function analyzeClass(
         CodeBase $unused_code_base,
         Clazz $class
-    ) {
+    ) : void {
         $this->elements_for_postponed_analysis[] = $class;
     }
 
@@ -133,7 +133,7 @@ class UnusedSuppressionPlugin extends PluginV2 implements
     public function analyzeMethod(
         CodeBase $unused_code_base,
         Method $method
-    ) {
+    ) : void {
 
         // Ignore methods inherited by subclasses
         if ($method->getFQSEN() !== $method->getDefiningFQSEN()) {
@@ -157,7 +157,7 @@ class UnusedSuppressionPlugin extends PluginV2 implements
     public function analyzeFunction(
         CodeBase $unused_code_base,
         Func $function
-    ) {
+    ) : void {
         $this->elements_for_postponed_analysis[] = $function;
     }
 
@@ -175,7 +175,7 @@ class UnusedSuppressionPlugin extends PluginV2 implements
     public function analyzeProperty(
         CodeBase $unused_code_base,
         Property $property
-    ) {
+    ) : void {
         $this->elements_for_postponed_analysis[] = $property;
     }
 
@@ -185,7 +185,7 @@ class UnusedSuppressionPlugin extends PluginV2 implements
      *       Putting this hook in finalizeProcess() just minimizes the incorrect result counts.
      * @override
      */
-    public function finalizeProcess(CodeBase $code_base)
+    public function finalizeProcess(CodeBase $code_base) : void
     {
         foreach ($this->elements_for_postponed_analysis as $element) {
             self::analyzeAddressableElement($code_base, $element);
@@ -268,7 +268,7 @@ class UnusedSuppressionPlugin extends PluginV2 implements
         Context $context,
         string $unused_file_contents,
         Node $unused_node
-    ) {
+    ) : void {
         $file = $context->getFile();
         $this->files_for_postponed_analysis[$file] = $file;
     }

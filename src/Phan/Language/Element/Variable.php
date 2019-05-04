@@ -82,7 +82,7 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
      * This will always return false in so far as variables
      * cannot be passed by reference.
      */
-    public function isPassByReference()
+    public function isPassByReference() : bool
     {
         return false;
     }
@@ -92,7 +92,7 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
      * This will always return false in so far as variables
      * cannot be variadic
      */
-    public function isVariadic()
+    public function isVariadic() : bool
     {
         return false;
     }

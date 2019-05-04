@@ -15,7 +15,7 @@ abstract class BaseTest extends TestCase
      * @return void
      * @suppress PhanAccessMethodInternal
      */
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass() : void
     {
         parent::setUpBeforeClass();
         // Need more than 1G to generate code coverage reports

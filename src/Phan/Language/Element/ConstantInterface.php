@@ -20,7 +20,7 @@ interface ConstantInterface
      *
      * @return void
      */
-    public function setFutureUnionType(FutureUnionType $future_union_type);
+    public function setFutureUnionType(FutureUnionType $future_union_type) : void;
 
     /**
      * Sets the node with the AST representing the value of this constant.
@@ -28,7 +28,7 @@ interface ConstantInterface
      * @param Node|string|float|int $node
      * @return void
      */
-    public function setNodeForValue($node);
+    public function setNodeForValue($node) : void;
 
     /**
      * Gets the node with the AST representing the value of this constant.

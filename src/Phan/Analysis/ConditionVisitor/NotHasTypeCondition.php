@@ -69,7 +69,7 @@ class NotHasTypeCondition implements BinaryCondition
         return $visitor->getContext();
     }
 
-    public function analyzeCall(ConditionVisitorInterface $unused_visitor, $unused_call_node, $unused_expr)
+    public function analyzeCall(ConditionVisitorInterface $unused_visitor, \ast\Node $unused_call_node, $unused_expr) : ?\Phan\Language\Context
     {
         return null;
     }

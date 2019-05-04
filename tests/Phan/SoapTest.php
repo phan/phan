@@ -21,7 +21,7 @@ final class SoapTest extends AbstractPhanFileTest
      *
      * @dataProvider getTestFiles
      */
-    public function testFiles($test_file_list, $expected_file_path, $config_file_path = null)
+    public function testFiles(array $test_file_list, string $expected_file_path, ?string $config_file_path = null) : void
     {
         parent::testFiles($test_file_list, $expected_file_path, $config_file_path);
     }
@@ -29,7 +29,7 @@ final class SoapTest extends AbstractPhanFileTest
     /**
      * @suppress PhanUndeclaredConstant
      */
-    public function getTestFiles()
+    public function getTestFiles() : array
     {
         return $this->scanSourceFilesDir(SOAP_TEST_FILE_DIR, SOAP_EXPECTED_DIR);
     }

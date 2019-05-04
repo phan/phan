@@ -17,7 +17,7 @@ use Phan\Tests\BaseTest;
  */
 final class TolerantASTConverterWithNodeMappingTest extends BaseTest
 {
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass() : void
     {
         parent::setUpBeforeClass();
         // @phan-suppress-next-line PhanAccessMethodInternal

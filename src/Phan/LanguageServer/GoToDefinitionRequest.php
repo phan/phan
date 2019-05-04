@@ -376,7 +376,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
      *
      * If a response for this request hasn't been sent yet, then send it (or null) back to the language server client
      */
-    public function finalize()
+    public function finalize() : void
     {
         if ($this->fulfilled) {
             return;

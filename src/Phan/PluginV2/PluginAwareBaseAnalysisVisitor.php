@@ -22,7 +22,7 @@ abstract class PluginAwareBaseAnalysisVisitor extends AnalysisVisitor
      *
      * @return void
      */
-    public function visit(Node $node)
+    public function visit(Node $node) : void
     {
     }
 

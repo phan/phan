@@ -61,8 +61,10 @@ trait Analyzable
     /**
      * @return Node
      * The AST node associated with this object
+     * NOTE: This is non-null if hasNode is true
+     * @suppress PhanTypeMismatchDeclaredReturnNullable
      */
-    public function getNode()
+    public function getNode() : ?\ast\Node
     {
         return $this->node;
     }

@@ -12,7 +12,7 @@ use Phan\Tests\BaseTest;
  */
 final class ParameterTypesAnalyzerTest extends BaseTest
 {
-    public function setUp()
+    public function setUp() : void
     {
         parent::setUp();
         Config::setValue('prefer_narrowed_phpdoc_return_type', true);

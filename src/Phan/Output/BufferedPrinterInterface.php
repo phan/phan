@@ -11,5 +11,5 @@ interface BufferedPrinterInterface extends IssuePrinterInterface
      * flush the printer buffer
      * @return void
      */
-    public function flush();
+    public function flush() : void;
 }

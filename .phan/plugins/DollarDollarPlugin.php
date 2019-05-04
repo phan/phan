@@ -59,7 +59,7 @@ class DollarDollarVisitor extends PluginAwarePostAnalysisVisitor
      * @return void
      * @override
      */
-    public function visitVar(Node $node)
+    public function visitVar(Node $node) : void
     {
         if ($node->children['name'] instanceof Node) {
             $this->emitPluginIssue(

@@ -832,7 +832,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visitBinaryMod(Node $unused_node)
+    public function visitBinaryMod(Node $unused_node) : \Phan\Language\UnionType
     {
         // TODO: Warn about invalid left or right side
         return IntType::instance(false)->asUnionType();
