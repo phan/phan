@@ -187,10 +187,10 @@ final class CompletionRequest extends NodeInfoRequest
             \uksort(
                 $result,
                 /**
-                 * @param string $a
-                 * @param string $b
+                 * @param int|string $a usually strings
+                 * @param int|string $b
                  */
-                static function (string $a, string $b) : int {
+                static function ($a, $b) : int {
                     $a = \ltrim((string)$a, '$');
                     $b = \ltrim((string)$b, '$');
                     return (\strtolower($a) <=> \strtolower($b)) ?: ($a <=> $b);

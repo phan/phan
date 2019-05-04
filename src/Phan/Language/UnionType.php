@@ -150,7 +150,6 @@ class UnionType implements Serializable
     }
 
     /**
-     * @return void
      * @internal
      */
     public static function init() : void
@@ -2806,11 +2805,9 @@ class UnionType implements Serializable
      * @param string $serialized
      * A serialized UnionType
      *
-     * @return void
-     *
      * @see \Serializable
      */
-    public function unserialize($serialized)
+    public function unserialize($serialized) : void
     {
         // NOTE: Potentially need to handle "array{field:int|string}" in the future.
         // TODO: Not going to work with template types
@@ -3105,8 +3102,6 @@ class UnionType implements Serializable
      * Removes false|true types and adds bool
      *
      * @param UnionTypeBuilder $builder (Containing only non-nullable values)
-     * @return void
-     * @var int $bool_id
      * @suppress PhanTypeMismatchArgumentNullable false positive in static init
      */
     private static function convertToTypeSetWithNormalizedNonNullableBools(UnionTypeBuilder $builder) : void

@@ -21,7 +21,6 @@ trait Alternatives
 
     /**
      * Implementers should use the \Phan\Memoize trait
-     * @return void
      */
     abstract protected function memoizeFlushAll() : void;
 
