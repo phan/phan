@@ -40,9 +40,6 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
      */
     abstract public function getTestFiles() : array;
 
-    /**
-     * @return void
-     */
     public static function setUpBeforeClass() : void
     {
         parent::setUpBeforeClass();
@@ -52,9 +49,6 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
         ConfigPluginSet::reset();  // @phan-suppress-current-line PhanAccessMethodInternal
     }
 
-    /**
-     * @return void
-     */
     public static function tearDownAfterClass() : void
     {
         parent::tearDownAfterClass();

@@ -2,7 +2,6 @@
 
 namespace Phan\Language\Type;
 
-use ast\Node;
 use Closure;
 use Generator;
 use Phan\CodeBase;
@@ -281,9 +280,6 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return false;
     }
 
-    /**
-     * @return ?FunctionInterface
-     */
     public function asFunctionInterfaceOrNull(CodeBase $unused_codebase, Context $unused_context) : ?\Phan\Language\Element\FunctionInterface
     {
         return $this;
@@ -473,7 +469,6 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         throw new \AssertionError('unexpected call to ' . __METHOD__);
     }
 
-    /** @return Node|null */
     public function getNode() : ?\ast\Node
     {
         return null;

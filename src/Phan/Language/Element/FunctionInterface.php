@@ -361,7 +361,6 @@ interface FunctionInterface extends AddressableElementInterface
      */
     public function ensureScopeInitialized(CodeBase $code_base) : void;
 
-    /** @return Node|null */
     public function getNode() : ?\ast\Node;
 
     /**
@@ -369,10 +368,6 @@ interface FunctionInterface extends AddressableElementInterface
      */
     public function getComment() : ?\Phan\Language\Element\Comment;
 
-    /**
-     * @param Comment $comment
-     * @return void
-     */
     public function setComment(Comment $comment) : void;
 
     /**

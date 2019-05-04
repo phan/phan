@@ -23,9 +23,6 @@ final class ReachabilityChecker extends KindVisitorImplementation
         $this->inner = $inner;
     }
 
-    /**
-     * @return ?bool
-     */
     public function visitArgList(Node $node) : ?bool
     {
         if ($node === $this->inner) {
@@ -115,25 +112,16 @@ final class ReachabilityChecker extends KindVisitorImplementation
         return null;
     }
 
-    /**
-     * @return ?bool
-     */
     public function visitBreak(Node $_) : ?bool
     {
         return false;
     }
 
-    /**
-     * @return ?bool
-     */
     public function visitContinue(Node $_) : ?bool
     {
         return false;
     }
 
-    /**
-     * @return bool
-     */
     public function visitReturn(Node $node) : bool
     {
         $expr = $node->children['expr'];
@@ -174,9 +162,6 @@ final class ReachabilityChecker extends KindVisitorImplementation
         return $this->__invoke($args);
     }
 
-    /**
-     * @return bool
-     */
     public function visitThrow(Node $node) : bool
     {
         $expr = $node->children['expr'];
@@ -186,9 +171,6 @@ final class ReachabilityChecker extends KindVisitorImplementation
         return $this->__invoke($expr) ?? false;
     }
 
-    /**
-     * @return bool
-     */
     public function visitExit(Node $node) : bool
     {
         $expr = $node->children['expr'];

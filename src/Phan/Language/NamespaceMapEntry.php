@@ -40,9 +40,6 @@ class NamespaceMapEntry implements \Serializable
         $this->lineno = $lineno;
     }
 
-    /**
-     * @return string
-     */
     public function serialize() : string
     {
         return \serialize([

@@ -339,9 +339,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         // return $this->analyzeAssignmentTarget($expr, false);
     }
 
-    /**
-     * @return VariableTrackingScope
-     */
     public function handleMissingNodeKind(Node $unused_node) : \Phan\Plugin\Internal\VariableTracker\VariableTrackingScope
     {
         // do nothing

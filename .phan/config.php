@@ -287,6 +287,8 @@ return [
         // TODO: These started being emitted after comments with (at)return void were removed.
         // Fix the occurrences of PhanPluginNoCommentOnPublicMethod
         'PhanPluginNoCommentOnPublicMethod',
+        // TODO: Fix edge cases in --automatic-fix for PhanPluginRedundantClosureComment
+        'PhanPluginRedundantClosureComment',
     ],
 
     // If empty, no filter against issues types will be applied.
@@ -472,6 +474,7 @@ return [
 
         'HasPHPDocPlugin',
         'PHPDocToRealTypesPlugin',
+        'PHPDocRedundantPlugin',
 
         // This should only be enabled if the code being analyzed contains Phan plugins.
         'PhanSelfCheckPlugin',

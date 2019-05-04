@@ -1090,7 +1090,6 @@ trait FunctionTrait
     /** @return UnionType union type this function-like's declared return type (from PHPDoc, signatures, etc.)  */
     abstract public function getUnionType() : UnionType;
 
-    /** @return void */
     abstract public function setUnionType(UnionType $type) : void;
 
     /**

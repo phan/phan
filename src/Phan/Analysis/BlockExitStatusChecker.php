@@ -307,9 +307,6 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
 
     const STATUS_CONTINUE_OR_BREAK = self::STATUS_CONTINUE | self::STATUS_BREAK;
 
-    /**
-     * @return int
-     */
     public function visitForeach(Node $node) : int
     {
         // We assume foreach loops are over a finite sequence, and that it's possible for that sequence to have at least one element.
@@ -322,9 +319,6 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         return ($inner_status & ~self::STATUS_CONTINUE_OR_BREAK) | self::STATUS_PROCEED;
     }
 
-    /**
-     * @return int
-     */
     public function visitWhile(Node $node) : int
     {
         $inner_status = $this->check($node->children['stmts']);
