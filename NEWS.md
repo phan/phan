@@ -13,6 +13,7 @@ Plugins:
   This does not check that the phpdoc types are correct.
 
   `--automatic-fix` can be used to automate making these changes for issues that are not suppressed.
++ Add `PHPDocRedundantPlugin` to detect functions/methods/closures where the doc comment just repeats the types in the signature.
 + Add a `BeforeAnalyzePhaseCapability`. Unlike `BeforeAnalyzeCapability`, this will run after methods are analyzed, not before.
 
 ?? ??? 2019, Phan 1.3.3 (dev)
