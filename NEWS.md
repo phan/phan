@@ -12,6 +12,9 @@ New features(CLI, Configs):
 
 New features(Analysis):
 + Emit `PhanDeprecatedClassConstant` for code using a constant marked with `@deprecated`.
++ When recursively inferring the return type of `BaseClass::method()` from its return statements,
+  make that also affect the inherited copies of that method (`SubClass::method()`). (#2718)
+  This change is limited to methods with no return type in the phpdoc or real signature.
 
 Plugins:
 + Add more forms of checks such as `$x !== null ? $x : null` to `PhanPluginDuplicateConditionalNullCoalescing` (#2691)
