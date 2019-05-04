@@ -134,5 +134,6 @@ return [
         'WhitespacePlugin',
         'NotFullyQualifiedUsagePlugin',
         'PHPDocToRealTypesPlugin',
+        'PHPDocRedundantPlugin',
     ],
 ];

@@ -1,0 +1,168 @@
+<?php declare(strict_types=1);
+
+namespace PHPDocRedundantPlugin;
+
+use Microsoft\PhpParser;
+use Microsoft\PhpParser\FunctionLike;
+use Microsoft\PhpParser\Node\Expression\AnonymousFunctionCreationExpression;
+use Microsoft\PhpParser\Node\MethodDeclaration;
+use Microsoft\PhpParser\Node\Statement\FunctionDeclaration;
+use Microsoft\PhpParser\ParseContext;
+use Microsoft\PhpParser\PhpTokenizer;
+use Microsoft\PhpParser\Token;
+use Microsoft\PhpParser\TokenKind;
+use Phan\AST\TolerantASTConverter\NodeUtils;
+use Phan\CodeBase;
+use Phan\IssueInstance;
+use Phan\Library\FileCacheEntry;
+use Phan\Library\StringUtil;
+use Phan\Plugin\Internal\IssueFixingPlugin\FileEdit;
+use Phan\Plugin\Internal\IssueFixingPlugin\FileEditSet;
+
+/**
+ * This plugin implements --automatic-fix for PHPDocRedundantPlugin
+ */
+class Fixers
+{
+    /**
+     * Add a missing return type to the real signature
+     * @return ?FileEditSet
+     */
+    public static function fixRedundantFunctionLikeComment(
+        CodeBase $unused_code_base,
+        FileCacheEntry $contents,
+        IssueInstance $instance
+    ) : ?\Phan\Plugin\Internal\IssueFixingPlugin\FileEditSet {
+        $params = $instance->getTemplateParameters();
+        $name = $params[0];
+        $encoded_comment = $params[1];
+        // @phan-suppress-next-line PhanPartialTypeMismatchArgument
+        $declaration = self::findFunctionLikeDeclaration($contents, $instance->getLine(), $name);
+        if (!$declaration) {
+            return null;
+        }
+        return self::computeEditsToRemoveFunctionLikeComment($contents, $declaration, (string)$encoded_comment);
+    }
+
+    private static function computeEditsToRemoveFunctionLikeComment(FileCacheEntry $contents, FunctionLike $declaration, string $encoded_comment) : ?FileEditSet
+    {
+        if (!$declaration instanceof PhpParser\Node) {
+            // impossible
+            return null;
+        }
+        $comment_token = self::getDocCommentToken($declaration);
+        if (!$comment_token) {
+            return null;
+        }
+        $file_contents = $contents->getContents();
+        $comment = $comment_token->getText($file_contents);
+        $actual_encoded_comment = StringUtil::encodeValue($comment);
+        if ($actual_encoded_comment !== $encoded_comment) {
+            return null;
+        }
+        return self::computeEditSetToDeleteComment($file_contents, $comment_token);
+    }
+
+    private static function computeEditSetToDeleteComment(string $file_contents, Token $comment_token) : ?FileEditSet
+    {
+        // get the byte where the `)` of the argument list ends
+        $last_byte_index = $comment_token->getEndPosition();
+        $first_byte_index = $comment_token->start;
+        // Skip leading whitespace and the previous newline, if those were found
+        for (;$first_byte_index > 0; $first_byte_index--) {
+            $prev_byte = $file_contents[$first_byte_index - 1];
+            switch ($prev_byte) {
+                case " ":
+                case "\t":
+                    // keep skipping previous bytes of whitespace
+                    break;
+                case "\n":
+                    $first_byte_index--;
+                    if ($first_byte_index > 0 && $file_contents[$first_byte_index - 1] === "\r") {
+                        $first_byte_index--;
+                    }
+                    break 2;
+                case "\r":
+                    $first_byte_index--;
+                    break 2;
+                default:
+                    // This is not whitespace, so stop.
+                    break 2;
+            }
+        }
+        $file_edit = new FileEdit($first_byte_index, $last_byte_index, '');
+        return new FileEditSet([$file_edit]);
+    }
+
+    /**
+     * @suppress PhanThrowTypeAbsentForCall
+     */
+    private static function getDocCommentToken(PhpParser\Node $node) : ?Token
+    {
+        $leadingTriviaText = $node->getLeadingCommentAndWhitespaceText();
+        $leadingTriviaTokens = PhpTokenizer::getTokensArrayFromContent(
+            $leadingTriviaText, ParseContext::SourceElements, $node->getFullStart(), false
+        );
+        for ($i = \count($leadingTriviaTokens) - 1; $i >= 0; $i--) {
+            $token = $leadingTriviaTokens[$i];
+            if ($token->kind === TokenKind::DocCommentToken) {
+                return $token;
+            }
+        }
+        return null;
+    }
+
+    private static function computeEditsForParamTypeDeclaration(FileCacheEntry $contents, FunctionLike $declaration, string $param_name, string $param_type) : ?FileEditSet
+    {
+        if (!$param_type) {
+            return null;
+        }
+        // @phan-suppress-next-line PhanUndeclaredProperty
+        $parameter_node_list = $declaration->parameters->children ?? [];
+        foreach ($parameter_node_list as $param) {
+            if (!$param instanceof PhpParser\Node\Parameter) {
+                continue;
+            }
+            $declaration_name = (new NodeUtils($contents->getContents()))->tokenToString($param->variableName);
+            if ($declaration_name !== $param_name)  {
+                continue;
+            }
+            $token = $param->byRefToken ?? $param->dotDotDotToken ?? $param->variableName;
+            $token_start_index = $token->start;
+            $file_edit = new FileEdit($token_start_index, $token_start_index, "$param_type ");
+            return new FileEditSet([$file_edit]);
+        }
+        return null;
+    }
+
+    /**
+     * @return ?FunctionLike
+     */
+    private static function findFunctionLikeDeclaration(
+        FileCacheEntry $contents,
+        int $line,
+        string $name
+    ) : ?\Microsoft\PhpParser\FunctionLike {
+        $candidates = [];
+        foreach ($contents->getNodesAtLine($line) as $node) {
+            if ($node instanceof FunctionDeclaration || $node instanceof MethodDeclaration) {
+                $name_node = $node->name;
+                if (!$name_node) {
+                    continue;
+                }
+                $declaration_name = (new NodeUtils($contents->getContents()))->tokenToString($name_node);
+                if ($declaration_name === $name) {
+                    $candidates[] = $node;
+                }
+            } elseif ($node instanceof AnonymousFunctionCreationExpression) {
+                if (\preg_match('/^Closure\(/', $name)) {
+                    $candidates[] = $node;
+                }
+            }
+        }
+        if (\count($candidates) === 1) {
+            return $candidates[0];
+        }
+        return null;
+    }
+}
