@@ -26,5 +26,5 @@ interface AnalyzePropertyCapability
     public function analyzeProperty(
         CodeBase $code_base,
         Property $property
-    );
+    ) : void;
 }

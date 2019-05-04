@@ -35,7 +35,7 @@ abstract class AbstractFQSEN implements FQSEN, Serializable
      * An FQSEN string like '\Namespace\Class::method' or
      * 'Class' or 'Class::method'.
      *
-     * @return FQSEN
+     * @return static
      */
     abstract public static function fromFullyQualifiedString(
         string $fully_qualified_string
@@ -49,7 +49,7 @@ abstract class AbstractFQSEN implements FQSEN, Serializable
      * @param Context $context
      * The context in which the FQSEN string was found
      *
-     * @return FQSEN
+     * @return static
      */
     abstract public static function fromStringInContext(
         string $fqsen_string,
@@ -106,7 +106,7 @@ abstract class AbstractFQSEN implements FQSEN, Serializable
     /**
      * @throws Error to prevent accidentally calling this
      */
-    public function serialize()
+    public function serialize() : string
     {
         // We compare and look up FQSENs by their identity
         throw new Error("serializing an FQSEN (" . (string)$this . ") is forbidden\n");
@@ -116,7 +116,7 @@ abstract class AbstractFQSEN implements FQSEN, Serializable
      * @param string $unused_serialized
      * @throws Error to prevent accidentally calling this
      */
-    public function unserialize($unused_serialized)
+    public function unserialize($unused_serialized) : void
     {
         // We compare and look up FQSENs by their identity
         throw new Error("unserializing an FQSEN ($unused_serialized) is forbidden\n");

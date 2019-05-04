@@ -72,7 +72,7 @@ class GenericArrayTemplateKeyType extends GenericArrayType
      * @param CodeBase $code_base
      * @return ?Closure(UnionType, Context):UnionType
      */
-    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type)
+    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type) : ?\Closure
     {
         $element_closure = parent::getTemplateTypeExtractorClosure($code_base, $template_type);
         $key_closure = $this->template_key_type->getTemplateTypeExtractorClosure($code_base, $template_type);

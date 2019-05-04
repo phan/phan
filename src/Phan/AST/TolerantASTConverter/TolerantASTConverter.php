@@ -187,7 +187,7 @@ class TolerantASTConverter
      * @return ast\Node
      * @throws InvalidArgumentException if the requested AST version is invalid.
      */
-    public function parseCodeAsPHPAST(string $file_contents, int $version, array &$errors = [], Cache $cache = null)
+    public function parseCodeAsPHPAST(string $file_contents, int $version, array &$errors = [], Cache $cache = null) : \ast\Node
     {
         if (!\in_array($version, self::SUPPORTED_AST_VERSIONS)) {
             throw new \InvalidArgumentException(sprintf("Unexpected version: want %s, got %d", \implode(', ', self::SUPPORTED_AST_VERSIONS), $version));
@@ -1588,7 +1588,7 @@ class TolerantASTConverter
      *
      * @throws InvalidNodeException
      */
-    protected static function astStmtUseOrGroupUseFromUseClause(PhpParser\Node\NamespaceUseClause $use_clause, $parser_use_kind, int $start_line) : ast\Node
+    protected static function astStmtUseOrGroupUseFromUseClause(PhpParser\Node\NamespaceUseClause $use_clause, ?int $parser_use_kind, int $start_line) : ast\Node
     {
         $namespace_name_node = $use_clause->namespaceName;
         if ($namespace_name_node instanceof PhpParser\Node\QualifiedName) {
@@ -1724,7 +1724,7 @@ class TolerantASTConverter
      * @param PhpParser\Node\QualifiedName|Token|null $type
      * @return ?ast\Node
      */
-    protected static function phpParserTypeToAstNode($type, int $line)
+    protected static function phpParserTypeToAstNode($type, int $line) : ?\ast\Node
     {
         if (\is_null($type)) {
             return null;
@@ -2964,7 +2964,7 @@ class TolerantASTConverter
     /**
      * @return ?string - null if this should not be cached
      */
-    public function generateCacheKey(string $file_contents, int $version)
+    public function generateCacheKey(string $file_contents, int $version) : ?string
     {
         $details = var_export([
             \sha1($file_contents),

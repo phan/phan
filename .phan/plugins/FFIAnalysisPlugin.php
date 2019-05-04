@@ -58,7 +58,7 @@ class FFIPreAnalysisVisitor extends PluginAwarePreAnalysisVisitor
      * @param Node $node a node of kind ast\AST_ASSIGN
      * @return void
      */
-    public function visitAssign(Node $node)
+    public function visitAssign(Node $node) : void
     {
         $left = $node->children['var'];
         if (!($left instanceof Node)) {
@@ -120,7 +120,7 @@ class FFIPostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
      * @return void
      * @override
      */
-    public function visitAssign(Node $node)
+    public function visitAssign(Node $node) : void
     {
         // @phan-suppress-next-line PhanUndeclaredProperty
         if (isset($node->is_ffi)) {

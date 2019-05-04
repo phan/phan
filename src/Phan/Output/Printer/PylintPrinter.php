@@ -15,7 +15,7 @@ final class PylintPrinter implements IssuePrinterInterface
     /** @var OutputInterface an output that pylint formatted issues can be written to. */
     private $output;
 
-    public function print(IssueInstance $instance)
+    public function print(IssueInstance $instance) : void
     {
         $message = \sprintf(
             "%s: %s",
@@ -58,7 +58,7 @@ final class PylintPrinter implements IssuePrinterInterface
         }
     }
 
-    public function configureOutput(OutputInterface $output)
+    public function configureOutput(OutputInterface $output) : void
     {
         $this->output = $output;
     }

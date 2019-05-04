@@ -71,7 +71,7 @@ class HasTypeCondition implements BinaryCondition
     /**
      * @suppress PhanUnusedPublicMethodParameter
      */
-    public function analyzeCall(ConditionVisitorInterface $visitor, $call_node, $expr)
+    public function analyzeCall(ConditionVisitorInterface $visitor, \ast\Node $call_node, $expr) : ?\Phan\Language\Context
     {
         return null;
     }

@@ -1410,42 +1410,42 @@ class ParseVisitor extends ScopeVisitor
 
     // common no-ops
     /** @return Context */
-    public function visitArrayElem(Node $node)
+    public function visitArrayElem(Node $node) : \Phan\Language\Context
     {
         return $this->context;
     }
     /** @return Context */
-    public function visitVar(Node $node)
+    public function visitVar(Node $node) : \Phan\Language\Context
     {
         return $this->context;
     }
     /** @return Context */
-    public function visitName(Node $node)
+    public function visitName(Node $node) : \Phan\Language\Context
     {
         return $this->context;
     }
     /** @return Context */
-    public function visitArgList(Node $node)
+    public function visitArgList(Node $node) : \Phan\Language\Context
     {
         return $this->context;
     }
     /** @return Context */
-    public function visitStmtList(Node $node)
+    public function visitStmtList(Node $node) : \Phan\Language\Context
     {
         return $this->context;
     }
     /** @return Context */
-    public function visitProp(Node $node)
+    public function visitProp(Node $node) : \Phan\Language\Context
     {
         return $this->context;
     }
     /** @return Context */
-    public function visitArray(Node $node)
+    public function visitArray(Node $node) : \Phan\Language\Context
     {
         return $this->context;
     }
     /** @return Context */
-    public function visitBinaryOp(Node $node)
+    public function visitBinaryOp(Node $node) : \Phan\Language\Context
     {
         return $this->context;
     }

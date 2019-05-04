@@ -13,14 +13,14 @@ final class FileCacheTest extends BaseTest
     const MOCK_PATH = '/path/to/a';
     const MOCK_CONTENTS = "Mock contents\nOther lines\n";
 
-    public function setUp()
+    public function setUp() : void
     {
         parent::setUp();
         FileCache::clear();
         FileCache::setMaxCacheSize(FileCache::MINIMUM_CACHE_SIZE);
     }
 
-    public function tearDown()
+    public function tearDown() : void
     {
         parent::setUp();
         FileCache::clear();

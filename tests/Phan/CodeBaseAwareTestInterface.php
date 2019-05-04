@@ -20,5 +20,5 @@ interface CodeBaseAwareTestInterface
      * @param ?CodeBase $code_base
      * @return void
      */
-    public function setCodeBase(CodeBase $code_base = null);
+    public function setCodeBase(CodeBase $code_base = null) : void;
 }

@@ -240,7 +240,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      * @return UnionType returns the array value's union type
      * @phan-override
      */
-    public function iterableValueUnionType(CodeBase $unused_codebase)
+    public function iterableValueUnionType(CodeBase $unused_codebase) : \Phan\Language\UnionType
     {
         return $this->element_type->asUnionType();
     }
@@ -249,7 +249,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      * @return UnionType the array key's union type
      * @phan-override
      */
-    public function iterableKeyUnionType(CodeBase $unused_codebase)
+    public function iterableKeyUnionType(CodeBase $unused_codebase) : \Phan\Language\UnionType
     {
         return self::unionTypeForKeyType($this->key_type);
     }
@@ -687,7 +687,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      * @param CodeBase $code_base
      * @return ?Closure(UnionType,Context):UnionType
      */
-    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type)
+    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type) : ?\Closure
     {
         $closure = $this->element_type->getTemplateTypeExtractorClosure($code_base, $template_type);
         if (!$closure) {

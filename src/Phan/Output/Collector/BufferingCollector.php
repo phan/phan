@@ -32,7 +32,7 @@ final class BufferingCollector implements IssueCollectorInterface
      * Collect issue
      * @param IssueInstance $issue
      */
-    public function collectIssue(IssueInstance $issue)
+    public function collectIssue(IssueInstance $issue) : void
     {
         if (!$this->filter->supports($issue)) {
             return;
@@ -81,7 +81,7 @@ final class BufferingCollector implements IssueCollectorInterface
      * @param array<int,string> $files - the relative paths to those files
      * @return void
      */
-    public function removeIssuesForFiles(array $files)
+    public function removeIssuesForFiles(array $files) : void
     {
         $file_set = \array_flip($files);
         foreach ($this->issues as $key => $issue) {
@@ -94,7 +94,7 @@ final class BufferingCollector implements IssueCollectorInterface
     /**
      * Removes all collected issues.
      */
-    public function reset()
+    public function reset() : void
     {
         $this->issues = [];
     }

@@ -179,7 +179,7 @@ final class ClosureType extends Type
         return $this->func;
     }
 
-    public function asFunctionInterfaceOrNull(CodeBase $unused_codebase, Context $unused_context)
+    public function asFunctionInterfaceOrNull(CodeBase $unused_codebase, Context $unused_context) : ?\Phan\Language\Element\FunctionInterface
     {
         return $this->func;
     }

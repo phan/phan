@@ -76,7 +76,7 @@ class ParallelParentCollector implements IssueCollectorInterface
      * @param IssueInstance $issue
      * @return void
      */
-    public function collectIssue(IssueInstance $issue)
+    public function collectIssue(IssueInstance $issue) : void
     {
         $this->base_collector->collectIssue($issue);
     }
@@ -132,7 +132,7 @@ class ParallelParentCollector implements IssueCollectorInterface
      * @param string[] $files - the relative paths to those files (@phan-unused-param)
      * @return void
      */
-    public function removeIssuesForFiles(array $files)
+    public function removeIssuesForFiles(array $files) : void
     {
         return;  // Never going to be called - daemon mode isn't combined with parallel execution.
     }
@@ -153,7 +153,7 @@ class ParallelParentCollector implements IssueCollectorInterface
     /**
      * This method has no effect on a ParallelParentCollector.
      */
-    public function reset()
+    public function reset() : void
     {
     }
 }

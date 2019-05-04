@@ -58,7 +58,7 @@ final class GenericIterableType extends IterableType
      *
      * @see self::getKeyUnionType()
      */
-    public function iterableKeyUnionType(CodeBase $unused_code_base)
+    public function iterableKeyUnionType(CodeBase $unused_code_base) : \Phan\Language\UnionType
     {
         return $this->key_union_type;
     }
@@ -69,7 +69,7 @@ final class GenericIterableType extends IterableType
      *
      * @see self::getElementUnionType()
      */
-    public function iterableValueUnionType(CodeBase $unused_code_base)
+    public function iterableValueUnionType(CodeBase $unused_code_base) : \Phan\Language\UnionType
     {
         return $this->element_union_type;
     }
@@ -151,7 +151,7 @@ final class GenericIterableType extends IterableType
      * @param CodeBase $code_base
      * @return ?Closure(UnionType, Context):UnionType
      */
-    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type)
+    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type) : ?\Closure
     {
         $closure = $this->element_union_type->getTemplateTypeExtractorClosure($code_base, $template_type);
         if ($closure) {
@@ -171,6 +171,15 @@ final class GenericIterableType extends IterableType
             $key_closure = null;
         }
         return TemplateType::combineParameterClosures($key_closure, $element_closure);
+    }
+
+    /**
+     * Returns the corresponding type that would be used in a signature
+     * @override
+     */
+    public function asSignatureType() : Type
+    {
+        return IterableType::instance($this->is_nullable);
     }
 }
 // Trigger autoloader for subclass before make() can get called.

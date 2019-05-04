@@ -109,7 +109,7 @@ class RedundantNodeVisitor extends PluginAwarePostAnalysisVisitor
      * @override
      * @suppress PhanAccessClassConstantInternal
      */
-    public function visitBinaryOp(Node $node)
+    public function visitBinaryOp(Node $node) : void
     {
         $flags = $node->flags;
         if (!\array_key_exists($flags, self::REDUNDANT_BINARY_OP_SET)) {
@@ -167,7 +167,7 @@ class RedundantNodeVisitor extends PluginAwarePostAnalysisVisitor
      * @return void
      * @override
      */
-    public function visitAssignRef(Node $node)
+    public function visitAssignRef(Node $node) : void
     {
         $this->visitAssign($node);
     }
@@ -179,7 +179,7 @@ class RedundantNodeVisitor extends PluginAwarePostAnalysisVisitor
      * @return void
      * @override
      */
-    public function visitAssign(Node $node)
+    public function visitAssign(Node $node) : void
     {
         $var = $node->children['var'];
         $expr = $node->children['expr'];
@@ -267,7 +267,7 @@ class RedundantNodeVisitor extends PluginAwarePostAnalysisVisitor
      * @return void
      * @override
      */
-    public function visitConditional(Node $node)
+    public function visitConditional(Node $node) : void
     {
         $cond_node = $node->children['cond'];
         $true_node_hash = ASTHasher::hash($node->children['true']);

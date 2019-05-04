@@ -1931,7 +1931,10 @@ class Clazz extends AddressableElement
         return ($this->getFlags() & \ast\flags\CLASS_ANONYMOUS) > 0;
     }
 
-    public function getFQSEN() : FullyQualifiedClassName
+    /**
+     * @return FullyQualifiedClassName
+     */
+    public function getFQSEN()
     {
         return $this->fqsen;
     }
@@ -2295,7 +2298,7 @@ class Clazz extends AddressableElement
      * @return void
      * @override
      */
-    public function addReference(FileRef $file_ref)
+    public function addReference(FileRef $file_ref) : void
     {
         if (Config::get_track_references()) {
             // Currently, we don't need to track references to PHP-internal methods/functions/constants
@@ -2813,7 +2816,7 @@ class Clazz extends AddressableElement
      *
      * @return void
      */
-    protected function hydrateOnce(CodeBase $code_base)
+    protected function hydrateOnce(CodeBase $code_base) : void
     {
         // Ensure that we hydrate constants before hydrating properties and methods
         $this->hydrateConstants($code_base);
@@ -2962,7 +2965,7 @@ class Clazz extends AddressableElement
      * @return void
      * @override
      */
-    public function hydrate(CodeBase $code_base)
+    public function hydrate(CodeBase $code_base) : void
     {
         if (!$this->did_finish_parsing) {
             return;
@@ -2997,7 +3000,7 @@ class Clazz extends AddressableElement
      * Used by daemon mode to restore an element to the state it had before parsing.
      * @return Closure
      */
-    public function createRestoreCallback()
+    public function createRestoreCallback() : \Closure
     {
         // NOTE: Properties, Methods, and closures are restored separately.
         $original_this = clone($this);

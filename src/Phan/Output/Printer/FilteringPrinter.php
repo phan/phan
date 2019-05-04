@@ -46,7 +46,7 @@ final class FilteringPrinter implements BufferedPrinterInterface
      * @param IssueInstance $instance
      * @override
      */
-    public function print(IssueInstance $instance)
+    public function print(IssueInstance $instance) : void
     {
         $file = $instance->getFile();
         if (!isset($this->file_set[self::normalize($file)])) {
@@ -59,7 +59,7 @@ final class FilteringPrinter implements BufferedPrinterInterface
      * @param OutputInterface $output
      * @override
      */
-    public function configureOutput(OutputInterface $output)
+    public function configureOutput(OutputInterface $output) : void
     {
         $this->printer->configureOutput($output);
     }
@@ -67,7 +67,7 @@ final class FilteringPrinter implements BufferedPrinterInterface
     /**
      * @override
      */
-    public function flush()
+    public function flush() : void
     {
         if ($this->printer instanceof BufferedPrinterInterface) {
             $this->printer->flush();

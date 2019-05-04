@@ -30,7 +30,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
      * @return void
      * @suppress PhanPossiblyNullTypeMismatchProperty
      */
-    public function setCodeBase(CodeBase $code_base = null)
+    public function setCodeBase(CodeBase $code_base = null) : void
     {
         $this->code_base = $code_base;
     }
@@ -38,12 +38,12 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
     /**
      * @return array<string,array{0:array,1:string}> Array of <filename => [filename]>
      */
-    abstract public function getTestFiles();
+    abstract public function getTestFiles() : array;
 
     /**
      * @return void
      */
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass() : void
     {
         parent::setUpBeforeClass();
         // Reset the config file
@@ -55,7 +55,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
     /**
      * @return void
      */
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass() : void
     {
         parent::tearDownAfterClass();
         // Reset the config file
@@ -69,7 +69,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
      *
      * @return void
      */
-    public function setUp()
+    public function setUp() : void
     {
         parent::setUp();
 
@@ -80,7 +80,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
      * Reset any changes we made to our global state
      * @return void
      */
-    public function tearDown()
+    public function tearDown() : void
     {
         parent::tearDown();
 
@@ -152,7 +152,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
      * @suppress PhanThrowTypeAbsentForCall
      * @dataProvider getTestFiles
      */
-    public function testFiles($test_file_list, $expected_file_path, $config_file_path = null)
+    public function testFiles(array $test_file_list, string $expected_file_path, ?string $config_file_path = null) : void
     {
         $expected_output = '';
         if (\is_file($expected_file_path)) {

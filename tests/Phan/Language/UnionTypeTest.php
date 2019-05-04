@@ -45,7 +45,7 @@ final class UnionTypeTest extends BaseTest
     /** @var CodeBase The code base within which this unit test is operating */
     protected static $code_base = null;
 
-    protected function setUp()
+    protected function setUp() : void
     {
         // Deliberately not calling parent::setUp()
         global $internal_class_name_list;
@@ -64,7 +64,7 @@ final class UnionTypeTest extends BaseTest
         }
     }
 
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass() : void
     {
         // @phan-suppress-next-line PhanTypeMismatchProperty
         self::$code_base = null;

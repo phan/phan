@@ -17,5 +17,5 @@ interface Hasher
      * @return void
      * If there is any state, clear it.
      */
-    public function reset();
+    public function reset() : void;
 }

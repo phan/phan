@@ -82,7 +82,7 @@ class DemoPlugin extends PluginV2 implements
     public function analyzeClass(
         CodeBase $code_base,
         Clazz $class
-    ) {
+    ) : void {
         // As an example, we test to see if the name of
         // the class is `Class`, and emit an issue explain that
         // the name is not allowed.
@@ -112,7 +112,7 @@ class DemoPlugin extends PluginV2 implements
     public function analyzeMethod(
         CodeBase $code_base,
         Method $method
-    ) {
+    ) : void {
         // As an example, we test to see if the name of the
         // method is `function`, and emit an issue if it is.
         // NOTE: Placeholders can be found in \Phan\Issue::uncolored_format_string_for_replace
@@ -141,7 +141,7 @@ class DemoPlugin extends PluginV2 implements
     public function analyzeFunction(
         CodeBase $code_base,
         Func $function
-    ) {
+    ) : void {
         // As an example, we test to see if the name of the
         // function is `function`, and emit an issue if it is.
         if ($function->getName() == 'function') {
@@ -169,7 +169,7 @@ class DemoPlugin extends PluginV2 implements
     public function analyzeProperty(
         CodeBase $code_base,
         Property $property
-    ) {
+    ) : void {
         // As an example, we test to see if the name of the
         // property is `property`, and emit an issue if it is.
         if ($property->getName() == 'property') {
@@ -208,7 +208,7 @@ class DemoNodeVisitor extends PluginAwarePostAnalysisVisitor
      *
      * @override
      */
-    public function visitInstanceof(Node $node)
+    public function visitInstanceof(Node $node) : void
     {
         // Debug::printNode($node);
 

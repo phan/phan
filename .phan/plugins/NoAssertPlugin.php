@@ -60,7 +60,7 @@ class NoAssertVisitor extends PluginAwarePostAnalysisVisitor
      * @return void
      * @override
      */
-    public function visitCall(Node $node)
+    public function visitCall(Node $node) : void
     {
         $name = $node->children['expr']->children['name'] ?? null;
         if (!is_string($name)) {

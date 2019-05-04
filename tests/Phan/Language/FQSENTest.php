@@ -22,13 +22,13 @@ final class FQSENTest extends BaseTest
     /** @var Context the context within which this unit test will run */
     protected $context = null;
 
-    protected function setUp()
+    protected function setUp() : void
     {
         // Deliberately not calling parent::setUp()
         $this->context = new Context();
     }
 
-    protected function tearDown()
+    protected function tearDown() : void
     {
         // Deliberately not calling parent::tearDown()
         // @phan-suppress-next-line PhanTypeMismatchProperty

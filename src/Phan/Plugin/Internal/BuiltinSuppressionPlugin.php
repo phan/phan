@@ -64,7 +64,7 @@ final class BuiltinSuppressionPlugin extends PluginV2 implements
         string $issue_type,
         int $lineno,
         array $parameters,
-        $suggestion
+        ?\Phan\Suggestion $suggestion
     ) : bool {
         $issue_suppression_list = $this->getRawIssueSuppressionList($code_base, $context->getFile());
         $suppressions_for_issue_type = $issue_suppression_list[$issue_type] ?? null;

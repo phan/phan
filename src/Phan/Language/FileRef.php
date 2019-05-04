@@ -162,7 +162,7 @@ class FileRef implements \Serializable
         return $this->file . ':' . $this->line_number_start;
     }
 
-    public function serialize()
+    public function serialize() : string
     {
         return $this->__toString();
     }
@@ -170,7 +170,7 @@ class FileRef implements \Serializable
     /**
      * @param string $serialized
      */
-    public function unserialize($serialized)
+    public function unserialize($serialized) : void
     {
         $map = \explode(':', $serialized);
         $this->file = $map[0];

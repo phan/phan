@@ -25,7 +25,7 @@ class CapturerResponder implements Responder
     /**
      * @return array<string,mixed> the request data
      */
-    public function getRequestData()
+    public function getRequestData() : array
     {
         return $this->request_data;
     }
@@ -35,7 +35,7 @@ class CapturerResponder implements Responder
      * @return void
      * @throws \RuntimeException if called twice
      */
-    public function sendResponseAndClose(array $data)
+    public function sendResponseAndClose(array $data) : void
     {
         if (\is_array($this->response_data)) {
             throw new \RuntimeException("Called sendResponseAndClose twice: data = " . StringUtil::jsonEncode($data));

@@ -141,7 +141,7 @@ final class MethodSearcherPlugin extends PluginV2 implements
         }
     }
 
-    public function beforeAnalyze(CodeBase $code_base)
+    public function beforeAnalyze(CodeBase $code_base) : void
     {
         self::addMissingNamespacesToTypes($code_base);
 

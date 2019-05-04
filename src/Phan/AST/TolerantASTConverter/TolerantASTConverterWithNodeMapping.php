@@ -94,7 +94,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
      * @throws InvalidArgumentException for invalid $version
      * @throws Throwable (after logging) if anything is thrown by the parser
      */
-    public function parseCodeAsPHPAST(string $file_contents, int $version, array &$errors = [], Cache $unused_cache = null)
+    public function parseCodeAsPHPAST(string $file_contents, int $version, array &$errors = [], Cache $unused_cache = null) : \ast\Node
     {
         // Force the byte offset to be within the
         $byte_offset = \max(0, \min(\strlen($file_contents), $this->instance_desired_byte_offset));
@@ -124,7 +124,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
     /**
      * @return ?string - null if this should not be cached
      */
-    public function generateCacheKey(string $unused_file_contents, int $unused_version)
+    public function generateCacheKey(string $unused_file_contents, int $unused_version) : ?string
     {
         return null;
     }
@@ -412,7 +412,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
      */
     protected static function astStmtUseOrGroupUseFromUseClause(
         PhpParser\Node\NamespaceUseClause $use_clause,
-        $parser_use_kind,
+        ?int $parser_use_kind,
         int $start_line
     ) : ast\Node {
         // fwrite(STDERR, "Calling astStmtUseOrGroupUseFromUseClause for " . json_encode($use_clause) . "\n");
@@ -431,7 +431,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
      * @return ?ast\Node
      * @override
      */
-    protected static function phpParserTypeToAstNode($type, int $line)
+    protected static function phpParserTypeToAstNode($type, int $line) : ?\ast\Node
     {
         $ast_node = parent::phpParserTypeToAstNode($type, $line);
         if ($type === self::$closest_node_or_token && $type !== null) {

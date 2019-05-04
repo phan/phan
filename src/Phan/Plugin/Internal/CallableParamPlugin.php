@@ -191,7 +191,7 @@ final class CallableParamPlugin extends PluginV2 implements
     public function handleLazyLoadInternalFunction(
         CodeBase $unused_code_base,
         Func $function
-    ) {
+    ) : void {
         $closure = self::generateClosureForFunctionInterface($function);
         if ($closure) {
             $function->addFunctionCallAnalyzer($closure);

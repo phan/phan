@@ -35,12 +35,12 @@ class PHPDocRedundantPlugin extends PluginV2 implements
     const RedundantClosureComment = 'PhanPluginRedundantClosureComment';
     const RedundantMethodComment = 'PhanPluginRedundantMethodComment';
 
-    public function analyzeFunction(CodeBase $code_base, Func $function)
+    public function analyzeFunction(CodeBase $code_base, Func $function) : void
     {
         $this->analyzeFunctionLike($code_base, $function);
     }
 
-    public function analyzeMethod(CodeBase $code_base, Method $method)
+    public function analyzeMethod(CodeBase $code_base, Method $method) : void
     {
         if ($method->getIsMagic() || $method->isPHPInternal()) {
             return;

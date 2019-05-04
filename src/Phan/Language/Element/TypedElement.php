@@ -124,7 +124,7 @@ abstract class TypedElement implements TypedElementInterface
      *
      * @return void
      */
-    public function setUnionType(UnionType $type)
+    public function setUnionType(UnionType $type) : void
     {
         $this->type = $type;
     }
@@ -334,7 +334,7 @@ abstract class TypedElement implements TypedElementInterface
      *
      * @return void
      */
-    public function hydrate(CodeBase $unused_code_base)
+    public function hydrate(CodeBase $unused_code_base) : void
     {
         // Do nothing unless overridden
     }

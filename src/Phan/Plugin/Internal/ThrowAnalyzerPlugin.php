@@ -55,7 +55,7 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
      * @return void
      * @override
      */
-    public function visitThrow(Node $node)
+    public function visitThrow(Node $node) : void
     {
         $context = $this->context;
         if (!$context->isInFunctionLikeScope()) {
@@ -219,7 +219,7 @@ class ThrowRecursiveVisitor extends ThrowVisitor
      * @return void
      * @override
      */
-    public function visitCall(Node $node)
+    public function visitCall(Node $node) : void
     {
         $context = $this->context;
         if (!$context->isInFunctionLikeScope()) {
@@ -251,7 +251,7 @@ class ThrowRecursiveVisitor extends ThrowVisitor
      * @return void
      * @override
      */
-    public function visitMethodCall(Node $node)
+    public function visitMethodCall(Node $node) : void
     {
         $context = $this->context;
         if (!$context->isInFunctionLikeScope()) {
@@ -293,7 +293,7 @@ class ThrowRecursiveVisitor extends ThrowVisitor
      * @return void
      * @override
      */
-    public function visitStaticCall(Node $node)
+    public function visitStaticCall(Node $node) : void
     {
         $context = $this->context;
         if (!$context->isInFunctionLikeScope()) {

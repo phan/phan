@@ -14,7 +14,7 @@ class PhanTestNew extends PhanTestCommon
     /**
      * @suppress PhanUndeclaredConstant
      */
-    public function getTestFiles()
+    public function getTestFiles() : array
     {
         return \array_filter(
             $this->getAllTestFiles(),

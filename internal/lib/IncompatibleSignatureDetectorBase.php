@@ -341,10 +341,10 @@ EOT;
     }
 
     /** @return ?array<mixed,string> */
-    abstract public function parseMethodSignature(string $class, string $method);
+    abstract public function parseMethodSignature(string $class, string $method) : ?array;
 
     /** @return ?array<mixed,string> */
-    abstract public function parseFunctionSignature(string $function_name);
+    abstract public function parseFunctionSignature(string $function_name) : ?array;
 
     /**
      * @param string $msg @phan-unused-param

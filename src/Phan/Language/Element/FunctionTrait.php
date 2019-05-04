@@ -76,7 +76,7 @@ trait FunctionTrait
      * The fully-qualified structural element name of this
      * structural element
      */
-    abstract public function getFQSEN();
+    abstract public function getFQSEN() : \Phan\Language\FQSEN;
 
     /**
      * @return string
@@ -959,7 +959,7 @@ trait FunctionTrait
     abstract public function getRecursionDepth() : int;
 
     /** @return Node|null the node of this function-like's declaration, if any exist and were kept for recursive non-quick analysis. */
-    abstract public function getNode();
+    abstract public function getNode() : ?\ast\Node;
 
     /** @return Context location and scope where this was declared. */
     abstract public function getContext() : Context;
@@ -1091,14 +1091,15 @@ trait FunctionTrait
     abstract public function getUnionType() : UnionType;
 
     /** @return void */
-    abstract public function setUnionType(UnionType $type);
+    abstract public function setUnionType(UnionType $type) : void;
 
     /**
      * Creates a callback that can restore this element to the state it had before parsing.
      * @internal - Used by daemon mode
      * @return Closure
+     * @suppress PhanTypeMismatchDeclaredReturnNullable overriding phpdoc type deliberately so that this works in php 7.1
      */
-    public function createRestoreCallback()
+    public function createRestoreCallback() : ?Closure
     {
         $clone_this = clone($this);
         foreach ($clone_this->parameter_list as $i => $parameter) {

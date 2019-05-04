@@ -48,7 +48,7 @@ final class VariableTrackerPlugin extends PluginV2 implements
  */
 final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
 {
-    public function visitMethod(Node $node)
+    public function visitMethod(Node $node) : void
     {
         $this->analyzeMethodLike($node);
     }
@@ -56,7 +56,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @override
      */
-    public function visitFuncDecl(Node $node)
+    public function visitFuncDecl(Node $node) : void
     {
         $this->analyzeMethodLike($node);
     }
@@ -64,7 +64,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @override
      */
-    public function visitClosure(Node $node)
+    public function visitClosure(Node $node) : void
     {
         $this->analyzeMethodLike($node);
     }

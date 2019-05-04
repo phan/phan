@@ -97,7 +97,7 @@ class VariableTrackingScope
      *
      * @return ?array<int,true> the Nodes which defined $variable_name
      */
-    public function getDefinition(string $variable_name)
+    public function getDefinition(string $variable_name) : ?array
     {
         return $this->defs[$variable_name] ?? null;
     }
@@ -109,7 +109,7 @@ class VariableTrackingScope
      *
      * @return ?array<int,true> the Nodes which defined $variable_name
      */
-    public function getDefinitionUpToScope(string $variable_name, VariableTrackingScope $forbidden_scope)
+    public function getDefinitionUpToScope(string $variable_name, VariableTrackingScope $forbidden_scope) : ?array
     {
         if ($this === $forbidden_scope) {
             return null;
@@ -122,7 +122,7 @@ class VariableTrackingScope
      *
      * @return array<string,array<int,true>>
      */
-    public function getDefinitionsRecursively()
+    public function getDefinitionsRecursively() : array
     {
         return $this->defs;
     }
@@ -294,7 +294,7 @@ class VariableTrackingScope
      *             This would mean that the branch uses variables, but does not define them outside of that scope.
      * @return void
      */
-    public function recordSkippedScope(VariableTrackingBranchScope $inner_scope, bool $exits)
+    public function recordSkippedScope(VariableTrackingBranchScope $inner_scope, bool $exits) : void
     {
         // Subclasses will implement this
     }

@@ -176,7 +176,7 @@ abstract class Scope
      * @return ?FullyQualifiedClassName
      * Crawl the scope hierarchy to get a class FQSEN.
      */
-    public function getClassFQSENOrNull()
+    public function getClassFQSENOrNull() : ?\Phan\Language\FQSEN\FullyQualifiedClassName
     {
         return $this->parent_scope->getClassFQSENOrNull();
     }

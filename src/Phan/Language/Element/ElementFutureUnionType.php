@@ -33,7 +33,7 @@ trait ElementFutureUnionType
      *
      * @return void
      */
-    abstract public function setUnionType(UnionType $type);
+    abstract public function setUnionType(UnionType $type) : void;
 
     /**
      * Sets a value that can be used once parsing/hydration is completed,

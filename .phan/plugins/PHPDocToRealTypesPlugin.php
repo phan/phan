@@ -52,14 +52,14 @@ class PHPDocToRealTypesPlugin extends PluginV2 implements
         ];
     }
 
-    public function analyzeFunction(CodeBase $code_base, Func $function)
+    public function analyzeFunction(CodeBase $code_base, Func $function) : void
     {
         $this->analyzeFunctionLike($code_base, $function);
     }
 
-    public function analyzeMethod(CodeBase $unused_code_base, Method $method)
+    public function analyzeMethod(CodeBase $unused_code_base, Method $method) : void
     {
-        if ($method->getIsMagic() || $method->isPHPInternal()) {
+        if ($method->isFromPHPDoc() || $method->getIsMagic() || $method->isPHPInternal()) {
             return;
         }
         if ($method->getFQSEN() !== $method->getDefiningFQSEN()) {
@@ -68,12 +68,14 @@ class PHPDocToRealTypesPlugin extends PluginV2 implements
         $this->deferred_analysis_methods[$method->getFQSEN()->__toString()] = $method;
     }
 
-    public function beforeAnalyzePhase(CodeBase $code_base)
+    public function beforeAnalyzePhase(CodeBase $code_base) : void
     {
+        $ignore_overrides = (bool)getenv('PHPDOC_TO_REAL_TYPES_IGNORE_INHERITANCE');
         foreach ($this->deferred_analysis_methods as $method) {
             if ($method->getIsOverride() || $method->getIsOverriddenByAnother()) {
-                // TODO: Consider allowing this
-                continue;
+                if (!$ignore_overrides) {
+                    continue;
+                }
             }
             $this->analyzeFunctionLike($code_base, $method);
         }

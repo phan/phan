@@ -310,7 +310,7 @@ final class ConfigPluginSet extends PluginV2 implements
         Context $context,
         string $file_contents,
         Node $node
-    ) {
+    ) : void {
         foreach ($this->before_analyze_file_plugin_set as $plugin) {
             $plugin->beforeAnalyzeFile(
                 $code_base,
@@ -329,7 +329,7 @@ final class ConfigPluginSet extends PluginV2 implements
      *
      * @override
      */
-    public function beforeAnalyze(CodeBase $code_base)
+    public function beforeAnalyze(CodeBase $code_base) : void
     {
         $this->did_analyze_phase_start = true;
         foreach ($this->before_analyze_plugin_set as $plugin) {
@@ -345,7 +345,7 @@ final class ConfigPluginSet extends PluginV2 implements
      *
      * @override
      */
-    public function beforeAnalyzePhase(CodeBase $code_base)
+    public function beforeAnalyzePhase(CodeBase $code_base) : void
     {
         $this->did_analyze_phase_start = true;
         foreach ($this->before_analyze_phase_plugin_set as $plugin) {
@@ -370,7 +370,7 @@ final class ConfigPluginSet extends PluginV2 implements
         Context $context,
         string $file_contents,
         Node $node
-    ) {
+    ) : void {
         foreach ($this->after_analyze_file_plugin_set as $plugin) {
             $plugin->afterAnalyzeFile(
                 $code_base,
@@ -394,7 +394,7 @@ final class ConfigPluginSet extends PluginV2 implements
     public function analyzeClass(
         CodeBase $code_base,
         Clazz $class
-    ) {
+    ) : void {
         foreach ($this->analyze_class_plugin_set as $plugin) {
             $plugin->analyzeClass(
                 $code_base,
@@ -421,7 +421,7 @@ final class ConfigPluginSet extends PluginV2 implements
     public function analyzeMethod(
         CodeBase $code_base,
         Method $method
-    ) {
+    ) : void {
         foreach ($this->analyze_method_plugin_set as $plugin) {
             $plugin->analyzeMethod(
                 $code_base,
@@ -455,7 +455,7 @@ final class ConfigPluginSet extends PluginV2 implements
         string $issue_type,
         int $lineno,
         array $parameters,
-        $suggestion
+        ?\Phan\Suggestion $suggestion
     ) : bool {
         foreach ($this->suppression_plugin_set as $plugin) {
             if ($plugin->shouldSuppressIssue(
@@ -517,7 +517,7 @@ final class ConfigPluginSet extends PluginV2 implements
     public function analyzeFunction(
         CodeBase $code_base,
         Func $function
-    ) {
+    ) : void {
         foreach ($this->analyze_function_plugin_set as $plugin) {
             $plugin->analyzeFunction(
                 $code_base,
@@ -541,7 +541,7 @@ final class ConfigPluginSet extends PluginV2 implements
     public function analyzeProperty(
         CodeBase $code_base,
         Property $property
-    ) {
+    ) : void {
         foreach ($this->analyze_property_plugin_set as $plugin) {
             try {
                 $plugin->analyzeProperty(
@@ -569,7 +569,7 @@ final class ConfigPluginSet extends PluginV2 implements
      */
     public function finalizeProcess(
         CodeBase $code_base
-    ) {
+    ) : void {
         foreach ($this->finalize_process_plugin_set as $plugin) {
             $plugin->finalizeProcess($code_base);
         }

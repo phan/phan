@@ -57,7 +57,7 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
         Context $context,
         string $file_contents,
         Node $node
-    ) {
+    ) : void {
         $php_binaries = (Config::getValue('plugin_config')['php_native_syntax_check_binaries'] ?? null) ?: [PHP_BINARY];
 
         foreach ($php_binaries as $binary) {
@@ -83,7 +83,7 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
         Context $context,
         string $file_contents,
         Node $node
-    ) {
+    ) : void {
         $configured_max_incomplete_processes = (int)(Config::getValue('plugin_config')['php_native_syntax_check_max_processes'] ?? 1) - 1;
         $max_incomplete_processes = max(0, $configured_max_incomplete_processes);
         $this->awaitIncompleteProcesses($code_base, $max_incomplete_processes);
@@ -116,7 +116,7 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
      * @override
      * @throws Error if a syntax check process fails to shut down.
      */
-    public function finalizeProcess(CodeBase $code_base)
+    public function finalizeProcess(CodeBase $code_base) : void
     {
         $this->awaitIncompleteProcesses($code_base, 0);
     }

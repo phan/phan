@@ -61,7 +61,7 @@ final class HasPHPDocPlugin extends PluginV2 implements
     public function analyzeClass(
         CodeBase $code_base,
         Clazz $class
-    ) {
+    ) : void {
         if ($class->isAnonymous()) {
             // Probably not useful in many cases to document a short anonymous class.
             return;
@@ -104,7 +104,7 @@ final class HasPHPDocPlugin extends PluginV2 implements
     public function analyzeProperty(
         CodeBase $code_base,
         Property $property
-    ) {
+    ) : void {
         if ($property->isDynamicProperty()) {
             // And dynamic properties don't have phpdoc.
             return;
@@ -158,7 +158,7 @@ final class HasPHPDocPlugin extends PluginV2 implements
     public function analyzeMethod(
         CodeBase $code_base,
         Method $method
-    ) {
+    ) : void {
         if ($method->isFromPHPDoc()) {
             // Phan does not track descriptions of (at)method.
             return;
@@ -225,7 +225,7 @@ final class HasPHPDocPlugin extends PluginV2 implements
     public function analyzeFunction(
         CodeBase $code_base,
         Func $function
-    ) {
+    ) : void {
         $doc_comment = $function->getDocComment();
         if ($function->isPHPInternal()) {
             // This isn't user-defined, there's no reason to warn or way to change it.

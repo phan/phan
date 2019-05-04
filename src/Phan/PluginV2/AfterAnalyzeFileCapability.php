@@ -30,5 +30,5 @@ interface AfterAnalyzeFileCapability
         Context $context,
         string $file_contents,
         Node $node
-    );
+    ) : void;
 }

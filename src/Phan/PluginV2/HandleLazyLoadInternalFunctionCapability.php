@@ -25,5 +25,5 @@ interface HandleLazyLoadInternalFunctionCapability
     public function handleLazyLoadInternalFunction(
         CodeBase $code_base,
         Func $function
-    );
+    ) : void;
 }

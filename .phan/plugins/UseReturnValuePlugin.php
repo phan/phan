@@ -81,7 +81,7 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
      * @return void
      * @override
      */
-    public function finalizeProcess(CodeBase $code_base)
+    public function finalizeProcess(CodeBase $code_base) : void
     {
         if (!self::$use_dynamic) {
             return;
@@ -894,7 +894,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
      * @return void
      * @override
      */
-    public function visitCall(Node $node)
+    public function visitCall(Node $node) : void
     {
         $parent = $this->findNonUnaryParentNodeNode();
         if (!$parent) {
@@ -944,7 +944,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
      * @return void
      * @override
      */
-    public function visitMethodCall(Node $node)
+    public function visitMethodCall(Node $node) : void
     {
         $parent = $this->findNonUnaryParentNodeNode();
         if (!$parent) {
@@ -993,7 +993,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
      * @return void
      * @override
      */
-    public function visitStaticCall(Node $node)
+    public function visitStaticCall(Node $node) : void
     {
         $parent = $this->findNonUnaryParentNodeNode();
         if (!$parent) {

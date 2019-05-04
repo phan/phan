@@ -20,5 +20,5 @@ interface ProtocolReader extends EmitterInterface
     /**
      * @return void
      */
-    public function stopAcceptingNewRequests();
+    public function stopAcceptingNewRequests() : void;
 }

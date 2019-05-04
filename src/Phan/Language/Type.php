@@ -1921,7 +1921,7 @@ class Type
     /**
      * @return ?UnionType returns the iterable key's union type, if this is a subtype of iterable. null otherwise.
      */
-    public function iterableKeyUnionType(CodeBase $unused_code_base)
+    public function iterableKeyUnionType(CodeBase $unused_code_base) : ?\Phan\Language\UnionType
     {
         if ($this->namespace === '\\') {
             $name = strtolower($this->name);
@@ -1949,7 +1949,7 @@ class Type
      *
      * This is overridden by the array subclasses
      */
-    public function iterableValueUnionType(CodeBase $unused_code_base)
+    public function iterableValueUnionType(CodeBase $unused_code_base) : ?\Phan\Language\UnionType
     {
         if ($this->namespace === '\\') {
             $name = strtolower($this->name);
@@ -3156,7 +3156,7 @@ class Type
      * @return ?Closure(UnionType, Context):UnionType a closure to determine the union type(s) that are in the same position(s) as the template type.
      * This is overridden in subclasses.
      */
-    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type)
+    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type) : ?\Closure
     {
         if (!$this->template_parameter_type_list) {
             return null;
@@ -3195,7 +3195,7 @@ class Type
      * @param Context $context the context where the function interface is referenced (for emitting issues) @phan-unused-param
      * @return ?FunctionInterface
      */
-    public function asFunctionInterfaceOrNull(CodeBase $code_base, Context $context)
+    public function asFunctionInterfaceOrNull(CodeBase $code_base, Context $context) : ?\Phan\Language\Element\FunctionInterface
     {
         if (static::class !== self::class) {
             // Overridden in other subclasses

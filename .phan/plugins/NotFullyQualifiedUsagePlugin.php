@@ -96,7 +96,7 @@ class NotFullyQualifiedUsageVisitor extends PluginAwarePostAnalysisVisitor
      *
      * @override
      */
-    public function visitCall(Node $node)
+    public function visitCall(Node $node) : void
     {
         $expression = $node->children['expr'];
         if (!($expression instanceof Node) || $expression->kind !== ast\AST_NAME) {
@@ -150,7 +150,7 @@ class NotFullyQualifiedUsageVisitor extends PluginAwarePostAnalysisVisitor
      *
      * @override
      */
-    public function visitConst(Node $node)
+    public function visitConst(Node $node) : void
     {
         $expression = $node->children['name'];
         if (!($expression instanceof Node) || $expression->kind !== ast\AST_NAME) {

@@ -18,7 +18,7 @@ final class IssueFixingPluginTest extends BaseTest implements CodeBaseAwareTestI
     /** @var CodeBase|null The code base within which this unit test is operating */
     private $code_base = null;
 
-    public function setCodeBase(CodeBase $code_base = null)
+    public function setCodeBase(CodeBase $code_base = null) : void
     {
         $this->code_base = $code_base;
     }

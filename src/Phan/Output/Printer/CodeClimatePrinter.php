@@ -24,7 +24,7 @@ final class CodeClimatePrinter implements BufferedPrinterInterface
     /** @var array<int,array> a list of associative arrays with codeclimate issue fields. */
     private $messages = [];
 
-    public function print(IssueInstance $instance)
+    public function print(IssueInstance $instance) : void
     {
         $this->messages[] = [
             'type' => 'issue',
@@ -58,7 +58,7 @@ final class CodeClimatePrinter implements BufferedPrinterInterface
     }
 
     /** flush printer buffer */
-    public function flush()
+    public function flush() : void
     {
 
         // See https://github.com/codeclimate/spec/blob/master/SPEC.md#output
@@ -70,7 +70,7 @@ final class CodeClimatePrinter implements BufferedPrinterInterface
         $this->messages = [];
     }
 
-    public function configureOutput(OutputInterface $output)
+    public function configureOutput(OutputInterface $output) : void
     {
         $this->output = $output;
     }

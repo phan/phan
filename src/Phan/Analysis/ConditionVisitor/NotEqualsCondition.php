@@ -30,7 +30,7 @@ class NotEqualsCondition implements BinaryCondition
     /**
      * Assert that this condition applies to the variable $object (i.e. get_class($object) != $expr)
      *
-     * @param Node $object
+     * @param Node|int|string|float $object
      * @param Node|int|string|float $expr
      * @return Context
      * @override
@@ -44,7 +44,7 @@ class NotEqualsCondition implements BinaryCondition
     /**
      * @suppress PhanUnusedPublicMethodParameter
      */
-    public function analyzeCall(ConditionVisitorInterface $visitor, $call_node, $expr)
+    public function analyzeCall(ConditionVisitorInterface $visitor, \ast\Node $call_node, $expr) : ?\Phan\Language\Context
     {
         if (!$expr instanceof Node) {
             return null;

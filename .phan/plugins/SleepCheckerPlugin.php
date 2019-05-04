@@ -50,7 +50,7 @@ class SleepCheckerVisitor extends PluginAwarePostAnalysisVisitor
      * @return void
      * @override
      */
-    public function visitMethod(Node $node)
+    public function visitMethod(Node $node) : void
     {
         if (strcasecmp('__sleep', (string)$node->children['name']) !== 0) {
             return;

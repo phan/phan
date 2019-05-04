@@ -54,7 +54,7 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
      * @return void
      * @override
      */
-    public function visitClass(Node $unused_node)
+    public function visitClass(Node $unused_node) : void
     {
         if (!Config::get_track_references()) {
             return;

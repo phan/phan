@@ -52,7 +52,7 @@ interface FunctionInterface extends AddressableElementInterface
      * for tracking variables within the function-like.
      * @return void
      */
-    public function setInternalScope(ClosedScope $internal_scope);
+    public function setInternalScope(ClosedScope $internal_scope) : void;
 
     /**
      * @return ClosedScope
@@ -71,7 +71,7 @@ interface FunctionInterface extends AddressableElementInterface
      *
      * @return void
      */
-    public function setNumberOfOptionalParameters(int $number);
+    public function setNumberOfOptionalParameters(int $number) : void;
 
     /**
      * @return int
@@ -100,7 +100,7 @@ interface FunctionInterface extends AddressableElementInterface
      *
      * @return void
      */
-    public function setNumberOfRequiredParameters(int $number);
+    public function setNumberOfRequiredParameters(int $number) : void;
 
     /**
      * @return int
@@ -130,7 +130,7 @@ interface FunctionInterface extends AddressableElementInterface
      */
     public function setIsReturnTypeUndefined(
         bool $is_return_type_undefined
-    );
+    ) : void;
 
     /**
      * @return bool
@@ -144,7 +144,7 @@ interface FunctionInterface extends AddressableElementInterface
      *
      * @return void
      */
-    public function setHasReturn(bool $has_return);
+    public function setHasReturn(bool $has_return) : void;
 
     /**
      * @param bool $has_yield
@@ -155,7 +155,7 @@ interface FunctionInterface extends AddressableElementInterface
      *
      * @return void
      */
-    public function setHasYield(bool $has_yield);
+    public function setHasYield(bool $has_yield) : void;
 
     /**
      * @return array<int,Parameter>
@@ -172,7 +172,7 @@ interface FunctionInterface extends AddressableElementInterface
      * @param int $i - offset of the parameter.
      * @return Parameter|null The parameter type that the **caller** observes.
      */
-    public function getParameterForCaller(int $i);
+    public function getParameterForCaller(int $i) : ?\Phan\Language\Element\Parameter;
 
     /**
      * Gets the $ith real parameter for the **caller**.
@@ -183,7 +183,7 @@ interface FunctionInterface extends AddressableElementInterface
      * @param int $i - offset of the parameter.
      * @return Parameter|null The parameter type that the **caller** observes.
      */
-    public function getRealParameterForCaller(int $i);
+    public function getRealParameterForCaller(int $i) : ?\Phan\Language\Element\Parameter;
 
     /**
      * @param Parameter $parameter
@@ -191,21 +191,21 @@ interface FunctionInterface extends AddressableElementInterface
      *
      * @return void
      */
-    public function appendParameter(Parameter $parameter);
+    public function appendParameter(Parameter $parameter) : void;
 
     /**
      * @return void
      *
      * Call this before calling appendParameter, if parameters were already added.
      */
-    public function clearParameterList();
+    public function clearParameterList() : void;
 
     /**
      * Records the fact that $parameter_name is an output-only reference.
      * @param string $parameter_name
      * @return void
      */
-    public function recordOutputReferenceParamName(string $parameter_name);
+    public function recordOutputReferenceParamName(string $parameter_name) : void;
 
     /**
      * @return array<int,string> list of output references (annotated with (at)phan-output-reference. Usually empty.
@@ -280,12 +280,12 @@ interface FunctionInterface extends AddressableElementInterface
      * Will differ from real parameter types (ideally narrower)
      * @return void
      */
-    public function setPHPDocParameterTypeMap(array $parameter_map);
+    public function setPHPDocParameterTypeMap(array $parameter_map) : void;
 
     /**
      * @return array<string,UnionType> maps a subset of param names to the unmodified phpdoc parameter types.
      */
-    public function getPHPDocParameterTypeMap();
+    public function getPHPDocParameterTypeMap() : array;
 
     /**
      * @param ?UnionType $union_type the raw phpdoc union type
@@ -296,7 +296,7 @@ interface FunctionInterface extends AddressableElementInterface
     /**
      * @return ?UnionType the raw phpdoc union type
      */
-    public function getPHPDocReturnType();
+    public function getPHPDocReturnType() : ?\Phan\Language\UnionType;
 
     /**
      * @return bool
@@ -321,7 +321,7 @@ interface FunctionInterface extends AddressableElementInterface
      * Make calculation of the return type of this function/method use $closure
      * @return void
      */
-    public function setDependentReturnTypeClosure(\Closure $closure);
+    public function setDependentReturnTypeClosure(\Closure $closure) : void;
 
     /**
      * Returns true if this function or method has additional analysis logic for invocations (From internal and user defined plugins)
@@ -337,20 +337,20 @@ interface FunctionInterface extends AddressableElementInterface
      * @param array<int,Node|int|string> $args
      * @return void
      */
-    public function analyzeFunctionCall(CodeBase $code_base, Context $context, array $args);
+    public function analyzeFunctionCall(CodeBase $code_base, Context $context, array $args) : void;
 
     /**
      * Make additional analysis logic of this function/method use $closure
      * If callers need to invoke multiple closures, they should pass in a closure to invoke multiple closures or use addFunctionCallAnalyzer.
      * @return void
      */
-    public function setFunctionCallAnalyzer(\Closure $closure);
+    public function setFunctionCallAnalyzer(\Closure $closure) : void;
 
     /**
      * If callers need to invoke multiple closures, they should pass in a closure to invoke multiple closures.
      * @return void
      */
-    public function addFunctionCallAnalyzer(\Closure $closure);
+    public function addFunctionCallAnalyzer(\Closure $closure) : void;
 
     /**
      * Initialize the inner scope of this method with variables created from the parameters.
@@ -359,21 +359,21 @@ interface FunctionInterface extends AddressableElementInterface
      *
      * @return void
      */
-    public function ensureScopeInitialized(CodeBase $code_base);
+    public function ensureScopeInitialized(CodeBase $code_base) : void;
 
     /** @return Node|null */
-    public function getNode();
+    public function getNode() : ?\ast\Node;
 
     /**
      * @return ?Comment - Not set for internal functions/methods
      */
-    public function getComment();
+    public function getComment() : ?\Phan\Language\Element\Comment;
 
     /**
      * @param Comment $comment
      * @return void
      */
-    public function setComment(Comment $comment);
+    public function setComment(Comment $comment) : void;
 
     /**
      * @return UnionType of 0 or more types from (at)throws annotations on this function-like
@@ -393,7 +393,7 @@ interface FunctionInterface extends AddressableElementInterface
      * @internal
      * @return void
      */
-    public function cloneParameterList();
+    public function cloneParameterList() : void;
 
     /**
      * @return bool - Does any parameter type possibly require recursive analysis if more specific types are provided?
@@ -431,7 +431,7 @@ interface FunctionInterface extends AddressableElementInterface
      *
      * @return void
      */
-    public function analyzeReturnTypes(CodeBase $code_base);
+    public function analyzeReturnTypes(CodeBase $code_base) : void;
 
     /**
      * Does this function/method declare an (at)template type for this type?
@@ -444,5 +444,5 @@ interface FunctionInterface extends AddressableElementInterface
      * @return ?Closure(CodeBase, Context, array):UnionType
      * @internal
      */
-    public function getCommentParamAssertionClosure(CodeBase $code_base);
+    public function getCommentParamAssertionClosure(CodeBase $code_base) : ?\Closure;
 }

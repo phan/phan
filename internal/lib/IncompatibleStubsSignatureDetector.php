@@ -157,7 +157,7 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
      * @return ?array<mixed,string>
      * @throws FQSENException if signature map is invalid
      */
-    public function parseMethodSignature(string $class_name, string $method_name)
+    public function parseMethodSignature(string $class_name, string $method_name) : ?array
     {
         $this->initStubs();
         if ($class_name[0] !== '\\') {
@@ -186,7 +186,7 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
      * @return ?array<mixed,string>
      * @throws FQSENException if $function_name is invalid
      */
-    public function parseFunctionSignature(string $function_name)
+    public function parseFunctionSignature(string $function_name) : ?array
     {
         $this->initStubs();
         $function_fqsen = FullyQualifiedFunctionName::fromFullyQualifiedString($function_name);

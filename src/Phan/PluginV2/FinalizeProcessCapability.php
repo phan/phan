@@ -21,5 +21,5 @@ interface FinalizeProcessCapability
      *
      * @return void
      */
-    public function finalizeProcess(CodeBase $code_base);
+    public function finalizeProcess(CodeBase $code_base) : void;
 }

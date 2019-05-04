@@ -41,7 +41,7 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
      * @return void
      * @override
      */
-    public function visitCall(Node $node)
+    public function visitCall(Node $node) : void
     {
         $args = $node->children['args']->children;
         if (count($args) < 2) {
@@ -271,7 +271,7 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
      * @return void
      * @override
      */
-    public function visitMethodCall(Node $node)
+    public function visitMethodCall(Node $node) : void
     {
         $args = $node->children['args']->children;
         if (count($args) < 2) {
@@ -302,7 +302,7 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
      * @return void
      * @override
      */
-    public function visitStaticCall(Node $node)
+    public function visitStaticCall(Node $node) : void
     {
         $args = $node->children['args']->children;
         if (count($args) < 2) {
