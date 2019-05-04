@@ -39,6 +39,14 @@ class Method extends ClassElement implements FunctionInterface
     private $real_defining_fqsen;
 
     /**
+     * @var ?Method The defining method, if this method was inherited.
+     *              This is only set if this is needed to recursively infer method types - do not use this.
+     *
+     *              This may become out of date in language server mode.
+     */
+    private $defining_method_for_type_fetching;
+
+    /**
      * @param Context $context
      * The context in which the structural element lives
      *
@@ -542,11 +550,46 @@ class Method extends ClassElement implements FunctionInterface
     }
 
     /**
+     * Ensure that this clone will use the return type of the ancestor method
+     * @return void
+     */
+    public function ensureClonesReturnType(Method $original_method)
+    {
+        if ($this->defining_method_for_type_fetching) {
+            return;
+        }
+        // Get the real ancestor of C::method() if C extends B and B extends A
+        $original_method = $original_method->defining_method_for_type_fetching ?? $original_method;
+
+        // Don't bother with methods that can't have types inferred recursively
+        if ($original_method->isAbstract() || $original_method->isFromPHPDoc() || $original_method->isPHPInternal()) {
+            return;
+        }
+
+        if (!$original_method->getUnionType()->isEmpty() || !$original_method->getRealReturnType()->isEmpty()) {
+            // This heuristic is used as little as possible.
+            // It will only use this fallback of directly using the (possibly modified)
+            // parent's type if the parent method declaration had no phpdoc return type and no real return type (and nothing was guessed such as `void`).
+            return;
+        }
+        $this->defining_method_for_type_fetching = $original_method;
+    }
+
+    public function setUnionType(UnionType $union_type)
+    {
+        $this->defining_method_for_type_fetching = null;
+        parent::setUnionType($union_type);
+    }
+
+    /**
      * @return UnionType
-     * The type of this method in its given context.
+     * The return type of this method in its given context.
      */
     public function getUnionType() : UnionType
     {
+        if ($this->defining_method_for_type_fetching) {
+            return $this->defining_method_for_type_fetching->getUnionType();
+        }
         $union_type = parent::getUnionType();
 
         // If the type is 'static', add this context's class

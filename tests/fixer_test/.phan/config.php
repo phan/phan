@@ -133,5 +133,6 @@ return [
         'SuspiciousParamOrderPlugin',
         'WhitespacePlugin',
         'NotFullyQualifiedUsagePlugin',
+        'PHPDocToRealTypesPlugin',
     ],
 ];

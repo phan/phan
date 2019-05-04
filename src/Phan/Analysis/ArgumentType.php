@@ -384,6 +384,12 @@ final class ArgumentType
             // the parameter in a moment
             $argument_type = $get_argument_type($argument, $i);
             self::analyzeParameter($code_base, $context, $method, $argument_type, $argument->lineno ?? $context->getLineNumberStart(), $i);
+            if ($parameter->isPassByReference()) {
+                if ($argument instanceof Node) {
+                    // @phan-suppress-next-line PhanUndeclaredProperty this is added for analyzers
+                    $argument->is_reference = true;
+                }
+            }
         }
     }
 
@@ -488,6 +494,12 @@ final class ArgumentType
                 true
             );
             self::analyzeParameter($code_base, $context, $method, $argument_type, $argument->lineno ?? $node->lineno ?? 0, $i);
+            if ($parameter->isPassByReference()) {
+                if ($argument instanceof Node) {
+                    // @phan-suppress-next-line PhanUndeclaredProperty this is added for analyzers
+                    $argument->is_reference = true;
+                }
+            }
             if ($argument_kind === \ast\AST_UNPACK) {
                 self::analyzeRemainingParametersForVariadic($code_base, $context, $method, $i + 1, $node, $argument, $argument_type);
             }
@@ -544,6 +556,10 @@ final class ArgumentType
             }
 
             self::analyzeParameter($code_base, $context, $method, $argument_type, $argument->lineno, $i);
+            if ($parameter->isPassByReference()) {
+                // @phan-suppress-next-line PhanUndeclaredProperty this is added for analyzers
+                $argument->is_reference = true;
+            }
         }
     }
 

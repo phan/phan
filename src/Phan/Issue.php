@@ -333,6 +333,14 @@ class Issue
     const UnusedVariableValueOfForeachWithKey   = 'PhanUnusedVariableValueOfForeachWithKey';  // has higher false positive rates than UnusedVariable
     const UnusedVariableCaughtException         = 'PhanUnusedVariableCaughtException';  // has higher false positive rates than UnusedVariable
     const UnusedGotoLabel                       = 'PhanUnusedGotoLabel';
+    const VariableDefinitionCouldBeConstant     = 'PhanVariableDefinitionCouldBeConstant';
+    const VariableDefinitionCouldBeConstantEmptyArray = 'PhanVariableDefinitionCouldBeConstantEmptyArray';
+    const VariableDefinitionCouldBeConstantString = 'PhanVariableDefinitionCouldBeConstantString';
+    const VariableDefinitionCouldBeConstantFloat = 'PhanVariableDefinitionCouldBeConstantFloat';
+    const VariableDefinitionCouldBeConstantInt = 'PhanVariableDefinitionCouldBeConstantInt';
+    const VariableDefinitionCouldBeConstantTrue = 'PhanVariableDefinitionCouldBeConstantTrue';
+    const VariableDefinitionCouldBeConstantFalse = 'PhanVariableDefinitionCouldBeConstantFalse';
+    const VariableDefinitionCouldBeConstantNull = 'PhanVariableDefinitionCouldBeConstantNull';
 
     // Issue::CATEGORY_REDEFINE
     const RedefineClass             = 'PhanRedefineClass';
@@ -2971,6 +2979,70 @@ class Issue
                 "Unused goto label {CODE}",
                 self::REMEDIATION_B,
                 6055
+            ),
+            new Issue(
+                self::VariableDefinitionCouldBeConstant,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Uses of ${VARIABLE} could probably be replaced with a literal or constant',
+                self::REMEDIATION_B,
+                6061
+            ),
+            new Issue(
+                self::VariableDefinitionCouldBeConstantEmptyArray,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Uses of ${VARIABLE} could probably be replaced with an empty array',
+                self::REMEDIATION_B,
+                6062
+            ),
+            new Issue(
+                self::VariableDefinitionCouldBeConstantString,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Uses of ${VARIABLE} could probably be replaced with a literal or constant string',
+                self::REMEDIATION_B,
+                6063
+            ),
+            new Issue(
+                self::VariableDefinitionCouldBeConstantFloat,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Uses of ${VARIABLE} could probably be replaced with a literal or constant float',
+                self::REMEDIATION_B,
+                6064
+            ),
+            new Issue(
+                self::VariableDefinitionCouldBeConstantInt,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Uses of ${VARIABLE} could probably be replaced with literal integer or a named constant',
+                self::REMEDIATION_B,
+                6065
+            ),
+            new Issue(
+                self::VariableDefinitionCouldBeConstantTrue,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Uses of ${VARIABLE} could probably be replaced with true or a named constant',
+                self::REMEDIATION_B,
+                6066
+            ),
+            new Issue(
+                self::VariableDefinitionCouldBeConstantFalse,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Uses of ${VARIABLE} could probably be replaced with false or a named constant',
+                self::REMEDIATION_B,
+                6067
+            ),
+            new Issue(
+                self::VariableDefinitionCouldBeConstantNull,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Uses of ${VARIABLE} could probably be replaced with null or a named constant',
+                self::REMEDIATION_B,
+                6068
             ),
 
             // Issue::CATEGORY_REDEFINE

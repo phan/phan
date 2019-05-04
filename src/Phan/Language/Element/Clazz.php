@@ -851,7 +851,6 @@ class Clazz extends AddressableElement
         );
         foreach ($magic_property_map as $comment_parameter) {
             // $phan_flags can be used to indicate if something is property-read or property-write
-            $flags = 0;
             $phan_flags = $comment_parameter->getFlags();
             $property_name = $comment_parameter->getName();
             $property_fqsen = FullyQualifiedPropertyName::make(
@@ -864,7 +863,7 @@ class Clazz extends AddressableElement
                 clone($context)->withLineNumberStart($comment_parameter->getLine()),
                 $property_name,
                 $union_type,
-                $flags,
+                0,
                 $property_fqsen
             );
             if ($original_union_type !== $union_type) {
@@ -1486,6 +1485,7 @@ class Clazz extends AddressableElement
         }
 
         if ($method->getFQSEN() !== $method_fqsen) {
+            $original_method = $method;
             $method = clone($method);
             $method->setFQSEN($method_fqsen);
             // When we inherit it from the ancestor class, it may be an override in the ancestor class,
@@ -1494,6 +1494,7 @@ class Clazz extends AddressableElement
 
             // Clone the parameter list, so that modifying the parameters on the first call won't modify the others.
             $method->cloneParameterList();
+            $method->ensureClonesReturnType($original_method);
 
             // If we have a parent type defined, map the method's
             // return type and parameter types through it

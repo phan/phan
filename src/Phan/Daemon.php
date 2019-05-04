@@ -137,7 +137,6 @@ class Daemon
         $socket_server = self::createDaemonStreamSocketServer();
         try {
             while (true) {
-                $got_signal = false;  // reset this.
                 // We get an error from stream_socket_accept. After the RuntimeException is thrown, pcntl_signal is called.
                 $previous_error_handler = \set_error_handler(
                     /**
@@ -163,9 +162,6 @@ class Daemon
                     self::debugf("Got signal");
                     \pcntl_signal_dispatch();
                     self::debugf("done processing signals");
-                    if ($got_signal) {
-                        continue;  // Ignore notices from stream_socket_accept if it's due to being interrupted by a child process terminating.
-                    }
                 } finally {
                     \restore_error_handler();
                 }

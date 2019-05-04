@@ -116,7 +116,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
             // We narrow this down to the specific category if we need to warn.
             $result[\spl_object_id($parameter)] = Issue::UnusedPublicMethodParameter;
 
-            $graph->recordVariableDefinition($parameter_name, $parameter, $scope);
+            $graph->recordVariableDefinition($parameter_name, $parameter, $scope, null);
             if ($parameter->flags & ast\flags\PARAM_REF) {
                 $graph->markAsReference($parameter_name);
             }
@@ -131,7 +131,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
             }
             $result[\spl_object_id($closure_use)] = Issue::UnusedClosureUseVariable;
 
-            $graph->recordVariableDefinition($name, $closure_use, $scope);
+            $graph->recordVariableDefinition($name, $closure_use, $scope, null);
             if ($closure_use->flags & ast\flags\PARAM_REF) {
                 $graph->markAsReference($name);
             }
@@ -233,6 +233,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
                 // don't warn about static/global/references
                 continue;
             }
+            // Check for variable definitions that are unused
             foreach ($def_uses_for_variable as $definition_id => $use_list) {
                 if (count($use_list) > 0) {
                     // Don't warn if there's at least one usage of that definition
@@ -271,7 +272,66 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
                     self::makeSuggestion($graph, $variable_name, $issue_type)
                 );
             }
+            // Check for variables that could be replaced with constants or literals
+            if (Config::getValue('constant_variable_detection') && count($def_uses_for_variable) === 1) {
+                foreach ($def_uses_for_variable as $definition_id => $use_list) {
+                    if (!$use_list) {
+                        // We already warned that this was unused
+                        continue;
+                    }
+                    $value_node = $graph->const_expr_declarations[$variable_name][$definition_id] ?? null;
+                    if ($value_node === null) {
+                        continue;
+                    }
+                    if (isset($graph->const_expr_declarations[$variable_name][-1])) {
+                        // Set by recordVariableModification
+                        continue;
+                    }
+                    $this->warnAboutCouldBeConstant($graph, $variable_name, $definition_id, $value_node);
+                }
+            }
         }
+    }
+
+    /**
+     * @param Node|string|int|float $value_node
+     */
+    private function warnAboutCouldBeConstant(VariableGraph $graph, string $variable_name, int $definition_id, $value_node) {
+        $issue_type = Issue::VariableDefinitionCouldBeConstant;
+        if ($value_node instanceof Node) {
+            if ($value_node->kind === ast\AST_ARRAY) {
+                if (count($value_node->children) === 0) {
+                    $issue_type = Issue::VariableDefinitionCouldBeConstantEmptyArray;
+                }
+            } elseif ($value_node->kind === ast\AST_CONST) {
+                $name = strtolower((string)$value_node->children['name']->children['name'] ?? '');
+                switch ($name) {
+                    case 'false':
+                        $issue_type = Issue::VariableDefinitionCouldBeConstantFalse;
+                        break;
+                    case 'true':
+                        $issue_type = Issue::VariableDefinitionCouldBeConstantTrue;
+                        break;
+                    case 'null':
+                        $issue_type = Issue::VariableDefinitionCouldBeConstantNull;
+                        break;
+                }
+            }
+        } elseif (is_string($value_node)) {
+            $issue_type = Issue::VariableDefinitionCouldBeConstantString;
+        } elseif (is_int($value_node)) {
+            $issue_type = Issue::VariableDefinitionCouldBeConstantInt;
+        } elseif (is_float($value_node)) {
+            $issue_type = Issue::VariableDefinitionCouldBeConstantFloat;
+        }
+        $line = $graph->def_lines[$variable_name][$definition_id] ?? 1;
+        Issue::maybeEmitWithParameters(
+            $this->code_base,
+            $this->context,
+            $issue_type,
+            $line,
+            [$variable_name]
+        );
     }
 
     /**
