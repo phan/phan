@@ -502,7 +502,6 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     /** @var array<string,?SimpleXMLElement> maps file paths to cached parsed XML elements */
     private $simple_xml_cache = [];
 
-    /** @return ?SimpleXMLElement */
     private function getSimpleXMLForFile(string $file_path) : ?\SimpleXMLElement
     {
         if (array_key_exists($file_path, $this->simple_xml_cache)) {
@@ -519,7 +518,6 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         });
     }
 
-    /** @return ?SimpleXMLElement */
     private function getSimpleXMLForFileUncached(string $file_path) : ?\SimpleXMLElement
     {
         $signature_file_contents = $this->fileGetContents($file_path);
@@ -530,9 +528,6 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         return $this->getSimpleXMLForFileContents($signature_file_contents, $file_path);
     }
 
-    /**
-     * @return ?SimpleXMLElement
-     */
     private function getSimpleXMLForFileContents(string $signature_file_contents, string $file_path) : ?\SimpleXMLElement
     {
         // Not sure if there's a good way of using an external entity file in PHP.
@@ -548,7 +543,6 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         return $result;
     }
 
-    /** @return ?string */
     private static function getFunctionNameFromXML(SimpleXMLElement $xml) : ?string
     {
         $name = $xml->xpath('/a:refentry/a:refnamediv/a:refname') ?: [];
@@ -569,7 +563,6 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         return null;
     }
 
-    /** @return ?string */
     private static function getMethodNameFromXML(SimpleXMLElement $xml) : ?string
     {
         $name = $xml->xpath('/a:refentry/a:refnamediv/a:refname') ?: [];
@@ -928,9 +921,6 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         });
     }
 
-    /**
-     * @return ?string
-     */
     private static function convertXMLElementToMarkdown(SimpleXMLElement $element) : ?string
     {
         $xml = (string)$element->asXML();

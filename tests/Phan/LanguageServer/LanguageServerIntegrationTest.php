@@ -1200,9 +1200,6 @@ EOT
         ];
     }
 
-    /**
-     * @param ?string $requested_uri
-     */
     private static function shouldExpectDiagnosticNotificationForURI(?string $requested_uri) : bool
     {
         if ($requested_uri && \basename(\dirname($requested_uri)) !== 'src') {
@@ -1211,10 +1208,6 @@ EOT
         return true;
     }
 
-    /**
-     * @param ?int $expected_definition_line
-     * @param ?string $requested_uri
-     */
     public function runTestDefinitionInOtherFileWithPcntlSetting(
         string $new_file_contents,
         Position $position,
@@ -1288,10 +1281,6 @@ EOT
         }
     }
 
-    /**
-     * @param ?int $expected_definition_line
-     * @param ?string $requested_uri
-     */
     public function runTestTypeDefinitionInOtherFileWithPcntlSetting(
         string $new_file_contents,
         Position $position,
@@ -1371,10 +1360,6 @@ EOT
         }
     }
 
-    /**
-     * @param ?string $expected_hover_string
-     * @param ?string $requested_uri
-     */
     public function runTestHoverInOtherFileWithPcntlSetting(
         string $new_file_contents,
         Position $position,

@@ -68,10 +68,6 @@ class UndoTracker
         return count($this->file_modification_state);
     }
 
-    /**
-     * @param ?string $current_parsed_file
-     * @return void
-     */
     public function setCurrentParsedFile(?string $current_parsed_file) : void
     {
         if (\is_string($current_parsed_file)) {

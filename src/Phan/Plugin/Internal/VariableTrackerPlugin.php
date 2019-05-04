@@ -69,9 +69,6 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
         $this->analyzeMethodLike($node);
     }
 
-    /**
-     * @return void
-     */
     private function analyzeMethodLike(Node $node) : void
     {
         // \Phan\Debug::printNode($node);
@@ -157,9 +154,6 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
             return false;
         }
     }
-    /**
-     * @return string
-     */
     private function getParameterCategory(Node $method_node) : string
     {
         $kind = $method_node->kind;
@@ -296,7 +290,8 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param Node|string|int|float $value_node
      */
-    private function warnAboutCouldBeConstant(VariableGraph $graph, string $variable_name, int $definition_id, $value_node) {
+    private function warnAboutCouldBeConstant(VariableGraph $graph, string $variable_name, int $definition_id, $value_node) : void
+    {
         $issue_type = Issue::VariableDefinitionCouldBeConstant;
         if ($value_node instanceof Node) {
             if ($value_node->kind === ast\AST_ARRAY) {
@@ -334,9 +329,6 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
         );
     }
 
-    /**
-     * @return ?Suggestion
-     */
     private static function makeSuggestion(VariableGraph $graph, string $variable_name, string $issue_type) : ?\Phan\Suggestion
     {
         if ($issue_type !== Issue::UnusedVariable) {

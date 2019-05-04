@@ -121,9 +121,6 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
         $this->awaitIncompleteProcesses($code_base, 0);
     }
 
-    /**
-     * @return void
-     */
     private static function handleError(CodeBase $code_base, InvokeExecutionPromise $process) : void
     {
         $check_error_message = $process->getError();

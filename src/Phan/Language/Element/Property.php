@@ -237,9 +237,6 @@ class Property extends ClassElement
         return $this->getPhanFlagsHasState(Flags::WAS_PROPERTY_READ);
     }
 
-    /**
-     * @return void
-     */
     public function setHasReadReference() : void
     {
         $this->enablePhanFlagBits(Flags::WAS_PROPERTY_READ);
@@ -255,9 +252,6 @@ class Property extends ClassElement
         return $this->getPhanFlagsHasState(Flags::WAS_PROPERTY_WRITTEN);
     }
 
-    /**
-     * @return void
-     */
     public function setHasWriteReference() : void
     {
         $this->enablePhanFlagBits(Flags::WAS_PROPERTY_WRITTEN);
@@ -378,9 +372,6 @@ class Property extends ClassElement
         return $this->getPhanFlagsHasState(Flags::IS_WRITE_ONLY);
     }
 
-    /**
-     * @return void
-     */
     public function setIsDynamicProperty(bool $is_dynamic) : void
     {
         $this->setPhanFlags(
@@ -392,9 +383,6 @@ class Property extends ClassElement
         );
     }
 
-    /**
-     * @return void
-     */
     public function inheritStaticUnionType(FullyQualifiedClassName $old, FullyQualifiedClassName $new) : void
     {
         $union_type = $this->getUnionType();

@@ -77,7 +77,6 @@ EOT;
         self::printAllStubs($code_base);
     }
 
-    /** @return void */
     private static function printStubsForExtension(string $extension_name, CodeBase $code_base) : void
     {
         $stub_collection = new StubCollection($code_base);
@@ -159,9 +158,6 @@ EOT;
         }
     }
 
-    /**
-     * @return void
-     */
     public static function printAllStubs(CodeBase $code_base) : void
     {
         $stub_collection = new StubCollection($code_base);
@@ -210,21 +206,18 @@ class StubCollection
     /** @var string[][] a list of global constant stubs for a PHP module */
     public $global_constant_stubs = [];
 
-    /** @return void */
     public function addClazz(Clazz $class) : void
     {
         list($namespace, $name) = $class->toStubInfo($this->code_base);
         $this->class_stubs[$namespace][(string)$class->getFQSEN()] = $name;
     }
 
-    /** @return void */
     public function addGlobalConstant(GlobalConstant $global_constant) : void
     {
         list($namespace, $name) = $global_constant->toStubInfo();
         $this->global_constant_stubs[$namespace][(string)$global_constant->getFQSEN()] = $name;
     }
 
-    /** @return void */
     public function addFunc(Func $function) : void
     {
         list($namespace, $name) = $function->toStubInfo();

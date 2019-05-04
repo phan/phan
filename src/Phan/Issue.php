@@ -3850,9 +3850,6 @@ class Issue
     }
 
 
-    /**
-     * @return string
-     */
     public function getType() : string
     {
         return $this->type;
@@ -3866,9 +3863,6 @@ class Issue
         return $this->type_id;
     }
 
-    /**
-     * @return int
-     */
     public function getCategory() : int
     {
         return $this->category;
@@ -3892,9 +3886,6 @@ class Issue
         return self::CATEGORY_NAME[$category] ?? '';
     }
 
-    /**
-     * @return int
-     */
     public function getSeverity() : int
     {
         return $this->severity;
@@ -3927,9 +3918,6 @@ class Issue
         return $this->remediation_difficulty;
     }
 
-    /**
-     * @return string
-     */
     public function getTemplate() : string
     {
         return $this->template;

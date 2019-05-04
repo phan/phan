@@ -24,7 +24,6 @@ final class CodeClimatePrinter implements BufferedPrinterInterface
     /** @var array<int,array> a list of associative arrays with codeclimate issue fields. */
     private $messages = [];
 
-    /** @param IssueInstance $instance */
     public function print(IssueInstance $instance)
     {
         $this->messages[] = [
@@ -43,10 +42,6 @@ final class CodeClimatePrinter implements BufferedPrinterInterface
         ];
     }
 
-    /**
-     * @param int $raw_severity
-     * @return string
-     */
     private static function mapSeverity(int $raw_severity) : string
     {
         $severity = self::CODECLIMATE_SEVERITY_INFO;
@@ -75,9 +70,6 @@ final class CodeClimatePrinter implements BufferedPrinterInterface
         $this->messages = [];
     }
 
-    /**
-     * @param OutputInterface $output
-     */
     public function configureOutput(OutputInterface $output)
     {
         $this->output = $output;

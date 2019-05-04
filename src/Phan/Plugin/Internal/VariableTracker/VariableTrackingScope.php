@@ -150,9 +150,6 @@ class VariableTrackingScope
         return $result;
     }
 
-    /**
-     * @return void
-     */
     protected function flattenScopeToMergedLoopResult(
         VariableTrackingLoopScope $inner_loop_scope,
         VariableTrackingBranchScope $alternate_scope,
@@ -170,9 +167,6 @@ class VariableTrackingScope
         $inner_loop_scope->mergeUses($alternate_scope->uses);
     }
 
-    /**
-     * @return void
-     */
     protected function flattenUsesFromScopeToMergedLoopResult(
         VariableTrackingLoopScope $inner_loop_scope,
         VariableTrackingBranchScope $alternate_scope,
@@ -189,9 +183,6 @@ class VariableTrackingScope
         $inner_loop_scope->mergeUses($alternate_scope->uses);
     }
 
-    /**
-     * @return void
-     */
     private function addScopeToMergedLoopResult(
         VariableTrackingScope $result,
         VariableTrackingBranchScope $scope,

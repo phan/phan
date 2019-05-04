@@ -242,9 +242,6 @@ class MarkupDescription
         return null;
     }
 
-    /**
-     * @return ?string
-     */
     private static function extractDescriptionFromDocCommentRaw(AddressableElementInterface $element) : ?string
     {
         $doc_comment = $element->getDocComment();

@@ -23,9 +23,6 @@ final class FilteringPrinter implements BufferedPrinterInterface
     /** @var IssuePrinterInterface the wrapped printer */
     private $printer;
 
-    /**
-     * @param string $file
-     */
     private static function normalize(string $file) : string
     {
         return \str_replace(\DIRECTORY_SEPARATOR, "//", (string)$file);

@@ -59,7 +59,6 @@ class Fixers
             return null;
         }
         return self::computeEditsForParamTypeDeclaration($contents, $declaration, (string)$param_name, (string)$param_type);
-
     }
 
     private static function computeEditsForReturnTypeDeclaration(FunctionLike $declaration, string $return_type) : ?FileEditSet
@@ -90,7 +89,7 @@ class Fixers
                 continue;
             }
             $declaration_name = (new NodeUtils($contents->getContents()))->tokenToString($param->variableName);
-            if ($declaration_name !== $param_name)  {
+            if ($declaration_name !== $param_name) {
                 continue;
             }
             $token = $param->byRefToken ?? $param->dotDotDotToken ?? $param->variableName;
@@ -101,9 +100,6 @@ class Fixers
         return null;
     }
 
-    /**
-     * @return ?FunctionLike
-     */
     private static function findFunctionLikeDeclaration(
         FileCacheEntry $contents,
         int $line,

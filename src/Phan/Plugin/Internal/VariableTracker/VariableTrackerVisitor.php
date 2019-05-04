@@ -158,7 +158,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     /**
      * @return VariableTrackingScope
      */
-    private function analyzeIncDec(Node $node)
+    private function analyzeIncDec(Node $node) : \Phan\Plugin\Internal\VariableTracker\VariableTrackingScope
     {
         $var_node = $node->children['var'];
         if ($var_node instanceof Node && $var_node->kind === ast\AST_VAR) {
@@ -236,7 +236,8 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @param Node|string|int|float $expr
      * @return Node|string|int|float|null
      */
-    private static function getConstExprOrNull($expr) {
+    private static function getConstExprOrNull($expr)
+    {
         return ParseVisitor::isConstExpr($expr) ? $expr : null;
     }
 

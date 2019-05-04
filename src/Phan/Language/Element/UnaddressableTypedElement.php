@@ -127,9 +127,6 @@ abstract class UnaddressableTypedElement
         $this->type = $type->nullableClone();
     }
 
-    /**
-     * @return int
-     */
     public function getFlags() : int
     {
         return $this->flags;
@@ -159,9 +156,6 @@ abstract class UnaddressableTypedElement
         $this->flags = $flags;
     }
 
-    /**
-     * @return int
-     */
     public function getPhanFlags() : int
     {
         return $this->phan_flags;

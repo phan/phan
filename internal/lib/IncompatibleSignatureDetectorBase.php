@@ -112,9 +112,6 @@ EOT;
         return $old;
     }
 
-    /**
-     * @return void
-     */
     protected function updatePHPDocPropertySummaries() : void
     {
         $old_property_documentation = $this->readPropertyDocumentationMap();
@@ -133,9 +130,6 @@ EOT;
      */
     abstract protected function getAvailablePropertyPHPDocSummaries() : array;
 
-    /**
-     * @return void
-     */
     protected function updatePHPDocFunctionSummaries() : void
     {
         $old_function_documentation = $this->readFunctionDocumentationMap();
@@ -154,9 +148,6 @@ EOT;
      */
     abstract protected function getAvailableMethodPHPDocSummaries() : array;
 
-    /**
-     * @return void
-     */
     protected function updatePHPDocConstantSummaries() : void
     {
         $old_constant_documentation = $this->readConstantDocumentationMap();
@@ -175,9 +166,6 @@ EOT;
      */
     abstract protected function getAvailableConstantPHPDocSummaries() : array;
 
-    /**
-     * @return void
-     */
     protected function updatePHPDocClassSummaries() : void
     {
         $old_class_documentation = $this->readClassDocumentationMap();
@@ -197,7 +185,6 @@ EOT;
     abstract protected function getAvailableClassPHPDocSummaries() : array;
 
 
-    /** @return void */
     public function updateFunctionSignatures() : void
     {
         $phan_signatures = static::readSignatureMap();
@@ -259,7 +246,6 @@ EOT;
     }
 
 
-    /** @return void */
     public function addMissingFunctionLikeSignatures() : void
     {
         $phan_signatures = static::readSignatureMap();
@@ -365,9 +351,6 @@ EOT;
         // fwrite(STDERR, $msg);
     }
 
-    /**
-     * @return void
-     */
     protected static function info(string $msg) : void
     {
         // comment out the below line to hide debug output

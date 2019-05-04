@@ -124,9 +124,6 @@ class ThrowsTypesAnalyzer
         return true;
     }
 
-    /**
-     * @return ?Suggestion
-     */
     protected static function suggestSimilarClassForThrownClass(
         CodeBase $code_base,
         Context $context,

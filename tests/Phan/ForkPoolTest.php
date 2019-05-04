@@ -27,7 +27,6 @@ final class ForkPoolTest extends BaseTest
         $worker_data = [];
         $pool = new ForkPool(
             $data,
-            /** @return void */
             static function () : void {
             },
             /**
@@ -58,9 +57,6 @@ final class ForkPoolTest extends BaseTest
         $did_startup = false;
         $pool = new ForkPool(
             [[1], [2], [3], [4]],
-            /**
-             * @return void
-             */
             static function () use (&$did_startup) : void {
                 $did_startup = true;
             },

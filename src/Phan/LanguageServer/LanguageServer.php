@@ -269,12 +269,6 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         if (\function_exists('pcntl_signal')) {
             \pcntl_signal(
                 SIGCHLD,
-                /**
-                 * @param int $signo
-                 * @param int|null $status
-                 * @param int|null $pid
-                 * @return void
-                 */
                 static function (int $signo, ?int $status = null, ?int $pid = null) use (&$got_signal) : void {
                     $got_signal = true;
                     Request::childSignalHandler($signo, $status, $pid);
@@ -578,9 +572,6 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         return [$filtered_uris_to_analyze, $file_path_list];
     }
 
-    /**
-     * @return void
-     */
     private function finalizeAnalyzingURIs() : void
     {
         list($uris_to_analyze, $file_path_list) = $this->getFilteredURIsToAnalyze();

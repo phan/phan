@@ -553,7 +553,7 @@ class Method extends ClassElement implements FunctionInterface
      * Ensure that this clone will use the return type of the ancestor method
      * @return void
      */
-    public function ensureClonesReturnType(Method $original_method)
+    public function ensureClonesReturnType(Method $original_method) : void
     {
         if ($this->defining_method_for_type_fetching) {
             return;
@@ -618,9 +618,6 @@ class Method extends ClassElement implements FunctionInterface
         return parent::getUnionType();
     }
 
-    /**
-     * @return FullyQualifiedMethodName
-     */
     public function getFQSEN() : FullyQualifiedMethodName
     {
         return $this->fqsen;

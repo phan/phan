@@ -215,9 +215,6 @@ class UnusedSuppressionPlugin extends PluginV2 implements
         return Config::getValue('plugin_config')['unused_suppression_ignore_list'] ?? [];
     }
 
-    /**
-     * @return void
-     */
     private function analyzePluginSuppressionsForFile(CodeBase $code_base, SuppressionCapability $plugin, string $relative_file_path) : void
     {
         $absolute_file_path = Config::projectPath($relative_file_path);

@@ -76,9 +76,6 @@ final class TolerantASTConverterWithNodeMappingTest extends BaseTest
         }
     }
 
-    /**
-     * @return Node
-     */
     private function parseASTWithDefaultOptions(string $file_contents, int $byte_offset) : \ast\Node
     {
         $converter = new TolerantASTConverterWithNodeMapping($byte_offset);

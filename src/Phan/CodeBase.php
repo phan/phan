@@ -233,9 +233,6 @@ class CodeBase
         $this->addInternalFunctionsByNames($internal_function_name_list);
     }
 
-    /**
-     * @return void
-     */
     public function enableUndoTracking() : void
     {
         if ($this->has_enabled_undo_tracker) {
@@ -245,9 +242,6 @@ class CodeBase
         $this->undo_tracker = new UndoTracker();
     }
 
-    /**
-     * @return void
-     */
     public function disableUndoTracking() : void
     {
         if (!$this->has_enabled_undo_tracker) {
@@ -264,9 +258,6 @@ class CodeBase
         return $this->undo_tracker !== null;
     }
 
-    /**
-     * @return void
-     */
     public function setShouldHydrateRequestedElements(
         bool $should_hydrate_requested_elements
     ) : void {
@@ -303,10 +294,6 @@ class CodeBase
         throw new \RuntimeException("Calling getParsedFilePathCount without an undo tracker");
     }
 
-    /**
-     * @param string|null $current_parsed_file
-     * @return void
-     */
     public function setCurrentParsedFile(?string $current_parsed_file) : void
     {
         self::$current_file = $current_parsed_file;
@@ -460,18 +447,12 @@ class CodeBase
         throw new \RuntimeException("Calling replaceFileContents without undo tracker");
     }
 
-    /**
-     * @return void
-     */
     public function eagerlyLoadAllSignatures() : void
     {
         $this->getInternalClassMap();  // Force initialization of remaining internal php classes to reduce latency of future analysis requests.
         $this->forceLoadingInternalFunctions();  // Force initialization of internal functions to reduce latency of future analysis requests.
     }
 
-    /**
-     * @return void
-     */
     public function forceLoadingInternalFunctions() : void
     {
         $internal_function_fqsen_set = $this->internal_function_fqsen_set;
@@ -793,9 +774,6 @@ class CodeBase
         }
     }
 
-    /**
-     * @return void
-     */
     public function resolveClassAliases() : void
     {
         if ($this->undo_tracker) {
@@ -807,9 +785,6 @@ class CodeBase
         }
     }
 
-    /**
-     * @return void
-     */
     private function resolveClassAliasesForAliasSet(FullyQualifiedClassName $original_fqsen, Set $alias_set) : void
     {
         if (!$this->hasClassWithFQSEN($original_fqsen)) {
@@ -889,7 +864,6 @@ class CodeBase
         return false;
     }
 
-    /** @return void */
     private function loadPHPInternalClassWithFQSEN(
         FullyQualifiedClassName $fqsen,
         ReflectionClass $reflection_class

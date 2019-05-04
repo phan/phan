@@ -60,12 +60,6 @@ class Daemon
             if (\function_exists('pcntl_signal')) {
                 \pcntl_signal(
                     \SIGCHLD,
-                    /**
-                     * @param int $signo
-                     * @param int|null $status
-                     * @param int|null $pid
-                     * @return void
-                     */
                     static function (int $signo, ?int $status = null, ?int $pid = null) use (&$got_signal) : void {
                         $got_signal = true;
                         Request::childSignalHandler($signo, $status, $pid);
@@ -139,13 +133,6 @@ class Daemon
             while (true) {
                 // We get an error from stream_socket_accept. After the RuntimeException is thrown, pcntl_signal is called.
                 $previous_error_handler = \set_error_handler(
-                    /**
-                     * @param int $severity
-                     * @param string $message
-                     * @param string $file
-                     * @param int $line
-                     * @return bool
-                     */
                     static function (int $severity, string $message, string $file, int $line) use (&$previous_error_handler) : bool {
                         self::debugf("In new error handler '$message'");
                         if (!\preg_match('/stream_socket_accept/i', $message)) {

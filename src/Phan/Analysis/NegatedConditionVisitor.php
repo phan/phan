@@ -836,9 +836,6 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
         return $context;
     }
 
-    /**
-     * @return Context
-     */
     private function checkComplexNegatedEmpty(Node $var_node) : \Phan\Language\Context
     {
         $context = $this->context;

@@ -37,11 +37,6 @@ class FileMapping
         return $this->overrides;
     }
 
-    /**
-     * @param string $uri
-     * @param ?string $new_contents
-     * @return void
-     */
     public function addOverrideURI(string $uri, ?string $new_contents) : void
     {
         $path = Utils::uriToPath($uri);
@@ -52,11 +47,6 @@ class FileMapping
         $this->addOverride($path, $new_contents);
     }
 
-    /**
-     * @param string $path
-     * @param ?string $new_contents
-     * @return void
-     */
     public function addOverride(string $path, ?string $new_contents) : void
     {
         if ($new_contents === null) {
@@ -66,9 +56,6 @@ class FileMapping
         $this->overrides[$path] = $new_contents;
     }
 
-    /**
-     * @return void
-     */
     public function removeOverrideURI(string $uri) : void
     {
         $path = Utils::uriToPath($uri);
@@ -85,9 +72,6 @@ class FileMapping
         return $this->uri_for_path[$path] ?? Utils::pathToUri($path);
     }
 
-    /**
-     * @return void
-     */
     public function removeOverride(string $path) : void
     {
         unset($this->uri_for_path[$path]);

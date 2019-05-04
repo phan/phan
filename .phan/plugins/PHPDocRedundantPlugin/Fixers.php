@@ -69,7 +69,7 @@ class Fixers
         $last_byte_index = $comment_token->getEndPosition();
         $first_byte_index = $comment_token->start;
         // Skip leading whitespace and the previous newline, if those were found
-        for (;$first_byte_index > 0; $first_byte_index--) {
+        for (; $first_byte_index > 0; $first_byte_index--) {
             $prev_byte = $file_contents[$first_byte_index - 1];
             switch ($prev_byte) {
                 case " ":
@@ -101,7 +101,10 @@ class Fixers
     {
         $leadingTriviaText = $node->getLeadingCommentAndWhitespaceText();
         $leadingTriviaTokens = PhpTokenizer::getTokensArrayFromContent(
-            $leadingTriviaText, ParseContext::SourceElements, $node->getFullStart(), false
+            $leadingTriviaText,
+            ParseContext::SourceElements,
+            $node->getFullStart(),
+            false
         );
         for ($i = \count($leadingTriviaTokens) - 1; $i >= 0; $i--) {
             $token = $leadingTriviaTokens[$i];
@@ -124,7 +127,7 @@ class Fixers
                 continue;
             }
             $declaration_name = (new NodeUtils($contents->getContents()))->tokenToString($param->variableName);
-            if ($declaration_name !== $param_name)  {
+            if ($declaration_name !== $param_name) {
                 continue;
             }
             $token = $param->byRefToken ?? $param->dotDotDotToken ?? $param->variableName;
@@ -135,9 +138,6 @@ class Fixers
         return null;
     }
 
-    /**
-     * @return ?FunctionLike
-     */
     private static function findFunctionLikeDeclaration(
         FileCacheEntry $contents,
         int $line,

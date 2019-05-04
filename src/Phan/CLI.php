@@ -804,9 +804,6 @@ class CLI
         return ' (Did you mean ' . \implode(' or ', $suggestions) . '?)';
     }
 
-    /**
-     * @return void
-     */
     public function recomputeFileList() : void
     {
         $this->file_list = $this->file_list_in_config;
@@ -1578,9 +1575,6 @@ EOB;
         self::debugOutput($line);
     }
 
-    /**
-     * @return void
-     */
     public static function debugOutput(string $line) : void
     {
         \fwrite(STDERR, $line . "\n");

@@ -162,9 +162,6 @@ class ReflectionCompletenessCheck
             }
         }
     }
-    /**
-     * @return void
-     */
     public static function main() : void
     {
         Config::setValue('target_php_version', sprintf("%d.%d", PHP_MAJOR_VERSION, PHP_MINOR_VERSION));

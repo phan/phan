@@ -258,9 +258,6 @@ class ParameterTypesAnalyzer
         }
     }
 
-    /**
-     * @return void
-     */
     private static function checkCommentParametersAreInOrder(CodeBase $code_base, FunctionInterface $method) : void
     {
         $comment = $method->getComment();
@@ -359,9 +356,6 @@ class ParameterTypesAnalyzer
         }
     }
 
-    /**
-     * @return void
-     */
     private static function analyzeOverrideComment(CodeBase $code_base, Method $method) : void
     {
         if ($method->getIsMagic()) {
@@ -1005,9 +999,6 @@ class ParameterTypesAnalyzer
         }
     }
 
-    /**
-     * @return void
-     */
     private static function analyzeParameterTypesDocblockSignaturesMatch(
         CodeBase $code_base,
         FunctionInterface $method
@@ -1031,9 +1022,6 @@ class ParameterTypesAnalyzer
         self::recordOutputReferences($method);
     }
 
-    /**
-     * @return void
-     */
     private static function tryToAssignPHPDocTypeToParameter(
         CodeBase $code_base,
         FunctionInterface $method,
@@ -1099,9 +1087,6 @@ class ParameterTypesAnalyzer
         }
     }
 
-    /**
-     * @return ?int
-     */
     private static function guessCommentParamLineNumber(FunctionInterface $method, Parameter $param) : ?int
     {
         $comment = $method->getComment();
@@ -1135,9 +1120,6 @@ class ParameterTypesAnalyzer
         return $comment->getReturnLineno();
     }
 
-    /**
-     * @param FunctionInterface $method
-     */
     private static function recordOutputReferences(FunctionInterface $method) : void
     {
         foreach ($method->getOutputReferenceParamNames() as $output_param_name) {

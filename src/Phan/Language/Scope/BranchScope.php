@@ -34,9 +34,6 @@ class BranchScope extends Scope
         );
     }
 
-    /**
-     * @return Variable
-     */
     public function getVariableByName(string $name) : Variable
     {
         return (

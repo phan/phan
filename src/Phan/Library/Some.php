@@ -25,9 +25,6 @@ class Some extends Option
         $this->_ = $_;
     }
 
-    /**
-     * @return bool
-     */
     public function isDefined() : bool
     {
         return true;

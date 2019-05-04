@@ -349,9 +349,6 @@ final class Builder
         ))->build();
     }
 
-    /**
-     * @return void
-     */
     private function parseCommentLine(int $i, string $line) : void
     {
         // https://secure.php.net/manual/en/regexp.reference.internal-options.php
@@ -481,9 +478,6 @@ final class Builder
      * @internal
      */
     const ASSERT_REGEX = '/@phan-assert(?:(-true-condition|-false-condition)|\s+(!?)(' . UnionType::union_type_regex . '))\s+\$' . self::WORD_REGEX . '/';
-    /**
-     * @return ?Assertion
-     */
     private function assertFromCommentLine(string $line) : ?\Phan\Language\Element\Comment\Assertion
     {
         if (!\preg_match(self::ASSERT_REGEX, $line, $match)) {
@@ -508,9 +502,6 @@ final class Builder
         return new Assertion($union_type, $param_name, $assertion_type);
     }
 
-    /**
-     * @return void
-     */
     private function maybeParsePhanAssert(int $i, string $line) : void
     {
         $this->checkCompatible('@phan-assert', Comment::FUNCTION_LIKE, $i);
@@ -699,9 +690,6 @@ final class Builder
         }
     }
 
-    /**
-     * @return ?Suggestion
-     */
     private static function generateSuggestionForMisspelledAnnotation(string $annotation) : ?\Phan\Suggestion
     {
         $suggestions = IssueFixSuggester::getSuggestionsForStringSet('@' . $annotation, self::SUPPORTED_ANNOTATIONS);
@@ -812,9 +800,6 @@ final class Builder
         }
     }
 
-    /**
-     * @return void
-     */
     private function emitInvalidCommentForDeclarationType(
         string $annotation_type,
         int $issue_lineno

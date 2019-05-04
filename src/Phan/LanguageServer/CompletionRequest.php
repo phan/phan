@@ -142,9 +142,6 @@ final class CompletionRequest extends NodeInfoRequest
         return $element->getName();
     }
 
-    /**
-     * @return ?int
-     */
     private function kindForElement(TypedElementInterface $element) : ?int
     {
         if ($element instanceof ClassConstant) {

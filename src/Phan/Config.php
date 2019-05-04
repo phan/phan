@@ -851,9 +851,6 @@ class Config
         self::$project_root_directory = $project_root_directory;
     }
 
-    /**
-     * @return void
-     */
     public static function init() : void
     {
         static $did_init = false;

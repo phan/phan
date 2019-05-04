@@ -67,9 +67,6 @@ class ProtocolStreamReader extends Emitter implements ProtocolReader
         });
     }
 
-    /**
-     * @return int
-     */
     private function readMessages() : int
     {
         $emitted_messages = 0;
@@ -128,9 +125,6 @@ class ProtocolStreamReader extends Emitter implements ProtocolReader
         $this->is_accepting_new_requests = false;
     }
 
-    /**
-     * @return void
-     */
     private function emitClose() : void
     {
         if ($this->did_emit_close) {

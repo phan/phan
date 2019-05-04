@@ -81,9 +81,6 @@ final class VariableGraph
         $scope->recordDefinitionById($name, $id);
     }
 
-    /**
-     * @return void
-     */
     public function recordVariableUsage(string $name, Node $node, VariableTrackingScope $scope) : void
     {
         if (!\array_key_exists($name, $this->variable_types)) {
@@ -111,7 +108,8 @@ final class VariableGraph
     /**
      * Record that $name was modified in place
      */
-    public function recordVariableModification(string $name) : void {
+    public function recordVariableModification(string $name) : void
+    {
         $this->const_expr_declarations[$name][-1] = 0;
     }
 
@@ -129,25 +127,16 @@ final class VariableGraph
         }
     }
 
-    /**
-     * @return void
-     */
     public function markAsReference(string $name) : void
     {
         $this->markBitForVariableName($name, self::IS_REFERENCE);
     }
 
-    /**
-     * @return void
-     */
     public function markAsStaticVariable(string $name) : void
     {
         $this->markBitForVariableName($name, self::IS_STATIC);
     }
 
-    /**
-     * @return void
-     */
     public function markAsGlobalVariable(string $name) : void
     {
         $this->markBitForVariableName($name, self::IS_GLOBAL);
@@ -197,9 +186,6 @@ final class VariableGraph
         return \array_key_exists($definition_id, $this->caught_exception_ids);
     }
 
-    /**
-     * @return void
-     */
     private function markBitForVariableName(string $name, int $bit) : void
     {
         $this->variable_types[$name] = (($this->variable_types[$name] ?? 0) | $bit);

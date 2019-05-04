@@ -75,9 +75,6 @@ class IssueFixSuggester
         });
     }
 
-    /**
-     * @return ?Suggestion
-     */
     public static function suggestSimilarClassForMethod(CodeBase $code_base, Context $context, FullyQualifiedClassName $class_fqsen, string $method_name, bool $is_static) : ?\Phan\Suggestion
     {
         $filter = null;
@@ -91,9 +88,6 @@ class IssueFixSuggester
         return self::suggestSimilarClass($code_base, $context, $class_fqsen, $filter);
     }
 
-    /**
-     * @return ?Suggestion
-     */
     public static function suggestSimilarGlobalFunction(
         CodeBase $code_base,
         Context $context,
@@ -186,9 +180,6 @@ class IssueFixSuggester
         return Suggestion::fromString($suggestion_text);
     }
 
-    /**
-     * @return ?Suggestion
-     */
     public static function suggestSimilarMethod(CodeBase $code_base, Context $context, Clazz $class, string $wanted_method_name, bool $is_static) : ?\Phan\Suggestion
     {
         if (Config::getValue('disable_suggestions')) {
@@ -274,9 +265,6 @@ class IssueFixSuggester
         return self::suggestSimilarClass($code_base, $context, $fqsen, $filter, $prefix);
     }
 
-    /**
-     * @return ?Suggestion
-     */
     public static function suggestSimilarProperty(CodeBase $code_base, Context $context, Clazz $class, string $wanted_property_name, bool $is_static) : ?\Phan\Suggestion
     {
         if (Config::getValue('disable_suggestions')) {
@@ -354,9 +342,6 @@ class IssueFixSuggester
         return $candidates;
     }
 
-    /**
-     * @return ?Suggestion
-     */
     public static function suggestSimilarClassConstant(CodeBase $code_base, Context $context, FullyQualifiedClassConstantName $class_constant_fqsen) : ?\Phan\Suggestion
     {
         if (Config::getValue('disable_suggestions')) {
@@ -537,9 +522,6 @@ class IssueFixSuggester
         return $candidates;
     }
 
-    /**
-     * @return ?Suggestion
-     */
     public static function suggestVariableTypoFix(CodeBase $code_base, Context $context, string $variable_name, string $prefix = 'Did you mean') : ?\Phan\Suggestion
     {
         if (Config::getValue('disable_suggestions')) {

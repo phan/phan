@@ -21,7 +21,6 @@ final class JSONPrinter implements BufferedPrinterInterface
     /** @var array<int,array<string,mixed>> the issue data to be JSON encoded. */
     private $messages = [];
 
-    /** @param IssueInstance $instance */
     public function print(IssueInstance $instance)
     {
         $issue = $instance->getIssue();
@@ -62,9 +61,6 @@ final class JSONPrinter implements BufferedPrinterInterface
         $this->messages = [];
     }
 
-    /**
-     * @param OutputInterface $output
-     */
     public function configureOutput(OutputInterface $output)
     {
         $this->output = $output;

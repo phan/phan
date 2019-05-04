@@ -165,9 +165,6 @@ final class ArgumentType
         }
     }
 
-    /**
-     * @return void
-     */
     private static function checkIsDeprecatedOrInternal(CodeBase $code_base, Context $context, FunctionInterface $method) : void
     {
         // Special common cases where we want slightly
@@ -506,9 +503,6 @@ final class ArgumentType
         }
     }
 
-    /**
-     * @return void
-     */
     private static function analyzeRemainingParametersForVariadic(
         CodeBase $code_base,
         Context $context,
@@ -563,14 +557,6 @@ final class ArgumentType
         }
     }
 
-    /**
-     * @param CodeBase $code_base
-     * @param Context $context
-     * @param FunctionInterface $method
-     * @param UnionType $argument_type
-     * @param int $lineno
-     * @return void
-     */
     public static function analyzeParameter(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, int $lineno, int $i) : void
     {
         // Expand it to include all parent types up the chain
@@ -657,9 +643,6 @@ final class ArgumentType
         self::warnInvalidArgumentType($code_base, $context, $method, $alternate_parameter, $argument_type_expanded, $lineno, $i);
     }
 
-    /**
-     * @return void
-     */
     private static function warnInvalidArgumentType(
         CodeBase $code_base,
         Context $context,

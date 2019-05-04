@@ -433,7 +433,6 @@ class Phan implements IgnoredFilesFilterInterface
                 // files up among a given number of child processes.
                 $pool = new ForkPool(
                     $process_file_list_map,
-                    /** @return void */
                     static function () : void {
                         // Remove any issues that were collected prior to forking
                         // to prevent duplicate issues in the output.
@@ -627,9 +626,6 @@ class Phan implements IgnoredFilesFilterInterface
         return EXIT_SUCCESS;
     }
 
-    /**
-     * @return void
-     */
     private static function printMemoryUsageSummary() : void
     {
         $memory = memory_get_usage() / 1024 / 1024;

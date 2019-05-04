@@ -688,11 +688,6 @@ final class ConfigPluginSet extends PluginV2 implements
         $this->addNodeSelectionClosureForKind($node->kind, $closure);
     }
 
-    /**
-     * @param CodeBase $code_base
-     * @param ?Request $request
-     * @return ?RAII
-     */
     public function addTemporaryAnalysisPlugin(CodeBase $code_base, ?\Phan\Daemon\Request $request) : ?\Phan\Library\RAII
     {
         if (!$request) {
@@ -788,9 +783,6 @@ final class ConfigPluginSet extends PluginV2 implements
         return \dirname(__DIR__, 3) . '/.phan/plugins';
     }
 
-    /**
-     * @return void
-     */
     private function ensurePluginsExist() : void
     {
         if (!is_null($this->plugin_set)) {

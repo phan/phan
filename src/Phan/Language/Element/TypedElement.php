@@ -139,9 +139,6 @@ abstract class TypedElement implements TypedElementInterface
         return $this->getUnionType();
     }
 
-    /**
-     * @return int
-     */
     public function getFlags() : int
     {
         return $this->flags;
@@ -161,19 +158,11 @@ abstract class TypedElement implements TypedElementInterface
     }
 
 
-    /**
-     * @param int $flags
-     *
-     * @return void
-     */
     public function setFlags(int $flags) : void
     {
         $this->flags = $flags;
     }
 
-    /**
-     * @return int
-     */
     public function getPhanFlags() : int
     {
         return $this->phan_flags;
@@ -192,11 +181,6 @@ abstract class TypedElement implements TypedElementInterface
         return ($this->phan_flags & $flag) === $flag;
     }
 
-    /**
-     * @param int $phan_flags
-     *
-     * @return void
-     */
     public function setPhanFlags(int $phan_flags) : void
     {
         $this->phan_flags = $phan_flags;
@@ -333,9 +317,6 @@ abstract class TypedElement implements TypedElementInterface
         return $this->getPhanFlagsHasState(Flags::IS_PHP_INTERNAL);
     }
 
-    /**
-     * @return void
-     */
     private function setIsPHPInternal(bool $is_internal) : void
     {
         $this->setPhanFlags(

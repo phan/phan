@@ -57,13 +57,11 @@ class NodeDumper
         $this->indent = $indent;
     }
 
-    /** @return void */
     public function setIncludeOffset(bool $include_offset) : void
     {
         $this->include_offset = $include_offset;
     }
 
-    /** @return void */
     public function setIncludeTokenKind(bool $include_token_kind) : void
     {
         $this->include_token_kind = $include_token_kind;
