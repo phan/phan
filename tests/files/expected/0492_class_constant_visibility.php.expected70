@@ -1,4 +1,0 @@
-%s:23 PhanPropertyAccessSignatureMismatch Access level to protected $prop must be compatible with public $prop defined in %s:4
-%s:25 PhanAccessNonStaticToStaticProperty Cannot make non static property \X->instance_prop into the static property \Y::$instance_prop
-%s:26 PhanAccessStaticToNonStaticProperty Cannot make static property \X::$static_prop into the non static property \Y->static_prop
-%s:28 PhanAccessSignatureMismatch Access level to function test() must be compatible with function test() defined in %s:7
