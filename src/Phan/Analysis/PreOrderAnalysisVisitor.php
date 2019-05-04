@@ -310,9 +310,6 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         return $context;
     }
 
-    /**
-     * @return ?FullyQualifiedClassName
-     */
     private static function getOverrideClassFQSEN(CodeBase $code_base, Func $func) : ?\Phan\Language\FQSEN\FullyQualifiedClassName
     {
         $closure_scope = $func->getInternalScope();

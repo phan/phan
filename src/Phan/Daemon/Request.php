@@ -147,9 +147,6 @@ class Request
         return false;
     }
 
-    /**
-     * @return int
-     */
     public function getTargetByteOffset(string $file_contents) : int
     {
         if ($this->most_recent_node_info_request) {
@@ -324,9 +321,6 @@ class Request
         $this->sendJSONResponse($response);
     }
 
-    /**
-     * @return void
-     */
     public function respondWithNoFilesToAnalyze() : void
     {
         // The mentioned file wasn't in .phan/config.php's list of files to analyze.
@@ -378,17 +372,11 @@ class Request
         return $mapping;
     }
 
-    /**
-     * @return ?NodeInfoRequest
-     */
     public function getMostRecentNodeInfoRequest() : ?\Phan\LanguageServer\NodeInfoRequest
     {
         return $this->most_recent_node_info_request;
     }
 
-    /**
-     * @return void
-     */
     public function rejectLanguageServerRequestsRequiringAnalysis() : void
     {
         if ($this->most_recent_node_info_request) {
@@ -426,12 +414,6 @@ class Request
         }
     }
 
-    /**
-     * @param int $signo
-     * @param int|null $status
-     * @param int|null $pid
-     * @return void
-     */
     public static function childSignalHandler(int $signo, ?int $status = null, ?int $pid = null) : void
     {
         // test
@@ -621,9 +603,6 @@ class Request
         Daemon::debugf("Created a child pid %d", $pid);
     }
 
-    /**
-     * @return void
-     */
     public static function handleBecomingChildAnalysisProcess() : void
     {
         self::$child_pids = [];

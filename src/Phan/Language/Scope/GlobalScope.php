@@ -75,9 +75,6 @@ class GlobalScope extends Scope
         return \array_key_exists($name, self::$global_variable_map);
     }
 
-    /**
-     * @return Variable
-     */
     public function getVariableByName(string $name) : Variable
     {
         return self::$global_variable_map[$name];
@@ -104,9 +101,6 @@ class GlobalScope extends Scope
         return $this;
     }
 
-    /**
-     * @return void
-     */
     public function addVariable(Variable $variable) : void
     {
         $variable_name = $variable->getName();

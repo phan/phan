@@ -284,6 +284,9 @@ return [
         'PhanPluginDescriptionlessCommentOnProtectedMethod',
         'PhanPluginNoCommentOnPrivateMethod',
         'PhanPluginDescriptionlessCommentOnPrivateMethod',
+        // TODO: These started being emitted after comments with (at)return void were removed.
+        // Fix the occurrences of PhanPluginNoCommentOnPublicMethod
+        'PhanPluginNoCommentOnPublicMethod',
     ],
 
     // If empty, no filter against issues types will be applied.

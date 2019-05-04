@@ -63,11 +63,6 @@ trait FunctionTrait
     /** @return bool true if all of the bits in $bits is true in $this->getPhanFlags() */
     abstract public function getPhanFlagsHasState(int $bits) : bool;
 
-    /**
-     * @param int $phan_flags
-     *
-     * @return void
-     */
     abstract public function setPhanFlags(int $phan_flags) : void;
 
     /**
@@ -553,7 +548,7 @@ trait FunctionTrait
     public function getRealParameterList()
     {
         // Excessive cloning, to ensure that this stays immutable.
-        return \array_map(/** @return Parameter */ static function (Parameter $param) : \Phan\Language\Element\Parameter {
+        return \array_map(static function (Parameter $param) : \Phan\Language\Element\Parameter {
             return clone($param);
         }, $this->real_parameter_list);
     }
@@ -566,7 +561,7 @@ trait FunctionTrait
      */
     public function setRealParameterList(array $parameter_list) : void
     {
-        $this->real_parameter_list = \array_map(/** @return Parameter */ static function (Parameter $param) : \Phan\Language\Element\Parameter {
+        $this->real_parameter_list = \array_map(static function (Parameter $param) : \Phan\Language\Element\Parameter {
             return clone($param);
         }, $parameter_list);
 
@@ -993,9 +988,6 @@ trait FunctionTrait
         return ($this->return_type_callback)($code_base, $context, $this, $args);
     }
 
-    /**
-     * @return void
-     */
     public function setDependentReturnTypeClosure(Closure $closure) : void
     {
         $this->return_type_callback = $closure;
@@ -1056,10 +1048,6 @@ trait FunctionTrait
         return $this->comment;
     }
 
-    /**
-     * @param Comment $comment
-     * @return void
-     */
     public function setComment(Comment $comment) : void
     {
         $this->comment = $comment;
@@ -1097,7 +1085,6 @@ trait FunctionTrait
         }
     }
 
-    /** @return void */
     abstract public function memoizeFlushAll() : void;
 
     /** @return UnionType union type this function-like's declared return type (from PHPDoc, signatures, etc.)  */

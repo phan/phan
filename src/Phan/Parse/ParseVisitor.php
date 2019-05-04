@@ -1490,4 +1490,18 @@ class ParseVisitor extends ScopeVisitor
             self::checkIsAllowedInConstExpr($child_node);
         }
     }
+
+    /**
+     * @param Node|string|float|int|bool|null $n
+     * @return bool - If true, then $n is a valid constant AST.
+     */
+    public static function isConstExpr($n) : bool
+    {
+        try {
+            self::checkIsAllowedInConstExpr($n);
+            return true;
+        } catch (InvalidArgumentException $_) {
+            return false;
+        }
+    }
 }

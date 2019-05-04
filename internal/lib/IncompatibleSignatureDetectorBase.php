@@ -18,7 +18,7 @@ define('ORIGINAL_PROPERTY_DOCUMENTATION_PATH', dirname(dirname(__DIR__)) . '/src
  * - Compare the signatures against Phan's to report incomplete or inaccurate signatures of Phan itself (or the external signature)
  *
  * TODO: could extend this to properties (the use of properties in extensions is rare).
- * TODO: Fix zoookeeperconfig in phpdoc-en svn repo
+ * TODO: Fix zookeeperconfig in phpdoc-en svn repo
  *
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
@@ -112,9 +112,6 @@ EOT;
         return $old;
     }
 
-    /**
-     * @return void
-     */
     protected function updatePHPDocPropertySummaries() : void
     {
         $old_property_documentation = $this->readPropertyDocumentationMap();
@@ -133,9 +130,6 @@ EOT;
      */
     abstract protected function getAvailablePropertyPHPDocSummaries() : array;
 
-    /**
-     * @return void
-     */
     protected function updatePHPDocFunctionSummaries() : void
     {
         $old_function_documentation = $this->readFunctionDocumentationMap();
@@ -154,9 +148,6 @@ EOT;
      */
     abstract protected function getAvailableMethodPHPDocSummaries() : array;
 
-    /**
-     * @return void
-     */
     protected function updatePHPDocConstantSummaries() : void
     {
         $old_constant_documentation = $this->readConstantDocumentationMap();
@@ -175,9 +166,6 @@ EOT;
      */
     abstract protected function getAvailableConstantPHPDocSummaries() : array;
 
-    /**
-     * @return void
-     */
     protected function updatePHPDocClassSummaries() : void
     {
         $old_class_documentation = $this->readClassDocumentationMap();
@@ -196,8 +184,9 @@ EOT;
      */
     abstract protected function getAvailableClassPHPDocSummaries() : array;
 
-
-    /** @return void */
+    /**
+     * Update the function/method signatures using the subclass's source of type information
+     */
     public function updateFunctionSignatures() : void
     {
         $phan_signatures = static::readSignatureMap();
@@ -258,8 +247,10 @@ EOT;
         return $arguments_from_phan;
     }
 
-
-    /** @return void */
+    /**
+     * Save a file with suffix .extra_signatures using information from the type source
+     * that is not in Phan's signature map.
+     */
     public function addMissingFunctionLikeSignatures() : void
     {
         $phan_signatures = static::readSignatureMap();
@@ -365,9 +356,6 @@ EOT;
         // fwrite(STDERR, $msg);
     }
 
-    /**
-     * @return void
-     */
     protected static function info(string $msg) : void
     {
         // comment out the below line to hide debug output

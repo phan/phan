@@ -8,7 +8,6 @@ use Closure;
 use Phan\AST\Visitor\Element;
 use Phan\CodeBase;
 use Phan\Config;
-use Phan\Daemon\Request;
 use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Context;
@@ -688,11 +687,6 @@ final class ConfigPluginSet extends PluginV2 implements
         $this->addNodeSelectionClosureForKind($node->kind, $closure);
     }
 
-    /**
-     * @param CodeBase $code_base
-     * @param ?Request $request
-     * @return ?RAII
-     */
     public function addTemporaryAnalysisPlugin(CodeBase $code_base, ?\Phan\Daemon\Request $request) : ?\Phan\Library\RAII
     {
         if (!$request) {
@@ -788,9 +782,6 @@ final class ConfigPluginSet extends PluginV2 implements
         return \dirname(__DIR__, 3) . '/.phan/plugins';
     }
 
-    /**
-     * @return void
-     */
     private function ensurePluginsExist() : void
     {
         if (!is_null($this->plugin_set)) {

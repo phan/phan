@@ -409,9 +409,6 @@ class Context extends FileRef
         return $this->scope->getClassFQSEN();
     }
 
-    /**
-     * @return ?FullyQualifiedClassName
-     */
     public function getClassFQSENOrNull() : ?\Phan\Language\FQSEN\FullyQualifiedClassName
     {
         return $this->scope->getClassFQSENOrNull();
@@ -716,9 +713,6 @@ class Context extends FileRef
         $this->cache[$node_id ^ self::HIGH_BIT_2] = $result;
     }
 
-    /**
-     * @return void
-     */
     public function clearCachedUnionTypes() : void
     {
         $this->cache = [];
@@ -886,9 +880,6 @@ class Context extends FileRef
         return $override_type;
     }
 
-    /**
-     * @return ?UnionType
-     */
     public function getThisPropertyIfOverridden(string $name) : ?\Phan\Language\UnionType
     {
         if (!$this->scope->hasVariableWithName(self::VAR_NAME_THIS_PROPERTIES)) {

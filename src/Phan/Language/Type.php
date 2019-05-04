@@ -1966,7 +1966,6 @@ class Type
     }
 
     // TODO: Use a template-based abstraction so that this boilerplate can be removed
-    /** @return ?UnionType */
     private function keyTypeOfTraversable() : ?\Phan\Language\UnionType
     {
         $template_type_list = $this->template_parameter_type_list;
@@ -1976,7 +1975,6 @@ class Type
         return null;
     }
 
-    /** @return ?UnionType */
     private function valueTypeOfTraversable() : ?\Phan\Language\UnionType
     {
         $template_type_list = $this->template_parameter_type_list;
@@ -1988,7 +1986,6 @@ class Type
     }
 
 
-    /** @return ?UnionType */
     private function keyTypeOfGenerator() : ?\Phan\Language\UnionType
     {
         $template_type_list = $this->template_parameter_type_list;
@@ -1998,7 +1995,6 @@ class Type
         return null;
     }
 
-    /** @return ?UnionType */
     private function valueTypeOfGenerator() : ?\Phan\Language\UnionType
     {
         $template_type_list = $this->template_parameter_type_list;
@@ -2102,7 +2098,7 @@ class Type
         if ($recursion_depth >= 20) {
             throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
         }
-        $union_type = $this->memoize(__METHOD__, /** @return UnionType */ function () use ($code_base, $recursion_depth) : \Phan\Language\UnionType {
+        $union_type = $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) : \Phan\Language\UnionType {
             $union_type = $this->asUnionType();
 
             $class_fqsen = $this->asFQSEN();
@@ -2184,7 +2180,7 @@ class Type
         if ($recursion_depth >= 20) {
             throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
         }
-        $union_type = $this->memoize(__METHOD__, /** @return UnionType */ function () use ($code_base, $recursion_depth) : \Phan\Language\UnionType {
+        $union_type = $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) : \Phan\Language\UnionType {
             $union_type = $this->asUnionType();
 
             $class_fqsen = $this->asFQSEN();

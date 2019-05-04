@@ -13,6 +13,7 @@ Plugins:
   This does not check that the phpdoc types are correct.
 
   `--automatic-fix` can be used to automate making these changes for issues that are not suppressed.
++ Add `PHPDocRedundantPlugin` to detect functions/methods/closures where the doc comment just repeats the types in the signature.
 + Add a `BeforeAnalyzePhaseCapability`. Unlike `BeforeAnalyzeCapability`, this will run after methods are analyzed, not before.
 
 ?? ??? 2019, Phan 1.3.3 (dev)
@@ -24,9 +25,15 @@ New features(CLI, Configs):
 + Add `maximum_recursion_depth` - This setting specifies the maximum recursion depth that
   can be reached during re-analysis.
   Default is 2.
++ Add `--constant-variable-detection` - This checks for variables that can be replaced with literals or constants. (#2704)
+  This is almost entirely false positives in most coding styles, but may catch some dead code.
 
 New features(Analysis):
 + Emit `PhanDeprecatedClassConstant` for code using a constant marked with `@deprecated`.
++ When recursively inferring the return type of `BaseClass::method()` from its return statements,
+  make that also affect the inherited copies of that method (`SubClass::method()`). (#2718)
+  This change is limited to methods with no return type in the phpdoc or real signature.
++ Improve unused variable detection: Detect more unused variables for expressions such as `$x++` and `$x -= 2` (#2715)
 
 Plugins:
 + Add more forms of checks such as `$x !== null ? $x : null` to `PhanPluginDuplicateConditionalNullCoalescing` (#2691)

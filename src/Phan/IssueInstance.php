@@ -140,7 +140,6 @@ class IssueInstance
         return $this->template_parameters;
     }
 
-    /** @return ?string */
     public function getSuggestionMessage() : ?string
     {
         if (!$this->suggestion) {
@@ -153,41 +152,26 @@ class IssueInstance
         return StringUtil::asSingleLineUtf8($text);
     }
 
-    /**
-     * @return Issue
-     */
     public function getIssue() : Issue
     {
         return $this->issue;
     }
 
-    /**
-     * @return string
-     */
     public function getFile() : string
     {
         return $this->file;
     }
 
-    /**
-     * @return int
-     */
     public function getLine() : int
     {
         return $this->line;
     }
 
-    /**
-     * @return string
-     */
     public function getMessage() : string
     {
         return $this->message;
     }
 
-    /**
-     * @return string
-     */
     public function getMessageAndMaybeSuggestion() : string
     {
         $message = $this->getMessage();

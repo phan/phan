@@ -473,18 +473,12 @@ class Parameter extends Variable
         return self::REFERENCE_DEFAULT;
     }
 
-    /**
-     * @return void
-     */
     public function setIsOutputReference() : void
     {
         $this->enablePhanFlagBits(Flags::IS_WRITE_REFERENCE);
         $this->disablePhanFlagBits(Flags::IS_READ_REFERENCE);
     }
 
-    /**
-     * @return void
-     */
     private function setIsUsingNullableSyntax() : void
     {
         $this->enablePhanFlagBits(Flags::IS_PARAM_USING_NULLABLE_SYNTAX);

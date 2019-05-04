@@ -1427,9 +1427,6 @@ class UnionTypeVisitor extends AnalysisVisitor
         return false;
     }
 
-    /**
-     * @return ?UnionType
-     */
     private function resolveArrayShapeElementTypes(Node $node, UnionType $union_type) : ?\Phan\Language\UnionType
     {
         $dim_node = $node->children['dim'];
@@ -2873,11 +2870,6 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
     }
 
-    /**
-     * @param string $class_name
-     * @param string $method_name
-     * @return void
-     */
     private function emitNonObjectContextInCallableIssue(string $class_name, string $method_name) : void
     {
         $this->emitIssue(
@@ -3167,10 +3159,6 @@ class UnionTypeVisitor extends AnalysisVisitor
         return null;
     }
 
-    /**
-     * @param Node $node
-     * @return void
-     */
     private function analyzeNegativeStringOffsetCompatibility(Node $node, UnionType $dim_type) : void
     {
         $dim_value = $dim_type->asSingleScalarValueOrNull();

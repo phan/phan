@@ -31,7 +31,6 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
         ~(ContextNode::RESOLVE_KEYS_SKIP_UNKNOWN_KEYS | ContextNode::RESOLVE_ARRAY_VALUES);
 
 
-    /** @return void */
     private static function analyzePattern(CodeBase $code_base, Context $context, Func $function, string $pattern) : void
     {
         /**

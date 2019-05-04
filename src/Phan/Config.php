@@ -423,6 +423,13 @@ class Config
         // This has a few known false positives, e.g. for loops or branches.
         'unused_variable_detection' => false,
 
+        // Set to true in order to attempt to detect variables that could be replaced with constants or literals.
+        // (i.e. they are declared once (as a constant expression) and never modified)
+        // This is almost entirely false positives for most coding styles.
+        //
+        // This is intended to be used to check for bugs where a variable such as a boolean was declared but is no longer (or was never) modified.
+        'constant_variable_detection' => false,
+
         // Set to true in order to emit issues such as `PhanUnusedPublicMethodParameter` instead of `PhanUnusedPublicNoOverrideMethodParameter`
         // (i.e. assume any non-final non-private method can have overrides).
         // This is useful in situations when parsing only a subset of the available files.
@@ -844,9 +851,6 @@ class Config
         self::$project_root_directory = $project_root_directory;
     }
 
-    /**
-     * @return void
-     */
     public static function init() : void
     {
         static $did_init = false;

@@ -21,9 +21,6 @@ final class UnionTypeBuilder
         $this->type_set = $type_set;
     }
 
-    /**
-     * @return void
-     */
     public function addType(Type $type) : void
     {
         if (\in_array($type, $this->type_set, true)) {
@@ -32,9 +29,6 @@ final class UnionTypeBuilder
         $this->type_set[] = $type;
     }
 
-    /**
-     * @return void
-     */
     public function addUnionType(UnionType $union_type) : void
     {
         $old_type_set = $this->type_set;
@@ -45,9 +39,6 @@ final class UnionTypeBuilder
         }
     }
 
-    /**
-     * @return void
-     */
     public function removeType(Type $type) : void
     {
         $i = \array_search($type, $this->type_set, true);

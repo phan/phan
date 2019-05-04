@@ -1887,9 +1887,6 @@ class UnionType implements Serializable
         });
     }
 
-    /**
-     * @return UnionType
-     */
     public function asArrayOrArrayAccessSubTypes(CodeBase $code_base) : UnionType
     {
         $result = UnionType::empty();

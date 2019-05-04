@@ -418,9 +418,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         return $this->context;
     }
 
-    /**
-     * @return void
-     */
     private function checkExpressionInDynamicString(Node $expr_node) : void
     {
         $code_base = $this->code_base;
@@ -1319,9 +1316,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         );
     }
 
-    /**
-     * @return void
-     */
     private function analyzeReturnInGenerator(
         FunctionInterface $method,
         Node $node
@@ -1557,9 +1551,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         return self::checkCanCastToReturnType($code_base, $nonnull_expression_type, $method_return_type);
     }
 
-    /**
-     * @return void
-     */
     private function analyzeReturnStrict(
         CodeBase $code_base,
         FunctionInterface $method,
@@ -2858,9 +2849,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         return false;
     }
 
-    /**
-     * @return void
-     */
     private function trackPropertyReference(Property $property, Node $node) : void
     {
         $property->addReference($this->context);
@@ -3303,9 +3291,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
     }
 
-    /**
-     * @return void
-     */
     private function trackReferenceToClosure(Node $argument) : void
     {
         try {
@@ -3358,7 +3343,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         try {
             // Even though we don't modify the parameter list, we still need to know the types
             // -- as an optimization, we don't run quick mode again if the types didn't change?
-            $parameter_list = \array_map(/** @return Parameter */ static function (Parameter $parameter) : \Phan\Language\Element\Parameter {
+            $parameter_list = \array_map(static function (Parameter $parameter) : \Phan\Language\Element\Parameter {
                 return clone($parameter);
             }, $method->getParameterList());
 
@@ -3790,9 +3775,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         return $this->context;
     }
 
-    /**
-     * @return void
-     */
     private function warnBreakOrContinueWithoutLoop(Node $node) : void
     {
         $depth = $node->children['depth'] ?? 1;

@@ -87,9 +87,6 @@ class IssueFixer
         return true;
     }
 
-    /**
-     * @return ?FileEdit
-     */
     private static function maybeRemoveNamespaceUseDeclaration(
         string $file_contents,
         NamespaceUseDeclaration $declaration,

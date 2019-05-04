@@ -30,9 +30,6 @@ class ClassMap
      */
     private $method_map = [];
 
-    /**
-     * @return void
-     */
     public function addClassConstant(ClassConstant $constant) : void
     {
         $this->class_constant_map[
@@ -64,9 +61,6 @@ class ClassMap
         return $this->class_constant_map;
     }
 
-    /**
-     * @return void
-     */
     public function addProperty(Property $property) : void
     {
         $this->property_map[
@@ -74,17 +68,11 @@ class ClassMap
         ] = $property;
     }
 
-    /**
-     * @return bool
-     */
     public function hasPropertyWithName(string $name) : bool
     {
         return isset($this->property_map[$name]);
     }
 
-    /**
-     * @return Property
-     */
     public function getPropertyByName(string $name) : Property
     {
         return $this->property_map[$name];
@@ -98,9 +86,6 @@ class ClassMap
         return $this->property_map;
     }
 
-    /**
-     * @return void
-     */
     public function addMethod(Method $method) : void
     {
         $this->method_map[\strtolower(
@@ -108,17 +93,11 @@ class ClassMap
         )] = $method;
     }
 
-    /**
-     * @return bool
-     */
     public function hasMethodWithName(string $name) : bool
     {
         return isset($this->method_map[\strtolower($name)]);
     }
 
-    /**
-     * @return Method
-     */
     public function getMethodByName(string $name) : Method
     {
         return $this->method_map[\strtolower($name)];

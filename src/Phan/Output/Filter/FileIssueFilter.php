@@ -26,10 +26,6 @@ final class FileIssueFilter implements IssueFilterInterface
         $this->ignored_files_filter = $ignored_files_filter;
     }
 
-    /**
-     * @param IssueInstance $issue
-     * @return bool
-     */
     public function supports(IssueInstance $issue):bool
     {
         return !$this->ignored_files_filter->isFilenameIgnored($issue->getFile());

@@ -26,9 +26,6 @@ class VariadicParameter extends Parameter
         return $result;
     }
 
-    /**
-     * @return void
-     */
     private function convertToNonVariadic() : void
     {
         // Avoid a redundant clone of toGenericArray()

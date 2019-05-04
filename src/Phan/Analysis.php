@@ -567,9 +567,6 @@ class Analysis
         return $context;
     }
 
-    /**
-     * @return void
-     */
     private static function emitSyntaxError(
         CodeBase $code_base,
         Context $context,

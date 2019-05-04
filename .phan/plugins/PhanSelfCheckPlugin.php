@@ -195,9 +195,6 @@ class PhanSelfCheckPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
         return $results;
     }
 
-    /**
-     * @return ?Issue
-     */
     private static function getIssueOrWarn(CodeBase $code_base, Context $context, FunctionInterface $function, string $issue_type) : ?\Phan\Issue
     {
         try {

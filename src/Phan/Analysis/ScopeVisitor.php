@@ -206,7 +206,6 @@ abstract class ScopeVisitor extends AnalysisVisitor
         );
     }
 
-    /** @return void */
     private function analyzeUseElemCompatibility(
         string $alias,
         FQSEN $target,

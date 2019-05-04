@@ -165,9 +165,6 @@ final class ArgumentType
         }
     }
 
-    /**
-     * @return void
-     */
     private static function checkIsDeprecatedOrInternal(CodeBase $code_base, Context $context, FunctionInterface $method) : void
     {
         // Special common cases where we want slightly
@@ -384,6 +381,12 @@ final class ArgumentType
             // the parameter in a moment
             $argument_type = $get_argument_type($argument, $i);
             self::analyzeParameter($code_base, $context, $method, $argument_type, $argument->lineno ?? $context->getLineNumberStart(), $i);
+            if ($parameter->isPassByReference()) {
+                if ($argument instanceof Node) {
+                    // @phan-suppress-next-line PhanUndeclaredProperty this is added for analyzers
+                    $argument->is_reference = true;
+                }
+            }
         }
     }
 
@@ -488,15 +491,18 @@ final class ArgumentType
                 true
             );
             self::analyzeParameter($code_base, $context, $method, $argument_type, $argument->lineno ?? $node->lineno ?? 0, $i);
+            if ($parameter->isPassByReference()) {
+                if ($argument instanceof Node) {
+                    // @phan-suppress-next-line PhanUndeclaredProperty this is added for analyzers
+                    $argument->is_reference = true;
+                }
+            }
             if ($argument_kind === \ast\AST_UNPACK) {
                 self::analyzeRemainingParametersForVariadic($code_base, $context, $method, $i + 1, $node, $argument, $argument_type);
             }
         }
     }
 
-    /**
-     * @return void
-     */
     private static function analyzeRemainingParametersForVariadic(
         CodeBase $code_base,
         Context $context,
@@ -544,17 +550,13 @@ final class ArgumentType
             }
 
             self::analyzeParameter($code_base, $context, $method, $argument_type, $argument->lineno, $i);
+            if ($parameter->isPassByReference()) {
+                // @phan-suppress-next-line PhanUndeclaredProperty this is added for analyzers
+                $argument->is_reference = true;
+            }
         }
     }
 
-    /**
-     * @param CodeBase $code_base
-     * @param Context $context
-     * @param FunctionInterface $method
-     * @param UnionType $argument_type
-     * @param int $lineno
-     * @return void
-     */
     public static function analyzeParameter(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, int $lineno, int $i) : void
     {
         // Expand it to include all parent types up the chain
@@ -641,9 +643,6 @@ final class ArgumentType
         self::warnInvalidArgumentType($code_base, $context, $method, $alternate_parameter, $argument_type_expanded, $lineno, $i);
     }
 
-    /**
-     * @return void
-     */
     private static function warnInvalidArgumentType(
         CodeBase $code_base,
         Context $context,

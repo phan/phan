@@ -38,7 +38,7 @@ use function is_array;
  * @see \Phan\Plugin\Internal\NodeSelectionPlugin for how the node is found
  * @see \Phan\AST\TolerantASTConverter\TolerantASTConverterWithNodeMapping for how isSelected is set
  *
- * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod, PhanPluginNoCommentOnPublicMethod
  */
 final class GoToDefinitionRequest extends NodeInfoRequest
 {
@@ -193,9 +193,6 @@ final class GoToDefinitionRequest extends NodeInfoRequest
         '_SESSION' => 'An associative array containing session variables available to the current script.',
     ];
 
-    /**
-     * @return ?string
-     */
     public function getDescriptionOfVariable(
         CodeBase $code_base,
         Context $context,
@@ -238,9 +235,6 @@ final class GoToDefinitionRequest extends NodeInfoRequest
         $this->recordTypeOfElement($code_base, $context, $variable);
     }
 
-    /**
-     * @return void
-     */
     private function recordTypeOfElement(
         CodeBase $code_base,
         Context $context,
@@ -328,9 +322,6 @@ final class GoToDefinitionRequest extends NodeInfoRequest
     }
 
 
-    /**
-     * @return void
-     */
     public function recordDefinitionLocation(Location $location) : void
     {
         $this->locations[$location->uri . ':' . \json_encode($location->range)] = $location;
@@ -362,9 +353,6 @@ final class GoToDefinitionRequest extends NodeInfoRequest
         return \array_values($this->locations);
     }
 
-    /**
-     * @return ?Hover
-     */
     public function getHoverResponse() : ?\Phan\LanguageServer\Protocol\Hover
     {
         return $this->hover_response;

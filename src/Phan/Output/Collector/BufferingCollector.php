@@ -41,10 +41,6 @@ final class BufferingCollector implements IssueCollectorInterface
         $this->issues[$this->formatSortableKey($issue)] = $issue;
     }
 
-    /**
-     * @param IssueInstance $issue
-     * @return string
-     */
     private function formatSortableKey(IssueInstance $issue) : string
     {
         // This needs to be a sortable key so that output

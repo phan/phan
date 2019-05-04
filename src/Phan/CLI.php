@@ -75,6 +75,7 @@ class CLI
         'backward-compatibility-checks',
         'color',
         'config-file:',
+        'constant-variable-detection',
         'daemonize-socket:',
         'daemonize-tcp-host:',
         'daemonize-tcp-port:',
@@ -675,6 +676,10 @@ class CLI
                 case 'unused-variable-detection':
                     Config::setValue('unused_variable_detection', true);
                     break;
+                case 'constant-variable-detection':
+                    Config::setValue('constant_variable_detection', true);
+                    Config::setValue('unused_variable_detection', true);
+                    break;
                 case 'allow-polyfill-parser':
                     // Just check if it's installed and of a new enough version.
                     // Assume that if there is an installation, it works, and warn later in ensureASTParserExists()
@@ -799,9 +804,6 @@ class CLI
         return ' (Did you mean ' . \implode(' or ', $suggestions) . '?)';
     }
 
-    /**
-     * @return void
-     */
     public function recomputeFileList() : void
     {
         $this->file_list = $this->file_list_in_config;
@@ -1148,6 +1150,12 @@ Extended help:
   Makes the polyfill aware of doc comments on class constants and declare statements
   even when imitating parsing a PHP 7.0 codebase.
 
+ --constant-variable-detection
+  Emit issues for variables that could be replaced with literals or constants.
+  (i.e. they are declared once (as a constant expression) and never modified).
+  This is almost entirely false positives for most coding styles.
+  Implies --unused-variable-detection
+
  --language-server-on-stdin
   Start the language server (For the Language Server protocol).
   This is a different protocol from --daemonize, clients for various IDEs already exist.
@@ -1209,6 +1217,7 @@ Extended help:
 
  --help-annotations
   Print details on annotations supported by Phan
+
 EOB;
         }
         exit($exit_code);
@@ -1566,9 +1575,6 @@ EOB;
         self::debugOutput($line);
     }
 
-    /**
-     * @return void
-     */
     public static function debugOutput(string $line) : void
     {
         \fwrite(STDERR, $line . "\n");

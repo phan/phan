@@ -107,6 +107,8 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
      * @param $fully_qualified_string
      * An FQSEN string like '\Namespace\Class::methodName'
      *
+     * @return static
+     *
      * @throws InvalidArgumentException if the $fully_qualified_string doesn't have a '::' delimiter
      *
      * @throws FQSENException if the class or element FQSEN is invalid
@@ -249,7 +251,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
      */
     public function __toString() : string
     {
-        $fqsen_string = $this->memoize(__METHOD__, /** @return string */ function () : string {
+        $fqsen_string = $this->memoize(__METHOD__, function () : string {
             return self::toString(
                 $this->getFullyQualifiedClassName(),
                 $this->getName(),

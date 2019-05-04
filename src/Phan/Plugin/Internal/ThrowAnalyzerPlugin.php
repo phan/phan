@@ -121,9 +121,6 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
         return $union_type;
     }
 
-    /**
-     * @return void
-     */
     protected function warnAboutPossiblyThrownType(
         Node $node,
         FunctionInterface $analyzed_function,

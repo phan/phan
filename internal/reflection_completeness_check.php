@@ -162,8 +162,9 @@ class ReflectionCompletenessCheck
             }
         }
     }
+
     /**
-     * @return void
+     * Run all checks that the function signatures are complete.
      */
     public static function main() : void
     {

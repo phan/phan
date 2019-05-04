@@ -19,7 +19,6 @@ final class CheckstylePrinter implements BufferedPrinterInterface
     /** @var array<string,array<int,array>> maps files with issues to the list of those issues */
     private $files = [];
 
-    /** @param IssueInstance $instance */
     public function print(IssueInstance $instance)
     {
         if (!isset($this->files[$instance->getFile()])) {
@@ -94,9 +93,6 @@ final class CheckstylePrinter implements BufferedPrinterInterface
         $this->files = [];
     }
 
-    /**
-     * @param OutputInterface $output
-     */
     public function configureOutput(OutputInterface $output)
     {
         $this->output = $output;

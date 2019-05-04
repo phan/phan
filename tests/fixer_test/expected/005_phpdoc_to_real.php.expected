@@ -1,0 +1,2 @@
+src_copy/005_phpdoc_to_real.php:6 PhanPluginCanUseNullableParamType Can use ?int as a return type of parameter $a of f5
+src_copy/005_phpdoc_to_real.php:6 PhanPluginCanUseReturnType Can use int as a return type of f5

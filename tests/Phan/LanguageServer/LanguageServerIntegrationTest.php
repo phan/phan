@@ -1200,9 +1200,6 @@ EOT
         ];
     }
 
-    /**
-     * @param ?string $requested_uri
-     */
     private static function shouldExpectDiagnosticNotificationForURI(?string $requested_uri) : bool
     {
         if ($requested_uri && \basename(\dirname($requested_uri)) !== 'src') {
@@ -1212,8 +1209,8 @@ EOT
     }
 
     /**
-     * @param ?int $expected_definition_line
-     * @param ?string $requested_uri
+     * Tests getting element definitions when the declaration
+     * is in a different file from the usage.
      */
     public function runTestDefinitionInOtherFileWithPcntlSetting(
         string $new_file_contents,
@@ -1289,8 +1286,8 @@ EOT
     }
 
     /**
-     * @param ?int $expected_definition_line
-     * @param ?string $requested_uri
+     * Tests generating responses for type definitions for elements
+     * declared in a different file from the usage.
      */
     public function runTestTypeDefinitionInOtherFileWithPcntlSetting(
         string $new_file_contents,
@@ -1372,8 +1369,8 @@ EOT
     }
 
     /**
-     * @param ?string $expected_hover_string
-     * @param ?string $requested_uri
+     * Tests of generating descriptions when hovering over an element in an IDE/editor,
+     * for elements that were declared in a different file
      */
     public function runTestHoverInOtherFileWithPcntlSetting(
         string $new_file_contents,

@@ -252,9 +252,6 @@ class DefinitionResolver
         return $found;
     }
 
-    /**
-     * @return void
-     */
     public static function locatePropDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node) : void
     {
         $is_static = $node->kind === ast\AST_STATIC_PROP;
@@ -298,9 +295,6 @@ class DefinitionResolver
         $request->recordDefinitionElement($code_base, $class_const, false);
     }
 
-    /**
-     * @return void
-     */
     public static function locateGlobalConstDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node) : void
     {
         try {
@@ -315,9 +309,6 @@ class DefinitionResolver
         $request->recordDefinitionElement($code_base, $global_const, false);
     }
 
-    /**
-     * @return void
-     */
     public static function locateVariableDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node) : void
     {
         $name = $node->children['name'];
@@ -378,9 +369,6 @@ class DefinitionResolver
         }
     }
 
-    /**
-     * @return void
-     */
     public static function locateMethodDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node) : void
     {
         $is_static = $node->kind === ast\AST_STATIC_CALL;
@@ -400,9 +388,6 @@ class DefinitionResolver
         $request->recordDefinitionElement($code_base, $method, true);
     }
 
-    /**
-     * @return void
-     */
     public static function locateFuncDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node) : void
     {
         try {
