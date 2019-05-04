@@ -59,7 +59,7 @@ class PHPDocToRealTypesPlugin extends PluginV2 implements
 
     public function analyzeMethod(CodeBase $unused_code_base, Method $method) : void
     {
-        if ($method->isFromPHPDoc() || $method->isPHPInternal()) {
+        if ($method->isFromPHPDoc() || $method->getIsMagic() || $method->isPHPInternal()) {
             return;
         }
         if ($method->getFQSEN() !== $method->getDefiningFQSEN()) {

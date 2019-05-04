@@ -53,4 +53,9 @@ final class CallableStringType extends StringType implements CallableInterface
     {
         return UnionType::fromFullyQualifiedString('string');
     }
+
+    public function canUseInRealSignature() : bool
+    {
+        return false;
+    }
 }

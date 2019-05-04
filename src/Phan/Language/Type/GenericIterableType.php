@@ -172,6 +172,15 @@ final class GenericIterableType extends IterableType
         }
         return TemplateType::combineParameterClosures($key_closure, $element_closure);
     }
+
+    /**
+     * Returns the corresponding type that would be used in a signature
+     * @override
+     */
+    public function asSignatureType() : Type
+    {
+        return IterableType::instance($this->is_nullable);
+    }
 }
 // Trigger autoloader for subclass before make() can get called.
 \class_exists(ArrayType::class);

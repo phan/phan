@@ -106,4 +106,9 @@ final class ClassStringType extends StringType
 
         return $string;
     }
+
+    public function canUseInRealSignature() : bool
+    {
+        return false;
+    }
 }
