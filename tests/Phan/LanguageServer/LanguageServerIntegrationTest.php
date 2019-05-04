@@ -1208,6 +1208,10 @@ EOT
         return true;
     }
 
+    /**
+     * Tests getting element definitions when the declaration
+     * is in a different file from the usage.
+     */
     public function runTestDefinitionInOtherFileWithPcntlSetting(
         string $new_file_contents,
         Position $position,
@@ -1281,6 +1285,10 @@ EOT
         }
     }
 
+    /**
+     * Tests generating responses for type definitions for elements
+     * declared in a different file from the usage.
+     */
     public function runTestTypeDefinitionInOtherFileWithPcntlSetting(
         string $new_file_contents,
         Position $position,
@@ -1360,6 +1368,10 @@ EOT
         }
     }
 
+    /**
+     * Tests of generating descriptions when hovering over an element in an IDE/editor,
+     * for elements that were declared in a different file
+     */
     public function runTestHoverInOtherFileWithPcntlSetting(
         string $new_file_contents,
         Position $position,

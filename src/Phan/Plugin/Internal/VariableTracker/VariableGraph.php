@@ -81,6 +81,11 @@ final class VariableGraph
         $scope->recordDefinitionById($name, $id);
     }
 
+    /**
+     * Records that the variable with name $name was used by Node $node in the given scope.
+     *
+     * This marks the definitions that are accessible from this scope as being used at $node.
+     */
     public function recordVariableUsage(string $name, Node $node, VariableTrackingScope $scope) : void
     {
         if (!\array_key_exists($name, $this->variable_types)) {
@@ -127,16 +132,28 @@ final class VariableGraph
         }
     }
 
+    /**
+     * Records that the variable with the name $name was used as a reference
+     * somewhere within the function body
+     */
     public function markAsReference(string $name) : void
     {
         $this->markBitForVariableName($name, self::IS_REFERENCE);
     }
 
+    /**
+     * Records that the variable with the name $name was declared as a static variable
+     * somewhere within the function body
+     */
     public function markAsStaticVariable(string $name) : void
     {
         $this->markBitForVariableName($name, self::IS_STATIC);
     }
 
+    /**
+     * Records that the variable with the name $name was declared as a global variable
+     * somewhere within the function body
+     */
     public function markAsGlobalVariable(string $name) : void
     {
         $this->markBitForVariableName($name, self::IS_GLOBAL);

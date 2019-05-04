@@ -18,7 +18,7 @@ define('ORIGINAL_PROPERTY_DOCUMENTATION_PATH', dirname(dirname(__DIR__)) . '/src
  * - Compare the signatures against Phan's to report incomplete or inaccurate signatures of Phan itself (or the external signature)
  *
  * TODO: could extend this to properties (the use of properties in extensions is rare).
- * TODO: Fix zoookeeperconfig in phpdoc-en svn repo
+ * TODO: Fix zookeeperconfig in phpdoc-en svn repo
  *
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
@@ -184,7 +184,9 @@ EOT;
      */
     abstract protected function getAvailableClassPHPDocSummaries() : array;
 
-
+    /**
+     * Update the function/method signatures using the subclass's source of type information
+     */
     public function updateFunctionSignatures() : void
     {
         $phan_signatures = static::readSignatureMap();
@@ -245,7 +247,10 @@ EOT;
         return $arguments_from_phan;
     }
 
-
+    /**
+     * Save a file with suffix .extra_signatures using information from the type source
+     * that is not in Phan's signature map.
+     */
     public function addMissingFunctionLikeSignatures() : void
     {
         $phan_signatures = static::readSignatureMap();

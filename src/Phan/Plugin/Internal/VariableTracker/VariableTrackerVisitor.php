@@ -155,9 +155,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         return $this->analyzeIncDec($node);
     }
 
-    /**
-     * @return VariableTrackingScope
-     */
     private function analyzeIncDec(Node $node) : \Phan\Plugin\Internal\VariableTracker\VariableTrackingScope
     {
         $var_node = $node->children['var'];

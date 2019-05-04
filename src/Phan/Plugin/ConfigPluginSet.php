@@ -8,7 +8,6 @@ use Closure;
 use Phan\AST\Visitor\Element;
 use Phan\CodeBase;
 use Phan\Config;
-use Phan\Daemon\Request;
 use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Context;
