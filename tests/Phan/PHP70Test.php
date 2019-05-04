@@ -5,7 +5,8 @@ namespace Phan\Tests;
 use Phan\Config;
 
 /**
- * Unit tests of analysis targeting PHP 7.0 codebases
+ * Unit tests of analysis **targeting PHP 7.0 codebases**.
+ * These tests are run in all PHP versions.
  */
 class PHP70Test extends AbstractPhanFileTest
 {

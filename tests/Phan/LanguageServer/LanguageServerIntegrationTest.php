@@ -836,11 +836,8 @@ EOT;
      * @dataProvider hoverInOtherFileProvider
      * @param ?string $expected_hover_markup
      */
-    public function testHoverInOtherFile(string $new_file_contents, Position $position, ?string $expected_hover_markup, string $requested_uri = null, bool $require_php71_or_newer = false) : void
+    public function testHoverInOtherFile(string $new_file_contents, Position $position, ?string $expected_hover_markup, string $requested_uri = null) : void
     {
-        if (\PHP_VERSION_ID < 70100 && $require_php71_or_newer) {
-            $this->markTestSkipped('This test requires php 7.1');
-        }
         if (\function_exists('pcntl_fork')) {
             $this->runTestHoverInOtherFileWithPcntlSetting(
                 $new_file_contents,
@@ -854,7 +851,7 @@ EOT;
     }
 
     /**
-     * @return array<int,array{0:string,1:Position,2:?string,3?:?string,4?:bool}>
+     * @return array<int,array{0:string,1:Position,2:?string,3?:?string}>
      */
     public function hoverInOtherFileProvider() : array
     {
@@ -937,8 +934,6 @@ const MY_NAMESPACED_CONST = 2
 This constant is equal to 1+1
 EOT
                 ,
-                null,
-                true
             ],
             [
                 $example_file_contents,
@@ -998,8 +993,6 @@ const HTTP_500 = 500
 `@var int` value of an HTTP response code
 EOT
                 ,
-                null,
-                true
             ],
             [
                 $example_file_contents,
@@ -1012,8 +1005,6 @@ class ExampleClass
 description of ExampleClass
 EOT
                 ,
-                null,
-                true
             ],
             [
                 $example_file_contents,
@@ -1025,9 +1016,6 @@ public $descriptionlessProp
 
 `@var array<string, \stdClass>`
 EOT
-                ,
-                null,
-                true
             ],
             [
                 $example_file_contents,
@@ -1039,9 +1027,6 @@ public static $typelessProp
 
 This has no type
 EOT
-                ,
-                null,
-                true
             ],
             [
                 $example_file_contents,
@@ -1054,8 +1039,6 @@ EOT
                 $example_file_contents,
                 new Position(20, 20),  // $arrVal
                 '`array<string,\stdClass>`',
-                null,
-                true
             ],
             [
                 $example_file_contents,
@@ -1067,9 +1050,6 @@ function strlen(string $string) : int
 
 Get string length
 EOT
-                ,
-                null,
-                true
             ],
             // Currently, the namespace is left out from the hover text
             [
@@ -1083,9 +1063,6 @@ function parse_code(string $code, int $version, string $filename = default) : \a
 
 Parses code string and returns AST root node.
 EOT
-                ,
-                null,
-                true
             ],
             [
                 $example_file_contents,
@@ -1097,9 +1074,6 @@ public $propWithDefault
 
 `@var array{0:2,1:3}` This has a default
 EOT
-                ,
-                null,
-                true
             ],
             [
                 $example_file_contents,
@@ -1111,9 +1085,6 @@ const JSON_PRETTY_PRINT = 128
 
 Use whitespace in returned data to format it. Available since PHP 5.4.0.
 EOT
-                ,
-                null,
-                true
             ],
             [
                 $example_file_contents,
@@ -1127,9 +1098,6 @@ Construct an instance of `\AssertionError`.
 
 `AssertionError` is thrown when an assertion made via `assert` fails.
 EOT
-                ,
-                null,
-                true
             ],
             [
                 $example_file_contents,
@@ -1141,9 +1109,6 @@ public $kind
 
 AST Node Kind. Values are one of `ast\AST_*` constants.
 EOT
-                ,
-                null,
-                true
             ],
             [
                 $example_file_contents,
@@ -1151,9 +1116,6 @@ EOT
                 <<<'EOT'
 `array<string,string>` An associative array of variables passed to the current script via the environment method.
 EOT
-                ,
-                null,
-                true
             ],
             [
                 $example_file_contents,
@@ -1165,9 +1127,6 @@ public function count() : int
 
 Get the number of public properties in the ArrayObject
 EOT
-                ,
-                null,
-                true
             ],
             [
                 $example_file_contents,
@@ -1179,9 +1138,6 @@ public function count() : int
 
 Get the number of public properties in the ArrayObject
 EOT
-                ,
-                null,
-                true
             ],
             [
                 $example_file_contents,
@@ -1193,9 +1149,6 @@ class anonymous_class
 
 Documentation of anonymous class
 EOT
-                ,
-                null,
-                true
             ],
         ];
     }
