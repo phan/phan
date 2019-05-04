@@ -107,7 +107,7 @@ class GlobalScope extends Scope
     /**
      * @return void
      */
-    public function addVariable(Variable $variable)
+    public function addVariable(Variable $variable) : void
     {
         $variable_name = $variable->getName();
         if (Variable::isHardcodedGlobalVariableWithName($variable_name)) {
@@ -125,7 +125,7 @@ class GlobalScope extends Scope
      *
      * @return void
      */
-    public function addGlobalVariable(Variable $variable)
+    public function addGlobalVariable(Variable $variable) : void
     {
         $this->addVariable($variable);
     }

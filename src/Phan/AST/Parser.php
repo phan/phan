@@ -90,7 +90,7 @@ class Parser
     public static function parseCode(
         CodeBase $code_base,
         Context $context,
-        $request,
+        ?\Phan\Daemon\Request $request,
         string $file_path,
         string $file_contents,
         bool $suppress_parse_errors
@@ -198,7 +198,7 @@ class Parser
      * @return ?Node
      * @throws ParseException
      */
-    public static function parseCodePolyfill(CodeBase $code_base, Context $context, string $file_path, string $file_contents, bool $suppress_parse_errors, $request) : ?\ast\Node
+    public static function parseCodePolyfill(CodeBase $code_base, Context $context, string $file_path, string $file_contents, bool $suppress_parse_errors, ?\Phan\Daemon\Request $request) : ?\ast\Node
     {
         $converter = self::createConverter($file_path, $file_contents, $request);
         $converter->setPHPVersionId(Config::get_closest_target_php_version_id());

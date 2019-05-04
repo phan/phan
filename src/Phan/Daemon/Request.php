@@ -187,7 +187,7 @@ class Request
         CodeBase $code_base,
         Closure $file_path_lister,
         FileMapping $file_mapping,
-        $most_recent_node_info_request,
+        ?\Phan\LanguageServer\NodeInfoRequest $most_recent_node_info_request,
         bool $should_exit
     ) : Request {
         FileCache::clear();
@@ -432,7 +432,7 @@ class Request
      * @param int|null $pid
      * @return void
      */
-    public static function childSignalHandler($signo, $status = null, $pid = null) : void
+    public static function childSignalHandler(int $signo, ?int $status = null, ?int $pid = null) : void
     {
         // test
         if ($signo !== SIGCHLD) {
@@ -465,7 +465,7 @@ class Request
      * @param ?string &$error_message @phan-output-reference
      * @return array<string,string>
      */
-    public static function normalizeFileMappingContents($file_mapping_contents, &$error_message) : array
+    public static function normalizeFileMappingContents(array $file_mapping_contents, ?string &$error_message) : array
     {
         $error_message = null;
         if (!\is_array($file_mapping_contents)) {

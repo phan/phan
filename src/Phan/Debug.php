@@ -53,7 +53,7 @@ class Debug
      * @param int $indent
      * @return void
      */
-    public static function printNodeName($node, $indent = 0) : void
+    public static function printNodeName($node, int $indent = 0) : void
     {
         print \str_repeat("\t", $indent);
         print self::nodeName($node);

@@ -489,8 +489,6 @@ class Type
      * as the parent classes may have changed since the last parse attempt.
      *
      * This gets called immediately after the parse phase but before the analysis phase.
-     *
-     * @return void
      */
     public static function clearAllMemoizations() : void
     {

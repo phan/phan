@@ -963,7 +963,7 @@ class ParameterTypesAnalyzer
         string $issue_type,
         string $internal_issue_type,
         string $phpdoc_issue_type,
-        $lineno,
+        ?int $lineno,
         ...$args
     ) : void {
         if ($method->isFromPHPDoc() || $o_method->isFromPHPDoc()) {

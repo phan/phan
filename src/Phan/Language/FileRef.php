@@ -69,7 +69,7 @@ class FileRef implements \Serializable
      * root directory
      * @see Config::getProjectRootDirectory() for converting paths to absolute paths
      */
-    public static function getProjectRelativePathForPath($cwd_relative_path) : string
+    public static function getProjectRelativePathForPath(string $cwd_relative_path) : string
     {
         // Get a path relative to the project root
         $path = \str_replace(

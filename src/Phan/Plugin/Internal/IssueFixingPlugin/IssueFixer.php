@@ -132,7 +132,7 @@ class IssueFixer
      *        this is neither a real type hint nor a real closure so that the implementation can optionally be moved to classes that aren't loaded by the PHP interpreter yet.
      * @return void
      */
-    public static function registerFixerClosure(string $issue_name, $fixer) : void
+    public static function registerFixerClosure(string $issue_name, callable $fixer) : void
     {
         self::$fixer_closures[$issue_name] = $fixer;
     }

@@ -291,7 +291,7 @@ interface FunctionInterface extends AddressableElementInterface
      * @param ?UnionType $union_type the raw phpdoc union type
      * @return void
      */
-    public function setPHPDocReturnType($union_type);
+    public function setPHPDocReturnType(?UnionType $union_type) : void ;
 
     /**
      * @return ?UnionType the raw phpdoc union type

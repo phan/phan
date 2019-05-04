@@ -276,10 +276,10 @@ abstract class Scope
     }
 
     /**
+     * Unset a variable in the local scope.
+     *
      * @param string $variable_name
      * The name of a variable to unset in the local scope
-     *
-     * @return void
      *
      * TODO: Make this work properly and merge properly when the variable is in a branch (BranchScope)
      */
@@ -292,9 +292,8 @@ abstract class Scope
      * Add $variable to the current scope.
      *
      * @see self::withVariable() for creating a clone of a scope with $variable instead
-     * @return void
      */
-    public function addVariable(Variable $variable)
+    public function addVariable(Variable $variable) : void
     {
         // uncomment to debug issues with variadics
         /*
@@ -310,10 +309,8 @@ abstract class Scope
      *
      * @param Variable $variable
      * A variable to add to the set of global variables
-     *
-     * @return void
      */
-    public function addGlobalVariable(Variable $variable)
+    public function addGlobalVariable(Variable $variable) : void
     {
         $this->parent_scope->addGlobalVariable($variable);
     }
@@ -388,8 +385,6 @@ abstract class Scope
      *
      * @param TemplateType $template_type
      * A template type parameterizing the generic class in scope
-     *
-     * @return void
      */
     public function addTemplateType(TemplateType $template_type) : void
     {

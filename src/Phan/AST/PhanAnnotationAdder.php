@@ -62,7 +62,7 @@ class PhanAnnotationAdder
      * @param array<mixed,Node|string|float|int|null> $children (should all be Nodes or null)
      * @param int $bit_set
      */
-    private static function markArrayElements($children, $bit_set) : void
+    private static function markArrayElements($children, int $bit_set) : void
     {
         foreach ($children as $node) {
             if ($node instanceof Node) {
@@ -75,7 +75,7 @@ class PhanAnnotationAdder
      * @param Node $node
      * @param int $bit_set the bits to add to the flags
      */
-    private static function markNode($node, $bit_set) : void
+    private static function markNode(\ast\Node $node, int $bit_set) : void
     {
         $kind = $node->kind;
         if (\array_key_exists($kind, self::FLAGS_NODE_TYPE_SET)) {
@@ -94,7 +94,7 @@ class PhanAnnotationAdder
          * @param Node $node
          * @return void
          */
-        $binary_op_handler = static function ($node) : void {
+        $binary_op_handler = static function (\ast\Node $node) : void {
             if ($node->flags === flags\BINARY_COALESCE) {
                 $inner_node = $node->children['left'];
                 if ($inner_node instanceof Node) {
@@ -106,7 +106,7 @@ class PhanAnnotationAdder
          * @param Node $node
          * @return void
          */
-        $dim_handler = static function ($node) : void {
+        $dim_handler = static function (\ast\Node $node) : void {
             if ($node->flags & self::FLAG_IGNORE_NULLABLE_AND_UNDEF) {
                 $inner_node = $node->children['expr'];
                 if ($inner_node instanceof Node) {
@@ -119,7 +119,7 @@ class PhanAnnotationAdder
          * @param Node $node
          * @return void
          */
-        $ignore_nullable_and_undef_handler = static function ($node) : void {
+        $ignore_nullable_and_undef_handler = static function (\ast\Node $node) : void {
             $inner_node = $node->children['var'];
             if ($inner_node instanceof Node) {
                 self::markNode($inner_node, self::FLAG_IGNORE_NULLABLE_AND_UNDEF);
@@ -130,7 +130,7 @@ class PhanAnnotationAdder
          * @param Node $node
          * @return void
          */
-        $ignore_nullable_and_undef_expr_handler = static function ($node) : void {
+        $ignore_nullable_and_undef_expr_handler = static function (\ast\Node $node) : void {
             $inner_node = $node->children['expr'];
             if ($inner_node instanceof Node) {
                 self::markNode($inner_node, self::FLAG_IGNORE_NULLABLE_AND_UNDEF);
@@ -140,7 +140,7 @@ class PhanAnnotationAdder
          * @param Node $node
          * @return void
          */
-        $ast_array_elem_handler = static function ($node) : void {
+        $ast_array_elem_handler = static function (\ast\Node $node) : void {
             // Handle [$a1, $a2] = $array; - Don't warn about $node
             $bit = $node->flags & self::FLAG_IGNORE_UNDEF;
             if ($bit) {

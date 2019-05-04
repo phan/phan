@@ -29,6 +29,9 @@ class PHPDocToRealTypesPlugin extends PluginV2 implements
     const CanUseReturnType = 'PhanPluginCanUseReturnType';
     const CanUseNullableReturnType = 'PhanPluginCanUseNullableReturnType';
 
+    const CanUseParamType = 'PhanPluginCanUseParamType';
+    const CanUseNullableParamType = 'PhanPluginCanUseNullableParamType';
+
     /** @var array<string,Method> */
     private $deferred_analysis_methods = [];
 
@@ -38,10 +41,14 @@ class PHPDocToRealTypesPlugin extends PluginV2 implements
     public function getAutomaticFixers() : array
     {
         require_once __DIR__ .  '/PHPDocToRealTypesPlugin/Fixers.php';
+        $param_closure = Closure::fromCallable([Fixers::class, 'fixParamType']);
+        $return_closure = Closure::fromCallable([Fixers::class, 'fixReturnType']);
         return [
-            self::CanUsePHP71Void => Closure::fromCallable([Fixers::class, 'fixReturnType']),
-            self::CanUseReturnType => Closure::fromCallable([Fixers::class, 'fixReturnType']),
-            self::CanUseNullableReturnType => Closure::fromCallable([Fixers::class, 'fixReturnType']),
+            self::CanUsePHP71Void => $return_closure,
+            self::CanUseReturnType => $return_closure,
+            self::CanUseNullableReturnType => $return_closure,
+            self::CanUseNullableParamType => $param_closure,
+            self::CanUseParamType => $param_closure,
         ];
     }
 
@@ -74,9 +81,39 @@ class PHPDocToRealTypesPlugin extends PluginV2 implements
 
     private function analyzeFunctionLike(CodeBase $code_base, FunctionInterface $method) : void
     {
-        if (!$method->getRealReturnType()->isEmpty()) {
-            return;
+        if ($method->getRealReturnType()->isEmpty()) {
+            $this->analyzeReturnTypeOfFunctionLike($code_base, $method);
         }
+        $phpdoc_param_list = $method->getParameterList();
+        foreach ($method->getRealParameterList() as $i => $parameter) {
+            if (!$parameter->getNonVariadicUnionType()->isEmpty()) {
+                continue;
+            }
+            $phpdoc_param = $phpdoc_param_list[$i];
+            if (!$phpdoc_param) {
+                continue;
+            }
+            $union_type = $phpdoc_param->getNonVariadicUnionType()->asNormalizedTypes();
+            if ($union_type->typeCount() !== 1) {
+                continue;
+            }
+            $type = $union_type->getTypeSet()[0];
+            if (!$type->canUseInRealSignature()) {
+                continue;
+            }
+            self::emitIssue(
+                $code_base,
+                $method->getContext(),
+                $type->getIsNullable() ? self::CanUseNullableParamType : self::CanUseParamType,
+                'Can use {TYPE} as a return type of parameter ${PARAMETER} of {METHOD}',
+                [$type->asSignatureType(), $parameter->getName(), $method->getName()]
+            );
+        }
+    }
+
+
+    private function analyzeReturnTypeOfFunctionLike(CodeBase $code_base, FunctionInterface $method) : void
+    {
         $union_type = $method->getUnionType();
         if ($union_type->isVoidType()) {
             self::emitIssue(

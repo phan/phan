@@ -40,7 +40,7 @@ final class CSVPrinterTest extends BaseTest
      *
      * @dataProvider specialCharacterCasesProvider
      */
-    public function testSpecialCharactersAreProperlyEncoded($string, $expected_message) : void
+    public function testSpecialCharactersAreProperlyEncoded(string $string, string $expected_message) : void
     {
         $output = new BufferedOutput();
 

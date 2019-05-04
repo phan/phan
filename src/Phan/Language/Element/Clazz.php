@@ -1147,7 +1147,7 @@ class Clazz extends AddressableElement
      *
      * @param ?Node $node
      */
-    public static function isAccessToElementOfThis($node) : bool
+    public static function isAccessToElementOfThis(?\ast\Node $node) : bool
     {
         if (!($node instanceof Node)) {
             return false;

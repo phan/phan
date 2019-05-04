@@ -159,7 +159,7 @@ class FunctionFactory
          * @param array<string,mixed> $map
          * @suppress PhanPossiblyFalseTypeArgumentInternal, PhanPossiblyFalseTypeArgument
          */
-        return \array_map(static function ($map) use (
+        return \array_map(static function (array $map) use (
             $function,
             &$alternate_id
         ) : FunctionInterface {

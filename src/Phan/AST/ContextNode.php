@@ -1206,7 +1206,7 @@ class ContextNode
      * @throws NodeException
      * An exception is thrown if we can't understand the node
      */
-    public function getOrCreateVariableForReferenceParameter(Parameter $parameter, $real_parameter) : Variable
+    public function getOrCreateVariableForReferenceParameter(Parameter $parameter, ?\Phan\Language\Element\Parameter $real_parameter) : Variable
     {
         try {
             return $this->getVariable();

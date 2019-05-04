@@ -111,17 +111,12 @@ abstract class UnaddressableTypedElement
     /**
      * @param UnionType $type
      * Set the type of this element
-     *
-     * @return void
      */
-    public function setUnionType(UnionType $type)
+    public function setUnionType(UnionType $type) : void
     {
         $this->type = $type;
     }
 
-    /**
-     * @return void
-     */
     protected function convertToNullable() : void
     {
         // Avoid a redundant clone of nonNullableClone()
@@ -157,10 +152,9 @@ abstract class UnaddressableTypedElement
     /**
      * @param int $flags
      *
-     * @return void
      * @suppress PhanUnreferencedPublicMethod unused, other modifiers are used by Phan right now
      */
-    public function setFlags(int $flags)
+    public function setFlags(int $flags) : void
     {
         $this->flags = $flags;
     }
@@ -189,7 +183,6 @@ abstract class UnaddressableTypedElement
     /**
      * @param int $phan_flags
      *
-     * @return void
      * @suppress PhanUnreferencedPublicMethod potentially used in the future
      */
     public function setPhanFlags(int $phan_flags) : void
@@ -198,7 +191,7 @@ abstract class UnaddressableTypedElement
     }
 
     /**
-     * @return void
+     * Enable an individual bit of phan flags.
      */
     public function enablePhanFlagBits(int $new_bits) : void
     {
@@ -206,7 +199,7 @@ abstract class UnaddressableTypedElement
     }
 
     /**
-     * @return void
+     * Disable an individual bit of phan flags.
      */
     public function disablePhanFlagBits(int $new_bits) : void
     {

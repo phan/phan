@@ -202,7 +202,7 @@ EOT;
         if ($issue instanceof Issue) {
             self::debugLog("Found $issue_name\n");
             /** @param array<int,string> $unused_match */
-            $text = preg_replace_callback('@\n```\n[^\n]*\n```@', static function ($unused_match) use ($issue) : string {
+            $text = preg_replace_callback('@\n```\n[^\n]*\n```@', static function (array $unused_match) use ($issue) : string {
                 return "\n```\n{$issue->getTemplateRaw()}\n```";
             }, $text);
             if (!preg_match('@```php|https?://@i', $text)) {

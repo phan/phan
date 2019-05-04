@@ -881,7 +881,7 @@ trait FunctionTrait
      * @param ?UnionType $type the raw phpdoc union type
      * @return void
      */
-    public function setPHPDocReturnType($type) : void
+    public function setPHPDocReturnType(?\Phan\Language\UnionType $type) : void
     {
         $this->phpdoc_return_type = $type;
     }

@@ -187,8 +187,8 @@ final class CompletionRequest extends NodeInfoRequest
             \uksort(
                 $result,
                 /**
-                 * @param string $a
-                 * @param string $b
+                 * @param int|string $a usually strings
+                 * @param int|string $b
                  */
                 static function ($a, $b) : int {
                     $a = \ltrim((string)$a, '$');

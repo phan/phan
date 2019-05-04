@@ -87,7 +87,7 @@ class Workspace
      * @phan-param array<string,mixed> $settings @phan-unused-param NOTE: reflection-docblock does not support generic arrays
      * @return void (unimplemented)
      */
-    public function didChangeConfiguration($settings) : void
+    public function didChangeConfiguration(array $settings) : void
     {
     }
 }
