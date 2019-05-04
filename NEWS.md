@@ -9,12 +9,15 @@ New features(CLI, Configs):
 + Add `maximum_recursion_depth` - This setting specifies the maximum recursion depth that
   can be reached during re-analysis.
   Default is 2.
++ Add `--constant-variable-detection` - This checks for variables that can be replaced with literals or constants. (#2704)
+  This is almost entirely false positives in most coding styles, but may catch some dead code.
 
 New features(Analysis):
 + Emit `PhanDeprecatedClassConstant` for code using a constant marked with `@deprecated`.
 + When recursively inferring the return type of `BaseClass::method()` from its return statements,
   make that also affect the inherited copies of that method (`SubClass::method()`). (#2718)
   This change is limited to methods with no return type in the phpdoc or real signature.
++ Improve unused variable detection: Detect more unused variables for expressions such as `$x++` and `$x -= 2` (#2715)
 
 Plugins:
 + Add more forms of checks such as `$x !== null ? $x : null` to `PhanPluginDuplicateConditionalNullCoalescing` (#2691)
