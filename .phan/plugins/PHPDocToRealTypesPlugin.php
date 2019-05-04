@@ -70,10 +70,12 @@ class PHPDocToRealTypesPlugin extends PluginV2 implements
 
     public function beforeAnalyzePhase(CodeBase $code_base)
     {
+        $ignore_overrides = (bool)getenv('PHPDOC_TO_REAL_TYPES_IGNORE_INHERITANCE');
         foreach ($this->deferred_analysis_methods as $method) {
             if ($method->getIsOverride() || $method->getIsOverriddenByAnother()) {
-                // TODO: Consider allowing this
-                continue;
+                if (!$ignore_overrides) {
+                    continue;
+                }
             }
             $this->analyzeFunctionLike($code_base, $method);
         }
