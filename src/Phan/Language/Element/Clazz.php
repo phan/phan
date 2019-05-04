@@ -851,7 +851,6 @@ class Clazz extends AddressableElement
         );
         foreach ($magic_property_map as $comment_parameter) {
             // $phan_flags can be used to indicate if something is property-read or property-write
-            $flags = 0;
             $phan_flags = $comment_parameter->getFlags();
             $property_name = $comment_parameter->getName();
             $property_fqsen = FullyQualifiedPropertyName::make(
@@ -864,7 +863,7 @@ class Clazz extends AddressableElement
                 clone($context)->withLineNumberStart($comment_parameter->getLine()),
                 $property_name,
                 $union_type,
-                $flags,
+                0,
                 $property_fqsen
             );
             if ($original_union_type !== $union_type) {
