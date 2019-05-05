@@ -1513,7 +1513,7 @@ class Type
      * @deprecated use isNullable
      * @suppress PhanUnreferencedPublicMethod
      */
-    public final function getIsNullable() : bool
+    final public function getIsNullable() : bool
     {
         return $this->isNullable();
     }
@@ -1531,7 +1531,7 @@ class Type
      * @deprecated
      * @suppress PhanUnreferencedPublicMethod
      */
-    public final function getIsPossiblyFalsey() : bool
+    final public function getIsPossiblyFalsey() : bool
     {
         return $this->is_nullable;
     }
@@ -1549,7 +1549,7 @@ class Type
      * @deprecated use isAlwaysFalsey
      * @suppress PhanUnreferencedPublicMethod
      */
-    public final function getIsAlwaysFalsey() : bool
+    final public function getIsAlwaysFalsey() : bool
     {
         return $this->isAlwaysFalsey();
     }
@@ -1567,7 +1567,7 @@ class Type
      * @deprecated use isPossiblyTruthy
      * @suppress PhanUnreferencedPublicMethod
      */
-    public final function getIsPossiblyTruthy() : bool
+    final public function getIsPossiblyTruthy() : bool
     {
         return $this->isPossiblyTruthy();
     }
@@ -1590,7 +1590,7 @@ class Type
      * @deprecated use isAlwaysTruthy
      * @suppress PhanUnreferencedPublicMethod
      */
-    public final function getIsAlwaysTruthy() : bool
+    final public function getIsAlwaysTruthy() : bool
     {
         return $this->isAlwaysTruthy();
     }
@@ -1608,7 +1608,7 @@ class Type
      * @deprecated use isPossiblyFalse
      * @suppress PhanUnreferencedPublicMethod
      */
-    public final function getIsPossiblyFalse() : bool
+    final public function getIsPossiblyFalse() : bool
     {
         return $this->isPossiblyFalse();
     }
@@ -1626,7 +1626,7 @@ class Type
      * @deprecated
      * @suppress PhanUnreferencedPublicMethod
      */
-    public final function getIsAlwaysFalse() : bool
+    final public function getIsAlwaysFalse() : bool
     {
         return $this->isAlwaysFalse();
     }
@@ -1645,7 +1645,7 @@ class Type
      * @deprecated use isPossiblyTrue
      * @suppress PhanUnreferencedPublicMethod
      */
-    public final function getIsPossiblyTrue() : bool
+    final public function getIsPossiblyTrue() : bool
     {
         return $this->isPossiblyTrue();
     }
@@ -1663,7 +1663,7 @@ class Type
      * @deprecated
      * @suppress PhanUnreferencedPublicMethod
      */
-    public final function getIsAlwaysTrue() : bool
+    final public function getIsAlwaysTrue() : bool
     {
         return $this->isAlwaysTrue();
     }
@@ -1681,7 +1681,7 @@ class Type
      * @deprecated use isInBoolFamily
      * @suppress PhanUnreferencedPublicMethod
      */
-    public final function getIsInBoolFamily() : bool
+    final public function getIsInBoolFamily() : bool
     {
         return $this->isInBoolFamily();
     }
@@ -1699,7 +1699,7 @@ class Type
      * @deprecated use isPossiblyNumeric
      * @suppress PhanUnreferencedPublicMethod
      */
-    public final function getIsPossiblyNumeric() : bool
+    final public function getIsPossiblyNumeric() : bool
     {
         return $this->isPossiblyNumeric();
     }

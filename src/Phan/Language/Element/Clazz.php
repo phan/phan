@@ -1839,7 +1839,7 @@ class Clazz extends AddressableElement
      * @deprecated use hasDynamicProperties
      * @suppress PhanUnreferencedPublicMethod
      */
-    public final function getHasDynamicProperties(CodeBase $code_base) : bool
+    final public function getHasDynamicProperties(CodeBase $code_base) : bool
     {
         return $this->hasDynamicProperties($code_base);
     }

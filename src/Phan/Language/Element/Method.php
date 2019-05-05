@@ -191,7 +191,7 @@ class Method extends ClassElement implements FunctionInterface
      * @deprecated use isOverriddenByAnother
      * @suppress PhanUnreferencedPublicMethod
      */
-    public final function getIsOverriddenByAnother() : bool
+    final public function getIsOverriddenByAnother() : bool
     {
         return $this->isOverriddenByAnother();
     }
@@ -268,7 +268,7 @@ class Method extends ClassElement implements FunctionInterface
      * @deprecated use isMagic
      * @suppress PhanUnreferencedPublicMethod
      */
-    public final function getIsMagic() : bool
+    final public function getIsMagic() : bool
     {
         return $this->isMagic();
     }
@@ -287,7 +287,7 @@ class Method extends ClassElement implements FunctionInterface
      * @deprecated use isMagicAndVoid
      * @suppress PhanUnreferencedPublicMethod
      */
-    public final function getIsMagicAndVoid() : bool
+    final public function getIsMagicAndVoid() : bool
     {
         return $this->isMagicAndVoid();
     }

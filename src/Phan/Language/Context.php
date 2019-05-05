@@ -270,7 +270,7 @@ class Context extends FileRef
      * @deprecated use isStrictTypes
      * @suppress PhanUnreferencedPublicMethod
      */
-    public final function getIsStrictTypes() : bool
+    final public function getIsStrictTypes() : bool
     {
         return $this->isStrictTypes();
     }

@@ -347,7 +347,7 @@ trait FunctionTrait
      * @deprecated use hasReturn
      * @suppress PhanUnreferencedPublicMethod
      */
-    public final function getHasReturn() : bool
+    final public function getHasReturn() : bool
     {
         return $this->hasReturn();
     }
@@ -366,7 +366,7 @@ trait FunctionTrait
      * @deprecated use hasYield
      * @suppress PhanUnreferencedPublicMethod
      */
-    public final function getHasYield() : bool
+    final public function getHasYield() : bool
     {
         return $this->hasYield();
     }

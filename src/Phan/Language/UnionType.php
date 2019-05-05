@@ -3373,7 +3373,7 @@ class UnionType implements Serializable
      * @deprecated use isPossiblyUndefined
      * @suppress PhanUnreferencedPublicMethod
      */
-    public final function getIsPossiblyUndefined() : bool
+    final public function getIsPossiblyUndefined() : bool
     {
         return $this->isPossiblyUndefined();
     }

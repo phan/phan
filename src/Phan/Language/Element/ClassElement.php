@@ -189,7 +189,7 @@ abstract class ClassElement extends AddressableElement
      * @deprecated use isOverride
      * @suppress PhanUnreferencedPublicMethod
      */
-    public final function getIsOverride() : bool
+    final public function getIsOverride() : bool
     {
         return $this->isOverride();
     }
