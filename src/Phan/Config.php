@@ -765,17 +765,17 @@ class Config
         // When true, this will manually back up the state of the PHP process and restore it.
         'language_server_use_pcntl_fallback' => false,
 
-        // This should only be set via CLI (`--language-server-enable-go-to-definition`)
+        // This should only be set via CLI (`--language-server-disable-go-to-definition` to disable)
         // Affects "go to definition" and "go to type definition" of LSP.
-        'language_server_enable_go_to_definition' => false,
+        'language_server_enable_go_to_definition' => true,
 
-        // This should only be set via CLI (`--language-server-enable-hover`)
+        // This should only be set via CLI (`--language-server-disable-hover` to disable)
         // Affects "hover" of LSP.
-        'language_server_enable_hover' => false,
+        'language_server_enable_hover' => true,
 
-        // This should only be set via CLI (`--language-server-enable-completion`)
+        // This should only be set via CLI (`--language-server-disable-completion` to disable)
         // Affects "completion" of LSP.
-        'language_server_enable_completion' => false,
+        'language_server_enable_completion' => true,
 
         // Don't show the category name in issue messages.
         // This makes error messages slightly shorter.

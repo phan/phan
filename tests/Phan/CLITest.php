@@ -159,6 +159,15 @@ final class CLITest extends BaseTest
                 ['output-mode' => 'csv'],
                 ['printer_class' => CsvPrinter::class],
             ],
+            // --language-server-enable-feature are now no-ops for tested features.
+            [
+                [],
+                [
+                    'language-server-enable-go-to-definition' => false,
+                    'language-server-enable-hover' => false,
+                    'language-server-enable-completion' => false,
+                ],
+            ],
             [
                 [
                     'color_issue_messages' => true,
@@ -174,9 +183,9 @@ final class CLITest extends BaseTest
                     'language_server_config' => [
                         'stdin' => true
                     ],
-                    'language_server_enable_completion' => true,
-                    'language_server_enable_go_to_definition' => true,
-                    'language_server_enable_hover' => true,
+                    'language_server_enable_completion' => false,
+                    'language_server_enable_go_to_definition' => false,
+                    'language_server_enable_hover' => false,
                     'language_server_hide_category_of_issues' => true,
                     'plugins' => ['InvokePHPNativeSyntaxCheckPlugin'],
                     'quick_mode' => true,
@@ -189,9 +198,9 @@ final class CLITest extends BaseTest
                     'language-server-allow-missing-pcntl' => false,
                     'use-fallback-parser' => false,
                     'allow-polyfill-parser' => false,
-                    'language-server-enable-go-to-definition' => false,
-                    'language-server-enable-hover' => false,
-                    'language-server-enable-completion' => false,
+                    'language-server-disable-go-to-definition' => false,
+                    'language-server-disable-hover' => false,
+                    'language-server-disable-completion' => false,
                     'language-server-hide-category' => false,
                     'plugin' => 'InvokePHPNativeSyntaxCheckPlugin',
                 ],

@@ -114,6 +114,9 @@ class CLI
         'language-server-allow-missing-pcntl',
         'language-server-force-missing-pcntl',
         'language-server-require-pcntl',
+        'language-server-disable-go-to-definition',
+        'language-server-disable-hover',
+        'language-server-disable-completion',
         'language-server-enable',
         'language-server-enable-go-to-definition',
         'language-server-enable-hover',
@@ -649,19 +652,24 @@ class CLI
                 case 'language-server-analyze-only-on-save':
                     Config::setValue('language_server_analyze_only_on_save', true);
                     break;
+                case 'language-server-disable-go-to-definition':
+                    Config::setValue('language_server_enable_go_to_definition', false);
+                    break;
                 case 'language-server-enable-go-to-definition':
                     Config::setValue('language_server_enable_go_to_definition', true);
+                    break;
+                case 'language-server-disable-hover':
+                    Config::setValue('language_server_enable_hover', false);
                     break;
                 case 'language-server-enable-hover':
                     Config::setValue('language_server_enable_hover', true);
                     break;
                 case 'language-server-completion-vscode':
                     break;
+                case 'language-server-disable-completion':
+                    Config::setValue('language_server_enable_completion', false);
+                    break;
                 case 'language-server-enable-completion':
-                    Config::setValue(
-                        'language_server_enable_completion',
-                        isset($opts['language-server-completion-vscode']) ? Config::COMPLETION_VSCODE : true
-                    );
                     break;
                 case 'language-server-verbose':
                     Config::setValue('language_server_debug_level', 'info');
@@ -716,6 +724,9 @@ class CLI
                 default:
                     throw new UsageException("Unknown option '-$key'" . self::getFlagSuggestionString($key), EXIT_FAILURE);
             }
+        }
+        if (isset($opts['language-server-completion-vscode']) && Config::getValue('language_server_enable_completion')) {
+            Config::setValue('language_server_enable_completion', Config::COMPLETION_VSCODE);
         }
 
         self::checkPluginsExist();
@@ -1170,17 +1181,17 @@ Extended help:
   Prevent the client from sending change notifications (Only notify the language server when the user saves a document)
   This significantly reduces CPU usage, but clients won't get notifications about issues immediately.
 
- --language-server-enable-go-to-definition
-  Enables support for "Go To Definition" and "Go To Type Definition" in the Phan Language Server.
-  Disabled by default.
+ --language-server-disable-go-to-definition, --language-server-enable-go-to-definition
+  Disables/Enables support for "Go To Definition" and "Go To Type Definition" in the Phan Language Server.
+  Enabled by default.
 
- --language-server-enable-hover
-  Enables support for "Hover" in the Phan Language Server.
-  Disabled by default.
+ --language-server-disable-hover, --language-server-enable-hover
+  Disables/Enables support for "Hover" in the Phan Language Server.
+  Enabled by default.
 
- --language-server-enable-completion
-  Enables support for "Completion" in the Phan Language Server.
-  Disabled by default.
+ --language-server-disable-completion, --language-server-enable-completion
+  Disables/Enables support for "Completion" in the Phan Language Server.
+  Enabled by default.
 
  --language-server-completion-vscode
   Adds a workaround to make completion of variables and static properties

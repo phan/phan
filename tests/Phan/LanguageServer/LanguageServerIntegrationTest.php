@@ -106,7 +106,7 @@ final class LanguageServerIntegrationTest extends BaseTest
             $options = "$options --language-server-completion-vscode";
         }
         $command = \sprintf(
-            '%s -d %s --quick --use-fallback-parser %s --language-server-enable-hover --language-server-enable-completion --language-server-enable-go-to-definition %s',
+            '%s -d %s --quick --use-fallback-parser %s %s',
             $escaped_command,
             \escapeshellarg(self::getLSPFolder()),
             $options,
