@@ -36,6 +36,7 @@ final class EmptyUnionTypeTest extends BaseTest
         // UnionType implementation can't be optimized
         'withIsPossiblyUndefined',
         'isPossiblyUndefined',
+        'getIsPossiblyUndefined',  // alias of isPossiblyUndefined
     ];
 
     public function testMethods() : void
