@@ -469,12 +469,13 @@ return [
         // Plugins for Phan's self-analysis
         ////////////////////////////////////////////////////////////////////////
 
-        // TODO: warn about the usage of assert() for Phan's self-analysis. See https://github.com/phan/phan/issues/288
+        // Warns about the usage of assert() for Phan's self-analysis. See https://github.com/phan/phan/issues/288
         'NoAssertPlugin',
 
         'HasPHPDocPlugin',
-        'PHPDocToRealTypesPlugin',
+        'PHPDocToRealTypesPlugin',  // suggests replacing (at)return void with `: void` in the declaration, etc.
         'PHPDocRedundantPlugin',
+        'PreferNamespaceUsePlugin',
 
         // This should only be enabled if the code being analyzed contains Phan plugins.
         'PhanSelfCheckPlugin',

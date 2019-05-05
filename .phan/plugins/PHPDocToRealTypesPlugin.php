@@ -18,6 +18,8 @@ use PHPDocToRealTypesPlugin\Fixers;
  * This plugin suggests real types that can be used instead of phpdoc types.
  *
  * It does not check if the change is safe to make.
+ *
+ * TODO: Always use the same type representation as phpdoc if possible in this plugin
  */
 class PHPDocToRealTypesPlugin extends PluginV3 implements
     AnalyzeFunctionCapability,

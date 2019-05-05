@@ -327,12 +327,40 @@ Warnings may need to be completely disabled due to the large number of method de
 #### PHPDocToRealTypesPlugin.php
 
 This plugin suggests real types that can be used instead of phpdoc types.
-Currently, this just checks return types.
-This also supports `--automatic-fix` to add those types.
+Currently, this just checks param and return types.
+Some of the suggestions made by this plugin will cause inheritance errors.
+
+This doesn't suggest changes if classes have subclasses (but this check doesn't work when inheritance involves traits).
+`PHPDOC_TO_REAL_TYPES_IGNORE_INHERITANCE=1` can be used to force this to check **all** methods and emit issues.
+
+This also supports `--automatic-fix` to add the types to the real type signatures.
 
 - **PhanPluginCanUseReturnType**: `Can use {TYPE} as a return type of {METHOD}`
 - **PhanPluginCanUseNullableReturnType**: `Can use {TYPE} as a return type of {METHOD}` (useful if there is a minimum php version of 7.1)
 - **PhanPluginCanUsePHP71Void**: `Can use php 7.1's void as a return type of {METHOD}` (useful if there is a minimum php version of 7.1)
+
+This supports `--automatic-fix`.
+- `PHPDocRedundantPlugin` will be useful for cleaning up redundant phpdoc after real types were added.
+- `PreferNamespaceUsePlugin` can be used to convert types from fully qualified types back to unqualified types ()
+
+#### PHPDocRedundantPlugin.php
+
+This plugin warns about function/method/closure phpdoc that does nothing but repeat the information in the type signature.
+E.g. this will warn about `/** @return void */ function () : void {}` and `/** */`, but not `/** @return void description of what it does or other annotations */`
+
+This supports `--automatic-fix`
+
+- **PhanPluginRedundantFunctionComment**: `Redundant doc comment on function {FUNCTION}(): {COMMENT}`
+- **PhanPluginRedundantMethodComment**: `Redundant doc comment on method {METHOD}(): {COMMENT}`
+- **PhanPluginRedundantClosureComment**: `Redundant doc comment on closure {FUNCTION}: {COMMENT}`
+
+#### PreferNamespaceUsePlugin.php
+
+This plugin suggests using `ClassName` instead of `\My\Ns\ClassName` when there is a `use My\Ns\ClassName` annotation (or for uses in namespace `\My\Ns`)
+Currently, this only checks **real** (not phpdoc) param/return annotations.
+
+- **PhanPluginPreferNamespaceUseParamType**: `Could write param type of ${PARAMETER} of {FUNCTION} as {TYPE} instead of {TYPE}`
+- **PhanPluginPreferNamespaceUseReturnType**: `Could write return type of {FUNCTION} as {TYPE} instead of {TYPE}`
 
 ### 4. Demo plugins:
 
