@@ -386,6 +386,17 @@ This setting can be overridden if users wish to store strings that are even long
 
 (Default: `200`)
 
+## maximum_recursion_depth
+
+The maximum recursion depth that can be reached when analyzing the code.
+This setting only takes effect when quick_mode is disabled.
+A higher limit will make the analysis more accurate, but could possibly
+make it harder to track the code bit where a detected issue originates.
+As long as this is kept relatively low, performance is usually not affected
+by changing this setting.
+
+(Default: `2`)
+
 ## parent_constructor_required
 
 A set of fully qualified class-names for which
@@ -719,6 +730,16 @@ Setting this to true will introduce numerous false positives
 # Dead Code Detection
 
 These settings affect how Phan will track what elements are referenced to warn about them.
+
+## constant_variable_detection
+
+Set to true in order to attempt to detect variables that could be replaced with constants or literals.
+(i.e. they are declared once (as a constant expression) and never modified)
+This is almost entirely false positives for most coding styles.
+
+This is intended to be used to check for bugs where a variable such as a boolean was declared but is no longer (or was never) modified.
+
+(Default: `false`)
 
 ## dead_code_detection
 

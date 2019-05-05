@@ -251,6 +251,12 @@ Extended help:
   Makes the polyfill aware of doc comments on class constants and declare statements
   even when imitating parsing a PHP 7.0 codebase.
 
+ --constant-variable-detection
+  Emit issues for variables that could be replaced with literals or constants.
+  (i.e. they are declared once (as a constant expression) and never modified).
+  This is almost entirely false positives for most coding styles.
+  Implies --unused-variable-detection
+
  --language-server-on-stdin
   Start the language server (For the Language Server protocol).
   This is a different protocol from --daemonize, clients for various IDEs already exist.
@@ -265,17 +271,17 @@ Extended help:
   Prevent the client from sending change notifications (Only notify the language server when the user saves a document)
   This significantly reduces CPU usage, but clients won't get notifications about issues immediately.
 
- --language-server-enable-go-to-definition
-  Enables support for "Go To Definition" and "Go To Type Definition" in the Phan Language Server.
-  Disabled by default.
+ --language-server-disable-go-to-definition, --language-server-enable-go-to-definition
+  Disables/Enables support for "Go To Definition" and "Go To Type Definition" in the Phan Language Server.
+  Enabled by default.
 
- --language-server-enable-hover
-  Enables support for "Hover" in the Phan Language Server.
-  Disabled by default.
+ --language-server-disable-hover, --language-server-enable-hover
+  Disables/Enables support for "Hover" in the Phan Language Server.
+  Enabled by default.
 
- --language-server-enable-completion
-  Enables support for "Completion" in the Phan Language Server.
-  Disabled by default.
+ --language-server-disable-completion, --language-server-enable-completion
+  Disables/Enables support for "Completion" in the Phan Language Server.
+  Enabled by default.
 
  --language-server-completion-vscode
   Adds a workaround to make completion of variables and static properties
