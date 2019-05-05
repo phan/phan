@@ -64,7 +64,7 @@ trait Analyzable
      * NOTE: This is non-null if hasNode is true
      * @suppress PhanTypeMismatchDeclaredReturnNullable
      */
-    public function getNode() : ?\ast\Node
+    public function getNode() : ?Node
     {
         return $this->node;
     }

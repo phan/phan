@@ -186,7 +186,7 @@ class ArrayType extends IterableType
     /**
      * @return UnionType int|string for arrays
      */
-    public function iterableKeyUnionType(CodeBase $unused_code_base) : \Phan\Language\UnionType
+    public function iterableKeyUnionType(CodeBase $unused_code_base) : UnionType
     {
         // Reduce false positive partial type mismatch errors
         return UnionType::empty();

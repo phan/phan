@@ -139,7 +139,7 @@ final class TemplateType extends Type
      * @param ?Closure(mixed, Context):UnionType $right
      * @return ?Closure(mixed, Context):UnionType
      */
-    public static function combineParameterClosures(?\Closure $left, ?\Closure $right) : ?\Closure
+    public static function combineParameterClosures(?Closure $left, ?Closure $right) : ?Closure
     {
         if (!$left) {
             return $right;
@@ -161,7 +161,7 @@ final class TemplateType extends Type
      *
      * @return ?Closure(UnionType, Context):UnionType a closure to map types to the template type wherever it was in the original union type
      */
-    public function getTemplateTypeExtractorClosure(CodeBase $unused_code_base, TemplateType $template_type) : ?\Closure
+    public function getTemplateTypeExtractorClosure(CodeBase $unused_code_base, TemplateType $template_type) : ?Closure
     {
         if ($this === $template_type) {
             return static function (UnionType $type, Context $_) : UnionType {

@@ -418,7 +418,7 @@ class Context extends FileRef
         return $this->scope->getClassFQSEN();
     }
 
-    public function getClassFQSENOrNull() : ?\Phan\Language\FQSEN\FullyQualifiedClassName
+    public function getClassFQSENOrNull() : ?FullyQualifiedClassName
     {
         return $this->scope->getClassFQSENOrNull();
     }
@@ -672,7 +672,7 @@ class Context extends FileRef
      * @param bool $should_catch_issue_exception the value passed to UnionTypeVisitor
      * @return ?UnionType
      */
-    public function getUnionTypeOfNodeIfCached(int $node_id, bool $should_catch_issue_exception) : ?\Phan\Language\UnionType
+    public function getUnionTypeOfNodeIfCached(int $node_id, bool $should_catch_issue_exception) : ?UnionType
     {
         if ($should_catch_issue_exception) {
             return $this->cache[$node_id] ?? null;
@@ -889,7 +889,7 @@ class Context extends FileRef
         return $override_type;
     }
 
-    public function getThisPropertyIfOverridden(string $name) : ?\Phan\Language\UnionType
+    public function getThisPropertyIfOverridden(string $name) : ?UnionType
     {
         if (!$this->scope->hasVariableWithName(self::VAR_NAME_THIS_PROPERTIES)) {
             return null;

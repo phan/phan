@@ -93,7 +93,7 @@ abstract class AnalysisVisitor extends KindVisitorImplementation
         string $issue_type,
         int $lineno,
         array $parameters,
-        ?\Phan\Suggestion $suggestion
+        ?Suggestion $suggestion
     ) : void {
         Issue::maybeEmitWithParameters(
             $this->code_base,

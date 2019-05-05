@@ -261,7 +261,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      *
      * @suppress PhanUndeclaredConstant, UnusedSuppression (pcntl unavailable on Windows)
      */
-    public static function run(CodeBase $code_base, \Closure $file_path_lister, array $options) : ?\Phan\Daemon\Request
+    public static function run(CodeBase $code_base, Closure $file_path_lister, array $options) : ?Request
     {
         if (!$code_base->isUndoTrackingEnabled()) {
             throw new AssertionError("Expected undo tracking to be enabled");

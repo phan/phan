@@ -191,7 +191,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      * @return UnionType
      * @phan-override
      */
-    public function iterableKeyUnionType(CodeBase $unused_code_base) : \Phan\Language\UnionType
+    public function iterableKeyUnionType(CodeBase $unused_code_base) : UnionType
     {
         return $this->getKeyUnionType();
     }
@@ -214,7 +214,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      * @return UnionType
      * @override
      */
-    public function iterableValueUnionType(CodeBase $unused_code_base) : \Phan\Language\UnionType
+    public function iterableValueUnionType(CodeBase $unused_code_base) : UnionType
     {
         return $this->genericArrayElementUnionType();
     }
@@ -704,7 +704,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      * @param CodeBase $code_base
      * @return ?Closure(UnionType, Context):UnionType
      */
-    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type) : ?\Closure
+    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type) : ?Closure
     {
         $closure = null;
         foreach ($this->field_types as $key => $type) {
@@ -757,7 +757,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      * Returns the function interface this references
      * @return ?FunctionInterface
      */
-    public function asFunctionInterfaceOrNull(CodeBase $code_base, Context $context) : ?\Phan\Language\Element\FunctionInterface
+    public function asFunctionInterfaceOrNull(CodeBase $code_base, Context $context) : ?FunctionInterface
     {
         if (\count($this->field_types) !== 2) {
             Issue::maybeEmit(

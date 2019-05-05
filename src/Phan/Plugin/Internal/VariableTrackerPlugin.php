@@ -329,7 +329,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
         );
     }
 
-    private static function makeSuggestion(VariableGraph $graph, string $variable_name, string $issue_type) : ?\Phan\Suggestion
+    private static function makeSuggestion(VariableGraph $graph, string $variable_name, string $issue_type) : ?Suggestion
     {
         if ($issue_type !== Issue::UnusedVariable) {
             return null;

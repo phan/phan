@@ -183,7 +183,7 @@ class Analysis
      * @return Context
      * The context from within the node is returned
      */
-    public static function parseNodeInContext(CodeBase $code_base, Context $context, Node $node) : \Phan\Language\Context
+    public static function parseNodeInContext(CodeBase $code_base, Context $context, Node $node) : Context
     {
         $kind = $node->kind;
         $context->setLineNumberStart($node->lineno);
@@ -483,7 +483,7 @@ class Analysis
     public static function analyzeFile(
         CodeBase $code_base,
         string $file_path,
-        ?\Phan\Daemon\Request $request,
+        ?Request $request,
         string $override_contents = null
     ) : Context {
         // Set the file on the context

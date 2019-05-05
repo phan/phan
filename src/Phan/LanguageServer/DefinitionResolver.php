@@ -37,7 +37,7 @@ class DefinitionResolver
      * and "go to type definition" in their implementations,
      * based on $request->isTypeDefinitionRequest()
      */
-    public static function createGoToDefinitionClosure(GoToDefinitionRequest $request, CodeBase $code_base) : \Closure
+    public static function createGoToDefinitionClosure(GoToDefinitionRequest $request, CodeBase $code_base) : Closure
     {
         /**
          * @param array<int,Node> $parent_node_list

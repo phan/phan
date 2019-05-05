@@ -53,7 +53,7 @@ class Map extends SplObjectStorage
      * A new map containing the mapped keys and
      * values
      */
-    public function keyValueMap(Closure $key_closure, Closure $value_closure) : \Phan\Library\Map
+    public function keyValueMap(Closure $key_closure, Closure $value_closure) : Map
     {
         $map = new Map();
         foreach ($this as $key => $value) {

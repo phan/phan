@@ -91,7 +91,7 @@ class IssueFixer
         string $file_contents,
         NamespaceUseDeclaration $declaration,
         IssueInstance $issue_instance
-    ) : ?\Phan\Plugin\Internal\IssueFixingPlugin\FileEdit {
+    ) : ?FileEdit {
         if (!self::isMatchingNamespaceUseDeclaration($file_contents, $declaration, $issue_instance)) {
             return null;
         }
@@ -146,7 +146,7 @@ class IssueFixer
             CodeBase $unused_code_base,
             FileCacheEntry $file_contents,
             IssueInstance $issue_instance
-        ) : ?\Phan\Plugin\Internal\IssueFixingPlugin\FileEditSet {
+        ) : ?FileEditSet {
             // 1-based line
             $line = $issue_instance->getLine();
             $edits = [];
@@ -212,7 +212,7 @@ class IssueFixer
                 ) use (
                     $closure,
                     $instance
-) : ?\Phan\Plugin\Internal\IssueFixingPlugin\FileEditSet {
+) : ?FileEditSet {
                     self::debug("Calling for $instance\n");
                     return $closure($code_base, $file_contents, $instance);
                 };

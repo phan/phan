@@ -338,7 +338,7 @@ final class MiscParamPlugin extends PluginV3 implements
             CodeBase $code_base,
             Context $context,
             $node
-        ) : ?\Phan\Language\Element\Variable {
+        ) : ?Variable {
             if (!$node instanceof Node) {
                 return null;
             }

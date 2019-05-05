@@ -247,7 +247,7 @@ abstract class ClassElement extends AddressableElement
      *                                    null if in the global scope.
      * @return bool true if this can be accessed from the scope of $accessing_class_fqsen
      */
-    public function isAccessibleFromClass(CodeBase $code_base, ?\Phan\Language\FQSEN\FullyQualifiedClassName $accessing_class_fqsen) : bool
+    public function isAccessibleFromClass(CodeBase $code_base, ?FullyQualifiedClassName $accessing_class_fqsen) : bool
     {
         if ($this->isPublic()) {
             return true;

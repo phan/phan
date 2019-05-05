@@ -187,7 +187,7 @@ class TextDocument
      * @return ?Promise <Location|Location[]|null>
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
-    public function definition(TextDocumentIdentifier $textDocument, Position $position) : ?\Sabre\Event\Promise
+    public function definition(TextDocumentIdentifier $textDocument, Position $position) : ?Promise
     {
         Logger::logInfo("Called textDocument/definition, uri={$textDocument->uri} position={$position->line}:{$position->character}");
         try {
@@ -208,7 +208,7 @@ class TextDocument
      * @return ?Promise <Location|Location[]|null>
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
-    public function typeDefinition(TextDocumentIdentifier $textDocument, Position $position) : ?\Sabre\Event\Promise
+    public function typeDefinition(TextDocumentIdentifier $textDocument, Position $position) : ?Promise
     {
         Logger::logInfo("Called textDocument/typeDefinition, uri={$textDocument->uri} position={$position->line}:{$position->character}");
         try {
@@ -231,7 +231,7 @@ class TextDocument
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      * @return ?Promise
      */
-    public function hover(TextDocumentIdentifier $textDocument, Position $position) : ?\Sabre\Event\Promise
+    public function hover(TextDocumentIdentifier $textDocument, Position $position) : ?Promise
     {
         // Some clients (e.g. emacs-lsp, the last time I checked)
         // don't respect the server's reported hover capability, and send this unconditionally.
@@ -261,7 +261,7 @@ class TextDocument
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      * @return ?Promise <CompletionItem[]|CompletionList>
      */
-    public function completion(TextDocumentIdentifier $textDocument, Position $position, CompletionContext $context = null) : ?\Sabre\Event\Promise
+    public function completion(TextDocumentIdentifier $textDocument, Position $position, CompletionContext $context = null) : ?Promise
     {
         if (!Config::getValue('language_server_enable_completion')) {
             // Placeholder to avoid a performance degradation on clients

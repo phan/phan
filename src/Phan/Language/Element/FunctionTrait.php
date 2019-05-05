@@ -76,7 +76,7 @@ trait FunctionTrait
      * The fully-qualified structural element name of this
      * structural element
      */
-    abstract public function getFQSEN() : \Phan\Language\FQSEN;
+    abstract public function getFQSEN() : FQSEN;
 
     /**
      * @return string
@@ -455,7 +455,7 @@ trait FunctionTrait
      * @param int $i - offset of the parameter.
      * @return Parameter|null The parameter type that the **caller** observes.
      */
-    public function getParameterForCaller(int $i) : ?\Phan\Language\Element\Parameter
+    public function getParameterForCaller(int $i) : ?Parameter
     {
         $list = $this->parameter_list;
         if (count($list) === 0) {
@@ -482,7 +482,7 @@ trait FunctionTrait
      * @return Parameter|null The real parameter type (from php signature) that the **caller** observes.
      * @suppress PhanUnreferencedPublicMethod false positive - this is referenced in FunctionInterface.
      */
-    public function getRealParameterForCaller(int $i) : ?\Phan\Language\Element\Parameter
+    public function getRealParameterForCaller(int $i) : ?Parameter
     {
         $list = $this->real_parameter_list;
         if (count($list) === 0) {
@@ -568,7 +568,7 @@ trait FunctionTrait
     public function getRealParameterList()
     {
         // Excessive cloning, to ensure that this stays immutable.
-        return \array_map(static function (Parameter $param) : \Phan\Language\Element\Parameter {
+        return \array_map(static function (Parameter $param) : Parameter {
             return clone($param);
         }, $this->real_parameter_list);
     }
@@ -581,7 +581,7 @@ trait FunctionTrait
      */
     public function setRealParameterList(array $parameter_list) : void
     {
-        $this->real_parameter_list = \array_map(static function (Parameter $param) : \Phan\Language\Element\Parameter {
+        $this->real_parameter_list = \array_map(static function (Parameter $param) : Parameter {
             return clone($param);
         }, $parameter_list);
 
@@ -896,7 +896,7 @@ trait FunctionTrait
      * @param ?UnionType $type the raw phpdoc union type
      * @return void
      */
-    public function setPHPDocReturnType(?\Phan\Language\UnionType $type) : void
+    public function setPHPDocReturnType(?UnionType $type) : void
     {
         $this->phpdoc_return_type = $type;
     }
@@ -905,7 +905,7 @@ trait FunctionTrait
      * @return ?UnionType the raw phpdoc union type
      * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
-    public function getPHPDocReturnType() : ?\Phan\Language\UnionType
+    public function getPHPDocReturnType() : ?UnionType
     {
         return $this->phpdoc_return_type;
     }
@@ -979,7 +979,7 @@ trait FunctionTrait
     abstract public function getRecursionDepth() : int;
 
     /** @return Node|null the node of this function-like's declaration, if any exist and were kept for recursive non-quick analysis. */
-    abstract public function getNode() : ?\ast\Node;
+    abstract public function getNode() : ?Node;
 
     /** @return Context location and scope where this was declared. */
     abstract public function getContext() : Context;
@@ -1063,7 +1063,7 @@ trait FunctionTrait
     /**
      * @return ?Comment - Not set for internal functions/methods
      */
-    public function getComment() : ?\Phan\Language\Element\Comment
+    public function getComment() : ?Comment
     {
         return $this->comment;
     }
@@ -1500,7 +1500,7 @@ trait FunctionTrait
      *
      * @return ?Closure(array<int,Node|string|int|float|UnionType>, Context):UnionType
      */
-    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type, int $skip_index = null) : ?\Closure
+    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type, int $skip_index = null) : ?Closure
     {
         $closure = null;
         foreach ($this->parameter_list as $i => $parameter) {
@@ -1556,7 +1556,7 @@ trait FunctionTrait
      * @return ?Closure(CodeBase, Context, FunctionInterface, array):void
      * @internal
      */
-    private function getPluginForParamAssertionMap(CodeBase $code_base, array $param_assertion_map) : ?\Closure
+    private function getPluginForParamAssertionMap(CodeBase $code_base, array $param_assertion_map) : ?Closure
     {
         $closure = null;
         foreach ($param_assertion_map as $param_name => $assertion) {
@@ -1586,7 +1586,7 @@ trait FunctionTrait
      * @suppress PhanAccessPropertyInternal
      * @internal
      */
-    public function createClosureForAssertion(CodeBase $code_base, Assertion $assertion, int $i) : ?\Closure
+    public function createClosureForAssertion(CodeBase $code_base, Assertion $assertion, int $i) : ?Closure
     {
         $union_type = $assertion->union_type;
         if ($union_type->hasTemplateTypeRecursive()) {
@@ -1611,7 +1611,7 @@ trait FunctionTrait
      * @param Closure(CodeBase, Context, array):UnionType $union_type_extractor
      * @return ?Closure(CodeBase, Context, FunctionInterface, array):void
      */
-    public static function createClosureForUnionTypeExtractorAndAssertionType(Closure $union_type_extractor, int $assertion_type, int $i) : ?\Closure
+    public static function createClosureForUnionTypeExtractorAndAssertionType(Closure $union_type_extractor, int $assertion_type, int $i) : ?Closure
     {
         switch ($assertion_type) {
             case Assertion::IS_OF_TYPE:
@@ -1678,7 +1678,7 @@ trait FunctionTrait
      *
      * @return ?Closure(CodeBase, Context, array):UnionType
      */
-    private function makeAssertionUnionTypeExtractor(CodeBase $code_base, UnionType $type, int $asserted_param_index) : ?\Closure
+    private function makeAssertionUnionTypeExtractor(CodeBase $code_base, UnionType $type, int $asserted_param_index) : ?Closure
     {
         $comment = $this->getComment();
         if (!$comment) {
@@ -1718,7 +1718,7 @@ trait FunctionTrait
      * @internal
      * @suppress PhanUnreferencedPublicMethod referenced in FunctionTrait
      */
-    public function getCommentParamAssertionClosure(CodeBase $code_base) : ?\Closure
+    public function getCommentParamAssertionClosure(CodeBase $code_base) : ?Closure
     {
         $comment = $this->getComment();
         if (!$comment) {

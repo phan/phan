@@ -51,7 +51,7 @@ interface SuppressionCapability
         string $issue_type,
         int $lineno,
         array $parameters,
-        ?\Phan\Suggestion $suggestion
+        ?Suggestion $suggestion
     ) : bool;
 
     /**

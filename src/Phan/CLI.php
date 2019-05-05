@@ -275,7 +275,7 @@ class CLI
      * @throws UsageException
      * @internal - used for unit tests only
      */
-    public static function fromRawValues(array $opts, array $argv) : \Phan\CLI
+    public static function fromRawValues(array $opts, array $argv) : CLI
     {
         return new self($opts, $argv);
     }

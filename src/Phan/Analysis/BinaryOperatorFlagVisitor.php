@@ -418,7 +418,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    private function visitBinaryOpCommon(Node $node) : \Phan\Language\UnionType
+    private function visitBinaryOpCommon(Node $node) : UnionType
     {
         $left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
@@ -832,7 +832,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visitBinaryMod(Node $unused_node) : \Phan\Language\UnionType
+    public function visitBinaryMod(Node $unused_node) : UnionType
     {
         // TODO: Warn about invalid left or right side
         return IntType::instance(false)->asUnionType();

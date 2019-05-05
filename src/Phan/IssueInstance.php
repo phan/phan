@@ -129,7 +129,7 @@ class IssueInstance
     /**
      * @return ?Suggestion If this is non-null, this contains suggestions on how to resolve the error.
      */
-    public function getSuggestion() : ?\Phan\Suggestion
+    public function getSuggestion() : ?Suggestion
     {
         return $this->suggestion;
     }

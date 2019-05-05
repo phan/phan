@@ -2330,7 +2330,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * @param string $method_name - NOTE: The caller should convert constants/class constants/etc in $node->children['method'] to a string.
      * @return ?Method
      */
-    private function getStaticMethodOrEmitIssue(Node $node, string $method_name) : ?\Phan\Language\Element\Method
+    private function getStaticMethodOrEmitIssue(Node $node, string $method_name) : ?Method
     {
         try {
             // Get a reference to the method being called
@@ -3095,7 +3095,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      *
      * @param ?Parameter $real_parameter the real parameter type from the type signature
      */
-    private function createPassByReferenceArgumentInCall(Node $argument, Parameter $parameter, ?\Phan\Language\Element\Parameter $real_parameter) : void
+    private function createPassByReferenceArgumentInCall(Node $argument, Parameter $parameter, ?Parameter $real_parameter) : void
     {
         if ($argument->kind == ast\AST_VAR) {
             // We don't do anything with the new variable; just create it
@@ -3157,7 +3157,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         array $argument_list,
         FunctionInterface $method,
         Parameter $parameter,
-        ?\Phan\Language\Element\Parameter $real_parameter
+        ?Parameter $real_parameter
     ) : void {
         $variable = null;
         $kind = $argument->kind;
@@ -3343,7 +3343,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         try {
             // Even though we don't modify the parameter list, we still need to know the types
             // -- as an optimization, we don't run quick mode again if the types didn't change?
-            $parameter_list = \array_map(static function (Parameter $parameter) : \Phan\Language\Element\Parameter {
+            $parameter_list = \array_map(static function (Parameter $parameter) : Parameter {
                 return clone($parameter);
             }, $method->getParameterList());
 

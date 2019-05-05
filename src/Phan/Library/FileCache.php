@@ -62,7 +62,7 @@ final class FileCache
      * @return ?FileCacheEntry if the entry exists in cache, return it.
      * Otherwise, return null.
      */
-    public static function getEntry(string $file_name) : ?\Phan\Library\FileCacheEntry
+    public static function getEntry(string $file_name) : ?FileCacheEntry
     {
         $entry = self::$cache_entries[$file_name] ?? null;
         if ($entry) {

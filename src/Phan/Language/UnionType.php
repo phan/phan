@@ -108,7 +108,7 @@ class UnionType implements Serializable
      * @param Type[] $type_list
      * @return UnionType
      */
-    public static function of(array $type_list) : \Phan\Language\UnionType
+    public static function of(array $type_list) : UnionType
     {
         $n = \count($type_list);
         if ($n === 0) {
@@ -126,7 +126,7 @@ class UnionType implements Serializable
      * @return UnionType
      * @suppress PhanPossiblyNonClassMethodCall
      */
-    protected static function ofUniqueTypes(array $type_list) : \Phan\Language\UnionType
+    protected static function ofUniqueTypes(array $type_list) : UnionType
     {
         $n = \count($type_list);
         if ($n === 0) {
@@ -144,7 +144,7 @@ class UnionType implements Serializable
     /**
      * @return EmptyUnionType (Real return type omitted for performance)
      */
-    public static function empty() : \Phan\Language\EmptyUnionType
+    public static function empty() : EmptyUnionType
     {
         return self::$empty_instance;
     }
@@ -472,7 +472,7 @@ class UnionType implements Serializable
          * @param string|null $type_name
          * @return UnionType|null
          */
-        $get_for_global_context = static function (?string $type_name) : ?\Phan\Language\UnionType {
+        $get_for_global_context = static function (?string $type_name) : ?UnionType {
             if (!$type_name) {
                 return null;
             }
@@ -535,7 +535,7 @@ class UnionType implements Serializable
      *
      * @return UnionType
      */
-    public function withType(Type $type) : \Phan\Language\UnionType
+    public function withType(Type $type) : UnionType
     {
         $type_set = $this->type_set;
         if (\count($type_set) === 0) {
@@ -558,7 +558,7 @@ class UnionType implements Serializable
      *
      * @return UnionType
      */
-    public function withoutType(Type $type) : \Phan\Language\UnionType
+    public function withoutType(Type $type) : UnionType
     {
         // Copy the array $this->type_set
         $type_set = $this->type_set;
@@ -588,7 +588,7 @@ class UnionType implements Serializable
      *
      * @return UnionType
      */
-    public function withUnionType(UnionType $union_type) : \Phan\Language\UnionType
+    public function withUnionType(UnionType $union_type) : UnionType
     {
         // Precondition: Both UnionTypes have lists of unique types.
         $type_set = $this->type_set;
@@ -1997,7 +1997,7 @@ class UnionType implements Serializable
      */
     public function asClassFQSENList(
         Context $context
-    ) : \Generator {
+    ) : Generator {
         // Iterate over each viable class type to see if any
         // have the constant we're looking for
         foreach ($this->type_set as $class_type) {
@@ -2050,7 +2050,7 @@ class UnionType implements Serializable
     public function asClassList(
         CodeBase $code_base,
         Context $context
-    ) : \Generator {
+    ) : Generator {
         // Iterate over each viable class type to see if any
         // have the constant we're looking for
         foreach ($this->type_set as $class_type) {
@@ -3821,7 +3821,7 @@ class UnionType implements Serializable
      *
      * @return ?Closure(UnionType, Context):UnionType a closure to map types to the template type wherever it was in the original union type
      */
-    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type) : ?\Closure
+    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type) : ?Closure
     {
         $closure = null;
         foreach ($this->type_set as $type) {

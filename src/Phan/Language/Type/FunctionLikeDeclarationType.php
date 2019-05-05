@@ -136,7 +136,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     /**
      * @return ?ClosureDeclarationParameter the parameter which the argument at the index $i would be passed in as
      */
-    public function getClosureParameterForArgument(int $i) : ?\Phan\Language\Type\ClosureDeclarationParameter
+    public function getClosureParameterForArgument(int $i) : ?ClosureDeclarationParameter
     {
         $result = $this->params[$i] ?? null;
         if (!$result) {
@@ -280,7 +280,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return false;
     }
 
-    public function asFunctionInterfaceOrNull(CodeBase $unused_codebase, Context $unused_context) : ?\Phan\Language\Element\FunctionInterface
+    public function asFunctionInterfaceOrNull(CodeBase $unused_codebase, Context $unused_context) : ?FunctionInterface
     {
         return $this;
     }
@@ -358,7 +358,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
      * @phan-return \Generator<FunctionLikeDeclarationType>
      * @override
      */
-    public function alternateGenerator(CodeBase $_) : \Generator
+    public function alternateGenerator(CodeBase $_) : Generator
     {
         yield $this;
     }
@@ -411,7 +411,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     }
 
     /** @override */
-    public function getComment() : ?\Phan\Language\Element\Comment
+    public function getComment() : ?Comment
     {
         return null;
     }
@@ -518,7 +518,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     }
 
     /** @override */
-    public function getPHPDocReturnType() : ?\Phan\Language\UnionType
+    public function getPHPDocReturnType() : ?UnionType
     {
         return $this->return_type;
     }
@@ -527,7 +527,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
      * @return Parameter|null
      * @override
      */
-    public function getParameterForCaller(int $i) : ?\Phan\Language\Element\Parameter
+    public function getParameterForCaller(int $i) : ?Parameter
     {
         $list = $this->params;
         if (\count($list) === 0) {
@@ -545,7 +545,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
      * @return Parameter|null
      * @override
      */
-    public function getRealParameterForCaller(int $i) : ?\Phan\Language\Element\Parameter
+    public function getRealParameterForCaller(int $i) : ?Parameter
     {
         // FunctionLikeDeclarationType doesn't know if the phpdoc type is the real union type.
         //
@@ -852,7 +852,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return false;
     }
 
-    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type) : ?\Closure
+    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type) : ?Closure
     {
         // Create a closure to extract types for the template type from the return type and param types.
         $closure = $this->getReturnTemplateTypeExtractorClosure($code_base, $template_type);
@@ -889,7 +889,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
      * Extracts a closure to extract the template type from the return type, or returns null
      * @return ?Closure(UnionType,Context):UnionType
      */
-    private function getReturnTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type) : ?\Closure
+    private function getReturnTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type) : ?Closure
     {
         $return_closure = $this->getUnionType()->getTemplateTypeExtractorClosure($code_base, $template_type);
         if (!$return_closure) {
@@ -925,7 +925,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return (new static($this->file_ref, $new_params, $new_return_type, $this->returns_reference, $this->is_nullable))->asUnionType();
     }
 
-    public function getCommentParamAssertionClosure(CodeBase $code_base) : ?\Closure
+    public function getCommentParamAssertionClosure(CodeBase $code_base) : ?Closure
     {
         return null;
     }

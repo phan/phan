@@ -168,7 +168,7 @@ class Set extends \SplObjectStorage
      * closure return true
      * @suppress PhanUnreferencedPublicMethod potentially useful but currently unused
      */
-    public function filter(Closure $closure) : \Phan\Library\Set
+    public function filter(Closure $closure) : Set
     {
         $set = new Set();
         foreach ($this as $element) {

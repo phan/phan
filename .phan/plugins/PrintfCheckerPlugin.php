@@ -83,7 +83,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
      * @param bool|int|string|float|Node|array|null $ast_node
      * @return ?PrimitiveValue
      */
-    protected function astNodeToPrimitive(CodeBase $code_base, Context $context, $ast_node) : ?\Phan\Plugin\PrintfCheckerPlugin\PrimitiveValue
+    protected function astNodeToPrimitive(CodeBase $code_base, Context $context, $ast_node) : ?PrimitiveValue
     {
         // Base case: convert primitive tokens such as numbers and strings.
         if (!($ast_node instanceof Node)) {
@@ -148,7 +148,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
      * @param PrimitiveValue $right the value on the right.
      * @return ?PrimitiveValue
      */
-    protected static function concatenateToPrimitive(PrimitiveValue $left, PrimitiveValue $right) : ?\Phan\Plugin\PrintfCheckerPlugin\PrimitiveValue
+    protected static function concatenateToPrimitive(PrimitiveValue $left, PrimitiveValue $right) : ?PrimitiveValue
     {
         // Combining untranslated strings with anything will cause problems.
         if ($left->is_translated) {

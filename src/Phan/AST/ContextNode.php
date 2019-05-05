@@ -169,7 +169,7 @@ class ContextNode
      * @return ?FullyQualifiedClassName (If this returns null, the caller is responsible for emitting an issue or falling back)
      * @throws FQSENException hopefully impossible
      */
-    public function getTraitFQSEN(array $adaptations_map) : ?\Phan\Language\FQSEN\FullyQualifiedClassName
+    public function getTraitFQSEN(array $adaptations_map) : ?FullyQualifiedClassName
     {
         // TODO: In a subsequent PR, try to make trait analysis work when $adaptations_map has multiple possible traits.
         $trait_fqsen_string = $this->getQualifiedName();
@@ -1206,7 +1206,7 @@ class ContextNode
      * @throws NodeException
      * An exception is thrown if we can't understand the node
      */
-    public function getOrCreateVariableForReferenceParameter(Parameter $parameter, ?\Phan\Language\Element\Parameter $real_parameter) : Variable
+    public function getOrCreateVariableForReferenceParameter(Parameter $parameter, ?Parameter $real_parameter) : Variable
     {
         try {
             return $this->getVariable();
@@ -2012,7 +2012,7 @@ class ContextNode
      * @return ?FullyQualifiedClassName
      * @throws IssueException if the list of possible classes couldn't be determined.
      */
-    public function resolveClassNameInContext() : ?\Phan\Language\FQSEN\FullyQualifiedClassName
+    public function resolveClassNameInContext() : ?FullyQualifiedClassName
     {
         // A function argument to resolve into an FQSEN
         $arg = $this->node;

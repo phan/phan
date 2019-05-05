@@ -30,7 +30,7 @@ class CompletionResolver
      * and "go to type definition" in their implementations,
      * based on $request->isTypeDefinitionRequest()
      */
-    public static function createCompletionClosure(CompletionRequest $request, CodeBase $code_base) : \Closure
+    public static function createCompletionClosure(CompletionRequest $request, CodeBase $code_base) : Closure
     {
         // TODO: Could use the parent node list
         // (e.g. don't use a method with a void return as an argument to another function)

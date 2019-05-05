@@ -131,7 +131,7 @@ class UndoTracker
      *
      * @return void
      */
-    public function recordUndo(\Closure $undo_operation) : void
+    public function recordUndo(Closure $undo_operation) : void
     {
         $file = $this->current_parsed_file;
         if (!\is_string($file)) {

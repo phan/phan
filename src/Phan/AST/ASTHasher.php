@@ -53,7 +53,7 @@ class ASTHasher
      * @param Node $node
      * @return string a 16-byte binary key
      */
-    private static function computeHash(\ast\Node $node) : string
+    private static function computeHash(Node $node) : string
     {
         $str = 'N' . $node->kind . ':' . ($node->flags & 0xfffff);
         foreach ($node->children as $key => $child) {

@@ -73,7 +73,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
      *
      * @return Context
      */
-    public function visit(Node $node) : \Phan\Language\Context
+    public function visit(Node $node) : Context
     {
         Issue::maybeEmit(
             $this->code_base,
@@ -89,7 +89,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
      * @param Closure(UnionType):UnionType $get_type
      * @return Context
      */
-    private function updateTargetVariableWithType(Node $node, Closure $get_type) : \Phan\Language\Context
+    private function updateTargetVariableWithType(Node $node, Closure $get_type) : Context
     {
         try {
             $variable_name = (new ContextNode(
@@ -158,7 +158,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
      *
      * @see BinaryOperatorFlagVisitor::visitBinaryAdd() for analysis of "+", which is similar to "+="
      */
-    public function visitBinaryAdd(Node $node) : \Phan\Language\Context
+    public function visitBinaryAdd(Node $node) : Context
     {
         return $this->updateTargetWithType($node, function (UnionType $left) use ($node) : UnionType {
             $code_base = $this->code_base;
@@ -267,7 +267,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         });
     }
 
-    public function visitBinaryCoalesce(Node $node) : \Phan\Language\Context
+    public function visitBinaryCoalesce(Node $node) : Context
     {
         $var_node = $node->children['var'];
         $new_node = new ast\Node(ast\AST_BINARY_OP, $node->lineno, [
@@ -404,22 +404,22 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         });
     }
 
-    public function visitBinaryBitwiseAnd(Node $node) : \Phan\Language\Context
+    public function visitBinaryBitwiseAnd(Node $node) : Context
     {
         return $this->analyzeBitwiseOperation($node);
     }
 
-    public function visitBinaryBitwiseOr(Node $node) : \Phan\Language\Context
+    public function visitBinaryBitwiseOr(Node $node) : Context
     {
         return $this->analyzeBitwiseOperation($node);
     }
 
-    public function visitBinaryBitwiseXor(Node $node) : \Phan\Language\Context
+    public function visitBinaryBitwiseXor(Node $node) : Context
     {
         return $this->analyzeBitwiseOperation($node);
     }
 
-    public function visitBinaryConcat(Node $node) : \Phan\Language\Context
+    public function visitBinaryConcat(Node $node) : Context
     {
         return $this->updateTargetWithType($node, static function (UnionType $unused_left) : UnionType {
             // TODO: Check if both sides can cast to string and warn if they can't.
@@ -427,12 +427,12 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         });
     }
 
-    public function visitBinaryDiv(Node $node) : \Phan\Language\Context
+    public function visitBinaryDiv(Node $node) : Context
     {
         return $this->analyzeNumericArithmeticOp($node, false);
     }
 
-    public function visitBinaryMod(Node $node) : \Phan\Language\Context
+    public function visitBinaryMod(Node $node) : Context
     {
         $this->warnForInvalidOperandsOfNumericOp($node);
         return $this->updateTargetWithType($node, static function (UnionType $unused_left) : UnionType {
@@ -441,12 +441,12 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         });
     }
 
-    public function visitBinaryMul(Node $node) : \Phan\Language\Context
+    public function visitBinaryMul(Node $node) : Context
     {
         return $this->analyzeNumericArithmeticOp($node, true);
     }
 
-    public function visitBinaryPow(Node $node) : \Phan\Language\Context
+    public function visitBinaryPow(Node $node) : Context
     {
         // TODO: 2 ** (-2)  is a float
         return $this->analyzeNumericArithmeticOp($node, true);
@@ -456,7 +456,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
      * @return Context
      * TODO: There's an RFC to make binary shift left/right apply to strings.
      */
-    public function visitBinaryShiftLeft(Node $node) : \Phan\Language\Context
+    public function visitBinaryShiftLeft(Node $node) : Context
     {
         $this->analyzeBinaryShift($node);
         return $this->updateTargetWithType($node, static function (UnionType $unused_left) : UnionType {
@@ -466,7 +466,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         });
     }
 
-    public function visitBinaryShiftRight(Node $node) : \Phan\Language\Context
+    public function visitBinaryShiftRight(Node $node) : Context
     {
         $this->analyzeBinaryShift($node);
         return $this->updateTargetWithType($node, static function (UnionType $unused_left) : UnionType {
@@ -526,7 +526,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         );
     }
 
-    public function visitBinarySub(Node $node) : \Phan\Language\Context
+    public function visitBinarySub(Node $node) : Context
     {
         return $this->analyzeNumericArithmeticOp($node, true);
     }

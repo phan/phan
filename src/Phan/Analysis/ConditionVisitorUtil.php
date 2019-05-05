@@ -619,7 +619,7 @@ trait ConditionVisitorUtil
      * @return ?Context
      * @suppress PhanPartialTypeMismatchArgument
      */
-    private function analyzeBinaryConditionSide(Node $var_node, $expr_node, BinaryCondition $condition) : ?\Phan\Language\Context
+    private function analyzeBinaryConditionSide(Node $var_node, $expr_node, BinaryCondition $condition) : ?Context
     {
         '@phan-var ConditionVisitorUtil|ConditionVisitorInterface $this';
         $kind = $var_node->kind;
@@ -666,7 +666,7 @@ trait ConditionVisitorUtil
      * @return ?Context
      * @suppress PhanUnreferencedPublicMethod referenced in ConditionVisitorInterface
      */
-    public function analyzeClassAssertion($object_node, $expr_node) : ?\Phan\Language\Context
+    public function analyzeClassAssertion($object_node, $expr_node) : ?Context
     {
         if (!($object_node instanceof Node)) {
             return null;
@@ -771,7 +771,7 @@ trait ConditionVisitorUtil
      *
      * TODO: support assertions on superglobals, within the current file scope?
      */
-    final public function getVariableFromScope(Node $var_node, Context $context) : ?\Phan\Language\Element\Variable
+    final public function getVariableFromScope(Node $var_node, Context $context) : ?Variable
     {
         if ($var_node->kind !== ast\AST_VAR) {
             return null;

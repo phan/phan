@@ -455,7 +455,7 @@ final class ConfigPluginSet extends PluginV3 implements
         string $issue_type,
         int $lineno,
         array $parameters,
-        ?\Phan\Suggestion $suggestion
+        ?Suggestion $suggestion
     ) : bool {
         foreach ($this->suppression_plugin_set as $plugin) {
             if ($plugin->shouldSuppressIssue(
@@ -604,7 +604,7 @@ final class ConfigPluginSet extends PluginV3 implements
      * @param ?Closure(CodeBase, Context, FunctionInterface, array<int,Node|mixed>):void $b
      * @return Closure(CodeBase, Context, FunctionInterface, array<int,Node|mixed>):void $b
      */
-    public static function mergeAnalyzeFunctionCallClosures(Closure $a, Closure $b = null) : \Closure
+    public static function mergeAnalyzeFunctionCallClosures(Closure $a, Closure $b = null) : Closure
     {
         if (!$b) {
             return $a;
@@ -687,7 +687,7 @@ final class ConfigPluginSet extends PluginV3 implements
         $this->addNodeSelectionClosureForKind($node->kind, $closure);
     }
 
-    public function addTemporaryAnalysisPlugin(CodeBase $code_base, ?\Phan\Daemon\Request $request) : ?\Phan\Library\RAII
+    public function addTemporaryAnalysisPlugin(CodeBase $code_base, ?\Phan\Daemon\Request $request) : ?RAII
     {
         if (!$request) {
             return null;
@@ -928,7 +928,7 @@ final class ConfigPluginSet extends PluginV3 implements
         /**
          * @param array<int,Closure> $closure_list
          */
-        return $closures_for_kind->getFlattenedClosures(static function (array $closure_list) : \Closure {
+        return $closures_for_kind->getFlattenedClosures(static function (array $closure_list) : Closure {
             return static function (CodeBase $code_base, Context $context, Node $node) use ($closure_list) : void {
                 foreach ($closure_list as $closure) {
                     $closure($code_base, $context, $node);
@@ -1025,7 +1025,7 @@ final class ConfigPluginSet extends PluginV3 implements
         /**
          * @param array<int,Closure> $closure_list
          */
-        return $closures_for_kind->getFlattenedClosures(static function (array $closure_list) : \Closure {
+        return $closures_for_kind->getFlattenedClosures(static function (array $closure_list) : Closure {
             /**
              * @param array<int,Node> $parent_node_list
              */
@@ -1137,7 +1137,7 @@ final class ConfigPluginSet extends PluginV3 implements
      * @param PluginV3[] $plugin_set
      * @return ?UnusedSuppressionPlugin
      */
-    private static function findUnusedSuppressionPlugin(array $plugin_set) : ?\UnusedSuppressionPlugin
+    private static function findUnusedSuppressionPlugin(array $plugin_set) : ?UnusedSuppressionPlugin
     {
         foreach ($plugin_set as $plugin) {
             // Don't use instanceof, avoid triggering class autoloader unnecessarily.

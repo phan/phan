@@ -37,7 +37,7 @@ class Parser
      *
      * @return ?Cache<ParseResult>
      */
-    private static function maybeGetCache(CodeBase $code_base) : ?\Phan\Library\Cache
+    private static function maybeGetCache(CodeBase $code_base) : ?Cache
     {
         if ($code_base->getExpectChangesToFileContents()) {
             return null;
@@ -90,11 +90,11 @@ class Parser
     public static function parseCode(
         CodeBase $code_base,
         Context $context,
-        ?\Phan\Daemon\Request $request,
+        ?Request $request,
         string $file_path,
         string $file_contents,
         bool $suppress_parse_errors
-    ) : ?\ast\Node {
+    ) : ?Node {
         try {
             // This will choose the parser to use based on the config and $file_path
             // (For "Go To Definition", one of the files will have a slower parser which records the requested AST node)
@@ -148,7 +148,7 @@ class Parser
         string $file_contents,
         bool $suppress_parse_errors,
         Error $native_parse_error
-    ) : ?\ast\Node {
+    ) : ?Node {
         if (!$suppress_parse_errors) {
             Issue::maybeEmit(
                 $code_base,
@@ -198,7 +198,7 @@ class Parser
      * @return ?Node
      * @throws ParseException
      */
-    public static function parseCodePolyfill(CodeBase $code_base, Context $context, string $file_path, string $file_contents, bool $suppress_parse_errors, ?\Phan\Daemon\Request $request) : ?\ast\Node
+    public static function parseCodePolyfill(CodeBase $code_base, Context $context, string $file_path, string $file_contents, bool $suppress_parse_errors, ?Request $request) : ?Node
     {
         $converter = self::createConverter($file_path, $file_contents, $request);
         $converter->setPHPVersionId(Config::get_closest_target_php_version_id());

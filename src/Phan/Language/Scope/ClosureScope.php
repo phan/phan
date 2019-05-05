@@ -47,7 +47,7 @@ class ClosureScope extends FunctionLikeScope
      * If the (at)phan-closure-scope annotation is used, returns the corresponding override class FQSEN.
      * Returns the class FQSEN inside this closure's scope (with an (at)phan-closure-scope annotation).
      */
-    public function getOverrideClassFQSEN() : ?\Phan\Language\FQSEN\FullyQualifiedClassName
+    public function getOverrideClassFQSEN() : ?FullyQualifiedClassName
     {
         return $this->override_class_fqsen;
     }
@@ -65,7 +65,7 @@ class ClosureScope extends FunctionLikeScope
      * @return ?FullyQualifiedClassName
      * Crawl the scope hierarchy to get a class FQSEN.
      */
-    public function getClassFQSENOrNull() : ?\Phan\Language\FQSEN\FullyQualifiedClassName
+    public function getClassFQSENOrNull() : ?FullyQualifiedClassName
     {
         return $this->override_class_fqsen ?? parent::getClassFQSENOrNull();
     }

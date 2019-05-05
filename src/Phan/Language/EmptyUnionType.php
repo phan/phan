@@ -55,7 +55,7 @@ final class EmptyUnionType extends UnionType
      * @return UnionType
      * @override
      */
-    public function withType(Type $type) : \Phan\Language\UnionType
+    public function withType(Type $type) : UnionType
     {
         return $type->asUnionType();
     }
@@ -70,7 +70,7 @@ final class EmptyUnionType extends UnionType
      * @return UnionType
      * @override
      */
-    public function withoutType(Type $type) : \Phan\Language\UnionType
+    public function withoutType(Type $type) : UnionType
     {
         return $this;
     }
@@ -92,7 +92,7 @@ final class EmptyUnionType extends UnionType
      * @return UnionType
      * @override
      */
-    public function withUnionType(UnionType $union_type) : \Phan\Language\UnionType
+    public function withUnionType(UnionType $union_type) : UnionType
     {
         return $union_type;
     }
@@ -634,7 +634,7 @@ final class EmptyUnionType extends UnionType
      */
     public function asClassFQSENList(
         Context $context
-    ) : \Generator {
+    ) : Generator {
         if (false) {
             yield;
         }
@@ -664,7 +664,7 @@ final class EmptyUnionType extends UnionType
     public function asClassList(
         CodeBase $code_base,
         Context $context
-    ) : \Generator {
+    ) : Generator {
         yield from [];
     }
 
@@ -1277,7 +1277,7 @@ final class EmptyUnionType extends UnionType
         return $this;
     }
 
-    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type) : ?\Closure
+    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type) : ?Closure
     {
         return null;
     }

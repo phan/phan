@@ -28,7 +28,7 @@ class Fixers
         CodeBase $unused_code_base,
         FileCacheEntry $contents,
         IssueInstance $instance
-    ) : ?\Phan\Plugin\Internal\IssueFixingPlugin\FileEditSet {
+    ) : ?FileEditSet {
         $params = $instance->getTemplateParameters();
         $return_type = $params[0];
         $name = $params[1];
@@ -104,7 +104,7 @@ class Fixers
         FileCacheEntry $contents,
         int $line,
         string $name
-    ) : ?\Microsoft\PhpParser\FunctionLike {
+    ) : ?FunctionLike {
         $candidates = [];
         foreach ($contents->getNodesAtLine($line) as $node) {
             if ($node instanceof FunctionDeclaration || $node instanceof MethodDeclaration) {

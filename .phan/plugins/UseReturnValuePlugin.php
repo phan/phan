@@ -870,7 +870,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
      * For `$x = +foo();` the parent node is AST_ASSIGN.
      * @return ?Node
      */
-    private function findNonUnaryParentNodeNode() : ?\ast\Node
+    private function findNonUnaryParentNodeNode() : ?Node
     {
         $parent = end($this->parent_node_list);
         if (!$parent) {

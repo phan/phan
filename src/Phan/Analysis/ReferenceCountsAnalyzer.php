@@ -467,7 +467,7 @@ class ReferenceCountsAnalyzer
     public static function findAlternateReferencedElementDeclaration(
         CodeBase $code_base,
         AddressableElement $element
-    ) : ?\Phan\Language\Element\AddressableElement {
+    ) : ?AddressableElement {
         $old_fqsen = $element->getFQSEN();
         if ($old_fqsen instanceof FullyQualifiedGlobalStructuralElement) {
             $fqsen = $old_fqsen->getCanonicalFQSEN();
