@@ -1420,7 +1420,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     private static function isSuspiciousNullable(UnionType $union_type) : bool
     {
         foreach ($union_type->getTypeSet() as $type) {
-            if ($type->getIsNullable() && ($type instanceof ArrayType || $type instanceof StringType)) {
+            if ($type->isNullable() && ($type instanceof ArrayType || $type instanceof StringType)) {
                 return true;
             }
         }

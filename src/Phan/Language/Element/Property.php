@@ -341,7 +341,7 @@ class Property extends ClassElement
     /**
      * Does this property contain `static` anywhere in the original union type?
      */
-    public function getHasStaticInUnionType() : bool
+    public function hasStaticInUnionType() : bool
     {
         return $this->getPhanFlagsHasState(Flags::HAS_STATIC_UNION_TYPE);
     }
@@ -393,7 +393,7 @@ class Property extends ClassElement
             if (FullyQualifiedClassName::fromType($type) === $old) {
                 $union_type = $union_type
                     ->withoutType($type)
-                    ->withType($new->asType()->withIsNullable($type->getIsNullable()));
+                    ->withType($new->asType()->withIsNullable($type->isNullable()));
             }
         }
         $this->setUnionType($union_type);

@@ -17,7 +17,7 @@ class ArrayType extends IterableType
     /** @phan-override */
     const NAME = 'array';
 
-    public function getIsAlwaysTruthy() : bool
+    public function isAlwaysTruthy() : bool
     {
         return false;
     }

@@ -22,7 +22,7 @@ class StringType extends ScalarType
     }
 
     /** @override */
-    public function getIsPossiblyNumeric() : bool
+    public function isPossiblyNumeric() : bool
     {
         return true;
     }

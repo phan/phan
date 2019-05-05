@@ -258,12 +258,21 @@ class Context extends FileRef
 
     /**
      * @return bool
-     * True if strict_types is set to 1 in this
-     * context.
+     * Returns true if strict_types is set to 1 in this context.
      */
-    public function getIsStrictTypes() : bool
+    public function isStrictTypes() : bool
     {
         return (1 === $this->strict_types);
+    }
+
+    /**
+     * Returns true if strict_types is set to 1 in this context.
+     * @deprecated use isStrictTypes
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public final function getIsStrictTypes() : bool
+    {
+        return $this->isStrictTypes();
     }
 
     /**
@@ -896,7 +905,7 @@ class Context extends FileRef
                 return null;
             }
             $extra = $type->getFieldTypes()[$name] ?? null;
-            if (!$extra || $extra->getIsPossiblyUndefined()) {
+            if (!$extra || $extra->isPossiblyUndefined()) {
                 return null;
             }
             $result = $result->withUnionType($extra);

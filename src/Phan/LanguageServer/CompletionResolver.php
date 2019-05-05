@@ -28,7 +28,7 @@ class CompletionResolver
      * @return Closure(Context,Node, array<int,Node>):void
      * NOTE: The helper methods distinguish between "Go to definition"
      * and "go to type definition" in their implementations,
-     * based on $request->getIsTypeDefinitionRequest()
+     * based on $request->isTypeDefinitionRequest()
      */
     public static function createCompletionClosure(CompletionRequest $request, CodeBase $code_base) : \Closure
     {

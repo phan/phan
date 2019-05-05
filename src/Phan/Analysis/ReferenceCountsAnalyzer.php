@@ -236,7 +236,7 @@ class ReferenceCountsAnalyzer
 
             // Don't analyze elements defined in a parent class.
             // We copy references to methods, properties, and constants into the defining trait or class before this.
-            if ($element->getIsOverride()) {
+            if ($element->isOverride()) {
                 continue;
             }
 
@@ -245,7 +245,7 @@ class ReferenceCountsAnalyzer
 
             if ($element instanceof Method) {
                 // Ignore magic methods
-                if ($element->getIsMagic()) {
+                if ($element->isMagic()) {
                     continue;
                 }
                 // Don't analyze abstract methods, as they're uncallable.

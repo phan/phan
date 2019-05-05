@@ -211,7 +211,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         }
 
         // TODO: Why is the check for yield in PreOrderAnalysisVisitor?
-        if ($method->getHasYield()) {
+        if ($method->hasYield()) {
             $this->setReturnTypeOfGenerator($method, $node);
         }
 
@@ -300,10 +300,10 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             }
         }
 
-        if ($function->getHasYield()) {
+        if ($function->hasYield()) {
             $this->setReturnTypeOfGenerator($function, $node);
         }
-        if (!$function->getHasReturn() && $function->getUnionType()->isEmpty()) {
+        if (!$function->hasReturn() && $function->getUnionType()->isEmpty()) {
             $function->setUnionType(VoidType::instance(false)->asUnionType());
         }
 
@@ -477,7 +477,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 $func->getInternalScope()->addVariable($variable);
             }
         }
-        if (!$func->getHasReturn() && $func->getUnionType()->isEmpty()) {
+        if (!$func->hasReturn() && $func->getUnionType()->isEmpty()) {
             $func->setUnionType(VoidType::instance(false)->asUnionType());
         }
 
@@ -506,7 +506,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             }
         }
 
-        if ($func->getHasYield()) {
+        if ($func->hasYield()) {
             $this->setReturnTypeOfGenerator($func, $node);
         }
 

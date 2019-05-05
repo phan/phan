@@ -95,7 +95,7 @@ final class MethodSearcherPlugin extends PluginV3 implements
                 foreach ($replacement_element_types->getTypeSet() as $element_type) {
                     $replacement_type = GenericArrayType::fromElementType(
                         $element_type,
-                        $type->getIsNullable(),
+                        $type->isNullable(),
                         $type->getKeyType()
                     );
                     $union_type = $union_type->withType($replacement_type);
@@ -123,7 +123,7 @@ final class MethodSearcherPlugin extends PluginV3 implements
             exit(\EXIT_FAILURE);
         }
         return \array_map(static function (FullyQualifiedClassName $fqsen) use ($type) : Type {
-            return $fqsen->asType()->withIsNullable($type->getIsNullable());
+            return $fqsen->asType()->withIsNullable($type->isNullable());
         }, $fqsens);
     }
 
@@ -249,14 +249,14 @@ final class MethodSearcherPlugin extends PluginV3 implements
     {
         if ($function instanceof Method) {
             // TODO: convert __sleep to string[], etc.
-            if ($function->getIsMagicAndVoid()) {
+            if ($function->isMagicAndVoid()) {
                 return UnionType::fromFullyQualifiedString('void');
             }
-            if (!$function->isAbstract() && !$function->isPHPInternal() && !$function->getHasReturn()) {
+            if (!$function->isAbstract() && !$function->isPHPInternal() && !$function->hasReturn()) {
                 return UnionType::fromFullyQualifiedString('void');
             }
         } else {
-            if (!$function->isPHPInternal() && !$function->getHasReturn()) {
+            if (!$function->isPHPInternal() && !$function->hasReturn()) {
                 return UnionType::fromFullyQualifiedString('void');
             }
         }

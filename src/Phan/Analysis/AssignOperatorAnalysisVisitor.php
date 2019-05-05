@@ -492,7 +492,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         $this->warnAboutInvalidUnionType(
             $node,
             static function (Type $type) : bool {
-                return $type instanceof IntType && !$type->getIsNullable();
+                return $type instanceof IntType && !$type->isNullable();
             },
             $left,
             $right,

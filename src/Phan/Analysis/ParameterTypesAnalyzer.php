@@ -183,8 +183,8 @@ class ParameterTypesAnalyzer
             foreach ($real_parameter->getUnionType()->getTypeSet() as $type) {
                 $type_class = \get_class($type);
                 if ($php70_checks) {
-                    if ($type->getIsNullable()) {
-                        if ($real_parameter->getIsUsingNullableSyntax()) {
+                    if ($type->isNullable()) {
+                        if ($real_parameter->isUsingNullableSyntax()) {
                             Issue::maybeEmit(
                                 $code_base,
                                 $method->getContext(),
@@ -218,7 +218,7 @@ class ParameterTypesAnalyzer
         foreach ($method->getRealReturnType()->getTypeSet() as $type) {
             $type_class = \get_class($type);
             if ($php70_checks) {
-                if ($type->getIsNullable()) {
+                if ($type->isNullable()) {
                     Issue::maybeEmit(
                         $code_base,
                         $method->getContext(),
@@ -321,7 +321,7 @@ class ParameterTypesAnalyzer
 
         // Make sure we're actually overriding something
         // TODO(in another PR): check that signatures of magic methods are valid, if not done already (e.g. __get expects one param, most can't define return types, etc.)?
-        $is_actually_override = $method->getIsOverride();
+        $is_actually_override = $method->isOverride();
 
         if (!$is_actually_override && $method->isOverrideIntended()) {
             self::analyzeOverrideComment($code_base, $method);
@@ -358,7 +358,7 @@ class ParameterTypesAnalyzer
 
     private static function analyzeOverrideComment(CodeBase $code_base, Method $method) : void
     {
-        if ($method->getIsMagic()) {
+        if ($method->isMagic()) {
             return;
         }
         // Only emit this issue on the base class, not for the subclass which inherited it

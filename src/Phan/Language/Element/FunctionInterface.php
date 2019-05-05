@@ -136,7 +136,8 @@ interface FunctionInterface extends AddressableElementInterface
      * @return bool
      * True if this method returns a value
      */
-    public function getHasReturn() : bool;
+    public function hasReturn() : bool;
+
     /**
      * @param bool $has_return
      * Set to true to mark this method as having a

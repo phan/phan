@@ -130,7 +130,7 @@ final class AlwaysReturnPlugin extends PluginV3 implements
     {
         if (!$func->hasNode()) {
             return null;
-        } elseif ($func->getHasYield()) {
+        } elseif ($func->hasYield()) {
             // generators always return Generator.
             return null;
         }

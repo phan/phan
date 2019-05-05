@@ -55,7 +55,7 @@ class ParentConstructorCalledAnalyzer
         );
 
         if (!$parent_clazz->isAbstract()
-            && !$clazz->getIsParentConstructorCalled()
+            && !$clazz->isParentConstructorCalled()
         ) {
             Issue::maybeEmit(
                 $code_base,

@@ -702,7 +702,7 @@ class Clazz extends AddressableElement
         if ($original_property_fqsen !== $property_fqsen) {
             $property = clone($property);
             $property->setFQSEN($property_fqsen);
-            if ($property->getHasStaticInUnionType()) {
+            if ($property->hasStaticInUnionType()) {
                 $property->inheritStaticUnionType($original_property_fqsen->getFullyQualifiedClassName(), $this->getFQSEN());
             }
 
@@ -1070,7 +1070,7 @@ class Clazz extends AddressableElement
         // or we're working with a class with dynamic
         // properties such as stdClass.
         if (!$is_static && (Config::getValue('allow_missing_properties')
-            || $this->getHasDynamicProperties($code_base))
+            || $this->hasDynamicProperties($code_base))
         ) {
             $property = new Property(
                 $context,
@@ -1425,7 +1425,7 @@ class Clazz extends AddressableElement
                 self::markMethodAsOverridden($code_base, $existing_method_defining_fqsen);
             }
 
-            if ($method->isAbstract() || !$existing_method->isAbstract() || $existing_method->getIsNewConstructor()) {
+            if ($method->isAbstract() || !$existing_method->isAbstract() || $existing_method->isNewConstructor()) {
                 // TODO: What if both of these are abstract, and those get combined into an abstract class?
                 //       Should phan check compatibility of the abstract methods it inherits?
                 $existing_method->setIsOverride(true);
@@ -1485,7 +1485,7 @@ class Clazz extends AddressableElement
                 );
             }
         }
-        if ($method->getHasYield()) {
+        if ($method->hasYield()) {
             // There's no phpdoc standard for template types of Generators at the moment.
             $new_type = UnionType::fromFullyQualifiedString('\\Generator');
             if (!$new_type->canCastToUnionType($method->getUnionType())) {
@@ -1497,7 +1497,7 @@ class Clazz extends AddressableElement
         // NOTE: __construct is special for the following reasons:
         // 1. We automatically add __construct to class-like definitions (Not sure why it's done for interfaces)
         // 2. If it's abstract, then PHP would enforce that signatures are compatible
-        if ($this->isInterface() && !$method->getIsNewConstructor()) {
+        if ($this->isInterface() && !$method->isNewConstructor()) {
             $method->setFlags(Flags::bitVectorWithState($method->getFlags(), \ast\flags\MODIFIER_ABSTRACT, true));
         }
 
@@ -1737,10 +1737,9 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * @return bool
      * True if this class calls its parent constructor
      */
-    public function getIsParentConstructorCalled() : bool
+    public function isParentConstructorCalled() : bool
     {
         return $this->getPhanFlagsHasState(Flags::IS_PARENT_CONSTRUCTOR_CALLED);
     }
@@ -1823,17 +1822,26 @@ class Clazz extends AddressableElement
      * @return bool
      * True if this class has dynamic properties. (e.g. stdClass)
      */
-    public function getHasDynamicProperties(CodeBase $code_base) : bool
+    public function hasDynamicProperties(CodeBase $code_base) : bool
     {
-        return (
+        return
             $this->getPhanFlagsHasState(Flags::CLASS_HAS_DYNAMIC_PROPERTIES)
             ||
             (
                 $this->hasParentType()
                 && $code_base->hasClassWithFQSEN($this->getParentClassFQSEN())
-                && $this->getParentClass($code_base)->getHasDynamicProperties($code_base)
-            )
-        );
+                && $this->getParentClass($code_base)->hasDynamicProperties($code_base)
+            );
+    }
+
+    /**
+     * True if this class has dynamic properties. (e.g. stdClass)
+     * @deprecated use hasDynamicProperties
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public final function getHasDynamicProperties(CodeBase $code_base) : bool
+    {
+        return $this->hasDynamicProperties($code_base);
     }
 
     public function setHasDynamicProperties(
@@ -2806,7 +2814,7 @@ class Clazz extends AddressableElement
     private static function analyzeClassConstantOverrides(CodeBase $code_base, array $original_declared_class_constants) : void
     {
         foreach ($original_declared_class_constants as $constant) {
-            if ($constant->isOverrideIntended() && !$constant->getIsOverride()) {
+            if ($constant->isOverrideIntended() && !$constant->isOverride()) {
                 if ($constant->checkHasSuppressIssueAndIncrementCount(Issue::CommentOverrideOnNonOverrideConstant)) {
                     continue;
                 }

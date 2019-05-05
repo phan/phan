@@ -619,7 +619,7 @@ final class UnionTypeTest extends BaseTest
         $this->assertSame('array<string,int>|array<string,string[]>', (string)$union_type->withFlattenedArrayShapeOrLiteralTypeInstances());
         $this->assertInstanceOf(ArrayShapeType::class, $type);
         $field_union_type = $type->getFieldTypes()['key'];
-        $this->assertFalse($field_union_type->getIsPossiblyUndefined());
+        $this->assertFalse($field_union_type->isPossiblyUndefined());
     }
 
     public function testFlattenEmptyArrayShape() : void
@@ -650,7 +650,7 @@ final class UnionTypeTest extends BaseTest
         $this->assertInstanceOf(ArrayShapeType::class, $type);
         $this->assertSame('array<string,int>|array<string,string>', (string)$union_type->withFlattenedArrayShapeOrLiteralTypeInstances());
         $field_union_type = $type->getFieldTypes()['key'];
-        $this->assertTrue($field_union_type->getIsPossiblyUndefined());
+        $this->assertTrue($field_union_type->isPossiblyUndefined());
         $this->assertSame('int|string=', (string)$field_union_type);
         $this->assertSame([IntType::instance(false), StringType::instance(false)], $field_union_type->getTypeSet());
     }
@@ -667,7 +667,7 @@ final class UnionTypeTest extends BaseTest
         $this->assertSame('array{key\n\\\\line\x3a:int}', (string)$type);
         $this->assertSame('array<string,int>', (string)$union_type->withFlattenedArrayShapeOrLiteralTypeInstances());
         $field_union_type = $type->getFieldTypes()["key\n\\line:"];
-        $this->assertFalse($field_union_type->getIsPossiblyUndefined());
+        $this->assertFalse($field_union_type->isPossiblyUndefined());
         $this->assertSame('int', (string)$field_union_type);
     }
 

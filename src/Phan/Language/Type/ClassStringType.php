@@ -19,7 +19,7 @@ final class ClassStringType extends StringType
     const NAME = 'class-string';
 
     /** @override */
-    public function getIsPossiblyNumeric() : bool
+    public function isPossiblyNumeric() : bool
     {
         return false;
     }

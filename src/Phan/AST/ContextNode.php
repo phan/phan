@@ -1402,7 +1402,7 @@ class ContextNode
         if (!$is_static) {
             foreach ($class_list as $class) {
                 if (Config::getValue('allow_missing_properties')
-                    || $class->getHasDynamicProperties($this->code_base)
+                    || $class->hasDynamicProperties($this->code_base)
                 ) {
                     return $class->getPropertyByNameInContext(
                         $this->code_base,

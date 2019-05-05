@@ -35,7 +35,7 @@ class DefinitionResolver
      * @return Closure(Context,Node,array<int,Node>):void
      * NOTE: The helper methods distinguish between "Go to definition"
      * and "go to type definition" in their implementations,
-     * based on $request->getIsTypeDefinitionRequest()
+     * based on $request->isTypeDefinitionRequest()
      */
     public static function createGoToDefinitionClosure(GoToDefinitionRequest $request, CodeBase $code_base) : \Closure
     {
@@ -315,7 +315,7 @@ class DefinitionResolver
         if (!is_string($name)) {
             return;
         }
-        if (!$request->getIsTypeDefinitionRequest() && !$request->getIsHoverRequest()) {
+        if (!$request->isTypeDefinitionRequest() && !$request->isHoverRequest()) {
             // TODO: Implement "Go To Definition" for variables with heuristics or create a new plugin
             return;
         }
@@ -359,7 +359,7 @@ class DefinitionResolver
             }
             $class = $code_base->getClassByFQSEN($class_fqsen);
             $method = $class->getMethodByName($code_base, '__construct');
-            if ($method->isPHPInternal() && !$class->isPHPInternal() && !$request->getIsHoverRequest()) {
+            if ($method->isPHPInternal() && !$class->isPHPInternal() && !$request->isHoverRequest()) {
                 $request->recordDefinitionElement($code_base, $class, false);
                 continue;
             }

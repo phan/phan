@@ -148,7 +148,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
                 return false;
             }
 
-            return $method->getIsOverride() || $method->getIsOverriddenByAnother();
+            return $method->isOverride() || $method->isOverriddenByAnother();
         } catch (Exception $_) {
             // should not happen
             return false;

@@ -59,7 +59,7 @@ class PHPDocToRealTypesPlugin extends PluginV3 implements
 
     public function analyzeMethod(CodeBase $unused_code_base, Method $method) : void
     {
-        if ($method->isFromPHPDoc() || $method->getIsMagic() || $method->isPHPInternal()) {
+        if ($method->isFromPHPDoc() || $method->isMagic() || $method->isPHPInternal()) {
             return;
         }
         if ($method->getFQSEN() !== $method->getDefiningFQSEN()) {
@@ -72,7 +72,7 @@ class PHPDocToRealTypesPlugin extends PluginV3 implements
     {
         $ignore_overrides = (bool)getenv('PHPDOC_TO_REAL_TYPES_IGNORE_INHERITANCE');
         foreach ($this->deferred_analysis_methods as $method) {
-            if ($method->getIsOverride() || $method->getIsOverriddenByAnother()) {
+            if ($method->isOverride() || $method->isOverriddenByAnother()) {
                 if (!$ignore_overrides) {
                     continue;
                 }
@@ -106,7 +106,7 @@ class PHPDocToRealTypesPlugin extends PluginV3 implements
             self::emitIssue(
                 $code_base,
                 $method->getContext(),
-                $type->getIsNullable() ? self::CanUseNullableParamType : self::CanUseParamType,
+                $type->isNullable() ? self::CanUseNullableParamType : self::CanUseParamType,
                 'Can use {TYPE} as a return type of parameter ${PARAMETER} of {METHOD}',
                 [$type->asSignatureType(), $parameter->getName(), $method->getName()]
             );
@@ -138,7 +138,7 @@ class PHPDocToRealTypesPlugin extends PluginV3 implements
         self::emitIssue(
             $code_base,
             $method->getContext(),
-            $type->getIsNullable() ? self::CanUseNullableReturnType : self::CanUseReturnType,
+            $type->isNullable() ? self::CanUseNullableReturnType : self::CanUseReturnType,
             'Can use {TYPE} as a return type of {METHOD}',
             [$type->asSignatureType(), $method->getName()]
         );

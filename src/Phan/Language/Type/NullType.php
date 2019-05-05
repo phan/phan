@@ -153,17 +153,17 @@ final class NullType extends ScalarType
         return $this->name;
     }
 
-    public function getIsNullable() : bool
+    public function isNullable() : bool
     {
         return true;
     }
 
-    public function getIsPossiblyFalsey() : bool
+    public function isPossiblyFalsey() : bool
     {
         return true;  // Null is always falsey.
     }
 
-    public function getIsAlwaysFalsey() : bool
+    public function isAlwaysFalsey() : bool
     {
         return true;  // Null is always falsey.
     }

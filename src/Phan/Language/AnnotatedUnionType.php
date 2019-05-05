@@ -59,7 +59,8 @@ class AnnotatedUnionType extends UnionType
         }
         return parent::asValueOrNullOrSelf();
     }
-    public function getIsPossiblyUndefined() : bool
+
+    public function isPossiblyUndefined() : bool
     {
         return $this->is_possibly_undefined;
     }

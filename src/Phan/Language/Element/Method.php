@@ -179,12 +179,21 @@ class Method extends ClassElement implements FunctionInterface
     }
 
     /**
-     * @return bool
-     * True if this element is overridden by at least one other element
+     * Returns true if this element is overridden by at least one other element
      */
-    public function getIsOverriddenByAnother() : bool
+    public function isOverriddenByAnother() : bool
     {
         return $this->getPhanFlagsHasState(Flags::IS_OVERRIDDEN_BY_ANOTHER);
+    }
+
+    /**
+     * Returns true if this element is overridden by at least one other element
+     * @deprecated use isOverriddenByAnother
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public final function getIsOverriddenByAnother() : bool
+    {
+        return $this->isOverriddenByAnother();
     }
 
     /**
@@ -232,7 +241,7 @@ class Method extends ClassElement implements FunctionInterface
             return true;
         }
         return Config::getValue('assume_no_external_class_overrides')
-            && !$this->getIsOverriddenByAnother()
+            && !$this->isOverriddenByAnother()
             && !$this->isAbstract();
     }
 
@@ -246,51 +255,66 @@ class Method extends ClassElement implements FunctionInterface
     }
 
     /**
-     * @return bool
-     * True if this is a magic method
+     * Returns true if this is a magic method
      * (Names are all normalized in FullyQualifiedMethodName::make())
      */
-    public function getIsMagic() : bool
+    public function isMagic() : bool
     {
         return \array_key_exists($this->getName(), FullyQualifiedMethodName::MAGIC_METHOD_NAME_SET);
     }
 
     /**
-     * @return bool
-     * True if this is a magic method which should have return type of void
+     * Returns true if this is a magic method
+     * @deprecated use isMagic
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public final function getIsMagic() : bool
+    {
+        return $this->isMagic();
+    }
+
+    /**
+     * Returns true if this is a magic method which should have return type of void
      * (Names are all normalized in FullyQualifiedMethodName::make())
      */
-    public function getIsMagicAndVoid() : bool
+    public function isMagicAndVoid() : bool
     {
         return \array_key_exists($this->getName(), FullyQualifiedMethodName::MAGIC_VOID_METHOD_NAME_SET);
     }
 
     /**
-     * @return bool
-     * True if this is the `__construct` method
+     * Returns true if this is a magic method which should have return type of void
+     * @deprecated use isMagicAndVoid
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public final function getIsMagicAndVoid() : bool
+    {
+        return $this->isMagicAndVoid();
+    }
+
+    /**
+     * Returns true if this is the `__construct` method
      * (Does not return true for php4 constructors)
      */
-    public function getIsNewConstructor() : bool
+    public function isNewConstructor() : bool
     {
-        return ($this->getName() === '__construct');
+        return $this->getName() === '__construct';
     }
 
     /**
-     * @return bool
-     * True if this is the magic `__call` method
+     * Returns true if this is the magic `__call` method
      */
-    public function getIsMagicCall() : bool
+    public function isMagicCall() : bool
     {
-        return ($this->getName() === '__call');
+        return $this->getName() === '__call';
     }
 
     /**
-     * @return bool
-     * True if this is the magic `__callStatic` method
+     * Returns true if this is the magic `__callStatic` method
      */
-    public function getIsMagicCallStatic() : bool
+    public function isMagicCallStatic() : bool
     {
-        return ($this->getName() === '__callStatic');
+        return $this->getName() === '__callStatic';
     }
 
     /**
@@ -513,7 +537,7 @@ class Method extends ClassElement implements FunctionInterface
         $method->setIsOverrideIntended($comment->isOverrideIntended());
         $method->setSuppressIssueSet($comment->getSuppressIssueSet());
 
-        if ($method->getIsMagicCall() || $method->getIsMagicCallStatic()) {
+        if ($method->isMagicCall() || $method->isMagicCallStatic()) {
             $method->setNumberOfOptionalParameters(FunctionInterface::INFINITE_PARAMETERS);
             $method->setNumberOfRequiredParameters(0);
         }

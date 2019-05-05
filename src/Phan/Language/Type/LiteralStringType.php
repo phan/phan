@@ -193,25 +193,25 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
     }
 
     /** @override */
-    public function getIsPossiblyFalsey() : bool
+    public function isPossiblyFalsey() : bool
     {
         return !$this->value;
     }
 
     /** @override */
-    public function getIsAlwaysFalsey() : bool
+    public function isAlwaysFalsey() : bool
     {
         return !$this->value;
     }
 
     /** @override */
-    public function getIsPossiblyTruthy() : bool
+    public function isPossiblyTruthy() : bool
     {
         return (bool)$this->value;
     }
 
     /** @override */
-    public function getIsAlwaysTruthy() : bool
+    public function isAlwaysTruthy() : bool
     {
         return (bool)$this->value;
     }
