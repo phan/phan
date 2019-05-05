@@ -491,7 +491,7 @@ class Parameter extends Variable
      *
      * This is needed to deal with edge cases of analysis.
      */
-    public function getIsUsingNullableSyntax() : bool
+    public function isUsingNullableSyntax() : bool
     {
         return $this->getPhanFlagsHasState(Flags::IS_PARAM_USING_NULLABLE_SYNTAX);
     }

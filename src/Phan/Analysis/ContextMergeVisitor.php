@@ -348,7 +348,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
             $name = (string)$name;
             // Skip variables that are only partially defined
             if (!$is_defined_on_all_branches($name)) {
-                if ($this->context->getIsStrictTypes()) {
+                if ($this->context->isStrictTypes()) {
                     continue;
                 } else {
                     // Limit the type of the variable to the subset

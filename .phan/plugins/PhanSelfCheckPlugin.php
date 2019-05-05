@@ -259,7 +259,7 @@ class PhanSelfCheckPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
         }
         $field_types = $array_shape_type->getFieldTypes();
         foreach ($field_types as $field_type) {
-            if ($field_type->getIsPossiblyUndefined()) {
+            if ($field_type->isPossiblyUndefined()) {
                 return null;
             }
         }

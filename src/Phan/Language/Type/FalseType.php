@@ -16,32 +16,32 @@ final class FalseType extends ScalarType
     /** @phan-override */
     const NAME = 'false';
 
-    public function getIsPossiblyFalsey() : bool
+    public function isPossiblyFalsey() : bool
     {
         return true;  // it's always falsey, whether or not it's nullable.
     }
 
-    public function getIsAlwaysFalsey() : bool
+    public function isAlwaysFalsey() : bool
     {
         return true;  // FalseType is always falsey, whether or not it's nullable.
     }
 
-    public function getIsAlwaysFalse() : bool
+    public function isAlwaysFalse() : bool
     {
         return !$this->is_nullable;  // If it can be null, it's not **always** identical to false
     }
 
-    public function getIsPossiblyTruthy() : bool
+    public function isPossiblyTruthy() : bool
     {
         return false;
     }
 
-    public function getIsAlwaysTruthy() : bool
+    public function isAlwaysTruthy() : bool
     {
         return false;
     }
 
-    public function getIsPossiblyFalse() : bool
+    public function isPossiblyFalse() : bool
     {
         return true;
     }
@@ -54,7 +54,7 @@ final class FalseType extends ScalarType
         return NullType::instance(false);
     }
 
-    public function getIsInBoolFamily() : bool
+    public function isInBoolFamily() : bool
     {
         return true;
     }

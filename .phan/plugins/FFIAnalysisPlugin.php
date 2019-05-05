@@ -99,7 +99,7 @@ class FFIPreAnalysisVisitor extends PluginAwarePreAnalysisVisitor
             if (strcasecmp('CData', $type->getName()) !== 0) {
                 continue;
             }
-            if ($type->getIsNullable()) {
+            if ($type->isNullable()) {
                 return self::PARTIALLY_FFI_CDATA;
             }
             if ($union_type->typeCount() > 1) {

@@ -458,7 +458,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     }
 
     /** @override */
-    public function getHasReturn() : bool
+    public function hasReturn() : bool
     {
         return true;
     }

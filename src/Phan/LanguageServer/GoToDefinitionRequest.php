@@ -77,7 +77,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
         AddressableElementInterface $element,
         bool $resolve_type_definition_if_needed
     ) : void {
-        if ($this->getIsTypeDefinitionRequest() && $resolve_type_definition_if_needed) {
+        if ($this->isTypeDefinitionRequest() && $resolve_type_definition_if_needed) {
             if (!($element instanceof Clazz)) {
                 $this->recordTypeOfElement($code_base, $element->getContext(), $element);
                 return;
@@ -111,7 +111,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
     }
 
     /**
-     * Precondition: $this->getIsHoverRequest()
+     * Precondition: $this->isHoverRequest()
      * @return void
      */
     private function recordHoverTextForElementType(
@@ -148,7 +148,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
 
         // If there is exactly one known type, then if it is a class/interface type, show details about the class/interface for that type
         foreach ($type_set as $type) {
-            if ($type->getIsNullable()) {
+            if ($type->isNullable()) {
                 continue;
             }
             if ($type instanceof TemplateType) {
@@ -240,7 +240,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
         Context $context,
         TypedElementInterface $element
     ) : void {
-        if ($this->getIsHoverRequest()) {
+        if ($this->isHoverRequest()) {
             $this->recordHoverTextForElementType($code_base, $context, $element);
             return;
         }
@@ -279,7 +279,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
     ) : void {
         $record_definition = function (AddressableElementInterface $element) use ($code_base) : void {
             if (!$element->isPHPInternal()) {
-                if ($this->getIsHoverRequest()) {
+                if ($this->isHoverRequest()) {
                     $this->recordDefinitionElement($code_base, $element, false);
                 } else {
                     $this->recordDefinitionContext($element->getContext());
@@ -393,7 +393,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
     /**
      * Is this a "go to type definition" request?
      */
-    public function getIsTypeDefinitionRequest() : bool
+    public function isTypeDefinitionRequest() : bool
     {
         return $this->request_type === self::REQUEST_TYPE_DEFINITION;
     }
@@ -401,7 +401,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
     /**
      * Is this a hover request?
      */
-    public function getIsHoverRequest() : bool
+    public function isHoverRequest() : bool
     {
         return $this->request_type === self::REQUEST_HOVER;
     }

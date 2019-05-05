@@ -179,9 +179,19 @@ abstract class ClassElement extends AddressableElement
      * @return bool
      * True if this element overrides another element
      */
-    public function getIsOverride() : bool
+    public function isOverride() : bool
     {
         return $this->getPhanFlagsHasState(Flags::IS_OVERRIDE);
+    }
+
+    /**
+     * True if this element overrides another element
+     * @deprecated use isOverride
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public final function getIsOverride() : bool
+    {
+        return $this->isOverride();
     }
 
     /**

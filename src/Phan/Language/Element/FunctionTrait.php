@@ -337,18 +337,38 @@ trait FunctionTrait
      * True if this method returns a value
      * (i.e. it has a return with an expression)
      */
-    public function getHasReturn() : bool
+    public function hasReturn() : bool
     {
         return $this->getPhanFlagsHasState(Flags::HAS_RETURN);
+    }
+
+    /**
+     * True if this method returns a value
+     * @deprecated use hasReturn
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public final function getHasReturn() : bool
+    {
+        return $this->hasReturn();
     }
 
     /**
      * @return bool
      * True if this method yields any value(i.e. it is a \Generator)
      */
-    public function getHasYield() : bool
+    public function hasYield() : bool
     {
         return $this->getPhanFlagsHasState(Flags::HAS_YIELD);
+    }
+
+    /**
+     * True if this method yields any value(i.e. it is a \Generator)
+     * @deprecated use hasYield
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public final function getHasYield() : bool
+    {
+        return $this->hasYield();
     }
 
     /**
@@ -1339,8 +1359,8 @@ trait FunctionTrait
                 }
             }
         }
-        if ($return_type->isEmpty() && !$this->getHasReturn()) {
-            if ($this instanceof Func || ($this instanceof Method && ($this->isPrivate() || $this->isEffectivelyFinal() || $this->getIsMagicAndVoid() || $this->getClass($code_base)->isFinal()))) {
+        if ($return_type->isEmpty() && !$this->hasReturn()) {
+            if ($this instanceof Func || ($this instanceof Method && ($this->isPrivate() || $this->isEffectivelyFinal() || $this->isMagicAndVoid() || $this->getClass($code_base)->isFinal()))) {
                 $this->setUnionType(VoidType::instance(false)->asUnionType());
             }
         }

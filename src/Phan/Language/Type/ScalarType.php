@@ -55,20 +55,6 @@ abstract class ScalarType extends NativeType
     }
 
     /**
-     * @param CodeBase $code_base (@phan-unused-param)
-     *
-     * @param Type $parent (@phan-unused-param)
-     *
-     * @return bool
-     * True if this type represents a class which is a sub-type of
-     * the class represented by the passed type.
-     */
-    public function isSubclassOf(CodeBase $code_base, Type $parent) : bool
-    {
-        return false;
-    }
-
-    /**
      * @return bool
      * True if this Type can be cast to the given Type
      * cleanly
@@ -111,7 +97,7 @@ abstract class ScalarType extends NativeType
         return $this->name;
     }
 
-    public function getIsAlwaysTruthy() : bool
+    public function isAlwaysTruthy() : bool
     {
         // Most scalars (Except ResourceType) have a false value, e.g. 0/""/"0"/0.0/false.
         // (But ResourceType isn't a subclass of ScalarType in Phan's implementation)

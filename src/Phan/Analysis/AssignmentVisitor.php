@@ -727,7 +727,7 @@ class AssignmentVisitor extends AnalysisVisitor
         }
 
         // Check if it is a built in class with dynamic properties but (possibly) no __set, such as SimpleXMLElement or stdClass or V8Js
-        $is_class_with_arbitrary_types = isset($class_list[0]) ? $class_list[0]->getHasDynamicProperties($this->code_base) : false;
+        $is_class_with_arbitrary_types = isset($class_list[0]) ? $class_list[0]->hasDynamicProperties($this->code_base) : false;
 
         if ($is_class_with_arbitrary_types || Config::getValue('allow_missing_properties')) {
             try {
@@ -838,7 +838,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 $this->code_base
             )
                 && !($this->right_type->hasTypeInBoolFamily() && $property_union_type->hasTypeInBoolFamily())
-                && !$clazz->getHasDynamicProperties($this->code_base)
+                && !$clazz->hasDynamicProperties($this->code_base)
             ) {
                 if ($this->right_type->nonNullableClone()->canCastToExpandedUnionType($property_union_type, $this->code_base) &&
                         !$this->right_type->isType(NullType::instance(false))) {

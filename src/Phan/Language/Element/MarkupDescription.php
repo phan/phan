@@ -161,7 +161,7 @@ class MarkupDescription
         CodeBase $code_base,
         array &$checked_class_fqsens = []
     ) : ?string {
-        if (!$element->getIsOverride() && $element->getRealDefiningFQSEN() === $element->getFQSEN()) {
+        if (!$element->isOverride() && $element->getRealDefiningFQSEN() === $element->getFQSEN()) {
             return null;
         }
         $class_fqsen = $element->getDefiningClassFQSEN();

@@ -57,11 +57,11 @@ final class PossiblyStaticMethodPlugin extends PluginV3 implements
         CodeBase $code_base,
         Method $method
     ) : void {
-        if ($method->getIsOverride()) {
+        if ($method->isOverride()) {
             // This method can't be static unless its parent is also static.
             return;
         }
-        if ($method->getIsOverriddenByAnother()) {
+        if ($method->isOverriddenByAnother()) {
             // Changing this method causes a fatal error.
             return;
         }
@@ -205,7 +205,7 @@ final class PossiblyStaticMethodPlugin extends PluginV3 implements
             // This is what we want.
             return;
         }
-        if ($method->getIsMagic()) {
+        if ($method->isMagic()) {
             // Magic methods can't be static.
             return;
         }

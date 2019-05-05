@@ -79,6 +79,9 @@ final class HasPHPDocPlugin extends PluginV3 implements
         }
         $description = MarkupDescription::extractDescriptionFromDocComment($class);
         if (!$description) {
+            if (strpos($doc_comment, '@deprecated') !== false) {
+                return;
+            }
             self::emitIssue(
                 $code_base,
                 $class->getContext(),
@@ -163,7 +166,7 @@ final class HasPHPDocPlugin extends PluginV3 implements
             // Phan does not track descriptions of (at)method.
             return;
         }
-        if ($method->getIsMagic()) {
+        if ($method->isMagic()) {
             // Don't require a description for `__construct()`, `__sleep()`, etc.
             return;
         }
@@ -172,7 +175,7 @@ final class HasPHPDocPlugin extends PluginV3 implements
             // Don't warn about subclasses inheriting this method.
             return;
         }
-        if ($method->getIsOverride()) {
+        if ($method->isOverride()) {
             // Note: This deliberately avoids requiring a summary for methods that are just overrides of other methods
             // This reduces the number of false positives
             return;

@@ -632,7 +632,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 );
                 return $context;
             }
-            if (!$context->getIsStrictTypes()) {
+            if (!$context->isStrictTypes()) {
                 try {
                     foreach ($type->asExpandedTypes($code_base)->asClassList($code_base, $context) as $clazz) {
                         if ($clazz->hasMethodWithName($code_base, "__toString")) {
@@ -799,7 +799,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $this->warnAboutInvalidUnionType(
             $node,
             static function (Type $type) : bool {
-                return $type instanceof IntType && !$type->getIsNullable();
+                return $type instanceof IntType && !$type->isNullable();
             },
             $left,
             $right,
@@ -1187,7 +1187,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $return_type = $func->getUnionType();
 
         if (!$return_type->isEmpty()
-            && !$func->getHasReturn()
+            && !$func->hasReturn()
             && !self::declOnlyThrows($node)
             && !$return_type->hasType(VoidType::instance(false))
             && !$return_type->hasType(NullType::instance(false))
@@ -1231,7 +1231,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // Get the method/function/closure we're in
         $method = $context->getFunctionLikeInScope($code_base);
 
-        if ($method->getHasYield()) {  // Function that is syntactically a Generator.
+        if ($method->hasYield()) {  // Function that is syntactically a Generator.
             $this->analyzeReturnInGenerator($method, $node);
             // TODO: Compare against TReturn of Generator<TKey,TValue,TSend,TReturn>
             return $context;  // Analysis was completed in PreOrderAnalysisVisitor
@@ -1584,7 +1584,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 if ($method->isPHPInternal()) {
                     // If we are not in strict mode and we accept a string parameter
                     // and the argument we are passing has a __toString method then it is ok
-                    if (!$context->getIsStrictTypes() && $method_return_type->hasNonNullStringType()) {
+                    if (!$context->isStrictTypes() && $method_return_type->hasNonNullStringType()) {
                         if ($individual_type_expanded->hasClassWithToStringMethod($code_base, $context)) {
                             continue;
                         }
@@ -2419,7 +2419,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             && !$method->isFromPHPDoc()
             && !$has_interface_class
             && !$return_type->isEmpty()
-            && !$method->getHasReturn()
+            && !$method->hasReturn()
             && !self::declOnlyThrows($node)
             && !$return_type->hasType(VoidType::instance(false))
             && !$return_type->hasType(NullType::instance(false))
@@ -2432,7 +2432,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             );
         }
 
-        if ($method->getHasReturn() && $method->getIsMagicAndVoid()) {
+        if ($method->hasReturn() && $method->isMagicAndVoid()) {
             $this->emitIssue(
                 Issue::TypeMagicVoidWithReturn,
                 $node->lineno,
@@ -2483,7 +2483,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $return_type = $method->getUnionType();
 
         if (!$return_type->isEmpty()
-            && !$method->getHasReturn()
+            && !$method->hasReturn()
             && !self::declOnlyThrows($node)
             && !$return_type->hasType(VoidType::instance(false))
             && !$return_type->hasType(NullType::instance(false))

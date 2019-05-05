@@ -41,7 +41,7 @@ final class CallableStringType extends StringType implements CallableInterface
     }
 
     /** @override */
-    public function getIsPossiblyNumeric() : bool
+    public function isPossiblyNumeric() : bool
     {
         return false;
     }

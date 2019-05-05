@@ -13,7 +13,7 @@ final class FloatType extends ScalarType
     const NAME = 'float';
 
     /** @override */
-    public function getIsPossiblyNumeric() : bool
+    public function isPossiblyNumeric() : bool
     {
         return true;
     }

@@ -1503,15 +1503,35 @@ class Type
      *
      * E.g. returns true for `?array`, `null`, etc.
      */
-    public function getIsNullable() : bool
+    public function isNullable() : bool
+    {
+        return $this->is_nullable;
+    }
+
+    /**
+     * Is this nullable?
+     * @deprecated use isNullable
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public final function getIsNullable() : bool
+    {
+        return $this->isNullable();
+    }
+
+    /**
+     * Returns true if this has some possibly falsey values
+     */
+    public function isPossiblyFalsey() : bool
     {
         return $this->is_nullable;
     }
 
     /**
      * Returns true if this has some possibly falsey values
+     * @deprecated
+     * @suppress PhanUnreferencedPublicMethod
      */
-    public function getIsPossiblyFalsey() : bool
+    public final function getIsPossiblyFalsey() : bool
     {
         return $this->is_nullable;
     }
@@ -1519,17 +1539,37 @@ class Type
     /**
      * Returns true if this is guaranteed to be falsey
      */
-    public function getIsAlwaysFalsey() : bool
+    public function isAlwaysFalsey() : bool
     {
         return false;  // overridden in FalseType and NullType, as well as literal scalar types
     }
 
     /**
+     * Returns true if this is guaranteed to be falsey
+     * @deprecated use isAlwaysFalsey
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public final function getIsAlwaysFalsey() : bool
+    {
+        return $this->isAlwaysFalsey();
+    }
+
+    /**
      * Returns true if this is possibly truthy.
      */
-    public function getIsPossiblyTruthy() : bool
+    public function isPossiblyTruthy() : bool
     {
         return true;  // overridden in various types. This base class (Type) is implicitly the type of an object, which is always truthy.
+    }
+
+    /**
+     * Returns true if this is possibly truthy.
+     * @deprecated use isPossiblyTruthy
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public final function getIsPossiblyTruthy() : bool
+    {
+        return $this->isPossiblyTruthy();
     }
 
     /**
@@ -1540,58 +1580,128 @@ class Type
      * This base class (Type) is type of an object with a known FQSEN,
      * which is always truthy.
      */
-    public function getIsAlwaysTruthy() : bool
+    public function isAlwaysTruthy() : bool
     {
         return true;
     }
 
     /**
+     * Returns true if this is guaranteed to be truthy.
+     * @deprecated use isAlwaysTruthy
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public final function getIsAlwaysTruthy() : bool
+    {
+        return $this->isAlwaysTruthy();
+    }
+
+    /**
      * Returns true for types such as `mixed`, `bool`, `false`
      */
-    public function getIsPossiblyFalse() : bool
+    public function isPossiblyFalse() : bool
     {
         return false;
     }
 
     /**
+     * Returns true for types such as `mixed`, `bool`, `false`
+     * @deprecated use isPossiblyFalse
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public final function getIsPossiblyFalse() : bool
+    {
+        return $this->isPossiblyFalse();
+    }
+
+    /**
      * Returns true for non-nullable `FalseType`
      */
-    public function getIsAlwaysFalse() : bool
+    public function isAlwaysFalse() : bool
     {
         return false;  // overridden in FalseType
+    }
+
+    /**
+     * Returns true for non-nullable `FalseType`
+     * @deprecated
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public final function getIsAlwaysFalse() : bool
+    {
+        return $this->isAlwaysFalse();
     }
 
     /**
      * Returns true if this could include the type `true`
      * (e.g. for `mixed`, `bool`, etc.)
      */
-    public function getIsPossiblyTrue() : bool
+    public function isPossiblyTrue() : bool
+    {
+        return false;
+    }
+
+    /**
+     * Returns true if this could include the type `true`
+     * @deprecated use isPossiblyTrue
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public final function getIsPossiblyTrue() : bool
+    {
+        return $this->isPossiblyTrue();
+    }
+
+    /**
+     * Returns true for non-nullable `TrueType`
+     */
+    public function isAlwaysTrue() : bool
     {
         return false;
     }
 
     /**
      * Returns true for non-nullable `TrueType`
+     * @deprecated
+     * @suppress PhanUnreferencedPublicMethod
      */
-    public function getIsAlwaysTrue() : bool
+    public final function getIsAlwaysTrue() : bool
+    {
+        return $this->isAlwaysTrue();
+    }
+
+    /**
+     * Returns true for FalseType, TrueType, and BoolType
+     */
+    public function isInBoolFamily() : bool
     {
         return false;
     }
 
     /**
      * Returns true for FalseType, TrueType, and BoolType
+     * @deprecated use isInBoolFamily
+     * @suppress PhanUnreferencedPublicMethod
      */
-    public function getIsInBoolFamily() : bool
+    public final function getIsInBoolFamily() : bool
+    {
+        return $this->isInBoolFamily();
+    }
+
+    /**
+     * Returns true if this type may satisfy `is_numeric()`
+     */
+    public function isPossiblyNumeric() : bool
     {
         return false;
     }
 
     /**
      * Returns true if this type may satisfy `is_numeric()`
+     * @deprecated use isPossiblyNumeric
+     * @suppress PhanUnreferencedPublicMethod
      */
-    public function getIsPossiblyNumeric() : bool
+    public final function getIsPossiblyNumeric() : bool
     {
-        return false;
+        return $this->isPossiblyNumeric();
     }
 
     /**
@@ -1621,7 +1731,7 @@ class Type
      * Returns this type with any falsey types (e.g. false, null, 0, '') removed.
      *
      * Overridden by BoolType, etc.
-     * @see self::getIsAlwaysFalsey()
+     * @see self::isAlwaysFalsey()
      */
     public function asNonFalseyType() : Type
     {
@@ -1633,7 +1743,7 @@ class Type
      * Returns this type with any truthy types removed.
      *
      * Overridden by BoolType, etc.
-     * @see self::getIsAlwaysTruthy()
+     * @see self::isAlwaysTruthy()
      */
     public function asNonTruthyType() : Type
     {
@@ -1645,7 +1755,7 @@ class Type
      * Returns this type with the type `false` removed.
      *
      * Overridden by BoolType, etc.
-     * @see self::getIsAlwaysFalse()
+     * @see self::isAlwaysFalse()
      */
     public function asNonFalseType() : Type
     {
@@ -1656,7 +1766,7 @@ class Type
      * Returns this type with the type `true` removed.
      *
      * Overridden by BoolType, etc.
-     * @see self::getIsAlwaysTrue()
+     * @see self::isAlwaysTrue()
      */
     public function asNonTrueType() : Type
     {
@@ -2253,35 +2363,6 @@ class Type
     }
 
     /**
-     * @param CodeBase $code_base
-     *
-     * @param Type $parent
-     *
-     * @return bool
-     * True if this type represents a class which is a sub-type of
-     * the class represented by the passed type.
-     *
-     * @deprecated
-     * @suppress PhanUnreferencedPublicMethod
-     */
-    public function isSubclassOf(CodeBase $code_base, Type $parent) : bool
-    {
-        $fqsen = FullyQualifiedClassName::fromType($this);
-
-        $this_clazz = $code_base->getClassByFQSEN(
-            $fqsen
-        );
-
-        $parent_fqsen = FullyQualifiedClassName::fromType($parent);
-
-        $parent_clazz = $code_base->getClassByFQSEN(
-            $parent_fqsen
-        );
-
-        return $this_clazz->isSubclassOf($code_base, $parent_clazz);
-    }
-
-    /**
      * @param Type[] $target_type_set 1 or more types
      * @return bool
      * True if this Type can be cast to the given Type cleanly.
@@ -2569,7 +2650,7 @@ class Type
         if ($union_type->hasType($this)) {
             return true;
         }
-        if ($this->getIsNullable() && !$union_type->containsNullable()) {
+        if ($this->isNullable() && !$union_type->containsNullable()) {
             return false;
         }
         $this_resolved = $this->withStaticResolvedInContext($context);

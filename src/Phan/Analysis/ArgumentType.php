@@ -361,7 +361,7 @@ final class ArgumentType
     ) : void {
         // There's nothing reasonable we can do here
         if ($method instanceof Method) {
-            if ($method->getIsMagicCall() || $method->getIsMagicCallStatic()) {
+            if ($method->isMagicCall() || $method->isMagicCallStatic()) {
                 return;
             }
         }
@@ -424,7 +424,7 @@ final class ArgumentType
     ) : void {
         // There's nothing reasonable we can do here
         if ($method instanceof Method) {
-            if ($method->getIsMagicCall() || $method->getIsMagicCallStatic()) {
+            if ($method->isMagicCall() || $method->isMagicCallStatic()) {
                 return;
             }
         }
@@ -627,7 +627,7 @@ final class ArgumentType
         if ($method->isPHPInternal()) {
             // If we are not in strict mode and we accept a string parameter
             // and the argument we are passing has a __toString method then it is ok
-            if (!$context->getIsStrictTypes() && $parameter_type->hasNonNullStringType()) {
+            if (!$context->isStrictTypes() && $parameter_type->hasNonNullStringType()) {
                 try {
                     foreach ($argument_type_expanded->asClassList($code_base, $context) as $clazz) {
                         if ($clazz->hasMethodWithName($code_base, "__toString")) {
@@ -733,7 +733,7 @@ final class ArgumentType
                 if ($method->isPHPInternal()) {
                     // If we are not in strict mode and we accept a string parameter
                     // and the argument we are passing has a __toString method then it is ok
-                    if (!$context->getIsStrictTypes() && $parameter_type->hasNonNullStringType()) {
+                    if (!$context->isStrictTypes() && $parameter_type->hasNonNullStringType()) {
                         if ($individual_type_expanded->hasClassWithToStringMethod($code_base, $context)) {
                             continue;  // don't warn about $type
                         }

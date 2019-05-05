@@ -14,7 +14,7 @@ class IntType extends ScalarType
     const NAME = 'int';
 
     /** @override */
-    public function getIsPossiblyNumeric() : bool
+    public function isPossiblyNumeric() : bool
     {
         return true;
     }

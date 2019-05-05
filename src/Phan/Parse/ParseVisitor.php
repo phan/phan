@@ -360,7 +360,7 @@ class ParseVisitor extends ScopeVisitor
             // TODO: More precise callable shape
             $class->addAdditionalType(CallableType::instance(false));
         } elseif ('__toString' === $method_name
-            && !$this->context->getIsStrictTypes()
+            && !$this->context->isStrictTypes()
         ) {
             $class->addAdditionalType(StringType::instance(false));
         }

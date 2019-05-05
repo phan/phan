@@ -150,7 +150,7 @@ trait ConditionVisitorUtil
                 foreach ($union_type->getTypeSet() as $type) {
                     if ($cb($type)) {
                         $union_type = $union_type->withoutType($type);
-                        $has_nullable = $has_nullable || $type->getIsNullable();
+                        $has_nullable = $has_nullable || $type->isNullable();
                     }
                 }
                 if ($has_nullable) {
