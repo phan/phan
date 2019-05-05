@@ -9,7 +9,7 @@ use Phan\Language\Element\Property;
  * Plugins can implement this to analyze (and modify) a property definition,
  * after parsing and before analyzing.
  */
-interface AnalyzePropertyCapability
+interface AnalyzePropertyCapability extends \Phan\PluginV2\AnalyzePropertyCapability
 {
     /**
      * Analyze (and modify) a property definition,
