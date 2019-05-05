@@ -173,7 +173,7 @@ interface FunctionInterface extends AddressableElementInterface
      * @param int $i - offset of the parameter.
      * @return Parameter|null The parameter type that the **caller** observes.
      */
-    public function getParameterForCaller(int $i) : ?\Phan\Language\Element\Parameter;
+    public function getParameterForCaller(int $i) : ?Parameter;
 
     /**
      * Gets the $ith real parameter for the **caller**.
@@ -184,7 +184,7 @@ interface FunctionInterface extends AddressableElementInterface
      * @param int $i - offset of the parameter.
      * @return Parameter|null The parameter type that the **caller** observes.
      */
-    public function getRealParameterForCaller(int $i) : ?\Phan\Language\Element\Parameter;
+    public function getRealParameterForCaller(int $i) : ?Parameter;
 
     /**
      * @param Parameter $parameter
@@ -297,7 +297,7 @@ interface FunctionInterface extends AddressableElementInterface
     /**
      * @return ?UnionType the raw phpdoc union type
      */
-    public function getPHPDocReturnType() : ?\Phan\Language\UnionType;
+    public function getPHPDocReturnType() : ?UnionType;
 
     /**
      * @return bool
@@ -322,7 +322,7 @@ interface FunctionInterface extends AddressableElementInterface
      * Make calculation of the return type of this function/method use $closure
      * @return void
      */
-    public function setDependentReturnTypeClosure(\Closure $closure) : void;
+    public function setDependentReturnTypeClosure(Closure $closure) : void;
 
     /**
      * Returns true if this function or method has additional analysis logic for invocations (From internal and user defined plugins)
@@ -345,13 +345,13 @@ interface FunctionInterface extends AddressableElementInterface
      * If callers need to invoke multiple closures, they should pass in a closure to invoke multiple closures or use addFunctionCallAnalyzer.
      * @return void
      */
-    public function setFunctionCallAnalyzer(\Closure $closure) : void;
+    public function setFunctionCallAnalyzer(Closure $closure) : void;
 
     /**
      * If callers need to invoke multiple closures, they should pass in a closure to invoke multiple closures.
      * @return void
      */
-    public function addFunctionCallAnalyzer(\Closure $closure) : void;
+    public function addFunctionCallAnalyzer(Closure $closure) : void;
 
     /**
      * Initialize the inner scope of this method with variables created from the parameters.
@@ -362,12 +362,12 @@ interface FunctionInterface extends AddressableElementInterface
      */
     public function ensureScopeInitialized(CodeBase $code_base) : void;
 
-    public function getNode() : ?\ast\Node;
+    public function getNode() : ?Node;
 
     /**
      * @return ?Comment - Not set for internal functions/methods
      */
-    public function getComment() : ?\Phan\Language\Element\Comment;
+    public function getComment() : ?Comment;
 
     public function setComment(Comment $comment) : void;
 
@@ -440,5 +440,5 @@ interface FunctionInterface extends AddressableElementInterface
      * @return ?Closure(CodeBase, Context, array):UnionType
      * @internal
      */
-    public function getCommentParamAssertionClosure(CodeBase $code_base) : ?\Closure;
+    public function getCommentParamAssertionClosure(CodeBase $code_base) : ?Closure;
 }

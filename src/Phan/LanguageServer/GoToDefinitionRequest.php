@@ -353,7 +353,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
         return \array_values($this->locations);
     }
 
-    public function getHoverResponse() : ?\Phan\LanguageServer\Protocol\Hover
+    public function getHoverResponse() : ?Hover
     {
         return $this->hover_response;
     }

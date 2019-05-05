@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace PHPDocToRealTypesPlugin;
+namespace PreferNamespaceUsePlugin;
 
 use Microsoft\PhpParser;
 use Microsoft\PhpParser\FunctionLike;
@@ -15,13 +15,13 @@ use Phan\Plugin\Internal\IssueFixingPlugin\FileEdit;
 use Phan\Plugin\Internal\IssueFixingPlugin\FileEditSet;
 
 /**
- * This plugin implements --automatic-fix for PHPDocToRealTypesPlugin
+ * This plugin implements --automatic-fix for PreferNamespaceUsePlugin
  */
 class Fixers
 {
 
     /**
-     * Add a missing return type to the real signature
+     * Generate an edit to replace a fully qualified return type with a shorter equivalent representation.
      * @return ?FileEditSet
      */
     public static function fixReturnType(
@@ -30,18 +30,18 @@ class Fixers
         IssueInstance $instance
     ) : ?FileEditSet {
         $params = $instance->getTemplateParameters();
-        $return_type = $params[0];
-        $name = $params[1];
+        $shorter_return_type = ltrim((string)$params[1], '?');
+        $method_name = $params[0];
         // @phan-suppress-next-line PhanPartialTypeMismatchArgument
-        $declaration = self::findFunctionLikeDeclaration($contents, $instance->getLine(), $name);
+        $declaration = self::findFunctionLikeDeclaration($contents, $instance->getLine(), $method_name);
         if (!$declaration) {
             return null;
         }
-        return self::computeEditsForReturnTypeDeclaration($declaration, (string)$return_type);
+        return self::computeEditsForReturnTypeDeclaration($declaration, (string)$shorter_return_type);
     }
 
     /**
-     * Add a missing param type to the real signature
+     * Generate an edit to replace a fully qualified param type with a shorter equivalent representation.
      * @return ?FileEditSet
      */
     public static function fixParamType(
@@ -50,36 +50,44 @@ class Fixers
         IssueInstance $instance
     ) : ?FileEditSet {
         $params = $instance->getTemplateParameters();
-        $param_type = $params[0];
-        $param_name = $params[1];
-        $method_name = $params[2];
+        $shorter_return_type = ltrim((string)$params[2], '?');
+        $method_name = (string)$params[1];
+        $param_name = (string)$params[0];
         // @phan-suppress-next-line PhanPartialTypeMismatchArgument
         $declaration = self::findFunctionLikeDeclaration($contents, $instance->getLine(), $method_name);
         if (!$declaration) {
             return null;
         }
-        return self::computeEditsForParamTypeDeclaration($contents, $declaration, (string)$param_name, (string)$param_type);
+        return self::computeEditsForParamTypeDeclaration($contents, $declaration, $param_name, (string)$shorter_return_type);
     }
 
-    private static function computeEditsForReturnTypeDeclaration(FunctionLike $declaration, string $return_type) : ?FileEditSet
-    {
-        if (!$return_type) {
-            return null;
-        }
+    private static function computeEditsForReturnTypeDeclaration(
+        FunctionLike $declaration,
+        string $shorter_return_type
+    ) : ?FileEditSet {
         // @phan-suppress-next-line PhanUndeclaredProperty
-        $close_bracket = $declaration->anonymousFunctionUseClause->closeParen ?? $declaration->closeParen;
-        if (!$close_bracket) {
+        $return_type_node = $declaration->returnType;
+        if (!$return_type_node) {
             return null;
         }
-        // get the byte where the `)` of the argument list ends
-        $last_byte_index = $close_bracket->getEndPosition();
-        $file_edit = new FileEdit($last_byte_index, $last_byte_index, " : $return_type");
+        // Generate an edit to replace the long return type with the shorter return type
+        $file_edit = new FileEdit(
+            $return_type_node->getStart(),
+            $return_type_node->getEndPosition(),
+            $shorter_return_type
+        );
         return new FileEditSet([$file_edit]);
     }
 
-    private static function computeEditsForParamTypeDeclaration(FileCacheEntry $contents, FunctionLike $declaration, string $param_name, string $param_type) : ?FileEditSet
-    {
-        if (!$param_type) {
+    private static function computeEditsForParamTypeDeclaration(
+        FileCacheEntry $contents,
+        FunctionLike $declaration,
+        string $param_name,
+        string $shorter_param_type
+    ) : ?FileEditSet {
+        // @phan-suppress-next-line PhanUndeclaredProperty
+        $return_type_node = $declaration->returnType;
+        if (!$return_type_node) {
             return null;
         }
         // @phan-suppress-next-line PhanUndeclaredProperty
@@ -92,14 +100,18 @@ class Fixers
             if ($declaration_name !== $param_name) {
                 continue;
             }
-            $token = $param->byRefToken ?? $param->dotDotDotToken ?? $param->variableName;
-            $token_start_index = $token->start;
-            $file_edit = new FileEdit($token_start_index, $token_start_index, "$param_type ");
+            $token = $param->typeDeclaration;
+            if (!$token) {
+                return null;
+            }
+            // @phan-suppress-next-line PhanThrowTypeAbsentForCall php-parser is not expected to throw here
+            $file_edit = new FileEdit($token->getStart(), $token->getEndPosition(), $shorter_param_type);
             return new FileEditSet([$file_edit]);
         }
         return null;
     }
 
+    // TODO: Move this into a reusable function
     private static function findFunctionLikeDeclaration(
         FileCacheEntry $contents,
         int $line,

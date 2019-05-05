@@ -245,7 +245,7 @@ abstract class NativeType extends Type
     /**
      * @return ?UnionType returns the iterable value's union type if this is a subtype of iterable, null otherwise.
      */
-    public function iterableKeyUnionType(CodeBase $unused_code_base) : ?\Phan\Language\UnionType
+    public function iterableKeyUnionType(CodeBase $unused_code_base) : ?UnionType
     {
         return null;
     }
@@ -253,7 +253,7 @@ abstract class NativeType extends Type
     /**
      * @return ?UnionType returns the iterable value's union type if this is a subtype of iterable, null otherwise.
      */
-    public function iterableValueUnionType(CodeBase $unused_code_base) : ?\Phan\Language\UnionType
+    public function iterableValueUnionType(CodeBase $unused_code_base) : ?UnionType
     {
         return null;
     }

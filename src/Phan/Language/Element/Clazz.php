@@ -449,7 +449,7 @@ class Clazz extends AddressableElement
      * @return Option<Type>
      * If a parent type is defined, get Some<Type>, else None.
      */
-    public function getParentTypeOption() : \Phan\Library\Option
+    public function getParentTypeOption() : Option
     {
         if ($this->parent_type !== null) {
             return new Some($this->parent_type);
@@ -1101,7 +1101,7 @@ class Clazz extends AddressableElement
      *
      * @param ?Node $node
      */
-    public static function isAccessToElementOfThis(?\ast\Node $node) : bool
+    public static function isAccessToElementOfThis(?Node $node) : bool
     {
         if (!($node instanceof Node)) {
             return false;
@@ -1623,7 +1623,7 @@ class Clazz extends AddressableElement
      * @return Method
      * The magic `__call` method
      */
-    public function getCallMethod(CodeBase $code_base) : \Phan\Language\Element\Method
+    public function getCallMethod(CodeBase $code_base) : Method
     {
         return $this->getMethodByName($code_base, '__call');
     }
@@ -1664,7 +1664,7 @@ class Clazz extends AddressableElement
      * @return Method
      * The magic `__callStatic` method
      */
-    public function getCallStaticMethod(CodeBase $code_base) : \Phan\Language\Element\Method
+    public function getCallStaticMethod(CodeBase $code_base) : Method
     {
         return $this->getMethodByName($code_base, '__callStatic');
     }
@@ -1839,7 +1839,7 @@ class Clazz extends AddressableElement
      * @deprecated use hasDynamicProperties
      * @suppress PhanUnreferencedPublicMethod
      */
-    public final function getHasDynamicProperties(CodeBase $code_base) : bool
+    final public function getHasDynamicProperties(CodeBase $code_base) : bool
     {
         return $this->hasDynamicProperties($code_base);
     }
@@ -2969,7 +2969,7 @@ class Clazz extends AddressableElement
      * Used by daemon mode to restore an element to the state it had before parsing.
      * @return Closure
      */
-    public function createRestoreCallback() : \Closure
+    public function createRestoreCallback() : Closure
     {
         // NOTE: Properties, Methods, and closures are restored separately.
         $original_this = clone($this);
@@ -2990,7 +2990,7 @@ class Clazz extends AddressableElement
         $this->additional_union_types = ($this->additional_union_types ?? UnionType::empty())->withType($type);
     }
 
-    public function getAdditionalTypes() : ?\Phan\Language\UnionType
+    public function getAdditionalTypes() : ?UnionType
     {
         return $this->additional_union_types;
     }
@@ -3127,7 +3127,7 @@ class Clazz extends AddressableElement
      *
      * @return ?ClassElement if non-null, this is of the same type as $element
      */
-    public static function getAncestorElement(CodeBase $code_base, FullyQualifiedClassName $ancestor_fqsen, ClassElement $element) : ?\Phan\Language\Element\ClassElement
+    public static function getAncestorElement(CodeBase $code_base, FullyQualifiedClassName $ancestor_fqsen, ClassElement $element) : ?ClassElement
     {
         if (!$code_base->hasClassWithFQSEN($ancestor_fqsen)) {
             return null;

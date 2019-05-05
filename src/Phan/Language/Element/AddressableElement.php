@@ -305,7 +305,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * @internal
      * @return ?Closure
      */
-    abstract public function createRestoreCallback() : ?\Closure;
+    abstract public function createRestoreCallback() : ?Closure;
 
     /**
      * @param ?string $doc_comment the 'docComment' for this element, if any exists.

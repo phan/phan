@@ -130,7 +130,7 @@ final class Builder
         string $line,
         bool $is_var,
         int $i
-    ) : \Phan\Language\Element\Comment\Parameter {
+    ) : Parameter {
         $matched = \preg_match(self::PARAM_COMMENT_REGEX, $line, $match);
         // Parse https://docs.phpdoc.org/references/phpdoc/tags/param.html
         // Exceptions: Deliberately allow "&" in "@param int &$x" when documenting references.
@@ -209,7 +209,7 @@ final class Builder
     private function returnTypeFromCommentLine(
         string $line,
         int $i
-    ) : \Phan\Language\UnionType {
+    ) : UnionType {
         $return_union_type_string = '';
 
         if (\preg_match(self::RETURN_COMMENT_REGEX, $line, $match)) {
@@ -478,7 +478,7 @@ final class Builder
      * @internal
      */
     const ASSERT_REGEX = '/@phan-assert(?:(-true-condition|-false-condition)|\s+(!?)(' . UnionType::union_type_regex . '))\s+\$' . self::WORD_REGEX . '/';
-    private function assertFromCommentLine(string $line) : ?\Phan\Language\Element\Comment\Assertion
+    private function assertFromCommentLine(string $line) : ?Assertion
     {
         if (!\preg_match(self::ASSERT_REGEX, $line, $match)) {
             return null;
@@ -690,7 +690,7 @@ final class Builder
         }
     }
 
-    private static function generateSuggestionForMisspelledAnnotation(string $annotation) : ?\Phan\Suggestion
+    private static function generateSuggestionForMisspelledAnnotation(string $annotation) : ?Suggestion
     {
         $suggestions = IssueFixSuggester::getSuggestionsForStringSet('@' . $annotation, self::SUPPORTED_ANNOTATIONS);
         if (!$suggestions) {
@@ -822,7 +822,7 @@ final class Builder
      */
     private static function templateTypeFromCommentLine(
         string $line
-    ) : ?\Phan\Language\Type\TemplateType {
+    ) : ?TemplateType {
         // Backslashes or nested templates wouldn't make sense, so use WORD_REGEX.
         if (\preg_match('/@(?:phan-)?template\s+(' . self::WORD_REGEX . ')/', $line, $match)) {
             $template_type_identifier = $match[1];
@@ -841,7 +841,7 @@ final class Builder
      */
     private function inheritsFromCommentLine(
         string $line
-    ) : \Phan\Library\Option {
+    ) : Option {
         $match = [];
         if (\preg_match('/@(?:phan-)?(?:inherits|extends)\s+(' . Type::type_regex . ')/', $line, $match)) {
             $type_string = $match[1];
@@ -914,7 +914,7 @@ final class Builder
         string $param_string,
         int $param_index,
         int $comment_line_offset
-    ) : ?\Phan\Language\Element\Comment\Parameter {
+    ) : ?Parameter {
         $param_string = \trim($param_string);
         // Don't support trailing commas, or omitted params. Provide at least one of [type] or [parameter]
         if ($param_string === '') {
@@ -962,7 +962,7 @@ final class Builder
     private function magicMethodFromCommentLine(
         string $line,
         int $comment_line_offset
-    ) : ?\Phan\Language\Element\Comment\Method {
+    ) : ?Method {
         // https://phpdoc.org/docs/latest/references/phpdoc/tags/method.html
         // > Going to assume "static" is a magic keyword, based on https://github.com/phpDocumentor/phpDocumentor2/issues/822
         // > TODO: forbid in trait?
@@ -1105,7 +1105,7 @@ final class Builder
     private function magicPropertyFromCommentLine(
         string $line,
         int $i
-    ) : ?\Phan\Language\Element\Comment\Property {
+    ) : ?Property {
         // Note that the type of a property can be left out (@property $myVar) - This is equivalent to @property mixed $myVar
         // TODO: properly handle duplicates...
         if (\preg_match('/@(?:phan-)?(property|property-read|property-write)(?:\s+(' . UnionType::union_type_regex . '))?(?:\s+(?:\\$' . self::WORD_REGEX . '))/', $line, $match)) {

@@ -299,7 +299,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         // Get the intersection of all types for all versions of
         // the variable from every side of the branch
         $union_type =
-            static function (string $variable_name) use ($scope_list) : \Phan\Language\UnionType {
+            static function (string $variable_name) use ($scope_list) : UnionType {
                 $previous_type = null;
                 $type_list = [];
                 // Get a list of all variables with the given name from

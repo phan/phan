@@ -79,7 +79,7 @@ interface ConditionVisitorInterface
      * @param Node|string|int|float|bool $expr_node
      * @return ?Context
      */
-    public function analyzeClassAssertion($object_node, $expr_node) : ?\Phan\Language\Context;
+    public function analyzeClassAssertion($object_node, $expr_node) : ?Context;
 
     /**
      * @return ?Variable - Returns null if the variable is undeclared and ignore_undeclared_variables_in_global_scope applies.
@@ -89,5 +89,5 @@ interface ConditionVisitorInterface
      *
      * TODO: support assertions on superglobals, within the current file scope?
      */
-    public function getVariableFromScope(Node $var_node, Context $context) : ?\Phan\Language\Element\Variable;
+    public function getVariableFromScope(Node $var_node, Context $context) : ?Variable;
 }

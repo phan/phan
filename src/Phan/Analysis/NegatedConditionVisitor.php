@@ -260,7 +260,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitCall(Node $node) : \Phan\Language\Context
+    public function visitCall(Node $node) : Context
     {
         $raw_function_name = self::getFunctionName($node);
         if (!\is_string($raw_function_name)) {
@@ -301,7 +301,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
         return $context;
     }
 
-    public function visitVar(Node $node) : \Phan\Language\Context
+    public function visitVar(Node $node) : Context
     {
         $this->checkVariablesDefined($node);
         return $this->removeTruthyFromVariable($node, $this->context, false);
@@ -448,7 +448,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      * @param Node|mixed $class_node
      * @return ?UnionType
      */
-    private function computeNegatedInstanceofType(UnionType $union_type, $class_node) : ?\Phan\Language\UnionType
+    private function computeNegatedInstanceofType(UnionType $union_type, $class_node) : ?UnionType
     {
         $right_hand_union_type = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
@@ -718,7 +718,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      * Analyze expressions such as $x['offset'] inside of a negated isset type check
      * @return Context
      */
-    public function checkComplexIsset(Node $var_node) : \Phan\Language\Context
+    public function checkComplexIsset(Node $var_node) : Context
     {
         $context = $this->context;
         if ($var_node->kind === ast\AST_DIM) {
@@ -833,7 +833,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
         return $context;
     }
 
-    private function checkComplexNegatedEmpty(Node $var_node) : \Phan\Language\Context
+    private function checkComplexNegatedEmpty(Node $var_node) : Context
     {
         $context = $this->context;
         // TODO: !empty($obj->prop['offset']) should imply $obj is not null (removeNullFromVariable)

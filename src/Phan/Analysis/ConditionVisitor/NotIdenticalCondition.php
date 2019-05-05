@@ -40,7 +40,7 @@ class NotIdenticalCondition implements BinaryCondition
         return $visitor->getContext();
     }
 
-    public function analyzeCall(ConditionVisitorInterface $visitor, \ast\Node $call_node, $expr) : ?\Phan\Language\Context
+    public function analyzeCall(ConditionVisitorInterface $visitor, Node $call_node, $expr) : ?Context
     {
         if (!$expr instanceof Node) {
             return null;

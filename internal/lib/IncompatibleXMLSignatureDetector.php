@@ -237,7 +237,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     /**
      * @return Generator<string>
      */
-    private function getPossibleFilesInReferenceDirectory(string $folder_in_reference_directory) : \Generator
+    private function getPossibleFilesInReferenceDirectory(string $folder_in_reference_directory) : Generator
     {
         $file = $this->reference_directory . '/' . $folder_in_reference_directory . '.xml';
         yield $file;
@@ -393,7 +393,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     /**
      * @return ?SimpleXMLElement the simple xml for the global function $function_name
      */
-    public function getSimpleXMLForFunctionSignature(string $function_name) : ?\SimpleXMLElement
+    public function getSimpleXMLForFunctionSignature(string $function_name) : ?SimpleXMLElement
     {
         $function_name_lc = strtolower($function_name);
         $function_name_file_map = $this->getFilesForFunctionNameList();
@@ -502,7 +502,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     /** @var array<string,?SimpleXMLElement> maps file paths to cached parsed XML elements */
     private $simple_xml_cache = [];
 
-    private function getSimpleXMLForFile(string $file_path) : ?\SimpleXMLElement
+    private function getSimpleXMLForFile(string $file_path) : ?SimpleXMLElement
     {
         if (array_key_exists($file_path, $this->simple_xml_cache)) {
             return $this->simple_xml_cache[$file_path];
@@ -518,7 +518,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         });
     }
 
-    private function getSimpleXMLForFileUncached(string $file_path) : ?\SimpleXMLElement
+    private function getSimpleXMLForFileUncached(string $file_path) : ?SimpleXMLElement
     {
         $signature_file_contents = $this->fileGetContents($file_path);
         if (!is_string($signature_file_contents)) {
@@ -528,7 +528,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         return $this->getSimpleXMLForFileContents($signature_file_contents, $file_path);
     }
 
-    private function getSimpleXMLForFileContents(string $signature_file_contents, string $file_path) : ?\SimpleXMLElement
+    private function getSimpleXMLForFileContents(string $signature_file_contents, string $file_path) : ?SimpleXMLElement
     {
         // Not sure if there's a good way of using an external entity file in PHP.
         $signature_file_contents = $this->normalizeEntityFile($signature_file_contents);
@@ -588,7 +588,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
      * @param ?SimpleXMLElement $xml
      * @return ?array<mixed,string>
      */
-    private function parseFunctionLikeSignatureForXML(string $function_name, ?\SimpleXMLElement $xml) : ?array
+    private function parseFunctionLikeSignatureForXML(string $function_name, ?SimpleXMLElement $xml) : ?array
     {
         if (!$xml) {
             return null;

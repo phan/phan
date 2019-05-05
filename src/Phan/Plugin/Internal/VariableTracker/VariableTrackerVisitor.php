@@ -62,7 +62,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @return VariableTrackingScope
      * @override
      */
-    public function visit(Node $node) : \Phan\Plugin\Internal\VariableTracker\VariableTrackingScope
+    public function visit(Node $node) : VariableTrackingScope
     {
         foreach ($node->children as $child_node) {
             if (!($child_node instanceof Node)) {
@@ -79,7 +79,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @return VariableTrackingScope
      * @override
      */
-    public function visitStmtList(Node $node) : \Phan\Plugin\Internal\VariableTracker\VariableTrackingScope
+    public function visitStmtList(Node $node) : VariableTrackingScope
     {
         $top_level_statement = $this->top_level_statement;
         foreach ($node->children as $child_node) {
@@ -99,7 +99,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @return VariableTrackingScope
      * @override
      */
-    public function visitAssignRef(Node $node) : \Phan\Plugin\Internal\VariableTracker\VariableTrackingScope
+    public function visitAssignRef(Node $node) : VariableTrackingScope
     {
         $expr = $node->children['expr'];
         if ($expr instanceof Node) {
@@ -120,7 +120,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @override
      * @return VariableTrackingScope
      */
-    public function visitPostInc(Node $node) : \Phan\Plugin\Internal\VariableTracker\VariableTrackingScope
+    public function visitPostInc(Node $node) : VariableTrackingScope
     {
         return $this->analyzeIncDec($node);
     }
@@ -130,7 +130,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @override
      * @return VariableTrackingScope
      */
-    public function visitPostDec(Node $node) : \Phan\Plugin\Internal\VariableTracker\VariableTrackingScope
+    public function visitPostDec(Node $node) : VariableTrackingScope
     {
         return $this->analyzeIncDec($node);
     }
@@ -140,7 +140,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @override
      * @return VariableTrackingScope
      */
-    public function visitPreInc(Node $node) : \Phan\Plugin\Internal\VariableTracker\VariableTrackingScope
+    public function visitPreInc(Node $node) : VariableTrackingScope
     {
         return $this->analyzeIncDec($node);
     }
@@ -150,12 +150,12 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @override
      * @return VariableTrackingScope
      */
-    public function visitPreDec(Node $node) : \Phan\Plugin\Internal\VariableTracker\VariableTrackingScope
+    public function visitPreDec(Node $node) : VariableTrackingScope
     {
         return $this->analyzeIncDec($node);
     }
 
-    private function analyzeIncDec(Node $node) : \Phan\Plugin\Internal\VariableTracker\VariableTrackingScope
+    private function analyzeIncDec(Node $node) : VariableTrackingScope
     {
         $var_node = $node->children['var'];
         if ($var_node instanceof Node && $var_node->kind === ast\AST_VAR) {
@@ -180,7 +180,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @return VariableTrackingScope
      * @override
      */
-    public function visitAssignOp(Node $node) : \Phan\Plugin\Internal\VariableTracker\VariableTrackingScope
+    public function visitAssignOp(Node $node) : VariableTrackingScope
     {
         $expr = $node->children['expr'];
         if ($expr instanceof Node) {
@@ -220,7 +220,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @return VariableTrackingScope
      * @override
      */
-    public function visitAssign(Node $node) : \Phan\Plugin\Internal\VariableTracker\VariableTrackingScope
+    public function visitAssign(Node $node) : VariableTrackingScope
     {
         $expr = $node->children['expr'];
         if ($expr instanceof Node) {
@@ -339,7 +339,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         // return $this->analyzeAssignmentTarget($expr, false);
     }
 
-    public function handleMissingNodeKind(Node $unused_node) : \Phan\Plugin\Internal\VariableTracker\VariableTrackingScope
+    public function handleMissingNodeKind(Node $unused_node) : VariableTrackingScope
     {
         // do nothing
         return $this->scope;
@@ -349,7 +349,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @param Node|string|int|float|null $child_node
      * @return VariableTrackingScope
      */
-    private function analyzeWhenValidNode(VariableTrackingScope $scope, $child_node) : \Phan\Plugin\Internal\VariableTracker\VariableTrackingScope
+    private function analyzeWhenValidNode(VariableTrackingScope $scope, $child_node) : VariableTrackingScope
     {
         if ($child_node instanceof Node) {
             return $this->analyze($scope, $child_node);
@@ -363,7 +363,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @param Node $child_node - The node which will be analyzed to create the updated context.
      * @return VariableTrackingScope
      */
-    private function analyze(VariableTrackingScope $scope, Node $child_node) : \Phan\Plugin\Internal\VariableTracker\VariableTrackingScope
+    private function analyze(VariableTrackingScope $scope, Node $child_node) : VariableTrackingScope
     {
         // Modify the original object instead of creating a new BlockAnalysisVisitor.
         // this is slightly more efficient, especially if a large number of unchanged parameters would exist.
@@ -381,7 +381,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @return VariableTrackingScope
      * @override
      */
-    public function visitFuncDecl(Node $unused_node) : \Phan\Plugin\Internal\VariableTracker\VariableTrackingScope
+    public function visitFuncDecl(Node $unused_node) : VariableTrackingScope
     {
         return $this->scope;
     }
@@ -391,7 +391,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @return VariableTrackingScope
      * @override
      */
-    public function visitClass(Node $unused_node) : \Phan\Plugin\Internal\VariableTracker\VariableTrackingScope
+    public function visitClass(Node $unused_node) : VariableTrackingScope
     {
         return $this->scope;
     }
@@ -403,7 +403,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @return VariableTrackingScope
      * @override
      */
-    public function visitClosure(Node $node) : \Phan\Plugin\Internal\VariableTracker\VariableTrackingScope
+    public function visitClosure(Node $node) : VariableTrackingScope
     {
         foreach ($node->children['uses']->children ?? [] as $closure_use) {
             if (!($closure_use instanceof Node)) {
@@ -430,7 +430,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @return VariableTrackingScope
      * Common no-op
      */
-    public function visitName(Node $unused_node) : \Phan\Plugin\Internal\VariableTracker\VariableTrackingScope
+    public function visitName(Node $unused_node) : VariableTrackingScope
     {
         return $this->scope;
     }
@@ -440,7 +440,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @return VariableTrackingScope
      * @override
      */
-    public function visitVar(Node $node) : \Phan\Plugin\Internal\VariableTracker\VariableTrackingScope
+    public function visitVar(Node $node) : VariableTrackingScope
     {
         $name = $node->children['name'];
         if (\is_string($name)) {
@@ -460,7 +460,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @return VariableTrackingScope
      * @override
      */
-    public function visitStatic(Node $node) : \Phan\Plugin\Internal\VariableTracker\VariableTrackingScope
+    public function visitStatic(Node $node) : VariableTrackingScope
     {
         $name = $node->children['var']->children['name'] ?? null;
         if (\is_string($name)) {
@@ -474,7 +474,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @return VariableTrackingScope
      * @override
      */
-    public function visitGlobal(Node $node) : \Phan\Plugin\Internal\VariableTracker\VariableTrackingScope
+    public function visitGlobal(Node $node) : VariableTrackingScope
     {
         $name = $node->children['var']->children['name'] ?? null;
         if (\is_string($name)) {
@@ -487,7 +487,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * Analyzes `foreach ($expr as $key => $value) { stmts }
      * @return VariableTrackingScope
      */
-    public function visitForeach(Node $node) : \Phan\Plugin\Internal\VariableTracker\VariableTrackingScope
+    public function visitForeach(Node $node) : VariableTrackingScope
     {
         $expr_node = $node->children['expr'];
         $outer_scope_unbranched = $this->analyzeWhenValidNode($this->scope, $expr_node);
@@ -521,7 +521,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @return VariableTrackingScope
      * @override
      */
-    public function visitWhile(Node $node) : \Phan\Plugin\Internal\VariableTracker\VariableTrackingScope
+    public function visitWhile(Node $node) : VariableTrackingScope
     {
         $outer_scope_unbranched = $this->analyzeWhenValidNode($this->scope, $node->children['cond']);
         $outer_scope = new VariableTrackingBranchScope($outer_scope_unbranched);
@@ -545,7 +545,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @return VariableTrackingScope
      * @override
      */
-    public function visitDoWhile(Node $node) : \Phan\Plugin\Internal\VariableTracker\VariableTrackingScope
+    public function visitDoWhile(Node $node) : VariableTrackingScope
     {
         $outer_scope_unbranched = $this->scope;
         $outer_scope = new VariableTrackingBranchScope($outer_scope_unbranched);
@@ -567,7 +567,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @return VariableTrackingScope
      * @override
      */
-    public function visitFor(Node $node) : \Phan\Plugin\Internal\VariableTracker\VariableTrackingScope
+    public function visitFor(Node $node) : VariableTrackingScope
     {
         $top_level_statement = $this->top_level_statement;
         $init_node = $node->children['init'];
@@ -618,7 +618,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @see BlockAnalysisVisitor::visitIf()
      * @override
      */
-    public function visitIf(Node $node) : \Phan\Plugin\Internal\VariableTracker\VariableTrackingScope
+    public function visitIf(Node $node) : VariableTrackingScope
     {
         $outer_scope = $this->scope;
 
@@ -670,7 +670,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      *
      * @override
      */
-    public function visitSwitchList(Node $node) : \Phan\Plugin\Internal\VariableTracker\VariableTrackingScope
+    public function visitSwitchList(Node $node) : VariableTrackingScope
     {
         $outer_scope = $this->scope;
 
@@ -721,7 +721,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      *
      * @override
      */
-    public function visitTry(Node $node) : \Phan\Plugin\Internal\VariableTracker\VariableTrackingScope
+    public function visitTry(Node $node) : VariableTrackingScope
     {
         $outer_scope = $this->scope;
 
@@ -754,7 +754,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      *
      * @override
      */
-    public function visitCatchList(Node $node) : \Phan\Plugin\Internal\VariableTracker\VariableTrackingScope
+    public function visitCatchList(Node $node) : VariableTrackingScope
     {
         $outer_scope = $this->scope;
 
@@ -783,7 +783,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      *
      * @override
      */
-    public function visitCatch(Node $node) : \Phan\Plugin\Internal\VariableTracker\VariableTrackingScope
+    public function visitCatch(Node $node) : VariableTrackingScope
     {
         $var_node = $node->children['var'];
 

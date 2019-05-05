@@ -128,7 +128,7 @@ class ThrowsTypesAnalyzer
         CodeBase $code_base,
         Context $context,
         FullyQualifiedClassName $type_fqsen
-    ) : ?\Phan\Suggestion {
+    ) : ?Suggestion {
         return IssueFixSuggester::suggestSimilarClass(
             $code_base,
             $context,

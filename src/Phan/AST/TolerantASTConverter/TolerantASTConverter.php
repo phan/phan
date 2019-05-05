@@ -2017,7 +2017,7 @@ class TolerantASTConverter
      * @param ?Token $flags
      * @throws InvalidArgumentException if the class flags were unexpected
      */
-    private static function phpParserClassModifierToAstClassFlags(?\Microsoft\PhpParser\Token $flags) : int
+    private static function phpParserClassModifierToAstClassFlags(?Token $flags) : int
     {
         if ($flags === null) {
             return 0;

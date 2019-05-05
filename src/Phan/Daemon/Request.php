@@ -184,7 +184,7 @@ class Request
         CodeBase $code_base,
         Closure $file_path_lister,
         FileMapping $file_mapping,
-        ?\Phan\LanguageServer\NodeInfoRequest $most_recent_node_info_request,
+        ?NodeInfoRequest $most_recent_node_info_request,
         bool $should_exit
     ) : Request {
         FileCache::clear();
@@ -372,7 +372,7 @@ class Request
         return $mapping;
     }
 
-    public function getMostRecentNodeInfoRequest() : ?\Phan\LanguageServer\NodeInfoRequest
+    public function getMostRecentNodeInfoRequest() : ?NodeInfoRequest
     {
         return $this->most_recent_node_info_request;
     }
@@ -474,7 +474,7 @@ class Request
      * @param Responder $responder
      * @return ?Request - non-null if this is a worker process with work to do. null if request failed or this is the master.
      */
-    public static function accept(CodeBase $code_base, \Closure $file_path_lister, Responder $responder, bool $fork) : ?\Phan\Daemon\Request
+    public static function accept(CodeBase $code_base, Closure $file_path_lister, Responder $responder, bool $fork) : ?Request
     {
         FileCache::clear();
 
@@ -615,7 +615,7 @@ class Request
      * @param ?array<int,string> $file_names
      * @return void
      */
-    public static function reloadFilePathListForDaemon(CodeBase $code_base, \Closure $file_path_lister, array $file_mapping_contents, array $file_names = null) : void
+    public static function reloadFilePathListForDaemon(CodeBase $code_base, Closure $file_path_lister, array $file_mapping_contents, array $file_names = null) : void
     {
         $old_count = $code_base->getParsedFilePathCount();
 

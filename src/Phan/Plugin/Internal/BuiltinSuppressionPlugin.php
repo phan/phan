@@ -64,7 +64,7 @@ final class BuiltinSuppressionPlugin extends PluginV3 implements
         string $issue_type,
         int $lineno,
         array $parameters,
-        ?\Phan\Suggestion $suggestion
+        ?Suggestion $suggestion
     ) : bool {
         $issue_suppression_list = $this->getRawIssueSuppressionList($code_base, $context->getFile());
         $suppressions_for_issue_type = $issue_suppression_list[$issue_type] ?? null;
@@ -197,7 +197,7 @@ final class BuiltinSuppressionPlugin extends PluginV3 implements
      */
     private static function yieldSuppressionComments(
         string $file_contents
-    ) : \Generator {
+    ) : Generator {
         foreach (\token_get_all($file_contents) as $token) {
             if (!\is_array($token)) {
                 continue;

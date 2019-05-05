@@ -134,7 +134,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         $key = static::class . '|' .
             static::toString(\strtolower($namespace), static::canonicalLookupKey($name), $alternate_id);
 
-        $fqsen = self::memoizeStatic($key, static function () use ($namespace, $name, $alternate_id) : \Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement {
+        $fqsen = self::memoizeStatic($key, static function () use ($namespace, $name, $alternate_id) : FullyQualifiedGlobalStructuralElement {
             return new static(
                 $namespace,
                 $name,
@@ -165,7 +165,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
              * @return FullyQualifiedGlobalStructuralElement
              * @throws FQSENException
              */
-            static function () use ($fully_qualified_string) : \Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement {
+            static function () use ($fully_qualified_string) : FullyQualifiedGlobalStructuralElement {
                 // Split off the alternate_id
                 $parts = \explode(',', $fully_qualified_string);
                 $fqsen_string = $parts[0];

@@ -608,7 +608,7 @@ class Type
                  * @param mixed $value
                  * @return UnionType
                  */
-                static function ($value) : \Phan\Language\UnionType {
+                static function ($value) : UnionType {
                     return self::fromObjectExtended($value)->asUnionType();
                 },
                 $array
@@ -1513,7 +1513,7 @@ class Type
      * @deprecated use isNullable
      * @suppress PhanUnreferencedPublicMethod
      */
-    public final function getIsNullable() : bool
+    final public function getIsNullable() : bool
     {
         return $this->isNullable();
     }
@@ -1531,7 +1531,7 @@ class Type
      * @deprecated
      * @suppress PhanUnreferencedPublicMethod
      */
-    public final function getIsPossiblyFalsey() : bool
+    final public function getIsPossiblyFalsey() : bool
     {
         return $this->is_nullable;
     }
@@ -1549,7 +1549,7 @@ class Type
      * @deprecated use isAlwaysFalsey
      * @suppress PhanUnreferencedPublicMethod
      */
-    public final function getIsAlwaysFalsey() : bool
+    final public function getIsAlwaysFalsey() : bool
     {
         return $this->isAlwaysFalsey();
     }
@@ -1567,7 +1567,7 @@ class Type
      * @deprecated use isPossiblyTruthy
      * @suppress PhanUnreferencedPublicMethod
      */
-    public final function getIsPossiblyTruthy() : bool
+    final public function getIsPossiblyTruthy() : bool
     {
         return $this->isPossiblyTruthy();
     }
@@ -1590,7 +1590,7 @@ class Type
      * @deprecated use isAlwaysTruthy
      * @suppress PhanUnreferencedPublicMethod
      */
-    public final function getIsAlwaysTruthy() : bool
+    final public function getIsAlwaysTruthy() : bool
     {
         return $this->isAlwaysTruthy();
     }
@@ -1608,7 +1608,7 @@ class Type
      * @deprecated use isPossiblyFalse
      * @suppress PhanUnreferencedPublicMethod
      */
-    public final function getIsPossiblyFalse() : bool
+    final public function getIsPossiblyFalse() : bool
     {
         return $this->isPossiblyFalse();
     }
@@ -1626,7 +1626,7 @@ class Type
      * @deprecated
      * @suppress PhanUnreferencedPublicMethod
      */
-    public final function getIsAlwaysFalse() : bool
+    final public function getIsAlwaysFalse() : bool
     {
         return $this->isAlwaysFalse();
     }
@@ -1645,7 +1645,7 @@ class Type
      * @deprecated use isPossiblyTrue
      * @suppress PhanUnreferencedPublicMethod
      */
-    public final function getIsPossiblyTrue() : bool
+    final public function getIsPossiblyTrue() : bool
     {
         return $this->isPossiblyTrue();
     }
@@ -1663,7 +1663,7 @@ class Type
      * @deprecated
      * @suppress PhanUnreferencedPublicMethod
      */
-    public final function getIsAlwaysTrue() : bool
+    final public function getIsAlwaysTrue() : bool
     {
         return $this->isAlwaysTrue();
     }
@@ -1681,7 +1681,7 @@ class Type
      * @deprecated use isInBoolFamily
      * @suppress PhanUnreferencedPublicMethod
      */
-    public final function getIsInBoolFamily() : bool
+    final public function getIsInBoolFamily() : bool
     {
         return $this->isInBoolFamily();
     }
@@ -1699,7 +1699,7 @@ class Type
      * @deprecated use isPossiblyNumeric
      * @suppress PhanUnreferencedPublicMethod
      */
-    public final function getIsPossiblyNumeric() : bool
+    final public function getIsPossiblyNumeric() : bool
     {
         return $this->isPossiblyNumeric();
     }
@@ -2031,7 +2031,7 @@ class Type
     /**
      * @return ?UnionType returns the iterable key's union type, if this is a subtype of iterable. null otherwise.
      */
-    public function iterableKeyUnionType(CodeBase $unused_code_base) : ?\Phan\Language\UnionType
+    public function iterableKeyUnionType(CodeBase $unused_code_base) : ?UnionType
     {
         if ($this->namespace === '\\') {
             $name = strtolower($this->name);
@@ -2059,7 +2059,7 @@ class Type
      *
      * This is overridden by the array subclasses
      */
-    public function iterableValueUnionType(CodeBase $unused_code_base) : ?\Phan\Language\UnionType
+    public function iterableValueUnionType(CodeBase $unused_code_base) : ?UnionType
     {
         if ($this->namespace === '\\') {
             $name = strtolower($this->name);
@@ -2076,7 +2076,7 @@ class Type
     }
 
     // TODO: Use a template-based abstraction so that this boilerplate can be removed
-    private function keyTypeOfTraversable() : ?\Phan\Language\UnionType
+    private function keyTypeOfTraversable() : ?UnionType
     {
         $template_type_list = $this->template_parameter_type_list;
         if (count($template_type_list) === 2) {
@@ -2085,7 +2085,7 @@ class Type
         return null;
     }
 
-    private function valueTypeOfTraversable() : ?\Phan\Language\UnionType
+    private function valueTypeOfTraversable() : ?UnionType
     {
         $template_type_list = $this->template_parameter_type_list;
         $count = count($template_type_list);
@@ -2096,7 +2096,7 @@ class Type
     }
 
 
-    private function keyTypeOfGenerator() : ?\Phan\Language\UnionType
+    private function keyTypeOfGenerator() : ?UnionType
     {
         $template_type_list = $this->template_parameter_type_list;
         if (count($template_type_list) >= 2 && count($template_type_list) <= 4) {
@@ -2105,7 +2105,7 @@ class Type
         return null;
     }
 
-    private function valueTypeOfGenerator() : ?\Phan\Language\UnionType
+    private function valueTypeOfGenerator() : ?UnionType
     {
         $template_type_list = $this->template_parameter_type_list;
         if (count($template_type_list) >= 2 && count($template_type_list) <= 4) {
@@ -2208,7 +2208,7 @@ class Type
         if ($recursion_depth >= 20) {
             throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
         }
-        $union_type = $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) : \Phan\Language\UnionType {
+        $union_type = $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) : UnionType {
             $union_type = $this->asUnionType();
 
             $class_fqsen = $this->asFQSEN();
@@ -2290,7 +2290,7 @@ class Type
         if ($recursion_depth >= 20) {
             throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
         }
-        $union_type = $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) : \Phan\Language\UnionType {
+        $union_type = $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) : UnionType {
             $union_type = $this->asUnionType();
 
             $class_fqsen = $this->asFQSEN();
@@ -2767,7 +2767,7 @@ class Type
      */
     private static function typeStringComponents(
         string $type_string
-    ) : \Phan\Library\Tuple5 {
+    ) : Tuple5 {
         // This doesn't depend on any configs; the result can be safely cached.
         static $cache = [];
         return $cache[$type_string] ?? ($cache[$type_string] = self::typeStringComponentsInner($type_string));
@@ -2785,7 +2785,7 @@ class Type
      */
     private static function typeStringComponentsInner(
         string $type_string
-    ) : \Phan\Library\Tuple5 {
+    ) : Tuple5 {
         // Check to see if we have template parameter types
         $template_parameter_type_name_list = [];
         $shape_components = null;
@@ -3237,7 +3237,7 @@ class Type
      * @return ?Closure(UnionType, Context):UnionType a closure to determine the union type(s) that are in the same position(s) as the template type.
      * This is overridden in subclasses.
      */
-    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type) : ?\Closure
+    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type) : ?Closure
     {
         if (!$this->template_parameter_type_list) {
             return null;
@@ -3276,7 +3276,7 @@ class Type
      * @param Context $context the context where the function interface is referenced (for emitting issues) @phan-unused-param
      * @return ?FunctionInterface
      */
-    public function asFunctionInterfaceOrNull(CodeBase $code_base, Context $context) : ?\Phan\Language\Element\FunctionInterface
+    public function asFunctionInterfaceOrNull(CodeBase $code_base, Context $context) : ?FunctionInterface
     {
         if (static::class !== self::class) {
             // Overridden in other subclasses

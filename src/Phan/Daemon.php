@@ -36,7 +36,7 @@ class Daemon
      *
      * @throws Exception if analysis fails unexpectedly
      */
-    public static function run(CodeBase $code_base, Closure $file_path_lister) : ?\Phan\Daemon\Request
+    public static function run(CodeBase $code_base, Closure $file_path_lister) : ?Request
     {
         if (Config::getValue('language_server_use_pcntl_fallback')) {
             self::runWithoutPcntl($code_base, $file_path_lister);

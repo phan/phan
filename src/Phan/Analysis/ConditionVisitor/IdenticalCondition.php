@@ -39,7 +39,7 @@ class IdenticalCondition implements BinaryCondition
         return $visitor->analyzeClassAssertion($object, $expr) ?? $visitor->getContext();
     }
 
-    public function analyzeCall(ConditionVisitorInterface $visitor, \ast\Node $call_node, $expr) : ?\Phan\Language\Context
+    public function analyzeCall(ConditionVisitorInterface $visitor, Node $call_node, $expr) : ?Context
     {
         if (!$expr instanceof Node) {
             return null;

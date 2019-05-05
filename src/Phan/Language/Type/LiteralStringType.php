@@ -309,7 +309,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
      *
      * @return ?FunctionInterface
      */
-    public function asFunctionInterfaceOrNull(CodeBase $code_base, Context $context) : ?\Phan\Language\Element\FunctionInterface
+    public function asFunctionInterfaceOrNull(CodeBase $code_base, Context $context) : ?FunctionInterface
     {
         // parse 'function_name' or 'class_name::method_name'
         // NOTE: In other subclasses of Type, calling this might recurse.

@@ -234,7 +234,7 @@ class Parameter extends Variable
      * @param Node|string|float|int $node
      * @return ?UnionType - Returns if we know the exact type of $node and can easily resolve it
      */
-    private static function maybeGetKnownDefaultValueForNode($node) : ?\Phan\Language\UnionType
+    private static function maybeGetKnownDefaultValueForNode($node) : ?UnionType
     {
         if (!($node instanceof Node)) {
             return Type::nonLiteralFromObject($node)->asUnionType();

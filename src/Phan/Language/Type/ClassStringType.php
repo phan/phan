@@ -67,7 +67,7 @@ final class ClassStringType extends StringType
      * @return ?Closure(UnionType):UnionType a closure to determine the union type(s) that are in the same position(s) as the template type.
      * This is overridden in subclasses.
      */
-    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type) : ?\Closure
+    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type) : ?Closure
     {
         $template_union_type = $this->template_parameter_type_list[0] ?? null;
         if (!$template_union_type) {

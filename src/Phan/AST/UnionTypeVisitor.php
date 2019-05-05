@@ -485,7 +485,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @return ?Type
      * @throws IssueException if the parent type could not be resolved
      */
-    public static function findParentType(Context $context, CodeBase $code_base) : ?\Phan\Language\Type
+    public static function findParentType(Context $context, CodeBase $code_base) : ?Type
     {
         if (!$context->isInClassScope()) {
             throw new IssueException(
@@ -637,7 +637,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @param int|float|string|Node $node
      * @return ?UnionType
      */
-    public static function unionTypeFromLiteralOrConstant(CodeBase $code_base, Context $context, $node) : ?\Phan\Language\UnionType
+    public static function unionTypeFromLiteralOrConstant(CodeBase $code_base, Context $context, $node) : ?UnionType
     {
         if ($node instanceof Node) {
             // TODO: Could check for arrays of constants or literals, and convert those to the generic array types
@@ -662,7 +662,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * This preserves `self` and `static`
      * @param Node $node
      */
-    public function fromTypeInSignature(\ast\Node $node) : UnionType
+    public function fromTypeInSignature(Node $node) : UnionType
     {
         $is_nullable = $node->kind === ast\AST_NULLABLE_TYPE;
         if ($is_nullable) {
@@ -1427,7 +1427,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         return false;
     }
 
-    private function resolveArrayShapeElementTypes(Node $node, UnionType $union_type) : ?\Phan\Language\UnionType
+    private function resolveArrayShapeElementTypes(Node $node, UnionType $union_type) : ?UnionType
     {
         $dim_node = $node->children['dim'];
         $dim_value = $dim_node instanceof Node ? (new ContextNode($this->code_base, $this->context, $dim_node))->getEquivalentPHPScalarValue() : $dim_node;
@@ -2821,7 +2821,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @return ?FullyQualifiedClassName
      * @throws FQSENException
      */
-    private function lookupClassOfCallableByName(string $class_name) : ?\Phan\Language\FQSEN\FullyQualifiedClassName
+    private function lookupClassOfCallableByName(string $class_name) : ?FullyQualifiedClassName
     {
         switch (\strtolower($class_name)) {
             case 'self':
@@ -3086,7 +3086,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @return ?UnionType (Returns null when mixed)
      * TODO: Add an equivalent for Traversable and subclasses, once we have template support for Traversable<Key,T>
      */
-    public static function unionTypeOfArrayKeyForNode(CodeBase $code_base, Context $context, $node) : ?\Phan\Language\UnionType
+    public static function unionTypeOfArrayKeyForNode(CodeBase $code_base, Context $context, $node) : ?UnionType
     {
         $arg_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $node);
         return self::arrayKeyUnionTypeOfUnionType($arg_type);
@@ -3097,7 +3097,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * TODO: Add an equivalent for Traversable and subclasses, once we have template support for Traversable<Key,T>
      * TODO: Move into UnionType?
      */
-    public static function arrayKeyUnionTypeOfUnionType(UnionType $union_type) : ?\Phan\Language\UnionType
+    public static function arrayKeyUnionTypeOfUnionType(UnionType $union_type) : ?UnionType
     {
         if ($union_type->isEmpty()) {
             return null;

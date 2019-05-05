@@ -44,7 +44,7 @@ class PhanSelfCheckPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
         /**
          * @return Closure(CodeBase, Context, FunctionInterface, array<int,mixed>):void
          */
-        $make_array_issue_callback = static function (int $fmt_index, int $arg_index) : \Closure {
+        $make_array_issue_callback = static function (int $fmt_index, int $arg_index) : Closure {
             /**
              * @param array<int,Node|string|int|float> $args the nodes for the arguments to the invocation
              * @return void
@@ -81,7 +81,7 @@ class PhanSelfCheckPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
          * @param int $arg_index the index of an array parameter expecting sequential arguments. This is >= $type_index.
          * @return Closure(CodeBase, Context, FunctionInterface, array<int,mixed>):void
          */
-        $make_type_and_parameters_callback = static function (int $type_index, int $arg_index) : \Closure {
+        $make_type_and_parameters_callback = static function (int $type_index, int $arg_index) : Closure {
             /**
              * @param array<int,Node|string|int|float> $args the nodes for the arguments to the invocation
              * @return void
@@ -122,7 +122,7 @@ class PhanSelfCheckPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
          * @param int $arg_index the index of an array parameter expecting variable arguments. This is >= $type_index.
          * @return Closure(CodeBase, Context, FunctionInterface, array<int,mixed>):void
          */
-        $make_type_and_varargs_callback = static function (int $type_index, int $arg_index) : \Closure {
+        $make_type_and_varargs_callback = static function (int $type_index, int $arg_index) : Closure {
             /**
              * @param array<int,Node|string|int|float> $args the nodes for the arguments to the invocation
              * @return void
@@ -195,7 +195,7 @@ class PhanSelfCheckPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
         return $results;
     }
 
-    private static function getIssueOrWarn(CodeBase $code_base, Context $context, FunctionInterface $function, string $issue_type) : ?\Phan\Issue
+    private static function getIssueOrWarn(CodeBase $code_base, Context $context, FunctionInterface $function, string $issue_type) : ?Issue
     {
         try {
             return Issue::fromType($issue_type);

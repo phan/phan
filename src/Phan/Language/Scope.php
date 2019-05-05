@@ -115,7 +115,7 @@ abstract class Scope
      * (e.g. a FullyQualifiedFunctionName, FullyQualifiedClassName, etc.)
      * @suppress PhanPossiblyNullTypeReturn, PhanPartialTypeMismatchReturn callers should call hasFQSEN
      */
-    public function getFQSEN() : \Phan\Language\FQSEN
+    public function getFQSEN() : FQSEN
     {
         return $this->fqsen;
     }
@@ -176,7 +176,7 @@ abstract class Scope
      * @return ?FullyQualifiedClassName
      * Crawl the scope hierarchy to get a class FQSEN.
      */
-    public function getClassFQSENOrNull() : ?\Phan\Language\FQSEN\FullyQualifiedClassName
+    public function getClassFQSENOrNull() : ?FullyQualifiedClassName
     {
         return $this->parent_scope->getClassFQSENOrNull();
     }
