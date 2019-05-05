@@ -4,7 +4,7 @@ Phan NEWS
 -----------------------
 
 Backwards Incompatible Changes:
-+ Require php-ast 1.0.1 or newer (or the absense of php-ast with `--allow-polyfill-parser`)
++ Require php-ast 1.0.1 or newer (or the absence of php-ast with `--allow-polyfill-parser`)
   Phan switched from using [AST version 50 to version 70](https://github.com/nikic/php-ast#ast-versioning).
 
 Plugins:
