@@ -116,7 +116,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         return $this->analyzeAssignmentTarget($var_node, true, null);
     }
 
-    private function markVariablesAsReference(Node $expr)
+    private function markVariablesAsReference(Node $expr) : void
     {
         while (\in_array($expr->kind, [ast\AST_DIM, ast\AST_PROP], true)) {
             $expr = $expr->children['expr'];
