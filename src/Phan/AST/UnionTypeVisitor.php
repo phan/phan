@@ -641,7 +641,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     {
         if ($node instanceof Node) {
             // TODO: Could check for arrays of constants or literals, and convert those to the generic array types
-            if ($node->kind === \ast\AST_CONST || $node->kind === \ast\AST_CLASS_CONST) {
+            if (\in_array($node->kind, [\ast\AST_CONST, \ast\AST_CLASS_CONST, \ast\AST_CLASS_NAME], true)) {
                 try {
                     return UnionTypeVisitor::unionTypeFromNode($code_base, $context, $node, false);
                 } catch (IssueException $_) {

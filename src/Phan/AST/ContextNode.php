@@ -2023,9 +2023,7 @@ class ContextNode
                 return FullyQualifiedClassName::fromFullyQualifiedString($arg);
             }
             if ($arg instanceof Node
-                && $arg->kind === ast\AST_CLASS_CONST
-                && \strcasecmp($arg->children['const'], 'class') === 0
-            ) {
+                && $arg->kind === ast\AST_CLASS_NAME) {
                 $class_type = UnionTypeVisitor::unionTypeFromClassNode(
                     $this->code_base,
                     $this->context,
