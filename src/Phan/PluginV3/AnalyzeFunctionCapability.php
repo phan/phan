@@ -9,7 +9,7 @@ use Phan\Language\Element\Func;
  * Plugins should implement this to analyze (and modify) a function definition,
  * after parsing and before analyzing.
  */
-interface AnalyzeFunctionCapability
+interface AnalyzeFunctionCapability extends \Phan\PluginV2\AnalyzeFunctionCapability
 {
     /**
      * Analyze (and modify) a function definition, after parsing and before analyzing.

@@ -7,7 +7,7 @@ use Phan\CodeBase;
 /**
  * Plugins can implement this to be called after other forms of analysis are finished running
  */
-interface FinalizeProcessCapability
+interface FinalizeProcessCapability extends \Phan\PluginV2\FinalizeProcessCapability
 {
     /**
      * This is called after the other forms of analysis are finished running.
