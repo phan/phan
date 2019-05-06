@@ -487,6 +487,8 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         $name = $node->children['var']->children['name'] ?? null;
         if (\is_string($name)) {
             self::$variable_graph->markAsStaticVariable($name);
+            self::$variable_graph->recordVariableDefinition($name, $node, $this->scope, null);
+            $this->scope->recordDefinition($name, $node);
         }
         return $this->scope;
     }
