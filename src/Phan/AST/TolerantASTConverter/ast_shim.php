@@ -11,7 +11,7 @@ declare(strict_types=1);
  * With modifications to be a functional replacement for the data
  * structures and global constants of ext-ast. (for class ast\Node)
  *
- * This supports AST version 50
+ * This supports AST version 70
  *
  * However, this file does not define any global functions such as
  * ast\parse_code() and ast\parse_file(). (to avoid confusion)
