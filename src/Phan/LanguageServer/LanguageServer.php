@@ -275,8 +275,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
                  * @param int|null $pid
                  * @return void
                  */
-                static function ($signo, $status = null, $pid = null) use (&$got_signal) {
-                    $got_signal = true;
+                static function ($signo, $status = null, $pid = null) {
                     Request::childSignalHandler($signo, $status, $pid);
                 }
             );

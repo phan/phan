@@ -19,6 +19,8 @@ New features(Analysis):
   This change is limited to methods with no return type in the phpdoc or real signature.
 + Improve unused variable detection: Detect more unused variables for expressions such as `$x++` and `$x -= 2` (#2715)
 + Fix false positive `PhanUnusedVariable` after assignment by reference (#2730)
++ Warn about references, static variables, and uses of global variables that are probably unnecessary (never used/assigned to afterwards) (#2733)
+  New issue types: `PhanUnusedVariableReference`, `PhanUnusedVariableGlobal`,  `PhanUnusedVariableGlobal`
 
 Plugins:
 + Add more forms of checks such as `$x !== null ? $x : null` to `PhanPluginDuplicateConditionalNullCoalescing` (#2691)

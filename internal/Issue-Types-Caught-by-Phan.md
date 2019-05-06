@@ -567,6 +567,14 @@ Call to deprecated class {CLASS} defined at {FILE}:{LINE}
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0123_deprecated_class.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.2/tests/files/src/0123_deprecated_class.php#L12).
 
+## PhanDeprecatedClassConstant
+
+```
+Reference to deprecated property {PROPERTY} defined at {FILE}:{LINE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php72_files/expected/0007_deprecated_class_constant.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php72_files/src/0007_deprecated_class_constant.php#L6).
+
 ## PhanDeprecatedFunction
 
 If a class, method, function, property or constant is marked in its comment as `@deprecated`, any references to them will emit a deprecated error.
@@ -1090,6 +1098,30 @@ Unused definition of variable ${VARIABLE} as a caught exception
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/plugin_test/expected/054_shadowed_exception.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.2/tests/plugin_test/src/054_shadowed_exception.php#L6).
 
+## PhanUnusedVariableGlobal
+
+```
+Unreferenced definition of variable ${VARIABLE} as a global variable
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/121_unused_reference.php.expected#L5) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/121_unused_reference.php#L28).
+
+## PhanUnusedVariableReference
+
+```
+Unused definition of variable ${VARIABLE} as a reference
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/122_closure_reference.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/122_closure_reference.php#L21).
+
+## PhanUnusedVariableStatic
+
+```
+Unreferenced definition of variable ${VARIABLE} as a static variable
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/121_unused_reference.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/121_unused_reference.php#L10).
+
 ## PhanUnusedVariableValueOfForeachWithKey
 
 ```
@@ -1139,6 +1171,54 @@ The use statement for class/namespace {CLASS} in the global namespace has no eff
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0553_unreferenced_use.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.2/tests/files/src/0553_unreferenced_use.php#L5).
+
+## PhanVariableDefinitionCouldBeConstant
+
+```
+Uses of ${VARIABLE} could probably be replaced with a literal or constant
+```
+
+## PhanVariableDefinitionCouldBeConstantEmptyArray
+
+```
+Uses of ${VARIABLE} could probably be replaced with an empty array
+```
+
+## PhanVariableDefinitionCouldBeConstantFalse
+
+```
+Uses of ${VARIABLE} could probably be replaced with false or a named constant
+```
+
+## PhanVariableDefinitionCouldBeConstantFloat
+
+```
+Uses of ${VARIABLE} could probably be replaced with a literal or constant float
+```
+
+## PhanVariableDefinitionCouldBeConstantInt
+
+```
+Uses of ${VARIABLE} could probably be replaced with literal integer or a named constant
+```
+
+## PhanVariableDefinitionCouldBeConstantNull
+
+```
+Uses of ${VARIABLE} could probably be replaced with null or a named constant
+```
+
+## PhanVariableDefinitionCouldBeConstantString
+
+```
+Uses of ${VARIABLE} could probably be replaced with a literal or constant string
+```
+
+## PhanVariableDefinitionCouldBeConstantTrue
+
+```
+Uses of ${VARIABLE} could probably be replaced with true or a named constant
+```
 
 ## PhanWriteOnlyPHPDocProperty
 
