@@ -37,7 +37,7 @@ final class StringFunctionPlugin extends PluginV3 implements
         }
         if ($arg instanceof Node) {
             $kind = $arg->kind;
-            if ($kind === ast\AST_CONST || $kind === ast\AST_CLASS_CONST) {
+            if (\in_array($kind, [ast\AST_CONST, ast\AST_CLASS_CONST, ast\AST_CLASS_NAME], true)) {
                 return true;
             }
             if ($kind === ast\AST_BINARY_OP) {

@@ -114,6 +114,9 @@ class ASTReverter
             ast\AST_CLASS_CONST => static function (Node $node) : string {
                 return self::toShortString($node->children['class']) . '::' . $node->children['const'];
             },
+            ast\AST_CLASS_NAME => static function (Node $node) : string {
+                return self::toShortString($node->children['class']) . '::class';
+            },
             ast\AST_CONST => static function (Node $node) : string {
                 return self::toShortString($node->children['name']);
             },

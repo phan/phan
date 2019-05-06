@@ -103,6 +103,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     {
         $expr = $node->children['expr'];
         if ($expr instanceof Node) {
+            $this->markVariablesAsReference($expr);
             $this->scope = $this->analyze($this->scope, $expr);
         }
         $var_node = $node->children['var'];
@@ -112,7 +113,23 @@ final class VariableTrackerVisitor extends AnalysisVisitor
                 self::$variable_graph->recordVariableUsage($name, $var_node, $this->scope);
             }
         }
-        return $this->analyzeAssignmentTarget($var_node, false, null);
+        return $this->analyzeAssignmentTarget($var_node, true, null);
+    }
+
+    private function markVariablesAsReference(Node $expr) : void
+    {
+        while (\in_array($expr->kind, [ast\AST_DIM, ast\AST_PROP], true)) {
+            $expr = $expr->children['expr'];
+            if (!$expr instanceof Node) {
+                return;
+            }
+        }
+        if ($expr->kind === ast\AST_VAR) {
+            $name = $expr->children['name'];
+            if (is_string($name)) {
+                self::$variable_graph->markAsReference($name);
+            }
+        }
     }
 
     /**
