@@ -18,6 +18,7 @@ New features(Analysis):
   make that also affect the inherited copies of that method (`SubClass::method()`). (#2718)
   This change is limited to methods with no return type in the phpdoc or real signature.
 + Improve unused variable detection: Detect more unused variables for expressions such as `$x++` and `$x -= 2` (#2715)
++ Fix false positive `PhanUnusedVariable` after assignment by reference (#2730)
 
 Plugins:
 + Add more forms of checks such as `$x !== null ? $x : null` to `PhanPluginDuplicateConditionalNullCoalescing` (#2691)
