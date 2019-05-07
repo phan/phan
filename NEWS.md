@@ -21,6 +21,7 @@ New features(Analysis):
 + Fix false positive `PhanUnusedVariable` after assignment by reference (#2730)
 + Warn about references, static variables, and uses of global variables that are probably unnecessary (never used/assigned to afterwards) (#2733)
   New issue types: `PhanUnusedVariableReference`, `PhanUnusedVariableGlobal`,  `PhanUnusedVariableGlobal`
++ Warn about invalid AST nodes for defaults of properties and static variables. (#2732)
 
 Plugins:
 + Add more forms of checks such as `$x !== null ? $x : null` to `PhanPluginDuplicateConditionalNullCoalescing` (#2691)
