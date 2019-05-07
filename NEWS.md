@@ -22,6 +22,7 @@ New features(Analysis):
 + Warn about references, static variables, and uses of global variables that are probably unnecessary (never used/assigned to afterwards) (#2733)
   New issue types: `PhanUnusedVariableReference`, `PhanUnusedVariableGlobal`,  `PhanUnusedVariableGlobal`
 + Warn about invalid AST nodes for defaults of properties and static variables. (#2732)
++ Warn about union types on properties that might have an incomplete suffix. (e.g. `/** @var array<int, */`) (#2708)
 
 Plugins:
 + Add more forms of checks such as `$x !== null ? $x : null` to `PhanPluginDuplicateConditionalNullCoalescing` (#2691)
