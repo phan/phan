@@ -1,0 +1,1 @@
+%s:4 PhanUnextractableAnnotationSuffix Saw a token Phan may have failed to parse after '/** @var array<int, */': after array, saw '<'
