@@ -433,6 +433,7 @@ class ParseVisitor extends ScopeVisitor
                     $union_type = UnionType::empty();
                 }
             } else {
+                $this->checkNodeIsConstExpr($default_node);
                 $future_union_type = new FutureUnionType(
                     $this->code_base,
                     $context_for_property,
@@ -695,6 +696,30 @@ class ParseVisitor extends ScopeVisitor
         }
 
         return $this->context;
+    }
+
+    /**
+     * Visit a node with kind `\ast\AST_STATIC` (a static variable)
+     */
+    public function visitStatic(Node $node) : Context
+    {
+        $default = $node->children['default'];
+        if ($default instanceof Node) {
+            $this->checkNodeIsConstExpr($default);
+        }
+        return $this->context;
+    }
+
+    private function checkNodeIsConstExpr(Node $node)
+    {
+        try {
+            self::checkIsAllowedInConstExpr($node);
+        } catch (InvalidArgumentException $_) {
+            $this->emitIssue(
+                Issue::InvalidConstantExpression,
+                $node->lineno
+            );
+        }
     }
 
     /**
