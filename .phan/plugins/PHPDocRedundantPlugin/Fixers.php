@@ -14,6 +14,7 @@ use Microsoft\PhpParser\TokenKind;
 use Phan\AST\TolerantASTConverter\NodeUtils;
 use Phan\CodeBase;
 use Phan\IssueInstance;
+use Phan\Language\Element\Comment\Builder;
 use Phan\Library\FileCacheEntry;
 use Phan\Library\StringUtil;
 use Phan\Plugin\Internal\IssueFixingPlugin\FileEdit;
@@ -92,6 +93,45 @@ class Fixers
         }
         $file_edit = new FileEdit($first_byte_index, $last_byte_index, '');
         return new FileEditSet([$file_edit]);
+    }
+
+    /**
+     * Add a missing return type to the real signature
+     * @return ?FileEditSet
+     */
+    public static function fixRedundantReturnComment(
+        CodeBase $unused_code_base,
+        FileCacheEntry $contents,
+        IssueInstance $instance
+    ) : ?FileEditSet {
+        $lineno = $instance->getLine();
+        $file_lines = $contents->getLines();
+
+        $line = trim($file_lines[$lineno]);
+        fwrite(STDERR, "Going to delete $line\n");
+        // @phan-suppress-next-line PhanAccessClassConstantInternal
+        if (!preg_match(Builder::RETURN_COMMENT_REGEX, $line)) {
+            return null;
+        }
+        $first_deleted_line = $lineno;
+        $last_deleted_line = $lineno;
+        $is_blank_comment_line = function (int $i) use ($file_lines) : bool {
+            return trim($file_lines[$i] ?? '') === '*';
+        };
+        while ($is_blank_comment_line($first_deleted_line - 1)) {
+            $first_deleted_line--;
+        }
+        while ($is_blank_comment_line($last_deleted_line + 1)) {
+            $last_deleted_line++;
+        }
+        $start_offset = $contents->getLineOffset($first_deleted_line);
+        $end_offset = $contents->getLineOffset($last_deleted_line + 1);
+        fwrite(STDERR, "Creating an edit to delete from $start_offset to $end_offset $first_deleted_line\n");
+        if (!$start_offset || !$end_offset) {
+            return null;
+        }
+        // Return an edit to delete the `(at)return RedundantType` and the surrounding blank comment lines
+        return new FileEditSet([new FileEdit($start_offset, $end_offset, '')]);
     }
 
     /**

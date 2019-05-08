@@ -8,12 +8,12 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Library\FileCacheEntry;
 use Phan\Library\StringUtil;
+use Phan\Phan;
 use Phan\Plugin\Internal\IssueFixingPlugin\FileEditSet;
 use Phan\PluginV3;
 use Phan\PluginV3\AnalyzeFunctionCapability;
 use Phan\PluginV3\AnalyzeMethodCapability;
 use Phan\PluginV3\AutomaticFixCapability;
-// use Phan\PluginV3\AutomaticFixCapability;
 use PHPDocRedundantPlugin\Fixers;
 
 /**
@@ -34,6 +34,7 @@ class PHPDocRedundantPlugin extends PluginV3 implements
     const RedundantFunctionComment = 'PhanPluginRedundantFunctionComment';
     const RedundantClosureComment = 'PhanPluginRedundantClosureComment';
     const RedundantMethodComment = 'PhanPluginRedundantMethodComment';
+    const RedundantReturnComment = 'PhanPluginRedundantReturnComment';
 
     public function analyzeFunction(CodeBase $code_base, Func $function) : void
     {
@@ -119,11 +120,16 @@ class PHPDocRedundantPlugin extends PluginV3 implements
 
     private function analyzeFunctionLike(CodeBase $code_base, FunctionInterface $method) : void
     {
+        if (Phan::isExcludedAnalysisFile($method->getContext()->getFile())) {
+            // This has no side effects, so we can skip files that don't need to be analyzed
+            return;
+        }
         $comment = $method->getDocComment();
         if (!$comment) {
             return;
         }
         if (!self::isRedundantFunctionComment($method, $comment)) {
+            $this->checkIsRedundantReturn($code_base, $method, $comment);
             return;
         }
         $encoded_comment = StringUtil::encodeValue($comment);
@@ -154,6 +160,58 @@ class PHPDocRedundantPlugin extends PluginV3 implements
         }
     }
 
+    private function checkIsRedundantReturn(CodeBase $code_base, FunctionInterface $method, string $doc_comment) : void
+    {
+        if (strpos($doc_comment, '@return') === false) {
+            return;
+        }
+        $comment = $method->getComment();
+        if (!$comment) {
+            // unparseable?
+            return;
+        }
+        if ($method->getRealReturnType()->isEmpty()) {
+            return;
+        }
+        if (!$comment->hasReturnUnionType()) {
+            return;
+        }
+        $comment_return_type = $comment->getReturnType();
+        if (!$comment_return_type->asNormalizedTypes()->isEqualTo($method->getRealReturnType())) {
+            return;
+        }
+        $lines = explode("\n", $doc_comment);
+        for ($i = count($lines) - 1; $i >= 0; $i--) {
+            $line = $lines[$i];
+            $line = trim($line, " \r\n\t*/");
+            if ($line === '') {
+                continue;
+            }
+            if ($line[0] !== '@') {
+                return;
+            }
+            if (!preg_match('/^@(phan-)?return\s/', $line)) {
+                return;
+            }
+            // @phan-suppress-next-line PhanAccessClassConstantInternal
+            if (!preg_match(Builder::RETURN_COMMENT_REGEX, $line, $matches)) {
+                return;
+            }
+            if ($matches[0] !== $line) {
+                // There's a description after the (at)return annotation
+                return;
+            }
+            self::emitIssue(
+                $code_base,
+                $method->getContext()->withLineNumberStart($comment->getReturnLineno()),
+                self::RedundantReturnComment,
+                'Redundant @return {TYPE} on function {FUNCTION}: {COMMENT}',
+                [$comment_return_type, $method->getNameForIssue(), $line]
+            );
+            return;
+        }
+    }
+
     /**
      * @return array<string,Closure(CodeBase,FileCacheEntry,IssueInstance):(?FileEditSet)>
      */
@@ -165,6 +223,7 @@ class PHPDocRedundantPlugin extends PluginV3 implements
             self::RedundantFunctionComment => $function_like_fixer,
             self::RedundantMethodComment => $function_like_fixer,
             self::RedundantClosureComment => $function_like_fixer,
+            self::RedundantReturnComment => Closure::fromCallable([Fixers::class, 'fixRedundantReturnComment']),
         ];
     }
 }

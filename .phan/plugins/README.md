@@ -353,6 +353,7 @@ This supports `--automatic-fix`
 - **PhanPluginRedundantFunctionComment**: `Redundant doc comment on function {FUNCTION}(): {COMMENT}`
 - **PhanPluginRedundantMethodComment**: `Redundant doc comment on method {METHOD}(): {COMMENT}`
 - **PhanPluginRedundantClosureComment**: `Redundant doc comment on closure {FUNCTION}: {COMMENT}`
+- **PhanPluginRedundantReturnComment**: `Redundant @return {TYPE} on function {FUNCTION}: {COMMENT}`
 
 #### PreferNamespaceUsePlugin.php
 

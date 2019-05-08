@@ -8,6 +8,7 @@ use Phan\Config;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Context;
+use Phan\Language\Element\AddressableElementInterface;
 use Phan\Language\Element\Comment;
 use Phan\Language\Element\Flags;
 use Phan\Language\FQSEN;
@@ -781,13 +782,14 @@ final class Builder
         $lines_array = $entry->getLines();
 
         $line = $this->lines[$i];
+        $trimmed_line = \trim($line);
         for ($check_lineno = $lineno_search; $check_lineno >= $lineno_stop; $check_lineno--) {
             $cur_line = $lines_array[$check_lineno];
             if (\stripos($cur_line, $line) !== false) {
                 // Better heuristic: Lines in the middle of phpdoc are guaranteed to be complete, including a few newlines at the end.
                 $j = $i - ($lineno_search - $check_lineno);
                 if ($j > 0 && $j < $this->comment_lines_count - 1) {
-                    if (\trim($line) !== \trim($cur_line)) {
+                    if ($trimmed_line !== \trim($cur_line)) {
                         continue;
                     }
                 }
@@ -798,6 +800,45 @@ final class Builder
         return $declaration_lineno;
     }
 
+    /**
+     * Find the line number of line $i of the doc comment with lines $lines
+     *
+     * @param array<int,string> $lines
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public static function findLineNumberOfCommentForElement(AddressableElementInterface $element, array $lines, int $i) : int
+    {
+        $context = $element->getContext();
+        fwrite(STDERR, "Trying to load $context\n" . Config::projectPath($context->getFile()) . "\n");
+
+        $entry = FileCache::getOrReadEntry(Config::projectPath($context->getFile()));
+        $declaration_lineno = $context->getLineNumberStart();
+        if (!$entry) {
+            return $declaration_lineno;
+        }
+        $lines_array = $entry->getLines();
+        $count = \count($lines);
+        $lineno_search = $declaration_lineno - ($count - $i - 1);
+        $lineno_stop = \max(1, $lineno_search - 9);
+        $line = $lines[$i];
+        fwrite(STDERR, "looking for $line");
+        $trimmed_line = \trim($lines[$i]);
+        for ($check_lineno = $lineno_search; $check_lineno >= $lineno_stop; $check_lineno--) {
+            $cur_line = $lines_array[$check_lineno];
+            fwrite(STDERR, "Comparing against $cur_line\n");
+            if (\stripos($cur_line, $line) !== false) {
+                // Better heuristic: Lines in the middle of phpdoc are guaranteed to be complete, including a few newlines at the end.
+                $j = $i - ($lineno_search - $check_lineno);
+                if ($j > 0 && $j < $count - 1) {
+                    if ($trimmed_line !== \trim($cur_line)) {
+                        continue;
+                    }
+                }
+                return $check_lineno;
+            }
+        }
+        return $declaration_lineno;
+    }
 
     /**
      * @param array<int,int> $valid_types

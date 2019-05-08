@@ -27,7 +27,13 @@ cp -r src src_copy
 echo
 echo "Comparing the output:"
 
-diff $EXPECTED_PATH $ACTUAL_PATH
+if type colordiff >/dev/null; then
+    DIFF=colordiff
+else
+    DIFF=diff
+fi
+
+$DIFF $EXPECTED_PATH $ACTUAL_PATH
 EXIT_CODE=$?
 if [ "$EXIT_CODE" == 0 ]; then
 	echo "Files $EXPECTED_PATH and output $ACTUAL_PATH are identical"
@@ -42,7 +48,7 @@ for expected_src_file in expected_src/*.php; do
 	FOUND_EXPECTED=1
 	actual_src_file=${expected_src_file/expected_src/src_copy}
 	# diff returns a non-zero exit code if files differ or are missing
-	if ! diff -C 3 "$actual_src_file" "$expected_src_file"; then
+	if ! $DIFF -C 3 "$actual_src_file" "$expected_src_file"; then
 		echo "phan --automatic-fix did not generate the expected fix for $actual_src_file and $expected_src_file"
 		UNEXPECTED_FIX=1
 	fi

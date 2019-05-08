@@ -6,6 +6,7 @@ use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Library\FileCacheEntry;
+use Phan\Phan;
 use Phan\Plugin\Internal\IssueFixingPlugin\FileEditSet;
 use Phan\PluginV3;
 use Phan\PluginV3\AnalyzeFunctionCapability;
@@ -85,6 +86,10 @@ class PHPDocToRealTypesPlugin extends PluginV3 implements
 
     private function analyzeFunctionLike(CodeBase $code_base, FunctionInterface $method) : void
     {
+        if (Phan::isExcludedAnalysisFile($method->getContext()->getFile())) {
+            // This has no side effects, so we can skip files that don't need to be analyzed
+            return;
+        }
         if ($method->getRealReturnType()->isEmpty()) {
             $this->analyzeReturnTypeOfFunctionLike($code_base, $method);
         }
