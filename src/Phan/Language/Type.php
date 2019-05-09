@@ -982,6 +982,7 @@ class Type
     ) : Type {
         $template_count = count($template_parameter_type_list);
         if ($template_count <= 2) {  // iterable<T> or iterable<key, T>
+            // TODO: Warn about unparseable type or throw if more arguments are seen?
             $key_union_type = ($template_count === 2)
                 ? $template_parameter_type_list[0]
                 : UnionType::empty();

@@ -833,6 +833,7 @@ class ContextNode
 
     /**
      * Yields a list of FunctionInterface objects for the 'expr' of an AST_CALL.
+     * @return iterable<mixed, FunctionInterface>
      */
     public function getFunctionFromNode() : iterable
     {
