@@ -299,7 +299,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
         VariableGraph $graph,
         string $variable_name,
         array $issue_overrides_for_definition_ids
-    ) {
+    ) : void {
         $uses = $graph->def_uses[$variable_name];
         reset($uses);
         $definition_id = key($uses);

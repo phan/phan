@@ -713,7 +713,7 @@ class ParseVisitor extends ScopeVisitor
         return $this->context;
     }
 
-    private function checkNodeIsConstExpr(Node $node)
+    private function checkNodeIsConstExpr(Node $node) : void
     {
         try {
             self::checkIsAllowedInConstExpr($node);
