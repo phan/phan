@@ -77,7 +77,6 @@ interface ConditionVisitorInterface
      *
      * @param Node|string|int|float $object_node
      * @param Node|string|int|float|bool $expr_node
-     * @return ?Context
      */
     public function analyzeClassAssertion($object_node, $expr_node) : ?Context;
 

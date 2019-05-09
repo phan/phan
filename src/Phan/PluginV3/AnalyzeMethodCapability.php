@@ -19,8 +19,6 @@ interface AnalyzeMethodCapability extends \Phan\PluginV2\AnalyzeMethodCapability
      *
      * @param Method $method
      * A method being analyzed
-     *
-     * @return void
      */
     public function analyzeMethod(
         CodeBase $code_base,

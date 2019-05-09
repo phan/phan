@@ -21,8 +21,6 @@ class Prep
      *
      * @param \Closure $visit_node
      * A closure that is to be applied to every AST node
-     *
-     * @return void
      */
     public static function scanFileList(
         array $file_list,
@@ -50,8 +48,6 @@ class Prep
      *
      * @param \Closure $visit_node
      * A closure that is to be applied to every AST node
-     *
-     * @return void
      */
     public static function scanNodeInFile(
         Node $node,

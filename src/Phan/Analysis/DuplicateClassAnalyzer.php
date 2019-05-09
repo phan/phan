@@ -13,8 +13,6 @@ class DuplicateClassAnalyzer
 {
     /**
      * Check to see if the given Clazz is a duplicate
-     *
-     * @return void
      */
     public static function analyzeDuplicateClass(
         CodeBase $code_base,

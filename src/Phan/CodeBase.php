@@ -307,8 +307,6 @@ class CodeBase
      * Record that changes to file contents should be expected from now onwards, e.g. this is running as a language server or in daemon mode.
      *
      * E.g. this would disable caching ASTs of the polyfill/fallback to disk.
-     *
-     * @return void
      */
     public function setExpectChangesToFileContents() : void
     {
@@ -319,8 +317,6 @@ class CodeBase
      * Returns true if changes to file contents should be expected frequently.
      *
      * E.g. this is called to check if Phan should disable caching ASTs of the polyfill/fallback to disk.
-     *
-     * @return bool
      */
     public function getExpectChangesToFileContents() : bool
     {
@@ -330,7 +326,6 @@ class CodeBase
     /**
      * Sets the currently analyzed file, to improve Phan's crash reporting.
      * @param string|null $current_analyzed_file
-     * @return void
      */
     public function setCurrentAnalyzedFile(?string $current_analyzed_file) : void
     {
@@ -350,7 +345,6 @@ class CodeBase
     /**
      * Called when a file is unparsable.
      * Removes the classes and functions, etc. from an older version of the file, if one exists.
-     * @return void
      */
     public function recordUnparsableFile(string $current_parsed_file) : void
     {
@@ -363,8 +357,6 @@ class CodeBase
     /**
      * @param string[] $class_name_list
      * A list of class names to load type information for
-     *
-     * @return void
      */
     private function addClassesByNames(array $class_name_list) : void
     {
@@ -380,8 +372,6 @@ class CodeBase
     /**
      * @param string[] $const_name_list
      * A list of global constant names to load type information for
-     *
-     * @return void
      */
     private function addGlobalConstantsByNames(array $const_name_list) : void
     {
@@ -538,7 +528,6 @@ class CodeBase
 
     /**
      * @param array{clone:CodeBase,callbacks:?(Closure():void)[]} $restore_point
-     * @return void
      */
     public function restoreFromRestorePoint(array $restore_point) : void
     {
@@ -648,8 +637,6 @@ class CodeBase
     /**
      * @param Clazz $class
      * A class to add.
-     *
-     * @return void
      */
     public function addClass(Clazz $class) : void
     {
@@ -717,8 +704,6 @@ class CodeBase
     /**
      * @param ReflectionClass $class
      * A class to add, lazily.
-     *
-     * @return void
      */
     public function addReflectionClass(ReflectionClass $class) : void
     {
@@ -742,9 +727,6 @@ class CodeBase
      *
      * @param FullyQualifiedClassName $alias
      *  a name to alias $original to
-     *
-     *
-     * @return void
      */
     public function addClassAlias(
         FullyQualifiedClassName $original,
@@ -963,8 +945,6 @@ class CodeBase
     /**
      * @param Method $method
      * A method to add to the code base
-     *
-     * @return void
      */
     public function addMethod(Method $method) : void
     {
@@ -1116,8 +1096,6 @@ class CodeBase
     /**
      * @param Func $function
      * A function to add to the code base
-     *
-     * @return void
      */
     public function addFunction(Func $function) : void
     {
@@ -1177,8 +1155,6 @@ class CodeBase
     /**
      * @param ClassConstant $class_constant
      * A class constant to add to the code base
-     *
-     * @return void
      */
     public function addClassConstant(ClassConstant $class_constant) : void
     {
@@ -1229,8 +1205,6 @@ class CodeBase
     /**
      * @param GlobalConstant $global_constant
      * A global constant to add to the code base
-     *
-     * @return void
      */
     public function addGlobalConstant(GlobalConstant $global_constant) : void
     {
@@ -1280,8 +1254,6 @@ class CodeBase
     /**
      * @param Property $property
      * A property to add to the code base
-     *
-     * @return void
      */
     public function addProperty(Property $property) : void
     {
@@ -1484,7 +1456,6 @@ class CodeBase
 
     /**
      * @param string $file_path @phan-unused-param
-     * @return void
      */
     public function flushDependenciesForFile(string $file_path) : void
     {
@@ -1522,7 +1493,6 @@ class CodeBase
     /**
      * @param string $file path to a file
      * @param string $issue_type (e.g. 'PhanUnreferencedUseNormal')
-     * @return void
      */
     public function addFileLevelSuppression(string $file, string $issue_type) : void
     {

@@ -912,7 +912,6 @@ trait ConditionVisitorUtil
      *        A closure acting on a Variable instance (not really a variable) to modify its type
      * @param Context $context
      * @param array<int,mixed> $args
-     * @return Context
      */
     protected function modifyComplexExpression($node, Closure $type_modification_callback, Context $context, array $args) : Context
     {

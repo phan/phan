@@ -389,8 +389,6 @@ class Clazz extends AddressableElement
     /**
      * @param Type $parent_type
      * The type of the parent (extended) class of this class.
-     *
-     * @return void
      */
     public function setParentType(Type $parent_type, int $lineno = 0) : void
     {
@@ -634,7 +632,6 @@ class Clazz extends AddressableElement
      * interfaces for this class.
      *
      * @param FullyQualifiedClassName $fqsen
-     * @return void
      */
     public function addInterfaceClassFQSEN(FullyQualifiedClassName $fqsen, int $lineno = 0) : void
     {
@@ -669,8 +666,6 @@ class Clazz extends AddressableElement
      * parameter types when importing the property
      *
      * @param bool $from_trait
-     *
-     * @return void
      */
     public function addProperty(
         CodeBase $code_base,
@@ -1132,8 +1127,6 @@ class Clazz extends AddressableElement
 
     /**
      * Inherit a class constant from an ancestor class
-     *
-     * @return void
      */
     public function inheritConstant(
         CodeBase $code_base,
@@ -1206,8 +1199,6 @@ class Clazz extends AddressableElement
 
     /**
      * Add a class constant
-     *
-     * @return void
      */
     public function addConstant(
         CodeBase $code_base,
@@ -1391,8 +1382,6 @@ class Clazz extends AddressableElement
      * @param Option<Type>|None $type_option
      * A possibly defined type used to define template
      * parameter types when importing the method
-     *
-     * @return void
      */
     public function addMethod(
         CodeBase $code_base,
@@ -1774,7 +1763,6 @@ class Clazz extends AddressableElement
      * Set whether undeclared magic properties are forbidden
      * (properties accessed through __get or __set, with no (at)property annotation on parent class)
      * @param bool $forbid_undeclared_dynamic_properties - set to true to forbid.
-     * @return void
      */
     public function setForbidUndeclaredMagicProperties(
         bool $forbid_undeclared_dynamic_properties
@@ -1806,7 +1794,6 @@ class Clazz extends AddressableElement
      * Set whether undeclared magic methods are forbidden
      * (methods accessed through __call or __callStatic, with no (at)method annotation on class)
      * @param bool $forbid_undeclared_magic_methods - set to true to forbid.
-     * @return void
      */
     public function setForbidUndeclaredMagicMethods(
         bool $forbid_undeclared_magic_methods
@@ -1979,8 +1966,6 @@ class Clazz extends AddressableElement
      * @param CodeBase $code_base
      * The entire code base from which we'll find ancestor
      * details
-     *
-     * @return void
      */
     public function importConstantsFromAncestorClasses(CodeBase $code_base) : void
     {
@@ -2023,8 +2008,6 @@ class Clazz extends AddressableElement
      * @param CodeBase $code_base
      * The entire code base from which we'll find ancestor
      * details
-     *
-     * @return void
      */
     public function importAncestorClasses(CodeBase $code_base) : void
     {
@@ -2233,8 +2216,6 @@ class Clazz extends AddressableElement
      *
      * @param Clazz $class
      * A class to import from
-     *
-     * @return void
      */
     public function importConstantsFromAncestorClass(
         CodeBase $code_base,
@@ -2300,8 +2281,6 @@ class Clazz extends AddressableElement
      * A possibly defined ancestor type used to define template
      * parameter types when importing ancestor properties and
      * methods
-     *
-     * @return void
      */
     public function importAncestorClass(
         CodeBase $code_base,
@@ -2434,8 +2413,6 @@ class Clazz extends AddressableElement
      * A possibly defined ancestor type used to define template
      * parameter types when importing ancestor properties and
      * methods
-     *
-     * @return void
      */
     private function importTraitAdaptations(
         CodeBase $code_base,
@@ -2782,8 +2759,6 @@ class Clazz extends AddressableElement
     /**
      * This method must be called before analysis
      * begins.
-     *
-     * @return void
      */
     protected function hydrateOnce(CodeBase $code_base) : void
     {
@@ -2809,7 +2784,6 @@ class Clazz extends AddressableElement
 
     /**
      * @param ClassConstant[] $original_declared_class_constants
-     * @return void
      */
     private static function analyzeClassConstantOverrides(CodeBase $code_base, array $original_declared_class_constants) : void
     {
@@ -2891,8 +2865,6 @@ class Clazz extends AddressableElement
     /**
      * This method must be called before analysis
      * begins. It hydrates constants, but not properties/methods.
-     *
-     * @return void
      */
     protected function hydrateConstants(CodeBase $code_base) : void
     {
@@ -2967,7 +2939,6 @@ class Clazz extends AddressableElement
 
     /**
      * Used by daemon mode to restore an element to the state it had before parsing.
-     * @return Closure
      */
     public function createRestoreCallback() : Closure
     {
@@ -3168,7 +3139,6 @@ class Clazz extends AddressableElement
 
     /**
      * Sets the declaration id of the node containing this user-defined class
-     * @return void
      */
     public function setDeclId(int $id) : void
     {

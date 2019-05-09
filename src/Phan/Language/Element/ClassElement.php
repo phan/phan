@@ -113,7 +113,6 @@ abstract class ClassElement extends AddressableElement
      * the element was originally defined.
      *
      * @param FullyQualifiedClassElement $defining_fqsen
-     * @return void
      */
     public function setDefiningFQSEN(
         FullyQualifiedClassElement $defining_fqsen
@@ -199,8 +198,6 @@ abstract class ClassElement extends AddressableElement
      *
      * @param bool $is_override
      * True if this element overrides another element
-     *
-     * @return void
      */
     public function setIsOverride(bool $is_override) : void
     {

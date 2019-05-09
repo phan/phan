@@ -42,7 +42,6 @@ class ASTReverter
      * This does not work for all node kinds, and may be ambiguous.
      *
      * @param Node|string|int|float|bool|null $node
-     * @return string
      */
     public static function toShortString($node) : string
     {
@@ -102,8 +101,6 @@ class ASTReverter
 
     /**
      * Static initializer.
-     *
-     * @return void
      */
     public static function init() : void
     {

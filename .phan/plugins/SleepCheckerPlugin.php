@@ -65,7 +65,6 @@ class SleepCheckerVisitor extends PluginAwarePostAnalysisVisitor
      * and don't have (at)transient or (at)phan-transient
      *
      * @param array<string,true> $sleep_properties
-     * @return void
      */
     private function warnAboutTransientSleepProperties(array $sleep_properties) : void
     {
@@ -113,7 +112,6 @@ class SleepCheckerVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param Node|int|string|float|null $node
      * @param array<string,true> $sleep_properties
-     * @return void
      */
     private function analyzeStatementsOfSleep($node, array &$sleep_properties = []) : void
     {

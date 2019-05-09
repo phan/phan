@@ -65,7 +65,6 @@ final class ConversionTest extends BaseTest
      * This is used to sort by token count, so that the failures with the fewest token
      * (i.e. simplest ASTs) appear first.
      * @param string[] $files
-     * @return void
      */
     private static function sortByTokenCount(array &$files) : void
     {
@@ -107,7 +106,6 @@ final class ConversionTest extends BaseTest
 
     /**
      * @param ast\Node|int|string|float|null $node
-     * @return void
      */
     private static function normalizeOriginalAST($node) : void
     {

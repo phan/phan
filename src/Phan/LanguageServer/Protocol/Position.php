@@ -42,7 +42,6 @@ class Position
      *  - a positive number otherwise
      *
      * @param Position $position
-     * @return int
      */
     public function compare(Position $position): int
     {

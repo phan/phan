@@ -66,8 +66,6 @@ final class BufferingCollector implements IssueCollectorInterface
      * Clear the array of issues without outputting anything.
      *
      * Called after analysis ends.
-     *
-     * @return void
      */
     public function flush() : void
     {
@@ -79,7 +77,6 @@ final class BufferingCollector implements IssueCollectorInterface
      * Called from daemon mode.
      *
      * @param array<int,string> $files - the relative paths to those files
-     * @return void
      */
     public function removeIssuesForFiles(array $files) : void
     {

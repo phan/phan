@@ -19,8 +19,6 @@ interface AnalyzeFunctionCapability extends \Phan\PluginV2\AnalyzeFunctionCapabi
      *
      * @param Func $function
      * A function being analyzed
-     *
-     * @return void
      */
     public function analyzeFunction(
         CodeBase $code_base,

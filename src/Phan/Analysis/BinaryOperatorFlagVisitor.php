@@ -325,8 +325,6 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      *
      * @param int|string|FQSEN|UnionType|Type ...$parameters
      * Template parameters for the issue's error message
-     *
-     * @return void
      */
     protected function emitIssue(
         string $issue_type,
@@ -574,7 +572,6 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
     /**
      * @param Node $node with type AST_BINARY_OP
      * @param Closure(Type):bool $is_valid_type
-     * @return void
      */
     private function warnAboutInvalidUnionType(
         Node $node,

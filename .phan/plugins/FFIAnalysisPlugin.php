@@ -56,7 +56,6 @@ class FFIPreAnalysisVisitor extends PluginAwarePreAnalysisVisitor
     /**
      * @override
      * @param Node $node a node of kind ast\AST_ASSIGN
-     * @return void
      */
     public function visitAssign(Node $node) : void
     {

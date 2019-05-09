@@ -122,8 +122,6 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
 
     /**
      * Initialize the stub information to write by parsing the folder with Phan.
-     *
-     * @return void
      */
     public function initStubs() : void
     {

@@ -180,7 +180,6 @@ class PregRegexCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
     {
         /**
          * @param array<int,Node|string|int|float> $args the nodes for the arguments to the invocation
-         * @return void
          */
         $preg_pattern_callback = static function (
             CodeBase $code_base,
@@ -202,7 +201,6 @@ class PregRegexCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
 
         /**
          * @param array<int,Node|int|string|float> $args
-         * @return void
          */
         $preg_pattern_or_array_callback = static function (
             CodeBase $code_base,
@@ -221,7 +219,6 @@ class PregRegexCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
 
         /**
          * @param array<int,Node|int|string|float> $args
-         * @return void
          */
         $preg_pattern_and_replacement_callback = static function (
             CodeBase $code_base,
@@ -248,7 +245,6 @@ class PregRegexCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
 
         /**
          * @param array<int,Node|string|int|float> $args the nodes for the arguments to the invocation
-         * @return void
          */
         $preg_replace_callback_array_callback = static function (
             CodeBase $code_base,

@@ -17,8 +17,6 @@ interface ConstantInterface
     /**
      * Sets a value that can be used to resolve the union type of this constant later.
      * Used if it cannot be resolved immediately while parsing.
-     *
-     * @return void
      */
     public function setFutureUnionType(FutureUnionType $future_union_type) : void;
 
@@ -26,7 +24,6 @@ interface ConstantInterface
      * Sets the node with the AST representing the value of this constant.
      *
      * @param Node|string|float|int $node
-     * @return void
      */
     public function setNodeForValue($node) : void;
 

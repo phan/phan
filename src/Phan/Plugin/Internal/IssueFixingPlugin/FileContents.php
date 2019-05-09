@@ -150,7 +150,6 @@ class FileContents
      * This is more efficient than using \SplFileObject if multiple lines may need to be fetched.
      *
      * @param int $lineno - A line number, starting with line 1
-     * @return ?string
      */
     public function getLine(int $lineno) : ?string
     {

@@ -120,7 +120,6 @@ final class VariableGraph
 
     /**
      * @param array<int,mixed> $loop_uses_of_own_variable any array that has node ids for uses of $def_id as keys
-     * @return void
      */
     public function recordLoopSelfUsage(string $name, int $def_id, array $loop_uses_of_own_variable) : void
     {
@@ -164,7 +163,6 @@ final class VariableGraph
      * (Common false positive, since there's no way to avoid setting the value)
      *
      * @param Node|string|int|float|null $node
-     * @return void
      */
     public function markAsLoopValueNode($node) : void
     {
@@ -186,7 +184,6 @@ final class VariableGraph
      * (Common false positive, since there's no way to avoid setting the value)
      *
      * @param Node|int|string|float|null $node
-     * @return void
      */
     public function markAsCaughtException($node) : void
     {

@@ -287,8 +287,6 @@ class Context extends FileRef
 
     /**
      * Set the scope on the context
-     *
-     * @return void
      */
     public function setScope(Scope $scope) : void
     {
@@ -343,8 +341,6 @@ class Context extends FileRef
      * @param Variable $variable
      * A variable to add to the scope for the new
      * context
-     *
-     * @return void
      */
     public function addGlobalScopeVariable(Variable $variable) : void
     {
@@ -359,8 +355,6 @@ class Context extends FileRef
      *
      * @param Variable $variable
      * A variable to inject into this context
-     *
-     * @return void
      */
     public function addScopeVariable(
         Variable $variable
@@ -376,8 +370,6 @@ class Context extends FileRef
      *
      * @param string $variable_name
      * The name of a variable to remove from the context.
-     *
-     * @return void
      */
     public function unsetScopeVariable(
         string $variable_name
@@ -670,7 +662,6 @@ class Context extends FileRef
     /**
      * @param int $node_id \spl_object_id($node)
      * @param bool $should_catch_issue_exception the value passed to UnionTypeVisitor
-     * @return ?UnionType
      */
     public function getUnionTypeOfNodeIfCached(int $node_id, bool $should_catch_issue_exception) : ?UnionType
     {
@@ -688,7 +679,6 @@ class Context extends FileRef
      * @param int $node_id \spl_object_id($node)
      * @param UnionType $type the type to cache.
      * @param bool $should_catch_issue_exception the value passed to UnionTypeVisitor
-     * @return void
      */
     public function setCachedUnionTypeOfNode(int $node_id, UnionType $type, bool $should_catch_issue_exception) : void
     {
@@ -715,7 +705,6 @@ class Context extends FileRef
      * TODO: This may be unsafe? Clear the cache after a function goes out of scope.
      * @param int $node_id \spl_object_id($node)
      * @param array{0:UnionType,1:Clazz[]} $result
-     * @return void
      */
     public function setCachedClassListOfNode(int $node_id, array $result) : void
     {
@@ -748,8 +737,6 @@ class Context extends FileRef
      * The code base within which we're operating
      *
      * @internal
-     *
-     * @return void
      */
     public function warnAboutUnusedUseElements(CodeBase $code_base) : void
     {
@@ -795,7 +782,6 @@ class Context extends FileRef
     /**
      * Copy private properties of $other to this
      * @suppress PhanTypeSuspiciousNonTraversableForeach
-     * @return void
      */
     final protected function copyPropertiesFrom(Context $other) : void
     {

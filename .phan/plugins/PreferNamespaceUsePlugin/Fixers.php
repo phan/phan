@@ -22,7 +22,6 @@ class Fixers
 
     /**
      * Generate an edit to replace a fully qualified return type with a shorter equivalent representation.
-     * @return ?FileEditSet
      */
     public static function fixReturnType(
         CodeBase $unused_code_base,
@@ -42,7 +41,6 @@ class Fixers
 
     /**
      * Generate an edit to replace a fully qualified param type with a shorter equivalent representation.
-     * @return ?FileEditSet
      */
     public static function fixParamType(
         CodeBase $unused_code_base,

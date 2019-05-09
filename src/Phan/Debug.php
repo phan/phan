@@ -23,7 +23,6 @@ class Debug
      * see if a thing is called
      *
      * @suppress PhanUnreferencedPublicMethod
-     * @return void
      */
     public static function mark() : void
     {
@@ -51,7 +50,6 @@ class Debug
      * @suppress PhanUnreferencedPublicMethod
      * @param Node|string|null $node
      * @param int $indent
-     * @return void
      */
     public static function printNodeName($node, int $indent = 0) : void
     {

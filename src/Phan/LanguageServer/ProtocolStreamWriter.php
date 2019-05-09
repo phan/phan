@@ -54,8 +54,6 @@ class ProtocolStreamWriter implements ProtocolWriter
 
     /**
      * Writes pending messages to the output stream.
-     *
-     * @return void
      */
     private function flush() : void
     {

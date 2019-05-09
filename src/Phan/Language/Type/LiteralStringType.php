@@ -113,7 +113,6 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
             '/[^- .\/?:;"!#$%^&*_+=a-zA-Z0-9_\x80-\xff]/',
             /**
              * @param array{0:string} $match
-             * @return string
              */
             static function (array $match) : string {
                 $c = $match[0];
@@ -306,8 +305,6 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
      * Returns the function interface that would be used if this type's string were a callable, or null.
      * @param CodeBase $code_base the code base in which the function interface is found
      * @param Context $context the context where the function interface is referenced (for emitting issues)
-     *
-     * @return ?FunctionInterface
      */
     public function asFunctionInterfaceOrNull(CodeBase $code_base, Context $context) : ?FunctionInterface
     {

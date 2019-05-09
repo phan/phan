@@ -19,7 +19,6 @@ interface BeforeAnalyzeCapability extends \Phan\PluginV2\BeforeAnalyzeCapability
      *
      * @param CodeBase $code_base
      * The code base of the project.
-     * @return void
      */
     public function beforeAnalyze(
         CodeBase $code_base

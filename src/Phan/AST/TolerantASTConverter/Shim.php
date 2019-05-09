@@ -9,7 +9,6 @@ class Shim
 {
     /**
      * Loads the AST shim and any constants that are missing from older php-ast versions.
-     * @return void
      */
     public static function load() : void
     {

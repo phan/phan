@@ -19,7 +19,6 @@ interface Responder
     /**
      * This must be called exactly once
      * @param array<string,mixed> $data the response fields
-     * @return void
      */
     public function sendResponseAndClose(array $data) : void;
 }

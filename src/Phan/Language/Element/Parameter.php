@@ -88,8 +88,6 @@ class Parameter extends Variable
     /**
      * @param UnionType $type
      * The type of the default value for this parameter
-     *
-     * @return void
      */
     public function setDefaultValueType(UnionType $type) : void
     {
@@ -99,8 +97,6 @@ class Parameter extends Variable
     /**
      * @param FutureUnionType $type
      * The future type of the default value for this parameter
-     *
-     * @return void
      */
     public function setDefaultValueFutureType(FutureUnionType $type) : void
     {
@@ -138,8 +134,6 @@ class Parameter extends Variable
     /**
      * @param mixed $value
      * The value of the default for this parameter
-     *
-     * @return void
      */
     public function setDefaultValue($value) : void
     {
@@ -150,7 +144,6 @@ class Parameter extends Variable
      * If the value's default is null, or a constant evaluating to null,
      * then the parameter type should be converted to nullable
      * (E.g. `int $x = null` and `?int $x = null` are equivalent.
-     * @return void
      */
     public function handleDefaultValueOfNull() : void
     {
@@ -425,8 +418,6 @@ class Parameter extends Variable
      *
      * @param UnionType $union_type
      * The type to add to this parameter's union type
-     *
-     * @return void
      */
     public function addUnionType(UnionType $union_type) : void
     {
@@ -438,8 +429,6 @@ class Parameter extends Variable
      *
      * @param Type $type
      * The type to add to this parameter's union type
-     *
-     * @return void
      */
     public function addType(Type $type) : void
     {

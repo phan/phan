@@ -81,7 +81,6 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
      * @param CodeBase $code_base
      * @param Context $context
      * @param bool|int|string|float|Node|array|null $ast_node
-     * @return ?PrimitiveValue
      */
     protected function astNodeToPrimitive(CodeBase $code_base, Context $context, $ast_node) : ?PrimitiveValue
     {
@@ -146,7 +145,6 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
      *
      * @param PrimitiveValue $left the value on the left.
      * @param PrimitiveValue $right the value on the right.
-     * @return ?PrimitiveValue
      */
     protected static function concatenateToPrimitive(PrimitiveValue $left, PrimitiveValue $right) : ?PrimitiveValue
     {
@@ -231,7 +229,6 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
         /**
          * Analyzes a printf-like function with a format directive in the first position.
          * @param array<int,Node|string|int|float> $args the nodes for the arguments to the invocation
-         * @return void
          */
         $printf_callback = function (
             CodeBase $code_base,
@@ -254,7 +251,6 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
         /**
          * Analyzes a printf-like function with a format directive in the first position.
          * @param array<int,Node|string|int|float> $args the nodes for the arguments to the invocation
-         * @return void
          */
         $fprintf_callback = function (
             CodeBase $code_base,
@@ -277,7 +273,6 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
         /**
          * Analyzes a printf-like function with a format directive in the first position.
          * @param array<int,Node|int|string|float> $args
-         * @return void
          */
         $vprintf_callback = function (
             CodeBase $code_base,
@@ -301,7 +296,6 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
         /**
          * Analyzes a printf-like function with a format directive in the first position.
          * @param array<int,Node|string|int|float> $args the nodes for the arguments to the invocation
-         * @return void
          */
         $vfprintf_callback = function (
             CodeBase $code_base,
@@ -658,7 +652,6 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
      * @param string $fmt_str
      * @param ConversionSpec[][] $types_of_arg contains array of ConversionSpec for
      *                                         each position in the untranslated format string.
-     * @return void
      */
     protected static function validateTranslations(CodeBase $code_base, Context $context, string $fmt_str, array $types_of_arg) : void
     {

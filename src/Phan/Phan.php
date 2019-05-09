@@ -78,8 +78,6 @@ class Phan implements IgnoredFilesFilterInterface
     /**
      * Set the IssueCollectorInterface used to gather issues to be printed (or used) once analysis is finished
      * @param IssueCollectorInterface $issue_collector
-     *
-     * @return void
      */
     public static function setIssueCollector(
         IssueCollectorInterface $issue_collector
@@ -405,7 +403,6 @@ class Phan implements IgnoredFilesFilterInterface
 
             /**
              * This worker takes a file and analyzes it
-             * @return void
              */
             $analysis_worker = static function (int $i, string $file_path) use ($file_count, $code_base, $temporary_file_mapping, $request) : void {
                 CLI::progress('analyze', ($i + 1) / $file_count, $file_path);
@@ -590,8 +587,6 @@ class Phan implements IgnoredFilesFilterInterface
 
     /**
      * Emit all collected issues
-     *
-     * @return void
      */
     private static function display() : void
     {
@@ -635,7 +630,6 @@ class Phan implements IgnoredFilesFilterInterface
 
     /**
      * Set the printer to use for emitting issues.
-     * @return void
      */
     public static function setPrinter(
         IssuePrinterInterface $printer
@@ -655,7 +649,6 @@ class Phan implements IgnoredFilesFilterInterface
 
     /**
      * Logs slow php options to stdout
-     * @return void
      */
     private static function checkForSlowPHPOptions() : void
     {

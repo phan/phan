@@ -973,7 +973,6 @@ class ParseVisitor extends ScopeVisitor
 
     /**
      * Analyze a node for syntax backward compatibility, if that option is enabled
-     * @return void
      */
     private function analyzeBackwardCompatibility(Node $node) : void
     {
@@ -1246,8 +1245,6 @@ class ParseVisitor extends ScopeVisitor
      *
      * @param bool $is_fully_qualified
      * Is the provided $name already fully qualified?
-     *
-     * @return void
      */
     public static function addConstant(
         CodeBase $code_base,
@@ -1384,7 +1381,6 @@ class ParseVisitor extends ScopeVisitor
      * Supports 'MyClass' and MyClass::class
      *
      * @param Node $node - An AST_CALL node with name 'class_alias' to attempt to resolve
-     * @return void
      */
     private function recordClassAlias(Node $node) : void
     {

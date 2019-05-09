@@ -15,8 +15,6 @@ class AbstractMethodAnalyzer
 
     /**
      * Check to see if signatures match
-     *
-     * @return void
      */
     public static function analyzeAbstractMethodsAreImplemented(
         CodeBase $code_base,

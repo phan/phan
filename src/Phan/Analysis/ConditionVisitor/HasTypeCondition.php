@@ -57,7 +57,6 @@ class HasTypeCondition implements BinaryCondition
      *
      * @param Node|int|string|float $object
      * @param Node|int|string|float $unused_expr
-     * @return Context
      */
     public function analyzeClassCheck(ConditionVisitorInterface $visitor, $object, $unused_expr) : Context
     {

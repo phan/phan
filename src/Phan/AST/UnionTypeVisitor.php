@@ -635,7 +635,6 @@ class UnionTypeVisitor extends AnalysisVisitor
 
     /**
      * @param int|float|string|Node $node
-     * @return ?UnionType
      */
     public static function unionTypeFromLiteralOrConstant(CodeBase $code_base, Context $context, $node) : ?UnionType
     {
@@ -697,7 +696,6 @@ class UnionTypeVisitor extends AnalysisVisitor
 
     /**
      * @param int|float|string|Node $cond
-     * @return ?bool
      */
     public static function checkCondUnconditionalTruthiness($cond) : ?bool
     {
@@ -2224,7 +2222,6 @@ class UnionTypeVisitor extends AnalysisVisitor
     /**
      * @param Node $node with type AST_BINARY_OP
      * @param Closure(Type):bool $is_valid_type
-     * @return void
      */
     private function warnAboutInvalidUnaryOp(
         Node $node,

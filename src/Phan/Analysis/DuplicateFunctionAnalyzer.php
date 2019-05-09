@@ -15,8 +15,6 @@ class DuplicateFunctionAnalyzer
 
     /**
      * Check to see if the given FunctionInterface is a duplicate
-     *
-     * @return void
      */
     public static function analyzeDuplicateFunction(
         CodeBase $code_base,

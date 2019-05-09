@@ -303,7 +303,6 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
 
     /**
      * @override
-     * @return void
      */
     public function addReference(FileRef $_) : void
     {

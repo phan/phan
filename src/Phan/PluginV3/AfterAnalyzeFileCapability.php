@@ -23,7 +23,6 @@ interface AfterAnalyzeFileCapability extends \Phan\PluginV2\AfterAnalyzeFileCapa
      *
      * @param string $file_contents the unmodified file contents
      * @param Node $node the node parsed from $file_contents
-     * @return void
      */
     public function afterAnalyzeFile(
         CodeBase $code_base,

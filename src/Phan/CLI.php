@@ -1466,8 +1466,6 @@ EOB;
      *
      * @param ?(string|FQSEN|AddressableElement) $details
      * Details about what is being analyzed within the phase for $msg
-     *
-     * @return void
      */
     public static function progress(
         string $msg,
@@ -1535,7 +1533,6 @@ EOB;
 
     /**
      * Print an end to progress bars or debug output
-     * @return void
      */
     public static function endProgressBar() : void
     {

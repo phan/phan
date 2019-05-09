@@ -50,7 +50,6 @@ interface FunctionInterface extends AddressableElementInterface
     /**
      * Sets the scope within this function-like element's body,
      * for tracking variables within the function-like.
-     * @return void
      */
     public function setInternalScope(ClosedScope $internal_scope) : void;
 
@@ -68,8 +67,6 @@ interface FunctionInterface extends AddressableElementInterface
 
     /**
      * The number of optional parameters
-     *
-     * @return void
      */
     public function setNumberOfOptionalParameters(int $number) : void;
 
@@ -97,8 +94,6 @@ interface FunctionInterface extends AddressableElementInterface
 
     /**
      * The number of required parameters
-     *
-     * @return void
      */
     public function setNumberOfRequiredParameters(int $number) : void;
 
@@ -125,8 +120,6 @@ interface FunctionInterface extends AddressableElementInterface
      *
      * @param bool $is_return_type_undefined
      * True if it was undefined
-     *
-     * @return void
      */
     public function setIsReturnTypeUndefined(
         bool $is_return_type_undefined
@@ -142,8 +135,6 @@ interface FunctionInterface extends AddressableElementInterface
      * @param bool $has_return
      * Set to true to mark this method as having a
      * return value (Only through `return`)
-     *
-     * @return void
      */
     public function setHasReturn(bool $has_return) : void;
 
@@ -153,8 +144,6 @@ interface FunctionInterface extends AddressableElementInterface
      * yield statement (Only through `yield`)
      * This implies that it has a return value of \Generator.
      * (or a parent interface)
-     *
-     * @return void
      */
     public function setHasYield(bool $has_yield) : void;
 
@@ -189,8 +178,6 @@ interface FunctionInterface extends AddressableElementInterface
     /**
      * @param Parameter $parameter
      * A parameter to append to the parameter list
-     *
-     * @return void
      */
     public function appendParameter(Parameter $parameter) : void;
 
@@ -204,7 +191,6 @@ interface FunctionInterface extends AddressableElementInterface
     /**
      * Records the fact that $parameter_name is an output-only reference.
      * @param string $parameter_name
-     * @return void
      */
     public function recordOutputReferenceParamName(string $parameter_name) : void;
 
@@ -279,7 +265,6 @@ interface FunctionInterface extends AddressableElementInterface
     /**
      * @param array<string,UnionType> $parameter_map maps a subset of param names to the unmodified phpdoc parameter types.
      * Will differ from real parameter types (ideally narrower)
-     * @return void
      */
     public function setPHPDocParameterTypeMap(array $parameter_map) : void;
 
@@ -290,7 +275,6 @@ interface FunctionInterface extends AddressableElementInterface
 
     /**
      * @param ?UnionType $union_type the raw phpdoc union type
-     * @return void
      */
     public function setPHPDocReturnType(?UnionType $union_type) : void;
 
@@ -320,7 +304,6 @@ interface FunctionInterface extends AddressableElementInterface
 
     /**
      * Make calculation of the return type of this function/method use $closure
-     * @return void
      */
     public function setDependentReturnTypeClosure(Closure $closure) : void;
 
@@ -336,20 +319,17 @@ interface FunctionInterface extends AddressableElementInterface
      * @param CodeBase $code_base
      * @param Context $context
      * @param array<int,Node|int|string> $args
-     * @return void
      */
     public function analyzeFunctionCall(CodeBase $code_base, Context $context, array $args) : void;
 
     /**
      * Make additional analysis logic of this function/method use $closure
      * If callers need to invoke multiple closures, they should pass in a closure to invoke multiple closures or use addFunctionCallAnalyzer.
-     * @return void
      */
     public function setFunctionCallAnalyzer(Closure $closure) : void;
 
     /**
      * If callers need to invoke multiple closures, they should pass in a closure to invoke multiple closures.
-     * @return void
      */
     public function addFunctionCallAnalyzer(Closure $closure) : void;
 
@@ -357,8 +337,6 @@ interface FunctionInterface extends AddressableElementInterface
      * Initialize the inner scope of this method with variables created from the parameters.
      *
      * Deferred until the parse phase because getting the UnionType of parameter defaults requires having all class constants be known.
-     *
-     * @return void
      */
     public function ensureScopeInitialized(CodeBase $code_base) : void;
 
@@ -387,7 +365,6 @@ interface FunctionInterface extends AddressableElementInterface
      * Clone the parameter list, so that modifying the parameters on the first call won't modify the others.
      * TODO: If parameters were changed to be immutable, they can be shared without cloning with less worry.
      * @internal
-     * @return void
      */
     public function cloneParameterList() : void;
 
@@ -424,8 +401,6 @@ interface FunctionInterface extends AddressableElementInterface
     /**
      * Check this method's return types (phpdoc and real) to make sure they're valid,
      * and infer a return type from the combination of the signature and phpdoc return types.
-     *
-     * @return void
      */
     public function analyzeReturnTypes(CodeBase $code_base) : void;
 

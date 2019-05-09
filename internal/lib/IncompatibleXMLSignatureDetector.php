@@ -277,8 +277,6 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
 
     /**
      * Execute one of several possible commands to update Phan's stub files.
-     *
-     * @return void
      */
     public static function main() : void
     {
@@ -353,7 +351,6 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
 
     /**
      * Sort the signature map and save to to $filename.sorted
-     * @return void
      */
     public static function sortSignatureMapInPlace() : void
     {
@@ -981,7 +978,6 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
      * Returns a markdown/HTML description for $description_paragraphs
      *
      * @param array<int,SimpleXMLElement> $description_paragraphs
-     * @return ?string
      */
     private static function extractDescriptionFromParagraphElements(array $description_paragraphs) : ?string
     {

@@ -29,7 +29,6 @@ class RAII
 
     /**
      * Calls the finalizer, unless it has already been called.
-     * @return void
      */
     public function callFinalizerOnce() : void
     {

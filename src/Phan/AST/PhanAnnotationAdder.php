@@ -165,7 +165,6 @@ class PhanAnnotationAdder
 
     /**
      * @param Node|array|int|string|float|bool|null $node
-     * @return void
      */
     public static function applyFull($node) : void
     {
@@ -182,7 +181,6 @@ class PhanAnnotationAdder
 
     /**
      * @param Node|string|int|float|null $node
-     * @return void
      */
     private static function applyToScopeInner($node) : void
     {
@@ -204,7 +202,6 @@ class PhanAnnotationAdder
 
     /**
      * @param Node $node a node beginning a scope such as AST_FUNC, AST_STMT_LIST, AST_METHOD, etc. (Assumes these nodes don't have any annotations.
-     * @return void
      */
     public static function applyToScope(Node $node) : void
     {

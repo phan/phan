@@ -722,8 +722,6 @@ final class EmptyUnionType extends UnionType
 
     /**
      * Returns true if objectTypes would be non-empty.
-     *
-     * @return bool
      */
     public function hasObjectTypes() : bool
     {

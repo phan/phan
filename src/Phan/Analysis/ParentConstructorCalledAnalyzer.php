@@ -15,8 +15,6 @@ class ParentConstructorCalledAnalyzer
 
     /**
      * Checks if the constructor of the given Clazz calls the parent constructor.
-     *
-     * @return void
      */
     public static function analyzeParentConstructorCalled(
         CodeBase $code_base,

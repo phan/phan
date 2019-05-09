@@ -36,8 +36,6 @@ class ReferenceCountsAnalyzer
     /**
      * Take a look at all globally accessible elements and see if
      * we can find any dead code that is never referenced
-     *
-     * @return void
      */
     public static function analyzeReferenceCounts(CodeBase $code_base) : void
     {
@@ -151,8 +149,6 @@ class ReferenceCountsAnalyzer
      * @param string $issue_type
      * @param int $total_count
      * @param int $i
-     *
-     * @return void
      */
     private static function analyzeGlobalElementListReferenceCounts(
         CodeBase $code_base,
@@ -270,8 +266,6 @@ class ReferenceCountsAnalyzer
 
     /**
      * Check to see if the given AddressableElement is a duplicate
-     *
-     * @return void
      */
     private static function analyzeElementReferenceCounts(
         CodeBase $code_base,
@@ -462,7 +456,6 @@ class ReferenceCountsAnalyzer
      * Find Elements with FQSENs that are the same as $element's FQSEN,
      * apart from the alternate id.
      * (i.e. duplicate declarations)
-     * @return ?AddressableElement
      */
     public static function findAlternateReferencedElementDeclaration(
         CodeBase $code_base,

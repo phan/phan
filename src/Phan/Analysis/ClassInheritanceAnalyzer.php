@@ -17,8 +17,6 @@ class ClassInheritanceAnalyzer
     /**
      * Checks if the given Clazz(class/trait/interface) properly inherits
      * from its classes, traits, and/or interfaces
-     *
-     * @return void
      */
     public static function analyzeClassInheritance(
         CodeBase $code_base,

@@ -121,8 +121,6 @@ abstract class TypedElement implements TypedElementInterface
      * Set the type of this element
      *
      * TODO: A helper addUnionType(), accounting for variadic
-     *
-     * @return void
      */
     public function setUnionType(UnionType $type) : void
     {
@@ -188,8 +186,6 @@ abstract class TypedElement implements TypedElementInterface
 
     /**
      * @param int $bits combination of flags from Flags::* constants to enable
-     *
-     * @return void
      */
     public function enablePhanFlagBits(int $bits) : void
     {
@@ -239,8 +235,6 @@ abstract class TypedElement implements TypedElementInterface
     /**
      * @param bool $is_deprecated
      * Set this element as deprecated
-     *
-     * @return void
      */
     public function setIsDeprecated(bool $is_deprecated) : void
     {
@@ -256,7 +250,6 @@ abstract class TypedElement implements TypedElementInterface
      * If the values are 0, the suppressions haven't been used yet.
      *
      * @param array<string,int> $suppress_issue_set
-     * @return void
      */
     public function setSuppressIssueSet(array $suppress_issue_set) : void
     {
@@ -273,7 +266,6 @@ abstract class TypedElement implements TypedElementInterface
 
     /**
      * Increments the number of times $issue_name was suppressed.
-     * @return void
      */
     public function incrementSuppressIssueCount(string $issue_name) : void
     {
@@ -331,8 +323,6 @@ abstract class TypedElement implements TypedElementInterface
     /**
      * This method must be called before analysis
      * begins.
-     *
-     * @return void
      */
     public function hydrate(CodeBase $unused_code_base) : void
     {

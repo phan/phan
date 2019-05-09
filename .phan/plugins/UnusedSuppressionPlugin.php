@@ -67,8 +67,6 @@ class UnusedSuppressionPlugin extends PluginV3 implements
      * @param AddressableElement $element
      * Any element such as function, method, class
      * (which has an FQSEN)
-     *
-     * @return void
      */
     private static function analyzeAddressableElement(
         CodeBase $code_base,

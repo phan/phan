@@ -74,8 +74,6 @@ EOT;
 
     /**
      * Update markdown summaries of elements with the docs from php.net
-     *
-     * @return void
      */
     protected function updatePHPDocSummaries() : void
     {
@@ -264,7 +262,6 @@ EOT;
 
     /**
      * @param array<string,array<int|string,string>> &$phan_signatures
-     * @return void
      */
     protected function addMissingGlobalFunctionSignatures(array &$phan_signatures) : void
     {
@@ -287,7 +284,6 @@ EOT;
 
     /**
      * @param array<string,array<int|string,string>> &$phan_signatures
-     * @return void
      */
     protected function addMissingMethodSignatures(array &$phan_signatures) : void
     {
@@ -348,7 +344,6 @@ EOT;
 
     /**
      * @param string $msg @phan-unused-param
-     * @return void
      */
     protected static function debug(string $msg) : void
     {
@@ -364,7 +359,6 @@ EOT;
 
     /**
      * @param array<string,mixed> &$phan_signatures
-     * @return void
      */
     public static function sortSignatureMap(array &$phan_signatures) : void
     {
@@ -478,7 +472,6 @@ EOT;
 
     /**
      * @param array<string,array<int|string,string>> $phan_signatures
-     * @return void
      */
     public static function saveSignatureMap(string $new_signature_path, array $phan_signatures, bool $include_header = true) : void
     {
@@ -491,7 +484,6 @@ EOT;
 
     /**
      * @param array<string,array<int|string,string>> $signatures
-     * @return string
      */
     public static function serializeSignatures(array $signatures) : string
     {
@@ -505,7 +497,6 @@ EOT;
 
     /**
      * @param array<string,string> $phan_documentation
-     * @return void
      */
     public static function savePropertyDocumentationMap(string $new_documentation_path, array $phan_documentation, bool $include_header = true) : void
     {
@@ -518,7 +509,6 @@ EOT;
 
     /**
      * @param array<string,string> $phan_documentation
-     * @return void
      */
     public static function saveFunctionDocumentationMap(string $new_documentation_path, array $phan_documentation, bool $include_header = true) : void
     {
@@ -531,7 +521,6 @@ EOT;
 
     /**
      * @param array<string,string> $phan_documentation
-     * @return void
      */
     public static function saveConstantDocumentationMap(string $new_documentation_path, array $phan_documentation, bool $include_header = true) : void
     {
@@ -544,7 +533,6 @@ EOT;
 
     /**
      * @param array<string,string> $phan_documentation
-     * @return void
      */
     public static function saveClassDocumentationMap(string $new_documentation_path, array $phan_documentation, bool $include_header = true) : void
     {
@@ -557,7 +545,6 @@ EOT;
 
     /**
      * @param array<string,string> $signatures
-     * @return string
      */
     public static function serializeDocumentation(array $signatures) : string
     {

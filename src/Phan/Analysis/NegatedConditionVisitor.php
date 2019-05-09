@@ -82,7 +82,6 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      * Check if variables from within a generic condition are defined.
      * @param Node $node
      * A node to parse
-     * @return void
      */
     private function checkVariablesDefined(Node $node) : void
     {
@@ -446,7 +445,6 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
     /**
      * Compute the type of $union_type after asserting `!(expr instanceof $class_node)`
      * @param Node|mixed $class_node
-     * @return ?UnionType
      */
     private function computeNegatedInstanceofType(UnionType $union_type, $class_node) : ?UnionType
     {
@@ -716,7 +714,6 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
 
     /**
      * Analyze expressions such as $x['offset'] inside of a negated isset type check
-     * @return Context
      */
     public function checkComplexIsset(Node $var_node) : Context
     {

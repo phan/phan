@@ -89,7 +89,6 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
      * Check if variables from within a generic condition are defined.
      * @param Node $node
      * A node to parse
-     * @return void
      */
     private function checkVariablesDefined(Node $node) : void
     {
@@ -113,7 +112,6 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
      * Check if variables from within isset are defined.
      * @param Node $node
      * A node to parse
-     * @return void
      */
     private function checkVariablesDefinedInIsset(Node $node) : void
     {
@@ -526,7 +524,6 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                 $expr_node,
                 /**
                  * @param array<int,mixed> $args
-                 * @return void
                  */
                 function (CodeBase $code_base, Context $context, Variable $variable, array $args) use ($class_node) : void {
                     $this->setInstanceofVariableType($variable, $class_node);
@@ -625,7 +622,6 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
 
     /**
      * @param Variable $variable (Node argument in a call to is_object)
-     * @return void
      */
     private static function analyzeIsObjectAssertion(Variable $variable) : void
     {
@@ -666,7 +662,6 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
 
             /**
              * @param array<int,Node|mixed> $args
-             * @return void
              */
             return static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $args) use ($asserted_union_type, $asserted_union_type_set, $empty_type) : void {
                 $new_types = $empty_type;
@@ -688,7 +683,6 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             );
             /**
              * @param array<int,Node|mixed> $args
-             * @return void
              */
             return static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $args) use ($asserted_union_type) : void {
                 // Otherwise, overwrite the type for any simple
@@ -700,7 +694,6 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         $array_type = ArrayType::instance(false);
         /**
          * @param array<int,Node|mixed> $args
-         * @return void
          */
         $array_callback = static function (CodeBase $code_base, Context $context, Variable $variable, array $args) use ($array_type) : void {
             // Change the type to match the is_a relationship
@@ -722,14 +715,12 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
 
         /**
          * @param array<int,Node|mixed> $args
-         * @return void
          */
         $object_callback = static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $args) : void {
             self::analyzeIsObjectAssertion($variable);
         };
         /**
          * @param array<int,Node|mixed> $args
-         * @return void
          */
         $is_a_callback = static function (CodeBase $code_base, Context $context, Variable $variable, array $args) use ($object_callback) : void {
             $class_name = $args[1] ?? null;
@@ -757,7 +748,6 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
 
         /**
          * @param array<int,Node|mixed> $args
-         * @return void
          */
         $scalar_callback = static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $args) : void {
             // Change the type to match the is_a relationship
@@ -784,7 +774,6 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             $method = new ReflectionMethod(UnionType::class, $extract_types);
             /**
              * @param array<int,Node|mixed> $args
-             * @return void
              */
             return static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $args) use ($method, $default_if_empty) : void {
                 // Change the type to match the is_a relationship

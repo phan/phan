@@ -126,7 +126,6 @@ function with_disabled_phan_error_handler(Closure $closure)
  * @param string $errstr
  * @param string $errfile
  * @param int $errline
- * @return bool
  */
 function phan_error_handler(int $errno, string $errstr, string $errfile, int $errline) : bool
 {

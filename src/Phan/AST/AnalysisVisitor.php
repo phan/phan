@@ -57,8 +57,6 @@ abstract class AnalysisVisitor extends KindVisitorImplementation
      *
      * @param int|string|FQSEN|UnionType|Type ...$parameters
      * Template parameters for the issue's error message
-     *
-     * @return void
      */
     protected function emitIssue(
         string $issue_type,
@@ -86,8 +84,6 @@ abstract class AnalysisVisitor extends KindVisitorImplementation
      *
      * @param ?Suggestion $suggestion
      * A suggestion (may be null)
-     *
-     * @return void
      */
     protected function emitIssueWithSuggestion(
         string $issue_type,

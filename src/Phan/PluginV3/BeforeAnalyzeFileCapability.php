@@ -23,7 +23,6 @@ interface BeforeAnalyzeFileCapability extends \Phan\PluginV2\BeforeAnalyzeFileCa
      *
      * @param string $file_contents the unmodified file contents
      * @param Node $node the node parsed from $file_contents
-     * @return void
      */
     public function beforeAnalyzeFile(
         CodeBase $code_base,

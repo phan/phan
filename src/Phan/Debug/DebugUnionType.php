@@ -31,8 +31,6 @@ class DebugUnionType extends UnionType
 
     /**
      * Add the given types to this type
-     *
-     * @return UnionType
      */
     public function withUnionType(UnionType $union_type) : UnionType
     {

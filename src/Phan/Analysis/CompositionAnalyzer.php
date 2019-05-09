@@ -18,8 +18,6 @@ class CompositionAnalyzer
 
     /**
      * Check to see if the signatures of inherited properties match
-     *
-     * @return void
      */
     public static function analyzeComposition(
         CodeBase $code_base,

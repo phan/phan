@@ -35,8 +35,6 @@ final class FileCache
     /**
      * Adds an entry recording that $file_name has contents $file_contents,
      * overwriting any previous entries
-     *
-     * @return FileCacheEntry
      */
     public static function addEntry(string $file_name, string $contents) : FileCacheEntry
     {
@@ -101,7 +99,6 @@ final class FileCache
 
     /**
      * Clear the cache (E.g. after pausing, accepting a daemon mode request, then resuming)
-     * @return void
      */
     public static function clear() : void
     {

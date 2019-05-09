@@ -28,7 +28,6 @@ class Logger
     /**
      * Logs a request received from the client
      * @param array<string,string> $headers
-     * @return void
      */
     public static function logRequest(array $headers, string $buffer) : void
     {
@@ -41,7 +40,6 @@ class Logger
     /**
      * Logs a response this is about to send back to the client
      * @param array<string,mixed> $headers
-     * @return void
      */
     public static function logResponse(array $headers, string $buffer) : void
     {
@@ -57,8 +55,6 @@ class Logger
      *
      * This is used by code related to the language server.
      * Phan is slower when verbose logging is enabled.
-     *
-     * @return void
      */
     public static function logInfo(string $msg) : void
     {
@@ -72,7 +68,6 @@ class Logger
     /**
      * Logs an error related to the language server protocol
      * to the configured log file (defaults to STDERR)
-     * @return void
      */
     public static function logError(string $msg) : void
     {

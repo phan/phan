@@ -77,7 +77,6 @@ class Consistent implements Hasher
 
     /**
      * No-op reset
-     * @return void
      */
     public function reset() : void
     {

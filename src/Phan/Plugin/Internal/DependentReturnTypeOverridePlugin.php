@@ -59,7 +59,6 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             /**
              * @param Func $function @phan-unused-param
              * @param array<int,Node|int|float|string> $args
-             * @return UnionType
              */
             return static function (
                 CodeBase $code_base,

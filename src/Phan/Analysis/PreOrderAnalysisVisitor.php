@@ -341,7 +341,6 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     /**
      * If a Closure overrides the scope(class) it will be executed in (via doc comment)
      * then return a context with the new scope instead.
-     * @return void
      */
     private static function addThisVariableToInternalScope(
         CodeBase $code_base,
@@ -516,7 +515,6 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     /**
      * The return type of the given FunctionInterface to a Generator.
      * Emit an Issue if the documented return type is incompatible with that.
-     * @return void
      */
     private function setReturnTypeOfGenerator(FunctionInterface $func, Node $node) : void
     {

@@ -324,7 +324,6 @@ class AssignmentVisitor extends AnalysisVisitor
 
     /**
      * @param Node|string|int|float $value_node
-     * @return void
      */
     private function analyzeValueNodeOfShapedArray(
         UnionType $element_type,
@@ -505,7 +504,6 @@ class AssignmentVisitor extends AnalysisVisitor
     /**
      * @param int|false $expect_int_keys_lineno
      * @param int|false $expect_string_keys_lineno
-     * @return void
      */
     private function checkMismatchArrayDestructuringKey($expect_int_keys_lineno, $expect_string_keys_lineno) : void
     {
@@ -880,8 +878,6 @@ class AssignmentVisitor extends AnalysisVisitor
     /**
      * Modifies $this->context (if needed) to track the assignment to a property of $this within a function-like.
      * This handles conditional branches.
-     *
-     * @return void
      */
     private function handleThisPropertyAssignmentInLocalScope(Property $property) : void
     {
@@ -981,8 +977,6 @@ class AssignmentVisitor extends AnalysisVisitor
 
     /**
      * @param Property $property - The property which should have types added to it
-     *
-     * @return void
      */
     private function addTypesToProperty(Property $property, Node $node) : void
     {

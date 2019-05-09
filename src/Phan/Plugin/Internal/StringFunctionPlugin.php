@@ -71,7 +71,6 @@ final class StringFunctionPlugin extends PluginV3 implements
             $expected_arg_count = 1 + (int)\max($expected_const_pos, $expected_variable_pos);
             /**
              * @param array<int,Node|int|float|string> $args
-             * @return void
              */
             return static function (
                 CodeBase $code_base,

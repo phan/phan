@@ -437,7 +437,6 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
 
     /**
      * Asynchronously analyze the given URI.
-     * @return void
      */
     public function analyzeURIAsync(string $uri) : void
     {
@@ -968,7 +967,6 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      * but before the client is sending any other request or notification to the server.
      *
      * @suppress PhanUnreferencedPublicMethod
-     * @return void
      */
     public function initialized() : void
     {
@@ -979,8 +977,6 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      * The shutdown request is sent from the client to the server. It asks the server to shut down, but to not exit
      * (otherwise the response might not be delivered correctly to the client). There is a separate exit notification that
      * asks the server to exit.
-     *
-     * @return void
      */
     public function shutdown() : void
     {
@@ -990,8 +986,6 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
 
     /**
      * A notification to ask the server to exit its process.
-     *
-     * @return void
      */
     public function exit() : void
     {

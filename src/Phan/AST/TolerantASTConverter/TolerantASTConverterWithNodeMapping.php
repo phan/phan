@@ -133,8 +133,6 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
      * Records the closest node or token to the given offset.
      * Heuristics are used to ensure that this can map to an ast\Node.
      * TODO: Finish implementing
-     *
-     * @return void
      */
     private static function findNodeAtOffset(PhpParser\Node $parser_node, int $offset) : void
     {

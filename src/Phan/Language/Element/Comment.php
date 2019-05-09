@@ -281,7 +281,6 @@ class Comment
 
     /**
      * @param mixed $value
-     * @return void
      */
     private function applyOverride(string $key, $value) : void
     {
