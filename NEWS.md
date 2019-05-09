@@ -5,7 +5,8 @@ Phan NEWS
 
 New features(CLI, Configs):
 + Enable language server features by default. (#2358)
-  New CLI flags to disable features: `--language-server-disable-hover`, `--language-server-disable-go-to-definition`, `--language-server-disable-completion`
+  `--language-server-disable-go-to-definition`, `--language-server-disable-hover`, and `--language-server-disable-completion`
+  can be used to disable those features.
 
 Backwards Incompatible Changes:
 + Drop support for running Phan with PHP 7.0. (PHP 7.0 reached its end of life in December 2018)
