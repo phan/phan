@@ -333,6 +333,9 @@ class Issue
     const UnusedVariableValueOfForeachWithKey   = 'PhanUnusedVariableValueOfForeachWithKey';  // has higher false positive rates than UnusedVariable
     const UnusedVariableCaughtException         = 'PhanUnusedVariableCaughtException';  // has higher false positive rates than UnusedVariable
     const UnusedGotoLabel                       = 'PhanUnusedGotoLabel';
+    const UnusedVariableReference               = 'PhanUnusedVariableReference';
+    const UnusedVariableStatic                  = 'PhanUnusedVariableStatic';
+    const UnusedVariableGlobal                  = 'PhanUnusedVariableGlobal';
     const VariableDefinitionCouldBeConstant     = 'PhanVariableDefinitionCouldBeConstant';
     const VariableDefinitionCouldBeConstantEmptyArray = 'PhanVariableDefinitionCouldBeConstantEmptyArray';
     const VariableDefinitionCouldBeConstantString = 'PhanVariableDefinitionCouldBeConstantString';
@@ -2931,6 +2934,30 @@ class Issue
                 'Unused definition of variable ${VARIABLE} as a caught exception',
                 self::REMEDIATION_B,
                 6046
+            ),
+            new Issue(
+                self::UnusedVariableReference,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Unused definition of variable ${VARIABLE} as a reference',
+                self::REMEDIATION_B,
+                6069
+            ),
+            new Issue(
+                self::UnusedVariableStatic,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Unreferenced definition of variable ${VARIABLE} as a static variable',
+                self::REMEDIATION_B,
+                6070
+            ),
+            new Issue(
+                self::UnusedVariableGlobal,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Unreferenced definition of variable ${VARIABLE} as a global variable',
+                self::REMEDIATION_B,
+                6071
             ),
             new Issue(
                 self::UseNormalNamespacedNoEffect,

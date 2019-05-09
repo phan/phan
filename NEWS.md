@@ -5,7 +5,8 @@ Phan NEWS
 
 New features(CLI, Configs):
 + Enable language server features by default. (#2358)
-  New CLI flags to disable features: `--language-server-disable-hover`, `--language-server-disable-go-to-definition`, `--language-server-disable-completion`
+  `--language-server-disable-go-to-definition`, `--language-server-disable-hover`, and `--language-server-disable-completion`
+  can be used to disable those features.
 
 Backwards Incompatible Changes:
 + Drop support for running Phan with PHP 7.0. (PHP 7.0 reached its end of life in December 2018)
@@ -37,6 +38,8 @@ New features(CLI, Configs):
   Default is 2.
 + Add `--constant-variable-detection` - This checks for variables that can be replaced with literals or constants. (#2704)
   This is almost entirely false positives in most coding styles, but may catch some dead code.
++ Add `--language-server-disable-go-to-definition`, `--language-server-disable-hover`, and `--language-server-disable-completion`
+  (These are already disabled by default, but will be enabled by default in Phan 2.0)
 
 New features(Analysis):
 + Emit `PhanDeprecatedClassConstant` for code using a constant marked with `@deprecated`.
@@ -45,6 +48,10 @@ New features(Analysis):
   This change is limited to methods with no return type in the phpdoc or real signature.
 + Improve unused variable detection: Detect more unused variables for expressions such as `$x++` and `$x -= 2` (#2715)
 + Fix false positive `PhanUnusedVariable` after assignment by reference (#2730)
++ Warn about references, static variables, and uses of global variables that are probably unnecessary (never used/assigned to afterwards) (#2733)
+  New issue types: `PhanUnusedVariableReference`, `PhanUnusedVariableGlobal`,  `PhanUnusedVariableGlobal`
++ Warn about invalid AST nodes for defaults of properties and static variables. (#2732)
++ Warn about union types on properties that might have an incomplete suffix. (e.g. `/** @var array<int, */`) (#2708)
 
 Plugins:
 + Add more forms of checks such as `$x !== null ? $x : null` to `PhanPluginDuplicateConditionalNullCoalescing` (#2691)

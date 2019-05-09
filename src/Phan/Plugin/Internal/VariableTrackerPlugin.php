@@ -224,6 +224,10 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
             }
             $type_bitmask = $graph->variable_types[$variable_name] ?? 0;
             if ($type_bitmask & VariableGraph::IS_REFERENCE_OR_GLOBAL_OR_STATIC) {
+                // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
+                if (count($def_uses_for_variable) === 1 && count(reset($def_uses_for_variable)) === 0) {
+                    $this->checkSingleDefinitionReferenceOrGlobalOrStatic($graph, $variable_name, $issue_overrides_for_definition_ids);
+                }
                 // don't warn about static/global/references
                 continue;
             }
@@ -284,6 +288,51 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
                     $this->warnAboutCouldBeConstant($graph, $variable_name, $definition_id, $value_node);
                 }
             }
+        }
+    }
+
+    /**
+     * @param array<int,string> $issue_overrides_for_definition_ids maps definition ids to issue types
+     * @return void
+     */
+    private function checkSingleDefinitionReferenceOrGlobalOrStatic(
+        VariableGraph $graph,
+        string $variable_name,
+        array $issue_overrides_for_definition_ids
+    ) : void {
+        $uses = $graph->def_uses[$variable_name];
+        reset($uses);
+        $definition_id = key($uses);
+        $issue_type = $issue_overrides_for_definition_ids[$definition_id] ?? Issue::UnusedVariable;
+        if ($issue_type === Issue::UnusedPublicMethodParameter) {
+            return;
+        }
+        $type_bitmask = $graph->variable_types[$variable_name] ?? 0;
+        $line = $graph->def_lines[$variable_name][$definition_id] ?? 1;
+        if ($type_bitmask === VariableGraph::IS_REFERENCE) {
+            Issue::maybeEmitWithParameters(
+                $this->code_base,
+                $this->context,
+                Issue::UnusedVariableReference,
+                $line,
+                [$variable_name]
+            );
+        } elseif ($type_bitmask === VariableGraph::IS_STATIC) {
+            Issue::maybeEmitWithParameters(
+                $this->code_base,
+                $this->context,
+                Issue::UnusedVariableStatic,
+                $line,
+                [$variable_name]
+            );
+        } elseif ($type_bitmask === VariableGraph::IS_GLOBAL) {
+            Issue::maybeEmitWithParameters(
+                $this->code_base,
+                $this->context,
+                Issue::UnusedVariableGlobal,
+                $line,
+                [$variable_name]
+            );
         }
     }
 
