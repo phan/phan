@@ -56,7 +56,7 @@ class CLI
     /**
      * This should be updated to x.y.z-dev after every release, and x.y.z before a release.
      */
-    const PHAN_VERSION = '1.3.3';
+    const PHAN_VERSION = '1.3.4';
 
     /**
      * List of short flags passed to getopt
@@ -700,7 +700,7 @@ class CLI
                         break;
                     }
                     $ast_version = (new ReflectionExtension('ast'))->getVersion();
-                    if (\version_compare($ast_version, '1.0.0') <= 0) {
+                    if (\version_compare($ast_version, '0.1.5') < 0) {
                         Config::setValue('use_polyfill_parser', true);
                         break;
                     }
