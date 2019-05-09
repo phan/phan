@@ -135,7 +135,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     /**
      * Analyze X++
      * @override
-     * @return VariableTrackingScope
      */
     public function visitPostInc(Node $node) : VariableTrackingScope
     {
@@ -145,7 +144,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     /**
      * Analyze X--
      * @override
-     * @return VariableTrackingScope
      */
     public function visitPostDec(Node $node) : VariableTrackingScope
     {
@@ -155,7 +153,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     /**
      * Analyze ++X
      * @override
-     * @return VariableTrackingScope
      */
     public function visitPreInc(Node $node) : VariableTrackingScope
     {
@@ -165,7 +162,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     /**
      * Analyze --X
      * @override
-     * @return VariableTrackingScope
      */
     public function visitPreDec(Node $node) : VariableTrackingScope
     {
@@ -364,7 +360,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
 
     /**
      * @param Node|string|int|float|null $child_node
-     * @return VariableTrackingScope
      */
     private function analyzeWhenValidNode(VariableTrackingScope $scope, $child_node) : VariableTrackingScope
     {
@@ -378,7 +373,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * This is an abstraction for getting a new, updated context for a child node.
      *
      * @param Node $child_node - The node which will be analyzed to create the updated context.
-     * @return VariableTrackingScope
      */
     private function analyze(VariableTrackingScope $scope, Node $child_node) : VariableTrackingScope
     {
@@ -504,7 +498,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
 
     /**
      * Analyzes `foreach ($expr as $key => $value) { stmts }
-     * @return VariableTrackingScope
      */
     public function visitForeach(Node $node) : VariableTrackingScope
     {

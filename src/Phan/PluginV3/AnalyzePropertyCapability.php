@@ -20,8 +20,6 @@ interface AnalyzePropertyCapability extends \Phan\PluginV2\AnalyzePropertyCapabi
      *
      * @param Property $property
      * A property being analyzed
-     *
-     * @return void
      */
     public function analyzeProperty(
         CodeBase $code_base,

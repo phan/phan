@@ -19,8 +19,6 @@ interface AnalyzeClassCapability extends \Phan\PluginV2\AnalyzeClassCapability
      *
      * @param Clazz $class
      * A class being analyzed
-     *
-     * @return void
      */
     public function analyzeClass(
         CodeBase $code_base,

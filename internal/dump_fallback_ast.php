@@ -102,7 +102,6 @@ EOB;
 
 /**
  * Parses $expr and echoes the compact AST representation to stdout.
- * @return void
  */
 function dump_expr_as_ast(string $expr, bool $with_placeholders, bool $native) : void
 {

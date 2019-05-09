@@ -868,7 +868,6 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
      * Skip unary ops when determining the parent node.
      * E.g. for `@foo();`, the parent node is AST_STMT_LIST (which we infer means the result is unused)
      * For `$x = +foo();` the parent node is AST_ASSIGN.
-     * @return ?Node
      */
     private function findNonUnaryParentNodeNode() : ?Node
     {

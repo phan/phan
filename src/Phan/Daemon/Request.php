@@ -391,7 +391,6 @@ class Request
      * TODO: HTTP protocol.
      *
      * @param array<string,mixed> $response
-     * @return void
      */
     public function sendJSONResponse(array $response) : void
     {
@@ -586,7 +585,6 @@ class Request
 
     /**
      * @param int $pid the child PID of this process that is performing analysis
-     * @return void
      */
     public static function handleBecomingParentOfChildAnalysisProcess(int $pid) : void
     {
@@ -613,7 +611,6 @@ class Request
      * Reloads the file path list.
      * @param array<string,string> $file_mapping_contents maps relative paths to file contents
      * @param ?array<int,string> $file_names
-     * @return void
      */
     public static function reloadFilePathListForDaemon(CodeBase $code_base, Closure $file_path_lister, array $file_mapping_contents, array $file_names = null) : void
     {
@@ -670,7 +667,6 @@ class Request
      * (i.e. it was returned by $file_path_lister in the past)
      *
      * @param array<string,string> $temporary_file_mapping_contents
-     * @return void
      */
     private static function applyTemporaryFileMappingForParsePhase(CodeBase $code_base, array $temporary_file_mapping_contents) : void
     {

@@ -51,8 +51,6 @@ class MarkupDescription
 
     /**
      * Eagerly load all of the hover signatures into memory before potentially forking.
-     *
-     * @return void
      */
     public static function eagerlyLoadAllDescriptionMaps() : void
     {
@@ -124,8 +122,6 @@ class MarkupDescription
      * (or from FunctionDocumentationMap.php)
      *
      * @param array<string,true> $checked_class_fqsens
-     *
-     * @return ?string
      */
     public static function extractDescriptionFromDocCommentOrAncestor(
         AddressableElementInterface $element,
@@ -154,7 +150,6 @@ class MarkupDescription
 
     /**
      * @param array<string,true> $checked_class_fqsens
-     * @return ?string
      */
     private static function extractDescriptionFromDocCommentOfAncestorOfClassElement(
         ClassElement $element,
@@ -184,8 +179,6 @@ class MarkupDescription
     /**
      * Extracts a plaintext description of the element from the doc comment of an element.
      * (or from FunctionDocumentationMap.php)
-     *
-     * @return ?string
      */
     public static function extractDescriptionFromDocComment(
         AddressableElementInterface $element,

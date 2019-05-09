@@ -237,7 +237,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * @param Node $node
      * @param Context $context
      * @param int|float|string|null $child_node (probably not null)
-     * @return void
      */
     private function handleScalarStmt(Node $node, Context $context, $child_node) : void
     {
@@ -287,7 +286,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * (php-ast isn't able to parse inline doc comments, so string literals are used for rare edge cases where assert/if statements don't work)
      *
      * Modifies the type of the variable (in the scope of $context) to be identical to the annotated union type.
-     * @return void
      */
     private function analyzeSubstituteVarAssert(CodeBase $code_base, Context $context, string $text) : void
     {
@@ -1171,7 +1169,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     /**
      * @param array<int,Node> $catch_nodes
      * @param Context $context
-     * @return void
      */
     private function checkUnreachableCatch(array $catch_nodes, Context $context) : void
     {

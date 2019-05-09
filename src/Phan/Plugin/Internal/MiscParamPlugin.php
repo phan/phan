@@ -50,7 +50,6 @@ final class MiscParamPlugin extends PluginV3 implements
 
         /**
          * @param array<int,Node|int|float|string> $args
-         * @return void
          */
         $min_max_callback = static function (
             CodeBase $code_base,
@@ -84,7 +83,6 @@ final class MiscParamPlugin extends PluginV3 implements
         };
         /**
          * @param array<int,Node|int|float|string> $args
-         * @return void
          */
         $array_udiff_callback = static function (
             CodeBase $code_base,
@@ -256,7 +254,6 @@ final class MiscParamPlugin extends PluginV3 implements
         };
         /**
          * @param array<int,Node|int|float|string> $args
-         * @return void
          */
         $array_uintersect_uassoc_callback = static function (
             CodeBase $code_base,
@@ -362,7 +359,6 @@ final class MiscParamPlugin extends PluginV3 implements
 
         /**
          * @param array<int,Node|int|float|string> $args
-         * @return void
          */
         $array_add_callback = static function (
             CodeBase $code_base,
@@ -408,7 +404,6 @@ final class MiscParamPlugin extends PluginV3 implements
 
         /**
          * @param array<int,Node|int|float|string> $args
-         * @return void
          */
         $array_remove_single_callback = static function (
             CodeBase $code_base,

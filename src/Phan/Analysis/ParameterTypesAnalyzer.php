@@ -42,8 +42,6 @@ class ParameterTypesAnalyzer
      * Check function, closure, and method parameters to make sure they're valid
      *
      * This will also warn if method parameters are incompatible with the parameters of ancestor methods.
-     *
-     * @return void
      */
     public static function analyzeParameterTypes(
         CodeBase $code_base,
@@ -651,7 +649,6 @@ class ParameterTypesAnalyzer
      * @param $method - The overriding method
      * @param $o_method - The overridden method. E.g. if a subclass overrid a base class implementation, then $o_method would be from the base class.
      * @param $o_class the overridden class
-     * @return void
      */
     private static function analyzeOverrideRealSignature(
         CodeBase $code_base,
@@ -871,8 +868,6 @@ class ParameterTypesAnalyzer
     /**
      * Inherit any missing phpdoc types for (at)return and (at)param of $method from $o_method.
      * This is the default behavior, see https://www.phpdoc.org/docs/latest/guides/inheritance.html
-     *
-     * @return void
      */
     private static function inheritPHPDoc(
         CodeBase $code_base,
@@ -948,7 +943,6 @@ class ParameterTypesAnalyzer
      * @param string $phpdoc_issue_type the ParamSignaturePHPDocMismatch* (issue type if overriding internal method)
      * @param ?int $lineno
      * @param int|string ...$args
-     * @return void
      */
     private static function emitSignatureRealMismatchIssue(
         CodeBase $code_base,
@@ -1169,7 +1163,6 @@ class ParameterTypesAnalyzer
 
     /**
      * Warns if a method is overriding a final method
-     * @return void
      */
     private static function warnOverridingFinalMethod(CodeBase $code_base, Method $method, Clazz $class, Method $o_method) : void
     {

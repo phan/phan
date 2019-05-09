@@ -19,7 +19,6 @@ interface BeforeAnalyzePhaseCapability
      *
      * @param CodeBase $code_base
      * The code base of the project.
-     * @return void
      */
     public function beforeAnalyzePhase(
         CodeBase $code_base

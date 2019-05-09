@@ -60,8 +60,6 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
 
     /**
      * Setup our state before running each test
-     *
-     * @return void
      */
     public function setUp() : void
     {
@@ -72,7 +70,6 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
 
     /**
      * Reset any changes we made to our global state
-     * @return void
      */
     public function tearDown() : void
     {

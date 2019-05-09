@@ -20,8 +20,6 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
     /**
      * Override the default getter to fill in a future
      * union type if available.
-     *
-     * @return UnionType
      */
     public function getUnionType() : UnionType
     {

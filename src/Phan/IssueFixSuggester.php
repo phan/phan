@@ -128,7 +128,6 @@ class IssueFixSuggester
      *
      * @param ?Closure(FullyQualifiedClassName):bool $filter
      * @param int $class_suggest_type whether to include non-classes such as 'int', 'callable', etc.
-     * @return ?Suggestion
      */
     public static function suggestSimilarClass(
         CodeBase $code_base,
@@ -249,7 +248,6 @@ class IssueFixSuggester
 
     /**
      * @param ?\Closure(FullyQualifiedClassName):bool $filter
-     * @return ?Suggestion
      */
     public static function suggestSimilarClassForGenericFQSEN(CodeBase $code_base, Context $context, FQSEN $fqsen, ?Closure $filter = null, string $prefix = 'Did you mean') : ?Suggestion
     {

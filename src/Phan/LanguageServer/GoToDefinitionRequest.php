@@ -70,7 +70,6 @@ final class GoToDefinitionRequest extends NodeInfoRequest
 
     /**
      * @param CodeBase $code_base used for resolving type location in "Go To Type Definition"
-     * @return void
      */
     public function recordDefinitionElement(
         CodeBase $code_base,
@@ -112,7 +111,6 @@ final class GoToDefinitionRequest extends NodeInfoRequest
 
     /**
      * Precondition: $this->isHoverRequest()
-     * @return void
      */
     private function recordHoverTextForElementType(
         CodeBase $code_base,
@@ -225,7 +223,6 @@ final class GoToDefinitionRequest extends NodeInfoRequest
     /**
      * @param CodeBase $code_base used for resolving type location in "Go To Type Definition"
      * @param Context $context used for resolving 'self'/'static', etc.
-     * @return void
      */
     public function recordDefinitionOfVariableType(
         CodeBase $code_base,
@@ -329,7 +326,6 @@ final class GoToDefinitionRequest extends NodeInfoRequest
 
     /**
      * @param Location|array<string,mixed>|array<int,Location|array> $locations
-     * @return void
      */
     public function recordDefinitionLocationList($locations) : void
     {

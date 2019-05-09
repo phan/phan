@@ -74,7 +74,6 @@ class ParallelParentCollector implements IssueCollectorInterface
     /**
      * Collect issue
      * @param IssueInstance $issue
-     * @return void
      */
     public function collectIssue(IssueInstance $issue) : void
     {
@@ -84,7 +83,6 @@ class ParallelParentCollector implements IssueCollectorInterface
     /**
      * Read the entire queue and write all issues to the
      * base collector
-     * @return void
      */
     public function readQueuedIssues() : void
     {
@@ -130,7 +128,6 @@ class ParallelParentCollector implements IssueCollectorInterface
      * Called from daemon mode.
      *
      * @param string[] $files - the relative paths to those files (@phan-unused-param)
-     * @return void
      */
     public function removeIssuesForFiles(array $files) : void
     {

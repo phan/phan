@@ -150,7 +150,6 @@ class ASTSimplifier
      * Replaces the last node in a list with a list of 0 or more nodes
      * @param array<int,Node> $nodes
      * @param Node ...$new_statements
-     * @return void
      */
     private static function replaceLastNodeWithNodeList(array &$nodes, Node... $new_statements) : void
     {

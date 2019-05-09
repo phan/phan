@@ -23,7 +23,6 @@ interface AddressableElementInterface extends TypedElementInterface
     /**
      * Sets the fully qualified structural element name of this element.
      * @param FQSEN $fqsen
-     * @return void
      */
     public function setFQSEN(FQSEN $fqsen) : void;
 
@@ -56,7 +55,6 @@ interface AddressableElementInterface extends TypedElementInterface
      * is referenced.
      *
      * @param FileRef $file_ref
-     * @return void
      */
     public function addReference(FileRef $file_ref) : void;
 
@@ -104,8 +102,6 @@ interface AddressableElementInterface extends TypedElementInterface
      * Set this element as deprecated or not deprecated
      *
      * @param bool $is_deprecated
-     *
-     * @return void
      */
     public function setIsDeprecated(bool $is_deprecated) : void;
 
@@ -113,8 +109,6 @@ interface AddressableElementInterface extends TypedElementInterface
      * Set the set of issue names ($suppress_issue_list) to suppress
      *
      * @param array<string,int> $suppress_issue_set
-     *
-     * @return void
      */
     public function setSuppressIssueSet(array $suppress_issue_set) : void;
 
@@ -126,7 +120,6 @@ interface AddressableElementInterface extends TypedElementInterface
 
     /**
      * Increments the number of times $issue_name was suppressed.
-     * @return void
      */
     public function incrementSuppressIssueCount(string $issue_name) : void;
 
@@ -156,8 +149,6 @@ interface AddressableElementInterface extends TypedElementInterface
     /**
      * This method must be called before analysis
      * begins.
-     *
-     * @return void
      */
     public function hydrate(CodeBase $code_base) : void;
 }

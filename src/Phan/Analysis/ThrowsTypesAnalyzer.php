@@ -24,8 +24,6 @@ class ThrowsTypesAnalyzer
 
     /**
      * Check phpdoc (at)throws types of function-likes to make sure they're valid
-     *
-     * @return void
      */
     public static function analyzeThrowsTypes(
         CodeBase $code_base,

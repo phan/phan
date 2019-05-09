@@ -842,8 +842,6 @@ class Config
      * @param string $project_root_directory
      * Set the root directory of the project that we're
      * scanning
-     *
-     * @return void
      */
     public static function setProjectRootDirectory(
         string $project_root_directory
@@ -991,7 +989,6 @@ class Config
     /**
      * @param string $name
      * @param mixed $value
-     * @return void
      */
     public static function setValue(string $name, $value) : void
     {
@@ -1060,7 +1057,6 @@ class Config
 
     /**
      * @param string[] $value
-     * @return ?string
      */
     private static function generateDirectoryListRegex(array $value) : ?string
     {
@@ -1124,7 +1120,6 @@ class Config
     {
         /**
          * @param mixed $value
-         * @return ?string
          */
         $is_scalar = static function ($value) : ?string {
             if (is_null($value) || \is_scalar($value)) {
@@ -1134,7 +1129,6 @@ class Config
         };
         /**
          * @param mixed $value
-         * @return ?string
          */
         $is_bool = static function ($value) : ?string {
             if (is_bool($value)) {
@@ -1144,7 +1138,6 @@ class Config
         };
         /**
          * @param mixed $value
-         * @return ?string
          */
         $is_string_or_null = static function ($value) : ?string {
             if (is_null($value) || is_string($value)) {
@@ -1154,7 +1147,6 @@ class Config
         };
         /**
          * @param mixed $value
-         * @return ?string
          */
         $is_string = static function ($value) : ?string {
             if (is_string($value)) {
@@ -1164,7 +1156,6 @@ class Config
         };
         /**
          * @param mixed $value
-         * @return ?string
          */
         $is_array = static function ($value) : ?string {
             if (is_array($value)) {
@@ -1174,7 +1165,6 @@ class Config
         };
         /**
          * @param mixed $value
-         * @return ?string
          */
         $is_int_strict = static function ($value) : ?string {
             if (is_int($value)) {
@@ -1184,7 +1174,6 @@ class Config
         };
         /**
          * @param mixed $value
-         * @return ?string
          */
         $is_string_list = static function ($value) : ?string {
             if (!is_array($value)) {
@@ -1199,7 +1188,6 @@ class Config
         };
         /**
          * @param mixed $value
-         * @return ?string
          */
         $is_associative_string_array = static function ($value) : ?string {
             if (!is_array($value)) {
@@ -1328,7 +1316,6 @@ class Config
 
     /**
      * Prints errors to stderr if any config options are definitely invalid.
-     * @return void
      */
     public static function warnIfInvalid() : void
     {

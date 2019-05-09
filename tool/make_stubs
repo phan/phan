@@ -56,8 +56,6 @@ EOT;
     /**
      * The main function of the `make_stubs` script.
      * See `make_stubs --help` for usage.
-     *
-     * @return void
      */
     public static function main() : void
     {

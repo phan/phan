@@ -3837,7 +3837,6 @@ class Issue
 
     /**
      * @param array<int,Issue> $error_list
-     * @return void
      */
     private static function sanityCheckErrorList(array $error_list) : void
     {
@@ -4046,8 +4045,6 @@ class Issue
      * message
      *
      * @param ?Suggestion $suggestion (optional details on fixing this)
-     *
-     * @return void
      */
     public static function emitWithParameters(
         string $type,
@@ -4066,8 +4063,6 @@ class Issue
     /**
      * @param IssueInstance $issue_instance
      * An issue instance to emit
-     *
-     * @return void
      */
     public static function emitInstance(
         IssueInstance $issue_instance
@@ -4084,8 +4079,6 @@ class Issue
      *
      * @param IssueInstance $issue_instance
      * An issue instance to emit
-     *
-     * @return void
      */
     public static function maybeEmitInstance(
         CodeBase $code_base,
@@ -4127,8 +4120,6 @@ class Issue
      * @param string|int|float|bool|Type|UnionType|FQSEN|TypedElement|UnaddressableTypedElement ...$parameters
      * Template parameters for the issue's error message.
      * If these are objects, they should define __toString()
-     *
-     * @return void
      */
     public static function maybeEmit(
         CodeBase $code_base,
@@ -4164,8 +4155,6 @@ class Issue
      * @param ?Suggestion $suggestion (optional)
      *
      * Template parameters for the issue's error message
-     *
-     * @return void
      */
     public static function maybeEmitWithParameters(
         CodeBase $code_base,

@@ -117,7 +117,6 @@ class CompletionResolver
 
     /**
      * @param string|mixed $incomplete_prop_name
-     * @return void
      */
     public static function locatePropertyCompletion(
         CompletionRequest $request,

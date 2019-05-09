@@ -32,7 +32,6 @@ class IdenticalCondition implements BinaryCondition
      *
      * @param Node|int|string|float $object
      * @param Node|int|string|float $expr
-     * @return Context
      */
     public function analyzeClassCheck(ConditionVisitorInterface $visitor, $object, $expr) : Context
     {

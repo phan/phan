@@ -70,8 +70,6 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
      *
      * @param Node $node
      * A node to check types on
-     *
-     * @return Context
      */
     public function visit(Node $node) : Context
     {
@@ -87,7 +85,6 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
     /**
      * @param Node $node a node of kind AST_VAR
      * @param Closure(UnionType):UnionType $get_type
-     * @return Context
      */
     private function updateTargetVariableWithType(Node $node, Closure $get_type) : Context
     {
@@ -138,7 +135,6 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
     /**
      * @param Node $node
      * @param Closure(UnionType):UnionType $get_type
-     * @return Context
      */
     private function updateTargetWithType(Node $node, Closure $get_type) : Context
     {

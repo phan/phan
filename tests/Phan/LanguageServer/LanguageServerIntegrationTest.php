@@ -1625,7 +1625,6 @@ EOT;
 
     /**
      * @param resource $proc_out
-     * @return void
      */
     private function assertHasEmptyPublishDiagnosticsNotification($proc_out, string $requested_uri = null) : void
     {
@@ -1641,7 +1640,6 @@ EOT;
 
     /**
      * @param resource $proc_out
-     * @return void
      */
     private function assertHasNonEmptyPublishDiagnosticsNotification($proc_out, string $requested_uri = null) : void
     {
@@ -1665,7 +1663,6 @@ EOT;
 
     /**
      * @param array<string,mixed> $diagnostic
-     * @return void
      */
     private function assertSameDiagnostic(array $diagnostic, string $issue_type, int $expected_lineno, string $message) : void
     {
@@ -2019,7 +2016,6 @@ EOT;
     /**
      * @param resource $proc_in
      * @param array<string,mixed> $body
-     * @return void
      */
     private function writeEncodedBody($proc_in, array $body) : void
     {

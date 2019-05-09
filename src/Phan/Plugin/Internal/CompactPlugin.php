@@ -39,7 +39,6 @@ final class CompactPlugin extends PluginV3 implements
     {
         /**
          * @param array<int,Node|int|float|string> $args
-         * @return void
          */
         $compact_callback = static function (
             CodeBase $code_base,

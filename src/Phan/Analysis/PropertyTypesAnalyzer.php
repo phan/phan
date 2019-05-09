@@ -18,8 +18,6 @@ class PropertyTypesAnalyzer
 
     /**
      * Check to see if the given class's properties have issues.
-     *
-     * @return void
      */
     public static function analyzePropertyTypes(CodeBase $code_base, Clazz $clazz) : void
     {

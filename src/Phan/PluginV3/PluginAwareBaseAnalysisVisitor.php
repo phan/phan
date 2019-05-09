@@ -19,8 +19,6 @@ abstract class PluginAwareBaseAnalysisVisitor extends AnalysisVisitor
      * Don't override this unless you need to, analysis is more efficient if Phan knows it doesn't need to call a plugin on a node type.
      * @see self::isDefinedInSubclass()
      * @param Node $node @phan-unused-param (unused because the body is empty)
-     *
-     * @return void
      */
     public function visit(Node $node) : void
     {
@@ -53,7 +51,6 @@ abstract class PluginAwareBaseAnalysisVisitor extends AnalysisVisitor
      * set {Issue:REMEDIATION_A, Issue:REMEDIATION_B, ...
      * Issue::REMEDIATION_F} with F being the hardest.
      * @suppress PhanUnreferencedPublicMethod (this plugin type is deprecated)
-     * @return void
      */
     public function emit(
         string $issue_type,

@@ -463,7 +463,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     /**
      * Check if a given variable is undeclared.
      * @param Node $node Node with kind AST_VAR
-     * @return void
      */
     private function checkForUndeclaredVariable(Node $node) : void
     {
@@ -836,7 +835,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     /**
      * @param Node $node with type AST_BINARY_OP
      * @param Closure(Type):bool $is_valid_type
-     * @return void
      */
     private function warnAboutInvalidUnionType(
         Node $node,
@@ -1294,7 +1292,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     /**
      * Emits Issue::TypeMismatchReturnNullable or TypeMismatchReturn, unless suppressed
-     * @return void
      */
     private function emitTypeMismatchReturnIssue(UnionType $expression_type, FunctionInterface $method, UnionType $method_return_type, int $lineno) : void
     {
@@ -2250,7 +2247,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     /**
      * Check calling A::__construct (where A is not parent)
-     * @return void
      */
     private function checkNonAncestorConstructCall(
         Node $node,
@@ -2313,7 +2309,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     /**
      * TODO: change to a different issue type in a future phan release?
-     * @return void
      */
     private function emitConstructorWarning(Node $node, string $static_class, string $method_name) : void
     {
@@ -2328,7 +2323,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * gets the static method, or emits an issue.
      * @param Node $node
      * @param string $method_name - NOTE: The caller should convert constants/class constants/etc in $node->children['method'] to a string.
-     * @return ?Method
      */
     private function getStaticMethodOrEmitIssue(Node $node, string $method_name) : ?Method
     {
@@ -2939,8 +2933,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      *
      * @param Method $method
      * @param Node $node
-     *
-     * @return void
      */
     private function analyzeMethodVisibility(
         Method $method,
@@ -2988,8 +2980,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      *
      * @param FunctionInterface $method
      * @param Node $node
-     *
-     * @return void
      */
     private function analyzeCallToFunctionLike(
         FunctionInterface $method,
@@ -3147,8 +3137,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * @param Parameter $parameter the parameter types inferred from combination of real and union type
      *
      * @param ?Parameter $real_parameter the real parameter type from the type signature
-     *
-     * @return void
      */
     private static function analyzePassByReferenceArgument(
         CodeBase $code_base,
@@ -3556,8 +3544,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * @param int $parameter_offset
      * The offset of the parameter on the method's
      * signature.
-     *
-     * @return void
      */
     private function updateParameterTypeByArgument(
         FunctionInterface $method,
@@ -3675,8 +3661,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      *
      * @param string $issue_type
      * A message to emit if it's a no-op
-     *
-     * @return void
      */
     private function analyzeNoOp(Node $node, string $issue_type) : void
     {

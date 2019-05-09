@@ -238,8 +238,6 @@ trait FunctionTrait
 
     /**
      * The number of optional parameters
-     *
-     * @return void
      */
     public function setNumberOfOptionalParameters(int $number) : void
     {
@@ -295,8 +293,6 @@ trait FunctionTrait
     /**
      *
      * The number of required parameters
-     *
-     * @return void
      */
     public function setNumberOfRequiredParameters(int $number) : void
     {
@@ -319,8 +315,6 @@ trait FunctionTrait
      * True if this method had no return type defined when it
      * was defined (either in the signature itself or in the
      * docblock).
-     *
-     * @return void
      */
     public function setIsReturnTypeUndefined(
         bool $is_return_type_undefined
@@ -375,8 +369,6 @@ trait FunctionTrait
      * @param bool $has_return
      * Set to true to mark this method as having a
      * return value
-     *
-     * @return void
      */
     public function setHasReturn(bool $has_return) : void
     {
@@ -391,8 +383,6 @@ trait FunctionTrait
      * @param bool $has_yield
      * Set to true to mark this method as having a
      * yield value
-     *
-     * @return void
      */
     public function setHasYield(bool $has_yield) : void
     {
@@ -576,8 +566,6 @@ trait FunctionTrait
     /**
      * @param array<int,Parameter> $parameter_list
      * A list of parameters (not from phpdoc) to set on this method. The parameters will be cloned.
-     *
-     * @return void
      */
     public function setRealParameterList(array $parameter_list) : void
     {
@@ -601,8 +589,6 @@ trait FunctionTrait
     /**
      * @param UnionType $union_type
      * The real (non-phpdoc) return type of this method in its given context.
-     *
-     * @return void
      */
     public function setRealReturnType(UnionType $union_type) : void
     {
@@ -667,8 +653,6 @@ trait FunctionTrait
      * @param FunctionInterface $function - A Func or Method to add params to the local scope of.
      *
      * @param Comment $comment - processed doc comment of $node, with params
-     *
-     * @return void
      */
     public static function addParamsToScopeOfFunctionOrMethod(
         Context $context,
@@ -727,7 +711,6 @@ trait FunctionTrait
 
     /**
      * Internally used.
-     * @return void
      */
     public static function addParamToScopeOfFunctionOrMethod(
         Context $context,
@@ -894,7 +877,6 @@ trait FunctionTrait
 
     /**
      * @param ?UnionType $type the raw phpdoc union type
-     * @return void
      */
     public function setPHPDocReturnType(?UnionType $type) : void
     {
@@ -1040,7 +1022,6 @@ trait FunctionTrait
     /**
      * Make additional analysis logic of this function/method use $closure
      * If callers need to invoke multiple closures, they should pass in a closure to invoke multiple closures or use addFunctionCallAnalyzer.
-     * @return void
      */
     public function setFunctionCallAnalyzer(Closure $closure) : void
     {
@@ -1049,7 +1030,6 @@ trait FunctionTrait
 
     /**
      * Make additional analysis logic of this function/method use $closure in addition to any other closures.
-     * @return void
      */
     public function addFunctionCallAnalyzer(Closure $closure) : void
     {
@@ -1086,8 +1066,6 @@ trait FunctionTrait
      * Initialize the inner scope of this method with variables created from the parameters.
      *
      * Deferred until the parse phase because getting the UnionType of parameter defaults requires having all class constants be known.
-     *
-     * @return void
      */
     public function ensureScopeInitialized(CodeBase $code_base) : void
     {
@@ -1143,7 +1121,6 @@ trait FunctionTrait
      * Clone the parameter list, so that modifying the parameters on the first call won't modify the others.
      * TODO: If they're immutable, they can be shared without cloning with less worry.
      * @internal
-     * @return void
      */
     public function cloneParameterList() : void
     {
@@ -1238,8 +1215,6 @@ trait FunctionTrait
     /**
      * Check this method's return types (phpdoc and real) to make sure they're valid,
      * and infer a return type from the combination of the signature and phpdoc return types.
-     *
-     * @return void
      */
     public function analyzeReturnTypes(CodeBase $code_base) : void
     {
@@ -1536,7 +1511,6 @@ trait FunctionTrait
 
     /**
      * Returns the index of the parameter with name $name.
-     * @return ?int
      */
     public function getParamIndexForName(string $name) : ?int
     {

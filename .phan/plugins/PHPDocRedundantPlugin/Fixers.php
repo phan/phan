@@ -27,7 +27,6 @@ class Fixers
 {
     /**
      * Add a missing return type to the real signature
-     * @return ?FileEditSet
      */
     public static function fixRedundantFunctionLikeComment(
         CodeBase $unused_code_base,
@@ -97,7 +96,6 @@ class Fixers
 
     /**
      * Add a missing return type to the real signature
-     * @return ?FileEditSet
      */
     public static function fixRedundantReturnComment(
         CodeBase $unused_code_base,

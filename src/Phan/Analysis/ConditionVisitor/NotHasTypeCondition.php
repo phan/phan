@@ -61,7 +61,6 @@ class NotHasTypeCondition implements BinaryCondition
      *
      * @param Node|int|string|float $unused_object
      * @param Node|int|string|float $unused_expr
-     * @return Context
      */
     public function analyzeClassCheck(ConditionVisitorInterface $visitor, $unused_object, $unused_expr) : Context
     {

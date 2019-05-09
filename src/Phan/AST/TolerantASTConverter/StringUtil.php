@@ -149,7 +149,6 @@ final class StringUtil
             '~\\\\([\\\\$nrtfve]|[xX][0-9a-fA-F]{1,2}|[0-7]{1,3}|u\{([0-9a-fA-F]+)\})~',
             /**
              * @param array<int,string> $matches
-             * @return string
              */
             static function (array $matches) : string {
                 $str = $matches[1];

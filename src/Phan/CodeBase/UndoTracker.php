@@ -102,7 +102,6 @@ class UndoTracker
     /**
      * Called when a file is unparsable.
      * Removes the classes and functions, etc. from an older version of the file, if one exists.
-     * @return void
      */
     public function recordUnparsableFile(CodeBase $code_base, string $current_parsed_file) : void
     {
@@ -114,7 +113,6 @@ class UndoTracker
 
     /**
      * Undoes all of the changes for the relative path at $path
-     * @return void
      */
     private function undoFileChanges(CodeBase $code_base, string $path) : void
     {
@@ -128,8 +126,6 @@ class UndoTracker
     /**
      * @param \Closure $undo_operation - a closure expecting 1 param - inner. It undoes a change caused by a parsed file.
      * Ideally, this would extend to all changes. (e.g. including dead code detection)
-     *
-     * @return void
      */
     public function recordUndo(Closure $undo_operation) : void
     {

@@ -211,8 +211,6 @@ class DefinitionResolver
 
     /**
      * Record information about this definition, to send back to the language client after all possible definitions were found.
-     *
-     * @return void
      */
     public static function locateClassDefinition(
         GoToDefinitionRequest $request,
@@ -269,7 +267,6 @@ class DefinitionResolver
 
     /**
      * @param Node $node a node of type AST_CLASS_CONST
-     * @return void
      */
     public static function locateClassConstDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node) : void
     {
@@ -331,7 +328,6 @@ class DefinitionResolver
 
     /**
      * Given a node of type AST_NEW, locate the constructor definition (or class definition)
-     * @return void
      */
     private static function locateNewDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node) : void
     {
@@ -405,7 +401,6 @@ class DefinitionResolver
 
     /**
      * @param Node $node a node of type AST_USE to find the definition of
-     * @return void
      */
     public static function locateNamespaceUseDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Node $node) : void
     {

@@ -1254,8 +1254,6 @@ final class Builder
      *
      * @param int|string|FQSEN|UnionType|Type ...$parameters
      * Template parameters for the issue's error message
-     *
-     * @return void
      */
     protected function emitIssue(
         string $issue_type,
@@ -1281,8 +1279,6 @@ final class Builder
      * Template parameters for the issue's error message
      *
      * @param ?Suggestion $suggestion
-     *
-     * @return void
      */
     protected function emitIssueWithSuggestion(
         string $issue_type,

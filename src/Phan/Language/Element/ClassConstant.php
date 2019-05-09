@@ -60,8 +60,6 @@ class ClassConstant extends ClassElement implements ConstantInterface
     /**
      * Override the default getter to fill in a future
      * union type if available.
-     *
-     * @return UnionType
      */
     public function getUnionType() : UnionType
     {
@@ -111,7 +109,6 @@ class ClassConstant extends ClassElement implements ConstantInterface
      * Records whether or not this class constant is intended to be an override of another class constant (contains (at)override in PHPDoc)
      * @param bool $is_override_intended
 
-     * @return void
      */
     public function setIsOverrideIntended(bool $is_override_intended) : void
     {

@@ -209,7 +209,6 @@ class Property extends ClassElement
     /**
      * Used by daemon mode to restore an element to the state it had before parsing.
      * @internal
-     * @return ?Closure
      */
     public function createRestoreCallback() : ?Closure
     {
@@ -260,7 +259,6 @@ class Property extends ClassElement
     /**
      * Copy addressable references from an element of the same subclass
      * @override
-     * @return void
      */
     public function copyReferencesFrom(AddressableElement $element) : void
     {
@@ -325,7 +323,6 @@ class Property extends ClassElement
      * Record whether this property contains `static` anywhere in the original union type.
      *
      * @param bool $has_static
-     * @return void
      */
     public function setHasStaticInUnionType(bool $has_static) : void
     {

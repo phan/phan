@@ -106,8 +106,6 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
      * Marks all data provider methods as being referenced
      *
      * @param Method $method the Method representing a unit test in a test case subclass
-     *
-     * @return void
      */
     private function markDataProvidersAsReferenced(Clazz $class, Method $method) : void
     {

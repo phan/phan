@@ -398,7 +398,6 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     /**
      * Returns an empty array shape (for `array{}`)
      * @param bool $is_nullable
-     * @return ArrayShapeType
      */
     public static function empty(
         bool $is_nullable = false
@@ -464,7 +463,6 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
             '([^-./^;$%*+_a-zA-Z0-9\x7f-\xff])',
             /**
              * @param array{0:string} $match
-             * @return string
              */
             static function (array $match) : string {
                 $c = $match[0];
@@ -755,7 +753,6 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
 
     /**
      * Returns the function interface this references
-     * @return ?FunctionInterface
      */
     public function asFunctionInterfaceOrNull(CodeBase $code_base, Context $context) : ?FunctionInterface
     {

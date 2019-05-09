@@ -33,7 +33,6 @@ trait ConstantTrait
      * Sets the node with the AST representing the value of this constant.
      *
      * @param Node|string|float|int $node Either a node or a constant to be used as the value of the constant.
-     * @return void
      */
     public function setNodeForValue($node) : void
     {
@@ -53,7 +52,6 @@ trait ConstantTrait
     /**
      * Used by daemon mode to restore an element to the state it had before parsing.
      * @internal
-     * @return ?Closure
      */
     public function createRestoreCallback() : ?Closure
     {

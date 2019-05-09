@@ -37,7 +37,6 @@ trait Analyzable
      *
      * @param Node $node
      * The AST Node defining this object.
-     * @return void
      */
     public function setNode(Node $node) : void
     {

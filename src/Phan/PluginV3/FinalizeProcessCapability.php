@@ -18,8 +18,6 @@ interface FinalizeProcessCapability extends \Phan\PluginV2\FinalizeProcessCapabi
      * Some plugins using this, such as UnusedSuppressionPlugin,
      * will not work as expected with more than one process.
      * If possible, write plugins to emit issues immediately.
-     *
-     * @return void
      */
     public function finalizeProcess(CodeBase $code_base) : void;
 }

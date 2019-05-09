@@ -189,7 +189,6 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
     {
         /**
          * @param array<int,Node|int|string|float> $args
-         * @return void
          */
         $call_user_func_callback = static function (
             CodeBase $code_base,
@@ -210,7 +209,6 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
 
         /**
          * @param array<int,Node|int|string|float> $args
-         * @return void
          */
         $call_user_func_array_callback = static function (
             CodeBase $code_base,
@@ -308,8 +306,6 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
      * @param Context $context
      * @param array<int,FunctionInterface> $function_like_list
      * @param array<int,Node|string|int|float> $arguments
-     *
-     * @return void
      */
     private static function analyzeFunctionAndNormalArgumentList(CodeBase $code_base, Context $context, array $function_like_list, array $arguments) : void
     {

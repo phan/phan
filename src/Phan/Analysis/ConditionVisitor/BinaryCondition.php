@@ -16,7 +16,6 @@ interface BinaryCondition
      *
      * @param Node $var
      * @param Node|int|string|float $expr
-     * @return Context
      */
     public function analyzeVar(ConditionVisitorInterface $visitor, Node $var, $expr) : Context;
 
@@ -25,7 +24,6 @@ interface BinaryCondition
      *
      * @param Node|int|string|float $object
      * @param Node|int|string|float $expr
-     * @return Context
      */
     public function analyzeClassCheck(ConditionVisitorInterface $visitor, $object, $expr) : Context;
 
@@ -34,7 +32,6 @@ interface BinaryCondition
      *
      * @param Node $call_node a node of kind AST_CALL
      * @param Node|string|int|float $expr
-     * @return ?Context
      */
     public function analyzeCall(ConditionVisitorInterface $visitor, Node $call_node, $expr) : ?Context;
 }

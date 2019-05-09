@@ -106,7 +106,6 @@ class UnionType implements Serializable
 
     /**
      * @param Type[] $type_list
-     * @return UnionType
      */
     public static function of(array $type_list) : UnionType
     {
@@ -236,8 +235,6 @@ class UnionType implements Serializable
      * May be provided to resolve 'parent' in the context
      * (e.g. if parsing complex phpdoc).
      * Unnecessary in most use cases.
-     *
-     * @return UnionType
      */
     public static function fromStringInContext(
         string $type_string,
@@ -532,8 +529,6 @@ class UnionType implements Serializable
 
     /**
      * Add a type name to the list of types
-     *
-     * @return UnionType
      */
     public function withType(Type $type) : UnionType
     {
@@ -555,8 +550,6 @@ class UnionType implements Serializable
      * keeping the keys in a consecutive order.
      *
      * Each type in $this->type_set occurs exactly once.
-     *
-     * @return UnionType
      */
     public function withoutType(Type $type) : UnionType
     {
@@ -585,8 +578,6 @@ class UnionType implements Serializable
 
     /**
      * Returns a union type which add the given types to this type
-     *
-     * @return UnionType
      */
     public function withUnionType(UnionType $union_type) : UnionType
     {
@@ -2164,8 +2155,6 @@ class UnionType implements Serializable
 
     /**
      * Returns true if objectTypes would be non-empty.
-     *
-     * @return bool
      */
     public function hasObjectTypes() : bool
     {
@@ -2178,8 +2167,6 @@ class UnionType implements Serializable
      * Returns true if at least one type could possibly be an object.
      * E.g. returns true for iterator.
      * NOTE: this returns false for `mixed`
-     *
-     * @return bool
      */
     public function hasPossiblyObjectTypes() : bool
     {
@@ -2418,8 +2405,6 @@ class UnionType implements Serializable
      * Takes `array{field:int,other:stdClass}` and returns `string`
      *
      * @param CodeBase $code_base (for detecting the iterable value types of `class MyIterator extends Iterator`)
-     *
-     * @return UnionType
      */
     public function iterableKeyUnionType(CodeBase $code_base) : UnionType
     {

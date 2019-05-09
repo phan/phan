@@ -127,7 +127,6 @@ class IssueFixer
      *
      * @param callable(CodeBase,FileCacheEntry,IssueInstance):(?FileEditSet) $fixer
      *        this is neither a real type hint nor a real closure so that the implementation can optionally be moved to classes that aren't loaded by the PHP interpreter yet.
-     * @return void
      */
     public static function registerFixerClosure(string $issue_name, callable $fixer) : void
     {
@@ -176,7 +175,6 @@ class IssueFixer
      * Apply fixes where possible for any issues in $instances.
      *
      * @param IssueInstance[] $instances
-     * @return void
      */
     public static function applyFixes(CodeBase $code_base, array $instances) : void
     {
@@ -256,7 +254,6 @@ class IssueFixer
 
     /**
      * @param array<int,Closure(CodeBase,string,PhpParser\Node):(?FileEditSet)> $fixers one or more fixers. These return 0 edits if nothing works.
-     * @return void
      */
     private static function attemptFixForIssues(
         CodeBase $code_base,
@@ -331,7 +328,6 @@ class IssueFixer
 
     /**
      * Log an error message to be shown to users for unexpected errors.
-     * @return void
      */
     public static function error(string $message) : void
     {
@@ -340,7 +336,6 @@ class IssueFixer
 
     /**
      * Log an extremely verbose message - used for debugging why automatic fixing doesn't work.
-     * @return void
      */
     public static function debug(string $message) : void
     {

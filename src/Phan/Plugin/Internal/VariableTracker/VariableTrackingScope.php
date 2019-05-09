@@ -35,8 +35,6 @@ class VariableTrackingScope
 
     /**
      * Record that $variable_name had a definition that was created by the Node $node
-     *
-     * @return void
      */
     public function recordDefinition(string $variable_name, Node $node) : void
     {
@@ -47,8 +45,6 @@ class VariableTrackingScope
 
     /**
      * Record that $variable_name had a definition that was created by the Node $node where spl_object_id($node) is $node_id
-     *
-     * @return void
      */
     public function recordDefinitionById(string $variable_name, int $node_id) : void
     {
@@ -63,7 +59,6 @@ class VariableTrackingScope
      * If it is already a definition of $variable_name, then don't record that.
      *
      * @suppress PhanUnreferencedPublicMethod used by reference
-     * @return void
      */
     public function recordUsage(string $variable_name, Node $node) : void
     {
@@ -79,8 +74,6 @@ class VariableTrackingScope
      * Record the fact that a node is a usage of $variable_name.
      *
      * Equivalent to $this->recordUsage($variable_name, spl_object_id($node))
-     *
-     * @return void
      */
     public function recordUsageById(string $variable_name, int $node_id) : void
     {
@@ -292,7 +285,6 @@ class VariableTrackingScope
      * @param VariableTrackingBranchScope $inner_scope @phan-unused-param
      * @param bool $exits true if the branch of $inner_scope will exit. @phan-unused-param
      *             This would mean that the branch uses variables, but does not define them outside of that scope.
-     * @return void
      */
     public function recordSkippedScope(VariableTrackingBranchScope $inner_scope, bool $exits) : void
     {

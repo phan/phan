@@ -66,7 +66,6 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
 
     /**
      * @param Node|string|int|float|null $arg_node
-     * @return ?string
      */
     private static function extractName($arg_node) : ?string
     {
@@ -114,7 +113,6 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
 
     /**
      * @param array<int,Node|string|int|float|null> $args
-     * @return void
      */
     private function checkCall(FunctionInterface $function, array $args, Node $node) : void
     {

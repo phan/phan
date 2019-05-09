@@ -18,7 +18,6 @@ interface CodeBaseAwareTestInterface
      * or to null (to free up memory after the test is complete)
      *
      * @param ?CodeBase $code_base
-     * @return void
      */
     public function setCodeBase(CodeBase $code_base = null) : void;
 }

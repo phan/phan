@@ -606,7 +606,6 @@ class Type
             \array_map(
                 /**
                  * @param mixed $value
-                 * @return UnionType
                  */
                 static function ($value) : UnionType {
                     return self::fromObjectExtended($value)->asUnionType();
@@ -3274,7 +3273,6 @@ class Type
      *
      * @param CodeBase $code_base the code base in which the function interface is found
      * @param Context $context the context where the function interface is referenced (for emitting issues) @phan-unused-param
-     * @return ?FunctionInterface
      */
     public function asFunctionInterfaceOrNull(CodeBase $code_base, Context $context) : ?FunctionInterface
     {

@@ -241,8 +241,6 @@ final class ConfigPluginSet extends PluginV3 implements
      *
      * @param Node $node
      * The php-ast Node being analyzed.
-     *
-     * @return void
      */
     public function preAnalyzeNode(
         CodeBase $code_base,
@@ -273,8 +271,6 @@ final class ConfigPluginSet extends PluginV3 implements
      *
      * @param array<int,Node> $parent_node_list
      * The parent node of the given node (if one exists).
-     *
-     * @return void
      */
     public function postAnalyzeNode(
         CodeBase $code_base,
@@ -884,7 +880,6 @@ final class ConfigPluginSet extends PluginV3 implements
 
     /**
      * @param array<int,PluginV3> $plugin_set
-     * @return void
      */
     private static function registerIssueFixerClosures(array $plugin_set) : void
     {
@@ -1138,7 +1133,6 @@ final class ConfigPluginSet extends PluginV3 implements
 
     /**
      * @param PluginV3[] $plugin_set
-     * @return ?UnusedSuppressionPlugin
      */
     private static function findUnusedSuppressionPlugin(array $plugin_set) : ?UnusedSuppressionPlugin
     {

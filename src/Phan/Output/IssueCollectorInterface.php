@@ -15,7 +15,6 @@ interface IssueCollectorInterface
     /**
      * Collect issue
      * @param IssueInstance $issue
-     * @return void
      */
     public function collectIssue(IssueInstance $issue) : void;
 
@@ -29,13 +28,11 @@ interface IssueCollectorInterface
      * Called from daemon mode.
      *
      * @param array<int,string> $files - the relative paths to those files
-     * @return void
      */
     public function removeIssuesForFiles(array $files) : void;
 
     /**
      * Remove all collected issues.
-     * @return void
      */
     public function reset() : void;
 }

@@ -230,7 +230,6 @@ class ContextNode
      * Handles a node of kind ast\AST_TRAIT_ALIAS, modifying the corresponding TraitAdaptations instance
      * @param array<string,TraitAdaptations> $adaptations_map
      * @param Node $adaptation_node
-     * @return void
      */
     private function handleTraitAlias(array $adaptations_map, Node $adaptation_node) : void
     {
@@ -834,7 +833,6 @@ class ContextNode
 
     /**
      * Yields a list of FunctionInterface objects for the 'expr' of an AST_CALL.
-     * @return iterable<void, FunctionInterface, void, void>
      */
     public function getFunctionFromNode() : iterable
     {
@@ -1877,8 +1875,6 @@ class ContextNode
      * (It often should, because outside quick mode, it may be run multiple times per node)
      *
      * TODO: This is repetitive, move these checks into ParseVisitor?
-     *
-     * @return void
      */
     public function analyzeBackwardCompatibility() : void
     {
@@ -2123,7 +2119,6 @@ class ContextNode
     /**
      * @param Node $node a node of kind AST_ARRAY
      * @suppress PhanUndeclaredProperty this adds a dynamic property
-     * @return void
      */
     public static function warnAboutEmptyArrayElements(CodeBase $code_base, Context $context, Node $node) : void
     {

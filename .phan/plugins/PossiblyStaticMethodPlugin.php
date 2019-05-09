@@ -50,8 +50,6 @@ final class PossiblyStaticMethodPlugin extends PluginV3 implements
      *
      * @param Method $method
      * A method being analyzed
-     *
-     * @return void
      */
     private static function analyzePostponedMethod(
         CodeBase $code_base,

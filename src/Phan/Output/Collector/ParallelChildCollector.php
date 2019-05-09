@@ -133,7 +133,6 @@ class ParallelChildCollector implements IssueCollectorInterface
 
     /**
      * This method has no effect on a ParallelChildCollector.
-     * @return void
      */
     public function reset() : void
     {

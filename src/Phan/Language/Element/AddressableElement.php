@@ -100,8 +100,6 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * @param FQSEN $fqsen
      * A fully qualified structural element name to set on
      * this element
-     *
-     * @return void
      */
     public function setFQSEN(FQSEN $fqsen) : void
     {
@@ -173,7 +171,6 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
 
     /**
      * Set this element as being `internal`.
-     * @return void
      */
     public function setIsNSInternal(bool $is_internal) : void
     {
@@ -210,8 +207,6 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * @param FileRef $file_ref
      * A reference to a location in which this typed structural
      * element is referenced.
-     *
-     * @return void
      */
     public function addReference(FileRef $file_ref) : void
     {
@@ -228,7 +223,6 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
 
     /**
      * Copy addressable references from an element of the same subclass
-     * @return void
      */
     public function copyReferencesFrom(AddressableElement $element) : void
     {
@@ -303,13 +297,11 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     /**
      * Used by daemon mode to restore an element to the state it had before parsing.
      * @internal
-     * @return ?Closure
      */
     abstract public function createRestoreCallback() : ?Closure;
 
     /**
      * @param ?string $doc_comment the 'docComment' for this element, if any exists.
-     * @return void
      */
     public function setDocComment(string $doc_comment = null) : void
     {

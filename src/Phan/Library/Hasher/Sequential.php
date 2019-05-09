@@ -32,7 +32,6 @@ class Sequential implements Hasher
 
     /**
      * Resets counter
-     * @return void
      */
     public function reset() : void
     {

@@ -52,7 +52,6 @@ class ClosuresForKind
      *
      * @param array<int,int> $kinds - A list of unique values of node kinds
      * @param Closure $c - The closure to execute on each of those kinds
-     * @return void
      */
     public function recordForKinds(array $kinds, Closure $c) : void
     {

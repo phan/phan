@@ -19,8 +19,6 @@ interface HandleLazyLoadInternalFunctionCapability extends \Phan\PluginV2\Handle
      *
      * @param Func $function
      * The function that was just now added to $code_base
-     *
-     * @return void
      */
     public function handleLazyLoadInternalFunction(
         CodeBase $code_base,

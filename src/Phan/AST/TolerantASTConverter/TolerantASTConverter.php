@@ -172,7 +172,6 @@ class TolerantASTConverter
 
     /**
      * Parse all doc comments, even the ones the current php version's php-ast would be incapable of providing.
-     * @return void
      */
     public function setParseAllDocComments(bool $value) : void
     {
@@ -225,7 +224,6 @@ class TolerantASTConverter
 
     /**
      * @param null|Diagnostic[] &$errors @phan-output-reference (TODO: param-out)
-     * @return PhpParser\Node
      */
     public static function phpParserParse(string $file_contents, array &$errors = null) : PhpParser\Node
     {
@@ -1722,7 +1720,6 @@ class TolerantASTConverter
 
     /**
      * @param PhpParser\Node\QualifiedName|Token|null $type
-     * @return ?ast\Node
      */
     protected static function phpParserTypeToAstNode($type, int $line) : ?\ast\Node
     {
@@ -2824,7 +2821,6 @@ class TolerantASTConverter
 
     /**
      * @param array<mixed,ast\Node|string|int|float|null> $children
-     * @return ast\Node
      */
     private static function newAstDecl(int $kind, int $flags, array $children, int $lineno, string $doc_comment = null, string $name = null, int $end_lineno = 0, int $decl_id = -1) : ast\Node
     {

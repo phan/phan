@@ -204,7 +204,6 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
 
     /**
      * @param array<int,string> $issue_overrides_for_definition_ids maps definition ids to issue types
-     * @return void
      */
     private function warnAboutVariableGraph(
         Node $method_node,
@@ -293,7 +292,6 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
 
     /**
      * @param array<int,string> $issue_overrides_for_definition_ids maps definition ids to issue types
-     * @return void
      */
     private function checkSingleDefinitionReferenceOrGlobalOrStatic(
         VariableGraph $graph,

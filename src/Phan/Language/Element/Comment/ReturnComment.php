@@ -32,7 +32,6 @@ class ReturnComment
 
     /**
      * Sets the type of this (at)return comment
-     * @return void
      */
     public function setType(UnionType $type) : void
     {

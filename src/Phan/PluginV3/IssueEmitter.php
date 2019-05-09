@@ -55,8 +55,6 @@ trait IssueEmitter
      * @param ?Suggestion $suggestion
      * If this plugin has suggestions on how to fix the issue,
      * this can be added separately from the issue text.
-     *
-     * @return void
      */
     public static function emitPluginIssue(
         CodeBase $code_base,

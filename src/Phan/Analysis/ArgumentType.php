@@ -48,8 +48,6 @@ final class ArgumentType
      *
      * @param CodeBase $code_base
      * The global code base
-     *
-     * @return void
      */
     public static function analyze(
         FunctionInterface $method,
@@ -349,8 +347,6 @@ final class ArgumentType
      * The context in which we see the call
      *
      * @param Closure $get_argument_type (Node|string|int $node, int $i) -> UnionType
-     *
-     * @return void
      */
     private static function analyzeParameterListForCallback(
         CodeBase $code_base,
@@ -413,8 +409,6 @@ final class ArgumentType
      *
      * @param Context $context
      * The context in which we see the call
-     *
-     * @return void
      */
     private static function analyzeParameterList(
         CodeBase $code_base,
