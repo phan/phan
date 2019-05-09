@@ -11,6 +11,8 @@ New features(CLI, Configs):
   Default is 2.
 + Add `--constant-variable-detection` - This checks for variables that can be replaced with literals or constants. (#2704)
   This is almost entirely false positives in most coding styles, but may catch some dead code.
++ Add `--language-server-disable-go-to-definition`, `--language-server-disable-hover`, and `--language-server-disable-completion`
+  (These are already disabled by default, but will be enabled by default in Phan 2.0)
 
 New features(Analysis):
 + Emit `PhanDeprecatedClassConstant` for code using a constant marked with `@deprecated`.

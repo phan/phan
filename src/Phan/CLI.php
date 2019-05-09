@@ -114,6 +114,9 @@ class CLI
         'language-server-allow-missing-pcntl',
         'language-server-force-missing-pcntl',
         'language-server-require-pcntl',
+        'language-server-disable-go-to-definition',
+        'language-server-disable-hover',
+        'language-server-disable-completion',
         'language-server-enable',
         'language-server-enable-go-to-definition',
         'language-server-enable-hover',
@@ -272,7 +275,7 @@ class CLI
      * @throws UsageException
      * @internal - used for unit tests only
      */
-    public static function fromRawValues(array $opts, array $argv)
+    public static function fromRawValues(array $opts, array $argv) : CLI
     {
         return new self($opts, $argv);
     }
@@ -649,13 +652,22 @@ class CLI
                 case 'language-server-analyze-only-on-save':
                     Config::setValue('language_server_analyze_only_on_save', true);
                     break;
+                case 'language-server-disable-go-to-definition':
+                    Config::setValue('language_server_enable_go_to_definition', false);
+                    break;
                 case 'language-server-enable-go-to-definition':
                     Config::setValue('language_server_enable_go_to_definition', true);
+                    break;
+                case 'language-server-disable-hover':
+                    Config::setValue('language_server_enable_hover', false);
                     break;
                 case 'language-server-enable-hover':
                     Config::setValue('language_server_enable_hover', true);
                     break;
                 case 'language-server-completion-vscode':
+                    break;
+                case 'language-server-disable-completion':
+                    Config::setValue('language_server_enable_completion', false);
                     break;
                 case 'language-server-enable-completion':
                     Config::setValue(
@@ -688,7 +700,7 @@ class CLI
                         break;
                     }
                     $ast_version = (new ReflectionExtension('ast'))->getVersion();
-                    if (\version_compare($ast_version, '0.1.5') < 0) {
+                    if (\version_compare($ast_version, '1.0.0') <= 0) {
                         Config::setValue('use_polyfill_parser', true);
                         break;
                     }
@@ -791,17 +803,17 @@ class CLI
         $plugin_dirname = ConfigPluginSet::getBuiltinPluginDirectory();
         $candidates = [];
         foreach (\scandir($plugin_dirname) as $basename) {
-            if (substr($basename, -4) !== '.php') {
+            if (\substr($basename, -4) !== '.php') {
                 continue;
             }
-            $plugin_name = substr($basename, 0, -4);
+            $plugin_name = \substr($basename, 0, -4);
             $candidates[$plugin_name] = $plugin_name;
         }
         $suggestions = IssueFixSuggester::getSuggestionsForStringSet($plugin_path_or_name, $candidates);
         if (!$suggestions) {
             return '';
         }
-        return ' (Did you mean ' . implode(' or ', $suggestions) . '?)';
+        return ' (Did you mean ' . \implode(' or ', $suggestions) . '?)';
     }
 
     /**
@@ -1173,16 +1185,16 @@ Extended help:
   Prevent the client from sending change notifications (Only notify the language server when the user saves a document)
   This significantly reduces CPU usage, but clients won't get notifications about issues immediately.
 
- --language-server-enable-go-to-definition
-  Enables support for "Go To Definition" and "Go To Type Definition" in the Phan Language Server.
+ --language-server-disable-go-to-definition, --language-server-enable-go-to-definition
+  Disables/Enables support for "Go To Definition" and "Go To Type Definition" in the Phan Language Server.
   Disabled by default.
 
- --language-server-enable-hover
-  Enables support for "Hover" in the Phan Language Server.
+ --language-server-disable-hover, --language-server-enable-hover
+  Disables/Enables support for "Hover" in the Phan Language Server.
   Disabled by default.
 
- --language-server-enable-completion
-  Enables support for "Completion" in the Phan Language Server.
+ --language-server-disable-completion, --language-server-enable-completion
+  Disables/Enables support for "Completion" in the Phan Language Server.
   Disabled by default.
 
  --language-server-completion-vscode
@@ -1276,7 +1288,7 @@ EOB;
             // distance > 5 is to far off to be a typo
             // Make sure that if two flags have the same distance, ties are sorted alphabetically
             if ($distance <= 5) {
-                $similarities[$flag] = [$distance, "x" . strtolower($flag), $flag];
+                $similarities[$flag] = [$distance, "x" . \strtolower($flag), $flag];
             }
         }
 
@@ -1307,13 +1319,13 @@ EOB;
         if (!\is_array($file_extensions) || count($file_extensions) === 0) {
             return false;
         }
-        $extension = pathinfo($file_path, PATHINFO_EXTENSION);
+        $extension = \pathinfo($file_path, \PATHINFO_EXTENSION);
         if (!$extension || !in_array($extension, $file_extensions)) {
             return false;
         }
 
         $directory_regex = Config::getValue('__directory_regex');
-        return $directory_regex && preg_match($directory_regex, $file_path) > 0;
+        return $directory_regex && \preg_match($directory_regex, $file_path) > 0;
     }
 
     /**
@@ -1538,13 +1550,13 @@ EOB;
         }
         $did_end = true;
         if (self::shouldShowDebugOutput()) {
-            fwrite(STDERR, "Phan's analysis is complete\n");
+            \fwrite(STDERR, "Phan's analysis is complete\n");
             return;
         }
         if (self::shouldShowProgress()) {
             // Print a newline to stderr to visuall separate stderr from stdout
-            fwrite(STDERR, PHP_EOL);
-            fflush(STDOUT);
+            \fwrite(STDERR, \PHP_EOL);
+            \fflush(\STDOUT);
         }
     }
 
@@ -1719,6 +1731,7 @@ EOB;
                 . Config::AST_VERSION
                 . ') in configuration. '
                 . "You may need to rebuild the latest version of the php-ast extension.\n"
+                . "(You are using php-ast " . (new ReflectionExtension('ast'))->getVersion() . ". Alternately, test with --force-polyfill-parser (which is noticeably slower))\n"
             );
             exit(EXIT_FAILURE);
         }
