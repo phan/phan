@@ -159,6 +159,15 @@ final class CLITest extends BaseTest
                 ['output-mode' => 'csv'],
                 ['printer_class' => CsvPrinter::class],
             ],
+            // These flags are no-ops in Phan 1.x with the default config, but the settings would be enabled in Phan 2.x
+            [
+                [],
+                [
+                    'language-server-disable-go-to-definition' => false,
+                    'language-server-disable-hover' => false,
+                    'language-server-disable-completion' => false,
+                ]
+            ],
             [
                 [
                     'color_issue_messages' => true,
