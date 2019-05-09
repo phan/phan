@@ -182,7 +182,7 @@ final class VariableGraph
     }
 
     /**
-     * Marks something as being a loop variable `$v` in `foreach ($arr as $k => $v)`
+     * Marks something as being a caught exception `$e` in `catch ($e)`
      * (Common false positive, since there's no way to avoid setting the value)
      *
      * @param Node|int|string|float|null $node

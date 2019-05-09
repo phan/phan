@@ -150,6 +150,18 @@ final class Builder
                 $variable_name = '';  // "@var int ...$x" is nonsense and invalid phpdoc.
             } else {
                 $variable_name = $match[17] ?? '';
+                if ($is_var && $variable_name === '' && $this->comment_type === Comment::ON_PROPERTY) {
+                    $char_at_end_offset = $line[\strpos($line, $match[0]) + \strlen($match[0])] ?? ' ';
+                    if (\ord($char_at_end_offset) > 32) {  // Not a control character or space
+                        $this->emitIssue(
+                            Issue::UnextractableAnnotationSuffix,
+                            $this->guessActualLineLocation($i),
+                            \trim($line),
+                            $original_type,
+                            $char_at_end_offset
+                        );
+                    }
+                }
             }
             // Fix typos or non-standard phpdoc tags, according to the user's configuration.
             // Does nothing by default.

@@ -1098,6 +1098,30 @@ Unused definition of variable ${VARIABLE} as a caught exception
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/plugin_test/expected/054_shadowed_exception.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.2/tests/plugin_test/src/054_shadowed_exception.php#L6).
 
+## PhanUnusedVariableGlobal
+
+```
+Unreferenced definition of variable ${VARIABLE} as a global variable
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/121_unused_reference.php.expected#L5) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/121_unused_reference.php#L28).
+
+## PhanUnusedVariableReference
+
+```
+Unused definition of variable ${VARIABLE} as a reference
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/122_closure_reference.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/122_closure_reference.php#L21).
+
+## PhanUnusedVariableStatic
+
+```
+Unreferenced definition of variable ${VARIABLE} as a static variable
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/121_unused_reference.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/121_unused_reference.php#L10).
+
 ## PhanUnusedVariableValueOfForeachWithKey
 
 ```

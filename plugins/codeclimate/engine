@@ -81,10 +81,7 @@ call_user_func(static function () use ($code_base) : void {
     };
 
     // Todo: wrap with `-l` console logic instead of custom function
-    /**
-     * @param string $dir_path
-     */
-    $queue_with_include_paths = function (string $dir_path) use (&$include_paths, &$queue_with_include_paths, &$queue_file) : void {
+    $queue_with_include_paths = function (string $dir_path) use (&$queue_with_include_paths, &$queue_file) : void {
         foreach (scandir($dir_path) as $f) {
             if ($f !== '.' and $f !== '..') {
                 if (is_dir("$dir_path/$f")) {
