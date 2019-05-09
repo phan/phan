@@ -1,5 +1,11 @@
 Phan NEWS
 
+09 May 2019, Phan 1.3.4
+-----------------------
+
+Bug fixes:
++ Fix bug in Phan 1.3.3 causing polyfill parser to be used if the installed version of php-ast was older than 1.0.1.
+
 08 May 2019, Phan 1.3.3
 -----------------------
 
