@@ -1808,7 +1808,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             $exception_fqsen = $exception->getFQSEN();
             // We might still be in the parse phase.
             // Throw the same IssueException that would be thrown in Phan 1 and let the caller decide how to handle this.
-            throw new IssueException(
+            $new_exception = new IssueException(
                 Issue::fromType(Issue::UndeclaredClassConstant)(
                     $this->context->getFile(),
                     $node->lineno,
@@ -1816,6 +1816,14 @@ class UnionTypeVisitor extends AnalysisVisitor
                     IssueFixSuggester::suggestSimilarClassForGenericFQSEN($this->code_base, $this->context, $exception_fqsen)
                 )
             );
+            if ($this->should_catch_issue_exception) {
+                Issue::maybeEmitInstance($this->code_base, $this->context, $new_exception->getIssueInstance());
+                return LiteralStringType::instanceForValue(
+                    \ltrim($exception_fqsen->__toString(), '\\'),
+                    false
+                )->asUnionType();
+            }
+            throw $new_exception;
         }
         // Return the first class FQSEN
         foreach ($class_list as $class) {
