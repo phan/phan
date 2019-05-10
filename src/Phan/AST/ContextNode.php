@@ -2216,6 +2216,15 @@ class ContextNode
                 $new_node = (new ContextNode($this->code_base, $constant->getContext(), $new_node))->getEquivalentPHPValueForNode($new_node, $flags & ~self::RESOLVE_CONSTANTS);
             }
             return $new_node;
+        } elseif ($kind === ast\AST_CLASS_NAME) {
+            if (($flags & self::RESOLVE_CONSTANTS) === 0) {
+                return $node;
+            }
+            try {
+                return UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node, false)->asSingleScalarValueOrNull() ?? $node;
+            } catch (\Exception $_) {
+                return $node;
+            }
         } elseif ($kind === ast\AST_MAGIC_CONST) {
             // TODO: Look into eliminating this
             return $this->getValueForMagicConstByNode($node);

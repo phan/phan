@@ -1806,16 +1806,24 @@ class UnionTypeVisitor extends AnalysisVisitor
             ))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME);
         } catch (CodeBaseException $exception) {
             $exception_fqsen = $exception->getFQSEN();
-            $this->emitIssueWithSuggestion(
-                Issue::UndeclaredClassConstant,
-                $node->lineno,
-                ['class', (string)$exception_fqsen],
-                IssueFixSuggester::suggestSimilarClassForGenericFQSEN($this->code_base, $this->context, $exception_fqsen)
+            // We might still be in the parse phase.
+            // Throw the same IssueException that would be thrown in Phan 1 and let the caller decide how to handle this.
+            $new_exception = new IssueException(
+                Issue::fromType(Issue::UndeclaredClassConstant)(
+                    $this->context->getFile(),
+                    $node->lineno,
+                    ['class', (string)$exception_fqsen],
+                    IssueFixSuggester::suggestSimilarClassForGenericFQSEN($this->code_base, $this->context, $exception_fqsen)
+                )
             );
-            return LiteralStringType::instanceForValue(
-                \ltrim($exception_fqsen->__toString(), '\\'),
-                false
-            )->asUnionType();
+            if ($this->should_catch_issue_exception) {
+                Issue::maybeEmitInstance($this->code_base, $this->context, $new_exception->getIssueInstance());
+                return LiteralStringType::instanceForValue(
+                    \ltrim($exception_fqsen->__toString(), '\\'),
+                    false
+                )->asUnionType();
+            }
+            throw $new_exception;
         }
         // Return the first class FQSEN
         foreach ($class_list as $class) {

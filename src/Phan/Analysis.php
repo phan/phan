@@ -168,7 +168,6 @@ class Analysis
      * returned context is the new context from within the
      * given node.
      *
-     * NOTE: This is called extremely frequently, so the real signature types were omitted for performance.
      *
      * @param CodeBase $code_base
      * The global code base in which we store all
@@ -182,8 +181,10 @@ class Analysis
      *
      * @return Context
      * The context from within the node is returned
+     * @suppress PhanPluginCanUseReturnType
+     * NOTE: This is called extremely frequently, so the real signature types were omitted for performance.
      */
-    public static function parseNodeInContext(CodeBase $code_base, Context $context, Node $node) : Context
+    public static function parseNodeInContext(CodeBase $code_base, Context $context, Node $node)
     {
         $kind = $node->kind;
         $context->setLineNumberStart($node->lineno);

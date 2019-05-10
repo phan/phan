@@ -106,7 +106,6 @@ class Fixers
         $file_lines = $contents->getLines();
 
         $line = trim($file_lines[$lineno]);
-        fwrite(STDERR, "Going to delete $line\n");
         // @phan-suppress-next-line PhanAccessClassConstantInternal
         if (!preg_match(Builder::RETURN_COMMENT_REGEX, $line)) {
             return null;
@@ -124,7 +123,6 @@ class Fixers
         }
         $start_offset = $contents->getLineOffset($first_deleted_line);
         $end_offset = $contents->getLineOffset($last_deleted_line + 1);
-        fwrite(STDERR, "Creating an edit to delete from $start_offset to $end_offset $first_deleted_line\n");
         if (!$start_offset || !$end_offset) {
             return null;
         }
