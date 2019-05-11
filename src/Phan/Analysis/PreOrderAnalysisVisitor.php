@@ -24,6 +24,7 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\Scope\ClosureScope;
 use Phan\Language\Type;
+use Phan\Language\Type\NullType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 
@@ -428,8 +429,6 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                     continue;
                 }
 
-                $variable = null;
-
                 // Check to see if the variable exists in this scope
                 if (!$context->getScope()->hasVariableWithName(
                     $variable_name
@@ -439,13 +438,13 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                     if (!($use->flags & ast\flags\PARAM_REF)) {
                         Issue::maybeEmitWithParameters(
                             $this->code_base,
-                            clone($context)->withLineNumberStart($use->lineno),
+                            $context,
                             Issue::UndeclaredVariable,
-                            $node->lineno,
+                            $use->lineno,
                             [$variable_name],
                             IssueFixSuggester::suggestVariableTypoFix($this->code_base, $context, $variable_name)
                         );
-                        continue;
+                        $variable = new Variable($context, $variable_name, NullType::instance(false)->asUnionType(), 0);
                     } else {
                         // If the variable doesn't exist, but it's
                         // a pass-by-reference variable, we can
@@ -456,9 +455,9 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                             $this->code_base,
                             false
                         );
-                        // And add it to the scope of the parent (For https://github.com/phan/phan/issues/367)
-                        $context->addScopeVariable($variable);
                     }
+                    // And add it to the scope of the parent (For https://github.com/phan/phan/issues/367)
+                    $context->addScopeVariable($variable);
                 } else {
                     $variable = $context->getScope()->getVariableByName(
                         $variable_name

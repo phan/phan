@@ -3,8 +3,9 @@ Phan NEWS
 ?? ??? 2019, Phan 2.0.0 (dev)
 -----------------------
 
-Bug fixes
+Bug fixes:
 + Analyze the remaining expressions in a statement after emitting `PhanTraitParentReference` (#2750)
++ Don't emit `PhanUndeclaredVariable` within a closure if a `use` variable was undefined outside of it. (#2716)
 
 09 May 2019, Phan 2.0.0-RC1
 -----------------------
