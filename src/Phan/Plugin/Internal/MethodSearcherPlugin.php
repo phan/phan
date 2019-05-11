@@ -248,9 +248,10 @@ final class MethodSearcherPlugin extends PluginV3 implements
     private static function guessUnionType(FunctionInterface $function) : UnionType
     {
         if ($function instanceof Method) {
-            // TODO: convert __sleep to string[], etc.
-            if ($function->isMagicAndVoid()) {
-                return UnionType::fromFullyQualifiedString('void');
+            // convert __set to void, __sleep to string[], etc.
+            $union_type = $function->getUnionTypeOfMagicIfKnown();
+            if ($union_type) {
+                return $union_type;
             }
             if (!$function->isAbstract() && !$function->isPHPInternal() && !$function->hasReturn()) {
                 return UnionType::fromFullyQualifiedString('void');

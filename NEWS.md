@@ -3,6 +3,10 @@ Phan NEWS
 ?? ??? 2019, Phan 2.0.0 (dev)
 -----------------------
 
+New features(Analysis):
++ Infer the return types of PHP 7.4's magic methods `__serialize()` and `__unserialize()`. (#2755)
+  Improve analysis of return types of other magic methods such as `__sleep()`.
+
 Plugins:
 + Detect some new php 7.3 functions (array_key_first, etc.) in `UseReturnValuePlugin`.
 
