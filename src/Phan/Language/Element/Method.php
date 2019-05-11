@@ -259,6 +259,15 @@ class Method extends ClassElement implements FunctionInterface
     }
 
     /**
+     * Returns the return union type of this magic method, if known.
+     */
+    public function getUnionTypeOfMagicIfKnown() : ?UnionType
+    {
+        $type_string = FullyQualifiedMethodName::MAGIC_METHOD_TYPE_MAP[$this->getName()] ?? null;
+        return $type_string ? UnionType::fromFullyQualifiedString($type_string) : null;
+    }
+
+    /**
      * Returns true if this is a magic method
      * @deprecated use isMagic
      * @suppress PhanUnreferencedPublicMethod

@@ -1334,9 +1334,18 @@ trait FunctionTrait
                 }
             }
         }
-        if ($return_type->isEmpty() && !$this->hasReturn()) {
-            if ($this instanceof Func || ($this instanceof Method && ($this->isPrivate() || $this->isEffectivelyFinal() || $this->isMagicAndVoid() || $this->getClass($code_base)->isFinal()))) {
-                $this->setUnionType(VoidType::instance(false)->asUnionType());
+        if ($return_type->isEmpty()) {
+            if ($this->hasReturn()) {
+                if ($this instanceof Method) {
+                    $union_type = $this->getUnionTypeOfMagicIfKnown();
+                    if ($union_type) {
+                        $this->setUnionType($union_type);
+                    }
+                }
+            } else {
+                if ($this instanceof Func || ($this instanceof Method && ($this->isPrivate() || $this->isEffectivelyFinal() || $this->isMagicAndVoid() || $this->getClass($code_base)->isFinal()))) {
+                    $this->setUnionType(VoidType::instance(false)->asUnionType());
+                }
             }
         }
         foreach ($real_return_type->getTypeSet() as $type) {
