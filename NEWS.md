@@ -3,6 +3,9 @@ Phan NEWS
 ?? ??? 2019, Phan 2.0.0 (dev)
 -----------------------
 
+Plugins:
++ Detect some new php 7.3 functions (array_key_first, etc.) in `UseReturnValuePlugin`.
+
 Bug fixes:
 + Analyze the remaining expressions in a statement after emitting `PhanTraitParentReference` (#2750)
 + Don't emit `PhanUndeclaredVariable` within a closure if a `use` variable was undefined outside of it. (#2716)
