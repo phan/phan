@@ -1161,6 +1161,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 ['class', (string)$exception_fqsen],
                 IssueFixSuggester::suggestSimilarClassForGenericFQSEN($this->code_base, $this->context, $exception_fqsen)
             );
+        } catch (IssueException $exception) {
+            Issue::maybeEmitInstance($this->code_base, $this->context, $exception->getIssueInstance());
         }
 
         // Check to make sure we're doing something with the
