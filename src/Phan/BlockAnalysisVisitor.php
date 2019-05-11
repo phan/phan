@@ -1496,7 +1496,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
     /**
      * @param Node $node
-     * An AST node we'd like to analyze the statements for
+     * An AST node of kind ast\AST_FUNC_DECL we'd like to analyze the statements for
      *
      * @return Context
      * The updated context after visiting the node
@@ -1511,7 +1511,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
     /**
      * @param Node $node
-     * An AST node we'd like to analyze the statements for
+     * An AST node of kind ast\AST_CLOSURE we'd like to analyze the statements for
      *
      * @return Context
      * The updated context after visiting the node
@@ -1519,6 +1519,20 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * @see self::visitClosedContext()
      */
     public function visitClosure(Node $node) : Context
+    {
+        return $this->visitClosedContext($node);
+    }
+
+    /**
+     * @param Node $node
+     * An AST node of kind ast\AST_ARROW_FUNC we'd like to analyze the statements for
+     *
+     * @return Context
+     * The updated context after visiting the node
+     *
+     * @see self::visitClosedContext()
+     */
+    public function visitArrowFunc(Node $node) : Context
     {
         return $this->visitClosedContext($node);
     }

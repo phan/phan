@@ -69,6 +69,6 @@ class PHP72Test extends AbstractPhanFileTest
      */
     public function getTestFiles() : array
     {
-        return $this->scanSourceFilesDir(PHP72_TEST_FILE_DIR, PHP72_EXPECTED_DIR);
+        return $this->scanSourceFilesDir(\PHP72_TEST_FILE_DIR, \PHP72_EXPECTED_DIR);
     }
 }

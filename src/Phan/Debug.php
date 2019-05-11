@@ -129,7 +129,7 @@ class Debug
         }
 
         if (!\is_object($node)) {
-            return $string . $node . "\n";
+            return $string . (\is_array($node) ? \json_encode($node) : $node) . "\n";
         }
         $kind = $node->kind;
 

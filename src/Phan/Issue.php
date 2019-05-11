@@ -328,6 +328,7 @@ class Issue
     const UnusedPrivateMethodParameter          = 'PhanUnusedPrivateMethodParameter';
     const UnusedPrivateFinalMethodParameter     = 'PhanUnusedPrivateFinalMethodParameter';
     const UnusedClosureUseVariable              = 'PhanUnusedClosureUseVariable';
+    const ShadowedVariableInArrowFunc           = 'PhanShadowedVariableInArrowFunc';
     const UnusedClosureParameter                = 'PhanUnusedClosureParameter';
     const UnusedGlobalFunctionParameter         = 'PhanUnusedGlobalFunctionParameter';
     const UnusedVariableValueOfForeachWithKey   = 'PhanUnusedVariableValueOfForeachWithKey';  // has higher false positive rates than UnusedVariable
@@ -2902,6 +2903,14 @@ class Issue
                 'Closure use variable ${VARIABLE} is never used',
                 self::REMEDIATION_B,
                 6042
+            ),
+            new Issue(
+                self::ShadowedVariableInArrowFunc,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Short arrow function shadows variable ${VARIABLE} from the outer scope',
+                self::REMEDIATION_B,
+                6072
             ),
             new Issue(
                 self::UnusedClosureParameter,

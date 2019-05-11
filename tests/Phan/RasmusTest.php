@@ -12,6 +12,6 @@ class RasmusTest extends AbstractPhanFileTest
      */
     public function getTestFiles() : array
     {
-        return $this->scanSourceFilesDir(RASMUS_TEST_FILE_DIR, RASMUS_EXPECTED_DIR);
+        return $this->scanSourceFilesDir(\RASMUS_TEST_FILE_DIR, \RASMUS_EXPECTED_DIR);
     }
 }

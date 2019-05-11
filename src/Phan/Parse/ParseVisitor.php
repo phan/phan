@@ -857,6 +857,26 @@ class ParseVisitor extends ScopeVisitor
     }
 
     /**
+     * Visit a node with kind `\ast\AST_ARROW_FUNC`
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitArrowFunc(Node $node) : Context
+    {
+        if (!isset($node->children['params'])) {
+            $msg = "php-ast 1.0.2dev or newer is required to correctly parse short arrow functions, but 1.0.1 is installed. A short arrow function was seen at $this->context";
+            \fwrite(\STDERR, $msg . \PHP_EOL);
+            throw new AssertionError($msg);
+        }
+        return $this->visitClosure($node);
+    }
+
+    /**
      * Visit a node with kind `\ast\AST_CALL`
      *
      * @param Node $node

@@ -1211,6 +1211,19 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * A new or an unchanged context resulting from
      * parsing the node
      */
+    public function visitArrowFunc(Node $node) : Context
+    {
+        return $this->visitClosure($node);
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
     public function visitReturn(Node $node) : Context
     {
         $context = $this->context;

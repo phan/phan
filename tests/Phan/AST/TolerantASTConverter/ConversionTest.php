@@ -163,7 +163,6 @@ final class ConversionTest extends BaseTest
                 self::normalizeYieldFlags($v);
             }
         }
-
     }
 
     /** @dataProvider astValidFileExampleProvider */

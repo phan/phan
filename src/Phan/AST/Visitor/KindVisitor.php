@@ -27,6 +27,11 @@ interface KindVisitor
     public function visitArrayElem(Node $node);
 
     /**
+     * Visit a node with kind `ast\AST_ARROW_FUNC`
+     */
+    public function visitArrowFunc(Node $node);
+
+    /**
      * Visit a node with kind `\ast\AST_ASSIGN`
      */
     public function visitAssign(Node $node);

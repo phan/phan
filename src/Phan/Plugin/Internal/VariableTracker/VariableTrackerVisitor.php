@@ -7,6 +7,7 @@ use ast;
 use ast\Node;
 use Phan\Analysis\BlockExitStatusChecker;
 use Phan\AST\AnalysisVisitor;
+use Phan\AST\ArrowFunc;
 use Phan\AST\Visitor\Element;
 use Phan\Parse\ParseVisitor;
 use function is_string;
@@ -410,7 +411,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     /**
      * Do not recurse into closure declarations within a scope.
      *
-     * FIXME: Check closure use variables without checking statements
      * @return VariableTrackingScope
      * @override
      */
@@ -432,6 +432,22 @@ final class VariableTrackerVisitor extends AnalysisVisitor
             } else {
                 self::$variable_graph->recordVariableUsage($name, $closure_use, $this->scope);
             }
+        }
+        return $this->scope;
+    }
+
+    /**
+     * Do not recurse into short arrow (`fn() => ...`) closure declarations within a scope.
+     *
+     * TODO: This could be improved by checking if the short arrow redefines the variable and ignores the original value.
+     *
+     * @return VariableTrackingScope
+     * @override
+     */
+    public function visitArrowFunc(Node $node) : VariableTrackingScope
+    {
+        foreach (ArrowFunc::getUses($node) as $name => $var_node) {
+            self::$variable_graph->recordVariableUsage((string)$name, $var_node, $this->scope);
         }
         return $this->scope;
     }
