@@ -118,6 +118,46 @@ function with_disabled_phan_error_handler(Closure $closure)
 }
 
 /**
+ * Print a backtrace with values to stderr.
+ */
+function phan_print_backtrace(bool $is_crash = false) : void
+{
+    ob_start();
+    debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+    fwrite(STDERR, rtrim(ob_get_clean() ?: "failed to dump backtrace") . PHP_EOL);
+
+    $frames = debug_backtrace();
+    if (isset($frames[1])) {
+        fwrite(STDERR, 'More details:' . PHP_EOL);
+        if (class_exists(Config::class, false)) {
+            $max_frame_length = max(100, Config::getValue('debug_max_frame_length'));
+        } else {
+            $max_frame_length = 1000;
+        }
+        $truncated = false;
+        foreach ($frames as $i => $frame) {
+            if ($i < 2) {
+                continue;
+            }
+            $frame_details = \Phan\Debug\Frame::frameToString($frame);
+            if (strlen($frame_details) > $max_frame_length) {
+                $truncated = true;
+                if (function_exists('mb_substr')) {
+                    $frame_details = mb_substr($frame_details, 0, $max_frame_length) . '...';
+                } else {
+                    $frame_details = substr($frame_details, 0, $max_frame_length) . '...';
+                }
+            }
+            fprintf(STDERR, '#%d: %s' . PHP_EOL, $i, $frame_details);
+        }
+        if ($truncated) {
+            fwrite(STDERR, "(Some long strings (usually JSON of AST Nodes) were truncated. To print more details for some stack frames of this " . ($is_crash ? "crash" : "log") . ", " .
+               "increase the Phan config setting debug_max_frame_length)" . PHP_EOL);
+        }
+    }
+}
+
+/**
  * The error handler for PHP notices, etc.
  * This is a named function instead of a closure to make stack traces easier to read.
  *
@@ -175,39 +215,8 @@ function phan_error_handler(int $errno, string $errstr, string $errfile, int $er
             fprintf(STDERR, "(Phan %s crashed)" . PHP_EOL, CLI::PHAN_VERSION);
         }
     }
-    ob_start();
-    debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-    fwrite(STDERR, rtrim(ob_get_clean() ?: "failed to dump backtrace") . PHP_EOL);
 
-    $frames = debug_backtrace();
-    if (isset($frames[1])) {
-        fwrite(STDERR, 'More details:' . PHP_EOL);
-        if (class_exists(Config::class, false)) {
-            $max_frame_length = max(100, Config::getValue('debug_max_frame_length'));
-        } else {
-            $max_frame_length = 1000;
-        }
-        $truncated = false;
-        foreach ($frames as $i => $frame) {
-            if ($i == 0) {
-                continue;
-            }
-            $frame_details = \Phan\Debug\Frame::frameToString($frame);
-            if (strlen($frame_details) > $max_frame_length) {
-                $truncated = true;
-                if (function_exists('mb_substr')) {
-                    $frame_details = mb_substr($frame_details, 0, $max_frame_length) . '...';
-                } else {
-                    $frame_details = substr($frame_details, 0, $max_frame_length) . '...';
-                }
-            }
-            fprintf(STDERR, '#%d: %s' . PHP_EOL, $i, $frame_details);
-        }
-        if ($truncated) {
-            fwrite(STDERR, "(Some long strings (usually JSON of AST Nodes) were truncated. To print more details for some stack frames of this crash, " .
-               "increase the Phan config setting debug_max_frame_length)" . PHP_EOL);
-        }
-    }
+    phan_print_backtrace(true);
 
     exit(EXIT_FAILURE);
 }

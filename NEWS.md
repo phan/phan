@@ -1,5 +1,11 @@
 Phan NEWS
 
+?? ??? 2019, Phan 2.0.0 (dev)
+-----------------------
+
+Bug fixes
++ Analyze the remaining expressions in a statement after emitting `PhanTraitParentReference` (#2750)
+
 09 May 2019, Phan 2.0.0-RC1
 -----------------------
 

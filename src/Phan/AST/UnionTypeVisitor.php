@@ -1804,6 +1804,12 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $this->context,
                 $node->children['class']
             ))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME);
+        } catch (IssueException $exception) {
+            if ($this->should_catch_issue_exception) {
+                Issue::maybeEmitInstance($this->code_base, $this->context, $exception->getIssueInstance());
+                return StringType::instance(false)->asUnionType();
+            }
+            throw $exception;
         } catch (CodeBaseException $exception) {
             $exception_fqsen = $exception->getFQSEN();
             // We might still be in the parse phase.
