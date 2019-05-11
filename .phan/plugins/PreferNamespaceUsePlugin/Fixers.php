@@ -29,7 +29,7 @@ class Fixers
         IssueInstance $instance
     ) : ?FileEditSet {
         $params = $instance->getTemplateParameters();
-        $shorter_return_type = ltrim((string)$params[1], '?');
+        $shorter_return_type = \ltrim((string)$params[1], '?');
         $method_name = $params[0];
         // @phan-suppress-next-line PhanPartialTypeMismatchArgument
         $declaration = self::findFunctionLikeDeclaration($contents, $instance->getLine(), $method_name);
@@ -48,10 +48,9 @@ class Fixers
         IssueInstance $instance
     ) : ?FileEditSet {
         $params = $instance->getTemplateParameters();
-        $shorter_return_type = ltrim((string)$params[2], '?');
+        $shorter_return_type = \ltrim((string)$params[2], '?');
         $method_name = (string)$params[1];
         $param_name = (string)$params[0];
-        // @phan-suppress-next-line PhanPartialTypeMismatchArgument
         $declaration = self::findFunctionLikeDeclaration($contents, $instance->getLine(), $method_name);
         if (!$declaration) {
             return null;

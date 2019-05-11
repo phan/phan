@@ -76,7 +76,6 @@ class RegexAnalyzer
             // @phan-suppress-next-line PhanTypeMismatchArgumentNullable false positive for static init
             return self::makeArrayShape($regex_group_keys, $string_type);
         }
-        // @phan-suppress-next-line PhanTypeMismatchReturnNullable false positive for static init
         return $string_array_type;
     }
 

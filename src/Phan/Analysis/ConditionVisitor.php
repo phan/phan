@@ -636,7 +636,6 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             }
             if (\get_class($type) === IterableType::class) {
                 // An iterable is either an array or a Traversable.
-                // @phan-suppress-next-line PhanThrowTypeAbsentForCall
                 $new_type_builder->addType(Type::traversableInstance());
             }
         }

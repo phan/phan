@@ -567,8 +567,7 @@ class Type
             case 'double':
                 return FloatType::instance(false);
             case 'object':
-                // TODO: Figure out why this is a false positive
-                // @phan-suppress-next-line PhanTypeMismatchArgumentInternal, PhanThrowTypeMismatchForCall
+                // @phan-suppress-next-line PhanThrowTypeMismatchForCall
                 return Type::fromFullyQualifiedString('\\' . \get_class($object));
             case 'boolean':
                 return $object ? TrueType::instance(false) : FalseType::instance(false);
@@ -796,7 +795,6 @@ class Type
                 $fully_qualified_substring = \substr($fully_qualified_string, 0, -2);
             }
             return GenericArrayType::fromElementType(
-                // @phan-suppress-next-line PhanThrowTypeMismatchForCall
                 Type::fromFullyQualifiedString($fully_qualified_substring),
                 $is_nullable,
                 GenericArrayType::KEY_MIXED

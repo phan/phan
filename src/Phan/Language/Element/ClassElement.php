@@ -104,7 +104,6 @@ abstract class ClassElement extends AddressableElement
                 "No defining class for {$this->getFQSEN()}"
             );
         }
-        // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
         return $this->defining_fqsen->getFullyQualifiedClassName();
     }
 

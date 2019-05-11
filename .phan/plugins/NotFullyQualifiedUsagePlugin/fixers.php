@@ -20,7 +20,6 @@ use Phan\Plugin\Internal\IssueFixingPlugin\IssueFixer;
 call_user_func(static function () : void {
     /**
      * @return ?FileEditSet
-     * @suppress PhanAccessMethodInternal
      */
     $fix = static function (CodeBase $code_base, FileCacheEntry $contents, IssueInstance $instance) : ?FileEditSet {
         $line = $instance->getLine();

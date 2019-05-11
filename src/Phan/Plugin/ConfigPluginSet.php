@@ -49,11 +49,11 @@ use Phan\PluginV2\AnalyzePropertyCapability;
 use Phan\PluginV2\BeforeAnalyzeCapability;
 use Phan\PluginV2\BeforeAnalyzeFileCapability;
 use Phan\PluginV2\FinalizeProcessCapability;
+use Phan\PluginV2\HandleLazyLoadInternalFunctionCapability;
 use Phan\PluginV3;
 use Phan\PluginV3\AnalyzeFunctionCallCapability;
 use Phan\PluginV3\AutomaticFixCapability;
 use Phan\PluginV3\BeforeAnalyzePhaseCapability;
-use Phan\PluginV2\HandleLazyLoadInternalFunctionCapability;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
 use Phan\PluginV3\PluginAwarePreAnalysisVisitor;
 use Phan\PluginV3\PostAnalyzeNodeCapability;
@@ -1040,7 +1040,7 @@ final class ConfigPluginSet extends PluginV3 implements
         PostAnalyzeNodeCapability $plugin
     ) : void {
         $plugin_analysis_class = $plugin->getPostAnalyzeNodeVisitorClassName();
-        if (!\is_subclass_of($plugin_analysis_class, PluginAwarePostAnalysisVisitor::class) && !is_subclass_of($plugin_analysis_class, \Phan\PluginV2\PluginAwarePostAnalysisVisitor::class)) {
+        if (!\is_subclass_of($plugin_analysis_class, PluginAwarePostAnalysisVisitor::class) && !\is_subclass_of($plugin_analysis_class, \Phan\PluginV2\PluginAwarePostAnalysisVisitor::class)) {
             throw new \TypeError(
                 \sprintf(
                     "Result of %s::getAnalyzeNodeVisitorClassName must be the name of a subclass of '%s', but '%s' is not",

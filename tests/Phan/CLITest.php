@@ -275,7 +275,7 @@ final class CLITest extends BaseTest
             if ($i == 0) {
                 continue;
             }
-            $this->assertLessThan(0, \version_compare($version, str_replace('-dev', '', $versions[$i - 1])), "unexpected order of $version and {$versions[$i - 1]}");
+            $this->assertLessThan(0, \version_compare($version, \str_replace('-dev', '', $versions[$i - 1])), "unexpected order of $version and {$versions[$i - 1]}");
         }
     }
 }

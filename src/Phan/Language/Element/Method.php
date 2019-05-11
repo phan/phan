@@ -738,8 +738,6 @@ class Method extends ClassElement implements FunctionInterface
     /**
      * @return FullyQualifiedMethodName the FQSEN with the original definition (Even if this is private/protected and inherited from a trait). Used for dead code detection.
      *                                  Inheritance tests use getDefiningFQSEN() so that access checks won't break.
-     *
-     * @suppress PhanPartialTypeMismatchReturn TODO: Allow subclasses to make property types more specific
      */
     public function getRealDefiningFQSEN() : FullyQualifiedMethodName
     {

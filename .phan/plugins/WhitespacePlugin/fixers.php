@@ -14,7 +14,6 @@ use Phan\Plugin\Internal\IssueFixingPlugin\IssueFixer;
 return [
     /**
      * @return ?FileEditSet
-     * @suppress PhanAccessMethodInternal
      */
     WhitespacePlugin::Tab => static function (CodeBase $unused_code_base, FileCacheEntry $contents, IssueInstance $instance) : ?FileEditSet {
         $spaces_per_tab = (int)(Config::getValue('plugin_config')['spaces_per_tab'] ?? 4);
@@ -41,7 +40,6 @@ return [
                 $replacement_space_count = ($len - 1) * $spaces_per_tab + ($spaces_per_tab - ($effective_space_count % $spaces_per_tab));
 
                 $start = $byte_offset + $match[1];
-                // @phan-suppress-next-line PhanAccessMethodInternal
                 yield new FileEdit($start, $start + $len, str_repeat(' ', $replacement_space_count));
             }
         };
@@ -67,7 +65,6 @@ return [
     },
     /**
      * @return ?FileEditSet
-     * @suppress PhanAccessMethodInternal
      */
     WhitespacePlugin::WhitespaceTrailing => static function (CodeBase $unused_code_base, FileCacheEntry $contents, IssueInstance $instance) : ?FileEditSet {
         IssueFixer::debug("Calling trailing whitespace fixer {$instance->getFile()}\n");
@@ -95,7 +92,6 @@ return [
 
     /**
      * @return ?FileEditSet
-     * @suppress PhanAccessMethodInternal
      */
     WhitespacePlugin::CarriageReturn => static function (CodeBase $unused_code_base, FileCacheEntry $contents, IssueInstance $instance) : ?FileEditSet {
         IssueFixer::debug("Calling trailing whitespace fixer {$instance->getFile()}\n");
