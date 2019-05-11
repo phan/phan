@@ -1,0 +1,4 @@
+%s:5 PhanUndeclaredProperty Reference to undeclared property \WeakReference->disallow
+%s:9 PhanTypeMismatchArgumentInternal Argument 1 (string) is object but \strlen() takes string
+%s:10 PhanUndeclaredMethod Call to undeclared method \WeakReference::missingMethod
+%s:12 PhanTypeMismatchArgumentInternal Argument 1 (referent) is 2 but \WeakReference::__construct() takes object
