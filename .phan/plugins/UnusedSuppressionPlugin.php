@@ -99,6 +99,15 @@ class UnusedSuppressionPlugin extends PluginV3 implements
         }
     }
 
+    private function postponeAnalysisOfElement(AddressableElement $element) : void
+    {
+        if (count($element->getSuppressIssueList()) === 0) {
+            // There are no suppressions, so there's no reason to check this
+            return;
+        }
+        $this->elements_for_postponed_analysis[] = $element;
+    }
+
     /**
      * @param CodeBase $unused_code_base
      * The code base in which the class exists
@@ -114,7 +123,7 @@ class UnusedSuppressionPlugin extends PluginV3 implements
         CodeBase $unused_code_base,
         Clazz $class
     ) : void {
-        $this->elements_for_postponed_analysis[] = $class;
+        $this->postponeAnalysisOfElement($class);
     }
 
     /**
@@ -138,7 +147,7 @@ class UnusedSuppressionPlugin extends PluginV3 implements
             return;
         }
 
-        $this->elements_for_postponed_analysis[] = $method;
+        $this->postponeAnalysisOfElement($method);
     }
 
     /**
@@ -156,7 +165,7 @@ class UnusedSuppressionPlugin extends PluginV3 implements
         CodeBase $unused_code_base,
         Func $function
     ) : void {
-        $this->elements_for_postponed_analysis[] = $function;
+        $this->postponeAnalysisOfElement($function);
     }
 
     /**
