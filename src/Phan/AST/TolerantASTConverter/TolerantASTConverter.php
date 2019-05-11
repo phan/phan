@@ -410,7 +410,7 @@ class TolerantASTConverter
             };
         }
         $callback = $callback_map[\get_class($n)] ?? $fallback_closure;
-        // @phan-suppress-next-line PhanThrowTypeMismatch, PhanThrowTypeAbsentForCall
+        // @phan-suppress-next-line PhanThrowTypeMismatch
         return $callback($n, self::getStartLine($n));
     }
 

@@ -858,7 +858,6 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
                 // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal, PhanPartialTypeMismatchArgumentInternal
                 return \chr(\hexdec(\substr($x, 2)));
             },
-            // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
             $escaped_key
         );
     }

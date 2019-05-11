@@ -106,7 +106,6 @@ class ParseVisitor extends ScopeVisitor
             return $this->context;
         }
 
-        // @phan-suppress-next-line PhanThrowTypeAbsentForCall hopefully impossible
         $class_fqsen = FullyQualifiedClassName::fromStringInContext(
             $class_name,
             $this->context
@@ -224,7 +223,6 @@ class ParseVisitor extends ScopeVisitor
                 // $extends_node->flags is 0 when it is fully qualified?
 
                 // The name is fully qualified.
-                // @phan-suppress-next-line PhanThrowTypeAbsentForCall should be impossible
                 $parent_fqsen = FullyQualifiedClassName::fromFullyQualifiedString(
                     $parent_class_name
                 );
@@ -245,7 +243,6 @@ class ParseVisitor extends ScopeVisitor
                 foreach ($node->children['implements']->children as $name_node) {
                     $name = (string)UnionTypeVisitor::unionTypeFromClassNode($this->code_base, $this->context, $name_node);
                     $class->addInterfaceClassFQSEN(
-                        // @phan-suppress-next-line PhanThrowTypeAbsentForCall should be impossible
                         FullyQualifiedClassName::fromFullyQualifiedString(
                             $name
                         ),

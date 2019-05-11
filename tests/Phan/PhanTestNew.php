@@ -11,9 +11,6 @@ namespace Phan\Tests;
  */
 class PhanTestNew extends PhanTestCommon
 {
-    /**
-     * @suppress PhanUndeclaredConstant
-     */
     public function getTestFiles() : array
     {
         return \array_filter(

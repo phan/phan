@@ -276,7 +276,6 @@ class CodeBase
     public function getParsedFilePathList() : array
     {
         if ($this->undo_tracker) {
-            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             return $this->undo_tracker->getParsedFilePathList();
         }
         throw new \RuntimeException("Calling getParsedFilePathList without an undo tracker");
@@ -349,7 +348,6 @@ class CodeBase
     public function recordUnparsableFile(string $current_parsed_file) : void
     {
         if ($this->undo_tracker) {
-            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             $this->undo_tracker->recordUnparsableFile($this, $current_parsed_file);
         }
     }
@@ -416,7 +414,6 @@ class CodeBase
         if ($this->undo_tracker) {
             $this->invalidateDependentCacheEntries();
 
-            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             return $this->undo_tracker->updateFileList($this, $new_file_list, $file_mapping_contents, $reanalyze_files);
         }
         throw new \RuntimeException("Calling updateFileList without undo tracker");
@@ -431,7 +428,6 @@ class CodeBase
         if ($this->undo_tracker) {
             $this->invalidateDependentCacheEntries();
 
-            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             return $this->undo_tracker->beforeReplaceFileContents($this, $file_name);
         }
         throw new \RuntimeException("Calling replaceFileContents without undo tracker");
@@ -645,7 +641,6 @@ class CodeBase
         $this->fqsen_class_map->offsetSet($fqsen, $class);
         $this->fqsen_class_map_user_defined->offsetSet($fqsen, $class);
         if ($this->undo_tracker) {
-            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             $this->undo_tracker->recordUndo(static function (CodeBase $inner) use ($fqsen) : void {
                 Daemon::debugf("Undoing addClass %s\n", $fqsen);
                 $inner->fqsen_class_map->offsetUnset($fqsen);
@@ -671,7 +666,6 @@ class CodeBase
         // debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
         $this->parsed_namespace_maps[$file][$key] = $namespace_map;
         if ($this->undo_tracker) {
-            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             $this->undo_tracker->recordUndo(static function (CodeBase $inner) use ($file, $key) : void {
                 Daemon::debugf("Undoing addParsedNamespaceMap file = %s namespace = %s\n", $file, $key);
                 unset($inner->parsed_namespace_maps[$file][$key]);
@@ -743,7 +737,6 @@ class CodeBase
         if ($this->undo_tracker) {
             // TODO: Track a count of aliases instead? This doesn't work in daemon mode if multiple files add the same alias to the same class.
             // TODO: Allow .phan/config.php to specify aliases or precedences for aliases?
-            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             $this->undo_tracker->recordUndo(static function (CodeBase $inner) use ($original, $alias_record) : void {
                 $fqsen_alias_map = $inner->fqsen_alias_map[$original] ?? null;
                 if ($fqsen_alias_map) {
@@ -966,7 +959,6 @@ class CodeBase
         }
         if ($this->undo_tracker) {
             // The addClass's recordUndo should remove the class map. Only need to remove it from method_set
-            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             $this->undo_tracker->recordUndo(static function (CodeBase $inner) use ($method) : void {
                 $inner->method_set->detach($method);
             });
@@ -1103,7 +1095,6 @@ class CodeBase
         $this->fqsen_func_map[$function->getFQSEN()] = $function;
 
         if ($this->undo_tracker) {
-            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             $this->undo_tracker->recordUndo(static function (CodeBase $inner) use ($function) : void {
                 Daemon::debugf("Undoing addFunction on %s\n", $function->getFQSEN());
                 unset($inner->fqsen_func_map[$function->getFQSEN()]);
@@ -1212,7 +1203,6 @@ class CodeBase
             $global_constant->getFQSEN()
         ] = $global_constant;
         if ($this->undo_tracker) {
-            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             $this->undo_tracker->recordUndo(static function (CodeBase $inner) use ($global_constant) : void {
                 Daemon::debugf("Undoing addGlobalConstant on %s\n", $global_constant->getFQSEN());
                 unset($inner->fqsen_global_constant_map[$global_constant->getFQSEN()]);

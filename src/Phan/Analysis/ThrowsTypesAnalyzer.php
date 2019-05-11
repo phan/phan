@@ -135,7 +135,6 @@ class ThrowsTypesAnalyzer
                 if ($class->isTrait()) {
                     return false;
                 }
-                // @phan-suppress-next-line PhanThrowTypeAbsentForCall
                 return $class->getFQSEN()->asType()->asExpandedTypes($code_base)->hasType(Type::throwableInstance());
             })
         );

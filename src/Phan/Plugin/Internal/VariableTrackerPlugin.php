@@ -249,7 +249,6 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
                     $issue_type = $this->getParameterCategory($method_node);
                     if (\strpos($issue_type, 'NoOverride') === false && \strpos($issue_type, 'MethodParameter') !== false) {
                         $alternate_issue_type = \str_replace('MethodParameter', 'NoOverrideMethodParameter', $issue_type);
-                        // @phan-suppress-next-line PhanAccessMethodInternal
                         if (Issue::shouldSuppressIssue($this->code_base, $this->context, $alternate_issue_type, $line, [$variable_name], null)) {
                             continue;
                         }

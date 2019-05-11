@@ -674,7 +674,6 @@ final class ArgumentType
             Issue::maybeEmit(
                 $code_base,
                 $context,
-                // @phan-suppress-next-line PhanAccessMethodInternal
                 $issue_type,
                 $lineno,
                 ($i + 1),

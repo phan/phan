@@ -7,8 +7,6 @@ use ReflectionClass;
 
 /**
  * Unit tests of PluginV3's documentation
- *
- * @phan-file-suppress PhanAccessMethodInternal
  */
 final class PluginV3Test extends BaseTest
 {

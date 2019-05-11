@@ -6,7 +6,6 @@ use Phan\Config;
 
 /**
  * Unit tests of Phan's analysis creating the expected element representations on snippets of code.
- * @phan-file-suppress PhanThrowTypeAbsentForCall
  */
 final class ConfigTest extends BaseTest
 {

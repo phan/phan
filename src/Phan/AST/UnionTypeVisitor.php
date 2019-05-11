@@ -554,7 +554,6 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
             // Sometimes 0 for a fully qualified name?
 
-            // @phan-suppress-next-line PhanThrowTypeAbsentForCall hopefully impossible
             return Type::fromFullyQualifiedString(
                 '\\' . $name
             )->asUnionType();

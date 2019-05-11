@@ -21,8 +21,6 @@ use function is_string;
 
 /**
  * Tests that the polyfill works with valid ASTs
- *
- * @phan-file-suppress PhanThrowTypeAbsent it's a test
  */
 final class ConversionTest extends BaseTest
 {
