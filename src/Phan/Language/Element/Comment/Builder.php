@@ -809,7 +809,6 @@ final class Builder
     public static function findLineNumberOfCommentForElement(AddressableElementInterface $element, array $lines, int $i) : int
     {
         $context = $element->getContext();
-        fwrite(STDERR, "Trying to load $context\n" . Config::projectPath($context->getFile()) . "\n");
 
         $entry = FileCache::getOrReadEntry(Config::projectPath($context->getFile()));
         $declaration_lineno = $context->getLineNumberStart();
@@ -821,11 +820,9 @@ final class Builder
         $lineno_search = $declaration_lineno - ($count - $i - 1);
         $lineno_stop = \max(1, $lineno_search - 9);
         $line = $lines[$i];
-        fwrite(STDERR, "looking for $line");
         $trimmed_line = \trim($lines[$i]);
         for ($check_lineno = $lineno_search; $check_lineno >= $lineno_stop; $check_lineno--) {
             $cur_line = $lines_array[$check_lineno];
-            fwrite(STDERR, "Comparing against $cur_line\n");
             if (\stripos($cur_line, $line) !== false) {
                 // Better heuristic: Lines in the middle of phpdoc are guaranteed to be complete, including a few newlines at the end.
                 $j = $i - ($lineno_search - $check_lineno);

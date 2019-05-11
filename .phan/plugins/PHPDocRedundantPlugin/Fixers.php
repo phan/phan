@@ -105,15 +105,15 @@ class Fixers
         $lineno = $instance->getLine();
         $file_lines = $contents->getLines();
 
-        $line = trim($file_lines[$lineno]);
+        $line = \trim($file_lines[$lineno]);
         // @phan-suppress-next-line PhanAccessClassConstantInternal
-        if (!preg_match(Builder::RETURN_COMMENT_REGEX, $line)) {
+        if (!\preg_match(Builder::RETURN_COMMENT_REGEX, $line)) {
             return null;
         }
         $first_deleted_line = $lineno;
         $last_deleted_line = $lineno;
-        $is_blank_comment_line = function (int $i) use ($file_lines) : bool {
-            return trim($file_lines[$i] ?? '') === '*';
+        $is_blank_comment_line = static function (int $i) use ($file_lines) : bool {
+            return \trim($file_lines[$i] ?? '') === '*';
         };
         while ($is_blank_comment_line($first_deleted_line - 1)) {
             $first_deleted_line--;
