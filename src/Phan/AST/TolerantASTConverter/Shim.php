@@ -22,5 +22,8 @@ class Shim
         if (!\defined('ast\AST_CLASS_NAME')) {
             \define('ast\AST_CLASS_NAME', 287);
         }
+        if (!\defined('ast\AST_ARROW_FUNC')) {
+            \define('ast\AST_ARROW_FUNC', 71);
+        }
     }
 }

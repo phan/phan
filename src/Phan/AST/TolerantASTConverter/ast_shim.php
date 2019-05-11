@@ -51,6 +51,7 @@ const AST_FUNC_DECL = 66;
 const AST_CLOSURE = 67;
 const AST_METHOD = 68;
 const AST_CLASS = 69;
+const AST_ARROW_FUNC = 71;
 const AST_MAGIC_CONST = 0;
 const AST_TYPE = 1;
 const AST_VAR = 256;

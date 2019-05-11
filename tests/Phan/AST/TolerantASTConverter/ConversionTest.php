@@ -144,6 +144,28 @@ final class ConversionTest extends BaseTest
         return $node;
     }
 
+    private const FUNCTION_DECLARATION_KINDS = [
+        ast\AST_FUNC_DECL,
+        ast\AST_METHOD,
+        ast\AST_CLOSURE,
+        ast\AST_ARROW_FUNC,
+    ];
+
+    public static function normalizeYieldFlags(ast\Node $node) : void
+    {
+        if (\in_array($node->kind, self::FUNCTION_DECLARATION_KINDS, true)) {
+            // Alternately, could make Phan do this.
+            $node->flags &= ~ast\flags\FUNC_GENERATOR;
+        }
+
+        foreach ($node->children as $v) {
+            if ($v instanceof ast\Node) {
+                self::normalizeYieldFlags($v);
+            }
+        }
+
+    }
+
     /** @dataProvider astValidFileExampleProvider */
     public function testFallbackFromParser(string $file_name, int $ast_version) : void
     {
@@ -173,6 +195,8 @@ final class ConversionTest extends BaseTest
             $fallback_ast = self::normalizeLineNumbers($fallback_ast);
             $ast          = self::normalizeLineNumbers($ast);
         }
+        self::normalizeYieldFlags($ast);
+        self::normalizeYieldFlags($fallback_ast);
         // TODO: Remove $ast->parent recursively
         $fallback_ast_repr = \var_export($fallback_ast, true);
         $original_ast_repr = \var_export($ast, true);

@@ -6,9 +6,10 @@ Phan NEWS
 New features(Analysis):
 + Infer the return types of PHP 7.4's magic methods `__serialize()` and `__unserialize()`. (#2755)
   Improve analysis of return types of other magic methods such as `__sleep()`.
++ Support more of PHP 7.4's function signatures (e.g. `WeakReference`)
 
 Plugins:
-+ Detect some new php 7.3 functions (array_key_first, etc.) in `UseReturnValuePlugin`.
++ Detect some new php 7.3 functions (`array_key_first`, etc.) in `UseReturnValuePlugin`.
 
 Bug fixes:
 + Analyze the remaining expressions in a statement after emitting `PhanTraitParentReference` (#2750)
