@@ -5,7 +5,6 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 require_once dirname(__DIR__) . '/internal/lib/IncompatibleSignatureDetectorBase.php';
 
-// @phan-file-suppress PhanNativePHPSyntaxCheckPlugin, UnusedPluginFileSuppression caused by inline HTML before declare
 /**
  * Loads the ReflectionFunction or ReflectionMethod for the given function or method name.
  * Method names must use '::' to separate the class and method names.
