@@ -3050,7 +3050,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
         if (is_string($node)) {
             if (\stripos($node, '::') !== false) {
-                list($class_name, $method_name) = \explode('::', $node, 2);
+                [$class_name, $method_name] = \explode('::', $node, 2);
                 return $this->methodFQSENListFromParts($class_name, $method_name);
             }
             return $this->functionFQSENListFromFunctionName($node);

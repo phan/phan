@@ -14,7 +14,7 @@ require_once dirname(__DIR__) . '/internal/lib/IncompatibleSignatureDetectorBase
 function load_internal_function(string $function_name) : ReflectionFunctionAbstract
 {
     if (strpos($function_name, '::') !== false) {
-        list($class_name, $method_name) = explode('::', $function_name, 2);
+        [$class_name, $method_name] = explode('::', $function_name, 2);
         $class = new ReflectionClass($class_name);
         return $class->getMethod($method_name);
     } else {
@@ -230,8 +230,8 @@ function check_fields(string $function_name, array $fields, array $signatures) :
 
 
     $reflection_parameters = $function->getParameters();
-    list($phan_required_count, $phan_optional_count, $saw_optional_after_required) = getParametersCountsFromPhan($fields);
-    list($php_computed_required_count, $php_optional_count) = getParameterCountsFromReflection($reflection_parameters);
+    [$phan_required_count, $phan_optional_count, $saw_optional_after_required] = getParametersCountsFromPhan($fields);
+    [$php_computed_required_count, $php_optional_count] = getParameterCountsFromReflection($reflection_parameters);
     $generate_comparison_text = static function () use ($encode_signature, $fields, $function) : string {
         $php_fields = getPhanSignatureArrayFromReflection($function);
         return sprintf("%s vs PHP's %s", $encode_signature($fields), $encode_signature($php_fields));

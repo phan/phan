@@ -813,7 +813,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // TODO: Improve inferences in switch statements?
         // TODO: Behave differently if switch lists don't cover every case (e.g. if there is no default)
         $has_default = false;
-        list($switch_variable_node, $switch_variable_condition) = $this->createSwitchConditionAnalyzer(
+        [$switch_variable_node, $switch_variable_condition] = $this->createSwitchConditionAnalyzer(
             end($this->parent_node_list)->children['cond']
         );
         $previous_child_context = null;

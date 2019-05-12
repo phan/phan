@@ -127,7 +127,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
             $prefix,
             $node->flags ?? 0
         );
-        foreach ($alias_target_map as $alias => list($flags, $target, $lineno)) {
+        foreach ($alias_target_map as $alias => [$flags, $target, $lineno]) {
             $context = $context->withNamespaceMap(
                 $flags,
                 $alias,
@@ -155,7 +155,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
         $context = $this->context;
         $target_php_version = Config::get_closest_target_php_version_id();
 
-        foreach (self::aliasTargetMapFromUseNode($node) as $alias => list($flags, $target, $lineno)) {
+        foreach (self::aliasTargetMapFromUseNode($node) as $alias => [$flags, $target, $lineno]) {
             $flags = $node->flags ?: $flags;
             if ($flags === \ast\flags\USE_NORMAL && $target_php_version < 70200) {
                 self::analyzeUseElemCompatibility($alias, $target, $target_php_version, $lineno);

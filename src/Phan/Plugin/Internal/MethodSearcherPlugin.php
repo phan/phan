@@ -167,7 +167,7 @@ final class MethodSearcherPlugin extends PluginV3 implements
         if ($limit < count($results)) {
             echo "(Showing $limit of $num_results results)\n";
         }
-        foreach ($results as $i => list($unused_score, $fqsen, $function)) {
+        foreach ($results as $i => [$unused_score, $fqsen, $function]) {
             echo "$fqsen\n";
             if ($function instanceof Method) {
                 $return_type = $function->getUnionTypeWithUnmodifiedStatic();

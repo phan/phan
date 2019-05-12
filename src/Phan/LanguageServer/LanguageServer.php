@@ -575,7 +575,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
 
     private function finalizeAnalyzingURIs() : void
     {
-        list($uris_to_analyze, $file_path_list) = $this->getFilteredURIsToAnalyze();
+        [$uris_to_analyze, $file_path_list] = $this->getFilteredURIsToAnalyze();
         // TODO: Add a better abstraction of
         if (\count($uris_to_analyze) === 0) {
             // Discard any node info requests, we haven't created a request yet.
@@ -777,7 +777,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             return;
         }
         foreach ($issues as $issue) {
-            list($issue_uri, $diagnostic) = self::generateDiagnostic($issue);
+            [$issue_uri, $diagnostic] = self::generateDiagnostic($issue);
             if ($diagnostic instanceof Diagnostic) {
                 $diagnostics[$issue_uri][] = $diagnostic;
             }
@@ -848,7 +848,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      */
     private static function streamForParent(array $sockets)
     {
-        list($for_read, $for_write) = $sockets;
+        [$for_read, $for_write] = $sockets;
 
         // The parent will not use the write channel, so it
         // must be closed to prevent deadlock.
@@ -873,7 +873,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      */
     private static function streamForChild(array $sockets)
     {
-        list($for_read, $for_write) = $sockets;
+        [$for_read, $for_write] = $sockets;
 
         // The while will not use the read channel, so it must
         // be closed to prevent deadlock.

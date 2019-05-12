@@ -99,7 +99,7 @@ class ASTSimplifier
                 $new_children[] = $child_node;
             }
         }
-        list($new_children, $modified) = self::normalizeStatementList($new_children);
+        [$new_children, $modified] = self::normalizeStatementList($new_children);
         if (!$modified && $new_children === $statement_list->children) {
             return $statement_list;
         }
