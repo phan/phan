@@ -143,11 +143,14 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
             }
         }
         if ($node->kind === ast\AST_ARROW_FUNC) {
-            foreach (ArrowFunc::getUses($node) as $name => $closure_use) {
-                $result[\spl_object_id($closure_use)] = Issue::ShadowedVariableInArrowFunc;
+            foreach (ArrowFunc::getUses($node) as $name => $_) {
+                // @phan-suppress-next-line PhanUndeclaredProperty
+                if (isset($node->phan_arrow_inherited_vars[$name])) {
+                    $result[\spl_object_id($node)] = Issue::ShadowedVariableInArrowFunc;
 
-                // $node is recorded as the definition so that warnings go on the correct line.
-                $graph->recordVariableDefinition((string)$name, $node, $scope, null);
+                    // $node is recorded as the definition so that warnings go on the correct line.
+                    $graph->recordVariableDefinition((string)$name, $node, $scope, null);
+                }
             }
         }
         return $result;

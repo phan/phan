@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 
 use ast\Node;
+use Phan\CLI;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
@@ -179,18 +180,21 @@ class InvokeExecutionPromise
     /** @var Context has the file name being analyzed */
     private $context;
 
+    /** @var ?string the temporary path, if needed for Windows. */
+    private $tmp_path;
+
     public function __construct(string $binary, string $file_contents, Context $context)
     {
-        $file_contents = self::removeShebang($file_contents);
+        $this->context = clone($context);
+        $new_file_contents = self::removeShebang($file_contents);
         // TODO: Use symfony process
         // Note: We might have invalid utf-8, ensure that the streams are opened in binary mode.
         // I'm not sure if this is necessary.
         if (DIRECTORY_SEPARATOR === "\\") {
             $cmd = $binary . ' --syntax-check --no-php-ini';
-            $abs_path = Config::projectPath($context->getFile());
-            if (!file_exists($abs_path)) {
-                $this->done = true;
-                $this->error = "File does not exist";
+            $abs_path = $this->getAbsPathForFileContents($new_file_contents, $file_contents !== $new_file_contents);
+            if (!is_string($abs_path)) {
+                // The helper function has set the error and done flags
                 return;
             }
 
@@ -226,14 +230,38 @@ class InvokeExecutionPromise
             }
             $this->process = $process;
 
-            self::streamPutContents($pipes[0], $file_contents);
+            self::streamPutContents($pipes[0], $new_file_contents);
         }
         $this->pipes = $pipes;
 
         if (!stream_set_blocking($pipes[1], false)) {
             $this->error = "unable to set read stdout to non-blocking";
         }
-        $this->context = clone($context);
+    }
+
+    private function getAbsPathForFileContents(string $new_file_contents, bool $force_tmp_file) : ?string {
+        $file_name = $this->context->getFile();
+        if ($force_tmp_file || CLI::isDaemonOrLanguageServer()) {
+            // This is inefficient, but
+            // - Windows has problems with using stdio/stdout at the same time
+            // - During regular analysis, we won't need to create temporary files.
+            $tmp_path = tempnam(sys_get_temp_dir(), 'phan');
+            if (!$tmp_path) {
+                $this->done = true;
+                $this->error = "Could not create temporary path for $file_name";
+                return null;
+            }
+            file_put_contents($tmp_path, $new_file_contents);
+            $this->tmp_path = $tmp_path;
+            return $tmp_path;
+        }
+        $abs_path = Config::projectPath($file_name);
+        if (!file_exists($abs_path)) {
+            $this->done = true;
+            $this->error = "File does not exist";
+            return null;
+        }
+        return $abs_path;
     }
 
     private static function removeShebang(string $file_contents) : string
@@ -386,6 +414,18 @@ class InvokeExecutionPromise
     public function getBinary() : string
     {
         return $this->binary;
+    }
+
+    public function __wakeup() {
+        $this->tmp_path = null;
+        throw new RuntimeException("Cannot unserialize");
+    }
+
+    public function __destruct() {
+        // We created a temporary path for Windows
+        if (is_string($this->tmp_path)) {
+            unlink($this->tmp_path);
+        }
     }
 }
 

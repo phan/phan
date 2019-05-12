@@ -742,6 +742,36 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     }
 
     /**
+     * Implements analysis of `cond_node ? true_node : false_node` and `cond_node ?: false_node`
+     * @return VariableTrackingScope
+     * @override
+     */
+    public function visitConditional(Node $node) : VariableTrackingScope
+    {
+        $outer_scope = $this->scope;
+        $cond_node = $node->children['cond'];
+        if ($cond_node instanceof Node) {
+            // Could handle non-nodes, optionally
+            $outer_scope = $this->analyze($outer_scope, $cond_node);
+        }
+        $inner_scope_list = [];
+
+        $merge_parent_scope = false;
+        foreach ([$node->children['true'], $node->children['false']] as $child_node) {
+            if ($child_node instanceof Node) {
+                $inner_scope = new VariableTrackingBranchScope($outer_scope);
+                $inner_scope = $this->analyze($inner_scope, $child_node);
+                '@phan-var VariableTrackingBranchScope $inner_scope';
+                $inner_scope_list[] = $inner_scope;
+            } else {
+                $merge_parent_scope = true;
+            }
+        }
+        // Merge inner scope into outer scope
+        return $outer_scope->mergeBranchScopeList($inner_scope_list, $merge_parent_scope, []);
+    }
+
+    /**
      * Analyzes try nodes and their catch statement lists and finally blocks.
      *
      * @param Node $node a node of kind AST_TRY

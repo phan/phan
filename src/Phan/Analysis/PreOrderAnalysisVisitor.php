@@ -547,6 +547,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             // Check to see if the variable exists in this scope
             // (If it doesn't, then don't add it - Phan will check later if it properly declares the variable in the scope.)
             if ($context->getScope()->hasVariableWithName($variable_name)) {
+                ArrowFunc::recordVariableExistsInOuterScope($node, $variable_name);
                 $variable = $context->getScope()->getVariableByName(
                     $variable_name
                 );

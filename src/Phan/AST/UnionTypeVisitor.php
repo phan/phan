@@ -787,6 +787,8 @@ class UnionTypeVisitor extends AnalysisVisitor
             if ($base_context_scope instanceof GlobalScope) {
                 $base_context = $base_context->withScope(new BranchScope($base_context_scope));
             }
+            // Doesn't seem to be necessary to run BlockAnalysisVisitor
+            // $base_context = (new BlockAnalysisVisitor($this->code_base, $base_context))->__invoke($cond_node);
             $true_context = (new ConditionVisitor(
                 $this->code_base,
                 isset($node->children['true']) ? $base_context : $this->context  // special case: $c = (($d = foo()) ?: 'fallback')

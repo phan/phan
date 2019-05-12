@@ -7,8 +7,8 @@ use ast\Node;
 use function spl_object_id;
 
 /**
- * This will represent a variable scope, similar to \Phan\Language\Scope.
- * Instead of tracking the union types for variable names, this will instead track definitions and uses of variable names.
+ * This represents a variable scope, similar to \Phan\Language\Scope.
+ * Instead of tracking the union types for variable names, this instead tracks definitions and uses of variable names.
  *
  * @see ContextMergeVisitor for something similar for union types.
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod

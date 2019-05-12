@@ -813,6 +813,14 @@ Possibly zero write references to public property {PROPERTY}
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/plugin_test/expected/048_redundant_binary_op.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.2/tests/plugin_test/src/048_redundant_binary_op.php#L5).
 
+## PhanShadowedVariableInArrowFunc
+
+```
+Short arrow function shadows variable ${VARIABLE} from the outer scope
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php74_files/expected/004_arrow_func_shadow.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php74_files/src/004_arrow_func_shadow.php#L7).
+
 ## PhanUnreachableCatch
 
 ```
