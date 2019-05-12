@@ -3,6 +3,7 @@
 namespace Phan\Tests;
 
 use Phan\Config;
+use Phan\Plugin\ConfigPluginSet;
 
 /**
  * Unit tests of Phan analysis targeting PHP 7.4 codebases.
@@ -12,15 +13,17 @@ final class PHP74Test extends AbstractPhanFileTest
 {
     const OVERRIDES = [
         'allow_method_param_type_widening' => true,
+        'unused_variable_detection' => true,  // for use with tests of arrow functions
         'target_php_version' => '7.4',
     ];
 
-    public function setUp() : void
+    public static function setUpBeforeClass() : void
     {
-        parent::setUp();
+        parent::setUpBeforeClass();
         foreach (self::OVERRIDES as $key => $value) {
             Config::setValue($key, $value);
         }
+        ConfigPluginSet::reset();  // @phan-suppress-current-line PhanAccessMethodInternal
     }
 
     /**
@@ -55,6 +58,6 @@ final class PHP74Test extends AbstractPhanFileTest
      */
     public function getTestFiles() : array
     {
-        return $this->scanSourceFilesDir(PHP74_TEST_FILE_DIR, PHP74_EXPECTED_DIR);
+        return $this->scanSourceFilesDir(\PHP74_TEST_FILE_DIR, \PHP74_EXPECTED_DIR);
     }
 }

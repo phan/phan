@@ -6,7 +6,10 @@ use AssertionError;
 use ast;
 use ast\flags;
 use ast\Node;
+use Phan\AST\TolerantASTConverter\Shim;
 use Phan\Debug;
+
+Shim::load();
 
 /**
  * This contains functionality needed by various visitor implementations
@@ -42,6 +45,7 @@ class Element
         ast\AST_ARG_LIST           => 'visitArgList',
         ast\AST_ARRAY              => 'visitArray',
         ast\AST_ARRAY_ELEM         => 'visitArrayElem',
+        ast\AST_ARROW_FUNC         => 'visitArrowFunc',
         ast\AST_ASSIGN             => 'visitAssign',
         ast\AST_ASSIGN_OP          => 'visitAssignOp',
         ast\AST_ASSIGN_REF         => 'visitAssignRef',

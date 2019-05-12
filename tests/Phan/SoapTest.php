@@ -31,6 +31,6 @@ final class SoapTest extends AbstractPhanFileTest
      */
     public function getTestFiles() : array
     {
-        return $this->scanSourceFilesDir(SOAP_TEST_FILE_DIR, SOAP_EXPECTED_DIR);
+        return $this->scanSourceFilesDir(\SOAP_TEST_FILE_DIR, \SOAP_EXPECTED_DIR);
     }
 }

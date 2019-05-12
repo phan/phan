@@ -4,9 +4,13 @@ Phan NEWS
 -----------------------
 
 New features(Analysis):
++ Support analysis of PHP 7.4's short arrow function syntax (`fn ($arg) => expr`) (#2714)
+  (requires php-ast 1.0.2dev or newer)
+
+  Note that the polyfill does not yet support this syntax.
 + Infer the return types of PHP 7.4's magic methods `__serialize()` and `__unserialize()`. (#2755)
   Improve analysis of return types of other magic methods such as `__sleep()`.
-+ Support more of PHP 7.4's function signatures (e.g. `WeakReference`)
++ Support more of PHP 7.4's function signatures (e.g. `WeakReference`) (#2756)
 
 Plugins:
 + Detect some new php 7.3 functions (`array_key_first`, etc.) in `UseReturnValuePlugin`.

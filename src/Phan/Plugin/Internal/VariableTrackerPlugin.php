@@ -6,6 +6,7 @@ use AssertionError;
 use ast;
 use ast\Node;
 use Exception;
+use Phan\AST\ArrowFunc;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
 use Phan\Issue;
@@ -65,6 +66,14 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
      * @override
      */
     public function visitClosure(Node $node) : void
+    {
+        $this->analyzeMethodLike($node);
+    }
+
+    /**
+     * @override
+     */
+    public function visitArrowFunc(Node $node) : void
     {
         $this->analyzeMethodLike($node);
     }
@@ -131,6 +140,14 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
             $graph->recordVariableDefinition($name, $closure_use, $scope, null);
             if ($closure_use->flags & ast\flags\PARAM_REF) {
                 $graph->markAsReference($name);
+            }
+        }
+        if ($node->kind === ast\AST_ARROW_FUNC) {
+            foreach (ArrowFunc::getUses($node) as $name => $closure_use) {
+                $result[\spl_object_id($closure_use)] = Issue::ShadowedVariableInArrowFunc;
+
+                // $node is recorded as the definition so that warnings go on the correct line.
+                $graph->recordVariableDefinition((string)$name, $node, $scope, null);
             }
         }
         return $result;

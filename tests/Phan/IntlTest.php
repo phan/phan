@@ -31,6 +31,6 @@ final class IntlTest extends AbstractPhanFileTest
      */
     public function getTestFiles() : array
     {
-        return $this->scanSourceFilesDir(INTL_TEST_FILE_DIR, INTL_EXPECTED_DIR);
+        return $this->scanSourceFilesDir(\INTL_TEST_FILE_DIR, \INTL_EXPECTED_DIR);
     }
 }

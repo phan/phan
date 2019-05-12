@@ -144,6 +144,15 @@ final class ReachabilityChecker extends KindVisitorImplementation
      * @return ?bool
      * @override
      */
+    public function visitArrowFunc(Node $_) : ?bool
+    {
+        return null;
+    }
+
+    /**
+     * @return ?bool
+     * @override
+     */
     public function visitFuncDecl(Node $_) : ?bool
     {
         return null;
