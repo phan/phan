@@ -34,6 +34,12 @@ class VariableTrackingScope
     protected $uses = [];
 
     /**
+     * @var array<string,true>
+     * Maps variable names to whether they were redefined in the scope.
+     */
+    private $defs_shadowing_set = [];
+
+    /**
      * Record that $variable_name had a definition that was created by the Node $node
      */
     public function recordDefinition(string $variable_name, Node $node) : void
@@ -41,6 +47,8 @@ class VariableTrackingScope
         // Create a new definition for variable_name.
         // Replace the definitions for $variable_name.
         $this->defs[$variable_name] = [spl_object_id($node) => true];
+        // TODO: handle merging branch scopes. If all branches (e.g. if/else, conditional) shadow the variable, then this scope shadows that variable.
+        $this->defs_shadowing_set[$variable_name] = true;
     }
 
     /**
@@ -65,7 +73,8 @@ class VariableTrackingScope
         $node_id = spl_object_id($node);
         // Create a new usage for variable_name.
 
-        if (($this->defs[$variable_name][$node_id] ?? false) !== true) {
+        if (!isset($this->defs_shadowing_set[$variable_name]) &&
+                ($this->defs[$variable_name][$node_id] ?? false) !== true) {
             $this->uses[$variable_name][$node_id] = true;
         }
     }
@@ -78,7 +87,8 @@ class VariableTrackingScope
     public function recordUsageById(string $variable_name, int $node_id) : void
     {
         // Create a new usage for variable_name.
-        if (($this->defs[$variable_name][$node_id] ?? false) !== true) {
+        if (!isset($this->defs_shadowing_set[$variable_name]) &&
+                ($this->defs[$variable_name][$node_id] ?? false) !== true) {
             $this->uses[$variable_name][$node_id] = true;
         }
     }

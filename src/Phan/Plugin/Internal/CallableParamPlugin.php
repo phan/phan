@@ -46,7 +46,7 @@ final class CallableParamPlugin extends PluginV3 implements
         /**
          * @param array<int,Node|int|float|string> $args
          */
-        $closure = static function (CodeBase $code_base, Context $context, FunctionInterface $function, array $args) use ($callable_params, $class_params) : void {
+        $closure = static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($callable_params, $class_params) : void {
             // TODO: Implement support for variadic callable arguments.
             foreach ($callable_params as $i) {
                 $arg = $args[$i] ?? null;
@@ -54,7 +54,8 @@ final class CallableParamPlugin extends PluginV3 implements
                     continue;
                 }
 
-                // Fetch possible functions. As an intentional side effect, this warns about invalid callables.
+                // Fetch possible functions for the provided callable argument.
+                // As an intentional side effect, this warns about invalid callables.
                 // TODO: Check if the signature allows non-array callables? Not sure of desired semantics.
                 $function_like_list = UnionTypeVisitor::functionLikeListFromNodeAndContext($code_base, $context, $arg, true);
                 if (count($function_like_list) === 0) {
