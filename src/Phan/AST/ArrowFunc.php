@@ -97,4 +97,13 @@ class ArrowFunc
             }
         }
     }
+
+    public static function recordVariableExistsInOuterScope(Node $n, string $variable_name) : void
+    {
+        if ($n->kind !== ast\AST_ARROW_FUNC) {
+            throw new InvalidArgumentException("Expected node kind AST_ARROW_FUNC but got " . ast\get_kind_name($n->kind));
+        }
+        // @phan-suppress-next-line PhanUndeclaredProperty
+        $n->phan_arrow_inherited_vars[$variable_name] = true;
+    }
 }
