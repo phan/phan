@@ -475,9 +475,9 @@ class AssignmentVisitor extends AnalysisVisitor
                     // Set the element type on each element of
                     // the list
                     $property->setUnionType($element_type);
-                } catch (UnanalyzableException $exception) {
+                } catch (UnanalyzableException $_) {
                     // Ignore it. There's nothing we can do.
-                } catch (NodeException $exception) {
+                } catch (NodeException $_) {
                     // Ignore it. There's nothing we can do.
                 } catch (IssueException $exception) {
                     Issue::maybeEmitInstance(
@@ -674,12 +674,12 @@ class AssignmentVisitor extends AnalysisVisitor
                 $this->context,
                 $node->children['expr']
             ))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT, Issue::TypeExpectedObjectPropAccess);
-        } catch (CodeBaseException $exception) {
+        } catch (CodeBaseException $_) {
             // This really shouldn't happen since the code
             // parsed cleanly. This should fatal.
             // throw $exception;
             return $this->context;
-        } catch (\Exception $exception) {
+        } catch (\Exception $_) {
             // If we can't figure out what kind of a class
             // this is, don't worry about it
             return $this->context;
@@ -1049,12 +1049,12 @@ class AssignmentVisitor extends AnalysisVisitor
                 $this->context,
                 $node->children['class']
             ))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME, Issue::TypeExpectedObjectStaticPropAccess);
-        } catch (CodeBaseException $exception) {
+        } catch (CodeBaseException $_) {
             // This really shouldn't happen since the code
             // parsed cleanly. This should fatal.
             // throw $exception;
             return $this->context;
-        } catch (\Exception $exception) {
+        } catch (\Exception $_) {
             // If we can't figure out what kind of a class
             // this is, don't worry about it
             return $this->context;
