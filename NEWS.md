@@ -15,6 +15,7 @@ New features(Analysis):
 Plugins:
 + Detect some new php 7.3 functions (`array_key_first`, etc.) in `UseReturnValuePlugin`.
 + Don't emit a `PhanNativePHPSyntaxCheckPlugin` error in `InvokePHPNativeSyntaxCheckPlugin` due to a shebang before `declare(strict_types=1)`
++ Fix edge cases running `PhanNativePHPSyntaxCheckPlugin` on Windows (in language server/daemon mode)
 
 Bug fixes:
 + Analyze the remaining expressions in a statement after emitting `PhanTraitParentReference` (#2750)

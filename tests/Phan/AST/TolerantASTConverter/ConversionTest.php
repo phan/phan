@@ -5,6 +5,7 @@ namespace Phan\Tests\AST\TolerantASTConverter;
 use AssertionError;
 use ast;
 use Phan\AST\TolerantASTConverter\NodeDumper;
+use Phan\AST\TolerantASTConverter\Shim;
 use Phan\AST\TolerantASTConverter\TolerantASTConverter;
 use Phan\Debug;
 use Phan\Tests\BaseTest;
@@ -18,6 +19,8 @@ use function in_array;
 use function is_array;
 use function is_int;
 use function is_string;
+
+Shim::load();
 
 /**
  * Tests that the polyfill works with valid ASTs
