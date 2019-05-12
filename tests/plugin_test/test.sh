@@ -29,12 +29,6 @@ sed -i 's,missing closing parenthesis,missing ),g' $ACTUAL_PATH
 echo
 echo "Comparing the output:"
 
-if [[ "$(php -r 'echo PHP_VERSION_ID;')" < 70100 ]]; then
-    echo "Skipping test cases that rely on Closure::fromCallable() or native syntax checks, the current php version is php 7.0";
-    # Ignore results of a subset of tests in php 7.0
-    # TODO: If we imitate the reflection of php 7.1 in php 7.0, we can restore this.
-    sed -i "/^.*PhanNativePHPSyntaxCheckPlugin.*unexpected '\\?'/d" $ACTUAL_PATH
-fi
 # Normalize PHP_VERSION_ID
 # and remove php 8.0 warnings
 sed -i -e 's/^\(src.020_bool.php.*of type\) [0-9]\+ \(evaluated\)/\1 int \2/g' \

@@ -181,6 +181,7 @@ class InvokeExecutionPromise
 
     public function __construct(string $binary, string $file_contents, Context $context)
     {
+        $file_contents = self::removeShebang($file_contents);
         // TODO: Use symfony process
         // Note: We might have invalid utf-8, ensure that the streams are opened in binary mode.
         // I'm not sure if this is necessary.
@@ -233,6 +234,35 @@ class InvokeExecutionPromise
             $this->error = "unable to set read stdout to non-blocking";
         }
         $this->context = clone($context);
+    }
+
+    private static function removeShebang(string $file_contents) : string
+    {
+        if (substr($file_contents, 0, 2) !== "#!") {
+            return $file_contents;
+        }
+        for ($i = 2; $i < strlen($file_contents); $i++) {
+            $c = $file_contents[$i];
+            if ($c === "\r")  {
+                if (($file_contents[$i + 1] ?? '') === "\n") {
+                    $i++;
+                    break;
+                }
+            } elseif ($c === "\n") {
+                break;
+            }
+        }
+        if ($i >= strlen($file_contents)) {
+            return '';
+        }
+        $rest = (string)substr($file_contents, $i + 1);
+        if (strcasecmp(substr($rest, 0, 5), "<?php") === 0) {
+            // declare(strict_types=1) must be the first part of the script.
+            // Even empty php tags aren't allowed prior to it, so avoid adding empty tags if possible.
+            return "<?php\n" . substr($rest, 5);
+        }
+        // Preserve the line numbers by adding a no-op newline instead of the removed shebang
+        return "<?php\n?>" . $rest;
     }
 
     /**
