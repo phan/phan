@@ -144,13 +144,13 @@ final class BuiltinSuppressionPlugin extends PluginV3 implements
             return [];
         }
         $suggestion_list = [];
-        foreach (self::yieldSuppressionComments($file_contents) as list(
+        foreach (self::yieldSuppressionComments($file_contents) as [
             $comment_text,
             $comment_start_line,
             $comment_start_offset,
             $comment_name,
             $kind_list_text
-        )) {
+        ]) {
             $kind_list = \array_map('trim', \explode(',', $kind_list_text));
             foreach ($kind_list as $issue_kind) {
                 // Build a map where the line being suppressed is mapped to the line causing the suppression.

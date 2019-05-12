@@ -1293,7 +1293,7 @@ final class Builder
 
     protected function emitDeferredIssues() : void
     {
-        foreach ($this->issues as list($issue_type, $issue_lineno, $parameters, $suggestion)) {
+        foreach ($this->issues as [$issue_type, $issue_lineno, $parameters, $suggestion]) {
             if (\array_key_exists($issue_type, $this->suppress_issue_set)) {
                 // Record that this suppression has been used.
                 $this->suppress_issue_set[$issue_type] = 1;

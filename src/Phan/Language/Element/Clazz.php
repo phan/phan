@@ -2653,7 +2653,7 @@ class Clazz extends AddressableElement
      */
     public function toStub(CodeBase $code_base) : string
     {
-        list($namespace, $string) = $this->toStubInfo($code_base);
+        [$namespace, $string] = $this->toStubInfo($code_base);
         $namespace_text = $namespace === '' ? '' : "$namespace ";
         $string = \sprintf("namespace %s{\n%s}\n", $namespace_text, $string);
         return $string;

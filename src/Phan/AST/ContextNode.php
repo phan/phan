@@ -591,7 +591,7 @@ class ContextNode
      */
     public function getClassList(bool $ignore_missing_classes = false, int $expected_type_categories = self::CLASS_LIST_ACCEPT_ANY, string $custom_issue_type = null) : array
     {
-        list($union_type, $class_list) = $this->getClassListInner($ignore_missing_classes);
+        [$union_type, $class_list] = $this->getClassListInner($ignore_missing_classes);
         if ($union_type->isEmpty()) {
             return [];
         }

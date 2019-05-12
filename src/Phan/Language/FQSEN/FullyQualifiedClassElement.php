@@ -121,10 +121,10 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
             throw new InvalidArgumentException("Fully qualified class element lacks '::' delimiter");
         }
 
-        list(
+        [
             $fully_qualified_class_name_string,
             $name_string
-        ) = $parts;
+        ] = $parts;
 
         $fully_qualified_class_name =
             FullyQualifiedClassName::fromFullyQualifiedString(
@@ -173,10 +173,10 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
             if (\count($parts) > 2) {
                 throw new InvalidArgumentException("Too many '::' in $fqsen_string");
             }
-            list(
+            [
                 $class_name_string,
                 $fqsen_string
-            ) = $parts;
+            ] = $parts;
 
             $fully_qualified_class_name =
                 FullyQualifiedClassName::fromStringInContext(

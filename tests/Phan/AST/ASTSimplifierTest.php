@@ -36,7 +36,7 @@ final class ASTSimplifierTest extends AbstractPhanFileTest
     public function testFiles(array $test_file_list, string $expected_file_path, ?string $config_file_path = null) : void
     {
         $this->assertCount(1, $test_file_list);
-        list($original_file_path) = $test_file_list;
+        [$original_file_path] = $test_file_list;
         // Read the expected output
         $original_src =
             \file_get_contents($original_file_path);

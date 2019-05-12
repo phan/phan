@@ -379,7 +379,7 @@ class Func extends AddressableElement implements FunctionInterface
      */
     public function toStub() : string
     {
-        list($namespace, $string) = $this->toStubInfo();
+        [$namespace, $string] = $this->toStubInfo();
         $namespace_text = $namespace === '' ? '' : "$namespace ";
         $string = \sprintf("namespace %s{\n%s}\n", $namespace_text, $string);
         return $string;

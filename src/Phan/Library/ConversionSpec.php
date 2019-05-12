@@ -26,7 +26,7 @@ class ConversionSpec
      */
     protected function __construct(array $match)
     {
-        list($this->directive, $position_str, $this->padding_char, $this->alignment, $this->width, $unused_precision, $this->arg_type) = $match;
+        [$this->directive, $position_str, $this->padding_char, $this->alignment, $this->width, $unused_precision, $this->arg_type] = $match;
         if ($position_str !== "") {
             $this->position = \intval(\substr($position_str, 0, -1));
         }

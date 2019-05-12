@@ -389,7 +389,7 @@ class Analysis
             try {
                 if (\stripos($fqsen_string, '::') !== false) {
                     // This is an override of a method.
-                    list($class, $method_name) = \explode('::', $fqsen_string, 2);
+                    [$class, $method_name] = \explode('::', $fqsen_string, 2);
                     $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class);
                     if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
                         continue;

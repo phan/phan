@@ -175,7 +175,7 @@ class Debug
      */
     public static function astFlagDescription(int $flags, int $kind) : string
     {
-        list($exclusive, $combinable) = self::getFlagInfo();
+        [$exclusive, $combinable] = self::getFlagInfo();
         $flag_names = [];
         if (isset($exclusive[$kind])) {
             $flag_info = $exclusive[$kind];
@@ -202,7 +202,7 @@ class Debug
      */
     public static function formatFlags(int $kind, int $flags) : string
     {
-        list($exclusive, $combinable) = self::getFlagInfo();
+        [$exclusive, $combinable] = self::getFlagInfo();
         if (isset($exclusive[$kind])) {
             $flag_info = $exclusive[$kind];
             if (isset($flag_info[$flags])) {

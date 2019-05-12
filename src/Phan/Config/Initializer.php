@@ -271,7 +271,7 @@ EOT;
         $is_weakest_level = $level >= 5;
 
         $cwd = \getcwd();
-        list($project_directory_list, $project_file_list) = self::extractAutoloadFilesAndDirectories('', $composer_settings);
+        [$project_directory_list, $project_file_list] = self::extractAutoloadFilesAndDirectories('', $composer_settings);
         if ($vendor_path !== null && count($project_directory_list) === 0 && count($project_file_list) === 0) {
             echo "phan --init expects composer.json to contain 'autoload' psr-4 directories\n";
             return null;
@@ -300,7 +300,7 @@ EOT;
         }
 
         $comments = [];
-        list($target_php_version, $comments['target_php_version']) = self::determineTargetPHPVersion($composer_settings);
+        [$target_php_version, $comments['target_php_version']] = self::determineTargetPHPVersion($composer_settings);
 
         $phan_settings = [
             'target_php_version'       => $target_php_version,
@@ -377,7 +377,7 @@ EOT;
                 continue;
             }
 
-            list($library_directory_list, $library_file_list) = self::extractAutoloadFilesAndDirectories("vendor/$requirement", $library_composer_settings);
+            [$library_directory_list, $library_file_list] = self::extractAutoloadFilesAndDirectories("vendor/$requirement", $library_composer_settings);
             $phan_directory_list = \array_merge($phan_directory_list, $library_directory_list);
             $phan_file_list = \array_merge($phan_file_list, $library_file_list);
         }

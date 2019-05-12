@@ -222,7 +222,7 @@ EOT;
      */
     private static function textForExample(array $example) : string
     {
-        list($record, $src_file_lineno, $expected_file_lineno) = $example;
+        [$record, $src_file_lineno, $expected_file_lineno] = $example;
         $src_url = preg_replace('@.*/tests/@', 'https://github.com/phan/phan/tree/master/tests/', $record->src_filename);
         $expected_url = preg_replace('@.*/tests/@', 'https://github.com/phan/phan/tree/master/tests/', $record->expected_filename);
 
@@ -283,7 +283,7 @@ EOT;
             // Process these backwards so we use the first issue occurrence in a file as the finally chosen example.
             $issues = $record->getIssues();
             krsort($issues);
-            foreach ($issues as $expected_file_lineno => list($ref, $issue_name, $unused_description)) {
+            foreach ($issues as $expected_file_lineno => [$ref, $issue_name, $unused_description]) {
                 if (preg_match('/[0-9]+$/', $ref, $matches)) {
                     $src_file_lineno = (int)$matches[0];
                     $examples[$issue_name] = [$record, $src_file_lineno, $expected_file_lineno];

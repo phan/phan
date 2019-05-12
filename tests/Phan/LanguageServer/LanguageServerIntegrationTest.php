@@ -121,7 +121,7 @@ final class LanguageServerIntegrationTest extends BaseTest
                 ],
                 $pipes
             );
-            list($proc_in, $proc_out) = $pipes;
+            [$proc_in, $proc_out] = $pipes;
         } else {
             $proc = \proc_open(
                 $command,
@@ -175,7 +175,7 @@ final class LanguageServerIntegrationTest extends BaseTest
     public function testInitialize(bool $pcntlEnabled, bool $prefer_stdio) : void
     {
         // TODO: Move this into an OOP abstraction, add time limits, etc.
-        list($proc, $proc_in, $proc_out) = $this->createPhanLanguageServer($pcntlEnabled, $prefer_stdio);
+        [$proc, $proc_in, $proc_out] = $this->createPhanLanguageServer($pcntlEnabled, $prefer_stdio);
         try {
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);
@@ -218,7 +218,7 @@ final class LanguageServerIntegrationTest extends BaseTest
     public function testGenerateDiagnostics(bool $pcntlEnabled) : void
     {
         // TODO: Move this into an OOP abstraction, add time limits, etc.
-        list($proc, $proc_in, $proc_out) = $this->createPhanLanguageServer($pcntlEnabled);
+        [$proc, $proc_in, $proc_out] = $this->createPhanLanguageServer($pcntlEnabled);
         try {
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);
@@ -258,7 +258,7 @@ EOT;
     public function testDefinitionInSameFile() : void
     {
         // TODO: Move this into an OOP abstraction, add time limits, etc.
-        list($proc, $proc_in, $proc_out) = $this->createPhanLanguageServer(true);
+        [$proc, $proc_in, $proc_out] = $this->createPhanLanguageServer(true);
         try {
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);
@@ -351,7 +351,7 @@ EOT;
         bool $pcntl_enabled
     ) : void {
         $this->messageId = 0;
-        list($proc, $proc_in, $proc_out) = $this->createPhanLanguageServer($pcntl_enabled, true, ['vscode_compatible_completions' => $for_vscode]);
+        [$proc, $proc_in, $proc_out] = $this->createPhanLanguageServer($pcntl_enabled, true, ['vscode_compatible_completions' => $for_vscode]);
         try {
             /*
             // This block can be uncommented when developing tests for completions
@@ -1176,7 +1176,7 @@ EOT
 
         $this->messageId = 0;
         // TODO: Move this into an OOP abstraction, add time limits, etc.
-        list($proc, $proc_in, $proc_out) = $this->createPhanLanguageServer($pcntl_enabled);
+        [$proc, $proc_in, $proc_out] = $this->createPhanLanguageServer($pcntl_enabled);
         try {
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);
@@ -1253,7 +1253,7 @@ EOT
 
         $this->messageId = 0;
         // TODO: Move this into an OOP abstraction, add time limits, etc.
-        list($proc, $proc_in, $proc_out) = $this->createPhanLanguageServer($pcntl_enabled);
+        [$proc, $proc_in, $proc_out] = $this->createPhanLanguageServer($pcntl_enabled);
         try {
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);
@@ -1335,7 +1335,7 @@ EOT
 
         $this->messageId = 0;
         // TODO: Move this into an OOP abstraction, add time limits, etc.
-        list($proc, $proc_in, $proc_out) = $this->createPhanLanguageServer($pcntl_enabled);
+        [$proc, $proc_in, $proc_out] = $this->createPhanLanguageServer($pcntl_enabled);
         try {
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);
