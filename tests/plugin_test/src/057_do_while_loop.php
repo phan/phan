@@ -48,3 +48,18 @@ call_user_func(function () {
         }
     } while ($a);
 });
+
+call_user_func(function () {
+    $a = 22;
+    echo $a;
+
+    do {
+        if (rand(0, 1) > 0) {
+            $a = 0;
+            break;
+        } else {
+            $a = 2;
+        }
+    } while ($a);
+    echo $a;
+});

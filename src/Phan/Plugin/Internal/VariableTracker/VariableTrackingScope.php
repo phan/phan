@@ -286,7 +286,31 @@ class VariableTrackingScope
             }
             $result->defs[$variable_name] = $defs_for_variable;
         }
+        if (!$merge_parent_scope && \count($inner_exiting_scope_list) === 0) {
+            $result->defs_shadowing_set += self::computeCommonDefsShadowingSet($branch_scopes);
+        }
         return $result;
+    }
+
+    /**
+     * @param array<int,VariableTrackingScope> $branch_scopes
+     * @return array<string,true>
+     */
+    private static function computeCommonDefsShadowingSet(array $branch_scopes) : array
+    {
+        $result = null;
+        foreach ($branch_scopes as $scope) {
+            $deps = $scope->defs_shadowing_set;
+            if (!\is_array($result)) {
+                $result = $deps;
+            } else {
+                $result = \array_intersect_key($result, $deps);
+            }
+            if (!$result) {
+                return [];
+            }
+        }
+        return $result ?? [];
     }
 
     /**
