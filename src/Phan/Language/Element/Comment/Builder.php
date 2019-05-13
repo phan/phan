@@ -152,8 +152,9 @@ final class Builder
             } else {
                 $variable_name = $match[17] ?? '';
                 if ($is_var && $variable_name === '' && $this->comment_type === Comment::ON_PROPERTY) {
-                    $char_at_end_offset = $line[\strpos($line, $match[0]) + \strlen($match[0])] ?? ' ';
-                    if (\ord($char_at_end_offset) > 32) {  // Not a control character or space
+                    $end_offset = (int)\strpos($line, $match[0]) + \strlen($match[0]);
+                    $char_at_end_offset = $line[$end_offset] ?? ' ';
+                    if (\ord($char_at_end_offset) > 32 && !\preg_match('@^\*+/$@', (string)\substr($line, $end_offset))) {  // Not a control character or space
                         $this->emitIssue(
                             Issue::UnextractableAnnotationSuffix,
                             $this->guessActualLineLocation($i),
@@ -228,8 +229,9 @@ final class Builder
         if (\preg_match(self::RETURN_COMMENT_REGEX, $line, $match)) {
             $return_union_type_string = $match[2];
             $raw_match = $match[0];
-            $char_at_end_offset = $line[\strpos($line, $raw_match) + \strlen($raw_match)] ?? ' ';
-            if (\ord($char_at_end_offset) > 32) {  // Not a control character or space
+            $end_offset = (int)\strpos($line, $raw_match) + \strlen($raw_match);
+            $char_at_end_offset = $line[$end_offset] ?? ' ';
+            if (\ord($char_at_end_offset) > 32 && !\preg_match('@^\*+/$@', (string)\substr($line, $end_offset))) {  // Not a control character or space
                 $this->emitIssue(
                     Issue::UnextractableAnnotationSuffix,
                     $this->guessActualLineLocation($i),
