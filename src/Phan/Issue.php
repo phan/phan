@@ -191,6 +191,7 @@ class Issue
     const TypeInvalidPropertyName = 'PhanTypeInvalidPropertyName';
     const TypeInvalidStaticPropertyName = 'PhanTypeInvalidStaticPropertyName';
     const TypeErrorInInternalCall = 'PhanTypeErrorInInternalCall';
+    const TypeInvalidPropertyDefaultReal = 'PhanTypeInvalidPropertyDefaultReal';
 
     // Issue::CATEGORY_ANALYSIS
     const Unanalyzable              = 'PhanUnanalyzable';
@@ -1991,6 +1992,14 @@ class Issue
                 "Saw a call to an internal function {FUNCTION}() with what would be invalid arguments in strict mode, when trying to infer the return value literal type: {DETAILS}",
                 self::REMEDIATION_B,
                 10104
+            ),
+            new Issue(
+                self::TypeInvalidPropertyDefaultReal,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,
+                "Default value for {TYPE} \${PROPERTY} can't be {TYPE}",
+                self::REMEDIATION_B,
+                10108
             ),
             // Issue::CATEGORY_VARIABLE
             new Issue(

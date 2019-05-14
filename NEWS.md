@@ -1,5 +1,12 @@
 Phan NEWS
 
+?? ??? 2019, Phan 2.0.0 (dev)
+-----------------------
+
+New features(Analysis):
++ Add early support for PHP 7.4's typed properties. (#2314)
+  (This is incomplete, and does not support inheritance, assignment, impossible conditions, etc.)
+
 13 May 2019, Phan 2.0.0-RC2
 -----------------------
 

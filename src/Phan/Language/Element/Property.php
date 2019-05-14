@@ -4,10 +4,12 @@ namespace Phan\Language\Element;
 
 use Closure;
 use Phan\Exception\IssueException;
+use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Scope\PropertyScope;
+use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
 use TypeError;
 
@@ -26,6 +28,12 @@ class Property extends ClassElement
      * Used for dead code detection.
      */
     private $real_defining_fqsen;
+
+    /**
+     * @var UnionType The real union type (typed properties were added in PHP 7.4)
+     * This does not change.
+     */
+    private $real_union_type;
 
     /**
      * @param Context $context
@@ -49,7 +57,8 @@ class Property extends ClassElement
         string $name,
         UnionType $type,
         int $flags,
-        FullyQualifiedPropertyName $fqsen
+        FullyQualifiedPropertyName $fqsen,
+        UnionType $real_union_type
     ) {
         parent::__construct(
             $context,
@@ -64,6 +73,7 @@ class Property extends ClassElement
         // if it isn't.
         $this->setDefiningFQSEN($fqsen);
         $this->real_defining_fqsen = $fqsen;
+        $this->real_union_type = $real_union_type;
 
         // Set an internal scope, so that issue suppressions can be placed on property doc comments.
         // (plugins acting on properties would then pick those up).
@@ -394,5 +404,52 @@ class Property extends ClassElement
             }
         }
         $this->setUnionType($union_type);
+    }
+
+    /**
+     * @return UnionType|null
+     * Get the UnionType from a future union type defined
+     * on this object or null if there is no future
+     * union type.
+     * @override
+     * @suppress PhanAccessMethodInternal
+     */
+    public function getFutureUnionType() : ?UnionType
+    {
+        $future_union_type = $this->future_union_type;
+        if ($future_union_type === null) {
+            return null;
+        }
+
+        // null out the future_union_type before
+        // we compute it to avoid unbounded
+        // recursion
+        $this->future_union_type = null;
+
+        try {
+            $union_type = $future_union_type->get();
+            if (!$this->real_union_type->isEmpty()
+                && !$union_type->canStrictCastToUnionType($future_union_type->getCodeBase(), $this->real_union_type)) {
+                    Issue::maybeEmit(
+                        $future_union_type->getCodeBase(),
+                        $future_union_type->getContext(),
+                        Issue::TypeInvalidPropertyDefaultReal,
+                        $future_union_type->getContext()->getLineNumberStart(),
+                        $this->real_union_type,
+                        $this->getName(),
+                        $union_type
+                    );
+            }
+        } catch (IssueException $_) {
+            $union_type = UnionType::empty();
+        }
+
+        // Don't set 'null' as the type if that's the default
+        // given that its the default.
+        if ($union_type->isType(NullType::instance(false))) {
+            $union_type = UnionType::empty();
+        }
+
+        return $union_type;
     }
 }

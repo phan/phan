@@ -1583,7 +1583,8 @@ class ContextNode
             $property_name,
             UnionType::empty(),
             $flags,
-            $property_fqsen
+            $property_fqsen,
+            UnionType::empty()
         );
 
         $class->addProperty($this->code_base, $property, new None());

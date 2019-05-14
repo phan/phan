@@ -292,7 +292,8 @@ class Clazz extends AddressableElement
                 $property_name,
                 $property_type,
                 $flags,
-                $property_fqsen
+                $property_fqsen,
+                UnionType::empty()
             );
 
             $clazz->addProperty($code_base, $property, new None());
@@ -324,7 +325,8 @@ class Clazz extends AddressableElement
                 $name,
                 Type::fromObject($default_value)->asUnionType(),
                 $flags,
-                $property_fqsen
+                $property_fqsen,
+                UnionType::empty()
             );
 
             $clazz->addProperty($code_base, $property, new None());
@@ -817,7 +819,8 @@ class Clazz extends AddressableElement
                 $property_name,
                 $union_type,
                 0,
-                $property_fqsen
+                $property_fqsen,
+                UnionType::empty()
             );
             if ($original_union_type !== $union_type) {
                 $phan_flags |= Flags::HAS_STATIC_UNION_TYPE;
@@ -1028,7 +1031,8 @@ class Clazz extends AddressableElement
                 $name,
                 $method->getUnionType(),
                 0,
-                $property_fqsen
+                $property_fqsen,
+                UnionType::empty()
             );
             $property->setIsDynamicProperty(true);
 
@@ -1072,7 +1076,8 @@ class Clazz extends AddressableElement
                 $name,
                 UnionType::empty(),
                 0,
-                $property_fqsen
+                $property_fqsen,
+                UnionType::empty()
             );
             $property->setIsDynamicProperty(true);
 

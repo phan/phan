@@ -383,7 +383,17 @@ class ParseVisitor extends ScopeVisitor
     {
         // Bomb out if we're not in a class context
         $props_node = $node->children['props'];
-        // TODO: Use $node->children['type']
+        $type_node = $node->children['type'];
+        if ($type_node) {
+            try {
+                $real_union_type = (new UnionTypeVisitor($this->code_base, $this->context))->fromTypeInSignature($type_node);
+            } catch (IssueException $e) {
+                Issue::maybeEmitInstance($this->code_base, $this->context, $e->getIssueInstance());
+                $real_union_type = UnionType::empty();
+            }
+        } else {
+            $real_union_type = UnionType::empty();
+        }
 
         $class = $this->getContextClass();
         $doc_comment = '';
@@ -419,29 +429,6 @@ class ParseVisitor extends ScopeVisitor
 
             $context_for_property = clone($this->context)->withLineNumberStart($child_node->lineno ?? 0);
 
-            if (!($default_node instanceof Node)) {
-                // Get the type of the default (not a literal)
-                if ($default_node !== null) {
-                    if ($variable_has_literals) {
-                        $union_type = Type::fromObject($default_node)->asUnionType();
-                    } else {
-                        $union_type = Type::nonLiteralFromObject($default_node)->asUnionType();
-                    }
-                } else {
-                    // This is a declaration such as `public $x;` with no $default_node
-                    // (we don't assume the property is always null, to reduce false positives)
-                    $union_type = UnionType::empty();
-                }
-            } else {
-                $this->checkNodeIsConstExpr($default_node);
-                $future_union_type = new FutureUnionType(
-                    $this->code_base,
-                    $context_for_property,
-                    $default_node
-                );
-                $union_type = UnionType::empty();
-            }
-
             $property_name = $child_node->children['name'];
 
             if (!\is_string($property_name)) {
@@ -452,6 +439,47 @@ class ParseVisitor extends ScopeVisitor
                     . ' at '
                     . $context_for_property
                 );
+            }
+
+
+            if ($default_node === null) {
+                // This is a declaration such as `public $x;` with no $default_node
+                // (we don't assume the property is always null, to reduce false positives)
+                // We don't need to compare this to the real union type
+                $union_type = $real_union_type;
+            } else {
+                if ($default_node instanceof Node) {
+                    $this->checkNodeIsConstExpr($default_node);
+                    $union_type = $this->resolveDefaultPropertyNode($default_node);
+                    if (!$union_type) {
+                        // We'll type check this union type against the real union type when the future union type is resolved
+                        $future_union_type = new FutureUnionType(
+                            $this->code_base,
+                            $context_for_property,
+                            $default_node
+                        );
+                        $union_type = UnionType::empty();
+                    }
+                } else {
+                    // Get the type of the default (not a literal)
+                    if ($variable_has_literals) {
+                        $union_type = Type::fromObject($default_node)->asUnionType();
+                    } else {
+                        $union_type = Type::nonLiteralFromObject($default_node)->asUnionType();
+                    }
+                }
+                if (!$real_union_type->isEmpty() && !$union_type->canStrictCastToUnionType($this->code_base, $real_union_type)) {
+                    $this->emitIssue(
+                        Issue::TypeInvalidPropertyDefaultReal,
+                        $context_for_property->getLineNumberStart(),
+                        $real_union_type,
+                        $property_name,
+                        $union_type
+                    );
+                }
+                if ($union_type->isType(NullType::instance(false))) {
+                    $union_type = UnionType::empty();
+                }
             }
 
             $property_fqsen = FullyQualifiedPropertyName::make(
@@ -484,7 +512,8 @@ class ParseVisitor extends ScopeVisitor
                 $property_name,
                 $union_type,
                 $node->flags,
-                $property_fqsen
+                $property_fqsen,
+                $real_union_type
             );
 
             $property->setPhanFlags($comment->getPhanFlagsForProperty());
@@ -539,6 +568,12 @@ class ParseVisitor extends ScopeVisitor
                     );
                 }
 
+            // Don't set 'null' as the type if that's the default
+            // given that its the default default.
+            if ($union_type->isType(NullType::instance(false))) {
+                $union_type = UnionType::empty();
+            }
+
                 $original_property_type = $property->getUnionType();
                 $original_variable_type = $variable->getUnionType();
                 $variable_type = $original_variable_type->withStaticResolvedInContext($this->context);
@@ -569,12 +604,6 @@ class ParseVisitor extends ScopeVisitor
                 }
             }
 
-            // Don't set 'null' as the type if that's the default
-            // given that its the default default.
-            if ($union_type->isType(NullType::instance(false))) {
-                $union_type = UnionType::empty();
-            }
-
             // Wait until after we've added the (at)var type
             // before setting the future so that calling
             // $property->getUnionType() doesn't force the
@@ -585,6 +614,26 @@ class ParseVisitor extends ScopeVisitor
         }
 
         return $this->context;
+    }
+
+    /**
+     * Resolve the union type of a property's default node.
+     * This is being done to resolve the most common cases - e.g. `null`, `false`, and `true`
+     */
+    private function resolveDefaultPropertyNode(Node $node) : ?UnionType
+    {
+        if ($node->kind === ast\AST_CONST) {
+            try {
+                return (new ContextNode(
+                    $this->code_base,
+                    $this->context,
+                    $node
+                ))->getConst()->getUnionType();
+            } catch (IssueException $_) {
+                // ignore
+            }
+        }
+        return null;
     }
 
     /**
