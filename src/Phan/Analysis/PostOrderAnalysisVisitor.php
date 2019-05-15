@@ -485,7 +485,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             && !Variable::isHardcodedVariableInScopeWithName($variable_name, $this->context->isInGlobalScope())
         ) {
             $this->emitIssueWithSuggestion(
-                Issue::UndeclaredVariable,
+                $variable_name === 'this' ? Issue::UndeclaredThis : Issue::UndeclaredVariable,
                 $node->lineno,
                 [$variable_name],
                 IssueFixSuggester::suggestVariableTypoFix($this->code_base, $this->context, $variable_name)

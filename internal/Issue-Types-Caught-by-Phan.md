@@ -3209,6 +3209,14 @@ class C22 {}
 $v11 = C22::$p;
 ```
 
+## PhanUndeclaredThis
+
+```
+Variable ${VARIABLE} is undeclared
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0140_class_context.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0140_class_context.php#L7).
+
 ## PhanUndeclaredTrait
 
 If you attempt to use a trait that doesn't exist, you'll see this issue.

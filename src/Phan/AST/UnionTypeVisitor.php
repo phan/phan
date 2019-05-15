@@ -1674,7 +1674,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 || !$this->context->isInGlobalScope()
             ) {
                 throw new IssueException(
-                    Issue::fromType(Issue::UndeclaredVariable)(
+                    Issue::fromType($variable_name === 'this' ? Issue::UndeclaredThis : Issue::UndeclaredVariable)(
                         $this->context->getFile(),
                         $node->lineno,
                         [$variable_name],

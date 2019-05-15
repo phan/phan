@@ -805,7 +805,7 @@ trait ConditionVisitorUtil
             }
             if (!($context->isInGlobalScope() && Config::getValue('ignore_undeclared_variables_in_global_scope'))) {
                 throw new IssueException(
-                    Issue::fromType(Issue::UndeclaredVariable)(
+                    Issue::fromType($var_name === 'this' ? Issue::UndeclaredThis : Issue::UndeclaredVariable)(
                         $context->getFile(),
                         $var_node->lineno ?? 0,
                         [$var_name],

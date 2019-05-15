@@ -1,1 +1,1 @@
-%s:7 PhanUndeclaredVariable Variable $this is undeclared
+%s:7 PhanUndeclaredThis Variable $this is undeclared
