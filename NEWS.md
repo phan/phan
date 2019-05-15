@@ -19,6 +19,7 @@ New features(Analysis):
   Improve analysis of return types of other magic methods such as `__sleep()`.
 + Support more of PHP 7.4's function signatures (e.g. `WeakReference`) (#2756)
 + Improve detection of unused variables inside of loops/branches.
++ Change warnings about undeclared `$this` into a critical `PhanUndeclaredThis` issue. (#2751)
 
 Plugins:
 + Detect some new php 7.3 functions (`array_key_first`, etc.) in `UseReturnValuePlugin`.
