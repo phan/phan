@@ -79,7 +79,6 @@ abstract class UnaddressableTypedElement
         int $flags
     ) {
         $this->context = $context;
-        $this->file_ref = FileRef::copyFileRef($context);
         $this->name = $name;
         $this->type = $type;
         $this->flags = $flags;
@@ -209,10 +208,11 @@ abstract class UnaddressableTypedElement
     /**
      * @return FileRef
      * A reference to where this element was found
+	 * @deprecated Since 2.0.0, use $this->getContext
      */
     public function getFileRef() : FileRef
     {
-        return $this->file_ref;
+        return $this->context;
     }
 
     /**
