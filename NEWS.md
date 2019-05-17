@@ -6,6 +6,8 @@ Phan NEWS
 New features(Analysis):
 + Add early support for PHP 7.4's typed properties. (#2314)
   (This is incomplete, and does not support inheritance, assignment, impossible conditions, etc.)
++ Change warnings about undeclared `$this` into a critical `PhanUndeclaredThis` issue. (#2751)
++ Fix the check for `PhanUnusedVariableGlobal` (#2768)
 
 13 May 2019, Phan 2.0.0-RC2
 -----------------------
@@ -19,7 +21,6 @@ New features(Analysis):
   Improve analysis of return types of other magic methods such as `__sleep()`.
 + Support more of PHP 7.4's function signatures (e.g. `WeakReference`) (#2756)
 + Improve detection of unused variables inside of loops/branches.
-+ Change warnings about undeclared `$this` into a critical `PhanUndeclaredThis` issue. (#2751)
 
 Plugins:
 + Detect some new php 7.3 functions (`array_key_first`, etc.) in `UseReturnValuePlugin`.
@@ -80,7 +81,7 @@ New features(Analysis):
 + Improve unused variable detection: Detect more unused variables for expressions such as `$x++` and `$x -= 2` (#2715)
 + Fix false positive `PhanUnusedVariable` after assignment by reference (#2730)
 + Warn about references, static variables, and uses of global variables that are probably unnecessary (never used/assigned to afterwards) (#2733)
-  New issue types: `PhanUnusedVariableReference`, `PhanUnusedVariableGlobal`,  `PhanUnusedVariableGlobal`
+  New issue types: `PhanUnusedVariableReference`, `PhanUnusedVariableGlobal`,  `PhanUnusedVariableStatic`
 + Warn about invalid AST nodes for defaults of properties and static variables. (#2732)
 + Warn about union types on properties that might have an incomplete suffix. (e.g. `/** @var array<int, */`) (#2708)
 

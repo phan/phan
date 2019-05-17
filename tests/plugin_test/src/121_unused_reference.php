@@ -21,9 +21,9 @@ test121(2);
 test121StaticVar();
 
 function test121GlobalVar() {
-    // This should warn - it's undefined
+
     global $global121;
-    global $global121b;
+    global $global121b;  // This should warn
     global $global121c;
     $global121 = 'new value';
     var_export($global121c);

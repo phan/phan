@@ -2,5 +2,5 @@ src/121_unused_reference.php:3 PhanUnusedVariableReference Unused definition of 
 src/121_unused_reference.php:9 PhanUndeclaredVariable Variable $staticVar is undeclared
 src/121_unused_reference.php:10 PhanUnusedVariableStatic Unreferenced definition of variable $staticVar as a static variable
 src/121_unused_reference.php:11 PhanUnusedVariableStatic Unreferenced definition of variable $staticUnreferencedVar as a static variable
-src/121_unused_reference.php:28 PhanUnusedVariableGlobal Unreferenced definition of variable $global121 as a global variable
+src/121_unused_reference.php:26 PhanUnusedVariableGlobal Unreferenced definition of variable $global121b as a global variable
 src/121_unused_reference.php:39 PhanUnusedVariableReference Unused definition of variable $dir_path as a reference

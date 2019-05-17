@@ -55,7 +55,6 @@ EOT;
      */
     public static function main() : void
     {
-        global $argv;
         $options = getopt('he:', ['help', 'extension:']);
         if (isset($options['h']) || isset($options['help'])) {
             self::printHelpAndExit('', 0);

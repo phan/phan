@@ -33,19 +33,11 @@ final class VariableGraph
     public $const_expr_declarations = [];
 
     /**
-     * @var array<int,true>
+     * @var array<int,int>
      *
-     * The set of definition ids that are possibly placeholder loop values
-     * in foreach over keys.
+     * Maps definition ids to information about them (e.g. IS_GLOBAL|IS_STATIC|IS_LOOP_DEF|IS_CAUGHT_EXCEPTION)
      */
-    public $loop_def_ids = [];
-
-    /**
-     * @var array<int,true>
-     *
-     * The set of definition ids that are caught exceptions in catch blocks.
-     */
-    public $caught_exception_ids = [];
+    public $def_bitset = [];
 
     /**
      * @var array<string,int> maps variable names to whether
@@ -53,9 +45,14 @@ final class VariableGraph
      */
     public $variable_types = [];
 
+    // Are these names/definition ids references, globals, or static
     const IS_REFERENCE      = 1 << 0;
     const IS_GLOBAL         = 1 << 1;
     const IS_STATIC         = 1 << 2;
+    // Is this possibly a placeholder loop variable
+    const IS_LOOP_DEF       = 1 << 3;
+    // Is this a caught exception
+    const IS_CAUGHT_EXCEPTION = 1 << 4;
 
     const IS_REFERENCE_OR_GLOBAL_OR_STATIC = self::IS_REFERENCE | self::IS_GLOBAL | self::IS_STATIC;
 
@@ -167,7 +164,7 @@ final class VariableGraph
     public function markAsLoopValueNode($node) : void
     {
         if ($node instanceof Node) {
-            $this->loop_def_ids[spl_object_id($node)] = true;
+            $this->def_bitset[spl_object_id($node)] = self::IS_LOOP_DEF;
         }
     }
 
@@ -176,7 +173,7 @@ final class VariableGraph
      */
     public function isLoopValueDefinitionId(int $definition_id) : bool
     {
-        return \array_key_exists($definition_id, $this->loop_def_ids);
+        return ($this->def_bitset[$definition_id] ?? 0) === self::IS_LOOP_DEF;
     }
 
     /**
@@ -188,7 +185,7 @@ final class VariableGraph
     public function markAsCaughtException($node) : void
     {
         if ($node instanceof Node) {
-            $this->caught_exception_ids[spl_object_id($node)] = true;
+            $this->def_bitset[spl_object_id($node)] = self::IS_CAUGHT_EXCEPTION;
         }
     }
 
@@ -197,7 +194,28 @@ final class VariableGraph
      */
     public function isCaughtException(int $definition_id) : bool
     {
-        return \array_key_exists($definition_id, $this->caught_exception_ids);
+        return ($this->def_bitset[$definition_id] ?? 0) === self::IS_CAUGHT_EXCEPTION;
+    }
+
+    /**
+     * Marks something as being a declaration of a global
+     */
+    public function markAsGlobal(Node $node, VariableTrackingScope $scope) : void
+    {
+        $this->def_bitset[spl_object_id($node)] = self::IS_GLOBAL;
+        $name = $node->children['var']->children['name'] ?? null;
+        if (\is_string($name)) {
+            $this->markAsGlobalVariable($name);
+            $this->recordVariableDefinition($name, $node, $scope, null);
+        }
+    }
+
+    /**
+     * Is this definition_id the first declarration of a global?
+     */
+    public function isGlobal(int $definition_id) : bool
+    {
+        return ($this->def_bitset[$definition_id] ?? 0) === self::IS_GLOBAL;
     }
 
     private function markBitForVariableName(string $name, int $bit) : void
