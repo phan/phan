@@ -31,6 +31,12 @@ interface TypedElementInterface
     public function setUnionType(UnionType $type) : void;
 
     /**
+     * @return Context
+     * The context in which this structural element exists
+     */
+    public function getContext() : Context;
+
+    /**
      * @return FileRef
      * A reference to where this element was found
      */

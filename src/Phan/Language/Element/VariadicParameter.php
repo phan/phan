@@ -99,7 +99,7 @@ class VariadicParameter extends Parameter
         // e.g. $this->getUnionType() is of type T[]
         //      $this->non_variadic->getUnionType() is of type T
         return new Parameter(
-            $this->getFileRef(),
+            $this->getContext(),
             $this->getName(),
             $this->type,
             Flags::bitVectorWithState($this->getFlags(), \ast\flags\PARAM_VARIADIC, false)

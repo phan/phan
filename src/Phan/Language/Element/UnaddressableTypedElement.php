@@ -18,6 +18,12 @@ abstract class UnaddressableTypedElement
      */
     private $file_ref;
 
+	/**
+	 * @var Context
+	 * The context where this element lives
+	 */
+	private $context;
+
     /**
      * @var string
      * The name of the typed structural element
@@ -49,10 +55,8 @@ abstract class UnaddressableTypedElement
     private $phan_flags = 0;
 
     /**
-     * @param FileRef $file_ref
-     * The Context or FileRef in which the structural element lives
-     * (Will be converted to FileRef, to avoid creating a reference
-     * cycle that can't be garbage collected)
+     * @param Context $context
+     * The Context in which the structural element lives
      *
      * @param string $name
      * The name of the typed structural element
@@ -68,12 +72,13 @@ abstract class UnaddressableTypedElement
      * a certain kind has a meaningful flags value.
      */
     public function __construct(
-        FileRef $file_ref,
+        Context $context,
         string $name,
         UnionType $type,
         int $flags
     ) {
-        $this->file_ref = FileRef::copyFileRef($file_ref);
+        $this->context = $context;
+        $this->file_ref = FileRef::copyFileRef($context);
         $this->name = $name;
         $this->type = $type;
         $this->flags = $flags;
@@ -207,6 +212,15 @@ abstract class UnaddressableTypedElement
     public function getFileRef() : FileRef
     {
         return $this->file_ref;
+    }
+
+    /**
+     * @return Context
+     * A reference to where this element was found
+     */
+    public function getContext() : Context
+    {
+        return $this->context;
     }
 
     abstract public function __toString() : string;

@@ -40,7 +40,7 @@ class Parameter extends Variable
     const REFERENCE_READ_WRITE = 2;
     const REFERENCE_WRITE_ONLY = 3;
 
-    // __construct(FileRef $file_ref, string $name, UnionType $type, int $flags) inherited from Variable
+    // __construct(Context $context, string $name, UnionType $type, int $flags) inherited from Variable
 
     /**
      * @var UnionType|null

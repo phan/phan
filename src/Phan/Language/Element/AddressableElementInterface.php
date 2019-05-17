@@ -87,12 +87,6 @@ interface AddressableElementInterface extends TypedElementInterface
     public function getDocComment() : ?string;
 
     /**
-     * @return Context
-     * The context in which this structural element exists
-     */
-    public function getContext() : Context;
-
-    /**
      * @return bool
      * True if this element is marked as deprecated
      */
