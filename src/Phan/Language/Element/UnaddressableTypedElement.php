@@ -208,7 +208,6 @@ abstract class UnaddressableTypedElement
     /**
      * @return FileRef
      * A reference to where this element was found
-     * @deprecated Since 2.0.0, use $this->getContext
      */
     public function getFileRef() : FileRef
     {
