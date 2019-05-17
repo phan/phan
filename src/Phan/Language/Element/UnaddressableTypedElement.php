@@ -19,11 +19,11 @@ abstract class UnaddressableTypedElement
      */
     private $file_ref;
 
-	/**
-	 * @var Context
-	 * The context where this element lives
-	 */
-	private $context;
+    /**
+     * @var Context
+     * The context where this element lives
+     */
+    private $context;
 
     /**
      * @var string

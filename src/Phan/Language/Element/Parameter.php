@@ -11,7 +11,6 @@ use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\Comment\Builder;
-use Phan\Language\FileRef;
 use Phan\Language\FutureUnionType;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
