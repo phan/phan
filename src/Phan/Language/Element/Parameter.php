@@ -64,7 +64,7 @@ class Parameter extends Variable
      * @return static
      */
     public static function create(
-        FileRef $context,
+        Context $context,
         string $name,
         UnionType $type,
         int $flags
