@@ -343,13 +343,15 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
                 [$variable_name]
             );
         } elseif ($type_bitmask === VariableGraph::IS_GLOBAL) {
-            Issue::maybeEmitWithParameters(
-                $this->code_base,
-                $this->context,
-                Issue::UnusedVariableGlobal,
-                $line,
-                [$variable_name]
-            );
+            if ($definition_id !== false && $graph->isGlobal($definition_id)) {
+                Issue::maybeEmitWithParameters(
+                    $this->code_base,
+                    $this->context,
+                    Issue::UnusedVariableGlobal,
+                    $line,
+                    [$variable_name]
+                );
+            }
         }
     }
 

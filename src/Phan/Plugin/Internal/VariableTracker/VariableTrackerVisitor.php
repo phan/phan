@@ -483,7 +483,8 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     }
 
     /**
-     * TODO: Check if the current context is a function call passing an argument by reference
+     * Analyzes `static $var [ = default ];`
+     *
      * @return VariableTrackingScope
      * @override
      */
@@ -499,16 +500,14 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     }
 
     /**
-     * TODO: Check if the current context is a function call passing an argument by reference
+     * Analyzes `global $var;` (analyzed like it was declared with the value from the global scope).
+     *
      * @return VariableTrackingScope
      * @override
      */
     public function visitGlobal(Node $node) : VariableTrackingScope
     {
-        $name = $node->children['var']->children['name'] ?? null;
-        if (\is_string($name)) {
-            self::$variable_graph->markAsGlobalVariable($name);
-        }
+        self::$variable_graph->markAsGlobal($node, $this->scope);
         return $this->scope;
     }
 

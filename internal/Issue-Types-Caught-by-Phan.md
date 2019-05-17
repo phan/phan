@@ -1112,7 +1112,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/plugin_test/expe
 Unreferenced definition of variable ${VARIABLE} as a global variable
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/121_unused_reference.php.expected#L5) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/121_unused_reference.php#L28).
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0676_unused_global.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0676_unused_global.php#L4).
 
 ## PhanUnusedVariableReference
 
@@ -1128,7 +1128,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/exp
 Unreferenced definition of variable ${VARIABLE} as a static variable
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/121_unused_reference.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/121_unused_reference.php#L10).
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0669_invalid_static.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0669_invalid_static.php#L6).
 
 ## PhanUnusedVariableValueOfForeachWithKey
 
