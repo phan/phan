@@ -2131,7 +2131,7 @@ class ContextNode
 
         $lineno = $node->lineno;
         foreach ($node->children as $child_node) {
-            if (!$child_node) {
+            if (!$child_node instanceof Node) {
                 // Emit the line number of the nearest Node before this empty element
                 Issue::maybeEmit(
                     $code_base,
