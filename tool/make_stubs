@@ -11,8 +11,7 @@ use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 
 require_once dirname(__DIR__) . '/src/requirements.php';
-
-require_once(dirname(__DIR__) . '/src/Phan/Bootstrap.php');
+require_once dirname(__DIR__) . '/src/Phan/Bootstrap.php';
 
 // If php-ast isn't loaded already, then load this file to generate equivalent
 // class, constant, and function definitions.

@@ -905,22 +905,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 }
                 if ($child->kind === ast\AST_UNPACK) {
                     // Analyze PHP 7.4's array spread operator, e.g. `[$a, ...$array, $b]`
-                    $value = $child->children['expr'];
-                    if (!$value instanceof Node) {
-                        // FIXME: Warn
-                        continue;
-                    }
-                    $element_value_type = UnionTypeVisitor::unionTypeFromNode(
-                        $this->code_base,
-                        $this->context,
-                        $value,
-                        $this->should_catch_issue_exception
-                    );
-                    if ($element_value_type->isEmpty()) {
-                        $value_types_builder->addType(MixedType::instance(false));
-                        continue;
-                    }
-                    $value_types_builder->addUnionType($element_value_type->iterableValueUnionType($this->code_base));
+                    $value_types_builder->addUnionType($this->visitUnpack($child));
                     continue;
                 }
                 $value = $child->children['value'];
@@ -1049,10 +1034,10 @@ class UnionTypeVisitor extends AnalysisVisitor
                 return null;
             }
             $field_types = $type->getFieldTypes();
-            if ($expr->kind !== ast\AST_ARRAY && count($field_types) >= self::ARRAY_UNPACK_COUNT_THRESHOLD) {
+            if ($expr->kind !== ast\AST_ARRAY && \count($field_types) >= self::ARRAY_UNPACK_COUNT_THRESHOLD) {
                 return null;
             }
-            foreach ($field_types as $i => $type){
+            foreach ($field_types as $i => $type) {
                 if ($i !== $expected || $type->isPossiblyUndefined()) {
                     return null;
                 }
@@ -1080,7 +1065,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             if ($child->kind === ast\AST_UNPACK) {
                 // handle [other_expr, ...expr, other_exprs]
                 $element_value_type = $this->getPackedArrayFieldTypes($child->children['expr']);
-                if (!is_array($element_value_type)) {
+                if (!\is_array($element_value_type)) {
                     // impossible
                     continue;
                 }
@@ -1637,31 +1622,34 @@ class UnionTypeVisitor extends AnalysisVisitor
         // Figure out what the types of accessed array
         // elements would be
         // TODO: Account for Traversable once there are generics for Traversable
-        $generic_types =
-            $union_type->genericArrayElementTypes();
+        $generic_types = $union_type->iterableValueUnionType($this->code_base);
 
         // If we have generics, we're all set
-        if ($generic_types->isEmpty()) {
-            if (!$union_type->asExpandedTypes($this->code_base)->hasIterable() && !$union_type->hasType(MixedType::instance(false))) {
+        try {
+            if ($generic_types->isEmpty()) {
+                if (!$union_type->asExpandedTypes($this->code_base)->hasIterable() && !$union_type->hasType(MixedType::instance(false))) {
+                    throw new IssueException(
+                        Issue::fromType(Issue::TypeMismatchUnpackValue)(
+                            $this->context->getFile(),
+                            $node->lineno,
+                            [(string)$union_type]
+                        )
+                    );
+                }
+                return $generic_types;
+            }
+            // TODO: Once we have generic template types for Traversable and subclasses, rewrite this check to account for `new ArrayObject([2])`, etc.
+            if (GenericArrayType::KEY_STRING === GenericArrayType::keyTypeFromUnionTypeKeys($union_type)) {
                 throw new IssueException(
-                    Issue::fromType(Issue::TypeMismatchUnpackValue)(
+                    Issue::fromType(Issue::TypeMismatchUnpackKey)(
                         $this->context->getFile(),
                         $node->lineno,
-                        [(string)$union_type]
+                        [(string)$union_type, 'string']
                     )
                 );
             }
-            return $generic_types;
-        }
-        // TODO: Once we have generic template types for Traversable and subclasses, rewrite this check to account for `new ArrayObject([2])`, etc.
-        if (GenericArrayType::KEY_STRING === GenericArrayType::keyTypeFromUnionTypeKeys($union_type)) {
-            throw new IssueException(
-                Issue::fromType(Issue::TypeMismatchUnpackKey)(
-                    $this->context->getFile(),
-                    $node->lineno,
-                    [(string)$union_type, 'string']
-                )
-            );
+        } catch (IssueException $exception) {
+            Issue::maybeEmitInstance($this->code_base, $this->context, $exception->getIssueInstance());
         }
         return $generic_types;
     }

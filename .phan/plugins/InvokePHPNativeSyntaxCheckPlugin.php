@@ -239,7 +239,8 @@ class InvokeExecutionPromise
         }
     }
 
-    private function getAbsPathForFileContents(string $new_file_contents, bool $force_tmp_file) : ?string {
+    private function getAbsPathForFileContents(string $new_file_contents, bool $force_tmp_file) : ?string
+    {
         $file_name = $this->context->getFile();
         if ($force_tmp_file || CLI::isDaemonOrLanguageServer()) {
             // This is inefficient, but
@@ -271,7 +272,7 @@ class InvokeExecutionPromise
         }
         for ($i = 2; $i < strlen($file_contents); $i++) {
             $c = $file_contents[$i];
-            if ($c === "\r")  {
+            if ($c === "\r") {
                 if (($file_contents[$i + 1] ?? '') === "\n") {
                     $i++;
                     break;
@@ -416,12 +417,14 @@ class InvokeExecutionPromise
         return $this->binary;
     }
 
-    public function __wakeup() {
+    public function __wakeup()
+    {
         $this->tmp_path = null;
         throw new RuntimeException("Cannot unserialize");
     }
 
-    public function __destruct() {
+    public function __destruct()
+    {
         // We created a temporary path for Windows
         if (is_string($this->tmp_path)) {
             unlink($this->tmp_path);

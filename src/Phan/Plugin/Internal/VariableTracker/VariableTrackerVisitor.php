@@ -301,6 +301,10 @@ final class VariableTrackerVisitor extends AnalysisVisitor
             if (!($elem_node instanceof Node)) {
                 continue;
             }
+            if ($elem_node->kind !== ast\AST_ARRAY_ELEM) {
+                // We already emitted PhanInvalidNode
+                continue;
+            }
             // Treat $key in `[$key => $y] = $array` as a usage of $key
             $this->scope = $this->analyzeWhenValidNode($this->scope, $elem_node->children['key']);
             $this->scope = $this->analyzeAssignmentTarget($elem_node->children['value'], false, $const_expr);

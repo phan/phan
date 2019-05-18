@@ -9,7 +9,10 @@ New features(Analysis):
 + Change warnings about undeclared `$this` into a critical `PhanUndeclaredThis` issue. (#2751)
 + Fix the check for `PhanUnusedVariableGlobal` (#2768)
 + Start work on supporting analyzing PHP 7.4's unpacking inside arrays. (e.g. `[1, 2, ...$arr1, 5]`) (#2779)
-  NOTE: This does not yet check for errors, some code is unmigrated, and the polyfill does not yet support this.
+  NOTE: This does not yet check all types of errors, some code is unmigrated, and the polyfill does not yet support this.
+
+Plugins:
++ Improve help messages for `internal/dump_fallback_ast.php` (this tool may be of use when developing plugins)
 
 13 May 2019, Phan 2.0.0-RC2
 -----------------------

@@ -10,6 +10,7 @@ use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\Element;
 use Phan\AST\Visitor\FlagVisitorImplementation;
 use Phan\CodeBase;
+use Phan\Debug;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\FQSEN;
@@ -84,7 +85,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      */
     private function handleMissing(Node $node) : void
     {
-        throw new AssertionError("All flags must match. Found " . Element::flagDescription($node));
+        throw new AssertionError("All flags must match. Found kind=" . Debug::nodeName($node) . ', flags=' . Element::flagDescription($node) . ' raw flags=' . $node->flags . ' at ' . $this->context->withLineNumberStart((int)$node->lineno));
     }
 
     /**
