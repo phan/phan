@@ -200,7 +200,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
             if ($entry === null) {
                 continue;  // Triggered by code such as `list(, $a) = $expr`. In php 7.1, the array and list() syntax was unified.
             }
-            $key = $entry->children['key'];
+            $key = $entry->children['key'] ?? null;
             // Skip array entries without literal keys. (Do it before resolving the key value)
             if ($key === null) {
                 $has_entry_without_key = true;

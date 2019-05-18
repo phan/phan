@@ -8,6 +8,8 @@ New features(Analysis):
   (This is incomplete, and does not support inheritance, assignment, impossible conditions, etc.)
 + Change warnings about undeclared `$this` into a critical `PhanUndeclaredThis` issue. (#2751)
 + Fix the check for `PhanUnusedVariableGlobal` (#2768)
++ Start work on supporting analyzing PHP 7.4's unpacking inside arrays. (e.g. `[1, 2, ...$arr1, 5]`) (#2779)
+  NOTE: This does not yet check for errors, some code is unmigrated, and the polyfill does not yet support this.
 
 13 May 2019, Phan 2.0.0-RC2
 -----------------------

@@ -564,6 +564,11 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
                 if (!($child instanceof Node)) {
                     continue;
                 }
+                if ($child->kind === \ast\AST_UNPACK) {
+                    // PHP 7.4's array spread operator adds integer keys, e.g. `[...$array, 'other' => 'value']`
+                    $key_type_enum |= GenericArrayType::KEY_INT;
+                    continue;
+                }
                 // Don't bother recursing more than one level to iterate over possible types.
                 $key_node = $child->children['key'];
                 if ($key_node instanceof Node) {
