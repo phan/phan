@@ -3,6 +3,7 @@
 namespace Phan\Analysis;
 
 use AssertionError;
+use ast;
 use ast\Node;
 use Phan\AST\AnalysisVisitor;
 use Phan\AST\ContextNode;
@@ -261,6 +262,14 @@ class AssignmentVisitor extends AnalysisVisitor
                 continue;
             }
 
+            if ($child_node->kind !== ast\AST_ARRAY_ELEM) {
+                $this->emitIssue(
+                    Issue::InvalidNode,
+                    $child_node->lineno,
+                    "Spread operator is not supported in assignments"
+                );
+                continue;
+            }
             // Get the key and value nodes for each
             // array element we're assigning to
             // TODO: Check key types are valid?
@@ -423,6 +432,14 @@ class AssignmentVisitor extends AnalysisVisitor
             // a list to throw the element away. I'm not
             // here to judge.
             if (!($child_node instanceof Node)) {
+                continue;
+            }
+            if ($child_node->kind !== ast\AST_ARRAY_ELEM) {
+                $this->emitIssue(
+                    Issue::InvalidNode,
+                    $child_node->lineno,
+                    "Spread operator is not supported in assignments"
+                );
                 continue;
             }
 

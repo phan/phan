@@ -1807,6 +1807,16 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 continue;
             }
             // Don't bother recursing more than one level to iterate over possible types.
+            if ($elem->kind === \ast\AST_UNPACK) {
+                // Could optionally recurse to better analyze `yield [...SOME_EXPRESSION_WITH_MIX_OF_VALUES]`
+                yield $elem->lineno => UnionTypeVisitor::unionTypeFromNode(
+                    $this->code_base,
+                    $context,
+                    $elem,
+                    true
+                );
+                continue;
+            }
             $value_node = $elem->children['value'];
             if ($value_node instanceof Node) {
                 yield $elem->lineno => UnionTypeVisitor::unionTypeFromNode(
