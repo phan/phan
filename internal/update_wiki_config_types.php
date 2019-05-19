@@ -142,6 +142,7 @@ class ConfigEntry
         'plugins' => self::CATEGORY_ANALYSIS,
         'plugin_config' => self::CATEGORY_ANALYSIS,
         'maximum_recursion_depth' => self::CATEGORY_ANALYSIS,
+        'record_variable_context_and_scope' => self::CATEGORY_HIDDEN_CLI_ONLY,
     ];
 
     /** @var string the configuration setting name (e.g. 'null_casts_as_any_type') */

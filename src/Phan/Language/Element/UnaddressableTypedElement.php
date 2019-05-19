@@ -69,15 +69,18 @@ abstract class UnaddressableTypedElement
      * a certain kind has a meaningful flags value.
      */
     public function __construct(
-        $context,
+        FileRef $context,
         string $name,
         UnionType $type,
         int $flags
     ) {
-        if ($this->storesContext()) {
+        if (Config::getValue('record_variable_context_and_scope')) {
+            // The full Context is being recorded for plugins such as the taint check plugin for wikimedia. Note that
+            // 1. Fetching record_variable_context_and_scope is inlined for performance
+            // 2. Phan allows phpdoc parameter types to be more specific than (e.g. subclasses of) real types.
             $this->file_ref = $context;
         } else {
-            // Convert the Context to FileRef, to avoid creating a reference
+            // Convert the Context to a FileRef, to avoid creating a reference
             // cycle that can't be garbage collected)
             $this->file_ref = FileRef::copyFileRef($context);
         }
@@ -218,8 +221,8 @@ abstract class UnaddressableTypedElement
     }
 
     /**
-     * @return bool
-     * Whether this element stores Context and Scope.
+     * Returns whether this element stores Context and Scope.
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function storesContext() : bool {
         return Config::getValue('record_variable_context_and_scope');
