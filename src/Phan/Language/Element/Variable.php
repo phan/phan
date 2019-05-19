@@ -63,13 +63,13 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
 
     /**
     public function __construct(
-        FileRef $file_ref,
+        Context $context,
         string $name,
         UnionType $type,
         int $flags
     ) {
         parent::__construct(
-            $file_ref,
+            $context,
             $name,
             $type,
             $flags

@@ -11,7 +11,6 @@ use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\Comment\Builder;
-use Phan\Language\FileRef;
 use Phan\Language\FutureUnionType;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
@@ -40,7 +39,7 @@ class Parameter extends Variable
     const REFERENCE_READ_WRITE = 2;
     const REFERENCE_WRITE_ONLY = 3;
 
-    // __construct(FileRef $file_ref, string $name, UnionType $type, int $flags) inherited from Variable
+    // __construct(Context $context, string $name, UnionType $type, int $flags) inherited from Variable
 
     /**
      * @var UnionType|null
@@ -64,7 +63,7 @@ class Parameter extends Variable
      * @return static
      */
     public static function create(
-        FileRef $context,
+        Context $context,
         string $name,
         UnionType $type,
         int $flags
