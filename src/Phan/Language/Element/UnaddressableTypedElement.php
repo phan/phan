@@ -137,6 +137,9 @@ abstract class UnaddressableTypedElement
         $this->type = $type->nullableClone();
     }
 
+    /**
+     * Returns the flags of the node declaring/defining this element.
+     */
     public function getFlags() : int
     {
         return $this->flags;
@@ -166,6 +169,10 @@ abstract class UnaddressableTypedElement
         $this->flags = $flags;
     }
 
+    /**
+     * Records the Phan flags for this element
+     * @see \Phan\Flags
+     */
     public function getPhanFlags() : int
     {
         return $this->phan_flags;

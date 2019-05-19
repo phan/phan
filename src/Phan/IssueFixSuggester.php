@@ -72,6 +72,10 @@ class IssueFixSuggester
         });
     }
 
+    /**
+     * Returns a suggestion that suggests a similarly spelled class that has a method with name $method_name
+     * (Used when trying to invoke a method on a class that does not exist)
+     */
     public static function suggestSimilarClassForMethod(CodeBase $code_base, Context $context, FullyQualifiedClassName $class_fqsen, string $method_name, bool $is_static) : ?Suggestion
     {
         $filter = null;
@@ -85,6 +89,9 @@ class IssueFixSuggester
         return self::suggestSimilarClass($code_base, $context, $class_fqsen, $filter);
     }
 
+    /**
+     * Returns a suggestion for a global function spelled similarly to $function_fqsen (e.g. if $function_fqsen does not exist)
+     */
     public static function suggestSimilarGlobalFunction(
         CodeBase $code_base,
         Context $context,
@@ -176,6 +183,9 @@ class IssueFixSuggester
         return Suggestion::fromString($suggestion_text);
     }
 
+    /**
+     * Returns a suggestion with similar method names to $wanted_method_name in $class (that exist and are accessible from the usage context), or null.
+     */
     public static function suggestSimilarMethod(CodeBase $code_base, Context $context, Clazz $class, string $wanted_method_name, bool $is_static) : ?Suggestion
     {
         if (Config::getValue('disable_suggestions')) {
@@ -260,6 +270,9 @@ class IssueFixSuggester
         return self::suggestSimilarClass($code_base, $context, $fqsen, $filter, $prefix);
     }
 
+    /**
+     * Generate a suggestion with similar suggestions (properties or otherwise) to a missing property with class $class and name $wanted_property_name.
+     */
     public static function suggestSimilarProperty(CodeBase $code_base, Context $context, Clazz $class, string $wanted_property_name, bool $is_static) : ?Suggestion
     {
         if (Config::getValue('disable_suggestions')) {
@@ -337,6 +350,9 @@ class IssueFixSuggester
         return $candidates;
     }
 
+    /**
+     * Returns a suggestion with class constants with a similar name to $class_constant_fqsen in the same class, or null
+     */
     public static function suggestSimilarClassConstant(CodeBase $code_base, Context $context, FullyQualifiedClassConstantName $class_constant_fqsen) : ?Suggestion
     {
         if (Config::getValue('disable_suggestions')) {
@@ -517,6 +533,11 @@ class IssueFixSuggester
         return $candidates;
     }
 
+    /**
+     * Return a suggestion for variables with similar spellings to $variable_name (which may or may not exist or be used elsewhere), or null.
+     *
+     * Suggestions also include accessible properties with similar names (e.g. suggest `$this->context` if `$context` is not declared)
+     */
     public static function suggestVariableTypoFix(CodeBase $code_base, Context $context, string $variable_name, string $prefix = 'Did you mean') : ?Suggestion
     {
         if (Config::getValue('disable_suggestions')) {

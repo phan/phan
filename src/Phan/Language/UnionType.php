@@ -1878,6 +1878,11 @@ class UnionType implements Serializable
         });
     }
 
+    /**
+     * Returns the types of this union type that are arrays or are types implementing ArrayAccess.
+     *
+     * This is useful for code inferring the types of dimensions of a union type.
+     */
     public function asArrayOrArrayAccessSubTypes(CodeBase $code_base) : UnionType
     {
         $result = UnionType::empty();

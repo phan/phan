@@ -853,6 +853,11 @@ class Config
         self::$project_root_directory = $project_root_directory;
     }
 
+    /**
+     * Initializes the configuration used for analysis.
+     *
+     * This is automatically called with the defaults, to set any derived configuration and static properties as side effects.
+     */
     public static function init() : void
     {
         static $did_init = false;

@@ -147,6 +147,9 @@ class Request
         return false;
     }
 
+    /**
+     * Computes the byte offset of the node targeted by a language client's request (e.g. for a "Go to definition" request)
+     */
     public function getTargetByteOffset(string $file_contents) : int
     {
         if ($this->most_recent_node_info_request) {
@@ -321,9 +324,12 @@ class Request
         $this->sendJSONResponse($response);
     }
 
+    /**
+     * Sends a response to the client indicating that
+     * the requested file wasn't in .phan/config.php's list of files to analyze.
+     */
     public function respondWithNoFilesToAnalyze() : void
     {
-        // The mentioned file wasn't in .phan/config.php's list of files to analyze.
         $this->sendJSONResponse([
             "status" => self::STATUS_NO_FILES,
         ]);
@@ -372,11 +378,21 @@ class Request
         return $mapping;
     }
 
+    /**
+     * Fetches the most recently made request for information about a node of the file.
+     * (e.g. for "go to definition")
+     */
     public function getMostRecentNodeInfoRequest() : ?NodeInfoRequest
     {
         return $this->most_recent_node_info_request;
     }
 
+    /**
+     * Send null responses for any open requests so that clients won't hang
+     * or encounter errors.
+     *
+     * (e.g. if we encountered a newer request before that request could be processed)
+     */
     public function rejectLanguageServerRequestsRequiringAnalysis() : void
     {
         if ($this->most_recent_node_info_request) {
@@ -584,6 +600,12 @@ class Request
     }
 
     /**
+     * Handle becoming a parent of a forked process $pid.
+     *
+     * This tracks the information needed for the
+     * main process of the daemon to properly clean up
+     * after $pid once it exits. (to avoid leaving zombie processes)
+     *
      * @param int $pid the child PID of this process that is performing analysis
      */
     public static function handleBecomingParentOfChildAnalysisProcess(int $pid) : void
@@ -602,6 +624,9 @@ class Request
         Daemon::debugf("Created a child pid %d", $pid);
     }
 
+    /**
+     * Handle becoming a child analysis process - this should no longer be waiting to clean up previously forked child processes.
+     */
     public static function handleBecomingChildAnalysisProcess() : void
     {
         self::$child_pids = [];

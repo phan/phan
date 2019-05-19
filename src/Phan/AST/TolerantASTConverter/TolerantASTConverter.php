@@ -160,11 +160,19 @@ class TolerantASTConverter
     {
     }
 
+    /**
+     * Controls whether this should add placeholders for nodes that couldn't be parsed
+     * (enabled for code completion)
+     */
     public function setShouldAddPlaceholders(bool $value) : void
     {
         $this->instance_should_add_placeholders = $value;
     }
 
+    /**
+     * Records the PHP major+minor version id (70100, 70200, etc.)
+     * that this polyfill should emulate the behavior of php-ast for.
+     */
     public function setPHPVersionId(int $value) : void
     {
         $this->instance_php_version_id_parsing = $value;

@@ -30,6 +30,9 @@ class ClassMap
      */
     private $method_map = [];
 
+    /**
+     * Record that the class this represents has the provided class constant.
+     */
     public function addClassConstant(ClassConstant $constant) : void
     {
         $this->class_constant_map[
@@ -61,6 +64,9 @@ class ClassMap
         return $this->class_constant_map;
     }
 
+    /**
+     * Record that the class this represents has the provided property information
+     */
     public function addProperty(Property $property) : void
     {
         $this->property_map[
@@ -68,11 +74,17 @@ class ClassMap
         ] = $property;
     }
 
+    /**
+     * Checks if the class this represents has a property with name $name
+     */
     public function hasPropertyWithName(string $name) : bool
     {
         return isset($this->property_map[$name]);
     }
 
+    /**
+     * Fetch information about the property (of the class this represents) with name $name
+     */
     public function getPropertyByName(string $name) : Property
     {
         return $this->property_map[$name];
@@ -86,6 +98,9 @@ class ClassMap
         return $this->property_map;
     }
 
+    /**
+     * Records that the class that this represents has the provided method.
+     */
     public function addMethod(Method $method) : void
     {
         $this->method_map[\strtolower(
@@ -93,11 +108,17 @@ class ClassMap
         )] = $method;
     }
 
+    /**
+     * Checks if the class that this represents has a method with name $name.
+     */
     public function hasMethodWithName(string $name) : bool
     {
         return isset($this->method_map[\strtolower($name)]);
     }
 
+    /**
+     * Fetches the method signature with name $name of the class that this represents.
+     */
     public function getMethodByName(string $name) : Method
     {
         return $this->method_map[\strtolower($name)];

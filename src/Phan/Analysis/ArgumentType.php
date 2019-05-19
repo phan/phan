@@ -556,6 +556,10 @@ final class ArgumentType
         }
     }
 
+    /**
+     * Analyze passing the an argument of type $argument_type to the ith parameter of the (possibly variadic) method $method,
+     * for a call made from the line $lineno.
+     */
     public static function analyzeParameter(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, int $lineno, int $i) : void
     {
         // Expand it to include all parent types up the chain

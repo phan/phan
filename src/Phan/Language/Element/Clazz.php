@@ -55,6 +55,7 @@ use function is_string;
  * @see CodeBase for the data structures used for looking up classes or elements of classes (properties, methods, constants, etc)
  *
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
+ * @phan-file-suppress PhanPluginNoCommentOnPublicMethod TODO: Add comments
  */
 class Clazz extends AddressableElement
 {

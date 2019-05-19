@@ -3902,7 +3902,9 @@ class Issue
         }
     }
 
-
+    /**
+     * Returns the type name of this issue (e.g. Issue::UndeclaredVariable)
+     */
     public function getType() : string
     {
         return $this->type;
@@ -3916,6 +3918,9 @@ class Issue
         return $this->type_id;
     }
 
+    /**
+     * Returns the category of this issue (e.g. Issue::CATEGORY_UNDEFINED)
+     */
     public function getCategory() : int
     {
         return $this->category;
@@ -3939,6 +3944,9 @@ class Issue
         return self::CATEGORY_NAME[$category] ?? '';
     }
 
+    /**
+     * Returns the severity of this issue (Issue::SEVERITY_LOW, Issue::SEVERITY_NORMAL, or Issue::SEVERITY_CRITICAL)
+     */
     public function getSeverity() : int
     {
         return $this->severity;
@@ -3971,6 +3979,9 @@ class Issue
         return $this->remediation_difficulty;
     }
 
+    /**
+     * Returns the template text of this issue (e.g. `'Variable ${VARIABLE} is undeclared'`)
+     */
     public function getTemplate() : string
     {
         return $this->template;

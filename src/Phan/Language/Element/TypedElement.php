@@ -12,6 +12,7 @@ use Phan\Language\UnionType;
  * addressable such as a class, method, closure, property,
  * constant, variable, ...
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
+ * @phan-file-suppress PhanPluginNoCommentOnPublicMethod TODO: Add comments
  */
 abstract class TypedElement implements TypedElementInterface
 {
