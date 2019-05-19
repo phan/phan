@@ -792,6 +792,10 @@ class Config
         // Phan is slightly faster when these are disabled.
         'enable_extended_internal_return_type_plugins' => false,
 
+        // Set this to true to make Phan store a full Context inside variables, instead of a FileRef. This could provide more useful info to plugins,
+        // but will increase the memory usage by roughly 2.5%.
+        'record_variable_context_and_scope' => false,
+
         // If a literal string type exceeds this length,
         // then Phan converts it to a regular string type.
         // This setting cannot be less than 50.

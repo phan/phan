@@ -14,10 +14,11 @@ use Phan\Language\UnionType;
 abstract class UnaddressableTypedElement
 {
     /**
-     * @var Context
-     * The context where this element lives
+     * @var FileRef
+     * The FileRef where this element lives. Will be instance of Context if
+     * `record_variable_context_and_scope` is true.
      */
-    private $context;
+    private $file_ref;
 
     /**
      * @var string
@@ -72,7 +73,13 @@ abstract class UnaddressableTypedElement
         UnionType $type,
         int $flags
     ) {
-        $this->context = $context;
+        if ($this->storesContext()) {
+            $this->context = $context;
+        } else {
+            // Convert the Context to FileRef, to avoid creating a reference
+            // cycle that can't be garbage collected)
+            $this->context = FileRef::copyFileRef($context);
+        }
         $this->name = $name;
         $this->type = $type;
         $this->flags = $flags;
@@ -210,11 +217,22 @@ abstract class UnaddressableTypedElement
 
     /**
      * @return Context
-     * A reference to where this element was found
+     * A reference to where this element was found. This is the same as $this->getFileRef(),
+     * but is intended to be used when `record_variable_context_and_scope` is true, for better
+     * naming and type inference.
+     * The typehint will make it fail very hard if $this->storesContext() is false.
      */
     public function getContext() : Context
     {
         return $this->context;
+    }
+
+    /**
+     * @return bool
+     * Whether this element stores Context and Scope.
+     */
+    public function storesContext() : bool {
+        return Config::getValue('record_variable_context_and_scope');
     }
 
     abstract public function __toString() : string;
