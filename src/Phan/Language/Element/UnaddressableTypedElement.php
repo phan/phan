@@ -74,11 +74,11 @@ abstract class UnaddressableTypedElement
         int $flags
     ) {
         if ($this->storesContext()) {
-            $this->context = $context;
+            $this->file_ref = $context;
         } else {
             // Convert the Context to FileRef, to avoid creating a reference
             // cycle that can't be garbage collected)
-            $this->context = FileRef::copyFileRef($context);
+            $this->file_ref = FileRef::copyFileRef($context);
         }
         $this->name = $name;
         $this->type = $type;
@@ -212,7 +212,7 @@ abstract class UnaddressableTypedElement
      */
     public function getFileRef() : FileRef
     {
-        return $this->context;
+        return $this->file_ref;
     }
 
     /**
@@ -224,7 +224,7 @@ abstract class UnaddressableTypedElement
      */
     public function getContext() : Context
     {
-        return $this->context;
+        return $this->file_ref;
     }
 
     /**
