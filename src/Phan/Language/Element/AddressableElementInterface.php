@@ -3,6 +3,7 @@
 namespace Phan\Language\Element;
 
 use Phan\CodeBase;
+use Phan\Language\Context;
 use Phan\Language\FileRef;
 use Phan\Language\FQSEN;
 
@@ -84,6 +85,12 @@ interface AddressableElementInterface extends TypedElementInterface
      * @return ?string the 'docComment' for this element, if any exists.
      */
     public function getDocComment() : ?string;
+
+    /**
+     * @return Context
+     * The context in which this structural element exists
+     */
+    public function getContext() : Context;
 
     /**
      * @return bool

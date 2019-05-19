@@ -2,7 +2,6 @@
 
 namespace Phan\Language\Element;
 
-use Phan\Language\Context;
 use Phan\Language\FileRef;
 use Phan\Language\UnionType;
 
@@ -30,12 +29,6 @@ interface TypedElementInterface
      * @param UnionType $type
      */
     public function setUnionType(UnionType $type) : void;
-
-    /**
-     * @return Context
-     * The context in which this structural element exists
-     */
-    public function getContext() : Context;
 
     /**
      * @return FileRef

@@ -53,7 +53,7 @@ abstract class UnaddressableTypedElement
 
     /**
      * @param Context $context
-     * The Context in which the structural element lives
+     * The Context in which the structural element lives.
      *
      * @param string $name
      * The name of the typed structural element
@@ -69,7 +69,7 @@ abstract class UnaddressableTypedElement
      * a certain kind has a meaningful flags value.
      */
     public function __construct(
-        Context $context,
+        $context,
         string $name,
         UnionType $type,
         int $flags
@@ -209,21 +209,10 @@ abstract class UnaddressableTypedElement
 
     /**
      * @return FileRef
-     * A reference to where this element was found
+     * A reference to where this element was found. This will return a Context object if
+     * `record_variable_context_and_scope` is true, and a FileRef otherwise.
      */
     public function getFileRef() : FileRef
-    {
-        return $this->file_ref;
-    }
-
-    /**
-     * @return Context
-     * A reference to where this element was found. This is the same as $this->getFileRef(),
-     * but is intended to be used when `record_variable_context_and_scope` is true, for better
-     * naming and type inference.
-     * The typehint will make it fail very hard if $this->storesContext() is false.
-     */
-    public function getContext() : Context
     {
         return $this->file_ref;
     }

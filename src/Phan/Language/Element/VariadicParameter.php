@@ -99,7 +99,8 @@ class VariadicParameter extends Parameter
         // e.g. $this->getUnionType() is of type T[]
         //      $this->non_variadic->getUnionType() is of type T
         return new Parameter(
-            $this->getContext(),
+            // @phan-suppress-next-line PhanTypeMismatchArgument Here it's fine to pass a FileRef
+            $this->getFileRef(),
             $this->getName(),
             $this->type,
             Flags::bitVectorWithState($this->getFlags(), \ast\flags\PARAM_VARIADIC, false)
