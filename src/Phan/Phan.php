@@ -503,10 +503,6 @@ class Phan implements IgnoredFilesFilterInterface
             $request->exit(EXIT_SUCCESS);
         }
 
-        if (Config::getValue('print_memory_usage_summary')) {
-            self::printMemoryUsageSummary();
-        }
-
         if ($did_fork_pool_have_error) {
             // Make fork pool errors (e.g. due to memory limits) easy to detect when running CI jobs.
             return true;
