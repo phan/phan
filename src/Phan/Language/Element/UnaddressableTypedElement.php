@@ -2,6 +2,7 @@
 
 namespace Phan\Language\Element;
 
+use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\FileRef;
 use Phan\Language\UnionType;
