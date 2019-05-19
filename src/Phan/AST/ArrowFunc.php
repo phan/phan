@@ -98,6 +98,9 @@ class ArrowFunc
         }
     }
 
+    /**
+     * Record that variable $variable_name exists in the outer scope of the arrow function with node $n
+     */
     public static function recordVariableExistsInOuterScope(Node $n, string $variable_name) : void
     {
         if ($n->kind !== ast\AST_ARROW_FUNC) {

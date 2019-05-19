@@ -154,6 +154,11 @@ final class ConversionTest extends BaseTest
         ast\AST_ARROW_FUNC,
     ];
 
+    /**
+     * Normalizes the flags on function declaration caused by \ast\flags\FUNC_GENERATOR.
+     *
+     * Phan does not use these flags because they are not natively provided in all PHP versions.
+     */
     public static function normalizeYieldFlags(ast\Node $node) : void
     {
         if (\in_array($node->kind, self::FUNCTION_DECLARATION_KINDS, true)) {

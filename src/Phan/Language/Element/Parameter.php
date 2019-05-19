@@ -461,6 +461,9 @@ class Parameter extends Variable
         return self::REFERENCE_DEFAULT;
     }
 
+    /**
+     * Records that this parameter is an output reference (it overwrites the value of the argument by reference
+     */
     public function setIsOutputReference() : void
     {
         $this->enablePhanFlagBits(Flags::IS_WRITE_REFERENCE);

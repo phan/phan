@@ -683,6 +683,10 @@ final class ConfigPluginSet extends PluginV3 implements
         $this->addNodeSelectionClosureForKind($node->kind, $closure);
     }
 
+    /**
+     * Adds a plugin that will stay around until the language client's request has been fulfilled
+     * (E.g. a plugin that will analyze the node targetted by "go to definition")
+     */
     public function addTemporaryAnalysisPlugin(CodeBase $code_base, ?\Phan\Daemon\Request $request) : ?RAII
     {
         if (!$request) {

@@ -815,6 +815,9 @@ class CLI
         return ' (Did you mean ' . \implode(' or ', $suggestions) . '?)';
     }
 
+    /**
+     * Recompute the list of files (used in daemon mode or language server mode)
+     */
     public function recomputeFileList() : void
     {
         $this->file_list = $this->file_list_in_config;
@@ -1583,9 +1586,14 @@ EOB;
         self::debugOutput($line);
     }
 
+    /**
+     * Write a line of output for debugging.
+     */
     public static function debugOutput(string $line) : void
     {
-        \fwrite(STDERR, $line . "\n");
+        if (self::shouldShowDebugOutput()) {
+            \fwrite(STDERR, $line . \PHP_EOL);
+        }
     }
 
     /**

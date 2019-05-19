@@ -28,6 +28,7 @@ use function is_string;
 /**
  * This implements closures for finding definitions for nodes where isSelected is set
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
+ * @phan-file-suppress PhanPluginNoCommentOnPublicMethod TODO: Add comments
  */
 class DefinitionResolver
 {

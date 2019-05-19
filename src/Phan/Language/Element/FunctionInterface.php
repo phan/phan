@@ -340,6 +340,7 @@ interface FunctionInterface extends AddressableElementInterface
      */
     public function ensureScopeInitialized(CodeBase $code_base) : void;
 
+    /** Get the node with the declaration of this function/method, if it exists and if Phan is running in non-quick mode */
     public function getNode() : ?Node;
 
     /**
@@ -347,6 +348,9 @@ interface FunctionInterface extends AddressableElementInterface
      */
     public function getComment() : ?Comment;
 
+    /**
+     * Set the comment data for this function/method
+     */
     public function setComment(Comment $comment) : void;
 
     /**

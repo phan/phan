@@ -39,6 +39,10 @@ abstract class NodeInfoRequest
         $this->promise = new Promise();
     }
 
+    /**
+     * If a response hasn't been sent to the client, then send a null response
+     * so that it knows it should stop waiting.
+     */
     abstract public function finalize() : void;
 
     /**
@@ -67,6 +71,11 @@ abstract class NodeInfoRequest
         return $this->position;
     }
 
+    /**
+     * Returns the promise for the result of this NodeInfoRequest.
+     *
+     * (to be used to fetch/await the value)
+     */
     final public function getPromise() : Promise
     {
         return $this->promise;

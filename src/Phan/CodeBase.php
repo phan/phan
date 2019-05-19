@@ -233,6 +233,12 @@ class CodeBase
         $this->addInternalFunctionsByNames($internal_function_name_list);
     }
 
+    /**
+     * Start to enable the tracking of closures that can undo adding elements (class declarations, method declarations, etc.)
+     * to this codebase.
+     *
+     * This should only be called once, before the start of the parse phase.
+     */
     public function enableUndoTracking() : void
     {
         if ($this->has_enabled_undo_tracker) {
@@ -242,6 +248,10 @@ class CodeBase
         $this->undo_tracker = new UndoTracker();
     }
 
+    /**
+     * Start to disable the tracking of closures that can undo adding elements (class declarations, method declarations, etc.)
+     * to this codebase.
+     */
     public function disableUndoTracking() : void
     {
         if (!$this->has_enabled_undo_tracker) {
@@ -258,6 +268,14 @@ class CodeBase
         return $this->undo_tracker !== null;
     }
 
+    /**
+     * Enable hydration of elements. (populating class elements with information from their ancestors)
+     *
+     * This is called after the parse phase is finished.
+     *
+     * - Prior to the end of the parse phase, ancestors of class elements would be unavailable,
+     *   so hydration would result in an inconsistent state.
+     */
     public function setShouldHydrateRequestedElements(
         bool $should_hydrate_requested_elements
     ) : void {
@@ -293,6 +311,10 @@ class CodeBase
         throw new \RuntimeException("Calling getParsedFilePathCount without an undo tracker");
     }
 
+    /**
+     * Records the file currently being parsed/analyzed so that crash/error reports
+     * will indicate the analyzed file causing the error.
+     */
     public function setCurrentParsedFile(?string $current_parsed_file) : void
     {
         self::$current_file = $current_parsed_file;
@@ -433,12 +455,24 @@ class CodeBase
         throw new \RuntimeException("Calling replaceFileContents without undo tracker");
     }
 
+    /**
+     * Eagerly load all signatures.
+     *
+     * This is useful if we expect Phan to be running for a long time and forking processes (in language server or daemon mode),
+     * or if we need all of the signatures of functions (e.g. for tools that need all signatures)
+     */
     public function eagerlyLoadAllSignatures() : void
     {
         $this->getInternalClassMap();  // Force initialization of remaining internal php classes to reduce latency of future analysis requests.
         $this->forceLoadingInternalFunctions();  // Force initialization of internal functions to reduce latency of future analysis requests.
     }
 
+    /**
+     * Load all internal global functions for analysis.
+     *
+     * This is useful if we expect Phan to be running for a long time and forking processes (in language server or daemon mode),
+     * or if we need all of the signatures of functions (e.g. for tools that need all signatures)
+     */
     public function forceLoadingInternalFunctions() : void
     {
         $internal_function_fqsen_set = $this->internal_function_fqsen_set;
@@ -696,6 +730,9 @@ class CodeBase
     }
 
     /**
+     * Add a class from reflection to the codebase,
+     * to be analyzed if any part of the analysis uses its fqsen.
+     *
      * @param ReflectionClass $class
      * A class to add, lazily.
      */
@@ -749,6 +786,11 @@ class CodeBase
         }
     }
 
+    /**
+     * Resolve the aliases of class FQSENs to other class FQSENs.
+     *
+     * This is called after all calls to class_alias are parsed and all class definitions are parsed
+     */
     public function resolveClassAliases() : void
     {
         if ($this->undo_tracker) {

@@ -284,9 +284,6 @@ return [
         'PhanPluginDescriptionlessCommentOnProtectedMethod',
         'PhanPluginNoCommentOnPrivateMethod',
         'PhanPluginDescriptionlessCommentOnPrivateMethod',
-        // TODO: These started being emitted after comments with (at)return void were removed.
-        // Fix the occurrences of PhanPluginNoCommentOnPublicMethod
-        'PhanPluginNoCommentOnPublicMethod',
         // TODO: Fix edge cases in --automatic-fix for PhanPluginRedundantClosureComment
         'PhanPluginRedundantClosureComment',
     ],

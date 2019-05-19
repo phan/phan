@@ -57,17 +57,24 @@ class NodeDumper
         $this->indent = $indent;
     }
 
+    /**
+     * Should this include the byte offset in the file where the node occurred?
+     */
     public function setIncludeOffset(bool $include_offset) : void
     {
         $this->include_offset = $include_offset;
     }
 
+    /**
+     * Should this include the token kind (default is just the text of the token)
+     */
     public function setIncludeTokenKind(bool $include_token_kind) : void
     {
         $this->include_token_kind = $include_token_kind;
     }
 
     /**
+     * Sets the text used for indentation (e.g. 4 spaces)
      * @return void
      * @suppress PhanUnreferencedPublicMethod
      */
