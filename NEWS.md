@@ -69,7 +69,13 @@ Plugins:
   (or when other parts don't just repeat information, but the `@return void` at the end is redundant)
 + Add a `BeforeAnalyzePhaseCapability`. Unlike `BeforeAnalyzeCapability`, this will run after methods are analyzed, not before.
 
-?? ??? 2019, Phan 1.3.3 (dev)
+09 May 2019, Phan 1.3.4
+-----------------------
+
+Bug fixes:
++ Fix bug in Phan 1.3.3 causing polyfill parser to be used if the installed version of php-ast was older than 1.0.1.
+
+08 May 2019, Phan 1.3.3
 -----------------------
 
 New features(CLI, Configs):
