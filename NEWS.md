@@ -10,9 +10,14 @@ New features(Analysis):
 + Fix the check for `PhanUnusedVariableGlobal` (#2768)
 + Start work on supporting analyzing PHP 7.4's unpacking inside arrays. (e.g. `[1, 2, ...$arr1, 5]`) (#2779)
   NOTE: This does not yet check all types of errors, some code is unmigrated, and the polyfill does not yet support this.
++ Improve the check for invalid array unpacking in function calls with iterable/Traversable parameters. (#2779)
 
 Plugins:
 + Improve help messages for `internal/dump_fallback_ast.php` (this tool may be of use when developing plugins)
+
+Bug fixes:
++ Work around issues parsing binary operators in PHP 7.4-dev.
+  Note that the latest version of php-ast (currently 1.0.2-dev) should be installed if you are testing Phan with PHP 7.4-dev.
 
 13 May 2019, Phan 2.0.0-RC2
 -----------------------

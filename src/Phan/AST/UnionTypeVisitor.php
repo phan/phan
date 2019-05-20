@@ -905,7 +905,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 }
                 if ($child->kind === ast\AST_UNPACK) {
                     // Analyze PHP 7.4's array spread operator, e.g. `[$a, ...$array, $b]`
-                    $value_types_builder->addUnionType($this->visitUnpack($child));
+                    $value_types_builder->addUnionType($this->analyzeUnpack($child, true));
                     continue;
                 }
                 $value = $child->children['value'];
@@ -1608,6 +1608,29 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitUnpack(Node $node) : UnionType
     {
+        return $this->analyzeUnpack($node, false);
+    }
+
+    /**
+     * Visit a node with kind `\ast\AST_UNPACK`
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @param bool $is_array_spread
+     * If true, this is the array spread operator,
+     * which tolerates integers that aren't consecutive.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
+     *
+     * @throws IssueException
+     * if the unpack is on an invalid expression
+     */
+    private function analyzeUnpack(Node $node, bool $is_array_spread) : UnionType
+    {
         $union_type = self::unionTypeFromNode(
             $this->code_base,
             $this->context,
@@ -1638,13 +1661,17 @@ class UnionTypeVisitor extends AnalysisVisitor
                 }
                 return $generic_types;
             }
-            // TODO: Once we have generic template types for Traversable and subclasses, rewrite this check to account for `new ArrayObject([2])`, etc.
-            if (GenericArrayType::KEY_STRING === GenericArrayType::keyTypeFromUnionTypeKeys($union_type)) {
+            $key_type = $union_type->iterableKeyUnionType($this->code_base);
+            // Check that this is possibly valid, e.g. array<int, mixed>, Generator<int, mixed>, or iterable<int, mixed>
+            // TODO: Could add stricter type checks (e.g. nullable checks)
+            if (!$key_type->isEmpty() && !$key_type->containsNullable() && !$key_type->hasTypeMatchingCallback(function (Type $type) : bool {
+                return $type instanceof IntType || $type instanceof MixedType;
+            })) {
                 throw new IssueException(
-                    Issue::fromType(Issue::TypeMismatchUnpackKey)(
+                    Issue::fromType($is_array_spread ? Issue::TypeMismatchUnpackKeyArraySpread : Issue::TypeMismatchUnpackKey)(
                         $this->context->getFile(),
                         $node->lineno,
-                        [(string)$union_type, 'string']
+                        [(string)$union_type, $key_type]
                     )
                 );
             }

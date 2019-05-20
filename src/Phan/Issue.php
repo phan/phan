@@ -137,6 +137,7 @@ class Issue
     const TypeMismatchDimFetch      = 'PhanTypeMismatchDimFetch';
     const TypeMismatchDimFetchNullable = 'PhanTypeMismatchDimFetchNullable';
     const TypeMismatchUnpackKey     = 'PhanTypeMismatchUnpackKey';
+    const TypeMismatchUnpackKeyArraySpread = 'PhanTypeMismatchUnpackKeyArraySpread';
     const TypeMismatchUnpackValue   = 'PhanTypeMismatchUnpackValue';
     const TypeMismatchArrayDestructuringKey = 'PhanTypeMismatchArrayDestructuringKey';
     const TypeMismatchVariadicComment = 'PhanMismatchVariadicComment';
@@ -1704,6 +1705,14 @@ class Issue
                 'When unpacking a value of type {TYPE}, the value\'s keys were of type {TYPE}, but the keys should be consecutive integers starting from 0',
                 self::REMEDIATION_B,
                 10041
+            ),
+            new Issue(
+                self::TypeMismatchUnpackKeyArraySpread,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'When unpacking a value of type {TYPE}, the value\'s keys were of type {TYPE}, but the keys should be integers',
+                self::REMEDIATION_B,
+                10109
             ),
             new Issue(
                 self::TypeMismatchUnpackValue,
