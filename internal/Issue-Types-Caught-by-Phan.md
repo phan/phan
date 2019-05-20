@@ -2335,6 +2335,14 @@ Instance method name must be a string, got {TYPE}
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0540_invalid_method_name.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.2/tests/files/src/0540_invalid_method_name.php#L4).
 
+## PhanTypeInvalidPropertyDefaultReal
+
+```
+Default value for {TYPE} ${PROPERTY} can't be {TYPE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php74_files/expected/006_typed_properties_invalid_default.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php74_files/src/006_typed_properties_invalid_default.php#L9).
+
 ## PhanTypeInvalidPropertyName
 
 ```
@@ -2690,6 +2698,14 @@ When unpacking a value of type {TYPE}, the value's keys were of type {TYPE}, but
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0401_varargs.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.2/tests/files/src/0401_varargs.php#L13).
+
+## PhanTypeMismatchUnpackKeyArraySpread
+
+```
+When unpacking a value of type {TYPE}, the value's keys were of type {TYPE}, but the keys should be integers
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php74_files/expected/009_unpack_warnings.php.expected#L9) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php74_files/src/009_unpack_warnings.php#L11).
 
 ## PhanTypeMismatchUnpackValue
 
