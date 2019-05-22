@@ -56,7 +56,7 @@ class CLI
     /**
      * This should be updated to x.y.z-dev after every release, and x.y.z before a release.
      */
-    const PHAN_VERSION = '1.3.4';
+    const PHAN_VERSION = '1.3.5';
 
     /**
      * List of short flags passed to getopt
@@ -310,6 +310,10 @@ class CLI
         }
         if (\array_key_exists('v', $opts ?? []) || \array_key_exists('version', $opts ?? [])) {
             \printf("Phan %s\n", self::PHAN_VERSION);
+
+            if (PHP_VERSION_ID >= 70100 && PHP_VERSION_ID < 70400 && !getenv('PHAN_SUPPRESS_PHP_UPGRADE_NOTICE')) {
+                fwrite(STDERR, "(Consider upgrading to Phan 2, which has the latest features and bug fixes (supports execution with PHP 7.1+))\n");
+            }
             throw new ExitException('', EXIT_SUCCESS);
         }
 
@@ -764,6 +768,14 @@ class CLI
         if (Config::getValue('processes') !== 1
             && Config::getValue('dead_code_detection')) {
             throw new AssertionError("We cannot run dead code detection on more than one core.");
+        }
+        if (Config::get_closest_target_php_version_id() >= 70400 && PHP_VERSION_ID < 70400) {
+            // Either warn in bootstrap about using php 7.4, or here about analyzing a codebase's support for php 7.4+, but not both.
+            if (!getenv('PHAN_SUPPRESS_PHP_UPGRADE_NOTICE')) {
+                fwrite(STDERR, "Phan 1.x (and AST version 50) has incomplete support for analyze codebases using php 7.4 syntax or function signatures.\n");
+                fwrite(STDERR, "To correctly analyze PHP 7.4+ codebases, upgrading to Phan 2 is strongly recommended.\n");
+                fwrite(STDERR, "(Set PHAN_SUPPRESS_PHP_UPGRADE_NOTICE=1 to disable this notice)\n");
+            }
         }
     }
 
@@ -1234,6 +1246,11 @@ Extended help:
   Print details on annotations supported by Phan
 
 EOB;
+        }
+        if (PHP_VERSION_ID >= 70100 && PHP_VERSION_ID < 70400) {
+            if (!getenv('PHAN_SUPPRESS_PHP_UPGRADE_NOTICE')) {
+                fprintf(STDERR, "\nPhan %s is installed (supporting execution with PHP 7.0+), but Phan 2 (supporting execution with PHP 7.1+) has the latest features and bug fixes.\n", CLI::PHAN_VERSION);
+            }
         }
         exit($exit_code);
     }
