@@ -169,6 +169,10 @@ final class CLITest extends BaseTest
                 ],
             ],
             [
+                ['language_server_min_diagnostics_delay_ms' => 100.0],
+                ['language-server-min-diagnostics-delay-ms' => '100'],
+            ],
+            [
                 [
                     'color_issue_messages' => true,
                     'target_php_version' => '7.1',

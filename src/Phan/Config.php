@@ -782,6 +782,11 @@ class Config
         // Use `--language-server-hide-category` if you want to enable this.
         'language_server_hide_category_of_issues' => false,
 
+        // Should be configured by --language-server-min-diagnostic-delay-ms.
+        // Use this for language clients that have race conditions processing diagnostics.
+        // Max value is 1000 ms.
+        'language_server_min_diagnostics_delay_ms' => 0,
+
         // Set this to false to disable the plugins that Phan uses to infer more accurate return types of `array_map`, `array_filter`, and many other functions.
         //
         // Phan is slightly faster when these are disabled.
@@ -1340,6 +1345,18 @@ class Config
     public static function isIssueFixingPluginEnabled() : bool
     {
         return \in_array(__DIR__ . '/Plugin/Internal/IssueFixingPlugin.php', Config::getValue('plugins'));
+    }
+
+    /**
+     * Fetches the value of language_server_min_diagnostics_delay_ms, constrained to 0..1000ms
+     */
+    public static function getMinDiagnosticsDelayMs() : float
+    {
+        $delay = Config::getValue('language_server_min_diagnostics_delay_ms');
+        if (\is_numeric($delay) && $delay > 0) {
+            return \min((float)$delay, 1000);
+        }
+        return 0;
     }
 }
 

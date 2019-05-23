@@ -104,24 +104,25 @@ class CLI
         'init-analyze-file:',
         'init-no-composer',
         'init-overwrite',
+        'language-server-allow-missing-pcntl',
         'language-server-analyze-only-on-save',
+        'language-server-completion-vscode',
+        'language-server-disable-completion',
+        'language-server-disable-go-to-definition',
+        'language-server-disable-hover',
+        'language-server-disable-output-filter',
+        'language-server-enable',
+        'language-server-enable-completion',
+        'language-server-enable-go-to-definition',
+        'language-server-enable-hover',
+        'language-server-force-missing-pcntl',
+        'language-server-hide-category',
+        'language-server-min-diagnostics-delay-ms:',
         'language-server-on-stdin',
+        'language-server-require-pcntl',
         'language-server-tcp-connect:',
         'language-server-tcp-server:',
         'language-server-verbose',
-        'language-server-disable-output-filter',
-        'language-server-hide-category',
-        'language-server-allow-missing-pcntl',
-        'language-server-force-missing-pcntl',
-        'language-server-require-pcntl',
-        'language-server-disable-go-to-definition',
-        'language-server-disable-hover',
-        'language-server-disable-completion',
-        'language-server-enable',
-        'language-server-enable-go-to-definition',
-        'language-server-enable-hover',
-        'language-server-enable-completion',
-        'language-server-completion-vscode',
         'markdown-issue-messages',
         'memory-limit:',
         'minimum-severity:',
@@ -558,6 +559,9 @@ class CLI
                     break;  // handled earlier
                 case 'language-server-hide-category':
                     Config::setValue('language_server_hide_category_of_issues', true);
+                    break;
+                case 'language-server-min-diagnostics-delay-ms':
+                    Config::setValue('language_server_min_diagnostics_delay_ms', (float)$value);
                     break;
                 case 'disable-cache':
                     Config::setValue('cache_polyfill_asts', false);
@@ -1225,6 +1229,11 @@ Extended help:
 
  --language-server-require-pcntl
   Don't start the language server if PCNTL isn't installed (don't use the fallback). Useful for debugging.
+
+ --language-server-min-diagnostics-delay-ms <0..1000>
+  Sets a minimum delay between publishing diagnostics (i.e. Phan issues) to the language client.
+  This can be increased to work around race conditions in clients processing Phan issues (e.g. if your editor/IDE shows outdated diagnostics)
+  Defaults to 0 (no delay)
 
  --require-config-exists
   Exit immediately with an error code if `.phan/config.php` does not exist.

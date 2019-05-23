@@ -3,6 +3,9 @@ Phan NEWS
 ?? ??? 2019, Phan 2.0.1 (dev)
 -----------------------
 
+Language Server/Daemon mode:
++ Add `--language-server-min-diagnostics-delay-ms <ms>`, to work around race conditions in some language clients.
+
 20 May 2019, Phan 2.0.0
 -----------------------
 
