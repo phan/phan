@@ -3,6 +3,9 @@ Phan NEWS
 22 May 2019, Phan 1.3.5
 -----------------------
 
+Phan 2 is out (requires PHP 7.1+ to run),
+and that release line will contain all of Phan's new features, bug fixes, and crash fixes.
+
 Maintenance:
 + Mention that Phan 2.0.0 has been released in `--help`, `--version`, and crash reports. (#2789)
   The environment variable `PHAN_SUPPRESS_PHP_UPGRADE_NOTICE=1` can be set to disable this notice.
