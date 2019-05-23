@@ -63,6 +63,7 @@ set_exception_handler(static function (Throwable $throwable) {
             error_log(sprintf("(Phan %s crashed due to an uncaught Throwable)\n", CLI::PHAN_VERSION));
         }
     }
+    error_log("\n(This bug may have been fixed in Phan 2, which has the latest features and bug fixes (supports execution with PHP 7.1+))\n");
     exit(EXIT_FAILURE);
 });
 
@@ -176,6 +177,7 @@ function phan_error_handler($errno, $errstr, $errfile, $errline)
                "increase the Phan config setting debug_max_frame_length)" . PHP_EOL);
         }
     }
+    fwrite(STDERR, PHP_EOL . "(This bug may have been fixed in Phan 2, which has the latest features and bug fixes (supports execution with PHP 7.1+))" . PHP_EOL);
 
     exit(EXIT_FAILURE);
 }
@@ -211,7 +213,7 @@ if (extension_loaded('ast')) {
         if (!getenv('PHAN_SUPPRESS_AST_UPGRADE_NOTICE')) {
             fprintf(
                 STDERR,
-                "A future major version of Phan will require php-ast 1.0.1+ for AST version 70. php-ast %s is installed." . PHP_EOL,
+                "Phan 2 is out, and it requires php-ast 1.0.1+ for AST version 70. php-ast %s is installed." . PHP_EOL,
                 $ast_version
             );
             fwrite(STDERR, "(Set PHAN_SUPPRESS_AST_UPGRADE_NOTICE=1 to suppress this message)" . PHP_EOL);
@@ -225,10 +227,28 @@ if (PHP_VERSION_ID < 70100) {
     if (!getenv('PHAN_SUPPRESS_PHP_UPGRADE_NOTICE')) {
         fprintf(
             STDERR,
-            "A future major version of Phan will require PHP 7.1+ to run, but PHP %s is installed." . PHP_EOL,
-            PHP_VERSION
+            "The latest Phan release (Phan 2) requires PHP 7.1+ to run, but PHP %s and Phan %s are installed." . PHP_EOL,
+            PHP_VERSION,
+            CLI::PHAN_VERSION
         );
         fwrite(STDERR, "PHP 7.0 reached its end of life in December 2018." . PHP_EOL);
         fwrite(STDERR, "(Set PHAN_SUPPRESS_PHP_UPGRADE_NOTICE=1 to suppress this message)" . PHP_EOL);
+    }
+} elseif (PHP_VERSION_ID >= 70400) {
+    if (!getenv('PHAN_SUPPRESS_PHP_UPGRADE_NOTICE')) {
+        fprintf(
+            STDERR,
+            "Phan %s does not support PHP 7.4+ (PHP %s is installed)" . PHP_EOL,
+            CLI::PHAN_VERSION,
+            PHP_VERSION
+        );
+        fwrite(
+            STDERR,
+            "Phan 2.0.0 or newer is required to properly parse and analyze PHP code when Phan is executed with PHP 7.4+." . PHP_EOL
+        );
+        fwrite(
+            STDERR,
+            "Executing anyway (Phan may crash)." . PHP_EOL
+        );
     }
 }
