@@ -126,6 +126,7 @@ class CLI
         'markdown-issue-messages',
         'memory-limit:',
         'minimum-severity:',
+        'no-color',
         'output:',
         'output-mode:',
         'parent-constructor-required:',
@@ -725,12 +726,20 @@ class CLI
                 case 'color':
                     Config::setValue('color_issue_messages', true);
                     break;
+                case 'no-color':
+                    Config::setValue('color_issue_messages', false);
+                    break;
                 default:
                     throw new UsageException("Unknown option '-$key'" . self::getFlagSuggestionString($key), EXIT_FAILURE);
             }
         }
         if (isset($opts['language-server-completion-vscode']) && Config::getValue('language_server_enable_completion')) {
             Config::setValue('language_server_enable_completion', Config::COMPLETION_VSCODE);
+        }
+        if (Config::getValue('color_issue_messages') === null && $printer_type === 'text') {
+            if (!getenv('PHAN_DISABLE_COLOR_OUTPUT') && self::supportsColor(STDOUT)) {
+                Config::setValue('color_issue_messages', true);
+            }
         }
 
         self::checkPluginsExist();
@@ -768,6 +777,42 @@ class CLI
             && Config::getValue('dead_code_detection')) {
             throw new AssertionError("We cannot run dead code detection on more than one core.");
         }
+    }
+
+    /**
+     * Returns true if the output stream supports colors
+     *
+     * This is tricky on Windows, because Cygwin, Msys2 etc emulate pseudo
+     * terminals via named pipes, so we can only check the environment.
+     *
+     * Reference: Composer\XdebugHandler\Process::supportsColor
+     * https://github.com/composer/xdebug-handler
+     * (This is internal, so it was duplicated in case their API changed)
+     *
+     * @param mixed $output A valid CLI output stream
+     *
+     * @return bool
+     * @suppress PhanUndeclaredFunction
+     */
+    public static function supportsColor($output) : bool
+    {
+        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+            return (function_exists('sapi_windows_vt100_support')
+                && sapi_windows_vt100_support($output))
+                || false !== getenv('ANSICON')
+                || 'ON' === getenv('ConEmuANSI')
+                || 'xterm' === getenv('TERM');
+        }
+
+        if (function_exists('stream_isatty')) {
+            return stream_isatty($output);
+        } elseif (function_exists('posix_isatty')) {
+            return posix_isatty($output);
+        }
+
+        $stat = fstat($output);
+        // Check if formatted mode is S_IFCHR
+        return $stat ? 0020000 === ($stat['mode'] & 0170000) : false;
     }
 
     private static function checkPluginsExist() : void
@@ -995,8 +1040,8 @@ Usage: {$argv[0]} [options] [files...]
   Output filename
 
 $init_help
- -C, --color
-  Add colors to the outputted issues. Tested in Unix.
+ -C, --color, --no-color
+  Add colors to the outputted issues.
   This is recommended for only the default --output-mode ('text')
 
  -p, --progress-bar

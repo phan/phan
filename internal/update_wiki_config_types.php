@@ -136,6 +136,7 @@ class ConfigEntry
         'language_server_enable_hover' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'language_server_enable_completion' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'language_server_hide_category_of_issues' => self::CATEGORY_HIDDEN_CLI_ONLY,
+        'language_server_min_diagnostics_delay_ms' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'enable_internal_return_type_plugins' => self::CATEGORY_ANALYSIS,
         'enable_extended_internal_return_type_plugins' => self::CATEGORY_ANALYSIS,
         'max_literal_string_type_length' => self::CATEGORY_ANALYSIS,

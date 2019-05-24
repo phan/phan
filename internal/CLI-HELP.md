@@ -82,8 +82,8 @@ Usage: ./phan [options] [files...]
     and will not include those paths in the generated config.
   [--init-overwrite] will allow 'phan --init' to overwrite .phan/config.php.
 
- -C, --color
-  Add colors to the outputted issues. Tested in Unix.
+ -C, --color, --no-color
+  Add colors to the outputted issues.
   This is recommended for only the default --output-mode ('text')
 
  -p, --progress-bar
@@ -312,6 +312,11 @@ Extended help:
 
  --language-server-require-pcntl
   Don't start the language server if PCNTL isn't installed (don't use the fallback). Useful for debugging.
+
+ --language-server-min-diagnostics-delay-ms <0..1000>
+  Sets a minimum delay between publishing diagnostics (i.e. Phan issues) to the language client.
+  This can be increased to work around race conditions in clients processing Phan issues (e.g. if your editor/IDE shows outdated diagnostics)
+  Defaults to 0 (no delay)
 
  --require-config-exists
   Exit immediately with an error code if `.phan/config.php` does not exist.

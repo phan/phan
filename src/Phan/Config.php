@@ -644,10 +644,12 @@ class Config
         // Enable this to emit issue messages with markdown formatting.
         'markdown_issue_messages' => false,
 
-        // Emit colorized issue messages.
+        // Emit colorized issue messages (true by default with the 'text' output mode to supported terminals).
         // NOTE: it is strongly recommended to enable this via the `--color` CLI flag instead,
         // since this is incompatible with most output formatters.
-        'color_issue_messages' => false,
+        //
+        // This can be disabled by setting PHAN_DISABLE_COLOR_OUTPUT=1 or passing `--no-color`
+        'color_issue_messages' => null,
 
         // Allow overriding color scheme in `.phan/config.php` for printing issues, for individual types.
         //
@@ -1153,6 +1155,15 @@ class Config
         /**
          * @param mixed $value
          */
+        $is_bool_or_null = static function ($value) : ?string {
+            if (is_bool($value) || is_null($value)) {
+                return null;
+            }
+            return 'Expected a boolean' . self::errSuffixGotType($value);
+        };
+        /**
+         * @param mixed $value
+         */
         $is_string_or_null = static function ($value) : ?string {
             if (is_null($value) || is_string($value)) {
                 return null;
@@ -1225,7 +1236,7 @@ class Config
             'cache_polyfill_asts' => $is_bool,
             'check_docblock_signature_param_type_match' => $is_bool,
             'check_docblock_signature_return_type_match' => $is_bool,
-            'color_issue_messages' => $is_bool,
+            'color_issue_messages' => $is_bool_or_null,
             'color_scheme' => $is_associative_string_array,
             'consistent_hashing_file_order' => $is_bool,
             'daemonize_socket' => $is_scalar,
