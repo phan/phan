@@ -95,6 +95,9 @@ final class CLITest extends BaseTest
         }
         \ksort($changed);
         \ksort($expected_changed_options);
+        if (!\array_key_exists('color_issue_messages', $expected_changed_options)) {
+            unset($changed['color_issue_messages']);
+        }
         $this->assertSame($expected_changed_options, $changed);
 
         $this->assertSame(['src' . \DIRECTORY_SEPARATOR . 'empty.php'], $cli->getFileList());
