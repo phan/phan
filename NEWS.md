@@ -3,6 +3,10 @@ Phan NEWS
 ?? ??? 2019, Phan 2.0.1 (dev)
 -----------------------
 
+New features(CLI, Configs):
++ Enable colorized output by default for the default output mode (`text`) when the terminal supports it.
+  This can be disabled by setting `PHAN_DISABLE_COLOR_OUTPUT=1` or by passing the flag `--no-color`.
+
 Language Server/Daemon mode:
 + Add `--language-server-min-diagnostics-delay-ms <ms>`, to work around race conditions in some language clients.
 
