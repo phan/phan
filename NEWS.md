@@ -7,6 +7,13 @@ New features(CLI, Configs):
 + Enable colorized output by default for the default output mode (`text`) when the terminal supports it.
   This can be disabled by setting `PHAN_DISABLE_COLOR_OUTPUT=1` or by passing the flag `--no-color`.
 
+New features(Analysis):
++ Infer that static variables with no default are `null`.
++ Improve control flow analysis of unconditionally true/false branches.
++ Improve analysis of some ways to initialize groups of static variables.
+  e.g. `static $a = null; static $b = null; if ($a === null) { $a = $b = rand(0,10); } use($a, $b)`
+  will now also infer that $b is non-null.
+
 Language Server/Daemon mode:
 + Add `--language-server-min-diagnostics-delay-ms <ms>`, to work around race conditions in some language clients.
 

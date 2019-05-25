@@ -37,7 +37,7 @@ final class IssueFixingPluginTest extends BaseTest implements CodeBaseAwareTestI
         $this->assertCount(1, $fixers);
         $fixers_for_file = $fixers[self::FILE];
         // echo "Going to apply to \n$original_contents\n";
-        // @phan-suppress-next-line PhanPossiblyNullTypeArgument, PhanPartialTypeMismatchArgument
+        // @phan-suppress-next-line PhanPartialTypeMismatchArgument
         $new_contents = IssueFixer::computeNewContentForFixers($this->code_base, self::FILE, $original_contents, $fixers_for_file);
         $this->assertSame($expected_contents, $new_contents, 'unexpected contents after applying fixes');
     }

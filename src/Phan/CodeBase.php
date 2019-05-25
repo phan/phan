@@ -305,7 +305,6 @@ class CodeBase
     public function getParsedFilePathCount() : int
     {
         if ($this->undo_tracker) {
-            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             return $this->undo_tracker->getParsedFilePathCount();
         }
         throw new \RuntimeException("Calling getParsedFilePathCount without an undo tracker");
@@ -319,7 +318,6 @@ class CodeBase
     {
         self::$current_file = $current_parsed_file;
         if ($this->undo_tracker) {
-            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             $this->undo_tracker->setCurrentParsedFile($current_parsed_file);
         }
     }

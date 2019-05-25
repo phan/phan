@@ -610,7 +610,6 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      *
      * @return UnionType
      * The resulting type(s) of the binary operation
-     * @suppress PhanTypeMismatchArgumentNullable false positives for static initializing
      */
     public function visitBinaryAdd(Node $node) : UnionType
     {
@@ -670,7 +669,6 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         if ($left->isNonNullNumberType() && $right->isNonNullNumberType()) {
             if (!$left->hasNonNullIntType() || !$right->hasNonNullIntType()) {
                 // Heuristic: If one or more of the sides is a float, the result is always a float.
-                // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
                 return $float_type->asUnionType();
             }
             return $int_or_float_union_type;
@@ -680,13 +678,11 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             !$left->genericArrayElementTypes()->isEmpty()
             && $left->nonArrayTypes()->isEmpty()
         ) || $left->isType($array_type);
-        // @phan-suppress-previous-line PhanTypeMismatchArgumentNullable false positive for static initialization
 
         $right_is_array = (
             !$right->genericArrayElementTypes()->isEmpty()
             && $right->nonArrayTypes()->isEmpty()
         ) || $right->isType($array_type);
-        // @phan-suppress-previous-line PhanTypeMismatchArgumentNullable false positive for static initialization
 
         if ($left_is_array || $right_is_array) {
             if ($left_is_array && $right_is_array) {
@@ -704,7 +700,6 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                     $node->lineno ?? 0
                 );
                 return UnionType::empty();
-                // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             } elseif ($right_is_array && !$left->canCastToUnionType($array_type->asUnionType())) {
                 $this->emitIssue(
                     Issue::TypeInvalidLeftOperand,
@@ -714,7 +709,6 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             }
             // If it is a '+' and we know one side is an array
             // and the other is unknown, assume array
-            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             return $array_type->asUnionType();
         }
 
@@ -779,7 +773,6 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         if ($left->isNonNullNumberType() && $right->isNonNullNumberType()) {
             if (!$left->hasNonNullIntType() || !$right->hasNonNullIntType()) {
                 // Heuristic: If one or more of the sides is a float, the result is always a float.
-                // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
                 return $float_type->asUnionType();
             }
             return $int_or_float_union_type;

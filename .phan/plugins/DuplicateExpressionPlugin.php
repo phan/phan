@@ -6,6 +6,7 @@ use ast\Node;
 use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\AST\ASTHasher;
 use Phan\AST\ASTReverter;
+use Phan\AST\InferValue;
 use Phan\PluginV3;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
 use Phan\PluginV3\PostAnalyzeNodeCapability;
@@ -146,6 +147,12 @@ class RedundantNodeVisitor extends PluginAwarePostAnalysisVisitor
                 return;
             }
         }
+        try {
+            // @phan-suppress-next-line PhanPartialTypeMismatchArgument TODO: handle
+            $result_representation = ASTReverter::toShortString(InferValue::computeBinaryOpResult($left, $right, $flags));
+        } catch (Error $_) {
+            $result_representation = '(unknown)';
+        }
         $this->emitPluginIssue(
             $this->code_base,
             $this->context,
@@ -155,7 +162,7 @@ class RedundantNodeVisitor extends PluginAwarePostAnalysisVisitor
                 ASTReverter::toShortString($left),
                 PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$flags],
                 ASTReverter::toShortString($right),
-                ASTReverter::toShortString(self::computeResultForBothLiteralsWarning($left, $right, $flags)),
+                $result_representation,
             ]
         );
     }
@@ -195,47 +202,6 @@ class RedundantNodeVisitor extends PluginAwarePostAnalysisVisitor
                 ]
             );
             return;
-        }
-    }
-
-    /**
-     * Compute result of a binary operator for a PhanPluginBothLiteralsBinaryOp warning
-     * @param int|string|float|bool|null $left left hand side of operation
-     * @param int|string|float|bool|null $right right hand side of operation
-     * @param int $flags
-     * @return int|string|float|bool|null
-     */
-    private static function computeResultForBothLiteralsWarning($left, $right, int $flags)
-    {
-        switch ($flags) {
-            case flags\BINARY_BOOL_AND:
-                return $left && $right;
-            case flags\BINARY_BOOL_OR:
-                return $left || $right;
-            case flags\BINARY_BOOL_XOR:
-                return $left xor $right;
-            case flags\BINARY_IS_IDENTICAL:
-                return $left === $right;
-            case flags\BINARY_IS_NOT_IDENTICAL:
-                return $left !== $right;
-            case flags\BINARY_IS_EQUAL:
-                return $left == $right;
-            case flags\BINARY_IS_NOT_EQUAL:
-                return $left != $right;
-            case flags\BINARY_IS_SMALLER:
-                return $left < $right;
-            case flags\BINARY_IS_SMALLER_OR_EQUAL:
-                return $left <= $right;
-            case flags\BINARY_IS_GREATER:
-                return $left > $right;
-            case flags\BINARY_IS_GREATER_OR_EQUAL:
-                return $left >= $right;
-            case flags\BINARY_SPACESHIP:
-                return $left <=> $right;
-            case flags\BINARY_COALESCE:
-                return $left ?? $right;
-            default:
-                return '(unknown)';
         }
     }
 

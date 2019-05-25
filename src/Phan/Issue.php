@@ -193,6 +193,7 @@ class Issue
     const TypeInvalidPropertyName = 'PhanTypeInvalidPropertyName';
     const TypeInvalidStaticPropertyName = 'PhanTypeInvalidStaticPropertyName';
     const TypeErrorInInternalCall = 'PhanTypeErrorInInternalCall';
+    const TypeErrorInOperation = 'PhanTypeErrorInOperation';
     const TypeInvalidPropertyDefaultReal = 'PhanTypeInvalidPropertyDefaultReal';
 
     // Issue::CATEGORY_ANALYSIS
@@ -645,11 +646,14 @@ class Issue
     public static function issueMap() : array
     {
         static $error_map;
+        return $error_map ?? ($error_map = self::generateIssueMap());
+    }
 
-        if (\is_array($error_map)) {
-            return $error_map;
-        }
-
+    /**
+     * @return array<string,Issue>
+     */
+    private static function generateIssueMap() : array
+    {
         // phpcs:disable Generic.Files.LineLength
         /**
          * @var array<int,Issue>
@@ -2010,6 +2014,14 @@ class Issue
                 "Saw a call to an internal function {FUNCTION}() with what would be invalid arguments in strict mode, when trying to infer the return value literal type: {DETAILS}",
                 self::REMEDIATION_B,
                 10104
+            ),
+            new Issue(
+                self::TypeErrorInOperation,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Saw an error when attempting to infer the type of expression {CODE}: {DETAILS}",
+                self::REMEDIATION_B,
+                10110
             ),
             new Issue(
                 self::TypeInvalidPropertyDefaultReal,
@@ -3848,6 +3860,7 @@ class Issue
 
         self::sanityCheckErrorList($error_list);
         // Verified the error meets preconditions, now add it.
+        $error_map = [];
         foreach ($error_list as $error) {
             $error_type = $error->getType();
             $error_map[$error_type] = $error;

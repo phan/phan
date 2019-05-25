@@ -17,7 +17,6 @@ use Phan\Output\Colorizing;
  *
  * @see Issue for how these are emitted. Visitors and plugins often have helper methods to emit issues.
  * @see OutputPrinter for how this is converted to various output formats
- * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  * @phan-file-suppress PhanPluginNoCommentOnPublicMethod TODO: Add comments
  */
 class IssueInstance

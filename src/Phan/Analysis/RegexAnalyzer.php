@@ -59,21 +59,17 @@ class RegexAnalyzer
         }
 
         if (!\is_int($bit)) {
-            // @phan-suppress-next-line PhanTypeMismatchReturnNullable false positive for static init
             return $array_type;
         }
         // TODO: Support PREG_UNMATCHED_AS_NULL
         if ($bit & \PREG_OFFSET_CAPTURE) {
             if (\is_array($regex_group_keys)) {
-                // @phan-suppress-next-line PhanTypeMismatchArgumentNullable false positive for static init
                 return self::makeArrayShape($regex_group_keys, $shape_array_inner_type);
             }
-            // @phan-suppress-next-line PhanTypeMismatchReturnNullable false positive for static init
             return $shape_array_type;
         }
 
         if (\is_array($regex_group_keys)) {
-            // @phan-suppress-next-line PhanTypeMismatchArgumentNullable false positive for static init
             return self::makeArrayShape($regex_group_keys, $string_type);
         }
         return $string_array_type;

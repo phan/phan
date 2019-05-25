@@ -5,7 +5,9 @@ namespace Phan\AST;
 use AssertionError;
 use ast;
 use ast\Node;
+use Error;
 use Exception;
+use Phan\Analysis\ConditionVisitorUtil;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
@@ -2067,6 +2069,14 @@ class ContextNode
     const RESOLVE_KEYS_USE_FALLBACK_PLACEHOLDER = (1 << 4);
     // Skip unknown keys
     const RESOLVE_KEYS_SKIP_UNKNOWN_KEYS = (1 << 5);
+    // Resolve unary and binary operations.
+    const RESOLVE_OPS = (1 << 6);
+    // Resolve calls to is_int, is_null, isset/empty, etc.
+    const RESOLVE_TYPE_CHECKS = (1 << 6);
+    // Resolve variables, but only if this was defined as a constant AST.
+    // This currently only supports static variables.
+    // When disabled, all variables will be resolved.
+    const RESOLVE_ONLY_CONSTANT_VARS = (1 << 7);
 
     const RESOLVE_DEFAULT =
         self::RESOLVE_ARRAYS |
@@ -2163,72 +2173,111 @@ class ContextNode
             return $node;
         }
         $kind = $node->kind;
-        if ($kind === ast\AST_ARRAY) {
-            if (($flags & self::RESOLVE_ARRAYS) === 0) {
-                return $node;
-            }
-            $elements = $this->getEquivalentPHPArrayElements($node, $flags);
-            if ($elements === null) {
-                // Attempted to resolve elements but failed at one or more elements.
-                return $node;
-            }
-            return $elements;
-        } elseif ($kind === ast\AST_CONST) {
-            $name = $node->children['name']->children['name'] ?? null;
-            if (\is_string($name)) {
-                switch (\strtolower($name)) {
-                    case 'false':
-                        return false;
-                    case 'true':
-                        return true;
-                    case 'null':
-                        return null;
+        switch ($kind) {
+            case ast\AST_ARRAY:
+                if (($flags & self::RESOLVE_ARRAYS) === 0) {
+                    return $node;
                 }
-            }
-            if (($flags & self::RESOLVE_CONSTANTS) === 0) {
-                return $node;
-            }
-            try {
-                $constant = (new ContextNode($this->code_base, $this->context, $node))->getConst();
-            } catch (Exception $_) {
-                // Is there a need to catch IssueException as well?
-                return $node;
-            }
-            // TODO: Recurse, but don't try to resolve constants again
-            $new_node = $constant->getNodeForValue();
-            if (is_object($new_node)) {
-                // Avoid infinite recursion, only resolve once
-                $new_node = (new ContextNode($this->code_base, $constant->getContext(), $new_node))->getEquivalentPHPValueForNode($new_node, $flags & ~self::RESOLVE_CONSTANTS);
-            }
-            return $new_node;
-        } elseif ($kind === ast\AST_CLASS_CONST) {
-            if (($flags & self::RESOLVE_CONSTANTS) === 0) {
-                return $node;
-            }
-            try {
-                $constant = (new ContextNode($this->code_base, $this->context, $node))->getClassConst();
-            } catch (\Exception $_) {
-                return $node;
-            }
-            // TODO: Recurse, but don't try to resolve constants again
-            $new_node = $constant->getNodeForValue();
-            if (is_object($new_node)) {
-                // Avoid infinite recursion, only resolve once
-                $new_node = (new ContextNode($this->code_base, $constant->getContext(), $new_node))->getEquivalentPHPValueForNode($new_node, $flags & ~self::RESOLVE_CONSTANTS);
-            }
-            return $new_node;
-        } elseif ($kind === ast\AST_CLASS_NAME) {
-            if (($flags & self::RESOLVE_CONSTANTS) === 0) {
-                return $node;
-            }
-            try {
-                return UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node, false)->asSingleScalarValueOrNull() ?? $node;
-            } catch (\Exception $_) {
-                return $node;
-            }
-        } elseif ($kind === ast\AST_MAGIC_CONST) {
-            // TODO: Look into eliminating this
-            return $this->getValueForMagicConstByNode($node);
+                $elements = $this->getEquivalentPHPArrayElements($node, $flags);
+                if ($elements === null) {
+                    // Attempted to resolve elements but failed at one or more elements.
+                    return $node;
+                }
+                return $elements;
+            case ast\AST_CONST:
+                $name = $node->children['name']->children['name'] ?? null;
+                if (\is_string($name)) {
+                    switch (\strtolower($name)) {
+                        case 'false':
+                            return false;
+                        case 'true':
+                            return true;
+                        case 'null':
+                            return null;
+                    }
+                }
+                if (($flags & self::RESOLVE_CONSTANTS) === 0) {
+                    return $node;
+                }
+                try {
+                    $constant = (new ContextNode($this->code_base, $this->context, $node))->getConst();
+                } catch (Exception $_) {
+                    // Is there a need to catch IssueException as well?
+                    return $node;
+                }
+                // TODO: Recurse, but don't try to resolve constants again
+                $new_node = $constant->getNodeForValue();
+                if (is_object($new_node)) {
+                    // Avoid infinite recursion, only resolve once
+                    $new_node = (new ContextNode($this->code_base, $constant->getContext(), $new_node))->getEquivalentPHPValueForNode($new_node, $flags & ~self::RESOLVE_CONSTANTS);
+                }
+                return $new_node;
+            case ast\AST_CLASS_CONST:
+                if (($flags & self::RESOLVE_CONSTANTS) === 0) {
+                    return $node;
+                }
+                try {
+                    $constant = (new ContextNode($this->code_base, $this->context, $node))->getClassConst();
+                } catch (\Exception $_) {
+                    return $node;
+                }
+                // TODO: Recurse, but don't try to resolve constants again
+                $new_node = $constant->getNodeForValue();
+                if (is_object($new_node)) {
+                    // Avoid infinite recursion, only resolve once
+                    $new_node = (new ContextNode($this->code_base, $constant->getContext(), $new_node))->getEquivalentPHPValueForNode($new_node, $flags & ~self::RESOLVE_CONSTANTS);
+                }
+                return $new_node;
+            case ast\AST_CLASS_NAME:
+                try {
+                    return UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node, false)->asSingleScalarValueOrNull() ?? $node;
+                } catch (\Exception $_) {
+                    return $node;
+                }
+            case ast\AST_MAGIC_CONST:
+                // TODO: Look into eliminating this
+                return $this->getValueForMagicConstByNode($node);
+            case ast\AST_BINARY_OP:
+                if ($flags & self::RESOLVE_OPS) {
+                    return $this->getValueForBinaryOp($node, $flags);
+                }
+                break;
+            case ast\AST_UNARY_OP:
+                if ($flags & self::RESOLVE_OPS) {
+                    return $this->getValueForUnaryOp($node, $flags);
+                }
+                break;
+            case ast\AST_EMPTY:
+                if ($flags & self::RESOLVE_TYPE_CHECKS) {
+                    return $this->getValueForEmptyCheck($node, $flags);
+                }
+                break;
+            case ast\AST_ISSET:
+                if ($flags & self::RESOLVE_TYPE_CHECKS) {
+                    // fprintf(STDERR, "Computing isset for %s\n", \Phan\Debug::nodeToString($node));
+                    return $this->getValueForIssetCheck($node, $flags);
+                }
+                break;
+            case ast\AST_CALL:
+                if ($flags & self::RESOLVE_TYPE_CHECKS) {
+                    // fprintf(STDERR, "Computing isset for %s\n", \Phan\Debug::nodeToString($node));
+                    return $this->getValueForCall($node, $flags);
+                }
+                break;
+            case ast\AST_VAR:
+                if ($flags & self::RESOLVE_ONLY_CONSTANT_VARS) {
+                    if (!$this->isVarWithConstantDefinition($node)) {
+                        return $node;
+                    }
+                    // fall through.
+                }
+                break;
+            default:
+                if ($flags & self::RESOLVE_ONLY_CONSTANT_VARS) {
+                    // Don't resolve other node kinds not in this list.
+                    return $node;
+                }
+                break;
         }
         $node_type = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
@@ -2240,6 +2289,166 @@ class ContextNode
             return $node;
         }
         return $value;
+    }
+
+    /**
+     * Check if this variable is one which Phan has inferred to be likely
+     * to have a definition that was constant at this point in the codebase.
+     * (This is a heuristic)
+     */
+    public function isVarWithConstantDefinition(Node $node) : bool
+    {
+        if (!$node instanceof Node || $node->kind !== ast\AST_VAR) {
+            return false;
+        }
+        $name = $node->children['name'];
+        if (!is_string($name)) {
+            return false;
+        }
+        $scope = $this->context->getScope();
+        if ($scope->hasVariableWithName($name)) {
+            return ($scope->getVariableByName($name)->getPhanFlags() & \Phan\Language\Element\Flags::IS_CONSTANT_DEFINITION) !== 0;
+        }
+        return false;
+    }
+
+    /**
+     * @return Node|string[]|int[]|float[]|string|float|int|bool|null -
+     *         If this could be resolved and we're certain of the value, this gets a raw PHP value for $node.
+     *         Otherwise, this returns $node.
+     */
+    private function getValueForBinaryOp(Node $node, int $flags)
+    {
+        $left_value = $this->getEquivalentPHPValueForNode($node->children['left'], $flags);
+        // fprintf(STDERR, "Left value for binary op %s is %s\n", \Phan\Debug::nodeToString($node), json_encode($left_value));
+        if ($left_value instanceof Node) {
+            return $node;
+        }
+        $right_value = $this->getEquivalentPHPValueForNode($node->children['left'], $flags);
+        // fprintf(STDERR, "Right value for binary op %s is %s\n", \Phan\Debug::nodeToString($node), json_encode($left_value));
+        if ($right_value instanceof Node) {
+            return $node;
+        }
+        try {
+            return InferValue::computeBinaryOpResult($left_value, $right_value, $node->flags);
+        } catch (Error $e) {
+            self::handleErrorInOperation($node, $e);
+            return $node;
+        }
+    }
+
+    private function handleErrorInOperation(Node $node, Error $e) : void
+    {
+        $this->emitIssue(
+            Issue::TypeErrorInOperation,
+            $node->lineno,
+            ASTReverter::toShortString($node),
+            $e->getMessage()
+        );
+    }
+
+    /**
+     * @return Node|string[]|int[]|float[]|string|float|int|bool|null -
+     *         If this could be resolved and we're certain of the value, this gets a raw PHP value for $node.
+     *         Otherwise, this returns $node.
+     */
+    private function getValueForUnaryOp(Node $node, int $flags)
+    {
+        $operand_value = $this->getEquivalentPHPValueForNode($node->children['expr'], $flags);
+        // fprintf(STDERR, "Computing unary op for %s : operand = %s\n", \Phan\Debug::nodeToString($node), json_encode($operand_value));
+        if ($operand_value instanceof Node) {
+            return $node;
+        }
+
+        try {
+            return InferValue::computeUnaryOpResult($operand_value, $node->flags);
+        } catch (Error $e) {
+            self::handleErrorInOperation($node, $e);
+            return $node;
+        }
+    }
+
+    /**
+     * @param Node $node a node of kind AST_EMPTY
+     * @return Node|bool
+     *         If this could be resolved and we're certain of the value, this gets a raw PHP boolean for $node.
+     *         Otherwise, this returns $node.
+     */
+    private function getValueForEmptyCheck(Node $node, int $flags)
+    {
+        $expr_value = $this->getEquivalentPHPValueForNode($node->children['expr'], $flags);
+        if ($expr_value instanceof Node) {
+            return $node;
+        }
+
+        return !$expr_value;
+    }
+
+    /**
+     * @param Node $node a node of kind AST_ISSET
+     * @return Node|bool
+     *         If this could be resolved and we're certain of the value, this gets a raw PHP boolean for $node.
+     *         Otherwise, this returns $node.
+     */
+    private function getValueForIssetCheck(Node $node, int $flags)
+    {
+        $var_value = $this->getEquivalentPHPValueForNode($node->children['var'], $flags);
+        if ($var_value instanceof Node) {
+            return $node;
+        }
+
+        return $var_value !== null;
+    }
+
+    // Type checks that can act on a single argument
+    private const TYPE_CHECK_SET = [
+        'is_array' => true,
+        'is_bool' => true,
+        'is_callable' => true,
+        'is_double' => true,
+        'is_float' => true,
+        'is_int' => true,
+        'is_integer' => true,
+        'is_iterable' => true,
+        'is_long' => true,
+        'is_null' => true,
+        'is_numeric' => true,
+        'is_object' => true,
+        'is_real' => true,
+        'is_resource' => true,
+        'is_scalar' => true,
+        'is_string' => true,
+    ];
+
+    /**
+     * @param Node $node a node of kind AST_CALL
+     * @return Node|bool
+     *         If this could be resolved and we're certain of the value, this gets a raw PHP boolean for $node.
+     *         Otherwise, this returns $node.
+     */
+    private function getValueForCall(Node $node, int $flags)
+    {
+        $arg_list = $node->children['args']->children;
+        if (\count($arg_list) !== 1) {
+            return $node;
+        }
+        $raw_function_name = ConditionVisitorUtil::getFunctionName($node);
+        if (!is_string($raw_function_name)) {
+            return $node;
+        }
+        $raw_function_name = \strtolower($raw_function_name);
+        if (!isset(self::TYPE_CHECK_SET[$raw_function_name])) {
+            return $node;
+        }
+        $arg_value = $this->getEquivalentPHPValueForNode($arg_list[0], $flags);
+        if ($arg_value instanceof Node) {
+            return $node;
+        }
+
+        // Given some known function name and the resolved value of the argument to the function,
+        // evaluate what the result is.
+        // e.g. `is_null($someStaticValue)`
+        return $raw_function_name($arg_value);
     }
 
     /**
@@ -2327,6 +2536,24 @@ class ContextNode
     public function getEquivalentPHPValue(int $flags = self::RESOLVE_DEFAULT)
     {
         return $this->getEquivalentPHPValueForNode($this->node, $flags);
+    }
+
+    /**
+     * @return Node|string[]|int[]|float[]|string|float|int|bool|null -
+     *   If this could be resolved and we're certain of the value, this gets an equivalent definition.
+     *   Otherwise, this returns $node.
+     */
+    public function getEquivalentPHPValueForControlFlowAnalysis()
+    {
+        return $this->getEquivalentPHPValueForNode(
+            $this->node,
+            self::RESOLVE_ARRAYS |
+            self::RESOLVE_ARRAY_KEYS |
+            self::RESOLVE_ARRAY_VALUES |
+            self::RESOLVE_OPS |
+            self::RESOLVE_ONLY_CONSTANT_VARS |
+            self::RESOLVE_TYPE_CHECKS
+        );
     }
 
     /**

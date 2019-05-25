@@ -844,7 +844,7 @@ trait ConditionVisitorUtil
      * Fetches the function name. Does not check for function uses or namespaces.
      * @return ?string (null if function name could not be found)
      */
-    final protected static function getFunctionName(Node $node) : ?string
+    final public static function getFunctionName(Node $node) : ?string
     {
         $expr = $node->children['expr'];
         if (!($expr instanceof Node)) {

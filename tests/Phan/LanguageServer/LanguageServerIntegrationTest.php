@@ -24,8 +24,6 @@ use function strlen;
  *
  * Note: This test file is not enabled in CI because they may hang indefinitely.
  * (integration test timeouts weren't implemented or tested yet).
- *
- * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 final class LanguageServerIntegrationTest extends BaseTest
 {

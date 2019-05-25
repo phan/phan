@@ -53,7 +53,7 @@ class ASTReverter
             if (\is_string($node)) {
                 return self::escapeString($node);
             }
-            // TODO: minimal representations for floats, etc.
+            // TODO: minimal representations for floats, arrays, etc.
             return \var_export($node, true);
         }
         return (self::$closure_map[$node->kind] ?? self::$noop)($node);
@@ -173,6 +173,18 @@ class ASTReverter
                     PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$node->flags] ?? ' unknown ',
                     self::toShortString($node->children['right'])
                 );
+            },
+            ast\AST_UNARY_OP => static function (Node $node) : string {
+                $operation_name = PostOrderAnalysisVisitor::NAME_FOR_UNARY_OP[$node->flags] ?? null;
+                if (!$operation_name) {
+                    return '(unknown)';
+                }
+                $expr = $node->children['expr'];
+                $expr_text = self::toShortString($expr);
+                if (($expr->kind ?? null) !== ast\AST_UNARY_OP) {
+                    return $operation_name . $expr_text;
+                }
+                return \sprintf("%s(%s)", $operation_name, $expr_text);
             },
             ast\AST_PROP => static function (Node $node) : string {
                 $prop_node = $node->children['prop'];

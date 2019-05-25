@@ -575,9 +575,14 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $this->context,
                 $node->children['default']
             );
-
-            $variable->setUnionType($default_type);
+        } else {
+            $default_type = NullType::instance(false)->asUnionType();
         }
+
+        $variable->setUnionType($default_type);
+        // TODO: Probably not true in a loop?
+        // TODO: Expand this to assigning to variables? (would need to make references invalidate that, and skip this in the global scope)
+        $variable->enablePhanFlagBits(\Phan\Language\Element\Flags::IS_CONSTANT_DEFINITION);
 
         // Note that we're not creating a new scope, just
         // adding variables to the existing scope

@@ -13,6 +13,7 @@ use Phan\Analysis\NegatedConditionVisitor;
 use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\Analysis\PreOrderAnalysisVisitor;
 use Phan\AST\AnalysisVisitor;
+use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\Element;
 use Phan\Exception\IssueException;
@@ -982,6 +983,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         $child_nodes = $node->children;
         $excluded_elem_count = 0;
 
+        $first_unconditionally_true_index = null;
+
         // With a context that is inside of the node passed
         // to this method, we analyze all children of the
         // node.
@@ -1005,25 +1008,51 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             // to reduce false positives.
             // (Variables will be available in `catch` and `finally`)
             // This is mitigated by finally and catch blocks being unaware of new variables from try{} blocks.
+            $cond_node = $child_node->children['cond'];
+            // inferred_value is either:
+            // 1. truthy non-Node if the value could be inferred
+            // 2. falsy non-Node if the value could be inferred
+            // 3. A Node if the value could not be inferred (most conditionals)
+            if ($cond_node instanceof Node) {
+                $inferred_cond_value = (new ContextNode($this->code_base, $fallthrough_context, $cond_node))->getEquivalentPHPValueForControlFlowAnalysis();
+            } else {
+                // Treat `else` as equivalent to `elseif (true)`
+                $inferred_cond_value = $cond_node ?? true;
+            }
             // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this is never null
-            if (BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($child_node->children['stmts'])) {
-                // e.g. "if (!is_string($x)) { return; }"
+            if (!$inferred_cond_value || BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($child_node->children['stmts'])) {
+                // Don't merge this scope into the outer scope
+                // e.g. "if (!is_string($x)) { return; }" or "if (false) { anything }"
                 $excluded_elem_count++;
             } else {
                 $child_context_list[] = $child_context;
             }
 
-            $cond_node = $child_node->children['cond'];
             if ($cond_node instanceof Node) {
-                $fallthrough_context = (new NegatedConditionVisitor($this->code_base, $fallthrough_context))($cond_node);
+                // fwrite(STDERR, "Checking if unconditionally true: " . \Phan\Debug::nodeToString($cond_node) . "\n");
+                // TODO: Could add a check for conditions that are unconditionally falsey and warn
+                if (!$inferred_cond_value instanceof Node && $inferred_cond_value) {
+                    // TODO: Could warn if this is not a condition on a static variable
+                    $first_unconditionally_true_index = $first_unconditionally_true_index ?? \count($child_context_list);
+                }
+                $fallthrough_context = (new NegatedConditionVisitor($this->code_base, $fallthrough_context))->__invoke($cond_node);
+            } elseif ($cond_node) {
+                $first_unconditionally_true_index = $first_unconditionally_true_index ?? \count($child_context_list);
             }
             // If cond_node was null, it would be an else statement.
         }
+        // fprintf(STDERR, "First unconditionally true index is %s: %s\n", $first_unconditionally_true_index ?? 'null', \Phan\Debug::nodeToString($node));
 
         if ($excluded_elem_count === count($child_nodes)) {
             // If all of the AST_IF_ELEM bodies would unconditionally throw or return,
             // then analyze the remaining statements with the negation of all of the conditions.
             $context = $fallthrough_context;
+        } elseif ($first_unconditionally_true_index > 0) {
+            // If we have at least one child context that falls through, then use that one.
+            $context = (new ContextMergeVisitor(
+                $fallthrough_context,  // e.g. "if (!is_string($x)) { $x = ''; }" should result in inferring $x is a string.
+                \array_slice($child_context_list, 0, $first_unconditionally_true_index)
+            ))->mergePossiblySingularChildContextList();
         } else {
             // For if statements, we need to merge the contexts
             // of all child context into a single scope based

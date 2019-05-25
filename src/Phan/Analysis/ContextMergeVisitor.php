@@ -237,6 +237,27 @@ class ContextMergeVisitor extends KindVisitorImplementation
     }
 
     /**
+     * Similar to visitIf, but only includes contexts up to (and including) the first context inferred to be unconditionally true.
+     */
+    public function mergePossiblySingularChildContextList() : Context
+    {
+        // Get the list of scopes for each branch of the
+        // conditional
+        $scope_list = \array_map(static function (Context $context) : Scope {
+            return $context->getScope();
+        }, $this->child_context_list);
+
+        // If there weren't multiple branches, continue on
+        // as if the conditional never happened
+        if (\count($scope_list) < 2) {
+            // @phan-suppress-next-line PhanPossiblyFalseTypeReturn child_context_list is not empty
+            return \reset($this->child_context_list);
+        }
+
+        return $this->combineScopeList($scope_list);
+    }
+
+    /**
      * @param array<mixed,Node|mixed> $children children of a Node of kind AST_IF
      */
     private static function hasElse(array $children) : bool
