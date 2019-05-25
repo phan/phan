@@ -43,7 +43,6 @@ class Range
      */
     public function includes(Position $position): bool
     {
-        // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
         return $this->start->compare($position) <= 0 && $this->end->compare($position) >= 0;
     }
 

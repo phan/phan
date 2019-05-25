@@ -13,7 +13,6 @@ use Sabre\Event\EmitterInterface;
  *
  * Source: https://github.com/felixfbecker/php-language-server/tree/master/src/ProtocolReader.php
  * See ../../../LICENSE.LANGUAGE_SERVER
- * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  * @phan-file-suppress PhanPluginNoCommentOnPublicMethod TODO: Add comments
  */
 interface ProtocolReader extends EmitterInterface

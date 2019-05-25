@@ -9,7 +9,6 @@ namespace Phan\LanguageServer;
  * TODO: remove all overrides when a language client disconnects.
  * (Right now, we only have a single client, and shut down when the client disconnects)
  *
- * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod TODO: Document
  * @phan-file-suppress PhanPluginNoCommentOnPublicMethod TODO: Add comments
  */
 class FileMapping

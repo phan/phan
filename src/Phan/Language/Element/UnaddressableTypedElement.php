@@ -231,7 +231,8 @@ abstract class UnaddressableTypedElement
      * Returns whether this element stores Context and Scope.
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function storesContext() : bool {
+    public function storesContext() : bool
+    {
         return Config::getValue('record_variable_context_and_scope');
     }
 

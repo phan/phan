@@ -207,7 +207,6 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
             if ($left->isNonNullNumberType() && $right->isNonNullNumberType()) {
                 if (!$left->hasNonNullIntType() || !$right->hasNonNullIntType()) {
                     // Heuristic: If one or more of the sides is a float, the result is always a float.
-                    // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
                     return $float_type->asUnionType();
                 }
                 return $int_or_float_union_type;
@@ -217,13 +216,11 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
                 !$left->genericArrayElementTypes()->isEmpty()
                 && $left->nonArrayTypes()->isEmpty()
             ) || $left->isType($array_type);
-            // @phan-suppress-previous-line PhanTypeMismatchArgumentNullable false positive from static init
 
             $right_is_array = (
                 !$right->genericArrayElementTypes()->isEmpty()
                 && $right->nonArrayTypes()->isEmpty()
             ) || $right->isType($array_type);
-            // @phan-suppress-previous-line PhanTypeMismatchArgumentNullable false positive from static init
 
             if ($left_is_array || $right_is_array) {
                 if ($left_is_array && $right_is_array) {
@@ -243,7 +240,6 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
                         $node->lineno ?? 0
                     );
                     return UnionType::empty();
-                    // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
                 } elseif ($right_is_array && !$left->canCastToUnionType($array_type->asUnionType())) {
                     Issue::maybeEmit(
                         $code_base,
@@ -255,7 +251,6 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
                 }
                 // If it is a '+' and we know one side is an array
                 // and the other is unknown, assume array
-                // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
                 return $array_type->asUnionType();
             }
 
@@ -330,7 +325,6 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
             if ($left->isNonNullNumberType() && $right->isNonNullNumberType()) {
                 if (!$left->hasNonNullIntType() || !$right->hasNonNullIntType()) {
                     // Heuristic: If one or more of the sides is a float, the result is always a float.
-                    // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
                     return $float_type->asUnionType();
                 }
                 return $int_or_float_union_type;

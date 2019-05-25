@@ -737,7 +737,7 @@ class CLI
             Config::setValue('language_server_enable_completion', Config::COMPLETION_VSCODE);
         }
         if (Config::getValue('color_issue_messages') === null && $printer_type === 'text') {
-            if (!getenv('PHAN_DISABLE_COLOR_OUTPUT') && self::supportsColor(STDOUT)) {
+            if (!\getenv('PHAN_DISABLE_COLOR_OUTPUT') && self::supportsColor(\STDOUT)) {
                 Config::setValue('color_issue_messages', true);
             }
         }
@@ -796,21 +796,21 @@ class CLI
      */
     public static function supportsColor($output) : bool
     {
-        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
-            return (function_exists('sapi_windows_vt100_support')
+        if (\defined('PHP_WINDOWS_VERSION_BUILD')) {
+            return (\function_exists('sapi_windows_vt100_support')
                 && sapi_windows_vt100_support($output))
-                || false !== getenv('ANSICON')
-                || 'ON' === getenv('ConEmuANSI')
-                || 'xterm' === getenv('TERM');
+                || false !== \getenv('ANSICON')
+                || 'ON' === \getenv('ConEmuANSI')
+                || 'xterm' === \getenv('TERM');
         }
 
-        if (function_exists('stream_isatty')) {
-            return stream_isatty($output);
-        } elseif (function_exists('posix_isatty')) {
-            return posix_isatty($output);
+        if (\function_exists('stream_isatty')) {
+            return \stream_isatty($output);
+        } elseif (\function_exists('posix_isatty')) {
+            return \posix_isatty($output);
         }
 
-        $stat = fstat($output);
+        $stat = \fstat($output);
         // Check if formatted mode is S_IFCHR
         return $stat ? 0020000 === ($stat['mode'] & 0170000) : false;
     }

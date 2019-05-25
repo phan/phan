@@ -15,9 +15,6 @@ abstract class PhanTestRange extends PhanTestCommon
     const START_RANGE = '';
     const END_RANGE = '';
 
-    /**
-     * @suppress PhanUndeclaredConstant
-     */
     public function getTestFiles() : array
     {
         return \array_filter(

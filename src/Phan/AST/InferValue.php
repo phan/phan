@@ -17,8 +17,9 @@ class InferValue
      * @return Node|array|int|string|float|bool|null
      * @throws Error should be handled by caller, e.g. for `+[]`.
      */
-    private static function evalSuppressingErrors(Closure $cb) {
-        return @with_disabled_phan_error_handler($cb);
+    private static function evalSuppressingErrors(Closure $cb)
+    {
+        return @\with_disabled_phan_error_handler($cb);
     }
 
     /**
@@ -34,7 +35,7 @@ class InferValue
     public static function computeBinaryOpResult($left, $right, int $flags)
     {
         // Don't make errors in the analyzed code crash Phan (e.g. converting arrays to strings).
-        return self::evalSuppressingErrors(/** @return Node|array|int|string|float|bool|null */ function () use ($left, $right, $flags) {
+        return self::evalSuppressingErrors(/** @return Node|array|int|string|float|bool|null */ static function () use ($left, $right, $flags) {
             switch ($flags) {
                 case flags\BINARY_CONCAT:
                     return $left . $right;
@@ -91,7 +92,7 @@ class InferValue
     public static function computeUnaryOpResult($operand, int $flags)
     {
         // Don't make errors in the analyzed code crash Phan (e.g. converting arrays to strings).
-        return self::evalSuppressingErrors(/** @return Node|array|int|string|float|bool|null */ function () use ($operand, $flags) {
+        return self::evalSuppressingErrors(/** @return Node|array|int|string|float|bool|null */ static function () use ($operand, $flags) {
             switch ($flags) {
                 case flags\UNARY_BOOL_NOT:
                     return !$operand;

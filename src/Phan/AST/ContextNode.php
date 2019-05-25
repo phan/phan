@@ -7,9 +7,9 @@ use ast;
 use ast\Node;
 use Error;
 use Exception;
+use Phan\Analysis\ConditionVisitorUtil;
 use Phan\CodeBase;
 use Phan\Config;
-use Phan\Analysis\ConditionVisitorUtil;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\EmptyFQSENException;
 use Phan\Exception\FQSENException;
@@ -2188,12 +2188,12 @@ class ContextNode
                 $name = $node->children['name']->children['name'] ?? null;
                 if (\is_string($name)) {
                     switch (\strtolower($name)) {
-                    case 'false':
-                        return false;
-                    case 'true':
-                        return true;
-                    case 'null':
-                        return null;
+                        case 'false':
+                            return false;
+                        case 'true':
+                            return true;
+                        case 'null':
+                            return null;
                     }
                 }
                 if (($flags & self::RESOLVE_CONSTANTS) === 0) {
@@ -2296,7 +2296,8 @@ class ContextNode
      * to have a definition that was constant at this point in the codebase.
      * (This is a heuristic)
      */
-    public function isVarWithConstantDefinition(Node $node) : bool {
+    public function isVarWithConstantDefinition(Node $node) : bool
+    {
         if (!$node instanceof Node || $node->kind !== ast\AST_VAR) {
             return false;
         }
@@ -2336,7 +2337,8 @@ class ContextNode
         }
     }
 
-    private function handleErrorInOperation(Node $node, Error $e) : void {
+    private function handleErrorInOperation(Node $node, Error $e) : void
+    {
         $this->emitIssue(
             Issue::TypeErrorInOperation,
             $node->lineno,
@@ -2427,7 +2429,7 @@ class ContextNode
     private function getValueForCall(Node $node, int $flags)
     {
         $arg_list = $node->children['args']->children;
-        if (count($arg_list) !== 1) {
+        if (\count($arg_list) !== 1) {
             return $node;
         }
         $raw_function_name = ConditionVisitorUtil::getFunctionName($node);
@@ -2543,13 +2545,15 @@ class ContextNode
      */
     public function getEquivalentPHPValueForControlFlowAnalysis()
     {
-        return $this->getEquivalentPHPValueForNode($this->node,
+        return $this->getEquivalentPHPValueForNode(
+            $this->node,
             self::RESOLVE_ARRAYS |
             self::RESOLVE_ARRAY_KEYS |
             self::RESOLVE_ARRAY_VALUES |
             self::RESOLVE_OPS |
             self::RESOLVE_ONLY_CONSTANT_VARS |
-            self::RESOLVE_TYPE_CHECKS);
+            self::RESOLVE_TYPE_CHECKS
+        );
     }
 
     /**

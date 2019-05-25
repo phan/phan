@@ -811,12 +811,12 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     {
         $delay = Config::getMinDiagnosticsDelayMs();
         if ($delay > 0) {
-            $elapsed_ms = 1000 * (microtime(true) - self::$last_publish_timestamp);
+            $elapsed_ms = 1000 * (\microtime(true) - self::$last_publish_timestamp);
             $remaining_ms = ($delay - $elapsed_ms);
             if ($remaining_ms > 0) {
-                usleep((int)($remaining_ms * 1000));
+                \usleep((int)($remaining_ms * 1000));
             }
-            self::$last_publish_timestamp = microtime(true);
+            self::$last_publish_timestamp = \microtime(true);
         }
     }
 
@@ -826,7 +826,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         if ($delay > 0) {
             // Sleep for half of the interval so that when analysis starts,
             // it's acting on a newer version of the file's contents.
-            usleep((int)($delay * 1000 / 2));
+            \usleep((int)($delay * 1000 / 2));
         }
     }
 

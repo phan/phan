@@ -3,8 +3,8 @@
 namespace Phan\Language\Type;
 
 use Phan\CodeBase;
-use Phan\Language\Element\Parameter;
 use Phan\Language\Context;
+use Phan\Language\Element\Parameter;
 use Phan\Language\UnionType;
 
 /**
