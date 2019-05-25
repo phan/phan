@@ -87,7 +87,7 @@ class ASTSimplifier
     private static function applyToStatementList(Node $statement_list) : Node
     {
         if ($statement_list->kind !== \ast\AST_STMT_LIST) {
-            $statement_list = self::buildStatementList($statement_list->lineno ?? 0, $statement_list);
+            $statement_list = self::buildStatementList($statement_list->lineno, $statement_list);
         }
         $new_children = [];
         foreach ($statement_list->children as $child_node) {
@@ -400,7 +400,7 @@ class ASTSimplifier
         $new_node_elem->flags = 0;
         $new_node = clone($node);
         $new_node->children[0] = $new_node_elem;
-        $new_node->lineno = $new_node_elem->lineno ?? 0;
+        $new_node->lineno = $new_node_elem->lineno;
         $new_node->flags = 0;
         return [$inner_assign_statement, $new_node];
     }
@@ -420,7 +420,7 @@ class ASTSimplifier
         $new_node_elem->flags = 0;
         $new_node = clone($node);
         $new_node->children[0] = $new_node_elem;
-        $new_node->lineno = $new_node_elem->lineno ?? 0;
+        $new_node->lineno = $new_node_elem->lineno;
         $new_node->flags = 0;
         return [$inner_assign_statement, $new_node];
     }
@@ -434,7 +434,7 @@ class ASTSimplifier
             \ast\AST_IF,
             0,
             [$l, $r],
-            $l->lineno ?? 0
+            $l->lineno
         );
     }
 
@@ -483,7 +483,7 @@ class ASTSimplifier
         $inner_node_elem = clone($node->children[0]);  // AST_IF_ELEM
         $inner_node_elem->children['cond'] = $inner_node_elem->children['cond']->children['right'];
         $inner_node_elem->flags = 0;
-        $inner_node_lineno = $inner_node_elem->lineno ?? 0;
+        $inner_node_lineno = $inner_node_elem->lineno;
 
         // Normalize code such as `if (A && (B && C)) {...}` recursively.
         $inner_node_stmts = self::normalizeIfStatement(new Node(
@@ -622,7 +622,7 @@ class ASTSimplifier
         $new_node_elem->flags = 0;
         $new_node = clone($node);
         $new_node->children[0] = $new_node_elem;
-        $new_node->lineno = $new_node_elem->lineno ?? 0;
+        $new_node->lineno = $new_node_elem->lineno;
         $new_node->flags = 0;
         return [$outer_assign_statement, $new_node];
     }

@@ -1,0 +1,2 @@
+%s:5 PhanTypeConversionFromArray array to string conversion
+%s:8 PhanTypeErrorInOperation Saw an error when attempting to infer the type of expression +$arr: Unsupported operand types
