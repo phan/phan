@@ -2047,13 +2047,25 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         return !$method->isStatic();
     }
 
+    private static function isStaticNameNode(Node $node, bool $allow_self) : bool
+    {
+        if ($node->kind !== ast\AST_NAME) {
+            return false;
+        }
+        $name = $node->children['name'];
+        if (!\is_string($name)) {
+            return false;
+        }
+        return \strcasecmp($name, 'static') === 0 || ($allow_self && \strcasecmp($name, 'self') === 0);
+    }
+
     private function warnIfInvalidClassForNew(Clazz $class, Node $node) : void
     {
         // Make sure we're not instantiating an abstract
         // class
         if ($class->isAbstract()) {
             $this->emitIssue(
-                Issue::TypeInstantiateAbstract,
+                self::isStaticNameNode($node, false) ? Issue::TypeInstantiateAbstractStatic : Issue::TypeInstantiateAbstract,
                 $node->lineno,
                 (string)$class->getFQSEN()
             );
@@ -2067,7 +2079,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         } elseif ($class->isTrait()) {
             // Make sure we're not instantiating a trait
             $this->emitIssue(
-                Issue::TypeInstantiateTrait,
+                self::isStaticNameNode($node, true) ? Issue::TypeInstantiateTraitStaticOrSelf : Issue::TypeInstantiateTrait,
                 $node->lineno,
                 (string)$class->getFQSEN()
             );

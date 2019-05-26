@@ -1,3 +1,3 @@
-%s:4 PhanTypeInstantiateAbstract Instantiation of abstract class \NS679\T
+%s:4 PhanTypeInstantiateAbstractStatic Potential instantiation of abstract class \NS679\T (not an issue if this method is only called from a non-abstract subclass)
 %s:14 PhanUndeclaredMethod Call to undeclared method \NS679\C::missing
 %s:17 PhanUndeclaredMethod Call to undeclared method \NS679\C::missing

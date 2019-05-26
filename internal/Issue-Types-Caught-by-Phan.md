@@ -2121,6 +2121,14 @@ Saw a call to an internal function {FUNCTION}() with what would be invalid argum
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/expected/101_extended_return_inferences.php.expected#L12) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/src/101_extended_return_inferences.php#L22).
 
+## PhanTypeErrorInOperation
+
+```
+Saw an error when attempting to infer the type of expression {CODE}: {DETAILS}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0678_invalid_operations.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0678_invalid_operations.php#L8).
+
 ## PhanTypeExpectedObject
 
 ```
@@ -2171,6 +2179,14 @@ This issue will be emitted for the following code
 abstract class D {} (new D);
 ```
 
+## PhanTypeInstantiateAbstractStatic
+
+```
+Potential instantiation of abstract class {CLASS} (not an issue if this method is only called from a non-abstract subclass)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0679_static_from_type.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0679_static_from_type.php#L4).
+
 ## PhanTypeInstantiateInterface
 
 ```
@@ -2190,6 +2206,14 @@ Instantiation of trait {TRAIT}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0624_instantiate_abstract.php.expected#L11) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/files/src/0624_instantiate_abstract.php#L42).
+
+## PhanTypeInstantiateTraitStaticOrSelf
+
+```
+Potential instantiation of trait {TRAIT} (not an issue if this method is only called from a non-abstract class using the trait)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0624_instantiate_abstract.php.expected#L12) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0624_instantiate_abstract.php#L43).
 
 ## PhanTypeInvalidBitwiseBinaryOperator
 

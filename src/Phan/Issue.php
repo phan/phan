@@ -96,8 +96,10 @@ class Issue
     const TypeComparisonToArray     = 'PhanTypeComparisonToArray';
     const TypeConversionFromArray   = 'PhanTypeConversionFromArray';
     const TypeInstantiateAbstract   = 'PhanTypeInstantiateAbstract';
+    const TypeInstantiateAbstractStatic = 'PhanTypeInstantiateAbstractStatic';
     const TypeInstantiateInterface  = 'PhanTypeInstantiateInterface';
     const TypeInstantiateTrait      = 'PhanTypeInstantiateTrait';
+    const TypeInstantiateTraitStaticOrSelf = 'PhanTypeInstantiateTraitStaticOrSelf';
     const TypeInvalidCloneNotObject = 'PhanTypeInvalidCloneNotObject';
     const TypeInvalidClosureScope   = 'PhanTypeInvalidClosureScope';
     const TypeInvalidLeftOperand    = 'PhanTypeInvalidLeftOperand';
@@ -1447,6 +1449,14 @@ class Issue
                 10013
             ),
             new Issue(
+                self::TypeInstantiateAbstractStatic,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Potential instantiation of abstract class {CLASS} (not an issue if this method is only called from a non-abstract subclass)",
+                self::REMEDIATION_B,
+                10111
+            ),
+            new Issue(
                 self::TypeInstantiateInterface,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
@@ -1461,6 +1471,14 @@ class Issue
                 "Instantiation of trait {TRAIT}",
                 self::REMEDIATION_B,
                 10074
+            ),
+            new Issue(
+                self::TypeInstantiateTraitStaticOrSelf,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Potential instantiation of trait {TRAIT} (not an issue if this method is only called from a non-abstract class using the trait)",
+                self::REMEDIATION_B,
+                10112
             ),
             new Issue(
                 self::TypeInvalidClosureScope,
