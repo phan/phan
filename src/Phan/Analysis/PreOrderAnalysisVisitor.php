@@ -332,7 +332,9 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                     $func_context->getLineNumberStart(),
                     (string)$class_fqsen
                 );
-                $closure_scope->overrideClassFQSEN(null);  // Avoid an uncaught CodeBaseException due to missing class for @phan-closure-scope
+                // Avoid an uncaught CodeBaseException due to missing class for @phan-closure-scope
+                // Just pretend it's the containing class instead of the missing class.
+                $closure_scope->overrideClassFQSEN($func_context->getScope()->getParentScope()->getClassFQSENOrNull());
                 return null;
             }
             return $class_fqsen;
@@ -676,7 +678,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             $code_base,
             $context,
             $node->children['expr']
-        );
+        )->withStaticResolvedInContext($context);
 
         // Check the expression type to make sure it's
         // something we can iterate over

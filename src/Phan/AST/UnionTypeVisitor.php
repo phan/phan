@@ -1224,7 +1224,6 @@ class UnionTypeVisitor extends AnalysisVisitor
                 return $type;
             }
 
-
             $class = $this->code_base->getClassByFQSEN($fqsen);
 
             // If this class doesn't have any generics on it, we're
@@ -2441,8 +2440,10 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         // If this is a straight-forward class name, recurse into the
         // class node and get its type
-        $is_static_type_string = Type::isStaticTypeString($class_name);
-        if (!($is_static_type_string || Type::isSelfTypeString($class_name))) {
+        if (Type::isStaticTypeString($class_name)) {
+            return StaticType::instance(false)->asUnionType();
+        }
+        if (!Type::isSelfTypeString($class_name)) {
             // @phan-suppress-next-line PhanThrowTypeAbsentForCall
             return self::unionTypeFromClassNode(
                 $this->code_base,
@@ -2484,9 +2485,6 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         $result = $this->context->getClassFQSEN()->asUnionType();
 
-        if ($is_static_type_string) {
-            $result = $result->withType(StaticType::instance(false));
-        }
         return $result;
     }
 
@@ -2524,7 +2522,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                     continue;
                 }
                 $result = $result->withType($fqsen->asType());
-            } elseif (\get_class($sub_type) === Type::class || $sub_type instanceof ClosureType) {
+            } elseif (\get_class($sub_type) === Type::class || $sub_type instanceof ClosureType || $sub_type instanceof StaticType) {
                 $result = $result->withType($sub_type);
             } elseif ($is_valid) {
                 if ($sub_type instanceof StringType) {

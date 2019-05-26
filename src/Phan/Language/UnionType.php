@@ -756,7 +756,7 @@ class UnionType implements Serializable
     /**
      * @return bool
      * True if this type has a type referencing the
-     * class context 'static'.
+     * class context 'static' at the top level.
      */
     public function hasStaticType() : bool
     {
@@ -771,7 +771,9 @@ class UnionType implements Serializable
     /**
      * @return bool
      * True if this type has a type referencing the
-     * class context 'static' or 'self'.
+     * class context 'static' or 'self' at the top level.
+     * @deprecated call withStaticResolvedInContext and check if the resulting object is different instead.
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function hasStaticOrSelfType() : bool
     {
@@ -792,28 +794,20 @@ class UnionType implements Serializable
         Context $context
     ) : UnionType {
 
-        // If the context isn't in a class scope, or if it doesn't have 'static',
+        // If the context isn't in a class scope,
         // there's nothing we can do
-        if (!$context->isInClassScope() || !$this->hasStaticOrSelfType()) {
+        if (!$context->isInClassScope()) {
             return $this;
         }
 
-        $type_set = $this->type_set;
-        $is_nullable = false;
         $result = $this;
-        foreach ($type_set as $type) {
-            if ($type instanceof StaticOrSelfType) {
-                if ($type->isNullable()) {
-                    $is_nullable = true;
-                }
-                $result = $result->withoutType($type);
+        foreach ($this->type_set as $type) {
+            $new_type = $type->withStaticResolvedInContext($context);
+            if ($new_type !== $type) {
+                $result = $result->withoutType($type)->withType($new_type);
             }
         }
-        $resolved_type = $context->getClassFQSEN()->asType();
-        if ($is_nullable) {
-            return $result->withType($resolved_type->withIsNullable(true));
-        }
-        return $result->withType($resolved_type);
+        return $result;
     }
 
     /**

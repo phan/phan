@@ -608,6 +608,11 @@ class Method extends ClassElement implements FunctionInterface
         parent::setUnionType($union_type);
     }
 
+    protected function getUnionTypeWithStatic() : UnionType
+    {
+        return parent::getUnionType();
+    }
+
     /**
      * @return UnionType
      * The return type of this method in its given context.
@@ -615,9 +620,10 @@ class Method extends ClassElement implements FunctionInterface
     public function getUnionType() : UnionType
     {
         if ($this->defining_method_for_type_fetching) {
-            return $this->defining_method_for_type_fetching->getUnionType();
+            $union_type = $this->defining_method_for_type_fetching->getUnionTypeWithStatic();
+        } else {
+            $union_type = parent::getUnionType();
         }
-        $union_type = parent::getUnionType();
 
         // If the type is 'static', add this context's class
         // to the return type

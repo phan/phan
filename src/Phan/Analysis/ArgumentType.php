@@ -564,8 +564,8 @@ final class ArgumentType
     {
         // Expand it to include all parent types up the chain
         try {
-            $argument_type_expanded =
-                $argument_type->asExpandedTypes($code_base);
+            $argument_type_expanded_resolved =
+                $argument_type->withStaticResolvedInContext($context)->asExpandedTypes($code_base);
         } catch (RecursionDepthException $_) {
             return;
         }
@@ -590,7 +590,7 @@ final class ArgumentType
 
             // See if the argument can be cast to the
             // parameter
-            if ($argument_type_expanded->canCastToUnionType(
+            if ($argument_type_expanded_resolved->canCastToUnionType(
                 $alternate_parameter->getNonVariadicUnionType()
             )) {
                 if (Config::get_strict_param_checking() && $argument_type->typeCount() > 1) {
@@ -632,7 +632,7 @@ final class ArgumentType
             // and the argument we are passing has a __toString method then it is ok
             if (!$context->isStrictTypes() && $parameter_type->hasNonNullStringType()) {
                 try {
-                    foreach ($argument_type_expanded->asClassList($code_base, $context) as $clazz) {
+                    foreach ($argument_type_expanded_resolved->asClassList($code_base, $context) as $clazz) {
                         if ($clazz->hasMethodWithName($code_base, "__toString")) {
                             return;
                         }
@@ -643,7 +643,7 @@ final class ArgumentType
             }
         }
         // Check suppressions and emit the issue
-        self::warnInvalidArgumentType($code_base, $context, $method, $alternate_parameter, $argument_type_expanded, $lineno, $i);
+        self::warnInvalidArgumentType($code_base, $context, $method, $alternate_parameter, $argument_type->asExpandedTypes($code_base), $argument_type_expanded_resolved, $lineno, $i);
     }
 
     private static function warnInvalidArgumentType(
@@ -652,6 +652,7 @@ final class ArgumentType
         FunctionInterface $method,
         Parameter $alternate_parameter,
         UnionType $argument_type_expanded,
+        UnionType $argument_type_expanded_resolved,
         int $lineno,
         int $i
     ) : void {
@@ -659,9 +660,9 @@ final class ArgumentType
         /**
          * @return ?string
          */
-        $choose_issue_type = static function (string $issue_type, string $nullable_issue_type) use ($argument_type_expanded, $parameter_type, $code_base, $context, $lineno) : ?string {
+        $choose_issue_type = static function (string $issue_type, string $nullable_issue_type) use ($argument_type_expanded_resolved, $parameter_type, $code_base, $context, $lineno) : ?string {
             // @phan-suppress-next-line PhanAccessMethodInternal
-            if (!$argument_type_expanded->canCastToUnionTypeIfNonNull($parameter_type)) {
+            if (!$argument_type_expanded_resolved->canCastToUnionTypeIfNonNull($parameter_type)) {
                 return $issue_type;
             }
             if (Issue::shouldSuppressIssue($code_base, $context, $issue_type, $lineno, [])) {
@@ -699,7 +700,7 @@ final class ArgumentType
             $lineno,
             ($i + 1),
             $alternate_parameter->getName(),
-            $argument_type_expanded,
+            $argument_type_expanded->withUnionType($argument_type_expanded_resolved),
             $method->getRepresentationForIssue(),
             (string)$parameter_type,
             $method->getFileRef()->getFile(),
@@ -725,7 +726,7 @@ final class ArgumentType
         // For the strict
         foreach ($type_set as $type) {
             // Expand it to include all parent types up the chain
-            $individual_type_expanded = $type->asExpandedTypes($code_base);
+            $individual_type_expanded = $type->withStaticResolvedInContext($context)->asExpandedTypes($code_base);
 
             // See if the argument can be cast to the
             // parameter

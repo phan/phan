@@ -33,10 +33,15 @@ class ClosureScope extends FunctionLikeScope
      */
     public function overrideClassFQSEN(FullyQualifiedClassName $fqsen = null) : void
     {
+        // If there is an FQSEN override, then this is in a class scope.
+        // If there is no override, then this inherits the class of the parent
         if ($fqsen) {
             $this->flags |= Scope::IN_CLASS_SCOPE;
         } else {
-            $this->flags &= ~Scope::IN_CLASS_SCOPE;
+            if (!($this->parent_scope->flags & Scope::IN_CLASS_SCOPE)) {
+                // This is probably a closure FQSEN with an missing class override outside of a method scope.
+                $this->flags &= ~Scope::IN_CLASS_SCOPE;
+            }
         }
         $this->override_class_fqsen = $fqsen;
     }

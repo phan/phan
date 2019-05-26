@@ -13,6 +13,11 @@ New features(Analysis):
 + Improve analysis of some ways to initialize groups of static variables.
   e.g. `static $a = null; static $b = null; if ($a === null) { $a = $b = rand(0,10); } use($a, $b)`
   will now also infer that $b is non-null.
++ Infer from `return new static();` and `return $this;` that the return type of a method is `@return static`, not `@return self` (#2797)
+  (and propogate that to inherited methods)
++ Fix some false positives when casting array types containing `static` to types containing the class or its ancestors. (#2797)
++ Add `PhanTypeInstantiateAbstractStatic` and `PhanTypeInstantiateTraitStaticOrSelf` as lower-severity warnings about `return new self()` and `return new static()` (#2797)
+  (emitted in static methods of abstract classes)
 
 Language Server/Daemon mode:
 + Add `--language-server-min-diagnostics-delay-ms <ms>`, to work around race conditions in some language clients.
