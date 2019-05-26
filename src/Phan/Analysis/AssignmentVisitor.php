@@ -796,14 +796,15 @@ class AssignmentVisitor extends AnalysisVisitor
         // outside of the scope of this assignment, so we add to
         // its union type rather than replace it.
         $property_union_type = $property->getUnionType();
+        $resolved_right_type = $this->right_type->withStaticResolvedInContext($this->context);
         if ($this->dim_depth > 0) {
-            if ($this->right_type->canCastToExpandedUnionType(
+            if ($resolved_right_type->canCastToExpandedUnionType(
                 $property_union_type,
                 $this->code_base
             )) {
                 $this->addTypesToProperty($property, $node);
-                if (Config::get_strict_property_checking() && $this->right_type->typeCount() > 1) {
-                    $this->analyzePropertyAssignmentStrict($property, $this->right_type, $node);
+                if (Config::get_strict_property_checking() && $resolved_right_type->typeCount() > 1) {
+                    $this->analyzePropertyAssignmentStrict($property, $resolved_right_type, $node);
                 }
             } elseif ($property_union_type->asExpandedTypes($this->code_base)->hasArrayAccess()) {
                 // Add any type if this is a subclass with array access.
@@ -814,7 +815,8 @@ class AssignmentVisitor extends AnalysisVisitor
                 // TODO: If the codebase explicitly sets a phpdoc array shape type on a property assignment,
                 // then preserve the array shape type.
                 $new_types = $this->typeCheckDimAssignment($property_union_type, $node)
-                                  ->withFlattenedArrayShapeOrLiteralTypeInstances();
+                                  ->withFlattenedArrayShapeOrLiteralTypeInstances()
+                                  ->withStaticResolvedInContext($this->context);
 
                 // TODO: More precise than canCastToExpandedUnionType
                 if (!$new_types->canCastToExpandedUnionType(
@@ -830,8 +832,8 @@ class AssignmentVisitor extends AnalysisVisitor
                         (string)$property_union_type
                     );
                 } else {
-                    if (Config::get_strict_property_checking() && $this->right_type->typeCount() > 1) {
-                        $this->analyzePropertyAssignmentStrict($property, $this->right_type, $node);
+                    if (Config::get_strict_property_checking() && $resolved_right_type->typeCount() > 1) {
+                        $this->analyzePropertyAssignmentStrict($property, $resolved_right_type, $node);
                     }
                     $this->right_type = $new_types;
                     $this->addTypesToProperty($property, $node);
@@ -848,22 +850,22 @@ class AssignmentVisitor extends AnalysisVisitor
                 $this->handleThisPropertyAssignmentInLocalScope($property);
             }
             // This is a regular assignment, not an assignment to an offset
-            if (!$this->right_type->canCastToExpandedUnionType(
+            if (!$resolved_right_type->canCastToExpandedUnionType(
                 $property_union_type,
                 $this->code_base
             )
-                && !($this->right_type->hasTypeInBoolFamily() && $property_union_type->hasTypeInBoolFamily())
+                && !($resolved_right_type->hasTypeInBoolFamily() && $property_union_type->hasTypeInBoolFamily())
                 && !$clazz->hasDynamicProperties($this->code_base)
             ) {
-                if ($this->right_type->nonNullableClone()->canCastToExpandedUnionType($property_union_type, $this->code_base) &&
-                        !$this->right_type->isType(NullType::instance(false))) {
+                if ($resolved_right_type->nonNullableClone()->canCastToExpandedUnionType($property_union_type, $this->code_base) &&
+                        !$resolved_right_type->isType(NullType::instance(false))) {
                     if ($this->shouldSuppressIssue(Issue::TypeMismatchProperty, $node->lineno)) {
                         return $this->context;
                     }
                     $this->emitIssue(
                         Issue::PossiblyNullTypeMismatchProperty,
                         $node->lineno,
-                        (string)$this->right_type,
+                        (string)$this->right_type->withUnionType($resolved_right_type),
                         $property->getRepresentationForIssue(),
                         (string)$property_union_type,
                         'null'
@@ -873,7 +875,7 @@ class AssignmentVisitor extends AnalysisVisitor
                     $this->emitIssue(
                         Issue::TypeMismatchProperty,
                         $node->lineno,
-                        (string)$this->right_type,
+                        (string)$this->right_type->withUnionType($resolved_right_type),
                         $property->getRepresentationForIssue(),
                         (string)$property_union_type
                     );

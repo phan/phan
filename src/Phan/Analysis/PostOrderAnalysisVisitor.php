@@ -304,7 +304,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             }
         }
 
-        $union_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $expr_node);
+        $union_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $expr_node)->withStaticResolvedInContext($this->context);
         $type_fqsens = $union_type->objectTypesWithKnownFQSENs();
         foreach ($type_fqsens->getTypeSet() as $type) {
             $fqsen = FullyQualifiedClassName::fromType($type);
@@ -1284,12 +1284,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
             // Check if the return type is compatible with the declared return type.
             if (!$method->isReturnTypeUndefined()) {
+                $resolved_expression_type = $expression_type->withStaticResolvedInContext($context);
                 // We allow base classes to cast to subclasses, and subclasses to cast to base classes,
                 // but don't allow subclasses to cast to subclasses on a separate branch of the inheritance tree
-                if (!self::checkCanCastToReturnType($code_base, $expression_type, $method_return_type)) {
-                    $this->emitTypeMismatchReturnIssue($expression_type, $method, $method_return_type, $lineno);
-                } elseif (Config::get_strict_return_checking() && $expression_type->typeCount() > 1) {
-                    self::analyzeReturnStrict($code_base, $method, $expression_type, $method_return_type, $lineno);
+                if (!self::checkCanCastToReturnType($code_base, $resolved_expression_type, $method_return_type)) {
+                    $this->emitTypeMismatchReturnIssue($resolved_expression_type, $method, $method_return_type, $lineno);
+                } elseif (Config::get_strict_return_checking() && $resolved_expression_type->typeCount() > 1) {
+                    self::analyzeReturnStrict($code_base, $method, $resolved_expression_type, $method_return_type, $lineno);
                 }
             }
             // For functions that aren't syntactically Generators,
@@ -1352,6 +1353,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $code_base = $this->code_base;
 
         foreach ($this->getReturnTypes($context, $node->children['expr'], $node->lineno) as $lineno => $expression_type) {
+            $expression_type = $expression_type->withStaticResolvedInContext($context);
             // We allow base classes to cast to subclasses, and subclasses to cast to base classes,
             // but don't allow subclasses to cast to subclasses on a separate branch of the inheritance tree
             if (!self::checkCanCastToReturnType($code_base, $expression_type, $expected_return_type)) {
@@ -1407,7 +1409,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
         $expected_value_type = $template_type_list[\min(1, $type_list_count - 1)];
         try {
-            if (!$yield_value_type->asExpandedTypes($code_base)->canCastToUnionType($expected_value_type)) {
+            if (!$yield_value_type->withStaticResolvedInContext($context)->asExpandedTypes($code_base)->canCastToUnionType($expected_value_type)) {
                 $this->emitIssue(
                     Issue::TypeMismatchGeneratorYieldValue,
                     $node->lineno,
@@ -1429,7 +1431,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             }
             // TODO: finalize syntax to indicate the absence of a key or value (e.g. use void instead?)
             $expected_key_type = $template_type_list[0];
-            if (!$yield_key_type->asExpandedTypes($code_base)->canCastToUnionType($expected_key_type)) {
+            if (!$yield_key_type->withStaticResolvedInContext($context)->asExpandedTypes($code_base)->canCastToUnionType($expected_key_type)) {
                 $this->emitIssue(
                     Issue::TypeMismatchGeneratorYieldKey,
                     $node->lineno,
@@ -1509,7 +1511,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         $yield_value_type = $actual_template_type_list[\min(1, $actual_type_list_count - 1)];
         $expected_value_type = $template_type_list[\min(1, $type_list_count - 1)];
-        if (!$yield_value_type->asExpandedTypes($code_base)->canCastToUnionType($expected_value_type)) {
+        if (!$yield_value_type->withStaticResolvedInContext($context)->asExpandedTypes($code_base)->canCastToUnionType($expected_value_type)) {
             $this->emitIssue(
                 Issue::TypeMismatchGeneratorYieldValue,
                 $node->lineno,
@@ -1524,7 +1526,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // TODO: finalize syntax to indicate the absence of a key or value (e.g. use void instead?)
             $yield_key_type = $actual_template_type_list[0];
             $expected_key_type = $template_type_list[0];
-            if (!$yield_key_type->asExpandedTypes($code_base)->canCastToUnionType($expected_key_type)) {
+            if (!$yield_key_type->withStaticResolvedInContext($context)->asExpandedTypes($code_base)->canCastToUnionType($expected_key_type)) {
                 $this->emitIssue(
                     Issue::TypeMismatchGeneratorYieldKey,
                     $node->lineno,
@@ -1694,12 +1696,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             true
         );
 
-        if ($expression_type->hasStaticType()) {
-            $expression_type =
-                $expression_type->withStaticResolvedInContext(
-                    $context
-                );
-        }
         yield $return_lineno => $expression_type;
     }
 

@@ -33,6 +33,7 @@ use Phan\Language\Type;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
+use Phan\Language\Type\StaticType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
 use Phan\Library\None;
@@ -2748,7 +2749,7 @@ class Clazz extends AddressableElement
             new Variable(
                 $this->getContext(),
                 'this',
-                $this->getUnionType(),
+                StaticType::instance(false)->asUnionType(),
                 0
             )
         );

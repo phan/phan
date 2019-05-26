@@ -870,4 +870,21 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     {
         return ArrayType::instance($this->is_nullable);
     }
+
+    public function withStaticResolvedInContext(Context $context) : Type
+    {
+        $did_change = false;
+        $new_field_types = $this->field_types;
+        foreach ($new_field_types as $i => $field_type) {
+            $new_field_type = $field_type->withStaticResolvedInContext($context);
+            if ($new_field_type !== $field_type) {
+                $did_change = true;
+                $new_field_types[$i] = $new_field_type;
+            }
+        }
+        if (!$did_change) {
+            return $this;
+        }
+        return self::fromFieldTypes($new_field_types, $this->is_nullable);
+    }
 }
