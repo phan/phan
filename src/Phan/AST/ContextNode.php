@@ -2320,12 +2320,10 @@ class ContextNode
     private function getValueForBinaryOp(Node $node, int $flags)
     {
         $left_value = $this->getEquivalentPHPValueForNode($node->children['left'], $flags);
-        // fprintf(STDERR, "Left value for binary op %s is %s\n", \Phan\Debug::nodeToString($node), json_encode($left_value));
         if ($left_value instanceof Node) {
             return $node;
         }
-        $right_value = $this->getEquivalentPHPValueForNode($node->children['left'], $flags);
-        // fprintf(STDERR, "Right value for binary op %s is %s\n", \Phan\Debug::nodeToString($node), json_encode($left_value));
+        $right_value = $this->getEquivalentPHPValueForNode($node->children['right'], $flags);
         if ($right_value instanceof Node) {
             return $node;
         }
