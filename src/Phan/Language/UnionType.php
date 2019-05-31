@@ -13,6 +13,8 @@ use Phan\Exception\IssueException;
 use Phan\Exception\RecursionDepthException;
 use Phan\Issue;
 use Phan\Language\Element\Clazz;
+use Phan\Language\Element\FunctionInterface;
+use Phan\Language\Element\Method;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
@@ -808,6 +810,42 @@ class UnionType implements Serializable
             }
         }
         return $result;
+    }
+
+    /**
+     * @return UnionType
+     * A new UnionType with any references to 'static' resolved
+     * in the given function or method's context.
+     */
+    public function withStaticResolvedInFunctionLike(
+        FunctionInterface $function
+    ) : UnionType {
+        $context = $function->getContext();
+        if ($function instanceof Method) {
+            // Gets the context of the method *after* inheritance
+            $context = $context->withScope(new class($function->getClassFQSEN()) extends Scope {
+                /** @var FullyQualifiedClassName the name being resolved */
+                private $class_fqsen;
+                public function __construct(FullyQualifiedClassName $fqsen) {
+                    $this->class_fqsen = $fqsen;
+                }
+
+                /**
+                 * @override
+                 */
+                public function isInClassScope() : bool {
+                    return true;
+                }
+
+                /**
+                 * @override
+                 */
+                public function getClassFQSEN() : FullyQualifiedClassName {
+                    return $this->class_fqsen;
+                }
+            });
+        }
+        return $this->withStaticResolvedInContext($context);
     }
 
     /**

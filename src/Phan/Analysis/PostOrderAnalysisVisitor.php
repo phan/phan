@@ -3363,6 +3363,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         ) {
             return;
         }
+        foreach ($argument_types as $i => $type) {
+            $argument_types[$i] = $type->withStaticResolvedInContext($this->context);
+        }
 
         $original_method_scope = $method->getInternalScope();
         $method->setInternalScope(clone($original_method_scope));
@@ -3468,7 +3471,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $this->context,
                     $argument,
                     true
-                );
+                )->withStaticResolvedInContext($this->context);
             }
 
             foreach ($parameter_list as $i => $parameter_clone) {

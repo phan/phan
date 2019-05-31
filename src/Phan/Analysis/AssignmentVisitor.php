@@ -1002,7 +1002,7 @@ class AssignmentVisitor extends AnalysisVisitor
         $original_property_types = $property->getUnionType();
         if ($original_property_types->isEmpty()) {
             // TODO: Be more precise?
-            $property->setUnionType($this->right_type->withFlattenedArrayShapeOrLiteralTypeInstances());
+            $property->setUnionType($this->right_type->withStaticResolvedInContext($this->context)->withFlattenedArrayShapeOrLiteralTypeInstances());
             return;
         }
 
@@ -1012,7 +1012,7 @@ class AssignmentVisitor extends AnalysisVisitor
             $new_types = $this->right_type;
         }
         $has_literals = $original_property_types->hasLiterals();
-        $new_types = $new_types->withFlattenedArrayShapeTypeInstances();
+        $new_types = $new_types->withStaticResolvedInContext($this->context)->withFlattenedArrayShapeTypeInstances();
 
         $updated_property_types = $original_property_types;
         foreach ($new_types->getTypeSet() as $new_type) {
@@ -1272,7 +1272,7 @@ class AssignmentVisitor extends AnalysisVisitor
             }
             return $right_type;
         }
-        $assign_type_expanded = $assign_type->asExpandedTypes($this->code_base);
+        $assign_type_expanded = $assign_type->withStaticResolvedInContext($this->context)->asExpandedTypes($this->code_base);
         //echo "$assign_type_expanded : " . json_encode($assign_type_expanded->hasArrayLike()) . "\n";
 
         // TODO: Better heuristic to deal with false positives on ArrayAccess subclasses
