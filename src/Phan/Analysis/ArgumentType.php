@@ -584,17 +584,13 @@ final class ArgumentType
             }
 
             $alternate_parameter = $candidate_alternate_parameter;
-            if (!($alternate_parameter instanceof Variable)) {
-                throw new AssertionError('Expected alternate_parameter to be Variable or subclass');
-            }
+            $alternate_parameter_type = $alternate_parameter->getNonVariadicUnionType()->withStaticResolvedInFunctionLike($alternate_method);
 
             // See if the argument can be cast to the
             // parameter
-            if ($argument_type_expanded_resolved->canCastToUnionType(
-                $alternate_parameter->getNonVariadicUnionType()
-            )) {
+            if ($argument_type_expanded_resolved->canCastToUnionType($alternate_parameter_type))  {
                 if (Config::get_strict_param_checking() && $argument_type->typeCount() > 1) {
-                    self::analyzeParameterStrict($code_base, $context, $method, $argument_type, $alternate_parameter, $lineno, $i);
+                    self::analyzeParameterStrict($code_base, $context, $method, $argument_type, $alternate_parameter, $alternate_parameter_type, $lineno, $i);
                 }
                 return;
             }
@@ -608,17 +604,15 @@ final class ArgumentType
             return;
         }
 
-        $parameter_type = $alternate_parameter->getNonVariadicUnionType();
-
-        if ($parameter_type->hasTemplateTypeRecursive()) {
+        if ($alternate_parameter_type->hasTemplateTypeRecursive()) {
             // Don't worry about **unresolved** template types.
             // We resolve them if possible in ContextNode->getMethod()
             return;
         }
-        if ($parameter_type->hasTemplateParameterTypes()) {
+        if ($alternate_parameter_type->hasTemplateParameterTypes()) {
             // TODO: Make the check for templates recursive
             $argument_type_expanded_templates = $argument_type->asExpandedTypesPreservingTemplate($code_base);
-            if ($argument_type_expanded_templates->canCastToUnionTypeHandlingTemplates($parameter_type, $code_base)) {
+            if ($argument_type_expanded_templates->canCastToUnionTypeHandlingTemplates($alternate_parameter_type, $code_base)) {
                 // - can cast MyClass<\stdClass> to MyClass<mixed>
                 // - can cast Some<\stdClass> to Option<\stdClass>
                 // - cannot cast Some<\SomeOtherClass> to Option<\stdClass>
@@ -630,7 +624,7 @@ final class ArgumentType
         if ($method->isPHPInternal()) {
             // If we are not in strict mode and we accept a string parameter
             // and the argument we are passing has a __toString method then it is ok
-            if (!$context->isStrictTypes() && $parameter_type->hasNonNullStringType()) {
+            if (!$context->isStrictTypes() && $alternate_parameter_type->hasNonNullStringType()) {
                 try {
                     foreach ($argument_type_expanded_resolved->asClassList($code_base, $context) as $clazz) {
                         if ($clazz->hasMethodWithName($code_base, "__toString")) {
@@ -643,7 +637,7 @@ final class ArgumentType
             }
         }
         // Check suppressions and emit the issue
-        self::warnInvalidArgumentType($code_base, $context, $method, $alternate_parameter, $argument_type->asExpandedTypes($code_base), $argument_type_expanded_resolved, $lineno, $i);
+        self::warnInvalidArgumentType($code_base, $context, $method, $alternate_parameter, $alternate_parameter_type, $argument_type->asExpandedTypes($code_base), $argument_type_expanded_resolved, $lineno, $i);
     }
 
     private static function warnInvalidArgumentType(
@@ -651,18 +645,18 @@ final class ArgumentType
         Context $context,
         FunctionInterface $method,
         Parameter $alternate_parameter,
+        UnionType $alternate_parameter_type,
         UnionType $argument_type_expanded,
         UnionType $argument_type_expanded_resolved,
         int $lineno,
         int $i
     ) : void {
-        $parameter_type = $alternate_parameter->getNonVariadicUnionType();
         /**
          * @return ?string
          */
-        $choose_issue_type = static function (string $issue_type, string $nullable_issue_type) use ($argument_type_expanded_resolved, $parameter_type, $code_base, $context, $lineno) : ?string {
+        $choose_issue_type = static function (string $issue_type, string $nullable_issue_type) use ($argument_type_expanded_resolved, $alternate_parameter_type, $code_base, $context, $lineno) : ?string {
             // @phan-suppress-next-line PhanAccessMethodInternal
-            if (!$argument_type_expanded_resolved->canCastToUnionTypeIfNonNull($parameter_type)) {
+            if (!$argument_type_expanded_resolved->canCastToUnionTypeIfNonNull($alternate_parameter_type)) {
                 return $issue_type;
             }
             if (Issue::shouldSuppressIssue($code_base, $context, $issue_type, $lineno, [])) {
@@ -685,7 +679,7 @@ final class ArgumentType
                 $alternate_parameter->getName(),
                 $argument_type_expanded,
                 $method->getRepresentationForIssue(),
-                (string)$parameter_type
+                (string)$alternate_parameter_type
             );
             return;
         }
@@ -702,13 +696,13 @@ final class ArgumentType
             $alternate_parameter->getName(),
             $argument_type_expanded->withUnionType($argument_type_expanded_resolved),
             $method->getRepresentationForIssue(),
-            (string)$parameter_type,
+            (string)$alternate_parameter_type,
             $method->getFileRef()->getFile(),
             $method->getFileRef()->getLineNumberStart()
         );
     }
 
-    private static function analyzeParameterStrict(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, Variable $alternate_parameter, int $lineno, int $i) : void
+    private static function analyzeParameterStrict(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, Variable $alternate_parameter, UnionType $parameter_type, int $lineno, int $i) : void
     {
         if ($alternate_parameter instanceof Parameter && $alternate_parameter->isPassByReference() && $alternate_parameter->getReferenceType() === Parameter::REFERENCE_WRITE_ONLY) {
             return;
@@ -717,8 +711,6 @@ final class ArgumentType
         if (\count($type_set) < 2) {
             throw new AssertionError("Expected to have at least two parameter types when checking if parameter types match in strict mode");
         }
-
-        $parameter_type = $alternate_parameter->getNonVariadicUnionType();
 
         $mismatch_type_set = UnionType::empty();
         $mismatch_expanded_types = null;

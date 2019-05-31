@@ -1272,7 +1272,7 @@ class AssignmentVisitor extends AnalysisVisitor
             }
             return $right_type;
         }
-        $assign_type_expanded = $assign_type->asExpandedTypes($this->code_base);
+        $assign_type_expanded = $assign_type->withStaticResolvedInContext($this->context)->asExpandedTypes($this->code_base);
         //echo "$assign_type_expanded : " . json_encode($assign_type_expanded->hasArrayLike()) . "\n";
 
         // TODO: Better heuristic to deal with false positives on ArrayAccess subclasses

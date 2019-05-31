@@ -18,6 +18,8 @@ New features(Analysis):
 + Fix some false positives when casting array types containing `static` to types containing the class or its ancestors. (#2797)
 + Add `PhanTypeInstantiateAbstractStatic` and `PhanTypeInstantiateTraitStaticOrSelf` as lower-severity warnings about `return new self()` and `return new static()` (#2797)
   (emitted in static methods of abstract classes)
++ Fix false positives passing `static` to other classes. (#2797)
++ Fix false positive seen when `static` implements `ArrayAccess` (#2797)
 
 Language Server/Daemon mode:
 + Add `--language-server-min-diagnostics-delay-ms <ms>`, to work around race conditions in some language clients.

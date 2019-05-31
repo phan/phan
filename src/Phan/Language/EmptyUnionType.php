@@ -8,6 +8,7 @@ use Phan\CodeBase;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
 use Phan\Language\Element\Clazz;
+use Phan\Language\Element\FunctionInterface;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\IntType;
@@ -225,6 +226,17 @@ final class EmptyUnionType extends UnionType
      */
     public function withStaticResolvedInContext(
         Context $context
+    ) : UnionType {
+        return $this;
+    }
+
+    /**
+     * @return UnionType
+     * A new UnionType with any references to 'static' resolved
+     * in the given context.
+     */
+    public function withStaticResolvedInFunctionLike(
+        FunctionInterface $function
     ) : UnionType {
         return $this;
     }
