@@ -23,10 +23,7 @@ final class FilteringPrinter implements BufferedPrinterInterface
     /** @var IssuePrinterInterface the wrapped printer */
     private $printer;
 
-    /**
-     * @param string $file
-     */
-    private static function normalize($file) : string
+    private static function normalize(string $file) : string
     {
         return \str_replace(\DIRECTORY_SEPARATOR, "//", (string)$file);
     }
@@ -49,7 +46,7 @@ final class FilteringPrinter implements BufferedPrinterInterface
      * @param IssueInstance $instance
      * @override
      */
-    public function print(IssueInstance $instance)
+    public function print(IssueInstance $instance) : void
     {
         $file = $instance->getFile();
         if (!isset($this->file_set[self::normalize($file)])) {
@@ -62,7 +59,7 @@ final class FilteringPrinter implements BufferedPrinterInterface
      * @param OutputInterface $output
      * @override
      */
-    public function configureOutput(OutputInterface $output)
+    public function configureOutput(OutputInterface $output) : void
     {
         $this->printer->configureOutput($output);
     }
@@ -70,11 +67,10 @@ final class FilteringPrinter implements BufferedPrinterInterface
     /**
      * @override
      */
-    public function flush()
+    public function flush() : void
     {
-        $printer = $this->printer;
-        if ($printer instanceof BufferedPrinterInterface) {
-            $printer->flush();
+        if ($this->printer instanceof BufferedPrinterInterface) {
+            $this->printer->flush();
         }
     }
 }

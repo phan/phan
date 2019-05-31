@@ -5,7 +5,6 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 require_once dirname(__DIR__) . '/internal/lib/IncompatibleSignatureDetectorBase.php';
 
-// @phan-file-suppress PhanNativePHPSyntaxCheckPlugin, UnusedPluginFileSuppression caused by inline HTML before declare
 /**
  * Loads the ReflectionFunction or ReflectionMethod for the given function or method name.
  * Method names must use '::' to separate the class and method names.
@@ -14,7 +13,7 @@ require_once dirname(__DIR__) . '/internal/lib/IncompatibleSignatureDetectorBase
 function load_internal_function(string $function_name) : ReflectionFunctionAbstract
 {
     if (strpos($function_name, '::') !== false) {
-        list($class_name, $method_name) = explode('::', $function_name, 2);
+        [$class_name, $method_name] = explode('::', $function_name, 2);
         $class = new ReflectionClass($class_name);
         return $class->getMethod($method_name);
     } else {
@@ -195,7 +194,7 @@ function getUnionTypeStringForReflectionType(ReflectionType $reflection_type = n
  * @return void
  * @throws InvalidArgumentException for invalid return types
  */
-function check_fields(string $function_name, array $fields, array $signatures)
+function check_fields(string $function_name, array $fields, array $signatures) : void
 {
     $return_type = $fields[0];  // TODO: Check type
     if (!is_string($return_type)) {
@@ -230,8 +229,8 @@ function check_fields(string $function_name, array $fields, array $signatures)
 
 
     $reflection_parameters = $function->getParameters();
-    list($phan_required_count, $phan_optional_count, $saw_optional_after_required) = getParametersCountsFromPhan($fields);
-    list($php_computed_required_count, $php_optional_count) = getParameterCountsFromReflection($reflection_parameters);
+    [$phan_required_count, $phan_optional_count, $saw_optional_after_required] = getParametersCountsFromPhan($fields);
+    [$php_computed_required_count, $php_optional_count] = getParameterCountsFromReflection($reflection_parameters);
     $generate_comparison_text = static function () use ($encode_signature, $fields, $function) : string {
         $php_fields = getPhanSignatureArrayFromReflection($function);
         return sprintf("%s vs PHP's %s", $encode_signature($fields), $encode_signature($php_fields));
@@ -383,7 +382,7 @@ function check_fields(string $function_name, array $fields, array $signatures)
 /**
  * Load Phan's function signatures and check that they are compatible with Reflection's real function/method signatures
  */
-function main_check_fields()
+function main_check_fields() : void
 {
     error_reporting(E_ALL);
 

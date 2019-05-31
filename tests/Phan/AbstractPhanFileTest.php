@@ -28,8 +28,9 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
 
     /**
      * @return void
+     * @suppress PhanPossiblyNullTypeMismatchProperty
      */
-    public function setCodeBase(CodeBase $code_base = null)
+    public function setCodeBase(CodeBase $code_base = null) : void
     {
         $this->code_base = $code_base;
     }
@@ -37,12 +38,9 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
     /**
      * @return array<string,array{0:array,1:string}> Array of <filename => [filename]>
      */
-    abstract public function getTestFiles();
+    abstract public function getTestFiles() : array;
 
-    /**
-     * @return void
-     */
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass() : void
     {
         parent::setUpBeforeClass();
         // Reset the config file
@@ -51,10 +49,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
         ConfigPluginSet::reset();  // @phan-suppress-current-line PhanAccessMethodInternal
     }
 
-    /**
-     * @return void
-     */
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass() : void
     {
         parent::tearDownAfterClass();
         // Reset the config file
@@ -65,10 +60,8 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
 
     /**
      * Setup our state before running each test
-     *
-     * @return void
      */
-    public function setUp()
+    public function setUp() : void
     {
         parent::setUp();
 
@@ -77,9 +70,8 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
 
     /**
      * Reset any changes we made to our global state
-     * @return void
      */
-    public function tearDown()
+    public function tearDown() : void
     {
         parent::tearDown();
 
@@ -92,7 +84,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
      * @param string $source_dir
      * @return array<string,array{0:array,1:string}>
      */
-    final protected function scanSourceFilesDir(string $source_dir, string $expected_dir)
+    final protected function scanSourceFilesDir(string $source_dir, string $expected_dir) : array
     {
         $files = \array_filter(
             \scandir($source_dir) ?: [],
@@ -102,10 +94,8 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
             }
         );
 
-        // NOTE: To avoid ParseError in php-ast
-        if (\PHP_VERSION_ID < 70100) {
-            $suffix = '70';
-        } elseif (\PHP_VERSION_ID < 70200) {
+        // NOTE: This is done to avoid ParseError in php-ast
+        if (\PHP_VERSION_ID < 70200) {
             $suffix = '71';
         } else {
             $suffix = '72';
@@ -151,7 +141,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
      * @suppress PhanThrowTypeAbsentForCall
      * @dataProvider getTestFiles
      */
-    public function testFiles($test_file_list, $expected_file_path, $config_file_path = null)
+    public function testFiles(array $test_file_list, string $expected_file_path, ?string $config_file_path = null) : void
     {
         $expected_output = '';
         if (\is_file($expected_file_path)) {

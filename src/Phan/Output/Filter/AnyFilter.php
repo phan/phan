@@ -13,7 +13,6 @@ final class AnyFilter implements IssueFilterInterface
 
     /**
      * @param IssueInstance $issue (@phan-unused-param)
-     * @return bool
      */
     public function supports(IssueInstance $issue):bool
     {

@@ -168,7 +168,6 @@ class Analysis
      * returned context is the new context from within the
      * given node.
      *
-     * NOTE: This is called extremely frequently, so the real signature types were omitted for performance.
      *
      * @param CodeBase $code_base
      * The global code base in which we store all
@@ -182,6 +181,8 @@ class Analysis
      *
      * @return Context
      * The context from within the node is returned
+     * @suppress PhanPluginCanUseReturnType
+     * NOTE: This is called extremely frequently, so the real signature types were omitted for performance.
      */
     public static function parseNodeInContext(CodeBase $code_base, Context $context, Node $node)
     {
@@ -254,9 +255,8 @@ class Analysis
      * Take a pass over all functions verifying various states.
      *
      * @param ?array<string,mixed> $file_filter if non-null, limit analysis to functions and methods declared in this array
-     * @return void
      */
-    public static function analyzeFunctions(CodeBase $code_base, array $file_filter = null)
+    public static function analyzeFunctions(CodeBase $code_base, array $file_filter = null) : void
     {
         $plugin_set = ConfigPluginSet::instance();
         $has_function_or_method_plugins = $plugin_set->hasAnalyzeFunctionPlugins() || $plugin_set->hasAnalyzeMethodPlugins();
@@ -266,7 +266,7 @@ class Analysis
             $plugin_set,
             $has_function_or_method_plugins,
             $file_filter
-        ) {
+        ) : void {
             if ($function_or_method->isPHPInternal()) {
                 return;
             }
@@ -322,12 +322,12 @@ class Analysis
         // Plugins may also analyze user-defined methods here.
         $i = 0;
         if ($show_progress) {
-            CLI::progress('function', 0.0);
+            CLI::progress('function', 0.0, null);
         }
         $function_map = $code_base->getFunctionMap();
         foreach ($function_map as $function) {  // iterate, ignoring $fqsen
             if ($show_progress) {
-                CLI::progress('function', (++$i) / (\count($function_map)));
+                CLI::progress('function', (++$i) / (\count($function_map)), $function);
             }
             $analyze_function_or_method($function);
         }
@@ -337,14 +337,14 @@ class Analysis
         $i = 0;
         $method_set = $code_base->getMethodSet();
         if ($show_progress) {
-            CLI::progress('method', 0.0);
+            CLI::progress('method', 0.0, null);
         }
         foreach ($method_set as $method) {
             if ($show_progress) {
                 // I suspect that method analysis is hydrating some of the classes,
                 // adding even more inherited methods to the end of the set.
                 // This recalculation is needed so that the progress bar is accurate.
-                CLI::progress('method', (++$i) / (\count($method_set)));
+                CLI::progress('method', (++$i) / (\count($method_set)), $method);
             }
             $analyze_function_or_method($method);
         }
@@ -352,10 +352,8 @@ class Analysis
 
     /**
      * Loads extra logic for analyzing function and method calls.
-     *
-     * @return void
      */
-    public static function loadMethodPlugins(CodeBase $code_base)
+    public static function loadMethodPlugins(CodeBase $code_base) : void
     {
         $plugin_set = ConfigPluginSet::instance();
         foreach ($plugin_set->getReturnTypeOverrides($code_base) as $fqsen_string => $closure) {
@@ -391,7 +389,7 @@ class Analysis
             try {
                 if (\stripos($fqsen_string, '::') !== false) {
                     // This is an override of a method.
-                    list($class, $method_name) = \explode('::', $fqsen_string, 2);
+                    [$class, $method_name] = \explode('::', $fqsen_string, 2);
                     $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class);
                     if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
                         continue;
@@ -421,9 +419,8 @@ class Analysis
      * verifying various states.
      *
      * @param ?array<string,mixed> $path_filter if non-null, limit analysis to classes in this array
-     * @return void
      */
-    public static function analyzeClasses(CodeBase $code_base, array $path_filter = null)
+    public static function analyzeClasses(CodeBase $code_base, array $path_filter = null) : void
     {
         $classes = $code_base->getUserDefinedClassMap();
         if (\is_array($path_filter)) {
@@ -448,10 +445,8 @@ class Analysis
     /**
      * Take a look at all globally accessible elements and see if
      * we can find any dead code that is never referenced
-     *
-     * @return void
      */
-    public static function analyzeDeadCode(CodeBase $code_base)
+    public static function analyzeDeadCode(CodeBase $code_base) : void
     {
         // Check to see if dead code detection is enabled. Keep
         // in mind that the results here are just a guess and
@@ -477,13 +472,11 @@ class Analysis
      * @param ?string $override_contents
      * If this is not null, this function will act as if $file_path's contents
      * were $override_contents
-     *
-     * @return Context
      */
     public static function analyzeFile(
         CodeBase $code_base,
         string $file_path,
-        $request,
+        ?Request $request,
         string $override_contents = null
     ) : Context {
         // Set the file on the context
@@ -567,14 +560,11 @@ class Analysis
         return $context;
     }
 
-    /**
-     * @return void
-     */
     private static function emitSyntaxError(
         CodeBase $code_base,
         Context $context,
         Throwable $e
-    ) {
+    ) : void {
         Issue::maybeEmit(
             $code_base,
             $context,

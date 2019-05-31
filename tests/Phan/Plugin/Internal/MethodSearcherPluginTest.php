@@ -13,22 +13,23 @@ use Phan\Tests\CodeBaseAwareTestInterface;
  */
 final class MethodSearcherPluginTest extends BaseTest implements CodeBaseAwareTestInterface
 {
-    /** @var CodeBase|null The code base within which this unit test is operating */
+    /** @var CodeBase The code base within which this unit test is operating */
     private $code_base = null;
 
-    public function setCodeBase(CodeBase $code_base = null)
+    public function setCodeBase(CodeBase $code_base = null) : void
     {
+        // @phan-suppress-next-line PhanPossiblyNullTypeMismatchProperty
         $this->code_base = $code_base;
     }
 
     /**
      * @dataProvider getTypeMatchingBonusProvider
      */
-    public function testGetTypeMatchingBonus(float $expected_score, string $actual, string $desired)
+    public function testGetTypeMatchingBonus(float $expected_score, string $actual, string $desired) : void
     {
         $actual_signature_type = UnionType::fromFullyQualifiedString($actual);
         $desired_signature_type = UnionType::fromFullyQualifiedString($desired);
-        // @phan-suppress-next-line PhanAccessMethodInternal, PhanPossiblyNullTypeArgument
+        // @phan-suppress-next-line PhanAccessMethodInternal
         $this->assertSame($expected_score, MethodSearcherPlugin::getTypeMatchingBonus($this->code_base, $actual_signature_type, $desired_signature_type));
     }
 
@@ -52,11 +53,11 @@ final class MethodSearcherPluginTest extends BaseTest implements CodeBaseAwareTe
      * @param array<int,string> $desired
      * @dataProvider matchesParamTypesProvider
      */
-    public function testMatchesParamTypes(float $expected_score, array $actual, array $desired)
+    public function testMatchesParamTypes(float $expected_score, array $actual, array $desired) : void
     {
         $actual_signature_types = \array_map('\Phan\Language\UnionType::fromFullyQualifiedString', $actual);
         $desired_signature_types = \array_map('\Phan\Language\UnionType::fromFullyQualifiedString', $desired);
-        // @phan-suppress-next-line PhanAccessMethodInternal, PhanPossiblyNullTypeArgument
+        // @phan-suppress-next-line PhanAccessMethodInternal
         $this->assertSame($expected_score, MethodSearcherPlugin::matchesParamTypes($this->code_base, $actual_signature_types, $desired_signature_types));
     }
 

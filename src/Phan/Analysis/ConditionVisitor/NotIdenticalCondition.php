@@ -3,7 +3,10 @@
 namespace Phan\Analysis\ConditionVisitor;
 
 use ast\Node;
+use Phan\Analysis\ConditionVisitor;
 use Phan\Analysis\ConditionVisitorInterface;
+use Phan\Analysis\NegatedConditionVisitor;
+use Phan\AST\UnionTypeVisitor;
 use Phan\Language\Context;
 
 /**
@@ -27,7 +30,7 @@ class NotIdenticalCondition implements BinaryCondition
     /**
      * Assert that this condition applies to the variable $object (i.e. get_class($object) !== $expr)
      *
-     * @param Node $object
+     * @param Node|int|string|float $object
      * @param Node|int|string|float $expr
      * @return Context
      * @suppress PhanUnusedPublicMethodParameter
@@ -35,5 +38,25 @@ class NotIdenticalCondition implements BinaryCondition
     public function analyzeClassCheck(ConditionVisitorInterface $visitor, $object, $expr) : Context
     {
         return $visitor->getContext();
+    }
+
+    public function analyzeCall(ConditionVisitorInterface $visitor, Node $call_node, $expr) : ?Context
+    {
+        if (!$expr instanceof Node) {
+            return null;
+        }
+        $code_base = $visitor->getCodeBase();
+        $context = $visitor->getContext();
+        $value = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $expr)->asSingleScalarValueOrNullOrSelf();
+        if (!\is_bool($value)) {
+            return null;
+        }
+        if ($value) {
+            // e.g. `if (!(is_string($x) === true))`
+            return (new NegatedConditionVisitor($code_base, $context))->visitCall($call_node);
+        } else {
+            // e.g. `if (!(is_string($x) === false))`
+            return (new ConditionVisitor($code_base, $context))->visitCall($call_node);
+        }
     }
 }

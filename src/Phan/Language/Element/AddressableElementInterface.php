@@ -23,15 +23,14 @@ interface AddressableElementInterface extends TypedElementInterface
     /**
      * Sets the fully qualified structural element name of this element.
      * @param FQSEN $fqsen
-     * @return void
      */
-    public function setFQSEN(FQSEN $fqsen);
+    public function setFQSEN(FQSEN $fqsen) : void;
 
     /**
      * @return bool true if this element's visibility
      *                   is strictly more visible than $other (public > protected > private)
      */
-    public function isStrictlyMoreVisibileThan(AddressableElementInterface $other) : bool;
+    public function isStrictlyMoreVisibleThan(AddressableElementInterface $other) : bool;
 
     /**
      * @return bool
@@ -56,9 +55,8 @@ interface AddressableElementInterface extends TypedElementInterface
      * is referenced.
      *
      * @param FileRef $file_ref
-     * @return void
      */
-    public function addReference(FileRef $file_ref);
+    public function addReference(FileRef $file_ref) : void;
 
     /**
      * @return FileRef[]
@@ -86,7 +84,7 @@ interface AddressableElementInterface extends TypedElementInterface
     /**
      * @return ?string the 'docComment' for this element, if any exists.
      */
-    public function getDocComment();
+    public function getDocComment() : ?string;
 
     /**
      * @return Context
@@ -104,19 +102,15 @@ interface AddressableElementInterface extends TypedElementInterface
      * Set this element as deprecated or not deprecated
      *
      * @param bool $is_deprecated
-     *
-     * @return void
      */
-    public function setIsDeprecated(bool $is_deprecated);
+    public function setIsDeprecated(bool $is_deprecated) : void;
 
     /**
      * Set the set of issue names ($suppress_issue_list) to suppress
      *
-     * @param array<int,string> $suppress_issue_list
-     *
-     * @return void
+     * @param array<string,int> $suppress_issue_set
      */
-    public function setSuppressIssueList(array $suppress_issue_list);
+    public function setSuppressIssueSet(array $suppress_issue_set) : void;
 
     /**
      * @return array<string,int>
@@ -126,9 +120,8 @@ interface AddressableElementInterface extends TypedElementInterface
 
     /**
      * Increments the number of times $issue_name was suppressed.
-     * @return void
      */
-    public function incrementSuppressIssueCount(string $issue_name);
+    public function incrementSuppressIssueCount(string $issue_name) : void;
 
     /**
      * return bool
@@ -156,8 +149,6 @@ interface AddressableElementInterface extends TypedElementInterface
     /**
      * This method must be called before analysis
      * begins.
-     *
-     * @return void
      */
-    public function hydrate(CodeBase $code_base);
+    public function hydrate(CodeBase $code_base) : void;
 }

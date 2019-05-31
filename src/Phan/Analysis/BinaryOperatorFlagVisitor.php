@@ -10,6 +10,7 @@ use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\Element;
 use Phan\AST\Visitor\FlagVisitorImplementation;
 use Phan\CodeBase;
+use Phan\Debug;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\FQSEN;
@@ -82,9 +83,9 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      * @throws AssertionError
      * @suppress PhanUnreferencedPrivateMethod this is referenced by __invoke
      */
-    private function handleMissing(Node $node)
+    private function handleMissing(Node $node) : void
     {
-        throw new AssertionError("All flags must match. Found " . Element::flagDescription($node));
+        throw new AssertionError("All flags must match. Found kind=" . Debug::nodeName($node) . ', flags=' . Element::flagDescription($node) . ' raw flags=' . $node->flags . ' at ' . $this->context->withLineNumberStart((int)$node->lineno));
     }
 
     /**
@@ -239,7 +240,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
 
         if ($left->hasNonNullIntType()) {
             if ($right->hasNonNullIntType()) {
-                return $this->computeIntegerOperationResult($node, $left, $right);
+                return self::computeIntegerOperationResult($node, $left, $right);
             }
             if ($right->hasNonNullStringType()) {
                 $this->emitIssue(
@@ -277,7 +278,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         return IntType::instance(false)->asUnionType();
     }
 
-    private function computeIntegerOperationResult(
+    private static function computeIntegerOperationResult(
         Node $node,
         UnionType $left,
         UnionType $right
@@ -325,14 +326,12 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      *
      * @param int|string|FQSEN|UnionType|Type ...$parameters
      * Template parameters for the issue's error message
-     *
-     * @return void
      */
     protected function emitIssue(
         string $issue_type,
         int $lineno,
         ...$parameters
-    ) {
+    ) : void {
         Issue::maybeEmitWithParameters(
             $this->code_base,
             $this->context,
@@ -418,7 +417,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    private function visitBinaryOpCommon(Node $node)
+    private function visitBinaryOpCommon(Node $node) : UnionType
     {
         $left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
@@ -574,7 +573,6 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
     /**
      * @param Node $node with type AST_BINARY_OP
      * @param Closure(Type):bool $is_valid_type
-     * @return void
      */
     private function warnAboutInvalidUnionType(
         Node $node,
@@ -583,7 +581,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         UnionType $right,
         string $left_issue_type,
         string $right_issue_type
-    ) {
+    ) : void {
         if (!$left->isEmpty()) {
             if (!$left->hasTypeMatchingCallback($is_valid_type)) {
                 $this->emitIssue(
@@ -633,7 +631,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
 
         // fast-track common cases
         if ($left->isNonNullIntType() && $right->isNonNullIntType()) {
-            return $this->computeIntegerOperationResult($node, $left, $right);
+            return self::computeIntegerOperationResult($node, $left, $right);
         }
 
         // If both left and right union types are arrays, then this is array
@@ -671,7 +669,6 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         if ($left->isNonNullNumberType() && $right->isNonNullNumberType()) {
             if (!$left->hasNonNullIntType() || !$right->hasNonNullIntType()) {
                 // Heuristic: If one or more of the sides is a float, the result is always a float.
-                // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
                 return $float_type->asUnionType();
             }
             return $int_or_float_union_type;
@@ -703,7 +700,6 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                     $node->lineno ?? 0
                 );
                 return UnionType::empty();
-                // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             } elseif ($right_is_array && !$left->canCastToUnionType($array_type->asUnionType())) {
                 $this->emitIssue(
                     Issue::TypeInvalidLeftOperand,
@@ -713,7 +709,6 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             }
             // If it is a '+' and we know one side is an array
             // and the other is unknown, assume array
-            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             return $array_type->asUnionType();
         }
 
@@ -750,7 +745,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
 
         // fast-track common cases
         if ($left->isNonNullIntType() && $right->isNonNullIntType()) {
-            return $this->computeIntegerOperationResult($node, $left, $right);
+            return self::computeIntegerOperationResult($node, $left, $right);
         }
 
         $this->warnAboutInvalidUnionType(
@@ -778,7 +773,6 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         if ($left->isNonNullNumberType() && $right->isNonNullNumberType()) {
             if (!$left->hasNonNullIntType() || !$right->hasNonNullIntType()) {
                 // Heuristic: If one or more of the sides is a float, the result is always a float.
-                // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
                 return $float_type->asUnionType();
             }
             return $int_or_float_union_type;
@@ -829,7 +823,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visitBinaryMod(Node $unused_node)
+    public function visitBinaryMod(Node $unused_node) : UnionType
     {
         // TODO: Warn about invalid left or right side
         return IntType::instance(false)->asUnionType();

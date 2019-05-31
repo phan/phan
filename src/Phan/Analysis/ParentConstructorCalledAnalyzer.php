@@ -15,13 +15,11 @@ class ParentConstructorCalledAnalyzer
 
     /**
      * Checks if the constructor of the given Clazz calls the parent constructor.
-     *
-     * @return void
      */
     public static function analyzeParentConstructorCalled(
         CodeBase $code_base,
         Clazz $clazz
-    ) {
+    ) : void {
         // Only look at classes configured to require a call
         // to its parent constructor
         if (!\in_array(
@@ -55,7 +53,7 @@ class ParentConstructorCalledAnalyzer
         );
 
         if (!$parent_clazz->isAbstract()
-            && !$clazz->getIsParentConstructorCalled()
+            && !$clazz->isParentConstructorCalled()
         ) {
             Issue::maybeEmit(
                 $code_base,

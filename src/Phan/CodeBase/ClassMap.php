@@ -31,9 +31,9 @@ class ClassMap
     private $method_map = [];
 
     /**
-     * @return void
+     * Record that the class this represents has the provided class constant.
      */
-    public function addClassConstant(ClassConstant $constant)
+    public function addClassConstant(ClassConstant $constant) : void
     {
         $this->class_constant_map[
             $constant->getFQSEN()->getNameWithAlternateId()
@@ -65,9 +65,9 @@ class ClassMap
     }
 
     /**
-     * @return void
+     * Record that the class this represents has the provided property information
      */
-    public function addProperty(Property $property)
+    public function addProperty(Property $property) : void
     {
         $this->property_map[
             $property->getFQSEN()->getNameWithAlternateId()
@@ -75,7 +75,7 @@ class ClassMap
     }
 
     /**
-     * @return bool
+     * Checks if the class this represents has a property with name $name
      */
     public function hasPropertyWithName(string $name) : bool
     {
@@ -83,7 +83,7 @@ class ClassMap
     }
 
     /**
-     * @return Property
+     * Fetch information about the property (of the class this represents) with name $name
      */
     public function getPropertyByName(string $name) : Property
     {
@@ -99,9 +99,9 @@ class ClassMap
     }
 
     /**
-     * @return void
+     * Records that the class that this represents has the provided method.
      */
-    public function addMethod(Method $method)
+    public function addMethod(Method $method) : void
     {
         $this->method_map[\strtolower(
             $method->getFQSEN()->getNameWithAlternateId()
@@ -109,7 +109,7 @@ class ClassMap
     }
 
     /**
-     * @return bool
+     * Checks if the class that this represents has a method with name $name.
      */
     public function hasMethodWithName(string $name) : bool
     {
@@ -117,7 +117,7 @@ class ClassMap
     }
 
     /**
-     * @return Method
+     * Fetches the method signature with name $name of the class that this represents.
      */
     public function getMethodByName(string $name) : Method
     {

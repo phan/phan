@@ -17,7 +17,7 @@ use Phan\Tests\BaseTest;
  */
 final class TolerantASTConverterWithNodeMappingTest extends BaseTest
 {
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass() : void
     {
         parent::setUpBeforeClass();
         // @phan-suppress-next-line PhanAccessMethodInternal
@@ -30,7 +30,7 @@ final class TolerantASTConverterWithNodeMappingTest extends BaseTest
      * @dataProvider byteOffsetLookupProvider
      * @suppress PhanUndeclaredProperty isSelected
      */
-    public function testByteOffsetLookup(int $line, int $column, string $file_contents, Node $expected_node)
+    public function testByteOffsetLookup(int $line, int $column, string $file_contents, Node $expected_node) : void
     {
         $expected_node->isSelected = true;
 
@@ -38,7 +38,7 @@ final class TolerantASTConverterWithNodeMappingTest extends BaseTest
         $ast = $this->parseASTWithDefaultOptions($file_contents, $byte_offset);
         // TODO: Create a reusable abstraction in Util to walk / filter nodes from the AST
         $selected_node = $this->findSelectedNode($ast);
-        $this->assertEquals(\Phan\Debug::nodeToString($expected_node), \Phan\Debug::nodeToString($selected_node));
+        $this->assertSame(\Phan\Debug::nodeToString($expected_node), \Phan\Debug::nodeToString($selected_node));
         $this->assertEquals($expected_node, $selected_node);
     }
 
@@ -56,9 +56,8 @@ final class TolerantASTConverterWithNodeMappingTest extends BaseTest
     /**
      * @param Node|int|string|float|null $node
      * @param array<int,Node> &$candidates
-     * @return void
      */
-    private function findSelectedNodeInner($node, array &$candidates)
+    private function findSelectedNodeInner($node, array &$candidates) : void
     {
         if ($node instanceof Node) {
             if (\property_exists($node, 'isSelected')) {
@@ -76,10 +75,7 @@ final class TolerantASTConverterWithNodeMappingTest extends BaseTest
         }
     }
 
-    /**
-     * @return Node
-     */
-    private function parseASTWithDefaultOptions(string $file_contents, int $byte_offset)
+    private function parseASTWithDefaultOptions(string $file_contents, int $byte_offset) : Node
     {
         $converter = new TolerantASTConverterWithNodeMapping($byte_offset);
         $errors = [];
@@ -110,7 +106,7 @@ final class TolerantASTConverterWithNodeMappingTest extends BaseTest
     /**
      * @return array<int,array{0:int,1:int,2:string,3:Node}>
      */
-    public function byteOffsetLookupProvider()
+    public function byteOffsetLookupProvider() : array
     {
         // using 1-based lines, 0-based columns
         $default_file = <<<'EOT'

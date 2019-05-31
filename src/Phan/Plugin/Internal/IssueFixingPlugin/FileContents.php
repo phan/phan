@@ -98,7 +98,7 @@ class FileContents
      * @return ?int the byte offset of the start of the given line (1-based)
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function getLineOffset(int $line)
+    public function getLineOffset(int $line) : ?int
     {
         if ($this->line_offset_map === null) {
             $this->line_offset_map = self::computeLineOffsetMap($this->contents);
@@ -131,9 +131,8 @@ class FileContents
      */
     public function getLines() : array
     {
-        $lines = $this->lines;
-        if (\is_array($lines)) {
-            return $lines;
+        if (\is_array($this->lines)) {
+            return $this->lines;
         }
         $lines = \preg_split("/^/m", $this->contents);
         // TODO: Use a better way to not include false when arguments are both valid
@@ -151,9 +150,8 @@ class FileContents
      * This is more efficient than using \SplFileObject if multiple lines may need to be fetched.
      *
      * @param int $lineno - A line number, starting with line 1
-     * @return ?string
      */
-    public function getLine(int $lineno)
+    public function getLine(int $lineno) : ?string
     {
         $lines = $this->getLines();
         return $lines[$lineno] ?? null;

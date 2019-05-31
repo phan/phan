@@ -82,12 +82,15 @@ Usage: ./phan [options] [files...]
     and will not include those paths in the generated config.
   [--init-overwrite] will allow 'phan --init' to overwrite .phan/config.php.
 
- -C, --color
-  Add colors to the outputted issues. Tested in Unix.
+ -C, --color, --no-color
+  Add colors to the outputted issues.
   This is recommended for only the default --output-mode ('text')
 
  -p, --progress-bar
   Show progress bar
+
+ -D, --debug
+  Print debugging output to stderr. Useful for looking into performance issues or crashes.
 
  -q, --quick
   Quick mode - doesn't recurse into all function calls
@@ -223,6 +226,11 @@ Extended help:
   Emit JSON serialized signatures to the given file.
   This uses a method signature format similar to FunctionSignatureMap.php.
 
+ --automatic-fix
+  Automatically fix any issues Phan is capable of fixing.
+  NOTE: This is a work in progress and limited to a small subset of issues
+  (e.g. unused imports on their own line)
+
  --find-signature 'paramUnionType1->paramUnionType2->returnUnionType'
   Find a signature in the analyzed codebase that is similar to the argument.
   See tool/phoogle for examples.
@@ -243,6 +251,12 @@ Extended help:
   Makes the polyfill aware of doc comments on class constants and declare statements
   even when imitating parsing a PHP 7.0 codebase.
 
+ --constant-variable-detection
+  Emit issues for variables that could be replaced with literals or constants.
+  (i.e. they are declared once (as a constant expression) and never modified).
+  This is almost entirely false positives for most coding styles.
+  Implies --unused-variable-detection
+
  --language-server-on-stdin
   Start the language server (For the Language Server protocol).
   This is a different protocol from --daemonize, clients for various IDEs already exist.
@@ -257,17 +271,17 @@ Extended help:
   Prevent the client from sending change notifications (Only notify the language server when the user saves a document)
   This significantly reduces CPU usage, but clients won't get notifications about issues immediately.
 
- --language-server-enable-go-to-definition
-  Enables support for "Go To Definition" and "Go To Type Definition" in the Phan Language Server.
-  Disabled by default.
+ --language-server-disable-go-to-definition, --language-server-enable-go-to-definition
+  Disables/Enables support for "Go To Definition" and "Go To Type Definition" in the Phan Language Server.
+  Enabled by default.
 
- --language-server-enable-hover
-  Enables support for "Hover" in the Phan Language Server.
-  Disabled by default.
+ --language-server-disable-hover, --language-server-enable-hover
+  Disables/Enables support for "Hover" in the Phan Language Server.
+  Enabled by default.
 
- --language-server-enable-completion
-  Enables support for "Completion" in the Phan Language Server.
-  Disabled by default.
+ --language-server-disable-completion, --language-server-enable-completion
+  Disables/Enables support for "Completion" in the Phan Language Server.
+  Enabled by default.
 
  --language-server-completion-vscode
   Adds a workaround to make completion of variables and static properties
@@ -298,6 +312,11 @@ Extended help:
 
  --language-server-require-pcntl
   Don't start the language server if PCNTL isn't installed (don't use the fallback). Useful for debugging.
+
+ --language-server-min-diagnostics-delay-ms <0..1000>
+  Sets a minimum delay between publishing diagnostics (i.e. Phan issues) to the language client.
+  This can be increased to work around race conditions in clients processing Phan issues (e.g. if your editor/IDE shows outdated diagnostics)
+  Defaults to 0 (no delay)
 
  --require-config-exists
   Exit immediately with an error code if `.phan/config.php` does not exist.

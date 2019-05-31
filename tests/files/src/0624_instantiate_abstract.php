@@ -39,10 +39,12 @@ trait T {
     }
 
     public static function staticTraitMethod() {
-        var_export(new self());
+        var_export(new T());  // This is always a bug
+        var_export(new self());  // This would be a bug if T::staticTraitMethod() was called directly instead of on the class inheriting the method from T
         var_export(new static());
     }
     public function traitMethod() {
+        var_export(new T());  // This is always a bug
         var_export(new self());
         var_export(new static());  // should not emit PhanTypeInstantiateTrait, this is a valid instance of something
     }

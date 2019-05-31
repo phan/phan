@@ -7,6 +7,7 @@ use Phan\Language\Element\UnaddressableTypedElement;
 use Phan\Language\FQSEN;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
+use Phan\Library\StringUtil;
 use Phan\Output\Colorizing;
 
 /**
@@ -16,7 +17,7 @@ use Phan\Output\Colorizing;
  *
  * @see Issue for how these are emitted. Visitors and plugins often have helper methods to emit issues.
  * @see OutputPrinter for how this is converted to various output formats
- * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
+ * @phan-file-suppress PhanPluginNoCommentOnPublicMethod TODO: Add comments
  */
 class IssueInstance
 {
@@ -66,6 +67,9 @@ class IssueInstance
         } else {
             $this->message = self::generatePlainMessage($issue, $template_parameters);
         }
+        // The terminal color codes are valid utf-8 (all control code bytes <= 127)
+        $this->message = StringUtil::asSingleLineUtf8($this->message);
+
         // Fixes #1754 : Some issue template parameters might not be serializable (for passing to ForkPool)
 
         /**
@@ -125,7 +129,7 @@ class IssueInstance
     /**
      * @return ?Suggestion If this is non-null, this contains suggestions on how to resolve the error.
      */
-    public function getSuggestion()
+    public function getSuggestion() : ?Suggestion
     {
         return $this->suggestion;
     }
@@ -136,51 +140,38 @@ class IssueInstance
         return $this->template_parameters;
     }
 
-    /** @return ?string */
-    public function getSuggestionMessage()
+    public function getSuggestionMessage() : ?string
     {
-        $suggestion = $this->suggestion;
-        if (!$suggestion) {
+        if (!$this->suggestion) {
             return null;
         }
-        return $suggestion->getMessage() ?: null;
+        $text = $this->suggestion->getMessage();
+        if (!$text) {
+            return null;
+        }
+        return StringUtil::asSingleLineUtf8($text);
     }
 
-    /**
-     * @return Issue
-     */
     public function getIssue() : Issue
     {
         return $this->issue;
     }
 
-    /**
-     * @return string
-     */
     public function getFile() : string
     {
         return $this->file;
     }
 
-    /**
-     * @return int
-     */
     public function getLine() : int
     {
         return $this->line;
     }
 
-    /**
-     * @return string
-     */
     public function getMessage() : string
     {
         return $this->message;
     }
 
-    /**
-     * @return string
-     */
     public function getMessageAndMaybeSuggestion() : string
     {
         $message = $this->getMessage();

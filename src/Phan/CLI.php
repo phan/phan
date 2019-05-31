@@ -7,7 +7,9 @@ use InvalidArgumentException;
 use Phan\Config\Initializer;
 use Phan\Daemon\ExitException;
 use Phan\Exception\UsageException;
+use Phan\Language\Element\AddressableElement;
 use Phan\Language\Element\Comment\Builder;
+use Phan\Language\FQSEN;
 use Phan\Library\StringUtil;
 use Phan\Output\Collector\BufferingCollector;
 use Phan\Output\Filter\CategoryIssueFilter;
@@ -22,15 +24,14 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
 use Symfony\Component\Console\Terminal;
-
 use function array_slice;
 use function count;
 use function in_array;
 use function is_array;
 use function is_resource;
 use function is_string;
+use function str_repeat;
 use function strlen;
-
 use const DIRECTORY_SEPARATOR;
 use const EXIT_FAILURE;
 use const EXIT_SUCCESS;
@@ -55,14 +56,14 @@ class CLI
     /**
      * This should be updated to x.y.z-dev after every release, and x.y.z before a release.
      */
-    const PHAN_VERSION = '1.2.6';
+    const PHAN_VERSION = '2.0.1-dev';
 
     /**
      * List of short flags passed to getopt
      * still available: g,n,t,u,w
      * @internal
      */
-    const GETOPT_SHORT_OPTIONS = 'f:m:o:c:k:aeqbr:pid:3:y:l:xj:zhvs:SCP:I:';
+    const GETOPT_SHORT_OPTIONS = 'f:m:o:c:k:aeqbr:pid:3:y:l:xj:zhvs:SCP:I:D';
 
     /**
      * List of long flags passed to getopt
@@ -74,10 +75,12 @@ class CLI
         'backward-compatibility-checks',
         'color',
         'config-file:',
+        'constant-variable-detection',
         'daemonize-socket:',
         'daemonize-tcp-host:',
         'daemonize-tcp-port:',
         'dead-code-detection',
+        'debug',
         'directory:',
         'disable-cache',
         'disable-plugins',
@@ -101,24 +104,29 @@ class CLI
         'init-analyze-file:',
         'init-no-composer',
         'init-overwrite',
+        'language-server-allow-missing-pcntl',
         'language-server-analyze-only-on-save',
+        'language-server-completion-vscode',
+        'language-server-disable-completion',
+        'language-server-disable-go-to-definition',
+        'language-server-disable-hover',
+        'language-server-disable-output-filter',
+        'language-server-enable',
+        'language-server-enable-completion',
+        'language-server-enable-go-to-definition',
+        'language-server-enable-hover',
+        'language-server-force-missing-pcntl',
+        'language-server-hide-category',
+        'language-server-min-diagnostics-delay-ms:',
         'language-server-on-stdin',
+        'language-server-require-pcntl',
         'language-server-tcp-connect:',
         'language-server-tcp-server:',
         'language-server-verbose',
-        'language-server-disable-output-filter',
-        'language-server-hide-category',
-        'language-server-allow-missing-pcntl',
-        'language-server-force-missing-pcntl',
-        'language-server-require-pcntl',
-        'language-server-enable',
-        'language-server-enable-go-to-definition',
-        'language-server-enable-hover',
-        'language-server-enable-completion',
-        'language-server-completion-vscode',
         'markdown-issue-messages',
         'memory-limit:',
         'minimum-severity:',
+        'no-color',
         'output:',
         'output-mode:',
         'parent-constructor-required:',
@@ -206,7 +214,7 @@ class CLI
      * @param array<int,string> $argv
      * @throws UsageException
      */
-    private function checkAllArgsUsed(array $opts, array &$argv)
+    private static function checkAllArgsUsed(array $opts, array &$argv) : void
     {
         $pruneargv = [];
         foreach ($opts as $opt => $value) {
@@ -270,7 +278,7 @@ class CLI
      * @throws UsageException
      * @internal - used for unit tests only
      */
-    public static function fromRawValues(array $opts, array $argv)
+    public static function fromRawValues(array $opts, array $argv) : CLI
     {
         return new self($opts, $argv);
     }
@@ -413,7 +421,7 @@ class CLI
                                 return;
                             }
                             $this->file_list_in_config = \array_merge(
-                                $this->file_list,
+                                $this->file_list_in_config,
                                 \array_values($this->directoryNameToFileList(
                                     $directory_name
                                 ))
@@ -453,6 +461,10 @@ class CLI
                 case 'p':
                 case 'progress-bar':
                     Config::setValue('progress_bar', true);
+                    break;
+                case 'D':
+                case 'debug':
+                    Config::setValue('debug_output', true);
                     break;
                 case 'a':
                 case 'dump-ast':
@@ -550,6 +562,9 @@ class CLI
                 case 'language-server-hide-category':
                     Config::setValue('language_server_hide_category_of_issues', true);
                     break;
+                case 'language-server-min-diagnostics-delay-ms':
+                    Config::setValue('language_server_min_diagnostics_delay_ms', (float)$value);
+                    break;
                 case 'disable-cache':
                     Config::setValue('cache_polyfill_asts', false);
                     break;
@@ -594,7 +609,7 @@ class CLI
                     break;
                 case 's':
                 case 'daemonize-socket':
-                    $this->checkCanDaemonize('unix', $key);
+                    self::checkCanDaemonize('unix', $key);
                     if (!is_string($value)) {
                         throw new UsageException(\sprintf("Invalid arguments to --daemonize-socket: args=%s", StringUtil::jsonEncode($value)), EXIT_FAILURE);
                     }
@@ -646,19 +661,24 @@ class CLI
                 case 'language-server-analyze-only-on-save':
                     Config::setValue('language_server_analyze_only_on_save', true);
                     break;
+                case 'language-server-disable-go-to-definition':
+                    Config::setValue('language_server_enable_go_to_definition', false);
+                    break;
                 case 'language-server-enable-go-to-definition':
                     Config::setValue('language_server_enable_go_to_definition', true);
+                    break;
+                case 'language-server-disable-hover':
+                    Config::setValue('language_server_enable_hover', false);
                     break;
                 case 'language-server-enable-hover':
                     Config::setValue('language_server_enable_hover', true);
                     break;
                 case 'language-server-completion-vscode':
                     break;
+                case 'language-server-disable-completion':
+                    Config::setValue('language_server_enable_completion', false);
+                    break;
                 case 'language-server-enable-completion':
-                    Config::setValue(
-                        'language_server_enable_completion',
-                        isset($opts['language-server-completion-vscode']) ? Config::COMPLETION_VSCODE : true
-                    );
                     break;
                 case 'language-server-verbose':
                     Config::setValue('language_server_debug_level', 'info');
@@ -673,6 +693,10 @@ class CLI
                 case 'unused-variable-detection':
                     Config::setValue('unused_variable_detection', true);
                     break;
+                case 'constant-variable-detection':
+                    Config::setValue('constant_variable_detection', true);
+                    Config::setValue('unused_variable_detection', true);
+                    break;
                 case 'allow-polyfill-parser':
                     // Just check if it's installed and of a new enough version.
                     // Assume that if there is an installation, it works, and warn later in ensureASTParserExists()
@@ -681,7 +705,7 @@ class CLI
                         break;
                     }
                     $ast_version = (new ReflectionExtension('ast'))->getVersion();
-                    if (\version_compare($ast_version, '0.1.5') < 0) {
+                    if (\version_compare($ast_version, '1.0.0') <= 0) {
                         Config::setValue('use_polyfill_parser', true);
                         break;
                     }
@@ -706,13 +730,24 @@ class CLI
                 case 'color':
                     Config::setValue('color_issue_messages', true);
                     break;
+                case 'no-color':
+                    Config::setValue('color_issue_messages', false);
+                    break;
                 default:
                     throw new UsageException("Unknown option '-$key'" . self::getFlagSuggestionString($key), EXIT_FAILURE);
             }
         }
+        if (isset($opts['language-server-completion-vscode']) && Config::getValue('language_server_enable_completion')) {
+            Config::setValue('language_server_enable_completion', Config::COMPLETION_VSCODE);
+        }
+        if (Config::getValue('color_issue_messages') === null && $printer_type === 'text') {
+            if (!\getenv('PHAN_DISABLE_COLOR_OUTPUT') && self::supportsColor(\STDOUT)) {
+                Config::setValue('color_issue_messages', true);
+            }
+        }
 
         self::checkPluginsExist();
-        $this->ensureASTParserExists();
+        self::ensureASTParserExists();
 
         $output = $this->output;
         $printer = $factory->getPrinter($printer_type, $output);
@@ -723,7 +758,7 @@ class CLI
         ]);
         $collector = new BufferingCollector($filter);
 
-        $this->checkAllArgsUsed($opts, $argv);
+        self::checkAllArgsUsed($opts, $argv);
 
         Phan::setPrinter($printer);
         Phan::setIssueCollector($collector);
@@ -748,14 +783,55 @@ class CLI
         }
     }
 
-    private static function checkPluginsExist()
+    /**
+     * Returns true if the output stream supports colors
+     *
+     * This is tricky on Windows, because Cygwin, Msys2 etc emulate pseudo
+     * terminals via named pipes, so we can only check the environment.
+     *
+     * Reference: Composer\XdebugHandler\Process::supportsColor
+     * https://github.com/composer/xdebug-handler
+     * (This is internal, so it was duplicated in case their API changed)
+     *
+     * @param mixed $output A valid CLI output stream
+     *
+     * @return bool
+     * @suppress PhanUndeclaredFunction
+     */
+    public static function supportsColor($output) : bool
+    {
+        if (\defined('PHP_WINDOWS_VERSION_BUILD')) {
+            return (\function_exists('sapi_windows_vt100_support')
+                && sapi_windows_vt100_support($output))
+                || false !== \getenv('ANSICON')
+                || 'ON' === \getenv('ConEmuANSI')
+                || 'xterm' === \getenv('TERM');
+        }
+
+        if (\function_exists('stream_isatty')) {
+            return \stream_isatty($output);
+        } elseif (\function_exists('posix_isatty')) {
+            return \posix_isatty($output);
+        }
+
+        $stat = \fstat($output);
+        // Check if formatted mode is S_IFCHR
+        return $stat ? 0020000 === ($stat['mode'] & 0170000) : false;
+    }
+
+    private static function checkPluginsExist() : void
     {
         $all_plugins_exist = true;
         foreach (Config::getValue('plugins') as $plugin_path_or_name) {
             // @phan-suppress-next-line PhanAccessMethodInternal
             $plugin_file_name = ConfigPluginSet::normalizePluginPath($plugin_path_or_name);
             if (!\is_file($plugin_file_name)) {
-                $details = $plugin_file_name === $plugin_path_or_name ? '' : ' (Referenced as ' . StringUtil::jsonEncode($plugin_path_or_name) . ')';
+                if ($plugin_file_name === $plugin_path_or_name) {
+                    $details = '';
+                } else {
+                    $details = ' (Referenced as ' . StringUtil::jsonEncode($plugin_path_or_name) . ')';
+                    $details .= self::getPluginSuggestionText($plugin_path_or_name);
+                }
                 \fprintf(
                     STDERR,
                     "Phan could not find plugin %s%s\n",
@@ -772,9 +848,30 @@ class CLI
     }
 
     /**
-     * @return void
+     * @internal (visible for tests)
      */
-    public function recomputeFileList()
+    public static function getPluginSuggestionText(string $plugin_path_or_name) : string
+    {
+        $plugin_dirname = ConfigPluginSet::getBuiltinPluginDirectory();
+        $candidates = [];
+        foreach (\scandir($plugin_dirname) as $basename) {
+            if (\substr($basename, -4) !== '.php') {
+                continue;
+            }
+            $plugin_name = \substr($basename, 0, -4);
+            $candidates[$plugin_name] = $plugin_name;
+        }
+        $suggestions = IssueFixSuggester::getSuggestionsForStringSet($plugin_path_or_name, $candidates);
+        if (!$suggestions) {
+            return '';
+        }
+        return ' (Did you mean ' . \implode(' or ', $suggestions) . '?)';
+    }
+
+    /**
+     * Recompute the list of files (used in daemon mode or language server mode)
+     */
+    public function recomputeFileList() : void
     {
         $this->file_list = $this->file_list_in_config;
 
@@ -790,7 +887,7 @@ class CLI
             foreach (Config::getValue('directory_list') as $directory_name) {
                 $this->file_list = \array_merge(
                     $this->file_list,
-                    \array_values($this->directoryNameToFileList($directory_name))
+                    \array_values(self::directoryNameToFileList($directory_name))
                 );
             }
 
@@ -822,7 +919,7 @@ class CLI
      * @return void - exits on usage error
      * @throws UsageException
      */
-    private function checkCanDaemonize(string $protocol, string $opt)
+    private static function checkCanDaemonize(string $protocol, string $opt) : void
     {
         $opt = strlen($opt) >= 2 ? "--$opt" : "-$opt";
         if (!in_array($protocol, \stream_get_transports())) {
@@ -880,7 +977,7 @@ EOT;
     // FIXME: If I stop using defined() in UnionTypeVisitor,
     // this will warn about the undefined constant EXIT_SUCCESS when a
     // user-defined constant is used in parse phase in a function declaration
-    private static function usage(string $msg = '', int $exit_code = EXIT_SUCCESS, bool $print_extended_help = false)
+    private static function usage(string $msg = '', int $exit_code = EXIT_SUCCESS, bool $print_extended_help = false) : void
     {
         global $argv;
 
@@ -947,12 +1044,15 @@ Usage: {$argv[0]} [options] [files...]
   Output filename
 
 $init_help
- -C, --color
-  Add colors to the outputted issues. Tested in Unix.
+ -C, --color, --no-color
+  Add colors to the outputted issues.
   This is recommended for only the default --output-mode ('text')
 
  -p, --progress-bar
   Show progress bar
+
+ -D, --debug
+  Print debugging output to stderr. Useful for looking into performance issues or crashes.
 
  -q, --quick
   Quick mode - doesn't recurse into all function calls
@@ -1125,6 +1225,12 @@ Extended help:
   Makes the polyfill aware of doc comments on class constants and declare statements
   even when imitating parsing a PHP 7.0 codebase.
 
+ --constant-variable-detection
+  Emit issues for variables that could be replaced with literals or constants.
+  (i.e. they are declared once (as a constant expression) and never modified).
+  This is almost entirely false positives for most coding styles.
+  Implies --unused-variable-detection
+
  --language-server-on-stdin
   Start the language server (For the Language Server protocol).
   This is a different protocol from --daemonize, clients for various IDEs already exist.
@@ -1139,17 +1245,17 @@ Extended help:
   Prevent the client from sending change notifications (Only notify the language server when the user saves a document)
   This significantly reduces CPU usage, but clients won't get notifications about issues immediately.
 
- --language-server-enable-go-to-definition
-  Enables support for "Go To Definition" and "Go To Type Definition" in the Phan Language Server.
-  Disabled by default.
+ --language-server-disable-go-to-definition, --language-server-enable-go-to-definition
+  Disables/Enables support for "Go To Definition" and "Go To Type Definition" in the Phan Language Server.
+  Enabled by default.
 
- --language-server-enable-hover
-  Enables support for "Hover" in the Phan Language Server.
-  Disabled by default.
+ --language-server-disable-hover, --language-server-enable-hover
+  Disables/Enables support for "Hover" in the Phan Language Server.
+  Enabled by default.
 
- --language-server-enable-completion
-  Enables support for "Completion" in the Phan Language Server.
-  Disabled by default.
+ --language-server-disable-completion, --language-server-enable-completion
+  Disables/Enables support for "Completion" in the Phan Language Server.
+  Enabled by default.
 
  --language-server-completion-vscode
   Adds a workaround to make completion of variables and static properties
@@ -1181,11 +1287,17 @@ Extended help:
  --language-server-require-pcntl
   Don't start the language server if PCNTL isn't installed (don't use the fallback). Useful for debugging.
 
+ --language-server-min-diagnostics-delay-ms <0..1000>
+  Sets a minimum delay between publishing diagnostics (i.e. Phan issues) to the language client.
+  This can be increased to work around race conditions in clients processing Phan issues (e.g. if your editor/IDE shows outdated diagnostics)
+  Defaults to 0 (no delay)
+
  --require-config-exists
   Exit immediately with an error code if `.phan/config.php` does not exist.
 
  --help-annotations
   Print details on annotations supported by Phan
+
 EOB;
         }
         exit($exit_code);
@@ -1239,22 +1351,46 @@ EOB;
             }
             $distance = \levenshtein($key_lower, \strtolower($flag));
             // distance > 5 is to far off to be a typo
+            // Make sure that if two flags have the same distance, ties are sorted alphabetically
             if ($distance <= 5) {
-                $similarities[$flag] = $distance;
+                $similarities[$flag] = [$distance, "x" . \strtolower($flag), $flag];
             }
         }
 
         \asort($similarities); // retain keys and sort descending
-        $similar_flags = \array_keys($similarities);
         $similarity_values = \array_values($similarities);
 
-        if (count($similar_flags) >= 2 && ($similarity_values[1] <= $similarity_values[0] + 1)) {
+        if (count($similarity_values) >= 2 && ($similarity_values[1][0] <= $similarity_values[0][0] + 1)) {
             // If the next-closest suggestion isn't close to as similar as the closest suggestion, just return the closest suggestion
-            return $generate_suggestion_text($similar_flags[0], $similar_flags[1]);
-        } elseif (count($similar_flags) >= 1) {
-            return $generate_suggestion_text($similar_flags[0]);
+            return $generate_suggestion_text($similarity_values[0][2], $similarity_values[1][2]);
+        } elseif (count($similarity_values) >= 1) {
+            return $generate_suggestion_text($similarity_values[0][2]);
         }
         return '';
+    }
+
+    /**
+     * Checks if a file (not a folder) which has potentially not yet been created on disk should be parsed.
+     * @param string $file_path a relative path to a file within the project
+     */
+    public static function shouldParse(string $file_path) : bool
+    {
+        $exclude_file_regex = Config::getValue('exclude_file_regex');
+        if ($exclude_file_regex && self::isPathExcludedByRegex($exclude_file_regex, $file_path)) {
+            return false;
+        }
+        $file_extensions = Config::getValue('analyzed_file_extensions');
+
+        if (!\is_array($file_extensions) || count($file_extensions) === 0) {
+            return false;
+        }
+        $extension = \pathinfo($file_path, \PATHINFO_EXTENSION);
+        if (!$extension || !in_array($extension, $file_extensions)) {
+            return false;
+        }
+
+        $directory_regex = Config::getValue('__directory_regex');
+        return $directory_regex && \preg_match($directory_regex, $file_path) > 0;
     }
 
     /**
@@ -1267,7 +1403,7 @@ EOB;
      * @throws InvalidArgumentException
      * if there is nothing to analyze
      */
-    private function directoryNameToFileList(
+    private static function directoryNameToFileList(
         string $directory_name
     ) : array {
         $file_list = [];
@@ -1337,11 +1473,27 @@ EOB;
      */
     public static function shouldShowProgress() : bool
     {
-        return Config::getValue('progress_bar') &&
+        return (Config::getValue('progress_bar') || Config::getValue('debug_output')) &&
             !Config::getValue('dump_ast') &&
-            !Config::getValue('daemonize_tcp') &&
-            !Config::getValue('daemonize_socket') &&
-            !Config::getValue('language_server_config');
+            !self::isDaemonOrLanguageServer();
+    }
+
+    /**
+     * Returns true if this is a daemon or language server responding to requests
+     */
+    public static function isDaemonOrLanguageServer() : bool
+    {
+        return Config::getValue('daemonize_tcp') ||
+            Config::getValue('daemonize_socket') ||
+            Config::getValue('language_server_config');
+    }
+
+    /**
+     * Should this show --debug output
+     */
+    public static function shouldShowDebugOutput() : bool
+    {
+        return Config::getValue('debug_output') && !self::isDaemonOrLanguageServer();
     }
 
     /**
@@ -1365,6 +1517,12 @@ EOB;
         return \preg_match($exclude_file_regex, $path_name) > 0;
     }
 
+    // Bound the percentage to [0, 1]
+    private static function boundPercentage(float $p) : float
+    {
+        return \min(\max($p, 0.0), 1.0);
+    }
+
     /**
      * Update a progress bar on the screen
      *
@@ -1375,18 +1533,24 @@ EOB;
      * @param float $p
      * The percentage to display
      *
-     * @return void
+     * @param ?(string|FQSEN|AddressableElement) $details
+     * Details about what is being analyzed within the phase for $msg
      */
     public static function progress(
         string $msg,
-        float $p
-    ) {
+        float $p,
+        $details = null
+    ) : void {
+        if (self::shouldShowDebugOutput()) {
+            self::debugProgress($msg, $p, $details);
+            return;
+        }
         if (!self::shouldShowProgress()) {
             return;
         }
 
         // Bound the percentage to [0, 1]
-        $p = \min(\max($p, 0.0), 1.0);
+        $p = self::boundPercentage($p);
 
         static $previous_update_time = 0.0;
         $time = \microtime(true);
@@ -1396,16 +1560,14 @@ EOB;
         // Making the update frequency based on time (instead of the number of files)
         // prevents the terminal from rapidly flickering while processing small files.
         if ($time - $previous_update_time < Config::getValue('progress_bar_sample_interval')) {
-            return;
+            // Make sure to output 100% if this is one of the last phases, to avoid confusion.
+            // https://github.com/phan/phan/issues/2694
+            if ($p < 1.0 || in_array($msg, ['parse', 'method', 'function'], true)) {
+                return;
+            }
         }
         $previous_update_time = $time;
 
-        // If we're on windows, just print a dot to show we're
-        // working
-        if (\strtoupper(\substr(PHP_OS, 0, 3)) === 'WIN') {
-            \fwrite(STDERR, '.');
-            return;
-        }
         $memory = \memory_get_usage() / 1024 / 1024;
         $peak = \memory_get_peak_usage() / 1024 / 1024;
 
@@ -1414,7 +1576,11 @@ EOB;
                " " . \sprintf("%1$ 3d", (int)(100 * $p)) . "%" .
                \sprintf(' %0.2dMB/%0.2dMB', $memory, $peak);
 
-        $columns = (new Terminal())->getWidth();
+        static $columns = null;
+        if ($columns === null) {
+            // Only call this once per process, since it can be rather expensive
+            $columns = (new Terminal())->getWidth();
+        }
         // strlen("  99% 999MB/999MB") == 17
         $used_length = strlen($left_side) + \max(17, strlen($right_side));
         $remaining_length = $columns - $used_length;
@@ -1435,6 +1601,68 @@ EOB;
     }
 
     /**
+     * Print an end to progress bars or debug output
+     */
+    public static function endProgressBar() : void
+    {
+        static $did_end = false;
+        if ($did_end) {
+            // Overkill as a sanity check
+            return;
+        }
+        $did_end = true;
+        if (self::shouldShowDebugOutput()) {
+            \fwrite(STDERR, "Phan's analysis is complete\n");
+            return;
+        }
+        if (self::shouldShowProgress()) {
+            // Print a newline to stderr to visuall separate stderr from stdout
+            \fwrite(STDERR, \PHP_EOL);
+            \fflush(\STDOUT);
+        }
+    }
+
+    /**
+     * @return void
+     * @param ?(string|FQSEN|AddressableElement) $details
+     */
+    public static function debugProgress(string $msg, float $p, $details) : void
+    {
+        $pct = \sprintf("%d%%", (int)(100 * self::boundPercentage($p)));
+
+        if ($details === null) {
+            return;
+        }
+        if ($details instanceof AddressableElement) {
+            $details = $details->getFQSEN();
+        }
+        switch ($msg) {
+            case 'parse':
+            case 'analyze':
+                $line = "Going to $msg '$details' ($pct)";
+                break;
+            case 'method':
+            case 'function':
+                $line = "Going to analyze $msg $details() ($pct)";
+                break;
+            default:
+                $line = "In $msg phase, processing '$details' ($pct)";
+                break;
+        }
+        self::debugOutput($line);
+    }
+
+    /**
+     * Write a line of output for debugging.
+     */
+    public static function debugOutput(string $line) : void
+    {
+        if (self::shouldShowDebugOutput()) {
+            \fwrite(STDERR, $line . \PHP_EOL);
+        }
+    }
+
+    /**
      * Renders a unicode progress bar that goes from light (left) to dark (right)
      * The length in the console is the positive integer $length
      * @see https://en.wikipedia.org/wiki/Block_Elements
@@ -1444,18 +1672,48 @@ EOB;
         $current_float = $p * $length;
         $current = (int)$current_float;
         $rest = \max($length - $current, 0);
+
+        if (!self::doesTerminalSupportUtf8()) {
+            // Show a progress bar of "XXXX>------" in Windows when utf-8 is unsupported.
+            $progress_bar = str_repeat("X", $current);
+            $delta = $current_float - $current;
+            if ($delta > 0.5) {
+                $progress_bar .= ">" . str_repeat("-", $rest - 1);
+            } else {
+                $progress_bar .= str_repeat("-", $rest);
+            }
+            return $progress_bar;
+        }
         // The left-most characters are "Light shade"
-        $progress_bar = \str_repeat("\u{2588}", $current);
+        $progress_bar = str_repeat("\u{2588}", $current);
         $delta = $current_float - $current;
         if ($delta > 1.0 / 3) {
             // The between character is "Full block" or "Medium shade" or "solid shade".
             // The remaining characters on the right are "Full block" (darkest)
             $first = $delta > 2.0 / 3 ? "\u{2593}" : "\u{2592}";
-            $progress_bar .= $first . \str_repeat("\u{2591}", $rest - 1);
+            $progress_bar .= $first . str_repeat("\u{2591}", $rest - 1);
         } else {
-            $progress_bar .= \str_repeat("\u{2591}", $rest);
+            $progress_bar .= str_repeat("\u{2591}", $rest);
         }
         return $progress_bar;
+    }
+
+    /**
+     * Guess if the terminal supports utf-8.
+     * In some locales, windows is set to a non-utf-8 codepoint.
+     *
+     * @see https://github.com/phan/phan/issues/2572
+     * @see https://en.wikipedia.org/wiki/Code_page#Windows_code_pages
+     * @suppress PhanUndeclaredFunction, UnusedSuppression the function exists only in Windows.
+     */
+    public static function doesTerminalSupportUtf8() : bool
+    {
+        if (\strtoupper(\substr(PHP_OS, 0, 3)) === 'WIN') {
+            if (!\function_exists('sapi_windows_cp_is_utf8') || !\sapi_windows_cp_is_utf8()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -1464,7 +1722,7 @@ EOB;
      * the configuration.
      * @throws UsageException
      */
-    private function maybeReadConfigFile(bool $require_config_exists)
+    private function maybeReadConfigFile(bool $require_config_exists) : void
     {
 
         // If the file doesn't exist here, try a directory up
@@ -1510,7 +1768,7 @@ EOB;
      * @return void
      * @throws AssertionError on failure
      */
-    private function ensureASTParserExists()
+    private static function ensureASTParserExists() : void
     {
         if (Config::getValue('use_polyfill_parser')) {
             return;
@@ -1537,6 +1795,7 @@ EOB;
                 . Config::AST_VERSION
                 . ') in configuration. '
                 . "You may need to rebuild the latest version of the php-ast extension.\n"
+                . "(You are using php-ast " . (new ReflectionExtension('ast'))->getVersion() . ", but " . Config::MINIMUM_AST_EXTENSION_VERSION . " or newer is required. Alternately, test with --force-polyfill-parser (which is noticeably slower))\n"
             );
             exit(EXIT_FAILURE);
         }

@@ -87,14 +87,11 @@ class IssueFixer
         return true;
     }
 
-    /**
-     * @return ?FileEdit
-     */
     private static function maybeRemoveNamespaceUseDeclaration(
         string $file_contents,
         NamespaceUseDeclaration $declaration,
         IssueInstance $issue_instance
-    ) {
+    ) : ?FileEdit {
         if (!self::isMatchingNamespaceUseDeclaration($file_contents, $declaration, $issue_instance)) {
             return null;
         }
@@ -130,9 +127,8 @@ class IssueFixer
      *
      * @param callable(CodeBase,FileCacheEntry,IssueInstance):(?FileEditSet) $fixer
      *        this is neither a real type hint nor a real closure so that the implementation can optionally be moved to classes that aren't loaded by the PHP interpreter yet.
-     * @return void
      */
-    public static function registerFixerClosure(string $issue_name, $fixer)
+    public static function registerFixerClosure(string $issue_name, callable $fixer) : void
     {
         self::$fixer_closures[$issue_name] = $fixer;
     }
@@ -149,7 +145,7 @@ class IssueFixer
             CodeBase $unused_code_base,
             FileCacheEntry $file_contents,
             IssueInstance $issue_instance
-        ) {
+        ) : ?FileEditSet {
             // 1-based line
             $line = $issue_instance->getLine();
             $edits = [];
@@ -179,9 +175,8 @@ class IssueFixer
      * Apply fixes where possible for any issues in $instances.
      *
      * @param IssueInstance[] $instances
-     * @return void
      */
-    public static function applyFixes(CodeBase $code_base, array $instances)
+    public static function applyFixes(CodeBase $code_base, array $instances) : void
     {
         $fixers_for_files = self::computeFixersForInstances($instances);
         foreach ($fixers_for_files as $file => $fixers) {
@@ -196,7 +191,7 @@ class IssueFixer
      * @param IssueInstance[] $instances
      * @return array<string,array<int,Closure(CodeBase,FileCacheEntry):(?FileEditSet)>>
      */
-    public static function computeFixersForInstances(array $instances)
+    public static function computeFixersForInstances(array $instances) : array
     {
         $closures = self::createClosures();
         $fixers_for_files = [];
@@ -215,7 +210,7 @@ class IssueFixer
                 ) use (
                     $closure,
                     $instance
-) {
+) : ?FileEditSet {
                     self::debug("Calling for $instance\n");
                     return $closure($code_base, $file_contents, $instance);
                 };
@@ -234,7 +229,7 @@ class IssueFixer
         string $file,
         string $raw_contents,
         array $fixers
-    ) {
+    ) : ?string {
         // A tolerantparser ast node
 
         $contents = new FileCacheEntry($raw_contents);
@@ -259,13 +254,12 @@ class IssueFixer
 
     /**
      * @param array<int,Closure(CodeBase,string,PhpParser\Node):(?FileEditSet)> $fixers one or more fixers. These return 0 edits if nothing works.
-     * @return void
      */
     private static function attemptFixForIssues(
         CodeBase $code_base,
         string $file,
         array $fixers
-    ) {
+    ) : void {
         try {
             $entry = FileCache::getOrReadEntry($file);
         } catch (RuntimeException $e) {
@@ -294,12 +288,12 @@ class IssueFixer
      * @param FileEdit[] $all_edits
      * @return ?string - the new contents, if successful.
      */
-    public static function computeNewContents(string $file, string $contents, array $all_edits)
+    public static function computeNewContents(string $file, string $contents, array $all_edits) : ?string
     {
         \usort($all_edits, static function (FileEdit $a, FileEdit $b) : int {
             return ($a->replace_start <=> $b->replace_start)
                 ?: ($a->replace_end <=> $b->replace_end)
-                ?: strcmp($a->new_text, $b->new_text);
+                ?: \strcmp($a->new_text, $b->new_text);
         });
         self::debug("Going to apply these fixes for $file: " . StringUtil::jsonEncode($all_edits) . "\n");
         $last_end = 0;
@@ -334,18 +328,16 @@ class IssueFixer
 
     /**
      * Log an error message to be shown to users for unexpected errors.
-     * @return void
      */
-    public static function error(string $message)
+    public static function error(string $message) : void
     {
         \fwrite(\STDERR, $message);
     }
 
     /**
      * Log an extremely verbose message - used for debugging why automatic fixing doesn't work.
-     * @return void
      */
-    public static function debug(string $message)
+    public static function debug(string $message) : void
     {
         if (\getenv('PHAN_DEBUG_AUTOMATIC_FIX')) {
             \fwrite(\STDERR, $message);

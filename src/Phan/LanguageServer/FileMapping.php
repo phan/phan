@@ -9,7 +9,7 @@ namespace Phan\LanguageServer;
  * TODO: remove all overrides when a language client disconnects.
  * (Right now, we only have a single client, and shut down when the client disconnects)
  *
- * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod TODO: Document
+ * @phan-file-suppress PhanPluginNoCommentOnPublicMethod TODO: Add comments
  */
 class FileMapping
 {
@@ -32,17 +32,12 @@ class FileMapping
     /**
      * @return array<string,string> maps the absolute paths on disks to the currently edited versions of those files.
      */
-    public function getOverrides()
+    public function getOverrides() : array
     {
         return $this->overrides;
     }
 
-    /**
-     * @param string $uri
-     * @param ?string $new_contents
-     * @return void
-     */
-    public function addOverrideURI(string $uri, $new_contents)
+    public function addOverrideURI(string $uri, ?string $new_contents) : void
     {
         $path = Utils::uriToPath($uri);
         if ($new_contents === null) {
@@ -52,12 +47,7 @@ class FileMapping
         $this->addOverride($path, $new_contents);
     }
 
-    /**
-     * @param string $path
-     * @param ?string $new_contents
-     * @return void
-     */
-    public function addOverride(string $path, $new_contents)
+    public function addOverride(string $path, ?string $new_contents) : void
     {
         if ($new_contents === null) {
             $this->removeOverride($path);
@@ -66,10 +56,7 @@ class FileMapping
         $this->overrides[$path] = $new_contents;
     }
 
-    /**
-     * @return void
-     */
-    public function removeOverrideURI(string $uri)
+    public function removeOverrideURI(string $uri) : void
     {
         $path = Utils::uriToPath($uri);
         $this->removeOverride($path);
@@ -85,10 +72,7 @@ class FileMapping
         return $this->uri_for_path[$path] ?? Utils::pathToUri($path);
     }
 
-    /**
-     * @return void
-     */
-    public function removeOverride(string $path)
+    public function removeOverride(string $path) : void
     {
         unset($this->uri_for_path[$path]);
         unset($this->overrides[$path]);

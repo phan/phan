@@ -31,7 +31,7 @@ final class CommentTest extends BaseTest
         'read_magic_method_annotations' => true,
     ];
 
-    protected function setUp()
+    protected function setUp() : void
     {
         Phan::setIssueCollector(new BufferingCollector());
         $this->code_base = new CodeBase([], [], [], [], []);
@@ -44,7 +44,7 @@ final class CommentTest extends BaseTest
     /**
      * @suppress PhanTypeMismatchProperty
      */
-    protected function tearDown()
+    protected function tearDown() : void
     {
         $this->code_base = null;
         foreach ($this->old_values as $key => $value) {
@@ -52,7 +52,7 @@ final class CommentTest extends BaseTest
         }
     }
 
-    public function testEmptyComment()
+    public function testEmptyComment() : void
     {
         $comment = Comment::fromStringInContext(
             '/** foo */',
@@ -69,12 +69,12 @@ final class CommentTest extends BaseTest
         $this->assertInstanceOf(None::class, $comment->getClosureScopeOption());
         $this->assertSame([], $comment->getParameterList());
         $this->assertSame([], $comment->getParameterMap());
-        $this->assertSame([], $comment->getSuppressIssueList());
+        $this->assertSame([], $comment->getSuppressIssueSet());
         $this->assertFalse($comment->hasParameterWithNameOrOffset('bar', 0));
         $this->assertSame([], $comment->getVariableList());
     }
 
-    public function testGetParameterMap()
+    public function testGetParameterMap() : void
     {
         $comment = Comment::fromStringInContext(
             '/** @param int $myParam */',
@@ -95,7 +95,7 @@ final class CommentTest extends BaseTest
         $this->assertFalse($my_param_doc->isOutputReference());
     }
 
-    public function testGetParameterMapReferenceIgnored()
+    public function testGetParameterMapReferenceIgnored() : void
     {
         $comment = Comment::fromStringInContext(
             '/** @param int &$myParam */',
@@ -116,7 +116,7 @@ final class CommentTest extends BaseTest
         $this->assertFalse($my_param_doc->isOutputReference());
     }
 
-    public function testGetVariadicParameterMap()
+    public function testGetVariadicParameterMap() : void
     {
         $comment = Comment::fromStringInContext(
             '/** @param int|string ...$args */',
@@ -137,7 +137,7 @@ final class CommentTest extends BaseTest
         $this->assertFalse($my_param_doc->isOutputReference());
     }
 
-    public function testGetOutputParameter()
+    public function testGetOutputParameter() : void
     {
         $comment = Comment::fromStringInContext(
             "/** @param int|string \$args @phan-output-reference\n@param string \$other*/",
@@ -154,7 +154,7 @@ final class CommentTest extends BaseTest
     }
 
 
-    public function testGetReturnType()
+    public function testGetReturnType() : void
     {
         $comment = Comment::fromStringInContext(
             '/** @return int|string */',
@@ -168,7 +168,7 @@ final class CommentTest extends BaseTest
         $this->assertSame('int|string', (string)$return_type);
     }
 
-    public function testGetReturnTypeThis()
+    public function testGetReturnTypeThis() : void
     {
         $comment = Comment::fromStringInContext(
             '/** @return $this */',
@@ -183,7 +183,7 @@ final class CommentTest extends BaseTest
         $this->assertTrue($return_type->hasType(StaticType::instance(false)));
     }
 
-    public function testGetMagicProperty()
+    public function testGetMagicProperty() : void
     {
         $comment = Comment::fromStringInContext(
             '/** @property int|string   $myProp */',
@@ -197,7 +197,7 @@ final class CommentTest extends BaseTest
         $this->assertSame('int|string $myProp', (string)$property);
     }
 
-    public function testGetMagicMethod()
+    public function testGetMagicMethod() : void
     {
         $comment_text = <<<'EOT'
 /**
@@ -222,7 +222,7 @@ EOT;
         $this->assertSame('myInstanceMethod2', $instance_method_definition->getName());
     }
 
-    public function testGetTemplateType()
+    public function testGetTemplateType() : void
     {
         $comment_text = <<<'EOT'
 /**
@@ -247,7 +247,7 @@ EOT;
         $this->assertSame('u', $u_info->getName());
     }
 
-    public function testGetParameterArrayNew()
+    public function testGetParameterArrayNew() : void
     {
         // Currently, we ignore the array key. This may change in a future release.
         $comment_text = <<<'EOT'
@@ -282,7 +282,7 @@ EOT;
         $this->assertSame('rest', $rest_doc->getName());
     }
 
-    public function testGetVarArrayNew()
+    public function testGetVarArrayNew() : void
     {
         // Currently, we ignore the array key. This may change in a future release.
         $comment_text = <<<'EOT'
@@ -312,7 +312,7 @@ EOT;
         $this->assertSame('array', $array_doc->getName());
     }
 
-    public function testGetClosureScope()
+    public function testGetClosureScope() : void
     {
         $comment = Comment::fromStringInContext(
             '/** @phan-closure-scope MyNS\MyClass */',
@@ -325,18 +325,18 @@ EOT;
         $this->assertTrue($scope_option->isDefined());
         $scope_type = $scope_option->get();
         $expected_type = Type::fromFullyQualifiedString('MyNS\MyClass');
-        $this->assertEquals($expected_type, $scope_type);
+        $this->assertSame($expected_type, $scope_type);
         $this->assertSame($expected_type, $scope_type);
     }
 
-    public function testParseReturnCommentCallableString()
+    public function testParseReturnCommentCallableString() : void
     {
         // @phan-suppress-next-line PhanAccessClassConstantInternal
         \preg_match(\Phan\Language\Element\Comment\Builder::RETURN_COMMENT_REGEX, '/** @return callable-string description */', $matches);
         $this->assertSame('@return callable-string', $matches[0]);
     }
 
-    public function testParseSuppressCommentString()
+    public function testParseSuppressCommentString() : void
     {
         // @phan-suppress-next-line PhanAccessClassConstantInternal
         \preg_match(\Phan\Language\Element\Comment\Builder::PHAN_SUPPRESS_REGEX, '/** @suppress MyPlugin-string description */', $matches);

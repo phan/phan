@@ -8,6 +8,7 @@ use Phan\CodeBase;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
 use Phan\Language\Element\Clazz;
+use Phan\Language\Element\FunctionInterface;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\IntType;
@@ -55,7 +56,7 @@ final class EmptyUnionType extends UnionType
      * @return UnionType
      * @override
      */
-    public function withType(Type $type)
+    public function withType(Type $type) : UnionType
     {
         return $type->asUnionType();
     }
@@ -70,7 +71,7 @@ final class EmptyUnionType extends UnionType
      * @return UnionType
      * @override
      */
-    public function withoutType(Type $type)
+    public function withoutType(Type $type) : UnionType
     {
         return $this;
     }
@@ -92,7 +93,7 @@ final class EmptyUnionType extends UnionType
      * @return UnionType
      * @override
      */
-    public function withUnionType(UnionType $union_type)
+    public function withUnionType(UnionType $union_type) : UnionType
     {
         return $union_type;
     }
@@ -225,6 +226,17 @@ final class EmptyUnionType extends UnionType
      */
     public function withStaticResolvedInContext(
         Context $context
+    ) : UnionType {
+        return $this;
+    }
+
+    /**
+     * @return UnionType
+     * A new UnionType with any references to 'static' resolved
+     * in the given context.
+     */
+    public function withStaticResolvedInFunctionLike(
+        FunctionInterface $function
     ) : UnionType {
         return $this;
     }
@@ -479,6 +491,19 @@ final class EmptyUnionType extends UnionType
         return true;  // Empty can cast to anything. See parent implementation.
     }
 
+    /**
+     * Precondition: $this->canCastToUnionType() is false.
+     *
+     * This tells us if it would have succeeded if the source type was not nullable.
+     *
+     * @internal
+     * @override
+     */
+    public function canCastToUnionTypeIfNonNull(UnionType $target) : bool
+    {
+        return false;
+    }
+
     public function canCastToUnionTypeHandlingTemplates(
         UnionType $target,
         CodeBase $code_base
@@ -621,7 +646,7 @@ final class EmptyUnionType extends UnionType
      */
     public function asClassFQSENList(
         Context $context
-    ) {
+    ) : Generator {
         if (false) {
             yield;
         }
@@ -651,7 +676,7 @@ final class EmptyUnionType extends UnionType
     public function asClassList(
         CodeBase $code_base,
         Context $context
-    ) {
+    ) : Generator {
         yield from [];
     }
 
@@ -709,8 +734,6 @@ final class EmptyUnionType extends UnionType
 
     /**
      * Returns true if objectTypes would be non-empty.
-     *
-     * @return bool
      */
     public function hasObjectTypes() : bool
     {
@@ -1264,12 +1287,17 @@ final class EmptyUnionType extends UnionType
         return $this;
     }
 
-    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type)
+    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type) : ?Closure
     {
         return null;
     }
 
     public function usesTemplateType(TemplateType $template_type) : bool
+    {
+        return false;
+    }
+
+    public function isVoidType() : bool
     {
         return false;
     }

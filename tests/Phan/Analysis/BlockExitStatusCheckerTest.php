@@ -60,7 +60,7 @@ final class BlockExitStatusCheckerTest extends BaseTest
     /**
      * @dataProvider exitStatusProvider
      */
-    public function testExitStatus(string $expected_status_representation, string $code_snippet)
+    public function testExitStatus(string $expected_status_representation, string $code_snippet) : void
     {
         $ast = \ast\parse_code("<" . "?php " . $code_snippet, Config::AST_VERSION);
         $status_code = (new BlockExitStatusChecker())($ast);

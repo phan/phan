@@ -29,10 +29,27 @@ class ParallelChildCollector implements IssueCollectorInterface
     {
         self::assertSharedMemoryCommunicationEnabled();
 
+        $this->message_queue_resource = self::getQueueForProcessGroup();
+    }
+
+    /**
+     * @return resource the result of msg_get_queue()
+     * @throws AssertionError if this could not create a resource with msg_get_queue.
+     * @internal
+     */
+    public static function getQueueForProcessGroup()
+    {
         // Create a message queue for this process group
         $message_queue_key = \posix_getpgid(\posix_getpid());
-        $this->message_queue_resource =
-            \msg_get_queue($message_queue_key);
+        if (!\is_int($message_queue_key)) {
+            throw new AssertionError('Expected posix_getpgid to return a valid id');
+        }
+
+        $resource = \msg_get_queue($message_queue_key);
+        if (!$resource) {
+            throw new AssertionError('Expected msg_get_queue to return a valid resource');
+        }
+        return $resource;
     }
 
     /**
@@ -40,7 +57,7 @@ class ParallelChildCollector implements IssueCollectorInterface
      * @throws AssertionError if PHP modules needed for shared communication aren't loaded
      * @internal
      */
-    final public static function assertSharedMemoryCommunicationEnabled()
+    final public static function assertSharedMemoryCommunicationEnabled() : void
     {
         if (!\extension_loaded('sysvsem')) {
             throw new AssertionError(
@@ -61,7 +78,7 @@ class ParallelChildCollector implements IssueCollectorInterface
      * @return void
      * @throws AssertionError if the message failed to be sent to the parent process
      */
-    public function collectIssue(IssueInstance $issue)
+    public function collectIssue(IssueInstance $issue) : void
     {
         $error_code = 0;
 
@@ -109,16 +126,15 @@ class ParallelChildCollector implements IssueCollectorInterface
      *
      * @override
      */
-    public function removeIssuesForFiles(array $files)
+    public function removeIssuesForFiles(array $files) : void
     {
         return;  // Never going to be called - daemon mode isn't combined with parallel execution.
     }
 
     /**
      * This method has no effect on a ParallelChildCollector.
-     * @return void
      */
-    public function reset()
+    public function reset() : void
     {
     }
 }

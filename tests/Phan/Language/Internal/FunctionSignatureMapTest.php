@@ -23,7 +23,7 @@ final class FunctionSignatureMapTest extends BaseTest
     /**
      * @dataProvider phpVersionIdProvider
      */
-    public function testFunctionSignatureMap(int $php_version_id)
+    public function testFunctionSignatureMap(int $php_version_id) : void
     {
         $map = UnionType::internalFunctionSignatureMap($php_version_id);
         $failures = [];

@@ -14,7 +14,7 @@ use Symfony\Component\Console\Output\BufferedOutput;
 final class CSVPrinterTest extends BaseTest
 {
 
-    public function testHeaderCorrespondsToData()
+    public function testHeaderCorrespondsToData() : void
     {
         $output = new BufferedOutput();
 
@@ -25,13 +25,13 @@ final class CSVPrinterTest extends BaseTest
 
         $lines = \array_map("str_getcsv", \explode("\n", $output->fetch()));
         $fields = \array_combine($lines[0], $lines[1]);
-        $this->assertEquals("test.php", $fields["filename"]);
-        $this->assertEquals(0, $fields["line"]);
-        $this->assertEquals(10, $fields["severity_ord"]);
-        $this->assertEquals("critical", $fields["severity_name"]);
-        $this->assertEquals("Syntax", $fields["category"]);
-        $this->assertEquals("PhanSyntaxError", $fields["check_name"]);
-        $this->assertEquals("foo", $fields["message"]);
+        $this->assertSame("test.php", $fields["filename"]);
+        $this->assertSame("0", $fields["line"]);
+        $this->assertSame("10", $fields["severity_ord"]);
+        $this->assertSame("critical", $fields["severity_name"]);
+        $this->assertSame("Syntax", $fields["category"]);
+        $this->assertSame("PhanSyntaxError", $fields["check_name"]);
+        $this->assertSame("foo", $fields["message"]);
     }
 
     /**
@@ -40,7 +40,7 @@ final class CSVPrinterTest extends BaseTest
      *
      * @dataProvider specialCharacterCasesProvider
      */
-    public function testSpecialCharactersAreProperlyEncoded($string, $expected_message)
+    public function testSpecialCharactersAreProperlyEncoded(string $string, string $expected_message) : void
     {
         $output = new BufferedOutput();
 
@@ -51,7 +51,7 @@ final class CSVPrinterTest extends BaseTest
 
         $expected = 'test.php,0,10,critical,Syntax,PhanSyntaxError,' . $expected_message;
         $actual = \explode("\n", $output->fetch())[1]; // Ignore header
-        $this->assertEquals($expected, $actual);
+        $this->assertSame($expected, $actual);
     }
 
     /** @return array<int,array> */

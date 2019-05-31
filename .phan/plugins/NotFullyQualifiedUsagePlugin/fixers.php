@@ -17,12 +17,11 @@ use Phan\Plugin\Internal\IssueFixingPlugin\IssueFixer;
  *
  * This is a prototype, there are various features it does not implement.
  */
-call_user_func(static function () {
+call_user_func(static function () : void {
     /**
      * @return ?FileEditSet
-     * @suppress PhanAccessMethodInternal
      */
-    $fix = static function (CodeBase $code_base, FileCacheEntry $contents, IssueInstance $instance) {
+    $fix = static function (CodeBase $code_base, FileCacheEntry $contents, IssueInstance $instance) : ?FileEditSet {
         $line = $instance->getLine();
         $expected_name = $instance->getTemplateParameters()[0];
         $edits = [];

@@ -1,0 +1,2 @@
+src/110_duplicate_assignment.php:3 PhanPluginDuplicateExpressionAssignment Both sides of the assignment = are the same: $x
+src/110_duplicate_assignment.php:4 PhanPluginDuplicateExpressionAssignment Both sides of the assignment =& are the same: $y[0]

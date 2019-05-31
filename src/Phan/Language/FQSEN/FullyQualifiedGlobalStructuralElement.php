@@ -134,7 +134,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         $key = static::class . '|' .
             static::toString(\strtolower($namespace), static::canonicalLookupKey($name), $alternate_id);
 
-        $fqsen = self::memoizeStatic($key, /** @return FullyQualifiedGlobalStructuralElement */ static function () use ($namespace, $name, $alternate_id) {
+        $fqsen = self::memoizeStatic($key, static function () use ($namespace, $name, $alternate_id) : FullyQualifiedGlobalStructuralElement {
             return new static(
                 $namespace,
                 $name,
@@ -165,7 +165,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
              * @return FullyQualifiedGlobalStructuralElement
              * @throws FQSENException
              */
-            static function () use ($fully_qualified_string) {
+            static function () use ($fully_qualified_string) : FullyQualifiedGlobalStructuralElement {
                 // Split off the alternate_id
                 $parts = \explode(',', $fully_qualified_string);
                 $fqsen_string = $parts[0];
@@ -394,15 +394,10 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
      */
     public function __toString() : string
     {
-        $as_string = $this->as_string;
-        if ($as_string === null) {
-            $as_string = static::toString(
-                $this->getNamespace(),
-                $this->getName(),
-                $this->getAlternateId()
-            );
-            $this->as_string = $as_string;
-        }
-        return $as_string;
+        return $this->as_string ?? $this->as_string = static::toString(
+            $this->getNamespace(),
+            $this->getName(),
+            $this->getAlternateId()
+        );
     }
 }

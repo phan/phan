@@ -21,8 +21,7 @@ final class JSONPrinter implements BufferedPrinterInterface
     /** @var array<int,array<string,mixed>> the issue data to be JSON encoded. */
     private $messages = [];
 
-    /** @param IssueInstance $instance */
-    public function print(IssueInstance $instance)
+    public function print(IssueInstance $instance) : void
     {
         $issue = $instance->getIssue();
         $message = [
@@ -50,7 +49,7 @@ final class JSONPrinter implements BufferedPrinterInterface
     }
 
     /** flush printer buffer */
-    public function flush()
+    public function flush() : void
     {
         // NOTE: Need to use OUTPUT_RAW for JSON.
         // Otherwise, error messages such as "...Unexpected << (T_SL)" don't get formatted properly (They get escaped into unparsable JSON)
@@ -62,10 +61,7 @@ final class JSONPrinter implements BufferedPrinterInterface
         $this->messages = [];
     }
 
-    /**
-     * @param OutputInterface $output
-     */
-    public function configureOutput(OutputInterface $output)
+    public function configureOutput(OutputInterface $output) : void
     {
         $this->output = $output;
     }

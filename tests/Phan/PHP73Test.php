@@ -14,7 +14,7 @@ final class PHP73Test extends AbstractPhanFileTest
         'target_php_version' => '7.3',
     ];
 
-    public function setUp()
+    public function setUp() : void
     {
         parent::setUp();
         foreach (self::OVERRIDES as $key => $value) {
@@ -34,7 +34,7 @@ final class PHP73Test extends AbstractPhanFileTest
      * @dataProvider getTestFiles
      * @override
      */
-    public function testFiles($test_file_list, $expected_file_path, $config_file_path = null)
+    public function testFiles(array $test_file_list, string $expected_file_path, ?string $config_file_path = null) : void
     {
         $skip_reason = null;
         // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
@@ -52,8 +52,8 @@ final class PHP73Test extends AbstractPhanFileTest
     /**
      * @suppress PhanUndeclaredConstant
      */
-    public function getTestFiles()
+    public function getTestFiles() : array
     {
-        return $this->scanSourceFilesDir(PHP73_TEST_FILE_DIR, PHP73_EXPECTED_DIR);
+        return $this->scanSourceFilesDir(\PHP73_TEST_FILE_DIR, \PHP73_EXPECTED_DIR);
     }
 }

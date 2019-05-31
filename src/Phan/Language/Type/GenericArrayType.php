@@ -4,6 +4,7 @@ namespace Phan\Language\Type;
 
 use ast\Node;
 use Closure;
+use Generator;
 use InvalidArgumentException;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
@@ -239,7 +240,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      * @return UnionType returns the array value's union type
      * @phan-override
      */
-    public function iterableValueUnionType(CodeBase $unused_codebase)
+    public function iterableValueUnionType(CodeBase $unused_codebase) : UnionType
     {
         return $this->element_type->asUnionType();
     }
@@ -248,7 +249,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      * @return UnionType the array key's union type
      * @phan-override
      */
-    public function iterableKeyUnionType(CodeBase $unused_codebase)
+    public function iterableKeyUnionType(CodeBase $unused_codebase) : UnionType
     {
         return self::unionTypeForKeyType($this->key_type);
     }
@@ -447,7 +448,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
         CodeBase $code_base,
         UnionTypeBuilder $union_type_builder,
         FullyQualifiedClassName $class_fqsen
-    ) {
+    ) : void {
         $fqsen_aliases = $code_base->getClassAliasesByFQSEN($class_fqsen);
         foreach ($fqsen_aliases as $alias_fqsen_record) {
             $alias_fqsen = $alias_fqsen_record->alias_fqsen;
@@ -560,6 +561,11 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
             // Check the all elements for key types.
             foreach ($children as $child) {
                 if (!($child instanceof Node)) {
+                    continue;
+                }
+                if ($child->kind === \ast\AST_UNPACK) {
+                    // PHP 7.4's array spread operator adds integer keys, e.g. `[...$array, 'other' => 'value']`
+                    $key_type_enum |= GenericArrayType::KEY_INT;
                     continue;
                 }
                 // Don't bother recursing more than one level to iterate over possible types.
@@ -685,7 +691,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      * @param CodeBase $code_base
      * @return ?Closure(UnionType,Context):UnionType
      */
-    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type)
+    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type) : ?Closure
     {
         $closure = $this->element_type->getTemplateTypeExtractorClosure($code_base, $template_type);
         if (!$closure) {
@@ -695,5 +701,39 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
         return static function (UnionType $array_type, Context $context) use ($closure) : UnionType {
             return $closure($array_type->genericArrayElementTypes(), $context);
         };
+    }
+
+    /**
+     * @return Generator<void,Type> (void => $inner_type)
+     */
+    public function getReferencedClasses() : Generator
+    {
+        return $this->element_type->getReferencedClasses();
+    }
+
+    /**
+     * Returns the corresponding type that would be used in a signature
+     * @override
+     */
+    public function asSignatureType() : Type
+    {
+        return ArrayType::instance($this->is_nullable);
+    }
+
+    /**
+     * Given a type such as array<int,static>, return array<int,SomeClass>
+     * @override
+     */
+    public function withStaticResolvedInContext(Context $context) : Type
+    {
+        $resolved_element_type = $this->element_type->withStaticResolvedInContext($context);
+        if ($this->element_type === $resolved_element_type) {
+            return $this;
+        }
+        return GenericArrayType::fromElementType(
+            $resolved_element_type,
+            $this->is_nullable,
+            $this->key_type
+        );
     }
 }

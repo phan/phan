@@ -48,14 +48,13 @@ class ParallelParentCollector implements IssueCollectorInterface
         $this->base_collector = $base_collector;
 
         // Create a message queue for this process group
-        $message_queue_key = \posix_getpgid(\posix_getpid());
         $this->message_queue_resource =
-            \msg_get_queue($message_queue_key);
+            ParallelChildCollector::getQueueForProcessGroup();
 
         // Listen for ALARMS that indicate we should flush
         // the queue
         \pcntl_sigprocmask(\SIG_UNBLOCK, [\SIGUSR1], $old);
-        \pcntl_signal(\SIGUSR1, function () {
+        \pcntl_signal(\SIGUSR1, function () : void {
             $this->readQueuedIssues();
         });
     }
@@ -75,9 +74,8 @@ class ParallelParentCollector implements IssueCollectorInterface
     /**
      * Collect issue
      * @param IssueInstance $issue
-     * @return void
      */
-    public function collectIssue(IssueInstance $issue)
+    public function collectIssue(IssueInstance $issue) : void
     {
         $this->base_collector->collectIssue($issue);
     }
@@ -85,9 +83,8 @@ class ParallelParentCollector implements IssueCollectorInterface
     /**
      * Read the entire queue and write all issues to the
      * base collector
-     * @return void
      */
-    public function readQueuedIssues()
+    public function readQueuedIssues() : void
     {
         // Get the status of the queue
         $status = \msg_stat_queue(
@@ -131,9 +128,8 @@ class ParallelParentCollector implements IssueCollectorInterface
      * Called from daemon mode.
      *
      * @param string[] $files - the relative paths to those files (@phan-unused-param)
-     * @return void
      */
-    public function removeIssuesForFiles(array $files)
+    public function removeIssuesForFiles(array $files) : void
     {
         return;  // Never going to be called - daemon mode isn't combined with parallel execution.
     }
@@ -154,7 +150,7 @@ class ParallelParentCollector implements IssueCollectorInterface
     /**
      * This method has no effect on a ParallelParentCollector.
      */
-    public function reset()
+    public function reset() : void
     {
     }
 }

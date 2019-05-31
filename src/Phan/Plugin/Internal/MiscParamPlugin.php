@@ -26,9 +26,9 @@ use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use Phan\Parse\ParseVisitor;
-use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeFunctionCallCapability;
-use Phan\PluginV2\StopParamAnalysisException;
+use Phan\PluginV3;
+use Phan\PluginV3\AnalyzeFunctionCallCapability;
+use Phan\PluginV3\StopParamAnalysisException;
 use function count;
 
 /**
@@ -37,27 +37,26 @@ use function count;
  * TODO: Analyze returning callables (function() : callable) for any callables that are returned as literals?
  * This would be difficult.
  */
-final class MiscParamPlugin extends PluginV2 implements
+final class MiscParamPlugin extends PluginV3 implements
     AnalyzeFunctionCallCapability
 {
     /**
      * @return array<string,Closure>
      * @phan-return array<string,Closure(CodeBase,Context,FunctionInterface,array):void>
      */
-    private function getAnalyzeFunctionCallClosuresStatic() : array
+    private static function getAnalyzeFunctionCallClosuresStatic() : array
     {
         $stop_exception = new StopParamAnalysisException();
 
         /**
          * @param array<int,Node|int|float|string> $args
-         * @return void
          */
         $min_max_callback = static function (
             CodeBase $code_base,
             Context $context,
             FunctionInterface $function,
             array $args
-        ) {
+        ) : void {
             if (\count($args) !== 1) {
                 return;
             }
@@ -84,14 +83,13 @@ final class MiscParamPlugin extends PluginV2 implements
         };
         /**
          * @param array<int,Node|int|float|string> $args
-         * @return void
          */
         $array_udiff_callback = static function (
             CodeBase $code_base,
             Context $context,
             FunctionInterface $function,
             array $args
-        ) {
+        ) : void {
             $argcount = \count($args);
             if ($argcount < 3) {
                 return;
@@ -148,7 +146,7 @@ final class MiscParamPlugin extends PluginV2 implements
             Context $context,
             FunctionInterface $function,
             array $args
-        ) use ($stop_exception) {
+        ) use ($stop_exception) : void {
             $argcount = \count($args);
             // (string glue, string[] pieces),
             // (string[] pieces, string glue) or
@@ -256,14 +254,13 @@ final class MiscParamPlugin extends PluginV2 implements
         };
         /**
          * @param array<int,Node|int|float|string> $args
-         * @return void
          */
         $array_uintersect_uassoc_callback = static function (
             CodeBase $code_base,
             Context $context,
             FunctionInterface $function,
             array $args
-        ) {
+        ) : void {
             $argcount = \count($args);
             if ($argcount < 4) {
                 return;
@@ -338,7 +335,7 @@ final class MiscParamPlugin extends PluginV2 implements
             CodeBase $code_base,
             Context $context,
             $node
-        ) {
+        ) : ?Variable {
             if (!$node instanceof Node) {
                 return null;
             }
@@ -362,14 +359,13 @@ final class MiscParamPlugin extends PluginV2 implements
 
         /**
          * @param array<int,Node|int|float|string> $args
-         * @return void
          */
         $array_add_callback = static function (
             CodeBase $code_base,
             Context $context,
             FunctionInterface $unused_function,
             array $args
-        ) {
+        ) : void {
             // TODO: support nested adds, like AssignmentVisitor
             // TODO: support properties, like AssignmentVisitor
             if (count($args) < 2) {
@@ -408,14 +404,13 @@ final class MiscParamPlugin extends PluginV2 implements
 
         /**
          * @param array<int,Node|int|float|string> $args
-         * @return void
          */
         $array_remove_single_callback = static function (
             CodeBase $code_base,
             Context $context,
             FunctionInterface $unused_function,
             array $args
-        ) use ($get_variable) {
+        ) use ($get_variable) : void {
             // TODO: support nested adds, like AssignmentVisitor
             // TODO: Could be more specific for arrays with known length and order
             if (count($args) < 1) {
@@ -436,7 +431,7 @@ final class MiscParamPlugin extends PluginV2 implements
             Context $context,
             FunctionInterface $unused_function,
             array $args
-        ) use ($get_variable) {
+        ) use ($get_variable) : void {
             // TODO: support nested adds, like AssignmentVisitor
             // TODO: Could be more specific for arrays with known length and order
             if (count($args) < 4) {
@@ -465,7 +460,7 @@ final class MiscParamPlugin extends PluginV2 implements
             Context $context,
             FunctionInterface $unused_function,
             array $args
-        ) {
+        ) : void {
             // TODO: support nested adds, like AssignmentVisitor
             // TODO: Could be more specific for arrays with known length and order
             if (count($args) < 1) {
@@ -507,7 +502,7 @@ final class MiscParamPlugin extends PluginV2 implements
                 if (!\is_string($field_name)) {
                     continue;
                 }
-                $add_variable = static function (string $name) use ($context, $field_type, $scope) {
+                $add_variable = static function (string $name) use ($context, $field_type, $scope) : void {
                     if (!Variable::isValidIdentifier($name)) {
                         return;
                     }
@@ -576,7 +571,7 @@ final class MiscParamPlugin extends PluginV2 implements
             Context $context,
             FunctionInterface $unused_function,
             array $args
-        ) {
+        ) : void {
             if (count($args) < 2) {
                 return;
             }
@@ -631,7 +626,7 @@ final class MiscParamPlugin extends PluginV2 implements
             Context $context,
             FunctionInterface $unused_function,
             array $args
-        ) {
+        ) : void {
             if (count($args) < 2) {
                 return;
             }

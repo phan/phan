@@ -115,7 +115,7 @@ class RegexAnalyzer
     ) : UnionType {
         $field_types = \array_map(
             /** @param true $_ */
-            static function ($_) use ($type) : UnionType {
+            static function (bool $_) use ($type) : UnionType {
                 return $type;
             },
             $regex_group_keys

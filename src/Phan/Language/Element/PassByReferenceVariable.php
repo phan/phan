@@ -57,7 +57,7 @@ class PassByReferenceVariable extends Variable
         return $this->element->getUnionType();
     }
 
-    public function setUnionType(UnionType $type)
+    public function setUnionType(UnionType $type) : void
     {
         $this->element->setUnionType($type);
     }
@@ -72,7 +72,7 @@ class PassByReferenceVariable extends Variable
         return $this->element->getFlagsHasState($bits);
     }
 
-    public function setFlags(int $flags)
+    public function setFlags(int $flags) : void
     {
         $this->element->setFlags($flags);
     }
@@ -87,7 +87,7 @@ class PassByReferenceVariable extends Variable
         return $this->element->getPhanFlagsHasState($bits);
     }
 
-    public function setPhanFlags(int $phan_flags)
+    public function setPhanFlags(int $phan_flags) : void
     {
         $this->element->setPhanFlags($phan_flags);
     }
@@ -113,5 +113,15 @@ class PassByReferenceVariable extends Variable
     public function isPHPInternal() : bool
     {
         return $this->element->isPHPInternal();
+    }
+
+    /**
+     * Get the argument passed in to this object.
+     * @return TypedElement|UnaddressableTypedElement
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public function getElement()
+    {
+        return $this->element;
     }
 }

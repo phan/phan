@@ -20,7 +20,7 @@ use ReflectionClass;
  */
 final class DocBlockTest extends BaseTest
 {
-    public function testAllCommentsValid()
+    public function testAllCommentsValid() : void
     {
         $doc_block_factory = DocBlockFactory::createInstance();
         $context_factory = new ContextFactory();
@@ -42,7 +42,7 @@ final class DocBlockTest extends BaseTest
                 try {
                     $doc_block = $doc_block_factory->create($comment, $context);
                     $param_tags = $doc_block->getTagsByName('param');
-                    $this->assertInternalType('array', $param_tags);
+                    $this->assertIsArray($param_tags);
                 } catch (Exception $e) {
                     $fqsen = $reflection_class->getName() . '::' . $method->getName();
                     throw new InvalidArgumentException("Invalid doc comment for $fqsen: " . $e->getMessage(), 1, $e);

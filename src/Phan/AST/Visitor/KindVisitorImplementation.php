@@ -56,6 +56,11 @@ abstract class KindVisitorImplementation implements KindVisitor
         return $this->visit($node);
     }
 
+    public function visitArrowFunc(Node $node)
+    {
+        return $this->visit($node);
+    }
+
     public function visitAssign(Node $node)
     {
         return $this->visit($node);
@@ -107,6 +112,11 @@ abstract class KindVisitorImplementation implements KindVisitor
     }
 
     public function visitClassConstDecl(Node $node)
+    {
+        return $this->visit($node);
+    }
+
+    public function visitClassName(Node $node)
     {
         return $this->visit($node);
     }
@@ -272,6 +282,11 @@ abstract class KindVisitorImplementation implements KindVisitor
     }
 
     public function visitProp(Node $node)
+    {
+        return $this->visit($node);
+    }
+
+    public function visitPropGroup(Node $node)
     {
         return $this->visit($node);
     }

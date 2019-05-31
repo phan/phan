@@ -6,7 +6,6 @@ declare(strict_types=1);
  * This checks that the function signatures are complete.
  * TODO: Expand to checking classes (methods, and properties)
  * TODO: Refactor the scripts in internal/ to reuse more code.
- * @phan-file-suppress PhanNativePHPSyntaxCheckPlugin, UnusedPluginFileSuppression caused by inline HTML before declare
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 require_once dirname(__DIR__) . '/vendor/autoload.php';
@@ -39,7 +38,7 @@ class ReflectionCompletenessCheck
         '_zendtestclassalias' => true,
     ];
 
-    private static function checkForUndeclaredTypeFunctions()
+    private static function checkForUndeclaredTypeFunctions() : void
     {
         foreach (get_defined_functions() as $unused_ext => $group) {
             foreach ($group as $function_name) {
@@ -88,7 +87,7 @@ class ReflectionCompletenessCheck
         }
     }
 
-    private static function checkForUndeclaredTypeMethods()
+    private static function checkForUndeclaredTypeMethods() : void
     {
         foreach (self::getInternalClasses() as $class_name => $reflection_class) {
             foreach ($reflection_class->getMethods() as $reflection_method) {
@@ -110,7 +109,7 @@ class ReflectionCompletenessCheck
     /**
      * @return string[]
      */
-    public static function createStubSignature(ReflectionFunctionAbstract $reflection_method)
+    public static function createStubSignature(ReflectionFunctionAbstract $reflection_method) : array
     {
         $signature = [];
         $signature[] = (string)UnionType::fromReflectionType($reflection_method->getReturnType());
@@ -145,7 +144,7 @@ class ReflectionCompletenessCheck
         return $result;
     }
 
-    private static function checkForUndeclaredTypeProperties()
+    private static function checkForUndeclaredTypeProperties() : void
     {
         foreach (self::getInternalClasses() as $class_name => $reflection_class) {
             $map_for_class = UnionType::internalPropertyMapForClassName($class_name);
@@ -162,10 +161,11 @@ class ReflectionCompletenessCheck
             }
         }
     }
+
     /**
-     * @return void
+     * Run all checks that the function signatures are complete.
      */
-    public static function main()
+    public static function main() : void
     {
         Config::setValue('target_php_version', sprintf("%d.%d", PHP_MAJOR_VERSION, PHP_MINOR_VERSION));
         error_reporting(E_ALL);

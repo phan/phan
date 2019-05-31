@@ -6,9 +6,10 @@ use ast\Node;
 use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\AST\ASTHasher;
 use Phan\AST\ASTReverter;
-use Phan\PluginV2;
-use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
+use Phan\AST\InferValue;
+use Phan\PluginV3;
+use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV3\PostAnalyzeNodeCapability;
 
 /**
  * This plugin checks for duplicate expressions in a statement
@@ -25,7 +26,7 @@ use Phan\PluginV2\PostAnalyzeNodeCapability;
  *
  * A plugin file must
  *
- * - Contain a class that inherits from \Phan\PluginV2
+ * - Contain a class that inherits from \Phan\PluginV3
  *
  * - End by returning an instance of that class.
  *
@@ -35,7 +36,7 @@ use Phan\PluginV2\PostAnalyzeNodeCapability;
  * Note: When adding new plugins,
  * add them to the corresponding section of README.md
  */
-class DuplicateExpressionPlugin extends PluginV2 implements PostAnalyzeNodeCapability
+class DuplicateExpressionPlugin extends PluginV3 implements PostAnalyzeNodeCapability
 {
 
     /**
@@ -109,7 +110,7 @@ class RedundantNodeVisitor extends PluginAwarePostAnalysisVisitor
      * @override
      * @suppress PhanAccessClassConstantInternal
      */
-    public function visitBinaryOp(Node $node)
+    public function visitBinaryOp(Node $node) : void
     {
         $flags = $node->flags;
         if (!\array_key_exists($flags, self::REDUNDANT_BINARY_OP_SET)) {
@@ -146,6 +147,12 @@ class RedundantNodeVisitor extends PluginAwarePostAnalysisVisitor
                 return;
             }
         }
+        try {
+            // @phan-suppress-next-line PhanPartialTypeMismatchArgument TODO: handle
+            $result_representation = ASTReverter::toShortString(InferValue::computeBinaryOpResult($left, $right, $flags));
+        } catch (Error $_) {
+            $result_representation = '(unknown)';
+        }
         $this->emitPluginIssue(
             $this->code_base,
             $this->context,
@@ -155,49 +162,46 @@ class RedundantNodeVisitor extends PluginAwarePostAnalysisVisitor
                 ASTReverter::toShortString($left),
                 PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$flags],
                 ASTReverter::toShortString($right),
-                ASTReverter::toShortString(self::computeResultForBothLiteralsWarning($left, $right, $flags)),
+                $result_representation,
             ]
         );
     }
 
     /**
-     * Compute result of a binary operator for a PhanPluginBothLiteralsBinaryOp warning
-     * @param int|string|float|bool|null $left left hand side of operation
-     * @param int|string|float|bool|null $right right hand side of operation
-     * @param int $flags
-     * @return int|string|float|bool|null
+     * @param Node $node
+     * An assignment operation node to analyze
+     *
+     * @return void
+     * @override
      */
-    private static function computeResultForBothLiteralsWarning($left, $right, int $flags)
+    public function visitAssignRef(Node $node) : void
     {
-        switch ($flags) {
-            case flags\BINARY_BOOL_AND:
-                return $left && $right;
-            case flags\BINARY_BOOL_OR:
-                return $left || $right;
-            case flags\BINARY_BOOL_XOR:
-                return $left xor $right;
-            case flags\BINARY_IS_IDENTICAL:
-                return $left === $right;
-            case flags\BINARY_IS_NOT_IDENTICAL:
-                return $left !== $right;
-            case flags\BINARY_IS_EQUAL:
-                return $left == $right;
-            case flags\BINARY_IS_NOT_EQUAL:
-                return $left != $right;
-            case flags\BINARY_IS_SMALLER:
-                return $left < $right;
-            case flags\BINARY_IS_SMALLER_OR_EQUAL:
-                return $left <= $right;
-            case flags\BINARY_IS_GREATER:
-                return $left > $right;
-            case flags\BINARY_IS_GREATER_OR_EQUAL:
-                return $left >= $right;
-            case flags\BINARY_SPACESHIP:
-                return $left <=> $right;
-            case flags\BINARY_COALESCE:
-                return $left ?? $right;
-            default:
-                return '(unknown)';
+        $this->visitAssign($node);
+    }
+
+    /**
+     * @param Node $node
+     * An assignment operation node to analyze
+     *
+     * @return void
+     * @override
+     */
+    public function visitAssign(Node $node) : void
+    {
+        $var = $node->children['var'];
+        $expr = $node->children['expr'];
+        if (ASTHasher::hash($var) === ASTHasher::hash($expr)) {
+            $this->emitPluginIssue(
+                $this->code_base,
+                $this->context,
+                'PhanPluginDuplicateExpressionAssignment',
+                'Both sides of the assignment {OPERATOR} are the same: {CODE}',
+                [
+                    $node->kind === ast\AST_ASSIGN_REF ? '=&' : '=',
+                    ASTReverter::toShortString($var),
+                ]
+            );
+            return;
         }
     }
 
@@ -229,7 +233,7 @@ class RedundantNodeVisitor extends PluginAwarePostAnalysisVisitor
      * @return void
      * @override
      */
-    public function visitConditional(Node $node)
+    public function visitConditional(Node $node) : void
     {
         $cond_node = $node->children['cond'];
         $true_node_hash = ASTHasher::hash($node->children['true']);
@@ -244,17 +248,95 @@ class RedundantNodeVisitor extends PluginAwarePostAnalysisVisitor
             );
             return;
         }
-        if ($cond_node instanceof Node && $cond_node->kind === ast\AST_ISSET) {
-            if (ASTHasher::hash($cond_node->children['var']) === $true_node_hash) {
-                $this->emitPluginIssue(
-                    $this->code_base,
-                    $this->context,
-                    'PhanPluginDuplicateConditionalNullCoalescing',
-                    '"isset(X) ? X : Y" can usually be simplified to "X ?? Y" in PHP 7. The duplicated expression X was {CODE}',
-                    [ASTReverter::toShortString($cond_node->children['var'])]
-                );
+        if (!$cond_node instanceof Node) {
+            return;
+        }
+        switch ($cond_node->kind) {
+            case ast\AST_ISSET:
+                if (ASTHasher::hash($cond_node->children['var']) === $true_node_hash) {
+                    $this->warnDuplicateConditionalNullCoalescing('isset(X) ? X : Y', $node->children['true']);
+                }
+                break;
+            case ast\AST_BINARY_OP:
+                $this->checkBinaryOpOfConditional($cond_node, $true_node_hash);
+                break;
+            case ast\AST_UNARY_OP:
+                $this->checkUnaryOpOfConditional($cond_node, $true_node_hash);
+                break;
+        }
+    }
+
+    /**
+     * @param int|string $true_node_hash
+     */
+    private function checkBinaryOpOfConditional(Node $cond_node, $true_node_hash) : void
+    {
+        if ($cond_node->flags !== ast\flags\BINARY_IS_NOT_IDENTICAL) {
+            return;
+        }
+        $left_node = $cond_node->children['left'];
+        $right_node = $cond_node->children['right'];
+        if (self::isNullConstantNode($left_node)) {
+            if (ASTHasher::hash($right_node) === $true_node_hash) {
+                $this->warnDuplicateConditionalNullCoalescing('null !== X ? X : Y', $right_node);
+            }
+        } elseif (self::isNullConstantNode($right_node)) {
+            if (ASTHasher::hash($left_node) === $true_node_hash) {
+                $this->warnDuplicateConditionalNullCoalescing('X !== null ? X : Y', $left_node);
             }
         }
+    }
+
+    /**
+     * @param int|string $true_node_hash
+     */
+    private function checkUnaryOpOfConditional(Node $cond_node, $true_node_hash) : void
+    {
+        if ($cond_node->flags !== ast\flags\UNARY_BOOL_NOT) {
+            return;
+        }
+        $expr = $cond_node->children['expr'];
+        if (!$expr instanceof Node) {
+            return;
+        }
+        if ($expr->kind === ast\AST_CALL) {
+            $function = $expr->children['expr'];
+            if ($function->kind !== ast\AST_NAME || strcasecmp((string)($function->children['name'] ?? ''), 'is_null') !== 0) {
+                return;
+            }
+            $args = $expr->children['args']->children;
+            if (count($args) !== 1) {
+                return;
+            }
+            if (ASTHasher::hash($args[0]) === $true_node_hash) {
+                $this->warnDuplicateConditionalNullCoalescing('!is_null(X) ? X : Y', $args[0]);
+            }
+        }
+    }
+
+    /**
+     * @param Node|mixed $node
+     */
+    private static function isNullConstantNode($node) : bool
+    {
+        if (!$node instanceof Node) {
+            return false;
+        }
+        return $node->kind === ast\AST_CONST && strcasecmp((string)$node->children['name']->children['name'] ?? '', 'null') === 0;
+    }
+
+    /**
+     * @param ?(Node|string|int|float) $x_node
+     */
+    private function warnDuplicateConditionalNullCoalescing(string $expr, $x_node) : void
+    {
+        $this->emitPluginIssue(
+            $this->code_base,
+            $this->context,
+            'PhanPluginDuplicateConditionalNullCoalescing',
+            '"' . $expr . '" can usually be simplified to "X ?? Y" in PHP 7. The duplicated expression X was {CODE}',
+            [ASTReverter::toShortString($x_node)]
+        );
     }
 }
 

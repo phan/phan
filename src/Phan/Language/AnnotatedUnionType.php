@@ -59,7 +59,8 @@ class AnnotatedUnionType extends UnionType
         }
         return parent::asValueOrNullOrSelf();
     }
-    public function getIsPossiblyUndefined() : bool
+
+    public function isPossiblyUndefined() : bool
     {
         return $this->is_possibly_undefined;
     }
@@ -79,7 +80,7 @@ class AnnotatedUnionType extends UnionType
      * @return UnionType
      * @override
      */
-    public function withType(Type $type)
+    public function withType(Type $type) : UnionType
     {
         return parent::withType($type)->withIsPossiblyUndefined(false);
     }
@@ -90,7 +91,7 @@ class AnnotatedUnionType extends UnionType
      * @return UnionType
      * @override
      */
-    public function withoutType(Type $type)
+    public function withoutType(Type $type) : UnionType
     {
         return parent::withoutType($type)->withIsPossiblyUndefined(false);
     }
@@ -101,7 +102,7 @@ class AnnotatedUnionType extends UnionType
      * @return UnionType
      * @override
      */
-    public function withUnionType(UnionType $union_type)
+    public function withUnionType(UnionType $union_type) : UnionType
     {
         return parent::withUnionType($union_type)->withIsPossiblyUndefined(false);
     }

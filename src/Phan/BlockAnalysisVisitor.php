@@ -13,11 +13,11 @@ use Phan\Analysis\NegatedConditionVisitor;
 use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\Analysis\PreOrderAnalysisVisitor;
 use Phan\AST\AnalysisVisitor;
+use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\Element;
 use Phan\Exception\IssueException;
 use Phan\Language\Context;
-use Phan\Language\Element\Comment;
 use Phan\Language\Element\Comment\Builder;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
@@ -238,9 +238,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * @param Node $node
      * @param Context $context
      * @param int|float|string|null $child_node (probably not null)
-     * @return void
      */
-    private function handleScalarStmt(Node $node, Context $context, $child_node)
+    private function handleScalarStmt(Node $node, Context $context, $child_node) : void
     {
         if (\is_string($child_node)) {
             if (\strpos($child_node, '@phan-') !== false) {
@@ -280,16 +279,16 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
 
     const PHAN_VAR_REGEX =
-        '/@(phan-var(?:-force)?)\b\s*(' . UnionType::union_type_regex . ')\s*&?\\$' . Comment::WORD_REGEX . '/';
+        '/@(phan-var(?:-force)?)\b\s*(' . UnionType::union_type_regex . ')\s*&?\\$' . Builder::WORD_REGEX . '/';
+    // @phan-suppress-previous-line PhanAccessClassConstantInternal
 
     /**
      * Parses annotations such as "(at)phan-var int $myVar" and "(at)phan-var-force ?MyClass $varName" annotations from inline string literals.
      * (php-ast isn't able to parse inline doc comments, so string literals are used for rare edge cases where assert/if statements don't work)
      *
      * Modifies the type of the variable (in the scope of $context) to be identical to the annotated union type.
-     * @return void
      */
-    private function analyzeSubstituteVarAssert(CodeBase $code_base, Context $context, string $text)
+    private function analyzeSubstituteVarAssert(CodeBase $code_base, Context $context, string $text) : void
     {
         $has_known_annotations = false;
         if (\preg_match_all(self::PHAN_VAR_REGEX, $text, $matches, \PREG_SET_ORDER) > 0) {
@@ -299,7 +298,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 $type_string = $group[2];
                 $var_name = $group[16];
                 $type = UnionType::fromStringInContext($type_string, $context, Type::FROM_PHPDOC);
-                $this->createVarForInlineComment($code_base, $context, $var_name, $type, $annotation_name === 'phan-var-force');
+                self::createVarForInlineComment($code_base, $context, $var_name, $type, $annotation_name === 'phan-var-force');
             }
         }
 
@@ -331,7 +330,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * @return void
      * @see ConditionVarUtil::getVariableFromScope()
      */
-    private function createVarForInlineComment(CodeBase $code_base, Context $context, string $var_name, UnionType $type, bool $create_variable)
+    private static function createVarForInlineComment(CodeBase $code_base, Context $context, string $var_name, UnionType $type, bool $create_variable) : void
     {
         if (!$context->getScope()->hasVariableWithName($var_name)) {
             if (Variable::isHardcodedVariableInScopeWithName($var_name, $context->isInGlobalScope())) {
@@ -357,10 +356,11 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $context->addScopeVariable($variable);
             return;
         }
-        $variable = $context->getScope()->getVariableByName(
+        $variable = clone($context->getScope()->getVariableByName(
             $var_name
-        );
+        ));
         $variable->setUnionType($type);
+        $context->addScopeVariable($variable);
     }
 
     /**
@@ -429,8 +429,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * Effectively the same as (new BlockAnalysisVisitor(..., $context, $node, ...)child_node))
      * but is much less repetitive and verbose, and slightly more efficient.
      *
-     * NOTE: This is called extremely frequently, so the real signature types were omitted for performance.
-     *
      * @param Context $context - The original context for $node, before analyzing $child_node
      *
      * @param Node $node - The parent node of $child_node
@@ -438,8 +436,11 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * @param Node $child_node - The node which will be analyzed to create the updated context.
      *
      * @return Context (The unmodified $context, or a different Context instance with modifications)
+     *
+     * @suppress PhanPluginCanUseReturnType
+     * NOTE: This is called extremely frequently, so the real signature types were omitted for performance.
      */
-    private function analyzeAndGetUpdatedContext($context, $node, $child_node)
+    private function analyzeAndGetUpdatedContext(Context $context, Node $node, Node $child_node)
     {
         // Modify the original object instead of creating a new BlockAnalysisVisitor.
         // this is slightly more efficient, especially if a large number of unchanged parameters would exist.
@@ -813,7 +814,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // TODO: Improve inferences in switch statements?
         // TODO: Behave differently if switch lists don't cover every case (e.g. if there is no default)
         $has_default = false;
-        list($switch_variable_node, $switch_variable_condition) = $this->createSwitchConditionAnalyzer(
+        [$switch_variable_node, $switch_variable_condition] = $this->createSwitchConditionAnalyzer(
             end($this->parent_node_list)->children['cond']
         );
         $previous_child_context = null;
@@ -830,12 +831,16 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     $visitor = new ConditionVisitor($this->code_base, $child_context);
                     $child_context = $switch_variable_condition($child_context, $cond_node);
                     if ($previous_child_context !== null) {
+                        // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this being non-null is implied by switch_variable_condition
                         $variable = $visitor->getVariableFromScope($switch_variable_node, $child_context);
                         if ($variable) {
+                            // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this being non-null is implied by switch_variable_condition
                             $old_variable = $visitor->getVariableFromScope($switch_variable_node, $previous_child_context);
 
                             if ($old_variable) {
+                                $variable = clone($variable);
                                 $variable->setUnionType($variable->getUnionType()->withUnionType($old_variable->getUnionType()));
+                                $child_context->addScopeVariable($variable);
                             }
                         }
                     }
@@ -850,6 +855,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             // We can improve analysis of `case` blocks by using
             // a BlockExitStatusChecker to avoid propagating invalid inferences.
             $stmts_node = $child_node->children['stmts'];
+            // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this is never null
             $block_exit_status = (new BlockExitStatusChecker())->__invoke($stmts_node);
             // equivalent to !willUnconditionallyThrowOrReturn()
             $previous_child_context = null;
@@ -977,6 +983,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         $child_nodes = $node->children;
         $excluded_elem_count = 0;
 
+        $first_unconditionally_true_index = null;
+
         // With a context that is inside of the node passed
         // to this method, we analyze all children of the
         // node.
@@ -1000,24 +1008,51 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             // to reduce false positives.
             // (Variables will be available in `catch` and `finally`)
             // This is mitigated by finally and catch blocks being unaware of new variables from try{} blocks.
-            if (BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($child_node->children['stmts'])) {
-                // e.g. "if (!is_string($x)) { return; }"
+            $cond_node = $child_node->children['cond'];
+            // inferred_value is either:
+            // 1. truthy non-Node if the value could be inferred
+            // 2. falsy non-Node if the value could be inferred
+            // 3. A Node if the value could not be inferred (most conditionals)
+            if ($cond_node instanceof Node) {
+                $inferred_cond_value = (new ContextNode($this->code_base, $fallthrough_context, $cond_node))->getEquivalentPHPValueForControlFlowAnalysis();
+            } else {
+                // Treat `else` as equivalent to `elseif (true)`
+                $inferred_cond_value = $cond_node ?? true;
+            }
+            // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this is never null
+            if (!$inferred_cond_value || BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($child_node->children['stmts'])) {
+                // Don't merge this scope into the outer scope
+                // e.g. "if (!is_string($x)) { return; }" or "if (false) { anything }"
                 $excluded_elem_count++;
             } else {
                 $child_context_list[] = $child_context;
             }
 
-            $cond_node = $child_node->children['cond'];
             if ($cond_node instanceof Node) {
-                $fallthrough_context = (new NegatedConditionVisitor($this->code_base, $fallthrough_context))($cond_node);
+                // fwrite(STDERR, "Checking if unconditionally true: " . \Phan\Debug::nodeToString($cond_node) . "\n");
+                // TODO: Could add a check for conditions that are unconditionally falsey and warn
+                if (!$inferred_cond_value instanceof Node && $inferred_cond_value) {
+                    // TODO: Could warn if this is not a condition on a static variable
+                    $first_unconditionally_true_index = $first_unconditionally_true_index ?? \count($child_context_list);
+                }
+                $fallthrough_context = (new NegatedConditionVisitor($this->code_base, $fallthrough_context))->__invoke($cond_node);
+            } elseif ($cond_node) {
+                $first_unconditionally_true_index = $first_unconditionally_true_index ?? \count($child_context_list);
             }
             // If cond_node was null, it would be an else statement.
         }
+        // fprintf(STDERR, "First unconditionally true index is %s: %s\n", $first_unconditionally_true_index ?? 'null', \Phan\Debug::nodeToString($node));
 
         if ($excluded_elem_count === count($child_nodes)) {
             // If all of the AST_IF_ELEM bodies would unconditionally throw or return,
             // then analyze the remaining statements with the negation of all of the conditions.
             $context = $fallthrough_context;
+        } elseif ($first_unconditionally_true_index > 0) {
+            // If we have at least one child context that falls through, then use that one.
+            $context = (new ContextMergeVisitor(
+                $fallthrough_context,  // e.g. "if (!is_string($x)) { $x = ''; }" should result in inferring $x is a string.
+                \array_slice($child_context_list, 0, $first_unconditionally_true_index)
+            ))->mergePossiblySingularChildContextList();
         } else {
             // For if statements, we need to merge the contexts
             // of all child context into a single scope based
@@ -1164,9 +1199,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     /**
      * @param array<int,Node> $catch_nodes
      * @param Context $context
-     * @return void
      */
-    private function checkUnreachableCatch(array $catch_nodes, Context $context)
+    private function checkUnreachableCatch(array $catch_nodes, Context $context) : void
     {
         if (count($catch_nodes) <= 1) {
             return;
@@ -1491,7 +1525,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
     /**
      * @param Node $node
-     * An AST node we'd like to analyze the statements for
+     * An AST node of kind ast\AST_FUNC_DECL we'd like to analyze the statements for
      *
      * @return Context
      * The updated context after visiting the node
@@ -1506,7 +1540,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
     /**
      * @param Node $node
-     * An AST node we'd like to analyze the statements for
+     * An AST node of kind ast\AST_CLOSURE we'd like to analyze the statements for
      *
      * @return Context
      * The updated context after visiting the node
@@ -1514,6 +1548,20 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * @see self::visitClosedContext()
      */
     public function visitClosure(Node $node) : Context
+    {
+        return $this->visitClosedContext($node);
+    }
+
+    /**
+     * @param Node $node
+     * An AST node of kind ast\AST_ARROW_FUNC we'd like to analyze the statements for
+     *
+     * @return Context
+     * The updated context after visiting the node
+     *
+     * @see self::visitClosedContext()
+     */
+    public function visitArrowFunc(Node $node) : Context
     {
         return $this->visitClosedContext($node);
     }

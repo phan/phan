@@ -26,7 +26,7 @@ class Position
     public $character;
 
     /**
-     * @suppress PhanTypeMismatchProperty
+     * @suppress PhanPossiblyNullTypeMismatchProperty
      */
     public function __construct(int $line = null, int $character = null)
     {
@@ -42,7 +42,6 @@ class Position
      *  - a positive number otherwise
      *
      * @param Position $position
-     * @return int
      */
     public function compare(Position $position): int
     {

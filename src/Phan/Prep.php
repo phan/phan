@@ -21,13 +21,11 @@ class Prep
      *
      * @param \Closure $visit_node
      * A closure that is to be applied to every AST node
-     *
-     * @return void
      */
     public static function scanFileList(
         array $file_list,
         \Closure $visit_node
-    ) {
+    ) : void {
         foreach ($file_list as $file_path) {
             // Convert the file to an Abstract Syntax Tree
             // before passing it on to the recursive version
@@ -50,14 +48,12 @@ class Prep
      *
      * @param \Closure $visit_node
      * A closure that is to be applied to every AST node
-     *
-     * @return void
      */
     public static function scanNodeInFile(
         Node $node,
         string $file_path,
         \Closure $visit_node
-    ) {
+    ) : void {
         // Visit the node doing whatever the caller
         // likes
         $visit_node($node, $file_path);

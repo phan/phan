@@ -107,13 +107,14 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
     public function __toString() : string
     {
         // TODO: Finalize escaping
+        // NOTE: Phan has issues with parsing commas in phpdoc, so don't suggest them.
+        // Support for commas should be restored when https://github.com/phan/phan/issues/2597 is fixed
         $inner = \preg_replace_callback(
-            '/[^- ,.\/?:;"!#$%^&*_+=a-zA-Z0-9_\x80-\xff]/',
+            '/[^- .\/?:;"!#$%^&*_+=a-zA-Z0-9_\x80-\xff]/',
             /**
              * @param array{0:string} $match
-             * @return string
              */
-            static function (array $match) {
+            static function (array $match) : string {
                 $c = $match[0];
                 return self::ESCAPE_CHARACTER_LOOKUP[$c] ?? \sprintf('\\x%02x', \ord($c));
             },
@@ -165,7 +166,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
     /**
      * Called at the bottom of the file to ensure static properties are set for quick access.
      */
-    public static function init()
+    public static function init() : void
     {
         self::$non_nullable_string_type = StringType::instance(false);
         self::$nullable_string_type = StringType::instance(true);
@@ -191,25 +192,25 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
     }
 
     /** @override */
-    public function getIsPossiblyFalsey() : bool
+    public function isPossiblyFalsey() : bool
     {
         return !$this->value;
     }
 
     /** @override */
-    public function getIsAlwaysFalsey() : bool
+    public function isAlwaysFalsey() : bool
     {
         return !$this->value;
     }
 
     /** @override */
-    public function getIsPossiblyTruthy() : bool
+    public function isPossiblyTruthy() : bool
     {
         return (bool)$this->value;
     }
 
     /** @override */
-    public function getIsAlwaysTruthy() : bool
+    public function isAlwaysTruthy() : bool
     {
         return (bool)$this->value;
     }
@@ -304,15 +305,23 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
      * Returns the function interface that would be used if this type's string were a callable, or null.
      * @param CodeBase $code_base the code base in which the function interface is found
      * @param Context $context the context where the function interface is referenced (for emitting issues)
-     *
-     * @return ?FunctionInterface
      */
-    public function asFunctionInterfaceOrNull(CodeBase $code_base, Context $context)
+    public function asFunctionInterfaceOrNull(CodeBase $code_base, Context $context) : ?FunctionInterface
     {
         // parse 'function_name' or 'class_name::method_name'
         // NOTE: In other subclasses of Type, calling this might recurse.
         $function_like_fqsens = UnionTypeVisitor::functionLikeListFromNodeAndContext($code_base, $context, $this->value, true);
         return $function_like_fqsens[0] ?? null;
+    }
+
+    public function isValidNumericOperand() : bool
+    {
+        return filter_var($this->value, FILTER_VALIDATE_FLOAT) !== false;
+    }
+
+    public function asSignatureType() : Type
+    {
+        return StringType::instance($this->is_nullable);
     }
 }
 

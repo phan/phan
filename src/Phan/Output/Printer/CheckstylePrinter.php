@@ -19,8 +19,7 @@ final class CheckstylePrinter implements BufferedPrinterInterface
     /** @var array<string,array<int,array>> maps files with issues to the list of those issues */
     private $files = [];
 
-    /** @param IssueInstance $instance */
-    public function print(IssueInstance $instance)
+    public function print(IssueInstance $instance) : void
     {
         if (!isset($this->files[$instance->getFile()])) {
             $this->files[$instance->getFile()] = [];
@@ -36,7 +35,7 @@ final class CheckstylePrinter implements BufferedPrinterInterface
     }
 
     /** flush printer buffer */
-    public function flush()
+    public function flush() : void
     {
         $document = new \DOMDocument('1.0', 'ISO-8859-15');
 
@@ -94,10 +93,7 @@ final class CheckstylePrinter implements BufferedPrinterInterface
         $this->files = [];
     }
 
-    /**
-     * @param OutputInterface $output
-     */
-    public function configureOutput(OutputInterface $output)
+    public function configureOutput(OutputInterface $output) : void
     {
         $this->output = $output;
     }

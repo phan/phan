@@ -10,6 +10,7 @@ use Phan\Issue;
 use Phan\Language\Element\AddressableElement;
 use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\ClassElement;
+use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
@@ -35,10 +36,8 @@ class ReferenceCountsAnalyzer
     /**
      * Take a look at all globally accessible elements and see if
      * we can find any dead code that is never referenced
-     *
-     * @return void
      */
-    public static function analyzeReferenceCounts(CodeBase $code_base)
+    public static function analyzeReferenceCounts(CodeBase $code_base) : void
     {
         // Check to see if dead code detection is enabled. Keep
         // in mind that the results here are just a guess and
@@ -118,7 +117,7 @@ class ReferenceCountsAnalyzer
         ClassMap $class_map,
         int $total_count,
         int &$i
-    ) {
+    ) : \Generator {
         // Constants
         yield from self::getElementsFromElementListForDeferredAnalysis(
             $code_base,
@@ -150,8 +149,6 @@ class ReferenceCountsAnalyzer
      * @param string $issue_type
      * @param int $total_count
      * @param int $i
-     *
-     * @return void
      */
     private static function analyzeGlobalElementListReferenceCounts(
         CodeBase $code_base,
@@ -159,11 +156,13 @@ class ReferenceCountsAnalyzer
         string $issue_type,
         int $total_count,
         int &$i
-    ) {
+    ) : void {
         foreach ($element_list as $element) {
-            CLI::progress('dead code', (++$i) / $total_count);
+            CLI::progress('dead code', (++$i) / $total_count, $element);
             // Don't worry about internal elements
-            if ($element->isPHPInternal()) {
+            if ($element->isPHPInternal() || $element->getContext()->isPHPInternal()) {
+                // The extra check of the context is necessary for code in internal_stubs
+                // which aren't exactly internal to PHP.
                 continue;
             }
             self::analyzeElementReferenceCounts($code_base, $element, $issue_type);
@@ -184,9 +183,9 @@ class ReferenceCountsAnalyzer
         $element_list,
         int $total_count,
         int &$i
-    ) {
+    ) : \Generator {
         foreach ($element_list as $element) {
-            CLI::progress('dead code', (++$i) / $total_count);
+            CLI::progress('dead code', (++$i) / $total_count, $element);
             // Don't worry about internal elements
             if ($element->isPHPInternal()) {
                 continue;
@@ -196,11 +195,9 @@ class ReferenceCountsAnalyzer
             if (!$element instanceof ClassElement) {
                 throw new TypeError("Expected an iterable of ClassElement values");
             }
-            if ($element instanceof ClassConstant) {
-                // should not warn about self::class
-                if (\strcasecmp($element->getName(), 'class') === 0) {
-                    continue;
-                }
+            // should not warn about self::class
+            if (\strcasecmp($element->getName(), 'class') === 0) {
+                continue;
             }
             $fqsen = $element->getFQSEN();
             if ($element instanceof Method || $element instanceof Property) {
@@ -235,7 +232,7 @@ class ReferenceCountsAnalyzer
 
             // Don't analyze elements defined in a parent class.
             // We copy references to methods, properties, and constants into the defining trait or class before this.
-            if ($element->getIsOverride()) {
+            if ($element->isOverride()) {
                 continue;
             }
 
@@ -244,7 +241,7 @@ class ReferenceCountsAnalyzer
 
             if ($element instanceof Method) {
                 // Ignore magic methods
-                if ($element->getIsMagic()) {
+                if ($element->isMagic()) {
                     continue;
                 }
                 // Don't analyze abstract methods, as they're uncallable.
@@ -256,7 +253,7 @@ class ReferenceCountsAnalyzer
                 // Skip properties on classes that were derived from (at)property annotations on classes
                 // or were automatically generated for classes with __get or __set methods
                 // (or undeclared properties that were automatically added depending on configs)
-                if ($element->isDynamicOrFromPHPDoc()) {
+                if ($element->isDynamicProperty()) {
                     continue;
                 }
                 // TODO: may want to continue to skip `if ($defining_class->hasGetOrSetMethod($code_base)) {`
@@ -269,14 +266,12 @@ class ReferenceCountsAnalyzer
 
     /**
      * Check to see if the given AddressableElement is a duplicate
-     *
-     * @return void
      */
     private static function analyzeElementReferenceCounts(
         CodeBase $code_base,
         AddressableElement $element,
         string $issue_type
-    ) {
+    ) : void {
         /*
         print "digraph G {\n";
         foreach ($element->getReferenceList() as $file_ref) {
@@ -300,7 +295,9 @@ class ReferenceCountsAnalyzer
                     $issue_type = Issue::UnreferencedPublicMethod;
                 }
             } elseif ($element instanceof Property) {
-                if ($element->isPrivate()) {
+                if ($element->isFromPHPDoc()) {
+                    $issue_type = Issue::UnreferencedPHPDocProperty;
+                } elseif ($element->isPrivate()) {
                     $issue_type = Issue::UnreferencedPrivateProperty;
                 } elseif ($element->isProtected()) {
                     $issue_type = Issue::UnreferencedProtectedProperty;
@@ -326,6 +323,11 @@ class ReferenceCountsAnalyzer
                     return;
                 }
                 $issue_type = Issue::UnreferencedClosure;
+            }
+        } elseif ($element instanceof Clazz) {
+            if ($element->isAnonymous()) {
+                // This can't be referenced by name in type signatures, etc.
+                return;
             }
         }
 
@@ -383,9 +385,15 @@ class ReferenceCountsAnalyzer
         return $context->withScope($context->getScope()->getParentScope())->hasSuppressIssue($code_base, Issue::UnreferencedClosure);
     }
 
-    private static function maybeWarnWriteOnlyProperty(CodeBase $code_base, Property $property)
+    private static function maybeWarnWriteOnlyProperty(CodeBase $code_base, Property $property) : void
     {
-        if ($property->isPrivate()) {
+        if ($property->isWriteOnly()) {
+            // Handle annotations such as property-write and phan-write-only
+            return;
+        }
+        if ($property->isFromPHPDoc()) {
+            $issue_type = Issue::WriteOnlyPHPDocProperty;
+        } elseif ($property->isPrivate()) {
             $issue_type = Issue::WriteOnlyPrivateProperty;
         } elseif ($property->isProtected()) {
             $issue_type = Issue::WriteOnlyProtectedProperty;
@@ -410,10 +418,15 @@ class ReferenceCountsAnalyzer
         );
     }
 
-    private static function maybeWarnReadOnlyProperty(CodeBase $code_base, Property $property)
+    private static function maybeWarnReadOnlyProperty(CodeBase $code_base, Property $property) : void
     {
-        // TODO: Should this handle annotations such as property-read?
-        if ($property->isPrivate()) {
+        if ($property->isReadOnly()) {
+            // Handle annotations such as property-read and phan-read-only.
+            return;
+        }
+        if ($property->isFromPHPDoc()) {
+            $issue_type = Issue::ReadOnlyPHPDocProperty;
+        } elseif ($property->isPrivate()) {
             $issue_type = Issue::ReadOnlyPrivateProperty;
         } elseif ($property->isProtected()) {
             $issue_type = Issue::ReadOnlyProtectedProperty;
@@ -443,12 +456,11 @@ class ReferenceCountsAnalyzer
      * Find Elements with FQSENs that are the same as $element's FQSEN,
      * apart from the alternate id.
      * (i.e. duplicate declarations)
-     * @return ?AddressableElement
      */
     public static function findAlternateReferencedElementDeclaration(
         CodeBase $code_base,
         AddressableElement $element
-    ) {
+    ) : ?AddressableElement {
         $old_fqsen = $element->getFQSEN();
         if ($old_fqsen instanceof FullyQualifiedGlobalStructuralElement) {
             $fqsen = $old_fqsen->getCanonicalFQSEN();

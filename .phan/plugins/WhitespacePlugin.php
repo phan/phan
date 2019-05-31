@@ -2,16 +2,18 @@
 
 use ast\Node;
 use Phan\CodeBase;
+use Phan\IssueInstance;
 use Phan\Language\Context;
 use Phan\Library\FileCacheEntry;
-use Phan\PluginV2;
-use Phan\PluginV2\AfterAnalyzeFileCapability;
-use Phan\PluginV2\AutomaticFixCapability;
+use Phan\Plugin\Internal\IssueFixingPlugin\FileEditSet;
+use Phan\PluginV3;
+use Phan\PluginV3\AfterAnalyzeFileCapability;
+use Phan\PluginV3\AutomaticFixCapability;
 
 /**
  * This plugin checks the whitespace in analyzed PHP files for (1) tabs, (2) windows newlines, and (3) trailing whitespace.
  */
-class WhitespacePlugin extends PluginV2 implements
+class WhitespacePlugin extends PluginV3 implements
     AfterAnalyzeFileCapability,
     AutomaticFixCapability
 {
@@ -42,8 +44,8 @@ class WhitespacePlugin extends PluginV2 implements
         Context $context,
         string $file_contents,
         Node $node
-    ) {
-        if (!preg_match('/[\r\t]|[ \t]$/', $file_contents)) {
+    ) : void {
+        if (!preg_match('/[\r\t]|[ \t]\r?$/m', $file_contents)) {
             // Typical case: no errors
             return;
         }

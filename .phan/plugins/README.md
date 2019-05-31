@@ -39,6 +39,12 @@ or if the relevant parts of the codebase fixed the bug/added annotations)
 The setting `'plugin_config' => ['unused_suppression_ignore_list' => ['FlakyPluginIssueName']]` can be used in `.phan/config.php`
 to make this plugin avoid emitting `Unused*Suppression` for a list of issue names.
 
+#### FFIAnalysisPlugin.php
+
+This is only necessary if you are using [PHP 7.4's FFI (Foreign Function Interface) support](https://wiki.php.net/rfc/ffi)
+
+This makes Phan infer that assignments to variables that originally contained CData will continue to be CData.
+
 ### 2. General-Use Plugins
 
 These plugins are useful across a wide variety of code styles, and should give low false positives.
@@ -61,6 +67,9 @@ Warns about common errors in php array keys and switch statements. Has the follo
 - **PhanPluginDuplicateSwitchCase**: a duplicate or equivalent case statement.
 
   (E.g `switch ($x) { case 2: echo "A\n"; break; case 2: echo "B\n"; break;}` duplicates the key `2`. The later case statements are ignored.)
+- **PhanPluginDuplicateSwitchCaseLooseEquality**: a case statement that is loosely equivalent to an earlier case statement.
+
+  (E.g `switch ('foo') { case 0: echo "0\n"; break; case 'foo': echo "foo\n"; break;}` has `0 == 'foo'`, and echoes `0` because of that)
 - **PhanPluginMixedKeyNoKey**: mixing array entries of the form [key => value,] with entries of the form [value,].
 
   (E.g. `['key' => 'value', 'othervalue']` is often found in code because the key for `'othervalue'` was forgotten)
@@ -278,6 +287,7 @@ Warns about elements containing unknown types (function/method/closure return ty
 This plugin checks for duplicate expressions in a statement
 that are likely to be a bug. (e.g. `expr1 == expr`)
 
+- **PhanPluginDuplicateExpressionAssignment**: `Both sides of the assignment {OPERATOR} are the same: {CODE}`
 - **PhanPluginDuplicateExpressionBinaryOp**: `Both sides of the binary operator {OPERATOR} are the same: {CODE}`
 - **PhanPluginDuplicateConditionalTernaryDuplication**: `"X ? X : Y" can usually be simplified to "X ?: Y". The duplicated expression X was {CODE}`
 - **PhanPluginDuplicateConditionalNullCoalescing**: `"isset(X) ? X : Y" can usually be simplified to "X ?? Y" in PHP 7. The duplicated expression X was {CODE}`
@@ -301,6 +311,57 @@ E.g. warns about invoking `function example($first, $second, $third)` as `exampl
 
 - **PhanPluginSuspiciousParamOrder**: `Suspicious order for arguments named {DETAILS} - These are being passed to parameters {DETAILS} of {FUNCTION} defined at {FILE}:{LINE}`
 - **PhanPluginSuspiciousParamOrderInternal**: `Suspicious order for arguments named {DETAILS} - These are being passed to parameters {DETAILS}`
+
+#### PossiblyStaticMethodPlugin.php
+
+Checks if a method can be made static without causing any errors.
+
+- **PhanPluginPossiblyStaticPublicMethod**: `Public method {PROPERTY} can be static` (Also exists for Private and Protected)
+
+Warnings may need to be completely disabled due to the large number of method declarations in a typical codebase:
+
+- Warnings are not emitted for methods that override methods in the parent class.
+- Warnings are not emitted for methods that are overridden in child classes.
+- Warnings can be suppressed based on the method FQSEN with `plugin_config => [..., 'possibly_static_method_ignore_regex' => (a PCRE regex)]`
+
+#### PHPDocToRealTypesPlugin.php
+
+This plugin suggests real types that can be used instead of phpdoc types.
+Currently, this just checks param and return types.
+Some of the suggestions made by this plugin will cause inheritance errors.
+
+This doesn't suggest changes if classes have subclasses (but this check doesn't work when inheritance involves traits).
+`PHPDOC_TO_REAL_TYPES_IGNORE_INHERITANCE=1` can be used to force this to check **all** methods and emit issues.
+
+This also supports `--automatic-fix` to add the types to the real type signatures.
+
+- **PhanPluginCanUseReturnType**: `Can use {TYPE} as a return type of {METHOD}`
+- **PhanPluginCanUseNullableReturnType**: `Can use {TYPE} as a return type of {METHOD}` (useful if there is a minimum php version of 7.1)
+- **PhanPluginCanUsePHP71Void**: `Can use php 7.1's void as a return type of {METHOD}` (useful if there is a minimum php version of 7.1)
+
+This supports `--automatic-fix`.
+- `PHPDocRedundantPlugin` will be useful for cleaning up redundant phpdoc after real types were added.
+- `PreferNamespaceUsePlugin` can be used to convert types from fully qualified types back to unqualified types ()
+
+#### PHPDocRedundantPlugin.php
+
+This plugin warns about function/method/closure phpdoc that does nothing but repeat the information in the type signature.
+E.g. this will warn about `/** @return void */ function () : void {}` and `/** */`, but not `/** @return void description of what it does or other annotations */`
+
+This supports `--automatic-fix`
+
+- **PhanPluginRedundantFunctionComment**: `Redundant doc comment on function {FUNCTION}(): {COMMENT}`
+- **PhanPluginRedundantMethodComment**: `Redundant doc comment on method {METHOD}(): {COMMENT}`
+- **PhanPluginRedundantClosureComment**: `Redundant doc comment on closure {FUNCTION}: {COMMENT}`
+- **PhanPluginRedundantReturnComment**: `Redundant @return {TYPE} on function {FUNCTION}: {COMMENT}`
+
+#### PreferNamespaceUsePlugin.php
+
+This plugin suggests using `ClassName` instead of `\My\Ns\ClassName` when there is a `use My\Ns\ClassName` annotation (or for uses in namespace `\My\Ns`)
+Currently, this only checks **real** (not phpdoc) param/return annotations.
+
+- **PhanPluginPreferNamespaceUseParamType**: `Could write param type of ${PARAMETER} of {FUNCTION} as {TYPE} instead of {TYPE}`
+- **PhanPluginPreferNamespaceUseReturnType**: `Could write return type of {FUNCTION} as {TYPE} instead of {TYPE}`
 
 ### 4. Demo plugins:
 
@@ -330,7 +391,8 @@ Checks for complex variable access expressions `$$x`, which may be hard to read,
   - Analyze Symfony doc comment annotations.
   - Mark elements in inline doc comments (which Phan doesn't parse) as referencing types from `use statements` as not dead code.
 
-- https://github.com/TysonAndre/PhanTypoCheckPlugin checks of calls to `gettext()` by default, and can optionally check all strings.
+- https://github.com/TysonAndre/PhanTypoCheck checks all tokens of PHP files for typos, including within string literals.
+  It is also able to analyze calls to `gettext()`.
 
 ### 6. Self-analysis plugins:
 

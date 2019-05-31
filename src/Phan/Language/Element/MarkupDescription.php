@@ -8,7 +8,6 @@ use Phan\Language\Element\Comment\Builder;
 use Phan\Language\UnionType;
 
 use function count;
-use function is_string;
 
 /**
  * APIs for generating markup (markdown) description of elements
@@ -23,7 +22,7 @@ class MarkupDescription
      */
     public static function buildForElement(
         AddressableElementInterface $element,
-        CodeBase $code_base = null
+        CodeBase $code_base
     ) : string {
         // TODO: Use the doc comments of the ancestors if unavailable or if (at)inheritDoc is used.
         $markup = $element->getMarkupDescription();
@@ -52,10 +51,8 @@ class MarkupDescription
 
     /**
      * Eagerly load all of the hover signatures into memory before potentially forking.
-     *
-     * @return void
      */
-    public static function eagerlyLoadAllDescriptionMaps()
+    public static function eagerlyLoadAllDescriptionMaps() : void
     {
         if (!\extension_loaded('pcntl')) {
             // There's no forking, so descriptions will always be available after the first time they're loaded.
@@ -125,14 +122,12 @@ class MarkupDescription
      * (or from FunctionDocumentationMap.php)
      *
      * @param array<string,true> $checked_class_fqsens
-     *
-     * @return ?string
      */
     public static function extractDescriptionFromDocCommentOrAncestor(
         AddressableElementInterface $element,
         CodeBase $code_base,
         array &$checked_class_fqsens = []
-    ) {
+    ) : ?string {
         $extracted_doc_comment = self::extractDescriptionFromDocComment($element, $code_base);
         if ($extracted_doc_comment) {
             return $extracted_doc_comment;
@@ -155,14 +150,13 @@ class MarkupDescription
 
     /**
      * @param array<string,true> $checked_class_fqsens
-     * @return ?string
      */
     private static function extractDescriptionFromDocCommentOfAncestorOfClassElement(
         ClassElement $element,
         CodeBase $code_base,
         array &$checked_class_fqsens = []
-    ) {
-        if (!$element->getIsOverride() && $element->getRealDefiningFQSEN() === $element->getFQSEN()) {
+    ) : ?string {
+        if (!$element->isOverride() && $element->getRealDefiningFQSEN() === $element->getFQSEN()) {
             return null;
         }
         $class_fqsen = $element->getDefiningClassFQSEN();
@@ -179,18 +173,17 @@ class MarkupDescription
             }
             $extracted_doc_comment = self::extractDescriptionFromDocCommentOfAncestorOfClassElement($ancestor_element, $code_base, $checked_class_fqsens);
         }
+        return null;
     }
 
     /**
      * Extracts a plaintext description of the element from the doc comment of an element.
      * (or from FunctionDocumentationMap.php)
-     *
-     * @return ?string
      */
     public static function extractDescriptionFromDocComment(
         AddressableElementInterface $element,
         CodeBase $code_base = null
-    ) {
+    ) : ?string {
         $extracted_doc_comment = self::extractDescriptionFromDocCommentRaw($element);
         if ($extracted_doc_comment) {
             return $extracted_doc_comment;
@@ -242,10 +235,7 @@ class MarkupDescription
         return null;
     }
 
-    /**
-     * @return ?string
-     */
-    private static function extractDescriptionFromDocCommentRaw(AddressableElementInterface $element)
+    private static function extractDescriptionFromDocCommentRaw(AddressableElementInterface $element) : ?string
     {
         $doc_comment = $element->getDocComment();
         if (!$doc_comment) {
@@ -368,7 +358,7 @@ class MarkupDescription
 
         foreach ($lines as $i => $line) {
             $line = self::trimLine($line);
-            if (!is_string($line) || \preg_match('/^\s*@/', $line) > 0) {
+            if (\preg_match('/^\s*@/', $line) > 0) {
                 $saw_phpdoc_tag = true;
                 if (count($results) === 0) {
                     // Special cases:

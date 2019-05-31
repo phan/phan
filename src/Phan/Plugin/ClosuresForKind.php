@@ -36,7 +36,7 @@ class ClosuresForKind
      * @return void
      * @throws InvalidArgumentException if $kind is invalid
      */
-    public function record(int $kind, Closure $c)
+    public function record(int $kind, Closure $c) : void
     {
         if (!\array_key_exists($kind, Element::VISIT_LOOKUP_TABLE)) {
             throw new InvalidArgumentException("Invalid node kind $kind");
@@ -52,9 +52,8 @@ class ClosuresForKind
      *
      * @param array<int,int> $kinds - A list of unique values of node kinds
      * @param Closure $c - The closure to execute on each of those kinds
-     * @return void
      */
-    public function recordForKinds(array $kinds, Closure $c)
+    public function recordForKinds(array $kinds, Closure $c) : void
     {
         foreach ($kinds as $kind) {
             $this->record($kind, $c);
@@ -65,7 +64,7 @@ class ClosuresForKind
      * @param Closure $flattener
      * @return array<int,Closure> (Maps a subset of node kinds to a closure to execute for that node kind.)
      */
-    public function getFlattenedClosures(Closure $flattener)
+    public function getFlattenedClosures(Closure $flattener) : array
     {
         \ksort($this->closures);
         $merged_closures = [];

@@ -27,6 +27,7 @@ class Range
      */
     public $end;
 
+    /** @suppress PhanPossiblyNullTypeMismatchProperty anything useful will be non-null */
     public function __construct(Position $start = null, Position $end = null)
     {
         $this->start = $start;
@@ -42,7 +43,6 @@ class Range
      */
     public function includes(Position $position): bool
     {
-        // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
         return $this->start->compare($position) <= 0 && $this->end->compare($position) >= 0;
     }
 

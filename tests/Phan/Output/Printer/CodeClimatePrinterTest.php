@@ -14,7 +14,7 @@ use Symfony\Component\Console\Output\BufferedOutput;
 final class CodeClimatePrinterTest extends BaseTest
 {
 
-    public function testPrintOutput()
+    public function testPrintOutput() : void
     {
         $output = new BufferedOutput();
 
@@ -31,6 +31,19 @@ final class CodeClimatePrinterTest extends BaseTest
         $expected_output .= '{"type":"issue","check_name":"PhanSyntaxError","description":"fake error","categories":["Bug Risk"],"severity":"critical","location":{"path":"test.php","lines":{"begin":1,"end":1}}}' . "\x00";
         $expected_output .= '{"type":"issue","check_name":"PhanUndeclaredMethod","description":"Call to undeclared method \\\\Foo::bar","categories":["Bug Risk"],"severity":"critical","location":{"path":"undefinedmethod.php","lines":{"begin":1,"end":1}}}' . "\x00";
         // phpcs:enable
+        $this->assertSame($expected_output, $output->fetch());
+    }
+
+    // Should replace invalid utf-8 with placeholders in the resulting JSON
+    public function testPrintInvalidUtf8() : void
+    {
+        $output = new BufferedOutput();
+
+        $printer = new CodeClimatePrinter();
+        $printer->configureOutput($output);
+        $printer->print(new IssueInstance(Issue::fromType(Issue::UndeclaredVariableDim), 'dim.php', 10, ["a\x80b"]));
+        $expected_output = '{"type":"issue","check_name":"PhanUndeclaredVariableDim","description":"Variable $a�b was undeclared, but array fields are being added to it.","categories":["Bug Risk"],"severity":"info","location":{"path":"dim.php","lines":{"begin":10,"end":10}}}' . "\x00";
+        $printer->flush();
         $this->assertSame($expected_output, $output->fetch());
     }
 }

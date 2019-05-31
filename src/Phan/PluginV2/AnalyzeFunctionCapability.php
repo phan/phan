@@ -6,21 +6,13 @@ use Phan\CodeBase;
 use Phan\Language\Element\Func;
 
 /**
- * Plugins should implement this to analyze (and modify) a function definition,
- * after parsing and before analyzing.
+ * Use PluginV3 instead.
+ * @see \Phan\PluginV3\AnalyzeFunctionCapability
  */
 interface AnalyzeFunctionCapability
 {
     /**
-     * Analyze (and modify) a function definition, after parsing and before analyzing.
-     *
-     * @param CodeBase $code_base
-     * The code base in which the function exists
-     *
-     * @param Func $function
-     * A function being analyzed
-     *
-     * @return void
+     * @return void use pluginv3 instead
      */
     public function analyzeFunction(
         CodeBase $code_base,

@@ -1,0 +1,5 @@
+%s:3 PhanUnusedGotoLabel Unused goto label m2
+%s:9 PhanUnusedGotoLabel Unused goto label x1
+%s:19 PhanUnusedGotoLabel Unused goto label m1
+%s:22 PhanUnusedGotoLabel Unused goto label m3
+%s:29 PhanUnusedGotoLabel Unused goto label m1

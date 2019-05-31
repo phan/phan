@@ -11,9 +11,9 @@ use Phan\Config;
 use Phan\Issue;
 use Phan\Language\Type\StringType;
 use Phan\Library\Paths;
-use Phan\PluginV2;
-use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV3\PostAnalyzeNodeCapability;
 
 use function file_exists;
 use function is_file;
@@ -21,7 +21,7 @@ use function is_file;
 /**
  * Analyzes require/include/require_once/include_once statements to check if the file exists
  */
-class RequireExistsPlugin extends PluginV2 implements PostAnalyzeNodeCapability
+class RequireExistsPlugin extends PluginV3 implements PostAnalyzeNodeCapability
 {
     public static function getPostAnalyzeNodeVisitorClassName() : string
     {
@@ -38,7 +38,7 @@ class RequireExistsVisitor extends PluginAwarePostAnalysisVisitor
      * @return void
      * @override
      */
-    public function visitIncludeOrEval(Node $node)
+    public function visitIncludeOrEval(Node $node) : void
     {
         if ($node->flags === ast\flags\EXEC_EVAL) {
             $this->analyzeEval($node);
@@ -65,7 +65,7 @@ class RequireExistsVisitor extends PluginAwarePostAnalysisVisitor
         $this->checkPathExistsInContext($node, $path);
     }
 
-    private function analyzeEval(Node $node)
+    private function analyzeEval(Node $node) : void
     {
         $expr = $node->children['expr'];
         $type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $expr);
@@ -81,7 +81,7 @@ class RequireExistsVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * Check if the path provided to include()/require_once()/etc is valid.
      */
-    private function checkPathExistsInContext(Node $node, string $relative_path)
+    private function checkPathExistsInContext(Node $node, string $relative_path) : void
     {
         $absolute_path = $this->getAbsolutePath($node, $relative_path);
         if (!file_exists($absolute_path)) {

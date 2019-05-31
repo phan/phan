@@ -2,8 +2,6 @@
 <?php
 declare(strict_types=1);
 
-// @phan-file-suppress PhanNativePHPSyntaxCheckPlugin, UnusedPluginFileSuppression caused by inline HTML before declare
-
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 require_once __DIR__ . '/lib/WikiWriter.php';
 
@@ -56,6 +54,7 @@ class ConfigEntry
         'parent_constructor_required' => self::CATEGORY_ANALYSIS,
         'quick_mode' => self::CATEGORY_ANALYSIS,
         'analyze_signature_compatibility' => self::CATEGORY_ANALYSIS,
+        'assume_no_external_class_overrides' => self::CATEGORY_ANALYSIS,
         'allow_method_param_type_widening' => self::CATEGORY_ANALYSIS_VERSION,
         'guess_unknown_parameter_type_using_default' => self::CATEGORY_ANALYSIS,
         'inherit_phpdoc_types' => self::CATEGORY_ANALYSIS,
@@ -78,7 +77,9 @@ class ConfigEntry
         'prefer_narrowed_phpdoc_return_type' => self::CATEGORY_ANALYSIS,
         'dead_code_detection' => self::CATEGORY_DEAD_CODE_DETECTION,
         'unused_variable_detection' => self::CATEGORY_DEAD_CODE_DETECTION,
+        'unused_variable_detection_assume_override_exists' => self::CATEGORY_DEAD_CODE_DETECTION,
         'force_tracking_references' => self::CATEGORY_DEAD_CODE_DETECTION,
+        'constant_variable_detection' => self::CATEGORY_DEAD_CODE_DETECTION,
         'dead_code_detection_prefer_false_negative' => self::CATEGORY_DEAD_CODE_DETECTION,
         'warn_about_redundant_use_namespaced_class' => self::CATEGORY_DEAD_CODE_DETECTION,
         'simplify_ast' => self::CATEGORY_ANALYSIS,
@@ -97,6 +98,7 @@ class ConfigEntry
         'dump_signatures_file' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'dump_parsed_file_list' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'debug_max_frame_length' => self::CATEGORY_HIDDEN_CLI_ONLY,
+        'debug_output' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'progress_bar' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'progress_bar_sample_interval' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'processes' => self::CATEGORY_ANALYSIS,
@@ -134,11 +136,14 @@ class ConfigEntry
         'language_server_enable_hover' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'language_server_enable_completion' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'language_server_hide_category_of_issues' => self::CATEGORY_HIDDEN_CLI_ONLY,
+        'language_server_min_diagnostics_delay_ms' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'enable_internal_return_type_plugins' => self::CATEGORY_ANALYSIS,
         'enable_extended_internal_return_type_plugins' => self::CATEGORY_ANALYSIS,
         'max_literal_string_type_length' => self::CATEGORY_ANALYSIS,
         'plugins' => self::CATEGORY_ANALYSIS,
         'plugin_config' => self::CATEGORY_ANALYSIS,
+        'maximum_recursion_depth' => self::CATEGORY_ANALYSIS,
+        'record_variable_context_and_scope' => self::CATEGORY_HIDDEN_CLI_ONLY,
     ];
 
     /** @var string the configuration setting name (e.g. 'null_casts_as_any_type') */
@@ -181,7 +186,7 @@ class ConfigEntry
             '@(?<!\[)`([A-Za-z_0-9]+)`@',
             /** @param array{0:string,1:string} $matches */
             function (array $matches) : string {
-                list($markdown, $name) = $matches;
+                [$markdown, $name] = $matches;
                 if ($name !== $this->config_name && isset(Config::DEFAULT_CONFIGURATION[$name])) {
                     return sprintf('[%s](#%s)', $markdown, $name);
                 }
@@ -224,6 +229,9 @@ class ConfigEntry
      */
     public function isHidden() : bool
     {
+        if (strncmp($this->config_name, '__', 2) === 0) {
+            return true;
+        }
         return $this->category === self::CATEGORY_HIDDEN_CLI_ONLY;
     }
 
@@ -252,7 +260,7 @@ class WikiConfigUpdater
      */
     private static $verbose = false;
 
-    private static function printUsageAndExit(int $exit_code = 1)
+    private static function printUsageAndExit(int $exit_code = 1) : void
     {
         global $argv;
         $program = $argv[0];
@@ -326,7 +334,7 @@ EOT;
      * @return void
      * @throws InvalidArgumentException (uncaught) if the documented issue types can't be found.
      */
-    public static function main()
+    public static function main() : void
     {
         global $argv;
         if (count($argv) !== 1) {
@@ -371,7 +379,7 @@ EOT;
      * @param array<string,string> $old_text_for_section
      * @throws InvalidArgumentException
      */
-    private static function documentConfigCategorySection(WikiWriter $writer, ConfigEntry $config_entry, array $old_text_for_section)
+    private static function documentConfigCategorySection(WikiWriter $writer, ConfigEntry $config_entry, array $old_text_for_section) : void
     {
         $category = $config_entry->getCategory();
         if (!$category) {
@@ -391,7 +399,7 @@ EOT;
         }
     }
 
-    private static function documentConfig(WikiWriter $writer, ConfigEntry $config_entry)
+    private static function documentConfig(WikiWriter $writer, ConfigEntry $config_entry) : void
     {
         $header = '## ' . $config_entry->getConfigName();
 
@@ -410,7 +418,7 @@ EOT;
         $writer->append($placeholder);
     }
 
-    private static function debugLog(string $message)
+    private static function debugLog(string $message) : void
     {
         // Uncomment the below line to enable debugging
         if (self::$verbose) {

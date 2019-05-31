@@ -24,13 +24,11 @@ class ThrowsTypesAnalyzer
 
     /**
      * Check phpdoc (at)throws types of function-likes to make sure they're valid
-     *
-     * @return void
      */
     public static function analyzeThrowsTypes(
         CodeBase $code_base,
         FunctionInterface $method
-    ) {
+    ) : void {
         try {
             foreach ($method->getThrowsUnionType()->getTypeSet() as $type) {
                 // TODO: When analyzing the method body, only check the valid exceptions
@@ -49,11 +47,11 @@ class ThrowsTypesAnalyzer
         CodeBase $code_base,
         FunctionInterface $method,
         Type $type
-    ) {
+    ) : bool {
         /**
          * @param array<int,int|string|Type> $args
          */
-        $maybe_emit_for_method = static function (string $issue_type, array $args, Suggestion $suggestion = null) use ($code_base, $method) {
+        $maybe_emit_for_method = static function (string $issue_type, array $args, Suggestion $suggestion = null) use ($code_base, $method) : void {
             Issue::maybeEmitWithParameters(
                 $code_base,
                 $method->getContext(),
@@ -124,14 +122,11 @@ class ThrowsTypesAnalyzer
         return true;
     }
 
-    /**
-     * @return ?Suggestion
-     */
     protected static function suggestSimilarClassForThrownClass(
         CodeBase $code_base,
         Context $context,
         FullyQualifiedClassName $type_fqsen
-    ) {
+    ) : ?Suggestion {
         return IssueFixSuggester::suggestSimilarClass(
             $code_base,
             $context,
@@ -140,7 +135,6 @@ class ThrowsTypesAnalyzer
                 if ($class->isTrait()) {
                     return false;
                 }
-                // @phan-suppress-next-line PhanThrowTypeAbsentForCall
                 return $class->getFQSEN()->asType()->asExpandedTypes($code_base)->hasType(Type::throwableInstance());
             })
         );

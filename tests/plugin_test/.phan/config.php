@@ -109,6 +109,7 @@ return [
     'plugin_config' => [
         'php_native_syntax_check_max_processes' => 4,
         'unused_suppression_ignore_list' => ['Unused-Issue-In-Config'],
+        'possibly_static_method_ignore_regex' => '/^(?!PSM)/',
     ],
 
     // A list of plugin files to execute
@@ -133,5 +134,6 @@ return [
         'DuplicateExpressionPlugin',
         'SuspiciousParamOrderPlugin',
         'WhitespacePlugin',
+        'PossiblyStaticMethodPlugin',
     ],
 ];

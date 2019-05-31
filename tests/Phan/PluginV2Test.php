@@ -2,24 +2,22 @@
 
 namespace Phan\Tests;
 
-use Phan\PluginV2;
+use Phan\PluginV3;
 use ReflectionClass;
 
 /**
- * Unit tests of PluginV2's documentation
- *
- * @phan-file-suppress PhanAccessMethodInternal
+ * Unit tests of PluginV3's documentation
  */
-final class PluginV2Test extends BaseTest
+final class PluginV3Test extends BaseTest
 {
-    public function testDocumentation()
+    public function testDocumentation() : void
     {
-        $comment = (new ReflectionClass(PluginV2::class))->getDocComment();
-        $this->assertInternalType('string', $comment);
+        $comment = (new ReflectionClass(PluginV3::class))->getDocComment();
+        $this->assertIsString($comment);
 
         $capabilities = [];
-        foreach (scandir(dirname(__DIR__, 2) . '/src/Phan/PluginV2') as $file) {
-            if (!preg_match('/^(\w+Capability)\.php$/', $file, $matches)) {
+        foreach (\scandir(\dirname(__DIR__, 2) . '/src/Phan/PluginV3') as $file) {
+            if (!\preg_match('/^(\w+Capability)\.php$/', $file, $matches)) {
                 continue;
             }
             $capabilities[] = $matches[1];
@@ -27,10 +25,10 @@ final class PluginV2Test extends BaseTest
         $this->assertNotEmpty($capabilities);
         $missing_capabilities = [];
         foreach ($capabilities as $capability) {
-            if (strpos($comment, $capability) === false) {
+            if (\strpos($comment, $capability) === false) {
                 $missing_capabilities[] = $capability;
             }
         }
-        $this->assertSame([], $missing_capabilities, 'should document all PluginV2 capabilities');
+        $this->assertSame([], $missing_capabilities, 'should document all PluginV3 capabilities');
     }
 }

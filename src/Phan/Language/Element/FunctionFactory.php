@@ -119,7 +119,7 @@ class FunctionFactory
             - $reflection_method->getNumberOfRequiredParameters()
         );
 
-        if ($method->getIsMagicCall() || $method->getIsMagicCallStatic()) {
+        if ($method->isMagicCall() || $method->isMagicCallStatic()) {
             $method->setNumberOfOptionalParameters(FunctionInterface::INFINITE_PARAMETERS);
             $method->setNumberOfRequiredParameters(0);
         }
@@ -159,7 +159,7 @@ class FunctionFactory
          * @param array<string,mixed> $map
          * @suppress PhanPossiblyFalseTypeArgumentInternal, PhanPossiblyFalseTypeArgument
          */
-        return \array_map(static function ($map) use (
+        return \array_map(static function (array $map) use (
             $function,
             &$alternate_id
         ) : FunctionInterface {
@@ -249,7 +249,7 @@ class FunctionFactory
             );
 
             if ($alternate_function instanceof Method) {
-                if ($alternate_function->getIsMagicCall() || $alternate_function->getIsMagicCallStatic()) {
+                if ($alternate_function->isMagicCall() || $alternate_function->isMagicCallStatic()) {
                     $alternate_function->setNumberOfOptionalParameters(999);
                     $alternate_function->setNumberOfRequiredParameters(0);
                 }

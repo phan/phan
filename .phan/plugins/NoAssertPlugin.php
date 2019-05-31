@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
 use ast\Node;
-use Phan\PluginV2;
-use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV3\PostAnalyzeNodeCapability;
 
 /**
  * This plugin checks for occurrences of `assert(cond)` for Phan's self-analysis.
@@ -19,7 +19,7 @@ use Phan\PluginV2\PostAnalyzeNodeCapability;
  *
  * A plugin file must
  *
- * - Contain a class that inherits from \Phan\PluginV2
+ * - Contain a class that inherits from \Phan\PluginV3
  *
  * - End by returning an instance of that class.
  *
@@ -29,7 +29,7 @@ use Phan\PluginV2\PostAnalyzeNodeCapability;
  * Note: When adding new plugins,
  * add them to the corresponding section of README.md
  */
-class NoAssertPlugin extends PluginV2 implements PostAnalyzeNodeCapability
+class NoAssertPlugin extends PluginV3 implements PostAnalyzeNodeCapability
 {
 
     /**
@@ -60,7 +60,7 @@ class NoAssertVisitor extends PluginAwarePostAnalysisVisitor
      * @return void
      * @override
      */
-    public function visitCall(Node $node)
+    public function visitCall(Node $node) : void
     {
         $name = $node->children['expr']->children['name'] ?? null;
         if (!is_string($name)) {

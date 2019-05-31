@@ -104,7 +104,7 @@ class Func extends AddressableElement implements FunctionInterface
         Context $context,
         Type $closure_scope_type,
         Node $node
-    ) {
+    ) : ?FullyQualifiedClassName {
         if ($node->kind !== ast\AST_CLOSURE) {
             return null;
         }
@@ -256,8 +256,8 @@ class Func extends AddressableElement implements FunctionInterface
         // the namespace.
         $func->setIsNSInternal($comment->isNSInternal());
 
-        $func->setSuppressIssueList(
-            $comment->getSuppressIssueList()
+        $func->setSuppressIssueSet(
+            $comment->getSuppressIssueSet()
         );
 
         // Take a look at function return types
@@ -306,9 +306,6 @@ class Func extends AddressableElement implements FunctionInterface
         return $func;
     }
 
-    /**
-     * @return FullyQualifiedFunctionName
-     */
     public function getFQSEN() : FullyQualifiedFunctionName
     {
         return $this->fqsen;
@@ -382,7 +379,7 @@ class Func extends AddressableElement implements FunctionInterface
      */
     public function toStub() : string
     {
-        list($namespace, $string) = $this->toStubInfo();
+        [$namespace, $string] = $this->toStubInfo();
         $namespace_text = $namespace === '' ? '' : "$namespace ";
         $string = \sprintf("namespace %s{\n%s}\n", $namespace_text, $string);
         return $string;
@@ -405,7 +402,7 @@ class Func extends AddressableElement implements FunctionInterface
         $stub .= '(' . $this->getParameterStubText() . ')';
 
         $return_type = $this->getUnionType();
-        if ($return_type && !$return_type->isEmpty()) {
+        if (!$return_type->isEmpty()) {
             $stub .= ' : ' . (string)$return_type;
         }
         return $stub;

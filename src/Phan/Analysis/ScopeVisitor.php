@@ -127,7 +127,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
             $prefix,
             $node->flags ?? 0
         );
-        foreach ($alias_target_map as $alias => list($flags, $target, $lineno)) {
+        foreach ($alias_target_map as $alias => [$flags, $target, $lineno]) {
             $context = $context->withNamespaceMap(
                 $flags,
                 $alias,
@@ -155,7 +155,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
         $context = $this->context;
         $target_php_version = Config::get_closest_target_php_version_id();
 
-        foreach (self::aliasTargetMapFromUseNode($node) as $alias => list($flags, $target, $lineno)) {
+        foreach (self::aliasTargetMapFromUseNode($node) as $alias => [$flags, $target, $lineno]) {
             $flags = $node->flags ?: $flags;
             if ($flags === \ast\flags\USE_NORMAL && $target_php_version < 70200) {
                 self::analyzeUseElemCompatibility($alias, $target, $target_php_version, $lineno);
@@ -174,7 +174,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
         return $context;
     }
 
-    private function maybeWarnSameNamespaceUse(string $alias, FullyQualifiedGlobalStructuralElement $target, int $flags, int $lineno)
+    private function maybeWarnSameNamespaceUse(string $alias, FullyQualifiedGlobalStructuralElement $target, int $flags, int $lineno) : void
     {
         if (\strcasecmp($alias, $target->getName()) !== 0) {
             return;
@@ -188,7 +188,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
             if ($target->getNamespace() !== '\\') {
                 return;
             }
-            $issue_type = Issue::UseContantNoEffect;
+            $issue_type = Issue::UseConstantNoEffect;
         } else {
             if ($target->getNamespace() !== '\\') {
                 if (!Config::getValue('warn_about_relative_include_statement')) {
@@ -206,13 +206,12 @@ abstract class ScopeVisitor extends AnalysisVisitor
         );
     }
 
-    /** @return void */
     private function analyzeUseElemCompatibility(
         string $alias,
         FQSEN $target,
         int $target_php_version,
         int $lineno
-    ) {
+    ) : void {
         $alias_lower = \strtolower($alias);
         if ($target_php_version < 70100) {
             if ($alias_lower === 'void') {

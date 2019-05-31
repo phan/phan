@@ -25,7 +25,7 @@ final class AnalyzerTest extends BaseTest
      */
     private $code_base;
 
-    protected function setUp()
+    protected function setUp() : void
     {
         $this->code_base = new CodeBase(
             [], // $this->class_name_list,
@@ -36,7 +36,7 @@ final class AnalyzerTest extends BaseTest
         );
     }
 
-    public function testClassInCodeBase()
+    public function testClassInCodeBase() : void
     {
 
         $this->contextForCode("
@@ -50,7 +50,7 @@ final class AnalyzerTest extends BaseTest
         );
     }
 
-    public function testNamespaceClassInCodeBase()
+    public function testNamespaceClassInCodeBase() : void
     {
         $this->contextForCode("
             namespace A;
@@ -64,7 +64,7 @@ final class AnalyzerTest extends BaseTest
         );
     }
 
-    public function testMethodInCodeBase()
+    public function testMethodInCodeBase() : void
     {
         $this->contextForCode("
             namespace A;

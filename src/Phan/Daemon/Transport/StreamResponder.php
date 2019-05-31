@@ -37,7 +37,7 @@ class StreamResponder implements Responder
     /**
      * @return ?array<string,mixed> the request data(E.g. returns null if JSON is malformed)
      */
-    public function getRequestData()
+    public function getRequestData() : ?array
     {
         if (!$this->did_read_request_data) {
             $response_connection = $this->connection;
@@ -66,7 +66,7 @@ class StreamResponder implements Responder
      * @return void
      * @throws \RuntimeException if called twice
      */
-    public function sendResponseAndClose(array $data)
+    public function sendResponseAndClose(array $data) : void
     {
         $connection = $this->connection;
         if (!$this->did_read_request_data) {

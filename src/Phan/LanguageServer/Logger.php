@@ -28,9 +28,8 @@ class Logger
     /**
      * Logs a request received from the client
      * @param array<string,string> $headers
-     * @return void
      */
-    public static function logRequest(array $headers, string $buffer)
+    public static function logRequest(array $headers, string $buffer) : void
     {
         if (!self::shouldLog()) {
             return;
@@ -41,9 +40,8 @@ class Logger
     /**
      * Logs a response this is about to send back to the client
      * @param array<string,mixed> $headers
-     * @return void
      */
-    public static function logResponse(array $headers, string $buffer)
+    public static function logResponse(array $headers, string $buffer) : void
     {
         if (!self::shouldLog()) {
             return;
@@ -57,10 +55,8 @@ class Logger
      *
      * This is used by code related to the language server.
      * Phan is slower when verbose logging is enabled.
-     *
-     * @return void
      */
-    public static function logInfo(string $msg)
+    public static function logInfo(string $msg) : void
     {
         if (!self::shouldLog()) {
             return;
@@ -72,9 +68,8 @@ class Logger
     /**
      * Logs an error related to the language server protocol
      * to the configured log file (defaults to STDERR)
-     * @return void
      */
-    public static function logError(string $msg)
+    public static function logError(string $msg) : void
     {
         $file = self::getLogFile();
         \fwrite($file, $msg . "\n");
@@ -98,7 +93,7 @@ class Logger
      * @return void
      * @suppress PhanUnreferencedPublicMethod this is made available for debugging issues
      */
-    public static function setLogFile($new_file)
+    public static function setLogFile($new_file) : void
     {
         if (!\is_resource($new_file)) {
             throw new \TypeError("Expected newFile to be a resource, got " . \gettype($new_file));

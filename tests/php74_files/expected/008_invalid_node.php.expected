@@ -1,0 +1,7 @@
+%s:7 PhanUnusedVariable Unused definition of variable $a
+%s:8 PhanInvalidNode Spread operator is not supported in assignments
+%s:8 PhanUndeclaredVariable Variable $b is undeclared
+%s:11 PhanUnusedVariable Unused definition of variable $prog
+%s:12 PhanUnusedVariable Unused definition of variable $command
+%s:13 PhanInvalidNode Spread operator is not supported in assignments
+%s:13 PhanUndeclaredVariable Variable $b is undeclared

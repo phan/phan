@@ -91,10 +91,8 @@ trait Memoize
 
     /**
      * Delete all memoized data
-     *
-     * @return void
      */
-    protected function memoizeFlushAll()
+    protected function memoizeFlushAll() : void
     {
         $this->memoized_data = [];
     }

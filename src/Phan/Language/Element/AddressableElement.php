@@ -100,10 +100,8 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * @param FQSEN $fqsen
      * A fully qualified structural element name to set on
      * this element
-     *
-     * @return void
      */
-    public function setFQSEN(FQSEN $fqsen)
+    public function setFQSEN(FQSEN $fqsen) : void
     {
         $this->fqsen = $fqsen;
     }
@@ -112,7 +110,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * @return bool true if this element's visibility
      *                   is strictly more visible than $other (public > protected > private)
      */
-    public function isStrictlyMoreVisibileThan(AddressableElementInterface $other) : bool
+    public function isStrictlyMoreVisibleThan(AddressableElementInterface $other) : bool
     {
         if ($this->isPrivate()) {
             return false;
@@ -173,9 +171,8 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
 
     /**
      * Set this element as being `internal`.
-     * @return void
      */
-    public function setIsNSInternal(bool $is_internal)
+    public function setIsNSInternal(bool $is_internal) : void
     {
         $this->setPhanFlags(Flags::bitVectorWithState(
             $this->getPhanFlags(),
@@ -210,10 +207,8 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * @param FileRef $file_ref
      * A reference to a location in which this typed structural
      * element is referenced.
-     *
-     * @return void
      */
-    public function addReference(FileRef $file_ref)
+    public function addReference(FileRef $file_ref) : void
     {
         if (Config::get_track_references()) {
             // Currently, we don't need to track references to PHP-internal methods/functions/constants
@@ -228,9 +223,8 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
 
     /**
      * Copy addressable references from an element of the same subclass
-     * @return void
      */
-    public function copyReferencesFrom(AddressableElement $element)
+    public function copyReferencesFrom(AddressableElement $element) : void
     {
         if ($this === $element) {
             // Should be impossible
@@ -271,7 +265,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * @return void
      * @override
      */
-    public function hydrate(CodeBase $code_base)
+    public function hydrate(CodeBase $code_base) : void
     {
         if ($this->is_hydrated) {  // Same as isFirstExecution(), inlined due to being called frequently.
             return;
@@ -281,10 +275,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
         $this->hydrateOnce($code_base);
     }
 
-    /**
-     * @return void
-     */
-    protected function hydrateOnce(CodeBase $unused_code_base)
+    protected function hydrateOnce(CodeBase $unused_code_base) : void
     {
         // Do nothing unless overridden
     }
@@ -306,15 +297,13 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     /**
      * Used by daemon mode to restore an element to the state it had before parsing.
      * @internal
-     * @return ?Closure
      */
-    abstract public function createRestoreCallback();
+    abstract public function createRestoreCallback() : ?Closure;
 
     /**
      * @param ?string $doc_comment the 'docComment' for this element, if any exists.
-     * @return void
      */
-    public function setDocComment(string $doc_comment = null)
+    public function setDocComment(string $doc_comment = null) : void
     {
         $this->doc_comment = $doc_comment;
     }
@@ -322,7 +311,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     /**
      * @return ?string the 'docComment' for this element, if any exists.
      */
-    public function getDocComment()
+    public function getDocComment() : ?string
     {
         return $this->doc_comment;
     }

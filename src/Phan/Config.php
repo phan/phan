@@ -32,23 +32,22 @@ class Config
 {
     /**
      * The version of the AST (defined in php-ast) that we're using.
-     * Older versions are likely to have edge cases we no longer support,
-     * and version 50 got rid of Decl.
-     *
-     * TODO: Also enable support for version 60 once there is a stable php-ast 1.0.0 release. (Issue #2038)
+     * @see https://github.com/nikic/php-ast#ast-versioning
      */
-    const AST_VERSION = 50;
+    const AST_VERSION = 70;
+
+    const MINIMUM_AST_EXTENSION_VERSION = '1.0.1';
 
     /**
      * The version of the Phan plugin system.
      * Plugin files that wish to be backwards compatible may check this and
      * return different classes based on its existence and
      * the results of version_compare.
-     * PluginV2 will correspond to 2.x.y, PluginV3 will correspond to 3.x.y, etc.
+     * PluginV3 will correspond to 2.x.y, PluginV3 will correspond to 3.x.y, etc.
      * New features increment minor versions, and bug fixes increment patch versions.
      * @suppress PhanUnreferencedPublicClassConstant
      */
-    const PHAN_PLUGIN_VERSION = '2.9.0';
+    const PHAN_PLUGIN_VERSION = '3.0.0';
 
     /**
      * @var string|null
@@ -144,6 +143,12 @@ class Config
         // your application should be included in this list.
         'directory_list' => [],
 
+        // For internal use by Phan to quickly check for membership in directory_list.
+        '__directory_regex' => null,
+
+        // Whether to enable debugging output to stderr
+        'debug_output' => false,
+
         // List of case-insensitive file extensions supported by Phan.
         // (e.g. `['php', 'html', 'htm']`)
         'analyzed_file_extensions' => ['php'],
@@ -196,6 +201,9 @@ class Config
         //       to `exclude_analysis_directory_list`.
         'exclude_analysis_directory_list' => [],
 
+        // This is set internally by Phan based on exclude_analysis_directory_list
+        '__exclude_analysis_regex' => null,
+
         // A file list that defines files that will be included
         // in static analysis, to the exclusion of others.
         'include_analysis_file_list' => [],
@@ -247,6 +255,14 @@ class Config
         // detect that it is actually returning the passed in
         // `string` instead of an `int` as declared.
         'quick_mode' => false,
+
+        // The maximum recursion depth that can be reached when analyzing the code.
+        // This setting only takes effect when quick_mode is disabled.
+        // A higher limit will make the analysis more accurate, but could possibly
+        // make it harder to track the code bit where a detected issue originates.
+        // As long as this is kept relatively low, performance is usually not affected
+        // by changing this setting.
+        'maximum_recursion_depth' => 2,
 
         // If enabled, check all methods that override a
         // parent method to make sure its signature is
@@ -406,6 +422,24 @@ class Config
         //
         // This has a few known false positives, e.g. for loops or branches.
         'unused_variable_detection' => false,
+
+        // Set to true in order to attempt to detect variables that could be replaced with constants or literals.
+        // (i.e. they are declared once (as a constant expression) and never modified)
+        // This is almost entirely false positives for most coding styles.
+        //
+        // This is intended to be used to check for bugs where a variable such as a boolean was declared but is no longer (or was never) modified.
+        'constant_variable_detection' => false,
+
+        // Set to true in order to emit issues such as `PhanUnusedPublicMethodParameter` instead of `PhanUnusedPublicNoOverrideMethodParameter`
+        // (i.e. assume any non-final non-private method can have overrides).
+        // This is useful in situations when parsing only a subset of the available files.
+        'unused_variable_detection_assume_override_exists' => false,
+
+        // Set this to true in order to aggressively assume class elements aren't overridden when analyzing uses of classes.
+        // This is useful for standalone applications which have all code analyzed by Phan.
+        //
+        // Currently, this just affects inferring that methods without return statements have type `void`
+        'assume_no_external_class_overrides' => false,
 
         // Set to true in order to force tracking references to elements
         // (functions/methods/consts/protected).
@@ -610,10 +644,12 @@ class Config
         // Enable this to emit issue messages with markdown formatting.
         'markdown_issue_messages' => false,
 
-        // Emit colorized issue messages.
+        // Emit colorized issue messages (true by default with the 'text' output mode to supported terminals).
         // NOTE: it is strongly recommended to enable this via the `--color` CLI flag instead,
         // since this is incompatible with most output formatters.
-        'color_issue_messages' => false,
+        //
+        // This can be disabled by setting PHAN_DISABLE_COLOR_OUTPUT=1 or passing `--no-color`
+        'color_issue_messages' => null,
 
         // Allow overriding color scheme in `.phan/config.php` for printing issues, for individual types.
         //
@@ -743,22 +779,27 @@ class Config
         // When true, this will manually back up the state of the PHP process and restore it.
         'language_server_use_pcntl_fallback' => false,
 
-        // This should only be set via CLI (`--language-server-enable-go-to-definition`)
+        // This should only be set via CLI (`--language-server-disable-go-to-definition` to disable)
         // Affects "go to definition" and "go to type definition" of LSP.
-        'language_server_enable_go_to_definition' => false,
+        'language_server_enable_go_to_definition' => true,
 
-        // This should only be set via CLI (`--language-server-enable-hover`)
+        // This should only be set via CLI (`--language-server-disable-hover` to disable)
         // Affects "hover" of LSP.
-        'language_server_enable_hover' => false,
+        'language_server_enable_hover' => true,
 
-        // This should only be set via CLI (`--language-server-enable-completion`)
+        // This should only be set via CLI (`--language-server-disable-completion` to disable)
         // Affects "completion" of LSP.
-        'language_server_enable_completion' => false,
+        'language_server_enable_completion' => true,
 
         // Don't show the category name in issue messages.
         // This makes error messages slightly shorter.
         // Use `--language-server-hide-category` if you want to enable this.
         'language_server_hide_category_of_issues' => false,
+
+        // Should be configured by --language-server-min-diagnostic-delay-ms.
+        // Use this for language clients that have race conditions processing diagnostics.
+        // Max value is 1000 ms.
+        'language_server_min_diagnostics_delay_ms' => 0,
 
         // Set this to false to disable the plugins that Phan uses to infer more accurate return types of `array_map`, `array_filter`, and many other functions.
         //
@@ -769,6 +810,10 @@ class Config
         //
         // Phan is slightly faster when these are disabled.
         'enable_extended_internal_return_type_plugins' => false,
+
+        // Set this to true to make Phan store a full Context inside variables, instead of a FileRef. This could provide more useful info to plugins,
+        // but will increase the memory usage by roughly 2.5%.
+        'record_variable_context_and_scope' => false,
 
         // If a literal string type exceeds this length,
         // then Phan converts it to a regular string type.
@@ -820,19 +865,19 @@ class Config
      * @param string $project_root_directory
      * Set the root directory of the project that we're
      * scanning
-     *
-     * @return void
      */
     public static function setProjectRootDirectory(
         string $project_root_directory
-    ) {
+    ) : void {
         self::$project_root_directory = $project_root_directory;
     }
 
     /**
-     * @return void
+     * Initializes the configuration used for analysis.
+     *
+     * This is automatically called with the defaults, to set any derived configuration and static properties as side effects.
      */
-    public static function init()
+    public static function init() : void
     {
         static $did_init = false;
         if ($did_init) {
@@ -842,7 +887,7 @@ class Config
         self::initOnce();
     }
 
-    private static function initOnce()
+    private static function initOnce() : void
     {
         // Trigger magic setters
         foreach (self::$configuration as $name => $v) {
@@ -962,7 +1007,7 @@ class Config
      * @return void
      * @internal - this should only be used in unit tests.
      */
-    public static function reset()
+    public static function reset() : void
     {
         self::$configuration = self::DEFAULT_CONFIGURATION;
         // Trigger magic behavior
@@ -972,9 +1017,8 @@ class Config
     /**
      * @param string $name
      * @param mixed $value
-     * @return void
      */
-    public static function setValue(string $name, $value)
+    public static function setValue(string $name, $value) : void
     {
         self::$configuration[$name] = $value;
         switch ($name) {
@@ -1030,7 +1074,31 @@ class Config
                     self::$configuration['allow_method_param_type_widening'] = self::$closest_target_php_version_id >= 70200;
                 }
                 break;
+            case 'exclude_analysis_directory_list':
+                self::$configuration['__exclude_analysis_regex'] = self::generateDirectoryListRegex($value);
+                break;
+            case 'directory_list':
+                self::$configuration['__directory_regex'] = self::generateDirectoryListRegex($value);
+                break;
         }
+    }
+
+    /**
+     * @param string[] $value
+     */
+    private static function generateDirectoryListRegex(array $value) : ?string
+    {
+        if (!$value) {
+            return null;
+        }
+        $parts = \array_map(static function (string $path) : string {
+            $path = \str_replace('\\', '/', $path);  // Normalize \\ to / in configs
+            $path = \rtrim($path, '\//');  // remove trailing / from directory
+            $path = \preg_replace('@^(\./)+@', '', $path);  // Remove any number of leading ./ sections
+            return \preg_quote($path, '@');  // Quote this
+        }, $value);
+
+        return '@^(\./)*(' . \implode('|', $parts) . ')([/\\\\]|$)@';
     }
 
     private static function computeClosestTargetPHPVersionId(string $version) : int
@@ -1080,9 +1148,8 @@ class Config
     {
         /**
          * @param mixed $value
-         * @return ?string
          */
-        $is_scalar = static function ($value) {
+        $is_scalar = static function ($value) : ?string {
             if (is_null($value) || \is_scalar($value)) {
                 return null;
             }
@@ -1090,9 +1157,8 @@ class Config
         };
         /**
          * @param mixed $value
-         * @return ?string
          */
-        $is_bool = static function ($value) {
+        $is_bool = static function ($value) : ?string {
             if (is_bool($value)) {
                 return null;
             }
@@ -1100,9 +1166,17 @@ class Config
         };
         /**
          * @param mixed $value
-         * @return ?string
          */
-        $is_string_or_null = static function ($value) {
+        $is_bool_or_null = static function ($value) : ?string {
+            if (is_bool($value) || is_null($value)) {
+                return null;
+            }
+            return 'Expected a boolean' . self::errSuffixGotType($value);
+        };
+        /**
+         * @param mixed $value
+         */
+        $is_string_or_null = static function ($value) : ?string {
             if (is_null($value) || is_string($value)) {
                 return null;
             }
@@ -1110,9 +1184,8 @@ class Config
         };
         /**
          * @param mixed $value
-         * @return ?string
          */
-        $is_string = static function ($value) {
+        $is_string = static function ($value) : ?string {
             if (is_string($value)) {
                 return null;
             }
@@ -1120,9 +1193,8 @@ class Config
         };
         /**
          * @param mixed $value
-         * @return ?string
          */
-        $is_array = static function ($value) {
+        $is_array = static function ($value) : ?string {
             if (is_array($value)) {
                 return null;
             }
@@ -1130,9 +1202,8 @@ class Config
         };
         /**
          * @param mixed $value
-         * @return ?string
          */
-        $is_int_strict = static function ($value) {
+        $is_int_strict = static function ($value) : ?string {
             if (is_int($value)) {
                 return null;
             }
@@ -1140,9 +1211,8 @@ class Config
         };
         /**
          * @param mixed $value
-         * @return ?string
          */
-        $is_string_list = static function ($value) {
+        $is_string_list = static function ($value) : ?string {
             if (!is_array($value)) {
                 return 'Expected a list of strings' . self::errSuffixGotType($value);
             }
@@ -1155,9 +1225,8 @@ class Config
         };
         /**
          * @param mixed $value
-         * @return ?string
          */
-        $is_associative_string_array = static function ($value) {
+        $is_associative_string_array = static function ($value) : ?string {
             if (!is_array($value)) {
                 return 'Expected an associative array mapping strings to strings'  . self::errSuffixGotType($value);
             }
@@ -1179,7 +1248,7 @@ class Config
             'cache_polyfill_asts' => $is_bool,
             'check_docblock_signature_param_type_match' => $is_bool,
             'check_docblock_signature_return_type_match' => $is_bool,
-            'color_issue_messages' => $is_bool,
+            'color_issue_messages' => $is_bool_or_null,
             'color_scheme' => $is_associative_string_array,
             'consistent_hashing_file_order' => $is_bool,
             'daemonize_socket' => $is_scalar,
@@ -1284,9 +1353,8 @@ class Config
 
     /**
      * Prints errors to stderr if any config options are definitely invalid.
-     * @return void
      */
-    public static function warnIfInvalid()
+    public static function warnIfInvalid() : void
     {
         $errors = self::getConfigErrors(self::$configuration);
         foreach ($errors as $error) {
@@ -1299,7 +1367,19 @@ class Config
      */
     public static function isIssueFixingPluginEnabled() : bool
     {
-        return in_array(__DIR__ . '/Plugin/Internal/IssueFixingPlugin.php', Config::getValue('plugins'));
+        return \in_array(__DIR__ . '/Plugin/Internal/IssueFixingPlugin.php', Config::getValue('plugins'));
+    }
+
+    /**
+     * Fetches the value of language_server_min_diagnostics_delay_ms, constrained to 0..1000ms
+     */
+    public static function getMinDiagnosticsDelayMs() : float
+    {
+        $delay = Config::getValue('language_server_min_diagnostics_delay_ms');
+        if (\is_numeric($delay) && $delay > 0) {
+            return \min((float)$delay, 1000);
+        }
+        return 0;
     }
 }
 

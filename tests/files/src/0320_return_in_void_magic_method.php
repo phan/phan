@@ -78,3 +78,9 @@ class MyClass {
         return false;
     }
 }
+
+class MyClass2 {
+    public function __SET_STATE($data) {
+        return 'data';
+    }
+}

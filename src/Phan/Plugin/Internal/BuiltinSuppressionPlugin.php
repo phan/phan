@@ -13,8 +13,8 @@ use Phan\Language\FQSEN;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Library\FileCache;
-use Phan\PluginV2;
-use Phan\PluginV2\SuppressionCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\SuppressionCapability;
 use Phan\Suggestion;
 
 /**
@@ -22,7 +22,7 @@ use Phan\Suggestion;
  *
  * NOTE: This is automatically loaded by phan. Do not include it in a config.
  */
-final class BuiltinSuppressionPlugin extends PluginV2 implements
+final class BuiltinSuppressionPlugin extends PluginV3 implements
     SuppressionCapability
 {
     /**
@@ -64,7 +64,7 @@ final class BuiltinSuppressionPlugin extends PluginV2 implements
         string $issue_type,
         int $lineno,
         array $parameters,
-        $suggestion
+        ?Suggestion $suggestion
     ) : bool {
         $issue_suppression_list = $this->getRawIssueSuppressionList($code_base, $context->getFile());
         $suppressions_for_issue_type = $issue_suppression_list[$issue_type] ?? null;
@@ -144,13 +144,13 @@ final class BuiltinSuppressionPlugin extends PluginV2 implements
             return [];
         }
         $suggestion_list = [];
-        foreach (self::yieldSuppressionComments($file_contents) as list(
+        foreach (self::yieldSuppressionComments($file_contents) as [
             $comment_text,
             $comment_start_line,
             $comment_start_offset,
             $comment_name,
             $kind_list_text
-        )) {
+        ]) {
             $kind_list = \array_map('trim', \explode(',', $kind_list_text));
             foreach ($kind_list as $issue_kind) {
                 // Build a map where the line being suppressed is mapped to the line causing the suppression.
@@ -195,9 +195,9 @@ final class BuiltinSuppressionPlugin extends PluginV2 implements
      * @return Generator<array{0:string,1:int,2:int,3:string,4:string}>
      * yields [$comment_text, $comment_start_line, $comment_start_offset, $comment_name, $kind_list_text];
      */
-    private function yieldSuppressionComments(
+    private static function yieldSuppressionComments(
         string $file_contents
-    ) {
+    ) : Generator {
         foreach (\token_get_all($file_contents) as $token) {
             if (!\is_array($token)) {
                 continue;

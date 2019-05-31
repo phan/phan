@@ -15,13 +15,11 @@ class DuplicateFunctionAnalyzer
 
     /**
      * Check to see if the given FunctionInterface is a duplicate
-     *
-     * @return void
      */
     public static function analyzeDuplicateFunction(
         CodeBase $code_base,
         FunctionInterface $method
-    ) {
+    ) : void {
         $fqsen = $method->getFQSEN();
 
         if (!$fqsen->isAlternate()) {

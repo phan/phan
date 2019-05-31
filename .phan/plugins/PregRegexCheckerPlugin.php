@@ -10,8 +10,8 @@ use Phan\Language\Type\IterableType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Library\RegexKeyExtractor;
 use Phan\Library\StringUtil;
-use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeFunctionCallCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\AnalyzeFunctionCallCapability;
 
 /**
  * This plugin checks for invalid regexes in calls to preg_match. (And all of the other internal PCRE functions).
@@ -23,7 +23,7 @@ use Phan\PluginV2\AnalyzeFunctionCallCapability;
  * - getAnalyzeFunctionCallClosures
  *   This method returns a map from function/method FQSEN to closures that are called on invocations of those closures.
  */
-class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapability
+class PregRegexCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapability
 {
     // Skip over analyzing regex keys that couldn't be resolved.
     // Don't try to convert values to PHP data (should be closures)
@@ -31,14 +31,13 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
         ~(ContextNode::RESOLVE_KEYS_SKIP_UNKNOWN_KEYS | ContextNode::RESOLVE_ARRAY_VALUES);
 
 
-    /** @return void */
-    private static function analyzePattern(CodeBase $code_base, Context $context, Func $function, string $pattern)
+    private static function analyzePattern(CodeBase $code_base, Context $context, Func $function, string $pattern) : void
     {
         /**
          * @suppress PhanParamSuspiciousOrder 100% deliberate use of varying regex and constant $subject for preg_match
          * @return ?array<string,mixed>
          */
-        $err = with_disabled_phan_error_handler(static function () use ($pattern) {
+        $err = with_disabled_phan_error_handler(static function () use ($pattern) : ?array {
             $old_error_reporting = error_reporting();
             \error_reporting(0);
             \ob_start();
@@ -143,7 +142,7 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
      * @param string[] $patterns 1 or more regex patterns
      * @param Node|string|int|float $replacement_node
      */
-    private static function analyzeReplacementTemplate(CodeBase $code_base, Context $context, array $patterns, $replacement_node)
+    private static function analyzeReplacementTemplate(CodeBase $code_base, Context $context, array $patterns, $replacement_node) : void
     {
         $replacement_templates = self::extractStringsFromStringOrArray($code_base, $context, $replacement_node);
         $pattern_keys = null;
@@ -181,14 +180,13 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
     {
         /**
          * @param array<int,Node|string|int|float> $args the nodes for the arguments to the invocation
-         * @return void
          */
         $preg_pattern_callback = static function (
             CodeBase $code_base,
             Context $context,
             Func $function,
             array $args
-        ) {
+        ) : void {
             if (count($args) < 1) {
                 return;
             }
@@ -203,14 +201,13 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
 
         /**
          * @param array<int,Node|int|string|float> $args
-         * @return void
          */
         $preg_pattern_or_array_callback = static function (
             CodeBase $code_base,
             Context $context,
             Func $function,
             array $args
-        ) {
+        ) : void {
             if (count($args) < 1) {
                 return;
             }
@@ -222,14 +219,13 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
 
         /**
          * @param array<int,Node|int|string|float> $args
-         * @return void
          */
         $preg_pattern_and_replacement_callback = static function (
             CodeBase $code_base,
             Context $context,
             Func $function,
             array $args
-        ) {
+        ) : void {
             if (count($args) < 1) {
                 return;
             }
@@ -249,14 +245,13 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
 
         /**
          * @param array<int,Node|string|int|float> $args the nodes for the arguments to the invocation
-         * @return void
          */
         $preg_replace_callback_array_callback = static function (
             CodeBase $code_base,
             Context $context,
             Func $function,
             array $args
-        ) {
+        ) : void {
             if (count($args) < 1) {
                 return;
             }
@@ -267,9 +262,7 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
             }
             if (\is_array($pattern)) {
                 foreach ($pattern as $child_pattern => $_) {
-                    if (\is_scalar($child_pattern)) {
-                        self::analyzePattern($code_base, $context, $function, (string)$child_pattern);
-                    }
+                    self::analyzePattern($code_base, $context, $function, (string)$child_pattern);
                 }
                 return;
             }

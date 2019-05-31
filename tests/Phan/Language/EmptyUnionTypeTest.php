@@ -7,6 +7,11 @@ use Generator;
 use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\EmptyUnionType;
+use Phan\Language\Element\Func;
+use Phan\Language\Element\FunctionInterface;
+use Phan\Language\Element\Method;
+use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FalseType;
@@ -35,10 +40,11 @@ final class EmptyUnionTypeTest extends BaseTest
         '__construct',
         // UnionType implementation can't be optimized
         'withIsPossiblyUndefined',
-        'getIsPossiblyUndefined',
+        'isPossiblyUndefined',
+        'getIsPossiblyUndefined',  // alias of isPossiblyUndefined
     ];
 
-    public function testMethods()
+    public function testMethods() : void
     {
         $this->assertTrue(\class_exists(UnionType::class));  // Force the autoloader to load UnionType before attempting to load EmptyUnionType
         $failures = '';
@@ -175,6 +181,25 @@ final class EmptyUnionTypeTest extends BaseTest
                     static function (...$unused_args) : bool {
                         return true;
                     },
+                ];
+            case FunctionInterface::class:
+                return [
+                    new Func(
+                        new Context(),
+                        'placeholder1',
+                        UnionType::empty(),
+                        0,
+                        FullyQualifiedFunctionName::fromFullyQualifiedString('placeholder1'),
+                        []
+                    ),
+                    new Method(
+                        new Context(),
+                        'placeholder2',
+                        UnionType::empty(),
+                        0,
+                        FullyQualifiedMethodName::fromFullyQualifiedString('PlaceholderClass::placeholder2'),
+                        []
+                    ),
                 ];
             case TemplateType::class:
                 return [

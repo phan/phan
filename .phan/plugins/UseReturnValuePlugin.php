@@ -8,10 +8,10 @@ use Phan\Exception\CodeBaseException;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
-use Phan\PluginV2;
-use Phan\PluginV2\FinalizeProcessCapability;
-use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\FinalizeProcessCapability;
+use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV3\PostAnalyzeNodeCapability;
 
 /**
  * A plugin that checks for invocations of functions/methods where the return value should be used.
@@ -33,7 +33,7 @@ use Phan\PluginV2\PostAnalyzeNodeCapability;
  *
  *   For dynamic checks, use this value instead of the default of 98 (should be between 0.01 and 100)
  */
-class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability, FinalizeProcessCapability
+class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability, FinalizeProcessCapability
 {
     // phpcs:disable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
     // this is deliberate for issue names
@@ -81,7 +81,7 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
      * @return void
      * @override
      */
-    public function finalizeProcess(CodeBase $code_base)
+    public function finalizeProcess(CodeBase $code_base) : void
     {
         if (!self::$use_dynamic) {
             return;
@@ -179,6 +179,8 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'arrayiterator::key' => true,
         'arrayiterator::valid' => true,
         'array_key_exists' => true,
+        'array_key_first' => true,
+        'array_key_last' => true,
         'array_keys' => true,
         'array_map' => true,
         'array_merge_recursive' => true,
@@ -259,6 +261,7 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'date_default_timezone_get' => true,
         'dateinterval::format' => true,
         'datetime::createfromformat' => true,
+        'datetime::createfromimmutable' => true,
         'datetime::diff' => true,
         'datetime::format' => true,
         'datetime::gettimestamp' => true,
@@ -345,6 +348,7 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'func_get_arg' => true,
         'func_num_args' => true,
         'function_exists' => true,
+        'gc_status' => true,
         'get_called_class' => true,
         'get_cfg_var' => true,
         'get_class_methods' => true,
@@ -391,6 +395,7 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'headers_sent' => true,
         'hex2bin' => true,
         'hexdec' => true,
+        'hrtime' => true,
         'htmlentities' => true,
         'html_entity_decode' => true,
         'htmlspecialchars_decode' => true,
@@ -868,9 +873,8 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
      * Skip unary ops when determining the parent node.
      * E.g. for `@foo();`, the parent node is AST_STMT_LIST (which we infer means the result is unused)
      * For `$x = +foo();` the parent node is AST_ASSIGN.
-     * @return ?Node
      */
-    private function findNonUnaryParentNodeNode()
+    private function findNonUnaryParentNodeNode() : ?Node
     {
         $parent = end($this->parent_node_list);
         if (!$parent) {
@@ -894,7 +898,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
      * @return void
      * @override
      */
-    public function visitCall(Node $node)
+    public function visitCall(Node $node) : void
     {
         $parent = $this->findNonUnaryParentNodeNode();
         if (!$parent) {
@@ -944,7 +948,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
      * @return void
      * @override
      */
-    public function visitMethodCall(Node $node)
+    public function visitMethodCall(Node $node) : void
     {
         $parent = $this->findNonUnaryParentNodeNode();
         if (!$parent) {
@@ -993,7 +997,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
      * @return void
      * @override
      */
-    public function visitStaticCall(Node $node)
+    public function visitStaticCall(Node $node) : void
     {
         $parent = $this->findNonUnaryParentNodeNode();
         if (!$parent) {
@@ -1051,7 +1055,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         return is_string($name) && strcasecmp($name, 'true') === 0;
     }
 
-    private function quickWarn(string $fqsen, Node $node)
+    private function quickWarn(string $fqsen, Node $node) : void
     {
         $fqsen_key = strtolower(ltrim($fqsen, "\\"));
         $result = UseReturnValuePlugin::HARDCODED_FQSENS[$fqsen_key] ?? false;

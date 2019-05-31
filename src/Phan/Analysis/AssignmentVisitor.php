@@ -3,6 +3,7 @@
 namespace Phan\Analysis;
 
 use AssertionError;
+use ast;
 use ast\Node;
 use Phan\AST\AnalysisVisitor;
 use Phan\AST\ContextNode;
@@ -238,7 +239,7 @@ class AssignmentVisitor extends AnalysisVisitor
      * @return void
      * @see self::visitArray()
      */
-    private function analyzeShapedArrayAssignment(Node $node)
+    private function analyzeShapedArrayAssignment(Node $node) : void
     {
         // Figure out the type of elements in the list
         $fallback_element_type = null;
@@ -261,6 +262,14 @@ class AssignmentVisitor extends AnalysisVisitor
                 continue;
             }
 
+            if ($child_node->kind !== ast\AST_ARRAY_ELEM) {
+                $this->emitIssue(
+                    Issue::InvalidNode,
+                    $child_node->lineno,
+                    "Spread operator is not supported in assignments"
+                );
+                continue;
+            }
             // Get the key and value nodes for each
             // array element we're assigning to
             // TODO: Check key types are valid?
@@ -324,12 +333,11 @@ class AssignmentVisitor extends AnalysisVisitor
 
     /**
      * @param Node|string|int|float $value_node
-     * @return void
      */
     private function analyzeValueNodeOfShapedArray(
         UnionType $element_type,
         $value_node
-    ) {
+    ) : void {
         if (!$value_node instanceof Node) {
             return;
         }
@@ -394,7 +402,7 @@ class AssignmentVisitor extends AnalysisVisitor
      * @return void
      * @see self::visitArray()
      */
-    private function analyzeGenericArrayAssignment(Node $node)
+    private function analyzeGenericArrayAssignment(Node $node) : void
     {
         // Figure out the type of elements in the list
         $right_type = $this->right_type;
@@ -424,6 +432,14 @@ class AssignmentVisitor extends AnalysisVisitor
             // a list to throw the element away. I'm not
             // here to judge.
             if (!($child_node instanceof Node)) {
+                continue;
+            }
+            if ($child_node->kind !== ast\AST_ARRAY_ELEM) {
+                $this->emitIssue(
+                    Issue::InvalidNode,
+                    $child_node->lineno,
+                    "Spread operator is not supported in assignments"
+                );
                 continue;
             }
 
@@ -476,9 +492,9 @@ class AssignmentVisitor extends AnalysisVisitor
                     // Set the element type on each element of
                     // the list
                     $property->setUnionType($element_type);
-                } catch (UnanalyzableException $exception) {
+                } catch (UnanalyzableException $_) {
                     // Ignore it. There's nothing we can do.
-                } catch (NodeException $exception) {
+                } catch (NodeException $_) {
                     // Ignore it. There's nothing we can do.
                 } catch (IssueException $exception) {
                     Issue::maybeEmitInstance(
@@ -505,9 +521,8 @@ class AssignmentVisitor extends AnalysisVisitor
     /**
      * @param int|false $expect_int_keys_lineno
      * @param int|false $expect_string_keys_lineno
-     * @return void
      */
-    private function checkMismatchArrayDestructuringKey($expect_int_keys_lineno, $expect_string_keys_lineno)
+    private function checkMismatchArrayDestructuringKey($expect_int_keys_lineno, $expect_string_keys_lineno) : void
     {
         if ($expect_int_keys_lineno !== false || $expect_string_keys_lineno !== false) {
             $right_hand_key_type = GenericArrayType::keyTypeFromUnionTypeKeys($this->right_type);
@@ -576,7 +591,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 $dim_node
             );
             $dim_value = $dim_type->asSingleScalarValueOrNullOrSelf();
-        } elseif (\is_scalar($dim_node) && $dim_node !== null) {
+        } elseif (\is_scalar($dim_node)) {
             $dim_value = $dim_node;
             $dim_type = Type::fromObject($dim_node)->asUnionType();
         } else {
@@ -648,7 +663,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 $this->context,
                 $dim,
                 $this->right_type,
-                $node->flags ?? 0
+                0
             );
 
             $this->context->addGlobalScopeVariable(
@@ -676,12 +691,12 @@ class AssignmentVisitor extends AnalysisVisitor
                 $this->context,
                 $node->children['expr']
             ))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT, Issue::TypeExpectedObjectPropAccess);
-        } catch (CodeBaseException $exception) {
+        } catch (CodeBaseException $_) {
             // This really shouldn't happen since the code
             // parsed cleanly. This should fatal.
             // throw $exception;
             return $this->context;
-        } catch (\Exception $exception) {
+        } catch (\Exception $_) {
             // If we can't figure out what kind of a class
             // this is, don't worry about it
             return $this->context;
@@ -727,7 +742,7 @@ class AssignmentVisitor extends AnalysisVisitor
         }
 
         // Check if it is a built in class with dynamic properties but (possibly) no __set, such as SimpleXMLElement or stdClass or V8Js
-        $is_class_with_arbitrary_types = isset($class_list[0]) ? $class_list[0]->getHasDynamicProperties($this->code_base) : false;
+        $is_class_with_arbitrary_types = isset($class_list[0]) ? $class_list[0]->hasDynamicProperties($this->code_base) : false;
 
         if ($is_class_with_arbitrary_types || Config::getValue('allow_missing_properties')) {
             try {
@@ -766,6 +781,8 @@ class AssignmentVisitor extends AnalysisVisitor
 
     /**
      * This analyzes an assignment to an instance or static property.
+     *
+     * @param Node $node the left hand side of the assignment
      */
     private function analyzePropAssignment(Clazz $clazz, Property $property, Node $node) : Context
     {
@@ -779,14 +796,15 @@ class AssignmentVisitor extends AnalysisVisitor
         // outside of the scope of this assignment, so we add to
         // its union type rather than replace it.
         $property_union_type = $property->getUnionType();
+        $resolved_right_type = $this->right_type->withStaticResolvedInContext($this->context);
         if ($this->dim_depth > 0) {
-            if ($this->right_type->canCastToExpandedUnionType(
+            if ($resolved_right_type->canCastToExpandedUnionType(
                 $property_union_type,
                 $this->code_base
             )) {
                 $this->addTypesToProperty($property, $node);
-                if (Config::get_strict_property_checking() && $this->right_type->typeCount() > 1) {
-                    $this->analyzePropertyAssignmentStrict($property, $this->right_type, $node);
+                if (Config::get_strict_property_checking() && $resolved_right_type->typeCount() > 1) {
+                    $this->analyzePropertyAssignmentStrict($property, $resolved_right_type, $node);
                 }
             } elseif ($property_union_type->asExpandedTypes($this->code_base)->hasArrayAccess()) {
                 // Add any type if this is a subclass with array access.
@@ -797,7 +815,8 @@ class AssignmentVisitor extends AnalysisVisitor
                 // TODO: If the codebase explicitly sets a phpdoc array shape type on a property assignment,
                 // then preserve the array shape type.
                 $new_types = $this->typeCheckDimAssignment($property_union_type, $node)
-                                  ->withFlattenedArrayShapeOrLiteralTypeInstances();
+                                  ->withFlattenedArrayShapeOrLiteralTypeInstances()
+                                  ->withStaticResolvedInContext($this->context);
 
                 // TODO: More precise than canCastToExpandedUnionType
                 if (!$new_types->canCastToExpandedUnionType(
@@ -813,8 +832,8 @@ class AssignmentVisitor extends AnalysisVisitor
                         (string)$property_union_type
                     );
                 } else {
-                    if (Config::get_strict_property_checking() && $this->right_type->typeCount() > 1) {
-                        $this->analyzePropertyAssignmentStrict($property, $this->right_type, $node);
+                    if (Config::get_strict_property_checking() && $resolved_right_type->typeCount() > 1) {
+                        $this->analyzePropertyAssignmentStrict($property, $resolved_right_type, $node);
                     }
                     $this->right_type = $new_types;
                     $this->addTypesToProperty($property, $node);
@@ -827,22 +846,40 @@ class AssignmentVisitor extends AnalysisVisitor
             // stdClass is an exception to this, for issues such as https://github.com/phan/phan/pull/700
             return $this->context;
         } else {
+            if (($node->children['expr']->kind ?? null) === \ast\AST_VAR && $node->children['expr']->children['name'] === 'this') {
+                $this->handleThisPropertyAssignmentInLocalScope($property);
+            }
             // This is a regular assignment, not an assignment to an offset
-            if (!$this->right_type->canCastToExpandedUnionType(
+            if (!$resolved_right_type->canCastToExpandedUnionType(
                 $property_union_type,
                 $this->code_base
             )
-                && !($this->right_type->hasTypeInBoolFamily() && $property_union_type->hasTypeInBoolFamily())
-                && !$clazz->getHasDynamicProperties($this->code_base)
+                && !($resolved_right_type->hasTypeInBoolFamily() && $property_union_type->hasTypeInBoolFamily())
+                && !$clazz->hasDynamicProperties($this->code_base)
             ) {
-                // TODO: optionally, change the message from "::" to "->"?
-                $this->emitIssue(
-                    Issue::TypeMismatchProperty,
-                    $node->lineno ?? 0,
-                    (string)$this->right_type,
-                    $property->getRepresentationForIssue(),
-                    (string)$property_union_type
-                );
+                if ($resolved_right_type->nonNullableClone()->canCastToExpandedUnionType($property_union_type, $this->code_base) &&
+                        !$resolved_right_type->isType(NullType::instance(false))) {
+                    if ($this->shouldSuppressIssue(Issue::TypeMismatchProperty, $node->lineno)) {
+                        return $this->context;
+                    }
+                    $this->emitIssue(
+                        Issue::PossiblyNullTypeMismatchProperty,
+                        $node->lineno,
+                        (string)$this->right_type->withUnionType($resolved_right_type),
+                        $property->getRepresentationForIssue(),
+                        (string)$property_union_type,
+                        'null'
+                    );
+                } else {
+                    // TODO: optionally, change the message from "::" to "->"?
+                    $this->emitIssue(
+                        Issue::TypeMismatchProperty,
+                        $node->lineno,
+                        (string)$this->right_type->withUnionType($resolved_right_type),
+                        $property->getRepresentationForIssue(),
+                        (string)$property_union_type
+                    );
+                }
                 return $this->context;
             }
 
@@ -857,7 +894,16 @@ class AssignmentVisitor extends AnalysisVisitor
         return $this->context;
     }
 
-    private function analyzeAssignmentToReadOnlyProperty(Property $property, Node $node)
+    /**
+     * Modifies $this->context (if needed) to track the assignment to a property of $this within a function-like.
+     * This handles conditional branches.
+     */
+    private function handleThisPropertyAssignmentInLocalScope(Property $property) : void
+    {
+        $this->context = $this->context->withThisPropertySetToType($property, $this->right_type);
+    }
+
+    private function analyzeAssignmentToReadOnlyProperty(Property $property, Node $node) : void
     {
         $is_from_phpdoc = $property->isFromPHPDoc();
         $context = $property->getContext();
@@ -881,7 +927,7 @@ class AssignmentVisitor extends AnalysisVisitor
         );
     }
 
-    private function analyzePropertyAssignmentStrict(Property $property, UnionType $assignment_type, Node $node)
+    private function analyzePropertyAssignmentStrict(Property $property, UnionType $assignment_type, Node $node) : void
     {
         $type_set = $assignment_type->getTypeSet();
         if (\count($type_set) < 2) {
@@ -919,9 +965,13 @@ class AssignmentVisitor extends AnalysisVisitor
             // No mismatches
             return;
         }
+        if ($this->shouldSuppressIssue(Issue::TypeMismatchProperty, $node->lineno)) {
+            // TypeMismatchProperty also suppresses PhanPossiblyNullTypeMismatchProperty, etc.
+            return;
+        }
 
         $this->emitIssue(
-            self::getStrictIssueType($mismatch_type_set),
+            self::getStrictPropertyMismatchIssueType($mismatch_type_set),
             $node->lineno ?? 0,
             (string)$this->right_type,
             $property->getRepresentationForIssue(),
@@ -930,7 +980,7 @@ class AssignmentVisitor extends AnalysisVisitor
         );
     }
 
-    private static function getStrictIssueType(UnionType $union_type) : string
+    private static function getStrictPropertyMismatchIssueType(UnionType $union_type) : string
     {
         if ($union_type->typeCount() === 1) {
             $type = $union_type->getTypeSet()[0];
@@ -946,15 +996,13 @@ class AssignmentVisitor extends AnalysisVisitor
 
     /**
      * @param Property $property - The property which should have types added to it
-     *
-     * @return void
      */
-    private function addTypesToProperty(Property $property, Node $node)
+    private function addTypesToProperty(Property $property, Node $node) : void
     {
         $original_property_types = $property->getUnionType();
         if ($original_property_types->isEmpty()) {
             // TODO: Be more precise?
-            $property->setUnionType($this->right_type->withFlattenedArrayShapeOrLiteralTypeInstances());
+            $property->setUnionType($this->right_type->withStaticResolvedInContext($this->context)->withFlattenedArrayShapeOrLiteralTypeInstances());
             return;
         }
 
@@ -964,7 +1012,7 @@ class AssignmentVisitor extends AnalysisVisitor
             $new_types = $this->right_type;
         }
         $has_literals = $original_property_types->hasLiterals();
-        $new_types = $new_types->withFlattenedArrayShapeTypeInstances();
+        $new_types = $new_types->withStaticResolvedInContext($this->context)->withFlattenedArrayShapeTypeInstances();
 
         $updated_property_types = $original_property_types;
         foreach ($new_types->getTypeSet() as $new_type) {
@@ -1020,12 +1068,12 @@ class AssignmentVisitor extends AnalysisVisitor
                 $this->context,
                 $node->children['class']
             ))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME, Issue::TypeExpectedObjectStaticPropAccess);
-        } catch (CodeBaseException $exception) {
+        } catch (CodeBaseException $_) {
             // This really shouldn't happen since the code
             // parsed cleanly. This should fatal.
             // throw $exception;
             return $this->context;
-        } catch (\Exception $exception) {
+        } catch (\Exception $_) {
             // If we can't figure out what kind of a class
             // this is, don't worry about it
             return $this->context;
@@ -1224,7 +1272,7 @@ class AssignmentVisitor extends AnalysisVisitor
             }
             return $right_type;
         }
-        $assign_type_expanded = $assign_type->asExpandedTypes($this->code_base);
+        $assign_type_expanded = $assign_type->withStaticResolvedInContext($this->context)->asExpandedTypes($this->code_base);
         //echo "$assign_type_expanded : " . json_encode($assign_type_expanded->hasArrayLike()) . "\n";
 
         // TODO: Better heuristic to deal with false positives on ArrayAccess subclasses

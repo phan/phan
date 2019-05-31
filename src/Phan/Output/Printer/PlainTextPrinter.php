@@ -20,11 +20,7 @@ final class PlainTextPrinter implements IssuePrinterInterface
     /** @var OutputInterface an output that plaintext formatted issues can be written to. */
     private $output;
 
-    /**
-     * @param IssueInstance $instance
-     * @return void
-     */
-    public function print(IssueInstance $instance)
+    public function print(IssueInstance $instance) : void
     {
         $file    = $instance->getFile();
         $line    = $instance->getLine();
@@ -70,11 +66,7 @@ final class PlainTextPrinter implements IssuePrinterInterface
         $this->output->writeln($issue);
     }
 
-    /**
-     * @param OutputInterface $output
-     * @return void
-     */
-    public function configureOutput(OutputInterface $output)
+    public function configureOutput(OutputInterface $output) : void
     {
         $this->output = $output;
     }

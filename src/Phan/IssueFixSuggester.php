@@ -43,15 +43,12 @@ class IssueFixSuggester
      * @param Closure(Clazz):bool $class_closure
      * @return Closure(FullyQualifiedClassName):bool
      */
-    public static function createFQSENFilterFromClassFilter(CodeBase $code_base, Closure $class_closure)
+    public static function createFQSENFilterFromClassFilter(CodeBase $code_base, Closure $class_closure) : Closure
     {
         /**
          * @param FullyQualifiedClassName $alternate_fqsen
          */
-        return static function ($alternate_fqsen) use ($code_base, $class_closure) : bool {
-            if (!($alternate_fqsen instanceof FullyQualifiedClassName)) {
-                return false;
-            }
+        return static function (FullyQualifiedClassName $alternate_fqsen) use ($code_base, $class_closure) : bool {
             if (!$code_base->hasClassWithFQSEN($alternate_fqsen)) {
                 return false;
             }
@@ -62,7 +59,7 @@ class IssueFixSuggester
     /**
      * @return Closure(FullyQualifiedClassName):bool
      */
-    public static function createFQSENFilterForClasslikeCategories(CodeBase $code_base, bool $allow_class, bool $allow_trait, bool $allow_interface)
+    public static function createFQSENFilterForClasslikeCategories(CodeBase $code_base, bool $allow_class, bool $allow_trait, bool $allow_interface) : Closure
     {
         return self::createFQSENFilterFromClassFilter($code_base, static function (Clazz $class) use ($allow_class, $allow_trait, $allow_interface) : bool {
             if ($class->isTrait()) {
@@ -76,9 +73,10 @@ class IssueFixSuggester
     }
 
     /**
-     * @return ?Suggestion
+     * Returns a suggestion that suggests a similarly spelled class that has a method with name $method_name
+     * (Used when trying to invoke a method on a class that does not exist)
      */
-    public static function suggestSimilarClassForMethod(CodeBase $code_base, Context $context, FullyQualifiedClassName $class_fqsen, string $method_name, bool $is_static)
+    public static function suggestSimilarClassForMethod(CodeBase $code_base, Context $context, FullyQualifiedClassName $class_fqsen, string $method_name, bool $is_static) : ?Suggestion
     {
         $filter = null;
         if (strtolower($method_name) === '__construct') {
@@ -92,7 +90,7 @@ class IssueFixSuggester
     }
 
     /**
-     * @return ?Suggestion
+     * Returns a suggestion for a global function spelled similarly to $function_fqsen (e.g. if $function_fqsen does not exist)
      */
     public static function suggestSimilarGlobalFunction(
         CodeBase $code_base,
@@ -100,7 +98,7 @@ class IssueFixSuggester
         FullyQualifiedFunctionName $function_fqsen,
         bool $suggest_in_global_namespace = true,
         string $prefix = ""
-    ) {
+    ) : ?Suggestion {
         if (!$prefix) {
             $prefix = self::DEFAULT_FUNCTION_SUGGESTION_PREFIX;
         }
@@ -137,16 +135,15 @@ class IssueFixSuggester
      *
      * @param ?Closure(FullyQualifiedClassName):bool $filter
      * @param int $class_suggest_type whether to include non-classes such as 'int', 'callable', etc.
-     * @return ?Suggestion
      */
     public static function suggestSimilarClass(
         CodeBase $code_base,
         Context $context,
         FullyQualifiedClassName $class_fqsen,
-        $filter = null,
+        ?Closure $filter = null,
         string $prefix = null,
         int $class_suggest_type = self::CLASS_SUGGEST_ONLY_CLASSES
-    ) {
+    ) : ?Suggestion {
         if (!$prefix) {
             $prefix = self::DEFAULT_CLASS_SUGGESTION_PREFIX;
         }
@@ -187,9 +184,9 @@ class IssueFixSuggester
     }
 
     /**
-     * @return ?Suggestion
+     * Returns a suggestion with similar method names to $wanted_method_name in $class (that exist and are accessible from the usage context), or null.
      */
-    public static function suggestSimilarMethod(CodeBase $code_base, Context $context, Clazz $class, string $wanted_method_name, bool $is_static)
+    public static function suggestSimilarMethod(CodeBase $code_base, Context $context, Clazz $class, string $wanted_method_name, bool $is_static) : ?Suggestion
     {
         if (Config::getValue('disable_suggestions')) {
             return null;
@@ -227,7 +224,7 @@ class IssueFixSuggester
      * @return ?FullyQualifiedClassName
      * @internal
      */
-    public static function maybeGetClassInCurrentScope(Context $context)
+    public static function maybeGetClassInCurrentScope(Context $context) : ?FullyQualifiedClassName
     {
         if ($context->isInClassScope()) {
             return $context->getClassFQSEN();
@@ -240,7 +237,7 @@ class IssueFixSuggester
      * @return array<string,Method> a subset of those methods
      * @internal
      */
-    public static function filterSimilarMethods(CodeBase $code_base, Context $context, array $methods, bool $is_static)
+    public static function filterSimilarMethods(CodeBase $code_base, Context $context, array $methods, bool $is_static) : array
     {
         $class_fqsen_in_current_scope = self::maybeGetClassInCurrentScope($context);
 
@@ -260,11 +257,9 @@ class IssueFixSuggester
     }
 
     /**
-     * @param ?\Closure $filter
-     * @return ?Suggestion
-     * TODO: Figure out why ?Closure(NS\X):bool can't cast to ?Closure(NS\X):bool
+     * @param ?\Closure(FullyQualifiedClassName):bool $filter
      */
-    public static function suggestSimilarClassForGenericFQSEN(CodeBase $code_base, Context $context, FQSEN $fqsen, $filter = null, string $prefix = 'Did you mean')
+    public static function suggestSimilarClassForGenericFQSEN(CodeBase $code_base, Context $context, FQSEN $fqsen, ?Closure $filter = null, string $prefix = 'Did you mean') : ?Suggestion
     {
         if (Config::getValue('disable_suggestions')) {
             return null;
@@ -276,9 +271,9 @@ class IssueFixSuggester
     }
 
     /**
-     * @return ?Suggestion
+     * Generate a suggestion with similar suggestions (properties or otherwise) to a missing property with class $class and name $wanted_property_name.
      */
-    public static function suggestSimilarProperty(CodeBase $code_base, Context $context, Clazz $class, string $wanted_property_name, bool $is_static)
+    public static function suggestSimilarProperty(CodeBase $code_base, Context $context, Clazz $class, string $wanted_property_name, bool $is_static) : ?Suggestion
     {
         if (Config::getValue('disable_suggestions')) {
             return null;
@@ -332,7 +327,7 @@ class IssueFixSuggester
      * @return array<string,Property> a subset of those methods
      * @internal
      */
-    public static function filterSimilarProperties(CodeBase $code_base, Context $context, array $property_map, bool $is_static)
+    public static function filterSimilarProperties(CodeBase $code_base, Context $context, array $property_map, bool $is_static) : array
     {
         $class_fqsen_in_current_scope = self::maybeGetClassInCurrentScope($context);
         $candidates = [];
@@ -356,9 +351,9 @@ class IssueFixSuggester
     }
 
     /**
-     * @return ?Suggestion
+     * Returns a suggestion with class constants with a similar name to $class_constant_fqsen in the same class, or null
      */
-    public static function suggestSimilarClassConstant(CodeBase $code_base, Context $context, FullyQualifiedClassConstantName $class_constant_fqsen)
+    public static function suggestSimilarClassConstant(CodeBase $code_base, Context $context, FullyQualifiedClassConstantName $class_constant_fqsen) : ?Suggestion
     {
         if (Config::getValue('disable_suggestions')) {
             return null;
@@ -389,7 +384,7 @@ class IssueFixSuggester
     /**
      * @return ?Suggestion with values similar to the given constant
      */
-    public static function suggestSimilarGlobalConstant(CodeBase $code_base, Context $context, FullyQualifiedGlobalConstantName $fqsen)
+    public static function suggestSimilarGlobalConstant(CodeBase $code_base, Context $context, FullyQualifiedGlobalConstantName $fqsen) : ?Suggestion
     {
         if (Config::getValue('disable_suggestions')) {
             return null;
@@ -539,9 +534,11 @@ class IssueFixSuggester
     }
 
     /**
-     * @return ?Suggestion
+     * Return a suggestion for variables with similar spellings to $variable_name (which may or may not exist or be used elsewhere), or null.
+     *
+     * Suggestions also include accessible properties with similar names (e.g. suggest `$this->context` if `$context` is not declared)
      */
-    public static function suggestVariableTypoFix(CodeBase $code_base, Context $context, string $variable_name, string $prefix = 'Did you mean')
+    public static function suggestVariableTypoFix(CodeBase $code_base, Context $context, string $variable_name, string $prefix = 'Did you mean') : ?Suggestion
     {
         if (Config::getValue('disable_suggestions')) {
             return null;
@@ -606,7 +603,7 @@ class IssueFixSuggester
      * @param array<string,mixed> $potential_candidates
      * @return array<string,mixed> a subset of $potential_candidates
      */
-    public static function getSuggestionsForStringSet(string $target, array $potential_candidates)
+    public static function getSuggestionsForStringSet(string $target, array $potential_candidates) : array
     {
         if (count($potential_candidates) === 0) {
             return [];

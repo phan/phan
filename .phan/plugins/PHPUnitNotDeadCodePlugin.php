@@ -6,9 +6,9 @@ use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Method;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
-use Phan\PluginV2;
-use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV3\PostAnalyzeNodeCapability;
 
 /**
  * Mark all phpunit test cases as used for dead code detection during Phan's self-analysis.
@@ -20,9 +20,9 @@ use Phan\PluginV2\PostAnalyzeNodeCapability;
  *   Returns the name of a class extending PluginAwarePostAnalysisVisitor, which will be used to analyze nodes in the analysis phase.
  *   If the PluginAwarePostAnalysisVisitor subclass has an instance property called parent_node_list,
  *   Phan will automatically set that property to the list of parent nodes (The nodes deepest in the AST are at the end of the list)
- *   (implement \Phan\PluginV2\PostAnalyzeNodeCapability)
+ *   (implement \Phan\PluginV3\PostAnalyzeNodeCapability)
  */
-class PHPUnitNotDeadCodePlugin extends PluginV2 implements PostAnalyzeNodeCapability
+class PHPUnitNotDeadCodePlugin extends PluginV3 implements PostAnalyzeNodeCapability
 {
     /**
      * @override
@@ -54,7 +54,7 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
      * @return void
      * @override
      */
-    public function visitClass(Node $unused_node)
+    public function visitClass(Node $unused_node) : void
     {
         if (!Config::get_track_references()) {
             return;
@@ -106,10 +106,8 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
      * Marks all data provider methods as being referenced
      *
      * @param Method $method the Method representing a unit test in a test case subclass
-     *
-     * @return void
      */
-    private function markDataProvidersAsReferenced(Clazz $class, Method $method)
+    private function markDataProvidersAsReferenced(Clazz $class, Method $method) : void
     {
         if (preg_match('/@dataProvider\s+' . self::WORD_REGEX . '/', $method->getNode()->children['docComment'] ?? '', $match)) {
             $data_provider_name = $match[1];
@@ -142,7 +140,7 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
      * @return void
      * @suppress PhanThrowTypeAbsentForCall this FQSEN is valid
      */
-    public static function init()
+    public static function init() : void
     {
         $fqsen = FullyQualifiedClassName::make('\\PHPUnit\Framework', 'TestCase');
         self::$phpunit_test_case_fqsen = $fqsen;

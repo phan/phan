@@ -1,0 +1,4 @@
+src/107_ambiguous_switch.php:14 PhanPluginDuplicateSwitchCaseLooseEquality Switch case(1) is loosely equivalent (==) to an earlier case ('1e0') in switch statement - the earlier entry may be chosen instead.
+src/107_ambiguous_switch.php:26 PhanPluginDuplicateSwitchCaseLooseEquality Switch case('foo') is loosely equivalent (==) to an earlier case (0) in switch statement - the earlier entry may be chosen instead.
+src/107_ambiguous_switch.php:35 PhanPluginDuplicateSwitchCaseLooseEquality Switch case(1) is loosely equivalent (==) to an earlier case ('1bar') in switch statement - the earlier entry may be chosen instead.
+src/107_ambiguous_switch.php:38 PhanPluginDuplicateSwitchCaseLooseEquality Switch case('1e0') is loosely equivalent (==) to an earlier case (1) in switch statement - the earlier entry may be chosen instead.

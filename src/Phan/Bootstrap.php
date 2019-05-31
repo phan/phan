@@ -14,6 +14,34 @@ ini_set("memory_limit", '-1');
 define('CLASS_DIR', __DIR__ . '/../');
 set_include_path(get_include_path() . PATH_SEPARATOR . CLASS_DIR);
 
+if (extension_loaded('ast')) {
+    // Warn if the php-ast version is too low.
+    $ast_version = (new ReflectionExtension('ast'))->getVersion();
+    if (version_compare($ast_version, '1.0.0') <= 0) {
+        fprintf(
+            STDERR,
+            "ERROR: Phan 2.x requires php-ast 1.0.1+ because it depends on AST version 70. php-ast %s is installed." . PHP_EOL,
+            $ast_version
+        );
+        fwrite(
+            STDERR,
+            "Exiting without analyzing files." . PHP_EOL
+        );
+        exit(1);
+    }
+}
+if (PHP_VERSION_ID < 70100) {
+    fprintf(
+        STDERR,
+        "Phan 2.0 requires PHP 7.1+ to run, but PHP %s is installed." . PHP_EOL,
+        PHP_VERSION
+    );
+    fwrite(STDERR, "PHP 7.0 reached its end of life in December 2018." . PHP_EOL);
+    fwrite(STDERR, "Exiting without analyzing code." . PHP_EOL);
+    // The version of vendor libraries this depends on will also require php 7.1
+    exit(1);
+}
+
 // Use the composer autoloader
 $found_autoloader = false;
 foreach ([
@@ -36,6 +64,8 @@ define('EXIT_ISSUES_FOUND', EXIT_FAILURE);
 
 // Throw exceptions so asserts can be linked to the code being analyzed
 ini_set('assert.exception', '1');
+// Set a substitute character for StringUtil::asUtf8()
+ini_set('mbstring.substitute_character', (string)0xFFFD);
 
 // Explicitly set each option in case INI is set otherwise
 assert_options(ASSERT_ACTIVE, true);
@@ -51,7 +81,7 @@ assert_options(ASSERT_CALLBACK, '');  // Can't explicitly set ASSERT_CALLBACK to
  * Print more of the backtrace than is done by default
  * @suppress PhanAccessMethodInternal
  */
-set_exception_handler(static function (Throwable $throwable) {
+set_exception_handler(static function (Throwable $throwable) : void {
     error_log("$throwable\n");
     if (class_exists(CodeBase::class, false)) {
         $most_recent_file = CodeBase::getMostRecentlyParsedOrAnalyzedFile();
@@ -88,6 +118,46 @@ function with_disabled_phan_error_handler(Closure $closure)
 }
 
 /**
+ * Print a backtrace with values to stderr.
+ */
+function phan_print_backtrace(bool $is_crash = false) : void
+{
+    ob_start();
+    debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+    fwrite(STDERR, rtrim(ob_get_clean() ?: "failed to dump backtrace") . PHP_EOL);
+
+    $frames = debug_backtrace();
+    if (isset($frames[1])) {
+        fwrite(STDERR, 'More details:' . PHP_EOL);
+        if (class_exists(Config::class, false)) {
+            $max_frame_length = max(100, Config::getValue('debug_max_frame_length'));
+        } else {
+            $max_frame_length = 1000;
+        }
+        $truncated = false;
+        foreach ($frames as $i => $frame) {
+            if ($i < 2) {
+                continue;
+            }
+            $frame_details = \Phan\Debug\Frame::frameToString($frame);
+            if (strlen($frame_details) > $max_frame_length) {
+                $truncated = true;
+                if (function_exists('mb_substr')) {
+                    $frame_details = mb_substr($frame_details, 0, $max_frame_length) . '...';
+                } else {
+                    $frame_details = substr($frame_details, 0, $max_frame_length) . '...';
+                }
+            }
+            fprintf(STDERR, '#%d: %s' . PHP_EOL, $i, $frame_details);
+        }
+        if ($truncated) {
+            fwrite(STDERR, "(Some long strings (usually JSON of AST Nodes) were truncated. To print more details for some stack frames of this " . ($is_crash ? "crash" : "log") . ", " .
+               "increase the Phan config setting debug_max_frame_length)" . PHP_EOL);
+        }
+    }
+}
+
+/**
  * The error handler for PHP notices, etc.
  * This is a named function instead of a closure to make stack traces easier to read.
  *
@@ -96,9 +166,8 @@ function with_disabled_phan_error_handler(Closure $closure)
  * @param string $errstr
  * @param string $errfile
  * @param int $errline
- * @return bool
  */
-function phan_error_handler($errno, $errstr, $errfile, $errline)
+function phan_error_handler(int $errno, string $errstr, string $errfile, int $errline) : bool
 {
     global $__no_echo_phan_errors;
     if ($__no_echo_phan_errors) {
@@ -107,6 +176,11 @@ function phan_error_handler($errno, $errstr, $errfile, $errline)
     // php-src/ext/standard/streamsfuncs.c suggests that this is the only error caused by signal handlers and there are no translations
     if ($errno === E_WARNING && preg_match('/^stream_select.*unable to select/', $errstr)) {
         // Don't execute the PHP internal error handler
+        return true;
+    }
+    if ($errno === E_USER_DEPRECATED && preg_match('/^Passing a command as string when creating a /', $errstr)) {
+        // Suppress deprecation notices running `vendor/bin/paratest`.
+        // Don't execute the PHP internal error handler.
         return true;
     }
     if ($errno === E_DEPRECATED && preg_match('/ast\\\\parse_/', $errstr)) {
@@ -141,39 +215,8 @@ function phan_error_handler($errno, $errstr, $errfile, $errline)
             fprintf(STDERR, "(Phan %s crashed)" . PHP_EOL, CLI::PHAN_VERSION);
         }
     }
-    ob_start();
-    debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-    fwrite(STDERR, rtrim(ob_get_clean() ?: "failed to dump backtrace") . PHP_EOL);
 
-    $frames = debug_backtrace();
-    if (isset($frames[1])) {
-        fwrite(STDERR, 'More details:' . PHP_EOL);
-        if (class_exists(Config::class, false)) {
-            $max_frame_length = max(100, Config::getValue('debug_max_frame_length'));
-        } else {
-            $max_frame_length = 1000;
-        }
-        $truncated = false;
-        foreach ($frames as $i => $frame) {
-            if ($i == 0) {
-                continue;
-            }
-            $frame_details = \Phan\Debug\Frame::frameToString($frame);
-            if (strlen($frame_details) > $max_frame_length) {
-                $truncated = true;
-                if (function_exists('mb_substr')) {
-                    $frame_details = mb_substr($frame_details, 0, $max_frame_length) . '...';
-                } else {
-                    $frame_details = substr($frame_details, 0, $max_frame_length) . '...';
-                }
-            }
-            fprintf(STDERR, '#%d: %s' . PHP_EOL, $i, $frame_details);
-        }
-        if ($truncated) {
-            fwrite(STDERR, "(Some long strings (usually JSON of AST Nodes) were truncated. To print more details for some stack frames of this crash, " .
-               "increase the Phan config setting debug_max_frame_length)" . PHP_EOL);
-        }
-    }
+    phan_print_backtrace(true);
 
     exit(EXIT_FAILURE);
 }
@@ -192,22 +235,5 @@ if (!class_exists(CompileError::class)) {
     // phpcs:ignore PSR1.Classes.ClassDeclaration.MissingNamespace
     class CompileError extends Error
     {
-    }
-}
-
-if (extension_loaded('ast')) {
-    // Warn if the php-ast version is too low.
-    $ast_version = (new ReflectionExtension('ast'))->getVersion();
-    if (PHP_VERSION_ID >= 70400) {
-        if (version_compare($ast_version, '1.0.0') <= 0) {
-            fwrite(STDERR, "Phan is being run with php-ast version $ast_version.\n");
-            fwrite(STDERR, "However, when run with PHP 7.4+, Phan requires php-ast 1.0.1 or newer. Older versions of php-ast will crash Phan.\n");
-            fwrite(STDERR, "Alternately, to run this version of Phan with PHP 7.4 without upgrading php-ast, uninstall/disable php-ast in php.ini,"
-               . " then add the CLI option --allow-polyfill-parser (which is noticeably slower)\n");
-            exit(EXIT_FAILURE);
-        }
-    }
-    if (version_compare($ast_version, '0.1.5') < 0) {
-        fprintf(STDERR, "Phan supports php-ast version 0.1.5 or newer, but the installed php-ast version is %s. You may see bugs in some edge cases\n", $ast_version);
     }
 }

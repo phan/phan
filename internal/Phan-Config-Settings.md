@@ -192,6 +192,15 @@ This will also check if final methods are overridden, etc.
 
 (Default: `true`)
 
+## assume_no_external_class_overrides
+
+Set this to true in order to aggressively assume class elements aren't overridden when analyzing uses of classes.
+This is useful for standalone applications which have all code analyzed by Phan.
+
+Currently, this just affects inferring that methods without return statements have type `void`
+
+(Default: `false`)
+
 ## autoload_internal_extension_signatures
 
 You can put paths to stubs of internal extensions in this config option.
@@ -376,6 +385,17 @@ This setting cannot be less than 50.
 This setting can be overridden if users wish to store strings that are even longer than 50 bytes.
 
 (Default: `200`)
+
+## maximum_recursion_depth
+
+The maximum recursion depth that can be reached when analyzing the code.
+This setting only takes effect when quick_mode is disabled.
+A higher limit will make the analysis more accurate, but could possibly
+make it harder to track the code bit where a detected issue originates.
+As long as this is kept relatively low, performance is usually not affected
+by changing this setting.
+
+(Default: `2`)
 
 ## parent_constructor_required
 
@@ -711,6 +731,16 @@ Setting this to true will introduce numerous false positives
 
 These settings affect how Phan will track what elements are referenced to warn about them.
 
+## constant_variable_detection
+
+Set to true in order to attempt to detect variables that could be replaced with constants or literals.
+(i.e. they are declared once (as a constant expression) and never modified)
+This is almost entirely false positives for most coding styles.
+
+This is intended to be used to check for bugs where a variable such as a boolean was declared but is no longer (or was never) modified.
+
+(Default: `false`)
+
 ## dead_code_detection
 
 Set to true in order to attempt to detect dead
@@ -752,6 +782,14 @@ Set to true in order to attempt to detect unused variables.
 [`dead_code_detection`](#dead_code_detection) will also enable unused variable detection.
 
 This has a few known false positives, e.g. for loops or branches.
+
+(Default: `false`)
+
+## unused_variable_detection_assume_override_exists
+
+Set to true in order to emit issues such as `PhanUnusedPublicMethodParameter` instead of `PhanUnusedPublicNoOverrideMethodParameter`
+(i.e. assume any non-final non-private method can have overrides).
+This is useful in situations when parsing only a subset of the available files.
 
 (Default: `false`)
 

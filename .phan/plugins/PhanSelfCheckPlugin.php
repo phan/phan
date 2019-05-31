@@ -15,8 +15,8 @@ use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Library\ConversionSpec;
 use Phan\Library\StringUtil;
-use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeFunctionCallCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\AnalyzeFunctionCallCapability;
 use function count;
 use function is_string;
 
@@ -29,7 +29,7 @@ use function is_string;
  *
  * NOTE: This does not check Issue::fromType($typename)(...args)
  */
-class PhanSelfCheckPlugin extends PluginV2 implements AnalyzeFunctionCallCapability
+class PhanSelfCheckPlugin extends PluginV3 implements AnalyzeFunctionCallCapability
 {
     const TooManyArgumentsForIssue = 'PhanPluginTooManyArgumentsForIssue';
     const TooFewArgumentsForIssue = 'PhanPluginTooFewArgumentsForIssue';
@@ -44,10 +44,9 @@ class PhanSelfCheckPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
         /**
          * @return Closure(CodeBase, Context, FunctionInterface, array<int,mixed>):void
          */
-        $make_array_issue_callback = static function (int $fmt_index, int $arg_index) {
+        $make_array_issue_callback = static function (int $fmt_index, int $arg_index) : Closure {
             /**
              * @param array<int,Node|string|int|float> $args the nodes for the arguments to the invocation
-             * @return void
              */
             return static function (
                 CodeBase $code_base,
@@ -57,7 +56,7 @@ class PhanSelfCheckPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
             ) use (
                 $fmt_index,
                 $arg_index
-) {
+) : void {
                 if (\count($args) <= $fmt_index) {
                     return;
                 }
@@ -81,10 +80,9 @@ class PhanSelfCheckPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
          * @param int $arg_index the index of an array parameter expecting sequential arguments. This is >= $type_index.
          * @return Closure(CodeBase, Context, FunctionInterface, array<int,mixed>):void
          */
-        $make_type_and_parameters_callback = static function (int $type_index, int $arg_index) {
+        $make_type_and_parameters_callback = static function (int $type_index, int $arg_index) : Closure {
             /**
              * @param array<int,Node|string|int|float> $args the nodes for the arguments to the invocation
-             * @return void
              */
             return static function (
                 CodeBase $code_base,
@@ -94,7 +92,7 @@ class PhanSelfCheckPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
             ) use (
                 $type_index,
                 $arg_index
-) {
+) : void {
                 if (\count($args) <= $type_index) {
                     return;
                 }
@@ -122,10 +120,9 @@ class PhanSelfCheckPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
          * @param int $arg_index the index of an array parameter expecting variable arguments. This is >= $type_index.
          * @return Closure(CodeBase, Context, FunctionInterface, array<int,mixed>):void
          */
-        $make_type_and_varargs_callback = static function (int $type_index, int $arg_index) {
+        $make_type_and_varargs_callback = static function (int $type_index, int $arg_index) : Closure {
             /**
              * @param array<int,Node|string|int|float> $args the nodes for the arguments to the invocation
-             * @return void
              */
             return static function (
                 CodeBase $code_base,
@@ -135,7 +132,7 @@ class PhanSelfCheckPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
             ) use (
                 $type_index,
                 $arg_index
-) {
+) : void {
                 if (\count($args) <= $type_index) {
                     return;
                 }
@@ -179,7 +176,7 @@ class PhanSelfCheckPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
             '\Phan\Language\Element\Comment\Builder::emitIssue' => $make_type_and_parameters_callback(0, 2),
         ];
         // @phan-suppress-next-line PhanThrowTypeAbsentForCall
-        $emit_plugin_issue_fqsen = FullyQualifiedMethodName::fromFullyQualifiedString('\Phan\PluginV2\IssueEmitter::emitPluginIssue');
+        $emit_plugin_issue_fqsen = FullyQualifiedMethodName::fromFullyQualifiedString('\Phan\PluginV3\IssueEmitter::emitPluginIssue');
         // @phan-suppress-next-line PhanThrowTypeAbsentForCall
         $analysis_visitor_fqsen = FullyQualifiedMethodName::fromFullyQualifiedString('\Phan\AST\AnalysisVisitor::emitIssue');
 
@@ -195,10 +192,7 @@ class PhanSelfCheckPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
         return $results;
     }
 
-    /**
-     * @return ?Issue
-     */
-    private static function getIssueOrWarn(CodeBase $code_base, Context $context, FunctionInterface $function, string $issue_type)
+    private static function getIssueOrWarn(CodeBase $code_base, Context $context, FunctionInterface $function, string $issue_type) : ?Issue
     {
         try {
             return Issue::fromType($issue_type);
@@ -214,7 +208,7 @@ class PhanSelfCheckPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
         }
     }
 
-    private static function checkIssueTemplateUsage(CodeBase $code_base, Context $context, string $issue_message_template, int $issue_message_arg_count)
+    private static function checkIssueTemplateUsage(CodeBase $code_base, Context $context, string $issue_message_template, int $issue_message_arg_count) : void
     {
         $issue_message_format_string = Issue::templateToFormatString($issue_message_template);
         $expected_arg_count = ConversionSpec::computeExpectedArgumentCount($issue_message_format_string);
@@ -244,9 +238,8 @@ class PhanSelfCheckPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
 
     /**
      * @param Node|mixed $arg
-     * @return ?int
      */
-    private static function computeArraySize(CodeBase $code_base, Context $context, $arg)
+    private static function computeArraySize(CodeBase $code_base, Context $context, $arg) : ?int
     {
         if ($arg === null) {
             return 0;
@@ -262,7 +255,7 @@ class PhanSelfCheckPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
         }
         $field_types = $array_shape_type->getFieldTypes();
         foreach ($field_types as $field_type) {
-            if ($field_type->getIsPossiblyUndefined()) {
+            if ($field_type->isPossiblyUndefined()) {
                 return null;
             }
         }

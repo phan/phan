@@ -29,10 +29,6 @@ final class ChainedIssueFilter implements IssueFilterInterface
         $this->filters = $filters;
     }
 
-    /**
-     * @param IssueInstance $issue
-     * @return bool
-     */
     public function supports(IssueInstance $issue):bool
     {
         foreach ($this->filters as $filter) {

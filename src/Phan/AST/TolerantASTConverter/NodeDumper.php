@@ -57,23 +57,28 @@ class NodeDumper
         $this->indent = $indent;
     }
 
-    /** @return void */
-    public function setIncludeOffset(bool $include_offset)
+    /**
+     * Should this include the byte offset in the file where the node occurred?
+     */
+    public function setIncludeOffset(bool $include_offset) : void
     {
         $this->include_offset = $include_offset;
     }
 
-    /** @return void */
-    public function setIncludeTokenKind(bool $include_token_kind)
+    /**
+     * Should this include the token kind (default is just the text of the token)
+     */
+    public function setIncludeTokenKind(bool $include_token_kind) : void
     {
         $this->include_token_kind = $include_token_kind;
     }
 
     /**
+     * Sets the text used for indentation (e.g. 4 spaces)
      * @return void
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function setIndent(string $indent)
+    public function setIndent(string $indent) : void
     {
         $this->indent = $indent;
     }
@@ -82,7 +87,7 @@ class NodeDumper
      * Converts the class name of $ast_node to a short string describing that class name.
      * Removes the common `Microsoft\\PhpParser\\` prefix
      */
-    public function dumpClassName(Node $ast_node) : string
+    public static function dumpClassName(Node $ast_node) : string
     {
         $name = get_class($ast_node);
         if (\stripos($name, 'Microsoft\\PhpParser\\') === 0) {
@@ -96,7 +101,7 @@ class NodeDumper
      * Converts the class name of $ast_node to a short string describing that class name.
      * Removes the common `Microsoft\\PhpParser\\` prefix
      */
-    public function dumpTokenClassName(Token $ast_node) : string
+    public static function dumpTokenClassName(Token $ast_node) : string
     {
         $name = get_class($ast_node);
         if (\stripos($name, 'Microsoft\\PhpParser\\') === 0) {
@@ -119,7 +124,7 @@ class NodeDumper
                 "%s%s%s%s\n",
                 $padding,
                 $key !== '' ? $key . ': ' : '',
-                $this->dumpClassName($ast_node),
+                self::dumpClassName($ast_node),
                 $this->include_offset ? ' (@' . $ast_node->getStart() . ')' : ''
             );
 
@@ -133,7 +138,7 @@ class NodeDumper
                 "%s%s%s: %s%s%s: %s\n",
                 $padding,
                 $key !== '' ? $key . ': ' : '',
-                $this->dumpTokenClassName($ast_node),
+                self::dumpTokenClassName($ast_node),
                 $ast_node->getTokenKindNameFromValue($ast_node->kind),
                 $this->include_token_kind ? '(' . $ast_node->kind . ')' : '',
                 $this->include_offset ? ' (@' . $ast_node->start . ')' : '',
@@ -154,7 +159,7 @@ class NodeDumper
      * @throws Exception for invalid $ast_node values
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function dumpTree($ast_node, string $key = '', string $padding = '')
+    public function dumpTree($ast_node, string $key = '', string $padding = '') : void
     {
         echo $this->dumpTreeAsString($ast_node, $key, $padding);
     }

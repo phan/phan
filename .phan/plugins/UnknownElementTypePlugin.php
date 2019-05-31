@@ -9,15 +9,15 @@ use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
-use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeFunctionCapability;
-use Phan\PluginV2\AnalyzeMethodCapability;
-use Phan\PluginV2\AnalyzePropertyCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\AnalyzeFunctionCapability;
+use Phan\PluginV3\AnalyzeMethodCapability;
+use Phan\PluginV3\AnalyzePropertyCapability;
 
 /**
  * This file checks if any elements in the codebase have undeclared types.
  */
-class UnknownElementTypePlugin extends PluginV2 implements
+class UnknownElementTypePlugin extends PluginV3 implements
     AnalyzeFunctionCapability,
     AnalyzeMethodCapability,
     AnalyzePropertyCapability
@@ -49,7 +49,7 @@ class UnknownElementTypePlugin extends PluginV2 implements
     public function analyzeMethod(
         CodeBase $code_base,
         Method $method
-    ) {
+    ) : void {
         if ($method->getFQSEN() !== $method->getRealDefiningFQSEN()) {
             return;
         }
@@ -91,7 +91,7 @@ class UnknownElementTypePlugin extends PluginV2 implements
         string $message_for_empty,
         string $issue_type_for_unknown_array,
         string $message_for_unknown_array
-    ) {
+    ) : void {
         $union_type = $element->getUnionType();
         if ($union_type->isEmpty()) {
             self::emitIssue(
@@ -126,7 +126,7 @@ class UnknownElementTypePlugin extends PluginV2 implements
     public function analyzeFunction(
         CodeBase $code_base,
         Func $function
-    ) {
+    ) : void {
         // NOTE: Placeholders can be found in \Phan\Issue::uncolored_format_string_for_replace
         if ($function->getUnionType()->isEmpty()) {
             if ($function->getFQSEN()->isClosure()) {
@@ -208,7 +208,7 @@ class UnknownElementTypePlugin extends PluginV2 implements
     public function analyzeProperty(
         CodeBase $code_base,
         Property $property
-    ) {
+    ) : void {
         if ($property->getFQSEN() !== $property->getRealDefiningFQSEN()) {
             return;
         }

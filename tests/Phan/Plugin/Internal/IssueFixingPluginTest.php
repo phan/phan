@@ -18,7 +18,7 @@ final class IssueFixingPluginTest extends BaseTest implements CodeBaseAwareTestI
     /** @var CodeBase|null The code base within which this unit test is operating */
     private $code_base = null;
 
-    public function setCodeBase(CodeBase $code_base = null)
+    public function setCodeBase(CodeBase $code_base = null) : void
     {
         $this->code_base = $code_base;
     }
@@ -29,7 +29,7 @@ final class IssueFixingPluginTest extends BaseTest implements CodeBaseAwareTestI
      * @param IssueInstance[] $instances
      * @dataProvider computeAndApplyFixesProvider
      */
-    public function testComputeAndApplyFixes(string $expected_contents, string $original_contents, array $instances)
+    public function testComputeAndApplyFixes(string $expected_contents, string $original_contents, array $instances) : void
     {
         $fixers = IssueFixer::computeFixersForInstances($instances);
         //var_export($instances);
@@ -37,7 +37,7 @@ final class IssueFixingPluginTest extends BaseTest implements CodeBaseAwareTestI
         $this->assertCount(1, $fixers);
         $fixers_for_file = $fixers[self::FILE];
         // echo "Going to apply to \n$original_contents\n";
-        // @phan-suppress-next-line PhanPossiblyNullTypeArgument
+        // @phan-suppress-next-line PhanPartialTypeMismatchArgument
         $new_contents = IssueFixer::computeNewContentForFixers($this->code_base, self::FILE, $original_contents, $fixers_for_file);
         $this->assertSame($expected_contents, $new_contents, 'unexpected contents after applying fixes');
     }
@@ -89,7 +89,7 @@ EOT
      * @param FileEdit[] $all_edits
      * @dataProvider computeNewContentsProvider
      */
-    public function testComputeNewContents($expected_contents, string $contents, array $all_edits)
+    public function testComputeNewContents(?string $expected_contents, string $contents, array $all_edits) : void
     {
         $this->assertSame($expected_contents, IssueFixer::computeNewContents(self::FILE, $contents, $all_edits));
     }

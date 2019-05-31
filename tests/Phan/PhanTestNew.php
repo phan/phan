@@ -11,20 +11,17 @@ namespace Phan\Tests;
  */
 class PhanTestNew extends PhanTestCommon
 {
-    /**
-     * @suppress PhanUndeclaredConstant
-     */
-    public function getTestFiles()
+    public function getTestFiles() : array
     {
-        return array_filter(
+        return \array_filter(
             $this->getAllTestFiles(),
             /**
              * @param array{0:array{0:string},1:string} $data
              */
             static function (array $data) : bool {
-                $expected_file = basename($data[1]);
+                $expected_file = \basename($data[1]);
                 // Run everything except 0000-0599 (including tests starting with punctuation/letters if needed)
-                return !(strcmp($expected_file, '0000') >= 0 && strcmp($expected_file, '0600') < 0);
+                return !(\strcmp($expected_file, '0000') >= 0 && \strcmp($expected_file, '0600') < 0);
             }
         );
     }

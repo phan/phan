@@ -248,6 +248,9 @@ return [
 
         // TODO: Undo the suppressions for the below categories of issues:
         'Phan\Exception\CodeBaseException',
+        // phpunit
+        'PHPUnit\Framework\ExpectationFailedException',
+        'SebastianBergmann\RecursionContext\InvalidArgumentException',
     ],
 
     // Increase this to properly analyze require_once statements
@@ -281,6 +284,8 @@ return [
         'PhanPluginDescriptionlessCommentOnProtectedMethod',
         'PhanPluginNoCommentOnPrivateMethod',
         'PhanPluginDescriptionlessCommentOnPrivateMethod',
+        // TODO: Fix edge cases in --automatic-fix for PhanPluginRedundantClosureComment
+        'PhanPluginRedundantClosureComment',
     ],
 
     // If empty, no filter against issues types will be applied.
@@ -460,13 +465,16 @@ return [
         // Plugins for Phan's self-analysis
         ////////////////////////////////////////////////////////////////////////
 
-        // TODO: warn about the usage of assert() for Phan's self-analysis. See https://github.com/phan/phan/issues/288
+        // Warns about the usage of assert() for Phan's self-analysis. See https://github.com/phan/phan/issues/288
         'NoAssertPlugin',
 
         'HasPHPDocPlugin',
+        'PHPDocToRealTypesPlugin',  // suggests replacing (at)return void with `: void` in the declaration, etc.
+        'PHPDocRedundantPlugin',
+        'PreferNamespaceUsePlugin',
 
         // This should only be enabled if the code being analyzed contains Phan plugins.
-        '.phan/plugins/PhanSelfCheckPlugin.php',
+        'PhanSelfCheckPlugin',
 
         ////////////////////////////////////////////////////////////////////////
         // End plugins for Phan's self-analysis

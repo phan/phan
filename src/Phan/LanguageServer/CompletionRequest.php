@@ -60,7 +60,7 @@ final class CompletionRequest extends NodeInfoRequest
      * @return void
      * @suppress PhanPartialTypeMismatchArgument this accepts multiple types of arrays
      */
-    public function recordCompletionList($completions)
+    public function recordCompletionList($completions) : void
     {
         if ($completions instanceof CompletionItem || isset($completions['label'])) {
             $completions = [$completions];
@@ -78,18 +78,17 @@ final class CompletionRequest extends NodeInfoRequest
      *
      * @param CodeBase $code_base used for resolving type location in "Completion"
      * @param ClassConstant|Clazz|Func|GlobalConstant|Method|Property|Variable $element
-     * @return void
      */
     public function recordCompletionElement(
         CodeBase $code_base,
         TypedElementInterface $element,
         string $prefix = null
-    ) {
+    ) : void {
         $item = $this->createCompletionItem($code_base, $element, $prefix);
         $this->recordCompletionItem($item);
     }
 
-    private function recordCompletionItem(CompletionItem $item)
+    private function recordCompletionItem(CompletionItem $item) : void
     {
         $this->completions[$item->label . ':' . $item->kind] = $item;
     }
@@ -142,10 +141,7 @@ final class CompletionRequest extends NodeInfoRequest
         return $element->getName();
     }
 
-    /**
-     * @return ?int
-     */
-    private function kindForElement(TypedElementInterface $element)
+    private function kindForElement(TypedElementInterface $element) : ?int
     {
         if ($element instanceof ClassConstant) {
             return CompletionItemKind::VARIABLE;
@@ -174,41 +170,41 @@ final class CompletionRequest extends NodeInfoRequest
         return \array_values($this->completions);
     }
 
-    public function finalize()
+    public function finalize() : void
     {
-        $promise = $this->promise;
-        if ($promise) {
-            $result = $this->completions ?: null;
-            if ($result !== null) {
-                // Sort completion suggestions alphabetically,
-                // ignoring the leading `$` in variables/static properties.
-                \uksort(
-                    $result,
-                    /**
-                     * @param string $a
-                     * @param string $b
-                     */
-                    static function ($a, $b) : int {
-                        $a = \ltrim((string)$a, '$');
-                        $b = \ltrim((string)$b, '$');
-                        return (\strtolower($a) <=> \strtolower($b)) ?: ($a <=> $b);
-                    }
-                );
-                $result_list = new CompletionList(\array_values($result));
-            } else {
-                $result_list = null;
-            }
-            $promise->fulfill($result_list);
-            $this->promise = null;
+        if ($this->fulfilled) {
+            return;
         }
+        $this->fulfilled = true;
+        $result = $this->completions ?: null;
+        if ($result !== null) {
+            // Sort completion suggestions alphabetically,
+            // ignoring the leading `$` in variables/static properties.
+            \uksort(
+                $result,
+                /**
+                 * @param int|string $a usually strings
+                 * @param int|string $b
+                 */
+                static function ($a, $b) : int {
+                    $a = \ltrim((string)$a, '$');
+                    $b = \ltrim((string)$b, '$');
+                    return (\strtolower($a) <=> \strtolower($b)) ?: ($a <=> $b);
+                }
+            );
+            $result_list = new CompletionList(\array_values($result));
+        } else {
+            $result_list = null;
+        }
+        $this->promise->fulfill($result_list);
     }
 
     public function __destruct()
     {
-        $promise = $this->promise;
-        if ($promise) {
-            $promise->reject(new Exception('Failed to send a valid textDocument/definition result'));
-            $this->promise = null;
+        if ($this->fulfilled) {
+            return;
         }
+        $this->fulfilled = true;
+        $this->promise->reject(new Exception('Failed to send a valid textDocument/definition result'));
     }
 }

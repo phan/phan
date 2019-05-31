@@ -15,7 +15,7 @@ final class BoolType extends ScalarType
 {
     /** @phan-override */
     const NAME = 'bool';
-    public function getIsPossiblyFalsey() : bool
+    public function isPossiblyFalsey() : bool
     {
         return true;  // it's always falsey, since this is conceptually a collection of FalseType and TrueType
     }
@@ -30,7 +30,7 @@ final class BoolType extends ScalarType
         return FalseType::instance($this->is_nullable);
     }
 
-    public function getIsPossiblyFalse() : bool
+    public function isPossiblyFalse() : bool
     {
         return true;  // it's possibly false, since this is conceptually a collection of FalseType and TrueType
     }
@@ -40,7 +40,7 @@ final class BoolType extends ScalarType
         return TrueType::instance($this->is_nullable);
     }
 
-    public function getIsPossiblyTrue() : bool
+    public function isPossiblyTrue() : bool
     {
         return true;  // it's possibly true, since this is conceptually a collection of FalseType and TrueType
     }
@@ -50,12 +50,12 @@ final class BoolType extends ScalarType
         return FalseType::instance($this->is_nullable);
     }
 
-    public function getIsInBoolFamily() : bool
+    public function isInBoolFamily() : bool
     {
         return true;
     }
 
-    public function getIsAlwaysTruthy() : bool
+    public function isAlwaysTruthy() : bool
     {
         return false;  // overridden in various types. This base class (Type) is implicitly the type of an object, which is always truthy.
     }

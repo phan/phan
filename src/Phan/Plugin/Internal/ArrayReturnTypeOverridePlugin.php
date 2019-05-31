@@ -19,8 +19,8 @@ use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
-use Phan\PluginV2;
-use Phan\PluginV2\ReturnTypeOverrideCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\ReturnTypeOverrideCapability;
 use function count;
 
 /**
@@ -30,7 +30,7 @@ use function count;
  *
  * @phan-file-suppress PhanUnusedClosureParameter
  */
-final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
+final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
     ReturnTypeOverrideCapability
 {
 

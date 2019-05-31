@@ -3,6 +3,7 @@
 namespace Phan\Config;
 
 use ast\Node;
+use Closure;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\VersionParser;
 use Phan\AST\Parser;
@@ -254,7 +255,7 @@ EOT;
      * @return ?InitializedSettings
      * @internal
      */
-    public static function createPhanSettingsForComposerSettings(array $composer_settings, $vendor_path, array $opts)
+    public static function createPhanSettingsForComposerSettings(array $composer_settings, ?string $vendor_path, array $opts) : ?InitializedSettings
     {
         $level = $opts['init-level'] ?? 3;
         $level = self::LEVEL_MAP[\strtolower((string)$level)] ?? $level;
@@ -270,7 +271,7 @@ EOT;
         $is_weakest_level = $level >= 5;
 
         $cwd = \getcwd();
-        list($project_directory_list, $project_file_list) = self::extractAutoloadFilesAndDirectories('', $composer_settings);
+        [$project_directory_list, $project_file_list] = self::extractAutoloadFilesAndDirectories('', $composer_settings);
         if ($vendor_path !== null && count($project_directory_list) === 0 && count($project_file_list) === 0) {
             echo "phan --init expects composer.json to contain 'autoload' psr-4 directories\n";
             return null;
@@ -299,7 +300,7 @@ EOT;
         }
 
         $comments = [];
-        list($target_php_version, $comments['target_php_version']) = self::determineTargetPHPVersion($composer_settings);
+        [$target_php_version, $comments['target_php_version']] = self::determineTargetPHPVersion($composer_settings);
 
         $phan_settings = [
             'target_php_version'       => $target_php_version,
@@ -376,7 +377,7 @@ EOT;
                 continue;
             }
 
-            list($library_directory_list, $library_file_list) = self::extractAutoloadFilesAndDirectories("vendor/$requirement", $library_composer_settings);
+            [$library_directory_list, $library_file_list] = self::extractAutoloadFilesAndDirectories("vendor/$requirement", $library_composer_settings);
             $phan_directory_list = \array_merge($phan_directory_list, $library_directory_list);
             $phan_file_list = \array_merge($phan_file_list, $library_file_list);
         }
@@ -430,12 +431,15 @@ EOT;
         } catch (\UnexpectedValueException $_) {
             return [null, ['TODO: Choose a target_php_version for this project, or leave as null and remove this comment']];
         }
+        // Not going to suggest 5.6 - analyzing with 7.0 might detect some functions that were removed
         if ($version_constraint->matches(self::parseConstraintsForRange('<7.1-dev'))) {
             $version_guess = '7.0';
         } elseif ($version_constraint->matches(self::parseConstraintsForRange('<7.2-dev'))) {
             $version_guess = '7.1';
-        } elseif ($version_constraint->matches(self::parseConstraintsForRange('>= 7.2-dev'))) {
+        } elseif ($version_constraint->matches(self::parseConstraintsForRange('<7.3-dev'))) {
             $version_guess = '7.2';
+        } elseif ($version_constraint->matches(self::parseConstraintsForRange('>= 7.3-dev'))) {
+            $version_guess = '7.3';
         } else {
             return [null, ['TODO: Choose a target_php_version for this project, or leave as null and remove this comment']];
         }
@@ -451,7 +455,7 @@ EOT;
      * @param array<string,mixed> $composer_settings settings parsed from composer.json
      * @return array<int,array<int,string>> [$directory_list, $file_list]
      */
-    private static function extractAutoloadFilesAndDirectories(string $relative_dir, array $composer_settings)
+    private static function extractAutoloadFilesAndDirectories(string $relative_dir, array $composer_settings) : array
     {
         $directory_list = [];
         $file_list = [];
@@ -478,6 +482,7 @@ EOT;
                     continue;
                 }
 
+                $composer_lib_relative_path = \preg_replace('@(/\.)+$@', '', $composer_lib_relative_path);
                 if (\is_dir($composer_lib_absolute_path)) {
                     $directory_list[] = \trim($composer_lib_relative_path, '/');
                 } elseif (\is_file($composer_lib_relative_path)) {
@@ -485,14 +490,52 @@ EOT;
                 }
             }
         }
-        return [\array_unique($directory_list), \array_unique($file_list)];
+        return self::filterDirectoryAndFileList($directory_list, $file_list);
+    }
+
+    /**
+     * Sort and return the unique directories and files to be added to the Phan config.
+     * (don't return directories/files within other directories)
+     *
+     * @param array<int,string> $directory_list
+     * @param array<int,string> $file_list
+     * @return array<int,array<int,string>> [$directory_list, $file_list]
+     */
+    public static function filterDirectoryAndFileList(array $directory_list, array $file_list) : array
+    {
+        \sort($directory_list);
+        \sort($file_list);
+        if (count($directory_list) > 0) {
+            $filter = self::createNotInDirectoryFilter($directory_list);
+            $directory_list = \array_filter($directory_list, $filter);
+            $file_list = \array_filter($file_list, $filter);
+        }
+        return [
+            \array_values(\array_unique($directory_list)),
+            \array_values(\array_unique($file_list))
+        ];
+    }
+
+    /**
+     * @param string[] $directory_list
+     * @return Closure(string):bool a closure that returns true if the passed in file is not within any folders in $directory_list
+     */
+    private static function createNotInDirectoryFilter(array $directory_list) : Closure
+    {
+        $parts = \array_map(static function (string $path) : string {
+            return \preg_quote($path, '@');
+        }, $directory_list);
+        $prefix_filter = '@^(' . \implode($parts, '|') . ')[\\\\/]@';
+        return static function (string $path) use ($prefix_filter) : bool {
+            return !\preg_match($prefix_filter, $path);
+        };
     }
 
     /**
      * @param array<string,mixed> $opts
      * @return array<int,string>
      */
-    private static function getArrayOption(array $opts, string $key)
+    private static function getArrayOption(array $opts, string $key) : array
     {
         $values = $opts[$key] ?? [];
         if (is_string($values)) {

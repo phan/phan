@@ -30,14 +30,18 @@ class ClosureScope extends FunctionLikeScope
 
     /**
      * Override the class FQSEN inside this closure's scope (with an (at)phan-closure-scope annotation).
-     * @return void
      */
-    public function overrideClassFQSEN(FullyQualifiedClassName $fqsen = null)
+    public function overrideClassFQSEN(FullyQualifiedClassName $fqsen = null) : void
     {
+        // If there is an FQSEN override, then this is in a class scope.
+        // If there is no override, then this inherits the class of the parent
         if ($fqsen) {
             $this->flags |= Scope::IN_CLASS_SCOPE;
         } else {
-            $this->flags &= ~Scope::IN_CLASS_SCOPE;
+            if (!($this->parent_scope->flags & Scope::IN_CLASS_SCOPE)) {
+                // This is probably a closure FQSEN with an missing class override outside of a method scope.
+                $this->flags &= ~Scope::IN_CLASS_SCOPE;
+            }
         }
         $this->override_class_fqsen = $fqsen;
     }
@@ -47,7 +51,7 @@ class ClosureScope extends FunctionLikeScope
      * If the (at)phan-closure-scope annotation is used, returns the corresponding override class FQSEN.
      * Returns the class FQSEN inside this closure's scope (with an (at)phan-closure-scope annotation).
      */
-    public function getOverrideClassFQSEN()
+    public function getOverrideClassFQSEN() : ?FullyQualifiedClassName
     {
         return $this->override_class_fqsen;
     }
@@ -65,7 +69,7 @@ class ClosureScope extends FunctionLikeScope
      * @return ?FullyQualifiedClassName
      * Crawl the scope hierarchy to get a class FQSEN.
      */
-    public function getClassFQSENOrNull()
+    public function getClassFQSENOrNull() : ?FullyQualifiedClassName
     {
         return $this->override_class_fqsen ?? parent::getClassFQSENOrNull();
     }

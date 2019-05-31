@@ -9,8 +9,8 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\UnionType;
-use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeFunctionCallCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\AnalyzeFunctionCallCapability;
 
 /**
  * Mark PHPUnit helper assertions as having side effects.
@@ -24,7 +24,7 @@ use Phan\PluginV2\AnalyzeFunctionCallCapability;
  *
  * NOTE: This will probably be rewritten
  */
-class PHPUnitAssertionPlugin extends PluginV2 implements AnalyzeFunctionCallCapability
+class PHPUnitAssertionPlugin extends PluginV3 implements AnalyzeFunctionCallCapability
 {
     /**
      * @override
@@ -59,7 +59,7 @@ class PHPUnitAssertionPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
      * @return ?Closure(CodeBase, Context, FunctionInterface, array):void
      * @suppress PhanAccessClassConstantInternal, PhanAccessMethodInternal
      */
-    private function createClosureForMethod(CodeBase $code_base, Method $method, string $name)
+    private function createClosureForMethod(CodeBase $code_base, Method $method, string $name) : ?Closure
     {
         // TODO: Add a helper method which will convert a doc comment and a stub php function source code to a closure for a param index (or indices)
         switch (\strtolower($name)) {
@@ -75,6 +75,13 @@ class PHPUnitAssertionPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
                 return $method->createClosureForAssertion(
                     $code_base,
                     new Assertion(UnionType::empty(), 'unusedParamName', Assertion::IS_FALSE),
+                    0
+                );
+                // TODO: Rest of https://github.com/sebastianbergmann/phpunit/issues/3368
+            case 'assertisstring':
+                return $method->createClosureForAssertion(
+                    $code_base,
+                    new Assertion(UnionType::fromFullyQualifiedString('string'), 'unusedParamName', Assertion::IS_OF_TYPE),
                     0
                 );
             case 'assertnull':
@@ -226,6 +233,7 @@ class PHPUnitAssertionPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
                     1
                 );
         }
+        return null;
     }
 }
 

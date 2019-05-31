@@ -19,4 +19,9 @@ final class ResourceType extends NativeType
     {
         return false;
     }
+
+    public function canUseInRealSignature() : bool
+    {
+        return false;
+    }
 }

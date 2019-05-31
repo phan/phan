@@ -15,7 +15,7 @@ final class ASTSimplifierTest extends AbstractPhanFileTest
     /**
      * @suppress PhanUndeclaredConstant
      */
-    public function getTestFiles()
+    public function getTestFiles() : array
     {
         return $this->scanSourceFilesDir(\AST_TEST_FILE_DIR, \AST_EXPECTED_DIR);
     }
@@ -33,10 +33,10 @@ final class ASTSimplifierTest extends AbstractPhanFileTest
      * @override
      * @suppress PhanPossiblyFalseTypeArgumentInternal
      */
-    public function testFiles($test_file_list, $expected_file_path, $config_file_path = null)
+    public function testFiles(array $test_file_list, string $expected_file_path, ?string $config_file_path = null) : void
     {
         $this->assertCount(1, $test_file_list);
-        list($original_file_path) = $test_file_list;
+        [$original_file_path] = $test_file_list;
         // Read the expected output
         $original_src =
             \file_get_contents($original_file_path);
@@ -58,6 +58,6 @@ final class ASTSimplifierTest extends AbstractPhanFileTest
         $this->assertSame(\ast\AST_STMT_LIST, $actual->kind, 'should return an AST of kind AST_STMT_LIST');
         $actual_repr = Debug::astDump($actual);
         $expected_repr = Debug::astDump($expected);
-        $this->assertEquals($expected_repr, $actual_repr, 'Expected the AST representation to be the same as the expected source\'s after transformations');
+        $this->assertSame($expected_repr, $actual_repr, 'Expected the AST representation to be the same as the expected source\'s after transformations');
     }
 }

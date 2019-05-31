@@ -1,0 +1,4 @@
+%s:17 PhanParamTooFew Call with 0 arg(s) to \TypedProperties\A::__construct() which requires 3 arg(s) defined at %s:10
+%s:18 PhanTypeMismatchArgumentInternal Argument 1 (var) is ?int but \count() takes \Countable|array
+%s:19 PhanTypeMismatchArgumentInternal Argument 1 (var) is string but \count() takes \Countable|array
+%s:20 PhanTypeMismatchArgumentInternal Argument 1 (var) is \TypedProperties\A|\TypedProperties\SubClass but \count() takes \Countable|array

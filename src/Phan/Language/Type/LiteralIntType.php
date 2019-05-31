@@ -33,7 +33,7 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
     /**
      * @return LiteralIntType a unique LiteralIntType for $value (and the nullability)
      */
-    public static function instanceForValue(int $value, bool $is_nullable)
+    public static function instanceForValue(int $value, bool $is_nullable) : LiteralIntType
     {
         if ($is_nullable) {
             static $nullable_cache = [];
@@ -68,7 +68,7 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
     /**
      * Called at the bottom of the file to ensure static properties are set for quick access.
      */
-    public static function init()
+    public static function init() : void
     {
         self::$non_nullable_int_type = IntType::instance(false);
         self::$nullable_int_type = IntType::instance(true);
@@ -94,25 +94,25 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
     }
 
     /** @override */
-    public function getIsPossiblyFalsey() : bool
+    public function isPossiblyFalsey() : bool
     {
         return !$this->value;
     }
 
     /** @override */
-    public function getIsAlwaysFalsey() : bool
+    public function isAlwaysFalsey() : bool
     {
         return !$this->value;
     }
 
     /** @override */
-    public function getIsPossiblyTruthy() : bool
+    public function isPossiblyTruthy() : bool
     {
         return (bool)$this->value;
     }
 
     /** @override */
-    public function getIsAlwaysTruthy() : bool
+    public function isAlwaysTruthy() : bool
     {
         return (bool)$this->value;
     }
@@ -194,6 +194,11 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
     public function canSatisfyComparison($scalar, int $flags) : bool
     {
         return self::performComparison($this->value, $scalar, $flags);
+    }
+
+    public function asSignatureType() : Type
+    {
+        return IntType::instance($this->is_nullable);
     }
 }
 

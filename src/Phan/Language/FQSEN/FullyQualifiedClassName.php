@@ -2,7 +2,6 @@
 
 namespace Phan\Language\FQSEN;
 
-use Phan\Exception\FQSENException;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Memoize;
@@ -60,23 +59,6 @@ class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement
     public static function isValidClassFQSEN(string $type) : bool
     {
         return preg_match(self::VALID_CLASS_REGEX, $type) > 0;
-    }
-
-    /**
-     * Parses a FQSEN from a string
-     *
-     * @param $fully_qualified_string
-     * An fully qualified string like '\Namespace\Class'
-     *
-     * @return static
-     *
-     * @throws FQSENException on failure.
-     * @deprecated use self::fromFullyQualifiedString()
-     * @suppress PhanUnreferencedPublicMethod
-     */
-    public static function fromFullyQualifiedUserProvidedString(string $fully_qualified_string) : FullyQualifiedClassName
-    {
-        return self::fromFullyQualifiedString($fully_qualified_string);
     }
 
     /**

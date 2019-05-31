@@ -27,3 +27,9 @@ function suppression_test_fn() {
     $c->bar([]);  // should not be suppressed
 }
 suppression_test_fn();
+
+class ExtraSuppressionTest extends SuppressionTest {
+    public function bar(int $x) {
+        echo "Saw $x\n";
+    }
+}

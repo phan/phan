@@ -51,9 +51,6 @@ final class MixedType extends NativeType
         return $union_type->hasType($this);
     }
 
-    /**
-     * @param int $key_type
-     */
     public function asGenericArrayType(int $key_type) : Type
     {
         if ($key_type === GenericArrayType::KEY_INT || $key_type === GenericArrayType::KEY_STRING) {
@@ -93,6 +90,11 @@ final class MixedType extends NativeType
     }
 
     public function isDefiniteNonCallableType() : bool
+    {
+        return false;
+    }
+
+    public function canUseInRealSignature() : bool
     {
         return false;
     }

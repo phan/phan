@@ -9,13 +9,13 @@ use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
-use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeFunctionCallCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\AnalyzeFunctionCallCapability;
 
 /**
  * NOTE: This is automatically loaded by phan. Do not include it in a config.
  */
-final class CompactPlugin extends PluginV2 implements
+final class CompactPlugin extends PluginV3 implements
     AnalyzeFunctionCallCapability
 {
 
@@ -39,15 +39,14 @@ final class CompactPlugin extends PluginV2 implements
     {
         /**
          * @param array<int,Node|int|float|string> $args
-         * @return void
          */
         $compact_callback = static function (
             CodeBase $code_base,
             Context $context,
             Func $unused_func,
             array $args
-        ) {
-            $maybe_emit_issue = static function (string $variable_name, $arg = null) use ($code_base, $context) {
+        ) : void {
+            $maybe_emit_issue = static function (string $variable_name, $arg = null) use ($code_base, $context) : void {
                 if (!$context->getScope()->hasVariableWithName($variable_name)) {
                     Issue::maybeEmitWithParameters(
                         $code_base,

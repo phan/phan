@@ -140,7 +140,7 @@ class ForkPool
      */
     private static function streamForParent(array $sockets)
     {
-        list($for_read, $for_write) = $sockets;
+        [$for_read, $for_write] = $sockets;
 
         // The parent will not use the write channel, so it
         // must be closed to prevent deadlock.
@@ -165,7 +165,7 @@ class ForkPool
      */
     private static function streamForChild(array $sockets)
     {
-        list($for_read, $for_write) = $sockets;
+        [$for_read, $for_write] = $sockets;
 
         // The while will not use the read channel, so it must
         // be closed to prevent deadlock.
@@ -180,7 +180,7 @@ class ForkPool
      *
      * @return array[]
      */
-    private function readResultsFromChildren()
+    private function readResultsFromChildren() : array
     {
         // Create an array of all active streams, indexed by
         // resource id.
@@ -230,7 +230,7 @@ class ForkPool
          * @param string $data
          * @return mixed[]
          */
-        return \array_values(\array_map(function ($data) {
+        return \array_values(\array_map(function (string $data) : array {
             $result = \unserialize($data);
             if (!\is_array($result)) {
                 \error_log("Child terminated without returning a serialized array (threw or crashed - not enough memory?): response type=" . gettype($result));
@@ -244,7 +244,7 @@ class ForkPool
      * Wait for all child processes to complete
      * @return array[]
      */
-    public function wait()
+    public function wait() : array
     {
         // Read all the streams from child processes into an array.
         $content = $this->readResultsFromChildren();

@@ -18,11 +18,11 @@
     "config": {
         "sort-packages": true,
         "platform": {
-            "php": "7.0.24"
+            "php": "7.1.22"
         }
     },
     "require": {
-        "php": "^7.0.0",
+        "php": "^7.1.0",
         "ext-filter": "*",
         "ext-json": "*",
         "composer/semver": "^1.4",
@@ -30,16 +30,17 @@
         "felixfbecker/advanced-json-rpc": "^3.0.3",
         "microsoft/tolerant-php-parser": "0.0.17",
         "sabre/event": "^5.0",
-        "symfony/console": "^2.3|^3.0|~4.0"
+        "symfony/console": "^2.3|^3.0|~4.0",
+        "symfony/polyfill-mbstring": "^1.11.0"
     },
     "suggest": {
-        "ext-ast": "Needed for parsing ASTs (unless --use-fallback-parser is used). 1.0.1+ is recommended, php-ast ^0.1.5|^1.0.0 is needed.",
+        "ext-ast": "Needed for parsing ASTs (unless --use-fallback-parser is used). 1.0.1+ is needed.",
         "ext-igbinary": "Improves performance of polyfill when ext-ast is unavailable",
         "ext-tokenizer": "Needed for non-AST support and file/line-based suppressions."
     },
     "require-dev": {
-        "brianium/paratest": "^1.1",
-        "phpunit/phpunit": "^6.3.0"
+        "brianium/paratest": "^2.2.0",
+        "phpunit/phpunit": "^7.5.0"
     },
     "autoload": {
         "psr-4": {"Phan\\": "src/Phan"}

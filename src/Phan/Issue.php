@@ -68,6 +68,7 @@ class Issue
     const UndeclaredTypeProperty    = 'PhanUndeclaredTypeProperty';
     const UndeclaredTypeThrowsType  = 'PhanUndeclaredTypeThrowsType';
     const UndeclaredVariable        = 'PhanUndeclaredVariable';
+    const UndeclaredThis            = 'PhanUndeclaredThis';
     const UndeclaredVariableDim     = 'PhanUndeclaredVariableDim';
     const UndeclaredVariableAssignOp = 'PhanUndeclaredVariableAssignOp';
     const UndeclaredClassInCallable = 'PhanUndeclaredClassInCallable';
@@ -96,8 +97,10 @@ class Issue
     const TypeComparisonToArray     = 'PhanTypeComparisonToArray';
     const TypeConversionFromArray   = 'PhanTypeConversionFromArray';
     const TypeInstantiateAbstract   = 'PhanTypeInstantiateAbstract';
+    const TypeInstantiateAbstractStatic = 'PhanTypeInstantiateAbstractStatic';
     const TypeInstantiateInterface  = 'PhanTypeInstantiateInterface';
     const TypeInstantiateTrait      = 'PhanTypeInstantiateTrait';
+    const TypeInstantiateTraitStaticOrSelf = 'PhanTypeInstantiateTraitStaticOrSelf';
     const TypeInvalidCloneNotObject = 'PhanTypeInvalidCloneNotObject';
     const TypeInvalidClosureScope   = 'PhanTypeInvalidClosureScope';
     const TypeInvalidLeftOperand    = 'PhanTypeInvalidLeftOperand';
@@ -121,7 +124,9 @@ class Issue
     const TypeInvalidThrowsIsInterface           = 'PhanTypeInvalidThrowsIsInterface';
     const TypeMagicVoidWithReturn                = 'PhanTypeMagicVoidWithReturn';
     const TypeMismatchArgument                   = 'PhanTypeMismatchArgument';
+    const TypeMismatchArgumentNullable           = 'PhanTypeMismatchArgumentNullable';
     const TypeMismatchArgumentInternal           = 'PhanTypeMismatchArgumentInternal';
+    const TypeMismatchArgumentNullableInternal   = 'PhanTypeMismatchArgumentNullableInternal';
     const PartialTypeMismatchArgument            = 'PhanPartialTypeMismatchArgument';
     const PartialTypeMismatchArgumentInternal    = 'PhanPartialTypeMismatchArgumentInternal';
     const PossiblyNullTypeArgument  = 'PhanPossiblyNullTypeArgument';
@@ -135,6 +140,7 @@ class Issue
     const TypeMismatchDimFetch      = 'PhanTypeMismatchDimFetch';
     const TypeMismatchDimFetchNullable = 'PhanTypeMismatchDimFetchNullable';
     const TypeMismatchUnpackKey     = 'PhanTypeMismatchUnpackKey';
+    const TypeMismatchUnpackKeyArraySpread = 'PhanTypeMismatchUnpackKeyArraySpread';
     const TypeMismatchUnpackValue   = 'PhanTypeMismatchUnpackValue';
     const TypeMismatchArrayDestructuringKey = 'PhanTypeMismatchArrayDestructuringKey';
     const TypeMismatchVariadicComment = 'PhanMismatchVariadicComment';
@@ -148,6 +154,7 @@ class Issue
     const PossiblyFalseTypeMismatchProperty = 'PhanPossiblyFalseTypeMismatchProperty';
     const PartialTypeMismatchProperty = 'PhanPartialTypeMismatchProperty';
     const TypeMismatchReturn        = 'PhanTypeMismatchReturn';
+    const TypeMismatchReturnNullable = 'PhanTypeMismatchReturnNullable';
     const PartialTypeMismatchReturn = 'PhanPartialTypeMismatchReturn';
     const PossiblyNullTypeReturn  = 'PhanPossiblyNullTypeReturn';
     const PossiblyFalseTypeReturn  = 'PhanPossiblyFalseTypeReturn';
@@ -189,6 +196,8 @@ class Issue
     const TypeInvalidPropertyName = 'PhanTypeInvalidPropertyName';
     const TypeInvalidStaticPropertyName = 'PhanTypeInvalidStaticPropertyName';
     const TypeErrorInInternalCall = 'PhanTypeErrorInInternalCall';
+    const TypeErrorInOperation = 'PhanTypeErrorInOperation';
+    const TypeInvalidPropertyDefaultReal = 'PhanTypeInvalidPropertyDefaultReal';
 
     // Issue::CATEGORY_ANALYSIS
     const Unanalyzable              = 'PhanUnanalyzable';
@@ -215,6 +224,7 @@ class Issue
     const DeprecatedFunction        = 'PhanDeprecatedFunction';
     const DeprecatedFunctionInternal = 'PhanDeprecatedFunctionInternal';
     const DeprecatedProperty        = 'PhanDeprecatedProperty';
+    const DeprecatedClassConstant   = 'PhanDeprecatedClassConstant';
     const DeprecatedCaseInsensitiveDefine = 'PhanDeprecatedCaseInsensitiveDefine';
 
     // Issue::CATEGORY_PARAMETER
@@ -293,12 +303,15 @@ class Issue
     const UnreferencedPublicProperty    = 'PhanUnreferencedPublicProperty';
     const UnreferencedProtectedProperty = 'PhanUnreferencedProtectedProperty';
     const UnreferencedPrivateProperty   = 'PhanUnreferencedPrivateProperty';
+    const UnreferencedPHPDocProperty    = 'PhanUnreferencedPHPDocProperty';
     const ReadOnlyPublicProperty        = 'PhanReadOnlyPublicProperty';
     const ReadOnlyProtectedProperty     = 'PhanReadOnlyProtectedProperty';
     const ReadOnlyPrivateProperty       = 'PhanReadOnlyPrivateProperty';
+    const ReadOnlyPHPDocProperty        = 'PhanReadOnlyPHPDocProperty';
     const WriteOnlyPublicProperty       = 'PhanWriteOnlyPublicProperty';
     const WriteOnlyProtectedProperty    = 'PhanWriteOnlyProtectedProperty';
     const WriteOnlyPrivateProperty      = 'PhanWriteOnlyPrivateProperty';
+    const WriteOnlyPHPDocProperty       = 'PhanWriteOnlyPHPDocProperty';
     const UnreferencedConstant          = 'PhanUnreferencedConstant';
     const UnreferencedPublicClassConstant = 'PhanUnreferencedPublicClassConstant';
     const UnreferencedProtectedClassConstant = 'PhanUnreferencedProtectedClassConstant';
@@ -310,20 +323,35 @@ class Issue
     const UseNormalNoEffect             = 'PhanUseNormalNoEffect';
     const UseNormalNamespacedNoEffect   = 'PhanUseNormalNamespacedNoEffect';
     const UseFunctionNoEffect           = 'PhanUseFunctionNoEffect';
-    const UseContantNoEffect           = 'PhanUseContantNoEffect';
+    const UseConstantNoEffect           = 'PhanUseConstantNoEffect';
 
     const UnusedVariable                        = 'PhanUnusedVariable';
     const UnusedPublicMethodParameter           = 'PhanUnusedPublicMethodParameter';
     const UnusedPublicFinalMethodParameter      = 'PhanUnusedPublicFinalMethodParameter';
+    const UnusedPublicNoOverrideMethodParameter = 'PhanUnusedPublicNoOverrideMethodParameter';
     const UnusedProtectedMethodParameter        = 'PhanUnusedProtectedMethodParameter';
     const UnusedProtectedFinalMethodParameter   = 'PhanUnusedProtectedFinalMethodParameter';
+    const UnusedProtectedNoOverrideMethodParameter = 'PhanUnusedProtectedNoOverrideMethodParameter';
     const UnusedPrivateMethodParameter          = 'PhanUnusedPrivateMethodParameter';
     const UnusedPrivateFinalMethodParameter     = 'PhanUnusedPrivateFinalMethodParameter';
     const UnusedClosureUseVariable              = 'PhanUnusedClosureUseVariable';
+    const ShadowedVariableInArrowFunc           = 'PhanShadowedVariableInArrowFunc';
     const UnusedClosureParameter                = 'PhanUnusedClosureParameter';
     const UnusedGlobalFunctionParameter         = 'PhanUnusedGlobalFunctionParameter';
     const UnusedVariableValueOfForeachWithKey   = 'PhanUnusedVariableValueOfForeachWithKey';  // has higher false positive rates than UnusedVariable
     const UnusedVariableCaughtException         = 'PhanUnusedVariableCaughtException';  // has higher false positive rates than UnusedVariable
+    const UnusedGotoLabel                       = 'PhanUnusedGotoLabel';
+    const UnusedVariableReference               = 'PhanUnusedVariableReference';
+    const UnusedVariableStatic                  = 'PhanUnusedVariableStatic';
+    const UnusedVariableGlobal                  = 'PhanUnusedVariableGlobal';
+    const VariableDefinitionCouldBeConstant     = 'PhanVariableDefinitionCouldBeConstant';
+    const VariableDefinitionCouldBeConstantEmptyArray = 'PhanVariableDefinitionCouldBeConstantEmptyArray';
+    const VariableDefinitionCouldBeConstantString = 'PhanVariableDefinitionCouldBeConstantString';
+    const VariableDefinitionCouldBeConstantFloat = 'PhanVariableDefinitionCouldBeConstantFloat';
+    const VariableDefinitionCouldBeConstantInt = 'PhanVariableDefinitionCouldBeConstantInt';
+    const VariableDefinitionCouldBeConstantTrue = 'PhanVariableDefinitionCouldBeConstantTrue';
+    const VariableDefinitionCouldBeConstantFalse = 'PhanVariableDefinitionCouldBeConstantFalse';
+    const VariableDefinitionCouldBeConstantNull = 'PhanVariableDefinitionCouldBeConstantNull';
 
     // Issue::CATEGORY_REDEFINE
     const RedefineClass             = 'PhanRedefineClass';
@@ -438,7 +466,7 @@ class Issue
     const CATEGORY_COMPATIBLE        = 1 << 3;
     /** This category of issue is for when you're doing stuff out of the context in which you're allowed to do it, e.g. referencing `self` or `parent` when not in a class, interface or trait. */
     const CATEGORY_CONTEXT           = 1 << 4;
-    /** This category of issue comes up when you're accessing deprecated elements (as marked by the `@deprecated` comment). */
+    /** This category of issue comes up when you're accessing deprecated elements (as marked by the `(at)deprecated` comment). */
     const CATEGORY_DEPRECATED        = 1 << 5;
     /** Issues in this category are emitted when you have reasonable code but it isn't doing anything. */
     const CATEGORY_NOOP              = 1 << 6;
@@ -618,14 +646,17 @@ class Issue
     /**
      * @return array<string,Issue>
      */
-    public static function issueMap()
+    public static function issueMap() : array
     {
         static $error_map;
+        return $error_map ?? ($error_map = self::generateIssueMap());
+    }
 
-        if (\is_array($error_map)) {
-            return $error_map;
-        }
-
+    /**
+     * @return array<string,Issue>
+     */
+    private static function generateIssueMap() : array
+    {
         // phpcs:disable Generic.Files.LineLength
         /**
          * @var array<int,Issue>
@@ -885,6 +916,14 @@ class Issue
                 "Variable \${VARIABLE} is undeclared",
                 self::REMEDIATION_B,
                 11018
+            ),
+            new Issue(
+                self::UndeclaredThis,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_CRITICAL,
+                "Variable \${VARIABLE} is undeclared",
+                self::REMEDIATION_B,
+                11046
             ),
             new Issue(
                 self::UndeclaredTypeParameter,
@@ -1179,12 +1218,28 @@ class Issue
                 10003
             ),
             new Issue(
+                self::TypeMismatchArgumentNullable,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} defined at {FILE}:{LINE} (expected type to be non-nullable)",
+                self::REMEDIATION_B,
+                10105
+            ),
+            new Issue(
                 self::TypeMismatchArgumentInternal,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
                 "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE}",
                 self::REMEDIATION_B,
                 10004
+            ),
+            new Issue(
+                self::TypeMismatchArgumentNullableInternal,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} (expected type to be non-nullable)",
+                self::REMEDIATION_B,
+                10106
             ),
             new Issue(
                 self::TypeMismatchGeneratorYieldValue,
@@ -1265,6 +1320,14 @@ class Issue
                 "Returning type {TYPE} but {FUNCTIONLIKE} is declared to return {TYPE}",
                 self::REMEDIATION_B,
                 10005
+            ),
+            new Issue(
+                self::TypeMismatchReturnNullable,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Returning type {TYPE} but {FUNCTIONLIKE} is declared to return {TYPE} (expected returned value to be non-nullable)",
+                self::REMEDIATION_B,
+                10107
             ),
             new Issue(
                 self::PartialTypeMismatchReturn,
@@ -1395,6 +1458,14 @@ class Issue
                 10013
             ),
             new Issue(
+                self::TypeInstantiateAbstractStatic,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Potential instantiation of abstract class {CLASS} (not an issue if this method is only called from a non-abstract subclass)",
+                self::REMEDIATION_B,
+                10111
+            ),
+            new Issue(
                 self::TypeInstantiateInterface,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
@@ -1409,6 +1480,14 @@ class Issue
                 "Instantiation of trait {TRAIT}",
                 self::REMEDIATION_B,
                 10074
+            ),
+            new Issue(
+                self::TypeInstantiateTraitStaticOrSelf,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Potential instantiation of trait {TRAIT} (not an issue if this method is only called from a non-abstract class using the trait)",
+                self::REMEDIATION_B,
+                10112
             ),
             new Issue(
                 self::TypeInvalidClosureScope,
@@ -1657,6 +1736,14 @@ class Issue
                 'When unpacking a value of type {TYPE}, the value\'s keys were of type {TYPE}, but the keys should be consecutive integers starting from 0',
                 self::REMEDIATION_B,
                 10041
+            ),
+            new Issue(
+                self::TypeMismatchUnpackKeyArraySpread,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'When unpacking a value of type {TYPE}, the value\'s keys were of type {TYPE}, but the keys should be integers',
+                self::REMEDIATION_B,
+                10109
             ),
             new Issue(
                 self::TypeMismatchUnpackValue,
@@ -1955,6 +2042,22 @@ class Issue
                 self::REMEDIATION_B,
                 10104
             ),
+            new Issue(
+                self::TypeErrorInOperation,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Saw an error when attempting to infer the type of expression {CODE}: {DETAILS}",
+                self::REMEDIATION_B,
+                10110
+            ),
+            new Issue(
+                self::TypeInvalidPropertyDefaultReal,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,
+                "Default value for {TYPE} \${PROPERTY} can't be {TYPE}",
+                self::REMEDIATION_B,
+                10108
+            ),
             // Issue::CATEGORY_VARIABLE
             new Issue(
                 self::VariableUseClause,
@@ -2041,6 +2144,14 @@ class Issue
                 "Reference to deprecated property {PROPERTY} defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 5002
+            ),
+            new Issue(
+                self::DeprecatedClassConstant,
+                self::CATEGORY_DEPRECATED,
+                self::SEVERITY_NORMAL,
+                "Reference to deprecated property {PROPERTY} defined at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                5007
             ),
             new Issue(
                 self::DeprecatedInterface,
@@ -2636,6 +2747,14 @@ class Issue
                 6014
             ),
             new Issue(
+                self::UnreferencedPHPDocProperty,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero references to PHPDoc @property {PROPERTY}",
+                self::REMEDIATION_B,
+                6056
+            ),
+            new Issue(
                 self::UnreferencedProtectedProperty,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
@@ -2676,6 +2795,14 @@ class Issue
                 6034
             ),
             new Issue(
+                self::ReadOnlyPHPDocProperty,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero write references to PHPDoc @property {PROPERTY}",
+                self::REMEDIATION_B,
+                6058
+            ),
+            new Issue(
                 self::WriteOnlyPublicProperty,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
@@ -2700,6 +2827,14 @@ class Issue
                 6027
             ),
             new Issue(
+                self::WriteOnlyPHPDocProperty,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero read references to PHPDoc @property {PROPERTY}",
+                self::REMEDIATION_B,
+                6057
+            ),
+            new Issue(
                 self::UnreferencedPublicClassConstant,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
@@ -2719,7 +2854,7 @@ class Issue
                 self::UnreferencedPrivateClassConstant,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
-                "Possibly zero references to public class constant {CONST}",
+                "Possibly zero references to private class constant {CONST}",
                 self::REMEDIATION_B,
                 6019
             ),
@@ -2780,12 +2915,28 @@ class Issue
                 6037
             ),
             new Issue(
+                self::UnusedPublicNoOverrideMethodParameter,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Parameter ${PARAMETER} is never used',
+                self::REMEDIATION_B,
+                6060
+            ),
+            new Issue(
                 self::UnusedProtectedMethodParameter,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
                 'Parameter ${PARAMETER} is never used',
                 self::REMEDIATION_B,
                 6038
+            ),
+            new Issue(
+                self::UnusedProtectedNoOverrideMethodParameter,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Parameter ${PARAMETER} is never used',
+                self::REMEDIATION_B,
+                6059
             ),
             new Issue(
                 self::UnusedProtectedFinalMethodParameter,
@@ -2820,6 +2971,14 @@ class Issue
                 6042
             ),
             new Issue(
+                self::ShadowedVariableInArrowFunc,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Short arrow function shadows variable ${VARIABLE} from the outer scope',
+                self::REMEDIATION_B,
+                6072
+            ),
+            new Issue(
                 self::UnusedClosureParameter,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
@@ -2852,6 +3011,30 @@ class Issue
                 6046
             ),
             new Issue(
+                self::UnusedVariableReference,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Unused definition of variable ${VARIABLE} as a reference',
+                self::REMEDIATION_B,
+                6069
+            ),
+            new Issue(
+                self::UnusedVariableStatic,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Unreferenced definition of variable ${VARIABLE} as a static variable',
+                self::REMEDIATION_B,
+                6070
+            ),
+            new Issue(
+                self::UnusedVariableGlobal,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Unreferenced definition of variable ${VARIABLE} as a global variable',
+                self::REMEDIATION_B,
+                6071
+            ),
+            new Issue(
                 self::UseNormalNamespacedNoEffect,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_LOW,
@@ -2876,7 +3059,7 @@ class Issue
                 6049
             ),
             new Issue(
-                self::UseContantNoEffect,
+                self::UseConstantNoEffect,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
                 'The use statement for constant {CONST} has no effect',
@@ -2890,6 +3073,78 @@ class Issue
                 "Unused array offset fetch",
                 self::REMEDIATION_B,
                 6054
+            ),
+            new Issue(
+                self::UnusedGotoLabel,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                "Unused goto label {CODE}",
+                self::REMEDIATION_B,
+                6055
+            ),
+            new Issue(
+                self::VariableDefinitionCouldBeConstant,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Uses of ${VARIABLE} could probably be replaced with a literal or constant',
+                self::REMEDIATION_B,
+                6061
+            ),
+            new Issue(
+                self::VariableDefinitionCouldBeConstantEmptyArray,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Uses of ${VARIABLE} could probably be replaced with an empty array',
+                self::REMEDIATION_B,
+                6062
+            ),
+            new Issue(
+                self::VariableDefinitionCouldBeConstantString,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Uses of ${VARIABLE} could probably be replaced with a literal or constant string',
+                self::REMEDIATION_B,
+                6063
+            ),
+            new Issue(
+                self::VariableDefinitionCouldBeConstantFloat,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Uses of ${VARIABLE} could probably be replaced with a literal or constant float',
+                self::REMEDIATION_B,
+                6064
+            ),
+            new Issue(
+                self::VariableDefinitionCouldBeConstantInt,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Uses of ${VARIABLE} could probably be replaced with literal integer or a named constant',
+                self::REMEDIATION_B,
+                6065
+            ),
+            new Issue(
+                self::VariableDefinitionCouldBeConstantTrue,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Uses of ${VARIABLE} could probably be replaced with true or a named constant',
+                self::REMEDIATION_B,
+                6066
+            ),
+            new Issue(
+                self::VariableDefinitionCouldBeConstantFalse,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Uses of ${VARIABLE} could probably be replaced with false or a named constant',
+                self::REMEDIATION_B,
+                6067
+            ),
+            new Issue(
+                self::VariableDefinitionCouldBeConstantNull,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Uses of ${VARIABLE} could probably be replaced with null or a named constant',
+                self::REMEDIATION_B,
+                6068
             ),
 
             // Issue::CATEGORY_REDEFINE
@@ -3632,6 +3887,7 @@ class Issue
 
         self::sanityCheckErrorList($error_list);
         // Verified the error meets preconditions, now add it.
+        $error_map = [];
         foreach ($error_list as $error) {
             $error_type = $error->getType();
             $error_map[$error_type] = $error;
@@ -3657,9 +3913,8 @@ class Issue
 
     /**
      * @param array<int,Issue> $error_list
-     * @return void
      */
-    private static function sanityCheckErrorList(array $error_list)
+    private static function sanityCheckErrorList(array $error_list) : void
     {
         $error_map = [];
         $unique_type_id_set = [];
@@ -3696,9 +3951,8 @@ class Issue
         }
     }
 
-
     /**
-     * @return string
+     * Returns the type name of this issue (e.g. Issue::UndeclaredVariable)
      */
     public function getType() : string
     {
@@ -3714,7 +3968,7 @@ class Issue
     }
 
     /**
-     * @return int
+     * Returns the category of this issue (e.g. Issue::CATEGORY_UNDEFINED)
      */
     public function getCategory() : int
     {
@@ -3740,7 +3994,7 @@ class Issue
     }
 
     /**
-     * @return int
+     * Returns the severity of this issue (Issue::SEVERITY_LOW, Issue::SEVERITY_NORMAL, or Issue::SEVERITY_CRITICAL)
      */
     public function getSeverity() : int
     {
@@ -3775,7 +4029,7 @@ class Issue
     }
 
     /**
-     * @return string
+     * Returns the template text of this issue (e.g. `'Variable ${VARIABLE} is undeclared'`)
      */
     public function getTemplate() : string
     {
@@ -3854,7 +4108,7 @@ class Issue
         string $file,
         int $line,
         ...$template_parameters
-    ) {
+    ) : void {
         self::emitWithParameters(
             $type,
             $file,
@@ -3878,8 +4132,6 @@ class Issue
      * message
      *
      * @param ?Suggestion $suggestion (optional details on fixing this)
-     *
-     * @return void
      */
     public static function emitWithParameters(
         string $type,
@@ -3887,7 +4139,7 @@ class Issue
         int $line,
         array $template_parameters,
         Suggestion $suggestion = null
-    ) {
+    ) : void {
         $issue = self::fromType($type);
 
         self::emitInstance(
@@ -3898,12 +4150,10 @@ class Issue
     /**
      * @param IssueInstance $issue_instance
      * An issue instance to emit
-     *
-     * @return void
      */
     public static function emitInstance(
         IssueInstance $issue_instance
-    ) {
+    ) : void {
         Phan::getIssueCollector()->collectIssue($issue_instance);
     }
 
@@ -3916,14 +4166,12 @@ class Issue
      *
      * @param IssueInstance $issue_instance
      * An issue instance to emit
-     *
-     * @return void
      */
     public static function maybeEmitInstance(
         CodeBase $code_base,
         Context $context,
         IssueInstance $issue_instance
-    ) {
+    ) : void {
         // If this issue type has been suppressed in
         // the config, ignore it
 
@@ -3959,8 +4207,6 @@ class Issue
      * @param string|int|float|bool|Type|UnionType|FQSEN|TypedElement|UnaddressableTypedElement ...$parameters
      * Template parameters for the issue's error message.
      * If these are objects, they should define __toString()
-     *
-     * @return void
      */
     public static function maybeEmit(
         CodeBase $code_base,
@@ -3968,7 +4214,7 @@ class Issue
         string $issue_type,
         int $lineno,
         ...$parameters
-    ) {
+    ) : void {
         self::maybeEmitWithParameters(
             $code_base,
             $context,
@@ -3996,8 +4242,6 @@ class Issue
      * @param ?Suggestion $suggestion (optional)
      *
      * Template parameters for the issue's error message
-     *
-     * @return void
      */
     public static function maybeEmitWithParameters(
         CodeBase $code_base,
@@ -4006,7 +4250,7 @@ class Issue
         int $lineno,
         array $parameters,
         Suggestion $suggestion = null
-    ) {
+    ) : void {
         if (self::shouldSuppressIssue(
             $code_base,
             $context,
@@ -4030,7 +4274,7 @@ class Issue
     /**
      * @param array<int,mixed> $parameters
      */
-    private static function shouldSuppressIssue(
+    public static function shouldSuppressIssue(
         CodeBase $code_base,
         Context $context,
         string $issue_type,

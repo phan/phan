@@ -11,7 +11,7 @@ declare(strict_types=1);
  * With modifications to be a functional replacement for the data
  * structures and global constants of ext-ast. (for class ast\Node)
  *
- * This supports AST version 50
+ * This supports AST version 70
  *
  * However, this file does not define any global functions such as
  * ast\parse_code() and ast\parse_file(). (to avoid confusion)
@@ -51,6 +51,7 @@ const AST_FUNC_DECL = 66;
 const AST_CLOSURE = 67;
 const AST_METHOD = 68;
 const AST_CLASS = 69;
+const AST_ARROW_FUNC = 71;
 const AST_MAGIC_CONST = 0;
 const AST_TYPE = 1;
 const AST_VAR = 256;
@@ -81,6 +82,7 @@ const AST_THROW = 283;
 const AST_GOTO = 284;
 const AST_BREAK = 285;
 const AST_CONTINUE = 286;
+const AST_CLASS_NAME = 287;
 const AST_DIM = 512;
 const AST_PROP = 513;
 const AST_STATIC_PROP = 514;
@@ -110,6 +112,7 @@ const AST_NAMESPACE = 540;
 const AST_USE_ELEM = 541;
 const AST_TRAIT_ALIAS = 542;
 const AST_GROUP_USE = 543;
+const AST_PROP_GROUP = 545;
 const AST_METHOD_CALL = 768;
 const AST_STATIC_CALL = 769;
 const AST_CONDITIONAL = 770;
@@ -235,7 +238,7 @@ if (!\class_exists('\ast\Node')) {
         /**
          * A constructor which validates data types but not the values themselves.
          * For backwards compatibility reasons, all values are optional and properties default to null
-         * @suppress PhanTypeMismatchProperty
+         * @suppress PhanPossiblyNullTypeMismatchProperty
          */
         public function __construct(int $kind = null, int $flags = null, array $children = null, int $lineno = null)
         {

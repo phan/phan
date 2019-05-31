@@ -60,7 +60,7 @@ class Diagnostic
      * @param  int    $code     The diagnostic's code
      * @param  int    $severity DiagnosticSeverity
      * @param  string $source   A human-readable string describing the source of this diagnostic
-     * @suppress PhanTypeMismatchProperty
+     * @suppress PhanPossiblyNullTypeMismatchProperty
      * @suppress PhanTypeMismatchDeclaredParamNullable
      */
     public function __construct(string $message = null, Range $range = null, int $code = null, int $severity = null, string $source = null)

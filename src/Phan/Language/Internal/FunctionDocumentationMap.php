@@ -592,7 +592,7 @@ All other argument settings will be wiped.',
 'cairo::availableFonts' => 'Retrieves the availables font types',
 'cairo::availableSurfaces' => 'Retrieves all available surfaces',
 'cairo::statusToString' => 'Retrieves the current status as string',
-'cairo::version' => 'Retrives cairo\'s library version',
+'cairo::version' => 'Retrieves cairo\'s library version',
 'cairo::versionString' => 'Retrieves cairo version as string',
 'cairo_create' => 'Returns a new CairoContext object on the requested surface',
 'cairo_matrix_create_scale' => 'Alias of CairoMatrix::initScale',
@@ -616,7 +616,7 @@ All other argument settings will be wiped.',
 'cairocontext::fillExtents' => 'Computes the filled area',
 'cairocontext::fillPreserve' => 'Fills and preserve the current path',
 'cairocontext::fontExtents' => 'Get the font extents',
-'cairocontext::getAntialias' => 'Retrives the current antialias mode',
+'cairocontext::getAntialias' => 'Retrieves the current antialias mode',
 'cairocontext::getCurrentPoint' => 'The getCurrentPoint purpose',
 'cairocontext::getDash' => 'The getDash purpose',
 'cairocontext::getDashCount' => 'The getDashCount purpose',
@@ -807,6 +807,12 @@ All other argument settings will be wiped.',
 'call_user_method_array' => 'Call a user method given with an array of parameters',
 'callbackfilteriterator::__construct' => 'Create a filtered iterator from another iterator',
 'callbackfilteriterator::accept' => 'Calls the callback with the current value, the current key and the inner iterator as arguments',
+'CallbackFilterIterator::current' => 'Get the current element value',
+'CallbackFilterIterator::getInnerIterator' => 'Get the inner iterator',
+'CallbackFilterIterator::key' => 'Get the current key',
+'CallbackFilterIterator::next' => 'Move the iterator forward',
+'CallbackFilterIterator::rewind' => 'Rewind the iterator',
+'CallbackFilterIterator::valid' => 'Check whether the current element is valid',
 'ceil' => 'Round fractions up',
 'chdb::__construct' => 'Creates a chdb instance',
 'chdb::get' => 'Gets the value associated with a key',
@@ -1288,6 +1294,7 @@ order.',
 'Couchbase\SearchSortField::field' => 'Sort by a field in the hits.',
 'Couchbase\SearchSortField::geoDistance' => 'Sort by geo location.',
 'Couchbase\SearchSortField::id' => 'Sort by the document identifier.',
+'Couchbase\SearchSortField::jsonSerialize' => 'Specify data which should be serialized to JSON',
 'Couchbase\SearchSortField::missing' => 'Set where the hits with missing field will be inserted',
 'Couchbase\SearchSortField::mode' => 'Set mode of the sort',
 'Couchbase\SearchSortField::score' => 'Sort by the hit score.',
@@ -1296,17 +1303,20 @@ order.',
 'Couchbase\SearchSortGeoDistance::field' => 'Sort by a field in the hits.',
 'Couchbase\SearchSortGeoDistance::geoDistance' => 'Sort by geo location.',
 'Couchbase\SearchSortGeoDistance::id' => 'Sort by the document identifier.',
+'Couchbase\SearchSortGeoDistance::jsonSerialize' => 'Specify data which should be serialized to JSON',
 'Couchbase\SearchSortGeoDistance::score' => 'Sort by the hit score.',
 'Couchbase\SearchSortGeoDistance::unit' => 'Name of the units',
 'Couchbase\SearchSortId::descending' => 'Direction of the sort',
 'Couchbase\SearchSortId::field' => 'Sort by a field in the hits.',
 'Couchbase\SearchSortId::geoDistance' => 'Sort by geo location.',
 'Couchbase\SearchSortId::id' => 'Sort by the document identifier.',
+'Couchbase\SearchSortId::jsonSerialize' => 'Specify data which should be serialized to JSON',
 'Couchbase\SearchSortId::score' => 'Sort by the hit score.',
 'Couchbase\SearchSortScore::descending' => 'Direction of the sort',
 'Couchbase\SearchSortScore::field' => 'Sort by a field in the hits.',
 'Couchbase\SearchSortScore::geoDistance' => 'Sort by geo location.',
 'Couchbase\SearchSortScore::id' => 'Sort by the document identifier.',
+'Couchbase\SearchSortScore::jsonSerialize' => 'Specify data which should be serialized to JSON',
 'Couchbase\SearchSortScore::score' => 'Sort by the hit score.',
 'Couchbase\SpatialViewQuery::bbox' => 'Specifies the bounding box to search within.
 
@@ -1336,12 +1346,12 @@ Note that these options are expected to be already encoded.',
 Important: this setter and groupLevel should not be used together in the
 same ViewQuery. It is sufficient to only set the grouping level only and
 use this setter in cases where you always want the highest group level
-implictly.',
+implicitly.',
 'Couchbase\ViewQuery::groupLevel' => 'Specify the group level to be used.
 
 Important: group() and this setter should not be used together in the
 same ViewQuery. It is sufficient to only use this setter and use group()
-in cases where you always want the highest group level implictly.',
+in cases where you always want the highest group level implicitly.',
 'Couchbase\ViewQuery::idRange' => 'Specifies start and end document IDs in addition to range limits.
 
 This might be needed for more precise pagination with a lot of documents
@@ -1525,6 +1535,7 @@ with the same key selected into the same page.',
 'dateperiod::__construct' => 'Creates a new DatePeriod object',
 'dateperiod::getDateInterval' => 'Gets the interval',
 'dateperiod::getEndDate' => 'Gets the end date',
+'dateperiod::getRecurrences' => 'Gets the number of recurrences',
 'dateperiod::getStartDate' => 'Gets the start date',
 'datetime::__construct' => 'Returns new DateTime object',
 'datetime::__set_state' => 'The __set_state handler',
@@ -1738,35 +1749,42 @@ with the same key selected into the same page.',
 'directory::close' => 'Close directory handle',
 'directory::read' => 'Read entry from directory handle',
 'directory::rewind' => 'Rewind directory handle',
-'directoryiterator::__construct' => 'Constructs a new directory iterator from a path',
-'directoryiterator::__toString' => 'Get file name as a string',
-'directoryiterator::current' => 'Return the current DirectoryIterator item',
-'directoryiterator::getATime' => 'Get last access time of the current DirectoryIterator item',
-'directoryiterator::getBasename' => 'Get base name of current DirectoryIterator item',
-'directoryiterator::getCTime' => 'Get inode change time of the current DirectoryIterator item',
-'directoryiterator::getExtension' => 'Gets the file extension',
-'directoryiterator::getFilename' => 'Return file name of current DirectoryIterator item',
-'directoryiterator::getGroup' => 'Get group for the current DirectoryIterator item',
-'directoryiterator::getInode' => 'Get inode for the current DirectoryIterator item',
-'directoryiterator::getMTime' => 'Get last modification time of current DirectoryIterator item',
-'directoryiterator::getOwner' => 'Get owner of current DirectoryIterator item',
-'directoryiterator::getPath' => 'Get path of current Iterator item without filename',
-'directoryiterator::getPathname' => 'Return path and file name of current DirectoryIterator item',
-'directoryiterator::getPerms' => 'Get the permissions of current DirectoryIterator item',
-'directoryiterator::getSize' => 'Get size of current DirectoryIterator item',
-'directoryiterator::getType' => 'Determine the type of the current DirectoryIterator item',
-'directoryiterator::isDir' => 'Determine if current DirectoryIterator item is a directory',
-'directoryiterator::isDot' => 'Determine if current DirectoryIterator item is \'.\' or \'..\'',
-'directoryiterator::isExecutable' => 'Determine if current DirectoryIterator item is executable',
-'directoryiterator::isFile' => 'Determine if current DirectoryIterator item is a regular file',
-'directoryiterator::isLink' => 'Determine if current DirectoryIterator item is a symbolic link',
-'directoryiterator::isReadable' => 'Determine if current DirectoryIterator item can be read',
-'directoryiterator::isWritable' => 'Determine if current DirectoryIterator item can be written to',
-'directoryiterator::key' => 'Return the key for the current DirectoryIterator item',
-'directoryiterator::next' => 'Move forward to next DirectoryIterator item',
-'directoryiterator::rewind' => 'Rewind the DirectoryIterator back to the start',
-'directoryiterator::seek' => 'Seek to a DirectoryIterator item',
-'directoryiterator::valid' => 'Check whether current DirectoryIterator position is a valid file',
+'DirectoryIterator::__construct' => 'Constructs a new directory iterator from a path',
+'DirectoryIterator::__toString' => 'Get file name as a string',
+'DirectoryIterator::current' => 'Return the current DirectoryIterator item',
+'DirectoryIterator::getATime' => 'Get last access time of the current DirectoryIterator item',
+'DirectoryIterator::getBasename' => 'Get base name of current DirectoryIterator item',
+'DirectoryIterator::getCTime' => 'Get inode change time of the current DirectoryIterator item',
+'DirectoryIterator::getExtension' => 'Gets the file extension',
+'DirectoryIterator::getFileInfo' => 'Gets an SplFileInfo object for the file',
+'DirectoryIterator::getFilename' => 'Return file name of current DirectoryIterator item',
+'DirectoryIterator::getGroup' => 'Get group for the current DirectoryIterator item',
+'DirectoryIterator::getInode' => 'Get inode for the current DirectoryIterator item',
+'DirectoryIterator::getLinkTarget' => 'Gets the target of a link',
+'DirectoryIterator::getMTime' => 'Get last modification time of current DirectoryIterator item',
+'DirectoryIterator::getOwner' => 'Get owner of current DirectoryIterator item',
+'DirectoryIterator::getPath' => 'Get path of current Iterator item without filename',
+'DirectoryIterator::getPathInfo' => 'Gets an SplFileInfo object for the path',
+'DirectoryIterator::getPathname' => 'Return path and file name of current DirectoryIterator item',
+'DirectoryIterator::getPerms' => 'Get the permissions of current DirectoryIterator item',
+'DirectoryIterator::getRealPath' => 'Gets absolute path to file',
+'DirectoryIterator::getSize' => 'Get size of current DirectoryIterator item',
+'DirectoryIterator::getType' => 'Determine the type of the current DirectoryIterator item',
+'DirectoryIterator::isDir' => 'Determine if current DirectoryIterator item is a directory',
+'DirectoryIterator::isDot' => 'Determine if current DirectoryIterator item is \'.\' or \'..\'',
+'DirectoryIterator::isExecutable' => 'Determine if current DirectoryIterator item is executable',
+'DirectoryIterator::isFile' => 'Determine if current DirectoryIterator item is a regular file',
+'DirectoryIterator::isLink' => 'Determine if current DirectoryIterator item is a symbolic link',
+'DirectoryIterator::isReadable' => 'Determine if current DirectoryIterator item can be read',
+'DirectoryIterator::isWritable' => 'Determine if current DirectoryIterator item can be written to',
+'DirectoryIterator::key' => 'Return the key for the current DirectoryIterator item',
+'DirectoryIterator::next' => 'Move forward to next DirectoryIterator item',
+'DirectoryIterator::openFile' => 'Gets an SplFileObject object for the file',
+'DirectoryIterator::rewind' => 'Rewind the DirectoryIterator back to the start',
+'DirectoryIterator::seek' => 'Seek to a DirectoryIterator item',
+'DirectoryIterator::setFileClass' => 'Sets the class used with SplFileInfo::openFile',
+'DirectoryIterator::setInfoClass' => 'Sets the class used with SplFileInfo::getFileInfo and SplFileInfo::getPathInfo',
+'DirectoryIterator::valid' => 'Check whether current DirectoryIterator position is a valid file',
 'dirname' => 'Returns a parent directory\'s path',
 'disk_free_space' => 'Returns available space on filesystem or disk partition',
 'disk_total_space' => 'Returns the total size of a filesystem or disk partition',
@@ -1778,15 +1796,83 @@ with the same key selected into the same page.',
 'dns_get_record' => 'Fetch DNS Resource Records associated with a hostname',
 'dom_import_simplexml' => 'Gets a DOMElement object from a SimpleXMLElement object',
 'domattr::__construct' => 'Creates a new DOMAttr object',
+'DOMAttr::appendChild' => 'Adds new child at the end of the children',
+'DOMAttr::C14N' => 'Canonicalize nodes to a string',
+'DOMAttr::C14NFile' => 'Canonicalize nodes to a file',
+'DOMAttr::cloneNode' => 'Clones a node',
+'DOMAttr::getLineNo' => 'Get line number for a node',
+'DOMAttr::getNodePath' => 'Get an XPath for a node',
+'DOMAttr::hasAttributes' => 'Checks if node has attributes',
+'DOMAttr::hasChildNodes' => 'Checks if node has children',
+'DOMAttr::insertBefore' => 'Adds a new child before a reference node',
+'DOMAttr::isDefaultNamespace' => 'Checks if the specified namespaceURI is the default namespace or not',
 'domattr::isId' => 'Checks if attribute is a defined ID',
+'DOMAttr::isSameNode' => 'Indicates if two nodes are the same node',
+'DOMAttr::isSupported' => 'Checks if feature is supported for specified version',
+'DOMAttr::lookupNamespaceUri' => 'Gets the namespace URI of the node based on the prefix',
+'DOMAttr::lookupPrefix' => 'Gets the namespace prefix of the node based on the namespace URI',
+'DOMAttr::normalize' => 'Normalizes the node',
+'DOMAttr::removeChild' => 'Removes child from list of children',
+'DOMAttr::replaceChild' => 'Replaces a child',
 'domcdatasection::__construct' => 'Constructs a new DOMCdataSection object',
+'DOMCdataSection::appendData' => 'Append the string to the end of the character data of the node',
+'DOMCdataSection::deleteData' => 'Remove a range of characters from the node',
+'DOMCdataSection::insertData' => 'Insert a string at the specified 16-bit unit offset',
+'DOMCdataSection::isElementContentWhitespace' => 'Returns whether this text node contains whitespace in element content',
+'DOMCdataSection::isWhitespaceInElementContent' => 'Indicates whether this text node contains whitespace',
+'DOMCdataSection::replaceData' => 'Replace a substring within the DOMCharacterData node',
+'DOMCdataSection::splitText' => 'Breaks this node into two nodes at the specified offset',
+'DOMCdataSection::substringData' => 'Extracts a range of data from the node',
+'DOMCharacterData::appendChild' => 'Adds new child at the end of the children',
 'domcharacterdata::appendData' => 'Append the string to the end of the character data of the node',
+'DOMCharacterData::C14N' => 'Canonicalize nodes to a string',
+'DOMCharacterData::C14NFile' => 'Canonicalize nodes to a file',
+'DOMCharacterData::cloneNode' => 'Clones a node',
 'domcharacterdata::deleteData' => 'Remove a range of characters from the node',
+'DOMCharacterData::getLineNo' => 'Get line number for a node',
+'DOMCharacterData::getNodePath' => 'Get an XPath for a node',
+'DOMCharacterData::hasAttributes' => 'Checks if node has attributes',
+'DOMCharacterData::hasChildNodes' => 'Checks if node has children',
+'DOMCharacterData::insertBefore' => 'Adds a new child before a reference node',
 'domcharacterdata::insertData' => 'Insert a string at the specified 16-bit unit offset',
+'DOMCharacterData::isDefaultNamespace' => 'Checks if the specified namespaceURI is the default namespace or not',
+'DOMCharacterData::isSameNode' => 'Indicates if two nodes are the same node',
+'DOMCharacterData::isSupported' => 'Checks if feature is supported for specified version',
+'DOMCharacterData::lookupNamespaceUri' => 'Gets the namespace URI of the node based on the prefix',
+'DOMCharacterData::lookupPrefix' => 'Gets the namespace prefix of the node based on the namespace URI',
+'DOMCharacterData::normalize' => 'Normalizes the node',
+'DOMCharacterData::removeChild' => 'Removes child from list of children',
+'DOMCharacterData::replaceChild' => 'Replaces a child',
 'domcharacterdata::replaceData' => 'Replace a substring within the DOMCharacterData node',
 'domcharacterdata::substringData' => 'Extracts a range of data from the node',
 'domcomment::__construct' => 'Creates a new DOMComment object',
+'DOMComment::appendChild' => 'Adds new child at the end of the children',
+'DOMComment::appendData' => 'Append the string to the end of the character data of the node',
+'DOMComment::C14N' => 'Canonicalize nodes to a string',
+'DOMComment::C14NFile' => 'Canonicalize nodes to a file',
+'DOMComment::cloneNode' => 'Clones a node',
+'DOMComment::deleteData' => 'Remove a range of characters from the node',
+'DOMComment::getLineNo' => 'Get line number for a node',
+'DOMComment::getNodePath' => 'Get an XPath for a node',
+'DOMComment::hasAttributes' => 'Checks if node has attributes',
+'DOMComment::hasChildNodes' => 'Checks if node has children',
+'DOMComment::insertBefore' => 'Adds a new child before a reference node',
+'DOMComment::insertData' => 'Insert a string at the specified 16-bit unit offset',
+'DOMComment::isDefaultNamespace' => 'Checks if the specified namespaceURI is the default namespace or not',
+'DOMComment::isSameNode' => 'Indicates if two nodes are the same node',
+'DOMComment::isSupported' => 'Checks if feature is supported for specified version',
+'DOMComment::lookupNamespaceUri' => 'Gets the namespace URI of the node based on the prefix',
+'DOMComment::lookupPrefix' => 'Gets the namespace prefix of the node based on the namespace URI',
+'DOMComment::normalize' => 'Normalizes the node',
+'DOMComment::removeChild' => 'Removes child from list of children',
+'DOMComment::replaceChild' => 'Replaces a child',
+'DOMComment::replaceData' => 'Replace a substring within the DOMCharacterData node',
+'DOMComment::substringData' => 'Extracts a range of data from the node',
 'domdocument::__construct' => 'Creates a new DOMDocument object',
+'DOMDocument::appendChild' => 'Adds new child at the end of the children',
+'DOMDocument::C14N' => 'Canonicalize nodes to a string',
+'DOMDocument::C14NFile' => 'Canonicalize nodes to a file',
+'DOMDocument::cloneNode' => 'Clones a node',
 'domdocument::createAttribute' => 'Create new attribute',
 'domdocument::createAttributeNS' => 'Create new attribute node with an associated namespace',
 'domdocument::createCDATASection' => 'Create new cdata node',
@@ -1800,15 +1886,28 @@ with the same key selected into the same page.',
 'domdocument::getElementById' => 'Searches for an element with a certain id',
 'domdocument::getElementsByTagName' => 'Searches for all elements with given local tag name',
 'domdocument::getElementsByTagNameNS' => 'Searches for all elements with given tag name in specified namespace',
+'DOMDocument::getLineNo' => 'Get line number for a node',
+'DOMDocument::getNodePath' => 'Get an XPath for a node',
+'DOMDocument::hasAttributes' => 'Checks if node has attributes',
+'DOMDocument::hasChildNodes' => 'Checks if node has children',
 'domdocument::importNode' => 'Import node into current document',
+'DOMDocument::insertBefore' => 'Adds a new child before a reference node',
+'DOMDocument::isDefaultNamespace' => 'Checks if the specified namespaceURI is the default namespace or not',
+'DOMDocument::isSameNode' => 'Indicates if two nodes are the same node',
+'DOMDocument::isSupported' => 'Checks if feature is supported for specified version',
 'domdocument::load' => 'Load XML from a file',
 'domdocument::loadHTML' => 'Load HTML from a string',
 'domdocument::loadHTMLFile' => 'Load HTML from a file',
 'domdocument::loadXML' => 'Load XML from a string',
+'DOMDocument::lookupNamespaceUri' => 'Gets the namespace URI of the node based on the prefix',
+'DOMDocument::lookupPrefix' => 'Gets the namespace prefix of the node based on the namespace URI',
+'DOMDocument::normalize' => 'Normalizes the node',
 'domdocument::normalizeDocument' => 'Normalizes the document',
 'domdocument::registerNodeClass' => 'Register extended class used to create base node type',
 'domdocument::relaxNGValidate' => 'Performs relaxNG validation on the document',
 'domdocument::relaxNGValidateSource' => 'Performs relaxNG validation on the document',
+'DOMDocument::removeChild' => 'Removes child from list of children',
+'DOMDocument::replaceChild' => 'Replaces a child',
 'domdocument::save' => 'Dumps the internal XML tree back into a file',
 'domdocument::saveHTML' => 'Dumps the internal document into a string using HTML formatting',
 'domdocument::saveHTMLFile' => 'Dumps the internal document into a file using HTML formatting',
@@ -1817,17 +1916,48 @@ with the same key selected into the same page.',
 'domdocument::schemaValidateSource' => 'Validates a document based on a schema',
 'domdocument::validate' => 'Validates the document based on its DTD',
 'domdocument::xinclude' => 'Substitutes XIncludes in a DOMDocument Object',
+'DOMDocumentFragment::appendChild' => 'Adds new child at the end of the children',
 'domdocumentfragment::appendXML' => 'Append raw XML data',
+'DOMDocumentFragment::C14N' => 'Canonicalize nodes to a string',
+'DOMDocumentFragment::C14NFile' => 'Canonicalize nodes to a file',
+'DOMDocumentFragment::cloneNode' => 'Clones a node',
+'DOMDocumentFragment::getLineNo' => 'Get line number for a node',
+'DOMDocumentFragment::getNodePath' => 'Get an XPath for a node',
+'DOMDocumentFragment::hasAttributes' => 'Checks if node has attributes',
+'DOMDocumentFragment::hasChildNodes' => 'Checks if node has children',
+'DOMDocumentFragment::insertBefore' => 'Adds a new child before a reference node',
+'DOMDocumentFragment::isDefaultNamespace' => 'Checks if the specified namespaceURI is the default namespace or not',
+'DOMDocumentFragment::isSameNode' => 'Indicates if two nodes are the same node',
+'DOMDocumentFragment::isSupported' => 'Checks if feature is supported for specified version',
+'DOMDocumentFragment::lookupNamespaceUri' => 'Gets the namespace URI of the node based on the prefix',
+'DOMDocumentFragment::lookupPrefix' => 'Gets the namespace prefix of the node based on the namespace URI',
+'DOMDocumentFragment::normalize' => 'Normalizes the node',
+'DOMDocumentFragment::removeChild' => 'Removes child from list of children',
+'DOMDocumentFragment::replaceChild' => 'Replaces a child',
 'domelement::__construct' => 'Creates a new DOMElement object',
+'DOMElement::appendChild' => 'Adds new child at the end of the children',
+'DOMElement::C14N' => 'Canonicalize nodes to a string',
+'DOMElement::C14NFile' => 'Canonicalize nodes to a file',
+'DOMElement::cloneNode' => 'Clones a node',
 'domelement::getAttribute' => 'Returns value of attribute',
 'domelement::getAttributeNode' => 'Returns attribute node',
 'domelement::getAttributeNodeNS' => 'Returns attribute node',
 'domelement::getAttributeNS' => 'Returns value of attribute',
 'domelement::getElementsByTagName' => 'Gets elements by tagname',
 'domelement::getElementsByTagNameNS' => 'Get elements by namespaceURI and localName',
+'DOMElement::getLineNo' => 'Get line number for a node',
+'DOMElement::getNodePath' => 'Get an XPath for a node',
 'domelement::hasAttribute' => 'Checks to see if attribute exists',
 'domelement::hasAttributeNS' => 'Checks to see if attribute exists',
+'DOMElement::hasAttributes' => 'Checks if node has attributes',
+'DOMElement::hasChildNodes' => 'Checks if node has children',
 'DOMElement::insertBefore' => 'Adds a new child before a reference node',
+'DOMElement::isDefaultNamespace' => 'Checks if the specified namespaceURI is the default namespace or not',
+'DOMElement::isSameNode' => 'Indicates if two nodes are the same node',
+'DOMElement::isSupported' => 'Checks if feature is supported for specified version',
+'DOMElement::lookupNamespaceUri' => 'Gets the namespace URI of the node based on the prefix',
+'DOMElement::lookupPrefix' => 'Gets the namespace prefix of the node based on the namespace URI',
+'DOMElement::normalize' => 'Normalizes the node',
 'domelement::removeAttribute' => 'Removes attribute',
 'domelement::removeAttributeNode' => 'Removes attribute',
 'domelement::removeAttributeNS' => 'Removes attribute',
@@ -1841,6 +1971,23 @@ with the same key selected into the same page.',
 'domelement::setIdAttributeNode' => 'Declares the attribute specified by node to be of type ID',
 'domelement::setIdAttributeNS' => 'Declares the attribute specified by local name and namespace URI to be of type ID',
 'domentityreference::__construct' => 'Creates a new DOMEntityReference object',
+'DOMEntityReference::appendChild' => 'Adds new child at the end of the children',
+'DOMEntityReference::C14N' => 'Canonicalize nodes to a string',
+'DOMEntityReference::C14NFile' => 'Canonicalize nodes to a file',
+'DOMEntityReference::cloneNode' => 'Clones a node',
+'DOMEntityReference::getLineNo' => 'Get line number for a node',
+'DOMEntityReference::getNodePath' => 'Get an XPath for a node',
+'DOMEntityReference::hasAttributes' => 'Checks if node has attributes',
+'DOMEntityReference::hasChildNodes' => 'Checks if node has children',
+'DOMEntityReference::insertBefore' => 'Adds a new child before a reference node',
+'DOMEntityReference::isDefaultNamespace' => 'Checks if the specified namespaceURI is the default namespace or not',
+'DOMEntityReference::isSameNode' => 'Indicates if two nodes are the same node',
+'DOMEntityReference::isSupported' => 'Checks if feature is supported for specified version',
+'DOMEntityReference::lookupNamespaceUri' => 'Gets the namespace URI of the node based on the prefix',
+'DOMEntityReference::lookupPrefix' => 'Gets the namespace prefix of the node based on the namespace URI',
+'DOMEntityReference::normalize' => 'Normalizes the node',
+'DOMEntityReference::removeChild' => 'Removes child from list of children',
+'DOMEntityReference::replaceChild' => 'Replaces a child',
 'domimplementation::__construct' => 'Creates a new DOMImplementation object',
 'domimplementation::createDocument' => 'Creates a DOMDocument object of the specified type with its document element',
 'domimplementation::createDocumentType' => 'Creates an empty DOMDocumentType object',
@@ -1869,10 +2016,49 @@ with the same key selected into the same page.',
 'domnodelist::count' => 'Get number of nodes in the list',
 'domnodelist::item' => 'Retrieves a node specified by index',
 'domprocessinginstruction::__construct' => 'Creates a new DOMProcessingInstruction object',
+'DOMProcessingInstruction::appendChild' => 'Adds new child at the end of the children',
+'DOMProcessingInstruction::C14N' => 'Canonicalize nodes to a string',
+'DOMProcessingInstruction::C14NFile' => 'Canonicalize nodes to a file',
+'DOMProcessingInstruction::cloneNode' => 'Clones a node',
+'DOMProcessingInstruction::getLineNo' => 'Get line number for a node',
+'DOMProcessingInstruction::getNodePath' => 'Get an XPath for a node',
+'DOMProcessingInstruction::hasAttributes' => 'Checks if node has attributes',
+'DOMProcessingInstruction::hasChildNodes' => 'Checks if node has children',
+'DOMProcessingInstruction::insertBefore' => 'Adds a new child before a reference node',
+'DOMProcessingInstruction::isDefaultNamespace' => 'Checks if the specified namespaceURI is the default namespace or not',
+'DOMProcessingInstruction::isSameNode' => 'Indicates if two nodes are the same node',
+'DOMProcessingInstruction::isSupported' => 'Checks if feature is supported for specified version',
+'DOMProcessingInstruction::lookupNamespaceUri' => 'Gets the namespace URI of the node based on the prefix',
+'DOMProcessingInstruction::lookupPrefix' => 'Gets the namespace prefix of the node based on the namespace URI',
+'DOMProcessingInstruction::normalize' => 'Normalizes the node',
+'DOMProcessingInstruction::removeChild' => 'Removes child from list of children',
+'DOMProcessingInstruction::replaceChild' => 'Replaces a child',
 'domtext::__construct' => 'Creates a new DOMText object',
+'DOMText::appendChild' => 'Adds new child at the end of the children',
+'DOMText::appendData' => 'Append the string to the end of the character data of the node',
+'DOMText::C14N' => 'Canonicalize nodes to a string',
+'DOMText::C14NFile' => 'Canonicalize nodes to a file',
+'DOMText::cloneNode' => 'Clones a node',
+'DOMText::deleteData' => 'Remove a range of characters from the node',
+'DOMText::getLineNo' => 'Get line number for a node',
+'DOMText::getNodePath' => 'Get an XPath for a node',
+'DOMText::hasAttributes' => 'Checks if node has attributes',
+'DOMText::hasChildNodes' => 'Checks if node has children',
+'DOMText::insertBefore' => 'Adds a new child before a reference node',
+'DOMText::insertData' => 'Insert a string at the specified 16-bit unit offset',
+'DOMText::isDefaultNamespace' => 'Checks if the specified namespaceURI is the default namespace or not',
 'domtext::isElementContentWhitespace' => 'Returns whether this text node contains whitespace in element content',
+'DOMText::isSameNode' => 'Indicates if two nodes are the same node',
+'DOMText::isSupported' => 'Checks if feature is supported for specified version',
 'domtext::isWhitespaceInElementContent' => 'Indicates whether this text node contains whitespace',
+'DOMText::lookupNamespaceUri' => 'Gets the namespace URI of the node based on the prefix',
+'DOMText::lookupPrefix' => 'Gets the namespace prefix of the node based on the namespace URI',
+'DOMText::normalize' => 'Normalizes the node',
+'DOMText::removeChild' => 'Removes child from list of children',
+'DOMText::replaceChild' => 'Replaces a child',
+'DOMText::replaceData' => 'Replace a substring within the DOMCharacterData node',
 'domtext::splitText' => 'Breaks this node into two nodes at the specified offset',
+'DOMText::substringData' => 'Extracts a range of data from the node',
 'domxpath::__construct' => 'Creates a new DOMXPath object',
 'domxpath::evaluate' => 'Evaluates the given XPath expression and returns a typed result if possible',
 'domxpath::query' => 'Evaluates the given XPath expression',
@@ -2199,8 +2385,18 @@ Error can not be clone, so this method results in fatal error.',
 'error_get_last' => 'Get the last occurred error',
 'error_log' => 'Send an error message to the defined error handling routines',
 'error_reporting' => 'Sets which PHP errors are reported',
+'ErrorException::__clone' => 'Clone the exception
+Tries to clone the Exception, which results in Fatal error.',
 'ErrorException::__construct' => 'Constructs the exception',
+'ErrorException::__toString' => 'String representation of the exception',
+'ErrorException::getCode' => 'Gets the Exception code',
+'ErrorException::getFile' => 'Gets the file in which the exception occurred',
+'ErrorException::getLine' => 'Gets the line in which the exception occurred',
+'ErrorException::getMessage' => 'Gets the Exception message',
+'ErrorException::getPrevious' => 'Returns previous Exception',
 'ErrorException::getSeverity' => 'Gets the exception severity',
+'ErrorException::getTrace' => 'Gets the stack trace',
+'ErrorException::getTraceAsString' => 'Gets the stack trace as a string',
 'escapeshellarg' => 'Escape a string to be used as a shell argument',
 'escapeshellcmd' => 'Escape shell metacharacters',
 'ev::backend' => 'Returns an integer describing the backend used by libev',
@@ -3057,6 +3253,97 @@ Tries to clone the Exception, which results in Fatal error.',
 'fdf_set_value' => 'Set the value of a field',
 'fdf_set_version' => 'Sets version number for a FDF file',
 'feof' => 'Tests for end-of-file on a file pointer',
+'FFI::addr' => 'Returns C pointer to the given C data structure. The pointer is
+not "owned" and won\'t be free. Anyway, this is a potentially
+unsafe operation, because the life-time of the returned pointer
+may be longer than life-time of the source object, and this may
+cause dangling pointer dereference (like in regular C).',
+'FFI::alignof' => 'Returns size of C data type of the given FFI\CData or FFI\CType.',
+'FFI::arrayType' => 'Constructs a new C array type with elements of $type and
+dimensions specified by $dimensions.',
+'FFI::cast' => 'Casts given $pointer to another C type, specified by C declaration
+string or FFI\CType object.
+
+This function may be called statically and use only predefined
+types, or as a method of previously created FFI object. In last
+case the first argument may reuse all type and tag names
+defined in FFI::cdef().',
+'FFI::cdef' => 'The method creates a binding on the existing C function.
+
+All variables and functions defined by first arguments are bound
+to corresponding native symbols in DSO library and then may be
+accessed as FFI object methods and properties. C types of argument,
+return value and variables are automatically converted to/from PHP
+types (if possible). Otherwise, they are wrapped in a special CData
+proxy object and may be accessed by elements.',
+'FFI::free' => 'Manually removes previously created "not-owned" data structure.',
+'FFI::load' => '<p>Instead of embedding of a long C definition into PHP string,
+and creating FFI through FFI::cdef(), it\'s possible to separate
+it into a C header file. Note, that C preprocessor directives
+(e.g. #define or #ifdef) are not supported. And only a couple of
+special macros may be used especially for FFI.</p>
+
+<code>
+ #define FFI_LIB "libc.so.6"
+
+ int printf(const char *format, ...);
+</code>
+
+Here, FFI_LIB specifies, that the given library should be loaded.
+
+<code>
+ $ffi = FFI::load(__DIR__ . "/printf.h");
+ $ffi->printf("Hello world!\n");
+</code>',
+'FFI::memcmp' => 'Compares $size bytes from memory area $a and $b.',
+'FFI::memcpy' => 'Copies $size bytes from memory area $source to memory area $target.
+$source may be any native data structure (FFI\CData) or PHP string.',
+'FFI::memset' => 'Fills the $size bytes of the memory area pointed to by $target with
+the constant byte $byte.',
+'FFI::new' => 'Method that creates an arbitrary C structure.',
+'FFI::scope' => 'FFI definition parsing and shared library loading may take
+significant time. It\'s not useful to do it on each HTTP request in
+WEB environment. However, it\'s possible to pre-load FFI definitions
+and libraries at php startup, and instantiate FFI objects when
+necessary. Header files may be extended with FFI_SCOPE define
+(default pre-loading scope is "C"). This name is going to be
+used as FFI::scope() argument. It\'s possible to pre-load few
+files into a single scope.
+
+<code>
+ #define FFI_LIB "libc.so.6"
+ #define FFI_SCOPE "libc"
+
+ int printf(const char *format, ...);
+</code>
+
+These files are loaded through the same FFI::load() load function,
+executed from file loaded by opcache.preload php.ini directive.
+
+<code>
+ ffi.preload=/etc/php/ffi/printf.h
+</code>
+
+Finally, FFI::scope() instantiate an FFI object, that implements
+all C definition from the given scope.
+
+<code>
+ $ffi = FFI::scope("libc");
+ $ffi->printf("Hello world!\n");
+</code>',
+'FFI::sizeof' => 'Returns size of C data type of the given FFI\CData or FFI\CType.',
+'FFI::string' => 'Creates a PHP string from $size bytes of memory area pointed by
+$source. If size is omitted, $source must be zero terminated
+array of C chars.',
+'FFI::type' => 'This function creates and returns a FFI\CType object, representng
+type of the given C type declaration string.
+
+FFI::type() may be called statically and use only predefined types,
+or as a method of previously created FFI object. In last case the
+first argument may reuse all type and tag names defined in
+FFI::cdef().',
+'FFI::typeof' => 'This function returns a FFI\CType object, representing the type of
+the given FFI\CData object.',
 'fflush' => 'Flushes the output to a file',
 'ffmpeg_animated_gif::addFrame' => 'Add a frame to the end of the animated gif.',
 'ffmpeg_frame::__construct' => 'NOTE: This function will not be available if GD is not enabled.',
@@ -3120,13 +3407,44 @@ NOTE: This only works for files with constant bit rate.',
 'filepro_retrieve' => 'Retrieves data from a filePro database',
 'filepro_rowcount' => 'Find out how many rows are in a filePro database',
 'filesize' => 'Gets file size',
-'filesystemiterator::__construct' => 'Constructs a new filesystem iterator',
-'filesystemiterator::current' => 'The current file',
-'filesystemiterator::getFlags' => 'Get the handling flags',
-'filesystemiterator::key' => 'Retrieve the key for the current file',
-'filesystemiterator::next' => 'Move to the next file',
-'filesystemiterator::rewind' => 'Rewinds back to the beginning',
-'filesystemiterator::setFlags' => 'Sets handling flags',
+'FilesystemIterator::__construct' => 'Constructs a new filesystem iterator',
+'FilesystemIterator::__toString' => 'Get file name as a string',
+'FilesystemIterator::current' => 'The current file',
+'FilesystemIterator::getATime' => 'Get last access time of the current DirectoryIterator item',
+'FilesystemIterator::getBasename' => 'Get base name of current DirectoryIterator item',
+'FilesystemIterator::getCTime' => 'Get inode change time of the current DirectoryIterator item',
+'FilesystemIterator::getExtension' => 'Gets the file extension',
+'FilesystemIterator::getFileInfo' => 'Gets an SplFileInfo object for the file',
+'FilesystemIterator::getFilename' => 'Return file name of current DirectoryIterator item',
+'FilesystemIterator::getFlags' => 'Get the handling flags',
+'FilesystemIterator::getGroup' => 'Get group for the current DirectoryIterator item',
+'FilesystemIterator::getInode' => 'Get inode for the current DirectoryIterator item',
+'FilesystemIterator::getLinkTarget' => 'Gets the target of a link',
+'FilesystemIterator::getMTime' => 'Get last modification time of current DirectoryIterator item',
+'FilesystemIterator::getOwner' => 'Get owner of current DirectoryIterator item',
+'FilesystemIterator::getPath' => 'Get path of current Iterator item without filename',
+'FilesystemIterator::getPathInfo' => 'Gets an SplFileInfo object for the path',
+'FilesystemIterator::getPathname' => 'Return path and file name of current DirectoryIterator item',
+'FilesystemIterator::getPerms' => 'Get the permissions of current DirectoryIterator item',
+'FilesystemIterator::getRealPath' => 'Gets absolute path to file',
+'FilesystemIterator::getSize' => 'Get size of current DirectoryIterator item',
+'FilesystemIterator::getType' => 'Determine the type of the current DirectoryIterator item',
+'FilesystemIterator::isDir' => 'Determine if current DirectoryIterator item is a directory',
+'FilesystemIterator::isDot' => 'Determine if current DirectoryIterator item is \'.\' or \'..\'',
+'FilesystemIterator::isExecutable' => 'Determine if current DirectoryIterator item is executable',
+'FilesystemIterator::isFile' => 'Determine if current DirectoryIterator item is a regular file',
+'FilesystemIterator::isLink' => 'Determine if current DirectoryIterator item is a symbolic link',
+'FilesystemIterator::isReadable' => 'Determine if current DirectoryIterator item can be read',
+'FilesystemIterator::isWritable' => 'Determine if current DirectoryIterator item can be written to',
+'FilesystemIterator::key' => 'Retrieve the key for the current file',
+'FilesystemIterator::next' => 'Move to the next file',
+'FilesystemIterator::openFile' => 'Gets an SplFileObject object for the file',
+'FilesystemIterator::rewind' => 'Rewinds back to the beginning',
+'FilesystemIterator::seek' => 'Seek to a DirectoryIterator item',
+'FilesystemIterator::setFileClass' => 'Sets the class used with SplFileInfo::openFile',
+'FilesystemIterator::setFlags' => 'Sets handling flags',
+'FilesystemIterator::setInfoClass' => 'Sets the class used with SplFileInfo::getFileInfo and SplFileInfo::getPathInfo',
+'FilesystemIterator::valid' => 'Check whether current DirectoryIterator position is a valid file',
 'filetype' => 'Gets file type',
 'filter_has_var' => 'Checks if variable of specified type exists',
 'filter_id' => 'Returns the filter ID belonging to a named filter',
@@ -3414,7 +3732,37 @@ Throws an exception if the generator is still valid.',
 'gettype' => 'Get the type of a variable',
 'glob' => 'Find pathnames matching a pattern',
 'globiterator::__construct' => 'Construct a directory using glob',
+'GlobIterator::__toString' => 'Get file name as a string',
 'globiterator::count' => 'Get the number of directories and files',
+'GlobIterator::current' => 'The current file',
+'GlobIterator::getATime' => 'Get last access time of the current DirectoryIterator item',
+'GlobIterator::getBasename' => 'Get base name of current DirectoryIterator item',
+'GlobIterator::getCTime' => 'Get inode change time of the current DirectoryIterator item',
+'GlobIterator::getExtension' => 'Gets the file extension',
+'GlobIterator::getFilename' => 'Return file name of current DirectoryIterator item',
+'GlobIterator::getFlags' => 'Get the handling flags',
+'GlobIterator::getGroup' => 'Get group for the current DirectoryIterator item',
+'GlobIterator::getInode' => 'Get inode for the current DirectoryIterator item',
+'GlobIterator::getMTime' => 'Get last modification time of current DirectoryIterator item',
+'GlobIterator::getOwner' => 'Get owner of current DirectoryIterator item',
+'GlobIterator::getPath' => 'Get path of current Iterator item without filename',
+'GlobIterator::getPathname' => 'Return path and file name of current DirectoryIterator item',
+'GlobIterator::getPerms' => 'Get the permissions of current DirectoryIterator item',
+'GlobIterator::getSize' => 'Get size of current DirectoryIterator item',
+'GlobIterator::getType' => 'Determine the type of the current DirectoryIterator item',
+'GlobIterator::isDir' => 'Determine if current DirectoryIterator item is a directory',
+'GlobIterator::isDot' => 'Determine if current DirectoryIterator item is \'.\' or \'..\'',
+'GlobIterator::isExecutable' => 'Determine if current DirectoryIterator item is executable',
+'GlobIterator::isFile' => 'Determine if current DirectoryIterator item is a regular file',
+'GlobIterator::isLink' => 'Determine if current DirectoryIterator item is a symbolic link',
+'GlobIterator::isReadable' => 'Determine if current DirectoryIterator item can be read',
+'GlobIterator::isWritable' => 'Determine if current DirectoryIterator item can be written to',
+'GlobIterator::key' => 'Retrieve the key for the current file',
+'GlobIterator::next' => 'Move to the next file',
+'GlobIterator::rewind' => 'Rewinds back to the beginning',
+'GlobIterator::seek' => 'Seek to a DirectoryIterator item',
+'GlobIterator::setFlags' => 'Sets handling flags',
+'GlobIterator::valid' => 'Check whether current DirectoryIterator position is a valid file',
 'gmagick::__construct' => 'The Gmagick constructor',
 'gmagick::addimage' => 'Adds new image to Gmagick object image list',
 'gmagick::addnoiseimage' => 'Adds random noise to the image',
@@ -4011,37 +4359,874 @@ reached',
 'htmlspecialchars' => 'Convert special characters to HTML entities',
 'htmlspecialchars_decode' => 'Convert special HTML entities back to characters',
 'http\Client::__construct' => 'Create a new HTTP client.',
+'http\Client::addCookies' => 'Add custom cookies.
+See http\Client::setCookies().',
+'http\Client::addSslOptions' => 'Add specific SSL options.
+See http\Client::setSslOptions(), http\Client::setOptions() and http\Client\Curl\$ssl options.',
+'http\Client::attach' => 'Implements SplSubject. Attach another observer.
+Attached observers will be notified with progress of each transfer.',
+'http\Client::configure' => 'Configure the client\'s low level options.
+
+> ***NOTE:***
+> This method has been added in v2.3.0.',
+'http\Client::count' => 'Implements Countable. Retrieve the number of enqueued requests.
+
+> ***NOTE:***
+> The enqueued requests are counted without regard whether they are finished or not.',
+'http\Client::dequeue' => 'Dequeue the http\Client\Request $request.
+
+See http\Client::requeue(), if you want to requeue the request, instead of calling http\Client::dequeue() and then http\Client::enqueue().',
+'http\Client::detach' => 'Implements SplSubject. Detach $observer, which has been previously attached.',
+'http\Client::enableEvents' => 'Enable usage of an event library like libevent, which might improve performance with big socket sets.
+
+> ***NOTE:***
+> This method has been deprecated in 2.3.0, please use http\Client::configure() instead.',
+'http\Client::enablePipelining' => 'Enable sending pipelined requests to the same host if the driver supports it.
+
+> ***NOTE:***
+> This method has been deprecated in 2.3.0, please use http\Client::configure() instead.',
+'http\Client::enqueue' => 'Add another http\Client\Request to the request queue.
+If the optional callback $cb returns true, the request will be automatically dequeued.
+
+> ***Note:***
+> The http\Client\Response object resulting from the request is always stored
+> internally to be retrieved at a later time, __even__ when $cb is used.
+>
+> If you are about to send a lot of requests and do __not__ need the response
+> after executing the callback, you can use http\Client::getResponse() within
+> the callback to keep the memory usage level as low as possible.
+
+See http\Client::dequeue() and http\Client::send().',
+'http\Client::getAvailableConfiguration' => 'Get a list of available configuration options and their default values.
+
+See f.e. the [configuration options for the Curl driver](http/Client/Curl#Configuration:).',
+'http\Client::getAvailableDrivers' => 'List available drivers.',
+'http\Client::getAvailableOptions' => 'Retrieve a list of available request options and their default values.
+
+See f.e. the [request options for the Curl driver](http/Client/Curl#Options:).',
+'http\Client::getCookies' => 'Get priorly set custom cookies.
+See http\Client::setCookies().',
+'http\Client::getHistory' => 'Simply returns the http\Message chain representing the request/response history.
+
+> ***NOTE:***
+> The history is only recorded while http\Client::$recordHistory is true.',
+'http\Client::getObservers' => 'Returns the SplObjectStorage holding attached observers.',
+'http\Client::getOptions' => 'Get priorly set options.
+See http\Client::setOptions().',
+'http\Client::getProgressInfo' => 'Retrieve the progress information for $request.',
+'http\Client::getResponse' => 'Retrieve the corresponding response of an already finished request, or the last received response if $request is not set.
+
+> ***NOTE:***
+> If $request is NULL, then the response is removed from the internal storage (stack-like operation).',
+'http\Client::getSslOptions' => 'Retrieve priorly set SSL options.
+See http\Client::getOptions() and http\Client::setSslOptions().',
+'http\Client::getTransferInfo' => 'Get transfer related information for a running or finished request.',
+'http\Client::notify' => 'Implements SplSubject. Notify attached observers about progress with $request.',
+'http\Client::once' => 'Perform outstanding transfer actions.
+See http\Client::wait() for the completing interface.',
+'http\Client::requeue' => 'Requeue an http\Client\Request.
+
+The difference simply is, that this method, in contrast to http\Client::enqueue(), does not throw an http\Exception when the request to queue is already enqueued and dequeues it automatically prior enqueueing it again.',
+'http\Client::reset' => 'Reset the client to the initial state.',
+'http\Client::send' => 'Send all enqueued requests.
+See http\Client::once() and http\Client::wait() for a more fine grained interface.',
+'http\Client::setCookies' => 'Set custom cookies.
+See http\Client::addCookies() and http\Client::getCookies().',
+'http\Client::setDebug' => 'Set client debugging callback.
+
+> ***NOTE:***
+> This method has been added in v2.6.0, resp. v3.1.0.',
+'http\Client::setOptions' => 'Set client options.
+See http\Client\Curl.
+
+> ***NOTE:***
+> Only options specified prior enqueueing a request are applied to the request.',
+'http\Client::setSslOptions' => 'Specifically set SSL options.
+See http\Client::setOptions() and http\Client\Curl\$ssl options.',
+'http\Client::wait' => 'Wait for $timeout seconds for transfers to provide data.
+This is the completion call to http\Client::once().',
+'http\Client\Curl\User::init' => 'Initialize the event loop.',
+'http\Client\Curl\User::once' => 'Run the loop as long as it does not block.
+
+> ***NOTE:***
+> This method is called by http\Client::once(), so it does not need to have an actual implementation if http\Client::once() is never called.',
+'http\Client\Curl\User::send' => 'Run the loop.
+
+> ***NOTE:***
+> This method is called by http\Client::send(), so it does not need to have an actual implementation if http\Client::send() is never called.',
+'http\Client\Curl\User::socket' => 'Register (or deregister) a socket watcher.',
+'http\Client\Curl\User::timer' => 'Register a timeout watcher.',
+'http\Client\Curl\User::wait' => 'Wait/poll/select (block the loop) until events fire.
+
+> ***NOTE:***
+> This method is called by http\Client::wait(), so it does not need to have an actual implementation if http\Client::wait() is never called.',
+'http\Client\Request::__construct' => 'Create a new client request message to be enqueued and sent by http\Client.',
+'http\Client\Request::__toString' => 'Retrieve the message serialized to a string.
+Alias of http\Message::toString().',
+'http\Client\Request::addBody' => 'Append the data of $body to the message\'s body.
+See http\Message::setBody() and http\Message\Body::append().',
+'http\Client\Request::addHeader' => 'Add an header, appending to already existing headers.
+See http\Message::addHeaders() and http\Message::setHeader().',
+'http\Client\Request::addHeaders' => 'Add headers, optionally appending values, if header keys already exist.
+See http\Message::addHeader() and http\Message::setHeaders().',
+'http\Client\Request::addQuery' => 'Add querystring data.
+See http\Client\Request::setQuery() and http\Message::setRequestUrl().',
+'http\Client\Request::addSslOptions' => 'Add specific SSL options.
+See http\Client\Request::setSslOptions(), http\Client\Request::setOptions() and http\Client\Curl\$ssl options.',
+'http\Client\Request::count' => 'Implements Countable.',
+'http\Client\Request::current' => 'Implements iterator.
+See http\Message::valid() and http\Message::rewind().',
+'http\Client\Request::detach' => 'Detach a clone of this message from any message chain.',
+'http\Client\Request::getBody' => 'Retrieve the message\'s body.
+See http\Message::setBody().',
+'http\Client\Request::getContentType' => 'Extract the currently set "Content-Type" header.
+See http\Client\Request::setContentType().',
+'http\Client\Request::getHeader' => 'Retrieve a single header, optionally hydrated into a http\Header extending class.',
+'http\Client\Request::getHeaders' => 'Retrieve all message headers.
+See http\Message::setHeaders() and http\Message::getHeader().',
+'http\Client\Request::getHttpVersion' => 'Retrieve the HTTP protocol version of the message.
+See http\Message::setHttpVersion().',
+'http\Client\Request::getInfo' => 'Retrieve the first line of a request or response message.
+See http\Message::setInfo and also:
+
+* http\Message::getType()
+* http\Message::getHttpVersion()
+* http\Message::getResponseCode()
+* http\Message::getResponseStatus()
+* http\Message::getRequestMethod()
+* http\Message::getRequestUrl()',
+'http\Client\Request::getOptions' => 'Get priorly set options.
+See http\Client\Request::setOptions().',
+'http\Client\Request::getParentMessage' => 'Retrieve any parent message.
+See http\Message::reverse().',
+'http\Client\Request::getQuery' => 'Retrieve the currently set querystring.',
+'http\Client\Request::getRequestMethod' => 'Retrieve the request method of the message.
+See http\Message::setRequestMethod() and http\Message::getRequestUrl().',
+'http\Client\Request::getRequestUrl' => 'Retrieve the request URL of the message.
+See http\Message::setRequestUrl().',
+'http\Client\Request::getResponseCode' => 'Retrieve the response code of the message.
+See http\Message::setResponseCode() and http\Message::getResponseStatus().',
+'http\Client\Request::getResponseStatus' => 'Retrieve the response status of the message.
+See http\Message::setResponseStatus() and http\Message::getResponseCode().',
+'http\Client\Request::getSslOptions' => 'Retrieve priorly set SSL options.
+See http\Client\Request::getOptions() and http\Client\Request::setSslOptions().',
+'http\Client\Request::getType' => 'Retrieve the type of the message.
+See http\Message::setType() and http\Message::getInfo().',
+'http\Client\Request::isMultipart' => 'Check whether this message is a multipart message based on it\'s content type.
+If the message is a multipart message and a reference $boundary is given, the boundary string of the multipart message will be stored in $boundary.
+
+See http\Message::splitMultipartBody().',
+'http\Client\Request::key' => 'Implements Iterator.
+See http\Message::current() and http\Message::rewind().',
+'http\Client\Request::next' => 'Implements Iterator.
+See http\Message::valid() and http\Message::rewind().',
+'http\Client\Request::prepend' => 'Prepend message(s) $message to this message, or the top most message of this message chain.
+
+> ***NOTE:***
+> The message chains must not overlap.',
+'http\Client\Request::reverse' => 'Reverse the message chain and return the former top-most message.
+
+> ***NOTE:***
+> Message chains are ordered in reverse-parsed order by default, i.e. the last parsed message is the message you\'ll receive from any call parsing HTTP messages.
+>
+> This call re-orders the messages of the chain and returns the message that was parsed first with any later parsed messages re-parentized.',
+'http\Client\Request::rewind' => 'Implements Iterator.',
+'http\Client\Request::serialize' => 'Implements Serializable.',
+'http\Client\Request::setBody' => 'Set the message\'s body.
+See http\Message::getBody() and http\Message::addBody().',
+'http\Client\Request::setContentType' => 'Set the MIME content type of the request message.',
+'http\Client\Request::setHeader' => 'Set a single header.
+See http\Message::getHeader() and http\Message::addHeader().
+
+> ***NOTE:***
+> Prior to v2.5.6/v3.1.0 headers with the same name were merged into a single
+> header with values concatenated by comma.',
+'http\Client\Request::setHeaders' => 'Set the message headers.
+See http\Message::getHeaders() and http\Message::addHeaders().
+
+> ***NOTE:***
+> Prior to v2.5.6/v3.1.0 headers with the same name were merged into a single
+> header with values concatenated by comma.',
+'http\Client\Request::setHttpVersion' => 'Set the HTTP protocol version of the message.
+See http\Message::getHttpVersion().',
+'http\Client\Request::setInfo' => 'Set the complete message info, i.e. type and response resp. request information, at once.
+See http\Message::getInfo().',
+'http\Client\Request::setOptions' => 'Set client options.
+See http\Client::setOptions() and http\Client\Curl.
+
+Request specific options override general options which were set in the client.
+
+> ***NOTE:***
+> Only options specified prior enqueueing a request are applied to the request.',
+'http\Client\Request::setQuery' => '(Re)set the querystring.
+See http\Client\Request::addQuery() and http\Message::setRequestUrl().',
+'http\Client\Request::setRequestMethod' => 'Set the request method of the message.
+See http\Message::getRequestMethod() and http\Message::setRequestUrl().',
+'http\Client\Request::setRequestUrl' => 'Set the request URL of the message.
+See http\Message::getRequestUrl() and http\Message::setRequestMethod().',
+'http\Client\Request::setResponseCode' => 'Set the response status code.
+See http\Message::getResponseCode() and http\Message::setResponseStatus().
+
+> ***NOTE:***
+> This method also resets the response status phrase to the default for that code.',
+'http\Client\Request::setResponseStatus' => 'Set the response status phrase.
+See http\Message::getResponseStatus() and http\Message::setResponseCode().',
+'http\Client\Request::setSslOptions' => 'Specifically set SSL options.
+See http\Client\Request::setOptions() and http\Client\Curl\$ssl options.',
+'http\Client\Request::setType' => 'Set the message type and reset the message info.
+See http\Message::getType() and http\Message::setInfo().',
+'http\Client\Request::splitMultipartBody' => 'Splits the body of a multipart message.
+See http\Message::isMultipart() and http\Message\Body::addPart().',
+'http\Client\Request::toCallback' => 'Stream the message through a callback.',
+'http\Client\Request::toStream' => 'Stream the message into stream $stream, starting from $offset, streaming $maxlen at most.',
+'http\Client\Request::toString' => 'Retrieve the message serialized to a string.',
+'http\Client\Request::unserialize' => 'Implements Serializable.',
+'http\Client\Request::valid' => 'Implements Iterator.
+See http\Message::current() and http\Message::rewind().',
+'http\Client\Response::__construct' => 'Create a new HTTP message.',
+'http\Client\Response::__toString' => 'Retrieve the message serialized to a string.
+Alias of http\Message::toString().',
+'http\Client\Response::addBody' => 'Append the data of $body to the message\'s body.
+See http\Message::setBody() and http\Message\Body::append().',
+'http\Client\Response::addHeader' => 'Add an header, appending to already existing headers.
+See http\Message::addHeaders() and http\Message::setHeader().',
+'http\Client\Response::addHeaders' => 'Add headers, optionally appending values, if header keys already exist.
+See http\Message::addHeader() and http\Message::setHeaders().',
+'http\Client\Response::count' => 'Implements Countable.',
+'http\Client\Response::current' => 'Implements iterator.
+See http\Message::valid() and http\Message::rewind().',
+'http\Client\Response::detach' => 'Detach a clone of this message from any message chain.',
+'http\Client\Response::getBody' => 'Retrieve the message\'s body.
+See http\Message::setBody().',
+'http\Client\Response::getCookies' => 'Extract response cookies.
+Parses any "Set-Cookie" response headers into an http\Cookie list. See http\Cookie::__construct().',
+'http\Client\Response::getHeader' => 'Retrieve a single header, optionally hydrated into a http\Header extending class.',
+'http\Client\Response::getHeaders' => 'Retrieve all message headers.
+See http\Message::setHeaders() and http\Message::getHeader().',
+'http\Client\Response::getHttpVersion' => 'Retrieve the HTTP protocol version of the message.
+See http\Message::setHttpVersion().',
+'http\Client\Response::getInfo' => 'Retrieve the first line of a request or response message.
+See http\Message::setInfo and also:
+
+* http\Message::getType()
+* http\Message::getHttpVersion()
+* http\Message::getResponseCode()
+* http\Message::getResponseStatus()
+* http\Message::getRequestMethod()
+* http\Message::getRequestUrl()',
+'http\Client\Response::getParentMessage' => 'Retrieve any parent message.
+See http\Message::reverse().',
+'http\Client\Response::getRequestMethod' => 'Retrieve the request method of the message.
+See http\Message::setRequestMethod() and http\Message::getRequestUrl().',
+'http\Client\Response::getRequestUrl' => 'Retrieve the request URL of the message.
+See http\Message::setRequestUrl().',
+'http\Client\Response::getResponseCode' => 'Retrieve the response code of the message.
+See http\Message::setResponseCode() and http\Message::getResponseStatus().',
+'http\Client\Response::getResponseStatus' => 'Retrieve the response status of the message.
+See http\Message::setResponseStatus() and http\Message::getResponseCode().',
+'http\Client\Response::getTransferInfo' => 'Retrieve transfer related information after the request has completed.
+See http\Client::getTransferInfo().',
+'http\Client\Response::getType' => 'Retrieve the type of the message.
+See http\Message::setType() and http\Message::getInfo().',
+'http\Client\Response::isMultipart' => 'Check whether this message is a multipart message based on it\'s content type.
+If the message is a multipart message and a reference $boundary is given, the boundary string of the multipart message will be stored in $boundary.
+
+See http\Message::splitMultipartBody().',
+'http\Client\Response::key' => 'Implements Iterator.
+See http\Message::current() and http\Message::rewind().',
+'http\Client\Response::next' => 'Implements Iterator.
+See http\Message::valid() and http\Message::rewind().',
+'http\Client\Response::prepend' => 'Prepend message(s) $message to this message, or the top most message of this message chain.
+
+> ***NOTE:***
+> The message chains must not overlap.',
+'http\Client\Response::reverse' => 'Reverse the message chain and return the former top-most message.
+
+> ***NOTE:***
+> Message chains are ordered in reverse-parsed order by default, i.e. the last parsed message is the message you\'ll receive from any call parsing HTTP messages.
+>
+> This call re-orders the messages of the chain and returns the message that was parsed first with any later parsed messages re-parentized.',
+'http\Client\Response::rewind' => 'Implements Iterator.',
+'http\Client\Response::serialize' => 'Implements Serializable.',
+'http\Client\Response::setBody' => 'Set the message\'s body.
+See http\Message::getBody() and http\Message::addBody().',
+'http\Client\Response::setHeader' => 'Set a single header.
+See http\Message::getHeader() and http\Message::addHeader().
+
+> ***NOTE:***
+> Prior to v2.5.6/v3.1.0 headers with the same name were merged into a single
+> header with values concatenated by comma.',
+'http\Client\Response::setHeaders' => 'Set the message headers.
+See http\Message::getHeaders() and http\Message::addHeaders().
+
+> ***NOTE:***
+> Prior to v2.5.6/v3.1.0 headers with the same name were merged into a single
+> header with values concatenated by comma.',
+'http\Client\Response::setHttpVersion' => 'Set the HTTP protocol version of the message.
+See http\Message::getHttpVersion().',
+'http\Client\Response::setInfo' => 'Set the complete message info, i.e. type and response resp. request information, at once.
+See http\Message::getInfo().',
+'http\Client\Response::setRequestMethod' => 'Set the request method of the message.
+See http\Message::getRequestMethod() and http\Message::setRequestUrl().',
+'http\Client\Response::setRequestUrl' => 'Set the request URL of the message.
+See http\Message::getRequestUrl() and http\Message::setRequestMethod().',
+'http\Client\Response::setResponseCode' => 'Set the response status code.
+See http\Message::getResponseCode() and http\Message::setResponseStatus().
+
+> ***NOTE:***
+> This method also resets the response status phrase to the default for that code.',
+'http\Client\Response::setResponseStatus' => 'Set the response status phrase.
+See http\Message::getResponseStatus() and http\Message::setResponseCode().',
+'http\Client\Response::setType' => 'Set the message type and reset the message info.
+See http\Message::getType() and http\Message::setInfo().',
+'http\Client\Response::splitMultipartBody' => 'Splits the body of a multipart message.
+See http\Message::isMultipart() and http\Message\Body::addPart().',
+'http\Client\Response::toCallback' => 'Stream the message through a callback.',
+'http\Client\Response::toStream' => 'Stream the message into stream $stream, starting from $offset, streaming $maxlen at most.',
+'http\Client\Response::toString' => 'Retrieve the message serialized to a string.',
+'http\Client\Response::unserialize' => 'Implements Serializable.',
+'http\Client\Response::valid' => 'Implements Iterator.
+See http\Message::current() and http\Message::rewind().',
 'http\Cookie::__construct' => 'Create a new cookie list.',
+'http\Cookie::__toString' => 'String cast handler. Alias of http\Cookie::toString().',
+'http\Cookie::addCookie' => 'Add a cookie.
+See http\Cookie::setCookie() and http\Cookie::addCookies().',
+'http\Cookie::addCookies' => '(Re)set the cookies.
+See http\Cookie::setCookies().',
+'http\Cookie::addExtra' => 'Add an extra attribute to the cookie list.
+See http\Cookie::setExtra().',
+'http\Cookie::addExtras' => 'Add several extra attributes.
+See http\Cookie::addExtra().',
+'http\Cookie::getCookie' => 'Retrieve a specific cookie value.
+See http\Cookie::setCookie().',
+'http\Cookie::getCookies' => 'Get the list of cookies.
+See http\Cookie::setCookies().',
+'http\Cookie::getDomain' => 'Retrieve the effective domain of the cookie list.
+See http\Cookie::setDomain().',
+'http\Cookie::getExpires' => 'Get the currently set expires attribute.
+See http\Cookie::setExpires().
+
+> ***NOTE:***
+> A return value of -1 means that the attribute is not set.',
+'http\Cookie::getExtra' => 'Retrieve an extra attribute.
+See http\Cookie::setExtra().',
+'http\Cookie::getExtras' => 'Retrieve the list of extra attributes.
+See http\Cookie::setExtras().',
+'http\Cookie::getFlags' => 'Get the currently set flags.
+See http\Cookie::SECURE and http\Cookie::HTTPONLY constants.',
+'http\Cookie::getMaxAge' => 'Get the currently set max-age attribute of the cookie list.
+See http\Cookie::setMaxAge().
+
+> ***NOTE:***
+> A return value of -1 means that the attribute is not set.',
+'http\Cookie::getPath' => 'Retrieve the path the cookie(s) of this cookie list are effective at.
+See http\Cookie::setPath().',
+'http\Cookie::setCookie' => '(Re)set a cookie.
+See http\Cookie::addCookie() and http\Cookie::setCookies().
+
+> ***NOTE:***
+> The cookie will be deleted from the list if $cookie_value is NULL.',
+'http\Cookie::setCookies' => '(Re)set the cookies.
+See http\Cookie::addCookies().',
+'http\Cookie::setDomain' => 'Set the effective domain of the cookie list.
+See http\Cookie::setPath().',
+'http\Cookie::setExpires' => 'Set the traditional expires timestamp.
+See http\Cookie::setMaxAge() for a safer alternative.',
+'http\Cookie::setExtra' => '(Re)set an extra attribute.
+See http\Cookie::addExtra().
+
+> ***NOTE:***
+> The attribute will be removed from the extras list if $extra_value is NULL.',
+'http\Cookie::setExtras' => '(Re)set the extra attributes.
+See http\Cookie::addExtras().',
+'http\Cookie::setFlags' => 'Set the flags to specified $value.
+See http\Cookie::SECURE and http\Cookie::HTTPONLY constants.',
+'http\Cookie::setMaxAge' => 'Set the maximum age the cookie may have on the client side.
+This is a client clock departure safe alternative to the "expires" attribute.
+See http\Cookie::setExpires().',
+'http\Cookie::setPath' => 'Set the path the cookie(s) of this cookie list should be effective at.
+See http\Cookie::setDomain().',
+'http\Cookie::toArray' => 'Get the cookie list as array.',
+'http\Cookie::toString' => 'Retrieve the string representation of the cookie list.
+See http\Cookie::toArray().',
+'http\Encoding\Stream::__construct' => 'Base constructor for encoding stream implementations.',
+'http\Encoding\Stream::done' => 'Check whether the encoding stream is already done.',
+'http\Encoding\Stream::finish' => 'Finish and reset the encoding stream.
+Returns any pending data.',
+'http\Encoding\Stream::flush' => 'Flush the encoding stream.
+Returns any pending data.',
+'http\Encoding\Stream::update' => 'Update the encoding stream with more input.',
+'http\Encoding\Stream\Debrotli::__construct' => 'Base constructor for encoding stream implementations.',
+'http\Encoding\Stream\Debrotli::decode' => 'Decode brotli encoded data.',
+'http\Encoding\Stream\Debrotli::done' => 'Check whether the encoding stream is already done.',
+'http\Encoding\Stream\Debrotli::finish' => 'Finish and reset the encoding stream.
+Returns any pending data.',
+'http\Encoding\Stream\Debrotli::flush' => 'Flush the encoding stream.
+Returns any pending data.',
+'http\Encoding\Stream\Debrotli::update' => 'Update the encoding stream with more input.',
+'http\Encoding\Stream\Dechunk::__construct' => 'Base constructor for encoding stream implementations.',
+'http\Encoding\Stream\Dechunk::decode' => 'Decode chunked encoded data.',
+'http\Encoding\Stream\Dechunk::done' => 'Check whether the encoding stream is already done.',
+'http\Encoding\Stream\Dechunk::finish' => 'Finish and reset the encoding stream.
+Returns any pending data.',
+'http\Encoding\Stream\Dechunk::flush' => 'Flush the encoding stream.
+Returns any pending data.',
+'http\Encoding\Stream\Dechunk::update' => 'Update the encoding stream with more input.',
+'http\Encoding\Stream\Deflate::__construct' => 'Base constructor for encoding stream implementations.',
+'http\Encoding\Stream\Deflate::done' => 'Check whether the encoding stream is already done.',
+'http\Encoding\Stream\Deflate::encode' => 'Encode data with deflate/zlib/gzip encoding.',
+'http\Encoding\Stream\Deflate::finish' => 'Finish and reset the encoding stream.
+Returns any pending data.',
+'http\Encoding\Stream\Deflate::flush' => 'Flush the encoding stream.
+Returns any pending data.',
+'http\Encoding\Stream\Deflate::update' => 'Update the encoding stream with more input.',
+'http\Encoding\Stream\Enbrotli::__construct' => 'Base constructor for encoding stream implementations.',
+'http\Encoding\Stream\Enbrotli::done' => 'Check whether the encoding stream is already done.',
+'http\Encoding\Stream\Enbrotli::encode' => 'Encode data with brotli encoding.',
+'http\Encoding\Stream\Enbrotli::finish' => 'Finish and reset the encoding stream.
+Returns any pending data.',
+'http\Encoding\Stream\Enbrotli::flush' => 'Flush the encoding stream.
+Returns any pending data.',
+'http\Encoding\Stream\Enbrotli::update' => 'Update the encoding stream with more input.',
+'http\Encoding\Stream\Inflate::__construct' => 'Base constructor for encoding stream implementations.',
+'http\Encoding\Stream\Inflate::decode' => 'Decode deflate/zlib/gzip encoded data.',
+'http\Encoding\Stream\Inflate::done' => 'Check whether the encoding stream is already done.',
+'http\Encoding\Stream\Inflate::finish' => 'Finish and reset the encoding stream.
+Returns any pending data.',
+'http\Encoding\Stream\Inflate::flush' => 'Flush the encoding stream.
+Returns any pending data.',
+'http\Encoding\Stream\Inflate::update' => 'Update the encoding stream with more input.',
+'http\Env::getRequestBody' => 'Retrieve the current HTTP request\'s body.',
+'http\Env::getRequestHeader' => 'Retrieve one or all headers of the current HTTP request.',
+'http\Env::getResponseCode' => 'Get the HTTP response code to send.',
+'http\Env::getResponseHeader' => 'Get one or all HTTP response headers to be sent.',
+'http\Env::getResponseStatusForAllCodes' => 'Retrieve a list of all known HTTP response status.',
+'http\Env::getResponseStatusForCode' => 'Retrieve the string representation of specified HTTP response code.',
+'http\Env::negotiate' => 'Generic negotiator. For specific client negotiation see http\Env::negotiateContentType() and related methods.
+
+> ***NOTE:***
+> The first element of $supported serves as a default if no operand matches.',
+'http\Env::negotiateCharset' => 'Negotiate the client\'s preferred character set.
+
+> ***NOTE:***
+> The first element of $supported character sets serves as a default if no character set matches.',
+'http\Env::negotiateContentType' => 'Negotiate the client\'s preferred MIME content type.
+
+> ***NOTE:***
+> The first element of $supported content types serves as a default if no content-type matches.',
+'http\Env::negotiateEncoding' => 'Negotiate the client\'s preferred encoding.
+
+> ***NOTE:***
+> The first element of $supported encodings serves as a default if no encoding matches.',
+'http\Env::negotiateLanguage' => 'Negotiate the client\'s preferred language.
+
+> ***NOTE:***
+> The first element of $supported languages serves as a default if no language matches.',
+'http\Env::setResponseCode' => 'Set the HTTP response code to send.',
+'http\Env::setResponseHeader' => 'Set a response header, either replacing a prior set header, or appending the new header value, depending on $replace.
+
+If no $header_value is specified, or $header_value is NULL, then a previously set header with the same key will be deleted from the list.
+
+If $response_code is not 0, the response status code is updated accordingly.',
+'http\Env\Request::__construct' => 'Create an instance of the server\'s current HTTP request.
+
+Upon construction, the http\Env\Request acquires http\QueryString instances of query parameters ($\_GET) and form parameters ($\_POST).
+
+It also compiles an array of uploaded files ($\_FILES) more comprehensive than the original $\_FILES array, see http\Env\Request::getFiles() for that matter.',
+'http\Env\Request::__toString' => 'Retrieve the message serialized to a string.
+Alias of http\Message::toString().',
+'http\Env\Request::addBody' => 'Append the data of $body to the message\'s body.
+See http\Message::setBody() and http\Message\Body::append().',
+'http\Env\Request::addHeader' => 'Add an header, appending to already existing headers.
+See http\Message::addHeaders() and http\Message::setHeader().',
+'http\Env\Request::addHeaders' => 'Add headers, optionally appending values, if header keys already exist.
+See http\Message::addHeader() and http\Message::setHeaders().',
+'http\Env\Request::count' => 'Implements Countable.',
+'http\Env\Request::current' => 'Implements iterator.
+See http\Message::valid() and http\Message::rewind().',
+'http\Env\Request::detach' => 'Detach a clone of this message from any message chain.',
+'http\Env\Request::getBody' => 'Retrieve the message\'s body.
+See http\Message::setBody().',
 'http\Env\Request::getCookie' => 'Retrieve an URL query value ($_GET)',
 'http\Env\Request::getFiles' => 'Retrieve the uploaded files list ($_FILES)',
 'http\Env\Request::getForm' => 'Retrieve a form value ($_POST)',
+'http\Env\Request::getHeader' => 'Retrieve a single header, optionally hydrated into a http\Header extending class.',
+'http\Env\Request::getHeaders' => 'Retrieve all message headers.
+See http\Message::setHeaders() and http\Message::getHeader().',
+'http\Env\Request::getHttpVersion' => 'Retrieve the HTTP protocol version of the message.
+See http\Message::setHttpVersion().',
+'http\Env\Request::getInfo' => 'Retrieve the first line of a request or response message.
+See http\Message::setInfo and also:
+
+* http\Message::getType()
+* http\Message::getHttpVersion()
+* http\Message::getResponseCode()
+* http\Message::getResponseStatus()
+* http\Message::getRequestMethod()
+* http\Message::getRequestUrl()',
+'http\Env\Request::getParentMessage' => 'Retrieve any parent message.
+See http\Message::reverse().',
 'http\Env\Request::getQuery' => 'Retrieve an URL query value ($_GET)',
+'http\Env\Request::getRequestMethod' => 'Retrieve the request method of the message.
+See http\Message::setRequestMethod() and http\Message::getRequestUrl().',
+'http\Env\Request::getRequestUrl' => 'Retrieve the request URL of the message.
+See http\Message::setRequestUrl().',
+'http\Env\Request::getResponseCode' => 'Retrieve the response code of the message.
+See http\Message::setResponseCode() and http\Message::getResponseStatus().',
+'http\Env\Request::getResponseStatus' => 'Retrieve the response status of the message.
+See http\Message::setResponseStatus() and http\Message::getResponseCode().',
+'http\Env\Request::getType' => 'Retrieve the type of the message.
+See http\Message::setType() and http\Message::getInfo().',
+'http\Env\Request::isMultipart' => 'Check whether this message is a multipart message based on it\'s content type.
+If the message is a multipart message and a reference $boundary is given, the boundary string of the multipart message will be stored in $boundary.
+
+See http\Message::splitMultipartBody().',
+'http\Env\Request::key' => 'Implements Iterator.
+See http\Message::current() and http\Message::rewind().',
+'http\Env\Request::next' => 'Implements Iterator.
+See http\Message::valid() and http\Message::rewind().',
+'http\Env\Request::prepend' => 'Prepend message(s) $message to this message, or the top most message of this message chain.
+
+> ***NOTE:***
+> The message chains must not overlap.',
+'http\Env\Request::reverse' => 'Reverse the message chain and return the former top-most message.
+
+> ***NOTE:***
+> Message chains are ordered in reverse-parsed order by default, i.e. the last parsed message is the message you\'ll receive from any call parsing HTTP messages.
+>
+> This call re-orders the messages of the chain and returns the message that was parsed first with any later parsed messages re-parentized.',
+'http\Env\Request::rewind' => 'Implements Iterator.',
+'http\Env\Request::serialize' => 'Implements Serializable.',
+'http\Env\Request::setBody' => 'Set the message\'s body.
+See http\Message::getBody() and http\Message::addBody().',
+'http\Env\Request::setHeader' => 'Set a single header.
+See http\Message::getHeader() and http\Message::addHeader().
+
+> ***NOTE:***
+> Prior to v2.5.6/v3.1.0 headers with the same name were merged into a single
+> header with values concatenated by comma.',
+'http\Env\Request::setHeaders' => 'Set the message headers.
+See http\Message::getHeaders() and http\Message::addHeaders().
+
+> ***NOTE:***
+> Prior to v2.5.6/v3.1.0 headers with the same name were merged into a single
+> header with values concatenated by comma.',
+'http\Env\Request::setHttpVersion' => 'Set the HTTP protocol version of the message.
+See http\Message::getHttpVersion().',
+'http\Env\Request::setInfo' => 'Set the complete message info, i.e. type and response resp. request information, at once.
+See http\Message::getInfo().',
+'http\Env\Request::setRequestMethod' => 'Set the request method of the message.
+See http\Message::getRequestMethod() and http\Message::setRequestUrl().',
+'http\Env\Request::setRequestUrl' => 'Set the request URL of the message.
+See http\Message::getRequestUrl() and http\Message::setRequestMethod().',
+'http\Env\Request::setResponseCode' => 'Set the response status code.
+See http\Message::getResponseCode() and http\Message::setResponseStatus().
+
+> ***NOTE:***
+> This method also resets the response status phrase to the default for that code.',
+'http\Env\Request::setResponseStatus' => 'Set the response status phrase.
+See http\Message::getResponseStatus() and http\Message::setResponseCode().',
+'http\Env\Request::setType' => 'Set the message type and reset the message info.
+See http\Message::getType() and http\Message::setInfo().',
+'http\Env\Request::splitMultipartBody' => 'Splits the body of a multipart message.
+See http\Message::isMultipart() and http\Message\Body::addPart().',
+'http\Env\Request::toCallback' => 'Stream the message through a callback.',
+'http\Env\Request::toStream' => 'Stream the message into stream $stream, starting from $offset, streaming $maxlen at most.',
+'http\Env\Request::toString' => 'Retrieve the message serialized to a string.',
+'http\Env\Request::unserialize' => 'Implements Serializable.',
+'http\Env\Request::valid' => 'Implements Iterator.
+See http\Message::current() and http\Message::rewind().',
+'http\Env\Response::__construct' => 'Create a new env response message instance.',
 'http\Env\Response::__invoke' => 'Output buffer handler',
+'http\Env\Response::__toString' => 'Retrieve the message serialized to a string.
+Alias of http\Message::toString().',
+'http\Env\Response::addBody' => 'Append the data of $body to the message\'s body.
+See http\Message::setBody() and http\Message\Body::append().',
+'http\Env\Response::addHeader' => 'Add an header, appending to already existing headers.
+See http\Message::addHeaders() and http\Message::setHeader().',
+'http\Env\Response::addHeaders' => 'Add headers, optionally appending values, if header keys already exist.
+See http\Message::addHeader() and http\Message::setHeaders().',
+'http\Env\Response::count' => 'Implements Countable.',
+'http\Env\Response::current' => 'Implements iterator.
+See http\Message::valid() and http\Message::rewind().',
+'http\Env\Response::detach' => 'Detach a clone of this message from any message chain.',
+'http\Env\Response::getBody' => 'Retrieve the message\'s body.
+See http\Message::setBody().',
+'http\Env\Response::getHeader' => 'Retrieve a single header, optionally hydrated into a http\Header extending class.',
+'http\Env\Response::getHeaders' => 'Retrieve all message headers.
+See http\Message::setHeaders() and http\Message::getHeader().',
+'http\Env\Response::getHttpVersion' => 'Retrieve the HTTP protocol version of the message.
+See http\Message::setHttpVersion().',
+'http\Env\Response::getInfo' => 'Retrieve the first line of a request or response message.
+See http\Message::setInfo and also:
+
+* http\Message::getType()
+* http\Message::getHttpVersion()
+* http\Message::getResponseCode()
+* http\Message::getResponseStatus()
+* http\Message::getRequestMethod()
+* http\Message::getRequestUrl()',
+'http\Env\Response::getParentMessage' => 'Retrieve any parent message.
+See http\Message::reverse().',
+'http\Env\Response::getRequestMethod' => 'Retrieve the request method of the message.
+See http\Message::setRequestMethod() and http\Message::getRequestUrl().',
+'http\Env\Response::getRequestUrl' => 'Retrieve the request URL of the message.
+See http\Message::setRequestUrl().',
+'http\Env\Response::getResponseCode' => 'Retrieve the response code of the message.
+See http\Message::setResponseCode() and http\Message::getResponseStatus().',
+'http\Env\Response::getResponseStatus' => 'Retrieve the response status of the message.
+See http\Message::setResponseStatus() and http\Message::getResponseCode().',
+'http\Env\Response::getType' => 'Retrieve the type of the message.
+See http\Message::setType() and http\Message::getInfo().',
+'http\Env\Response::isCachedByEtag' => 'Manually test the header $header_name of the environment\'s request for a cache hit.
+http\Env\Response::send() checks that itself, though.',
+'http\Env\Response::isCachedByLastModified' => 'Manually test the header $header_name of the environment\'s request for a cache hit.
+http\Env\Response::send() checks that itself, though.',
+'http\Env\Response::isMultipart' => 'Check whether this message is a multipart message based on it\'s content type.
+If the message is a multipart message and a reference $boundary is given, the boundary string of the multipart message will be stored in $boundary.
+
+See http\Message::splitMultipartBody().',
+'http\Env\Response::key' => 'Implements Iterator.
+See http\Message::current() and http\Message::rewind().',
+'http\Env\Response::next' => 'Implements Iterator.
+See http\Message::valid() and http\Message::rewind().',
+'http\Env\Response::prepend' => 'Prepend message(s) $message to this message, or the top most message of this message chain.
+
+> ***NOTE:***
+> The message chains must not overlap.',
+'http\Env\Response::reverse' => 'Reverse the message chain and return the former top-most message.
+
+> ***NOTE:***
+> Message chains are ordered in reverse-parsed order by default, i.e. the last parsed message is the message you\'ll receive from any call parsing HTTP messages.
+>
+> This call re-orders the messages of the chain and returns the message that was parsed first with any later parsed messages re-parentized.',
+'http\Env\Response::rewind' => 'Implements Iterator.',
 'http\Env\Response::send' => 'Send the response through the SAPI or $stream',
+'http\Env\Response::serialize' => 'Implements Serializable.',
+'http\Env\Response::setBody' => 'Set the message\'s body.
+See http\Message::getBody() and http\Message::addBody().',
 'http\Env\Response::setCacheControl' => 'Make suggestions to the client how it should cache the response',
-'http\Env\Response::setContentDisposition' => 'Set the reponse’s content disposition parameters',
+'http\Env\Response::setContentDisposition' => 'Set the response’s content disposition parameters',
 'http\Env\Response::setContentEncoding' => 'Enable support for “Accept-Encoding” requests with deflate or gzip',
 'http\Env\Response::setContentType' => 'Set the MIME content type of the response',
 'http\Env\Response::setCookie' => 'Add cookies to the response to send',
 'http\Env\Response::setEnvRequest' => 'Override the environment’s request',
 'http\Env\Response::setEtag' => 'Override the environment’s request',
+'http\Env\Response::setHeader' => 'Set a single header.
+See http\Message::getHeader() and http\Message::addHeader().
+
+> ***NOTE:***
+> Prior to v2.5.6/v3.1.0 headers with the same name were merged into a single
+> header with values concatenated by comma.',
+'http\Env\Response::setHeaders' => 'Set the message headers.
+See http\Message::getHeaders() and http\Message::addHeaders().
+
+> ***NOTE:***
+> Prior to v2.5.6/v3.1.0 headers with the same name were merged into a single
+> header with values concatenated by comma.',
+'http\Env\Response::setHttpVersion' => 'Set the HTTP protocol version of the message.
+See http\Message::getHttpVersion().',
+'http\Env\Response::setInfo' => 'Set the complete message info, i.e. type and response resp. request information, at once.
+See http\Message::getInfo().',
 'http\Env\Response::setLastModified' => 'Override the environment’s request',
+'http\Env\Response::setRequestMethod' => 'Set the request method of the message.
+See http\Message::getRequestMethod() and http\Message::setRequestUrl().',
+'http\Env\Response::setRequestUrl' => 'Set the request URL of the message.
+See http\Message::getRequestUrl() and http\Message::setRequestMethod().',
+'http\Env\Response::setResponseCode' => 'Set the response status code.
+See http\Message::getResponseCode() and http\Message::setResponseStatus().
+
+> ***NOTE:***
+> This method also resets the response status phrase to the default for that code.',
+'http\Env\Response::setResponseStatus' => 'Set the response status phrase.
+See http\Message::getResponseStatus() and http\Message::setResponseCode().',
 'http\Env\Response::setThrottleRate' => 'Override the environment’s request',
+'http\Env\Response::setType' => 'Set the message type and reset the message info.
+See http\Message::getType() and http\Message::setInfo().',
+'http\Env\Response::splitMultipartBody' => 'Splits the body of a multipart message.
+See http\Message::isMultipart() and http\Message\Body::addPart().',
+'http\Env\Response::toCallback' => 'Stream the message through a callback.',
+'http\Env\Response::toStream' => 'Stream the message into stream $stream, starting from $offset, streaming $maxlen at most.',
+'http\Env\Response::toString' => 'Retrieve the message serialized to a string.',
+'http\Env\Response::unserialize' => 'Implements Serializable.',
+'http\Env\Response::valid' => 'Implements Iterator.
+See http\Message::current() and http\Message::rewind().',
+'http\Header::__construct' => 'Create an http\Header instance for use of simple matching or negotiation. If the value of the header is an array it may be compounded to a single comma separated string.',
+'http\Header::__toString' => 'String cast handler. Alias of http\Header::serialize().',
+'http\Header::getParams' => 'Create a parameter list out of the HTTP header value.',
+'http\Header::match' => 'Match the HTTP header\'s value against provided $value according to $flags.',
+'http\Header::negotiate' => 'Negotiate the header\'s value against a list of supported values in $supported.
+Negotiation operation is adopted according to the header name, i.e. if the
+header being negotiated is Accept, then a slash is used as primary type
+separator, and if the header is Accept-Language respectively, a hyphen is
+used instead.
+
+> ***NOTE:***
+> The first element of $supported serves as a default if no operand matches.',
+'http\Header::parse' => 'Parse HTTP headers.
+See also http\Header\Parser.',
+'http\Header::serialize' => 'Implements Serializable.',
+'http\Header::toString' => 'Convenience method. Alias of http\Header::serialize().',
+'http\Header::unserialize' => 'Implements Serializable.',
+'http\Header\Parser::getState' => 'Retrieve the current state of the parser.
+See http\Header\Parser::STATE_* constants.',
+'http\Header\Parser::parse' => 'Parse a string.',
+'http\Header\Parser::stream' => 'Parse a stream.',
 'http\Message::__construct' => 'Create a new HTTP message.',
+'http\Message::__toString' => 'Retrieve the message serialized to a string.
+Alias of http\Message::toString().',
+'http\Message::addBody' => 'Append the data of $body to the message\'s body.
+See http\Message::setBody() and http\Message\Body::append().',
+'http\Message::addHeader' => 'Add an header, appending to already existing headers.
+See http\Message::addHeaders() and http\Message::setHeader().',
+'http\Message::addHeaders' => 'Add headers, optionally appending values, if header keys already exist.
+See http\Message::addHeader() and http\Message::setHeaders().',
+'http\Message::count' => 'Implements Countable.',
+'http\Message::current' => 'Implements iterator.
+See http\Message::valid() and http\Message::rewind().',
+'http\Message::detach' => 'Detach a clone of this message from any message chain.',
+'http\Message::getBody' => 'Retrieve the message\'s body.
+See http\Message::setBody().',
+'http\Message::getHeader' => 'Retrieve a single header, optionally hydrated into a http\Header extending class.',
+'http\Message::getHeaders' => 'Retrieve all message headers.
+See http\Message::setHeaders() and http\Message::getHeader().',
+'http\Message::getHttpVersion' => 'Retrieve the HTTP protocol version of the message.
+See http\Message::setHttpVersion().',
+'http\Message::getInfo' => 'Retrieve the first line of a request or response message.
+See http\Message::setInfo and also:
+
+* http\Message::getType()
+* http\Message::getHttpVersion()
+* http\Message::getResponseCode()
+* http\Message::getResponseStatus()
+* http\Message::getRequestMethod()
+* http\Message::getRequestUrl()',
+'http\Message::getParentMessage' => 'Retrieve any parent message.
+See http\Message::reverse().',
+'http\Message::getRequestMethod' => 'Retrieve the request method of the message.
+See http\Message::setRequestMethod() and http\Message::getRequestUrl().',
+'http\Message::getRequestUrl' => 'Retrieve the request URL of the message.
+See http\Message::setRequestUrl().',
+'http\Message::getResponseCode' => 'Retrieve the response code of the message.
+See http\Message::setResponseCode() and http\Message::getResponseStatus().',
+'http\Message::getResponseStatus' => 'Retrieve the response status of the message.
+See http\Message::setResponseStatus() and http\Message::getResponseCode().',
+'http\Message::getType' => 'Retrieve the type of the message.
+See http\Message::setType() and http\Message::getInfo().',
+'http\Message::isMultipart' => 'Check whether this message is a multipart message based on it\'s content type.
+If the message is a multipart message and a reference $boundary is given, the boundary string of the multipart message will be stored in $boundary.
+
+See http\Message::splitMultipartBody().',
+'http\Message::key' => 'Implements Iterator.
+See http\Message::current() and http\Message::rewind().',
+'http\Message::next' => 'Implements Iterator.
+See http\Message::valid() and http\Message::rewind().',
+'http\Message::prepend' => 'Prepend message(s) $message to this message, or the top most message of this message chain.
+
+> ***NOTE:***
+> The message chains must not overlap.',
+'http\Message::reverse' => 'Reverse the message chain and return the former top-most message.
+
+> ***NOTE:***
+> Message chains are ordered in reverse-parsed order by default, i.e. the last parsed message is the message you\'ll receive from any call parsing HTTP messages.
+>
+> This call re-orders the messages of the chain and returns the message that was parsed first with any later parsed messages re-parentized.',
+'http\Message::rewind' => 'Implements Iterator.',
+'http\Message::serialize' => 'Implements Serializable.',
+'http\Message::setBody' => 'Set the message\'s body.
+See http\Message::getBody() and http\Message::addBody().',
+'http\Message::setHeader' => 'Set a single header.
+See http\Message::getHeader() and http\Message::addHeader().
+
+> ***NOTE:***
+> Prior to v2.5.6/v3.1.0 headers with the same name were merged into a single
+> header with values concatenated by comma.',
+'http\Message::setHeaders' => 'Set the message headers.
+See http\Message::getHeaders() and http\Message::addHeaders().
+
+> ***NOTE:***
+> Prior to v2.5.6/v3.1.0 headers with the same name were merged into a single
+> header with values concatenated by comma.',
+'http\Message::setHttpVersion' => 'Set the HTTP protocol version of the message.
+See http\Message::getHttpVersion().',
+'http\Message::setInfo' => 'Set the complete message info, i.e. type and response resp. request information, at once.
+See http\Message::getInfo().',
+'http\Message::setRequestMethod' => 'Set the request method of the message.
+See http\Message::getRequestMethod() and http\Message::setRequestUrl().',
+'http\Message::setRequestUrl' => 'Set the request URL of the message.
+See http\Message::getRequestUrl() and http\Message::setRequestMethod().',
+'http\Message::setResponseCode' => 'Set the response status code.
+See http\Message::getResponseCode() and http\Message::setResponseStatus().
+
+> ***NOTE:***
+> This method also resets the response status phrase to the default for that code.',
+'http\Message::setResponseStatus' => 'Set the response status phrase.
+See http\Message::getResponseStatus() and http\Message::setResponseCode().',
+'http\Message::setType' => 'Set the message type and reset the message info.
+See http\Message::getType() and http\Message::setInfo().',
+'http\Message::splitMultipartBody' => 'Splits the body of a multipart message.
+See http\Message::isMultipart() and http\Message\Body::addPart().',
+'http\Message::toCallback' => 'Stream the message through a callback.',
+'http\Message::toStream' => 'Stream the message into stream $stream, starting from $offset, streaming $maxlen at most.',
+'http\Message::toString' => 'Retrieve the message serialized to a string.',
+'http\Message::unserialize' => 'Implements Serializable.',
+'http\Message::valid' => 'Implements Iterator.
+See http\Message::current() and http\Message::rewind().',
 'http\Message\Body::__construct' => 'Create a new message body, optionally referencing $stream.',
+'http\Message\Body::__toString' => 'String cast handler.',
+'http\Message\Body::addForm' => 'Add form fields and files to the message body.
+
+> ***NOTE:***
+> Currently, http\Message\Body::addForm() creates "multipart/form-data" bodies.',
+'http\Message\Body::addPart' => 'Add a part to a multipart body.',
+'http\Message\Body::append' => 'Append plain bytes to the message body.',
+'http\Message\Body::etag' => 'Retrieve the ETag of the body.',
+'http\Message\Body::getBoundary' => 'Retrieve any boundary of the message body.
+See http\Message::splitMultipartBody().',
+'http\Message\Body::getResource' => 'Retrieve the underlying stream resource.',
+'http\Message\Body::serialize' => 'Implements Serializable.
+Alias of http\Message\Body::__toString().',
+'http\Message\Body::stat' => 'Stat size, atime, mtime and/or ctime.',
+'http\Message\Body::toCallback' => 'Stream the message body through a callback.',
+'http\Message\Body::toStream' => 'Stream the message body into another stream $stream, starting from $offset, streaming $maxlen at most.',
+'http\Message\Body::toString' => 'Retrieve the message body serialized to a string.
+Alias of http\Message\Body::__toString().',
+'http\Message\Body::unserialize' => 'Implements Serializable.',
+'http\Message\Parser::getState' => 'Retrieve the current state of the parser.
+See http\Message\Parser::STATE_* constants.',
+'http\Message\Parser::parse' => 'Parse a string.',
+'http\Message\Parser::stream' => 'Parse a stream.',
+'http\Params::__construct' => 'Instantiate a new HTTP (header) parameter set.',
+'http\Params::__toString' => 'String cast handler. Alias of http\Params::toString().
+Returns a stringified version of the parameters.',
+'http\Params::offsetExists' => 'Implements ArrayAccess.',
+'http\Params::offsetGet' => 'Implements ArrayAccess.',
+'http\Params::offsetSet' => 'Implements ArrayAccess.',
+'http\Params::offsetUnset' => 'Implements ArrayAccess.',
+'http\Params::toArray' => 'Convenience method that simply returns http\Params::$params.',
+'http\Params::toString' => 'Returns a stringified version of the parameters.',
 'http\QueryString::__construct' => 'QueryString constructor.',
+'http\QueryString::__toString' => 'Get the string representation of the querystring (x-www-form-urlencoded).',
 'http\QueryString::get' => 'Retrieve an querystring value',
 'http\QueryString::getArray' => 'Retrieve an array value at offset $name',
 'http\QueryString::getBool' => 'Retrieve an array value at offset $name',
 'http\QueryString::getFloat' => 'Retrieve an array value at offset $name',
 'http\QueryString::getGlobalInstance' => 'Retrieve the global querystring instance referencing $_GET',
 'http\QueryString::getInt' => 'Retrieve an array value at offset $name',
+'http\QueryString::getIterator' => 'Implements IteratorAggregate.',
 'http\QueryString::getObject' => 'Retrieve an array value at offset $name',
 'http\QueryString::getString' => 'Retrieve an array value at offset $name',
 'http\QueryString::mod' => 'Set additional $params to a clone of this instance',
+'http\QueryString::offsetExists' => 'Implements ArrayAccess.',
+'http\QueryString::offsetGet' => 'Implements ArrayAccess.',
+'http\QueryString::offsetSet' => 'Implements ArrayAccess.',
+'http\QueryString::offsetUnset' => 'Implements ArrayAccess.',
+'http\QueryString::serialize' => 'Implements Serializable.
+See http\QueryString::toString().',
 'http\QueryString::set' => 'Set additional querystring entries',
 'http\QueryString::toArray' => 'Returns http\QueryString::$queryArray',
 'http\QueryString::toString' => 'Get the string representation of the querystring (x-www-form-urlencoded)',
+'http\QueryString::unserialize' => 'Implements Serializable.',
 'http\QueryString::xlate' => 'Translate character encodings of the querystring with ext/iconv',
 'http\Url::__construct' => 'Url constructor.',
 'http\Url::__toString' => 'Alias of Url::toString()',
@@ -4092,7 +5277,7 @@ reached',
 'HttpMessage::toString' => 'Get string representation',
 'HttpQueryString::__construct' => 'HttpQueryString constructor',
 'HttpQueryString::get' => 'Get (part of) query string',
-'HttpQueryString::mod' => 'Modifiy query string copy',
+'HttpQueryString::mod' => 'Modify query string copy',
 'HttpQueryString::offsetExists' => 'Whether a offset exists',
 'HttpQueryString::offsetGet' => 'Offset to retrieve',
 'HttpQueryString::offsetSet' => 'Offset to set',
@@ -5126,7 +6311,12 @@ The maximum value represents the longest possible distance in the colorspace. e.
 'inet_ntop' => 'Converts a packed internet address to a human readable representation',
 'inet_pton' => 'Converts a human readable IP address to its packed in_addr representation',
 'infiniteiterator::__construct' => 'Constructs an InfiniteIterator',
+'InfiniteIterator::current' => 'Get the current value',
+'InfiniteIterator::getInnerIterator' => 'Get the inner iterator',
+'InfiniteIterator::key' => 'Get the key of the current element',
 'infiniteiterator::next' => 'Moves the inner Iterator forward or rewinds it',
+'InfiniteIterator::rewind' => 'Rewind to the first element',
+'InfiniteIterator::valid' => 'Checks if the iterator is valid',
 'inflate_add' => 'Incrementally inflate encoded data',
 'inflate_get_read_len' => 'Get number of bytes read so far',
 'inflate_get_status' => 'Get decompression status',
@@ -5309,7 +6499,27 @@ Get the largest local minimum value for a field',
 'intlchar::tolower' => 'Make Unicode character lowercase',
 'intlchar::totitle' => 'Make Unicode character titlecase',
 'intlchar::toupper' => 'Make Unicode character uppercase',
+'IntlCodePointBreakIterator::createCharacterInstance' => 'Create break iterator for boundaries of combining character sequences',
+'IntlCodePointBreakIterator::createCodePointInstance' => 'Create break iterator for boundaries of code points',
+'IntlCodePointBreakIterator::createLineInstance' => 'Create break iterator for logically possible line breaks',
+'IntlCodePointBreakIterator::createSentenceInstance' => 'Create break iterator for sentence breaks',
+'IntlCodePointBreakIterator::createTitleInstance' => 'Create break iterator for title-casing breaks',
+'IntlCodePointBreakIterator::createWordInstance' => 'Create break iterator for word breaks',
+'IntlCodePointBreakIterator::current' => 'Get index of current position',
+'IntlCodePointBreakIterator::first' => 'Set position to the first character in the text',
+'IntlCodePointBreakIterator::following' => 'Advance the iterator to the first boundary following specified offset',
+'IntlCodePointBreakIterator::getErrorCode' => 'Get last error code on the object',
+'IntlCodePointBreakIterator::getErrorMessage' => 'Get last error message on the object',
 'intlcodepointbreakiterator::getLastCodePoint' => 'Get last code point passed over after advancing or receding the iterator',
+'IntlCodePointBreakIterator::getLocale' => 'Get the locale associated with the object',
+'IntlCodePointBreakIterator::getPartsIterator' => 'Create iterator for navigating fragments between boundaries',
+'IntlCodePointBreakIterator::getText' => 'Get the text being scanned',
+'IntlCodePointBreakIterator::isBoundary' => 'Tell whether an offset is a boundaryʼs offset',
+'IntlCodePointBreakIterator::last' => 'Set the iterator position to index beyond the last character',
+'IntlCodePointBreakIterator::next' => 'Advance the iterator the next boundary',
+'IntlCodePointBreakIterator::preceding' => 'Set the iterator position to the first boundary before an offset',
+'IntlCodePointBreakIterator::previous' => 'Set the iterator position to the boundary immediately before the current',
+'IntlCodePointBreakIterator::setText' => 'Set the text being scanned',
 'IntlDateFormatter::create' => 'Create a date formatter',
 'intldateformatter::format' => 'Format the date/time value as a string',
 'intldateformatter::formatObject' => 'Formats an object',
@@ -5347,10 +6557,24 @@ Get the largest local minimum value for a field',
 'IntlRuleBasedBreakIterator::createSentenceInstance' => 'Create break iterator for sentence breaks',
 'IntlRuleBasedBreakIterator::createTitleInstance' => 'Create break iterator for title-casing breaks',
 'IntlRuleBasedBreakIterator::createWordInstance' => 'Create break iterator for word breaks',
+'IntlRuleBasedBreakIterator::current' => 'Get index of current position',
+'IntlRuleBasedBreakIterator::first' => 'Set position to the first character in the text',
+'IntlRuleBasedBreakIterator::following' => 'Advance the iterator to the first boundary following specified offset',
 'intlrulebasedbreakiterator::getBinaryRules' => 'Get the binary form of compiled rules',
+'IntlRuleBasedBreakIterator::getErrorCode' => 'Get last error code on the object',
+'IntlRuleBasedBreakIterator::getErrorMessage' => 'Get last error message on the object',
+'IntlRuleBasedBreakIterator::getLocale' => 'Get the locale associated with the object',
+'IntlRuleBasedBreakIterator::getPartsIterator' => 'Create iterator for navigating fragments between boundaries',
 'intlrulebasedbreakiterator::getRules' => 'Get the rule set used to create this object',
 'intlrulebasedbreakiterator::getRuleStatus' => 'Get the largest status value from the break rules that determined the current break position',
 'intlrulebasedbreakiterator::getRuleStatusVec' => 'Get the status values from the break rules that determined the current break position',
+'IntlRuleBasedBreakIterator::getText' => 'Get the text being scanned',
+'IntlRuleBasedBreakIterator::isBoundary' => 'Tell whether an offset is a boundaryʼs offset',
+'IntlRuleBasedBreakIterator::last' => 'Set the iterator position to index beyond the last character',
+'IntlRuleBasedBreakIterator::next' => 'Advance the iterator the next boundary',
+'IntlRuleBasedBreakIterator::preceding' => 'Set the iterator position to the first boundary before an offset',
+'IntlRuleBasedBreakIterator::previous' => 'Set the iterator position to the boundary immediately before the current',
+'IntlRuleBasedBreakIterator::setText' => 'Set the text being scanned',
 'intltimezone::countEquivalentIDs' => 'Get the number of IDs in the equivalency group that includes the given ID',
 'intltimezone::createDefault' => 'Create a new copy of the default timezone for this host',
 'intltimezone::createEnumeration' => 'Get an enumeration over time zone IDs associated with the given country or offset',
@@ -6580,9 +7804,9 @@ by the {@link https://php.net/manual/en/mongocollection.find.php MongoCollection
 'MongoCollection::distinct' => 'Retrieve a list of distinct values for the given key across a collection',
 'MongoCollection::drop' => 'Drops this collection',
 'MongoCollection::ensureIndex' => '`@return boolean` always true',
-'MongoCollection::find' => 'Querys this collection',
+'MongoCollection::find' => 'Queries this collection',
 'MongoCollection::findAndModify' => 'Update a document and return it',
-'MongoCollection::findOne' => 'Querys this collection, returning a single element',
+'MongoCollection::findOne' => 'Queries this collection, returning a single element',
 'MongoCollection::getDBRef' => 'Fetches the document pointed to by a database reference',
 'MongoCollection::getIndexInfo' => 'Returns an array of index names for this collection',
 'MongoCollection::getName' => 'Returns this collection\'s name',
@@ -6647,13 +7871,29 @@ This method will override the static class variable slaveOkay.',
 'MongoCursor::tailable' => 'Sets whether this cursor will be left open after fetching the last results',
 'MongoCursor::timeout' => 'Sets a client-side timeout for this query',
 'MongoCursor::valid' => 'Checks if the cursor is reading a valid result.',
+'MongoCursorException::__clone' => 'Clone the exception
+Tries to clone the Exception, which results in Fatal error.',
+'MongoCursorException::__construct' => 'Construct the exception. Note: The message is NOT binary safe.',
+'MongoCursorException::__toString' => 'String representation of the exception',
+'MongoCursorException::getCode' => 'Gets the Exception code',
+'MongoCursorException::getFile' => 'Gets the file in which the exception occurred',
 'mongocursorexception::getHost' => 'The hostname of the server that encountered the error',
+'MongoCursorException::getLine' => 'Gets the line in which the exception occurred',
+'MongoCursorException::getMessage' => 'Gets the Exception message',
+'MongoCursorException::getPrevious' => 'Returns previous Exception',
+'MongoCursorException::getTrace' => 'Gets the stack trace',
+'MongoCursorException::getTraceAsString' => 'Gets the stack trace as a string',
 'mongocursorinterface::batchSize' => 'Limits the number of elements returned in one batch',
+'MongoCursorInterface::current' => 'Return the current element',
 'mongocursorinterface::dead' => 'Checks if there are results that have not yet been sent from the database',
 'mongocursorinterface::getReadPreference' => 'Get the read preference for this query',
 'mongocursorinterface::info' => 'Gets information about the cursor\'s creation and iteration',
+'MongoCursorInterface::key' => 'Return the key of the current element',
+'MongoCursorInterface::next' => 'Move forward to next element',
+'MongoCursorInterface::rewind' => 'Rewind the Iterator to the first element',
 'mongocursorinterface::setReadPreference' => 'Set the read preference for this query',
 'mongocursorinterface::timeout' => 'Sets a client-side timeout for this query',
+'MongoCursorInterface::valid' => 'Checks if current position is valid',
 'mongodate::__construct' => 'Creates a new date',
 'mongodate::__toString' => 'Returns a string representation of this date',
 'mongodate::toDateTime' => 'Returns a DateTime object representing this date',
@@ -6911,6 +8151,17 @@ Note: If the object is not registered, this function is a no-op.',
 'mongodbref::create' => 'Creates a new database reference',
 'mongodbref::get' => 'Fetches the object pointed to by a reference',
 'mongodbref::isRef' => 'Checks if an array is a database reference',
+'MongoException::__clone' => 'Clone the exception
+Tries to clone the Exception, which results in Fatal error.',
+'MongoException::__construct' => 'Construct the exception. Note: The message is NOT binary safe.',
+'MongoException::__toString' => 'String representation of the exception',
+'MongoException::getCode' => 'Gets the Exception code',
+'MongoException::getFile' => 'Gets the file in which the exception occurred',
+'MongoException::getLine' => 'Gets the line in which the exception occurred',
+'MongoException::getMessage' => 'Gets the Exception message',
+'MongoException::getPrevious' => 'Returns previous Exception',
+'MongoException::getTrace' => 'Gets the stack trace',
+'MongoException::getTraceAsString' => 'Gets the stack trace as a string',
 'MongoGridFS::__construct' => 'Files as stored across two collections, the first containing file meta
 information, the second containing chunks of the actual file. By default,
 fs.files and fs.chunks are the collection names used.',
@@ -7035,7 +8286,18 @@ This method will override the static class variable slaveOkay.',
 'mongopool::setSize' => 'Set the size for future connection pools',
 'mongoregex::__construct' => 'Creates a new regular expression',
 'mongoregex::__toString' => 'A string representation of this regular expression',
+'MongoResultException::__clone' => 'Clone the exception
+Tries to clone the Exception, which results in Fatal error.',
+'MongoResultException::__construct' => 'Construct the exception. Note: The message is NOT binary safe.',
+'MongoResultException::__toString' => 'String representation of the exception',
+'MongoResultException::getCode' => 'Gets the Exception code',
 'mongoresultexception::getDocument' => 'Retrieve the full result document',
+'MongoResultException::getFile' => 'Gets the file in which the exception occurred',
+'MongoResultException::getLine' => 'Gets the line in which the exception occurred',
+'MongoResultException::getMessage' => 'Gets the Exception message',
+'MongoResultException::getPrevious' => 'Returns previous Exception',
+'MongoResultException::getTrace' => 'Gets the stack trace',
+'MongoResultException::getTraceAsString' => 'Gets the stack trace as a string',
 'mongotimestamp::__construct' => 'Creates a new timestamp',
 'mongotimestamp::__toString' => 'Returns a string representation of this timestamp',
 'MongoUpdateBatch::__construct' => '<p>(PECL mongo &gt;= 1.5.0)</p>
@@ -7047,7 +8309,18 @@ Executes a batch of write operations',
 'mongowritebatch::__construct' => 'Creates a new batch of write operations',
 'mongowritebatch::add' => 'Adds a write operation to a batch',
 'mongowritebatch::execute' => 'Executes a batch of write operations',
+'MongoWriteConcernException::__clone' => 'Clone the exception
+Tries to clone the Exception, which results in Fatal error.',
+'MongoWriteConcernException::__construct' => 'Construct the exception. Note: The message is NOT binary safe.',
+'MongoWriteConcernException::__toString' => 'String representation of the exception',
+'MongoWriteConcernException::getCode' => 'Gets the Exception code',
 'mongowriteconcernexception::getDocument' => 'Get the error document',
+'MongoWriteConcernException::getFile' => 'Gets the file in which the exception occurred',
+'MongoWriteConcernException::getLine' => 'Gets the line in which the exception occurred',
+'MongoWriteConcernException::getMessage' => 'Gets the Exception message',
+'MongoWriteConcernException::getPrevious' => 'Returns previous Exception',
+'MongoWriteConcernException::getTrace' => 'Gets the stack trace',
+'MongoWriteConcernException::getTraceAsString' => 'Gets the stack trace as a string',
 'move_uploaded_file' => 'Moves an uploaded file to a new location',
 'mqseries_back' => 'MQSeries MQBACK',
 'mqseries_begin' => 'MQseries MQBEGIN',
@@ -7340,6 +8613,7 @@ as individual tokens.',
 'mysql_xdevapi\rowresult::getColumnCount' => 'Get column count',
 'mysql_xdevapi\rowresult::getColumnNames' => 'Get all column names',
 'mysql_xdevapi\rowresult::getColumns' => 'Get column metadata',
+'mysql_xdevapi\rowresult::getColumnsCount' => 'Get column count',
 'mysql_xdevapi\rowresult::getWarnings' => 'Get warnings from last operation',
 'mysql_xdevapi\rowresult::getWarningsCount' => 'Get warning count from last operation',
 'mysql_xdevapi\schema::__construct' => 'constructor',
@@ -7387,6 +8661,7 @@ as individual tokens.',
 'mysql_xdevapi\sqlstatementresult::getColumnCount' => 'Get column count',
 'mysql_xdevapi\sqlstatementresult::getColumnNames' => 'Get column names',
 'mysql_xdevapi\sqlstatementresult::getColumns' => 'Get columns',
+'mysql_xdevapi\sqlstatementresult::getColumnsCount' => 'Get column count',
 'mysql_xdevapi\sqlstatementresult::getGeneratedIds' => 'Get generated ids',
 'mysql_xdevapi\sqlstatementresult::getLastInsertId' => 'Get last insert id',
 'mysql_xdevapi\sqlstatementresult::getWarnings' => 'Get warnings from last operation',
@@ -8248,7 +9523,12 @@ Alias of {@see OCI-Lob::writeTemporary()}',
 'openssl_x509_parse' => 'Parse an X509 certificate and return the information as an array',
 'openssl_x509_read' => 'Parse an X.509 certificate and return a resource identifier for it',
 'ord' => 'Convert the first byte of a string to a value between 0 and 255',
+'OuterIterator::current' => 'Return the current element',
 'outeriterator::getInnerIterator' => 'Returns the inner iterator for the current entry',
+'OuterIterator::key' => 'Return the key of the current element',
+'OuterIterator::next' => 'Move forward to next element',
+'OuterIterator::rewind' => 'Rewind the Iterator to the first element',
+'OuterIterator::valid' => 'Checks if current position is valid',
 'output_add_rewrite_var' => 'Add URL rewriter values',
 'output_reset_rewrite_vars' => 'Reset URL rewriter values',
 'outputformatObj::getOption' => 'Returns the associated value for the format option property passed
@@ -8290,10 +9570,14 @@ $request->setparameter(\'REQUEST\', \'GetMap\');',
 'parallel\runtime::run' => 'Parallel Execution',
 'parentiterator::__construct' => 'Constructs a ParentIterator',
 'parentiterator::accept' => 'Determines acceptability',
+'ParentIterator::current' => 'Get the current element value',
 'parentiterator::getChildren' => 'Return the inner iterator\'s children contained in a ParentIterator',
+'ParentIterator::getInnerIterator' => 'Get the inner iterator',
 'parentiterator::hasChildren' => 'Check whether the inner iterator\'s current element has children',
+'ParentIterator::key' => 'Get the current key',
 'parentiterator::next' => 'Move the iterator forward',
 'parentiterator::rewind' => 'Rewind the iterator',
+'ParentIterator::valid' => 'Check whether the current element is valid',
 'parle\lexer::advance' => 'Process next lexer rule',
 'parle\lexer::build' => 'Finalize the lexer rule set',
 'parle\lexer::callout' => 'Define token callback',
@@ -8751,11 +10035,14 @@ within the transaction boundary.
 'phar::extractTo' => 'Extract the contents of a phar archive to a directory',
 'phar::getAlias' => 'Get the alias for Phar',
 'Phar::getChildren' => 'Returns an iterator for the current entry if it is a directory',
+'Phar::getFlags' => 'Get the handling flags',
 'phar::getMetadata' => 'Returns phar archive meta-data',
 'phar::getModified' => 'Return whether phar was modified',
 'phar::getPath' => 'Get the real path to the Phar archive on disk',
 'phar::getSignature' => 'Return MD5/SHA1/SHA256/SHA512/OpenSSL signature of a Phar archive',
 'phar::getStub' => 'Return the PHP loader or bootstrap stub of a Phar archive',
+'Phar::getSubPath' => 'Get sub path',
+'Phar::getSubPathname' => 'Get sub path and name',
 'phar::getSupportedCompression' => 'Return array of supported compression algorithms',
 'phar::getSupportedSignatures' => 'Return array of supported signature types',
 'phar::getVersion' => 'Return version info of Phar archive',
@@ -8782,6 +10069,7 @@ within the transaction boundary.
 'Phar::seek' => 'Seek to a DirectoryIterator item',
 'phar::setAlias' => 'Set the alias for the Phar archive',
 'phar::setDefaultStub' => 'Used to set the PHP loader or bootstrap stub of a Phar archive to the default loader',
+'Phar::setFlags' => 'Sets handling flags',
 'phar::setMetadata' => 'Sets phar archive meta-data',
 'phar::setSignatureAlgorithm' => 'Set the signature algorithm for a phar and apply it',
 'phar::setStub' => 'Used to set the PHP loader or bootstrap stub of a Phar archive',
@@ -8795,51 +10083,110 @@ within the transaction boundary.
 'phardata::addEmptyDir' => 'Add an empty directory to the tar/zip archive',
 'phardata::addFile' => 'Add a file from the filesystem to the tar/zip archive',
 'phardata::addFromString' => 'Add a file from the filesystem to the tar/zip archive',
+'PharData::apiVersion' => 'Returns the api version',
 'phardata::buildFromDirectory' => 'Construct a tar/zip archive from the files within a directory',
 'phardata::buildFromIterator' => 'Construct a tar or zip archive from an iterator',
+'PharData::canCompress' => 'Returns whether phar extension supports compression using either zlib or bzip2',
+'PharData::canWrite' => 'Returns whether phar extension supports writing and creating phars',
 'phardata::compress' => 'Compresses the entire tar/zip archive using Gzip or Bzip2 compression',
 'phardata::compressFiles' => 'Compresses all files in the current tar/zip archive',
 'phardata::convertToData' => 'Convert a phar archive to a non-executable tar or zip file',
 'phardata::convertToExecutable' => 'Convert a non-executable tar/zip archive to an executable phar archive',
 'phardata::copy' => 'Copy a file internal to the phar archive to another new file within the phar',
+'PharData::count' => 'Returns the number of entries (files) in the Phar archive',
+'PharData::createDefaultStub' => 'Create a phar-file format specific stub',
 'PharData::current' => 'The current file',
 'phardata::decompress' => 'Decompresses the entire Phar archive',
 'phardata::decompressFiles' => 'Decompresses all files in the current zip archive',
 'phardata::delete' => 'Delete a file within a tar/zip archive',
 'phardata::delMetadata' => 'Deletes the global metadata of a zip archive',
 'phardata::extractTo' => 'Extract the contents of a tar/zip archive to a directory',
+'PharData::getAlias' => 'Get the alias for Phar',
 'PharData::getChildren' => 'Returns an iterator for the current entry if it is a directory',
+'PharData::getMetadata' => 'Returns phar archive meta-data',
+'PharData::getModified' => 'Return whether phar was modified',
+'PharData::getPath' => 'Get the real path to the Phar archive on disk',
+'PharData::getSignature' => 'Return MD5/SHA1/SHA256/SHA512/OpenSSL signature of a Phar archive',
+'PharData::getStub' => 'Return the PHP loader or bootstrap stub of a Phar archive',
+'PharData::getSubPath' => 'Get sub path',
+'PharData::getSubPathname' => 'Get sub path and name',
+'PharData::getSupportedCompression' => 'Return array of supported compression algorithms',
+'PharData::getSupportedSignatures' => 'Return array of supported signature types',
+'PharData::getVersion' => 'Return version info of Phar archive',
 'PharData::hasChildren' => 'Returns whether current entry is a directory and not \'.\' or \'..\'',
+'PharData::hasMetadata' => 'Returns whether phar has global meta-data',
+'PharData::interceptFileFuncs' => 'Instructs phar to intercept fopen, file_get_contents, opendir, and all of the stat-related functions',
+'PharData::isBuffering' => 'Used to determine whether Phar write operations are being buffered, or are flushing directly to disk',
+'PharData::isCompressed' => 'Returns Phar::GZ or PHAR::BZ2 if the entire phar archive is compressed (.tar.gz/tar.bz and so on)',
+'PharData::isFileFormat' => 'Returns true if the phar archive is based on the tar/phar/zip file format depending on the parameter',
+'PharData::isValidPharFilename' => 'Returns whether the given filename is a valid phar filename',
 'phardata::isWritable' => 'Returns true if the tar/zip archive can be modified',
 'PharData::key' => 'Retrieve the key for the current file',
+'PharData::loadPhar' => 'Loads any phar archive with an alias',
+'PharData::mapPhar' => 'Reads the currently executed file (a phar) and registers its manifest',
+'PharData::mount' => 'Mount an external path or file to a virtual location within the phar archive',
+'PharData::mungServer' => 'Defines a list of up to 4 $_SERVER variables that should be modified for execution',
 'PharData::next' => 'Move to the next file',
 'phardata::offsetSet' => 'Set the contents of a file within the tar/zip to those of an external file or string',
 'phardata::offsetUnset' => 'Remove a file from a tar/zip archive',
 'PharData::rewind' => 'Rewinds back to the beginning',
+'PharData::running' => 'Returns the full path on disk or full phar URL to the currently executing Phar archive',
 'PharData::seek' => 'Seek to a DirectoryIterator item',
 'phardata::setAlias' => 'Dummy function (Phar::setAlias is not valid for PharData)',
 'phardata::setDefaultStub' => 'Dummy function (Phar::setDefaultStub is not valid for PharData)',
 'phardata::setMetadata' => 'Sets phar archive meta-data',
 'phardata::setSignatureAlgorithm' => 'Set the signature algorithm for a phar and apply it',
 'phardata::setStub' => 'Dummy function (Phar::setStub is not valid for PharData)',
+'PharData::startBuffering' => 'Start buffering Phar write operations, do not modify the Phar object on disk',
+'PharData::stopBuffering' => 'Stop buffering write requests to the Phar archive, and save changes to disk',
+'PharData::unlinkArchive' => 'Completely remove a phar archive from disk and from memory',
 'PharData::valid' => 'Check whether current DirectoryIterator position is a valid file',
+'PharData::webPhar' => 'mapPhar for web-based phars. front controller for web applications',
 'pharfileinfo::__construct' => 'Construct a Phar entry object',
+'PharFileInfo::__toString' => 'Returns the path to the file as a string',
 'pharfileinfo::chmod' => 'Sets file-specific permission bits',
 'pharfileinfo::compress' => 'Compresses the current Phar entry with either zlib or bzip2 compression',
 'pharfileinfo::decompress' => 'Decompresses the current Phar entry within the phar',
 'pharfileinfo::delMetadata' => 'Deletes the metadata of the entry',
+'PharFileInfo::getATime' => 'Gets last access time of the file',
+'PharFileInfo::getBasename' => 'Gets the base name of the file',
 'pharfileinfo::getCompressedSize' => 'Returns the actual size of the file (with compression) inside the Phar archive',
 'pharfileinfo::getContent' => 'Get the complete file contents of the entry',
 'pharfileinfo::getCRC32' => 'Returns CRC32 code or throws an exception if CRC has not been verified',
+'PharFileInfo::getCTime' => 'Gets the inode change time',
+'PharFileInfo::getExtension' => 'Gets the file extension',
+'PharFileInfo::getFileInfo' => 'Gets an SplFileInfo object for the file',
+'PharFileInfo::getFilename' => 'Gets the filename',
+'PharFileInfo::getGroup' => 'Gets the file group',
+'PharFileInfo::getInode' => 'Gets the inode for the file',
+'PharFileInfo::getLinkTarget' => 'Gets the target of a link',
 'pharfileinfo::getMetadata' => 'Returns file-specific meta-data saved with a file',
+'PharFileInfo::getMTime' => 'Gets the last modified time',
+'PharFileInfo::getOwner' => 'Gets the owner of the file',
+'PharFileInfo::getPath' => 'Gets the path without filename',
+'PharFileInfo::getPathInfo' => 'Gets an SplFileInfo object for the path',
+'PharFileInfo::getPathname' => 'Gets the path to the file',
+'PharFileInfo::getPerms' => 'Gets file permissions',
 'pharfileinfo::getPharFlags' => 'Returns the Phar file entry flags',
+'PharFileInfo::getRealPath' => 'Gets absolute path to file',
+'PharFileInfo::getSize' => 'Gets file size',
+'PharFileInfo::getType' => 'Gets file type',
 'pharfileinfo::hasMetadata' => 'Returns the metadata of the entry',
 'pharfileinfo::isCompressed' => 'Returns whether the entry is compressed',
 'pharfileinfo::isCompressedBZIP2' => 'Returns whether the entry is compressed using bzip2',
 'pharfileinfo::isCompressedGZ' => 'Returns whether the entry is compressed using gz',
 'pharfileinfo::isCRCChecked' => 'Returns whether file entry has had its CRC verified',
+'PharFileInfo::isDir' => 'Tells if the file is a directory',
+'PharFileInfo::isExecutable' => 'Tells if the file is executable',
+'PharFileInfo::isFile' => 'Tells if the object references a regular file',
+'PharFileInfo::isLink' => 'Tells if the file is a link',
+'PharFileInfo::isReadable' => 'Tells if file is readable',
+'PharFileInfo::isWritable' => 'Tells if the entry is writable',
+'PharFileInfo::openFile' => 'Gets an SplFileObject object for the file',
 'pharfileinfo::setCompressedBZIP2' => 'Compresses the current Phar entry within the phar using Bzip2 compression',
 'pharfileinfo::setCompressedGZ' => 'Compresses the current Phar entry within the phar using gz compression',
+'PharFileInfo::setFileClass' => 'Sets the class used with SplFileInfo::openFile',
+'PharFileInfo::setInfoClass' => 'Sets the class used with SplFileInfo::getFileInfo and SplFileInfo::getPathInfo',
 'pharfileinfo::setMetadata' => 'Sets file-specific meta-data saved with a file',
 'pharfileinfo::setUncompressed' => 'Uncompresses the current Phar entry within the phar, if it is compressed',
 'php_check_syntax' => 'Check the PHP syntax of (and execute) the specified file',
@@ -9183,7 +10530,7 @@ MS_SUCCESS/MS_FAILURE.',
 'radius_acct_open' => 'Creates a Radius handle for accounting',
 'radius_add_server' => 'Adds a server',
 'radius_auth_open' => 'Creates a Radius handle for authentication',
-'radius_close' => 'Frees all ressources',
+'radius_close' => 'Frees all resources',
 'radius_config' => 'Causes the library to read the given configuration file',
 'radius_create_request' => 'Create accounting or authentication request',
 'radius_cvt_addr' => 'Converts raw data to IP-Address',
@@ -9236,6 +10583,17 @@ MS_SUCCESS/MS_FAILURE.',
 'rarentry::getVersion' => 'Get minimum version of RAR program required to unpack the entry',
 'rarentry::isDirectory' => 'Test whether an entry represents a directory',
 'rarentry::isEncrypted' => 'Test whether an entry is encrypted',
+'RarException::__clone' => 'Clone the exception
+Tries to clone the Exception, which results in Fatal error.',
+'RarException::__construct' => 'Construct the exception. Note: The message is NOT binary safe.',
+'RarException::__toString' => 'String representation of the exception',
+'RarException::getCode' => 'Gets the Exception code',
+'RarException::getFile' => 'Gets the file in which the exception occurred',
+'RarException::getLine' => 'Gets the line in which the exception occurred',
+'RarException::getMessage' => 'Gets the Exception message',
+'RarException::getPrevious' => 'Returns previous Exception',
+'RarException::getTrace' => 'Gets the stack trace',
+'RarException::getTraceAsString' => 'Gets the stack trace as a string',
 'rarexception::isUsingExceptions' => 'Check whether error handling with exceptions is in use',
 'rarexception::setUsingExceptions' => 'Activate and deactivate error handling with exceptions',
 'rawurldecode' => 'Decode URL-encoded strings',
@@ -9275,67 +10633,170 @@ Returns MS_SUCCESS/MS_FAILURE.',
 projection (2nd argument).  Returns MS_SUCCESS/MS_FAILURE.',
 'rectObj::set' => 'Set object property to a new value.',
 'rectObj::setextent' => 'Set the rectangle extents.',
-'recursivearrayiterator::getChildren' => 'Returns an iterator for the current entry if it is an array or an object',
-'recursivearrayiterator::hasChildren' => 'Returns whether current entry is an array or an object',
-'recursivecachingiterator::__construct' => 'Construct',
-'recursivecachingiterator::getChildren' => 'Return the inner iterator\'s children as a RecursiveCachingIterator',
-'recursivecachingiterator::hasChildren' => 'Check whether the current element of the inner iterator has children',
-'recursivecallbackfilteriterator::__construct' => 'Create a RecursiveCallbackFilterIterator from a RecursiveIterator',
-'recursivecallbackfilteriterator::getChildren' => 'Return the inner iterator\'s children contained in a RecursiveCallbackFilterIterator',
-'recursivecallbackfilteriterator::hasChildren' => 'Check whether the inner iterator\'s current element has children',
-'recursivedirectoryiterator::__construct' => 'Constructs a RecursiveDirectoryIterator',
+'RecursiveArrayIterator::append' => 'Append an element',
+'RecursiveArrayIterator::asort' => 'Sort array by values',
+'RecursiveArrayIterator::count' => 'Count elements',
+'RecursiveArrayIterator::current' => 'Return current array entry',
+'RecursiveArrayIterator::getArrayCopy' => 'Get array copy',
+'RecursiveArrayIterator::getChildren' => 'Returns an iterator for the current entry if it is an array or an object',
+'RecursiveArrayIterator::getFlags' => 'Get behavior flags',
+'RecursiveArrayIterator::hasChildren' => 'Returns whether current entry is an array or an object',
+'RecursiveArrayIterator::key' => 'Return current array key',
+'RecursiveArrayIterator::ksort' => 'Sort array by keys',
+'RecursiveArrayIterator::natcasesort' => 'Sort an array naturally, case insensitive',
+'RecursiveArrayIterator::natsort' => 'Sort an array naturally',
+'RecursiveArrayIterator::next' => 'Move to next entry',
+'RecursiveArrayIterator::offsetExists' => 'Check if offset exists',
+'RecursiveArrayIterator::offsetGet' => 'Get value for an offset',
+'RecursiveArrayIterator::offsetSet' => 'Set value for an offset',
+'RecursiveArrayIterator::offsetUnset' => 'Unset value for an offset',
+'RecursiveArrayIterator::rewind' => 'Rewind array back to the start',
+'RecursiveArrayIterator::seek' => 'Seek to position',
+'RecursiveArrayIterator::serialize' => 'Serialize',
+'RecursiveArrayIterator::setFlags' => 'Set behaviour flags',
+'RecursiveArrayIterator::uasort' => 'Sort with a user-defined comparison function and maintain index association',
+'RecursiveArrayIterator::uksort' => 'Sort by keys using a user-defined comparison function',
+'RecursiveArrayIterator::unserialize' => 'Unserialize',
+'RecursiveArrayIterator::valid' => 'Check whether array contains more entries',
+'RecursiveCachingIterator::__construct' => 'Construct',
+'RecursiveCachingIterator::__toString' => 'Return the string representation of the current element',
+'RecursiveCachingIterator::count' => 'The number of elements in the iterator',
+'RecursiveCachingIterator::current' => 'Return the current element',
+'RecursiveCachingIterator::getCache' => 'Retrieve the contents of the cache',
+'RecursiveCachingIterator::getChildren' => 'Return the inner iterator\'s children as a RecursiveCachingIterator',
+'RecursiveCachingIterator::getFlags' => 'Get flags used',
+'RecursiveCachingIterator::getInnerIterator' => 'Returns the inner iterator',
+'RecursiveCachingIterator::hasChildren' => 'Check whether the current element of the inner iterator has children',
+'RecursiveCachingIterator::hasNext' => 'Check whether the inner iterator has a valid next element',
+'RecursiveCachingIterator::key' => 'Return the key for the current element',
+'RecursiveCachingIterator::next' => 'Move the iterator forward',
+'RecursiveCachingIterator::offsetExists' => 'The offsetExists purpose',
+'RecursiveCachingIterator::offsetGet' => 'The offsetGet purpose',
+'RecursiveCachingIterator::offsetSet' => 'The offsetSet purpose',
+'RecursiveCachingIterator::offsetUnset' => 'The offsetUnset purpose',
+'RecursiveCachingIterator::rewind' => 'Rewind the iterator',
+'RecursiveCachingIterator::setFlags' => 'The setFlags purpose',
+'RecursiveCachingIterator::valid' => 'Check whether the current element is valid',
+'RecursiveCallbackFilterIterator::__construct' => 'Create a RecursiveCallbackFilterIterator from a RecursiveIterator',
+'RecursiveCallbackFilterIterator::accept' => 'Calls the callback with the current value, the current key and the inner iterator as arguments',
+'RecursiveCallbackFilterIterator::current' => 'Get the current element value',
+'RecursiveCallbackFilterIterator::getChildren' => 'Return the inner iterator\'s children contained in a RecursiveCallbackFilterIterator',
+'RecursiveCallbackFilterIterator::getInnerIterator' => 'Get the inner iterator',
+'RecursiveCallbackFilterIterator::hasChildren' => 'Check whether the inner iterator\'s current element has children',
+'RecursiveCallbackFilterIterator::key' => 'Get the current key',
+'RecursiveCallbackFilterIterator::next' => 'Move the iterator forward',
+'RecursiveCallbackFilterIterator::rewind' => 'Rewind the iterator',
+'RecursiveCallbackFilterIterator::valid' => 'Check whether the current element is valid',
+'RecursiveDirectoryIterator::__construct' => 'Constructs a RecursiveDirectoryIterator',
+'RecursiveDirectoryIterator::__toString' => 'Get file name as a string',
 'RecursiveDirectoryIterator::current' => 'The current file',
-'recursivedirectoryiterator::getChildren' => 'Returns an iterator for the current entry if it is a directory',
-'recursivedirectoryiterator::getSubPath' => 'Get sub path',
-'recursivedirectoryiterator::getSubPathname' => 'Get sub path and name',
-'recursivedirectoryiterator::hasChildren' => 'Returns whether current entry is a directory and not \'.\' or \'..\'',
-'recursivedirectoryiterator::key' => 'Return path and filename of current dir entry',
-'recursivedirectoryiterator::next' => 'Move to next entry',
-'recursivedirectoryiterator::rewind' => 'Rewind dir back to the start',
-'recursivefilteriterator::__construct' => 'Create a RecursiveFilterIterator from a RecursiveIterator',
-'recursivefilteriterator::getChildren' => 'Return the inner iterator\'s children contained in a RecursiveFilterIterator',
-'recursivefilteriterator::hasChildren' => 'Check whether the inner iterator\'s current element has children',
-'recursiveiterator::getChildren' => 'Returns an iterator for the current entry',
-'recursiveiterator::hasChildren' => 'Returns if an iterator can be created for the current entry',
-'recursiveiteratoriterator::__construct' => 'Construct a RecursiveIteratorIterator',
-'recursiveiteratoriterator::beginChildren' => 'Begin children',
-'recursiveiteratoriterator::beginIteration' => 'Begin Iteration',
-'recursiveiteratoriterator::callGetChildren' => 'Get children',
-'recursiveiteratoriterator::callHasChildren' => 'Has children',
-'recursiveiteratoriterator::current' => 'Access the current element value',
-'recursiveiteratoriterator::endChildren' => 'End children',
-'recursiveiteratoriterator::endIteration' => 'End Iteration',
-'recursiveiteratoriterator::getDepth' => 'Get the current depth of the recursive iteration',
-'recursiveiteratoriterator::getInnerIterator' => 'Get inner iterator',
-'recursiveiteratoriterator::getMaxDepth' => 'Get max depth',
-'recursiveiteratoriterator::getSubIterator' => 'The current active sub iterator',
-'recursiveiteratoriterator::key' => 'Access the current key',
-'recursiveiteratoriterator::next' => 'Move forward to the next element',
-'recursiveiteratoriterator::nextElement' => 'Next element',
-'recursiveiteratoriterator::rewind' => 'Rewind the iterator to the first element of the top level inner iterator',
-'recursiveiteratoriterator::setMaxDepth' => 'Set max depth',
-'recursiveiteratoriterator::valid' => 'Check whether the current position is valid',
-'recursiveregexiterator::__construct' => 'Creates a new RecursiveRegexIterator',
-'recursiveregexiterator::getChildren' => 'Returns an iterator for the current entry',
-'recursiveregexiterator::hasChildren' => 'Returns whether an iterator can be obtained for the current entry',
-'recursivetreeiterator::__construct' => 'Construct a RecursiveTreeIterator',
-'recursivetreeiterator::beginChildren' => 'Begin children',
-'recursivetreeiterator::beginIteration' => 'Begin iteration',
-'recursivetreeiterator::callGetChildren' => 'Get children',
-'recursivetreeiterator::callHasChildren' => 'Has children',
-'recursivetreeiterator::current' => 'Get current element',
-'recursivetreeiterator::endChildren' => 'End children',
-'recursivetreeiterator::endIteration' => 'End iteration',
-'recursivetreeiterator::getEntry' => 'Get current entry',
-'recursivetreeiterator::getPostfix' => 'Get the postfix',
-'recursivetreeiterator::getPrefix' => 'Get the prefix',
-'recursivetreeiterator::key' => 'Get the key of the current element',
-'recursivetreeiterator::next' => 'Move to next element',
-'recursivetreeiterator::nextElement' => 'Next element',
-'recursivetreeiterator::rewind' => 'Rewind iterator',
-'recursivetreeiterator::setPostfix' => 'Set postfix',
-'recursivetreeiterator::setPrefixPart' => 'Set a part of the prefix',
-'recursivetreeiterator::valid' => 'Check validity',
+'RecursiveDirectoryIterator::getATime' => 'Get last access time of the current DirectoryIterator item',
+'RecursiveDirectoryIterator::getBasename' => 'Get base name of current DirectoryIterator item',
+'RecursiveDirectoryIterator::getChildren' => 'Returns an iterator for the current entry if it is a directory',
+'RecursiveDirectoryIterator::getCTime' => 'Get inode change time of the current DirectoryIterator item',
+'RecursiveDirectoryIterator::getExtension' => 'Gets the file extension',
+'RecursiveDirectoryIterator::getFilename' => 'Return file name of current DirectoryIterator item',
+'RecursiveDirectoryIterator::getFlags' => 'Get the handling flags',
+'RecursiveDirectoryIterator::getGroup' => 'Get group for the current DirectoryIterator item',
+'RecursiveDirectoryIterator::getInode' => 'Get inode for the current DirectoryIterator item',
+'RecursiveDirectoryIterator::getMTime' => 'Get last modification time of current DirectoryIterator item',
+'RecursiveDirectoryIterator::getOwner' => 'Get owner of current DirectoryIterator item',
+'RecursiveDirectoryIterator::getPath' => 'Get path of current Iterator item without filename',
+'RecursiveDirectoryIterator::getPathname' => 'Return path and file name of current DirectoryIterator item',
+'RecursiveDirectoryIterator::getPerms' => 'Get the permissions of current DirectoryIterator item',
+'RecursiveDirectoryIterator::getSize' => 'Get size of current DirectoryIterator item',
+'RecursiveDirectoryIterator::getSubPath' => 'Get sub path',
+'RecursiveDirectoryIterator::getSubPathname' => 'Get sub path and name',
+'RecursiveDirectoryIterator::getType' => 'Determine the type of the current DirectoryIterator item',
+'RecursiveDirectoryIterator::hasChildren' => 'Returns whether current entry is a directory and not \'.\' or \'..\'',
+'RecursiveDirectoryIterator::isDir' => 'Determine if current DirectoryIterator item is a directory',
+'RecursiveDirectoryIterator::isDot' => 'Determine if current DirectoryIterator item is \'.\' or \'..\'',
+'RecursiveDirectoryIterator::isExecutable' => 'Determine if current DirectoryIterator item is executable',
+'RecursiveDirectoryIterator::isFile' => 'Determine if current DirectoryIterator item is a regular file',
+'RecursiveDirectoryIterator::isLink' => 'Determine if current DirectoryIterator item is a symbolic link',
+'RecursiveDirectoryIterator::isReadable' => 'Determine if current DirectoryIterator item can be read',
+'RecursiveDirectoryIterator::isWritable' => 'Determine if current DirectoryIterator item can be written to',
+'RecursiveDirectoryIterator::key' => 'Return path and filename of current dir entry',
+'RecursiveDirectoryIterator::next' => 'Move to next entry',
+'RecursiveDirectoryIterator::rewind' => 'Rewind dir back to the start',
+'RecursiveDirectoryIterator::seek' => 'Seek to a DirectoryIterator item',
+'RecursiveDirectoryIterator::setFlags' => 'Sets handling flags',
+'RecursiveDirectoryIterator::valid' => 'Check whether current DirectoryIterator position is a valid file',
+'RecursiveFilterIterator::__construct' => 'Create a RecursiveFilterIterator from a RecursiveIterator',
+'RecursiveFilterIterator::accept' => 'Check whether the current element of the iterator is acceptable',
+'RecursiveFilterIterator::current' => 'Get the current element value',
+'RecursiveFilterIterator::getChildren' => 'Return the inner iterator\'s children contained in a RecursiveFilterIterator',
+'RecursiveFilterIterator::getInnerIterator' => 'Get the inner iterator',
+'RecursiveFilterIterator::hasChildren' => 'Check whether the inner iterator\'s current element has children',
+'RecursiveFilterIterator::key' => 'Get the current key',
+'RecursiveFilterIterator::next' => 'Move the iterator forward',
+'RecursiveFilterIterator::rewind' => 'Rewind the iterator',
+'RecursiveFilterIterator::valid' => 'Check whether the current element is valid',
+'RecursiveIterator::current' => 'Return the current element',
+'RecursiveIterator::getChildren' => 'Returns an iterator for the current entry',
+'RecursiveIterator::hasChildren' => 'Returns if an iterator can be created for the current entry',
+'RecursiveIterator::key' => 'Return the key of the current element',
+'RecursiveIterator::next' => 'Move forward to next element',
+'RecursiveIterator::rewind' => 'Rewind the Iterator to the first element',
+'RecursiveIterator::valid' => 'Checks if current position is valid',
+'RecursiveIteratorIterator::__construct' => 'Construct a RecursiveIteratorIterator',
+'RecursiveIteratorIterator::beginChildren' => 'Begin children',
+'RecursiveIteratorIterator::beginIteration' => 'Begin Iteration',
+'RecursiveIteratorIterator::callGetChildren' => 'Get children',
+'RecursiveIteratorIterator::callHasChildren' => 'Has children',
+'RecursiveIteratorIterator::current' => 'Access the current element value',
+'RecursiveIteratorIterator::endChildren' => 'End children',
+'RecursiveIteratorIterator::endIteration' => 'End Iteration',
+'RecursiveIteratorIterator::getDepth' => 'Get the current depth of the recursive iteration',
+'RecursiveIteratorIterator::getInnerIterator' => 'Get inner iterator',
+'RecursiveIteratorIterator::getMaxDepth' => 'Get max depth',
+'RecursiveIteratorIterator::getSubIterator' => 'The current active sub iterator',
+'RecursiveIteratorIterator::key' => 'Access the current key',
+'RecursiveIteratorIterator::next' => 'Move forward to the next element',
+'RecursiveIteratorIterator::nextElement' => 'Next element',
+'RecursiveIteratorIterator::rewind' => 'Rewind the iterator to the first element of the top level inner iterator',
+'RecursiveIteratorIterator::setMaxDepth' => 'Set max depth',
+'RecursiveIteratorIterator::valid' => 'Check whether the current position is valid',
+'RecursiveRegexIterator::__construct' => 'Creates a new RecursiveRegexIterator',
+'RecursiveRegexIterator::accept' => 'Get accept status',
+'RecursiveRegexIterator::current' => 'Get the current element value',
+'RecursiveRegexIterator::getChildren' => 'Returns an iterator for the current entry',
+'RecursiveRegexIterator::getFlags' => 'Get flags',
+'RecursiveRegexIterator::getInnerIterator' => 'Get the inner iterator',
+'RecursiveRegexIterator::getMode' => 'Returns operation mode',
+'RecursiveRegexIterator::getPregFlags' => 'Returns the regular expression flags',
+'RecursiveRegexIterator::getRegex' => 'Returns current regular expression',
+'RecursiveRegexIterator::hasChildren' => 'Returns whether an iterator can be obtained for the current entry',
+'RecursiveRegexIterator::key' => 'Get the current key',
+'RecursiveRegexIterator::next' => 'Move the iterator forward',
+'RecursiveRegexIterator::rewind' => 'Rewind the iterator',
+'RecursiveRegexIterator::setFlags' => 'Sets the flags',
+'RecursiveRegexIterator::setMode' => 'Sets the operation mode',
+'RecursiveRegexIterator::setPregFlags' => 'Sets the regular expression flags',
+'RecursiveRegexIterator::valid' => 'Check whether the current element is valid',
+'RecursiveTreeIterator::__construct' => 'Construct a RecursiveTreeIterator',
+'RecursiveTreeIterator::beginChildren' => 'Begin children',
+'RecursiveTreeIterator::beginIteration' => 'Begin iteration',
+'RecursiveTreeIterator::callGetChildren' => 'Get children',
+'RecursiveTreeIterator::callHasChildren' => 'Has children',
+'RecursiveTreeIterator::current' => 'Get current element',
+'RecursiveTreeIterator::endChildren' => 'End children',
+'RecursiveTreeIterator::endIteration' => 'End iteration',
+'RecursiveTreeIterator::getDepth' => 'Get the current depth of the recursive iteration',
+'RecursiveTreeIterator::getEntry' => 'Get current entry',
+'RecursiveTreeIterator::getInnerIterator' => 'Get inner iterator',
+'RecursiveTreeIterator::getMaxDepth' => 'Get max depth',
+'RecursiveTreeIterator::getPostfix' => 'Get the postfix',
+'RecursiveTreeIterator::getPrefix' => 'Get the prefix',
+'RecursiveTreeIterator::getSubIterator' => 'The current active sub iterator',
+'RecursiveTreeIterator::key' => 'Get the key of the current element',
+'RecursiveTreeIterator::next' => 'Move to next element',
+'RecursiveTreeIterator::nextElement' => 'Next element',
+'RecursiveTreeIterator::rewind' => 'Rewind iterator',
+'RecursiveTreeIterator::setMaxDepth' => 'Set max depth',
+'RecursiveTreeIterator::setPostfix' => 'Set postfix',
+'RecursiveTreeIterator::setPrefixPart' => 'Set a part of the prefix',
+'RecursiveTreeIterator::valid' => 'Check validity',
 'Redis::__construct' => 'Creates a Redis client',
 'Redis::_prefix' => 'A utility method to prefix the value with the prefix setting for phpredis.',
 'Redis::_serialize' => 'A utility method to serialize values manually. This method allows you to serialize a value with whatever
@@ -9945,15 +11406,42 @@ Returns MS_SUCCESS/MS_FAILURE.',
 'reflectionextension::info' => 'Print extension info',
 'reflectionextension::isPersistent' => 'Returns whether this extension is persistent',
 'reflectionextension::isTemporary' => 'Returns whether this extension is temporary',
+'ReflectionFunction::__clone' => 'Clones function',
 'reflectionfunction::__construct' => 'Constructs a ReflectionFunction object',
 'reflectionfunction::__toString' => 'To string',
 'reflectionfunction::export' => 'Exports function',
 'reflectionfunction::getClosure' => 'Returns a dynamically created closure for the function',
+'ReflectionFunction::getClosureScopeClass' => 'Returns the scope associated to the closure',
+'ReflectionFunction::getClosureThis' => 'Returns this pointer bound to closure',
+'ReflectionFunction::getDocComment' => 'Gets doc comment',
+'ReflectionFunction::getEndLine' => 'Gets end line number',
+'ReflectionFunction::getExtension' => 'Gets extension info',
+'ReflectionFunction::getExtensionName' => 'Gets extension name',
+'ReflectionFunction::getFileName' => 'Gets file name',
+'ReflectionFunction::getName' => 'Gets function name',
+'ReflectionFunction::getNamespaceName' => 'Gets namespace name',
+'ReflectionFunction::getNumberOfParameters' => 'Gets number of parameters',
+'ReflectionFunction::getNumberOfRequiredParameters' => 'Gets number of required parameters',
+'ReflectionFunction::getParameters' => 'Gets parameters',
+'ReflectionFunction::getReturnType' => 'Gets the specified return type of a function',
+'ReflectionFunction::getShortName' => 'Gets function short name',
+'ReflectionFunction::getStartLine' => 'Gets starting line number',
+'ReflectionFunction::getStaticVariables' => 'Gets static variables',
+'ReflectionFunction::hasReturnType' => 'Checks if the function has a specified return type',
+'ReflectionFunction::inNamespace' => 'Checks if function in namespace',
 'reflectionfunction::invoke' => 'Invokes function',
 'reflectionfunction::invokeArgs' => 'Invokes function args',
+'ReflectionFunction::isClosure' => 'Checks if closure',
+'ReflectionFunction::isDeprecated' => 'Checks if deprecated',
 'reflectionfunction::isDisabled' => 'Checks if function is disabled',
+'ReflectionFunction::isGenerator' => 'Returns whether this function is a generator',
+'ReflectionFunction::isInternal' => 'Checks if is internal',
+'ReflectionFunction::isUserDefined' => 'Checks if user defined',
+'ReflectionFunction::isVariadic' => 'Checks if the function is variadic',
+'ReflectionFunction::returnsReference' => 'Checks if returns reference',
 'reflectionfunctionabstract::__clone' => 'Clones function',
 'reflectionfunctionabstract::__toString' => 'To string',
+'ReflectionFunctionAbstract::export' => 'Exports',
 'reflectionfunctionabstract::getClosureScopeClass' => 'Returns the scope associated to the closure',
 'reflectionfunctionabstract::getClosureThis' => 'Returns this pointer bound to closure',
 'reflectionfunctionabstract::getDocComment' => 'Gets doc comment',
@@ -9986,27 +11474,105 @@ Returns MS_SUCCESS/MS_FAILURE.',
 'reflectiongenerator::getFunction' => 'Gets the function name of the generator',
 'reflectiongenerator::getThis' => 'Gets the $this value of the generator',
 'reflectiongenerator::getTrace' => 'Gets the trace of the executing generator',
+'ReflectionMethod::__clone' => 'Clones function',
 'reflectionmethod::__construct' => 'Constructs a ReflectionMethod',
 'reflectionmethod::__toString' => 'Returns the string representation of the Reflection method object',
 'reflectionmethod::export' => 'Export a reflection method',
 'reflectionmethod::getClosure' => 'Returns a dynamically created closure for the method',
+'ReflectionMethod::getClosureScopeClass' => 'Returns the scope associated to the closure',
+'ReflectionMethod::getClosureThis' => 'Returns this pointer bound to closure',
 'reflectionmethod::getDeclaringClass' => 'Gets declaring class for the reflected method',
+'ReflectionMethod::getDocComment' => 'Gets doc comment',
+'ReflectionMethod::getEndLine' => 'Gets end line number',
+'ReflectionMethod::getExtension' => 'Gets extension info',
+'ReflectionMethod::getExtensionName' => 'Gets extension name',
+'ReflectionMethod::getFileName' => 'Gets file name',
 'reflectionmethod::getModifiers' => 'Gets the method modifiers',
+'ReflectionMethod::getName' => 'Gets function name',
+'ReflectionMethod::getNamespaceName' => 'Gets namespace name',
+'ReflectionMethod::getNumberOfParameters' => 'Gets number of parameters',
+'ReflectionMethod::getNumberOfRequiredParameters' => 'Gets number of required parameters',
+'ReflectionMethod::getParameters' => 'Gets parameters',
 'reflectionmethod::getPrototype' => 'Gets the method prototype (if there is one)',
+'ReflectionMethod::getReturnType' => 'Gets the specified return type of a function',
+'ReflectionMethod::getShortName' => 'Gets function short name',
+'ReflectionMethod::getStartLine' => 'Gets starting line number',
+'ReflectionMethod::getStaticVariables' => 'Gets static variables',
+'ReflectionMethod::hasReturnType' => 'Checks if the function has a specified return type',
+'ReflectionMethod::inNamespace' => 'Checks if function in namespace',
 'reflectionmethod::invoke' => 'Invoke',
 'reflectionmethod::invokeArgs' => 'Invoke args',
 'reflectionmethod::isAbstract' => 'Checks if method is abstract',
+'ReflectionMethod::isClosure' => 'Checks if closure',
 'reflectionmethod::isConstructor' => 'Checks if method is a constructor',
+'ReflectionMethod::isDeprecated' => 'Checks if deprecated',
 'reflectionmethod::isDestructor' => 'Checks if method is a destructor',
 'reflectionmethod::isFinal' => 'Checks if method is final',
+'ReflectionMethod::isGenerator' => 'Returns whether this function is a generator',
+'ReflectionMethod::isInternal' => 'Checks if is internal',
 'reflectionmethod::isPrivate' => 'Checks if method is private',
 'reflectionmethod::isProtected' => 'Checks if method is protected',
 'reflectionmethod::isPublic' => 'Checks if method is public',
 'reflectionmethod::isStatic' => 'Checks if method is static',
+'ReflectionMethod::isUserDefined' => 'Checks if user defined',
+'ReflectionMethod::isVariadic' => 'Checks if the function is variadic',
+'ReflectionMethod::returnsReference' => 'Checks if returns reference',
 'reflectionmethod::setAccessible' => 'Set method accessibility',
 'reflectionnamedtype::getName' => 'Get the text of the type hint',
+'ReflectionObject::__clone' => 'Clones object',
 'reflectionobject::__construct' => 'Constructs a ReflectionObject',
+'ReflectionObject::__toString' => 'Returns the string representation of the ReflectionClass object',
 'reflectionobject::export' => 'Export',
+'ReflectionObject::getConstant' => 'Gets defined constant',
+'ReflectionObject::getConstants' => 'Gets constants',
+'ReflectionObject::getConstructor' => 'Gets the constructor of the class',
+'ReflectionObject::getDefaultProperties' => 'Gets default properties',
+'ReflectionObject::getDocComment' => 'Gets doc comments',
+'ReflectionObject::getEndLine' => 'Gets end line',
+'ReflectionObject::getExtension' => 'Gets a ReflectionExtension object for the extension which defined the class',
+'ReflectionObject::getExtensionName' => 'Gets the name of the extension which defined the class',
+'ReflectionObject::getFileName' => 'Gets the filename of the file in which the class has been defined',
+'ReflectionObject::getInterfaceNames' => 'Gets the interface names',
+'ReflectionObject::getInterfaces' => 'Gets the interfaces',
+'ReflectionObject::getMethod' => 'Gets a ReflectionMethod for a class method',
+'ReflectionObject::getMethods' => 'Gets an array of methods',
+'ReflectionObject::getModifiers' => 'Gets the class modifiers',
+'ReflectionObject::getName' => 'Gets class name',
+'ReflectionObject::getNamespaceName' => 'Gets namespace name',
+'ReflectionObject::getParentClass' => 'Gets parent class',
+'ReflectionObject::getProperties' => 'Gets properties',
+'ReflectionObject::getProperty' => 'Gets a ReflectionProperty for a class\'s property',
+'ReflectionObject::getReflectionConstant' => 'Gets a ReflectionClassConstant for a class\'s constant',
+'ReflectionObject::getReflectionConstants' => 'Gets class constants',
+'ReflectionObject::getShortName' => 'Gets short name',
+'ReflectionObject::getStartLine' => 'Gets starting line number',
+'ReflectionObject::getStaticProperties' => 'Gets static properties',
+'ReflectionObject::getStaticPropertyValue' => 'Gets static property value',
+'ReflectionObject::getTraitAliases' => 'Returns an array of trait aliases',
+'ReflectionObject::getTraitNames' => 'Returns an array of names of traits used by this class',
+'ReflectionObject::getTraits' => 'Returns an array of traits used by this class',
+'ReflectionObject::hasConstant' => 'Checks if constant is defined',
+'ReflectionObject::hasMethod' => 'Checks if method is defined',
+'ReflectionObject::hasProperty' => 'Checks if property is defined',
+'ReflectionObject::implementsInterface' => 'Implements interface',
+'ReflectionObject::inNamespace' => 'Checks if in namespace',
+'ReflectionObject::isAbstract' => 'Checks if class is abstract',
+'ReflectionObject::isAnonymous' => 'Checks if class is anonymous',
+'ReflectionObject::isCloneable' => 'Returns whether this class is cloneable',
+'ReflectionObject::isFinal' => 'Checks if class is final',
+'ReflectionObject::isInstance' => 'Checks class for instance',
+'ReflectionObject::isInstantiable' => 'Checks if the class is instantiable',
+'ReflectionObject::isInterface' => 'Checks if the class is an interface',
+'ReflectionObject::isInternal' => 'Checks if class is defined internally by an extension, or the core',
+'ReflectionObject::isIterable' => 'Check whether this class is iterable',
+'ReflectionObject::isIterateable' => 'Alias of ReflectionClass::isIterable',
+'ReflectionObject::isSubclassOf' => 'Checks if a subclass',
+'ReflectionObject::isTrait' => 'Returns whether this is a trait',
+'ReflectionObject::isUserDefined' => 'Checks if user defined',
+'ReflectionObject::newInstance' => 'Creates a new class instance from given arguments',
+'ReflectionObject::newInstanceArgs' => 'Creates a new class instance from given arguments',
+'ReflectionObject::newInstanceWithoutConstructor' => 'Creates a new class instance without invoking the constructor',
+'ReflectionObject::setStaticPropertyValue' => 'Sets static property value',
 'reflectionparameter::__clone' => 'Clone',
 'reflectionparameter::__construct' => 'Construct',
 'reflectionparameter::__toString' => 'To string',
@@ -10062,13 +11628,19 @@ Returns MS_SUCCESS/MS_FAILURE.',
 'reflector::export' => 'Exports',
 'regexiterator::__construct' => 'Create a new RegexIterator',
 'regexiterator::accept' => 'Get accept status',
+'RegexIterator::current' => 'Get the current element value',
 'regexiterator::getFlags' => 'Get flags',
+'RegexIterator::getInnerIterator' => 'Get the inner iterator',
 'regexiterator::getMode' => 'Returns operation mode',
 'regexiterator::getPregFlags' => 'Returns the regular expression flags',
 'regexiterator::getRegex' => 'Returns current regular expression',
+'RegexIterator::key' => 'Get the current key',
+'RegexIterator::next' => 'Move the iterator forward',
+'RegexIterator::rewind' => 'Rewind the iterator',
 'regexiterator::setFlags' => 'Sets the flags',
 'regexiterator::setMode' => 'Sets the operation mode',
 'regexiterator::setPregFlags' => 'Sets the regular expression flags',
+'RegexIterator::valid' => 'Check whether the current element is valid',
 'register_shutdown_function' => 'Register a function for execution on shutdown',
 'register_tick_function' => 'Register a function for execution on each tick',
 'rename' => 'Renames a file or directory',
@@ -10379,7 +11951,7 @@ Returns MS_SUCCESS or MS_FAILURE on error.',
 'seaslog::flushBuffer' => 'Flush logs buffer, dump to appender file, or send to remote api with tcp/udp',
 'seaslog::getBasePath' => 'Get SeasLog base path.',
 'seaslog::getBuffer' => 'Get the logs buffer in memory as array',
-'seaslog::getBufferEnabled' => 'Determin if buffer enabled',
+'seaslog::getBufferEnabled' => 'Determine if buffer enabled',
 'seaslog::getDatetimeFormat' => 'Get SeasLog datetime format style',
 'seaslog::getLastLogger' => 'Get SeasLog last logger path',
 'seaslog::getRequestID' => 'Get SeasLog request_id differentiated requests',
@@ -10395,7 +11967,12 @@ Returns MS_SUCCESS or MS_FAILURE on error.',
 'seaslog::warning' => 'Record warning log information',
 'seaslog_get_author' => 'Get SeasLog author.',
 'seaslog_get_version' => 'Get SeasLog version.',
+'SeekableIterator::current' => 'Return the current element',
+'SeekableIterator::key' => 'Return the key of the current element',
+'SeekableIterator::next' => 'Move forward to next element',
+'SeekableIterator::rewind' => 'Rewind the Iterator to the first element',
 'seekableiterator::seek' => 'Seeks to a position',
+'SeekableIterator::valid' => 'Checks if current position is valid',
 'sem_acquire' => 'Acquire a semaphore',
 'sem_get' => 'Get a semaphore id',
 'sem_release' => 'Release a semaphore',
@@ -10618,14 +12195,25 @@ Only available if php/mapscript is built with GEOS library.',
 'simplexmlelement::saveXML' => 'Alias of SimpleXMLElement::asXML',
 'simplexmlelement::xpath' => 'Runs XPath query on XML data',
 'SimpleXMLIterator::__toString' => 'Returns the string content',
+'SimpleXMLIterator::addAttribute' => 'Adds an attribute to the SimpleXML element',
+'SimpleXMLIterator::addChild' => 'Adds a child element to the XML node',
+'SimpleXMLIterator::asXML' => 'Return a well-formed XML string based on SimpleXML element',
+'SimpleXMLIterator::attributes' => 'Identifies an element\'s attributes',
+'SimpleXMLIterator::children' => 'Finds children of given node',
 'SimpleXMLIterator::count' => 'Counts the children of an element',
 'simplexmliterator::current' => 'Returns the current element',
 'simplexmliterator::getChildren' => 'Returns the sub-elements of the current element',
+'SimpleXMLIterator::getDocNamespaces' => 'Returns namespaces declared in document',
+'SimpleXMLIterator::getName' => 'Gets the name of the XML element',
+'SimpleXMLIterator::getNamespaces' => 'Returns namespaces used in document',
 'simplexmliterator::hasChildren' => 'Checks whether the current element has sub elements',
 'simplexmliterator::key' => 'Return current key',
 'simplexmliterator::next' => 'Move to next element',
+'SimpleXMLIterator::registerXPathNamespace' => 'Creates a prefix/ns context for the next XPath query',
 'simplexmliterator::rewind' => 'Rewind to the first element',
+'SimpleXMLIterator::saveXML' => 'Alias of SimpleXMLElement::asXML',
 'simplexmliterator::valid' => 'Check whether the current element is valid',
+'SimpleXMLIterator::xpath' => 'Runs XPath query on XML data',
 'sin' => 'Sine',
 'sinh' => 'Hyperbolic sine',
 'sizeof' => 'Alias of count',
@@ -10678,8 +12266,17 @@ Only available if php/mapscript is built with GEOS library.',
 'soapclient::__setSoapHeaders' => 'Sets SOAP headers for subsequent calls',
 'soapclient::__soapCall' => 'Calls a SOAP function',
 'soapclient::SoapClient' => 'SoapClient constructor',
+'SoapFault::__clone' => 'Clone the exception
+Tries to clone the Exception, which results in Fatal error.',
 'soapfault::__construct' => 'SoapFault constructor',
 'soapfault::__toString' => 'Obtain a string representation of a SoapFault',
+'SoapFault::getCode' => 'Gets the Exception code',
+'SoapFault::getFile' => 'Gets the file in which the exception occurred',
+'SoapFault::getLine' => 'Gets the line in which the exception occurred',
+'SoapFault::getMessage' => 'Gets the Exception message',
+'SoapFault::getPrevious' => 'Returns previous Exception',
+'SoapFault::getTrace' => 'Gets the stack trace',
+'SoapFault::getTraceAsString' => 'Gets the stack trace as a string',
 'soapfault::SoapFault' => 'SoapFault constructor',
 'soapheader::__construct' => 'SoapHeader constructor',
 'soapheader::SoapHeader' => 'SoapHeader constructor',
@@ -10737,7 +12334,7 @@ Only available if php/mapscript is built with GEOS library.',
 'socket_strerror' => 'Return a string describing a socket error',
 'socket_write' => 'Write to a socket',
 'Sodium\add' => 'Add the right operand to the left',
-'Sodium\bin2hex' => 'Convert to hex without side-chanels',
+'Sodium\bin2hex' => 'Convert to hex without side-channels',
 'Sodium\compare' => 'Compare two strings in constant time',
 'Sodium\crypto_aead_aes256gcm_decrypt' => 'Authenticated Encryption with Associated Data (decrypt)
 AES-256-GCM',
@@ -10815,7 +12412,7 @@ Ed25519',
 Xsalsa20',
 'Sodium\crypto_stream_xor' => 'Encrypt a message using a stream cipher
 Xsalsa20',
-'Sodium\hex2bin' => 'Convert from hex without side-chanels',
+'Sodium\hex2bin' => 'Convert from hex without side-channels',
 'Sodium\increment' => 'Increment a string in little-endian',
 'Sodium\library_version_major' => 'Get the true major version of libsodium',
 'Sodium\library_version_minor' => 'Get the true minor version of libsodium',
@@ -10912,7 +12509,18 @@ Xsalsa20',
 'solrclient::setServlet' => 'Changes the specified servlet type to a new value',
 'solrclient::system' => 'Retrieve Solr Server information',
 'solrclient::threads' => 'Checks the threads status',
+'SolrClientException::__clone' => 'Clone the exception
+Tries to clone the Exception, which results in Fatal error.',
+'SolrClientException::__construct' => 'Construct the exception. Note: The message is NOT binary safe.',
+'SolrClientException::__toString' => 'String representation of the exception',
+'SolrClientException::getCode' => 'Gets the Exception code',
+'SolrClientException::getFile' => 'Gets the file in which the exception occurred',
 'solrclientexception::getInternalInfo' => 'Returns internal information where the Exception was thrown',
+'SolrClientException::getLine' => 'Gets the line in which the exception occurred',
+'SolrClientException::getMessage' => 'Gets the Exception message',
+'SolrClientException::getPrevious' => 'Returns previous Exception',
+'SolrClientException::getTrace' => 'Gets the stack trace',
+'SolrClientException::getTraceAsString' => 'Gets the stack trace as a string',
 'solrcollapsefunction::__construct' => 'Constructor',
 'solrcollapsefunction::__toString' => 'Returns a string representing the constructed collapse function',
 'solrcollapsefunction::getField' => 'Returns the field that is being collapsed on',
@@ -11195,7 +12803,18 @@ group.format=simple.',
 'solrdocument::valid' => 'Checks if the current position internally is still valid',
 'solrdocumentfield::__construct' => 'Constructor',
 'solrdocumentfield::__destruct' => 'Destructor',
+'SolrException::__clone' => 'Clone the exception
+Tries to clone the Exception, which results in Fatal error.',
+'SolrException::__construct' => 'Construct the exception. Note: The message is NOT binary safe.',
+'SolrException::__toString' => 'String representation of the exception',
+'SolrException::getCode' => 'Gets the Exception code',
+'SolrException::getFile' => 'Gets the file in which the exception occurred',
 'solrexception::getInternalInfo' => 'Returns internal information where the Exception was thrown',
+'SolrException::getLine' => 'Gets the line in which the exception occurred',
+'SolrException::getMessage' => 'Gets the Exception message',
+'SolrException::getPrevious' => 'Returns previous Exception',
+'SolrException::getTrace' => 'Gets the stack trace',
+'SolrException::getTraceAsString' => 'Gets the stack trace as a string',
 'solrgenericresponse::__construct' => 'Constructor',
 'solrgenericresponse::__destruct' => 'Destructor',
 'SolrGenericResponse::getDigestedResponse' => 'Returns the XML response as serialized PHP data',
@@ -11209,8 +12828,30 @@ group.format=simple.',
 'SolrGenericResponse::getResponse' => 'Returns a SolrObject representing the XML response from the server',
 'SolrGenericResponse::setParseMode' => 'Sets the parse mode',
 'SolrGenericResponse::success' => 'Was the request a success',
+'SolrIllegalArgumentException::__clone' => 'Clone the exception
+Tries to clone the Exception, which results in Fatal error.',
+'SolrIllegalArgumentException::__construct' => 'Construct the exception. Note: The message is NOT binary safe.',
+'SolrIllegalArgumentException::__toString' => 'String representation of the exception',
+'SolrIllegalArgumentException::getCode' => 'Gets the Exception code',
+'SolrIllegalArgumentException::getFile' => 'Gets the file in which the exception occurred',
 'solrillegalargumentexception::getInternalInfo' => 'Returns internal information where the Exception was thrown',
+'SolrIllegalArgumentException::getLine' => 'Gets the line in which the exception occurred',
+'SolrIllegalArgumentException::getMessage' => 'Gets the Exception message',
+'SolrIllegalArgumentException::getPrevious' => 'Returns previous Exception',
+'SolrIllegalArgumentException::getTrace' => 'Gets the stack trace',
+'SolrIllegalArgumentException::getTraceAsString' => 'Gets the stack trace as a string',
+'SolrIllegalOperationException::__clone' => 'Clone the exception
+Tries to clone the Exception, which results in Fatal error.',
+'SolrIllegalOperationException::__construct' => 'Construct the exception. Note: The message is NOT binary safe.',
+'SolrIllegalOperationException::__toString' => 'String representation of the exception',
+'SolrIllegalOperationException::getCode' => 'Gets the Exception code',
+'SolrIllegalOperationException::getFile' => 'Gets the file in which the exception occurred',
 'solrillegaloperationexception::getInternalInfo' => 'Returns internal information where the Exception was thrown',
+'SolrIllegalOperationException::getLine' => 'Gets the line in which the exception occurred',
+'SolrIllegalOperationException::getMessage' => 'Gets the Exception message',
+'SolrIllegalOperationException::getPrevious' => 'Returns previous Exception',
+'SolrIllegalOperationException::getTrace' => 'Gets the stack trace',
+'SolrIllegalOperationException::getTraceAsString' => 'Gets the stack trace as a string',
 'solrinputdocument::__clone' => 'Creates a copy of a SolrDocument',
 'solrinputdocument::__construct' => 'Constructor',
 'solrinputdocument::__destruct' => 'Destructor',
@@ -11506,7 +13147,18 @@ group.format=simple.',
 'solrresponse::getResponse' => 'Returns a SolrObject representing the XML response from the server',
 'solrresponse::setParseMode' => 'Sets the parse mode',
 'solrresponse::success' => 'Was the request a success',
+'SolrServerException::__clone' => 'Clone the exception
+Tries to clone the Exception, which results in Fatal error.',
+'SolrServerException::__construct' => 'Construct the exception. Note: The message is NOT binary safe.',
+'SolrServerException::__toString' => 'String representation of the exception',
+'SolrServerException::getCode' => 'Gets the Exception code',
+'SolrServerException::getFile' => 'Gets the file in which the exception occurred',
 'solrserverexception::getInternalInfo' => 'Returns internal information where the Exception was thrown',
+'SolrServerException::getLine' => 'Gets the line in which the exception occurred',
+'SolrServerException::getMessage' => 'Gets the Exception message',
+'SolrServerException::getPrevious' => 'Returns previous Exception',
+'SolrServerException::getTrace' => 'Gets the stack trace',
+'SolrServerException::getTraceAsString' => 'Gets the stack trace as a string',
 'solrupdateresponse::__construct' => 'Constructor',
 'solrupdateresponse::__destruct' => 'Destructor',
 'SolrUpdateResponse::getDigestedResponse' => 'Returns the XML response as serialized PHP data',
@@ -11644,18 +13296,45 @@ group.format=simple.',
 'splfileobject::ftell' => 'Return current file position',
 'splfileobject::ftruncate' => 'Truncates the file to a given length',
 'splfileobject::fwrite' => 'Write to file',
+'SplFileObject::getATime' => 'Gets last access time of the file',
+'SplFileObject::getBasename' => 'Gets the base name of the file',
 'splfileobject::getChildren' => 'No purpose',
 'splfileobject::getCsvControl' => 'Get the delimiter, enclosure and escape character for CSV',
+'SplFileObject::getCTime' => 'Gets the inode change time',
 'splfileobject::getCurrentLine' => 'Alias of SplFileObject::fgets',
+'SplFileObject::getExtension' => 'Gets the file extension',
+'SplFileObject::getFileInfo' => 'Gets an SplFileInfo object for the file',
+'SplFileObject::getFilename' => 'Gets the filename',
 'splfileobject::getFlags' => 'Gets flags for the SplFileObject',
+'SplFileObject::getGroup' => 'Gets the file group',
+'SplFileObject::getInode' => 'Gets the inode for the file',
+'SplFileObject::getLinkTarget' => 'Gets the target of a link',
 'splfileobject::getMaxLineLen' => 'Get maximum line length',
+'SplFileObject::getMTime' => 'Gets the last modified time',
+'SplFileObject::getOwner' => 'Gets the owner of the file',
+'SplFileObject::getPath' => 'Gets the path without filename',
+'SplFileObject::getPathInfo' => 'Gets an SplFileInfo object for the path',
+'SplFileObject::getPathname' => 'Gets the path to the file',
+'SplFileObject::getPerms' => 'Gets file permissions',
+'SplFileObject::getRealPath' => 'Gets absolute path to file',
+'SplFileObject::getSize' => 'Gets file size',
+'SplFileObject::getType' => 'Gets file type',
 'splfileobject::hasChildren' => 'SplFileObject does not have children',
+'SplFileObject::isDir' => 'Tells if the file is a directory',
+'SplFileObject::isExecutable' => 'Tells if the file is executable',
+'SplFileObject::isFile' => 'Tells if the object references a regular file',
+'SplFileObject::isLink' => 'Tells if the file is a link',
+'SplFileObject::isReadable' => 'Tells if file is readable',
+'SplFileObject::isWritable' => 'Tells if the entry is writable',
 'splfileobject::key' => 'Get line number',
 'splfileobject::next' => 'Read next line',
+'SplFileObject::openFile' => 'Gets an SplFileObject object for the file',
 'splfileobject::rewind' => 'Rewind the file to the first line',
 'splfileobject::seek' => 'Seek to specified line',
 'splfileobject::setCsvControl' => 'Set the delimiter, enclosure and escape character for CSV',
+'SplFileObject::setFileClass' => 'Sets the class used with SplFileInfo::openFile',
 'splfileobject::setFlags' => 'Sets flags for the SplFileObject',
+'SplFileObject::setInfoClass' => 'Sets the class used with SplFileInfo::getFileInfo and SplFileInfo::getPathInfo',
 'splfileobject::setMaxLineLen' => 'Set maximum line length',
 'splfileobject::valid' => 'Not at EOF',
 'splfixedarray::__construct' => 'Constructs a new fixed array',
@@ -11691,11 +13370,24 @@ group.format=simple.',
 'split' => 'Split string into array by regular expression',
 'spliti' => 'Split string into array by regular expression case insensitive',
 'splmaxheap::compare' => 'Compare elements in order to place them correctly in the heap while sifting up',
+'SplMaxHeap::count' => 'Counts the number of elements in the heap',
+'SplMaxHeap::current' => 'Return current node pointed by the iterator',
+'SplMaxHeap::extract' => 'Extracts a node from top of the heap and sift up',
+'SplMaxHeap::insert' => 'Inserts an element in the heap by sifting it up',
+'SplMaxHeap::isCorrupted' => 'Tells if the heap is in a corrupted state',
+'SplMaxHeap::isEmpty' => 'Checks whether the heap is empty',
+'SplMaxHeap::key' => 'Return current node index',
+'SplMaxHeap::next' => 'Move to the next node',
+'SplMaxHeap::recoverFromCorruption' => 'Recover from the corrupted state and allow further actions on the heap',
+'SplMaxHeap::rewind' => 'Rewind iterator back to the start (no-op)',
+'SplMaxHeap::top' => 'Peeks at the node from the top of the heap',
+'SplMaxHeap::valid' => 'Check whether the heap contains more nodes',
 'splminheap::compare' => 'Compare elements in order to place them correctly in the heap while sifting up',
 'SplMinHeap::count' => 'Counts the number of elements in the heap.',
 'SplMinHeap::current' => 'Return current node pointed by the iterator',
 'SplMinHeap::extract' => 'Extracts a node from top of the heap and sift up.',
 'SplMinHeap::insert' => 'Inserts an element in the heap by sifting it up.',
+'SplMinHeap::isCorrupted' => 'Tells if the heap is in a corrupted state',
 'SplMinHeap::isEmpty' => 'Checks whether the heap is empty.',
 'SplMinHeap::key' => 'Return current node index',
 'SplMinHeap::next' => 'Move to the next node',
@@ -11742,15 +13434,118 @@ group.format=simple.',
 'splpriorityqueue::top' => 'Peeks at the node from the top of the queue',
 'splpriorityqueue::valid' => 'Check whether the queue contains more nodes',
 'splqueue::__construct' => 'Constructs a new queue implemented using a doubly linked list',
+'SplQueue::add' => 'Add/insert a new value at the specified index',
+'SplQueue::bottom' => 'Peeks at the node from the beginning of the doubly linked list',
+'SplQueue::count' => 'Counts the number of elements in the doubly linked list',
+'SplQueue::current' => 'Return current array entry',
 'splqueue::dequeue' => 'Dequeues a node from the queue',
 'splqueue::enqueue' => 'Adds an element to the queue',
+'SplQueue::getIteratorMode' => 'Returns the mode of iteration',
+'SplQueue::isEmpty' => 'Checks whether the doubly linked list is empty',
+'SplQueue::key' => 'Return current node index',
+'SplQueue::next' => 'Move to next entry',
+'SplQueue::offsetExists' => 'Returns whether the requested $index exists',
+'SplQueue::offsetGet' => 'Returns the value at the specified $index',
+'SplQueue::offsetSet' => 'Sets the value at the specified $index to $newval',
+'SplQueue::offsetUnset' => 'Unsets the value at the specified $index',
+'SplQueue::pop' => 'Pops a node from the end of the doubly linked list',
+'SplQueue::prev' => 'Move to previous entry',
+'SplQueue::push' => 'Pushes an element at the end of the doubly linked list',
+'SplQueue::rewind' => 'Rewind iterator back to the start',
+'SplQueue::serialize' => 'Serializes the storage',
 'splqueue::setIteratorMode' => 'Sets the mode of iteration',
+'SplQueue::shift' => 'Shifts a node from the beginning of the doubly linked list',
+'SplQueue::top' => 'Peeks at the node from the end of the doubly linked list',
+'SplQueue::unserialize' => 'Unserializes the storage',
+'SplQueue::unshift' => 'Prepends the doubly linked list with an element',
+'SplQueue::valid' => 'Check whether the doubly linked list contains more nodes',
 'splstack::__construct' => 'Constructs a new stack implemented using a doubly linked list',
+'SplStack::add' => 'Add/insert a new value at the specified index',
+'SplStack::bottom' => 'Peeks at the node from the beginning of the doubly linked list',
+'SplStack::count' => 'Counts the number of elements in the doubly linked list',
+'SplStack::current' => 'Return current array entry',
+'SplStack::getIteratorMode' => 'Returns the mode of iteration',
+'SplStack::isEmpty' => 'Checks whether the doubly linked list is empty',
+'SplStack::key' => 'Return current node index',
+'SplStack::next' => 'Move to next entry',
+'SplStack::offsetExists' => 'Returns whether the requested $index exists',
+'SplStack::offsetGet' => 'Returns the value at the specified $index',
+'SplStack::offsetSet' => 'Sets the value at the specified $index to $newval',
+'SplStack::offsetUnset' => 'Unsets the value at the specified $index',
+'SplStack::pop' => 'Pops a node from the end of the doubly linked list',
+'SplStack::prev' => 'Move to previous entry',
+'SplStack::push' => 'Pushes an element at the end of the doubly linked list',
+'SplStack::rewind' => 'Rewind iterator back to the start',
+'SplStack::serialize' => 'Serializes the storage',
 'splstack::setIteratorMode' => 'Sets the mode of iteration',
+'SplStack::shift' => 'Shifts a node from the beginning of the doubly linked list',
+'SplStack::top' => 'Peeks at the node from the end of the doubly linked list',
+'SplStack::unserialize' => 'Unserializes the storage',
+'SplStack::unshift' => 'Prepends the doubly linked list with an element',
+'SplStack::valid' => 'Check whether the doubly linked list contains more nodes',
 'splsubject::attach' => 'Attach an SplObserver',
 'splsubject::detach' => 'Detach an observer',
 'splsubject::notify' => 'Notify an observer',
 'spltempfileobject::__construct' => 'Construct a new temporary file object',
+'SplTempFileObject::__toString' => 'Alias of SplTempFileObject::current',
+'SplTempFileObject::current' => 'Retrieve current line of file',
+'SplTempFileObject::eof' => 'Reached end of file',
+'SplTempFileObject::fflush' => 'Flushes the output to the file',
+'SplTempFileObject::fgetc' => 'Gets character from file',
+'SplTempFileObject::fgetcsv' => 'Gets line from file and parse as CSV fields',
+'SplTempFileObject::fgets' => 'Gets line from file',
+'SplTempFileObject::fgetss' => 'Gets line from file and strip HTML tags',
+'SplTempFileObject::flock' => 'Portable file locking',
+'SplTempFileObject::fpassthru' => 'Output all remaining data on a file pointer',
+'SplTempFileObject::fputcsv' => 'Write a field array as a CSV line',
+'SplTempFileObject::fread' => 'Read from file',
+'SplTempFileObject::fscanf' => 'Parses input from file according to a format',
+'SplTempFileObject::fseek' => 'Seek to a position',
+'SplTempFileObject::fstat' => 'Gets information about the file',
+'SplTempFileObject::ftell' => 'Return current file position',
+'SplTempFileObject::ftruncate' => 'Truncates the file to a given length',
+'SplTempFileObject::fwrite' => 'Write to file',
+'SplTempFileObject::getATime' => 'Gets last access time of the file',
+'SplTempFileObject::getBasename' => 'Gets the base name of the file',
+'SplTempFileObject::getChildren' => 'No purpose',
+'SplTempFileObject::getCsvControl' => 'Get the delimiter, enclosure and escape character for CSV',
+'SplTempFileObject::getCTime' => 'Gets the inode change time',
+'SplTempFileObject::getCurrentLine' => 'Alias of SplTempFileObject::fgets',
+'SplTempFileObject::getExtension' => 'Gets the file extension',
+'SplTempFileObject::getFileInfo' => 'Gets an SplTempFileInfo object for the file',
+'SplTempFileObject::getFilename' => 'Gets the filename',
+'SplTempFileObject::getFlags' => 'Gets flags for the SplTempFileObject',
+'SplTempFileObject::getGroup' => 'Gets the file group',
+'SplTempFileObject::getInode' => 'Gets the inode for the file',
+'SplTempFileObject::getLinkTarget' => 'Gets the target of a link',
+'SplTempFileObject::getMaxLineLen' => 'Get maximum line length',
+'SplTempFileObject::getMTime' => 'Gets the last modified time',
+'SplTempFileObject::getOwner' => 'Gets the owner of the file',
+'SplTempFileObject::getPath' => 'Gets the path without filename',
+'SplTempFileObject::getPathInfo' => 'Gets an SplTempFileInfo object for the path',
+'SplTempFileObject::getPathname' => 'Gets the path to the file',
+'SplTempFileObject::getPerms' => 'Gets file permissions',
+'SplTempFileObject::getRealPath' => 'Gets absolute path to file',
+'SplTempFileObject::getSize' => 'Gets file size',
+'SplTempFileObject::getType' => 'Gets file type',
+'SplTempFileObject::hasChildren' => 'SplTempFileObject does not have children',
+'SplTempFileObject::isDir' => 'Tells if the file is a directory',
+'SplTempFileObject::isExecutable' => 'Tells if the file is executable',
+'SplTempFileObject::isFile' => 'Tells if the object references a regular file',
+'SplTempFileObject::isLink' => 'Tells if the file is a link',
+'SplTempFileObject::isReadable' => 'Tells if file is readable',
+'SplTempFileObject::isWritable' => 'Tells if the entry is writable',
+'SplTempFileObject::key' => 'Get line number',
+'SplTempFileObject::next' => 'Read next line',
+'SplTempFileObject::openFile' => 'Gets an SplTempFileObject object for the file',
+'SplTempFileObject::rewind' => 'Rewind the file to the first line',
+'SplTempFileObject::seek' => 'Seek to specified line',
+'SplTempFileObject::setCsvControl' => 'Set the delimiter, enclosure and escape character for CSV',
+'SplTempFileObject::setFileClass' => 'Sets the class used with SplTempFileInfo::openFile',
+'SplTempFileObject::setFlags' => 'Sets flags for the SplTempFileObject',
+'SplTempFileObject::setInfoClass' => 'Sets the class used with SplTempFileInfo::getFileInfo and SplTempFileInfo::getPathInfo',
+'SplTempFileObject::setMaxLineLen' => 'Set maximum line length',
+'SplTempFileObject::valid' => 'Not at EOF',
 'spltype::__construct' => 'Creates a new value of some type',
 'spoofchecker::__construct' => 'Constructor',
 'spoofchecker::areConfusable' => 'Checks if given strings can be confused',
@@ -12526,7 +14321,7 @@ the value of the color from the field called "FIELD_NAME_COLOR"',
 'swoole\http\server::on' => 'Bind callback function to HTTP server by event name.',
 'swoole\http\server::start' => 'Start the swoole http server.',
 'swoole\lock::__construct' => 'Construct a memory lock.',
-'swoole\lock::__destruct' => 'Destory a Swoole memory lock.',
+'swoole\lock::__destruct' => 'Destroy a Swoole memory lock.',
 'swoole\lock::lock' => 'Try to acquire the lock. It will block if the lock is not available.',
 'swoole\lock::lock_read' => 'Lock a read-write lock for reading.',
 'swoole\lock::trylock' => 'Try to acquire the lock and return straight away even the lock is not available.',
@@ -12534,19 +14329,19 @@ the value of the color from the field called "FIELD_NAME_COLOR"',
 'swoole\lock::unlock' => 'Release the lock.',
 'swoole\mmap::open' => 'Map a file into memory and return the stream resource which can be used by PHP stream operations.',
 'swoole\mysql::__construct' => 'Construct an async MySQL client.',
-'swoole\mysql::__destruct' => 'Destory the async MySQL client.',
+'swoole\mysql::__destruct' => 'Destroy the async MySQL client.',
 'swoole\mysql::close' => 'Close the async MySQL connection.',
 'swoole\mysql::connect' => 'Connect to the remote MySQL server.',
 'swoole\mysql::on' => 'Register callback function based on event name.',
 'swoole\mysql::query' => 'Run the SQL query.',
 'swoole\process::__construct' => 'Construct a process.',
-'swoole\process::__destruct' => 'Destory the process.',
+'swoole\process::__destruct' => 'Destroy the process.',
 'swoole\process::alarm' => 'High precision timer which triggers signal with fixed interval.',
 'swoole\process::close' => 'Close the pipe to the child process.',
 'swoole\process::daemon' => 'Change the process to be a daemon process.',
 'swoole\process::exec' => 'Execute system commands.',
 'swoole\process::exit' => 'Stop the child processes.',
-'swoole\process::freeQueue' => 'Destory the message queue created by swoole_process::useQueue.',
+'swoole\process::freeQueue' => 'Destroy the message queue created by swoole_process::useQueue.',
 'swoole\process::kill' => 'Send signal to the child process.',
 'swoole\process::name' => 'Set name of the process.',
 'swoole\process::pop' => 'Read and pop data from the message queue.',
@@ -12598,7 +14393,7 @@ the value of the color from the field called "FIELD_NAME_COLOR"',
 'swoole\server::taskWaitMulti' => 'Execute multiple tasks concurrently.',
 'swoole\server::tick' => 'Repeats a given function at every given time-interval.',
 'swoole\server\port::__construct' => 'Construct a server port',
-'swoole\server\port::__destruct' => 'Destory server port',
+'swoole\server\port::__destruct' => 'Destroy server port',
 'swoole\server\port::on' => 'Register callback functions by event.',
 'swoole\server\port::set' => 'Set protocol of the server port.',
 'swoole\table::__construct' => 'Construct a Swoole memory table with fixed size.',
@@ -12643,7 +14438,7 @@ the value of the color from the field called "FIELD_NAME_COLOR"',
 'swoole_event_wait' => 'Start the event loop',
 'swoole_event_write' => 'Write data to a socket',
 'swoole_get_local_ip' => 'Get the IPv4 IP addresses of each NIC on the machine',
-'swoole_last_error' => 'Get the lastest error message',
+'swoole_last_error' => 'Get the latest error message',
 'swoole_load_module' => 'Load a swoole extension',
 'swoole_select' => 'Select the file descriptions which are ready to read/write or error in the eventloop',
 'swoole_set_process_name' => 'Set the process name',
@@ -12765,6 +14560,10 @@ fatal errors, or threw uncaught exceptions',
 'Thread::notifyOne' => 'Send notification to the referenced object. This unblocks at least one
 of the blocked threads (as opposed to unblocking all of them, as seen with
 Threaded::notify()).',
+'Thread::offsetExists' => 'Whether a offset exists',
+'Thread::offsetGet' => 'Offset to retrieve',
+'Thread::offsetSet' => 'Offset to set',
+'Thread::offsetUnset' => 'Offset to unset',
 'Thread::pop' => 'Pops an item from the objects property table',
 'Thread::run' => 'The programmer should always implement the run method for objects
 that are intended for execution.',
@@ -13305,7 +15104,7 @@ referenced object',
 'ui\run' => 'Enter UI Loop',
 'ui\size::__construct' => 'Construct a new Size',
 'ui\size::getHeight' => 'Retrieves Height',
-'ui\size::getWidth' => 'Retrives Width',
+'ui\size::getWidth' => 'Retrieves Width',
 'ui\size::of' => 'Point Coercion',
 'ui\size::setHeight' => 'Set Height',
 'ui\size::setWidth' => 'Set Width',
@@ -13405,6 +15204,17 @@ works similar to the set_time_limit php',
 'v8jsexception::getJsLineNumber' => 'The getJsLineNumber purpose',
 'v8jsexception::getJsSourceLine' => 'The getJsSourceLine purpose',
 'v8jsexception::getJsTrace' => 'The getJsTrace purpose',
+'V8JsScriptException::__clone' => 'Clone the exception
+Tries to clone the Exception, which results in Fatal error.',
+'V8JsScriptException::__construct' => 'Construct the exception. Note: The message is NOT binary safe.',
+'V8JsScriptException::__toString' => 'String representation of the exception',
+'V8JsScriptException::getCode' => 'Gets the Exception code',
+'V8JsScriptException::getFile' => 'Gets the file in which the exception occurred',
+'V8JsScriptException::getLine' => 'Gets the line in which the exception occurred',
+'V8JsScriptException::getMessage' => 'Gets the Exception message',
+'V8JsScriptException::getPrevious' => 'Returns previous Exception',
+'V8JsScriptException::getTrace' => 'Gets the stack trace',
+'V8JsScriptException::getTraceAsString' => 'Gets the stack trace as a string',
 'var_dump' => 'Dumps information about a variable',
 'var_export' => 'Outputs or returns a parsable string representation of a variable',
 'VARIANT::__construct' => 'COM class constructor.',
@@ -13608,6 +15418,10 @@ fatal errors, or threw uncaught exceptions',
 'Worker::notifyOne' => 'Send notification to the referenced object. This unblocks at least one
 of the blocked threads (as opposed to unblocking all of them, as seen with
 Threaded::notify()).',
+'Worker::offsetExists' => 'Whether a offset exists',
+'Worker::offsetGet' => 'Offset to retrieve',
+'Worker::offsetSet' => 'Offset to set',
+'Worker::offsetUnset' => 'Offset to unset',
 'Worker::pop' => 'Pops an item from the objects property table',
 'Worker::run' => 'The programmer should always implement the run method for objects
 that are intended for execution.',
@@ -14019,10 +15833,10 @@ This method depends on the request header: HTTP_X_REQUESTED_WITH, some Javascrip
 'yaf_application::app' => 'Retrieve an Application instance',
 'yaf_application::bootstrap' => 'Call bootstrap',
 'yaf_application::clearLastError' => 'Clear the last error info',
-'yaf_application::environ' => 'Retrive environ',
+'yaf_application::environ' => 'Retrieve environ',
 'yaf_application::execute' => 'Execute a callback',
 'yaf_application::getAppDirectory' => 'Get the application directory',
-'yaf_application::getConfig' => 'Retrive the config instance',
+'yaf_application::getConfig' => 'Retrieve the config instance',
 'yaf_application::getDispatcher' => 'Get Yaf_Dispatcher instance',
 'yaf_application::getLastErrorMsg' => 'Get message of the last occurred error',
 'yaf_application::getLastErrorNo' => 'Get code of last occurred error',
@@ -14068,7 +15882,7 @@ This method depends on the request header: HTTP_X_REQUESTED_WITH, some Javascrip
 'yaf_controller_abstract::__clone' => 'Yaf_Controller_Abstract can not be cloned',
 'yaf_controller_abstract::__construct' => 'Yaf_Controller_Abstract constructor',
 'yaf_controller_abstract::display' => 'The display purpose',
-'yaf_controller_abstract::forward' => 'Foward to another action',
+'yaf_controller_abstract::forward' => 'Forward to another action',
 'yaf_controller_abstract::getInvokeArg' => 'The getInvokeArg purpose',
 'yaf_controller_abstract::getInvokeArgs' => 'The getInvokeArgs purpose',
 'yaf_controller_abstract::getModuleName' => 'Get module name',
@@ -14091,10 +15905,10 @@ This method depends on the request header: HTTP_X_REQUESTED_WITH, some Javascrip
 'yaf_dispatcher::dispatch' => 'Dispatch a request',
 'yaf_dispatcher::enableView' => 'Enable view rendering',
 'yaf_dispatcher::flushInstantly' => 'Switch on/off the instant flushing',
-'yaf_dispatcher::getApplication' => 'Retrive the application',
-'yaf_dispatcher::getInstance' => 'Retrive the dispatcher instance',
-'yaf_dispatcher::getRequest' => 'Retrive the request instance',
-'yaf_dispatcher::getRouter' => 'Retrive router instance',
+'yaf_dispatcher::getApplication' => 'Retrieve the application',
+'yaf_dispatcher::getInstance' => 'Retrieve the dispatcher instance',
+'yaf_dispatcher::getRequest' => 'Retrieve the request instance',
+'yaf_dispatcher::getRouter' => 'Retrieve router instance',
 'yaf_dispatcher::initView' => 'Initialize view and return it',
 'yaf_dispatcher::registerPlugin' => 'Register a plugin',
 'yaf_dispatcher::returnResponse' => 'The returnResponse purpose',
@@ -14146,13 +15960,13 @@ This method depends on the request header: HTTP_X_REQUESTED_WITH, some Javascrip
 'yaf_request_abstract::getRequestUri' => 'The getRequestUri purpose',
 'yaf_request_abstract::getServer' => 'Retrieve SERVER variable',
 'yaf_request_abstract::isCli' => 'Determine if request is CLI request',
-'yaf_request_abstract::isDispatched' => 'Determin if the request is dispatched',
+'yaf_request_abstract::isDispatched' => 'Determine if the request is dispatched',
 'yaf_request_abstract::isGet' => 'Determine if request is GET request',
 'yaf_request_abstract::isHead' => 'Determine if request is HEAD request',
 'yaf_request_abstract::isOptions' => 'Determine if request is OPTIONS request',
 'yaf_request_abstract::isPost' => 'Determine if request is POST request',
 'yaf_request_abstract::isPut' => 'Determine if request is PUT request',
-'yaf_request_abstract::isRouted' => 'Determin if request has been routed',
+'yaf_request_abstract::isRouted' => 'Determine if request has been routed',
 'yaf_request_abstract::isXmlHttpRequest' => 'Determine if request is AJAX request',
 'yaf_request_abstract::setActionName' => 'The setActionName purpose',
 'yaf_request_abstract::setBaseUri' => 'Set base URI',
@@ -14173,7 +15987,7 @@ This method depends on the request header: HTTP_X_REQUESTED_WITH, some Javascrip
 'yaf_request_http::getRaw' => 'Retrieve Raw request body',
 'yaf_request_http::getRequest' => 'The getRequest purpose',
 'Yaf_Request_Http::getServer' => 'Retrieve $_SERVER variable',
-'yaf_request_http::isXmlHttpRequest' => 'Determin if request is Ajax Request',
+'yaf_request_http::isXmlHttpRequest' => 'Determine if request is Ajax Request',
 'Yaf_Request_Http::setBaseUri' => '<p>Set base URI, base URI is used when doing routing, in routing phase request URI is used to route a request, while base URI is used to skip the leading part(base URI) of request URI. That is, if comes a request with request URI a/b/c, then if you set base URI to "a/b", only "/c" will be used in routing phase.</p>
 <br/>
 <b>Note:</b>
@@ -14190,7 +16004,7 @@ This method depends on the request header: HTTP_X_REQUESTED_WITH, some Javascrip
 'yaf_request_simple::getQuery' => 'The getQuery purpose',
 'yaf_request_simple::getRequest' => 'The getRequest purpose',
 'Yaf_Request_Simple::getServer' => 'Retrieve $_SERVER variable',
-'yaf_request_simple::isXmlHttpRequest' => 'Determin if request is AJAX request',
+'yaf_request_simple::isXmlHttpRequest' => 'Determine if request is AJAX request',
 'Yaf_Request_Simple::setBaseUri' => '<p>Set base URI, base URI is used when doing routing, in routing phase request URI is used to route a request, while base URI is used to skip the leading part(base URI) of request URI. That is, if comes a request with request URI a/b/c, then if you set base URI to "a/b", only "/c" will be used in routing phase.</p>
 <br/>
 <b>Note:</b>
@@ -14316,12 +16130,34 @@ This method depends on the request header: HTTP_X_REQUESTED_WITH, some Javascrip
 'yar_client::__call' => 'Call service',
 'yar_client::__construct' => 'Create a client',
 'yar_client::setOpt' => 'Set calling contexts',
+'Yar_Client_Exception::__clone' => 'Clone the exception
+Tries to clone the Exception, which results in Fatal error.',
+'Yar_Client_Exception::__construct' => 'Construct the exception. Note: The message is NOT binary safe.',
+'Yar_Client_Exception::__toString' => 'String representation of the exception',
+'Yar_Client_Exception::getCode' => 'Gets the Exception code',
+'Yar_Client_Exception::getFile' => 'Gets the file in which the exception occurred',
+'Yar_Client_Exception::getLine' => 'Gets the line in which the exception occurred',
+'Yar_Client_Exception::getMessage' => 'Gets the Exception message',
+'Yar_Client_Exception::getPrevious' => 'Returns previous Exception',
+'Yar_Client_Exception::getTrace' => 'Gets the stack trace',
+'Yar_Client_Exception::getTraceAsString' => 'Gets the stack trace as a string',
 'yar_client_exception::getType' => 'Retrieve exception\'s type',
 'yar_concurrent_client::call' => 'Register a concurrent call',
 'yar_concurrent_client::loop' => 'Send all calls',
 'yar_concurrent_client::reset' => 'Clean all registered calls',
 'yar_server::__construct' => 'Register a server',
 'yar_server::handle' => 'Start RPC Server',
+'Yar_Server_Exception::__clone' => 'Clone the exception
+Tries to clone the Exception, which results in Fatal error.',
+'Yar_Server_Exception::__construct' => 'Construct the exception. Note: The message is NOT binary safe.',
+'Yar_Server_Exception::__toString' => 'String representation of the exception',
+'Yar_Server_Exception::getCode' => 'Gets the Exception code',
+'Yar_Server_Exception::getFile' => 'Gets the file in which the exception occurred',
+'Yar_Server_Exception::getLine' => 'Gets the line in which the exception occurred',
+'Yar_Server_Exception::getMessage' => 'Gets the Exception message',
+'Yar_Server_Exception::getPrevious' => 'Returns previous Exception',
+'Yar_Server_Exception::getTrace' => 'Gets the stack trace',
+'Yar_Server_Exception::getTraceAsString' => 'Gets the stack trace as a string',
 'yar_server_exception::getType' => 'Retrieve exception\'s type',
 'yaz_addinfo' => 'Returns additional error information',
 'yaz_ccl_conf' => 'Configure CCL parser',
@@ -14423,7 +16259,7 @@ a new job will be added. Job is passed by reference and it\'s updated from the q
 'ziparchive::addGlob' => 'Add files from a directory by glob pattern',
 'ziparchive::addPattern' => 'Add files from a directory by PCRE pattern',
 'ziparchive::close' => 'Close the active archive (opened or newly created)',
-'ziparchive::count' => 'Counts the number of files in the achive',
+'ziparchive::count' => 'Counts the number of files in the archive',
 'ziparchive::deleteIndex' => 'Delete an entry in the archive using its index',
 'ziparchive::deleteName' => 'Delete an entry in the archive using its name',
 'ziparchive::extractTo' => 'Extract the archive contents',

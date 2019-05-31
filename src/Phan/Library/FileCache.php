@@ -24,7 +24,7 @@ final class FileCache
      * Sets the cache size to $max_size (or self::MINIMUM_CACHE_SIZE if that's larger).
      * Entries will be removed until there are $max_size or fewer entries.
      */
-    public static function setMaxCacheSize(int $max_size)
+    public static function setMaxCacheSize(int $max_size) : void
     {
         self::$max_size = \max($max_size, self::MINIMUM_CACHE_SIZE);
         while (\count(self::$cache_entries) > self::$max_size) {
@@ -35,8 +35,6 @@ final class FileCache
     /**
      * Adds an entry recording that $file_name has contents $file_contents,
      * overwriting any previous entries
-     *
-     * @return FileCacheEntry
      */
     public static function addEntry(string $file_name, string $contents) : FileCacheEntry
     {
@@ -62,7 +60,7 @@ final class FileCache
      * @return ?FileCacheEntry if the entry exists in cache, return it.
      * Otherwise, return null.
      */
-    public static function getEntry(string $file_name)
+    public static function getEntry(string $file_name) : ?FileCacheEntry
     {
         $entry = self::$cache_entries[$file_name] ?? null;
         if ($entry) {
@@ -101,9 +99,8 @@ final class FileCache
 
     /**
      * Clear the cache (E.g. after pausing, accepting a daemon mode request, then resuming)
-     * @return void
      */
-    public static function clear()
+    public static function clear() : void
     {
         self::$cache_entries = [];
     }

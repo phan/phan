@@ -98,7 +98,6 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
      * @param array<int,Type> $element_types
      * @param bool $is_nullable
      * @param int $key_type
-     * @return GenericMultiArrayType
      */
     public static function fromElementTypes(
         array $element_types,

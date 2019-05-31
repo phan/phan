@@ -20,7 +20,7 @@ class StderrLogger implements LoggerInterface
      *
      * @override
      */
-    public function log($level, $message, array $unused_context = [])
+    public function log($level, $message, array $unused_context = []) : void
     {
         \fprintf(\STDERR, "[%s] %s\n", $level, $message);
     }

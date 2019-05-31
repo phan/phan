@@ -45,7 +45,7 @@ final class UnionTypeTest extends BaseTest
     /** @var CodeBase The code base within which this unit test is operating */
     protected static $code_base = null;
 
-    protected function setUp()
+    protected function setUp() : void
     {
         // Deliberately not calling parent::setUp()
         global $internal_class_name_list;
@@ -64,13 +64,13 @@ final class UnionTypeTest extends BaseTest
         }
     }
 
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass() : void
     {
         // @phan-suppress-next-line PhanTypeMismatchProperty
         self::$code_base = null;
     }
 
-    public function testInt()
+    public function testInt() : void
     {
         Phan::setIssueCollector(new BufferingCollector());
         $this->assertUnionTypeStringEqual('rand(0,20)', 'int');
@@ -114,7 +114,7 @@ final class UnionTypeTest extends BaseTest
         $this->assertUnionTypeStringEqual('(rand(0,1) ? "12" : 2.5) + (rand(0,1) ? "3" : 1.5)', 'float|int');
     }
 
-    public function testComplex()
+    public function testComplex() : void
     {
         Phan::setIssueCollector(new BufferingCollector());
         $this->assertUnionTypeStringEqual('$x=constant($argv[0]); $x <<= 2; $x', 'int');
@@ -157,7 +157,7 @@ final class UnionTypeTest extends BaseTest
         $this->assertUnionTypeStringEqual('"foo" . PHP_EOL', "'foo" . \addcslashes(\PHP_EOL, "\r\n") . "'");
     }
 
-    public function testString()
+    public function testString() : void
     {
         try {
             $this->assertUnionTypeStringEqual(
@@ -169,7 +169,7 @@ final class UnionTypeTest extends BaseTest
         }
     }
 
-    public function testArrayUniform()
+    public function testArrayUniform() : void
     {
         $this->assertUnionTypeStringEqual(
             '[false => \'$string\']',
@@ -177,7 +177,7 @@ final class UnionTypeTest extends BaseTest
         );
     }
 
-    public function testArrayUniformMultipleValuesLiteral()
+    public function testArrayUniformMultipleValuesLiteral() : void
     {
         $this->assertUnionTypeStringEqual(
             '[false => rand(0,1) ? zend_version() : 2]',
@@ -185,7 +185,7 @@ final class UnionTypeTest extends BaseTest
         );
     }
 
-    public function testArrayUniformMultipleValues()
+    public function testArrayUniformMultipleValues() : void
     {
         $this->assertUnionTypeStringEqual(
             '[false => rand(0,1) ? zend_version() : 2]',
@@ -193,7 +193,7 @@ final class UnionTypeTest extends BaseTest
         );
     }
 
-    public function testArrayMixed()
+    public function testArrayMixed() : void
     {
         $this->assertUnionTypeStringEqual(
             '[1, zend_version()]',
@@ -201,14 +201,14 @@ final class UnionTypeTest extends BaseTest
         );
     }
 
-    public function testArrayEmpty()
+    public function testArrayEmpty() : void
     {
         $this->assertUnionTypeStringEqual(
             '[]',
             'array{}'
         );
     }
-    public function testInternalObject()
+    public function testInternalObject() : void
     {
         $this->assertUnionTypeStringEqual(
             'new SplStack();',
@@ -216,7 +216,7 @@ final class UnionTypeTest extends BaseTest
         );
     }
 
-    public function testGenericArrayType()
+    public function testGenericArrayType() : void
     {
         $type = self::createGenericArrayTypeWithMixedKey(
             self::createGenericArrayTypeWithMixedKey(
@@ -226,22 +226,22 @@ final class UnionTypeTest extends BaseTest
             false
         );
 
-        $this->assertEquals(
+        $this->assertSame(
             $type->genericArrayElementType()->__toString(),
             "int[]"
         );
-        $this->assertEquals(
+        $this->assertSame(
             $type->genericArrayElementUnionType()->__toString(),
             "int[]"
         );
     }
 
-    public function testGenericArrayTypeFromString()
+    public function testGenericArrayTypeFromString() : void
     {
         $type = Type::fromFullyQualifiedString("int[][]");
         $this->assertInstanceOf(GenericArrayType::class, $type);
 
-        $this->assertEquals(
+        $this->assertSame(
             $type->genericArrayElementType()->__toString(),
             "int[]"
         );
@@ -260,8 +260,8 @@ final class UnionTypeTest extends BaseTest
     private function assertUnionTypeStringEqual(
         string $code_stub,
         string $type_name
-    ) {
-        $this->assertEquals(
+    ) : void {
+        $this->assertSame(
             $type_name,
             $this->typeStringFromCode('<' . '?php ' . $code_stub . ';')
         );
@@ -302,13 +302,13 @@ final class UnionTypeTest extends BaseTest
         return Type::fromStringInContext($type, new Context(), Type::FROM_PHPDOC);
     }
 
-    private function assertIsType(Type $type, string $union_type_string)
+    private function assertIsType(Type $type, string $union_type_string) : void
     {
         $union_type = self::makePHPDocUnionType($union_type_string);
         $this->assertTrue($union_type->hasType($type), "Expected $union_type (from $union_type_string) to be $type");
     }
 
-    public function testExpandedTypes()
+    public function testExpandedTypes() : void
     {
         $this->assertSame(
             '\Exception[]|\Throwable[]',
@@ -320,7 +320,7 @@ final class UnionTypeTest extends BaseTest
         );
     }
 
-    public function testBasicTypes()
+    public function testBasicTypes() : void
     {
         $this->assertIsType(ArrayType::instance(false), 'array');
         $this->assertIsType(ArrayType::instance(true), '?array');
@@ -341,7 +341,7 @@ final class UnionTypeTest extends BaseTest
         $this->assertIsType(VoidType::instance(false), 'void');
     }
 
-    public function testTemplateTypes()
+    public function testTemplateTypes() : void
     {
         $union_type = self::makePHPDocUnionType('TypeTestClass<A1,B2>');
         $this->assertSame(1, $union_type->typeCount());
@@ -357,7 +357,7 @@ final class UnionTypeTest extends BaseTest
         $this->assertTrue($parts[1]->isType(self::makePHPDocType('B2')));
     }
 
-    public function testTemplateNullableTypes()
+    public function testTemplateNullableTypes() : void
     {
         $this->assertRegExp('/^' . Type::type_regex . '$/', 'TypeTestClass<A1|null,B2|null>', 'type_regex does not support nested pipes');
         $this->assertRegExp('/^' . Type::type_regex_or_this . '$/', 'TypeTestClass<A1|null>', 'type_regex_or_this does not support nested pipes');
@@ -376,7 +376,7 @@ final class UnionTypeTest extends BaseTest
         $this->assertTrue($parts[1]->isEqualTo(self::makePHPDocUnionType('B2|null')));
     }
 
-    public function testNormalize()
+    public function testNormalize() : void
     {
         $union_type = self::makePHPDocUnionType('object|null');
         $this->assertSame(2, $union_type->typeCount());
@@ -387,7 +387,7 @@ final class UnionTypeTest extends BaseTest
         $this->assertSame(ObjectType::instance(true), \reset($type_set));
     }
 
-    public function testAlternateArrayTypes()
+    public function testAlternateArrayTypes() : void
     {
         // array keys are integers, values are strings
         $union_type = self::makePHPDocUnionType('array<int,string>');
@@ -400,7 +400,7 @@ final class UnionTypeTest extends BaseTest
         $this->assertSame($expected_type, $type);
     }
 
-    public function testAlternateArrayTypesNullable()
+    public function testAlternateArrayTypesNullable() : void
     {
         // array keys are nullable integers, values are strings
         $union_type = self::makePHPDocUnionType('array<string,?int>');
@@ -413,7 +413,7 @@ final class UnionTypeTest extends BaseTest
         $this->assertSame($expected_type, $type);
     }
 
-    public function testNestedArrayTypes()
+    public function testNestedArrayTypes() : void
     {
         $union_type = self::makePHPDocUnionType('array<int|string>');
         $this->assertSame('int[]|string[]', (string)$union_type);
@@ -454,7 +454,7 @@ final class UnionTypeTest extends BaseTest
      *
      * @dataProvider unparseableUnionTypeProvider
      */
-    public function testUnparseableUnionType(string $type)
+    public function testUnparseableUnionType(string $type) : void
     {
         $this->assertNotRegExp(self::VALID_UNION_TYPE_REGEX, $type, "'$type' should be unparseable");
     }
@@ -485,48 +485,48 @@ final class UnionTypeTest extends BaseTest
         ];
     }
 
-    public function testComplexUnionType()
+    public function testComplexUnionType() : void
     {
         $union_type = self::makePHPDocUnionType('(int|string)|Closure():(int|stdClass)');
         $this->assertSame('Closure():(\stdClass|int)|int|string', (string)$union_type);
         $this->assertSame(3, $union_type->typeCount());
     }
 
-    public function testClosureInsideArrayShape()
+    public function testClosureInsideArrayShape() : void
     {
         $union_type = self::makePHPDocUnionType('array{key:Closure(int,string|int):void}');
         $this->assertSame('array{key:Closure(int,int|string):void}', (string)$union_type);
         $this->assertSame(1, $union_type->typeCount());
     }
 
-    public function testClosureInsideGenericArray()
+    public function testClosureInsideGenericArray() : void
     {
         $union_type = self::makePHPDocUnionType('array<int,Closure(int,string|int):void>');
         $this->assertSame('array<int,Closure(int,int|string):void>', (string)$union_type);
         $this->assertSame(1, $union_type->typeCount());
     }
 
-    public function testArrayShapeInsideClosure()
+    public function testArrayShapeInsideClosure() : void
     {
         $union_type = self::makePHPDocUnionType('Closure(array{key:int,other:string|int}):void');
         $this->assertSame('Closure(array{key:int,other:int|string}):void', (string)$union_type);
         $this->assertSame(1, $union_type->typeCount());
     }
 
-    public function testClosureInsideClosure()
+    public function testClosureInsideClosure() : void
     {
         $union_type = self::makePHPDocUnionType('Closure(int|bool,Closure(int,string|false):bool):void');
         $this->assertSame('Closure(bool|int,Closure(int,false|string):bool):void', (string)$union_type);
         $this->assertSame(1, $union_type->typeCount());
     }
 
-    public function testNullableBasicType()
+    public function testNullableBasicType() : void
     {
         $union_type = self::makePHPDocUnionType('?(int|string|float|false)');
         $this->assertSame('?false|?float|?int|?string', (string)$union_type);
     }
 
-    public function testNullableBasicArrayType()
+    public function testNullableBasicArrayType() : void
     {
         $union_type = self::makePHPDocUnionType('?(int|string)[]');
         $this->assertSame('?int[]|?string[]', (string)$union_type);
@@ -536,7 +536,7 @@ final class UnionTypeTest extends BaseTest
         $this->assertSame(2, $union_type->typeCount());
     }
 
-    public function testNullableArrayType()
+    public function testNullableArrayType() : void
     {
         $union_type = self::makePHPDocUnionType('?string[]');
         $this->assertSame(1, $union_type->typeCount());
@@ -547,7 +547,7 @@ final class UnionTypeTest extends BaseTest
         $this->assertSame(self::createGenericArrayTypeWithMixedKey(StringType::instance(false), true), $type);
     }
 
-    public function testNullableBracketedArrayType()
+    public function testNullableBracketedArrayType() : void
     {
         $union_type = self::makePHPDocUnionType('(?string)[]');
         $this->assertSame(1, $union_type->typeCount());
@@ -558,12 +558,12 @@ final class UnionTypeTest extends BaseTest
         $this->assertSame(self::createGenericArrayTypeWithMixedKey(StringType::instance(true), false), $type);
     }
 
-    public function testNullableBracketedArrayType2()
+    public function testNullableBracketedArrayType2() : void
     {
         $union_type = self::makePHPDocUnionType('(?string)[]|(int)[]');
         $this->assertSame(2, $union_type->typeCount());
         $types = $union_type->getTypeSet();
-        list($type1, $type2) = \array_values($types);
+        [$type1, $type2] = \array_values($types);
 
         $this->assertSame('(?string)[]', (string)$type1);
         $this->assertSame(self::createGenericArrayTypeWithMixedKey(StringType::instance(true), false), $type1);
@@ -572,12 +572,12 @@ final class UnionTypeTest extends BaseTest
         $this->assertSame(self::createGenericArrayTypeWithMixedKey(IntType::instance(false), false), $type2);
     }
 
-    public function testNullableBracketedArrayType3()
+    public function testNullableBracketedArrayType3() : void
     {
         $union_type = self::makePHPDocUnionType('?(string[])|?(int[])');
         $this->assertSame(2, $union_type->typeCount());
         $types = $union_type->getTypeSet();
-        list($type1, $type2) = \array_values($types);
+        [$type1, $type2] = \array_values($types);
 
         $this->assertSame('?string[]', (string)$type1);
         $this->assertSame(self::createGenericArrayTypeWithMixedKey(StringType::instance(false), true), $type1);
@@ -586,7 +586,7 @@ final class UnionTypeTest extends BaseTest
         $this->assertSame(self::createGenericArrayTypeWithMixedKey(IntType::instance(false), true), $type2);
     }
 
-    public function testNullableArrayOfNullables()
+    public function testNullableArrayOfNullables() : void
     {
         $union_type = self::makePHPDocUnionType('?(?string)[]');
         $this->assertSame(1, $union_type->typeCount());
@@ -597,7 +597,7 @@ final class UnionTypeTest extends BaseTest
         $this->assertSame(self::createGenericArrayTypeWithMixedKey(StringType::instance(true), true), $type);
     }
 
-    public function testNullableExtraBracket()
+    public function testNullableExtraBracket() : void
     {
         $union_type = self::makePHPDocUnionType('?(string[])');
         $this->assertSame(1, $union_type->typeCount());
@@ -608,7 +608,7 @@ final class UnionTypeTest extends BaseTest
         $this->assertSame(self::createGenericArrayTypeWithMixedKey(StringType::instance(false), true), $type);
     }
 
-    public function testUnionInArrayShape()
+    public function testUnionInArrayShape() : void
     {
         $union_type = self::makePHPDocUnionType('array{key:int|string[]}');
         $this->assertSame(1, $union_type->typeCount());
@@ -619,10 +619,10 @@ final class UnionTypeTest extends BaseTest
         $this->assertSame('array<string,int>|array<string,string[]>', (string)$union_type->withFlattenedArrayShapeOrLiteralTypeInstances());
         $this->assertInstanceOf(ArrayShapeType::class, $type);
         $field_union_type = $type->getFieldTypes()['key'];
-        $this->assertFalse($field_union_type->getIsPossiblyUndefined());
+        $this->assertFalse($field_union_type->isPossiblyUndefined());
     }
 
-    public function testFlattenEmptyArrayShape()
+    public function testFlattenEmptyArrayShape() : void
     {
         $union_type = self::makePHPDocUnionType('array{}|array<int,\stdClass>');
 
@@ -639,7 +639,7 @@ final class UnionTypeTest extends BaseTest
         $this->assertSame("'str'|2|array", (string)$empty_union_type_and_literals->withFlattenedArrayShapeTypeInstances());
     }
 
-    public function testOptionalInArrayShape()
+    public function testOptionalInArrayShape() : void
     {
         $union_type = self::makePHPDocUnionType('array{key:int|string=}');
         $this->assertSame(1, $union_type->typeCount());
@@ -650,9 +650,34 @@ final class UnionTypeTest extends BaseTest
         $this->assertInstanceOf(ArrayShapeType::class, $type);
         $this->assertSame('array<string,int>|array<string,string>', (string)$union_type->withFlattenedArrayShapeOrLiteralTypeInstances());
         $field_union_type = $type->getFieldTypes()['key'];
-        $this->assertTrue($field_union_type->getIsPossiblyUndefined());
+        $this->assertTrue($field_union_type->isPossiblyUndefined());
         $this->assertSame('int|string=', (string)$field_union_type);
         $this->assertSame([IntType::instance(false), StringType::instance(false)], $field_union_type->getTypeSet());
+    }
+
+    public function testSymbolInArrayShape() : void
+    {
+        $union_type = self::makePHPDocUnionType('array{key\x0a\\\\line\x3a:int}');
+        $this->assertSame(1, $union_type->typeCount());
+        $types = $union_type->getTypeSet();
+        $type = \reset($types);
+
+        $this->assertInstanceOf(ArrayShapeType::class, $type);
+        $this->assertSame(["key\n\\line:"], \array_keys($type->getFieldTypes()));
+        $this->assertSame('array{key\n\\\\line\x3a:int}', (string)$type);
+        $this->assertSame('array<string,int>', (string)$union_type->withFlattenedArrayShapeOrLiteralTypeInstances());
+        $field_union_type = $type->getFieldTypes()["key\n\\line:"];
+        $this->assertFalse($field_union_type->isPossiblyUndefined());
+        $this->assertSame('int', (string)$field_union_type);
+    }
+
+    public function testBackslashInArrayShape() : void
+    {
+        $union_type = self::makePHPDocUnionType('array{\n:0,\r:1,\t:2,\\\\:3}');
+        $this->assertSame('array{\n:0,\r:1,\t:2,\\\\:3}', (string)$union_type);
+        $type = $union_type->getTypeSet()[0];
+        $this->assertInstanceOf(ArrayShapeType::class, $type);
+        $this->assertSame(["\n", "\r", "\t", "\\"], \array_keys($type->getFieldTypes()));
     }
 
     private static function createGenericArrayTypeWithMixedKey(Type $type, bool $is_nullable) : GenericArrayType

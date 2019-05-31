@@ -113,10 +113,7 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
         ]));
     }
 
-    /**
-     * @return UnionType
-     */
-    public function visitBinaryCoalesce(Node $node)
+    public function visitBinaryCoalesce(Node $node) : UnionType
     {
         $var_node = $node->children['var'];
         $new_node = new ast\Node(ast\AST_BINARY_OP, $node->lineno, [
@@ -133,7 +130,7 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
     /**
      * @return UnionType for the `&` operator
      */
-    public function visitBinaryBitwiseAnd(Node $node)
+    public function visitBinaryBitwiseAnd(Node $node) : UnionType
     {
         $left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
@@ -161,7 +158,7 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
     /**
      * @return UnionType for the `|` operator
      */
-    public function visitBinaryBitwiseOr(Node $node)
+    public function visitBinaryBitwiseOr(Node $node) : UnionType
     {
         $left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
@@ -193,7 +190,7 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
      *
      * @return UnionType for the `^` operator
      */
-    public function visitBinaryBitwiseXor(Node $node)
+    public function visitBinaryBitwiseXor(Node $node) : UnionType
     {
         $left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,

@@ -1,1 +1,1 @@
-%s:12 PhanTypeMismatchReturn Returning type null|string but f() is declared to return int
+%s:12 PhanUndeclaredVariable Variable $c is undeclared

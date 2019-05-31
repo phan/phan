@@ -36,7 +36,7 @@ class Daemon
      *
      * @throws Exception if analysis fails unexpectedly
      */
-    public static function run(CodeBase $code_base, Closure $file_path_lister)
+    public static function run(CodeBase $code_base, Closure $file_path_lister) : ?Request
     {
         if (Config::getValue('language_server_use_pcntl_fallback')) {
             self::runWithoutPcntl($code_base, $file_path_lister);
@@ -60,13 +60,7 @@ class Daemon
             if (\function_exists('pcntl_signal')) {
                 \pcntl_signal(
                     \SIGCHLD,
-                    /**
-                     * @param int $signo
-                     * @param int|null $status
-                     * @param int|null $pid
-                     * @return void
-                     */
-                    static function ($signo, $status = null, $pid = null) use (&$got_signal) {
+                    static function (int $signo, ?int $status = null, ?int $pid = null) use (&$got_signal) : void {
                         $got_signal = true;
                         Request::childSignalHandler($signo, $status, $pid);
                     }
@@ -82,7 +76,7 @@ class Daemon
                  * @param int $line
                  * @return bool
                  */
-                $previous_error_handler = \set_error_handler(static function ($severity, $message, $file, $line) use (&$previous_error_handler) {
+                $previous_error_handler = \set_error_handler(static function (int $severity, string $message, string $file, int $line) use (&$previous_error_handler) : bool {
                     self::debugf("In new error handler '$message'");
                     if (!\preg_match('/stream_socket_accept/i', $message)) {
                         return $previous_error_handler($severity, $message, $file, $line);
@@ -131,23 +125,15 @@ class Daemon
      *
      * @throws Exception if analysis failed in an unexpected way
      */
-    private static function runWithoutPcntl(CodeBase $code_base, Closure $file_path_lister)
+    private static function runWithoutPcntl(CodeBase $code_base, Closure $file_path_lister) : void
     {
         // This is a single threaded server, it only analyzes one TCP request at a time
         $socket_server = self::createDaemonStreamSocketServer();
         try {
             while (true) {
-                $got_signal = false;  // reset this.
                 // We get an error from stream_socket_accept. After the RuntimeException is thrown, pcntl_signal is called.
                 $previous_error_handler = \set_error_handler(
-                    /**
-                     * @param int $severity
-                     * @param string $message
-                     * @param string $file
-                     * @param int $line
-                     * @return bool
-                     */
-                    static function ($severity, $message, $file, $line) use (&$previous_error_handler) {
+                    static function (int $severity, string $message, string $file, int $line) use (&$previous_error_handler) : bool {
                         self::debugf("In new error handler '$message'");
                         if (!\preg_match('/stream_socket_accept/i', $message)) {
                             return $previous_error_handler($severity, $message, $file, $line);
@@ -163,9 +149,6 @@ class Daemon
                     self::debugf("Got signal");
                     \pcntl_signal_dispatch();
                     self::debugf("done processing signals");
-                    if ($got_signal) {
-                        continue;  // Ignore notices from stream_socket_accept if it's due to being interrupted by a child process terminating.
-                    }
                 } finally {
                     \restore_error_handler();
                 }
@@ -201,7 +184,7 @@ class Daemon
      * @return void
      * @throws Exception if analysis throws
      */
-    private static function analyzeDaemonRequestOnMainThread(CodeBase $code_base, Request $request)
+    private static function analyzeDaemonRequestOnMainThread(CodeBase $code_base, Request $request) : void
     {
         $restore_point = $code_base->createRestorePoint();
 
@@ -258,9 +241,8 @@ class Daemon
      *
      * @param string $format - printf style format string @phan-unused-param
      * @param mixed ...$args - printf args @phan-unused-param
-     * @return void
      */
-    public static function debugf(string $format, ...$args)
+    public static function debugf(string $format, ...$args) : void
     {
         /*
         if (count($args) > 0) {

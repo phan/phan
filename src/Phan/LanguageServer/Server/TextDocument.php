@@ -89,7 +89,7 @@ class TextDocument
      * @return void
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
-    public function didOpen(TextDocumentItem $textDocument)
+    public function didOpen(TextDocumentItem $textDocument) : void
     {
         Logger::logInfo("Called textDocument/didOpen, uri={$textDocument->uri}");
         try {
@@ -119,7 +119,7 @@ class TextDocument
      * @return void
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
-    public function didSave(TextDocumentIdentifier $textDocument, string $text = null)
+    public function didSave(TextDocumentIdentifier $textDocument, string $text = null) : void
     {
         Logger::logInfo("Called textDocument/didSave, uri={$textDocument->uri} len(text)=" . \strlen($text ?? ''));
         try {
@@ -141,7 +141,7 @@ class TextDocument
      * @return void
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
-    public function didChange(VersionedTextDocumentIdentifier $textDocument, array $contentChanges)
+    public function didChange(VersionedTextDocumentIdentifier $textDocument, array $contentChanges) : void
     {
         foreach ($contentChanges as $change) {
             $this->file_mapping->addOverrideURI($textDocument->uri, $change->text);
@@ -164,7 +164,7 @@ class TextDocument
      * @return void
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
-    public function didClose(TextDocumentIdentifier $textDocument)
+    public function didClose(TextDocumentIdentifier $textDocument) : void
     {
         Logger::logInfo("Called textDocument/didClose, uri={$textDocument->uri}");
         try {
@@ -187,7 +187,7 @@ class TextDocument
      * @return ?Promise <Location|Location[]|null>
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
-    public function definition(TextDocumentIdentifier $textDocument, Position $position)
+    public function definition(TextDocumentIdentifier $textDocument, Position $position) : ?Promise
     {
         Logger::logInfo("Called textDocument/definition, uri={$textDocument->uri} position={$position->line}:{$position->character}");
         try {
@@ -208,7 +208,7 @@ class TextDocument
      * @return ?Promise <Location|Location[]|null>
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
-    public function typeDefinition(TextDocumentIdentifier $textDocument, Position $position)
+    public function typeDefinition(TextDocumentIdentifier $textDocument, Position $position) : ?Promise
     {
         Logger::logInfo("Called textDocument/typeDefinition, uri={$textDocument->uri} position={$position->line}:{$position->character}");
         try {
@@ -229,9 +229,8 @@ class TextDocument
      * @param TextDocumentIdentifier $textDocument @phan-unused-param
      * @param Position $position @phan-unused-param
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
-     * @return ?Promise
      */
-    public function hover(TextDocumentIdentifier $textDocument, Position $position)
+    public function hover(TextDocumentIdentifier $textDocument, Position $position) : ?Promise
     {
         // Some clients (e.g. emacs-lsp, the last time I checked)
         // don't respect the server's reported hover capability, and send this unconditionally.
@@ -261,7 +260,7 @@ class TextDocument
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      * @return ?Promise <CompletionItem[]|CompletionList>
      */
-    public function completion(TextDocumentIdentifier $textDocument, Position $position, CompletionContext $context = null)
+    public function completion(TextDocumentIdentifier $textDocument, Position $position, CompletionContext $context = null) : ?Promise
     {
         if (!Config::getValue('language_server_enable_completion')) {
             // Placeholder to avoid a performance degradation on clients

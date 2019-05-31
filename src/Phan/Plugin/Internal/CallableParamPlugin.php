@@ -14,9 +14,9 @@ use Phan\Language\Type;
 use Phan\Language\Type\CallableInterface;
 use Phan\Language\Type\ClassStringType;
 use Phan\Plugin\ConfigPluginSet;
-use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeFunctionCallCapability;
-use Phan\PluginV2\HandleLazyLoadInternalFunctionCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\AnalyzeFunctionCallCapability;
+use Phan\PluginV3\HandleLazyLoadInternalFunctionCapability;
 use function count;
 
 /**
@@ -25,7 +25,7 @@ use function count;
  * TODO: Analyze returning callables (function() : callable) for any callables that are returned as literals?
  * This would be difficult.
  */
-final class CallableParamPlugin extends PluginV2 implements
+final class CallableParamPlugin extends PluginV3 implements
     AnalyzeFunctionCallCapability,
     HandleLazyLoadInternalFunctionCapability
 {
@@ -46,7 +46,7 @@ final class CallableParamPlugin extends PluginV2 implements
         /**
          * @param array<int,Node|int|float|string> $args
          */
-        $closure = static function (CodeBase $code_base, Context $context, FunctionInterface $function, array $args) use ($callable_params, $class_params) {
+        $closure = static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($callable_params, $class_params) : void {
             // TODO: Implement support for variadic callable arguments.
             foreach ($callable_params as $i) {
                 $arg = $args[$i] ?? null;
@@ -54,7 +54,8 @@ final class CallableParamPlugin extends PluginV2 implements
                     continue;
                 }
 
-                // Fetch possible functions. As an intentional side effect, this warns about invalid callables.
+                // Fetch possible functions for the provided callable argument.
+                // As an intentional side effect, this warns about invalid callables.
                 // TODO: Check if the signature allows non-array callables? Not sure of desired semantics.
                 $function_like_list = UnionTypeVisitor::functionLikeListFromNodeAndContext($code_base, $context, $arg, true);
                 if (count($function_like_list) === 0) {
@@ -97,7 +98,7 @@ final class CallableParamPlugin extends PluginV2 implements
     /**
      * @return ?Closure(CodeBase,Context,FunctionInterface,array):void
      */
-    private static function generateClosureForFunctionInterface(FunctionInterface $function)
+    private static function generateClosureForFunctionInterface(FunctionInterface $function) : ?Closure
     {
         $callable_params = [];
         $class_params = [];
@@ -129,10 +130,10 @@ final class CallableParamPlugin extends PluginV2 implements
      * @return array<string,\Closure>
      * @phan-return array<string,Closure(CodeBase,Context,FunctionInterface,array):void>
      */
-    private function getAnalyzeFunctionCallClosuresStatic(CodeBase $code_base) : array
+    private static function getAnalyzeFunctionCallClosuresStatic(CodeBase $code_base) : array
     {
         $result = [];
-        $add_callable_checker_closure = static function (FunctionInterface $function) use (&$result) {
+        $add_callable_checker_closure = static function (FunctionInterface $function) use (&$result) : void {
             // Generate a de-duplicated closure.
             // fqsen can be global_function or ClassName::method
             $closure = self::generateClosureForFunctionInterface($function);
@@ -141,14 +142,14 @@ final class CallableParamPlugin extends PluginV2 implements
             }
         };
 
-        $add_another_closure = static function (string $fqsen, Closure $closure) use (&$result) {
+        $add_another_closure = static function (string $fqsen, Closure $closure) use (&$result) : void {
             $result[$fqsen] = ConfigPluginSet::mergeAnalyzeFunctionCallClosures(
                 $closure,
                 $result[$fqsen] ?? null
             );
         };
 
-        $add_misc_closures = static function (FunctionInterface $function) use ($add_callable_checker_closure, $add_another_closure, $code_base) {
+        $add_misc_closures = static function (FunctionInterface $function) use ($add_callable_checker_closure, $add_another_closure, $code_base) : void {
             $add_callable_checker_closure($function);
             // @phan-suppress-next-line PhanAccessMethodInternal
             $closure = $function->getCommentParamAssertionClosure($code_base);
@@ -191,7 +192,7 @@ final class CallableParamPlugin extends PluginV2 implements
     public function handleLazyLoadInternalFunction(
         CodeBase $unused_code_base,
         Func $function
-    ) {
+    ) : void {
         $closure = self::generateClosureForFunctionInterface($function);
         if ($closure) {
             $function->addFunctionCallAnalyzer($closure);

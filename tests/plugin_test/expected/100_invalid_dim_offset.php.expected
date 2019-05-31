@@ -1,3 +1,4 @@
+src/100_invalid_dim_offset.php:3 PhanUnreferencedClass Possibly zero references to class \AbuseFilterHooks
 src/100_invalid_dim_offset.php:9 PhanUnusedPrivateMethodParameter Parameter $enabled is never used
 src/100_invalid_dim_offset.php:18 PhanUnreferencedFunction Possibly zero references to function \example_inner()
 src/100_invalid_dim_offset.php:24 PhanUnreferencedClosure Possibly zero references to Closure()

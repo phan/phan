@@ -15,7 +15,7 @@ class B307 implements ArrayAccess, Serializable {
     /**
      * @param string $offset (Part of the phpdoc can be specified, but any remaining fields will be inferred
      */
-	public function offsetExists($offset) { }  // Should warn about having no return value. It knows the expected return value from ArrayAccess
+    public function offsetExists($offset) { }  // Should warn about having no return value. It knows the expected return value from ArrayAccess
     /**
      * @param string $offset
      */

@@ -3,6 +3,7 @@
 namespace Phan\Tests;
 
 use Phan\Config;
+use Phan\Plugin\ConfigPluginSet;
 
 /**
  * Unit tests of Phan analysis targeting PHP 7.4 codebases.
@@ -12,15 +13,17 @@ final class PHP74Test extends AbstractPhanFileTest
 {
     const OVERRIDES = [
         'allow_method_param_type_widening' => true,
+        'unused_variable_detection' => true,  // for use with tests of arrow functions
         'target_php_version' => '7.4',
     ];
 
-    public function setUp()
+    public static function setUpBeforeClass() : void
     {
-        parent::setUp();
+        parent::setUpBeforeClass();
         foreach (self::OVERRIDES as $key => $value) {
             Config::setValue($key, $value);
         }
+        ConfigPluginSet::reset();  // @phan-suppress-current-line PhanAccessMethodInternal
     }
 
     /**
@@ -35,7 +38,7 @@ final class PHP74Test extends AbstractPhanFileTest
      * @dataProvider getTestFiles
      * @override
      */
-    public function testFiles($test_file_list, $expected_file_path, $config_file_path = null)
+    public function testFiles(array $test_file_list, string $expected_file_path, ?string $config_file_path = null) : void
     {
         $skip_reason = null;
         // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
@@ -53,8 +56,8 @@ final class PHP74Test extends AbstractPhanFileTest
     /**
      * @suppress PhanUndeclaredConstant
      */
-    public function getTestFiles()
+    public function getTestFiles() : array
     {
-        return $this->scanSourceFilesDir(PHP74_TEST_FILE_DIR, PHP74_EXPECTED_DIR);
+        return $this->scanSourceFilesDir(\PHP74_TEST_FILE_DIR, \PHP74_EXPECTED_DIR);
     }
 }

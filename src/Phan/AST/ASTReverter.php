@@ -42,27 +42,67 @@ class ASTReverter
      * This does not work for all node kinds, and may be ambiguous.
      *
      * @param Node|string|int|float|bool|null $node
-     * @return string
      */
-    public static function toShortString($node)
+    public static function toShortString($node) : string
     {
         if (!($node instanceof Node)) {
             if ($node === null) {
                 // use lowercase 'null' instead of 'NULL'
                 return 'null';
             }
-            // TODO: One-line representations for strings, minimal representations for floats, etc.
+            if (\is_string($node)) {
+                return self::escapeString($node);
+            }
+            // TODO: minimal representations for floats, arrays, etc.
             return \var_export($node, true);
         }
         return (self::$closure_map[$node->kind] ?? self::$noop)($node);
     }
 
     /**
-     * Static initializer.
+     * Escapes the inner contents to be suitable for a single-line single or double quoted string
      *
-     * @return void
+     * @see https://github.com/nikic/PHP-Parser/tree/master/lib/PhpParser/PrettyPrinter/Standard.php
      */
-    public static function init()
+    public static function escapeString(string $string) : string
+    {
+        if (\preg_match('/([\0-\15\16-\37])/', $string)) {
+            // Use double quoted strings if this contains newlines, tabs, control characters, etc.
+            return '"' . self::escapeInnerString($string, '"') . '"';
+        }
+        // Otherwise, use single quotes
+        return \var_export($string, true);
+    }
+
+    /**
+     * Escapes the inner contents to be suitable for a single-line double quoted string
+     *
+     * @see https://github.com/nikic/PHP-Parser/tree/master/lib/PhpParser/PrettyPrinter/Standard.php
+     */
+    public static function escapeInnerString(string $string, string $quote = null) : string
+    {
+        if (null === $quote) {
+            // For doc strings, don't escape newlines
+            $escaped = \addcslashes($string, "\t\f\v$\\");
+        } else {
+            $escaped = \addcslashes($string, "\n\r\t\f\v$" . $quote . "\\");
+        }
+
+        // Escape other control characters
+        return \preg_replace_callback('/([\0-\10\16-\37])(?=([0-7]?))/', /** @param array<int,string> $matches */ static function (array $matches) : string {
+            $oct = \decoct(\ord($matches[1]));
+            if ($matches[2] !== '') {
+                // If there is a trailing digit, use the full three character form
+                return '\\' . \str_pad($oct, 3, '0', \STR_PAD_LEFT);
+            }
+            return '\\' . $oct;
+        }, $escaped);
+    }
+
+    /**
+     * Static initializer.
+     */
+    public static function init() : void
     {
         self::$noop = static function (Node $_) : string {
             return '(unknown)';
@@ -71,12 +111,24 @@ class ASTReverter
             ast\AST_CLASS_CONST => static function (Node $node) : string {
                 return self::toShortString($node->children['class']) . '::' . $node->children['const'];
             },
+            ast\AST_CLASS_NAME => static function (Node $node) : string {
+                return self::toShortString($node->children['class']) . '::class';
+            },
             ast\AST_CONST => static function (Node $node) : string {
                 return self::toShortString($node->children['name']);
             },
             ast\AST_VAR => static function (Node $node) : string {
                 $name_node = $node->children['name'];
                 return '$' . (is_string($name_node) ? $name_node : ('{' . self::toShortString($name_node) . '}'));
+            },
+            ast\AST_DIM => static function (Node $node) : string {
+                $expr_str = self::toShortString($node->children['expr']);
+                if ($expr_str === '(unknown)') {
+                    return  '(unknown)';
+                }
+
+                $dim_str = self::toShortString($node->children['dim']);
+                return "${expr_str}[${dim_str}]";
             },
             ast\AST_NAME => static function (Node $node) : string {
                 $result = $node->children['name'];
@@ -121,6 +173,18 @@ class ASTReverter
                     PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$node->flags] ?? ' unknown ',
                     self::toShortString($node->children['right'])
                 );
+            },
+            ast\AST_UNARY_OP => static function (Node $node) : string {
+                $operation_name = PostOrderAnalysisVisitor::NAME_FOR_UNARY_OP[$node->flags] ?? null;
+                if (!$operation_name) {
+                    return '(unknown)';
+                }
+                $expr = $node->children['expr'];
+                $expr_text = self::toShortString($expr);
+                if (($expr->kind ?? null) !== ast\AST_UNARY_OP) {
+                    return $operation_name . $expr_text;
+                }
+                return \sprintf("%s(%s)", $operation_name, $expr_text);
             },
             ast\AST_PROP => static function (Node $node) : string {
                 $prop_node = $node->children['prop'];

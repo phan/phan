@@ -75,9 +75,6 @@ class GlobalScope extends Scope
         return \array_key_exists($name, self::$global_variable_map);
     }
 
-    /**
-     * @return Variable
-     */
     public function getVariableByName(string $name) : Variable
     {
         return self::$global_variable_map[$name];
@@ -95,8 +92,6 @@ class GlobalScope extends Scope
     /**
      * @param Variable $variable
      * A variable to add to the local scope
-     *
-     * @return Scope
      */
     public function withVariable(Variable $variable) : Scope
     {
@@ -104,10 +99,7 @@ class GlobalScope extends Scope
         return $this;
     }
 
-    /**
-     * @return void
-     */
-    public function addVariable(Variable $variable)
+    public function addVariable(Variable $variable) : void
     {
         $variable_name = $variable->getName();
         if (Variable::isHardcodedGlobalVariableWithName($variable_name)) {
@@ -122,10 +114,8 @@ class GlobalScope extends Scope
     /**
      * @param Variable $variable
      * A variable to add to the set of global variables
-     *
-     * @return void
      */
-    public function addGlobalVariable(Variable $variable)
+    public function addGlobalVariable(Variable $variable) : void
     {
         $this->addVariable($variable);
     }
@@ -178,8 +168,9 @@ class GlobalScope extends Scope
 
     /**
      * @return null
+     * @suppress PhanTypeMismatchDeclaredReturnNullable
      */
-    public function getClassFQSENOrNull()
+    public function getClassFQSENOrNull() : ?FullyQualifiedClassName
     {
         return null;
     }

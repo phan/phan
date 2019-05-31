@@ -7,17 +7,7 @@ namespace Phan\PluginV2;
 /**
  * For plugins which define their own post-order analysis behaviors in the analysis phase.
  * Called on a node after PluginAwarePreAnalysisVisitor implementations.
- *
- * - visit<VisitSuffix>(...) (Override these methods)
- * - emitPluginIssue(CodeBase $code_base, Config $config, ...) (Call these methods)
- * - emit(...)
- * - Public methods from Phan\AST\AnalysisVisitor
- *
- * NOTE: Subclasses should not implement the visit() method unless they absolutely need to.
- * (E.g. if the body would be empty, or if it could be replaced with a few methods such as visitFuncDecl, visitVar, etc. that are more specific)
- *
- * - Phan is able to figure out which methods a subclass implements, and only call the plugin's visitor for those types,
- *   but only when the plugin's visitor does not override the fallback visit() method.
+ * @deprecated use PluginV3
  */
 abstract class PluginAwarePostAnalysisVisitor extends PluginAwareBaseAnalysisVisitor
 {

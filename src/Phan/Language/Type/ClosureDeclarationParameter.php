@@ -3,8 +3,8 @@
 namespace Phan\Language\Type;
 
 use Phan\CodeBase;
+use Phan\Language\Context;
 use Phan\Language\Element\Parameter;
-use Phan\Language\FileRef;
 use Phan\Language\UnionType;
 
 /**
@@ -152,7 +152,7 @@ final class ClosureDeclarationParameter
             $flags |= \ast\flags\PARAM_REF;
         }
         $result = Parameter::create(
-            (new FileRef())->withFile('phpdoc'),
+            (new Context())->withFile('phpdoc'),
             "p$i",
             $this->type,
             $flags
@@ -177,7 +177,7 @@ final class ClosureDeclarationParameter
             $flags |= \ast\flags\PARAM_REF;
         }
         $result = Parameter::create(
-            (new FileRef())->withFile('phpdoc'),
+            (new Context())->withFile('phpdoc'),
             "p$i",
             $this->type,
             $flags
