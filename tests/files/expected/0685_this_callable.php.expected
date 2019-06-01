@@ -1,8 +1,11 @@
-%s:14 PhanTypeMismatchArgument Argument 1 (arg) is 'invalid' but \Invokable685::__invoke() takes int defined at %s:4
-%s:16 PhanTypeMismatchArgument Argument 1 (arg) is 'invalid' but \Invokable685::__invoke() takes int defined at %s:4
-%s:20 PhanParamTooFewCallable Call with 0 arg(s) to \Invokable685::dynamic() (as a provided callable) which requires 1 arg(s) defined at %s:8
-%s:21 PhanUndeclaredMethodInCallable Call to undeclared method missing in callable. Possible object type(s) for that method are static
-%s:22 PhanParamTooFewCallable Call with 0 arg(s) to \Invokable685::dynamic() (as a provided callable) which requires 1 arg(s) defined at %s:8
-%s:23 PhanUndeclaredMethodInCallable Call to undeclared method missing in callable. Possible object type(s) for that method are \Invokable685
-%s:24 PhanParamTooFewCallable Call with 0 arg(s) to \Invokable685::dynamic() (as a provided callable) which requires 1 arg(s) defined at %s:8
-%s:30 PhanParamTooFew Call with 0 arg(s) to \Invokable685::dynamic() which requires 1 arg(s) defined at %s:8
+%s:16 PhanParamTooFew Call with 0 arg(s) to \Invokable685::__construct() which requires 1 arg(s) defined at %s:4
+%s:17 PhanTypeMismatchArgument Argument 1 (arg) is 'invalid' but \Invokable685::__invoke() takes int defined at %s:7
+%s:19 PhanTypeMismatchArgument Argument 1 (arg) is 'invalid' but \Invokable685::__invoke() takes int defined at %s:7
+%s:23 PhanParamTooFewCallable Call with 0 arg(s) to \Invokable685::dynamic() (as a provided callable) which requires 1 arg(s) defined at %s:11
+%s:24 PhanUndeclaredMethodInCallable Call to undeclared method missing in callable. Possible object type(s) for that method are static
+%s:25 PhanParamTooFewCallable Call with 0 arg(s) to \Invokable685::dynamic() (as a provided callable) which requires 1 arg(s) defined at %s:11
+%s:26 PhanUndeclaredMethodInCallable Call to undeclared method missing in callable. Possible object type(s) for that method are \Invokable685
+%s:27 PhanParamTooFewCallable Call with 0 arg(s) to \Invokable685::dynamic() (as a provided callable) which requires 1 arg(s) defined at %s:11
+%s:33 PhanParamTooFew Call with 0 arg(s) to \Invokable685::dynamic() which requires 1 arg(s) defined at %s:11
+%s:37 PhanParamTooFew Call with 0 arg(s) to \Invokable685::__construct() which requires 1 arg(s) defined at %s:4
+%s:38 PhanTypeMismatchArgument Argument 1 (o) is null but \Invokable685::dynamic() takes \stdClass defined at %s:11

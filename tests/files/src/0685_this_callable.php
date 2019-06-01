@@ -1,6 +1,9 @@
 <?php
 
 class Invokable685 {
+    public function __construct(array $values) {
+    }
+
     public function __invoke(int $arg) {
         echo "__invoke $arg\n";
     }
@@ -28,5 +31,10 @@ class Invokable685 {
         // should warn
         $cb = Closure::fromCallable([$this, 'dynamic']);
         $cb();
+    }
+
+    public function testConstructor() {
+        $a = new $this();
+        $a->dynamic(null);
     }
 }
