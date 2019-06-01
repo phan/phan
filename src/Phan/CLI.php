@@ -77,6 +77,7 @@ class CLI
         'automatic-fix',
         'backward-compatibility-checks',
         'color',
+        'color-scheme:',
         'config-file:',
         'constant-variable-detection',
         'daemonize-socket:',
@@ -239,7 +240,7 @@ class CLI
 
         foreach ($argv as $arg) {
             if ($arg[0] == '-') {
-                throw new UsageException("Unknown option '$arg'" . self::getFlagSuggestionString(preg_replace('@(=.*$)|(^-+)@', '', $arg)), EXIT_FAILURE);
+                throw new UsageException("Unknown option '$arg'" . self::getFlagSuggestionString(\preg_replace('@(=.*$)|(^-+)@', '', $arg)), EXIT_FAILURE);
             }
         }
     }
@@ -727,6 +728,7 @@ class CLI
                 case 'markdown-issue-messages':
                     Config::setValue('markdown_issue_messages', true);
                     break;
+                case 'color-scheme':
                 case 'C':
                 case 'color':
                 case 'no-color':
@@ -788,6 +790,9 @@ class CLI
      */
     private static function detectAndConfigureColorSupport(array $opts) : void
     {
+        if (is_string($opts['color-scheme'] ?? false)) {
+            \putenv('PHAN_COLOR_SCHEME=' . $opts['color-scheme']);
+        }
         if (isset($opts['C']) || isset($opts['color'])) {
             Config::setValue('color_issue_messages', true);
         } elseif (isset($opts['no-color'])) {
@@ -1063,6 +1068,9 @@ $init_help
  -C, --color, --no-color
   Add colors to the outputted issues.
   This is recommended for only the default --output-mode ('text')
+
+  [--color-scheme={default,eclipse_dark,vim}]
+    This (or the environment variable PHAN_COLOR_SCHEME) can be used to set the color scheme for emitted issues.
 
  -p, --progress-bar
   Show progress bar

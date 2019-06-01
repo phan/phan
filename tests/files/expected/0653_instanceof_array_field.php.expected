@@ -1,5 +1,5 @@
 %s:10 PhanUndeclaredMethod Call to undeclared method \ArrayAccess::someMethod
-%s:13 PhanTypeMismatchArgumentInternal Argument 1 (string) is object but \strlen() takes string
+%s:13 PhanTypeMismatchArgumentInternal Argument 1 ($string) is object but \strlen() takes string
 %s:22 PhanNonClassMethodCall Call to method count on non-class type null
 %s:22 PhanTypeInvalidDimOffset Invalid offset "field" of array type array{0:\Countable}
 %s:25 PhanUndeclaredMethod Call to undeclared method \stdClass::count
