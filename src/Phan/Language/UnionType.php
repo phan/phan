@@ -826,21 +826,24 @@ class UnionType implements Serializable
             $context = $context->withScope(new class($function->getClassFQSEN()) extends Scope {
                 /** @var FullyQualifiedClassName the name being resolved */
                 private $class_fqsen;
-                public function __construct(FullyQualifiedClassName $fqsen) {
+                public function __construct(FullyQualifiedClassName $fqsen)
+                {
                     $this->class_fqsen = $fqsen;
                 }
 
                 /**
                  * @override
                  */
-                public function isInClassScope() : bool {
+                public function isInClassScope() : bool
+                {
                     return true;
                 }
 
                 /**
                  * @override
                  */
-                public function getClassFQSEN() : FullyQualifiedClassName {
+                public function getClassFQSEN() : FullyQualifiedClassName
+                {
                     return $this->class_fqsen;
                 }
             });

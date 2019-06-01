@@ -644,11 +644,16 @@ class Config
         // Enable this to emit issue messages with markdown formatting.
         'markdown_issue_messages' => false,
 
-        // Emit colorized issue messages (true by default with the 'text' output mode to supported terminals).
-        // NOTE: it is strongly recommended to enable this via the `--color` CLI flag instead,
+        // Enable this to automatically use colorized phan output for the 'text' output format if the terminal supports it.
+        // Alternately, set PHAN_ENABLE_COLOR_OUTPUT=1.
+        // This config setting can be overridden with PHAN_DISABLE_COLOR_OUTPUT=1.
+        'color_issue_messages_if_supported' => false,
+
+        // Emit colorized issue messages for the 'text' output mode (false by default with the 'text' output mode to supported terminals).
+        // NOTE: it is strongly recommended to enable this via other methods,
         // since this is incompatible with most output formatters.
         //
-        // This can be disabled by setting PHAN_DISABLE_COLOR_OUTPUT=1 or passing `--no-color`
+        // This can be enabled by setting PHAN_ENABLE_COLOR_OUTPUT=1 or passing `--color` or by setting `color_issue_messages_if_supported`
         'color_issue_messages' => null,
 
         // Allow overriding color scheme in `.phan/config.php` for printing issues, for individual types.

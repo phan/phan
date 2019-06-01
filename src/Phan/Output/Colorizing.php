@@ -169,10 +169,18 @@ class Colorizing
             \error_log("Invalid color name ($color) for template type $template_type");
             return $arg_str;
         }
+        return self::colorizeTextWithColorCode($color_code, $arg_str);
+    }
+
+    /**
+     * Wrap this section of text in the specified color.
+     */
+    public static function colorizeTextWithColorCode(string $color_code, string $text) : string
+    {
         if ($color_code == '0') {
-            return $arg_str;
+            return $text;
         }
-        return \sprintf(self::ESC_PATTERN, $color_code) . ((string) $arg) . self::ESC_RESET;
+        return \sprintf(self::ESC_PATTERN, $color_code) . $text . self::ESC_RESET;
     }
 
     /**
