@@ -33,5 +33,18 @@ class X681 implements ArrayAccess {
     public function testGetSet() {
         $this['field'] = 'X';
         var_export($this['otherField']);
+        unset($this['myField']);
+    }
+}
+
+class Y681 {
+    public function testSetInvalid() {
+        $this['field'] = 'X';
+    }
+    public function testGetInvalid() {
+        var_export($this['otherField']);
+    }
+    public function testUnsetInvalid() {
+        unset($this['myField']);
     }
 }
