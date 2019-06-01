@@ -891,7 +891,7 @@ class ContextNode
         $code_base = $this->code_base;
         $context = $this->context;
         $expression = $this->node;
-        $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $expression);
+        $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $expression)->withStaticResolvedInContext($context);
         if ($union_type->isEmpty()) {
             return;
         }
