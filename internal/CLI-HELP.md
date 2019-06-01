@@ -12,7 +12,7 @@ Usage: ./phan [options] [files...]
   Thus, both first-party and third-party code being used by
   your application should be included in this list.
 
-  You may include multiple `--directory DIR` options.
+  You may include multiple `--directory <directory>` options.
 
  --exclude-file <file>
   A file that should not be parsed or analyzed (or read
@@ -23,7 +23,7 @@ Usage: ./phan [options] [files...]
   A comma-separated list of directories that defines files
   that will be excluded from static analysis, but whose
   class and method information should be included.
-  (can be repeated, ignored if --include-analysis-directory-list is used)
+  (can be repeated, ignored if --include-analysis-file-list is used)
 
   Generally, you'll want to include the directories for
   third-party code (such as "vendor/") in this list.
@@ -69,10 +69,10 @@ Usage: ./phan [options] [files...]
   and you may end up with a large number of issues to be manually suppressed.
   See https://github.com/phan/phan/wiki/Tutorial-for-Analyzing-a-Large-Sloppy-Code-Base
 
-  [--init-level] affects the generated settings in `.phan/config.php`
+  [--init-level <level>] affects the generated settings in `.phan/config.php`
     (e.g. null_casts_as_array).
     `--init-level` can be set to 1 (strictest) to 5 (least strict)
-  [--init-analyze-dir] can be used as a relative path alongside directories
+  [--init-analyze-dir <dir>] can be used as a relative path alongside directories
     that Phan infers from composer.json's "autoload" settings
   [--init-analyze-file] can be used as a relative path alongside files
     that Phan infers from composer.json's "bin" settings
@@ -107,7 +107,7 @@ Usage: ./phan [options] [files...]
  -i, --ignore-undeclared
   Ignore undeclared functions and classes
 
- -y, --minimum-severity <level in {0,5,10}>
+ -y, --minimum-severity <level>
   Minimum severity level (low=0, normal=5, critical=10) to report.
   Defaults to 0.
 
@@ -193,14 +193,14 @@ Usage: ./phan [options] [files...]
  -s, --daemonize-socket </path/to/file.sock>
   Unix socket for Phan to listen for requests on, in daemon mode.
 
- --daemonize-tcp-host
+ --daemonize-tcp-host <hostname>
   TCP hostname for Phan to listen for JSON requests on, in daemon mode.
-  (e.g. 'default', which is an alias for host 127.0.0.1, or `0.0.0.0` for
+  (e.g. `default`, which is an alias for host `127.0.0.1`, or `0.0.0.0` for
   usage with Docker). `phan_client` can be used to communicate with the Phan Daemon.
 
  --daemonize-tcp-port <default|1024-65535>
   TCP port for Phan to listen for JSON requests on, in daemon mode.
-  (e.g. 'default', which is an alias for port 4846.)
+  (e.g. `default`, which is an alias for port 4846.)
   `phan_client` can be used to communicate with the Phan Daemon.
 
  -v, --version
@@ -231,9 +231,9 @@ Extended help:
   NOTE: This is a work in progress and limited to a small subset of issues
   (e.g. unused imports on their own line)
 
- --find-signature 'paramUnionType1->paramUnionType2->returnUnionType'
+ --find-signature <paramUnionType1->paramUnionType2->returnUnionType>
   Find a signature in the analyzed codebase that is similar to the argument.
-  See tool/phoogle for examples.
+  See `tool/phoogle` for examples.
 
  --memory-limit <memory_limit>
   Sets the memory limit for analysis (per process).
