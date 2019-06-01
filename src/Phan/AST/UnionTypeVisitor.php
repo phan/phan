@@ -643,7 +643,8 @@ class UnionTypeVisitor extends AnalysisVisitor
     public static function unionTypeFromLiteralOrConstant(CodeBase $code_base, Context $context, $node) : ?UnionType
     {
         if ($node instanceof Node) {
-            // TODO: Could check for arrays of constants or literals, and convert those to the generic array types
+            // TODO: There are a lot more types of expressions that have known union types that this doesn't handle.
+            // Maybe callers should call something else if this fails (e.g. it's useful for them to know if an expression becomes a string)
             if (\in_array($node->kind, [\ast\AST_CONST, \ast\AST_CLASS_CONST, \ast\AST_CLASS_NAME], true)) {
                 try {
                     return UnionTypeVisitor::unionTypeFromNode($code_base, $context, $node, false);
@@ -651,7 +652,12 @@ class UnionTypeVisitor extends AnalysisVisitor
                     return null;
                 }
             }
-            return null;
+            $result = (new ContextNode($code_base, $context, $node))->getEquivalentPHPValue();
+
+            if ($result instanceof Node) {
+                return null;
+            }
+            return Type::fromObjectExtended($result)->asUnionType();
         }
         // Otherwise, this is an int/float/string.
         if (!is_scalar($node)) {

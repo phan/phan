@@ -8,6 +8,8 @@ New features(CLI, Configs):
   This can be disabled by setting `PHAN_DISABLE_COLOR_OUTPUT=1` or by passing the flag `--no-color`.
 
 New features(Analysis):
++ Support unary and binary expressions on literals/constants in conditions. (#2812)
+  (e.g. `assert($x === -(1))` and `assert($x === 2+2)` now infer that $x is -1 and 4, respectively)
 + Infer that static variables with no default are `null`.
 + Improve control flow analysis of unconditionally true/false branches.
 + Improve analysis of some ways to initialize groups of static variables.
