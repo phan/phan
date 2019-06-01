@@ -111,6 +111,7 @@ class ConfigEntry
         'globals_type_map' => self::CATEGORY_ANALYSIS,
         'markdown_issue_messages' => self::CATEGORY_HIDDEN_CLI_ONLY, // self::CATEGORY_OUTPUT,
         'color_issue_messages' => self::CATEGORY_HIDDEN_CLI_ONLY, // self::CATEGORY_OUTPUT,
+        'color_issue_messages_if_supported' => self::CATEGORY_OUTPUT,
         'color_scheme' => self::CATEGORY_OUTPUT,
         'generic_types_enabled' => self::CATEGORY_ANALYSIS,
         'randomize_file_order' => self::CATEGORY_HIDDEN_CLI_ONLY,

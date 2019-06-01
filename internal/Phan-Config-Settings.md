@@ -806,6 +806,14 @@ Note: This does not affect warnings about redundant uses in the global namespace
 These settings will affect how the issues that Phan detects will be output,
 as well as how Phan will warn about being misconfigured.
 
+## color_issue_messages_if_supported
+
+Enable this to automatically use colorized phan output for the 'text' output format if the terminal supports it.
+Alternately, set PHAN_ENABLE_COLOR_OUTPUT=1.
+This config setting can be overridden with PHAN_DISABLE_COLOR_OUTPUT=1.
+
+(Default: `false`)
+
 ## color_scheme
 
 Allow overriding color scheme in `.phan/config.php` for printing issues, for individual types.

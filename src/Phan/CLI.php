@@ -300,11 +300,11 @@ class CLI
         self::detectAndConfigureColorSupport($opts);
 
         if (\array_key_exists('extended-help', $opts)) {
-            throw new UsageException('', EXIT_SUCCESS, true);  // --help prints help and calls exit(0)
+            throw new UsageException('', EXIT_SUCCESS, true);  // --extended-help prints help and calls exit(0)
         }
 
         if (\array_key_exists('h', $opts) || \array_key_exists('help', $opts)) {
-            throw new UsageException();  // --help prints help and calls exit(0)
+            throw new UsageException('', EXIT_SUCCESS);  // --help prints help and calls exit(0)
         }
         if (\array_key_exists('help-annotations', $opts)) {
             $result = "See https://github.com/phan/phan/wiki/Annotating-Your-Source-Code for more details." . \PHP_EOL . \PHP_EOL;
@@ -340,11 +340,8 @@ class CLI
         Config::setProjectRootDirectory($cwd);
 
         if (\array_key_exists('init', $opts)) {
-            $exit_code = Initializer::initPhanConfig($opts);
-            if ($exit_code === 0) {
-                exit($exit_code);
-            }
-            throw new UsageException('', $exit_code);
+            Initializer::initPhanConfig($opts);
+            exit(EXIT_SUCCESS);
         }
 
         // Before reading the config, check for an override on
@@ -1176,12 +1173,12 @@ $init_help
 
  --daemonize-tcp-host <hostname>
   TCP hostname for Phan to listen for JSON requests on, in daemon mode.
-  (e.g. 'default', which is an alias for host 127.0.0.1, or `0.0.0.0` for
+  (e.g. `default`, which is an alias for host `127.0.0.1`, or `0.0.0.0` for
   usage with Docker). `phan_client` can be used to communicate with the Phan Daemon.
 
  --daemonize-tcp-port <default|1024-65535>
   TCP port for Phan to listen for JSON requests on, in daemon mode.
-  (e.g. 'default', which is an alias for port 4846.)
+  (e.g. `default`, which is an alias for port 4846.)
   `phan_client` can be used to communicate with the Phan Daemon.
 
  -v, --version
@@ -1349,6 +1346,7 @@ EOB
             return Colorizing::colorizeTextWithColorCode(Colorizing::STYLES['yellow'], $cli_flag);
         };
         $section = \preg_replace_callback('@<\S+>|\{\S+\}@', $colorize_opt_cb, $section);
+        $section = \preg_replace('@^ERROR:@', Colorizing::colorizeTextWithColorCode(Colorizing::STYLES['light_red'], '\0'), $section);
         return $section;
     }
 
