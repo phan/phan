@@ -1,1 +1,1 @@
-src/104_array_map.php:3 PhanTypeMismatchArgumentInternal Argument 1 (var) is string but \count() takes \Countable|array
+src/104_array_map.php:3 PhanTypeMismatchArgumentInternal Argument 1 ($var) is string but \count() takes \Countable|array

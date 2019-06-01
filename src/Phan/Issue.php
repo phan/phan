@@ -1180,7 +1180,7 @@ class Issue
                 self::TypeMismatchDefault,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Default value for {TYPE} \${VARIABLE} can't be {TYPE}",
+                "Default value for {TYPE} \${PARAMETER} can't be {TYPE}",
                 self::REMEDIATION_B,
                 10002
             ),
@@ -1196,7 +1196,7 @@ class Issue
                 self::TypeMismatchVariadicParam,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_LOW,
-                "{PARAMETER} is not variadic in comment, but variadic in param ({PARAMETER})",
+                '{PARAMETER} is not variadic in comment, but variadic in param ({PARAMETER})',
                 self::REMEDIATION_B,
                 10023
             ),
@@ -1204,7 +1204,7 @@ class Issue
                 self::TypeMismatchArgument,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} defined at {FILE}:{LINE}",
+                'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} defined at {FILE}:{LINE}',
                 self::REMEDIATION_B,
                 10003
             ),
@@ -1212,7 +1212,7 @@ class Issue
                 self::TypeMismatchArgumentNullable,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_LOW,
-                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} defined at {FILE}:{LINE} (expected type to be non-nullable)",
+                'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} defined at {FILE}:{LINE} (expected type to be non-nullable)',
                 self::REMEDIATION_B,
                 10105
             ),
@@ -1220,7 +1220,7 @@ class Issue
                 self::TypeMismatchArgumentInternal,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE}",
+                'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE}',
                 self::REMEDIATION_B,
                 10004
             ),
@@ -1228,7 +1228,7 @@ class Issue
                 self::TypeMismatchArgumentNullableInternal,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_LOW,
-                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} (expected type to be non-nullable)",
+                'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} (expected type to be non-nullable)',
                 self::REMEDIATION_B,
                 10106
             ),
@@ -1260,7 +1260,7 @@ class Issue
                 self::PartialTypeMismatchArgument,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}",
+                'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}',
                 self::REMEDIATION_B,
                 10054
             ),
@@ -1268,7 +1268,7 @@ class Issue
                 self::PartialTypeMismatchArgumentInternal,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible)",
+                'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible)',
                 self::REMEDIATION_B,
                 10055
             ),
@@ -1276,7 +1276,7 @@ class Issue
                 self::PossiblyNullTypeArgument,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}",
+                'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}',
                 self::REMEDIATION_B,
                 10056
             ),
@@ -1284,7 +1284,7 @@ class Issue
                 self::PossiblyNullTypeArgumentInternal,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible)",
+                'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible)',
                 self::REMEDIATION_B,
                 10057
             ),
@@ -1292,7 +1292,7 @@ class Issue
                 self::PossiblyFalseTypeArgument,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}",
+                'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}',
                 self::REMEDIATION_B,
                 10058
             ),
@@ -1300,7 +1300,7 @@ class Issue
                 self::PossiblyFalseTypeArgumentInternal,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible)",
+                'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible)',
                 self::REMEDIATION_B,
                 10059
             ),
@@ -1364,7 +1364,7 @@ class Issue
                 self::TypeMismatchDeclaredParam,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Doc-block of \${VARIABLE} in {METHOD} contains phpdoc param type {TYPE} which is incompatible with the param type {TYPE} declared in the signature",
+                "Doc-block of \${PARAMETER} in {METHOD} contains phpdoc param type {TYPE} which is incompatible with the param type {TYPE} declared in the signature",
                 self::REMEDIATION_B,
                 10022
             ),
@@ -1372,7 +1372,7 @@ class Issue
                 self::TypeMismatchDeclaredParamNullable,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Doc-block of \${VARIABLE} in {METHOD} is phpdoc param type {TYPE} which is not a permitted replacement of the nullable param type {TYPE} declared in the signature ('?T' should be documented as 'T|null' or '?T')",
+                "Doc-block of \${PARAMETER} in {METHOD} is phpdoc param type {TYPE} which is not a permitted replacement of the nullable param type {TYPE} declared in the signature ('?T' should be documented as 'T|null' or '?T')",
                 self::REMEDIATION_B,
                 10027
             ),
@@ -2230,7 +2230,7 @@ class Issue
                 self::ParamSpecial1,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
-                "Argument {INDEX} ({PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} when argument {INDEX} is {TYPE}",
+                'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} when argument {INDEX} is {TYPE}',
                 self::REMEDIATION_B,
                 7005
             ),
@@ -2238,7 +2238,7 @@ class Issue
                 self::ParamSpecial2,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
-                "Argument {INDEX} ({PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} when passed only one argument",
+                'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} when passed only one argument',
                 self::REMEDIATION_B,
                 7006
             ),
@@ -3764,7 +3764,7 @@ class Issue
                 self::CommentParamWithoutRealParam,
                 self::CATEGORY_COMMENT,
                 self::SEVERITY_LOW,
-                "Saw an @param annotation for {VARIABLE}, but it was not found in the param list of {FUNCTIONLIKE}",
+                'Saw an @param annotation for ${PARAMETER}, but it was not found in the param list of {FUNCTIONLIKE}',
                 self::REMEDIATION_B,
                 16004
             ),
@@ -3772,7 +3772,7 @@ class Issue
                 self::CommentParamAssertionWithoutRealParam,
                 self::CATEGORY_COMMENT,
                 self::SEVERITY_LOW,
-                "Saw an @phan-assert annotation for {VARIABLE}, but it was not found in the param list of {FUNCTIONLIKE}",
+                'Saw an @phan-assert annotation for ${PARAMETER}, but it was not found in the param list of {FUNCTIONLIKE}',
                 self::REMEDIATION_B,
                 16019
             ),
@@ -3780,7 +3780,7 @@ class Issue
                 self::CommentParamOnEmptyParamList,
                 self::CATEGORY_COMMENT,
                 self::SEVERITY_LOW,
-                "Saw an @param annotation for {VARIABLE}, but the param list of {FUNCTIONLIKE} is empty",
+                'Saw an @param annotation for ${PARAMETER}, but the param list of {FUNCTIONLIKE} is empty',
                 self::REMEDIATION_B,
                 16005
             ),
@@ -3804,7 +3804,7 @@ class Issue
                 self::CommentParamOutOfOrder,
                 self::CATEGORY_COMMENT,
                 self::SEVERITY_LOW,
-                "Expected @param annotation for {VARIABLE} to be before the @param annotation for {VARIABLE}",
+                'Expected @param annotation for ${PARAMETER} to be before the @param annotation for ${PARAMETER}',
                 self::REMEDIATION_A,
                 16008
             ),

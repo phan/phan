@@ -26,7 +26,7 @@ src/000_plugins.php:77 PhanPluginAlwaysReturnMethod Method \ReturnChecks::missin
 src/000_plugins.php:80 PhanThrowTypeAbsent \ReturnChecks::missingReturnTypeSwitch() can throw \RuntimeException here, but has no '@throws' declarations for that class
 src/000_plugins.php:93 PhanThrowTypeAbsent \ReturnChecks::missingReturnTypeSwitchGood() can throw \RuntimeException here, but has no '@throws' declarations for that class
 src/000_plugins.php:114 PhanUnusedVariable Unused definition of variable $x
-src/000_plugins.php:127 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
+src/000_plugins.php:127 PhanTypeMismatchArgumentInternal Argument 1 ($string) is int but \strlen() takes string
 src/000_plugins.php:138 DemoPluginMethodName Method \TestDemoPlugin::function cannot be called `function`
 src/000_plugins.php:139 DemoPluginPropertyName Property \TestDemoPlugin::property should not be called `property`
 src/000_plugins.php:139 PhanReadOnlyPublicProperty Possibly zero write references to public property \TestDemoPlugin->property

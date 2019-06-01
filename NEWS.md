@@ -3,6 +3,11 @@ Phan NEWS
 ?? ??? 2019, Phan 2.1.1 (dev)
 -----------------------
 
+New features(CLI, Configs):
++ Add `--color-scheme <scheme>` for alternative colors of outputted issues (also configurable via environment variable as `PHAN_COLOR_SCHEME=<scheme>`)
+  Supported values: `default`, `vim`, `eclipse_dark`
++ Be consistent about starting parameter/variable names with `$` in issue messages.
+
 01 Jun 2019, Phan 2.1.0
 -----------------------
 

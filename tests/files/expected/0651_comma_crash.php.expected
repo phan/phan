@@ -1,1 +1,1 @@
-%s:8 PhanTypeMismatchArgument Argument 1 (x) is array{0:'test\x2cwrong'} but \test651() takes array{0:'test\x2cother'} defined at %s:5
+%s:8 PhanTypeMismatchArgument Argument 1 ($x) is array{0:'test\x2cwrong'} but \test651() takes array{0:'test\x2cother'} defined at %s:5
