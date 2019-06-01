@@ -261,6 +261,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if ($union_type->isEmpty()) {
                 return;
             }
+            $union_type = $union_type->withStaticResolvedInContext($this->context);
             if (!$union_type->asExpandedTypes($this->code_base)->hasArrayLike() && !$union_type->hasMixedType()) {
                 $this->emitIssue(
                     Issue::TypeArrayUnsetSuspicious,
