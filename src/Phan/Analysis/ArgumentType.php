@@ -588,7 +588,7 @@ final class ArgumentType
 
             // See if the argument can be cast to the
             // parameter
-            if ($argument_type_expanded_resolved->canCastToUnionType($alternate_parameter_type))  {
+            if ($argument_type_expanded_resolved->canCastToUnionType($alternate_parameter_type)) {
                 if (Config::get_strict_param_checking() && $argument_type->typeCount() > 1) {
                     self::analyzeParameterStrict($code_base, $context, $method, $argument_type, $alternate_parameter, $alternate_parameter_type, $lineno, $i);
                 }

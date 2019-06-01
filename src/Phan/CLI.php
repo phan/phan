@@ -12,6 +12,7 @@ use Phan\Language\Element\Comment\Builder;
 use Phan\Language\FQSEN;
 use Phan\Library\StringUtil;
 use Phan\Output\Collector\BufferingCollector;
+use Phan\Output\Colorizing;
 use Phan\Output\Filter\CategoryIssueFilter;
 use Phan\Output\Filter\ChainedIssueFilter;
 use Phan\Output\Filter\FileIssueFilter;
@@ -24,8 +25,10 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
 use Symfony\Component\Console\Terminal;
+use function array_map;
 use function array_slice;
 use function count;
+use function getenv;
 use function in_array;
 use function is_array;
 use function is_resource;
@@ -205,7 +208,7 @@ class CLI
             }
             $value_set[$file] = true;
         }
-        return \array_map('strval', \array_keys($value_set));
+        return array_map('strval', \array_keys($value_set));
     }
 
     /**
@@ -236,7 +239,7 @@ class CLI
 
         foreach ($argv as $arg) {
             if ($arg[0] == '-') {
-                throw new UsageException("Unknown option '{$arg}'", EXIT_FAILURE);
+                throw new UsageException("Unknown option '$arg'" . self::getFlagSuggestionString(preg_replace('@(=.*$)|(^-+)@', '', $arg)), EXIT_FAILURE);
             }
         }
     }
@@ -255,7 +258,7 @@ class CLI
         try {
             return new self($opts, $argv);
         } catch (UsageException $e) {
-            self::usage($e->getMessage(), (int)$e->getCode(), $e->print_extended_help);
+            self::usage($e->getMessage(), (int)$e->getCode(), $e->print_extended_help, $e->forbid_color);
             exit((int)$e->getCode());  // unreachable
         } catch (ExitException $e) {
             $message = $e->getMessage();
@@ -294,9 +297,12 @@ class CLI
      */
     private function __construct(array $opts, array $argv)
     {
+        self::detectAndConfigureColorSupport($opts);
+
         if (\array_key_exists('extended-help', $opts)) {
             throw new UsageException('', EXIT_SUCCESS, true);  // --help prints help and calls exit(0)
         }
+
         if (\array_key_exists('h', $opts) || \array_key_exists('help', $opts)) {
             throw new UsageException();  // --help prints help and calls exit(0)
         }
@@ -320,7 +326,7 @@ class CLI
         $overridden_project_root_directory = $opts['d'] ?? $opts['project-root-directory'] ?? null;
         if (\is_string($overridden_project_root_directory)) {
             if (!\is_dir($overridden_project_root_directory)) {
-                throw new UsageException(StringUtil::jsonEncode($overridden_project_root_directory) . ' is not a directory', EXIT_FAILURE);
+                throw new UsageException(StringUtil::jsonEncode($overridden_project_root_directory) . ' is not a directory', EXIT_FAILURE, false, true);
             }
             // Set the current working directory so that relative paths within the project will work.
             // TODO: Add an option to allow searching ancestor directories?
@@ -440,7 +446,9 @@ class CLI
                                 StringUtil::jsonEncode($value),
                                 \implode(',', $factory->getTypes())
                             ),
-                            EXIT_FAILURE
+                            EXIT_FAILURE,
+                            false,
+                            true
                         );
                     }
                     $printer_type = $value;
@@ -504,7 +512,7 @@ class CLI
                     }
                     $output_file = \fopen($value, 'w');
                     if (!is_resource($output_file)) {
-                        throw new UsageException("Failed to open output file '$value'\n", EXIT_FAILURE);
+                        throw new UsageException("Failed to open output file '$value'\n", EXIT_FAILURE, false, true);
                     }
                     $this->output = new StreamOutput($output_file);
                     break;
@@ -616,7 +624,7 @@ class CLI
                             StringUtil::jsonEncode($value),
                             StringUtil::jsonEncode($socket_dirname)
                         );
-                        throw new UsageException($msg, 1);
+                        throw new UsageException($msg, 1, false, true);
                     } else {
                         Config::setValue('daemonize_socket', $value);  // Daemonize. Assumes the file list won't change. Accepts requests over a Unix socket, or some other IPC mechanism.
                     }
@@ -627,7 +635,7 @@ class CLI
                     Config::setValue('daemonize_tcp', true);
                     $host = \filter_var($value, FILTER_VALIDATE_IP);
                     if (\strcasecmp($value, 'default') !== 0 && !$host) {
-                        throw new UsageException("daemonize-tcp-host must be the string 'default' or a valid hostname, got '$value'", 1);
+                        throw new UsageException("--daemonize-tcp-host must be the string 'default' or a valid hostname, got '$value'", 1);
                     }
                     if ($host) {
                         Config::setValue('daemonize_tcp_host', $host);
@@ -638,7 +646,7 @@ class CLI
                     Config::setValue('daemonize_tcp', true);
                     $port = \filter_var($value, FILTER_VALIDATE_INT);
                     if (\strcasecmp($value, 'default') !== 0 && !($port >= 1024 && $port <= 65535)) {
-                        throw new UsageException("daemonize-tcp-port must be the string 'default' or a value between 1024 and 65535, got '$value'", 1);
+                        throw new UsageException("--daemonize-tcp-port must be the string 'default' or a value between 1024 and 65535, got '$value'", 1);
                     }
                     if ($port) {
                         Config::setValue('daemonize_tcp_port', $port);
@@ -724,10 +732,8 @@ class CLI
                     break;
                 case 'C':
                 case 'color':
-                    Config::setValue('color_issue_messages', true);
-                    break;
                 case 'no-color':
-                    Config::setValue('color_issue_messages', false);
+                    // Handled before processing the CLI flag `--help`
                     break;
                 default:
                     throw new UsageException("Unknown option '-$key'" . self::getFlagSuggestionString($key), EXIT_FAILURE);
@@ -737,7 +743,7 @@ class CLI
             Config::setValue('language_server_enable_completion', Config::COMPLETION_VSCODE);
         }
         if (Config::getValue('color_issue_messages') === null && $printer_type === 'text') {
-            if (!\getenv('PHAN_DISABLE_COLOR_OUTPUT') && self::supportsColor(\STDOUT)) {
+            if (Config::getValue('color_issue_messages_if_supported') && self::supportsColor(\STDOUT)) {
                 Config::setValue('color_issue_messages', true);
             }
         }
@@ -780,6 +786,23 @@ class CLI
     }
 
     /**
+     * Configure settings for colorized output for help and issue messages.
+     * @param array<string,mixed> $opts
+     */
+    private static function detectAndConfigureColorSupport(array $opts) : void
+    {
+        if (isset($opts['C']) || isset($opts['color'])) {
+            Config::setValue('color_issue_messages', true);
+        } elseif (isset($opts['no-color'])) {
+            Config::setValue('color_issue_messages', false);
+        } elseif (getenv('PHAN_DISABLE_COLOR_OUTPUT')) {
+            Config::setValue('color_issue_messages', false);
+        } elseif (getenv('PHAN_ENABLE_COLOR_OUTPUT')) {
+            Config::setValue('color_issue_messages_if_supported', true);
+        }
+    }
+
+    /**
      * Returns true if the output stream supports colors
      *
      * This is tricky on Windows, because Cygwin, Msys2 etc emulate pseudo
@@ -798,7 +821,7 @@ class CLI
     {
         if (\defined('PHP_WINDOWS_VERSION_BUILD')) {
             return (\function_exists('sapi_windows_vt100_support')
-                && sapi_windows_vt100_support($output))
+                && \sapi_windows_vt100_support($output))
                 || false !== \getenv('ANSICON')
                 || 'ON' === \getenv('ConEmuANSI')
                 || 'xterm' === \getenv('TERM');
@@ -955,10 +978,10 @@ class CLI
   and you may end up with a large number of issues to be manually suppressed.
   See https://github.com/phan/phan/wiki/Tutorial-for-Analyzing-a-Large-Sloppy-Code-Base
 
-  [--init-level] affects the generated settings in `.phan/config.php`
+  [--init-level <level>] affects the generated settings in `.phan/config.php`
     (e.g. null_casts_as_array).
     `--init-level` can be set to 1 (strictest) to 5 (least strict)
-  [--init-analyze-dir] can be used as a relative path alongside directories
+  [--init-analyze-dir <dir>] can be used as a relative path alongside directories
     that Phan infers from composer.json's "autoload" settings
   [--init-analyze-file] can be used as a relative path alongside files
     that Phan infers from composer.json's "bin" settings
@@ -973,17 +996,17 @@ EOT;
     // FIXME: If I stop using defined() in UnionTypeVisitor,
     // this will warn about the undefined constant EXIT_SUCCESS when a
     // user-defined constant is used in parse phase in a function declaration
-    private static function usage(string $msg = '', int $exit_code = EXIT_SUCCESS, bool $print_extended_help = false) : void
+    private static function usage(string $msg = '', int $exit_code = EXIT_SUCCESS, bool $print_extended_help = false, bool $forbid_color_in_error = true) : void
     {
         global $argv;
 
         if ($msg !== '') {
-            echo "$msg\n";
+            self::printHelpSection("ERROR: $msg\n", $forbid_color_in_error);
         }
 
         $init_help = self::INIT_HELP;
-        echo <<<EOB
-Usage: {$argv[0]} [options] [files...]
+        echo "Usage: {$argv[0]} [options] [files...]\n";
+        self::printHelpSection(<<<EOB
  -f, --file-list <filename>
   A file containing a list of PHP files to be analyzed
 
@@ -996,7 +1019,7 @@ Usage: {$argv[0]} [options] [files...]
   Thus, both first-party and third-party code being used by
   your application should be included in this list.
 
-  You may include multiple `--directory DIR` options.
+  You may include multiple `--directory <directory>` options.
 
  --exclude-file <file>
   A file that should not be parsed or analyzed (or read
@@ -1007,7 +1030,7 @@ Usage: {$argv[0]} [options] [files...]
   A comma-separated list of directories that defines files
   that will be excluded from static analysis, but whose
   class and method information should be included.
-  (can be repeated, ignored if --include-analysis-directory-list is used)
+  (can be repeated, ignored if --include-analysis-file-list is used)
 
   Generally, you'll want to include the directories for
   third-party code (such as "vendor/") in this list.
@@ -1065,7 +1088,7 @@ $init_help
  -i, --ignore-undeclared
   Ignore undeclared functions and classes
 
- -y, --minimum-severity <level in {0,5,10}>
+ -y, --minimum-severity <level>
   Minimum severity level (low=0, normal=5, critical=10) to report.
   Defaults to 0.
 
@@ -1151,7 +1174,7 @@ $init_help
  -s, --daemonize-socket </path/to/file.sock>
   Unix socket for Phan to listen for requests on, in daemon mode.
 
- --daemonize-tcp-host
+ --daemonize-tcp-host <hostname>
   TCP hostname for Phan to listen for JSON requests on, in daemon mode.
   (e.g. 'default', which is an alias for host 127.0.0.1, or `0.0.0.0` for
   usage with Docker). `phan_client` can be used to communicate with the Phan Daemon.
@@ -1171,9 +1194,10 @@ $init_help
   This help information, plus less commonly used flags
   (E.g. for daemon mode)
 
-EOB;
+EOB
+        );
         if ($print_extended_help) {
-            echo <<<EOB
+            self::printHelpSection(<<<EOB
 
 Extended help:
  -a, --dump-ast
@@ -1193,9 +1217,9 @@ Extended help:
   NOTE: This is a work in progress and limited to a small subset of issues
   (e.g. unused imports on their own line)
 
- --find-signature 'paramUnionType1->paramUnionType2->returnUnionType'
+ --find-signature <paramUnionType1->paramUnionType2->returnUnionType>
   Find a signature in the analyzed codebase that is similar to the argument.
-  See tool/phoogle for examples.
+  See `tool/phoogle` for examples.
 
  --memory-limit <memory_limit>
   Sets the memory limit for analysis (per process).
@@ -1286,9 +1310,46 @@ Extended help:
  --help-annotations
   Print details on annotations supported by Phan
 
-EOB;
+EOB
+            );
         }
         exit($exit_code);
+    }
+
+    private static function printHelpSection(string $section, bool $forbid_color = false) : void
+    {
+        if (!$forbid_color) {
+            if (Config::getValue('color_issue_messages') ?? (!getenv('PHAN_DISABLE_COLOR_OUTPUT') && self::supportsColor(\STDOUT))) {
+                $section = self::colorizeHelpSection($section);
+            }
+        }
+        echo $section;
+    }
+
+    /**
+     * Add ansi color codes to the CLI flags included in the --help or --extended-help message.
+     */
+    public static function colorizeHelpSection(string $section) : string
+    {
+        $colorize_flag_cb = /** @param array<int,string> $match */ static function (array $match) : string {
+            [$_, $prefix, $cli_flag, $suffix] = $match;
+            $colorized_cli_flag = Colorizing::colorizeTextWithColorCode(Colorizing::STYLES['green'], $cli_flag);
+            return $prefix . $colorized_cli_flag . $suffix;
+        };
+        $long_flag_regex = '(()((?:--)(?:' . \implode('|', array_map(static function (string $option) : string {
+            return \preg_quote(\rtrim($option, ':'));
+        }, self::GETOPT_LONG_OPTIONS)) . '))([^\w-]))';
+        $section = \preg_replace_callback($long_flag_regex, $colorize_flag_cb, $section);
+        $short_flag_regex = '((\s|\b)(-[' . \str_replace(':', '', self::GETOPT_SHORT_OPTIONS) . '])([^\w-]))';
+
+        $section = \preg_replace_callback($short_flag_regex, $colorize_flag_cb, $section);
+
+        $colorize_opt_cb = /** @param array<int,string> $match */ static function (array $match) : string {
+            $cli_flag = $match[0];
+            return Colorizing::colorizeTextWithColorCode(Colorizing::STYLES['yellow'], $cli_flag);
+        };
+        $section = \preg_replace_callback('@<\S+>|\{\S+\}@', $colorize_opt_cb, $section);
+        return $section;
     }
 
     /**
@@ -1312,9 +1373,9 @@ EOB;
         };
         $generate_suggestion_text = static function (string $suggestion, string ...$other_suggestions) use ($generate_suggestion) : string {
             $suggestions = \array_merge([$suggestion], $other_suggestions);
-            return ' (did you mean ' . \implode(' or ', \array_map($generate_suggestion, $suggestions)) . '?)';
+            return ' (did you mean ' . \implode(' or ', array_map($generate_suggestion, $suggestions)) . '?)';
         };
-        $short_options = \array_filter(\array_map($trim, \str_split(self::GETOPT_SHORT_OPTIONS)));
+        $short_options = \array_filter(array_map($trim, \str_split(self::GETOPT_SHORT_OPTIONS)));
         if (strlen($key) === 1) {
             $alternate = \ctype_lower($key) ? \strtoupper($key) : \strtolower($key);
             if (in_array($alternate, $short_options)) {
@@ -1327,7 +1388,7 @@ EOB;
         // include short options in case a typo is made like -aa instead of -a
         $known_flags = \array_merge(self::GETOPT_LONG_OPTIONS, $short_options);
 
-        $known_flags = \array_map($trim, $known_flags);
+        $known_flags = array_map($trim, $known_flags);
 
         $similarities = [];
 

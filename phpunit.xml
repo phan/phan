@@ -39,6 +39,9 @@
         <const name="PHP73_EXPECTED_DIR" value="./tests/php73_files/expected"/>
         <const name="PHP74_TEST_FILE_DIR" value="./tests/php74_files/src"/>
         <const name="PHP74_EXPECTED_DIR" value="./tests/php74_files/expected"/>
+        <!-- Affects tests of CLI, etc. -->
+        <env name="PHAN_ENABLE_COLOR_OUTPUT" value="" force="true" />
+        <env name="PHAN_DISABLE_COLOR_OUTPUT" value="" force="true" />
     </php>
 
     <testsuites>

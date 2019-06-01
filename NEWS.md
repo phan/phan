@@ -4,7 +4,13 @@ Phan NEWS
 -----------------------
 
 New features(CLI, Configs):
-+ Enable colorized output by default for the default output mode (`text`) when the terminal supports it.
++ Add more options to configure colorized output. (#2799)
+
+  The environment variable `PHAN_ENABLE_COLOR_OUTPUT=1` and the config setting `color_issue_messages_if_supported` can be used to enable colorized output by default
+  for the default output mode (`text`) when the terminal supports it.
+
+  This can be disabled by setting `PHAN_DISABLE_COLOR_OUTPUT=1` or by passing the flag `--no-color`.
++ Colorize output of `--help` and `--extended-help` when `--color` is used or the terminal supports it.
   This can be disabled by setting `PHAN_DISABLE_COLOR_OUTPUT=1` or by passing the flag `--no-color`.
 
 New features(Analysis):
