@@ -10,6 +10,7 @@ use Phan\Analysis\ConditionVisitor\ComparisonCondition;
 use Phan\Analysis\ConditionVisitor\IdenticalCondition;
 use Phan\Analysis\ConditionVisitor\NotEqualsCondition;
 use Phan\Analysis\ConditionVisitor\NotIdenticalCondition;
+use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\BlockAnalysisVisitor;
 use Phan\CodeBase;
@@ -480,20 +481,19 @@ trait ConditionVisitorUtil
         $context = $context ?? $this->context;
         try {
             if ($expr instanceof Node) {
-                if ($expr->kind === ast\AST_CONST) {
-                    $expr_name_node = $expr->children['name'];
-                    if ($expr_name_node->kind === ast\AST_NAME) {
-                        // Currently, only add this inference when we're absolutely sure this is a check rejecting null/false/true
-                        $expr_name = $expr_name_node->children['name'];
-                        switch (\strtolower($expr_name)) {
-                            case 'null':
-                                return $this->removeNullFromVariable($var_node, $context, false);
-                            case 'false':
-                                return $this->removeFalseFromVariable($var_node, $context);
-                            case 'true':
-                                return $this->removeTrueFromVariable($var_node, $context);
-                        }
-                    }
+                $value = (new ContextNode($this->code_base, $context, $expr))->getEquivalentPHPValueForControlFlowAnalysis();
+                if ($value instanceof Node) {
+                    return $context;
+                }
+                if (\is_int($value) || \is_string($value)) {
+                    return $this->removeLiteralScalarFromVariable($var_node, $context, $value, true);
+                }
+                if ($value === false) {
+                    return $this->removeFalseFromVariable($var_node, $context);
+                } elseif ($value === true) {
+                    return $this->removeTrueFromVariable($var_node, $context);
+                } elseif ($value === null) {
+                    return $this->removeNullFromVariable($var_node, $context, false);
                 }
             } else {
                 return $this->removeLiteralScalarFromVariable($var_node, $context, $expr, true);
@@ -522,21 +522,15 @@ trait ConditionVisitorUtil
         if (\is_string($var_name)) {
             try {
                 if ($expr instanceof Node) {
-                    if ($expr->kind === ast\AST_CONST) {
-                        $expr_name_node = $expr->children['name'];
-                        if ($expr_name_node->kind === ast\AST_NAME) {
-                            // Currently, only add this inference when we're absolutely sure this is a check rejecting null/false/true
-                            $expr_name = $expr_name_node->children['name'];
-                            switch (\strtolower($expr_name)) {
-                                case 'null':
-                                case 'false':
-                                    return $this->removeFalseyFromVariable($var_node, $context, false);
-                                case 'true':
-                                    return $this->removeTrueFromVariable($var_node, $context);
-                            }
-                        }
+                    $expr = (new ContextNode($this->code_base, $context, $expr))->getEquivalentPHPValueForControlFlowAnalysis();
+                    if ($expr instanceof Node) {
+                        return $context;
                     }
-                    return $context;
+                    if ($expr === false || $expr === null) {
+                        return $this->removeFalseyFromVariable($var_node, $context, false);
+                    } elseif ($expr === true) {
+                        return $this->removeTrueFromVariable($var_node, $context);
+                    }
                 }
                 // Remove all of the types which are loosely equal
                 if (is_int($expr) || is_string($expr)) {
