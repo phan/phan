@@ -13,7 +13,7 @@ final class ConfigInitializerTest extends BaseTest
     public function testInitializesValid() : void
     {
         for ($init_level = 1; $init_level <= 5; $init_level++) {
-            // @phan-suppress-next-line PhanAccessMethodInternal
+            // @phan-suppress-next-line PhanAccessMethodInternal, PhanThrowTypeAbsentForCall
             $settings = Initializer::createPhanSettingsForComposerSettings(
                 [],
                 null,

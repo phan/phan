@@ -20,14 +20,14 @@ class UsageException extends ExitException
      * an optional error message to print
      *
      * @param int $code
-     * the exit code of the program
+     * the exit code of the program (EXIT_SUCCESS, EXIT_FAILURE)
      *
      * @param bool $print_extended_help
      * whether to print extended help messages
      */
     public function __construct(
-        string $message = "",
-        int $code = \EXIT_SUCCESS,
+        string $message,
+        int $code,
         bool $print_extended_help = false,
         bool $forbid_color = false
     ) {

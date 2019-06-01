@@ -9,6 +9,7 @@ use Composer\Semver\VersionParser;
 use Phan\AST\Parser;
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Exception\UsageException;
 use Phan\Issue;
 use Phan\Language\Context;
 use TypeError;
@@ -17,8 +18,8 @@ use function is_array;
 use function is_int;
 use function is_null;
 use function is_string;
+use const EXIT_FAILURE;
 use const FILTER_VALIDATE_INT;
-use const STDERR;
 
 /**
  * This class is used by 'phan --init' to generate a phan config for a composer project.
@@ -28,9 +29,10 @@ class Initializer
 {
     /**
      * @param array{init-overwrite?:mixed,init-no-composer?:mixed,init-level?:(int|string)} $opts
-     * Returns a process exit code for `phan --init`
+     * Returns
+     * @throws UsageException with a process exit code for `phan --init`
      */
-    public static function initPhanConfig(array $opts) : int
+    public static function initPhanConfig(array $opts) : void
     {
         Config::setValue('use_polyfill_parser', true);
         $cwd = \getcwd();
@@ -38,8 +40,7 @@ class Initializer
         $config_path = "$cwd/.phan/config.php";
         if (!isset($opts['init-overwrite'])) {
             if (\file_exists($config_path)) {
-                \fwrite(STDERR, "phan --init refuses to run: The Phan config already exists at '$config_path'\n(Can pass --init-overwrite to force Phan to overwrite that file)\n");
-                return 1;
+                throw new UsageException("phan --init refuses to run: The Phan config already exists at '$config_path'(Can pass --init-overwrite to force Phan to overwrite that file)", EXIT_FAILURE);
             }
         }
         if (isset($opts['init-no-composer'])) {
@@ -48,45 +49,38 @@ class Initializer
         } else {
             $composer_json_path = "$cwd/composer.json";
             if (!\file_exists($composer_json_path)) {
-                \fwrite(STDERR, "phan --init assumes that there will be a composer.json file (at '$composer_json_path')\n(Can pass --init-no-composer if this is not a composer project)\n");
-                return 1;
+                throw new UsageException("phan --init assumes that there will be a composer.json file (at '$composer_json_path')\n(Can pass --init-no-composer if this is not a composer project)", EXIT_FAILURE);
             }
             $contents = \file_get_contents($composer_json_path);
             if (!$contents) {
-                \fwrite(STDERR, "phan --init failed to read contents of $composer_json_path\n");
-                return 1;
+                throw new UsageException("phan --init failed to read contents of $composer_json_path", EXIT_FAILURE);
             }
             $composer_settings = \json_decode($contents, true);
             if (!is_array($composer_settings)) {
-                \fwrite(STDERR, "Failed to load '$composer_json_path'\n");
-                return 1;
+                throw new UsageException("Failed to load '$composer_json_path'", EXIT_FAILURE);
             }
 
             $vendor_path = $composer_settings['config']['vendor-dir'] ?? "$cwd/vendor";
 
             if (!\is_dir($vendor_path)) {
-                \fwrite(STDERR, "phan --init assumes that 'composer.phar install' was run already (expected to find '$vendor_path')\n");
-                return 1;
+                throw new UsageException("phan --init assumes that 'composer.phar install' was run already (expected to find '$vendor_path')", EXIT_FAILURE);
             }
         }
         $phan_settings = self::createPhanSettingsForComposerSettings($composer_settings, $vendor_path, $opts);
         if (!($phan_settings instanceof InitializedSettings)) {
-            \fwrite(STDERR, "phan --init failed to generate settings\n");
-            return 1;
+            throw new UsageException("phan --init failed to generate settings", EXIT_FAILURE);
         }
 
         $phan_dir = \dirname($config_path);
         if (!\file_exists($phan_dir)) {
             if (!\mkdir($phan_dir)) {
-                echo "Failed to create directory '$phan_dir'\n";
-                return 1;
+                throw new UsageException("Failed to create directory '$phan_dir'", EXIT_FAILURE, false, true);
             }
         }
         $settings_file_contents = self::generatePhanConfigFileContents($phan_settings);
         \file_put_contents($config_path, $settings_file_contents);
         echo "Successfully initialized '$config_path' with the following contents\n\n";
         echo $settings_file_contents;
-        return 0;
     }
 
     /**
@@ -252,16 +246,16 @@ EOT;
      * @param array<string,mixed> $composer_settings (can be empty for --init-no-composer)
      * @param ?string $vendor_path (can be null for --init-no-composer)
      * @param array{init-analyze-file?:string,init-overwrite?:mixed,init-no-composer?:mixed,init-level?:(int|string)} $opts parsed from getopt
-     * @return ?InitializedSettings
+     * @return InitializedSettings
+     * @throws UsageException if provided settings are invalid
      * @internal
      */
-    public static function createPhanSettingsForComposerSettings(array $composer_settings, ?string $vendor_path, array $opts) : ?InitializedSettings
+    public static function createPhanSettingsForComposerSettings(array $composer_settings, ?string $vendor_path, array $opts) : InitializedSettings
     {
         $level = $opts['init-level'] ?? 3;
         $level = self::LEVEL_MAP[\strtolower((string)$level)] ?? $level;
         if (\filter_var($level, FILTER_VALIDATE_INT) === false) {
-            echo "Invalid --init-level=$level\n";
-            return null;
+            throw new UsageException("Invalid --init-level=$level", EXIT_FAILURE);
         }
         $level = \max(1, \min(5, (int)$level));
         $is_strongest_level = $level === 1;
@@ -273,8 +267,7 @@ EOT;
         $cwd = \getcwd();
         [$project_directory_list, $project_file_list] = self::extractAutoloadFilesAndDirectories('', $composer_settings);
         if ($vendor_path !== null && count($project_directory_list) === 0 && count($project_file_list) === 0) {
-            echo "phan --init expects composer.json to contain 'autoload' psr-4 directories\n";
-            return null;
+            throw new UsageException('phan --init expects composer.json to contain "autoload" psr-4 directories', EXIT_FAILURE);
         }
         $minimum_severity = $is_weak_level ? Issue::SEVERITY_NORMAL : Issue::SEVERITY_LOW;
         if ($is_weakest_level) {
@@ -384,8 +377,7 @@ EOT;
         foreach (self::getArrayOption($opts, 'init-analyze-dir') as $extra_dir) {
             $path_to_require = "$cwd/$extra_dir";
             if (!\is_dir($path_to_require)) {
-                echo "phan --init-analyze-dir was given a missing/invalid relative directory '$extra_dir'\n";
-                return null;
+                throw new UsageException("phan --init-analyze-dir was given a missing/invalid relative directory '$extra_dir'", EXIT_FAILURE);
             }
             $phan_directory_list[] = $extra_dir;
         }
@@ -398,15 +390,13 @@ EOT;
         foreach (self::getArrayOption($opts, 'init-analyze-file') as $extra_file) {
             $path_to_require = "$cwd/$extra_file";
             if (!\is_file($path_to_require)) {
-                echo "phan --init-analyze-file was given a missing/invalid relative file '$extra_file'\n";
-                return null;
+                throw new UsageException("phan --init-analyze-file was given a missing/invalid relative file '$extra_file'", EXIT_FAILURE);
             }
             $phan_file_list[] = $extra_file;
         }
 
         if (count($phan_file_list) === 0 && count($phan_directory_list) === 0) {
-            echo "phan --init failed to find any directories or files to analyze, giving up.\n";
-            return null;
+            throw new UsageException("phan --init failed to find any directories or files to analyze, giving up.", EXIT_FAILURE);
         }
         \sort($phan_directory_list);
         \sort($phan_file_list);
