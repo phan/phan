@@ -1069,7 +1069,7 @@ $init_help
   Add colors to the outputted issues.
   This is recommended for only the default --output-mode ('text')
 
-  [--color-scheme={default,eclipse_dark,vim}]
+  [--color-scheme={default,code,eclipse_dark,vim}]
     This (or the environment variable PHAN_COLOR_SCHEME) can be used to set the color scheme for emitted issues.
 
  -p, --progress-bar

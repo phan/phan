@@ -2669,7 +2669,7 @@ class Issue
                 self::NoopNumericLiteral,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_LOW,
-                "Unused result of a numeric literal {STRING_LITERAL} near this line",
+                "Unused result of a numeric literal {SCALAR} near this line",
                 self::REMEDIATION_B,
                 6031
             ),
