@@ -8,6 +8,9 @@ New features(CLI, Configs):
   Supported values: `default`, `vim`, `eclipse_dark`
 + Be consistent about starting parameter/variable names with `$` in issue messages.
 
+Maintenance:
++ Add updates to the function/method signature map from Psalm and PHPStan.
+
 01 Jun 2019, Phan 2.1.0
 -----------------------
 

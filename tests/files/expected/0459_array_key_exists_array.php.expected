@@ -1,7 +1,7 @@
 %s:2 PhanParamTooFewCallable Call with 1 arg(s) to Closure($data, $str) (as a provided callable) which requires 2 arg(s) defined at %s:7
 %s:9 PhanTypeMismatchArgumentInternal Argument 1 ($string) is array{otherKey:mixed,key:string} but \strlen() takes string
 %s:11 PhanTypeMismatchArgumentInternal Argument 1 ($string) is array{key:string} but \strlen() takes string
-%s:14 PhanTypeMismatchArgumentInternal Argument 2 ($search) is string but \array_key_exists() takes array
+%s:14 PhanTypeMismatchArgumentInternal Argument 2 ($search) is string but \array_key_exists() takes \ArrayObject|array
 %s:15 PhanTypeMismatchArgumentInternal Argument 1 ($var) is string but \count() takes \Countable|array
 %s:21 PhanParamTooFewCallable Call with 1 arg(s) to Closure($data, $str) (as a provided callable) which requires 2 arg(s) defined at %s:26
 %s:28 PhanTypeMismatchArgumentInternal Argument 1 ($string) is array{key:string,otherKey:int} but \strlen() takes string

@@ -162,6 +162,7 @@ final class StringUtil
                     // @phan-suppress-next-line PhanPartialTypeMismatchArgument
                     return self::codePointToUtf8(hexdec($matches[2]));
                 } else {
+                    // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal
                     return chr(octdec($str));
                 }
             },

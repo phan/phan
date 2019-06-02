@@ -685,7 +685,7 @@ final class ConfigPluginSet extends PluginV3 implements
 
     /**
      * Adds a plugin that will stay around until the language client's request has been fulfilled
-     * (E.g. a plugin that will analyze the node targetted by "go to definition")
+     * (E.g. a plugin that will analyze the node targeted by "go to definition")
      */
     public function addTemporaryAnalysisPlugin(CodeBase $code_base, ?\Phan\Daemon\Request $request) : ?RAII
     {

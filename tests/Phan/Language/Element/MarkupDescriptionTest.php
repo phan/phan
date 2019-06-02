@@ -2,7 +2,9 @@
 
 namespace Phan\Tests\Language\Element;
 
+use Phan\CodeBase;
 use Phan\Language\Element\Comment;
+use Phan\Language\Element\GlobalConstant;
 use Phan\Language\Element\MarkupDescription;
 use Phan\Tests\BaseTest;
 
@@ -293,5 +295,22 @@ EOT
 EOT
             ],
         ];
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function testDescriptionForBuiltinConstant() : void
+    {
+        $const = GlobalConstant::fromGlobalConstantName('STDERR');
+        $expected = <<<EOT
+```php
+const STDERR = resource(stream)
+```
+
+An already opened stream to *stderr* (standard error).
+EOT;
+        $this->assertSame($expected, MarkupDescription::buildForElement($const, new CodeBase([], [], [], [], [])));
+
     }
 }

@@ -2163,7 +2163,7 @@ class ContextNode
      * @see self::getEquivalentPHPValue()
      *
      * @param Node|float|int|string $node
-     * @return Node|string[]|int[]|float[]|string|float|int|bool|null -
+     * @return Node|string[]|int[]|float[]|string|float|int|bool|resource|null -
      *         If this could be resolved and we're certain of the value, this gets a raw PHP value for $node.
      *         Otherwise, this returns $node.
      */
@@ -2527,7 +2527,7 @@ class ContextNode
      *
      * This does not create new object instances.
      *
-     * @return Node|string[]|int[]|float[]|string|float|int|bool|null -
+     * @return Node|string[]|int[]|float[]|string|float|int|bool|resource|null -
      *   If this could be resolved and we're certain of the value, this gets an equivalent definition.
      *   Otherwise, this returns $node.
      */
@@ -2537,7 +2537,7 @@ class ContextNode
     }
 
     /**
-     * @return Node|string[]|int[]|float[]|string|float|int|bool|null -
+     * @return Node|string[]|int[]|float[]|string|float|int|bool|resource|null -
      *   If this could be resolved and we're certain of the value, this gets an equivalent definition.
      *   Otherwise, this returns $node.
      */
