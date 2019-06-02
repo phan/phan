@@ -341,7 +341,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
      * @param CodeBase $code_base
      * @param Context $context
      * @param FunctionInterface $function
-     * @param Node|array|string|float|int|bool|null $pattern_node
+     * @param Node|array|string|float|int|bool|resource|null $pattern_node
      * @param ?(Node|string|int|float)[] $arg_nodes arguments following the format string. Null if the arguments could not be determined.
      * @return void
      * @suppress PhanPartialTypeMismatchArgument TODO: refactor into smaller functions

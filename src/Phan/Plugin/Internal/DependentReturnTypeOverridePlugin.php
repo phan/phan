@@ -266,7 +266,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             return Type::fromObject($result)->asUnionType();
         };
 
-
+        // TODO: Handle flags of preg_split.
         return [
             // commonly used functions where the return type depends on a passed in boolean
             'var_export'                  => $string_if_2_true,

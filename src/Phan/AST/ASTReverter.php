@@ -41,7 +41,7 @@ class ASTReverter
      *
      * This does not work for all node kinds, and may be ambiguous.
      *
-     * @param Node|string|int|float|bool|null $node
+     * @param Node|string|int|float|bool|null|resource $node
      */
     public static function toShortString($node) : string
     {
@@ -52,6 +52,9 @@ class ASTReverter
             }
             if (\is_string($node)) {
                 return self::escapeString($node);
+            }
+            if (\is_resource($node)) {
+                return 'resource(' . get_resource_type($node) . ')';
             }
             // TODO: minimal representations for floats, arrays, etc.
             return \var_export($node, true);
