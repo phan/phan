@@ -1,1 +1,1 @@
-%s:17 PhanTypeMismatchArgumentInternal Argument 1 ($var) is null but \count() takes \Countable|array
+%s:17 PhanTypeMismatchArgumentInternal Argument 1 ($var) is null but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
