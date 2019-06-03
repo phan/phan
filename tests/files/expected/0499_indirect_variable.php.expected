@@ -1,2 +1,2 @@
-%s:5 PhanTypeMismatchArgumentInternal Argument 1 ($var) is 'x' but \count() takes \Countable|array
+%s:5 PhanTypeMismatchArgumentInternal Argument 1 ($var) is 'x' but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
 %s:7 PhanTypeMismatchReturn Returning type 2 but Closure() : \stdClass is declared to return \stdClass

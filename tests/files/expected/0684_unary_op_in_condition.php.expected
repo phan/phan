@@ -1,2 +1,2 @@
-%s:35 PhanTypeMismatchArgumentInternal Argument 1 ($var) is bool but \count() takes \Countable|array
-%s:60 PhanTypeMismatchArgumentInternal Argument 1 ($var) is bool but \count() takes \Countable|array
+%s:35 PhanTypeMismatchArgumentInternal Argument 1 ($var) is bool but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:60 PhanTypeMismatchArgumentInternal Argument 1 ($var) is bool but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
