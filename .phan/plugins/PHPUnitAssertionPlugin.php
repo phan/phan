@@ -79,21 +79,22 @@ class PHPUnitAssertionPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
                 );
                 // TODO: Rest of https://github.com/sebastianbergmann/phpunit/issues/3368
             case 'assertisstring':
+                // TODO: Could convert to real types?
                 return $method->createClosureForAssertion(
                     $code_base,
-                    new Assertion(UnionType::fromFullyQualifiedString('string'), 'unusedParamName', Assertion::IS_OF_TYPE),
+                    new Assertion(UnionType::fromFullyQualifiedPHPDocString('string'), 'unusedParamName', Assertion::IS_OF_TYPE),
                     0
                 );
             case 'assertnull':
                 return $method->createClosureForAssertion(
                     $code_base,
-                    new Assertion(UnionType::fromFullyQualifiedString('null'), 'unusedParamName', Assertion::IS_OF_TYPE),
+                    new Assertion(UnionType::fromFullyQualifiedPHPDocString('null'), 'unusedParamName', Assertion::IS_OF_TYPE),
                     0
                 );
             case 'assertnotnull':
                 return $method->createClosureForAssertion(
                     $code_base,
-                    new Assertion(UnionType::fromFullyQualifiedString('null'), 'unusedParamName', Assertion::IS_NOT_OF_TYPE),
+                    new Assertion(UnionType::fromFullyQualifiedPHPDocString('null'), 'unusedParamName', Assertion::IS_NOT_OF_TYPE),
                     0
                 );
             case 'assertsame':
@@ -139,51 +140,51 @@ class PHPUnitAssertionPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
                         $original_type = (UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[1]));
                         switch ($string) {
                             case 'numeric':
-                                return UnionType::fromFullyQualifiedString('int|float|string');
+                                return UnionType::fromFullyQualifiedPHPDocString('int|float|string');
                             case 'integer':
                             case 'int':
-                                return UnionType::fromFullyQualifiedString('int');
+                                return UnionType::fromFullyQualifiedPHPDocString('int');
 
                             case 'double':
                             case 'float':
                             case 'real':
-                                return UnionType::fromFullyQualifiedString('float');
+                                return UnionType::fromFullyQualifiedPHPDocString('float');
 
                             case 'string':
-                                return UnionType::fromFullyQualifiedString('string');
+                                return UnionType::fromFullyQualifiedPHPDocString('string');
 
                             case 'boolean':
                             case 'bool':
-                                return UnionType::fromFullyQualifiedString('bool');
+                                return UnionType::fromFullyQualifiedPHPDocString('bool');
 
                             case 'null':
-                                return UnionType::fromFullyQualifiedString('null');
+                                return UnionType::fromFullyQualifiedPHPDocString('null');
 
                             case 'array':
                                 $result = $original_type->arrayTypes();
                                 if ($result->isEmpty()) {
-                                    return UnionType::fromFullyQualifiedString('array');
+                                    return UnionType::fromFullyQualifiedPHPDocString('array');
                                 }
                                 return $result;
                             case 'object':
                                 $result = $original_type->objectTypes();
                                 if ($result->isEmpty()) {
-                                    return UnionType::fromFullyQualifiedString('object');
+                                    return UnionType::fromFullyQualifiedPHPDocString('object');
                                 }
                                 return $result;
                             case 'resource':
-                                return UnionType::fromFullyQualifiedString('resource');
+                                return UnionType::fromFullyQualifiedPHPDocString('resource');
                             case 'scalar':
                                 $result = $original_type->scalarTypes();
                                 if ($result->isEmpty()) {
-                                    return UnionType::fromFullyQualifiedString('int|string|float|bool');
+                                    return UnionType::fromFullyQualifiedPHPDocString('int|string|float|bool');
                                 }
                                 return $result;
 
                             case 'callable':
                                 $result = $original_type->callableTypes();
                                 if ($result->isEmpty()) {
-                                    return UnionType::fromFullyQualifiedString('callable');
+                                    return UnionType::fromFullyQualifiedPHPDocString('callable');
                                 }
                                 return $result;
                         }
@@ -224,7 +225,7 @@ class PHPUnitAssertionPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
                             return UnionType::empty();
                         }
                         try {
-                            return FullyQualifiedClassName::fromFullyQualifiedString($string)->asType()->asUnionType();
+                            return FullyQualifiedClassName::fromFullyQualifiedString($string)->asType()->asPHPDocUnionType();
                         } catch (\Exception $_) {
                             return UnionType::empty();
                         }

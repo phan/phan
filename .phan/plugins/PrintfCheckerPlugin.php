@@ -161,7 +161,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
 
     public function getReturnTypeOverrides(CodeBase $unused_code_base) : array
     {
-        $string_union_type = StringType::instance(false)->asUnionType();
+        $string_union_type = StringType::instance(false)->asPHPDocUnionType();
         /**
          * @param array<int,Node|string|int|float> $args the nodes for the arguments to the invocation
          */
@@ -172,7 +172,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
             array $args
         ) use ($string_union_type) : UnionType {
             if (count($args) < 1) {
-                return FalseType::instance(false)->asUnionType();
+                return FalseType::instance(false)->asRealUnionType();
             }
             $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
             $format_strings = [];
@@ -534,7 +534,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
                     $type_name = $spec->getExpectedUnionTypeName();
                     $expected_set[$type_name] = true;
                 }
-                $expected_union_type = new UnionType();
+                $expected_union_type = UnionType::empty();
                 foreach ($expected_set as $type_name => $_) {
                     // @phan-suppress-next-line PhanThrowTypeAbsentForCall getExpectedUnionTypeName should only return valid union types
                     $expected_union_type = $expected_union_type->withType(Type::fromFullyQualifiedString($type_name));
@@ -625,7 +625,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
         if (isset($expected_set['string'])) {
             static $string_weak_types;
             if ($string_weak_types === null) {
-                $string_weak_types = UnionType::fromFullyQualifiedString('int|string|float');
+                $string_weak_types = UnionType::fromFullyQualifiedPHPDocString('int|string|float');
             }
             return $actual_union_type->canCastToUnionType($string_weak_types);
         }

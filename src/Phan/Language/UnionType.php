@@ -96,29 +96,43 @@ class UnionType implements Serializable
     private $type_set;
 
     /**
+     * @var ?array<int,Type> * This is an immutable list of unique types.
+     */
+    private $real_type_set;
+
+    /**
      * @param array<int,Type> $type_list
      * An optional list of types represented by this union
      * @param bool $is_unique - Whether or not this is already unique. Only set to true within UnionType code.
+     * @param ?array<int,Type> $real_type_set
      * @see UnionType::of() for a more memory efficient equivalent.
      */
-    public function __construct(array $type_list = [], bool $is_unique = false)
+    public function __construct(array $type_list, bool $is_unique, ?array $real_type_set)
     {
         $this->type_set = ($is_unique || \count($type_list) <= 1) ? $type_list : self::getUniqueTypes($type_list);
+        $this->real_type_set = $real_type_set;
     }
 
     /**
      * @param Type[] $type_list
+     * @param ?array<int,Type> $real_type_set
      */
-    public static function of(array $type_list) : UnionType
+    public static function of(array $type_list, ?array $real_type_set) : UnionType
     {
         $n = \count($type_list);
         if ($n === 0) {
             return self::$empty_instance;
         } elseif ($n === 1) {
-            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
-            return \reset($type_list)->asUnionType();
+            if (!$real_type_set) {
+                // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
+                return \reset($type_list)->asPHPDocUnionType();
+            } elseif ($real_type_set === $type_list) {
+                // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
+                return \reset($type_list)->asRealUnionType();
+            }
+            return new UnionType($type_list, true, $real_type_set);
         } else {
-            return new self($type_list);
+            return new self($type_list, false, $real_type_set);
         }
     }
 
@@ -133,9 +147,9 @@ class UnionType implements Serializable
         if ($n === 0) {
             return self::$empty_instance;
         } elseif ($n === 1) {
-            return \reset($type_list)->asUnionType();
+            return \reset($type_list)->asPHPDocUnionType();
         } else {
-            return new self($type_list, true);
+            return new self($type_list, true, null);
         }
     }
 
@@ -172,7 +186,7 @@ class UnionType implements Serializable
      *
      * @throws InvalidArgumentException if any type name in the union type was invalid
      */
-    public static function fromFullyQualifiedString(
+    public static function fromFullyQualifiedPHPDocString(
         string $fully_qualified_string
     ) : UnionType {
         if ($fully_qualified_string === '') {
@@ -193,12 +207,13 @@ class UnionType implements Serializable
             $unique_types = self::getUniqueTypes(self::normalizeMultiTypes($types));
             if (\count($unique_types) === 1) {
                 // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
-                $union_type = \reset($unique_types)->asUnionType();
+                $union_type = \reset($unique_types)->asPHPDocUnionType();
             } else {
                 // TODO: Support template types within <> and test?
                 $union_type = new UnionType(
                     $unique_types,
-                    true
+                    true,
+                    null
                 );
             }
             $memoize_map[$fully_qualified_string] = $union_type;
@@ -258,7 +273,7 @@ class UnionType implements Serializable
                 $code_base
             );
         }
-        return UnionType::of(self::normalizeMultiTypes($types));
+        return UnionType::of(self::normalizeMultiTypes($types), null);
     }
 
     /**
@@ -390,7 +405,7 @@ class UnionType implements Serializable
     public static function fromReflectionType(?\ReflectionType $reflection_type) : UnionType
     {
         if ($reflection_type !== null) {
-            return Type::fromReflectionType($reflection_type)->asUnionType();
+            return Type::fromReflectionType($reflection_type)->asRealUnionType();
         }
         return self::$empty_instance;
     }
@@ -530,20 +545,31 @@ class UnionType implements Serializable
     }
 
     /**
+     * @return ?array<int,Type>
+     * The list of real simple types associated with this
+     * union type. Keys are consecutive.
+     */
+    public function getRealTypeSet() : ?array
+    {
+        return $this->real_type_set;
+    }
+
+    /**
      * Add a type name to the list of types
      */
     public function withType(Type $type) : UnionType
     {
+        // TODO: Figure out a better way to specify if involved types are real
         $type_set = $this->type_set;
         if (\count($type_set) === 0) {
-            return $type->asUnionType();
+            return $type->asPHPDocUnionType();
         }
         if (\in_array($type, $type_set, true)) {
-            return $this;
+            return $this->eraseRealTypeSet();
         }
         // 2 or more types in type_set
         $type_set[] = $type;
-        return new UnionType($type_set, true);
+        return new UnionType($type_set, true, null);
     }
 
     /**
@@ -565,7 +591,7 @@ class UnionType implements Serializable
             }
         }
         // We did not find $type in type_set. The resulting union type is unchanged.
-        return $this;
+        return $this->eraseRealTypeSet();
     }
 
     /**
@@ -578,6 +604,17 @@ class UnionType implements Serializable
         return \in_array($type, $this->type_set, true);
     }
 
+    protected function eraseRealTypeSet() : UnionType {
+        if ($this->real_type_set) {
+            if (\count($this->type_set) === 1) {
+                // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
+                return \reset($this->type_set)->asPHPDocUnionType();
+            }
+            return new UnionType($this->type_set, true, null);
+        }
+        return $this;
+    }
+
     /**
      * Returns a union type which add the given types to this type
      */
@@ -586,12 +623,12 @@ class UnionType implements Serializable
         // Precondition: Both UnionTypes have lists of unique types.
         $type_set = $this->type_set;
         if (\count($type_set) === 0) {
-            return $union_type;
+            return $union_type->eraseRealTypeSet();
         }
         $other_type_set = $union_type->type_set;
 
         if (\count($other_type_set) === 0) {
-            return $this;
+            return $this->eraseRealTypeSet();
         }
         $new_type_set = $type_set;
         foreach ($other_type_set as $type) {
@@ -599,7 +636,17 @@ class UnionType implements Serializable
                 $new_type_set[] = $type;
             }
         }
-        return new UnionType($new_type_set, true);
+        $real_type_set = $this->real_type_set;
+        if ($real_type_set && $union_type->real_type_set) {
+            foreach ($union_type->real_type_set as $type) {
+                if (!\in_array($type, $real_type_set, true)) {
+                    $real_type_set[] = $type;
+                }
+            }
+        } else {
+            $real_type_set = null;
+        }
+        return new UnionType($new_type_set, true, $real_type_set);
     }
 
     /**
@@ -704,7 +751,7 @@ class UnionType implements Serializable
             }
         }
 
-        return $has_template ? UnionType::of($concrete_type_list) : $this;
+        return $has_template ? UnionType::of($concrete_type_list, null) : $this;
     }
 
     /**
@@ -997,7 +1044,7 @@ class UnionType implements Serializable
         if ($is_nullable) {
             if ($new_variable_type->isEmpty()) {
                 // There was a null somewhere in the old union type.
-                return NullType::instance(false)->asUnionType();
+                return NullType::instance(false)->asPHPDocUnionType();
             }
             return $new_variable_type->nullableClone();
         }
@@ -1450,7 +1497,7 @@ class UnionType implements Serializable
             return false;
         }
         foreach ($this->type_set as $type) {
-            if (!$type->asUnionType()->canStrictCastToUnionType($code_base, $other)) {
+            if (!$type->asPHPDocUnionType()->canStrictCastToUnionType($code_base, $other)) {
                 return false;
             }
         }
@@ -2002,7 +2049,18 @@ class UnionType implements Serializable
         if (\count($new_type_list) === \count($this->type_set)) {
             return $this;
         }
-        return new UnionType($new_type_list, true);
+        // TODO: look into filtering real_type_set
+        return new UnionType($new_type_list, true, $this->real_type_set && $this->allTypesMatchRealTypeSet($cb) ? $this->real_type_set : null);
+    }
+
+    private function allTypesMatchRealTypeSet(Closure $cb) : bool
+    {
+        foreach ($this->real_type_set as $type) {
+            if (!$cb($type)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -2573,9 +2631,9 @@ class UnionType implements Serializable
         }, $this->type_set);
         if (\count($parts) <= 1) {
             // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
-            return \count($parts) === 1 ? \reset($parts)->asUnionType() : self::$empty_instance;
+            return \count($parts) === 1 ? \reset($parts)->asPHPDocUnionType() : self::$empty_instance;
         }
-        return new UnionType($parts);
+        return new UnionType($parts, false, null);
     }
 
     /**
@@ -2592,7 +2650,7 @@ class UnionType implements Serializable
         if (\count($parts) <= 1) {
             return \count($parts) === 1 ? \reset($parts)->asUnionType() : self::$empty_instance;
         }
-        return new UnionType($parts);
+        return new UnionType($parts, false, null);
     }
 
     /**
@@ -2606,7 +2664,7 @@ class UnionType implements Serializable
                 $result = ArrayShapeType::fromFieldTypes($field_types, $type->isNullable());
                 return $result;
             } elseif ($type instanceof GenericArrayType) {
-                $element_types = $closure($type->genericArrayElementType()->asUnionType());
+                $element_types = $closure($type->genericArrayElementType()->asPHPDocUnionType());
                 if ($element_types->typeCount() !== 1) {
                     $element_type = MixedType::instance(false);
                 } else {
@@ -2649,7 +2707,7 @@ class UnionType implements Serializable
     public function asNonEmptyGenericArrayTypes(int $key_type) : UnionType
     {
         if (\count($this->type_set) === 0) {
-            return ArrayType::instance(false)->asUnionType();
+            return ArrayType::instance(false)->asPHPDocUnionType();
         }
         return $this->asMappedUnionType(
             static function (Type $type) use ($key_type) : Type {
@@ -2827,7 +2885,8 @@ class UnionType implements Serializable
     {
         // NOTE: Potentially need to handle "array{field:int|string}" in the future.
         // TODO: Not going to work with template types
-        $this->type_set = UnionType::fromFullyQualifiedString($serialized)->getTypeSet();
+        // NOTE: Not going to track whether this is real or phpdoc
+        $this->type_set = UnionType::fromFullyQualifiedPHPDocString($serialized)->getTypeSet();
     }
 
     /**
@@ -3356,7 +3415,7 @@ class UnionType implements Serializable
         if ($types === $this->type_set) {
             return $this;
         }
-        return UnionType::of($types);
+        return UnionType::of($types, null);
     }
 
     /**
@@ -3370,7 +3429,7 @@ class UnionType implements Serializable
         if ($is_possibly_undefined === false) {
             return $this;
         }
-        $result = new AnnotatedUnionType($this->getTypeSet(), true);
+        $result = new AnnotatedUnionType($this->getTypeSet(), true, null);
         $result->is_possibly_undefined = $is_possibly_undefined;
         return $result;
     }
@@ -3496,7 +3555,8 @@ class UnionType implements Serializable
     public function applyUnaryBitwiseNotOperator() : UnionType
     {
         if ($this->isEmpty()) {
-            return IntType::instance(false)->asUnionType();
+            // Can be int|string
+            return IntType::instance(false)->asPHPDocUnionType();
         }
         $added_fallbacks = false;
         $type_set = UnionType::empty();
@@ -3856,7 +3916,7 @@ class UnionType implements Serializable
     public function usesTemplateType(TemplateType $template_type) : bool
     {
         $new_union_type = $this->withTemplateParameterTypeMap([
-            $template_type->getName() => UnionType::fromFullyQualifiedString('mixed'),
+            $template_type->getName() => UnionType::fromFullyQualifiedPHPDocString('mixed'),
         ]);
         return !$this->isEqualTo($new_union_type);
     }

@@ -1448,21 +1448,43 @@ class Type
         return $result;
     }
 
-
     /**
      * @var ?UnionType of [$this]
      */
     protected $singleton_union_type;
 
     /**
+     * @var ?UnionType of [$this] with an identical real type set
+     */
+    protected $singleton_real_union_type;
+
+    /**
      * @return UnionType
      * A UnionType representing this and only this type
      */
-    public function asUnionType() : UnionType
+    public function asPHPDocUnionType() : UnionType
     {
         // return new UnionType([$this]);
         // Memoize the set of types. The constructed UnionType object can be modified later, so it isn't memoized.
         return $this->singleton_union_type ?? ($this->singleton_union_type = new UnionType([$this], true));
+    }
+
+    /**
+     * @param ?array<int,string> $type_set
+     * @return UnionType
+     * A UnionType representing this and only this type
+     */
+    public function asRealUnionType() : UnionType
+    {
+        // return new UnionType([$this]);
+        // Memoize the set of types. The constructed UnionType object can be modified later, so it isn't memoized.
+        return $this->singleton_real_union_type ?? ($this->singleton_real_union_type = $this->computeRealUnionType());
+    }
+
+    private function computeRealUnionType() : UnionType
+    {
+        $type_set = [$this];
+        return new UnionType($type_set, true, $type_set);
     }
 
     /**

@@ -39,7 +39,6 @@ use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Type;
-use Phan\Language\Type\IntType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
@@ -460,7 +459,7 @@ class ContextNode
             }
             static $int_or_string_type;
             if ($int_or_string_type === null) {
-                $int_or_string_type = new UnionType([StringType::instance(false), IntType::instance(false), NullType::instance(false)]);
+                $int_or_string_type = UnionType::fromFullyQualifiedPHPDocString('int|string|null');
             }
             if (!$name_node_type->canCastToUnionType($int_or_string_type)) {
                 $this->emitIssue(Issue::TypeSuspiciousIndirectVariable, $name_node->lineno ?? 0, (string)$name_node_type);
@@ -502,7 +501,7 @@ class ContextNode
         $node = $this->node;
         if (!($node instanceof Node)) {
             if (\is_string($node)) {
-                return [LiteralStringType::instanceForValue($node, false)->asUnionType(), []];
+                return [LiteralStringType::instanceForValue($node, false)->asRealUnionType(), []];
             }
             return [UnionType::empty(), []];
         }
@@ -1229,7 +1228,7 @@ class ContextNode
         );
         static $null_type = null;
         if ($null_type === null) {
-            $null_type = NullType::instance(false)->asUnionType();
+            $null_type = NullType::instance(false)->asPHPDocUnionType();
         }
         if ($parameter->getReferenceType() === Parameter::REFERENCE_READ_WRITE ||
             ($real_parameter && !$real_parameter->getNonVariadicUnionType()->containsNullableOrIsEmpty())) {
@@ -1478,7 +1477,7 @@ class ContextNode
     private function createExceptionForInvalidPropertyName(Node $node, bool $is_static) : Exception
     {
         $property_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['prop']);
-        if ($property_type->canCastToUnionType(StringType::instance(false)->asUnionType())) {
+        if ($property_type->canCastToUnionType(StringType::instance(false)->asPHPDocUnionType())) {
             // If we know it can be a string, throw a NodeException instead of a specific issue
             return new NodeException(
                 $node,
