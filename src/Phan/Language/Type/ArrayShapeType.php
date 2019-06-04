@@ -507,7 +507,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
                 try {
                     $expanded_field_type = $union_type->asExpandedTypes($code_base, $recursion_depth);
                 } catch (RecursionDepthException $_) {
-                    $expanded_field_type = MixedType::instance(false)->asUnionType();
+                    $expanded_field_type = MixedType::instance(false)->asPHPDocUnionType();
                 }
                 if ($union_type->isPossiblyUndefined()) {
                     // array{key?:string} should become array{key?:string}.
@@ -515,7 +515,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
                 }
                 $result_fields[$key] = $expanded_field_type;
             }
-            return ArrayShapeType::fromFieldTypes($result_fields, $this->is_nullable)->asUnionType();
+            return ArrayShapeType::fromFieldTypes($result_fields, $this->is_nullable)->asPHPDocUnionType();
         });
     }
 

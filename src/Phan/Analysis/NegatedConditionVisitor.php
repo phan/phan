@@ -587,7 +587,8 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                     if ($has_null && !$has_other_nullable_types) {
                         $new_type_builder->addType(NullType::instance(false));
                     }
-                    return $new_type_builder->getUnionType();
+                    // TODO: Could try to track real types here and elsewhere
+                    return $new_type_builder->getPHPDocUnionType();
                 },
                 false
             );
@@ -628,7 +629,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                     if ($has_null && !$has_other_nullable_types) {
                         $new_type_builder->addType(NullType::instance(false));
                     }
-                    return $new_type_builder->getUnionType();
+                    return $new_type_builder->getPHPDocUnionType();
                 },
                 false
             );
@@ -665,7 +666,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                     if ($has_null && !$has_other_nullable_types) {
                         $new_type_builder->addType(NullType::instance(false));
                     }
-                    return $new_type_builder->getUnionType();
+                    return $new_type_builder->getPHPDocUnionType();
                 },
                 false
             );
@@ -709,7 +710,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
             return $this->checkComplexIsset($var_node);
         }
         // if (!isset($x))
-        return $this->updateVariableWithNewType($var_node, $this->context, NullType::instance(false)->asUnionType(), true);
+        return $this->updateVariableWithNewType($var_node, $this->context, NullType::instance(false)->asPHPDocUnionType(), true);
     }
 
     /**
@@ -752,7 +753,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
             }
         } elseif ($var_node->kind === ast\AST_PROP) {
             $context = $this->modifyPropertySimple($var_node, static function (UnionType $_) : UnionType {
-                return NullType::instance(false)->asUnionType();
+                return NullType::instance(false)->asPHPDocUnionType();
             }, $context);
         }
         return $context;

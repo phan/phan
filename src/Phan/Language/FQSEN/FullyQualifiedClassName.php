@@ -77,9 +77,9 @@ class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement
      * @return UnionType
      * The union type of just this class type
      */
-    public function asUnionType() : UnionType
+    public function asPHPDocUnionType() : UnionType
     {
-        return $this->asType()->asUnionType();
+        return $this->asType()->asPHPDocUnionType();
     }
 
     /**

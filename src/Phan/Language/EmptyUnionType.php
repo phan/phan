@@ -27,7 +27,7 @@ final class EmptyUnionType extends UnionType
      */
     public function __construct()
     {
-        parent::__construct([], true);
+        parent::__construct([], true, null);
     }
 
     /**
@@ -58,7 +58,7 @@ final class EmptyUnionType extends UnionType
      */
     public function withType(Type $type) : UnionType
     {
-        return $type->asUnionType();
+        return $type->asPHPDocUnionType();
     }
 
     /**
@@ -95,7 +95,7 @@ final class EmptyUnionType extends UnionType
      */
     public function withUnionType(UnionType $union_type) : UnionType
     {
-        return $union_type;
+        return $union_type->eraseRealTypeSet();
     }
 
     /**
@@ -965,7 +965,7 @@ final class EmptyUnionType extends UnionType
      */
     public function asNonEmptyGenericArrayTypes(int $key_type) : UnionType
     {
-        return ArrayType::instance(false)->asUnionType();
+        return ArrayType::instance(false)->asPHPDocUnionType();
     }
 
     /**
@@ -1223,12 +1223,12 @@ final class EmptyUnionType extends UnionType
 
     public function applyUnaryBitwiseNotOperator() : UnionType
     {
-        return IntType::instance(false)->asUnionType();
+        return IntType::instance(false)->asPHPDocUnionType();
     }
 
     public function applyUnaryPlusOperator() : UnionType
     {
-        return UnionType::fromFullyQualifiedString('int|float');
+        return UnionType::fromFullyQualifiedPHPDocString('int|float');
     }
 
     /** @return null */

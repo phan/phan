@@ -14,14 +14,10 @@ use Phan\Language\Element\Comment\Builder;
 use Phan\Language\FutureUnionType;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
-use Phan\Language\Type\BoolType;
 use Phan\Language\Type\ClosureDeclarationParameter;
 use Phan\Language\Type\FalseType;
-use Phan\Language\Type\FloatType;
-use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
-use Phan\Language\Type\StringType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\UnionType;
 use Phan\Parse\ParseVisitor;
@@ -216,7 +212,7 @@ class Parameter extends Variable
         );
         if ($reflection_parameter->isOptional()) {
             $parameter->setDefaultValueType(
-                NullType::instance(false)->asUnionType()
+                NullType::instance(false)->asPHPDocUnionType()
             );
         }
         return $parameter;
@@ -589,7 +585,7 @@ class Parameter extends Variable
     {
         $param_type = $this->getNonVariadicUnionType();
         if ($param_type->isEmpty()) {
-            $param_type = MixedType::instance(false)->asUnionType();
+            $param_type = MixedType::instance(false)->asPHPDocUnionType();
         }
         return new ClosureDeclarationParameter(
             $param_type,

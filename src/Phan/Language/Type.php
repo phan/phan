@@ -607,7 +607,8 @@ class Type
                  * @param mixed $value
                  */
                 static function ($value) : UnionType {
-                    return self::fromObjectExtended($value)->asUnionType();
+                    // TODO: Look into how this is used and add real equivalent?
+                    return self::fromObjectExtended($value)->asPHPDocUnionType();
                 },
                 $array
             ),
@@ -890,7 +891,7 @@ class Type
     private static function createTemplateParameterTypeList(array $template_parameter_type_name_list) : array
     {
         return \array_map(static function (string $type_name) : UnionType {
-            return UnionType::fromFullyQualifiedString($type_name);
+            return UnionType::fromFullyQualifiedPHPDocString($type_name);
         }, $template_parameter_type_name_list);
     }
 
@@ -1466,7 +1467,7 @@ class Type
     {
         // return new UnionType([$this]);
         // Memoize the set of types. The constructed UnionType object can be modified later, so it isn't memoized.
-        return $this->singleton_union_type ?? ($this->singleton_union_type = new UnionType([$this], true));
+        return $this->singleton_union_type ?? ($this->singleton_union_type = new UnionType([$this], true, null));
     }
 
     /**
@@ -2217,6 +2218,8 @@ class Type
      * @return UnionType
      * Expands class types to all inherited classes returning
      * a superset of this type.
+     *
+     * TODO: Add equivalent to preserve the real type
      */
     public function asExpandedTypes(
         CodeBase $code_base,
@@ -2228,8 +2231,8 @@ class Type
         if ($recursion_depth >= 20) {
             throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
         }
-        $union_type = $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) : UnionType {
-            $union_type = $this->asUnionType();
+        return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) : UnionType {
+            $union_type = $this->asPHPDocUnionType();
 
             $class_fqsen = $this->asFQSEN();
 
@@ -2282,9 +2285,8 @@ class Type
                 );
             }
 
-            return $recursive_union_type_builder->getUnionType();
+            return $recursive_union_type_builder->getPHPDocUnionType();
         });
-        return $union_type;
     }
 
     /**
@@ -2310,8 +2312,8 @@ class Type
         if ($recursion_depth >= 20) {
             throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
         }
-        $union_type = $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) : UnionType {
-            $union_type = $this->asUnionType();
+        return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) : UnionType {
+            $union_type = $this->asPHPDocUnionType();
 
             $class_fqsen = $this->asFQSEN();
 
@@ -2373,13 +2375,12 @@ class Type
                 );
             }
 
-            $result = $recursive_union_type_builder->getUnionType();
+            $result = $recursive_union_type_builder->getPHPDocUnionType();
             if (!$template_union_type->isEmpty()) {
                 return $result->replaceWithTemplateTypes($template_union_type);
             }
             return $result;
         });
-        return $union_type;
     }
 
     /**
@@ -3162,10 +3163,10 @@ class Type
     {
         if ($this->is_nullable) {
             // ++null is 1
-            return UnionType::of([$this->withIsNullable(false), IntType::instance(false)]);
+            return UnionType::of([$this->withIsNullable(false), IntType::instance(false)], null);
         }
         // ++$obj; doesn't change the object.
-        return $this->asUnionType();
+        return $this->asPHPDocUnionType();
     }
 
     /**
@@ -3230,16 +3231,16 @@ class Type
         array $template_parameter_type_map
     ) : UnionType {
         if (!$this->template_parameter_type_list) {
-            return $this->asUnionType();
+            return $this->asPHPDocUnionType();
         }
         $new_type_list = [];
         foreach ($this->template_parameter_type_list as $i => $type) {
             $new_type_list[$i] = $type->withTemplateParameterTypeMap($template_parameter_type_map);
         }
         if ($new_type_list === $this->template_parameter_type_list) {
-            return $this->asUnionType();
+            return $this->asPHPDocUnionType();
         }
-        return self::fromType($this, $new_type_list)->asUnionType();
+        return self::fromType($this, $new_type_list)->asPHPDocUnionType();
     }
 
     /**

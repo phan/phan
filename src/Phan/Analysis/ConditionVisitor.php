@@ -639,7 +639,9 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                 $new_type_builder->addType(Type::traversableInstance());
             }
         }
-        $variable->setUnionType($new_type_builder->isEmpty() ? ObjectType::instance(false)->asRealUnionType() : $new_type_builder->getUnionType());
+        $variable->setUnionType(
+            $new_type_builder->isEmpty() ? ObjectType::instance(false)->asRealUnionType()
+                                         : UnionType::of($new_type_builder->getTypeSet(), [ObjectType::instance(false)]));
     }
 
     /**

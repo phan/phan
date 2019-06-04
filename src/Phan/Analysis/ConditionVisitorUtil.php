@@ -24,13 +24,11 @@ use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
 use Phan\Language\Type\FalseType;
-use Phan\Language\Type\IntType;
 use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\LiteralTypeInterface;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
-use Phan\Language\Type\StringType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\UnionType;
 use Phan\Library\StringUtil;
@@ -672,7 +670,7 @@ trait ConditionVisitorUtil
         }
         if (!is_string($expr_value)) {
             $expr_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $expr_node);
-            if (!$expr_type->canCastToUnionType(UnionType::fromFullyQualifiedString('string|false'))) {
+            if (!$expr_type->canCastToUnionType(UnionType::fromFullyQualifiedPHPDocString('string|false'))) {
                 Issue::maybeEmit(
                     $this->code_base,
                     $this->context,
