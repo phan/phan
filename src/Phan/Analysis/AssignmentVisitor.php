@@ -593,7 +593,7 @@ class AssignmentVisitor extends AnalysisVisitor
             $dim_value = $dim_type->asSingleScalarValueOrNullOrSelf();
         } elseif (\is_scalar($dim_node)) {
             $dim_value = $dim_node;
-            $dim_type = Type::fromObject($dim_node)->asUnionType();
+            $dim_type = Type::fromObject($dim_node)->asRealUnionType();
         } else {
             // TODO: If the array shape has only one set of keys, then appending should add to that shape? Possibly not a common use case.
             $dim_type = null;
@@ -601,9 +601,10 @@ class AssignmentVisitor extends AnalysisVisitor
         }
 
         if ($dim_type !== null && !\is_object($dim_value)) {
+            // TODO: This is probably why Phan has bugs with multi-dimensional assignment adding new union types instead of combining with existing ones.
             $right_type = ArrayShapeType::fromFieldTypes([
                 $dim_value => $this->right_type,
-            ], false)->asUnionType();
+            ], false)->asPHPDocUnionType();
         } else {
             // Make the right type a generic (i.e. int -> int[])
             if ($dim_type !== null) {
@@ -616,9 +617,9 @@ class AssignmentVisitor extends AnalysisVisitor
             $right_inner_type = $this->right_type;
             if ($right_inner_type->isEmpty()) {
                 if ($key_type_enum === GenericArrayType::KEY_MIXED) {
-                    $right_type = ArrayType::instance(false)->asUnionType();
+                    $right_type = ArrayType::instance(false)->asPHPDocUnionType();
                 } else {
-                    $right_type = GenericArrayType::fromElementType(MixedType::instance(false), false, $key_type_enum)->asUnionType();
+                    $right_type = GenericArrayType::fromElementType(MixedType::instance(false), false, $key_type_enum)->asPHPDocUnionType();
                 }
             } else {
                 $right_type = $right_inner_type->asGenericArrayTypes($key_type_enum);
@@ -1182,7 +1183,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 $old_variable_union_type = $variable->getUnionType();
                 $right_type = $this->typeCheckDimAssignment($old_variable_union_type, $node);
                 if ($old_variable_union_type->isEmpty()) {
-                    $old_variable_union_type = ArrayType::instance(false)->asUnionType();
+                    $old_variable_union_type = ArrayType::instance(false)->asPHPDocUnionType();
                 }
                 // TODO: Make the behavior more precise for $x['a']['b'] = ...; when $x is an array shape.
                 if ($this->dim_depth > 1 || ($old_variable_union_type->hasTopLevelNonArrayShapeTypeInstances() || $right_type->hasTopLevelNonArrayShapeTypeInstances() || $right_type->isEmpty())) {
@@ -1251,9 +1252,9 @@ class AssignmentVisitor extends AnalysisVisitor
         static $simple_xml_element_type = null;
 
         if ($int_or_string_type === null) {
-            $int_or_string_type = UnionType::fromFullyQualifiedString('int|string');
+            $int_or_string_type = UnionType::fromFullyQualifiedPHPDocString('int|string');
             $mixed_type = MixedType::instance(false);
-            $string_array_type = UnionType::fromFullyQualifiedString('string[]');
+            $string_array_type = UnionType::fromFullyQualifiedPHPDocString('string[]');
             $simple_xml_element_type =
                 Type::fromNamespaceAndName('\\', 'SimpleXMLElement', false);
         }
@@ -1302,7 +1303,7 @@ class AssignmentVisitor extends AnalysisVisitor
                     if ($right_type->canCastToUnionType($string_array_type)) {
                         // e.g. $a = 'aaa'; $a[0] = 'x';
                         // (Currently special casing this, not handling deeper dimensions)
-                        return StringType::instance(false)->asUnionType();
+                        return StringType::instance(false)->asPHPDocUnionType();
                     }
                 }
             } elseif (!$assign_type->hasType($mixed_type) && !$assign_type->hasType($simple_xml_element_type)) {

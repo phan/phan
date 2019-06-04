@@ -1765,7 +1765,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             $name_node_type = $this->__invoke($name_node);
             static $int_or_string_type;
             if ($int_or_string_type === null) {
-                $int_or_string_type = UnionType::fromFullyQualifiedString('int|string|null');
+                $int_or_string_type = UnionType::fromFullyQualifiedPHPDocString('int|string|null');
             }
             if (!$name_node_type->canCastToUnionType($int_or_string_type)) {
                 Issue::maybeEmit($this->code_base, $this->context, Issue::TypeSuspiciousIndirectVariable, $name_node->lineno, (string)$name_node_type);
@@ -3254,7 +3254,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         if ($int_type === null) {
             $int_type = IntType::instance(false)->asPHPDocUnionType();
             $string_type = StringType::instance(false)->asPHPDocUnionType();
-            $int_or_string_type = UnionType::fromFullyQualifiedString('int|string');
+            $int_or_string_type = UnionType::fromFullyQualifiedPHPDocString('int|string');
         }
         $key_enum_type = GenericArrayType::keyTypeFromUnionTypeKeys($union_type);
         switch ($key_enum_type) {

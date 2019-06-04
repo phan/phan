@@ -223,6 +223,51 @@ class UnionType implements Serializable
     }
 
     /**
+     * @param string $fully_qualified_string
+     * A '|' delimited string representing a type in the form
+     * 'int|string|null|ClassName'.
+     *
+     * @return UnionType
+     *
+     * @throws InvalidArgumentException if any type name in the union type was invalid
+     */
+    public static function fromFullyQualifiedRealString(
+        string $fully_qualified_string
+    ) : UnionType {
+        if ($fully_qualified_string === '') {
+            return self::$empty_instance;
+        }
+
+        /** @var array<string,UnionType> annotation not read by phan */
+        static $memoize_map = [];
+        $union_type = $memoize_map[$fully_qualified_string] ?? null;
+
+        if (\is_null($union_type)) {
+            /** Convert the `|` separated types in the union type to a list of types */
+            $types = \array_map(static function (string $type_name) : Type {
+                // @phan-suppress-next-line PhanThrowTypeAbsentForCall FIXME: Standardize on InvalidArgumentException
+                return Type::fromFullyQualifiedString($type_name);
+            }, self::extractTypeParts($fully_qualified_string));
+
+            $unique_types = self::getUniqueTypes(self::normalizeMultiTypes($types));
+            if (\count($unique_types) === 1) {
+                // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
+                $union_type = \reset($unique_types)->asPHPDocUnionType();
+            } else {
+                // TODO: Support template types within <> and test?
+                $union_type = new UnionType(
+                    $unique_types,
+                    true,
+                    $unique_types
+                );
+            }
+            $memoize_map[$fully_qualified_string] = $union_type;
+        }
+
+        return $union_type;
+    }
+
+    /**
      * @param array<int,Type> $type_list
      * @return array<int,Type>
      */

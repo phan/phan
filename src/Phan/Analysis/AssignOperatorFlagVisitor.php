@@ -99,18 +99,15 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
         } elseif ($left->hasNonNullIntType()
             && $right->hasNonNullIntType()
         ) {
-            return IntType::instance(false)->asUnionType();
+            return IntType::instance(false)->asPHPDocUnionType();
         } elseif ($left->hasType(FloatType::instance(false))
             && $right->hasType(FloatType::instance(false))
         ) {
-            return FloatType::instance(false)->asUnionType();
+            return FloatType::instance(false)->asPHPDocUnionType();
         }
 
         static $int_or_float;
-        return $int_or_float ?? ($int_or_float = new UnionType([
-            IntType::instance(false),
-            FloatType::instance(false)
-        ]));
+        return $int_or_float ?? ($int_or_float = UnionType::fromFullyQualifiedPHPDocString('int|float'));
     }
 
     public function visitBinaryCoalesce(Node $node) : UnionType
@@ -146,13 +143,13 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
         if ($left->hasNonNullIntType()
             && $right->hasNonNullIntType()
         ) {
-            return IntType::instance(false)->asUnionType();
+            return IntType::instance(false)->asPHPDocUnionType();
         } elseif ($left->hasNonNullStringType() &&
             $right->hasNonNullStringType()) {
             // $x = 'a'; $x &= 'c';
-            return StringType::instance(false)->asUnionType();
+            return StringType::instance(false)->asPHPDocUnionType();
         }
-        return IntType::instance(false)->asUnionType();
+        return IntType::instance(false)->asPHPDocUnionType();
     }
 
     /**
@@ -174,13 +171,13 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
         if ($left->hasNonNullIntType()
             && $right->hasNonNullIntType()
         ) {
-            return IntType::instance(false)->asUnionType();
+            return IntType::instance(false)->asPHPDocUnionType();
         } elseif ($left->hasNonNullStringType() &&
             $right->hasNonNullStringType()) {
             // $x = 'a'; $x |= 'c';
-            return StringType::instance(false)->asUnionType();
+            return StringType::instance(false)->asPHPDocUnionType();
         }
-        return IntType::instance(false)->asUnionType();
+        return IntType::instance(false)->asPHPDocUnionType();
     }
 
     /**
@@ -223,14 +220,14 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
         } elseif ($left->hasNonNullIntType()
             && $right->hasNonNullIntType()
         ) {
-            return IntType::instance(false)->asUnionType();
+            return IntType::instance(false)->asPHPDocUnionType();
         } elseif ($left->hasNonNullStringType()
             && $right->hasNonNullStringType()
         ) {
-            return StringType::instance(false)->asUnionType();
+            return StringType::instance(false)->asPHPDocUnionType();
         }
 
-        return IntType::instance(false)->asUnionType();
+        return IntType::instance(false)->asPHPDocUnionType();
     }
 
     /**
@@ -242,7 +239,7 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
      */
     public function visitBinaryConcat(Node $node) : UnionType
     {
-        return StringType::instance(false)->asUnionType();
+        return StringType::instance(false)->asRealUnionType();
     }
 
     /**
@@ -270,7 +267,7 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
         if ($left->isNonNullIntType()
             && $right->isNonNullIntType()
         ) {
-            return IntType::instance(false)->asUnionType();
+            return IntType::instance(false)->asPHPDocUnionType();
         }
 
         // If both left and right are arrays, then this is array
@@ -280,7 +277,7 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
                 return $left;
             }
 
-            return ArrayType::instance(false)->asUnionType();
+            return ArrayType::instance(false)->asPHPDocUnionType();
         }
 
         // TODO: isNonNullNumberType
@@ -289,7 +286,7 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
             && ($right->isNonNullIntType()
             || $right->isType(FloatType::instance(false)))
         ) {
-            return FloatType::instance(false)->asUnionType();
+            return FloatType::instance(false)->asPHPDocUnionType();
         }
 
         $left_is_array = (
@@ -304,7 +301,7 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
 
         if ($left_is_array
             && !$right->canCastToUnionType(
-                ArrayType::instance(false)->asUnionType()
+                ArrayType::instance(false)->asPHPDocUnionType()
             )
         ) {
             Issue::maybeEmit(
@@ -315,7 +312,7 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
             );
             return UnionType::empty();
         } elseif ($right_is_array
-            && !$left->canCastToUnionType(ArrayType::instance(false)->asUnionType())
+            && !$left->canCastToUnionType(ArrayType::instance(false)->asPHPDocUnionType())
         ) {
             Issue::maybeEmit(
                 $this->code_base,
@@ -327,46 +324,43 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
         } elseif ($left_is_array || $right_is_array) {
             // If it is a '+' and we know one side is an array
             // and the other is unknown, assume array
-            return ArrayType::instance(false)->asUnionType();
+            return ArrayType::instance(false)->asPHPDocUnionType();
         }
 
         static $int_or_float;
-        return $int_or_float ?? ($int_or_float = new UnionType([
-            IntType::instance(false),
-            FloatType::instance(false)
-        ]));
+        return $int_or_float ?? ($int_or_float = UnionType::fromFullyQualifiedPHPDocString('int|float'));
     }
 
     /** @override */
     public function visitBinaryDiv(Node $_) : UnionType
     {
         // analyzed in AssignOperatorAnalysisVisitor
-        return FloatType::instance(false)->asUnionType();
+        return FloatType::instance(false)->asPHPDocUnionType();
     }
 
     /** @override */
     public function visitBinaryMod(Node $_) : UnionType
     {
         // analyzed in AssignOperatorAnalysisVisitor
-        return IntType::instance(false)->asUnionType();
+        return IntType::instance(false)->asPHPDocUnionType();
     }
 
     /** @override */
     public function visitBinaryPow(Node $_) : UnionType
     {
         // analyzed in AssignOperatorAnalysisVisitor
-        return FloatType::instance(false)->asUnionType();
+        return FloatType::instance(false)->asPHPDocUnionType();
     }
 
     /** @override */
     public function visitBinaryShiftLeft(Node $_) : UnionType
     {
-        return IntType::instance(false)->asUnionType();
+        return IntType::instance(false)->asPHPDocUnionType();
     }
 
     /** @override */
     public function visitBinaryShiftRight(Node $_) : UnionType
     {
-        return IntType::instance(false)->asUnionType();
+        return IntType::instance(false)->asPHPDocUnionType();
     }
 }

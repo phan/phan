@@ -336,7 +336,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             return $context->withScopeVariable(new Variable(
                 $context->withLineNumberStart($var_node->lineno ?? 0),
                 $var_name,
-                $is_object ? ObjectType::instance(false)->asUnionType() : UnionType::empty(),
+                $is_object ? ObjectType::instance(false)->asRealUnionType() : UnionType::empty(),
                 0
             ));
         }
@@ -402,7 +402,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             return $context->withScopeVariable(new Variable(
                 $context->withLineNumberStart($node->lineno ?? 0),
                 $var_name,
-                ArrayType::instance(false)->asUnionType(),
+                ArrayType::instance(false)->asPHPDocUnionType(),  // can be array or (unlikely) ArrayAccess
                 0
             ));
         }
@@ -444,7 +444,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             if (!$union_type->hasTopLevelArrayShapeTypeInstances()) {
                 return $union_type;
             }
-            return ArrayType::combineArrayShapeTypesWithField($union_type, $dim_value, MixedType::instance(false)->asUnionType());
+            return ArrayType::combineArrayShapeTypesWithField($union_type, $dim_value, MixedType::instance(false)->asPHPDocUnionType());
         } elseif ($dim_union_type->containsNullableOrUndefined()) {
             if (!$non_nullable) {
                 // The offset in question already exists in the array shape type, and we won't be changing it.
@@ -577,7 +577,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         } else {
             // We know that variable is some sort of object if this condition is true.
             if ($class_node->kind !== ast\AST_NAME &&
-                    !$type->canCastToUnionType(StringType::instance(false)->asUnionType())) {
+                    !$type->canCastToUnionType(StringType::instance(false)->asPHPDocUnionType())) {
                 Issue::maybeEmit(
                     $this->code_base,
                     $this->context,
@@ -639,7 +639,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                 $new_type_builder->addType(Type::traversableInstance());
             }
         }
-        $variable->setUnionType($new_type_builder->isEmpty() ? ObjectType::instance(false)->asUnionType() : $new_type_builder->getUnionType());
+        $variable->setUnionType($new_type_builder->isEmpty() ? ObjectType::instance(false)->asRealUnionType() : $new_type_builder->getUnionType());
     }
 
     /**
@@ -653,7 +653,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
     private static function initTypeModifyingClosuresForVisitCall() : array
     {
         $make_basic_assertion_callback = static function (string $union_type_string) : Closure {
-            $asserted_union_type = UnionType::fromFullyQualifiedString(
+            $asserted_union_type = UnionType::fromFullyQualifiedRealString(
                 $union_type_string
             );
             $asserted_union_type_set = $asserted_union_type->getTypeSet();
@@ -677,7 +677,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             };
         };
         $make_direct_assertion_callback = static function (string $union_type_string) : Closure {
-            $asserted_union_type = UnionType::fromFullyQualifiedString(
+            $asserted_union_type = UnionType::fromFullyQualifiedRealString(
                 $union_type_string
             );
             /**
@@ -709,7 +709,8 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                     $new_type_builder->addType($array_type);
                 }
             }
-            $variable->setUnionType($new_type_builder->isEmpty() ? $array_type->asUnionType() : $new_type_builder->getUnionType());
+            // TODO: Apply the array filter to the real type set if possible
+            $variable->setUnionType($new_type_builder->isEmpty() ? $array_type->asRealUnionType() : $new_type_builder->getPHPDocUnionType());
         };
 
         /**
@@ -722,9 +723,11 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
          * @param array<int,Node|mixed> $args
          */
         $is_a_callback = static function (CodeBase $code_base, Context $context, Variable $variable, array $args) use ($object_callback) : void {
-            $class_name = $args[1] ?? null;
-            if ($class_name instanceof Node) {
-                $class_name = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $class_name)->asSingleScalarValueOrNull();
+            $real_class_name = $args[1] ?? null;
+            if ($real_class_name instanceof Node) {
+                $class_name = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $real_class_name)->asSingleScalarValueOrNull();
+            } else {
+                $class_name = $real_class_name;
             }
             if (!\is_string($class_name)) {
                 // Limit the types of $variable to an object if we can't infer the class name.
@@ -741,7 +744,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                 ));
             }
             // TODO: validate argument
-            $class_type = $fqsen->asType()->asUnionType();
+            $class_type = \is_string($real_class_name) ? $fqsen->asType()->asRealUnionType() : $fqsen->asType()->asPHPDocUnionType();
             $variable->setUnionType(self::calculateNarrowedUnionType($code_base, $variable->getUnionType(), $class_type));
         };
 
@@ -760,7 +763,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                 // If there are no inferred types, or the only type we saw was 'null',
                 // assume there this can be any possible scalar.
                 // (Excludes `resource`, which is technically a scalar)
-                $new_type = UnionType::fromFullyQualifiedString('int|float|bool|string');
+                $new_type = UnionType::fromFullyQualifiedRealString('int|float|bool|string');
             }
             $variable->setUnionType($new_type);
         };
