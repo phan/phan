@@ -794,11 +794,11 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             };
         };
         /** @return void */
-        $callable_callback = $make_callback('callableTypes', CallableType::instance(false)->asUnionType());
-        $bool_callback = $make_callback('getTypesInBoolFamily', BoolType::instance(false)->asUnionType());
-        $int_callback = $make_callback('intTypes', IntType::instance(false)->asUnionType());
-        $string_callback = $make_callback('stringTypes', StringType::instance(false)->asUnionType());
-        $numeric_callback = $make_callback('numericTypes', UnionType::fromFullyQualifiedString('string|int|float'));
+        $callable_callback = $make_callback('callableTypes', CallableType::instance(false)->asRealUnionType());
+        $bool_callback = $make_callback('getTypesInBoolFamily', BoolType::instance(false)->asRealUnionType());
+        $int_callback = $make_callback('intTypes', IntType::instance(false)->asRealUnionType());
+        $string_callback = $make_callback('stringTypes', StringType::instance(false)->asRealUnionType());
+        $numeric_callback = $make_callback('numericTypes', UnionType::fromFullyQualifiedRealString('string|int|float'));
 
         // Note: LiteralIntType exists, but LiteralFloatType doesn't, which is why these are different.
         $float_callback = $make_direct_assertion_callback('float');

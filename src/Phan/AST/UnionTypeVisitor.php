@@ -935,7 +935,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
             // TODO: Normalize value_types, e.g. false+true=bool, array<int,T>+array<string,T>=array<mixed,T>
             $key_type_enum = GenericArrayType::getKeyTypeOfArrayNode($this->code_base, $this->context, $node, $this->should_catch_issue_exception);
-            return $value_types_builder->getUnionType()->asNonEmptyGenericArrayTypes($key_type_enum);
+            return $value_types_builder->getPHPDocUnionType()->asNonEmptyGenericArrayTypes($key_type_enum)->withRealType(ArrayType::instance(false));
         }
 
         // TODO: Also return types such as array<int, mixed>?

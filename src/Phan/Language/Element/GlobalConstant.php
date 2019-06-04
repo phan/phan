@@ -68,7 +68,7 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
         $result = new self(
             new Context(),
             $name,
-            Type::fromObject($value)->asUnionType(),
+            Type::fromObject($value)->asRealUnionType(),
             0,
             $constant_fqsen
         );

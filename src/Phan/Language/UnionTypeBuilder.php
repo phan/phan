@@ -75,7 +75,7 @@ final class UnionTypeBuilder
      */
     public function getRealUnionType() : UnionType
     {
-        return UnionType::of($this->type_set, false, $this->type_set);
+        return UnionType::of($this->type_set, $this->type_set);
     }
 
     /**
@@ -83,6 +83,6 @@ final class UnionTypeBuilder
      */
     public function getPHPDocUnionType() : UnionType
     {
-        return UnionType::of($this->type_set, false, null);
+        return UnionType::of($this->type_set, null);
     }
 }

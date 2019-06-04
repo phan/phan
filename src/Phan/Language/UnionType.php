@@ -1145,13 +1145,14 @@ class UnionType implements Serializable
                 continue;
             }
             $did_change = true;
-            if ($type === NullType::instance(false)) {
+            if ($type instanceof NullType) {
                 continue;
             }
 
             $builder->addType($type->withIsNullable(false));
         }
-        return $did_change ? $builder->getUnionType() : $this;
+        // TODO: Support preserving real type
+        return $did_change ? $builder->getPHPDocUnionType() : $this;
     }
 
     /**
@@ -1170,7 +1171,8 @@ class UnionType implements Serializable
             $did_change = true;
             $builder->addType($type->withIsNullable(true));
         }
-        return $did_change ? $builder->getUnionType() : $this;
+        // TODO: Preserve real types
+        return $did_change ? $builder->getPHPDocUnionType() : $this;
     }
 
     /**
@@ -1220,7 +1222,8 @@ class UnionType implements Serializable
             // add non-nullable equivalents, and replace BoolType with non-nullable TrueType
             $builder->addType($type->asNonFalseyType());
         }
-        return $did_change ? $builder->getUnionType() : $this;
+        // TODO: Preserve real types
+        return $did_change ? $builder->getPHPDocUnionType() : $this;
     }
 
     /**
@@ -1387,7 +1390,7 @@ class UnionType implements Serializable
         if ($has_null) {
             $builder->addType(NullType::instance(false));
         }
-        return $builder->getUnionType()->asNormalizedTypes();
+        return $builder->getPHPDocUnionType()->asNormalizedTypes();
     }
 
     /**
@@ -1438,7 +1441,7 @@ class UnionType implements Serializable
             // add non-nullable equivalents, and replace BoolType with non-nullable TrueType
             $builder->addType($type->asNonFalseType());
         }
-        return $did_change ? $builder->getUnionType() : $this;
+        return $did_change ? $builder->getPHPDocUnionType() : $this;
     }
 
     /**
@@ -1463,7 +1466,7 @@ class UnionType implements Serializable
             // add non-nullable equivalents, and replace BoolType with non-nullable TrueType
             $builder->addType($type->asNonTrueType());
         }
-        return $did_change ? $builder->getUnionType() : $this;
+        return $did_change ? $builder->getPHPDocUnionType() : $this;
     }
 
     /**
@@ -2563,7 +2566,7 @@ class UnionType implements Serializable
             $builder->addUnionType($element_type);
         }
 
-        return $builder->getUnionType();
+        return $builder->getPHPDocUnionType();
     }
 
     /**
@@ -2609,7 +2612,7 @@ class UnionType implements Serializable
             $builder->addType($mixed_type);
         }
 
-        return $builder->getUnionType();
+        return $builder->getPHPDocUnionType();
     }
 
     /**
@@ -2652,7 +2655,7 @@ class UnionType implements Serializable
             $builder->addType($mixed_type);
         }
 
-        return $builder->getUnionType();
+        return $builder->getPHPDocUnionType();
     }
 
     /**
@@ -2777,6 +2780,7 @@ class UnionType implements Serializable
         CodeBase $code_base,
         int $recursion_depth = 0
     ) : UnionType {
+        // TODO: Preserve the original real types without expanding them?
         if ($recursion_depth >= 12) {
             throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
         }
@@ -2802,7 +2806,7 @@ class UnionType implements Serializable
                 )
             );
         }
-        return $builder->getUnionType();
+        return UnionType::of($builder->getTypeSet(), $this->real_type_set);
     }
 
     /**
@@ -2847,7 +2851,7 @@ class UnionType implements Serializable
                 )
             );
         }
-        return $builder->getUnionType();
+        return UnionType::of($builder->getTypeSet(), $this->real_type_set);
     }
 
     /**
@@ -3149,14 +3153,15 @@ class UnionType implements Serializable
             // Optimization: nothing to do if no types are null/nullable or booleans
             return $this;
         }
-        return self::asNormalizedTypesInner($type_set, $flags);
+        return self::asNormalizedTypesInner($type_set, $flags, $this->real_type_set);
     }
 
     /**
      * @param Type[] $type_set
+     * @param ?array<int,Type> $real_type_set
      * @param int $flags non-zero
      */
-    public static function asNormalizedTypesInner(array $type_set, int $flags) : UnionType
+    public static function asNormalizedTypesInner(array $type_set, int $flags, ?array $real_type_set) : UnionType
     {
         $nullable = ($flags & Type::_bit_nullable) !== 0;
         $builder = new UnionTypeBuilder($type_set);
@@ -3185,7 +3190,7 @@ class UnionType implements Serializable
             }
         }
         // TODO: Convert array|array{} to array?
-        return $builder->getUnionType();
+        return UnionType::of($builder->getTypeSet(), $real_type_set);
     }
 
     /**
@@ -3364,7 +3369,7 @@ class UnionType implements Serializable
             return $this;
         }
 
-        $result = new UnionTypeBuilder();
+        $builder = new UnionTypeBuilder();
         $has_other_array_type = false;
         $empty_array_shape_type = null;
         foreach ($this->type_set as $type) {
@@ -3377,19 +3382,19 @@ class UnionType implements Serializable
                 }
                 $has_other_array_type = true;
                 foreach ($type->withFlattenedArrayShapeOrLiteralTypeInstances() as $type_part) {
-                    $result->addType($type_part);
+                    $builder->addType($type_part);
                 }
             } else {
-                $result->addType($type);
+                $builder->addType($type);
                 if ($type instanceof ArrayType) {
                     $has_other_array_type = true;
                 }
             }
         }
         if ($empty_array_shape_type && !$has_other_array_type) {
-            $result->addType(ArrayType::instance($empty_array_shape_type->isNullable()));
+            $builder->addType(ArrayType::instance($empty_array_shape_type->isNullable()));
         }
-        return $result->getUnionType();
+        return $builder->getPHPDocUnionType();
     }
 
     /**
@@ -3402,7 +3407,7 @@ class UnionType implements Serializable
             return $this;
         }
 
-        $result = new UnionTypeBuilder();
+        $builder = new UnionTypeBuilder();
         $has_other_array_type = false;
         $empty_array_shape_type = null;
         foreach ($this->type_set as $type) {
@@ -3414,19 +3419,19 @@ class UnionType implements Serializable
                     }
                 }
                 foreach ($type->withFlattenedArrayShapeOrLiteralTypeInstances() as $type_part) {
-                    $result->addType($type_part);
+                    $builder->addType($type_part);
                 }
             } else {
-                $result->addType($type);
+                $builder->addType($type);
             }
             if ($type instanceof ArrayType) {
                 $has_other_array_type = true;
             }
         }
         if ($empty_array_shape_type && !$has_other_array_type) {
-            $result->addType(ArrayType::instance($empty_array_shape_type->isNullable()));
+            $builder->addType(ArrayType::instance($empty_array_shape_type->isNullable()));
         }
-        return $result->getUnionType();
+        return $builder->getPHPDocUnionType();
     }
 
     /**
@@ -3978,6 +3983,17 @@ class UnionType implements Serializable
             return false;
         }
         return \reset($type_set) instanceof VoidType;
+    }
+
+    public function withRealType(Type $type) : UnionType
+    {
+        $real_type_set = [$type];
+        if ($this->real_type_set === $real_type_set) {
+            return $this;
+        }
+        $new_type = clone($this);
+        $new_type->real_type_set = $real_type_set;
+        return $new_type;
     }
 }
 

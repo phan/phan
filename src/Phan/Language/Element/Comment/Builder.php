@@ -1038,7 +1038,7 @@ final class Builder
             } else {
                 // From https://phpdoc.org/docs/latest/references/phpdoc/tags/method.html
                 // > When the intended method does not have a return value then the return type MAY be omitted; in which case 'void' is implied.
-                $return_union_type = VoidType::instance(false)->asUnionType();
+                $return_union_type = VoidType::instance(false)->asPHPDocUnionType();
             }
             $method_name = $match[22];
 

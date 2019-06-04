@@ -577,7 +577,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $node->children['default']
             );
         } else {
-            $default_type = NullType::instance(false)->asUnionType();
+            $default_type = NullType::instance(false)->asRealUnionType();
         }
 
         $variable->setUnionType($default_type);
@@ -1029,7 +1029,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     {
         $var = $node->children['var'];
         $old_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $var)->withFlattenedArrayShapeOrLiteralTypeInstances();
-        if (!$old_type->canCastToUnionType(UnionType::fromFullyQualifiedString('int|string|float'))) {
+        if (!$old_type->canCastToUnionType(UnionType::fromFullyQualifiedPHPDocString('int|string|float'))) {
             $this->emitIssue(
                 Issue::TypeInvalidUnaryOperandIncOrDec,
                 $node->lineno,
@@ -1404,7 +1404,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         $yield_value_node = $node->children['value'];
         if ($yield_value_node === null) {
-            $yield_value_type = VoidType::instance(false)->asUnionType();
+            $yield_value_type = VoidType::instance(false)->asRealUnionType();
         } else {
             $yield_value_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $yield_value_node);
         }
@@ -1426,7 +1426,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if ($type_list_count > 1) {
             $yield_key_node = $node->children['key'];
             if ($yield_key_node === null) {
-                $yield_key_type = VoidType::instance(false)->asUnionType();
+                $yield_key_type = VoidType::instance(false)->asRealUnionType();
             } else {
                 $yield_key_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $yield_key_node);
             }
@@ -1661,7 +1661,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     {
         if (!($node instanceof Node)) {
             if (null === $node) {
-                yield $return_lineno => VoidType::instance(false)->asUnionType();
+                yield $return_lineno => VoidType::instance(false)->asRealUnionType();
                 return;
             }
             yield $return_lineno => UnionTypeVisitor::unionTypeFromNode(
@@ -1800,7 +1800,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     {
         if (\count($node->children) === 0) {
             // Possibly unreachable (array shape would be returned instead)
-            yield $node->lineno => MixedType::instance(false)->asUnionType();
+            yield $node->lineno => MixedType::instance(false)->asPHPDocUnionType();
             return;
         }
         foreach ($node->children as $elem) {
@@ -1830,7 +1830,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             } else {
                 yield $elem->lineno => Type::fromObject(
                     $value_node
-                )->asUnionType();
+                )->asRealUnionType();
             }
         }
     }
@@ -2149,7 +2149,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             }
             if (!\is_string($method_name)) {
                 $method_name_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['method']);
-                if (!$method_name_type->canCastToUnionType(StringType::instance(false)->asUnionType())) {
+                if (!$method_name_type->canCastToUnionType(StringType::instance(false)->asPHPDocUnionType())) {
                     Issue::maybeEmit(
                         $this->code_base,
                         $this->context,
@@ -2547,7 +2547,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             }
             if (!\is_string($method_name)) {
                 $method_name_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['method']);
-                if (!$method_name_type->canCastToUnionType(StringType::instance(false)->asUnionType())) {
+                if (!$method_name_type->canCastToUnionType(StringType::instance(false)->asPHPDocUnionType())) {
                     Issue::maybeEmit(
                         $this->code_base,
                         $this->context,
