@@ -75,7 +75,7 @@ final class EmptyUnionTypeTest extends BaseTest
             return '';
         }
 
-        $empty_regular = new UnionType([]);
+        $empty_regular = new UnionType([], true, null);
 
         $candidate_arg_lists = $this->generateArgLists($method);
         if (count($candidate_arg_lists) === 0) {
@@ -161,15 +161,19 @@ final class EmptyUnionTypeTest extends BaseTest
                     Type::fromFullyQualifiedString('\stdClass'),
                 ];
             case UnionType::class:
+                // TODO: Add tests of real union types
                 return [
-                    IntType::instance(false)->asUnionType(),
+                    IntType::instance(false)->asPHPDocUnionType(),
+                    IntType::instance(false)->asRealUnionType(),
                     UnionType::empty(),
-                    new UnionType([FalseType::instance(false), ArrayType::instance(false)]),
-                    ArrayType::instance(false)->asUnionType(),
-                    FalseType::instance(true)->asUnionType(),
-                    ObjectType::instance(false)->asUnionType(),
-                    MixedType::instance(false)->asUnionType(),
-                    Type::fromFullyQualifiedString('\stdClass')->asUnionType(),
+                    new UnionType([FalseType::instance(false), ArrayType::instance(false)], true, null),
+                    new UnionType([FalseType::instance(false), ArrayType::instance(false)], true, [FalseType::instance(false), ArrayType::instance(false)]),
+                    ArrayType::instance(false)->asPHPDocUnionType(),
+                    FalseType::instance(true)->asPHPDocUnionType(),
+                    ObjectType::instance(false)->asPHPDocUnionType(),
+                    ObjectType::instance(false)->asRealUnionType(),
+                    MixedType::instance(false)->asPHPDocUnionType(),
+                    Type::fromFullyQualifiedString('\stdClass')->asPHPDocUnionType(),
                 ];
             case Closure::class:
                 return [

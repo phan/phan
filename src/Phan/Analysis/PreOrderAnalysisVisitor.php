@@ -365,7 +365,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                     new Variable(
                         $context,
                         'this',
-                        $override_this_fqsen->asUnionType(),
+                        $override_this_fqsen->asRealUnionType(),
                         0
                     )
                 );
@@ -479,7 +479,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             }
         }
         if (!$func->hasReturn() && $func->getUnionType()->isEmpty()) {
-            $func->setUnionType(VoidType::instance(false)->asUnionType());
+            $func->setUnionType(VoidType::instance(false)->asRealUnionType());
         }
 
         // Add parameters to the context.

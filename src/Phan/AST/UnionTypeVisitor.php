@@ -2438,7 +2438,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             );
 
             // Turn that into a union type
-            return $fqsen->asUnionType();
+            return $fqsen->asType()->asRealUnionType();
         }
 
         // Things of the form `new $className()`, `new $obj()`, `new (foo())()`, etc.
@@ -2494,9 +2494,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             return $parent_type_option->get()->asRealUnionType();
         }
 
-        $result = $this->context->getClassFQSEN()->asUnionType();
-
-        return $result;
+        return $this->context->getClassFQSEN()->asType()->asRealUnionType();
     }
 
     private function classTypesForNonName(Node $node) : UnionType

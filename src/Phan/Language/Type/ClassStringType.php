@@ -29,7 +29,7 @@ final class ClassStringType extends StringType
      */
     public function getTypeAfterIncOrDec() : UnionType
     {
-        return UnionType::fromFullyQualifiedString('string');
+        return UnionType::fromFullyQualifiedPHPDocString('string');
     }
 
     public function hasTemplateTypeRecursive() : bool

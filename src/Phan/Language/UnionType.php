@@ -3158,8 +3158,8 @@ class UnionType implements Serializable
 
     /**
      * @param Type[] $type_set
-     * @param ?array<int,Type> $real_type_set
      * @param int $flags non-zero
+     * @param ?array<int,Type> $real_type_set
      */
     public static function asNormalizedTypesInner(array $type_set, int $flags, ?array $real_type_set) : UnionType
     {
@@ -3985,6 +3985,9 @@ class UnionType implements Serializable
         return \reset($type_set) instanceof VoidType;
     }
 
+    /**
+     * Shorter version of `UnionType::of($this->getTypeSet(), [$type])`
+     */
     public function withRealType(Type $type) : UnionType
     {
         $real_type_set = [$type];

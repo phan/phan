@@ -42,7 +42,7 @@ class StringType extends ScalarType
      */
     public function getTypeAfterIncOrDec() : UnionType
     {
-        return UnionType::fromFullyQualifiedString('int|string|float');
+        return UnionType::fromFullyQualifiedPHPDocString('int|string|float');
     }
 
     public function isValidNumericOperand() : bool

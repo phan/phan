@@ -312,11 +312,11 @@ final class UnionTypeTest extends BaseTest
     {
         $this->assertSame(
             '\Exception[]|\Throwable[]',
-            UnionType::fromFullyQualifiedString('\Exception[]')->asExpandedTypes(self::$code_base)->__toString()
+            UnionType::fromFullyQualifiedPHPDocString('\Exception[]')->asExpandedTypes(self::$code_base)->__toString()
         );
         $this->assertSame(
             'array<int,\Exception>|array<int,\Throwable>',
-            UnionType::fromFullyQualifiedString('array<int,\Exception>')->asExpandedTypes(self::$code_base)->__toString()
+            UnionType::fromFullyQualifiedPHPDocString('array<int,\Exception>')->asExpandedTypes(self::$code_base)->__toString()
         );
     }
 

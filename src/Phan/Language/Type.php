@@ -1471,7 +1471,6 @@ class Type
     }
 
     /**
-     * @param ?array<int,string> $type_set
      * @return UnionType
      * A UnionType representing this and only this type
      */

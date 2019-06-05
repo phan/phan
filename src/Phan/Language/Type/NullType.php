@@ -201,7 +201,7 @@ final class NullType extends ScalarType
      */
     public function getTypeAfterIncOrDec() : UnionType
     {
-        return IntType::instance(false)->asUnionType();
+        return IntType::instance(false)->asPHPDocUnionType();
     }
 
     public function canUseInRealSignature() : bool

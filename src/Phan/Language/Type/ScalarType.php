@@ -86,7 +86,7 @@ abstract class ScalarType extends NativeType
         Context $unused_context,
         CodeBase $unused_code_base
     ) : bool {
-        return $union_type->hasType($this) || $this->asUnionType()->canCastToUnionType($union_type);
+        return $union_type->hasType($this) || $this->asPHPDocUnionType()->canCastToUnionType($union_type);
     }
 
     /**

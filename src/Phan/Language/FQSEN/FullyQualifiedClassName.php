@@ -83,6 +83,15 @@ class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement
     }
 
     /**
+     * @return UnionType
+     * The union type of just this class type
+     */
+    public function asRealUnionType() : UnionType
+    {
+        return $this->asType()->asRealUnionType();
+    }
+
+    /**
      * @return FullyQualifiedClassName
      * The FQSEN for \stdClass.
      */

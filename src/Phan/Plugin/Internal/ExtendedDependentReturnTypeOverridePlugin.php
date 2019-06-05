@@ -36,8 +36,8 @@ final class ExtendedDependentReturnTypeOverridePlugin extends PluginV3 implement
      */
     private static function getReturnTypeOverridesStatic(CodeBase $code_base) : array
     {
-        $string_union_type = StringType::instance(false)->asUnionType();
-        $mixed_union_type = MixedType::instance(false)->asUnionType();
+        $string_union_type = StringType::instance(false)->asPHPDocUnionType();
+        $mixed_union_type = MixedType::instance(false)->asPHPDocUnionType();
         /**
          * @param callable-string $function
          * @return Closure(CodeBase,Context,Func,array):UnionType
@@ -90,7 +90,7 @@ final class ExtendedDependentReturnTypeOverridePlugin extends PluginV3 implement
                     );
                     return $default_type;
                 }
-                return Type::fromObjectExtended($result)->asUnionType();
+                return Type::fromObjectExtended($result)->asPHPDocUnionType();
             };
         };
         $basic_return_type_overrides = (new DependentReturnTypeOverridePlugin())->getReturnTypeOverrides($code_base);
@@ -120,7 +120,7 @@ final class ExtendedDependentReturnTypeOverridePlugin extends PluginV3 implement
                 return $cb_fallback($code_base, $context, $function_decl, $args);
             };
         };
-        $int_union_type = IntType::instance(false)->asUnionType();
+        $int_union_type = IntType::instance(false)->asPHPDocUnionType();
 
         return [
             // commonly used functions where the return type depends only on the passed in arguments
@@ -128,11 +128,11 @@ final class ExtendedDependentReturnTypeOverridePlugin extends PluginV3 implement
             'abs'          => $wrap_n_argument_function('abs', 1, 1, $int_union_type),
             'addcslashes'  => $wrap_n_argument_function('addcslashes', 2),
             'addslashes'   => $wrap_n_argument_function('addslashes', 1),
-            'explode'      => $wrap_n_argument_function('explode', 2, 3, UnionType::fromFullyQualifiedString('array<int,string>')),
+            'explode'      => $wrap_n_argument_function('explode', 2, 3, UnionType::fromFullyQualifiedPHPDocString('array<int,string>')),
             'implode'      => $wrap_n_argument_function('implode', 1, 2),
             // TODO: Improve this to warn about invalid json with json_error_last()
             'json_decode'  => $wrap_n_argument_function_with_fallback('json_decode', 1, 4),
-            'json_encode'  => $wrap_n_argument_function('json_encode', 1, 3, UnionType::fromFullyQualifiedString('string|false')),
+            'json_encode'  => $wrap_n_argument_function('json_encode', 1, 3, UnionType::fromFullyQualifiedRealString('string|false')),
             'substr'       => $wrap_n_argument_function('substr', 1, 3),
             'strlen'       => $wrap_n_argument_function('strlen', 1, 3),
             'join'         => $wrap_n_argument_function('join', 1),

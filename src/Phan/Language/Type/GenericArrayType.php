@@ -167,7 +167,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
     private function canCastToGenericIterableType(
         GenericIterableType $iterable_type
     ) : bool {
-        if (!$this->element_type->asUnionType()->canCastToUnionType($iterable_type->getElementUnionType())) {
+        if (!$this->element_type->asPHPDocUnionType()->canCastToUnionType($iterable_type->getElementUnionType())) {
             return false;
         }
         // TODO: Account for scalar key casting config
@@ -242,7 +242,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      */
     public function iterableValueUnionType(CodeBase $unused_codebase) : UnionType
     {
-        return $this->element_type->asUnionType();
+        return $this->element_type->asPHPDocUnionType();
     }
 
     /**
@@ -261,7 +261,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      */
     public function genericArrayElementUnionType() : UnionType
     {
-        return $this->element_type->asUnionType();
+        return $this->element_type->asPHPDocUnionType();
     }
 
     public function __toString() : string
@@ -314,7 +314,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
         }
 
         return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) : UnionType {
-            $union_type = $this->asUnionType();
+            $union_type = $this->asPHPDocUnionType();
 
             $element_type = $this->genericArrayElementType();
             if (!$element_type->isObjectWithKnownFQSEN()) {
@@ -355,7 +355,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
                     }
                 }
             } catch (RecursionDepthException $_) {
-                return ArrayType::instance($this->is_nullable)->asUnionType();
+                return ArrayType::instance($this->is_nullable)->asPHPDocUnionType();
             }
 
             // Add in aliases
@@ -363,7 +363,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
             if (Config::getValue('enable_class_alias_support')) {
                 self::addClassAliases($code_base, $recursive_union_type_builder, $class_fqsen);
             }
-            return $recursive_union_type_builder->getUnionType();
+            return $recursive_union_type_builder->getPHPDocUnionType();
         });
     }
 
@@ -393,7 +393,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
         }
 
         return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) : UnionType {
-            $union_type = $this->asUnionType();
+            $union_type = $this->asPHPDocUnionType();
 
             $class_fqsen = FullyQualifiedClassName::fromType($this->genericArrayElementType());
 
@@ -431,7 +431,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
                     }
                 }
             } catch (RecursionDepthException $_) {
-                return ArrayType::instance($this->is_nullable)->asUnionType();
+                return ArrayType::instance($this->is_nullable)->asPHPDocUnionType();
             }
 
             // Add in aliases
@@ -439,7 +439,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
             if (Config::getValue('enable_class_alias_support')) {
                 self::addClassAliases($code_base, $recursive_union_type_builder, $class_fqsen);
             }
-            return $recursive_union_type_builder->getUnionType();
+            return $recursive_union_type_builder->getPHPDocUnionType();
         });
     }
 
@@ -493,9 +493,9 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
         static $string_union_type = null;
         static $int_or_string_union_type = null;
         if ($int_union_type === null) {
-            $int_union_type = UnionType::fromFullyQualifiedString('int');
-            $string_union_type = UnionType::fromFullyQualifiedString('string');
-            $int_or_string_union_type = UnionType::fromFullyQualifiedString('int|string');
+            $int_union_type = UnionType::fromFullyQualifiedPHPDocString('int');
+            $string_union_type = UnionType::fromFullyQualifiedPHPDocString('string');
+            $int_or_string_union_type = UnionType::fromFullyQualifiedPHPDocString('int|string');
         }
         switch ($key_type) {
             case self::KEY_INT:
@@ -671,7 +671,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
         $element_type = $this->genericArrayElementUnionType();
         $new_element_type = $element_type->withTemplateParameterTypeMap($template_parameter_type_map);
         if ($element_type === $new_element_type) {
-            return $this->asUnionType();
+            return $this->asPHPDocUnionType();
         }
         // TODO: Override in array shape subclass
         return $new_element_type->asGenericArrayTypes($this->getKeyType());

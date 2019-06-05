@@ -183,7 +183,7 @@ final class ClosureDeclarationParameter
             $flags
         );
         if ($this->is_optional && !$this->is_variadic) {
-            $result->setDefaultValueType(MixedType::instance(false)->asUnionType());
+            $result->setDefaultValueType(MixedType::instance(false)->asPHPDocUnionType());
         }
         return $result;
     }
