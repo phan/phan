@@ -1,0 +1,11 @@
+%s:14 PhanStaticCallToNonStatic Static call to non-static method \NS688\CalledClass::isInstance() defined at %s:6
+%s:15 PhanStaticCallToNonStatic Static call to non-static method \NS688\CalledClass::isInstance() defined at %s:6
+%s:17 PhanStaticCallToNonStatic Static call to non-static method \NS688\CalledClass::isInstance() defined at %s:6
+%s:23 PhanStaticCallToNonStatic Static call to non-static method \NS688\OtherClass::ownMethod() defined at %s:34
+%s:24 PhanStaticCallToNonStatic Static call to non-static method \NS688\OtherClass::ownMethod() defined at %s:34
+%s:25 PhanStaticCallToNonStatic Static call to non-static method \NS688\CalledClass::isInstance() defined at %s:6
+%s:26 PhanStaticCallToNonStatic Static call to non-static method \NS688\CalledClass::isInstance() defined at %s:6
+%s:28 PhanStaticCallToNonStatic Static call to non-static method \NS688\CalledClass::isInstance() defined at %s:6
+%s:29 PhanStaticCallToNonStatic Static call to non-static method \NS688\OtherClass::ownMethod() defined at %s:34
+%s:30 PhanStaticCallToNonStatic Static call to non-static method \NS688\OtherClass::ownMethod() defined at %s:34
+%s:39 PhanStaticCallToNonStatic Static call to non-static method \NS688\OtherClass::ownMethod() defined at %s:34

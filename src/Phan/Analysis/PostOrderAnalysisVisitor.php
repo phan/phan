@@ -2187,47 +2187,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $this->checkNonAncestorConstructCall($node, $static_class, $method_name);
                 // Even if it exists, continue on and type check the arguments passed.
             }
-            // Get the method that's calling the static method
-            $calling_method = null;
-            if ($this->context->isInMethodScope()) {
-                $calling_function_like =
-                    $this->context->getFunctionLikeInScope($this->code_base);
-
-                if ($calling_function_like instanceof Method) {
-                    $calling_method = $calling_function_like;
-                }
-            }
-
             // If the method being called isn't actually static and it's
             // not a call to parent::f from f, we may be in trouble.
-            if (!$method->isStatic()
-
-                // Allow static calls to parent if we're not in a static
-                // method or if it's to the overridden method
-                && !(
-                    (
-                        'parent' === $static_class
-                        || 'self' === $static_class
-                        || 'static' === $static_class
-                    )
-                    && $this->context->isInMethodScope()
-                    && (
-                        $this->context->getFunctionLikeFQSEN()->getName() == $method->getFQSEN()->getName()
-                        || ($calling_method && !$calling_method->isStatic())
-                    )
-
-                // Allow static calls to methods from non-static class methods
-                ) && !(
-                    $this->context->isInClassScope()
-                    && $this->context->isInFunctionLikeScope()
-                    && ($calling_method && !$calling_method->isStatic())
-                // Allow static calls parent methods from closure
-                ) && !(
-                    $this->context->isInClassScope()
-                    && $this->context->isInFunctionLikeScope()
-                    && $this->context->getFunctionLikeFQSEN()->isClosure()
-                )
-            ) {
+            if (!$method->isStatic() && !$this->canCallInstanceMethodFromContext($method, $static_class)) {
                 $class_list = (new ContextNode(
                     $this->code_base,
                     $this->context,
@@ -2282,6 +2244,28 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             return $this->context;
         }
         return $this->context;
+    }
+
+    private function canCallInstanceMethodFromContext(Method $method, string $static_class) : bool
+    {
+        // Check if this is an instance method or closure of an instance method
+        if (!$this->context->getScope()->hasVariableWithName('this')) {
+            return false;
+        }
+        if (\in_array(\strtolower($static_class), ['parent', 'self', 'static'], true)) {
+            return true;
+        }
+        $calling_class_fqsen = $this->context->getClassFQSENOrNull();
+        if ($calling_class_fqsen) {
+            $calling_class_type = $calling_class_fqsen->asType()->asExpandedTypes($this->code_base);
+        } else {
+            $calling_class_type = $this->context->getScope()->getVariableByName('this')->getUnionType()->asExpandedTypes($this->code_base);
+        }
+        if ($calling_class_type->hasType($method->getClassFQSEN()->asType())) {
+            // Allow calling its own methods and class's methods.
+            return true;
+        }
+        return false;
     }
 
     /**
