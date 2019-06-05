@@ -35,7 +35,13 @@ sed -i -e 's/^\(src.020_bool.php.*of type\) [0-9]\+ \(evaluated\)/\1 int \2/g' \
     -e '/__autoload() is no longer supported, use spl_autoload_register/d' \
     $ACTUAL_PATH
 
-diff $EXPECTED_PATH $ACTUAL_PATH
+if type colordiff >/dev/null; then
+    DIFF=colordiff
+else
+    DIFF=diff
+fi
+
+$DIFF $EXPECTED_PATH $ACTUAL_PATH
 EXIT_CODE=$?
 if [ "$EXIT_CODE" == 0 ]; then
 	echo "Files $EXPECTED_PATH and output $ACTUAL_PATH are identical"

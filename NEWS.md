@@ -7,6 +7,7 @@ New features(CLI, Configs):
 + Add `--color-scheme <scheme>` for alternative colors of outputted issues (also configurable via environment variable as `PHAN_COLOR_SCHEME=<scheme>`)
   Supported values: `default`, `vim`, `eclipse_dark`
 + Be consistent about starting parameter/variable names with `$` in issue messages.
++ Fix false positives in more edge cases when analyzing variables with type `static` (e.g. `yield from $this;`)
 
 Maintenance:
 + Add updates to the function/method signature map from Psalm and PHPStan.

@@ -92,6 +92,7 @@ class ThrowsTypesAnalyzer
             // allow (at)throws Throwable.
             return true;
         }
+        $type = $type->withStaticResolvedInContext($method->getContext());
 
         $type_fqsen = FullyQualifiedClassName::fromType($type);
         if (!$code_base->hasClassWithFQSEN($type_fqsen)) {

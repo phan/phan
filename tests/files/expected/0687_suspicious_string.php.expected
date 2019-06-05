@@ -1,0 +1,3 @@
+%s:6 PhanTypeSuspiciousStringExpression Suspicious type static of a variable or expression used to build a string. (Expected type to be able to cast to a string)
+%s:7 PhanTypeSuspiciousEcho Suspicious argument static for an echo/print statement
+%s:14 PhanTypeArrayUnsetSuspicious Suspicious attempt to unset an offset of a value of type \NS681\Stringable

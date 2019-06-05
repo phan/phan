@@ -32,8 +32,17 @@ class X681 implements ArrayAccess {
 
     public function testGetSet() {
         $this['field'] = 'X';
+    }
+    public function testGet() {
         var_export($this['otherField']);
+    }
+
+    public function testUnset() {
         unset($this['myField']);
+    }
+
+    public function testIsset() {
+        var_export(isset($this['otherField']));
     }
 }
 
@@ -46,5 +55,8 @@ class Y681 {
     }
     public function testUnsetInvalid() {
         unset($this['myField']);
+    }
+    public function testIsset() {
+        var_export(isset($this['otherField']));  // NOTE: Phan currently does not type check isset checks
     }
 }

@@ -1336,7 +1336,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             $this->context,
             $node->children['expr'],
             $this->should_catch_issue_exception
-        );
+        )->withStaticResolvedInContext($this->context);
 
         if ($union_type->isEmpty()) {
             return $union_type;
@@ -1641,7 +1641,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             $this->context,
             $node->children['expr'],
             $this->should_catch_issue_exception
-        );
+        )->withStaticResolvedInContext($this->context);
 
         if ($union_type->isEmpty()) {
             return $union_type;

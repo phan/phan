@@ -444,7 +444,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             }
             // Check for __toString(), stringable variables/expressions in encapsulated strings work whether or not strict_types is set
             try {
-                foreach ($type->asExpandedTypes($code_base)->asClassList($code_base, $context) as $clazz) {
+                foreach ($type->withStaticResolvedInContext($context)->asExpandedTypes($code_base)->asClassList($code_base, $context) as $clazz) {
                     if ($clazz->hasMethodWithName($code_base, "__toString")) {
                         return;
                     }
@@ -639,7 +639,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             }
             if (!$context->isStrictTypes()) {
                 try {
-                    foreach ($type->asExpandedTypes($code_base)->asClassList($code_base, $context) as $clazz) {
+                    foreach ($type->withStaticResolvedInContext($context)->asExpandedTypes($code_base)->asClassList($code_base, $context) as $clazz) {
                         if ($clazz->hasMethodWithName($code_base, "__toString")) {
                             return $context;
                         }
@@ -1470,7 +1470,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if ($yield_from_type->isEmpty()) {
             return $context;
         }
-        $yield_from_expanded_type = $yield_from_type->asExpandedTypes($code_base);
+        $yield_from_expanded_type = $yield_from_type->withStaticResolvedInContext($this->context)->asExpandedTypes($code_base);
         if (!$yield_from_expanded_type->hasIterable() && !$yield_from_expanded_type->hasTraversable()) {
             $this->emitIssue(
                 Issue::TypeInvalidYieldFrom,

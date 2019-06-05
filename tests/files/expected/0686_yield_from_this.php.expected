@@ -1,0 +1,2 @@
+%s:57 PhanTypeInvalidYieldFrom Yield from statement was passed an invalid expression of type static (expected Traversable/array)
+%s:58 PhanTypeInvalidYieldFrom Yield from statement was passed an invalid expression of type static (expected Traversable/array)
