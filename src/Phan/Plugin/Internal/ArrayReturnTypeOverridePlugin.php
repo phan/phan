@@ -370,7 +370,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                 }
                 $array_shape_type = ArrayShapeType::fromFieldTypes([$key_type, $element_types], false);
 
-                return new UnionType([$array_shape_type, $false_type], false, [$array_type, $false_type]);
+                return new UnionType([$array_shape_type, $false_type], false, [ArrayType::instance(false), $false_type]);
             }
             return $mixed_type->asPHPDocUnionType();
         };

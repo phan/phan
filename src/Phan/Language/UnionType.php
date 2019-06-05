@@ -2696,7 +2696,7 @@ class UnionType implements Serializable
     {
         $parts = \array_map($closure, $this->type_set);
         if (\count($parts) <= 1) {
-            return \count($parts) === 1 ? \reset($parts)->asUnionType() : self::$empty_instance;
+            return \count($parts) === 1 ? \reset($parts)->asPHPDocUnionType() : self::$empty_instance;
         }
         return new UnionType($parts, false, null);
     }
