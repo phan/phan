@@ -2,7 +2,7 @@
 call_user_func(function() {
     $x = 2;
     assert(is_int($x));
-    assert(is_numeric($x));
+    assert(is_numeric($x));  // TODO: Emit PhanTypeRedundantCondition for int/float
     echo strlen($x);
 
     $y = 'a string';

@@ -590,6 +590,14 @@ class UnionType implements Serializable
     }
 
     /**
+     * @return bool true if this has a non-empty real type set.
+     */
+    public function hasRealTypeSet() : bool
+    {
+        return (bool)$this->real_type_set;
+    }
+
+    /**
      * @return ?array<int,Type>
      * The list of real simple types associated with this
      * union type. Keys are consecutive.
@@ -649,7 +657,10 @@ class UnionType implements Serializable
         return \in_array($type, $this->type_set, true);
     }
 
-    protected function eraseRealTypeSet() : UnionType {
+    /**
+     * Returns a union type with an empty union type set
+     */
+    public function eraseRealTypeSet() : UnionType {
         if ($this->real_type_set) {
             if (\count($this->type_set) === 1) {
                 // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
@@ -1913,6 +1924,16 @@ class UnionType implements Serializable
         // Only if no source types can be cast to any target
         // types do we say that we cannot perform the cast
         return false;
+    }
+
+    /**
+     * Check if these types have any possible types in common.
+     * (e.g. mixed <-> string, etc.)
+     *
+     * TODO: Make this work for callable <-> string, etc.
+     */
+    public function hasAnyTypeOverlap(CodeBase $code_base, UnionType $other) : bool {
+        return $this->canStrictCastToUnionType($code_base, $other) || $other->canStrictCastToUnionType($code_base, $this);
     }
 
     /**
@@ -4000,6 +4021,44 @@ class UnionType implements Serializable
         $new_type = clone($this);
         $new_type->real_type_set = $real_type_set;
         return $new_type;
+    }
+
+    /**
+     * Shorter version of `UnionType::of($this->getTypeSet(), $real_type_set)`
+     * @param ?array<int,Type> $real_type_set
+     */
+    public function withRealTypeSet(?array $real_type_set) : UnionType
+    {
+        if ($this->real_type_set === $real_type_set) {
+            return $this;
+        }
+        if (!$real_type_set) {
+            return $this->eraseRealTypeSet();
+        }
+        if (!$this->type_set) {
+            return UnionType::of($real_type_set, $real_type_set);
+        }
+        $new_type = clone($this);
+        $new_type->real_type_set = $real_type_set;
+        return $new_type;
+    }
+
+    /**
+     * Converts the real part of the union type to a standalone union type
+     */
+    public function getRealUnionType() : UnionType
+    {
+        $real_type_set = $this->real_type_set;
+        if ($this->type_set === $real_type_set) {
+            return $this;
+        }
+        if (!$real_type_set) {
+            return UnionType::empty();
+        } elseif (count($real_type_set) === 1) {
+            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
+            return \reset($real_type_set)->asRealUnionType();
+        }
+        return new UnionType($this->real_type_set, true, $this->real_type_set);
     }
 }
 

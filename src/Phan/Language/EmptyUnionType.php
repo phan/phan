@@ -1311,4 +1311,32 @@ final class EmptyUnionType extends UnionType
     {
         return null;
     }
+
+    public function hasRealTypeSet() : bool
+    {
+        return false;
+    }
+
+    public function eraseRealTypeSet() : UnionType
+    {
+        return $this;
+    }
+
+    public function hasAnyTypeOverlap(CodeBase $code_base, UnionType $other) : bool
+    {
+        return true;
+    }
+
+    public function withRealTypeSet(?array $real_type_set) : UnionType
+    {
+        if (!$real_type_set) {
+            return $this;
+        }
+        return UnionType::of($real_type_set, $real_type_set);
+    }
+
+    public function getRealUnionType() : UnionType
+    {
+        return $this;
+    }
 }

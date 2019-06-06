@@ -776,21 +776,53 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
          */
         $make_callback = static function (string $extract_types, UnionType $default_if_empty) : Closure {
             $method = new ReflectionMethod(UnionType::class, $extract_types);
+            $check_redundant = $extract_types !== 'numericTypes';
             /**
              * @param array<int,Node|mixed> $args
              */
-            return static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $args) use ($method, $default_if_empty) : void {
+            return static function (CodeBase $code_base, Context $context, Variable $variable, array $args) use ($method, $default_if_empty, $check_redundant) : void {
                 // Change the type to match the is_a relationship
                 // If we already have possible callable types, then keep those
                 // (E.g. Closure|false becomes Closure)
-                $new_type = $method->invoke($variable->getUnionType());
+                $union_type = $variable->getUnionType();
+                $new_type = $method->invoke($union_type);
                 if ($new_type->isEmpty()) {
                     // If there are no inferred types, or the only type we saw was 'null',
                     // assume there this can be any possible scalar.
                     // (Excludes `resource`, which is technically a scalar)
+                    //
+                    // FIXME move this to PostOrderAnalysisVisitor so that all expressions can be analyzed, not just variables?
                     $new_type = $default_if_empty;
-                } elseif ($new_type->containsNullable()) {
-                    $new_type = $new_type->nonNullableClone();
+                    if ($union_type->hasRealTypeSet() && !$union_type->getRealUnionType()->hasAnyTypeOverlap($code_base, $default_if_empty)) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::TypeImpossibleCondition,
+                            $context->getLineNumberStart(),
+                            $variable->getName(),
+                            $union_type->getRealUnionType(),
+                            $default_if_empty
+                        );
+                    }
+                } else {
+                    if ($new_type->containsNullable()) {
+                        $new_type = $new_type->nonNullableClone();
+                    }
+                    if ($check_redundant && $union_type->hasRealTypeSet() && $new_type->isEqualTo($union_type)) {
+                        $real_type = $union_type->getRealUnionType();
+                        $new_real_type = $method->invoke($real_type)->nonNullableClone();
+                        if ($real_type->isEqualTo($new_real_type)) {
+                            Issue::maybeEmit(
+                                $code_base,
+                                $context,
+                                Issue::TypeRedundantCondition,
+                                $context->getLineNumberStart(),
+                                $variable->getName(),
+                                $union_type->getRealUnionType(),
+                                $default_if_empty
+                            );
+                        }
+                    }
                 }
                 $variable->setUnionType($new_type);
             };
