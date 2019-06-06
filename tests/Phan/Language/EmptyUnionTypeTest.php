@@ -89,11 +89,26 @@ final class EmptyUnionTypeTest extends BaseTest
                 $expected_result = \iterator_to_array($expected_result);
                 $actual_result = \iterator_to_array($actual_result);
             }
-            if ($expected_result !== $actual_result) {
-                $failures .= "Expected $method_name implementation to be the same for " . \serialize($arg_list) . "\n";
+            if (!self::isSameResult($expected_result, $actual_result)) {
+                $failures .= "Expected $method_name implementation to be the same for " . \serialize($arg_list) . ": " . serialize($expected_result) . ' !== ' . serialize($actual_result) . "\n";
             }
         }
         return $failures;
+    }
+
+    /**
+     * @param mixed $expected_result
+     * @param mixed $actual_result
+     */
+    private static function isSameResult($expected_result, $actual_result) : bool
+    {
+        if ($expected_result === $actual_result) {
+            return true;
+        }
+        if ($expected_result instanceof UnionType && $actual_result instanceof UnionType) {
+            return (string)$expected_result === (string)$actual_result;
+        }
+        return false;
     }
 
     /**

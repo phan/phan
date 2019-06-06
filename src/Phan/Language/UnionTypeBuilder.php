@@ -73,14 +73,6 @@ final class UnionTypeBuilder
     /**
      * Build and return the UnionType for the unique type set that this was building.
      */
-    public function getRealUnionType() : UnionType
-    {
-        return UnionType::of($this->type_set, $this->type_set);
-    }
-
-    /**
-     * Build and return the UnionType for the unique type set that this was building.
-     */
     public function getPHPDocUnionType() : UnionType
     {
         return UnionType::of($this->type_set, null);

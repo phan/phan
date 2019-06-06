@@ -762,7 +762,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         if ($left->isNonNullNumberType() && $right->isNonNullNumberType()) {
             if (!$left->hasNonNullIntType() || !$right->hasNonNullIntType()) {
                 // Heuristic: If one or more of the sides is a float, the result is always a float.
-                return UnionType::fromFullyQualifiedPHPDocString('int|float');
+                return $float_type->asPHPDocUnionType();
             }
             return $int_or_float_union_type;
         }

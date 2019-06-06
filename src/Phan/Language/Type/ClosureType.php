@@ -63,6 +63,7 @@ final class ClosureType extends Type
             throw new AssertionError('should only clone null fqsen');
         }
         $this->singleton_union_type = null;
+        $this->singleton_real_union_type = null;
         // same as new static($this->namespace, $this->name, $this->template_parameter_type_list, $this->is_nullable);
     }
 

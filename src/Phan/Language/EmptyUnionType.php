@@ -1010,7 +1010,7 @@ final class EmptyUnionType extends UnionType
 
     public function replaceWithTemplateTypes(UnionType $template_union_type) : UnionType
     {
-        return $template_union_type;
+        return $template_union_type->eraseRealTypeSet();
     }
 
     public function hasTypeWithFQSEN(Type $other) : bool
@@ -1300,5 +1300,15 @@ final class EmptyUnionType extends UnionType
     public function isVoidType() : bool
     {
         return false;
+    }
+
+    public function withRealType(Type $type) : UnionType
+    {
+        return $type->asRealUnionType();
+    }
+
+    public function getRealTypeSet() : ?array
+    {
+        return null;
     }
 }

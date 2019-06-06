@@ -2861,10 +2861,10 @@ class UnionType implements Serializable
     public function replaceWithTemplateTypes(UnionType $template_union_type) : UnionType
     {
         // TODO: Preserve nullable
+        $result = $this->eraseRealTypeSet();
         if ($template_union_type->isEmpty()) {
-            return $this;
+            return $result;
         }
-        $result = $this;
         foreach ($this->getTypeSet() as $type) {
             // TODO: Handle recursion
             if ($template_union_type->hasTypeWithFQSEN($type)) {
@@ -3993,6 +3993,9 @@ class UnionType implements Serializable
         $real_type_set = [$type];
         if ($this->real_type_set === $real_type_set) {
             return $this;
+        }
+        if (!$this->type_set) {
+            return $type->asRealUnionType();
         }
         $new_type = clone($this);
         $new_type->real_type_set = $real_type_set;
