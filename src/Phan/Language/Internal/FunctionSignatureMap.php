@@ -1677,7 +1677,7 @@ return [
 'curl_multi_strerror' => ['?string', 'code'=>'int'],
 'curl_pause' => ['int', 'ch'=>'resource', 'bitmask'=>'int'],
 'curl_reset' => ['void', 'ch'=>'resource'],
-'curl_setopt' => ['bool', 'ch'=>'resource', 'option'=>'int', 'value'=>'callable|mixed'],
+'curl_setopt' => ['bool', 'ch'=>'resource', 'option'=>'int', 'value'=>'mixed'],
 'curl_setopt_array' => ['bool', 'ch'=>'resource', 'options'=>'array'],
 'curl_share_close' => ['void', 'sh'=>'resource'],
 'curl_share_errno' => ['int', 'sh'=>'resource'],
