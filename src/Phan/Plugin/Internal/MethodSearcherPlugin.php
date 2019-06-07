@@ -84,7 +84,7 @@ final class MethodSearcherPlugin extends PluginV3 implements
                 if ($replacements === [$type]) {
                     continue;
                 }
-                $union_type = $union_type->withoutType($type)->withUnionType(UnionType::of($replacements, null));
+                $union_type = $union_type->withoutType($type)->withUnionType(UnionType::of($replacements, []));
             } elseif ($type instanceof GenericArrayType) {
                 $element_type = $type->genericArrayElementType();
                 $replacement_element_types = self::addMissingNamespaces($code_base, $element_type->asPHPDocUnionType());

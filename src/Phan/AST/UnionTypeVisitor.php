@@ -1270,7 +1270,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             return Type::fromType($type, $template_type_list);
         }, $union_type->getTypeSet());
 
-        return UnionType::of($type_set, $class_node->kind === ast\AST_NAME ? $type_set : null);
+        return UnionType::of($type_set, $class_node->kind === ast\AST_NAME ? $type_set : []);
     }
 
     /**

@@ -157,7 +157,7 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
         return $this->element_types_union_type
             ?? ($this->element_types_union_type = UnionType::of(
                 UnionType::normalizeMultiTypes($this->element_types),
-                null
+                []
             ));
     }
 

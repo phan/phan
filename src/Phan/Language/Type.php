@@ -1460,14 +1460,26 @@ class Type
     protected $singleton_real_union_type;
 
     /**
+     * A UnionType representing this and only this type (from phpdoc or real types)
+     *
+     * @deprecated use self::asPHPDocUnionType()
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public function asUnionType() : UnionType
+    {
+        return $this->singleton_union_type ?? ($this->singleton_union_type = new UnionType([$this], true, []));
+    }
+
+    /**
      * @return UnionType
-     * A UnionType representing this and only this type
+     * A UnionType representing this and only this type (from phpdoc or real types)
+     * @see asRealUnionType() if you are certain this is the real type of the expression.
      */
     public function asPHPDocUnionType() : UnionType
     {
         // return new UnionType([$this]);
         // Memoize the set of types. The constructed UnionType object can be modified later, so it isn't memoized.
-        return $this->singleton_union_type ?? ($this->singleton_union_type = new UnionType([$this], true, null));
+        return $this->singleton_union_type ?? ($this->singleton_union_type = new UnionType([$this], true, []));
     }
 
     /**
@@ -3162,7 +3174,7 @@ class Type
     {
         if ($this->is_nullable) {
             // ++null is 1
-            return UnionType::of([$this->withIsNullable(false), IntType::instance(false)], null);
+            return UnionType::of([$this->withIsNullable(false), IntType::instance(false)], []);
         }
         // ++$obj; doesn't change the object.
         return $this->asPHPDocUnionType();

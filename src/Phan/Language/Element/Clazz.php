@@ -425,7 +425,7 @@ class Clazz extends AddressableElement
                             \array_map(static function (Type $type) use ($template_type_map) : Type {
                                 return $template_type_map[$type->getName()] ?? $type;
                             }, $union_type->getTypeSet()),
-                            null
+                            []
                         );
                     }, $parent_type->getTemplateParameterTypeList())
                 );

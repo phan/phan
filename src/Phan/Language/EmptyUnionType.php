@@ -27,7 +27,7 @@ final class EmptyUnionType extends UnionType
      */
     public function __construct()
     {
-        parent::__construct([], true, null);
+        parent::__construct([], true, []);
     }
 
     /**
@@ -1316,9 +1316,9 @@ final class EmptyUnionType extends UnionType
         return $type->asRealUnionType();
     }
 
-    public function getRealTypeSet() : ?array
+    public function getRealTypeSet() : array
     {
-        return null;
+        return [];
     }
 
     public function hasRealTypeSet() : bool

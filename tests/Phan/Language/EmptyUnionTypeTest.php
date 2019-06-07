@@ -75,7 +75,7 @@ final class EmptyUnionTypeTest extends BaseTest
             return '';
         }
 
-        $empty_regular = new UnionType([], true, null);
+        $empty_regular = new UnionType([], true, []);
 
         $candidate_arg_lists = $this->generateArgLists($method);
         if (count($candidate_arg_lists) === 0) {
@@ -181,7 +181,7 @@ final class EmptyUnionTypeTest extends BaseTest
                     IntType::instance(false)->asPHPDocUnionType(),
                     IntType::instance(false)->asRealUnionType(),
                     UnionType::empty(),
-                    new UnionType([FalseType::instance(false), ArrayType::instance(false)], true, null),
+                    new UnionType([FalseType::instance(false), ArrayType::instance(false)], true),
                     new UnionType([FalseType::instance(false), ArrayType::instance(false)], true, [FalseType::instance(false), ArrayType::instance(false)]),
                     ArrayType::instance(false)->asPHPDocUnionType(),
                     FalseType::instance(true)->asPHPDocUnionType(),

@@ -76,6 +76,17 @@ class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement
     /**
      * @return UnionType
      * The union type of just this class type
+     * @deprecated use asPHPDocUnionType()
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public function asUnionType() : UnionType
+    {
+        return $this->asType()->asPHPDocUnionType();
+    }
+
+    /**
+     * @return UnionType
+     * The union type of just this class type
      */
     public function asPHPDocUnionType() : UnionType
     {
