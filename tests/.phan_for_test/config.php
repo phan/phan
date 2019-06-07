@@ -63,6 +63,8 @@ return [
     // Note: This does not affect warnings about redundant uses in the global namespace.
     'warn_about_redundant_use_namespaced_class' => true,
 
+    'redundant_condition_detection' => true,
+
     // If true, Phan will read `class_alias` calls in the global scope,
     // then (1) create aliases from the *parsed* files if no class definition was found,
     // and (2) emit issues in the global scope if the source or target class is invalid.

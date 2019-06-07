@@ -423,6 +423,12 @@ class Config
         // This has a few known false positives, e.g. for loops or branches.
         'unused_variable_detection' => false,
 
+        // Set to true in order to attempt to detect redundant and impossible conditions.
+        //
+        // This has a large number of false positives involving loops,
+        // variables set in branches of loops, and global variables.
+        'redundant_condition_detection' => false,
+
         // Set to true in order to attempt to detect variables that could be replaced with constants or literals.
         // (i.e. they are declared once (as a constant expression) and never modified)
         // This is almost entirely false positives for most coding styles.
@@ -1322,6 +1328,7 @@ class Config
             'suppress_issue_types' => $is_string_list,
             'target_php_version' => $is_scalar,
             'unused_variable_detection' => $is_bool,
+            'redundant_condition_detection' => $is_bool,
             'use_fallback_parser' => $is_bool,
             'use_polyfill_parser' => $is_bool,
             'warn_about_redundant_use_namespaced_class' => $is_bool,

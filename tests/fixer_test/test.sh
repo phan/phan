@@ -20,7 +20,7 @@ rm -rf src_copy
 cp -r src src_copy
 
 # We use the polyfill parser because it behaves consistently in all php versions.
-../../phan --automatic-fix --dead-code-detection --force-polyfill-parser --memory-limit 1G | tee $ACTUAL_PATH
+../../phan --redundant-condition-detection --automatic-fix --dead-code-detection --force-polyfill-parser --memory-limit 1G | tee $ACTUAL_PATH
 
 # diff returns a non-zero exit code if files differ or are missing
 # This outputs the difference between actual and expected output.

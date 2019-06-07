@@ -141,6 +141,7 @@ class CLI
         'progress-bar',
         'project-root-directory:',
         'quick',
+        'redundant-condition-detection',
         'require-config-exists',
         'signature-compatibility',
         'strict-method-checking',
@@ -699,6 +700,9 @@ class CLI
                     Config::setValue('constant_variable_detection', true);
                     Config::setValue('unused_variable_detection', true);
                     break;
+                case 'redundant-condition-detection':
+                    Config::setValue('redundant_condition_detection', true);
+                    break;
                 case 'allow-polyfill-parser':
                     // Just check if it's installed and of a new enough version.
                     // Assume that if there is an installation, it works, and warn later in ensureASTParserExists()
@@ -1247,6 +1251,12 @@ Extended help:
   (i.e. they are declared once (as a constant expression) and never modified).
   This is almost entirely false positives for most coding styles.
   Implies --unused-variable-detection
+
+ --redundant-condition-detection
+  Emit issues for conditions such as is_int(expr) that are redundant or impossible.
+
+  This has many known false positives for loops, variables set in loops,
+  and global variables.
 
  --language-server-on-stdin
   Start the language server (For the Language Server protocol).
