@@ -57,6 +57,6 @@ class Y681 {
         unset($this['myField']);
     }
     public function testIsset() {
-        var_export(isset($this['otherField']));  // NOTE: Phan currently does not type check isset checks
+        var_export(isset($this['otherField']));  // Warns as a side effect of checking if isset is redundant.
     }
 }

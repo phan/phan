@@ -1,5 +1,7 @@
 %s:3 PhanNoopEmpty Unused result of an empty(expr) check
+%s:3 PhanTypeImpossibleCondition Impossible attempt to cast $a of type 2 to empty
 %s:4 PhanNoopIsset Unused result of an isset(expr) check
+%s:4 PhanTypeRedundantCondition Redundant attempt to cast $a of type 2 to isset
 %s:7 PhanNoopCast Unused result of a (string)(expr) cast
 %s:8 PhanNoopCast Unused result of a (int)(expr) cast
 %s:9 PhanNoopCast Unused result of a (bool)(expr) cast

@@ -1943,6 +1943,7 @@ class UnionType implements Serializable
      * (e.g. mixed <-> string, etc.)
      *
      * TODO: Make this work for callable <-> string, etc.
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function hasAnyTypeOverlap(CodeBase $code_base, UnionType $other) : bool {
         return $this->canStrictCastToUnionType($code_base, $other) || $other->canStrictCastToUnionType($code_base, $this);
