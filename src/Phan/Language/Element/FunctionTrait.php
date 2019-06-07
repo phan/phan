@@ -791,7 +791,7 @@ trait FunctionTrait
             // to null
             if ($default_is_null) {
                 if ($was_empty) {
-                    $parameter->addUnionType(MixedType::instance(false)->asUnionType());
+                    $parameter->addUnionType(MixedType::instance(false)->asPHPDocUnionType());
                 }
                 // The parameter constructor or above check for wasEmpty already took care of null default case
             } else {
@@ -799,7 +799,7 @@ trait FunctionTrait
                 if ($was_empty) {
                     $parameter->addUnionType(self::inferNormalizedTypesOfDefault($default_type));
                     if (!Config::getValue('guess_unknown_parameter_type_using_default')) {
-                        $parameter->addUnionType(MixedType::instance(false)->asUnionType());
+                        $parameter->addUnionType(MixedType::instance(false)->asPHPDocUnionType());
                     }
                 } else {
                     // Don't add both `int` and `?int` to the same set.
@@ -823,7 +823,7 @@ trait FunctionTrait
         $normalized_default_type = UnionType::empty();
         foreach ($type_set as $type) {
             if ($type instanceof FalseType || $type instanceof NullType) {
-                return MixedType::instance(false)->asUnionType();
+                return MixedType::instance(false)->asPHPDocUnionType();
             } elseif ($type instanceof GenericArrayType) {
                 // Ideally should be the **only** type.
                 $normalized_default_type = $normalized_default_type->withType(ArrayType::instance(false));
@@ -1158,7 +1158,7 @@ trait FunctionTrait
 
         $return_type = $this->getUnionType();
         if ($return_type->isEmpty()) {
-            $return_type = MixedType::instance(false)->asUnionType();
+            $return_type = MixedType::instance(false)->asPHPDocUnionType();
         }
         return new ClosureDeclarationType(
             $this->getFileRef(),
@@ -1345,7 +1345,7 @@ trait FunctionTrait
                 }
             } else {
                 if ($this instanceof Func || ($this instanceof Method && ($this->isPrivate() || $this->isEffectivelyFinal() || $this->isMagicAndVoid() || $this->getClass($code_base)->isFinal()))) {
-                    $this->setUnionType(VoidType::instance(false)->asUnionType());
+                    $this->setUnionType(VoidType::instance(false)->asRealUnionType());
                 }
             }
         }

@@ -808,7 +808,7 @@ class Context extends FileRef
             $override_type = ArrayShapeType::fromFieldTypes([$property->getName() => $type], false);
             $override_type = self::addArrayShapeTypes($override_type, $old_type->getTypeSet());
 
-            $variable->setUnionType($override_type->asUnionType());
+            $variable->setUnionType($override_type->asPHPDocUnionType());
         } else {
             // There is nothing inferred about any type
 
@@ -820,7 +820,7 @@ class Context extends FileRef
             $variable = new Variable(
                 $this,
                 self::VAR_NAME_THIS_PROPERTIES,
-                $override_type->asUnionType(),
+                $override_type->asPHPDocUnionType(),
                 0
             );
         }
@@ -840,7 +840,7 @@ class Context extends FileRef
             $override_type = ArrayShapeType::fromFieldTypes([$property_name => $type], false);
             $override_type = self::addArrayShapeTypes($override_type, $old_type->getTypeSet());
 
-            $variable->setUnionType($override_type->asUnionType());
+            $variable->setUnionType($override_type->asPHPDocUnionType());
         } else {
             // There is nothing inferred about any type
 
@@ -848,7 +848,7 @@ class Context extends FileRef
             $variable = new Variable(
                 $this,
                 self::VAR_NAME_THIS_PROPERTIES,
-                $override_type->asUnionType(),
+                $override_type->asPHPDocUnionType(),
                 0
             );
         }

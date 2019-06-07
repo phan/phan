@@ -1,3 +1,4 @@
 %s:51 PhanTypeArraySuspicious Suspicious array access to static
 %s:54 PhanTypeArraySuspicious Suspicious array access to \Y681
 %s:57 PhanTypeArrayUnsetSuspicious Suspicious attempt to unset an offset of a value of type \Y681
+%s:60 PhanTypeArraySuspicious Suspicious array access to \Y681

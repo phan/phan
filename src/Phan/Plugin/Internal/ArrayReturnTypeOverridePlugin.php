@@ -14,10 +14,8 @@ use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\GenericArrayType;
-use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
-use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use Phan\PluginV3;
 use Phan\PluginV3\ReturnTypeOverrideCapability;
@@ -27,6 +25,8 @@ use function count;
  * NOTE: This is automatically loaded by phan. Do not include it in a config.
  *
  * TODO: Refactor this.
+ *
+ * TODO: Support real types (e.g. array_values() if the passed in real union type is an array, otherwise real type is ?array
  *
  * @phan-file-suppress PhanUnusedClosureParameter
  */
@@ -42,12 +42,10 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
         $mixed_type  = MixedType::instance(false);
         $false_type  = FalseType::instance(false);
         $array_type  = ArrayType::instance(false);
-        $int_type    = IntType::instance(false);
-        $string_type = StringType::instance(false);
         $null_type   = NullType::instance(false);
-        $int_or_string_or_false = new UnionType([$int_type, $string_type, $false_type]);
-        $int_or_string_or_null = new UnionType([$int_type, $string_type, $null_type]);
-        $int_or_string = new UnionType([$int_type, $string_type]);
+        $int_or_string_or_false = UnionType::fromFullyQualifiedPHPDocString('int|string|false');
+        $int_or_string_or_null = UnionType::fromFullyQualifiedPHPDocString('int|string|null');
+        $int_or_string = UnionType::fromFullyQualifiedPHPDocString('int|string');
 
         /**
          * @param array<int,Node|int|float|string> $args
@@ -60,7 +58,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                     return $element_types->withType($false_type);
                 }
             }
-            return $mixed_type->asUnionType();
+            return $mixed_type->asPHPDocUnionType();
         };
         /**
          * @param array<int,Node|int|float|string> $args
@@ -114,7 +112,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                     return $element_types->withFlattenedArrayShapeOrLiteralTypeInstances();
                 }
             }
-            return $array_type->asUnionType();
+            return $array_type->asPHPDocUnionType();
         };
         /**
          * @param array<int,Node|int|float|string> $args
@@ -126,13 +124,13 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                 $element_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[1]);
                 if ($element_types->isEmpty()) {
                     if ($key_type_enum === GenericArrayType::KEY_MIXED) {
-                        return $array_type->asUnionType();
+                        return $array_type->asPHPDocUnionType();
                     }
-                    $element_types = $mixed_type->asUnionType();
+                    $element_types = $mixed_type->asPHPDocUnionType();
                 }
                 return $element_types->asNonEmptyGenericArrayTypes($key_type_enum);
             }
-            return $array_type->asUnionType();
+            return $array_type->asPHPDocUnionType();
         };
 
         /**
@@ -143,7 +141,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                 $element_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[2]);
                 return $element_types->asNonEmptyGenericArrayTypes(GenericArrayType::KEY_INT);
             }
-            return $array_type->asUnionType();
+            return $array_type->asPHPDocUnionType();
         };
 
         /**
@@ -190,7 +188,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                     return $generic_passed_array_type->withFlattenedArrayShapeOrLiteralTypeInstances();
                 }
             }
-            return $array_type->asUnionType();
+            return $array_type->asPHPDocUnionType();
         };
 
         /**
@@ -198,11 +196,11 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
          */
         $array_reduce_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($mixed_type) : UnionType {
             if (\count($args) < 2) {
-                return $mixed_type->asUnionType();
+                return $mixed_type->asPHPDocUnionType();
             }
             $function_like_list = UnionTypeVisitor::functionLikeListFromNodeAndContext($code_base, $context, $args[1], true);
             if (\count($function_like_list) === 0) {
-                return $mixed_type->asUnionType();
+                return $mixed_type->asPHPDocUnionType();
             }
             $function_return_types = UnionType::empty();
             foreach ($function_like_list as $function_like) {
@@ -241,11 +239,11 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             array $args
         ) use ($array_type) : UnionType {
             if (\count($args) < 2) {
-                return $array_type->asUnionType();
+                return $array_type->asPHPDocUnionType();
             }
             $function_like_list = UnionTypeVisitor::functionLikeListFromNodeAndContext($code_base, $context, $args[0], true);
             if (\count($function_like_list) === 0) {
-                return $array_type->asUnionType();
+                return $array_type->asPHPDocUnionType();
             }
             $arguments = \array_slice($args, 1);
             $possible_return_types = UnionType::empty();
@@ -307,7 +305,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                 }
             }
             if ($possible_return_types->isEmpty()) {
-                return $array_type->asUnionType();
+                return $array_type->asPHPDocUnionType();
             }
             if (count($arguments) >= 2) {
                 // There were two or more arrays passed to the closure
@@ -323,7 +321,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
          */
         $array_pad_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type) : UnionType {
             if (\count($args) != 3) {
-                return $array_type->asUnionType();
+                return $array_type->asPHPDocUnionType();
             }
             $padded_array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
             $result_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[2])->asGenericArrayTypes(GenericArrayType::KEY_INT);
@@ -336,13 +334,13 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
         /**
          * @param array<int,Node|int|string|float> $args
          */
-        $array_keys_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type, $int_type, $string_type) : UnionType {
+        $array_keys_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type) : UnionType {
             if (\count($args) != 1) {
-                return $array_type->asUnionType();
+                return $array_type->asPHPDocUnionType();
             }
             $key_union_type = UnionTypeVisitor::unionTypeOfArrayKeyForNode($code_base, $context, $args[0]);
             if ($key_union_type === null) {
-                $key_union_type = new UnionType([$int_type, $string_type], true);
+                $key_union_type = UnionType::fromFullyQualifiedPHPDocString('int|string');
             }
             return $key_union_type->asGenericArrayTypes(GenericArrayType::KEY_INT);
         };
@@ -351,7 +349,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
          */
         $array_values_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type) : UnionType {
             if (\count($args) != 1) {
-                return $array_type->asUnionType();
+                return $array_type->asPHPDocUnionType();
             }
             $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
             $element_type = $union_type->genericArrayElementTypes();
@@ -372,16 +370,16 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                 }
                 $array_shape_type = ArrayShapeType::fromFieldTypes([$key_type, $element_types], false);
 
-                return new UnionType([$array_shape_type, $false_type]);
+                return new UnionType([$array_shape_type, $false_type], false, [ArrayType::instance(false), $false_type]);
             }
-            return $mixed_type->asUnionType();
+            return $mixed_type->asPHPDocUnionType();
         };
         /**
          * @param array<int,Node|int|float|string> $args
          */
         $array_combine_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type) : UnionType {
             if (\count($args) < 2) {
-                return $array_type->asUnionType();
+                return $array_type->asPHPDocUnionType();
             }
             $keys_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
             $values_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[1]);

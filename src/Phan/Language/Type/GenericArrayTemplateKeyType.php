@@ -45,11 +45,11 @@ class GenericArrayTemplateKeyType extends GenericArrayType
         $new_element_type = $element_type->withTemplateParameterTypeMap($template_parameter_type_map);
         $new_key_type = $this->template_key_type->withTemplateParameterTypeMap($template_parameter_type_map);
         if ($element_type === $new_element_type && $new_key_type === $this->template_key_type) {
-            return $this->asUnionType();
+            return $this->asPHPDocUnionType();
         }
         if ($this->template_key_type !== $new_key_type) {
             if ($new_element_type->isEmpty()) {
-                $new_element_type = MixedType::instance(false)->asUnionType();
+                $new_element_type = MixedType::instance(false)->asPHPDocUnionType();
             }
             return $new_element_type->asGenericArrayTypes(
                 GenericArrayType::keyTypeFromUnionTypeValues($new_key_type)

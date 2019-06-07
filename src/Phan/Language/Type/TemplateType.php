@@ -130,7 +130,7 @@ final class TemplateType extends Type
     public function withTemplateParameterTypeMap(
         array $template_parameter_type_map
     ) : UnionType {
-        return $template_parameter_type_map[$this->template_type_identifier] ?? $this->asUnionType();
+        return $template_parameter_type_map[$this->template_type_identifier] ?? $this->asPHPDocUnionType();
     }
 
     /**

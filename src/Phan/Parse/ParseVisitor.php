@@ -129,7 +129,7 @@ class ParseVisitor extends ScopeVisitor
         $class = new Clazz(
             $class_context,
             $class_name,
-            $class_fqsen->asUnionType(),
+            $class_fqsen->asRealUnionType(),
             $node->flags ?? 0,
             $class_fqsen
         );
@@ -463,9 +463,9 @@ class ParseVisitor extends ScopeVisitor
                 } else {
                     // Get the type of the default (not a literal)
                     if ($variable_has_literals) {
-                        $union_type = Type::fromObject($default_node)->asUnionType();
+                        $union_type = Type::fromObject($default_node)->asPHPDocUnionType();
                     } else {
-                        $union_type = Type::nonLiteralFromObject($default_node)->asUnionType();
+                        $union_type = Type::nonLiteralFromObject($default_node)->asPHPDocUnionType();
                     }
                 }
                 if (!$real_union_type->isEmpty() && !$union_type->canStrictCastToUnionType($this->code_base, $real_union_type)) {
@@ -544,7 +544,7 @@ class ParseVisitor extends ScopeVisitor
                     }
                     if ($future_union_type === null) {
                         if ($original_union_type->isType(ArrayShapeType::empty())) {
-                            $union_type = ArrayType::instance(false)->asUnionType();
+                            $union_type = ArrayType::instance(false)->asPHPDocUnionType();
                         } elseif ($original_union_type->isType(NullType::instance(false))) {
                             $union_type = UnionType::empty();
                         } else {
@@ -718,14 +718,14 @@ class ParseVisitor extends ScopeVisitor
                         )
                     );
                 } catch (InvalidArgumentException $_) {
-                    $constant->setUnionType(MixedType::instance(false)->asUnionType());
+                    $constant->setUnionType(MixedType::instance(false)->asPHPDocUnionType());
                     $this->emitIssue(
                         Issue::InvalidConstantExpression,
                         $value_node->lineno
                     );
                 }
             } else {
-                $constant->setUnionType(Type::fromObject($value_node)->asUnionType());
+                $constant->setUnionType(Type::fromObject($value_node)->asPHPDocUnionType());
             }
             $constant->setNodeForValue($value_node);
 
@@ -1413,7 +1413,7 @@ class ParseVisitor extends ScopeVisitor
                     )
                 );
             } else {
-                $constant->setUnionType(Type::fromObject($value)->asUnionType());
+                $constant->setUnionType(Type::fromObject($value)->asPHPDocUnionType());
             }
         } else {
             $constant->setUnionType(UnionTypeVisitor::unionTypeFromNode($code_base, $context, $value));

@@ -24,13 +24,11 @@ use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
 use Phan\Language\Type\FalseType;
-use Phan\Language\Type\IntType;
 use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\LiteralTypeInterface;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
-use Phan\Language\Type\StringType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\UnionType;
 use Phan\Library\StringUtil;
@@ -156,7 +154,7 @@ trait ConditionVisitorUtil
                 }
                 if ($has_nullable) {
                     if ($union_type->isEmpty()) {
-                        return NullType::instance(false)->asUnionType();
+                        return NullType::instance(false)->asPHPDocUnionType();
                     }
                     return $union_type->nullableClone();
                 }
@@ -672,7 +670,7 @@ trait ConditionVisitorUtil
         }
         if (!is_string($expr_value)) {
             $expr_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $expr_node);
-            if (!$expr_type->canCastToUnionType(UnionType::fromFullyQualifiedString('string|false'))) {
+            if (!$expr_type->canCastToUnionType(UnionType::fromFullyQualifiedPHPDocString('string|false'))) {
                 Issue::maybeEmit(
                     $this->code_base,
                     $this->context,
@@ -699,7 +697,7 @@ trait ConditionVisitorUtil
 
             return null;
         }
-        $expr_type = $fqsen->asType()->asUnionType();
+        $expr_type = \is_string($expr_node) ? $fqsen->asType()->asRealUnionType() : $fqsen->asType()->asPHPDocUnionType();
 
         $var_name = $object_node->children['name'] ?? null;
         // Don't analyze variables such as $$a
@@ -778,11 +776,7 @@ trait ConditionVisitorUtil
             $name_node_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $context, $var_name_node, true);
             static $int_or_string_type;
             if ($int_or_string_type === null) {
-                $int_or_string_type = new UnionType([
-                    StringType::instance(false),
-                    IntType::instance(false),
-                    NullType::instance(false),
-                ]);
+                $int_or_string_type = UnionType::fromFullyQualifiedPHPDocString('?int|?string');
             }
             if (!$name_node_type->canCastToUnionType($int_or_string_type)) {
                 Issue::maybeEmit($this->code_base, $context, Issue::TypeSuspiciousIndirectVariable, $var_name_node->lineno ?? 0, (string)$name_node_type);

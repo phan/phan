@@ -196,7 +196,9 @@ class Issue
     const TypeInvalidStaticPropertyName = 'PhanTypeInvalidStaticPropertyName';
     const TypeErrorInInternalCall = 'PhanTypeErrorInInternalCall';
     const TypeErrorInOperation = 'PhanTypeErrorInOperation';
-    const TypeInvalidPropertyDefaultReal = 'PhanTypeInvalidPropertyDefaultReal';
+    const TypeInvalidPropertyDefaultReal  = 'PhanTypeInvalidPropertyDefaultReal';
+    const ImpossibleCondition         = 'PhanImpossibleCondition';
+    const RedundantCondition          = 'PhanRedundantCondition';
 
     // Issue::CATEGORY_ANALYSIS
     const Unanalyzable              = 'PhanUnanalyzable';
@@ -2048,6 +2050,22 @@ class Issue
                 "Default value for {TYPE} \${PROPERTY} can't be {TYPE}",
                 self::REMEDIATION_B,
                 10108
+            ),
+            new Issue(
+                self::ImpossibleCondition,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,
+                "Impossible attempt to cast {CODE} of type {TYPE} to {TYPE}",
+                self::REMEDIATION_B,
+                10113
+            ),
+            new Issue(
+                self::RedundantCondition,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,
+                "Redundant attempt to cast {CODE} of type {TYPE} to {TYPE}",
+                self::REMEDIATION_B,
+                10114
             ),
             // Issue::CATEGORY_VARIABLE
             new Issue(

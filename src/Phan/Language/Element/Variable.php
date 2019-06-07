@@ -198,7 +198,8 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
     ) : ?UnionType {
         if (\array_key_exists($name, self::_BUILTIN_GLOBAL_TYPES)) {
             // More efficient than using context.
-            return UnionType::fromFullyQualifiedString(self::_BUILTIN_GLOBAL_TYPES[$name]);
+            // Note that global constants can be modified by user code
+            return UnionType::fromFullyQualifiedPHPDocString(self::_BUILTIN_GLOBAL_TYPES[$name]);
         }
 
         if (\array_key_exists($name, Config::getValue('globals_type_map'))

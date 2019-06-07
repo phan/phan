@@ -33,6 +33,16 @@ class ArrayType extends IterableType
         return false;  // Overrides IterableType returning true
     }
 
+    public function isPossiblyTruthy() : bool
+    {
+        return true;
+    }
+
+    public function isPossiblyFalsey() : bool
+    {
+        return true;
+    }
+
     public function isArrayLike() : bool
     {
         return true;  // Overrides Type
@@ -60,18 +70,18 @@ class ArrayType extends IterableType
                     $result->addType($type);
                 }
             } elseif ($type instanceof ArrayType) {
-                return $type->asUnionType();
+                return UnionType::of([$type], $union_type->getRealTypeSet());
             }
         }
         if ($result->isEmpty()) {
-            return ArrayShapeType::union($array_shape_types)->asUnionType();
+            return UnionType::of([ArrayShapeType::union($array_shape_types)], $union_type->getRealTypeSet());
         }
         foreach ($array_shape_types as $type) {
             foreach ($type->withFlattenedArrayShapeOrLiteralTypeInstances() as $type_part) {
                 $result->addType($type_part);
             }
         }
-        return $result->getUnionType();
+        return UnionType::of($result->getTypeSet(), $union_type->getRealTypeSet());
     }
 
     /**
@@ -94,7 +104,7 @@ class ArrayType extends IterableType
                     $result->addType($type);
                 }
             } elseif ($type instanceof ArrayType) {
-                return $type->asUnionType();
+                return $type->asPHPDocUnionType();
             }
         }
         $right_array_shape_types = [];
@@ -107,28 +117,28 @@ class ArrayType extends IterableType
                     $result->addType($type);
                 }
             } elseif ($type instanceof ArrayType) {
-                return $type->asUnionType();
+                return $type->asPHPDocUnionType();
             }
         }
         if ($result->isEmpty()) {
             if (\count($left_array_shape_types) === 0) {
-                return ArrayShapeType::union($right_array_shape_types)->asUnionType();
+                return ArrayShapeType::union($right_array_shape_types)->asPHPDocUnionType();
             }
             if (\count($right_array_shape_types) === 0) {
-                return ArrayShapeType::union($left_array_shape_types)->asUnionType();
+                return ArrayShapeType::union($left_array_shape_types)->asPHPDocUnionType();
             }
             // fields from the left take precedence (e.g. [0, false] + ['string'] becomes [0, false])
             return ArrayShapeType::combineWithPrecedence(
                 ArrayShapeType::union($left_array_shape_types),
                 ArrayShapeType::union($right_array_shape_types)
-            )->asUnionType();
+            )->asPHPDocUnionType();
         }
         foreach (\array_merge($left_array_shape_types, $right_array_shape_types) as $type) {
             foreach ($type->withFlattenedArrayShapeOrLiteralTypeInstances() as $type_part) {
                 $result->addType($type_part);
             }
         }
-        return $result->getUnionType();
+        return $result->getPHPDocUnionType();
     }
 
     /**
@@ -157,7 +167,7 @@ class ArrayType extends IterableType
             // TODO: Add possibly_undefined annotations in union
             ArrayShapeType::union($left_array_shape_types)
         ));
-        return $result->getUnionType();
+        return $result->getPHPDocUnionType();
     }
 
     /**

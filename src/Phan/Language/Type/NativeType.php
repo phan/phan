@@ -214,7 +214,7 @@ abstract class NativeType extends Type
         CodeBase $code_base,
         int $recursion_depth = 0
     ) : UnionType {
-        return $this->asUnionType();
+        return $this->asPHPDocUnionType();
     }
 
     /**
@@ -234,7 +234,7 @@ abstract class NativeType extends Type
         CodeBase $code_base,
         int $recursion_depth = 0
     ) : UnionType {
-        return $this->asUnionType();
+        return $this->asPHPDocUnionType();
     }
 
     public function hasTemplateParameterTypes() : bool
@@ -265,7 +265,7 @@ abstract class NativeType extends Type
     public function withTemplateParameterTypeMap(
         array $unused_template_parameter_type_map
     ) : UnionType {
-        return $this->asUnionType();
+        return $this->asPHPDocUnionType();
     }
 
     public function isTemplateSubtypeOf(Type $unused_type) : bool

@@ -880,6 +880,7 @@ class ParameterTypesAnalyzer
         $comment_parameter_map = null;
         foreach ($phpdoc_parameter_list as $i => $parameter) {
             $parameter_type = $parameter->getNonVariadicUnionType();
+            // If there is already a phpdoc parameter type, then don't bother inheriting the parameter type from $o_method
             if (!$parameter_type->isEmpty()) {
                 $comment_parameter_map = $comment_parameter_map ?? self::extractCommentParameterMap($method);
                 $comment_parameter = $comment_parameter_map[$parameter->getName()] ?? null;
@@ -897,7 +898,7 @@ class ParameterTypesAnalyzer
                     continue;
                 }
                 if ($parameter_type->isEmpty() || $parent_parameter_type->isExclusivelyNarrowedFormOf($code_base, $parameter_type)) {
-                    $parameter->setUnionType($parent_parameter_type);
+                    $parameter->setUnionType($parent_parameter_type->eraseRealTypeSet());
                 }
             }
         }
@@ -1057,7 +1058,7 @@ class ParameterTypesAnalyzer
                 $param_to_modify = $method->getParameterList()[$i] ?? null;
                 if ($param_to_modify) {
                     // TODO: Maybe have two different sets of methods for setUnionType and setCallerUnionType, this is easy to mix up for variadics.
-                    $param_to_modify->setUnionType($normalized_phpdoc_param_union_type);
+                    $param_to_modify->setUnionType($normalized_phpdoc_param_union_type->withRealTypeSet($real_param_type->getRealTypeSet()));
                 }
             } else {
                 $comment = $method->getComment();

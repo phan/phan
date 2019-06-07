@@ -51,7 +51,7 @@ final class CallableStringType extends StringType implements CallableInterface
      */
     public function getTypeAfterIncOrDec() : UnionType
     {
-        return UnionType::fromFullyQualifiedString('string');
+        return UnionType::fromFullyQualifiedPHPDocString('string');
     }
 
     public function canUseInRealSignature() : bool

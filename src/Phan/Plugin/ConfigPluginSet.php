@@ -37,6 +37,7 @@ use Phan\Plugin\Internal\IssueFixingPlugin\IssueFixer;
 use Phan\Plugin\Internal\MiscParamPlugin;
 use Phan\Plugin\Internal\NodeSelectionPlugin;
 use Phan\Plugin\Internal\NodeSelectionVisitor;
+use Phan\Plugin\Internal\RedundantConditionCallPlugin;
 use Phan\Plugin\Internal\RequireExistsPlugin;
 use Phan\Plugin\Internal\StringFunctionPlugin;
 use Phan\Plugin\Internal\ThrowAnalyzerPlugin;
@@ -838,6 +839,9 @@ final class ConfigPluginSet extends PluginV3 implements
                 \array_unshift($internal_return_type_plugins, new ExtendedDependentReturnTypeOverridePlugin());
             }
             $plugin_set = \array_merge($internal_return_type_plugins, $plugin_set);
+        }
+        if (Config::getValue('redundant_condition_detection')) {
+            $plugin_set[] = new RedundantConditionCallPlugin();
         }
         if (Config::getValue('enable_include_path_checks')) {
             $plugin_set[] = new RequireExistsPlugin();

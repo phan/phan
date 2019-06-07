@@ -507,7 +507,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                         if ($has_null && !$has_other_nullable_types) {
                             $new_type_builder->addType(NullType::instance(false));
                         }
-                        return $new_type_builder->getUnionType();
+                        return $new_type_builder->getPHPDocUnionType();
                     },
                     false
                 );
@@ -544,7 +544,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                         if ($has_null && !$has_other_nullable_types) {
                             $new_type_builder->addType(NullType::instance(false));
                         }
-                        return $new_type_builder->getUnionType();
+                        return $new_type_builder->getPHPDocUnionType();
                     },
                     false
                 );
@@ -587,7 +587,8 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                     if ($has_null && !$has_other_nullable_types) {
                         $new_type_builder->addType(NullType::instance(false));
                     }
-                    return $new_type_builder->getUnionType();
+                    // TODO: Could try to track real types here and elsewhere
+                    return $new_type_builder->getPHPDocUnionType();
                 },
                 false
             );
@@ -628,7 +629,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                     if ($has_null && !$has_other_nullable_types) {
                         $new_type_builder->addType(NullType::instance(false));
                     }
-                    return $new_type_builder->getUnionType();
+                    return $new_type_builder->getPHPDocUnionType();
                 },
                 false
             );
@@ -665,7 +666,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                     if ($has_null && !$has_other_nullable_types) {
                         $new_type_builder->addType(NullType::instance(false));
                     }
-                    return $new_type_builder->getUnionType();
+                    return $new_type_builder->getPHPDocUnionType();
                 },
                 false
             );
@@ -709,7 +710,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
             return $this->checkComplexIsset($var_node);
         }
         // if (!isset($x))
-        return $this->updateVariableWithNewType($var_node, $this->context, NullType::instance(false)->asUnionType(), true);
+        return $this->updateVariableWithNewType($var_node, $this->context, NullType::instance(false)->asPHPDocUnionType(), true);
     }
 
     /**
@@ -752,7 +753,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
             }
         } elseif ($var_node->kind === ast\AST_PROP) {
             $context = $this->modifyPropertySimple($var_node, static function (UnionType $_) : UnionType {
-                return NullType::instance(false)->asUnionType();
+                return NullType::instance(false)->asPHPDocUnionType();
             }, $context);
         }
         return $context;
@@ -782,7 +783,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
         } else {
             static $null_and_possibly_undefined = null;
             if ($null_and_possibly_undefined === null) {
-                $null_and_possibly_undefined = NullType::instance(false)->asUnionType()->withIsPossiblyUndefined(true);
+                $null_and_possibly_undefined = NullType::instance(false)->asPHPDocUnionType()->withIsPossiblyUndefined(true);
             }
 
             return ArrayType::combineArrayShapeTypesWithField($union_type, $dim_value, $null_and_possibly_undefined);
@@ -851,11 +852,11 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                 }
                 if (!$context->getScope()->hasVariableWithName($var_name)) {
                     // Support analyzing cases such as `if (!empty($x['key'])) { use($x); }`, or `assert(!empty($x['key']))`
-                    // (Assume that this is an array, not ArrayAccess, as a heuristic)
+                    // (Assume that this is an array, not ArrayAccess or a string, as a heuristic)
                     $context->setScope($context->getScope()->withVariable(new Variable(
                         $context->withLineNumberStart($expr_node->lineno ?? 0),
                         $var_name,
-                        ArrayType::instance(false)->asUnionType(),
+                        ArrayType::instance(false)->asPHPDocUnionType(),
                         0
                     )));
                     return $context;
@@ -896,7 +897,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
             if (!$union_type->hasTopLevelArrayShapeTypeInstances()) {
                 return $context;
             }
-            $new_union_type = ArrayType::combineArrayShapeTypesWithField($union_type, $dim_value, MixedType::instance(false)->asUnionType());
+            $new_union_type = ArrayType::combineArrayShapeTypesWithField($union_type, $dim_value, MixedType::instance(false)->asPHPDocUnionType());
             $variable = clone($variable);
             $variable->setUnionType($new_union_type);
             return $context->withScopeVariable(

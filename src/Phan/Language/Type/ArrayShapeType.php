@@ -507,7 +507,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
                 try {
                     $expanded_field_type = $union_type->asExpandedTypes($code_base, $recursion_depth);
                 } catch (RecursionDepthException $_) {
-                    $expanded_field_type = MixedType::instance(false)->asUnionType();
+                    $expanded_field_type = MixedType::instance(false)->asPHPDocUnionType();
                 }
                 if ($union_type->isPossiblyUndefined()) {
                     // array{key?:string} should become array{key?:string}.
@@ -515,7 +515,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
                 }
                 $result_fields[$key] = $expanded_field_type;
             }
-            return ArrayShapeType::fromFieldTypes($result_fields, $this->is_nullable)->asUnionType();
+            return ArrayShapeType::fromFieldTypes($result_fields, $this->is_nullable)->asPHPDocUnionType();
         });
     }
 
@@ -554,7 +554,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
                 try {
                     $expanded_field_type = $union_type->asExpandedTypesPreservingTemplate($code_base, $recursion_depth);
                 } catch (RecursionDepthException $_) {
-                    $expanded_field_type = MixedType::instance(false)->asUnionType();
+                    $expanded_field_type = MixedType::instance(false)->asPHPDocUnionType();
                 }
                 if ($union_type->isPossiblyUndefined()) {
                     // array{key?:string} should become array{key?:string}.
@@ -562,7 +562,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
                 }
                 $result_fields[$key] = $expanded_field_type;
             }
-            return ArrayShapeType::fromFieldTypes($result_fields, $this->is_nullable)->asUnionType();
+            return ArrayShapeType::fromFieldTypes($result_fields, $this->is_nullable)->asPHPDocUnionType();
         });
     }
 
@@ -649,6 +649,21 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         return false;
     }
 
+    public function isAlwaysFalsey() : bool
+    {
+        return \count($this->field_types) === 0;
+    }
+
+    public function isPossiblyTruthy() : bool
+    {
+        return \count($this->field_types) > 0;
+    }
+
+    public function isPossiblyFalsey() : bool
+    {
+        return !$this->isAlwaysTruthy();
+    }
+
     /**
      * Returns true if this contains a type that is definitely non-callable
      * e.g. returns true for false, array, int
@@ -659,11 +674,11 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         if (\array_keys($this->field_types) !== [0, 1]) {
             return true;
         }
-        if (!$this->field_types[0]->canCastToUnionType(UnionType::fromFullyQualifiedString('string|object'))) {
+        if (!$this->field_types[0]->canCastToUnionType(UnionType::fromFullyQualifiedPHPDocString('string|object'))) {
             // First field of callable array should be a string or object. (the expression or class)
             return true;
         }
-        if (!$this->field_types[1]->canCastToUnionType(StringType::instance(false)->asUnionType())) {
+        if (!$this->field_types[1]->canCastToUnionType(StringType::instance(false)->asPHPDocUnionType())) {
             // Second field of callable array should be the method name.
             return true;
         }
@@ -691,9 +706,9 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
             }
         }
         if ($field_types === $this->field_types) {
-            return $this->asUnionType();
+            return $this->asPHPDocUnionType();
         }
-        return self::fromFieldTypes($field_types, $this->is_nullable)->asUnionType();
+        return self::fromFieldTypes($field_types, $this->is_nullable)->asPHPDocUnionType();
     }
 
     /**

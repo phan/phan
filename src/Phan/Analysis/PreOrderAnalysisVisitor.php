@@ -306,7 +306,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             $this->setReturnTypeOfGenerator($function, $node);
         }
         if (!$function->hasReturn() && $function->getUnionType()->isEmpty()) {
-            $function->setUnionType(VoidType::instance(false)->asUnionType());
+            // TODO: This is a global function - also guarantee that it's a real type elsewhere if phpdoc matches the implementation.
+            $function->setUnionType(VoidType::instance(false)->asRealUnionType());
         }
 
         return $context;
@@ -364,7 +365,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                     new Variable(
                         $context,
                         'this',
-                        $override_this_fqsen->asUnionType(),
+                        $override_this_fqsen->asRealUnionType(),
                         0
                     )
                 );
@@ -446,7 +447,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                             [$variable_name],
                             IssueFixSuggester::suggestVariableTypoFix($this->code_base, $context, $variable_name)
                         );
-                        $variable = new Variable($context, $variable_name, NullType::instance(false)->asUnionType(), 0);
+                        $variable = new Variable($context, $variable_name, NullType::instance(false)->asPHPDocUnionType(), 0);
                     } else {
                         // If the variable doesn't exist, but it's
                         // a pass-by-reference variable, we can
@@ -470,6 +471,11 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                     // doesn't update the outer scope
                     if (!($use->flags & ast\flags\PARAM_REF)) {
                         $variable = clone($variable);
+                    } else {
+                        $union_type = $variable->getUnionType();
+                        if ($union_type->hasRealTypeSet()) {
+                            $variable->setUnionType($union_type->eraseRealTypeSet());
+                        }
                     }
                 }
 
@@ -478,7 +484,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             }
         }
         if (!$func->hasReturn() && $func->getUnionType()->isEmpty()) {
-            $func->setUnionType(VoidType::instance(false)->asUnionType());
+            $func->setUnionType(VoidType::instance(false)->asRealUnionType());
         }
 
         // Add parameters to the context.
@@ -565,7 +571,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             }
         }
         if (!$func->hasReturn() && $func->getUnionType()->isEmpty()) {
-            $func->setUnionType(VoidType::instance(false)->asUnionType());
+            $func->setUnionType(VoidType::instance(false)->asRealUnionType());
         }
 
         // Add parameters to the context.
@@ -620,7 +626,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             $func_return_type = $func->getUnionType();
             try {
                 $func_return_type_can_cast = $func_return_type->canCastToExpandedUnionType(
-                    Type::fromNamespaceAndName('\\', 'Generator', false)->asUnionType(),
+                    Type::fromNamespaceAndName('\\', 'Generator', false)->asPHPDocUnionType(),
                     $this->code_base
                 );
             } catch (RecursionDepthException $_) {

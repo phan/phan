@@ -24,9 +24,9 @@ final class ParameterTypesAnalyzerTest extends BaseTest
         string $phpdoc_return_type_string,
         string $real_return_type_string
     ) : void {
-        $expected_type = UnionType::fromFullyQualifiedString($expected_type_string);
-        $phpdoc_return_type = UnionType::fromFullyQualifiedString($phpdoc_return_type_string);
-        $real_return_type = UnionType::fromFullyQualifiedString($real_return_type_string);
+        $expected_type = UnionType::fromFullyQualifiedPHPDocString($expected_type_string);
+        $phpdoc_return_type = UnionType::fromFullyQualifiedPHPDocString($phpdoc_return_type_string);
+        $real_return_type = UnionType::fromFullyQualifiedPHPDocString($real_return_type_string);
 
         $actual_normalized_type = ParameterTypesAnalyzer::normalizeNarrowedParamType($phpdoc_return_type, $real_return_type);
 
@@ -43,8 +43,8 @@ final class ParameterTypesAnalyzerTest extends BaseTest
         string $phpdoc_return_type_string,
         string $real_return_type_string
     ) : void {
-        $phpdoc_return_type = UnionType::fromFullyQualifiedString($phpdoc_return_type_string);
-        $real_return_type = UnionType::fromFullyQualifiedString($real_return_type_string);
+        $phpdoc_return_type = UnionType::fromFullyQualifiedPHPDocString($phpdoc_return_type_string);
+        $real_return_type = UnionType::fromFullyQualifiedPHPDocString($real_return_type_string);
 
         $actual_normalized_type = ParameterTypesAnalyzer::normalizeNarrowedParamType($phpdoc_return_type, $real_return_type);
 

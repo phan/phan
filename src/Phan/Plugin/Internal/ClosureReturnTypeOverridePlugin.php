@@ -15,6 +15,7 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Type;
 use Phan\Language\Type\ClosureType;
+use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
 use Phan\PluginV3;
 use Phan\PluginV3\AnalyzeFunctionCallCapability;
@@ -134,11 +135,12 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
             array $args
         ) : UnionType {
             if (\count($args) < 1) {
-                return ClosureType::instance(false)->asUnionType();
+                // Emits warning and returns null if 0 args given
+                return NullType::instance(false)->asRealUnionType();
             }
             $function_like_list = UnionTypeVisitor::functionLikeListFromNodeAndContext($code_base, $context, $args[0], true);
             if (\count($function_like_list) === 0) {
-                return ClosureType::instance(false)->asUnionType();
+                return ClosureType::instance(false)->asPHPDocUnionType();
             }
             $closure_types = UnionType::empty();
             foreach ($function_like_list as $function_like) {
@@ -156,7 +158,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
             array $args
         ) : UnionType {
             if (\count($args) < 1) {
-                return ClosureType::instance(false)->asUnionType();
+                return NullType::instance(false)->asRealUnionType();
             }
             $types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0], true);
             $types = $types->makeFromFilter(static function (Type $type) : bool {
@@ -167,7 +169,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
             });
 
             if ($types->isEmpty()) {
-                return ClosureType::instance(false)->asUnionType();
+                return ClosureType::instance(false)->asPHPDocUnionType();
             }
             return $types;
         };

@@ -577,10 +577,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $node->children['default']
             );
         } else {
-            $default_type = NullType::instance(false)->asUnionType();
+            $default_type = NullType::instance(false)->asRealUnionType();
         }
 
-        $variable->setUnionType($default_type);
+        // NOTE: Phan can't be sure that the type the static type starts with is the same as what it has later. Avoid false positive PhanRedundantCondition.
+        $variable->setUnionType($default_type->eraseRealTypeSet());
         // TODO: Probably not true in a loop?
         // TODO: Expand this to assigning to variables? (would need to make references invalidate that, and skip this in the global scope)
         $variable->enablePhanFlagBits(\Phan\Language\Element\Flags::IS_CONSTANT_DEFINITION);
@@ -1029,7 +1030,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     {
         $var = $node->children['var'];
         $old_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $var)->withFlattenedArrayShapeOrLiteralTypeInstances();
-        if (!$old_type->canCastToUnionType(UnionType::fromFullyQualifiedString('int|string|float'))) {
+        if (!$old_type->canCastToUnionType(UnionType::fromFullyQualifiedPHPDocString('int|string|float'))) {
             $this->emitIssue(
                 Issue::TypeInvalidUnaryOperandIncOrDec,
                 $node->lineno,
@@ -1404,7 +1405,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         $yield_value_node = $node->children['value'];
         if ($yield_value_node === null) {
-            $yield_value_type = VoidType::instance(false)->asUnionType();
+            $yield_value_type = VoidType::instance(false)->asRealUnionType();
         } else {
             $yield_value_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $yield_value_node);
         }
@@ -1426,7 +1427,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if ($type_list_count > 1) {
             $yield_key_node = $node->children['key'];
             if ($yield_key_node === null) {
-                $yield_key_type = VoidType::instance(false)->asUnionType();
+                $yield_key_type = VoidType::instance(false)->asRealUnionType();
             } else {
                 $yield_key_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $yield_key_node);
             }
@@ -1661,7 +1662,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     {
         if (!($node instanceof Node)) {
             if (null === $node) {
-                yield $return_lineno => VoidType::instance(false)->asUnionType();
+                yield $return_lineno => VoidType::instance(false)->asRealUnionType();
                 return;
             }
             yield $return_lineno => UnionTypeVisitor::unionTypeFromNode(
@@ -1800,7 +1801,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     {
         if (\count($node->children) === 0) {
             // Possibly unreachable (array shape would be returned instead)
-            yield $node->lineno => MixedType::instance(false)->asUnionType();
+            yield $node->lineno => MixedType::instance(false)->asPHPDocUnionType();
             return;
         }
         foreach ($node->children as $elem) {
@@ -1830,7 +1831,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             } else {
                 yield $elem->lineno => Type::fromObject(
                     $value_node
-                )->asUnionType();
+                )->asRealUnionType();
             }
         }
     }
@@ -2149,7 +2150,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             }
             if (!\is_string($method_name)) {
                 $method_name_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['method']);
-                if (!$method_name_type->canCastToUnionType(StringType::instance(false)->asUnionType())) {
+                if (!$method_name_type->canCastToUnionType(StringType::instance(false)->asPHPDocUnionType())) {
                     Issue::maybeEmit(
                         $this->code_base,
                         $this->context,
@@ -2303,7 +2304,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
             if (!$possible_ancestor_type->isEmpty()) {
                 // but forbid 'self::__construct', 'static::__construct'
-                $type = $this->context->getClassFQSEN()->asUnionType();
+                $type = $this->context->getClassFQSEN()->asRealUnionType();
                 if ($possible_ancestor_type->hasStaticType()) {
                     $this->emitIssue(
                         Issue::AccessOwnConstructor,
@@ -2547,7 +2548,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             }
             if (!\is_string($method_name)) {
                 $method_name_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['method']);
-                if (!$method_name_type->canCastToUnionType(StringType::instance(false)->asUnionType())) {
+                if (!$method_name_type->canCastToUnionType(StringType::instance(false)->asPHPDocUnionType())) {
                     Issue::maybeEmit(
                         $this->code_base,
                         $this->context,
@@ -3114,11 +3115,15 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // We don't do anything with the new variable; just create it
             // if it doesn't exist
             try {
-                (new ContextNode(
+                $variable = (new ContextNode(
                     $this->code_base,
                     $this->context,
                     $argument
                 ))->getOrCreateVariableForReferenceParameter($parameter, $real_parameter);
+                $variable_union_type = $variable->getUnionType();
+                if ($variable_union_type->hasRealTypeSet()) {
+                    $variable->setUnionType($variable->getUnionType()->eraseRealTypeSet());
+                }
             } catch (NodeException $_) {
                 return;
             }
@@ -3469,10 +3474,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     if ($parameter_type->isType(NullType::instance(false))) {
                         // Treat a parameter default of null the same way as passing null to that parameter
                         // (Add null to the list of possibilities)
-                        $parameter_clone->addUnionType($parameter_type);
+                        $parameter_clone->addUnionType($parameter_type->eraseRealTypeSet());
                     } else {
                         // For other types (E.g. string), just replace the union type.
-                        $parameter_clone->setUnionType($parameter_type);
+                        $parameter_clone->setUnionType($parameter_type->eraseRealTypeSet());
                     }
                 }
 
@@ -3579,7 +3584,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         array &$parameter_list,
         int $parameter_offset
     ) : void {
-        $argument_type = $argument_types[$parameter_offset];
+        $argument_type = $argument_types[$parameter_offset]->eraseRealTypeSet();
         if ($parameter->isVariadic()) {
             for ($i = $parameter_offset + 1; $i < \count($argument_types); $i++) {
                 $argument_type = $argument_type->withUnionType($argument_types[$i]);

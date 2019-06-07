@@ -27,7 +27,7 @@ final class EmptyUnionType extends UnionType
      */
     public function __construct()
     {
-        parent::__construct([], true);
+        parent::__construct([], true, []);
     }
 
     /**
@@ -58,7 +58,7 @@ final class EmptyUnionType extends UnionType
      */
     public function withType(Type $type) : UnionType
     {
-        return $type->asUnionType();
+        return $type->asPHPDocUnionType();
     }
 
     /**
@@ -95,7 +95,7 @@ final class EmptyUnionType extends UnionType
      */
     public function withUnionType(UnionType $union_type) : UnionType
     {
-        return $union_type;
+        return $union_type->eraseRealTypeSet();
     }
 
     /**
@@ -320,6 +320,10 @@ final class EmptyUnionType extends UnionType
     public function containsNullableOrIsEmpty() : bool
     {
         return true;
+    }
+
+    public function isNull() : bool {
+        return false;
     }
 
     /**
@@ -803,6 +807,11 @@ final class EmptyUnionType extends UnionType
         return $this;
     }
 
+    public function floatTypes() : UnionType
+    {
+        return $this;
+    }
+
     /**
      * Returns the types for which is_string($x) would be true.
      *
@@ -965,7 +974,7 @@ final class EmptyUnionType extends UnionType
      */
     public function asNonEmptyGenericArrayTypes(int $key_type) : UnionType
     {
-        return ArrayType::instance(false)->asUnionType();
+        return ArrayType::instance(false)->asPHPDocUnionType();
     }
 
     /**
@@ -1010,7 +1019,7 @@ final class EmptyUnionType extends UnionType
 
     public function replaceWithTemplateTypes(UnionType $template_union_type) : UnionType
     {
-        return $template_union_type;
+        return $template_union_type->eraseRealTypeSet();
     }
 
     public function hasTypeWithFQSEN(Type $other) : bool
@@ -1223,12 +1232,12 @@ final class EmptyUnionType extends UnionType
 
     public function applyUnaryBitwiseNotOperator() : UnionType
     {
-        return IntType::instance(false)->asUnionType();
+        return IntType::instance(false)->asPHPDocUnionType();
     }
 
     public function applyUnaryPlusOperator() : UnionType
     {
-        return UnionType::fromFullyQualifiedString('int|float');
+        return UnionType::fromFullyQualifiedPHPDocString('int|float');
     }
 
     /** @return null */
@@ -1300,5 +1309,46 @@ final class EmptyUnionType extends UnionType
     public function isVoidType() : bool
     {
         return false;
+    }
+
+    public function withRealType(Type $type) : UnionType
+    {
+        return $type->asRealUnionType();
+    }
+
+    public function getRealTypeSet() : array
+    {
+        return [];
+    }
+
+    public function hasRealTypeSet() : bool
+    {
+        return false;
+    }
+
+    public function eraseRealTypeSet() : UnionType
+    {
+        return $this;
+    }
+
+    public function hasAnyTypeOverlap(CodeBase $code_base, UnionType $other) : bool
+    {
+        return true;
+    }
+
+    /**
+     * @param ?array<int,Type> $real_type_set
+     */
+    public function withRealTypeSet(?array $real_type_set) : UnionType
+    {
+        if (!$real_type_set) {
+            return $this;
+        }
+        return UnionType::of($real_type_set, $real_type_set);
+    }
+
+    public function getRealUnionType() : UnionType
+    {
+        return $this;
     }
 }

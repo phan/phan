@@ -14,14 +14,10 @@ use Phan\Language\Element\Comment\Builder;
 use Phan\Language\FutureUnionType;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
-use Phan\Language\Type\BoolType;
 use Phan\Language\Type\ClosureDeclarationParameter;
 use Phan\Language\Type\FalseType;
-use Phan\Language\Type\FloatType;
-use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
-use Phan\Language\Type\StringType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\UnionType;
 use Phan\Parse\ParseVisitor;
@@ -216,7 +212,7 @@ class Parameter extends Variable
         );
         if ($reflection_parameter->isOptional()) {
             $parameter->setDefaultValueType(
-                NullType::instance(false)->asUnionType()
+                NullType::instance(false)->asPHPDocUnionType()
             );
         }
         return $parameter;
@@ -229,18 +225,20 @@ class Parameter extends Variable
     private static function maybeGetKnownDefaultValueForNode($node) : ?UnionType
     {
         if (!($node instanceof Node)) {
-            return Type::nonLiteralFromObject($node)->asUnionType();
+            return Type::nonLiteralFromObject($node)->asRealUnionType();
         }
+        // XXX: This could be made more precise and handle things like unary/binary ops.
+        // However, this doesn't know about constants that haven't been parsed yet.
         if ($node->kind === \ast\AST_CONST) {
             $name = $node->children['name']->children['name'] ?? null;
             if (\is_string($name)) {
                 switch (\strtolower($name)) {
                     case 'false':
-                        return FalseType::instance(false)->asUnionType();
+                        return FalseType::instance(false)->asRealUnionType();
                     case 'true':
-                        return TrueType::instance(false)->asUnionType();
+                        return TrueType::instance(false)->asRealUnionType();
                     case 'null':
-                        return NullType::instance(false)->asUnionType();
+                        return NullType::instance(false)->asRealUnionType();
                 }
             }
         }
@@ -316,19 +314,13 @@ class Parameter extends Variable
                 if ($default_node->kind === \ast\AST_ARRAY) {
                     // We know the parameter default is some sort of array, but we don't know any more (e.g. key types, value types).
                     // When the future type is resolved, we'll know something more specific.
-                    $default_value_union_type = ArrayType::instance(false)->asUnionType();
+                    $default_value_union_type = ArrayType::instance(false)->asRealUnionType();
                 } else {
                     static $possible_parameter_default_union_type = null;
                     if ($possible_parameter_default_union_type === null) {
                         // These can be constants or literals (or null/true/false)
-                        $possible_parameter_default_union_type = new UnionType([
-                            ArrayType::instance(false),
-                            BoolType::instance(false),
-                            FloatType::instance(false),
-                            IntType::instance(false),
-                            StringType::instance(false),
-                            NullType::instance(false),
-                        ]);
+                        // (STDERR, etc. are constants)
+                        $possible_parameter_default_union_type = UnionType::fromFullyQualifiedRealString('array|bool|float|int|string|resource|null');
                     }
                     $default_value_union_type = $possible_parameter_default_union_type;
                 }
@@ -593,7 +585,7 @@ class Parameter extends Variable
     {
         $param_type = $this->getNonVariadicUnionType();
         if ($param_type->isEmpty()) {
-            $param_type = MixedType::instance(false)->asUnionType();
+            $param_type = MixedType::instance(false)->asPHPDocUnionType();
         }
         return new ClosureDeclarationParameter(
             $param_type,

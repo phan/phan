@@ -64,7 +64,7 @@ final class MiscParamPlugin extends PluginV3 implements
                 $args[0],
                 $context,
                 $code_base,
-                ArrayType::instance(false)->asUnionType(),
+                ArrayType::instance(false)->asPHPDocUnionType(),
                 static function (UnionType $node_type) use ($context, $function) : IssueInstance {
                     // "arg#1(values) is %s but {$function->getFQSEN()}() takes array when passed only one arg"
                     return Issue::fromType(Issue::ParamSpecial2)(
@@ -98,7 +98,7 @@ final class MiscParamPlugin extends PluginV3 implements
                 $args[$argcount - 1],
                 $context,
                 $code_base,
-                CallableType::instance(false)->asUnionType(),
+                CallableType::instance(false)->asPHPDocUnionType(),
                 static function (UnionType $unused_node_type) use ($context, $function) : IssueInstance {
                     // "The last argument to {$function->getFQSEN()} must be a callable"
                     return Issue::fromType(Issue::ParamSpecial3)(
@@ -117,7 +117,7 @@ final class MiscParamPlugin extends PluginV3 implements
                     $args[$i],
                     $context,
                     $code_base,
-                    ArrayType::instance(false)->asUnionType(),
+                    ArrayType::instance(false)->asPHPDocUnionType(),
                     static function (UnionType $node_type) use ($context, $function, $i) : IssueInstance {
                         // "arg#".($i+1)." is %s but {$function->getFQSEN()}() takes array"
                         return Issue::fromType(Issue::ParamTypeMismatch)(
@@ -188,7 +188,7 @@ final class MiscParamPlugin extends PluginV3 implements
                 // TODO: better array checks
                 if ($arg1_type->isExclusivelyArray()) {
                     if (!$arg2_type->canCastToUnionType(
-                        StringType::instance(false)->asUnionType()
+                        StringType::instance(false)->asPHPDocUnionType()
                     )) {
                         Issue::maybeEmit(
                             $code_base,
@@ -220,7 +220,7 @@ final class MiscParamPlugin extends PluginV3 implements
                     throw $stop_exception;
                 } elseif ($arg1_type->isNonNullStringType()) {
                     if (!$arg2_type->canCastToUnionType(
-                        ArrayType::instance(false)->asUnionType()
+                        ArrayType::instance(false)->asPHPDocUnionType()
                     )) {
                         Issue::maybeEmit(
                             $code_base,
@@ -272,7 +272,7 @@ final class MiscParamPlugin extends PluginV3 implements
                 $args[$argcount - 1],
                 $context,
                 $code_base,
-                CallableType::instance(false)->asUnionType(),
+                CallableType::instance(false)->asPHPDocUnionType(),
                 static function (UnionType $unused_node_type) use ($context, $function) : IssueInstance {
                     // "The last argument to {$function->getFQSEN()} must be a callable"
                     return Issue::fromType(Issue::ParamSpecial3)(
@@ -290,7 +290,7 @@ final class MiscParamPlugin extends PluginV3 implements
                 $args[$argcount - 2],
                 $context,
                 $code_base,
-                CallableType::instance(false)->asUnionType(),
+                CallableType::instance(false)->asPHPDocUnionType(),
                 static function (UnionType $unused_node_type) use ($context, $function) : IssueInstance {
                     // "The second last argument to {$function->getFQSEN()} must be a callable"
                     return Issue::fromType(Issue::ParamSpecial4)(
@@ -309,7 +309,7 @@ final class MiscParamPlugin extends PluginV3 implements
                     $args[$i],
                     $context,
                     $code_base,
-                    ArrayType::instance(false)->asUnionType(),
+                    ArrayType::instance(false)->asPHPDocUnionType(),
                     static function (UnionType $node_type) use ($context, $function, $i) : IssueInstance {
                     // "arg#".($i+1)." is %s but {$function->getFQSEN()}() takes array"
                         return Issue::fromType(Issue::ParamTypeMismatch)(
@@ -792,7 +792,7 @@ final class MiscParamPlugin extends PluginV3 implements
     private static function canCastToStringArrayLike(CodeBase $code_base, Context $context, UnionType $union_type) : bool
     {
         if ($union_type->canCastToUnionType(
-            UnionType::fromFullyQualifiedString('string[]|int[]')
+            UnionType::fromFullyQualifiedPHPDocString('string[]|int[]')
         )) {
             return true;
         }

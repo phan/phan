@@ -9,6 +9,19 @@ New features(CLI, Configs):
 + Be consistent about starting parameter/variable names with `$` in issue messages.
 + Fix false positives in more edge cases when analyzing variables with type `static` (e.g. `yield from $this;`) (#2825)
 + Properly emit `NonStaticCallToStatic` in more edge cases (#2826)
++ Add `--redundant-condition-detection` to attempt to detect redundant conditions/casts and impossible conditions based on the inferred real expression types.
+  New issue types: `PhanRedundantCondition`, `PhanImpossibleCondition` (e.g. `is_int(2)` and `boolval(true)` is redundant, `empty(2)` is impossible).
+
+  Note: This has many false positives involving loops, variables set in loops, and global variables.
+  This will be split into more granular issue types later on.
+
+  The real types are inferred separately (and more conservatively) from regular (phpdoc+real) expression types.
+
+  (these checks can also be enabled with the config setting `redundant_condition_detection`)
+
+New features(Analysis):
++ Infer that `<=>` is `-1|0|1` instead of `int`
++ Infer that eval with backticks is `?string` instead of `string`
 
 Maintenance:
 + Add updates to the function/method signature map from Psalm and PHPStan.

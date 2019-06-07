@@ -264,7 +264,7 @@ class Method extends ClassElement implements FunctionInterface
     public function getUnionTypeOfMagicIfKnown() : ?UnionType
     {
         $type_string = FullyQualifiedMethodName::MAGIC_METHOD_TYPE_MAP[$this->getName()] ?? null;
-        return $type_string ? UnionType::fromFullyQualifiedString($type_string) : null;
+        return $type_string ? UnionType::fromFullyQualifiedPHPDocString($type_string) : null;
     }
 
     /**

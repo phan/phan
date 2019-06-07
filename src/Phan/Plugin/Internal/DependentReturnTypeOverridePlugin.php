@@ -31,6 +31,8 @@ use function is_string;
  * or regex function appear to have arguments in the wrong order,
  *
  * e.g. explode($var, ':') or strpos(':', $x)
+ *
+ * TODO: Make these have corresponding real type sets in the union type.
  */
 final class DependentReturnTypeOverridePlugin extends PluginV3 implements
     ReturnTypeOverrideCapability
@@ -44,12 +46,12 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
      */
     public static function getReturnTypeOverridesStatic(CodeBase $code_base) : array
     {
-        $string_union_type = StringType::instance(false)->asUnionType();
-        $true_union_type = TrueType::instance(false)->asUnionType();
+        $string_union_type = StringType::instance(false)->asPHPDocUnionType();
+        $true_union_type = TrueType::instance(false)->asPHPDocUnionType();
         $string_or_true_union_type = $string_union_type->withUnionType($true_union_type);
-        $void_union_type = VoidType::instance(false)->asUnionType();
-        $nullable_string_union_type = StringType::instance(true)->asUnionType();
-        $float_union_type = FloatType::instance(false)->asUnionType();
+        $void_union_type = VoidType::instance(false)->asPHPDocUnionType();
+        $nullable_string_union_type = StringType::instance(true)->asPHPDocUnionType();
+        $float_union_type = FloatType::instance(false)->asPHPDocUnionType();
         $string_or_float_union_type = $string_union_type->withUnionType($float_union_type);
 
         /**
@@ -92,8 +94,8 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
          * @phan-return Closure(CodeBase,Context,Func,array):UnionType
          */
         $make_arg_existence_dependent_type_method = static function (int $arg_pos, string $type_if_exists_string, string $type_if_missing_string) : Closure {
-            $type_if_exists = UnionType::fromFullyQualifiedString($type_if_exists_string);
-            $type_if_missing = UnionType::fromFullyQualifiedString($type_if_missing_string);
+            $type_if_exists = UnionType::fromFullyQualifiedPHPDocString($type_if_exists_string);
+            $type_if_missing = UnionType::fromFullyQualifiedPHPDocString($type_if_missing_string);
             /**
              * @param array<int,Node|int|float|string> $args
              */
@@ -111,9 +113,9 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             };
         };
 
-        $json_decode_array_types = UnionType::fromFullyQualifiedString('array|string|float|int|bool|null');
-        $json_decode_object_types = UnionType::fromFullyQualifiedString('\stdClass|array<int,mixed>|string|float|int|bool|null');
-        $json_decode_array_or_object_types = UnionType::fromFullyQualifiedString('\stdClass|array|string|float|int|bool|null');
+        $json_decode_array_types = UnionType::fromFullyQualifiedPHPDocString('array|string|float|int|bool|null');
+        $json_decode_object_types = UnionType::fromFullyQualifiedPHPDocString('\stdClass|array<int,mixed>|string|float|int|bool|null');
+        $json_decode_array_or_object_types = UnionType::fromFullyQualifiedPHPDocString('\stdClass|array|string|float|int|bool|null');
 
         $string_if_2_true           = $make_dependent_type_method(1, $string_union_type, $void_union_type, $nullable_string_union_type);
         $string_if_2_true_else_true = $make_dependent_type_method(1, $string_union_type, $true_union_type, $string_or_true_union_type);
@@ -161,8 +163,8 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             return ($options_result & \JSON_OBJECT_AS_ARRAY) !== 0 ? $json_decode_array_types : $json_decode_object_types;
         };
 
-        $str_replace_types = UnionType::fromFullyQualifiedString('string|string[]');
-        $str_array_type = UnionType::fromFullyQualifiedString('string[]');
+        $str_replace_types = UnionType::fromFullyQualifiedPHPDocString('string|string[]');
+        $str_array_type = UnionType::fromFullyQualifiedPHPDocString('string[]');
 
         /**
          * @param array<int,Node|int|float|string> $args
@@ -190,7 +192,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             }
             return $has_array ? $str_array_type : $str_replace_types;
         };
-        $string_or_false = UnionType::fromFullyQualifiedString('string|false');
+        $string_or_false = UnionType::fromFullyQualifiedPHPDocString('string|false');
         /**
          * @param array<int,Node|int|float|string> $args
          */
@@ -201,7 +203,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             array $args
         ) use ($string_or_false) : UnionType {
             if (count($args) === 0 && Config::get_closest_target_php_version_id() >= 70100) {
-                return UnionType::fromFullyQualifiedString('array<string,string>');
+                return UnionType::fromFullyQualifiedPHPDocString('array<string,string>');
             }
             return $string_or_false;
         };
@@ -252,7 +254,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
                 }
                 if ($levels <= 0) {
                     // TODO: Could warn but not common
-                    return NullType::instance(false)->asUnionType();
+                    return NullType::instance(false)->asPHPDocUnionType();
                 }
             } else {
                 $levels = 1;
@@ -263,7 +265,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             }
 
             $result = \dirname($arg, $levels);
-            return Type::fromObject($result)->asUnionType();
+            return Type::fromObject($result)->asPHPDocUnionType();
         };
 
         // TODO: Handle flags of preg_split.
@@ -294,7 +296,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
      */
     private static function makeStringFunctionHandler(callable $callable) : Closure
     {
-        $string_union_type = StringType::instance(false)->asUnionType();
+        $string_union_type = StringType::instance(false)->asPHPDocUnionType();
         /**
          * @param array<int,Node|int|float|string> $args
          */
@@ -317,7 +319,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             }
 
             $result = $callable($arg);
-            return Type::fromObject($result)->asUnionType();
+            return Type::fromObject($result)->asPHPDocUnionType();
         };
     }
 

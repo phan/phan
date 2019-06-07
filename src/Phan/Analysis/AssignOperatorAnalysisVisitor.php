@@ -168,7 +168,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
 
             // fast-track common cases
             if ($left->isNonNullIntType() && $right->isNonNullIntType()) {
-                return IntType::instance(false)->asUnionType();
+                return IntType::instance(false)->asPHPDocUnionType();
             }
 
             // If both left and right are arrays, then this is array
@@ -198,16 +198,13 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
             if ($int_or_float_union_type === null) {
                 $float_type = FloatType::instance(false);
                 $array_type = ArrayType::instance(false);
-                $int_or_float_union_type = new UnionType([
-                    IntType::instance(false),
-                    $float_type
-                ]);
+                $int_or_float_union_type = UnionType::fromFullyQualifiedPHPDocString('int|float');
             }
 
             if ($left->isNonNullNumberType() && $right->isNonNullNumberType()) {
                 if (!$left->hasNonNullIntType() || !$right->hasNonNullIntType()) {
                     // Heuristic: If one or more of the sides is a float, the result is always a float.
-                    return $float_type->asUnionType();
+                    return $float_type->asPHPDocUnionType();
                 }
                 return $int_or_float_union_type;
             }
@@ -230,7 +227,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
 
                 if ($left_is_array
                     && !$right->canCastToUnionType(
-                        ArrayType::instance(false)->asUnionType()
+                        ArrayType::instance(false)->asPHPDocUnionType()
                     )
                 ) {
                     Issue::maybeEmit(
@@ -240,7 +237,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
                         $node->lineno ?? 0
                     );
                     return UnionType::empty();
-                } elseif ($right_is_array && !$left->canCastToUnionType($array_type->asUnionType())) {
+                } elseif ($right_is_array && !$left->canCastToUnionType($array_type->asPHPDocUnionType())) {
                     Issue::maybeEmit(
                         $code_base,
                         $context,
@@ -251,7 +248,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
                 }
                 // If it is a '+' and we know one side is an array
                 // and the other is unknown, assume array
-                return $array_type->asUnionType();
+                return $array_type->asPHPDocUnionType();
             }
 
             return $int_or_float_union_type;
@@ -295,16 +292,14 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
             static $int_or_float_union_type = null;
             if ($int_or_float_union_type === null) {
                 $float_type = FloatType::instance(false);
-                $int_or_float_union_type = new UnionType([
-                    IntType::instance(false),
-                    $float_type
-                ]);
+                $int_or_float_union_type = UnionType::fromFullyQualifiedPHPDocString('int|float');
             }
 
             // fast-track common cases
             if ($left->isNonNullIntType() && $right->isNonNullIntType()) {
                 if ($combination_is_int) {
-                    return IntType::instance(false)->asUnionType();
+                    // XXX can overflow to float so asRealUnionType isn't used.
+                    return IntType::instance(false)->asPHPDocUnionType();
                 } else {
                     return $int_or_float_union_type;
                 }
@@ -325,7 +320,8 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
             if ($left->isNonNullNumberType() && $right->isNonNullNumberType()) {
                 if (!$left->hasNonNullIntType() || !$right->hasNonNullIntType()) {
                     // Heuristic: If one or more of the sides is a float, the result is always a float.
-                    return $float_type->asUnionType();
+                    // TODO: Return real types if both sides are real types, e.g. `$x = 2; $x += 3;`
+                    return $float_type->asPHPDocUnionType();
                 }
                 return $int_or_float_union_type;
             }
@@ -381,16 +377,17 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
     {
         return $this->updateTargetWithType($node, function (UnionType $left_type) use ($node) : UnionType {
             // TODO: Warn about invalid left and right-hand sides here and in BinaryOperatorFlagVisitor.
+            // TODO: Return real types if both sides are real types.
             // Expect int|string
 
             $right_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr']);
             if ($right_type->hasStringType() || $left_type->hasStringType()) {
                 if ($right_type->isNonNullStringType() && $left_type->isNonNullStringType()) {
-                    return StringType::instance(false)->asUnionType();
+                    return StringType::instance(false)->asPHPDocUnionType();
                 }
-                return UnionType::fromFullyQualifiedString('int|string');
+                return UnionType::fromFullyQualifiedPHPDocString('int|string');
             }
-            return IntType::instance(false)->asUnionType();
+            return IntType::instance(false)->asPHPDocUnionType();
         });
     }
 
@@ -413,7 +410,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
     {
         return $this->updateTargetWithType($node, static function (UnionType $unused_left) : UnionType {
             // TODO: Check if both sides can cast to string and warn if they can't.
-            return StringType::instance(false)->asUnionType();
+            return StringType::instance(false)->asRealUnionType();
         });
     }
 
@@ -427,7 +424,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         $this->warnForInvalidOperandsOfNumericOp($node);
         return $this->updateTargetWithType($node, static function (UnionType $unused_left) : UnionType {
             // TODO: Check if both sides can cast to string and warn if they can't.
-            return IntType::instance(false)->asUnionType();
+            return IntType::instance(false)->asRealUnionType();
         });
     }
 
@@ -452,7 +449,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         return $this->updateTargetWithType($node, static function (UnionType $unused_left) : UnionType {
             // TODO: Check if both sides can cast to int and warn if they can't.
             // TODO: Handle both sides being literals
-            return IntType::instance(false)->asUnionType();
+            return IntType::instance(false)->asRealUnionType();
         });
     }
 
@@ -462,7 +459,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         return $this->updateTargetWithType($node, static function (UnionType $unused_left) : UnionType {
             // TODO: Check if both sides can cast to int and warn if they can't.
             // TODO: Handle both sides being literals
-            return IntType::instance(false)->asUnionType();
+            return IntType::instance(false)->asRealUnionType();
         });
     }
 

@@ -294,11 +294,14 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
         return self::performComparison($this->value, $scalar, $flags);
     }
 
+    /**
+     * If a literal string is numeric, then it will have a numeric type (int/float) after being incremented/decremented
+     */
     public function getTypeAfterIncOrDec() : UnionType
     {
         $v = $this->value;
         ++$v;
-        return Type::nonLiteralFromObject($v)->asUnionType();
+        return Type::nonLiteralFromObject($v)->asPHPDocUnionType();
     }
 
     /**

@@ -73,8 +73,17 @@ final class UnionTypeBuilder
     /**
      * Build and return the UnionType for the unique type set that this was building.
      */
+    public function getPHPDocUnionType() : UnionType
+    {
+        return UnionType::of($this->type_set, []);
+    }
+
+    /**
+     * Build and return the UnionType for the unique type set that this was building.
+     * @deprecated use self::getPHPDocUnionType()
+     */
     public function getUnionType() : UnionType
     {
-        return UnionType::of($this->type_set);
+        return self::getPHPDocUnionType();
     }
 }

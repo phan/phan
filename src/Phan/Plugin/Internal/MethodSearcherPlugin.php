@@ -84,10 +84,10 @@ final class MethodSearcherPlugin extends PluginV3 implements
                 if ($replacements === [$type]) {
                     continue;
                 }
-                $union_type = $union_type->withoutType($type)->withUnionType(UnionType::of($replacements));
+                $union_type = $union_type->withoutType($type)->withUnionType(UnionType::of($replacements, []));
             } elseif ($type instanceof GenericArrayType) {
                 $element_type = $type->genericArrayElementType();
-                $replacement_element_types = self::addMissingNamespaces($code_base, $element_type->asUnionType());
+                $replacement_element_types = self::addMissingNamespaces($code_base, $element_type->asPHPDocUnionType());
                 if ($replacement_element_types->isType($element_type)) {
                     continue;
                 }
@@ -213,7 +213,7 @@ final class MethodSearcherPlugin extends PluginV3 implements
         }
         // TODO: Set strict type casting rules here?
         if ($function instanceof Method && \in_array(\strtolower($function->getName()), ['__construct', '__clone'], true)) {
-            $return_type = $function->getFQSEN()->getFullyQualifiedClassName()->asType()->asUnionType();
+            $return_type = $function->getFQSEN()->getFullyQualifiedClassName()->asType()->asPHPDocUnionType();
         } else {
             $return_type = $function->getUnionType();
         }
@@ -233,7 +233,7 @@ final class MethodSearcherPlugin extends PluginV3 implements
             $signature_param_types[] = $param->getUnionType();
         }
         if ($function instanceof Method) {
-            $signature_param_types[] = $function->getFQSEN()->getFullyQualifiedClassName()->asType()->asUnionType();
+            $signature_param_types[] = $function->getFQSEN()->getFullyQualifiedClassName()->asType()->asPHPDocUnionType();
         }
         if (count($signature_param_types) < count(self::$param_types)) {
             return 0;
@@ -254,11 +254,11 @@ final class MethodSearcherPlugin extends PluginV3 implements
                 return $union_type;
             }
             if (!$function->isAbstract() && !$function->isPHPInternal() && !$function->hasReturn()) {
-                return UnionType::fromFullyQualifiedString('void');
+                return UnionType::fromFullyQualifiedPHPDocString('void');
             }
         } else {
             if (!$function->isPHPInternal() && !$function->hasReturn()) {
-                return UnionType::fromFullyQualifiedString('void');
+                return UnionType::fromFullyQualifiedRealString('void');
             }
         }
         return UnionType::empty();
@@ -289,13 +289,13 @@ final class MethodSearcherPlugin extends PluginV3 implements
                 if ($inner_type->isObjectWithKnownFQSEN()) {
                     $result += 5;
                 } else {
-                    if ($inner_type->isScalar() && !$actual_signature_type->canCastToUnionType($inner_type->asUnionType())) {
+                    if ($inner_type->isScalar() && !$actual_signature_type->canCastToUnionType($inner_type->asPHPDocUnionType())) {
                         $result += 0.5;
                         continue;
                     }
                     $result += 1;
                 }
-            } elseif ($expanded_actual_signature_type->canCastToUnionType($inner_type->asUnionType())) {
+            } elseif ($expanded_actual_signature_type->canCastToUnionType($inner_type->asPHPDocUnionType())) {
                 $result += 0.5;
             }
         }

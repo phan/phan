@@ -41,7 +41,7 @@ final class FrameTest extends BaseTest
         $this->assertHasEncodedValue('stdClass({"key":"value","2":"other"})', (object)['key' => 'value', '2' => 'other']);
         $this->assertHasEncodedValue('Phan\Language\FQSEN\FullyQualifiedClassName(\ast\Node)', FullyQualifiedClassName::fromFullyQualifiedString('ast\Node'));
         $this->assertHasEncodedValue('Phan\Language\Type(\stdClass)', Type::fromFullyQualifiedString('\stdClass'));
-        $this->assertHasEncodedValue('Phan\Language\UnionType(array<int,string>|false)', UnionType::fromFullyQualifiedString('array<int,string>|false'));
+        $this->assertHasEncodedValue('Phan\Language\UnionType(array<int,string>|false)', UnionType::fromFullyQualifiedPHPDocString('array<int,string>|false'));
         $code_base = new CodeBase([], [], [], [], []);
         $context = (new Context())->withFile('src/somefile.php')->withLineNumberStart(15);
         $this->assertHasEncodedValue('[Phan\CodeBase({}), Phan\Language\Context(src/somefile.php:15)]', [$code_base, $context]);

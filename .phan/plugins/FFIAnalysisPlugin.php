@@ -133,7 +133,7 @@ class FFIPostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
         if (!is_string($var_name)) {
             return;
         }
-        $cdata_type = UnionType::fromFullyQualifiedString('\FFI\CData');
+        $cdata_type = UnionType::fromFullyQualifiedPHPDocString('\FFI\CData');
         $scope = $this->context->getScope();
         // @phan-suppress-next-line PhanUndeclaredProperty
         if ($node->is_ffi !== FFIPreAnalysisVisitor::ENTIRELY_FFI_CDATA) {

@@ -230,7 +230,7 @@ class Clazz extends AddressableElement
         $clazz = new Clazz(
             $context,
             $class_name,
-            UnionType::fromFullyQualifiedString('\\' . $class_name),
+            UnionType::fromFullyQualifiedRealString('\\' . $class_name),
             $flags,
             $class_fqsen
         );
@@ -325,7 +325,7 @@ class Clazz extends AddressableElement
             $property = new Property(
                 $property_context,
                 $name,
-                Type::fromObject($default_value)->asUnionType(),
+                Type::fromObject($default_value)->asPHPDocUnionType(),
                 $flags,
                 $property_fqsen,
                 UnionType::empty()
@@ -363,7 +363,7 @@ class Clazz extends AddressableElement
             $constant = new ClassConstant(
                 $context,
                 $name,
-                Type::fromObject($value)->asUnionType(),
+                Type::fromObject($value)->asRealUnionType(),  // TODO: These can vary based on OS/build flags
                 0,
                 $constant_fqsen
             );
@@ -424,7 +424,8 @@ class Clazz extends AddressableElement
                         return UnionType::of(
                             \array_map(static function (Type $type) use ($template_type_map) : Type {
                                 return $template_type_map[$type->getName()] ?? $type;
-                            }, $union_type->getTypeSet())
+                            }, $union_type->getTypeSet()),
+                            []
                         );
                     }, $parent_type->getTemplateParameterTypeList())
                 );
@@ -1483,7 +1484,7 @@ class Clazz extends AddressableElement
         }
         if ($method->hasYield()) {
             // There's no phpdoc standard for template types of Generators at the moment.
-            $new_type = UnionType::fromFullyQualifiedString('\\Generator');
+            $new_type = UnionType::fromFullyQualifiedRealString('\\Generator');
             if (!$new_type->canCastToUnionType($method->getUnionType())) {
                 $method->setUnionType($new_type);
             }
@@ -2734,7 +2735,7 @@ class Clazz extends AddressableElement
             LiteralStringType::instanceForValue(
                 $class_constant_value,
                 false
-            )->asUnionType(),
+            )->asRealUnionType(),
             0,
             FullyQualifiedClassConstantName::make(
                 $this->getFQSEN(),
@@ -2749,7 +2750,7 @@ class Clazz extends AddressableElement
             new Variable(
                 $this->getContext(),
                 'this',
-                StaticType::instance(false)->asUnionType(),
+                StaticType::instance(false)->asRealUnionType(),
                 0
             )
         );
@@ -3000,7 +3001,7 @@ class Clazz extends AddressableElement
         if (!$changed) {
             return UnionType::empty();
         }
-        return Type::fromType($this->parent_type, $parent_template_parameter_type_list)->asUnionType();
+        return Type::fromType($this->parent_type, $parent_template_parameter_type_list)->asPHPDocUnionType();
     }
 
     /**
@@ -3087,7 +3088,7 @@ class Clazz extends AddressableElement
                         }
                         /** @param array<int,\ast\Node|mixed> $unused_arg_list */
                         $template_type_resolver = static function (array $unused_arg_list) : UnionType {
-                            return MixedType::instance(false)->asUnionType();
+                            return MixedType::instance(false)->asPHPDocUnionType();
                         };
                     }
                     $template_type_resolvers[] = $template_type_resolver;

@@ -220,7 +220,7 @@ class FunctionFactory
                     // TODO: could check isDefaultValueAvailable and getDefaultValue, for a better idea.
                     // I don't see any cases where this will be used for internal types, though.
                     $parameter->setDefaultValueType(
-                        NullType::instance(false)->asUnionType()
+                        NullType::instance(false)->asPHPDocUnionType()
                     );
                 }
 

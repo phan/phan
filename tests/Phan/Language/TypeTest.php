@@ -221,15 +221,15 @@ final class TypeTest extends BaseTest
         $string_iterable_type = self::makePHPDocType('iterable<string>');
         $expected_string_iterable_type = GenericIterableType::fromKeyAndValueTypes(
             UnionType::empty(),
-            StringType::instance(false)->asUnionType(),
+            StringType::instance(false)->asPHPDocUnionType(),
             false
         );
         $this->assertSameType($expected_string_iterable_type, $string_iterable_type);
 
         $string_to_stdclass_array_type = self::makePHPDocType('iterable<string,stdClass>');
         $expectedstring_to_std_class_array_type = GenericIterableType::fromKeyAndValueTypes(
-            StringType::instance(false)->asUnionType(),
-            UnionType::fromFullyQualifiedString('\stdClass'),
+            StringType::instance(false)->asPHPDocUnionType(),
+            UnionType::fromFullyQualifiedPHPDocString('\stdClass'),
             false
         );
         $this->assertSameType($expectedstring_to_std_class_array_type, $string_to_stdclass_array_type);
@@ -318,7 +318,7 @@ final class TypeTest extends BaseTest
     {
         // is_variadic, is_reference, is_optional
         return new ClosureDeclarationParameter(
-            UnionType::fromFullyQualifiedString($type_string),
+            UnionType::fromFullyQualifiedPHPDocString($type_string),
             false,
             false,
             false
@@ -341,7 +341,7 @@ final class TypeTest extends BaseTest
         $expected_closure_void_type = new ClosureDeclarationType(
             new Context(),
             [],
-            VoidType::instance(false)->asUnionType(),
+            VoidType::instance(false)->asPHPDocUnionType(),
             false,
             false
         );
@@ -355,7 +355,7 @@ final class TypeTest extends BaseTest
         $expected_closure_void_type = new CallableDeclarationType(
             new Context(),
             [self::makeBasicClosureParam('string')],
-            IntType::instance(false)->asUnionType(),
+            IntType::instance(false)->asPHPDocUnionType(),
             false,
             false
         );
@@ -369,7 +369,7 @@ final class TypeTest extends BaseTest
         $expected_closure_void_type = new CallableDeclarationType(
             new Context(),
             [self::makeBasicClosureParam('string')],
-            VoidType::instance(false)->asUnionType(),
+            VoidType::instance(false)->asPHPDocUnionType(),
             false,
             true
         );
@@ -383,7 +383,7 @@ final class TypeTest extends BaseTest
         $expected_closure_type = new ClosureDeclarationType(
             new Context(),
             [self::makeBasicClosureParam('int'), self::makeBasicClosureParam('mixed')],
-            IntType::instance(false)->asUnionType(),
+            IntType::instance(false)->asPHPDocUnionType(),
             false,
             false
         );
@@ -399,7 +399,7 @@ final class TypeTest extends BaseTest
         $expected_closure_scalar_type = new ClosureDeclarationType(
             new Context(),
             [$nullable_scalar_param],
-            UnionType::fromFullyQualifiedString('?int|?string'),
+            UnionType::fromFullyQualifiedPHPDocString('?int|?string'),
             false,
             false
         );
@@ -414,13 +414,13 @@ final class TypeTest extends BaseTest
     public function testClosureRefVariadicAnnotations() : void
     {
         // is_variadic, is_reference, is_optional
-        $string_ref_annotation = new ClosureDeclarationParameter(UnionType::fromFullyQualifiedString('string'), false, true, false);
-        $variadic_bool_annotation = new ClosureDeclarationParameter(UnionType::fromFullyQualifiedString('bool'), true, true, false);
+        $string_ref_annotation = new ClosureDeclarationParameter(UnionType::fromFullyQualifiedPHPDocString('string'), false, true, false);
+        $variadic_bool_annotation = new ClosureDeclarationParameter(UnionType::fromFullyQualifiedPHPDocString('bool'), true, true, false);
 
         $expected_closure_type = new ClosureDeclarationType(
             new Context(),
             [$string_ref_annotation, $variadic_bool_annotation],
-            UnionType::fromFullyQualifiedString('void'),
+            UnionType::fromFullyQualifiedPHPDocString('void'),
             false,
             false
         );
@@ -432,13 +432,13 @@ final class TypeTest extends BaseTest
     public function testClosureOptionalParam() : void
     {
         // is_variadic, is_reference, is_optional
-        $optional_string_annotation = new ClosureDeclarationParameter(UnionType::fromFullyQualifiedString('?string'), false, false, true);
-        $optional_int_annotation = new ClosureDeclarationParameter(UnionType::fromFullyQualifiedString('int'), false, false, true);
+        $optional_string_annotation = new ClosureDeclarationParameter(UnionType::fromFullyQualifiedPHPDocString('?string'), false, false, true);
+        $optional_int_annotation = new ClosureDeclarationParameter(UnionType::fromFullyQualifiedPHPDocString('int'), false, false, true);
 
         $expected_closure_type = new ClosureDeclarationType(
             new Context(),
             [$optional_string_annotation, $optional_int_annotation],
-            UnionType::fromFullyQualifiedString('void'),
+            UnionType::fromFullyQualifiedPHPDocString('void'),
             false,
             false
         );

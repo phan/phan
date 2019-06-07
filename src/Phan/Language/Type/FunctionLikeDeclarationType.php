@@ -231,7 +231,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         CodeBase $unused_code_base,
         int $unused_recursion_depth = 0
     ) : UnionType {
-        return $this->asUnionType();
+        return $this->asPHPDocUnionType();
     }
 
     /**
@@ -241,7 +241,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         CodeBase $unused_code_base,
         int $unused_recursion_depth = 0
     ) : UnionType {
-        return $this->asUnionType();
+        return $this->asPHPDocUnionType();
     }
 
     /**
@@ -918,10 +918,10 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         $new_return_type = $this->return_type->withTemplateParameterTypeMap($template_parameter_type_map);
         if ($new_params === $this->params && $new_return_type === $this->return_type) {
             // no change
-            return $this->asUnionType();
+            return $this->asPHPDocUnionType();
         }
         // Create ClosureDeclarationType or CallableDeclarationType
-        return (new static($this->file_ref, $new_params, $new_return_type, $this->returns_reference, $this->is_nullable))->asUnionType();
+        return (new static($this->file_ref, $new_params, $new_return_type, $this->returns_reference, $this->is_nullable))->asPHPDocUnionType();
     }
 
     public function getCommentParamAssertionClosure(CodeBase $code_base) : ?Closure

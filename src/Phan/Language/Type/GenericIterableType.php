@@ -125,9 +125,9 @@ final class GenericIterableType extends IterableType
         $new_element_type = $this->element_union_type->withTemplateParameterTypeMap($template_parameter_type_map);
         if ($new_element_type === $this->element_union_type &&
             $new_key_type === $this->key_union_type) {
-            return $this->asUnionType();
+            return $this->asPHPDocUnionType();
         }
-        return self::fromKeyAndValueTypes($new_key_type, $new_element_type, $this->is_nullable)->asUnionType();
+        return self::fromKeyAndValueTypes($new_key_type, $new_element_type, $this->is_nullable)->asPHPDocUnionType();
     }
 
     public function __toString() : string
