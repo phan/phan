@@ -2055,7 +2055,7 @@ class Issue
                 self::TypeImpossibleCondition,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_CRITICAL,
-                "Impossible attempt to cast \${VARIABLE} of type {TYPE} to {TYPE}",
+                "Impossible attempt to cast {CODE} of type {TYPE} to {TYPE}",
                 self::REMEDIATION_B,
                 10113
             ),
@@ -2063,7 +2063,7 @@ class Issue
                 self::TypeRedundantCondition,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_CRITICAL,
-                "Redundant attempt to cast \${VARIABLE} of type {TYPE} to {TYPE}",
+                "Redundant attempt to cast {CODE} of type {TYPE} to {TYPE}",
                 self::REMEDIATION_B,
                 10114
             ),

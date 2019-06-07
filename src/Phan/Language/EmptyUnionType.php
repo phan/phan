@@ -803,6 +803,11 @@ final class EmptyUnionType extends UnionType
         return $this;
     }
 
+    public function floatTypes() : UnionType
+    {
+        return $this;
+    }
+
     /**
      * Returns the types for which is_string($x) would be true.
      *
@@ -1327,6 +1332,9 @@ final class EmptyUnionType extends UnionType
         return true;
     }
 
+    /**
+     * @param ?array<int,Type> $real_type_set
+     */
     public function withRealTypeSet(?array $real_type_set) : UnionType
     {
         if (!$real_type_set) {

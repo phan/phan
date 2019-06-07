@@ -580,7 +580,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $default_type = NullType::instance(false)->asRealUnionType();
         }
 
-        $variable->setUnionType($default_type);
+        // NOTE: Phan can't be sure that the type the static type starts with is the same as what it has later. Avoid false positive PhanTypeRedundantCondition.
+        $variable->setUnionType($default_type->eraseRealTypeSet());
         // TODO: Probably not true in a loop?
         // TODO: Expand this to assigning to variables? (would need to make references invalidate that, and skip this in the global scope)
         $variable->enablePhanFlagBits(\Phan\Language\Element\Flags::IS_CONSTANT_DEFINITION);

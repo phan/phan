@@ -2397,6 +2397,23 @@ class UnionType implements Serializable
     }
 
     /**
+     * Returns the types for which is_float($x) would be true.
+     *
+     * @return UnionType
+     * A UnionType with known int types kept, other types filtered out.
+     *
+     * @see nonGenericArrayTypes
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public function floatTypes() : UnionType
+    {
+        return $this->makeFromFilter(static function (Type $type) : bool {
+            // IntType and LiteralIntType and FloatType
+            return $type instanceof IntType || $type instanceof FloatType;
+        });
+    }
+
+    /**
      * Returns the types for which is_string($x) would be true.
      *
      * @return UnionType

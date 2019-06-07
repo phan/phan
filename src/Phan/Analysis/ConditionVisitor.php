@@ -793,36 +793,8 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                     //
                     // FIXME move this to PostOrderAnalysisVisitor so that all expressions can be analyzed, not just variables?
                     $new_type = $default_if_empty;
-                    if ($union_type->hasRealTypeSet() && !$union_type->getRealUnionType()->hasAnyTypeOverlap($code_base, $default_if_empty)) {
-                        Issue::maybeEmit(
-                            $code_base,
-                            $context,
-                            Issue::TypeImpossibleCondition,
-                            $context->getLineNumberStart(),
-                            $variable->getName(),
-                            $union_type->getRealUnionType(),
-                            $default_if_empty
-                        );
-                    }
                 } else {
-                    if ($new_type->containsNullable()) {
-                        $new_type = $new_type->nonNullableClone();
-                    }
-                    if ($check_redundant && $union_type->hasRealTypeSet() && $new_type->isEqualTo($union_type)) {
-                        $real_type = $union_type->getRealUnionType();
-                        $new_real_type = $method->invoke($real_type)->nonNullableClone();
-                        if ($real_type->isEqualTo($new_real_type)) {
-                            Issue::maybeEmit(
-                                $code_base,
-                                $context,
-                                Issue::TypeRedundantCondition,
-                                $context->getLineNumberStart(),
-                                $variable->getName(),
-                                $union_type->getRealUnionType(),
-                                $default_if_empty
-                            );
-                        }
-                    }
+                    $new_type = $new_type->nonNullableClone();
                 }
                 $variable->setUnionType($new_type);
             };
