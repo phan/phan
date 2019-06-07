@@ -172,10 +172,10 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
         }, 'bool');
         $doubleval_callback = $make_cast_callback(static function (UnionType $union_type) : bool {
             return $union_type->floatTypes()->isEqualTo($union_type);
-        }, 'bool');
+        }, 'float');
         $strval_callback = $make_cast_callback(static function (UnionType $union_type) : bool {
             return $union_type->stringTypes()->isEqualTo($union_type);
-        }, 'bool');
+        }, 'string');
 
         $int_callback = $make_simple_first_arg_checker('intTypes', 'int');
         // $callable_callback = $make_simple_first_arg_checker('callableTypes', 'callable');
