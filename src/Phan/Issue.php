@@ -197,8 +197,8 @@ class Issue
     const TypeErrorInInternalCall = 'PhanTypeErrorInInternalCall';
     const TypeErrorInOperation = 'PhanTypeErrorInOperation';
     const TypeInvalidPropertyDefaultReal  = 'PhanTypeInvalidPropertyDefaultReal';
-    const TypeImpossibleCondition         = 'PhanTypeImpossibleCondition';
-    const TypeRedundantCondition          = 'PhanTypeRedundantCondition';
+    const ImpossibleCondition         = 'PhanImpossibleCondition';
+    const RedundantCondition          = 'PhanRedundantCondition';
 
     // Issue::CATEGORY_ANALYSIS
     const Unanalyzable              = 'PhanUnanalyzable';
@@ -2052,7 +2052,7 @@ class Issue
                 10108
             ),
             new Issue(
-                self::TypeImpossibleCondition,
+                self::ImpossibleCondition,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_CRITICAL,
                 "Impossible attempt to cast {CODE} of type {TYPE} to {TYPE}",
@@ -2060,7 +2060,7 @@ class Issue
                 10113
             ),
             new Issue(
-                self::TypeRedundantCondition,
+                self::RedundantCondition,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_CRITICAL,
                 "Redundant attempt to cast {CODE} of type {TYPE} to {TYPE}",

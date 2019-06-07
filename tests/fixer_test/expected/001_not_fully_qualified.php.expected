@@ -1,4 +1,4 @@
 src_copy/001_not_fully_qualified.php:4 PhanPluginNotFullyQualifiedFunctionCall Expected function call to var_export() to be fully qualified or have a use statement but none were found in namespace \ns
 src_copy/001_not_fully_qualified.php:5 PhanPluginNotFullyQualifiedOptimizableFunctionCall Expected function call to is_string() to be fully qualified or have a use statement but none were found in namespace \ns (opcache can optimize fully qualified calls to this function in recent php versions)
-src_copy/001_not_fully_qualified.php:5 PhanTypeRedundantCondition Redundant attempt to cast 'test' of type 'test' to string
+src_copy/001_not_fully_qualified.php:5 PhanRedundantCondition Redundant attempt to cast 'test' of type 'test' to string
 src_copy/001_not_fully_qualified.php:6 PhanPluginNotFullyQualifiedGlobalConstant Expected usage of PHP_VERSION_ID to be fully qualified or have a use statement but none were found in namespace \ns

@@ -74,7 +74,7 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
                     Issue::maybeEmit(
                         $code_base,
                         $context,
-                        Issue::TypeRedundantCondition,
+                        Issue::RedundantCondition,
                         $args[0]->lineno ?? $context->getLineNumberStart(),
                         ASTReverter::toShortString($args[0]),
                         $union_type->getRealUnionType(),
@@ -84,7 +84,7 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
                     Issue::maybeEmit(
                         $code_base,
                         $context,
-                        Issue::TypeImpossibleCondition,
+                        Issue::ImpossibleCondition,
                         $args[0]->lineno ?? $context->getLineNumberStart(),
                         ASTReverter::toShortString($args[0]),
                         $union_type->getRealUnionType(),
@@ -259,7 +259,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor {
         $real_type = $type->getRealUnionType();
         if (!$real_type->containsTruthy()) {
             $this->emitIssue(
-                Issue::TypeRedundantCondition,
+                Issue::RedundantCondition,
                 $node->lineno ?? $var_node->lineno,
                 ASTReverter::toShortString($var_node),
                 $real_type,
@@ -267,7 +267,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor {
             );
         } elseif (!$real_type->containsFalsey()) {
             $this->emitIssue(
-                Issue::TypeImpossibleCondition,
+                Issue::ImpossibleCondition,
                 $node->lineno ?? $var_node->lineno,
                 ASTReverter::toShortString($var_node),
                 $real_type,
@@ -293,7 +293,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor {
         $real_type = $type->getRealUnionType();
         if (!$type->containsNullableOrUndefined()) {
             $this->emitIssue(
-                Issue::TypeRedundantCondition,
+                Issue::RedundantCondition,
                 $node->lineno ?? $var_node->lineno,
                 ASTReverter::toShortString($var_node),
                 $real_type,
@@ -301,7 +301,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor {
             );
         } elseif ($type->isNull()) {
             $this->emitIssue(
-                Issue::TypeImpossibleCondition,
+                Issue::ImpossibleCondition,
                 $node->lineno ?? $var_node->lineno,
                 ASTReverter::toShortString($var_node),
                 $real_type,
