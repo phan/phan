@@ -107,7 +107,7 @@ class UnionType implements Serializable
      * @param ?array<int,Type> $real_type_set
      * @see UnionType::of() for a more memory efficient equivalent.
      */
-    public function __construct(array $type_list, bool $is_unique, ?array $real_type_set)
+    public function __construct(array $type_list, bool $is_unique = false, array $real_type_set = [])
     {
         $this->type_set = ($is_unique || \count($type_list) <= 1) ? $type_list : self::getUniqueTypes($type_list);
         $this->real_type_set = $real_type_set;
