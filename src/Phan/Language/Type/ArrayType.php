@@ -33,6 +33,16 @@ class ArrayType extends IterableType
         return false;  // Overrides IterableType returning true
     }
 
+    public function isPossiblyTruthy() : bool
+    {
+        return true;
+    }
+
+    public function isPossiblyFalsey() : bool
+    {
+        return true;
+    }
+
     public function isArrayLike() : bool
     {
         return true;  // Overrides Type

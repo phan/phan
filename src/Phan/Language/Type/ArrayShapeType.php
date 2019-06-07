@@ -649,6 +649,21 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         return false;
     }
 
+    public function isAlwaysFalsey() : bool
+    {
+        return \count($this->field_types) === 0;
+    }
+
+    public function isPossiblyTruthy() : bool
+    {
+        return \count($this->field_types) > 0;
+    }
+
+    public function isPossiblyFalsey() : bool
+    {
+        return !$this->isAlwaysTruthy();
+    }
+
     /**
      * Returns true if this contains a type that is definitely non-callable
      * e.g. returns true for false, array, int
