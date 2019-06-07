@@ -1143,6 +1143,18 @@ class UnionType implements Serializable
     }
 
     /**
+     * Returns true if is_null(expr) is unconditionally true for this type
+     */
+    public function isNull() : bool {
+        foreach ($this->type_set as $type) {
+            if (!($type instanceof NullType) && !($type instanceof VoidType)) {
+                return false;
+            }
+        }
+        return \count($this->type_set) !== 0;
+    }
+
+    /**
      * @return UnionType a clone of this that does not include null,
      *                   and has the non-null equivalents of any nullable types in this UnionType
      */

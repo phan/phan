@@ -3115,11 +3115,15 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // We don't do anything with the new variable; just create it
             // if it doesn't exist
             try {
-                (new ContextNode(
+                $variable = (new ContextNode(
                     $this->code_base,
                     $this->context,
                     $argument
                 ))->getOrCreateVariableForReferenceParameter($parameter, $real_parameter);
+                $variable_union_type = $variable->getUnionType();
+                if ($variable_union_type->hasRealTypeSet()) {
+                    $variable->setUnionType($variable->getUnionType()->eraseRealTypeSet());
+                }
             } catch (NodeException $_) {
                 return;
             }
@@ -3470,10 +3474,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     if ($parameter_type->isType(NullType::instance(false))) {
                         // Treat a parameter default of null the same way as passing null to that parameter
                         // (Add null to the list of possibilities)
-                        $parameter_clone->addUnionType($parameter_type);
+                        $parameter_clone->addUnionType($parameter_type->eraseRealTypeSet());
                     } else {
                         // For other types (E.g. string), just replace the union type.
-                        $parameter_clone->setUnionType($parameter_type);
+                        $parameter_clone->setUnionType($parameter_type->eraseRealTypeSet());
                     }
                 }
 
@@ -3580,7 +3584,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         array &$parameter_list,
         int $parameter_offset
     ) : void {
-        $argument_type = $argument_types[$parameter_offset];
+        $argument_type = $argument_types[$parameter_offset]->eraseRealTypeSet();
         if ($parameter->isVariadic()) {
             for ($i = $parameter_offset + 1; $i < \count($argument_types); $i++) {
                 $argument_type = $argument_type->withUnionType($argument_types[$i]);

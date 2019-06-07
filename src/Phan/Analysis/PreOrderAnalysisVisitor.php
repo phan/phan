@@ -447,7 +447,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                             [$variable_name],
                             IssueFixSuggester::suggestVariableTypoFix($this->code_base, $context, $variable_name)
                         );
-                        $variable = new Variable($context, $variable_name, NullType::instance(false)->asRealUnionType(), 0);
+                        $variable = new Variable($context, $variable_name, NullType::instance(false)->asPHPDocUnionType(), 0);
                     } else {
                         // If the variable doesn't exist, but it's
                         // a pass-by-reference variable, we can
@@ -471,6 +471,11 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                     // doesn't update the outer scope
                     if (!($use->flags & ast\flags\PARAM_REF)) {
                         $variable = clone($variable);
+                    } else {
+                        $union_type = $variable->getUnionType();
+                        if ($union_type->hasRealTypeSet()) {
+                            $variable->setUnionType($union_type->eraseRealTypeSet());
+                        }
                     }
                 }
 

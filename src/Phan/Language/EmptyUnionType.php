@@ -322,6 +322,10 @@ final class EmptyUnionType extends UnionType
         return true;
     }
 
+    public function isNull() : bool {
+        return false;
+    }
+
     /**
      * @return bool - True if not empty, not possibly undefined, and at least one type is NullType or nullable.
      */

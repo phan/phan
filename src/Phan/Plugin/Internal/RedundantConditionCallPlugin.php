@@ -14,12 +14,12 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Type;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\IntType;
-use Phan\Language\Type\NullType;
 use Phan\Language\Type\ResourceType;
-use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 use Phan\PluginV3;
 use Phan\PluginV3\AnalyzeFunctionCallCapability;
+use Phan\PluginV3\PostAnalyzeNodeCapability;
+use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
 use ReflectionMethod;
 use function count;
 
@@ -33,7 +33,8 @@ use function count;
  * @phan-file-suppress PhanUnusedClosureParameter
  */
 final class RedundantConditionCallPlugin extends PluginV3 implements
-    AnalyzeFunctionCallCapability
+    AnalyzeFunctionCallCapability,
+    PostAnalyzeNodeCapability
 {
     private const _IS_IMPOSSIBLE = 1;
     private const _IS_REDUNDANT = 2;
@@ -74,7 +75,7 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
                         $code_base,
                         $context,
                         Issue::TypeRedundantCondition,
-                        $context->getLineNumberStart(),
+                        $args[0]->lineno ?? $context->getLineNumberStart(),
                         ASTReverter::toShortString($args[0]),
                         $union_type->getRealUnionType(),
                         $expected_type
@@ -84,7 +85,7 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
                         $code_base,
                         $context,
                         Issue::TypeImpossibleCondition,
-                        $context->getLineNumberStart(),
+                        $args[0]->lineno ?? $context->getLineNumberStart(),
                         ASTReverter::toShortString($args[0]),
                         $union_type->getRealUnionType(),
                         $expected_type
@@ -118,15 +119,13 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
             return self::_IS_REASONABLE_CONDITION;
         }, 'resource');
         $null_callback = $make_first_arg_checker(static function (UnionType $type) : int {
-            if (!$type->containsNullable()) {
+            if (!$type->containsNullableOrUndefined()) {
                 return self::_IS_IMPOSSIBLE;
             }
-            if ($type->hasTypeMatchingCallback(function (Type $type) : bool {
-                return !($type instanceof NullType || $type instanceof VoidType);
-            })) {
-                return self::_IS_REASONABLE_CONDITION;
+            if ($type->isNull()) {
+                return self::_IS_REDUNDANT;
             }
-            return self::_IS_REDUNDANT;
+            return self::_IS_REASONABLE_CONDITION;
         }, 'null');
         $numeric_callback = $make_first_arg_checker(static function (UnionType $union_type) : int {
             $has_non_numeric = false;
@@ -152,8 +151,34 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
             return self::_IS_IMPOSSIBLE;
         }, 'numeric');
 
+        /**
+         * @param Closure(UnionType):bool $condition
+         * @return Closure(CodeBase,Context,FunctionInterface,array<int,mixed>):void
+         */
+        $make_cast_callback = static function (Closure $condition, string $expected_type) use ($make_first_arg_checker) : Closure {
+            return $make_first_arg_checker(static function (UnionType $union_type) use ($condition) : int {
+                if (!$union_type->containsNullableOrUndefined() && $condition($union_type)) {
+                    return self::_IS_REDUNDANT;
+                }
+                return self::_IS_REASONABLE_CONDITION;
+            }, $expected_type);
+        };
+
+        $intval_callback = $make_cast_callback(static function (UnionType $union_type) : bool {
+            return $union_type->intTypes()->isEqualTo($union_type);
+        }, 'int');
+        $boolval_callback = $make_cast_callback(static function (UnionType $union_type) : bool {
+            return $union_type->isExclusivelyBoolTypes();
+        }, 'bool');
+        $doubleval_callback = $make_cast_callback(static function (UnionType $union_type) : bool {
+            return $union_type->floatTypes()->isEqualTo($union_type);
+        }, 'bool');
+        $strval_callback = $make_cast_callback(static function (UnionType $union_type) : bool {
+            return $union_type->stringTypes()->isEqualTo($union_type);
+        }, 'bool');
+
         $int_callback = $make_simple_first_arg_checker('intTypes', 'int');
-        $callable_callback = $make_simple_first_arg_checker('callableTypes', 'callable');
+        // $callable_callback = $make_simple_first_arg_checker('callableTypes', 'callable');
         $bool_callback = $make_simple_first_arg_checker('getTypesInBoolFamily', 'bool');
         $float_callback = $make_simple_first_arg_checker('floatTypes', 'float');
         $string_callback = $make_simple_first_arg_checker('stringTypes', 'string');
@@ -180,13 +205,19 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
             // TODO: Don't warn about CallableType, which can be string/scalar
             // 'is_scalar' => $scalar_callback,
             'is_string' => $string_callback,
-            // 'empty' => $null_callback,
+
+            'intval' => $intval_callback,
+            'boolval' => $boolval_callback,
+            'floatval' => $doubleval_callback,
+            'doubleval' => $doubleval_callback,
+            'strval' => $strval_callback,
         ];
     }
 
     /**
      * @param CodeBase $code_base @phan-unused-param
      * @return array<string,\Closure>
+     * @override
      */
     public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array
     {
@@ -196,5 +227,86 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
             $overrides = self::getAnalyzeFunctionCallClosuresStatic();
         }
         return $overrides;
+    }
+
+    /**
+     * @return string - name of PluginAwarePostAnalysisVisitor subclass
+     */
+    public static function getPostAnalyzeNodeVisitorClassName() : string
+    {
+        return RedundantConditionVisitor::class;
+    }
+}
+
+/**
+ * Checks builtin expressions such as empty() for redundant/impossible conditions.
+ */
+class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor {
+    /**
+     * @override
+     */
+    public function visitEmpty(Node $node) : void
+    {
+        $var_node = $node->children['expr'];
+        try {
+            $type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $var_node, false);
+        } catch (Exception $_) {
+            return;
+        }
+        if (!$type->hasRealTypeSet()) {
+            return;
+        }
+        $real_type = $type->getRealUnionType();
+        if (!$real_type->containsTruthy()) {
+            $this->emitIssue(
+                Issue::TypeRedundantCondition,
+                $node->lineno ?? $var_node->lineno,
+                ASTReverter::toShortString($var_node),
+                $real_type,
+                'empty'
+            );
+        } elseif (!$real_type->containsFalsey()) {
+            $this->emitIssue(
+                Issue::TypeImpossibleCondition,
+                $node->lineno ?? $var_node->lineno,
+                ASTReverter::toShortString($var_node),
+                $real_type,
+                'empty'
+            );
+        }
+    }
+
+    /**
+     * @override
+     */
+    public function visitIsset(Node $node) : void
+    {
+        $var_node = $node->children['var'];
+        try {
+            $type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $var_node, false);
+        } catch (Exception $_) {
+            return;
+        }
+        if (!$type->hasRealTypeSet()) {
+            return;
+        }
+        $real_type = $type->getRealUnionType();
+        if (!$type->containsNullableOrUndefined()) {
+            $this->emitIssue(
+                Issue::TypeRedundantCondition,
+                $node->lineno ?? $var_node->lineno,
+                ASTReverter::toShortString($var_node),
+                $real_type,
+                'isset'
+            );
+        } elseif ($type->isNull()) {
+            $this->emitIssue(
+                Issue::TypeImpossibleCondition,
+                $node->lineno ?? $var_node->lineno,
+                ASTReverter::toShortString($var_node),
+                $real_type,
+                'isset'
+            );
+        }
     }
 }

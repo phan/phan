@@ -1375,7 +1375,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         if ($union_type->hasTopLevelArrayShapeTypeInstances()) {
             $element_type = $this->resolveArrayShapeElementTypes($node, $union_type);
             if ($element_type !== null) {
-                return $element_type;
+                return $element_type->eraseRealTypeSet();
             }
         }
 
@@ -1388,7 +1388,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         // Figure out what the types of accessed array
         // elements would be.
-        $generic_types = $union_type->genericArrayElementTypes();
+        $generic_types = $union_type->genericArrayElementTypes()->eraseRealTypeSet();
 
         // If we have generics, we're all set
         if (!$generic_types->isEmpty()) {

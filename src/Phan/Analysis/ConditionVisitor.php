@@ -776,11 +776,10 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
          */
         $make_callback = static function (string $extract_types, UnionType $default_if_empty) : Closure {
             $method = new ReflectionMethod(UnionType::class, $extract_types);
-            $check_redundant = $extract_types !== 'numericTypes';
             /**
              * @param array<int,Node|mixed> $args
              */
-            return static function (CodeBase $code_base, Context $context, Variable $variable, array $args) use ($method, $default_if_empty, $check_redundant) : void {
+            return static function (CodeBase $code_base, Context $context, Variable $variable, array $args) use ($method, $default_if_empty) : void {
                 // Change the type to match the is_a relationship
                 // If we already have possible callable types, then keep those
                 // (E.g. Closure|false becomes Closure)
