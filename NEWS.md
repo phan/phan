@@ -18,6 +18,7 @@ New features(CLI, Configs):
   (these checks can also be enabled with the config setting `redundant_condition_detection`)
 
 New features(Analysis):
++ Make Phan more accurately check if a loop may be executed 0 times.
 + Support the type `callable-object` in phpdoc and infer it from checks such as `is_callable($var) && is_object($var)` (#1336)
 + Support the type `callable-array` in phpdoc and infer it from checks such as `is_callable($var) && is_array($var)` (#2833)
 + Fix false positives in more edge cases when analyzing variables with type `static` (e.g. `yield from $this;`) (#2825)

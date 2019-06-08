@@ -2543,7 +2543,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $result = $result->withType($fqsen->asType());
             } elseif (\get_class($sub_type) === Type::class || $sub_type instanceof ClosureType || $sub_type instanceof StaticType) {
                 $result = $result->withType($sub_type);
-            } elseif ($is_valid) {
+            } elseif ($is_valid) {  // @phan-suppress-current-line PhanRedundantCondition
                 if ($sub_type instanceof StringType) {
                     if ($sub_type instanceof ClassStringType) {
                         $result = $result->withUnionType($sub_type->getClassUnionType());

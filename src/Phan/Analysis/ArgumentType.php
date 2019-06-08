@@ -72,6 +72,7 @@ final class ArgumentType
         if ($argcount < $method->getNumberOfRequiredParameters() && !self::isUnpack($arglist->children)) {
             $alternate_found = false;
             foreach ($method->alternateGenerator($code_base) as $alternate_method) {
+                // @phan-suppress-next-line PhanImpossibleCondition
                 $alternate_found = $alternate_found || (
                     $argcount >=
                     $alternate_method->getNumberOfRequiredParameters()
@@ -276,6 +277,7 @@ final class ArgumentType
         if ($argcount < $method->getNumberOfRequiredParameters() && !self::isUnpack($arg_nodes)) {
             $alternate_found = false;
             foreach ($method->alternateGenerator($code_base) as $alternate_method) {
+                // @phan-suppress-next-line PhanImpossibleCondition known false positive in loop
                 $alternate_found = $alternate_found || (
                     $argcount >=
                     $alternate_method->getNumberOfRequiredParameters()
@@ -598,6 +600,9 @@ final class ArgumentType
 
         if (!($alternate_parameter instanceof Parameter)) {
             return;  // skip type check - is this possible?
+        }
+        if (!isset($alternate_parameter_type)) {
+            throw new AssertionError('Impossible - should be set if $alternate_parameter is set');
         }
 
         if ($alternate_parameter->isPassByReference() && $alternate_parameter->getReferenceType() === Parameter::REFERENCE_WRITE_ONLY) {

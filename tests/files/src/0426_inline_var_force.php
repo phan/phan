@@ -6,7 +6,7 @@ function example(int ...$values) {
     $sum = 0;
     '@phan-var int $prev';
     foreach ($values as $value) {
-        if (!$first) {
+        if (!$first) {  // TODO emit different issue type for loops or fix this false positive.
             $sum += $prev * $value;
         } else {
             $first = false;
