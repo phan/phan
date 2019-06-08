@@ -309,4 +309,65 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor {
             );
         }
     }
+
+    private function warnForCast(Node $node, UnionType $real_expr_type, string $expected_type) : void
+    {
+        $expr_node = $node->children['expr'];
+        $this->emitIssue(
+            Issue::RedundantCondition,
+            $expr_node->lineno ?? $node->lineno,
+            ASTReverter::toShortString($expr_node),
+            $real_expr_type,
+            $expected_type
+        );
+    }
+
+    /**
+     * @override
+     */
+    public function visitCast(Node $node) : void
+    {
+        // TODO: Check if the cast would throw an error at runtime, based on the type (e.g. casting object to string/int)
+        $expr_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr']);
+        if (!$expr_type->hasRealTypeSet()) {
+            return;
+        }
+        $real_expr_type = $expr_type->getRealUnionType();
+        if ($real_expr_type->containsNullableOrUndefined()) {
+            return;
+        }
+        switch ($node->flags) {
+            case \ast\flags\TYPE_BOOL:
+                if ($real_expr_type->isExclusivelyBoolTypes()) {
+                    $this->warnForCast($node, $real_expr_type, 'bool');
+                }
+                break;
+            case \ast\flags\TYPE_LONG:
+                if ($real_expr_type->intTypes()->isEqualTo($real_expr_type)) {
+                    $this->warnForCast($node, $real_expr_type, 'int');
+                }
+                break;
+            case \ast\flags\TYPE_DOUBLE:
+                if ($real_expr_type->floatTypes()->isEqualTo($real_expr_type)) {
+                    $this->warnForCast($node, $real_expr_type, 'float');
+                }
+                break;
+            case \ast\flags\TYPE_STRING:
+                if ($real_expr_type->stringTypes()->isEqualTo($real_expr_type)) {
+                    $this->warnForCast($node, $real_expr_type, 'string');
+                }
+                break;
+            case \ast\flags\TYPE_ARRAY:
+                if ($real_expr_type->isExclusivelyArray()) {
+                    $this->warnForCast($node, $real_expr_type, 'array');
+                }
+                break;
+            case \ast\flags\TYPE_OBJECT:
+                if ($real_expr_type->objectTypes()->isEqualTo($real_expr_type)) {
+                    $this->warnForCast($node, $real_expr_type, 'object');
+                }
+                break;
+            // ignore other casts such as TYPE_NULL
+        }
+    }
 }

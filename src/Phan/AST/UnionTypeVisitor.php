@@ -1160,8 +1160,10 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitCast(Node $node) : UnionType
     {
-        // TODO: Check if the cast is allowed based on the right side type
-        $expr_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr']);
+        // This calls unionTypeFromNode to trigger any warnings
+        // TODO: Check if the cast would throw an error at runtime, based on the type (e.g. casting object to string/int)
+
+        // RedundantConditionCallPlugin contains unrelated checks of whether this is redundant.
         switch ($node->flags) {
             case \ast\flags\TYPE_NULL:
                 return NullType::instance(false)->asRealUnionType();
@@ -1176,6 +1178,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             case \ast\flags\TYPE_ARRAY:
                 return ArrayType::instance(false)->asRealUnionType();
             case \ast\flags\TYPE_OBJECT:
+                $expr_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr']);
                 if ($expr_type->isExclusivelyArray()) {
                     // @phan-suppress-next-line PhanThrowTypeMismatchForCall
                     return Type::fromFullyQualifiedString('\stdClass')->asRealUnionType();
