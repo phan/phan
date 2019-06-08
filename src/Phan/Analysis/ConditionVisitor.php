@@ -19,7 +19,6 @@ use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
-use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableType;
@@ -567,7 +566,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             $this->context,
             $class_node
         );
-        $object_types = $type->objectTypes();
+        $object_types = $type->objectTypesStrict();
         if (!$object_types->isEmpty()) {
             // We know that the variable is the provided object type (or a subclass)
             // See https://secure.php.net/instanceof -
@@ -628,20 +627,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         // Change the type to match is_object relationship
         // If we already have the `object` type or generic object types, then keep those
         // (E.g. T|false becomes T, T[]|iterable|null becomes Traversable, object|bool becomes object)
-        $new_type_builder = new UnionTypeBuilder();
-        foreach ($variable->getUnionType()->getTypeSet() as $type) {
-            if ($type->isObject()) {
-                $new_type_builder->addType($type->withIsNullable(false));
-                continue;
-            }
-            if (\get_class($type) === IterableType::class) {
-                // An iterable is either an array or a Traversable.
-                $new_type_builder->addType(Type::traversableInstance());
-            }
-        }
-        $variable->setUnionType(
-            $new_type_builder->isEmpty() ? ObjectType::instance(false)->asRealUnionType()
-                                         : UnionType::of($new_type_builder->getTypeSet(), [ObjectType::instance(false)]));
+        $variable->setUnionType($variable->getUnionType()->objectTypesStrict());
     }
 
     /**

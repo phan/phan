@@ -16,7 +16,7 @@ final class ColorizingTest extends BaseTest
         foreach (Colorizing::COLOR_SCHEMES as $scheme_name => $_) {
             $colors = Colorizing::loadColorScheme($scheme_name);
             $this->assertNotNull($colors, "could not fetch $scheme_name");
-            $this->assertSame(array_keys($colors), array_keys(Colorizing::DEFAULT_COLOR_FOR_TEMPLATE));
+            $this->assertSame(\array_keys($colors), \array_keys(Colorizing::DEFAULT_COLOR_FOR_TEMPLATE));
             foreach ($colors as $template_name => $color) {
                 $this->assertNotNull(Colorizing::computeColorCode($color), "Unexpected value for scheme $scheme_name template $template_name (color=$color)");
             }

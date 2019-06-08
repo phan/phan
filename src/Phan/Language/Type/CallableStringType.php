@@ -58,4 +58,14 @@ final class CallableStringType extends StringType implements CallableInterface
     {
         return false;
     }
+
+    public function isAlwaysTruthy() : bool
+    {
+        return !$this->is_nullable;
+    }
+
+    public function isPossiblyFalsey() : bool
+    {
+        return $this->is_nullable;
+    }
 }

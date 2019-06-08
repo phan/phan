@@ -38,4 +38,9 @@ final class CallableType extends NativeType implements CallableInterface
     {
         return false;
     }
+
+    public function asObjectType() : ?Type
+    {
+        return CallableObjectType::instance(false);
+    }
 }

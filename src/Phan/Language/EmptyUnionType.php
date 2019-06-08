@@ -12,6 +12,7 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\TemplateType;
 
 /**
@@ -322,7 +323,8 @@ final class EmptyUnionType extends UnionType
         return true;
     }
 
-    public function isNull() : bool {
+    public function isNull() : bool
+    {
         return false;
     }
 
@@ -723,6 +725,11 @@ final class EmptyUnionType extends UnionType
         return $this;
     }
 
+    public function objectTypesStrict() : UnionType
+    {
+        return ObjectType::instance(false)->asRealUnionType();
+    }
+
     /**
      * Takes "MyClass|int|array|?object" and returns "MyClass|?object"
      *
@@ -825,6 +832,11 @@ final class EmptyUnionType extends UnionType
         return $this;
     }
 
+    public function isExclusivelyStringTypes() : bool
+    {
+        return true;
+    }
+
     /**
      * Returns the types for which is_numeric($x) is possibly true.
      *
@@ -889,6 +901,15 @@ final class EmptyUnionType extends UnionType
     public function hasTypeMatchingCallback(Closure $matcher_callback) : bool
     {
         return false;
+    }
+
+    /**
+     * @return bool
+     * True if all of the types in this UnionType made $matcher_callback return true
+     */
+    public function allTypesMatchCallback(Closure $matcher_callback) : bool
+    {
+        return true;
     }
 
     /**

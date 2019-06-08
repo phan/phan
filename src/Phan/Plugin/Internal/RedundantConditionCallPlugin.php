@@ -18,8 +18,8 @@ use Phan\Language\Type\ResourceType;
 use Phan\Language\UnionType;
 use Phan\PluginV3;
 use Phan\PluginV3\AnalyzeFunctionCallCapability;
-use Phan\PluginV3\PostAnalyzeNodeCapability;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV3\PostAnalyzeNodeCapability;
 use ReflectionMethod;
 use function count;
 
@@ -80,7 +80,7 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
                         $union_type->getRealUnionType(),
                         $expected_type
                     );
-                } elseif ($result === self::_IS_IMPOSSIBLE)  {
+                } elseif ($result === self::_IS_IMPOSSIBLE) {
                     Issue::maybeEmit(
                         $code_base,
                         $context,
@@ -174,7 +174,7 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
             return $union_type->floatTypes()->isEqualTo($union_type);
         }, 'float');
         $strval_callback = $make_cast_callback(static function (UnionType $union_type) : bool {
-            return $union_type->stringTypes()->isEqualTo($union_type);
+            return $union_type->isExclusivelyStringTypes();
         }, 'string');
 
         $int_callback = $make_simple_first_arg_checker('intTypes', 'int');
@@ -241,7 +241,8 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
 /**
  * Checks builtin expressions such as empty() for redundant/impossible conditions.
  */
-class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor {
+class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
+{
     /**
      * @override
      */
@@ -363,7 +364,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor {
                 }
                 break;
             case \ast\flags\TYPE_OBJECT:
-                if ($real_expr_type->objectTypes()->isEqualTo($real_expr_type)) {
+                if ($real_expr_type->objectTypesStrict()->isEqualTo($real_expr_type)) {
                     $this->warnForCast($node, $real_expr_type, 'object');
                 }
                 break;
