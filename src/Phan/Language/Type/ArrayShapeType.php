@@ -246,6 +246,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
                     // However, the scalar_array_key_cast config would make any cast of array keys a valid cast.
                     continue;
                 }
+                // @phan-suppress-next-line PhanImpossibleCondition known false positive in loop
                 if ($element_union_types) {
                     $element_union_types = $element_union_types->withType($target_type->genericArrayElementType());
                 } else {

@@ -1,0 +1,41 @@
+%s:5 PhanRedundantCondition Redundant attempt to cast ($a < $b) of type bool to bool
+%s:6 PhanRedundantCondition Redundant attempt to cast ($a <= $b) of type bool to bool
+%s:7 PhanRedundantCondition Redundant attempt to cast ($a > $b) of type bool to bool
+%s:8 PhanRedundantCondition Redundant attempt to cast ($a >= $b) of type bool to bool
+%s:9 PhanRedundantCondition Redundant attempt to cast ($a == $b) of type bool to bool
+%s:10 PhanRedundantCondition Redundant attempt to cast ($a === $b) of type bool to bool
+%s:11 PhanRedundantCondition Redundant attempt to cast ($a != $b) of type bool to bool
+%s:12 PhanRedundantCondition Redundant attempt to cast ($a != $b) of type bool to bool
+%s:13 PhanRedundantCondition Redundant attempt to cast ($a !== $b) of type bool to bool
+%s:14 PhanRedundantCondition Redundant attempt to cast !$a of type bool to bool
+%s:15 PhanRedundantCondition Redundant attempt to cast ($a <=> $b) of type -1|0|1 to int
+%s:16 PhanRedundantCondition Redundant attempt to cast ($a xor $b) of type bool to bool
+%s:17 PhanRedundantCondition Redundant attempt to cast ($a && $b) of type bool to bool
+%s:18 PhanRedundantCondition Redundant attempt to cast ($a || $b) of type bool to bool
+%s:19 PhanRedundantCondition Redundant attempt to cast ($a && $b) of type bool to bool
+%s:20 PhanRedundantCondition Redundant attempt to cast ($a || $b) of type bool to bool
+%s:23 PhanRedundantCondition Redundant attempt to cast (bool)($a) of type bool to bool
+%s:25 PhanRedundantCondition Redundant attempt to cast (int)($a) of type int to int
+%s:26 PhanRedundantCondition Redundant attempt to cast (float)($a) of type float to float
+%s:27 PhanRedundantCondition Redundant attempt to cast (int)($a) of type int to int
+%s:28 PhanRedundantCondition Redundant attempt to cast (array)($a) of type array to array
+%s:29 PhanRedundantCondition Redundant attempt to cast (object)($a) of type object to object
+%s:30 PhanRedundantCondition Redundant attempt to cast ($a * $b) of type float|int to float
+%s:32 PhanRedundantCondition Redundant attempt to cast ($a % $b) of type int to float
+%s:34 PhanRedundantCondition Redundant attempt to cast ($a - $b) of type float|int to float
+%s:35 PhanRedundantCondition Redundant attempt to cast ($a . $b) of type string to string
+%s:37 PhanRedundantCondition Redundant attempt to cast ($a >> $b) of type int to int
+%s:38 PhanRedundantCondition Redundant attempt to cast ($a << $b) of type int to int
+%s:39 PhanRedundantCondition Redundant attempt to cast (5 << 1) of type int to int
+%s:40 PhanRedundantCondition Redundant attempt to cast (5 >> 1) of type int to int
+%s:47 PhanRedundantCondition Redundant attempt to cast (3 & 6) of type 2 to int
+%s:48 PhanRedundantCondition Redundant attempt to cast (3 ^ 6) of type 5 to int
+%s:49 PhanRedundantCondition Redundant attempt to cast (3 | 6) of type 7 to int
+%s:52 PhanRedundantCondition Redundant attempt to cast ($x *= 3) of type float to float
+%s:58 PhanRedundantCondition Redundant attempt to cast ($x -= 3) of type float to float
+%s:60 PhanRedundantCondition Redundant attempt to cast ($x **= 3) of type float to float
+%s:63 PhanRedundantCondition Redundant attempt to cast ($x /= 3) of type float to float
+%s:66 PhanRedundantCondition Redundant attempt to cast ($x %= 3) of type int to int
+%s:69 PhanRedundantCondition Redundant attempt to cast ($x .= 'suffix') of type string to string
+%s:73 PhanRedundantCondition Redundant attempt to cast ($x <<= 3) of type int to int
+%s:77 PhanRedundantCondition Redundant attempt to cast ($x >>= 3) of type int to int

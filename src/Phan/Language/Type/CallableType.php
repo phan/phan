@@ -52,4 +52,9 @@ final class CallableType extends NativeType implements CallableInterface
     {
         return CallableArrayType::instance(false);
     }
+
+    public function asScalarType() : ?Type
+    {
+        return CallableStringType::instance(false);
+    }
 }

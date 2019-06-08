@@ -11,6 +11,7 @@ use Phan\Language\Element\Clazz;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\ArrayType;
+use Phan\Language\Type\BoolType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\TemplateType;
@@ -1376,5 +1377,23 @@ final class EmptyUnionType extends UnionType
     public function arrayTypesStrictCast() : UnionType
     {
         return ArrayType::instance(false)->asRealUnionType();
+    }
+
+    public function boolTypes() : UnionType
+    {
+        return BoolType::instance(false)->asRealUnionType();
+    }
+
+    public function scalarTypesStrict(bool $allow_empty = false) : UnionType
+    {
+        if ($allow_empty) {
+            return $this;
+        }
+        return UnionType::fromFullyQualifiedRealString('int|float|string|bool');
+    }
+
+    public function isExclusivelyRealTypes() : bool
+    {
+        return false;
     }
 }

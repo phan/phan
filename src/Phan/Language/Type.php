@@ -3419,4 +3419,12 @@ class Type
     {
         return null;
     }
+
+    /**
+     * Convert this to a subtype that satisfies is_scalar(), or returns null
+     */
+    public function asScalarType() : ?Type
+    {
+        return null;
+    }
 }

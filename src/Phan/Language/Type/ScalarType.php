@@ -142,6 +142,11 @@ abstract class ScalarType extends NativeType
     {
         return true;
     }
+
+    public function asScalarType() : ?Type
+    {
+        return $this->withIsNullable(false);
+    }
 }
 \class_exists(IntType::class);
 \class_exists(StringType::class);

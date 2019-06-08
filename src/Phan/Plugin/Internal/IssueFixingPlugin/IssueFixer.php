@@ -301,6 +301,7 @@ class IssueFixer
         $new_contents = '';
         $prev_edit = null;
         foreach ($all_edits as $edit) {
+            // @phan-suppress-next-line PhanImpossibleCondition known false positive in loop
             if ($prev_edit && $edit->isEqualTo($prev_edit)) {
                 continue;
             }

@@ -12,6 +12,7 @@ use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Type;
+use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\ResourceType;
@@ -163,6 +164,36 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
                 return self::_IS_REASONABLE_CONDITION;
             }, $expected_type);
         };
+        $callable_callback = $make_first_arg_checker(static function (UnionType $type) : int {
+            $new_real_type = $type->callableTypes()->nonNullableClone();
+            if ($new_real_type->isEmpty()) {
+                return self::_IS_IMPOSSIBLE;
+            }
+            if ($new_real_type->isEqualTo($type)) {
+                if (!$new_real_type->hasTypeMatchingCallback(static function (Type $type) : bool {
+                    return $type instanceof ArrayShapeType;
+                })) {
+                    return self::_IS_REDUNDANT;
+                }
+                // is_callable([$obj, 'someFn') is a reasonable condition, fall through.
+            }
+            return self::_IS_REASONABLE_CONDITION;
+        }, 'callable');
+        $scalar_callback = $make_first_arg_checker(static function (UnionType $type) : int {
+            $new_real_type = $type->scalarTypesStrict(true);
+            if ($new_real_type->isEmpty()) {
+                return self::_IS_IMPOSSIBLE;
+            }
+            if ($new_real_type->isEqualTo($type)) {
+                if (!$new_real_type->hasTypeMatchingCallback(static function (Type $type) : bool {
+                    return $type instanceof ArrayShapeType;
+                })) {
+                    return self::_IS_REDUNDANT;
+                }
+                // is_callable([$obj, 'someFn') is a reasonable condition, fall through.
+            }
+            return self::_IS_REASONABLE_CONDITION;
+        }, 'scalar');
 
         $intval_callback = $make_cast_callback(static function (UnionType $union_type) : bool {
             return $union_type->intTypes()->isEqualTo($union_type);
@@ -178,9 +209,9 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
         }, 'string');
 
         $int_callback = $make_simple_first_arg_checker('intTypes', 'int');
-        // $callable_callback = $make_simple_first_arg_checker('callableTypes', 'callable');
         $bool_callback = $make_simple_first_arg_checker('getTypesInBoolFamily', 'bool');
         $float_callback = $make_simple_first_arg_checker('floatTypes', 'float');
+        $object_callback = $make_simple_first_arg_checker('objectTypesStrict', 'object');
         $string_callback = $make_simple_first_arg_checker('stringTypes', 'string');
 
         // TODO: Implement checks for the commented out conditions.
@@ -189,8 +220,7 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
             // 'is_a' => $is_a_callback,
             // 'is_array' => $array_callback,
             'is_bool' => $bool_callback,
-            // TODO: Don't emit false positives for arrays/strings
-            // 'is_callable' => $callable_callback,
+            'is_callable' => $callable_callback,
             'is_double' => $float_callback,
             'is_float' => $float_callback,
             'is_int' => $int_callback,
@@ -199,11 +229,10 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
             'is_long' => $int_callback,
             'is_null' => $null_callback,
             'is_numeric' => $numeric_callback,
-            // 'is_object' => $object_callback,
+            'is_object' => $object_callback,
             'is_real' => $float_callback,
             'is_resource' => $resource_callback,
-            // TODO: Don't warn about CallableType, which can be string/scalar
-            // 'is_scalar' => $scalar_callback,
+            'is_scalar' => $scalar_callback,
             'is_string' => $string_callback,
 
             'intval' => $intval_callback,

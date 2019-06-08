@@ -756,12 +756,42 @@ class UnionType implements Serializable
      *
      * @see nonGenericArrayTypes
      * @suppress PhanUnreferencedPublicMethod
+     * @deprecated
      */
     public function getTypesInBoolFamily() : UnionType
     {
         return $this->makeFromFilter(static function (Type $type) : bool {
             return $type->isInBoolFamily();
         });
+    }
+
+    /**
+     * Returns this union type after asserting is_bool($x)
+     * @suppress PhanUnreferencedPublicMethod this is referenced dynamically in ConditionVisitor
+     */
+    public function boolTypes() : UnionType
+    {
+        return UnionType::of(
+            self::filterTypesInBoolFamily($this->type_set),
+            self::filterTypesInBoolFamily($this->real_type_set)
+        );
+    }
+
+    /**
+     * @param Type[] $type_list
+     * @return array<int,Type>
+     */
+    private static function filterTypesInBoolFamily(array $type_list) : array
+    {
+        $result = [];
+        foreach ($type_list as $type) {
+            if ($type->isInBoolFamily()) {
+                $result[] = $type->withIsNullable(false);
+            } elseif ($type instanceof MixedType) {
+                return [BoolType::instance(false)];
+            }
+        }
+        return \count($result) === 1 ? $result : [BoolType::instance(false)];
     }
 
     /**
@@ -1974,7 +2004,10 @@ class UnionType implements Serializable
 
     /**
      * @return bool
-     * True if all types in this union are scalars
+     * True if all types in this union are definitely scalars
+     * @see scalarTypes
+     * @see scalarTypesStrict
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function isScalar() : bool
     {
@@ -2422,6 +2455,46 @@ class UnionType implements Serializable
         return $this->nonNullableClone()->makeFromFilter(static function (Type $type) : bool {
             return $type->isScalar();
         });
+    }
+
+    /**
+     * A union type after asserting is_scalar($x)
+     *
+     */
+    public function scalarTypesStrict(bool $allow_empty = false) : UnionType
+    {
+        // NOTE: this is referenced dynamically in ConditionVisitor
+        if ($allow_empty) {
+            return UnionType::of(
+                self::typeSetToScalarTypesStrict($this->type_set),
+                self::typeSetToScalarTypesStrict($this->real_type_set)
+            );
+        } else {
+            static $default;
+            if ($default === null) {
+                $default = [StringType::instance(false), IntType::instance(false), FloatType::instance(false), BoolType::instance(false)];
+            }
+            return UnionType::of(
+                self::typeSetToScalarTypesStrict($this->type_set) ?: $default,
+                self::typeSetToScalarTypesStrict($this->real_type_set) ?: $default
+            );
+        }
+    }
+
+    /**
+     * @param Type[] $type_list
+     * @return array<int,Type>
+     */
+    private static function typeSetToScalarTypesStrict(array $type_list) : array
+    {
+        $result = [];
+        foreach ($type_list as $type) {
+            $type = $type->asScalarType();
+            if ($type) {
+                $result[] = $type;
+            }
+        }
+        return $result;
     }
 
     /**
@@ -4230,6 +4303,15 @@ class UnionType implements Serializable
             return \reset($real_type_set)->asRealUnionType();
         }
         return new UnionType($this->real_type_set, true, $this->real_type_set);
+    }
+
+    /**
+     * Check if this is exclusively real types.
+     * TODO: Could check if real types are in a different order
+     */
+    public function isExclusivelyRealTypes() : bool
+    {
+        return \count($this->real_type_set) > 0 && $this->type_set === $this->real_type_set;
     }
 }
 

@@ -173,8 +173,17 @@ class ASTReverter
                 return \sprintf(
                     "(%s %s %s)",
                     self::toShortString($node->children['left']),
-                    PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$node->flags] ?? ' unknown ',
+                    PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$node->flags] ?? 'unknown',
                     self::toShortString($node->children['right'])
+                );
+            },
+            /** @suppress PhanAccessClassConstantInternal */
+            ast\AST_ASSIGN_OP => static function (Node $node) : string {
+                return \sprintf(
+                    "(%s %s= %s)",
+                    self::toShortString($node->children['var']),
+                    PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$node->flags] ?? 'unknown',
+                    self::toShortString($node->children['expr'])
                 );
             },
             ast\AST_UNARY_OP => static function (Node $node) : string {
@@ -205,6 +214,22 @@ class ASTReverter
                     $prop_node instanceof Node ? '{' . self::toShortString($prop_node) . '}' : (string)$prop_node
                 );
             },
+            ast\AST_INSTANCEOF => static function (Node $node) : string {
+                return \sprintf(
+                    '(%s instanceof %s)',
+                    self::toShortString($node->children['expr']),
+                    self::toShortString($node->children['class'])
+                );
+            },
+            ast\AST_CAST => static function (Node $node) : string {
+                return \sprintf(
+                    '(%s)(%s)',
+                    // @phan-suppress-next-line PhanAccessClassConstantInternal
+                    PostOrderAnalysisVisitor::AST_CAST_FLAGS_LOOKUP[$node->flags] ?? 'unknown',
+                    self::toShortString($node->children['expr'])
+                );
+
+            }
         ];
     }
 }

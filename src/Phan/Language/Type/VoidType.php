@@ -2,6 +2,9 @@
 
 namespace Phan\Language\Type;
 
+use Phan\Config;
+use Phan\Language\Type;
+
 /**
  * Represents the return type `void`
  */
@@ -29,4 +32,48 @@ final class VoidType extends NativeType
     {
         return true;
     }
+
+    public function asScalarType() : ?Type
+    {
+        return null;
+    }
+
+    public function isPossiblyFalsey() : bool
+    {
+        return true;  // Null is always falsey.
+    }
+
+    public function isPossiblyTruthy() : bool
+    {
+        return false;  // Null is always falsey.
+    }
+
+    public function isAlwaysFalsey() : bool
+    {
+        return true;  // Null is always falsey.
+    }
+
+    public function isAlwaysTruthy() : bool
+    {
+        return false;  // Null is always falsey.
+    }
+
+
+    public function isPrintableScalar() : bool
+    {
+        // This would be '', which is probably not intended. allow null in union types for `echo` if there are **other** valid types.
+        return Config::get_null_casts_as_any_type();
+    }
+
+    public function isValidBitwiseOperand() : bool
+    {
+        // Allow null in union types for bitwise operations if there are **other** valid types.
+        return Config::get_null_casts_as_any_type();
+    }
+
+    public function isValidNumericOperand() : bool
+    {
+        return Config::get_null_casts_as_any_type();
+    }
+
 }
