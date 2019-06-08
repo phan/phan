@@ -311,6 +311,5 @@ const STDERR = resource(stream)
 An already opened stream to *stderr* (standard error).
 EOT;
         $this->assertSame($expected, MarkupDescription::buildForElement($const, new CodeBase([], [], [], [], [])));
-
     }
 }

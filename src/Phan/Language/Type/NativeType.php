@@ -141,6 +141,7 @@ abstract class NativeType extends Type
                 CallableType::NAME => in_array(CallableType::NAME, $permitted_cast_type_names, true),
                 ClassStringType::NAME => in_array(ClassStringType::NAME, $permitted_cast_type_names, true),
                 CallableStringType::NAME => in_array(CallableStringType::NAME, $permitted_cast_type_names, true),
+                CallableObjectType::NAME => in_array(CallableObjectType::NAME, $permitted_cast_type_names, true),
                 FalseType::NAME    => in_array(FalseType::NAME, $permitted_cast_type_names, true),
                 FloatType::NAME    => in_array(FloatType::NAME, $permitted_cast_type_names, true),
                 IntType::NAME      => in_array(IntType::NAME, $permitted_cast_type_names, true),
@@ -162,6 +163,7 @@ abstract class NativeType extends Type
         return [
             ArrayType::NAME    => $generate_row(ArrayType::NAME, IterableType::NAME, CallableType::NAME),
             BoolType::NAME     => $generate_row(BoolType::NAME, FalseType::NAME, TrueType::NAME, ScalarRawType::NAME),
+            CallableObjectType::NAME => $generate_row(CallableObjectType::NAME, CallableType::NAME, ObjectType::NAME),
             CallableType::NAME => $generate_row(CallableType::NAME),
             CallableStringType::NAME => $generate_row(CallableStringType::NAME, CallableType::NAME, StringType::NAME),
             ClassStringType::NAME => $generate_row(ClassStringType::NAME, CallableType::NAME, StringType::NAME),
@@ -302,6 +304,11 @@ abstract class NativeType extends Type
         if (false) {
             yield $this;
         }
+    }
+
+    public function asObjectType() : ?Type
+    {
+        return null;
     }
 }
 \class_exists(ArrayType::class);

@@ -25,6 +25,7 @@ use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableDeclarationType;
+use Phan\Language\Type\CallableObjectType;
 use Phan\Language\Type\CallableStringType;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\ClassStringType;
@@ -86,17 +87,17 @@ class Type
      * A legal type identifier (e.g. 'int' or 'DateTime')
      */
     const simple_type_regex =
-        '(\??)(?:callable-string|class-string|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
+        '(\??)(?:callable-(?:string|object)|class-string|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
 
     const simple_noncapturing_type_regex =
-        '\\\\?(?:callable-string|class-string|[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
+        '\\\\?(?:callable-(?:string|object)|class-string|[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
 
     /**
      * @var string
      * A legal type identifier (e.g. 'int' or 'DateTime')
      */
     const simple_type_regex_or_this =
-        '(\??)(callable-string|class-string|[a-zA-Z_\x7f-\xff\\\][a-zA-Z0-9_\x7f-\xff\\\]*|\$this)';
+        '(\??)(callable-(?:string|object)|class-string|[a-zA-Z_\x7f-\xff\\\][a-zA-Z0-9_\x7f-\xff\\\]*|\$this)';
 
     const shape_key_regex =
         '(?:[-.\/^;$%*+_a-zA-Z0-9\x7f-\xff]|\\\\(?:[nrt\\\\]|x[0-9a-fA-F]{2}))+\??';
@@ -206,24 +207,25 @@ class Type
      * @var array<string,bool> - For checking if a string is an internal type. This is used for case-insensitive lookup.
      */
     const _internal_type_set = [
-        'array'     => true,
-        'bool'      => true,
-        'callable'  => true,
+        'array'           => true,
+        'bool'            => true,
+        'callable'        => true,
+        'callable-object' => true,
         'callable-string' => true,
-        'class-string' => true,
-        'false'     => true,
-        'float'     => true,
-        'int'       => true,
-        'iterable'  => true,
-        'mixed'     => true,
-        'null'      => true,
-        'object'    => true,
-        'resource'  => true,
-        'scalar'    => true,
-        'static'    => true,
-        'string'    => true,
-        'true'      => true,
-        'void'      => true,
+        'class-string'    => true,
+        'false'           => true,
+        'float'           => true,
+        'int'             => true,
+        'iterable'        => true,
+        'mixed'           => true,
+        'null'            => true,
+        'object'          => true,
+        'resource'        => true,
+        'scalar'          => true,
+        'static'          => true,
+        'string'          => true,
+        'true'            => true,
+        'void'            => true,
     ];
 
     /**
@@ -448,6 +450,14 @@ class Type
                             $is_nullable
                         );
                         break;
+                    case 'callable-object':
+                        $value = new CallableObjectType(
+                            $namespace,
+                            'callable-object',
+                            $template_parameter_type_list,
+                            $is_nullable
+                        );
+                        break;
                     case 'callable-string':
                         $value = new CallableStringType(
                             $namespace,
@@ -666,6 +676,8 @@ class Type
                 return BoolType::instance($is_nullable);
             case 'callable':
                 return CallableType::instance($is_nullable);
+            case 'callable-object':
+                return CallableObjectType::instance($is_nullable);
             case 'callable-string':
                 return CallableStringType::instance($is_nullable);
             case 'class-string':
@@ -1955,6 +1967,16 @@ class Type
     {
         return true;  // Overridden in various subclasses
     }
+
+    /**
+     * Returns this type (or a subtype) converted to a type of an expression satisfying is_object(expr)
+     * Returns null if Phan cannot cast this type to an object type.
+     */
+    public function asObjectType() : ?Type
+    {
+        return $this->withIsNullable(false);
+    }
+
 
     /**
      * @return bool

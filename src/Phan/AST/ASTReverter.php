@@ -54,7 +54,7 @@ class ASTReverter
                 return self::escapeString($node);
             }
             if (\is_resource($node)) {
-                return 'resource(' . get_resource_type($node) . ')';
+                return 'resource(' . \get_resource_type($node) . ')';
             }
             // TODO: minimal representations for floats, arrays, etc.
             return \var_export($node, true);

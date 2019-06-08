@@ -458,6 +458,9 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
             return null;
         }
         $right_hand_type = $right_hand_union_type->getTypeSet()[0];
+        if (!$right_hand_type->isObjectWithKnownFQSEN()) {
+            return null;
+        }
         return $union_type->withoutSubclassesOf($this->code_base, $right_hand_type);
     }
 

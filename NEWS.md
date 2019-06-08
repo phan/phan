@@ -7,8 +7,6 @@ New features(CLI, Configs):
 + Add `--color-scheme <scheme>` for alternative colors of outputted issues (also configurable via environment variable as `PHAN_COLOR_SCHEME=<scheme>`)
   Supported values: `default`, `vim`, `eclipse_dark`
 + Be consistent about starting parameter/variable names with `$` in issue messages.
-+ Fix false positives in more edge cases when analyzing variables with type `static` (e.g. `yield from $this;`) (#2825)
-+ Properly emit `NonStaticCallToStatic` in more edge cases (#2826)
 + Add `--redundant-condition-detection` to attempt to detect redundant conditions/casts and impossible conditions based on the inferred real expression types.
   New issue types: `PhanRedundantCondition`, `PhanImpossibleCondition` (e.g. `is_int(2)` and `boolval(true)` is redundant, `empty(2)` is impossible).
 
@@ -20,6 +18,9 @@ New features(CLI, Configs):
   (these checks can also be enabled with the config setting `redundant_condition_detection`)
 
 New features(Analysis):
++ Support the type `callable-object` in phpdoc and infer it from checks such as `is_callable($var) && is_object($var)` (#1336)
++ Fix false positives in more edge cases when analyzing variables with type `static` (e.g. `yield from $this;`) (#2825)
++ Properly emit `NonStaticCallToStatic` in more edge cases (#2826)
 + Infer that `<=>` is `-1|0|1` instead of `int`
 + Infer that eval with backticks is `?string` instead of `string`
 

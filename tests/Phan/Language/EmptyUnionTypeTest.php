@@ -90,7 +90,7 @@ final class EmptyUnionTypeTest extends BaseTest
                 $actual_result = \iterator_to_array($actual_result);
             }
             if (!self::isSameResult($expected_result, $actual_result)) {
-                $failures .= "Expected $method_name implementation to be the same for " . \serialize($arg_list) . ": " . serialize($expected_result) . ' !== ' . serialize($actual_result) . "\n";
+                $failures .= "Expected $method_name implementation to be the same for " . \serialize($arg_list) . ": " . \serialize($expected_result) . ' !== ' . \serialize($actual_result) . "\n";
             }
         }
         return $failures;
