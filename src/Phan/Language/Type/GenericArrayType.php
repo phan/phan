@@ -736,4 +736,12 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
             $this->key_type
         );
     }
+
+    public function asCallableType() : ?Type
+    {
+        if ($this->key_type === self::KEY_INT) {
+            return null;
+        }
+        return CallableArrayType::instance(false);
+    }
 }

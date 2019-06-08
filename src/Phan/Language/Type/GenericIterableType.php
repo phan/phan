@@ -181,6 +181,20 @@ final class GenericIterableType extends IterableType
     {
         return IterableType::instance($this->is_nullable);
     }
+
+    public function asArrayType() : ?Type
+    {
+        $key_type = GenericArrayType::keyTypeFromUnionTypeValues($this->key_union_type);
+        if ($this->element_union_type->typeCount() === 1) {
+            $element_type = $this->element_union_type->getTypeSet()[0];
+        } else {
+            if ($key_type === GenericArrayType::KEY_MIXED) {
+                return ArrayType::instance(false);
+            }
+            $element_type = MixedType::instance(false);
+        }
+        return GenericArrayType::fromElementType($element_type, false, $key_type);
+    }
 }
 // Trigger autoloader for subclass before make() can get called.
 \class_exists(ArrayType::class);

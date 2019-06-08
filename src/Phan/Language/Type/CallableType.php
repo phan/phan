@@ -43,4 +43,13 @@ final class CallableType extends NativeType implements CallableInterface
     {
         return CallableObjectType::instance(false);
     }
+
+    /**
+     * Convert this to a subtype that satisfies is_array(), or returns null
+     * @see UnionType::arrayTypesStrictCast
+     */
+    public function asArrayType() : ?Type
+    {
+        return CallableArrayType::instance(false);
+    }
 }

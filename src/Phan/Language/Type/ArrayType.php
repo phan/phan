@@ -229,9 +229,21 @@ class ArrayType extends IterableType
     {
         return parent::performComparison([], $scalar, $flags);
     }
+
+    // There are more specific checks in GenericArrayType and ArrayShapeType
+    public function asCallableType() : ?Type
+    {
+        return CallableArrayType::instance(false);
+    }
+
+    public function asArrayType() : ?Type
+    {
+        return $this->withIsNullable(false);
+    }
 }
 // Trigger the autoloader for GenericArrayType so that it won't be called
 // before ArrayType.
 // This won't pass if GenericArrayType is in the process of being instantiated.
 \class_exists(GenericArrayType::class);
 \class_exists(ArrayShapeType::class);
+\class_exists(CallableArrayType::class);

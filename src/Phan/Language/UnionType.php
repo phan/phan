@@ -21,7 +21,6 @@ use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
-use Phan\Language\Type\CallableObjectType;
 use Phan\Language\Type\CallableStringType;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\FalseType;
@@ -2453,13 +2452,9 @@ class UnionType implements Serializable
     {
         $result = [];
         foreach ($type_list as $type) {
-            if ($type->isCallable()) {
-                $result[] = $type->withIsNullable(false);
-            } elseif ($type instanceof StringType) {
-                // TODO handle "foo::bar" and "fn" for LiteralStringType
-                $result[] = CallableStringType::instance(false);
-            } elseif ($type instanceof ObjectType) {
-                $result[] = CallableObjectType::instance(false);
+            $type = $type->asCallableType();
+            if ($type) {
+                $result[] = $type;
             }
         }
         return $result;
@@ -2650,6 +2645,36 @@ class UnionType implements Serializable
                 return $type instanceof ArrayType;
             }
         );
+    }
+
+    /**
+     * This is the union type Phan infers from assert(is_array($x))
+     * Converts iterable<key,value> to array<key, value>
+     * Takes `A[]|ArrayAccess` and returns `A[]`
+     * Takes `callable` and returns `callable-array`
+     */
+    public function arrayTypesStrictCast() : UnionType
+    {
+        return UnionType::of(
+            self::castToArrayTypesStrict($this->type_set),
+            self::castToArrayTypesStrict($this->real_type_set)
+        );
+    }
+
+    /**
+     * @param Type[] $type_list
+     * @return array<int,Type>
+     */
+    private static function castToArrayTypesStrict(array $type_list) : array
+    {
+        $result = [];
+        foreach ($type_list as $type) {
+            $type = $type->asArrayType();
+            if ($type) {
+                $result[] = $type;
+            }
+        }
+        return $result ?: [ArrayType::instance(false)];
     }
 
     /**

@@ -24,6 +24,7 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
+use Phan\Language\Type\CallableArrayType;
 use Phan\Language\Type\CallableDeclarationType;
 use Phan\Language\Type\CallableObjectType;
 use Phan\Language\Type\CallableStringType;
@@ -87,17 +88,17 @@ class Type
      * A legal type identifier (e.g. 'int' or 'DateTime')
      */
     const simple_type_regex =
-        '(\??)(?:callable-(?:string|object)|class-string|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
+        '(\??)(?:callable-(?:string|object|array)|class-string|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
 
     const simple_noncapturing_type_regex =
-        '\\\\?(?:callable-(?:string|object)|class-string|[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
+        '\\\\?(?:callable-(?:string|object|array)|class-string|[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
 
     /**
      * @var string
      * A legal type identifier (e.g. 'int' or 'DateTime')
      */
     const simple_type_regex_or_this =
-        '(\??)(callable-(?:string|object)|class-string|[a-zA-Z_\x7f-\xff\\\][a-zA-Z0-9_\x7f-\xff\\\]*|\$this)';
+        '(\??)(callable-(?:string|object|array)|class-string|[a-zA-Z_\x7f-\xff\\\][a-zA-Z0-9_\x7f-\xff\\\]*|\$this)';
 
     const shape_key_regex =
         '(?:[-.\/^;$%*+_a-zA-Z0-9\x7f-\xff]|\\\\(?:[nrt\\\\]|x[0-9a-fA-F]{2}))+\??';
@@ -210,6 +211,7 @@ class Type
         'array'           => true,
         'bool'            => true,
         'callable'        => true,
+        'callable-array'  => true,
         'callable-object' => true,
         'callable-string' => true,
         'class-string'    => true,
@@ -466,6 +468,14 @@ class Type
                             $is_nullable
                         );
                         break;
+                    case 'callable-array':
+                        $value = new CallableArrayType(
+                            $namespace,
+                            'callable-array',
+                            $template_parameter_type_list,
+                            $is_nullable
+                        );
+                        break;
                     case 'class-string':
                         $value = new ClassStringType(
                             $namespace,
@@ -676,6 +686,8 @@ class Type
                 return BoolType::instance($is_nullable);
             case 'callable':
                 return CallableType::instance($is_nullable);
+            case 'callable-array':
+                return CallableArrayType::instance($is_nullable);
             case 'callable-object':
                 return CallableObjectType::instance($is_nullable);
             case 'callable-string':
@@ -3386,5 +3398,25 @@ class Type
             return self::fromType($this, []);
         }
         return $this;
+    }
+
+    /**
+     * Convert this to a subtype that satisfies is_callable(), or return null
+     */
+    public function asCallableType() : ?Type
+    {
+        if ($this->isCallable()) {
+            return $this->withIsNullable(false);
+        }
+        return null;
+    }
+
+    /**
+     * Convert this to a subtype that satisfies is_array(), or returns null
+     * @see UnionType::arrayTypesStrictCast
+     */
+    public function asArrayType() : ?Type
+    {
+        return null;
     }
 }

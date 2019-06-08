@@ -37,6 +37,11 @@ class IterableType extends NativeType
     {
         return Type::traversableInstance();
     }
+
+    public function asArrayType() : ?Type
+    {
+        return ArrayType::instance(false);
+    }
 }
 // Trigger autoloader for subclass before make() can get called.
 \class_exists(GenericIterableType::class);

@@ -902,4 +902,12 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         }
         return self::fromFieldTypes($new_field_types, $this->is_nullable);
     }
+
+    public function asCallableType() : ?Type
+    {
+        if ($this->isDefiniteNonCallableType()) {
+            return null;
+        }
+        return $this->withIsNullable(false);
+    }
 }
