@@ -96,7 +96,7 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
     /** @override */
     public function isPossiblyFalsey() : bool
     {
-        return !$this->value;
+        return $this->is_nullable || !$this->value;
     }
 
     /** @override */
@@ -114,7 +114,7 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
     /** @override */
     public function isAlwaysTruthy() : bool
     {
-        return (bool)$this->value;
+        return (bool)$this->value && !$this->is_nullable;
     }
 
     /**

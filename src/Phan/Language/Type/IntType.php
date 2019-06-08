@@ -23,4 +23,24 @@ class IntType extends ScalarType
     {
         return IntType::instance(false)->asPHPDocUnionType();
     }
+
+    public function isPossiblyTruthy() : bool
+    {
+        return true;
+    }
+
+    public function isPossiblyFalsey() : bool
+    {
+        return true;
+    }
+
+    public function isAlwaysTruthy() : bool
+    {
+        return false;
+    }
+
+    public function isAlwaysFalsey() : bool
+    {
+        return false;
+    }
 }

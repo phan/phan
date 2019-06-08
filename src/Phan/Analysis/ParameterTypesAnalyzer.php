@@ -79,6 +79,7 @@ class ParameterTypesAnalyzer
             if ($parameter->isOptional()) {
                 $is_optional_seen = true;
             } else {
+                // @phan-suppress-next-line PhanImpossibleCondition this is a known false positive in loops
                 if ($is_optional_seen) {
                     Issue::maybeEmit(
                         $code_base,

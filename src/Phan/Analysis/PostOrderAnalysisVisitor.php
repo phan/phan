@@ -365,9 +365,17 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
+     *
+     * @suppress PhanUndeclaredProperty
      */
     public function visitSwitch(Node $node) : Context
     {
+        if (isset($node->phan_loop_contexts)) {
+            // Combine contexts from continue/break statements within this do-while loop
+            $context = (new ContextMergeVisitor($this->context, array_merge([$this->context], $node->phan_loop_contexts)))->combineChildContextList();
+            unset($node->phan_loop_contexts);
+            return $context;
+        }
         return $this->context;
     }
 

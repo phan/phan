@@ -2634,6 +2634,7 @@ class TolerantASTConverter
         $prev_was_element = false;
         foreach ($n->listElements->children ?? [] as $item) {
             if ($item instanceof Token) {
+                // @phan-suppress-next-line PhanImpossibleCondition this is a known false positive in loops
                 if (!$prev_was_element) {
                     $ast_items[] = null;
                     continue;
@@ -2664,6 +2665,7 @@ class TolerantASTConverter
         $prev_was_element = false;
         foreach ($n->arrayElements->children ?? [] as $item) {
             if ($item instanceof Token) {
+                // @phan-suppress-next-line PhanImpossibleCondition this is a known false positive in loops
                 if (!$prev_was_element) {
                     $ast_items[] = null;
                     continue;

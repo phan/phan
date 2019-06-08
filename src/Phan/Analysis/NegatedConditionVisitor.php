@@ -500,9 +500,11 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                         // Add types which are not instances of $base_class_name
                         foreach ($union_type->getTypeSet() as $type) {
                             if ($type instanceof $base_class_name) {
+                                // @phan-suppress-next-line PhanImpossibleCondition this is a known false positive in loops
                                 $has_null = $has_null || $type->isNullable();
                                 continue;
                             }
+                            // @phan-suppress-next-line PhanImpossibleCondition this is a known false positive in loops
                             $has_other_nullable_types = $has_other_nullable_types || $type->isNullable();
                             $new_type_builder->addType($type);
                         }
@@ -537,9 +539,11 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                         // Add types which are not scalars
                         foreach ($union_type->getTypeSet() as $type) {
                             if ($type_filter($type)) {
+                                // @phan-suppress-next-line PhanImpossibleCondition this is a known false positive in loops
                                 $has_null = $has_null || $type->isNullable();
                                 continue;
                             }
+                            // @phan-suppress-next-line PhanImpossibleCondition this is a known false positive in loops
                             $has_other_nullable_types = $has_other_nullable_types || $type->isNullable();
                             $new_type_builder->addType($type);
                         }
@@ -580,9 +584,11 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                     // Add types which are not callable
                     foreach ($union_type->getTypeSet() as $type) {
                         if ($type->isCallable()) {
+                            // @phan-suppress-next-line PhanImpossibleCondition this is a known false positive in loops
                             $has_null = $has_null || $type->isNullable();
                             continue;
                         }
+                        // @phan-suppress-next-line PhanImpossibleCondition this is a known false positive in loops
                         $has_other_nullable_types = $has_other_nullable_types || $type->isNullable();
                         $new_type_builder->addType($type);
                     }
@@ -615,10 +621,12 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                     // Add types which are not callable
                     foreach ($union_type->getTypeSet() as $type) {
                         if ($type instanceof ArrayType) {
+                            // @phan-suppress-next-line PhanImpossibleCondition this is a known false positive in loops
                             $has_null = $has_null || $type->isNullable();
                             continue;
                         }
 
+                        // @phan-suppress-next-line PhanImpossibleCondition this is a known false positive in loops
                         $has_other_nullable_types = $has_other_nullable_types || $type->isNullable();
 
                         if (\get_class($type) === IterableType::class) {
@@ -653,9 +661,11 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                     // Add types which are not callable
                     foreach ($union_type->getTypeSet() as $type) {
                         if ($type->isObject()) {
+                            // @phan-suppress-next-line PhanImpossibleCondition this is a known false positive in loops
                             $has_null = $has_null || $type->isNullable();
                             continue;
                         }
+                        // @phan-suppress-next-line PhanImpossibleCondition this is a known false positive in loops
                         $has_other_nullable_types = $has_other_nullable_types || $type->isNullable();
 
                         if (\get_class($type) === IterableType::class) {

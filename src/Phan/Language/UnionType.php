@@ -3810,6 +3810,7 @@ class UnionType implements Serializable
                 // Not going to bother being more specific (this applies bitwise not to each character for LiteralStringType)
                 $type_set = $type_set->withType(StringType::instance(false));
             } else {
+                // @phan-suppress-next-line PhanImpossibleCondition this is a known false positive in loops
                 if ($added_fallbacks) {
                     continue;
                 }
@@ -3861,6 +3862,7 @@ class UnionType implements Serializable
                         return $type_set->withType(LiteralIntType::instanceForValue(0, false));
                     }
                 }
+                // @phan-suppress-next-line PhanImpossibleCondition this is a known false positive in loops
                 if ($added_fallbacks) {
                     continue;
                 }

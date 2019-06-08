@@ -91,6 +91,7 @@ class Daemon
                     self::debugf("Got signal");
                     \pcntl_signal_dispatch();
                     self::debugf("done processing signals");
+                    // @phan-suppress-next-line PhanImpossibleCondition this is a known false positive with references. TODO fix analysis
                     if ($got_signal) {
                         continue;  // Ignore notices from stream_socket_accept if it's due to being interrupted by a child process terminating.
                     }
