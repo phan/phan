@@ -4,9 +4,11 @@
 %s:4 PhanRedundantCondition Redundant attempt to cast $a of type 2 to isset
 %s:7 PhanNoopCast Unused result of a (string)(expr) cast
 %s:8 PhanNoopCast Unused result of a (int)(expr) cast
+%s:8 PhanRedundantCondition Redundant attempt to cast $a of type 2 to int
 %s:9 PhanNoopCast Unused result of a (bool)(expr) cast
 %s:10 PhanNoopCast Unused result of a (unset)(expr) cast
 %s:11 PhanNoopCast Unused result of a (float)(expr) cast
+%s:11 PhanRedundantCondition Redundant attempt to cast $a of type 2 to float
 %s:12 PhanNoopCast Unused result of a (array)(expr) cast
 %s:13 PhanNoopCast Unused result of a (object)(expr) cast
 %s:22 PhanNoopBinaryOperator Unused result of a binary '??' operator

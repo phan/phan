@@ -74,7 +74,7 @@ class ConversionSpec
     {
         // echo "format is $fmt_str\n";
         $directives = [];
-        \preg_match_all(self::FORMAT_STRING_REGEX, (string) $fmt_str, $matches, \PREG_SET_ORDER);
+        \preg_match_all(self::FORMAT_STRING_REGEX, $fmt_str, $matches, \PREG_SET_ORDER);
         $unnamed_count = 0;
         foreach ($matches as $match) {
             if ($match[0] === '%%') {
