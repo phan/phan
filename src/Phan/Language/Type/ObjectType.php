@@ -60,5 +60,10 @@ class ObjectType extends NativeType
     {
         return $this->withIsNullable(false);
     }
+
+    public function asCallableType() : ?Type
+    {
+        return CallableObjectType::instance(false);
+    }
 }
 \class_exists(CallableObjectType::class);

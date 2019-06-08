@@ -1372,4 +1372,9 @@ final class EmptyUnionType extends UnionType
     {
         return $this;
     }
+
+    public function arrayTypesStrictCast() : UnionType
+    {
+        return ArrayType::instance(false)->asRealUnionType();
+    }
 }

@@ -23,12 +23,10 @@ use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\IntType;
-use Phan\Language\Type\IterableType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
-use Phan\Language\UnionTypeBuilder;
 use Phan\Library\StringUtil;
 use ReflectionMethod;
 
@@ -678,27 +676,14 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             };
         };
 
-        $array_type = ArrayType::instance(false);
         /**
          * @param array<int,Node|mixed> $args
          */
-        $array_callback = static function (CodeBase $code_base, Context $context, Variable $variable, array $args) use ($array_type) : void {
-            // Change the type to match the is_a relationship
+        $array_callback = static function (CodeBase $code_base, Context $context, Variable $variable, array $args) : void {
+            // Change the type to match the is_array relationship
             // If we already have generic array types, then keep those
-            // (E.g. T[]|false becomes T[], ?array|null becomes array)
-            $new_type_builder = new UnionTypeBuilder();
-            foreach ($variable->getUnionType()->getTypeSet() as $type) {
-                if ($type instanceof ArrayType) {
-                    $new_type_builder->addType($type->withIsNullable(false));
-                    continue;
-                }
-                if (\get_class($type) === IterableType::class) {
-                    // An iterable is either an array or a Traversable.
-                    $new_type_builder->addType($array_type);
-                }
-            }
-            // TODO: Apply the array filter to the real type set if possible
-            $variable->setUnionType($new_type_builder->isEmpty() ? $array_type->asRealUnionType() : $new_type_builder->getPHPDocUnionType());
+            // (E.g. T[]|false becomes T[], ?array|null becomes array, callable becomes callable_array)
+            $variable->setUnionType($variable->getUnionType()->arrayTypesStrictCast());
         };
 
         /**

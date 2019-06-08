@@ -1,6 +1,6 @@
 Phan NEWS
 
-?? ??? 2019, Phan 2.1.1 (dev)
+?? ??? 2019, Phan 2.2.0 (dev)
 -----------------------
 
 New features(CLI, Configs):
@@ -19,6 +19,7 @@ New features(CLI, Configs):
 
 New features(Analysis):
 + Support the type `callable-object` in phpdoc and infer it from checks such as `is_callable($var) && is_object($var)` (#1336)
++ Support the type `callable-array` in phpdoc and infer it from checks such as `is_callable($var) && is_array($var)` (#2833)
 + Fix false positives in more edge cases when analyzing variables with type `static` (e.g. `yield from $this;`) (#2825)
 + Properly emit `NonStaticCallToStatic` in more edge cases (#2826)
 + Infer that `<=>` is `-1|0|1` instead of `int`
