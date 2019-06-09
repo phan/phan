@@ -721,7 +721,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/misc/fallback_te
 ## PhanNoopNumericLiteral
 
 ```
-Unused result of a numeric literal {STRING_LITERAL} near this line
+Unused result of a numeric literal {SCALAR} near this line
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/misc/fallback_test/expected/035_bad_switch_statement.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/misc/fallback_test/src/035_bad_switch_statement.php#L1).
@@ -1550,7 +1550,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0
 ## PhanParamSpecial1
 
 ```
-Argument {INDEX} ({PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} when argument {INDEX} is {TYPE}
+Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} when argument {INDEX} is {TYPE}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0511_implode.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/files/src/0511_implode.php#L8).
@@ -1558,7 +1558,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0
 ## PhanParamSpecial2
 
 ```
-Argument {INDEX} ({PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} when passed only one argument
+Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} when passed only one argument
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0511_implode.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/files/src/0511_implode.php#L4).
@@ -1841,6 +1841,22 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0
 
 This category of issue come from using incorrect types or types that cannot cast to the expected types.
 
+## PhanImpossibleCondition
+
+```
+Impossible attempt to cast {CODE} of type {TYPE} to {TYPE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0265_ternary_guards.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0265_ternary_guards.php#L4).
+
+## PhanImpossibleTypeComparison
+
+```
+Impossible attempt to check if {CODE} of type {TYPE} is identical to {CODE} of type {TYPE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0695_identity_no_type_overlap.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0695_identity_no_type_overlap.php#L5).
+
 ## PhanInfiniteRecursion
 
 NOTE: This is based on very simple heuristics. It has known false positives and false negatives.
@@ -1889,7 +1905,7 @@ This issue (and similar issues) may be emitted when `strict_param_checking` is t
 (when some types of the argument's union type match, but not others.)
 
 ```
-Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}
+Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/expected/088_possibly_invalid_argument.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/src/088_possibly_invalid_argument.php#L10).
@@ -1899,7 +1915,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/expe
 This issue may be emitted when `strict_param_checking` is true, when analyzing an internal function.
 
 ```
-Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible)
+Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible)
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/expected/025_strict_param_checks.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/src/025_strict_param_checks.php#L8).
@@ -1930,7 +1946,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/expe
 This issue may be emitted when `strict_param_checking` is true
 
 ```
-Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}
+Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/expected/088_possibly_invalid_argument.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/src/088_possibly_invalid_argument.php#L6).
@@ -1940,7 +1956,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/expe
 This issue may be emitted when `strict_param_checking` is true
 
 ```
-Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible)
+Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible)
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/expected/078_merge_bool_and.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/src/078_merge_bool_and.php#L3).
@@ -1976,7 +1992,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/expe
 This issue may be emitted when `strict_param_checking` is true
 
 ```
-Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}
+Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/expected/088_possibly_invalid_argument.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/src/088_possibly_invalid_argument.php#L8).
@@ -1986,7 +2002,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/expe
 This issue may be emitted when `strict_param_checking` is true
 
 ```
-Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible)
+Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible)
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/expected/025_strict_param_checks.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/src/025_strict_param_checks.php#L6).
@@ -2008,6 +2024,14 @@ Returning type {TYPE} but {FUNCTIONLIKE} is declared to return {TYPE} ({TYPE} is
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/expected/026_strict_return_checks.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/src/026_strict_return_checks.php#L16).
+
+## PhanRedundantCondition
+
+```
+Redundant attempt to cast {CODE} of type {TYPE} to {TYPE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0516_literal_type_narrowing.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0516_literal_type_narrowing.php#L4).
 
 ## PhanRelativePathUsed
 
@@ -2527,7 +2551,7 @@ class A { public function __set() { return true; } }
 ## PhanTypeMismatchArgument
 
 ```
-Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} defined at {FILE}:{LINE}
+Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} defined at {FILE}:{LINE}
 ```
 
 This will be emitted for the code
@@ -2540,7 +2564,7 @@ f8('string');
 ## PhanTypeMismatchArgumentInternal
 
 ```
-Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE}
+Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE}
 ```
 
 This will be emitted for the code
@@ -2552,7 +2576,7 @@ strlen(42);
 ## PhanTypeMismatchArgumentNullable
 
 ```
-Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} defined at {FILE}:{LINE} (expected type to be non-nullable)
+Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} defined at {FILE}:{LINE} (expected type to be non-nullable)
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0086_conditional_instanceof_type.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/files/src/0086_conditional_instanceof_type.php#L14).
@@ -2560,7 +2584,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0
 ## PhanTypeMismatchArgumentNullableInternal
 
 ```
-Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} (expected type to be non-nullable)
+Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} (expected type to be non-nullable)
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0152_closure_casts_callable.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/files/src/0152_closure_casts_callable.php#L4).
@@ -2584,7 +2608,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0
 ## PhanTypeMismatchDeclaredParam
 
 ```
-Doc-block of ${VARIABLE} in {METHOD} contains phpdoc param type {TYPE} which is incompatible with the param type {TYPE} declared in the signature
+Doc-block of ${PARAMETER} in {METHOD} contains phpdoc param type {TYPE} which is incompatible with the param type {TYPE} declared in the signature
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0334_reject_bad_narrowing.php.expected#L6) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/files/src/0334_reject_bad_narrowing.php#L25).
@@ -2592,7 +2616,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0
 ## PhanTypeMismatchDeclaredParamNullable
 
 ```
-Doc-block of ${VARIABLE} in {METHOD} is phpdoc param type {TYPE} which is not a permitted replacement of the nullable param type {TYPE} declared in the signature ('?T' should be documented as 'T|null' or '?T')
+Doc-block of ${PARAMETER} in {METHOD} is phpdoc param type {TYPE} which is not a permitted replacement of the nullable param type {TYPE} declared in the signature ('?T' should be documented as 'T|null' or '?T')
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0005_compat.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/files/src/0005_compat.php#L21).
@@ -2616,7 +2640,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0
 ## PhanTypeMismatchDefault
 
 ```
-Default value for {TYPE} ${VARIABLE} can't be {TYPE}
+Default value for {TYPE} ${PARAMETER} can't be {TYPE}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/rasmus_files/expected/0030_def_arg_type.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/rasmus_files/src/0030_def_arg_type.php#L4).
@@ -3520,7 +3544,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0
 ## PhanCommentParamAssertionWithoutRealParam
 
 ```
-Saw an @phan-assert annotation for {VARIABLE}, but it was not found in the param list of {FUNCTIONLIKE}
+Saw an @phan-assert annotation for ${PARAMETER}, but it was not found in the param list of {FUNCTIONLIKE}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/expected/086_comment_param_assertions.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/src/086_comment_param_assertions.php#L14).
@@ -3528,7 +3552,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/expe
 ## PhanCommentParamOnEmptyParamList
 
 ```
-Saw an @param annotation for {VARIABLE}, but the param list of {FUNCTIONLIKE} is empty
+Saw an @param annotation for ${PARAMETER}, but the param list of {FUNCTIONLIKE} is empty
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/expected/086_comment_param_assertions.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/src/086_comment_param_assertions.php#L3).
@@ -3536,7 +3560,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/expe
 ## PhanCommentParamOutOfOrder
 
 ```
-Expected @param annotation for {VARIABLE} to be before the @param annotation for {VARIABLE}
+Expected @param annotation for ${PARAMETER} to be before the @param annotation for ${PARAMETER}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0520_spaces_in_union_type.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/files/src/0520_spaces_in_union_type.php#L5).
@@ -3544,7 +3568,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0
 ## PhanCommentParamWithoutRealParam
 
 ```
-Saw an @param annotation for {VARIABLE}, but it was not found in the param list of {FUNCTIONLIKE}
+Saw an @param annotation for ${PARAMETER}, but it was not found in the param list of {FUNCTIONLIKE}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0373_reject_bad_type_narrowing.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/files/src/0373_reject_bad_type_narrowing.php#L4).

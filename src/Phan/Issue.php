@@ -199,6 +199,7 @@ class Issue
     const TypeInvalidPropertyDefaultReal  = 'PhanTypeInvalidPropertyDefaultReal';
     const ImpossibleCondition         = 'PhanImpossibleCondition';
     const RedundantCondition          = 'PhanRedundantCondition';
+    const ImpossibleTypeComparison    = 'PhanImpossibleTypeComparison';
 
     // Issue::CATEGORY_ANALYSIS
     const Unanalyzable              = 'PhanUnanalyzable';
@@ -2066,6 +2067,14 @@ class Issue
                 "Redundant attempt to cast {CODE} of type {TYPE} to {TYPE}",
                 self::REMEDIATION_B,
                 10114
+            ),
+            new Issue(
+                self::ImpossibleTypeComparison,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,
+                "Impossible attempt to check if {CODE} of type {TYPE} is identical to {CODE} of type {TYPE}",
+                self::REMEDIATION_B,
+                10115
             ),
             // Issue::CATEGORY_VARIABLE
             new Issue(
