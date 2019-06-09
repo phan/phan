@@ -125,7 +125,7 @@ class RequireExistsVisitor extends PluginAwarePostAnalysisVisitor
             );
         }
 
-        $first_absolute_path = '(unknown)';
+        $first_absolute_path = null;
         foreach (Config::getValue('include_paths') ?: ['.'] as $include_path) {
             if (!Paths::isAbsolutePath($include_path)) {
                 $include_path = Paths::toAbsolutePath(\dirname(Config::projectPath($this->context->getFile())), $include_path);
@@ -134,8 +134,11 @@ class RequireExistsVisitor extends PluginAwarePostAnalysisVisitor
             if (file_exists($absolute_path)) {
                 return $absolute_path;
             }
+            // @phan-suppress-next-line PhanCoalescingAlwaysNull false positive in loop.
             $first_absolute_path = $first_absolute_path ?? $absolute_path;
         }
-        return $first_absolute_path;
+        // If we searched every directory in include_paths, but none existed,
+        // then give up and return the first (missing) resolved path.
+        return $first_absolute_path ?? '(unknown)';
     }
 }

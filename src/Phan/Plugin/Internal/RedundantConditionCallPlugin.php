@@ -2,8 +2,8 @@
 
 namespace Phan\Plugin\Internal;
 
-use ast\Node;
 use ast\flags;
+use ast\Node;
 use Closure;
 use Exception;
 use Phan\AST\ASTReverter;
@@ -310,13 +310,15 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
     public function visitBinaryOp(Node $node) : void
     {
         switch ($node->flags) {
-        case flags\BINARY_IS_IDENTICAL:
-        case flags\BINARY_IS_NOT_IDENTICAL:
-            $this->checkImpossibleComparison($node);
-            break;
-        // TODO: Warn about comparing string to array, string to false, etc. being questionable for loose equality
-        default:
-            return;
+            case flags\BINARY_IS_IDENTICAL:
+            case flags\BINARY_IS_NOT_IDENTICAL:
+                $this->checkImpossibleComparison($node);
+                break;
+            case flags\BINARY_COALESCE:
+                $this->analyzeBinaryCoalesce($node);
+                break;
+            default:
+                return;
         }
     }
 
@@ -340,6 +342,34 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
                 $left,
                 ASTReverter::toShortString($node->children['right']),
                 $right
+            );
+        }
+    }
+
+    /**
+     * Checks if the left hand side of a null coalescing operator is never null or always null
+     */
+    public function analyzeBinaryCoalesce(Node $node) : void
+    {
+        $left_node = $node->children['left'];
+        $left = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $left_node);
+        if (!$left->hasRealTypeSet()) {
+            return;
+        }
+        $left = $left->getRealUnionType();
+        if (!$left->containsNullableOrUndefined()) {
+            $this->emitIssue(
+                Issue::CoalescingNeverNull,
+                $node->lineno,
+                ASTReverter::toShortString($left_node),
+                $left
+            );
+        } elseif ($left->isNull()) {
+            $this->emitIssue(
+                Issue::CoalescingAlwaysNull,
+                $node->lineno,
+                ASTReverter::toShortString($left_node),
+                $left
             );
         }
     }

@@ -25,8 +25,11 @@ class AnnotatedUnionType extends UnionType
      */
     public function withIsPossiblyUndefined(bool $is_possibly_undefined) : UnionType
     {
+        if ($this->is_possibly_undefined === $is_possibly_undefined) {
+            return $this;
+        }
         if (!$is_possibly_undefined) {
-            return UnionType::ofUniqueTypes($this->getTypeSet());
+            return UnionType::of($this->getTypeSet(), $this->getRealTypeSet());
         }
         if (!$this->is_possibly_undefined) {
             return $this;

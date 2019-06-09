@@ -23,6 +23,7 @@
 %s:30 PhanTypeMismatchArgument Argument 1 ($x) is 2 but \expect_string_298() takes string defined at %s:3
 %s:31 PhanTypeMismatchArgument Argument 1 ($x) is 4 but \expect_string_298() takes string defined at %s:3
 %s:32 PhanTypeMismatchArgument Argument 1 ($x) is 7 but \expect_string_298() takes string defined at %s:3
+%s:33 PhanCoalescingNeverNull Using non-null 4 of type 4 as the left hand side of a null coalescing (??) operation. The right hand side may be unnecessary.
 %s:33 PhanTypeMismatchArgument Argument 1 ($x) is 4 but \expect_string_298() takes string defined at %s:3
 %s:34 PhanTypeMismatchArgument Argument 1 ($x) is bool but \expect_string_298() takes string defined at %s:3
 %s:35 PhanTypeMismatchArgument Argument 1 ($x) is bool but \expect_string_298() takes string defined at %s:3

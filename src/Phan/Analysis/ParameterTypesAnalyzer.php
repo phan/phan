@@ -883,6 +883,7 @@ class ParameterTypesAnalyzer
             $parameter_type = $parameter->getNonVariadicUnionType();
             // If there is already a phpdoc parameter type, then don't bother inheriting the parameter type from $o_method
             if (!$parameter_type->isEmpty()) {
+                // @phan-suppress-next-line PhanCoalescingAlwaysNull false positive in loop
                 $comment_parameter_map = $comment_parameter_map ?? self::extractCommentParameterMap($method);
                 $comment_parameter = $comment_parameter_map[$parameter->getName()] ?? null;
                 if ($comment_parameter) {

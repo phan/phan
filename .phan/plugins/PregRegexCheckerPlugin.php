@@ -151,6 +151,7 @@ class PregRegexCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
         // > $replacement may contain references of the form \\n or $n, with the latter form being the preferred one.
         try {
             foreach ($replacement_templates as $replacement_template) {
+                // @phan-suppress-next-line PhanCoalescingAlwaysNull false positive in loop
                 $pattern_keys = $pattern_keys ?? self::computePatternKeys($patterns);
                 $regex_group_keys = self::extractTemplateKeys($replacement_template);
                 foreach ($regex_group_keys as $key => $reference_string) {

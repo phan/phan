@@ -211,7 +211,7 @@ EOT;
         $return_type = $arguments_from_phan[0];
         $arguments_from_svn = null;
         if ($return_type === '') {
-            $arguments_from_svn = $arguments_from_svn ?? $this->parseFunctionLikeSignature($function_like_name);
+            $arguments_from_svn = $this->parseFunctionLikeSignature($function_like_name);
             if (is_null($arguments_from_svn)) {
                 return $arguments_from_phan;
             }

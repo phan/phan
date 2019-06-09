@@ -1375,7 +1375,7 @@ class ParseVisitor extends ScopeVisitor
 
         // Create the constant
         $constant = new GlobalConstant(
-            $context->withLineNumberStart($lineno ?? 0),
+            $context->withLineNumberStart($lineno),
             $name,
             UnionType::empty(),
             $flags,
@@ -1401,7 +1401,7 @@ class ParseVisitor extends ScopeVisitor
             $comment_string,
             $code_base,
             $context,
-            $lineno ?? 0,
+            $lineno,
             Comment::ON_CONST
         );
 

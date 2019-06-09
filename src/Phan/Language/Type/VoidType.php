@@ -75,5 +75,4 @@ final class VoidType extends NativeType
     {
         return Config::get_null_casts_as_any_type();
     }
-
 }

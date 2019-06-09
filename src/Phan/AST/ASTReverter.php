@@ -228,7 +228,6 @@ class ASTReverter
                     PostOrderAnalysisVisitor::AST_CAST_FLAGS_LOOKUP[$node->flags] ?? 'unknown',
                     self::toShortString($node->children['expr'])
                 );
-
             }
         ];
     }

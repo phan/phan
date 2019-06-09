@@ -471,7 +471,7 @@ class Request
     {
         $error_message = null;
         $new_file_mapping_contents = [];
-        foreach ($file_mapping_contents ?? [] as $file => $contents) {
+        foreach ($file_mapping_contents as $file => $contents) {
             if (!\is_string($file)) {
                 $error_message = 'Passed non-string in list of files to map';
                 return [];
