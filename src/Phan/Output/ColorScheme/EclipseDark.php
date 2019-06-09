@@ -5,6 +5,7 @@ namespace Phan\Output\ColorScheme;
 
 /**
  * Contains colors similar to eclipse's dark theme
+ * @suppress PhanUnreferencedClass this is used dynamically
  */
 class EclipseDark
 {

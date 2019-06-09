@@ -29,7 +29,6 @@ class InferValue
      * @param int $flags the flags on the node
      * @return Node|array|int|string|float|bool|null
      *   Node is returned to indicate that the result could not be computed
-     * @suppress PhanThrowTypeAbsent should not happen.
      * @throws Error that should be handled by caller, e.g. for `+[]`.
      */
     public static function computeBinaryOpResult($left, $right, int $flags)

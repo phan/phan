@@ -31,8 +31,6 @@ use function count;
  * TODO: Refactor this.
  *
  * TODO: Support real types (e.g. array_values() if the passed in real union type is an array, otherwise real type is ?array
- *
- * @phan-file-suppress PhanUnusedClosureParameter
  */
 final class RedundantConditionCallPlugin extends PluginV3 implements
     AnalyzeFunctionCallCapability,

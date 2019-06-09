@@ -24,7 +24,6 @@ class ArrowFunc
      *
      * @param Node $n a Node with kind ast\AST_ARROW_FUNC
      * @return array<int|string, Node>
-     * @suppress PhanThrowTypeAbsent
      */
     public static function getUses(Node $n) : array
     {

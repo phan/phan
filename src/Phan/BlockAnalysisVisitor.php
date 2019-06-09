@@ -1182,11 +1182,9 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 // e.g. "if (false) { anything }"
                 $excluded_elem_count++;
             } elseif (BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($stmts_node)) {
-                // @phan-suppress-previous-line PhanTypeMismatchArgumentNullable this is never null
                 // e.g. "if (!is_string($x)) { return; }" or break
                 $excluded_elem_count++;
                 if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_node)) {
-                    // @phan-suppress-previous-line PhanTypeMismatchArgumentNullable this is never null
                     $this->recordLoopContextForBreakOrContinue($child_context);
                 }
             } else {

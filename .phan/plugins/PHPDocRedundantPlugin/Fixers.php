@@ -133,7 +133,7 @@ class Fixers
     /**
      * @suppress PhanThrowTypeAbsentForCall
      * @suppress PhanUndeclaredClassMethod
-     * @suppress PhanUnusedSuppression false positive for PhpTokenizer with polyfill due to https://github.com/Microsoft/tolerant-php-parser/issues/292
+     * @suppress UnusedSuppression false positive for PhpTokenizer with polyfill due to https://github.com/Microsoft/tolerant-php-parser/issues/292
      */
     private static function getDocCommentToken(PhpParser\Node $node) : ?Token
     {
