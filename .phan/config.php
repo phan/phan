@@ -308,6 +308,7 @@ return [
         'plugins/codeclimate/engine',
         'tool/make_stubs',
         'internal/dump_fallback_ast.php',
+        'internal/extract_arg_info.php',
         'internal/internalsignatures.php',
         'internal/package.php',
         'internal/reflection_completeness_check.php',

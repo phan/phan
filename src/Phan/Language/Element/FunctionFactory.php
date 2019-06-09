@@ -63,6 +63,7 @@ class FunctionFactory
         array $signature
     ) : array {
 
+        // TODO: Look into adding helper method in UnionType caching this to speed up loading.
         $context = new Context();
 
         $return_type = UnionType::fromStringInContext(

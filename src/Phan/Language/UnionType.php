@@ -3320,6 +3320,23 @@ class UnionType implements Serializable
     }
 
     /**
+     * Returns the *real* return types for commonly used functions.
+     *
+     * NOTE: This assumes that argument counts are valid.
+     *
+     * @internal - This may change or be removed.
+     * @return array<string,string> maps internal function names to union type strings
+     */
+    public static function internalFunctionSignatureReturnTypeReal() : array
+    {
+        static $map;
+        if ($map === null) {
+            $map = require(__DIR__ . '/Internal/FunctionSignatureMapReal.php');
+        }
+        return $map;
+    }
+
+    /**
      * @return array<string,string[]>
      */
     private static function computeLatestFunctionSignatureMap() : array
