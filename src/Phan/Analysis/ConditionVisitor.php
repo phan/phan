@@ -722,25 +722,6 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         };
 
         /**
-         * @param array<int,Node|mixed> $args
-         */
-        $scalar_callback = static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $args) : void {
-            // Change the type to match the is_a relationship
-            // If we already have possible scalar types, then keep those
-            // (E.g. T|false becomes bool, T becomes int|float|bool|string|null)
-            $new_type = $variable->getUnionType()->scalarTypes();
-            if ($new_type->containsNullable()) {
-                $new_type = $new_type->nonNullableClone();
-            }
-            if ($new_type->isEmpty()) {
-                // If there are no inferred types, or the only type we saw was 'null',
-                // assume there this can be any possible scalar.
-                // (Excludes `resource`, which is technically a scalar)
-                $new_type = UnionType::fromFullyQualifiedRealString('int|float|bool|string');
-            }
-            $variable->setUnionType($new_type);
-        };
-        /**
          * @param string $extract_types
          * @param UnionType $default_if_empty
          * @return Closure(CodeBase,Context,Variable,array):void
@@ -771,10 +752,11 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         };
         /** @return void */
         $callable_callback = $make_callback('callableTypes', CallableType::instance(false)->asRealUnionType());
-        $bool_callback = $make_callback('getTypesInBoolFamily', BoolType::instance(false)->asRealUnionType());
+        $bool_callback = $make_callback('boolTypes', BoolType::instance(false)->asRealUnionType());
         $int_callback = $make_callback('intTypes', IntType::instance(false)->asRealUnionType());
         $string_callback = $make_callback('stringTypes', StringType::instance(false)->asRealUnionType());
         $numeric_callback = $make_callback('numericTypes', UnionType::fromFullyQualifiedRealString('string|int|float'));
+        $scalar_callback = $make_callback('scalarTypesStrict', UnionType::fromFullyQualifiedRealString('string|int|float|bool'));
 
         // Note: LiteralIntType exists, but LiteralFloatType doesn't, which is why these are different.
         $float_callback = $make_direct_assertion_callback('float');

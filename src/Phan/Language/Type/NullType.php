@@ -163,9 +163,19 @@ final class NullType extends ScalarType
         return true;  // Null is always falsey.
     }
 
+    public function isPossiblyTruthy() : bool
+    {
+        return false;  // Null is always falsey.
+    }
+
     public function isAlwaysFalsey() : bool
     {
         return true;  // Null is always falsey.
+    }
+
+    public function isAlwaysTruthy() : bool
+    {
+        return false;  // Null is always falsey.
     }
 
     public function isPrintableScalar() : bool
@@ -205,6 +215,16 @@ final class NullType extends ScalarType
     }
 
     public function canUseInRealSignature() : bool
+    {
+        return false;
+    }
+
+    public function asScalarType() : ?Type
+    {
+        return null;
+    }
+
+    public function isScalar() : bool
     {
         return false;
     }

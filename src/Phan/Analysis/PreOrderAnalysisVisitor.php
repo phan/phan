@@ -740,7 +740,10 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      */
     private function checkCanIterate(UnionType $union_type, Node $node) : void
     {
-        if ($union_type->isScalar()) {
+        if ($union_type->isEmpty()) {
+            return;
+        }
+        if (!$union_type->hasPossiblyObjectTypes() && !$union_type->hasIterable()) {
             $this->emitIssue(
                 Issue::TypeMismatchForeach,
                 $node->children['expr']->lineno ?? $node->lineno,

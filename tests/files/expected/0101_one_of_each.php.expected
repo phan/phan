@@ -34,6 +34,7 @@
 %s:129 PhanTypeMismatchArgument Argument 1 ($i) is 'string' but \f8() takes int defined at %s:128
 %s:132 PhanTypeMismatchArgumentInternal Argument 1 ($string) is 42 but \strlen() takes string
 %s:138 PhanTypeMismatchForeach null passed to foreach instead of array
+%s:139 PhanTypeMismatchForeach resource passed to foreach instead of array
 %s:141 PhanTypeMismatchDefault Default value for int $p can't be false
 %s:144 PhanTypeMismatchReturn Returning type 'string' but f() is declared to return int
 %s:147 PhanTypeMissingReturn Method \C9::f is declared to return int but has no return value
