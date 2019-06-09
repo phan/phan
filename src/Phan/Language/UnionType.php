@@ -139,23 +139,6 @@ class UnionType implements Serializable
         }
     }
 
-    /**
-     * @param array<int,Type> $type_list
-     * @return UnionType
-     * @suppress PhanPossiblyNonClassMethodCall
-     */
-    protected static function ofUniqueTypes(array $type_list) : UnionType
-    {
-        $n = \count($type_list);
-        if ($n === 0) {
-            return self::$empty_instance;
-        } elseif ($n === 1) {
-            return \reset($type_list)->asPHPDocUnionType();
-        } else {
-            return new self($type_list, true, []);
-        }
-    }
-
     /** @var EmptyUnionType an empty union type - Cached here for quick access. */
     private static $empty_instance;
 
@@ -654,8 +637,9 @@ class UnionType implements Serializable
         foreach ($type_set as $key => $other_type) {
             if ($type === $other_type) {
                 // Remove the only instance of $type from the copy.
+                // TODO: Make this work for removing from the real type set
                 unset($type_set[$key]);
-                return self::ofUniqueTypes($type_set);
+                return UnionType::of($type_set, []);
             }
         }
         // We did not find $type in type_set. The resulting union type is unchanged.
@@ -3508,7 +3492,24 @@ class UnionType implements Serializable
                 }
             }
         }
-        return UnionType::ofUniqueTypes($new_type_set);
+        $new_real_type_set = [];
+        foreach ($union_types as $type) {
+            $type_set = $type->real_type_set;
+            if (\count($type_set) === 0) {
+                $new_real_type_set = [];
+                break;
+            }
+            if (\count($new_real_type_set) === 0) {
+                $new_real_type_set = $type_set;
+                continue;
+            }
+            foreach ($type_set as $type) {
+                if (!\in_array($type, $new_real_type_set, true)) {
+                    $new_real_type_set[] = $type;
+                }
+            }
+        }
+        return UnionType::of($new_type_set, $new_real_type_set);
     }
 
     /**

@@ -75,7 +75,7 @@ final class CheckstylePrinter implements BufferedPrinterInterface
                 }
 
                 $error->appendChild(
-                    new \DOMAttr('severity', \htmlspecialchars((string)$level, ENT_NOQUOTES, 'UTF-8'))
+                    new \DOMAttr('severity', \htmlspecialchars($level, ENT_NOQUOTES, 'UTF-8'))
                 );
 
                 $error->appendChild(

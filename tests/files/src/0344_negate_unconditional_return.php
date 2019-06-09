@@ -40,7 +40,7 @@ function h344($x) : int {
             $x = 'alternative';
         }
     }
-    echo intdiv($x, 2);  // currently, doesn't warn, because the type is uncertain.
+    echo intdiv($x, 2);  // infers that $x must be either 'alternative'|array
     if (!is_int($x)) {
         return -1;
     }
