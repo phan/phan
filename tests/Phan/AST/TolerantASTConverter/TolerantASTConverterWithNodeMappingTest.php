@@ -12,8 +12,6 @@ use Phan\Tests\BaseTest;
 
 /**
  * Tests that the fallback works with ASTs, and can point an ast\Node to the original.
- *
- * @phan-file-suppress PhanThrowTypeAbsent it's a test
  */
 final class TolerantASTConverterWithNodeMappingTest extends BaseTest
 {

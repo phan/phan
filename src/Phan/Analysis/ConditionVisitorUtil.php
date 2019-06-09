@@ -44,8 +44,6 @@ use function is_string;
  * @see ConditionVisitor
  * @see NegatedConditionVisitor
  * @see ConditionVisitorInterface
- *
- * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
  */
 trait ConditionVisitorUtil
 {

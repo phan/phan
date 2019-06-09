@@ -6,6 +6,7 @@ namespace Phan\Output\ColorScheme;
 /**
  * Contains colors similar to VS Code's default color scheme
  * (with higher contrast against a black background and preferring related colors over plain text)
+ * @suppress PhanUnreferencedClass this is used dynamically
  */
 class Code
 {
