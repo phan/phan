@@ -322,7 +322,7 @@ class RedundantNodeVisitor extends PluginAwarePostAnalysisVisitor
         if (!$node instanceof Node) {
             return false;
         }
-        return $node->kind === ast\AST_CONST && strcasecmp((string)$node->children['name']->children['name'] ?? '', 'null') === 0;
+        return $node->kind === ast\AST_CONST && strcasecmp((string)($node->children['name']->children['name'] ?? ''), 'null') === 0;
     }
 
     /**

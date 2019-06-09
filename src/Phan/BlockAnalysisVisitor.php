@@ -16,8 +16,8 @@ use Phan\AST\AnalysisVisitor;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\Element;
-use Phan\Exception\NodeException;
 use Phan\Exception\IssueException;
+use Phan\Exception\NodeException;
 use Phan\Language\Context;
 use Phan\Language\Element\Comment\Builder;
 use Phan\Language\Element\Variable;
@@ -29,7 +29,6 @@ use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Library\StringUtil;
 use Phan\Plugin\ConfigPluginSet;
-
 use function array_map;
 use function count;
 use function end;
@@ -565,7 +564,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
         if (isset($node->phan_loop_contexts)) {
             // Combine contexts from continue/break statements within this for loop
-            $context = (new ContextMergeVisitor($context, array_merge([$context], $node->phan_loop_contexts)))->combineChildContextList();
+            $context = (new ContextMergeVisitor($context, \array_merge([$context], $node->phan_loop_contexts)))->combineChildContextList();
             unset($node->phan_loop_contexts);
         }
 
@@ -667,7 +666,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
         if (isset($node->phan_loop_contexts)) {
             // Combine contexts from continue/break statements within this while loop
-            $context = (new ContextMergeVisitor($context, array_merge([$context], $node->phan_loop_contexts)))->combineChildContextList();
+            $context = (new ContextMergeVisitor($context, \array_merge([$context], $node->phan_loop_contexts)))->combineChildContextList();
             unset($node->phan_loop_contexts);
         }
 
@@ -722,7 +721,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 // e.g. look up global constants and class constants.
                 $expr_value = (new ContextNode($this->code_base, $this->context, $expr_node))->getEquivalentPHPScalarValue();
 
-                $has_at_least_one_iteration = is_array($expr_value) && count($expr_value) > 0;
+                $has_at_least_one_iteration = \is_array($expr_value) && count($expr_value) > 0;
             }
         }
         // Analyze the context inside the loop. The keys/values would not get created in the outer scope if the iterable expression was empty.
@@ -756,7 +755,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $context_list = [$context, $inner_context];
         }
         if (isset($node->phan_loop_contexts)) {
-            $context_list = array_merge($context_list, $node->phan_loop_contexts);
+            $context_list = \array_merge($context_list, $node->phan_loop_contexts);
             // Combine contexts from continue/break statements within this foreach loop
             unset($node->phan_loop_contexts);
         }
@@ -811,7 +810,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         }
         if (isset($node->phan_loop_contexts)) {
             // Combine contexts from continue/break statements within this do-while loop
-            $context = (new ContextMergeVisitor($context, array_merge([$context], $node->phan_loop_contexts)))->combineChildContextList();
+            $context = (new ContextMergeVisitor($context, \array_merge([$context], $node->phan_loop_contexts)))->combineChildContextList();
             unset($node->phan_loop_contexts);
         }
 
@@ -1199,10 +1198,12 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 // TODO: Could add a check for conditions that are unconditionally falsey and warn
                 if (!$inferred_cond_value instanceof Node && $inferred_cond_value) {
                     // TODO: Could warn if this is not a condition on a static variable
+                    // @phan-suppress-next-line PhanCoalescingAlwaysNull false positive in loop
                     $first_unconditionally_true_index = $first_unconditionally_true_index ?? \count($child_context_list);
                 }
                 $fallthrough_context = (new NegatedConditionVisitor($this->code_base, $fallthrough_context))->__invoke($cond_node);
             } elseif ($cond_node) {
+                // @phan-suppress-next-line PhanCoalescingAlwaysNull false positive in loop
                 $first_unconditionally_true_index = $first_unconditionally_true_index ?? \count($child_context_list);
             }
             // If cond_node was null, it would be an else statement.

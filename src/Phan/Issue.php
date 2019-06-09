@@ -200,6 +200,8 @@ class Issue
     const ImpossibleCondition         = 'PhanImpossibleCondition';
     const RedundantCondition          = 'PhanRedundantCondition';
     const ImpossibleTypeComparison    = 'PhanImpossibleTypeComparison';
+    const CoalescingNeverNull         = 'PhanCoalescingNeverNull';
+    const CoalescingAlwaysNull        = 'PhanCoalescingAlwaysNull';
 
     // Issue::CATEGORY_ANALYSIS
     const Unanalyzable              = 'PhanUnanalyzable';
@@ -2055,7 +2057,7 @@ class Issue
             new Issue(
                 self::ImpossibleCondition,
                 self::CATEGORY_TYPE,
-                self::SEVERITY_CRITICAL,
+                self::SEVERITY_LOW,
                 "Impossible attempt to cast {CODE} of type {TYPE} to {TYPE}",
                 self::REMEDIATION_B,
                 10113
@@ -2063,7 +2065,7 @@ class Issue
             new Issue(
                 self::RedundantCondition,
                 self::CATEGORY_TYPE,
-                self::SEVERITY_CRITICAL,
+                self::SEVERITY_LOW,
                 "Redundant attempt to cast {CODE} of type {TYPE} to {TYPE}",
                 self::REMEDIATION_B,
                 10114
@@ -2071,10 +2073,26 @@ class Issue
             new Issue(
                 self::ImpossibleTypeComparison,
                 self::CATEGORY_TYPE,
-                self::SEVERITY_CRITICAL,
+                self::SEVERITY_LOW,
                 "Impossible attempt to check if {CODE} of type {TYPE} is identical to {CODE} of type {TYPE}",
                 self::REMEDIATION_B,
                 10115
+            ),
+            new Issue(
+                self::CoalescingNeverNull,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Using non-null {CODE} of type {TYPE} as the left hand side of a null coalescing (??) operation. The right hand side may be unnecessary.",
+                self::REMEDIATION_B,
+                10116
+            ),
+            new Issue(
+                self::CoalescingAlwaysNull,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Using {CODE} of type {TYPE} as the left hand side of a null coalescing (??) operation. The left hand side may be unnecessary.",
+                self::REMEDIATION_B,
+                10117
             ),
             // Issue::CATEGORY_VARIABLE
             new Issue(

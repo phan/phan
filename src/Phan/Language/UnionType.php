@@ -219,6 +219,32 @@ class UnionType implements Serializable
     }
 
     /**
+     * Returns a type with the following phpdoc types and real types.
+     * Use this if they are both non-empty but different.
+     * The caller should pass in phpdoc types that are subtypes of the real types
+     * (e.g. phpdoc='int|float' real='int')
+     */
+    public static function fromFullyQualifiedPHPDocAndRealString(
+        string $fully_qualified_phpdoc_string,
+        string $fully_qualified_real_string
+    ) : UnionType {
+        if ($fully_qualified_real_string === $fully_qualified_phpdoc_string) {
+            return self::fromFullyQualifiedRealString($fully_qualified_real_string);
+        }
+        static $memoize_map = [];
+        $key = "$fully_qualified_real_string@$fully_qualified_phpdoc_string";
+        $union_type = $memoize_map[$key] ?? null;
+
+        if (\is_null($union_type)) {
+            $phpdoc = UnionType::fromFullyQualifiedPHPDocString($fully_qualified_phpdoc_string);
+            $real = UnionType::fromFullyQualifiedPHPDocString($fully_qualified_real_string);
+            $union_type = UnionType::of($phpdoc->getTypeSet(), $real->getTypeSet());
+            $memoize_map[$key] = $union_type;
+        }
+        return $union_type;
+    }
+
+    /**
      * @param string $fully_qualified_string
      * A '|' delimited string representing a type in the form
      * 'int|string|null|ClassName'.

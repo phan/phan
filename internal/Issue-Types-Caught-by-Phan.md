@@ -1841,6 +1841,22 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0
 
 This category of issue come from using incorrect types or types that cannot cast to the expected types.
 
+## PhanCoalescingAlwaysNull
+
+```
+Using {CODE} of type {TYPE} as the left hand side of a null coalescing (??) operation. The left hand side may be unnecessary.
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0697_coalescing_always_never_null.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0697_coalescing_always_never_null.php#L5).
+
+## PhanCoalescingNeverNull
+
+```
+Using non-null {CODE} of type {TYPE} as the left hand side of a null coalescing (??) operation. The right hand side may be unnecessary.
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0697_coalescing_always_never_null.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0697_coalescing_always_never_null.php#L4).
+
 ## PhanImpossibleCondition
 
 ```

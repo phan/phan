@@ -622,7 +622,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
                 $param_name = 'arg' . $i;
             }
 
-            if (((string)$part->attributes()['choice'] ?? '') === 'opt') {
+            if (((string)($part->attributes()['choice'] ?? '')) === 'opt') {
                 $param_name .= '=';
             }
 

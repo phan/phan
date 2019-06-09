@@ -367,7 +367,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
                     $issue_type = Issue::VariableDefinitionCouldBeConstantEmptyArray;
                 }
             } elseif ($value_node->kind === ast\AST_CONST) {
-                $name = \strtolower((string)$value_node->children['name']->children['name'] ?? '');
+                $name = \strtolower((string)($value_node->children['name']->children['name'] ?? ''));
                 switch ($name) {
                     case 'false':
                         $issue_type = Issue::VariableDefinitionCouldBeConstantFalse;

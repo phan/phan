@@ -318,7 +318,7 @@ class CLI
             }
             throw new ExitException($result, EXIT_SUCCESS);
         }
-        if (\array_key_exists('v', $opts ?? []) || \array_key_exists('version', $opts ?? [])) {
+        if (\array_key_exists('v', $opts) || \array_key_exists('version', $opts)) {
             \printf("Phan %s\n", self::PHAN_VERSION);
             throw new ExitException('', EXIT_SUCCESS);
         }
