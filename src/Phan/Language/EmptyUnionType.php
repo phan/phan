@@ -1164,6 +1164,11 @@ final class EmptyUnionType extends UnionType
         return $this;
     }
 
+    public function canAnyTypeStrictCastToUnionType(CodeBase $code_base, UnionType $target) : bool
+    {
+        return true;
+    }
+
     public function canStrictCastToUnionType(CodeBase $code_base, UnionType $target) : bool
     {
         return true;

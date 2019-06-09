@@ -1231,18 +1231,27 @@ class UnionType implements Serializable
      */
     public function nullableClone() : UnionType
     {
-        $builder = new UnionTypeBuilder();
-        $did_change = false;
-        foreach ($this->type_set as $type) {
+        return self::of(
+            self::toNullableTypeList($this->type_set),
+            self::toNullableTypeList($this->real_type_set)
+        );
+    }
+
+    /**
+     * @param Type[] $type_list
+     * @return array<int,Type> a list that may contain duplicates.
+     */
+    private static function toNullableTypeList(array $type_list) : array
+    {
+        $result = [];
+        foreach ($type_list as $type) {
             if ($type->isNullable()) {
-                $builder->addType($type);
-                continue;
+                $result[] = $type;
+            } else {
+                $result[] = $type->withIsNullable(true);
             }
-            $did_change = true;
-            $builder->addType($type->withIsNullable(true));
         }
-        // TODO: Preserve real types
-        return $did_change ? $builder->getPHPDocUnionType() : $this;
+        return $result;
     }
 
     /**
@@ -1919,6 +1928,22 @@ class UnionType implements Serializable
     }
 
     /**
+     * Checks if any type in this union type can strictly cast to the other type
+     *
+     * E.g. allows ?T|Other -> T, null|Other -> ?T, ?T -> ?Other
+     * Does not allow ?T -> Other, etc.
+     */
+    public function canAnyTypeStrictCastToUnionType(CodeBase $code_base, UnionType $target) : bool
+    {
+        foreach ($this->type_set as $type) {
+            if ($type->asPHPDocUnionType()->canStrictCastToUnionType($code_base, $target)) {
+                return true;
+            }
+        }
+        return \count($this->type_set) === 0 || ($this->containsNullable() && $target->containsNullable());
+    }
+
+    /**
      * @param UnionType $target
      * A type to check to see if this can cast to it.
      *
@@ -1995,11 +2020,12 @@ class UnionType implements Serializable
      * (e.g. mixed <-> string, etc.)
      *
      * TODO: Make this work for callable <-> string, etc.
+     * TODO: Make this work for callable <-> string, etc.
      * @suppress PhanUnreferencedPublicMethod
      */
     public function hasAnyTypeOverlap(CodeBase $code_base, UnionType $other) : bool
     {
-        return $this->canStrictCastToUnionType($code_base, $other) || $other->canStrictCastToUnionType($code_base, $this);
+        return $this->canAnyTypeStrictCastToUnionType($code_base, $other) || $other->canAnyTypeStrictCastToUnionType($code_base, $this);
     }
 
     /**

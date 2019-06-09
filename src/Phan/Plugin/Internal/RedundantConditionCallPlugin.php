@@ -3,6 +3,7 @@
 namespace Phan\Plugin\Internal;
 
 use ast\Node;
+use ast\flags;
 use Closure;
 use Exception;
 use Phan\AST\ASTReverter;
@@ -302,6 +303,43 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
                 ASTReverter::toShortString($var_node),
                 $real_type,
                 'empty'
+            );
+        }
+    }
+
+    public function visitBinaryOp(Node $node) : void
+    {
+        switch ($node->flags) {
+        case flags\BINARY_IS_IDENTICAL:
+        case flags\BINARY_IS_NOT_IDENTICAL:
+            $this->checkImpossibleComparison($node);
+            break;
+        // TODO: Warn about comparing string to array, string to false, etc. being questionable for loose equality
+        default:
+            return;
+        }
+    }
+
+    private function checkImpossibleComparison(Node $node) : void
+    {
+        $left = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['left']);
+        if (!$left->hasRealTypeSet()) {
+            return;
+        }
+        $right = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['right']);
+        if (!$right->hasRealTypeSet()) {
+            return;
+        }
+        $left = $left->getRealUnionType()->withStaticResolvedInContext($this->context);
+        $right = $right->getRealUnionType()->withStaticResolvedInContext($this->context);
+        if (!$left->hasAnyTypeOverlap($this->code_base, $right)) {
+            $this->emitIssue(
+                Issue::ImpossibleTypeComparison,
+                $node->lineno,
+                ASTReverter::toShortString($node->children['left']),
+                $left,
+                ASTReverter::toShortString($node->children['right']),
+                $right
             );
         }
     }

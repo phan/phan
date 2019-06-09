@@ -65,10 +65,11 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
         $constant_fqsen = FullyQualifiedGlobalConstantName::fromFullyQualifiedString(
             '\\' . $name
         );
+        $type = Type::fromObject($value);
         $result = new self(
             new Context(),
             $name,
-            Type::fromObject($value)->asRealUnionType(),
+            UnionType::of([$type], [$type->asNonLiteralType()]),
             0,
             $constant_fqsen
         );
