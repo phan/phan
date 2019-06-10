@@ -100,6 +100,9 @@ final class SelfType extends StaticOrSelfType
      */
     public function withIsNullable(bool $is_nullable) : Type
     {
+        if ($is_nullable === $this->is_nullable) {
+            return $this;
+        }
         return self::instance($is_nullable);
     }
 

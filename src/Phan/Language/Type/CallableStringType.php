@@ -68,4 +68,49 @@ final class CallableStringType extends StringType implements CallableInterface
     {
         return $this->is_nullable;
     }
+
+    protected function __construct(bool $is_nullable)
+    {
+        parent::__construct('\\', self::NAME, [], $is_nullable);
+    }
+
+    /**
+     * Returns a nullable/non-nullable instance of this CallableStringType
+     *
+     * @param bool $is_nullable
+     * An optional parameter, which if true returns a
+     * nullable instance of this native type
+     *
+     * @return static
+     */
+    public static function instance(bool $is_nullable) : Type
+    {
+        if ($is_nullable) {
+            static $nullable_instance = null;
+
+            if ($nullable_instance === null) {
+                $nullable_instance = new self(true);
+            }
+
+            return $nullable_instance;
+        }
+
+        static $instance;
+
+        if (!$instance) {
+            $instance = new self(false);
+        }
+        return $instance;
+    }
+
+    /**
+     * @return CallableStringType
+     */
+    public function withIsNullable(bool $is_nullable) : Type
+    {
+        if ($is_nullable === $this->is_nullable) {
+            return $this;
+        }
+        return self::instance($is_nullable);
+    }
 }
