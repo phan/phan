@@ -23,6 +23,7 @@ New features(Analysis):
   (e.g. warns about `$x = new stdClass(); assert($x !== null)`)
 + New issue types: `PhanCoalescingAlwaysNull`, `PhanCoalescingNeverNull` (when `--redundant-condition-detection` is enabled)
   (e.g. warns about `(null ?? 'other')`, `($a >= $b) ?? 'default'`)
++ Infer real return types from Reflection of php and the enabled extensions (affects `--redundant-condition-detection`)
 + Make Phan more accurately check if a loop may be executed 0 times.
 + Make Phan more accurately check if a loop may be executed 0 times.
 + Support the type `callable-object` in phpdoc and infer it from checks such as `is_callable($var) && is_object($var)` (#1336)

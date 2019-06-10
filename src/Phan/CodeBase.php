@@ -1436,7 +1436,13 @@ class CodeBase
                 if ($found) {
                     $reflection_function = new \ReflectionFunction($name);
                     $function->setIsDeprecated($reflection_function->isDeprecated());
-                    $function->setRealReturnType(UnionType::fromReflectionType($reflection_function->getReturnType()));
+                    $real_return_type = UnionType::fromReflectionType($reflection_function->getReturnType());
+                    if (!$real_return_type->isEmpty()) {
+                        $real_type_set = $real_return_type->getTypeSet();
+                        $function->setRealReturnType($real_return_type);
+                        $function->setUnionType(UnionType::of($function->getUnionType()->getTypeSet() ?: $real_type_set, $real_type_set));
+                    }
+
                     $function->setRealParameterList(Parameter::listFromReflectionParameterList($reflection_function->getParameters()));
                 }
                 $this->addFunction($function);

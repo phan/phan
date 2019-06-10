@@ -111,6 +111,9 @@ class ASTReverter
             return '(unknown)';
         };
         self::$closure_map = [
+            ast\AST_ARG_LIST => static function (Node $node) : string {
+                return '(' . implode(', ', array_map('self::toShortString', $node->children)) . ')';
+            },
             ast\AST_CLASS_CONST => static function (Node $node) : string {
                 return self::toShortString($node->children['class']) . '::' . $node->children['const'];
             },
@@ -228,7 +231,14 @@ class ASTReverter
                     PostOrderAnalysisVisitor::AST_CAST_FLAGS_LOOKUP[$node->flags] ?? 'unknown',
                     self::toShortString($node->children['expr'])
                 );
-            }
+            },
+            ast\AST_CALL => static function (Node $node) : string {
+                return \sprintf(
+                    '%s%s',
+                    self::toShortString($node->children['expr']),
+                    self::toShortString($node->children['args'])
+                );
+            },
         ];
     }
 }
