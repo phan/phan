@@ -152,6 +152,7 @@ EOT;
 
     public static function printAllStubs(CodeBase $code_base) : void
     {
+        $code_base->eagerlyLoadAllSignatures();
         $stub_collection = new StubCollection($code_base);
         $class_map = $code_base->getInternalClassMap();
 

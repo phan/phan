@@ -474,20 +474,26 @@ class CodeBase
     public function forceLoadingInternalFunctions() : void
     {
         $internal_function_fqsen_set = $this->internal_function_fqsen_set;
-        $this->internal_function_fqsen_set = new Set();  // Don't need to track these any more.
-        foreach ($internal_function_fqsen_set as $function_fqsen) {
-            // hasFunctionWithFQSEN will automatically load $function_name, **unless** we don't have a signature for that function.
-            if (!$this->hasFunctionWithFQSEN($function_fqsen)) {
-                // Force loading these even if automatic loading failed.
-                // (Shouldn't happen, the function list is fetched from reflection by callers.
-                $function_alternate_generator = FunctionFactory::functionListFromReflectionFunction(
-                    $function_fqsen,
-                    new \ReflectionFunction($function_fqsen->getNamespacedName())
-                );
-                foreach ($function_alternate_generator as $function) {
-                    $this->addFunction($function);
+        try {
+            foreach ($internal_function_fqsen_set as $function_fqsen) {
+                // hasFunctionWithFQSEN will automatically load $function_name, **unless** we don't have a signature for that function.
+                if (!$this->hasFunctionWithFQSEN($function_fqsen)) {
+                    // Force loading these even if automatic loading failed.
+                    // (Shouldn't happen, the function list is fetched from reflection by callers.
+                    $function_alternate_generator = FunctionFactory::functionListFromReflectionFunction(
+                        $function_fqsen,
+                        new \ReflectionFunction($function_fqsen->getNamespacedName())
+                    );
+                    foreach ($function_alternate_generator as $function) {
+                        $this->addFunction($function);
+                    }
                 }
             }
+        } finally {
+            // Don't need to track these any more *afteR* loading everything.
+            // hasFunctionWithFQSEN calls hasInternalFunctionWithFQSEN,
+            // which will only load the function if it was in internal_function_fqsen_set
+            $this->internal_function_fqsen_set = new Set();
         }
     }
 
