@@ -21,6 +21,7 @@ sed -i \
     -e "s/ syntax error, unexpected return (T_RETURN)/ syntax error, unexpected 'return' (T_RETURN)/" \
     -e "s/ syntax error, unexpected new (T_NEW)/ syntax error, unexpected 'new' (T_NEW)/" \
     -e "/src\/018_list_expression_18\.php:2 PhanSyntaxError syntax error, unexpected '0'/d" \
+    -e "s/is \\\\Countable|\\\\SimpleXMLElement|\\\\Traversable|iterable/is \\\\SimpleXMLElement|\\\\Traversable|iterable/" \
     -e "s/ expecting ';' or ','/ expecting ',' or ';'/" \
     -e "/PhanSyntaxError syntax error, unexpected ',', expecting ']'/d" \
     -e "/030_crash_extract_type.php:3 PhanSyntaxError syntax error, unexpected ',', expecting ')'/d" \

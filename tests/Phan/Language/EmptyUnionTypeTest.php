@@ -151,10 +151,12 @@ final class EmptyUnionTypeTest extends BaseTest
     public function getPossibleArgValues(ReflectionParameter $param) : array
     {
         $type = $param->getType();
-        $type_name = (string)$type;
+        $type_name = Type::stringFromReflectionType($type);
         switch ($type_name) {
             case 'bool':
                 return [false, true];
+            case '?array':
+                return [[], null];
             case 'array':
                 return [[]];
             case 'int':
