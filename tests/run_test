@@ -28,6 +28,7 @@ case "$TEST_SUITE" in
 		exit $?
 		;;
 	__FakeSelfFallbackTest)
+		# This usually requires 1 GB with all plugins enabled.
 		./phan --plugin PHPUnitNotDeadCodePlugin \
 			--plugin InvokePHPNativeSyntaxCheckPlugin \
 			--dead-code-detection \
@@ -35,7 +36,7 @@ case "$TEST_SUITE" in
 			--polyfill-parse-all-element-doc-comments \
 			--force-polyfill-parser \
 			--disable-cache \
-			--memory-limit 1G
+			--memory-limit 2G
 		exit $?
 		;;
 	__FakeRewritingTest)
