@@ -240,6 +240,12 @@ class ArrayType extends IterableType
     {
         return $this->withIsNullable(false);
     }
+
+    /** @override of IterableType */
+    public function asObjectType() : ?Type
+    {
+        return null;
+    }
 }
 // Trigger the autoloader for GenericArrayType so that it won't be called
 // before ArrayType.
