@@ -36,7 +36,7 @@ class Fixers
         if (!$declaration) {
             return null;
         }
-        return self::computeEditsForReturnTypeDeclaration($declaration, (string)$shorter_return_type);
+        return self::computeEditsForReturnTypeDeclaration($declaration, $shorter_return_type);
     }
 
     /**
@@ -55,7 +55,7 @@ class Fixers
         if (!$declaration) {
             return null;
         }
-        return self::computeEditsForParamTypeDeclaration($contents, $declaration, $param_name, (string)$shorter_return_type);
+        return self::computeEditsForParamTypeDeclaration($contents, $declaration, $param_name, $shorter_return_type);
     }
 
     private static function computeEditsForReturnTypeDeclaration(

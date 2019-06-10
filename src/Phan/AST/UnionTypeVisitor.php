@@ -438,7 +438,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                         break;
                     }
                 }
-                return self::literalStringUnionType((string)\ltrim($this->context->getClassFQSEN()->__toString(), '\\'));
+                return self::literalStringUnionType(\ltrim($this->context->getClassFQSEN()->__toString(), '\\'));
             default:
                 return StringType::instance(false)->asPHPDocUnionType();
         }
@@ -2142,7 +2142,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             $expression
         ))->getFunctionFromNode();
 
-        $possible_types = UnionType::empty();
+        $possible_types = null;
         foreach ($function_list_generator as $function) {
             $function->analyzeReturnTypes($this->code_base);  // For daemon/server mode, call this to consistently ensure accurate return types.
 
@@ -2151,10 +2151,15 @@ class UnionTypeVisitor extends AnalysisVisitor
             } else {
                 $function_types = $function->getUnionType();
             }
-            $possible_types = $possible_types->withUnionType($function_types);
+            // @phan-suppress-next-line PhanImpossibleCondition known false positive in loops
+            if ($possible_types) {
+                $possible_types = $possible_types->withUnionType($function_types);
+            } else {
+                $possible_types = $function_types;
+            }
         }
 
-        return $possible_types;
+        return $possible_types ?? UnionType::empty();
     }
 
     /**

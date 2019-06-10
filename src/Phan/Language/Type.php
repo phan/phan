@@ -757,6 +757,26 @@ class Type
     }
 
     /**
+     * Converts the reflection type to a string that Phan can understand
+     */
+    public static function stringFromReflectionType(
+        ?\ReflectionType $reflection_type
+    ) : string {
+        if (!$reflection_type) {
+            return '';
+        }
+        if ($reflection_type instanceof \ReflectionNamedType) {
+            $reflection_type_string = $reflection_type->getName();
+            if ($reflection_type->allowsNull()) {
+                return "?" . $reflection_type_string;
+            }
+            return $reflection_type_string;
+        }
+        // Unreachable in php 7.1+? Also, ReflectionType::__toString() is deprecated in php 8.0
+        return (string)$reflection_type;
+    }
+
+    /**
      * Creates a type for the ReflectionType of a parameter, return value, etc.
      */
     public static function fromReflectionType(
@@ -764,7 +784,7 @@ class Type
     ) : Type {
 
         return self::fromStringInContext(
-            $reflection_type->__toString(),
+            self::stringFromReflectionType($reflection_type),
             new Context(),
             Type::FROM_NODE
         );
