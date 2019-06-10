@@ -1003,7 +1003,12 @@ class AssignmentVisitor extends AnalysisVisitor
         $original_property_types = $property->getUnionType();
         if ($original_property_types->isEmpty()) {
             // TODO: Be more precise?
-            $property->setUnionType($this->right_type->withStaticResolvedInContext($this->context)->withFlattenedArrayShapeOrLiteralTypeInstances());
+            $property->setUnionType(
+                $this->right_type
+                     ->eraseRealTypeSet()
+                     ->withStaticResolvedInContext($this->context)
+                     ->withFlattenedArrayShapeOrLiteralTypeInstances()
+             );
             return;
         }
 
