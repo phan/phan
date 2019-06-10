@@ -112,7 +112,7 @@ class ASTReverter
         };
         self::$closure_map = [
             ast\AST_ARG_LIST => static function (Node $node) : string {
-                return '(' . implode(', ', array_map('self::toShortString', $node->children)) . ')';
+                return '(' . implode(', ', \array_map('self::toShortString', $node->children)) . ')';
             },
             ast\AST_CLASS_CONST => static function (Node $node) : string {
                 return self::toShortString($node->children['class']) . '::' . $node->children['const'];

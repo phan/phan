@@ -140,7 +140,7 @@ class ASTSimplifier
             // Run normalizeIfStatement again.
             \array_pop($new_statements);
             \array_push($new_statements, ...self::normalizeIfStatement($stmt));
-            // @phan-suppress-next-line PhanImpossibleCondition this is a known false positive in loops
+            // @phan-suppress-next-line PhanRedundantConditionInLoop this is a known false positive in loops
             $modified = $modified || \end($new_statements) !== $stmt;
             continue;
         }

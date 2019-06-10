@@ -3,6 +3,7 @@
 namespace Phan\Language;
 
 use AssertionError;
+use ast\Node;
 use Phan\CodeBase;
 use Phan\Exception\CodeBaseException;
 use Phan\Issue;
@@ -65,6 +66,11 @@ class Context extends FileRef
      * strict_types setting for the file
      */
     protected $strict_types = 0;
+
+    /**
+     * @var array<int,Node>
+     */
+    protected $loop_nodes = [];
 
     /**
      * @var Scope
@@ -304,6 +310,40 @@ class Context extends FileRef
     {
         $context = clone($this);
         $context->setScope($scope);
+        return $context;
+    }
+
+    public function withEnterLoop(Node $node) : Context
+    {
+        $context = clone($this);
+        $context->loop_nodes[] = $node;
+        return $context;
+    }
+
+    public function withExitLoop(Node $node) : Context
+    {
+        $context = clone($this);
+
+        while ($this->loop_nodes) {
+            if (\array_pop($this->loop_nodes) === $node) {
+                break;
+            }
+        }
+        return $context;
+    }
+
+    /**
+     * Is this in a loop of the current function body (or global scope)?
+     */
+    public function isInLoop() : bool
+    {
+        return \count($this->loop_nodes) > 0;
+    }
+
+    public function withoutLoops() : Context
+    {
+        $context = clone($this);
+        $context->loop_nodes = [];
         return $context;
     }
 

@@ -10,7 +10,7 @@ New features(CLI, Configs):
 + Add `--redundant-condition-detection` to attempt to detect redundant conditions/casts and impossible conditions based on the inferred real expression types.
 
 New features(Analysis):
-+ New issue types: `PhanRedundantCondition`, `PhanImpossibleCondition` (when `--redundant-condition-detection` is enabled)
++ New issue types: `PhanRedundantCondition[InLoop]`, `PhanImpossibleCondition[InLoop]` (when `--redundant-condition-detection` is enabled)
   (e.g. `is_int(2)` and `boolval(true)` is redundant, `empty(2)` is impossible).
 
   Note: This has many false positives involving loops, variables set in loops, and global variables.
@@ -19,9 +19,9 @@ New features(Analysis):
   The real types are inferred separately (and more conservatively) from regular (phpdoc+real) expression types.
 
   (these checks can also be enabled with the config setting `redundant_condition_detection`)
-+ New issue types: `PhanImpossibleTypeComparison` (when `--redundant-condition-detection` is enabled) (#1807)
++ New issue types: `PhanImpossibleTypeComparison[InLoop]` (when `--redundant-condition-detection` is enabled) (#1807)
   (e.g. warns about `$x = new stdClass(); assert($x !== null)`)
-+ New issue types: `PhanCoalescingAlwaysNull`, `PhanCoalescingNeverNull` (when `--redundant-condition-detection` is enabled)
++ New issue types: `PhanCoalescingAlwaysNull[InLoop]`, `PhanCoalescingNeverNull[InLoop]` (when `--redundant-condition-detection` is enabled)
   (e.g. warns about `(null ?? 'other')`, `($a >= $b) ?? 'default'`)
 + Infer real return types from Reflection of php and the enabled extensions (affects `--redundant-condition-detection`)
 + Make Phan more accurately check if a loop may be executed 0 times.

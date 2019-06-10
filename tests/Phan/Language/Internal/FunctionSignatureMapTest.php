@@ -99,8 +99,8 @@ final class FunctionSignatureMapTest extends BaseTest implements CodeBaseAwareTe
                 $errors .= "Expected function name '$function_name' to be found in signatures for php 7.4\n";
                 continue;
             }
-            $return_type = UnionType::fromStringInContext(str_replace('void', 'null', $return_type_string), $context, Type::FROM_TYPE);
-            $phan_return_type = UnionType::fromStringInContext(str_replace('void', 'null', $real_signature[0]), $context, Type::FROM_TYPE);
+            $return_type = UnionType::fromStringInContext(\str_replace('void', 'null', $return_type_string), $context, Type::FROM_TYPE);
+            $phan_return_type = UnionType::fromStringInContext(\str_replace('void', 'null', $real_signature[0]), $context, Type::FROM_TYPE);
             if (!$phan_return_type->canStrictCastToUnionType($this->code_base, $return_type)) {
                 $errors .= "Expected $phan_return_type to be able to cast to $return_type (checking consistency of real and phpdoc return types for '$function_name')\n";
             }

@@ -58,7 +58,7 @@ final class ArgumentType
         self::checkIsDeprecatedOrInternal($code_base, $context, $method);
         if ($method->hasFunctionCallAnalyzer()) {
             try {
-                $method->analyzeFunctionCall($code_base, $context->withLineNumberStart($node->lineno ?? 0), $node->children['args']->children);
+                $method->analyzeFunctionCall($code_base, $context->withLineNumberStart($node->lineno), $node->children['args']->children);
             } catch (StopParamAnalysisException $_) {
                 return;
             }
@@ -72,7 +72,7 @@ final class ArgumentType
         if ($argcount < $method->getNumberOfRequiredParameters() && !self::isUnpack($arglist->children)) {
             $alternate_found = false;
             foreach ($method->alternateGenerator($code_base) as $alternate_method) {
-                // @phan-suppress-next-line PhanImpossibleCondition
+                // @phan-suppress-next-line PhanRedundantConditionInLoop
                 $alternate_found = $alternate_found || (
                     $argcount >=
                     $alternate_method->getNumberOfRequiredParameters()
@@ -277,7 +277,7 @@ final class ArgumentType
         if ($argcount < $method->getNumberOfRequiredParameters() && !self::isUnpack($arg_nodes)) {
             $alternate_found = false;
             foreach ($method->alternateGenerator($code_base) as $alternate_method) {
-                // @phan-suppress-next-line PhanImpossibleCondition known false positive in loop
+                // @phan-suppress-next-line PhanRedundantConditionInLoop known false positive in loop
                 $alternate_found = $alternate_found || (
                     $argcount >=
                     $alternate_method->getNumberOfRequiredParameters()

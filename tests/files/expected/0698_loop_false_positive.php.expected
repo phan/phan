@@ -1,0 +1,1 @@
+%s:5 PhanRedundantConditionInLoop Redundant attempt to cast $found of type false to falsey in a loop body (likely a false positive)

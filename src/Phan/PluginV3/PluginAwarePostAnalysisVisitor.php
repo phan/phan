@@ -18,6 +18,8 @@ namespace Phan\PluginV3;
  *
  * - Phan is able to figure out which methods a subclass implements, and only call the plugin's visitor for those types,
  *   but only when the plugin's visitor does not override the fallback visit() method.
+ *
+ * Subclasses should declare protected $parent_node_list as an instance property if they need to know the list of parent nodes.
  */
 abstract class PluginAwarePostAnalysisVisitor extends PluginAwareBaseAnalysisVisitor
 {
