@@ -14,6 +14,11 @@ final class CallableObjectType extends ObjectType
     /** @phan-override */
     const NAME = 'callable-object';
 
+    protected function __construct(bool $is_nullable)
+    {
+        parent::__construct('\\', self::NAME, [], $is_nullable);
+    }
+
     protected function canCastToNonNullableType(Type $type) : bool
     {
         // Inverse of check in Type->canCastToNullableType
@@ -37,5 +42,45 @@ final class CallableObjectType extends ObjectType
     public function canUseInRealSignature() : bool
     {
         return false;
+    }
+
+    /**
+     * Returns a nullable/non-nullable instance of this CallableObjectType
+     *
+     * @param bool $is_nullable
+     * An optional parameter, which if true returns a
+     * nullable instance of this native type
+     *
+     * @return static
+     */
+    public static function instance(bool $is_nullable) : Type
+    {
+        if ($is_nullable) {
+            static $nullable_instance = null;
+
+            if ($nullable_instance === null) {
+                $nullable_instance = new self(true);
+            }
+
+            return $nullable_instance;
+        }
+
+        static $instance;
+
+        if (!$instance) {
+            $instance = new self(false);
+        }
+        return $instance;
+    }
+
+    /**
+     * @return CallableObjectType
+     */
+    public function withIsNullable(bool $is_nullable) : Type
+    {
+        if ($is_nullable === $this->is_nullable) {
+            return $this;
+        }
+        return self::instance($is_nullable);
     }
 }

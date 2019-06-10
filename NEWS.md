@@ -36,6 +36,9 @@ New features(Analysis):
 Maintenance:
 + Add updates to the function/method signature map from Psalm and PHPStan.
 
+Bug fixes:
++ Fix a crash when an expression containing `class-string<T>` became nullable.
+
 01 Jun 2019, Phan 2.1.0
 -----------------------
 

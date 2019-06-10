@@ -111,4 +111,19 @@ final class ClassStringType extends StringType
     {
         return false;
     }
+
+    public function withIsNullable(bool $is_nullable) : Type
+    {
+        if ($is_nullable === $this->is_nullable) {
+            return $this;
+        }
+        // make() will throw if the namespace is the empty string
+        return static::make(
+            '\\',
+            $this->name,
+            $this->template_parameter_type_list,
+            $is_nullable,
+            Type::FROM_TYPE
+        );
+    }
 }
