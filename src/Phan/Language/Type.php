@@ -454,17 +454,11 @@ class Type
                         break;
                     case 'callable-object':
                         $value = new CallableObjectType(
-                            $namespace,
-                            'callable-object',
-                            $template_parameter_type_list,
                             $is_nullable
                         );
                         break;
                     case 'callable-string':
                         $value = new CallableStringType(
-                            $namespace,
-                            'callable-string',
-                            $template_parameter_type_list,
                             $is_nullable
                         );
                         break;
