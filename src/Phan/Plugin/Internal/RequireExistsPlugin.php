@@ -134,7 +134,7 @@ class RequireExistsVisitor extends PluginAwarePostAnalysisVisitor
             if (file_exists($absolute_path)) {
                 return $absolute_path;
             }
-            // @phan-suppress-next-line PhanCoalescingAlwaysNull false positive in loop.
+            // @phan-suppress-next-line PhanCoalescingAlwaysNullInLoop false positive in loop.
             $first_absolute_path = $first_absolute_path ?? $absolute_path;
         }
         // If we searched every directory in include_paths, but none existed,

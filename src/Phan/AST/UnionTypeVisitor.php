@@ -2151,7 +2151,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             } else {
                 $function_types = $function->getUnionType();
             }
-            // @phan-suppress-next-line PhanImpossibleCondition known false positive in loops
+            // @phan-suppress-next-line PhanImpossibleConditionInLoop known false positive in loops
             if ($possible_types) {
                 $possible_types = $possible_types->withUnionType($function_types);
             } else {
@@ -2548,7 +2548,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $result = $result->withType($fqsen->asType());
             } elseif (\get_class($sub_type) === Type::class || $sub_type instanceof ClosureType || $sub_type instanceof StaticType) {
                 $result = $result->withType($sub_type);
-            } elseif ($is_valid) {  // @phan-suppress-current-line PhanRedundantCondition
+            } elseif ($is_valid) {  // @phan-suppress-current-line PhanRedundantConditionInLoop
                 if ($sub_type instanceof StringType) {
                     if ($sub_type instanceof ClassStringType) {
                         $result = $result->withUnionType($sub_type->getClassUnionType());

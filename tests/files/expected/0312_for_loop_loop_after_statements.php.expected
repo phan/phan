@@ -1,3 +1,3 @@
-%s:9 PhanRedundantCondition Redundant attempt to cast $node of type \Node312 to truthy
-%s:16 PhanRedundantCondition Redundant attempt to cast $node of type \Node312 to truthy
+%s:9 PhanRedundantConditionInLoop Redundant attempt to cast $node of type \Node312 to truthy in a loop body (likely a false positive)
+%s:16 PhanRedundantConditionInLoop Redundant attempt to cast $node of type \Node312 to truthy in a loop body (likely a false positive)
 %s:16 PhanTypeMismatchArgumentInternal Argument 1 ($string) is 0|\Node312 but \strlen() takes string

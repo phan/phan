@@ -1849,6 +1849,12 @@ Using {CODE} of type {TYPE} as the left hand side of a null coalescing (??) oper
 
 e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0697_coalescing_always_never_null.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0697_coalescing_always_never_null.php#L5).
 
+## PhanCoalescingAlwaysNullInLoop
+
+```
+Using {CODE} of type {TYPE} as the left hand side of a null coalescing (??) operation. The left hand side may be unnecessary. (in a loop body - this is likely a false positive)
+```
+
 ## PhanCoalescingNeverNull
 
 ```
@@ -1856,6 +1862,12 @@ Using non-null {CODE} of type {TYPE} as the left hand side of a null coalescing 
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0697_coalescing_always_never_null.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0697_coalescing_always_never_null.php#L4).
+
+## PhanCoalescingNeverNullInLoop
+
+```
+Using non-null {CODE} of type {TYPE} as the left hand side of a null coalescing (??) operation. The right hand side may be unnecessary. (in a loop body - this is likely a false positive)
+```
 
 ## PhanImpossibleCondition
 
@@ -1865,6 +1877,12 @@ Impossible attempt to cast {CODE} of type {TYPE} to {TYPE}
 
 e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0265_ternary_guards.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0265_ternary_guards.php#L4).
 
+## PhanImpossibleConditionInLoop
+
+```
+Impossible attempt to cast {CODE} of type {TYPE} to {TYPE} in a loop body
+```
+
 ## PhanImpossibleTypeComparison
 
 ```
@@ -1872,6 +1890,12 @@ Impossible attempt to check if {CODE} of type {TYPE} is identical to {CODE} of t
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0695_identity_no_type_overlap.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0695_identity_no_type_overlap.php#L5).
+
+## PhanImpossibleTypeComparisonInLoop
+
+```
+Impossible attempt to check if {CODE} of type {TYPE} is identical to {CODE} of type {TYPE} in a loop body (likely a false positive)
+```
 
 ## PhanInfiniteRecursion
 
@@ -2048,6 +2072,14 @@ Redundant attempt to cast {CODE} of type {TYPE} to {TYPE}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0516_literal_type_narrowing.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0516_literal_type_narrowing.php#L4).
+
+## PhanRedundantConditionInLoop
+
+```
+Redundant attempt to cast {CODE} of type {TYPE} to {TYPE} in a loop body (likely a false positive)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0698_loop_false_positive.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0698_loop_false_positive.php#L5).
 
 ## PhanRelativePathUsed
 

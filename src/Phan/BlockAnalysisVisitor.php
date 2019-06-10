@@ -512,6 +512,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 $init_node
             );
         }
+        $context = $context->withEnterLoop($node);
 
         $condition_node = $node->children['cond'];
         if ($condition_node instanceof Node) {
@@ -568,6 +569,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             unset($node->phan_loop_contexts);
         }
 
+        $context = $context->withExitLoop($node);
 
         // Now that we know all about our context (like what
         // 'self' means), we can analyze statements like
@@ -619,7 +621,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     {
         $context = $this->context->withLineNumberStart(
             $node->lineno
-        );
+        )->withEnterLoop($node);
 
         // Let any configured plugins do a pre-order
         // analysis of the node.
@@ -649,7 +651,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             if ($condition_node instanceof Node) {
                 $context = (new ConditionVisitor(
                     $this->code_base,
-                    $this->context
+                    $context  // XXX why was this using $this->context
                 ))->__invoke($condition_node);
             }
 
@@ -669,6 +671,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $context = (new ContextMergeVisitor($context, \array_merge([$context], $node->phan_loop_contexts)))->combineChildContextList();
             unset($node->phan_loop_contexts);
         }
+
+        $context = $context->withExitLoop($node);
 
         // Now that we know all about our context (like what
         // 'self' means), we can analyze statements like
@@ -693,6 +697,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     {
         $context = $this->context;
         $context->setLineNumberStart($node->lineno);
+
+        $context = $context->withEnterLoop($node);
 
         // Visit the given node populating the code base
         // with anything we learn and get a new context
@@ -763,6 +769,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $context = (new ContextMergeVisitor($context, $context_list))->combineChildContextList();
         }
 
+        $context = $context->withExitLoop($node);
+
         return $this->postOrderAnalyze($context, $node);
     }
 
@@ -776,6 +784,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     {
         $context = $this->context;
         $context->setLineNumberStart($node->lineno);
+        $context = $context->withEnterLoop($node);
+
 
         // Visit the given node populating the code base
         // with anything we learn and get a new context
@@ -813,6 +823,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $context = (new ContextMergeVisitor($context, \array_merge([$context], $node->phan_loop_contexts)))->combineChildContextList();
             unset($node->phan_loop_contexts);
         }
+        $context = $context->withExitLoop($node);
 
         return $this->postOrderAnalyze($context, $node);
     }
@@ -1196,12 +1207,12 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 // TODO: Could add a check for conditions that are unconditionally falsey and warn
                 if (!$inferred_cond_value instanceof Node && $inferred_cond_value) {
                     // TODO: Could warn if this is not a condition on a static variable
-                    // @phan-suppress-next-line PhanCoalescingAlwaysNull false positive in loop
+                    // @phan-suppress-next-line PhanCoalescingAlwaysNullInLoop false positive in loop
                     $first_unconditionally_true_index = $first_unconditionally_true_index ?? \count($child_context_list);
                 }
                 $fallthrough_context = (new NegatedConditionVisitor($this->code_base, $fallthrough_context))->__invoke($cond_node);
             } elseif ($cond_node) {
-                // @phan-suppress-next-line PhanCoalescingAlwaysNull false positive in loop
+                // @phan-suppress-next-line PhanCoalescingAlwaysNullInLoop false positive in loop
                 $first_unconditionally_true_index = $first_unconditionally_true_index ?? \count($child_context_list);
             }
             // If cond_node was null, it would be an else statement.
@@ -1264,6 +1275,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     break;
                 case ast\AST_FUNC_DECL:
                 case ast\AST_CLOSURE:
+                case ast\AST_ARROW_FUNC:
                 case ast\AST_METHOD:
                 case ast\AST_CLASS:
                     // We didn't find it.

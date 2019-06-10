@@ -369,7 +369,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     }
 
     /** @override */
-    public function analyzeFunctionCall(CodeBase $unused_code_base, Context $unused_context, array $_) : void
+    public function analyzeFunctionCall(CodeBase $code_base, Context $context, array $args) : void
     {
         throw new \AssertionError('should not call ' . __METHOD__);
     }

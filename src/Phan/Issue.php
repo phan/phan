@@ -197,11 +197,16 @@ class Issue
     const TypeErrorInInternalCall = 'PhanTypeErrorInInternalCall';
     const TypeErrorInOperation = 'PhanTypeErrorInOperation';
     const TypeInvalidPropertyDefaultReal  = 'PhanTypeInvalidPropertyDefaultReal';
-    const ImpossibleCondition         = 'PhanImpossibleCondition';
-    const RedundantCondition          = 'PhanRedundantCondition';
-    const ImpossibleTypeComparison    = 'PhanImpossibleTypeComparison';
-    const CoalescingNeverNull         = 'PhanCoalescingNeverNull';
-    const CoalescingAlwaysNull        = 'PhanCoalescingAlwaysNull';
+    const ImpossibleCondition               = 'PhanImpossibleCondition';
+    const ImpossibleConditionInLoop         = 'PhanImpossibleConditionInLoop';
+    const RedundantCondition                = 'PhanRedundantCondition';
+    const RedundantConditionInLoop          = 'PhanRedundantConditionInLoop';
+    const ImpossibleTypeComparison          = 'PhanImpossibleTypeComparison';
+    const ImpossibleTypeComparisonInLoop    = 'PhanImpossibleTypeComparisonInLoop';
+    const CoalescingNeverNull               = 'PhanCoalescingNeverNull';
+    const CoalescingNeverNullInLoop         = 'PhanCoalescingNeverNullInLoop';
+    const CoalescingAlwaysNull              = 'PhanCoalescingAlwaysNull';
+    const CoalescingAlwaysNullInLoop        = 'PhanCoalescingAlwaysNullInLoop';
 
     // Issue::CATEGORY_ANALYSIS
     const Unanalyzable              = 'PhanUnanalyzable';
@@ -2063,12 +2068,28 @@ class Issue
                 10113
             ),
             new Issue(
+                self::ImpossibleConditionInLoop,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Impossible attempt to cast {CODE} of type {TYPE} to {TYPE} in a loop body",
+                self::REMEDIATION_B,
+                10118
+            ),
+            new Issue(
                 self::RedundantCondition,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_LOW,
                 "Redundant attempt to cast {CODE} of type {TYPE} to {TYPE}",
                 self::REMEDIATION_B,
                 10114
+            ),
+            new Issue(
+                self::RedundantConditionInLoop,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Redundant attempt to cast {CODE} of type {TYPE} to {TYPE} in a loop body (likely a false positive)",
+                self::REMEDIATION_B,
+                10119
             ),
             new Issue(
                 self::ImpossibleTypeComparison,
@@ -2079,6 +2100,14 @@ class Issue
                 10115
             ),
             new Issue(
+                self::ImpossibleTypeComparisonInLoop,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Impossible attempt to check if {CODE} of type {TYPE} is identical to {CODE} of type {TYPE} in a loop body (likely a false positive)",
+                self::REMEDIATION_B,
+                10120
+            ),
+            new Issue(
                 self::CoalescingNeverNull,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_LOW,
@@ -2087,12 +2116,28 @@ class Issue
                 10116
             ),
             new Issue(
+                self::CoalescingNeverNullInLoop,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Using non-null {CODE} of type {TYPE} as the left hand side of a null coalescing (??) operation. The right hand side may be unnecessary. (in a loop body - this is likely a false positive)",
+                self::REMEDIATION_B,
+                10121
+            ),
+            new Issue(
                 self::CoalescingAlwaysNull,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_LOW,
                 "Using {CODE} of type {TYPE} as the left hand side of a null coalescing (??) operation. The left hand side may be unnecessary.",
                 self::REMEDIATION_B,
                 10117
+            ),
+            new Issue(
+                self::CoalescingAlwaysNullInLoop,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Using {CODE} of type {TYPE} as the left hand side of a null coalescing (??) operation. The left hand side may be unnecessary. (in a loop body - this is likely a false positive)",
+                self::REMEDIATION_B,
+                10122
             ),
             // Issue::CATEGORY_VARIABLE
             new Issue(
