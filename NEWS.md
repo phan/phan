@@ -24,7 +24,8 @@ New features(Analysis):
 + New issue types: `PhanCoalescingAlwaysNull[InLoop]`, `PhanCoalescingNeverNull[InLoop]` (when `--redundant-condition-detection` is enabled)
   (e.g. warns about `(null ?? 'other')`, `($a >= $b) ?? 'default'`)
 + Infer real return types from Reflection of php and the enabled extensions (affects `--redundant-condition-detection`)
-+ Make Phan more accurately infer types for references set in conditionals.
++ Make Phan more accurately infer types for reference parameters set in conditionals.
++ Make Phan more accurately infer types after try-catch blocks.
 + Make Phan more accurately check if a loop may be executed 0 times.
 + Make Phan more accurately check if a loop may be executed 0 times.
 + Support the type `callable-object` in phpdoc and infer it from checks such as `is_callable($var) && is_object($var)` (#1336)
