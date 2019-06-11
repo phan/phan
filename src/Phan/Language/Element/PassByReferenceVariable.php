@@ -35,6 +35,7 @@ class PassByReferenceVariable extends Variable
     ) {
         $this->parameter = $parameter;
         $this->element = $element;
+        $this->type = $this->element->getNonVariadicUnionType();
     }
 
     public function getName() : string
@@ -49,17 +50,18 @@ class PassByReferenceVariable extends Variable
      */
     public function getNonVariadicUnionType() : UnionType
     {
-        return $this->element->getNonVariadicUnionType();
+        return $this->type;
     }
 
     public function getUnionType() : UnionType
     {
-        return $this->element->getUnionType();
+        return $this->type;
     }
 
     public function setUnionType(UnionType $type) : void
     {
-        $this->element->setUnionType($type);
+        $this->type = $type;
+        $this->element->setUnionType($type->eraseRealTypeSet());
     }
 
     public function getFlags() : int

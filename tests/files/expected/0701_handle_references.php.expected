@@ -1,0 +1,2 @@
+%s:37 PhanRedundantCondition Redundant attempt to cast $a of type 'exception'|'x' to truthy
+%s:63 PhanRedundantCondition Redundant attempt to cast $a of type 'other'|'x' to truthy
