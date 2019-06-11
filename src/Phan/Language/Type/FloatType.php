@@ -22,4 +22,24 @@ final class FloatType extends ScalarType
     {
         return Config::getValue('scalar_implicit_cast');
     }
+
+    public function isPossiblyTruthy() : bool
+    {
+        return true;
+    }
+
+    public function isPossiblyFalsey() : bool
+    {
+        return true;
+    }
+
+    public function isAlwaysTruthy() : bool
+    {
+        return false;
+    }
+
+    public function isAlwaysFalsey() : bool
+    {
+        return false;
+    }
 }
