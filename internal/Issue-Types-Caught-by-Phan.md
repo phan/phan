@@ -1849,6 +1849,12 @@ Using {CODE} of type {TYPE} as the left hand side of a null coalescing (??) oper
 
 e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0697_coalescing_always_never_null.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0697_coalescing_always_never_null.php#L5).
 
+## PhanCoalescingAlwaysNullInGlobalScope
+
+```
+Using {CODE} of type {TYPE} as the left hand side of a null coalescing (??) operation. The left hand side may be unnecessary. (in the global scope - this is likely a false positive)
+```
+
 ## PhanCoalescingAlwaysNullInLoop
 
 ```
@@ -1862,6 +1868,12 @@ Using non-null {CODE} of type {TYPE} as the left hand side of a null coalescing 
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0697_coalescing_always_never_null.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0697_coalescing_always_never_null.php#L4).
+
+## PhanCoalescingNeverNullInGlobalScope
+
+```
+Using non-null {CODE} of type {TYPE} as the left hand side of a null coalescing (??) operation. The right hand side may be unnecessary. (in the global scope - this is likely a false positive)
+```
 
 ## PhanCoalescingNeverNullInLoop
 
@@ -1877,10 +1889,18 @@ Impossible attempt to cast {CODE} of type {TYPE} to {TYPE}
 
 e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0265_ternary_guards.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0265_ternary_guards.php#L4).
 
+## PhanImpossibleConditionInGlobalScope
+
+```
+Impossible attempt to cast {CODE} of type {TYPE} to {TYPE} in the global scope (may be a false positive)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0620_more_noop_expressions.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0620_more_noop_expressions.php#L3).
+
 ## PhanImpossibleConditionInLoop
 
 ```
-Impossible attempt to cast {CODE} of type {TYPE} to {TYPE} in a loop body
+Impossible attempt to cast {CODE} of type {TYPE} to {TYPE} in a loop body (may be a false positive)
 ```
 
 ## PhanImpossibleTypeComparison
@@ -1890,6 +1910,12 @@ Impossible attempt to check if {CODE} of type {TYPE} is identical to {CODE} of t
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0695_identity_no_type_overlap.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0695_identity_no_type_overlap.php#L5).
+
+## PhanImpossibleTypeComparisonInGlobalScope
+
+```
+Impossible attempt to check if {CODE} of type {TYPE} is identical to {CODE} of type {TYPE} in the global scope (likely a false positive)
+```
 
 ## PhanImpossibleTypeComparisonInLoop
 
@@ -2071,7 +2097,15 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/expe
 Redundant attempt to cast {CODE} of type {TYPE} to {TYPE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0516_literal_type_narrowing.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0516_literal_type_narrowing.php#L4).
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0696_redundant_from_branch.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0696_redundant_from_branch.php#L11).
+
+## PhanRedundantConditionInGlobalScope
+
+```
+Redundant attempt to cast {CODE} of type {TYPE} to {TYPE} in the global scope (likely a false positive)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0620_more_noop_expressions.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0620_more_noop_expressions.php#L4).
 
 ## PhanRedundantConditionInLoop
 

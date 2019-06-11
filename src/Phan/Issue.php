@@ -199,14 +199,19 @@ class Issue
     const TypeInvalidPropertyDefaultReal  = 'PhanTypeInvalidPropertyDefaultReal';
     const ImpossibleCondition               = 'PhanImpossibleCondition';
     const ImpossibleConditionInLoop         = 'PhanImpossibleConditionInLoop';
+    const ImpossibleConditionInGlobalScope  = 'PhanImpossibleConditionInGlobalScope';
     const RedundantCondition                = 'PhanRedundantCondition';
     const RedundantConditionInLoop          = 'PhanRedundantConditionInLoop';
+    const RedundantConditionInGlobalScope   = 'PhanRedundantConditionInGlobalScope';
     const ImpossibleTypeComparison          = 'PhanImpossibleTypeComparison';
     const ImpossibleTypeComparisonInLoop    = 'PhanImpossibleTypeComparisonInLoop';
+    const ImpossibleTypeComparisonInGlobalScope    = 'PhanImpossibleTypeComparisonInGlobalScope';
     const CoalescingNeverNull               = 'PhanCoalescingNeverNull';
     const CoalescingNeverNullInLoop         = 'PhanCoalescingNeverNullInLoop';
+    const CoalescingNeverNullInGlobalScope  = 'PhanCoalescingNeverNullInGlobalScope';
     const CoalescingAlwaysNull              = 'PhanCoalescingAlwaysNull';
     const CoalescingAlwaysNullInLoop        = 'PhanCoalescingAlwaysNullInLoop';
+    const CoalescingAlwaysNullInGlobalScope = 'PhanCoalescingAlwaysNullInGlobalScope';
 
     // Issue::CATEGORY_ANALYSIS
     const Unanalyzable              = 'PhanUnanalyzable';
@@ -2071,9 +2076,17 @@ class Issue
                 self::ImpossibleConditionInLoop,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_LOW,
-                "Impossible attempt to cast {CODE} of type {TYPE} to {TYPE} in a loop body",
+                "Impossible attempt to cast {CODE} of type {TYPE} to {TYPE} in a loop body (may be a false positive)",
                 self::REMEDIATION_B,
                 10118
+            ),
+            new Issue(
+                self::ImpossibleConditionInGlobalScope,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Impossible attempt to cast {CODE} of type {TYPE} to {TYPE} in the global scope (may be a false positive)",
+                self::REMEDIATION_B,
+                10123
             ),
             new Issue(
                 self::RedundantCondition,
@@ -2092,6 +2105,14 @@ class Issue
                 10119
             ),
             new Issue(
+                self::RedundantConditionInGlobalScope,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Redundant attempt to cast {CODE} of type {TYPE} to {TYPE} in the global scope (likely a false positive)",
+                self::REMEDIATION_B,
+                10124
+            ),
+            new Issue(
                 self::ImpossibleTypeComparison,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_LOW,
@@ -2106,6 +2127,14 @@ class Issue
                 "Impossible attempt to check if {CODE} of type {TYPE} is identical to {CODE} of type {TYPE} in a loop body (likely a false positive)",
                 self::REMEDIATION_B,
                 10120
+            ),
+            new Issue(
+                self::ImpossibleTypeComparisonInGlobalScope,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Impossible attempt to check if {CODE} of type {TYPE} is identical to {CODE} of type {TYPE} in the global scope (likely a false positive)",
+                self::REMEDIATION_B,
+                10125
             ),
             new Issue(
                 self::CoalescingNeverNull,
@@ -2124,6 +2153,14 @@ class Issue
                 10121
             ),
             new Issue(
+                self::CoalescingNeverNullInGlobalScope,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Using non-null {CODE} of type {TYPE} as the left hand side of a null coalescing (??) operation. The right hand side may be unnecessary. (in the global scope - this is likely a false positive)",
+                self::REMEDIATION_B,
+                10126
+            ),
+            new Issue(
                 self::CoalescingAlwaysNull,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_LOW,
@@ -2138,6 +2175,14 @@ class Issue
                 "Using {CODE} of type {TYPE} as the left hand side of a null coalescing (??) operation. The left hand side may be unnecessary. (in a loop body - this is likely a false positive)",
                 self::REMEDIATION_B,
                 10122
+            ),
+            new Issue(
+                self::CoalescingAlwaysNullInGlobalScope,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Using {CODE} of type {TYPE} as the left hand side of a null coalescing (??) operation. The left hand side may be unnecessary. (in the global scope - this is likely a false positive)",
+                self::REMEDIATION_B,
+                10127
             ),
             // Issue::CATEGORY_VARIABLE
             new Issue(
