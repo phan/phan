@@ -20,6 +20,14 @@ class RedundantCondition
         Issue::CoalescingAlwaysNull     => Issue::CoalescingAlwaysNullInLoop,
     ];
 
+    private const GLOBAL_ISSUE_NAMES = [
+        Issue::RedundantCondition       => Issue::RedundantConditionInGlobalScope,
+        Issue::ImpossibleCondition      => Issue::ImpossibleConditionInGlobalScope,
+        Issue::ImpossibleTypeComparison => Issue::ImpossibleTypeComparisonInGlobalScope,
+        Issue::CoalescingNeverNull      => Issue::CoalescingNeverNullInGlobalScope,
+        Issue::CoalescingAlwaysNull     => Issue::CoalescingAlwaysNullInGlobalScope,
+    ];
+
     /**
      * Choose a more specific issue name based on where the issue was emitted from.
      * In loops, Phan's checks have higher false positives.
@@ -31,6 +39,9 @@ class RedundantCondition
     {
         if (ParseVisitor::isConstExpr($node)) {
             return $issue_name;
+        }
+        if ($context->isInGlobalScope()) {
+            return self::GLOBAL_ISSUE_NAMES[$issue_name] ?? $issue_name;
         }
         if ($context->isInLoop()) {
             return self::LOOP_ISSUE_NAMES[$issue_name] ?? $issue_name;
