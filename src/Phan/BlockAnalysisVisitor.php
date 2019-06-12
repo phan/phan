@@ -6,6 +6,7 @@ use AssertionError;
 use ast;
 use ast\Node;
 use Closure;
+use Phan\Analysis\AssignmentVisitor;
 use Phan\Analysis\BlockExitStatusChecker;
 use Phan\Analysis\ConditionVisitor;
 use Phan\Analysis\ContextMergeVisitor;
@@ -18,9 +19,12 @@ use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\Element;
 use Phan\Exception\IssueException;
 use Phan\Exception\NodeException;
+use Phan\Exception\RecursionDepthException;
 use Phan\Language\Context;
+use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Comment\Builder;
 use Phan\Language\Element\Variable;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Scope\BranchScope;
 use Phan\Language\Scope\GlobalScope;
@@ -695,41 +699,55 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      */
     public function visitForeach(Node $node) : Context
     {
+        $code_base = $this->code_base;
         $context = $this->context;
         $context->setLineNumberStart($node->lineno);
 
-        $context = $context->withEnterLoop($node);
-
-        // Visit the given node populating the code base
-        // with anything we learn and get a new context
-        // indicating the state of the world within the
-        // given node
-        $context = (new PreOrderAnalysisVisitor(
-            $this->code_base,
-            $context
-        ))->visitForeach($node);
-
-        // Let any configured plugins do a pre-order
-        // analysis of the node.
-        ConfigPluginSet::instance()->preAnalyzeNode(
-            $this->code_base,
-            $context,
-            $node
-        );
-
         $expr_node = $node->children['expr'];
+
         $has_at_least_one_iteration = false;
+        $expression_union_type = UnionTypeVisitor::unionTypeFromNode(
+            $code_base,
+            $context,
+            $expr_node
+        )->withStaticResolvedInContext($context);
+
         if ($expr_node instanceof Node) {
             if ($expr_node->kind === ast\AST_ARRAY) {
                 // e.g. foreach ([1, 2] as $value) has at least one
                 $has_at_least_one_iteration = \count($expr_node->children) > 0;
             } else {
                 // e.g. look up global constants and class constants.
-                $expr_value = (new ContextNode($this->code_base, $this->context, $expr_node))->getEquivalentPHPScalarValue();
+                $expr_value = (new ContextNode($code_base, $this->context, $expr_node))->getEquivalentPHPScalarValue();
 
                 $has_at_least_one_iteration = \is_array($expr_value) && count($expr_value) > 0;
             }
         }
+
+        // Check the expression type to make sure it's
+        // something we can iterate over
+        $this->checkCanIterate($expression_union_type, $node);
+
+        $expr_node = $node->children['expr'];
+        if ($expr_node instanceof Node) {
+            $context = $this->analyzeAndGetUpdatedContext($context, $node, $expr_node);
+        }
+
+        $context = $context->withEnterLoop($node);
+
+        // Check for errors in the foreach expression
+        $context = $this->analyzeForeachIteration($context, $expression_union_type, $node);
+
+        // PreOrderAnalysisVisitor is not used, to avoid issues analyzing edge cases such as `foreach ($x->method() as $x)`
+
+        // Let any configured plugins do a pre-order
+        // analysis of the node.
+        ConfigPluginSet::instance()->preAnalyzeNode(
+            $code_base,
+            $context,
+            $node
+        );
+
         // Analyze the context inside the loop. The keys/values would not get created in the outer scope if the iterable expression was empty.
         if ($has_at_least_one_iteration) {
             $inner_context = $context;
@@ -737,10 +755,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $inner_context = $context->withScope(new BranchScope($context->getScope()));
         }
 
-        $expr_node = $node->children['expr'];
-        if ($expr_node instanceof Node) {
-            $inner_context = $this->analyzeAndGetUpdatedContext($inner_context, $node, $expr_node);
-        }
         $value_node = $node->children['value'];
         if ($value_node instanceof Node) {
             $inner_context = $this->analyzeAndGetUpdatedContext($inner_context, $node, $value_node);
@@ -773,6 +787,145 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
         return $this->postOrderAnalyze($context, $node);
     }
+
+    /**
+     * @param UnionType $union_type the type of $node->children['expr']
+     * @param Node $node a node of kind AST_FOREACH
+     */
+    private function checkCanIterate(UnionType $union_type, Node $node) : void
+    {
+        if ($union_type->isEmpty()) {
+            return;
+        }
+        if (!$union_type->hasPossiblyObjectTypes() && !$union_type->hasIterable()) {
+            $this->emitIssue(
+                Issue::TypeMismatchForeach,
+                $node->children['expr']->lineno ?? $node->lineno,
+                (string)$union_type
+            );
+        }
+        foreach ($union_type->getTypeSet() as $type) {
+            try {
+                if ($type->asExpandedTypes($this->code_base)->hasTraversable()) {
+                    continue;
+                }
+            } catch (RecursionDepthException $_) {
+            }
+            if (!$type->isObjectWithKnownFQSEN()) {
+                continue;
+            }
+            $this->warnAboutNonTraversableType($node, $type);
+        }
+    }
+
+    private function warnAboutNonTraversableType(Node $node, Type $type) : void
+    {
+        $fqsen = FullyQualifiedClassName::fromType($type);
+        if (!$this->code_base->hasClassWithFQSEN($fqsen)) {
+            return;
+        }
+        if ($fqsen->__toString() === '\stdClass') {
+            // stdClass is the only non-Traversable that I'm aware of that's commonly traversed over.
+            return;
+        }
+        $class = $this->code_base->getClassByFQSEN($fqsen);
+        $status = $class->checkCanIterateFromContext(
+            $this->code_base,
+            $this->context
+        );
+        switch ($status) {
+            case Clazz::CAN_ITERATE_STATUS_NO_ACCESSIBLE_PROPERTIES:
+                $issue = Issue::TypeNoAccessiblePropertiesForeach;
+                break;
+            case Clazz::CAN_ITERATE_STATUS_NO_PROPERTIES:
+                $issue = Issue::TypeNoPropertiesForeach;
+                break;
+            default:
+                $issue = Issue::TypeSuspiciousNonTraversableForeach;
+                break;
+        }
+
+        $this->emitIssue(
+            $issue,
+            $node->children['expr']->lineno ?? $node->lineno,
+            $type
+        );
+    }
+
+    private function analyzeForeachIteration(Context $context, UnionType $expression_union_type, Node $node) : Context
+    {
+        $value_node = $node->children['value'];
+        if (!($value_node instanceof Node)) {
+            // should be a parse error?
+            return $context;
+        }
+        $code_base = $this->code_base;
+        if ($value_node->kind == ast\AST_ARRAY) {
+            if (Config::get_closest_target_php_version_id() < 70100) {
+                self::analyzeArrayAssignBackwardsCompatibility($code_base, $context, $value_node);
+            }
+        }
+
+        $context = (new AssignmentVisitor(
+            $code_base,
+            $context,
+            $value_node,
+            $expression_union_type->iterableValueUnionType($code_base)
+        ))->__invoke($value_node);
+
+        // If there's a key, make a variable out of that too
+        $key_node = $node->children['key'];
+        if ($key_node instanceof Node) {
+            if ($key_node->kind === ast\AST_ARRAY) {
+                $this->emitIssue(
+                    Issue::InvalidNode,
+                    $key_node->lineno,
+                    "Can't use list() as a key element - aborting"
+                );
+            } else {
+                // TODO: Support Traversable<Key, T> then return Key.
+                // If we see array<int,T> or array<string,T> and no other array types, we're reasonably sure the foreach key is an integer or a string, so set it.
+                // (Or if we see iterable<int,T>
+                $context = (new AssignmentVisitor(
+                    $code_base,
+                    $context,
+                    $key_node,
+                    $expression_union_type->iterableKeyUnionType($code_base)
+                ))->__invoke($key_node);
+            }
+        }
+
+        // Note that we're not creating a new scope, just
+        // adding variables to the existing scope
+        return $context;
+    }
+
+    /**
+     * Analyze an expression such as `[$a] = $values` or `list('key' => $v) = $values` for backwards compatibility issues
+     */
+    public static function analyzeArrayAssignBackwardsCompatibility(CodeBase $code_base, Context $context, Node $node) : void
+    {
+        if ($node->flags !== ast\flags\ARRAY_SYNTAX_LIST) {
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::CompatibleShortArrayAssignPHP70,
+                $node->lineno
+            );
+        }
+        foreach ($node->children as $array_elem) {
+            if (isset($array_elem->children['key'])) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::CompatibleKeyedArrayAssignPHP70,
+                    $array_elem->lineno
+                );
+                break;
+            }
+        }
+    }
+
 
     /**
      * For "do-while loop" nodes, we analyze the 'init', 'stmts', 'cond' in order.

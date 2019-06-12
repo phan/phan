@@ -8,10 +8,10 @@ use ast\Node;
 use Phan\AST\ArrowFunc;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
+use Phan\BlockAnalysisVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
-use Phan\Exception\NodeException;
 use Phan\Exception\RecursionDepthException;
 use Phan\Exception\UnanalyzableException;
 use Phan\Issue;
@@ -27,7 +27,6 @@ use Phan\Language\Scope\ClosureScope;
 use Phan\Language\Type;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\VoidType;
-use Phan\Language\UnionType;
 
 /**
  * PreOrderAnalysisVisitor is where we do the pre-order part of the analysis
@@ -659,162 +658,24 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     {
         $var_node = $node->children['var'];
         if (Config::get_closest_target_php_version_id() < 70100 && $var_node instanceof Node && $var_node->kind === ast\AST_ARRAY) {
-            $this->analyzeArrayAssignBackwardsCompatibility($var_node);
+            BlockAnalysisVisitor::analyzeArrayAssignBackwardsCompatibility($this->code_base, $this->context, $var_node);
         }
         return $this->context;
     }
 
     /**
-     * @param Node $node
+     * No-op - all work is done in BlockAnalysisVisitor
+     *
+     * @param Node $_
      * A node to parse
      *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
-     *
-     * @throws NodeException
-     * if the key is invalid
      */
-    public function visitForeach(Node $node) : Context
+    public function visitForeach(Node $_) : Context
     {
-        $code_base = $this->code_base;
-        $context = $this->context;
-
-        $expression_union_type = UnionTypeVisitor::unionTypeFromNode(
-            $code_base,
-            $context,
-            $node->children['expr']
-        )->withStaticResolvedInContext($context);
-
-        // Check the expression type to make sure it's
-        // something we can iterate over
-        $this->checkCanIterate($expression_union_type, $node);
-
-        $value_node = $node->children['value'];
-        if (!($value_node instanceof Node)) {
-            return $context;
-        }
-        if ($value_node->kind == ast\AST_ARRAY) {
-            if (Config::get_closest_target_php_version_id() < 70100) {
-                $this->analyzeArrayAssignBackwardsCompatibility($value_node);
-            }
-        }
-
-        $context = (new AssignmentVisitor(
-            $code_base,
-            $context,
-            $value_node,
-            $expression_union_type->iterableValueUnionType($code_base)
-        ))->__invoke($value_node);
-
-        // If there's a key, make a variable out of that too
-        $key_node = $node->children['key'];
-        if ($key_node instanceof Node) {
-            if ($key_node->kind === ast\AST_ARRAY) {
-                $this->emitIssue(
-                    Issue::InvalidNode,
-                    $key_node->lineno,
-                    "Can't use list() as a key element - aborting"
-                );
-            } else {
-                // TODO: Support Traversable<Key, T> then return Key.
-                // If we see array<int,T> or array<string,T> and no other array types, we're reasonably sure the foreach key is an integer or a string, so set it.
-                // (Or if we see iterable<int,T>
-                $context = (new AssignmentVisitor(
-                    $code_base,
-                    $context,
-                    $key_node,
-                    $expression_union_type->iterableKeyUnionType($code_base)
-                ))->__invoke($key_node);
-            }
-        }
-
-        // Note that we're not creating a new scope, just
-        // adding variables to the existing scope
-        return $context;
-    }
-
-    /**
-     * @param UnionType $union_type the type of $node->children['expr']
-     * @param Node $node a node of kind AST_FOREACH
-     */
-    private function checkCanIterate(UnionType $union_type, Node $node) : void
-    {
-        if ($union_type->isEmpty()) {
-            return;
-        }
-        if (!$union_type->hasPossiblyObjectTypes() && !$union_type->hasIterable()) {
-            $this->emitIssue(
-                Issue::TypeMismatchForeach,
-                $node->children['expr']->lineno ?? $node->lineno,
-                (string)$union_type
-            );
-        }
-        foreach ($union_type->getTypeSet() as $type) {
-            try {
-                if ($type->asExpandedTypes($this->code_base)->hasTraversable()) {
-                    continue;
-                }
-            } catch (RecursionDepthException $_) {
-            }
-            if (!$type->isObjectWithKnownFQSEN()) {
-                continue;
-            }
-            $this->warnAboutNonTraversableType($node, $type);
-        }
-    }
-
-    private function warnAboutNonTraversableType(Node $node, Type $type) : void
-    {
-        $fqsen = FullyQualifiedClassName::fromType($type);
-        if (!$this->code_base->hasClassWithFQSEN($fqsen)) {
-            return;
-        }
-        if ($fqsen->__toString() === '\stdClass') {
-            // stdClass is the only non-Traversable that I'm aware of that's commonly traversed over.
-            return;
-        }
-        $class = $this->code_base->getClassByFQSEN($fqsen);
-        $status = $class->checkCanIterateFromContext(
-            $this->code_base,
-            $this->context
-        );
-        switch ($status) {
-            case Clazz::CAN_ITERATE_STATUS_NO_ACCESSIBLE_PROPERTIES:
-                $issue = Issue::TypeNoAccessiblePropertiesForeach;
-                break;
-            case Clazz::CAN_ITERATE_STATUS_NO_PROPERTIES:
-                $issue = Issue::TypeNoPropertiesForeach;
-                break;
-            default:
-                $issue = Issue::TypeSuspiciousNonTraversableForeach;
-                break;
-        }
-
-        $this->emitIssue(
-            $issue,
-            $node->children['expr']->lineno ?? $node->lineno,
-            $type
-        );
-    }
-
-    private function analyzeArrayAssignBackwardsCompatibility(Node $node) : void
-    {
-        if ($node->flags !== ast\flags\ARRAY_SYNTAX_LIST) {
-            $this->emitIssue(
-                Issue::CompatibleShortArrayAssignPHP70,
-                $node->lineno
-            );
-        }
-        foreach ($node->children as $array_elem) {
-            if (isset($array_elem->children['key'])) {
-                $this->emitIssue(
-                    Issue::CompatibleKeyedArrayAssignPHP70,
-                    $array_elem->lineno
-                );
-                break;
-            }
-        }
+        return $this->context;
     }
 
     /**

@@ -1008,7 +1008,7 @@ class AssignmentVisitor extends AnalysisVisitor
                      ->eraseRealTypeSet()
                      ->withStaticResolvedInContext($this->context)
                      ->withFlattenedArrayShapeOrLiteralTypeInstances()
-             );
+            );
             return;
         }
 
