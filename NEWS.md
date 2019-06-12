@@ -27,7 +27,7 @@ New features(Analysis):
 + Make Phan more accurately infer types for reference parameters set in conditionals.
 + Make Phan more accurately infer types after try-catch blocks.
 + Make Phan more accurately check if a loop may be executed 0 times.
-+ Make Phan more accurately check if a loop may be executed 0 times.
++ Fix issue causing results of previous method analysis to affect subsequent analysis in some edge cases (#2857)
 + Support the type `callable-object` in phpdoc and infer it from checks such as `is_callable($var) && is_object($var)` (#1336)
 + Support the type `callable-array` in phpdoc and infer it from checks such as `is_callable($var) && is_array($var)` (#2833)
 + Fix false positives in more edge cases when analyzing variables with type `static` (e.g. `yield from $this;`) (#2825)
