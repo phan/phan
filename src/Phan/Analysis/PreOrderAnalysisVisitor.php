@@ -947,9 +947,13 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      */
     public function visitCall(Node $node) : Context
     {
-        $name = $node->children['expr']->children['name'] ?? null;
+        $expr_node = $node->children['expr'];
+        if (($expr_node->kind ?? null) !== ast\AST_NAME) {
+            return $this->context;
+        }
+        $name = $expr_node->children['name'];
         // Look only at nodes of the form `assert(expr, ...)`.
-        if ($name !== 'assert') {
+        if (!\is_string($name) || \strcasecmp($name, 'assert') !== 0) {
             return $this->context;
         }
         $args_first_child = $node->children['args']->children[0] ?? null;
