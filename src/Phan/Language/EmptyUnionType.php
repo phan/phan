@@ -1402,4 +1402,9 @@ final class EmptyUnionType extends UnionType
     {
         return false;
     }
+
+    public function getDebugRepresentation() : string
+    {
+        return '';
+    }
 }

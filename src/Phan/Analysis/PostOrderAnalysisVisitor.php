@@ -3469,7 +3469,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $this->context,
                     $argument,
                     true
-                )->withStaticResolvedInContext($this->context);
+                )->withStaticResolvedInContext($this->context)->eraseRealTypeSet();
             }
 
             foreach ($parameter_list as $i => $parameter_clone) {
@@ -3592,12 +3592,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         array &$parameter_list,
         int $parameter_offset
     ) : void {
-        $argument_type = $argument_types[$parameter_offset]->eraseRealTypeSet();
+        $argument_type = $argument_types[$parameter_offset];
         if ($parameter->isVariadic()) {
             for ($i = $parameter_offset + 1; $i < \count($argument_types); $i++) {
                 $argument_type = $argument_type->withUnionType($argument_types[$i]);
             }
         }
+        $argument_type = $argument_type->eraseRealTypeSet();
         // Then set the new type on that parameter based
         // on the argument's type. We'll use this to
         // retest the method with the passed in types

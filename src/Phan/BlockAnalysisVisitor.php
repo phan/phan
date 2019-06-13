@@ -1865,7 +1865,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // outer scope
         $context = $this->context;
         $context->setLineNumberStart($node->lineno);
-        $context = $this->preOrderAnalyze(clone($context), $node);
+        $context = $this->preOrderAnalyze($context, $node);
 
         // With a context that is inside of the node passed
         // to this method, we analyze all children of the

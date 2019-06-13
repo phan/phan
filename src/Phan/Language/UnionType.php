@@ -4383,6 +4383,21 @@ class UnionType implements Serializable
     {
         return \count($this->real_type_set) > 0 && $this->type_set === $this->real_type_set;
     }
+
+    /**
+     * Returns a detailed representation of this union type that can be used to debug issues when developing.
+     * The representation may change - this should not be used for issue messages, etc.
+     *
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public function getDebugRepresentation() : string
+    {
+        $representation = $this->__toString();
+        if ($this->real_type_set) {
+            $representation .= "(real=" . $this->getRealUnionType()->__toString() . ")";
+        }
+        return $representation;
+    }
 }
 
 UnionType::init();

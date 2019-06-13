@@ -243,4 +243,19 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
 
         return "$string\${$this->getName()}";
     }
+
+    /**
+     * Returns a representation that can be used to debug issues with union types.
+     * The representation may change - this should not be used for issue messages, etc.
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public function getDebugRepresentation() : string {
+        $string = '';
+
+        if (!$this->getUnionType()->isEmpty()) {
+            $string .= "{$this->getUnionType()->getDebugRepresentation()} ";
+        }
+
+        return "$string\${$this->getName()}";
+    }
 }
