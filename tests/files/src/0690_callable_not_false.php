@@ -3,7 +3,7 @@
 namespace TestNarrowing;
 
 function test_callable_not_null(callable $c, string $str) {
-    assert(!empty($c));  // TODO: Avoid warning twice for empty() checks?
+    assert(!empty($c));  // should only warn once about the empty()
     if (is_string($c)) {
         echo intdiv($c, 2);
         $c();
