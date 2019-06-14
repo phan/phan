@@ -71,9 +71,9 @@ trait ConditionVisitorUtil
             /**
              * @suppress PhanUndeclaredProperty did_check_redundant_condition
              */
-            function (UnionType $type) use ($var_node, $context) : bool {
+            function (UnionType $type) use ($var_node, $context, $suppress_issues) : bool {
                 $contains_truthy = $type->containsTruthy();
-                if (Config::getValue('redundant_condition_detection') && $type->hasRealTypeSet()) {
+                if (!$suppress_issues && Config::getValue('redundant_condition_detection') && $type->hasRealTypeSet()) {
                     // Here, we only perform the redundant condition checks on whichever ran first, to avoid warning about both impossible and redundant conditions
                     if (isset($var_node->did_check_redundant_condition)) {
                         return $contains_truthy;
@@ -125,9 +125,9 @@ trait ConditionVisitorUtil
             /**
              * @suppress PhanUndeclaredProperty did_check_redundant_condition
              */
-            function (UnionType $type) use ($context, $var_node) : bool {
+            function (UnionType $type) use ($context, $var_node, $suppress_issues) : bool {
                 $contains_falsey = $type->containsFalsey();
-                if (Config::getValue('redundant_condition_detection') && $type->hasRealTypeSet()) {
+                if (!$suppress_issues && Config::getValue('redundant_condition_detection') && $type->hasRealTypeSet()) {
                     // Here, we only perform the redundant condition checks on whichever ran first, to avoid warning about both impossible and redundant conditions
                     if (isset($var_node->did_check_redundant_condition)) {
                         return $contains_falsey;

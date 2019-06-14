@@ -3,7 +3,5 @@
 %s:24 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is object but \intdiv() takes int
 %s:26 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is callable-object but \intdiv() takes int
 %s:28 PhanImpossibleCondition Impossible attempt to cast $c of type callable-object to empty
-%s:28 PhanRedundantCondition Redundant attempt to cast $c of type callable-object to truthy
 %s:32 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is callable-object but \intdiv() takes int
 %s:34 PhanImpossibleCondition Impossible attempt to cast $o of type callable-object to empty
-%s:34 PhanRedundantCondition Redundant attempt to cast $o of type callable-object to truthy
