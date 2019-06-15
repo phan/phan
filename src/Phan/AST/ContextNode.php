@@ -2297,7 +2297,7 @@ class ContextNode
      */
     public function isVarWithConstantDefinition(Node $node) : bool
     {
-        if (!$node instanceof Node || $node->kind !== ast\AST_VAR) {
+        if ($node->kind !== ast\AST_VAR) {
             return false;
         }
         $name = $node->children['name'];

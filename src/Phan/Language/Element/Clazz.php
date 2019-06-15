@@ -1879,6 +1879,15 @@ class Clazz extends AddressableElement
 
     /**
      * @return bool
+     * True if this is a class (i.e. neither a trait nor an interface)
+     */
+    public function isClass() : bool
+    {
+        return ($this->getFlags() & (ast\flags\CLASS_INTERFACE | ast\flags\CLASS_TRAIT)) === 0;
+    }
+
+    /**
+     * @return bool
      * True if this class is a trait
      */
     public function isTrait() : bool
@@ -2135,7 +2144,7 @@ class Clazz extends AddressableElement
         // Get the parent class
         $parent = $this->getParentClass($code_base);
 
-        if ($parent->isTrait() || $parent->isInterface()) {
+        if (!$parent->isClass()) {
             $this->emitWrongInheritanceCategoryWarning($code_base, $parent, 'Class', $this->parent_type_lineno);
         }
         if ($parent->isFinal()) {

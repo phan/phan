@@ -2,6 +2,7 @@
 
 namespace Phan\Plugin\Internal;
 
+use ast;
 use ast\flags;
 use ast\Node;
 use Closure;
@@ -17,6 +18,7 @@ use Phan\Language\Type;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\ResourceType;
 use Phan\Language\UnionType;
 use Phan\PluginV3;
@@ -436,7 +438,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
             return;
         }
         $real_type = $type->getRealUnionType();
-        if (!$type->containsNullableOrUndefined()) {
+        if (!$real_type->containsNullableOrUndefined()) {
             RedundantCondition::emitInstance(
                 $var_node,
                 $this->code_base,
@@ -451,7 +453,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
                     return !$type->containsNullableOrUndefined();
                 }
             );
-        } elseif ($type->isNull()) {
+        } elseif ($real_type->isNull()) {
             RedundantCondition::emitInstance(
                 $var_node,
                 $this->code_base,
@@ -467,6 +469,79 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
                 }
             );
         }
+    }
+
+    /**
+     * @override
+     */
+    public function visitInstanceof(Node $node) : void
+    {
+        $expr_node = $node->children['expr'];
+        $code_base = $this->code_base;
+        try {
+            $type = UnionTypeVisitor::unionTypeFromNode($code_base, $this->context, $expr_node, false);
+        } catch (Exception $_) {
+            return;
+        }
+        if (!$type->hasRealTypeSet()) {
+            return;
+        }
+
+        $class_node = $node->children['class'];
+        if (!($class_node instanceof Node)) {
+            return;
+        }
+
+        $class_type = $this->getClassTypeFromNode($class_node);
+
+        $real_type = $type->getRealUnionType();
+        if ($real_type->isExclusivelySubclassesOf($code_base, $class_type)) {
+            RedundantCondition::emitInstance(
+                $expr_node,
+                $code_base,
+                clone($this->context)->withLineNumberStart($node->lineno),
+                Issue::RedundantCondition,
+                [
+                    ASTReverter::toShortString($expr_node),
+                    $real_type,
+                    $class_type,
+                ],
+                static function (UnionType $type) use ($code_base, $class_type) : bool {
+                    return $type->isExclusivelySubclassesOf($code_base, $class_type);
+                }
+            );
+        } elseif (!$real_type->canPossiblyCastToClass($code_base, $class_type)) {
+            RedundantCondition::emitInstance(
+                $expr_node,
+                $code_base,
+                clone($this->context)->withLineNumberStart($node->lineno),
+                Issue::ImpossibleCondition,
+                [
+                    ASTReverter::toShortString($expr_node),
+                    $real_type,
+                    $class_type,
+                ],
+                static function (UnionType $type) use ($code_base, $class_type) : bool {
+                    return !$type->canPossiblyCastToClass($code_base, $class_type);
+                }
+            );
+        }
+    }
+
+    private function getClassTypeFromNode(Node $class_node) : Type
+    {
+        if ($class_node->kind === ast\AST_NAME) {
+            $class_union_type = UnionTypeVisitor::unionTypeFromNode(
+                $this->code_base,
+                $this->context,
+                $class_node,
+                false
+            );
+            if ($class_union_type->typeCount() === 1) {
+                return $class_union_type->getTypeSet()[0];
+            }
+        }
+        return ObjectType::instance(false);
     }
 
     private function warnForCast(Node $node, UnionType $real_expr_type, string $expected_type) : void

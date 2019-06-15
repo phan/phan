@@ -9,9 +9,11 @@ New features(CLI, Configs):
 
 New features(Analysis):
 + Reduce the number of false positives of `--redundant-condition-detection` for variables in loops
++ Emit `PhanRedundantCondition` and `PhanImpossibleCondition` for `$x instanceof SomeClass` expressions.
 
 Bug fixes:
 + Fix issue that would make Phan infer that a redundant/impossible condition outside a loop was in a loop.
++ Avoid false positives analyzing expressions within `assert()`
 
 Jun 14 2019, Phan 2.2.0
 -----------------------

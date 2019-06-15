@@ -1,2 +1,3 @@
 %s:8 PhanNonClassMethodCall Call to method f on non-class type null
+%s:10 PhanImpossibleConditionInGlobalScope Impossible attempt to cast $x of type null to \A in the global scope (may be a false positive)
 %s:14 PhanTypeMismatchArgumentNullable Argument 1 ($p) is ?\A but \A::f() takes \A defined at %s:3 (expected type to be non-nullable)

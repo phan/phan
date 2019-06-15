@@ -2037,7 +2037,7 @@ class TolerantASTConverter
         }
     }
 
-    private static function interfaceBaseClauseToNode(?\Microsoft\PhpParser\node\interfacebaseclause $node) : ?\ast\Node
+    private static function interfaceBaseClauseToNode(?\Microsoft\PhpParser\Node\InterfaceBaseClause $node) : ?\ast\Node
     {
         if (!$node instanceof PhpParser\Node\InterfaceBaseClause) {
             // TODO: real placeholder?

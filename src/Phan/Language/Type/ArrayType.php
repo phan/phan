@@ -246,6 +246,12 @@ class ArrayType extends IterableType
     {
         return null;
     }
+
+    public function canPossiblyCastToClass(CodeBase $unused_code_base, Type $unused_other) : bool
+    {
+        // arrays can't cast to object.
+        return false;
+    }
 }
 // Trigger the autoloader for GenericArrayType so that it won't be called
 // before ArrayType.

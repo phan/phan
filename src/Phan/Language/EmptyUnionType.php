@@ -1407,4 +1407,14 @@ final class EmptyUnionType extends UnionType
     {
         return '';
     }
+
+    public function canPossiblyCastToClass(CodeBase $code_base, Type $class_type) : bool
+    {
+        return true;
+    }
+
+    public function isExclusivelySubclassesOf(CodeBase $code_base, Type $class_type) : bool
+    {
+        return false;
+    }
 }

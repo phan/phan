@@ -1,5 +1,6 @@
 %s:6 PhanUndeclaredClassCatch Catching undeclared class \Undef
 %s:9 PhanUndeclaredStaticMethod Static call to undeclared method \C98::staticMethod
+%s:13 PhanImpossibleConditionInGlobalScope Impossible attempt to cast $v of type null to \Undef in the global scope (may be a false positive)
 %s:13 PhanUndeclaredClassInstanceof Checking instanceof against undeclared class \Undef
 %s:16 PhanUndeclaredTypeParameter Parameter $p has undeclared type \Undef
 %s:19 PhanUndeclaredTypeProperty Property \D98->p has undeclared type \Undef

@@ -799,35 +799,16 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     }
 
     /**
-     * @param Node $node
+     * @param Node $_
      * A node to parse
      *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitCall(Node $node) : Context
+    public function visitCall(Node $_) : Context
     {
-        $expr_node = $node->children['expr'];
-        if (($expr_node->kind ?? null) !== ast\AST_NAME) {
-            return $this->context;
-        }
-        $name = $expr_node->children['name'];
-        // Look only at nodes of the form `assert(expr, ...)`.
-        if (!\is_string($name) || \strcasecmp($name, 'assert') !== 0) {
-            return $this->context;
-        }
-        $args_first_child = $node->children['args']->children[0] ?? null;
-        if (!($args_first_child instanceof Node)) {
-            return $this->context;
-        }
-
-        // Look to see if the asserted expression says anything about
-        // the types of any variables.
-        return (new ConditionVisitor(
-            $this->code_base,
-            $this->context
-        ))->__invoke($args_first_child);
+        return $this->context;
     }
 
     /**
