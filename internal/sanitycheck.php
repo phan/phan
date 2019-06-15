@@ -46,7 +46,6 @@ function getParametersCountsFromPhan(array $fields) : array
             break;
         } elseif (strpos($type, '=') === false) {
             $num_required++;
-            // @phan-suppress-next-line PhanImpossibleConditionInLoop this is a known false positive in loops
             if ($saw_optional) {
                 $saw_optional_after_required = true;
             }

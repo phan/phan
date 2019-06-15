@@ -83,26 +83,36 @@ trait ConditionVisitorUtil
                     // for the same expression
                     if ($contains_truthy) {
                         if (!$type->getRealUnionType()->containsFalsey()) {
-                            Issue::maybeEmit(
+                            RedundantCondition::emitInstance(
+                                $var_node,
                                 $this->code_base,
                                 $context,
-                                RedundantCondition::chooseSpecificImpossibleOrRedundantIssueKind($var_node, $context, Issue::ImpossibleCondition),
-                                $var_node->lineno,
-                                ASTReverter::toShortString($var_node),
-                                $type->getRealUnionType(),
-                                'falsey'
+                                Issue::ImpossibleCondition,
+                                [
+                                    ASTReverter::toShortString($var_node),
+                                    $type->getRealUnionType(),
+                                    'falsey',
+                                ],
+                                static function (UnionType $type) : bool {
+                                    return !$type->containsFalsey();
+                                }
                             );
                         }
                     } else {
                         if (!$type->getRealUnionType()->containsTruthy()) {
-                            Issue::maybeEmit(
+                            RedundantCondition::emitInstance(
+                                $var_node,
                                 $this->code_base,
                                 $context,
-                                RedundantCondition::chooseSpecificImpossibleOrRedundantIssueKind($var_node, $context, Issue::RedundantCondition),
-                                $var_node->lineno,
-                                ASTReverter::toShortString($var_node),
-                                $type->getRealUnionType(),
-                                'falsey'
+                                Issue::RedundantCondition,
+                                [
+                                    ASTReverter::toShortString($var_node),
+                                    $type->getRealUnionType(),
+                                    'falsey',
+                                ],
+                                static function (UnionType $type) : bool {
+                                    return !$type->containsTruthy();
+                                }
                             );
                         }
                     }
@@ -136,26 +146,36 @@ trait ConditionVisitorUtil
                     // for the same expression
                     if ($contains_falsey) {
                         if (!$type->getRealUnionType()->containsTruthy()) {
-                            Issue::maybeEmit(
+                            RedundantCondition::emitInstance(
+                                $var_node,
                                 $this->code_base,
                                 $context,
-                                RedundantCondition::chooseSpecificImpossibleOrRedundantIssueKind($var_node, $context, Issue::ImpossibleCondition),
-                                $var_node->lineno,
-                                ASTReverter::toShortString($var_node),
-                                $type->getRealUnionType(),
-                                'truthy'
+                                Issue::ImpossibleCondition,
+                                [
+                                    ASTReverter::toShortString($var_node),
+                                    $type->getRealUnionType(),
+                                    'truthy',
+                                ],
+                                static function (UnionType $type) : bool {
+                                    return !$type->containsTruthy();
+                                }
                             );
                         }
                     } else {
                         if (!$type->getRealUnionType()->containsFalsey()) {
-                            Issue::maybeEmit(
+                            RedundantCondition::emitInstance(
+                                $var_node,
                                 $this->code_base,
                                 $context,
-                                RedundantCondition::chooseSpecificImpossibleOrRedundantIssueKind($var_node, $context, Issue::RedundantCondition),
-                                $var_node->lineno,
-                                ASTReverter::toShortString($var_node),
-                                $type->getRealUnionType(),
-                                'truthy'
+                                Issue::RedundantCondition,
+                                [
+                                    ASTReverter::toShortString($var_node),
+                                    $type->getRealUnionType(),
+                                    'truthy',
+                                ],
+                                static function (UnionType $type) : bool {
+                                    return !$type->containsFalsey();
+                                }
                             );
                         }
                     }
@@ -223,7 +243,6 @@ trait ConditionVisitorUtil
                 foreach ($union_type->getTypeSet() as $type) {
                     if ($cb($type)) {
                         $union_type = $union_type->withoutType($type);
-                        // @phan-suppress-next-line PhanRedundantConditionInLoop known false positive in loop.
                         $has_nullable = $has_nullable || $type->isNullable();
                     }
                 }

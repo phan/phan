@@ -6,7 +6,7 @@ function example(int ...$values) {
     $sum = 0;
     '@phan-var int $prev';
     foreach ($values as $value) {
-        if (!$first) {  // emits different issue type for loops (usually false positive)
+        if (!$first) {  // should not emit PhanRedundantConditionInLoop
             $sum += $prev * $value;
         } else {
             $first = false;

@@ -1360,12 +1360,10 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 // TODO: Could add a check for conditions that are unconditionally falsey and warn
                 if (!$inferred_cond_value instanceof Node && $inferred_cond_value) {
                     // TODO: Could warn if this is not a condition on a static variable
-                    // @phan-suppress-next-line PhanCoalescingAlwaysNullInLoop false positive in loop
                     $first_unconditionally_true_index = $first_unconditionally_true_index ?? \count($child_context_list);
                 }
                 $fallthrough_context = (new NegatedConditionVisitor($this->code_base, $fallthrough_context))->__invoke($cond_node);
             } elseif ($cond_node) {
-                // @phan-suppress-next-line PhanCoalescingAlwaysNullInLoop false positive in loop
                 $first_unconditionally_true_index = $first_unconditionally_true_index ?? \count($child_context_list);
             }
             // If cond_node was null, it would be an else statement.

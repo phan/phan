@@ -72,7 +72,6 @@ final class ArgumentType
         if ($argcount < $method->getNumberOfRequiredParameters() && !self::isUnpack($arglist->children)) {
             $alternate_found = false;
             foreach ($method->alternateGenerator($code_base) as $alternate_method) {
-                // @phan-suppress-next-line PhanRedundantConditionInLoop
                 $alternate_found = $alternate_found || (
                     $argcount >=
                     $alternate_method->getNumberOfRequiredParameters()
@@ -277,7 +276,6 @@ final class ArgumentType
         if ($argcount < $method->getNumberOfRequiredParameters() && !self::isUnpack($arg_nodes)) {
             $alternate_found = false;
             foreach ($method->alternateGenerator($code_base) as $alternate_method) {
-                // @phan-suppress-next-line PhanRedundantConditionInLoop known false positive in loop
                 $alternate_found = $alternate_found || (
                     $argcount >=
                     $alternate_method->getNumberOfRequiredParameters()

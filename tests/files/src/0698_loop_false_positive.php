@@ -7,3 +7,11 @@ function test_loop() {
         echo '.';
     }
 }
+
+function test_loop_infinite698() {
+    $found = false;
+    while (!$found) {
+        $found = 0;
+        echo '.';
+    }
+}

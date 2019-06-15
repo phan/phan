@@ -58,7 +58,6 @@ class ProtocolStreamWriter implements ProtocolWriter
     private function flush() : void
     {
         $keepWriting = true;
-        // @phan-suppress-next-line PhanRedundantConditionInLoop this is a known false positive in loops
         while ($keepWriting) {
             $message = $this->messages[0]['message'];
             $promise = $this->messages[0]['promise'];

@@ -4,6 +4,7 @@ namespace Phan\Language;
 
 use AssertionError;
 use ast\Node;
+use Closure;
 use Phan\CodeBase;
 use Phan\Exception\CodeBaseException;
 use Phan\Issue;
@@ -324,12 +325,33 @@ class Context extends FileRef
     {
         $context = clone($this);
 
-        while ($this->loop_nodes) {
-            if (\array_pop($this->loop_nodes) === $node) {
+        while ($context->loop_nodes) {
+            if (\array_pop($context->loop_nodes) === $node) {
+                if (\count($context->loop_nodes) === 0) {
+                    // @phan-suppress-next-line PhanUndeclaredProperty
+                    foreach ($node->phan_deferred_checks ?? [] as $cb) {
+                        $cb($context);
+                    }
+                }
                 break;
             }
         }
         return $context;
+    }
+
+    /**
+     * @suppress PhanUndeclaredProperty
+     * @internal
+     */
+    public function deferCheckToOutermostLoop(Closure $closure) : void
+    {
+        $node = $this->loop_nodes[0] ?? null;
+        if ($node) {
+            if (!isset($node->phan_deferred_checks)) {
+                $node->phan_deferred_checks = [];
+            }
+            $node->phan_deferred_checks[] = $closure;
+        }
     }
 
     /**
