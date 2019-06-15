@@ -2419,7 +2419,26 @@ class UnionType implements Serializable
      */
     public function objectTypesStrict() : UnionType
     {
-        return UnionType::of(self::castToObjectTypesStrict($this->type_set), self::castToObjectTypesStrict($this->real_type_set));
+        return UnionType::of(
+            self::castToObjectTypesStrict($this->type_set) ?: [ObjectType::instance(false)],
+            self::castToObjectTypesStrict($this->real_type_set) ?: [ObjectType::instance(false)]
+        );
+    }
+
+    /**
+     * Takes `MyClass|int|array|?object` and returns `MyClass|object`
+     *
+     * Takes `` and returns ``
+     *
+     * Takes `callable|iterable` and returns `callable-object|Traversable`
+     * @suppress PhanUnreferencedPublicMethod called dynamically
+     */
+    public function objectTypesStrictAllowEmpty() : UnionType
+    {
+        return UnionType::of(
+            self::castToObjectTypesStrict($this->type_set),
+            self::castToObjectTypesStrict($this->real_type_set)
+        );
     }
 
     /**
@@ -2435,7 +2454,7 @@ class UnionType implements Serializable
                 $result[] = $type;
             }
         }
-        return $result ?: [ObjectType::instance(false)];
+        return $result;
     }
 
     /**
@@ -2786,8 +2805,25 @@ class UnionType implements Serializable
      * Converts iterable<key,value> to array<key, value>
      * Takes `A[]|ArrayAccess` and returns `A[]`
      * Takes `callable` and returns `callable-array`
+     * Takes `` and returns `array`
      */
     public function arrayTypesStrictCast() : UnionType
+    {
+        return UnionType::of(
+            self::castToArrayTypesStrict($this->type_set) ?: [ArrayType::instance(false)],
+            self::castToArrayTypesStrict($this->real_type_set) ?: [ArrayType::instance(false)]
+        );
+    }
+
+    /**
+     * This is the union type Phan infers from assert(is_array($x))
+     * Converts iterable<key,value> to array<key, value>
+     * Takes `A[]|ArrayAccess` and returns `A[]`
+     * Takes `callable` and returns `callable-array`
+     * Takes `` and returns `array`
+     * @suppress PhanUnreferencedPublicMethod called dynamically
+     */
+    public function arrayTypesStrictCastAllowEmpty() : UnionType
     {
         return UnionType::of(
             self::castToArrayTypesStrict($this->type_set),
@@ -2808,7 +2844,7 @@ class UnionType implements Serializable
                 $result[] = $type;
             }
         }
-        return $result ?: [ArrayType::instance(false)];
+        return $result;
     }
 
     /**
@@ -3373,6 +3409,29 @@ class UnionType implements Serializable
     {
         $map = [];
         $map_raw = require(__DIR__ . '/Internal/FunctionSignatureMap.php');
+        foreach ($map_raw as $key => $value) {
+            $map[\strtolower($key)] = $value;
+        }
+        return $map;
+    }
+
+    /**
+     * @return array<string,string> maps the lowercase function name to the return type
+     * @internal the data format will change
+     */
+    public static function getLatestRealFunctionSignatureMap() : array
+    {
+        static $map;
+        return $map ?? ($map = self::computeLatestRealFunctionSignatureMap());
+    }
+
+    /**
+     * @return array<string,string>
+     */
+    private static function computeLatestRealFunctionSignatureMap() : array
+    {
+        $map = [];
+        $map_raw = require(__DIR__ . '/Internal/FunctionSignatureMapReal.php');
         foreach ($map_raw as $key => $value) {
             $map[\strtolower($key)] = $value;
         }

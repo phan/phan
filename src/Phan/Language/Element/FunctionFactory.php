@@ -9,6 +9,7 @@ use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Type;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
+use Phan\Config;
 
 /**
  * This returns internal function declarations for a given function/method FQSEN,
@@ -28,9 +29,11 @@ class FunctionFactory
 
         $context = new Context();
 
+        $namespaced_name = $fqsen->getNamespacedName();
+
         $function = new Func(
             $context,
-            $fqsen->getNamespacedName(),
+            $namespaced_name,
             UnionType::empty(),
             0,
             $fqsen,
@@ -46,7 +49,15 @@ class FunctionFactory
             - $reflection_function->getNumberOfRequiredParameters()
         );
         $function->setIsDeprecated($reflection_function->isDeprecated());
-        $function->setRealReturnType(UnionType::fromReflectionType($reflection_function->getReturnType()));
+        $real_return_type = UnionType::fromReflectionType($reflection_function->getReturnType());
+        if ($real_return_type->isEmpty() && Config::getValue('assume_real_types_for_internal_functions')) {
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            $real_type_string = UnionType::getLatestRealFunctionSignatureMap()[$namespaced_name] ?? null;
+            if (\is_string($real_type_string)) {
+                $real_return_type = UnionType::fromStringInContext($real_type_string, new Context(), Type::FROM_TYPE);
+            }
+        }
+        $function->setRealReturnType($real_return_type);
         $function->setRealParameterList(Parameter::listFromReflectionParameterList($reflection_function->getParameters()));
 
         return self::functionListFromFunction($function);
