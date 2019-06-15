@@ -45,6 +45,7 @@
 %s:164 PhanTraitParentReference Reference to parent from trait \T1
 %s:172 PhanUndeclaredClassCatch Catching undeclared class \Undef
 %s:176 PhanUndeclaredConstant Reference to undeclared constant \C16::C
+%s:180 PhanImpossibleConditionInGlobalScope Impossible attempt to cast $v5 of type null to \Undef in the global scope (may be a false positive)
 %s:180 PhanUndeclaredClassInstanceof Checking instanceof against undeclared class \Undef
 %s:183 PhanUndeclaredClassMethod Call to method f5 from undeclared class \Undef
 %s:183 PhanUndeclaredTypeParameter Parameter $p has undeclared type \Undef

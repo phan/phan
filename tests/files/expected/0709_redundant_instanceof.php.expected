@@ -1,0 +1,8 @@
+%s:24 PhanRedundantCondition Redundant attempt to cast $x of type \NS709\MyFinalClass to \NS709\MyFinalClass
+%s:25 PhanImpossibleCondition Impossible attempt to cast $x2 of type \NS709\MyFinalClass to \NS709\MyClass
+%s:26 PhanImpossibleCondition Impossible attempt to cast $x3 of type \NS709\MyFinalClass to \NS709\MyInterface
+%s:27 PhanRedundantCondition Redundant attempt to cast $x4 of type \NS709\MyFinalClass to \NS709\ValidInterface
+%s:28 PhanImpossibleCondition Impossible attempt to cast $y of type int to \NS709\MyFinalClass
+%s:30 PhanImpossibleCondition Impossible attempt to cast $m1 of type \NS709\MyClass to \NS709\MyFinalClass
+%s:38 PhanImpossibleCondition Impossible attempt to cast $a1 of type array to \NS709\MyClass
+%s:39 PhanImpossibleCondition Impossible attempt to cast $a2 of type array to object

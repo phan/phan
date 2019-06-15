@@ -2476,6 +2476,31 @@ class UnionType implements Serializable
     }
 
     /**
+     * Returns true if this union type is empty, or if it's possible for any type (or sub-type) of this union type to be able to cast to $class_type
+     */
+    public function canPossiblyCastToClass(CodeBase $code_base, Type $class_type) : bool
+    {
+        foreach ($this->type_set as $type) {
+            if ($type->withIsNullable(false)->canPossiblyCastToClass($code_base, $class_type)) {
+                return true;
+            }
+        }
+        return \count($this->type_set) === 0;
+    }
+
+    /**
+     * Returns true if this union type is non-empty and all types inherit this class/trait/interface.
+     */
+    public function isExclusivelySubclassesOf(CodeBase $code_base, Type $class_type) : bool
+    {
+        foreach ($this->type_set as $type) {
+            if ($type->isNullable() || !$type->asExpandedTypes($code_base)->hasType($class_type)) {
+                return false;
+            }
+        }
+        return \count($this->type_set) > 0;
+    }
+    /**
      * Returns the types for which is_scalar($x) would be true.
      * This means null/nullable is removed.
      * Takes `MyClass|int|?bool|array|?object` and returns `int|bool`

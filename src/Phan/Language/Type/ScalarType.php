@@ -148,6 +148,11 @@ abstract class ScalarType extends NativeType
     {
         return $this->withIsNullable(false);
     }
+
+    public function canPossiblyCastToClass(CodeBase $unused_codebase, Type $unused_class_type) : bool
+    {
+        return false;
+    }
 }
 \class_exists(IntType::class);
 \class_exists(StringType::class);

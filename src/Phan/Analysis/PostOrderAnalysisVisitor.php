@@ -1881,12 +1881,30 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $function,
                     $node
                 );
+                if ($function instanceof Func && \strcasecmp($function->getName(), 'assert') === 0 && $function->getFQSEN()->getNamespace() === '\\') {
+                    $this->context = $this->analyzeAssert($this->context, $node);
+                }
             }
         } catch (CodeBaseException $_) {
             // ignore it.
         }
 
         return $this->context;
+    }
+
+    private function analyzeAssert(Context $context, Node $node) : Context
+    {
+        $args_first_child = $node->children['args']->children[0] ?? null;
+        if (!($args_first_child instanceof Node)) {
+            return $this->context;
+        }
+
+        // Look to see if the asserted expression says anything about
+        // the types of any variables.
+        return (new ConditionVisitor(
+            $this->code_base,
+            $context
+        ))->__invoke($args_first_child);
     }
 
     /**

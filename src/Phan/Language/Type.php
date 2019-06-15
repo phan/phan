@@ -2024,6 +2024,52 @@ class Type
     }
 
     /**
+     * Check if there is any way this type or a subclass could cast to $other.
+     * (does not check for mixed)
+     */
+    public function canPossiblyCastToClass(CodeBase $code_base, Type $other) : bool
+    {
+        if (!$this->isPossiblyObject()) {
+            return false;
+        }
+        // Check if either side is something we don't know about, e.g. `object`, `iterable`, etc.
+        if (!$this->isObjectWithKnownFQSEN()) {
+            return true;
+        }
+        if (!$other->isObjectWithKnownFQSEN()) {
+            return true;
+        }
+
+        if ($other->asExpandedTypes($code_base)->hasType($this) || $this->asExpandedTypes($code_base)->hasType($other)) {
+            // This is a subtype of $other, or vice-versa
+            return true;
+        }
+        $this_fqsen = FullyQualifiedClassName::fromType($this);
+        if (!$code_base->hasClassWithFQSEN($this_fqsen)) {
+            return true;
+        }
+        $this_class = $code_base->getClassByFQSEN($this_fqsen);
+
+        $other_fqsen = FullyQualifiedClassName::fromType($other);
+        if (!$code_base->hasClassWithFQSEN($other_fqsen)) {
+            return true;
+        }
+        $other_class = $code_base->getClassByFQSEN($other_fqsen);
+
+        if ($this_class->isFinal() || $other_class->isFinal()) {
+            // If at least one class is final (and the other is a trait/interface), we already confirmed there's nothing in common.
+            return false;
+        }
+        if ($this_class->isClass() && $other_class->isClass()) {
+            // So now we have two classes.
+            // We already know that their expanded types don't overlap from checking asExpandedTypes, so there's no possible common subtype.
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * @return bool
      * True if this type is iterable.
      */
