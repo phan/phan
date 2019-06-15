@@ -425,7 +425,7 @@ class Config
 
         // Set to true in order to attempt to detect redundant and impossible conditions.
         //
-        // This has a large number of false positives involving loops,
+        // This has some false positives involving loops,
         // variables set in branches of loops, and global variables.
         'redundant_condition_detection' => false,
 

@@ -193,6 +193,12 @@ return [
     // to be tracked.
     'force_tracking_references' => false,
 
+    // Set to true in order to attempt to detect redundant and impossible conditions.
+    //
+    // This has some false positives involving loops,
+    // variables set in branches of loops, and global variables.
+    'redundant_condition_detection' => true,
+
     // Enable this to warn about harmless redundant use for classes and namespaces such as `use Foo\bar` in namespace Foo.
     //
     // Note: This does not affect warnings about redundant uses in the global namespace.
