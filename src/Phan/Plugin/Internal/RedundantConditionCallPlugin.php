@@ -59,8 +59,9 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
                 if (count($args) < 1) {
                     return;
                 }
+                $arg = $args[0];
                 try {
-                    $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0], false);
+                    $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $arg, false);
                 } catch (Exception $_) {
                     return;
                 }
@@ -72,24 +73,34 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
                     return;
                 }
                 if ($result === self::_IS_REDUNDANT) {
-                    Issue::maybeEmit(
+                    RedundantCondition::emitInstance(
+                        $arg,
                         $code_base,
                         $context,
-                        RedundantCondition::chooseSpecificImpossibleOrRedundantIssueKind($args[0], $context, Issue::RedundantCondition),
-                        $args[0]->lineno ?? $context->getLineNumberStart(),
-                        ASTReverter::toShortString($args[0]),
-                        $union_type->getRealUnionType(),
-                        $expected_type
+                        Issue::RedundantCondition,
+                        [
+                            ASTReverter::toShortString($arg),
+                            $union_type->getRealUnionType(),
+                            $expected_type,
+                        ],
+                        static function (UnionType $type) use ($checker) : bool {
+                            return $checker($type) === self::_IS_REDUNDANT;
+                        }
                     );
                 } elseif ($result === self::_IS_IMPOSSIBLE) {
-                    Issue::maybeEmit(
+                    RedundantCondition::emitInstance(
+                        $arg,
                         $code_base,
                         $context,
-                        RedundantCondition::chooseSpecificImpossibleOrRedundantIssueKind($args[0], $context, Issue::ImpossibleCondition),
-                        $args[0]->lineno ?? $context->getLineNumberStart(),
-                        ASTReverter::toShortString($args[0]),
-                        $union_type->getRealUnionType(),
-                        $expected_type
+                        Issue::ImpossibleCondition,
+                        [
+                            ASTReverter::toShortString($arg),
+                            $union_type->getRealUnionType(),
+                            $expected_type,
+                        ],
+                        static function (UnionType $type) use ($checker) : bool {
+                            return $checker($type) === self::_IS_IMPOSSIBLE;
+                        }
                     );
                 }
             };
@@ -288,20 +299,34 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
         }
         $real_type = $type->getRealUnionType();
         if (!$real_type->containsTruthy()) {
-            $this->emitIssue(
-                $this->chooseIssue($var_node, Issue::RedundantCondition),
-                $node->lineno ?? $var_node->lineno,
-                ASTReverter::toShortString($var_node),
-                $real_type,
-                'empty'
+            RedundantCondition::emitInstance(
+                $var_node,
+                $this->code_base,
+                $this->context,
+                Issue::RedundantCondition,
+                [
+                    ASTReverter::toShortString($var_node),
+                    $type->getRealUnionType(),
+                    'empty',
+                ],
+                static function (UnionType $type) : bool {
+                    return !$type->containsTruthy();
+                }
             );
         } elseif (!$real_type->containsFalsey()) {
-            $this->emitIssue(
-                $this->chooseIssue($var_node, Issue::ImpossibleCondition),
-                $node->lineno ?? $var_node->lineno,
-                ASTReverter::toShortString($var_node),
-                $real_type,
-                'empty'
+            RedundantCondition::emitInstance(
+                $var_node,
+                $this->code_base,
+                $this->context,
+                Issue::ImpossibleCondition,
+                [
+                    ASTReverter::toShortString($var_node),
+                    $type->getRealUnionType(),
+                    'empty',
+                ],
+                static function (UnionType $type) : bool {
+                    return !$type->containsFalsey();
+                }
             );
         }
     }
@@ -366,18 +391,32 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
         }
         $left = $left->getRealUnionType();
         if (!$left->containsNullableOrUndefined()) {
-            $this->emitIssue(
-                $this->chooseIssue($node, Issue::CoalescingNeverNull),
-                $node->lineno,
-                ASTReverter::toShortString($left_node),
-                $left
+            RedundantCondition::emitInstance(
+                $left_node,
+                $this->code_base,
+                clone($this->context)->withLineNumberStart($node->lineno),
+                Issue::CoalescingNeverNull,
+                [
+                    ASTReverter::toShortString($left_node),
+                    $left
+                ],
+                static function (UnionType $type) : bool {
+                    return !$type->containsNullableOrUndefined();
+                }
             );
         } elseif ($left->isNull()) {
-            $this->emitIssue(
-                $this->chooseIssue($node, Issue::CoalescingAlwaysNull),
-                $node->lineno,
-                ASTReverter::toShortString($left_node),
-                $left
+            RedundantCondition::emitInstance(
+                $left_node,
+                $this->code_base,
+                clone($this->context)->withLineNumberStart($node->lineno),
+                Issue::CoalescingAlwaysNull,
+                [
+                    ASTReverter::toShortString($left_node),
+                    $left
+                ],
+                static function (UnionType $type) : bool {
+                    return $type->isNull();
+                }
             );
         }
     }
@@ -398,20 +437,34 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
         }
         $real_type = $type->getRealUnionType();
         if (!$type->containsNullableOrUndefined()) {
-            $this->emitIssue(
-                $this->chooseIssue($var_node, Issue::RedundantCondition),
-                $node->lineno ?? $var_node->lineno,
-                ASTReverter::toShortString($var_node),
-                $real_type,
-                'isset'
+            RedundantCondition::emitInstance(
+                $var_node,
+                $this->code_base,
+                clone($this->context)->withLineNumberStart($node->lineno),
+                Issue::RedundantCondition,
+                [
+                    ASTReverter::toShortString($var_node),
+                    $real_type,
+                    'isset'
+                ],
+                static function (UnionType $type) : bool {
+                    return !$type->containsNullableOrUndefined();
+                }
             );
         } elseif ($type->isNull()) {
-            $this->emitIssue(
-                $this->chooseIssue($var_node, Issue::ImpossibleCondition),
-                $node->lineno ?? $var_node->lineno,
-                ASTReverter::toShortString($var_node),
-                $real_type,
-                'isset'
+            RedundantCondition::emitInstance(
+                $var_node,
+                $this->code_base,
+                clone($this->context)->withLineNumberStart($node->lineno),
+                Issue::ImpossibleCondition,
+                [
+                    ASTReverter::toShortString($var_node),
+                    $real_type,
+                    'isset'
+                ],
+                static function (UnionType $type) : bool {
+                    return $type->isNull();
+                }
             );
         }
     }

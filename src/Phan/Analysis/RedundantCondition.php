@@ -2,9 +2,13 @@
 
 namespace Phan\Analysis;
 
+use ast;
 use ast\Node;
+use Closure;
+use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Context;
+use Phan\Language\UnionType;
 use Phan\Parse\ParseVisitor;
 
 /**
@@ -48,5 +52,46 @@ class RedundantCondition
         }
 
         return $issue_name;
+    }
+
+    /**
+     * Emit an issue. If this is in a loop, defer the check until more is known about possible types of the variable in the loop.
+     *
+     * @param Node|int|string|float $node
+     * @param array<int,mixed> $issue_args
+     * @param Closure(UnionType):bool $is_still_issue
+     */
+    public static function emitInstance($node, CodeBase $code_base, Context $context, string $issue_name, array $issue_args, Closure $is_still_issue) : void
+    {
+        if ($context->isInLoop() && $node instanceof Node && $node->kind === ast\AST_VAR) {
+            $var_name = $node->children['name'];
+            if (\is_string($var_name)) {
+                // @phan-suppress-next-line PhanAccessMethodInternal
+                $context->deferCheckToOutermostLoop(static function (Context $context_after_loop) use ($code_base, $node, $var_name, $is_still_issue, $issue_name, $issue_args, $context) : void {
+                    $scope = $context_after_loop->getScope();
+                    if ($scope->hasVariableWithName($var_name)) {
+                        $var_type = $scope->getVariableByName($var_name)->getUnionType()->getRealUnionType();
+                        if ($var_type->isEmpty() || !$is_still_issue($var_type)) {
+                            return;
+                        }
+                    }
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        RedundantCondition::chooseSpecificImpossibleOrRedundantIssueKind($node, $context, $issue_name),
+                        $node->lineno,
+                        ...$issue_args
+                    );
+                });
+                return;
+            }
+        }
+        Issue::maybeEmit(
+            $code_base,
+            $context,
+            RedundantCondition::chooseSpecificImpossibleOrRedundantIssueKind($node, $context, $issue_name),
+            $node->lineno ?? $context->getLineNumberStart(),
+            ...$issue_args
+        );
     }
 }

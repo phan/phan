@@ -79,7 +79,6 @@ class ParameterTypesAnalyzer
             if ($parameter->isOptional()) {
                 $is_optional_seen = true;
             } else {
-                // @phan-suppress-next-line PhanImpossibleConditionInLoop this is a known false positive in loops
                 if ($is_optional_seen) {
                     Issue::maybeEmit(
                         $code_base,
@@ -883,7 +882,6 @@ class ParameterTypesAnalyzer
             $parameter_type = $parameter->getNonVariadicUnionType();
             // If there is already a phpdoc parameter type, then don't bother inheriting the parameter type from $o_method
             if (!$parameter_type->isEmpty()) {
-                // @phan-suppress-next-line PhanCoalescingAlwaysNullInLoop false positive in loop
                 $comment_parameter_map = $comment_parameter_map ?? self::extractCommentParameterMap($method);
                 $comment_parameter = $comment_parameter_map[$parameter->getName()] ?? null;
                 if ($comment_parameter) {

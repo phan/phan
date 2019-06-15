@@ -2878,6 +2878,7 @@ class UnionType implements Serializable
     public function iterableValueUnionType(CodeBase $code_base) : UnionType
     {
         // This is frequently called, and has been optimized
+        // TODO: Support real types if the type set is exclusively real iterable types
         $builder = new UnionTypeBuilder();
         $type_set = $this->type_set;
         foreach ($type_set as $type) {
@@ -2885,6 +2886,10 @@ class UnionType implements Serializable
             if ($element_type === null) {
                 // Does not have iterable values
                 continue;
+            }
+            if (\count($type_set) === 1) {
+                // This will also return the corresponding real type
+                return $element_type;
             }
             $builder->addUnionType($element_type);
         }
@@ -3953,7 +3958,6 @@ class UnionType implements Serializable
                 // Not going to bother being more specific (this applies bitwise not to each character for LiteralStringType)
                 $type_set = $type_set->withType(StringType::instance(false));
             } else {
-                // @phan-suppress-next-line PhanImpossibleConditionInLoop this is a known false positive in loops
                 if ($added_fallbacks) {
                     continue;
                 }
@@ -4005,7 +4009,6 @@ class UnionType implements Serializable
                         return $type_set->withType(LiteralIntType::instanceForValue(0, false));
                     }
                 }
-                // @phan-suppress-next-line PhanImpossibleConditionInLoop this is a known false positive in loops
                 if ($added_fallbacks) {
                     continue;
                 }

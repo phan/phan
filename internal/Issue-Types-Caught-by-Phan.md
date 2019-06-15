@@ -1855,11 +1855,15 @@ e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/
 Using {CODE} of type {TYPE} as the left hand side of a null coalescing (??) operation. The left hand side may be unnecessary. (in the global scope - this is likely a false positive)
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0708_loop_issue_examples.php.expected#L6) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0708_loop_issue_examples.php#L28).
+
 ## PhanCoalescingAlwaysNullInLoop
 
 ```
 Using {CODE} of type {TYPE} as the left hand side of a null coalescing (??) operation. The left hand side may be unnecessary. (in a loop body - this is likely a false positive)
 ```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0708_loop_issue_examples.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0708_loop_issue_examples.php#L9).
 
 ## PhanCoalescingNeverNull
 
@@ -1875,11 +1879,15 @@ e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/
 Using non-null {CODE} of type {TYPE} as the left hand side of a null coalescing (??) operation. The right hand side may be unnecessary. (in the global scope - this is likely a false positive)
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0708_loop_issue_examples.php.expected#L8) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0708_loop_issue_examples.php#L30).
+
 ## PhanCoalescingNeverNullInLoop
 
 ```
 Using non-null {CODE} of type {TYPE} as the left hand side of a null coalescing (??) operation. The right hand side may be unnecessary. (in a loop body - this is likely a false positive)
 ```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0708_loop_issue_examples.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0708_loop_issue_examples.php#L17).
 
 ## PhanImpossibleCondition
 
@@ -1903,6 +1911,8 @@ e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/
 Impossible attempt to cast {CODE} of type {TYPE} to {TYPE} in a loop body (may be a false positive)
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0708_loop_issue_examples.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0708_loop_issue_examples.php#L18).
+
 ## PhanImpossibleTypeComparison
 
 ```
@@ -1916,6 +1926,8 @@ e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/
 ```
 Impossible attempt to check if {CODE} of type {TYPE} is identical to {CODE} of type {TYPE} in the global scope (likely a false positive)
 ```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0708_loop_issue_examples.php.expected#L9) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0708_loop_issue_examples.php#L31).
 
 ## PhanImpossibleTypeComparisonInLoop
 
@@ -2113,7 +2125,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/
 Redundant attempt to cast {CODE} of type {TYPE} to {TYPE} in a loop body (likely a false positive)
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0698_loop_false_positive.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0698_loop_false_positive.php#L5).
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0698_loop_false_positive.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0698_loop_false_positive.php#L13).
 
 ## PhanRelativePathUsed
 
