@@ -3,6 +3,10 @@ Phan NEWS
 ??? ?? 2019, Phan 2.2.1 (dev)
 -----------------------
 
+New features(CLI, Configs):
++ When printing help messages for errors in `phan --init`, print only the related options.
++ Make `phan --init` enable `redundant_condition_detection` when the strictest init level is requested. (#2849)
+
 New features(Analysis):
 + Reduce the number of false positives of `--redundant-condition-detection` for variables in loops
 

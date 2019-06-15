@@ -128,6 +128,12 @@ Usage: ./phan [options] [files...]
   that are probably never referenced.
   This has a few known false positives, e.g. for loops or branches.
 
+ --redundant-condition-detection
+  Emit issues for conditions such as `is_int(expr)` that are redundant or impossible.
+
+  This has some known false positives for loops, variables set in loops,
+  and global variables.
+
  -j, --processes <int>
   The number of parallel processes to run during the analysis
   phase. Defaults to 1.
