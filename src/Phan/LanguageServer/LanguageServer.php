@@ -941,6 +941,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     {
         return coroutine(function () : \Generator {
             // Eventually, this might block on something. Leave it as a generator.
+            // @phan-suppress-next-line PhanImpossibleCondition deliberately unreachable yield
             if (false) {
                 yield;
             }

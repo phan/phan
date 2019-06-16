@@ -1,2 +1,3 @@
 %s:5 PhanTypeConversionFromArray array to string conversion
 %s:8 PhanTypeErrorInOperation Saw an error when attempting to infer the type of expression +$arr: Unsupported operand types
+%s:8 PhanTypeInvalidUnaryOperandNumeric Invalid operator: unary operand of + is array{} (expected number)

@@ -11,6 +11,7 @@ New features(CLI, Configs):
 
 New features(Analysis):
 + Reduce the number of false positives of `--redundant-condition-detection` for variables in loops
++ Warn about more types of expressions causing redundant conditions (#2534, #822).
 + Emit `PhanRedundantCondition` and `PhanImpossibleCondition` for `$x instanceof SomeClass` expressions.
 + Emit `PhanImpossibleCondition` for `is_array` and `is_object` checks.
 
@@ -18,6 +19,7 @@ Bug fixes:
 + Fix issue that would make Phan infer that a redundant/impossible condition outside a loop was in a loop.
 + Avoid false positives analyzing expressions within `assert()`.
 + Fix method signatures for php 7.4's `WeakReference`.
++ Fix false positives analyzing uses of `__call` and `__callStatic` (#702)
 
 Jun 14 2019, Phan 2.2.0
 -----------------------

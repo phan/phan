@@ -239,6 +239,13 @@ class ASTReverter
                     self::toShortString($node->children['args'])
                 );
             },
+            ast\AST_NEW => static function (Node $node) : string {
+                return \sprintf(
+                    'new %s%s',
+                    self::toShortString($node->children['class']),
+                    self::toShortString($node->children['args'])
+                );
+            },
         ];
     }
 }

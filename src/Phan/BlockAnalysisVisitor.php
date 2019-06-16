@@ -10,6 +10,7 @@ use Phan\Analysis\AssignmentVisitor;
 use Phan\Analysis\BlockExitStatusChecker;
 use Phan\Analysis\ConditionVisitor;
 use Phan\Analysis\ContextMergeVisitor;
+use Phan\Analysis\LoopConditionVisitor;
 use Phan\Analysis\NegatedConditionVisitor;
 use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\Analysis\PreOrderAnalysisVisitor;
@@ -542,10 +543,14 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             //   E.g. `for (; $x = cond(); ) {}` will have truthy $x within the loop
             //   but falsey outside the loop, if there are no breaks.
             if ($condition_node instanceof Node) {
-                $context = (new ConditionVisitor(
+                $context = (new LoopConditionVisitor(
                     $this->code_base,
-                    $context
+                    $context,
+                    $condition_node,
+                    false
                 ))->__invoke($condition_node);
+            } elseif (Config::getValue('redundant_condition_detection')) {
+                (new LoopConditionVisitor($this->code_base, $context, $condition_node, false))->checkRedundantOrImpossibleTruthyCondition($condition_node, $context, null, false);
             }
             if ($stmts_node instanceof Node) {
                 $context = $this->analyzeAndGetUpdatedContext(
@@ -653,10 +658,19 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             //   E.g. `while ($x = cond()) {}` will have truthy $x within the loop
             //   but falsey outside the loop, if there are no breaks.
             if ($condition_node instanceof Node) {
-                $context = (new ConditionVisitor(
+                $context = (new LoopConditionVisitor(
                     $this->code_base,
-                    $context  // XXX why was this using $this->context
+                    $context,
+                    $condition_node,
+                    false
                 ))->__invoke($condition_node);
+            } elseif (!$condition_node && Config::getValue('redundant_condition_detection')) {
+                (new LoopConditionVisitor(
+                    $this->code_base,
+                    $context,
+                    $condition_node,
+                    false
+                ))->checkRedundantOrImpossibleTruthyCondition($condition_node, $context, null, false);
             }
 
             if ($stmts_node instanceof Node) {
@@ -928,7 +942,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
 
     /**
-     * For "do-while loop" nodes, we analyze the 'init', 'stmts', 'cond' in order.
+     * For "do-while loop" nodes of kind ast\AST_DO_WHILE, we analyze the 'stmts', 'cond' in order.
      * (right now, the statements are just analyzed without creating a BranchScope)
      *
      * @suppress PhanUndeclaredProperty
@@ -961,16 +975,19 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // to this method, we analyze all children of the
         // node.
         // (copied from visit(), this ensures plugins and other code get called)
-        foreach ($node->children as $child_node) {
-            // Skip any non Node children.
-            if (!($child_node instanceof Node)) {
-                continue;
-            }
-
-            // Step into each child node and get an
-            // updated context for the node
-            $context = $this->analyzeAndGetUpdatedContext($context, $node, $child_node);
+        $stmts_node = $node->children['stmts'];
+        if ($stmts_node instanceof Node) {
+            $context = $this->analyzeAndGetUpdatedContext($context, $node, $stmts_node);
         }
+        $cond_node = $node->children['cond'];
+        if ($cond_node instanceof Node) {
+            $context = $this->analyzeAndGetUpdatedContext($context, $node, $cond_node);
+        }
+        if (Config::getValue('redundant_condition_detection')) {
+            // Analyze - don't warn about `do...while(true)` or `do...while(false)` because they might be a way to `break;` out of a group of statements
+            (new LoopConditionVisitor($this->code_base, $context, $cond_node, true))->checkRedundantOrImpossibleTruthyCondition($cond_node, $context, null, false);
+        }
+
         if (isset($node->phan_loop_contexts)) {
             // Combine contexts from continue/break statements within this do-while loop
             $context = (new ContextMergeVisitor($context, \array_merge([$context], $node->phan_loop_contexts)))->combineChildContextList();
@@ -1015,6 +1032,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 $node,
                 $condition_node
             );
+        } elseif (Config::getValue('redundant_condition_detection')) {
+            (new ConditionVisitor($this->code_base, $context))->checkRedundantOrImpossibleTruthyCondition($condition_node, $context, null, false);
         }
 
         $context = $this->preOrderAnalyze($context, $node);
@@ -1804,6 +1823,9 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         } else {
             $true_context = $context;
             $false_context = $context;
+            if (Config::getValue('redundant_condition_detection')) {
+                (new ConditionVisitor($this->code_base, $context))->warnRedundantOrImpossibleScalar($cond_node);
+            }
         }
 
         $child_context_list = [];

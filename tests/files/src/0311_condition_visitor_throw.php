@@ -5,7 +5,7 @@
  * @param int $str
  */
 function testcondition311($y, $str) {
-    if (!0) { }
+    if (!0) { }  // These all warn about having known truthiness
     if (!STDERR) { }
     if (!!0) { }
     if (!1) { }
@@ -13,7 +13,7 @@ function testcondition311($y, $str) {
     if (!!1) { }
     if (!'') { }
     if (!'aa') { }
-    if (!0.0) { }
+    if (!0.0) { }  // TODO: warn
     if ($y && !$x) { }  // should emit undefined
     if ($y && $x2) { }  // should emit undefined
     if (!$z) { }  // should emit undefined

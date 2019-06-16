@@ -651,6 +651,7 @@ final class EmptyUnionType extends UnionType
      * context
      *
      * TODO: Add a method to ContextNode to directly get FQSEN instead?
+     * @suppress PhanImpossibleCondition deliberately making a generator yielding nothing
      */
     public function asClassFQSENList(
         Context $context
@@ -1210,6 +1211,7 @@ final class EmptyUnionType extends UnionType
      * @return Generator<Type,Type>
      * @suppress PhanTypeMismatchGeneratorYieldValue (deliberate empty stub code)
      * @suppress PhanTypeMismatchGeneratorYieldKey (deliberate empty stub code)
+     * @suppress PhanImpossibleCondition
      */
     public function getReferencedClasses() : Generator
     {
