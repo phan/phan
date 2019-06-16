@@ -1622,7 +1622,24 @@ class Clazz extends AddressableElement
      */
     public function getCallMethod(CodeBase $code_base) : Method
     {
-        return $this->getMethodByName($code_base, '__call');
+        return self::makeCallMethodCloneForCaller($this->getMethodByName($code_base, '__call'));
+    }
+
+    private static function makeCallMethodCloneForCaller(Method $method) : Method
+    {
+        echo "Cloning $method\n";
+        $result = new Method(
+            $method->getContext(),
+            $method->getName(),
+            $method->getUnionType(),
+            $method->getFlags(),
+            $method->getFQSEN(),
+            [
+                new VariadicParameter($method->getContext(), 'args', UnionType::empty(), 0)
+            ]
+        );
+        echo "Result is $result\n";
+        return $result;
     }
 
     /**
@@ -1663,7 +1680,7 @@ class Clazz extends AddressableElement
      */
     public function getCallStaticMethod(CodeBase $code_base) : Method
     {
-        return $this->getMethodByName($code_base, '__callStatic');
+        return self::makeCallMethodCloneForCaller($this->getMethodByName($code_base, '__callStatic'));
     }
 
     /**
