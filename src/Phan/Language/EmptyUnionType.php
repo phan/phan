@@ -732,6 +732,11 @@ final class EmptyUnionType extends UnionType
         return ObjectType::instance(false)->asRealUnionType();
     }
 
+    public function objectTypesStrictAllowEmpty() : UnionType
+    {
+        return $this;
+    }
+
     /**
      * Takes "MyClass|int|array|?object" and returns "MyClass|?object"
      *
@@ -1383,6 +1388,11 @@ final class EmptyUnionType extends UnionType
     public function arrayTypesStrictCast() : UnionType
     {
         return ArrayType::instance(false)->asRealUnionType();
+    }
+
+    public function arrayTypesStrictCastAllowEmpty() : UnionType
+    {
+        return $this;
     }
 
     public function boolTypes() : UnionType

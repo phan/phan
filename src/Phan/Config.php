@@ -351,6 +351,13 @@ class Config
         // (and reveal some bugs).
         'strict_return_checking' => false,
 
+        // If enabled, Phan will act as though it's certain of real return types of a subset of internal functions,
+        // even if those return types aren't available in reflection (real types were taken from php 8.0-dev).
+        //
+        // Note that in php 7 and earlier, php would return null or false if the argument types or counts were incorrect.
+        // As a result, enabling this setting may result in false positives for `--redundant-condition-detection`.
+        'assume_real_types_for_internal_functions' => false,
+
         // If enabled, scalars (int, float, bool, string, null)
         // are treated as if they can cast to each other.
         // This does not affect checks of array keys. See `scalar_array_key_cast`.
@@ -1329,6 +1336,7 @@ class Config
             'target_php_version' => $is_scalar,
             'unused_variable_detection' => $is_bool,
             'redundant_condition_detection' => $is_bool,
+            'assume_real_types_for_internal_functions' => $is_bool,
             'use_fallback_parser' => $is_bool,
             'use_polyfill_parser' => $is_bool,
             'warn_about_redundant_use_namespaced_class' => $is_bool,

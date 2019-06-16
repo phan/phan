@@ -6,10 +6,13 @@ Phan NEWS
 New features(CLI, Configs):
 + When printing help messages for errors in `phan --init`, print only the related options.
 + Make `phan --init` enable `redundant_condition_detection` when the strictest init level is requested. (#2849)
++ Add `--assume-real-types-for-internal-functions` to make stricter assumptions about the real types of internal functions (for use with `--redundant-condition-detection`).
+  Note that in PHP 7 and earlier, internal functions would return null/false for incorrect argument types/argument counts, so enabling this option may cause false positives.
 
 New features(Analysis):
 + Reduce the number of false positives of `--redundant-condition-detection` for variables in loops
 + Emit `PhanRedundantCondition` and `PhanImpossibleCondition` for `$x instanceof SomeClass` expressions.
++ Emit `PhanImpossibleCondition` for `is_array` and `is_object` checks.
 
 Bug fixes:
 + Fix issue that would make Phan infer that a redundant/impossible condition outside a loop was in a loop.

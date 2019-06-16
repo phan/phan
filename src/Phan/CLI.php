@@ -74,6 +74,7 @@ class CLI
      */
     const GETOPT_LONG_OPTIONS = [
         'allow-polyfill-parser',
+        'assume-real-types-for-internal-functions',
         'automatic-fix',
         'backward-compatibility-checks',
         'color',
@@ -255,7 +256,7 @@ class CLI
 
         // Parse command line args
         $opts = \getopt(self::GETOPT_SHORT_OPTIONS, self::GETOPT_LONG_OPTIONS);
-        $opts = $opts ?? [];
+        $opts = \is_array($opts) ? $opts : [];
 
         try {
             return new self($opts, $argv);
@@ -702,6 +703,9 @@ class CLI
                     break;
                 case 'redundant-condition-detection':
                     Config::setValue('redundant_condition_detection', true);
+                    break;
+                case 'assume-real-types-for-internal-functions':
+                    Config::setValue('assume_real_types_for_internal_functions', true);
                     break;
                 case 'allow-polyfill-parser':
                     // Just check if it's installed and of a new enough version.

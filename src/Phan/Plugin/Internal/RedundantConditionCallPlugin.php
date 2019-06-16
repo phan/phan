@@ -224,14 +224,15 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
         $int_callback = $make_simple_first_arg_checker('intTypes', 'int');
         $bool_callback = $make_simple_first_arg_checker('getTypesInBoolFamily', 'bool');
         $float_callback = $make_simple_first_arg_checker('floatTypes', 'float');
-        $object_callback = $make_simple_first_arg_checker('objectTypesStrict', 'object');
+        $object_callback = $make_simple_first_arg_checker('objectTypesStrictAllowEmpty', 'object');
+        $array_callback = $make_simple_first_arg_checker('arrayTypesStrictCastAllowEmpty', 'array');
         $string_callback = $make_simple_first_arg_checker('stringTypes', 'string');
 
         // TODO: Implement checks for the commented out conditions.
         // TODO: Check intval, boolval, etc.
         return [
             // 'is_a' => $is_a_callback,
-            // 'is_array' => $array_callback,
+            'is_array' => $array_callback,
             'is_bool' => $bool_callback,
             'is_callable' => $callable_callback,
             'is_double' => $float_callback,

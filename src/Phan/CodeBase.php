@@ -27,6 +27,7 @@ use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\NamespaceMapEntry;
+use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Library\Map;
 use Phan\Library\Set;
@@ -1437,6 +1438,15 @@ class CodeBase
                     $reflection_function = new \ReflectionFunction($name);
                     $function->setIsDeprecated($reflection_function->isDeprecated());
                     $real_return_type = UnionType::fromReflectionType($reflection_function->getReturnType());
+                    if ($real_return_type->isEmpty()) {
+                        if (Config::getValue('assume_real_types_for_internal_functions')) {
+                            // @phan-suppress-next-line PhanAccessMethodInternal
+                            $real_type_string = UnionType::getLatestRealFunctionSignatureMap()[$name] ?? null;
+                            if (\is_string($real_type_string)) {
+                                $real_return_type = UnionType::fromStringInContext($real_type_string, new Context(), Type::FROM_TYPE);
+                            }
+                        }
+                    }
                     if (!$real_return_type->isEmpty()) {
                         $real_type_set = $real_return_type->getTypeSet();
                         $function->setRealReturnType($real_return_type);

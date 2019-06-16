@@ -31,6 +31,7 @@ return [
 'FFI::string' => ['string', '&ptr'=>'FFI\CData', 'size='=>'int'],
 'FFI::typeof' => ['FFI\CType', '&ptr'=>'FFI\CData'],
 'FFI::type' => ['FFI\CType', 'type'=>'string'],
+'get_mangled_object_vars' => ['array', 'obj'=>'object'],
 'ReflectionReference::fromArrayElement' => ['?ReflectionReference', 'array'=>'array', 'key'=>'int|string'],
 'ReflectionReference::getId' => ['string'],
 'SQLite3Stmt::getSQL' => ['string', 'expanded='=>'bool'],
