@@ -1,5 +1,11 @@
 Phan NEWS
 
+??? ?? 2019, Phan 2.2.2 (dev)
+-----------------------
+
+Maintenance:
++ Support parsing PHP 7.4's numeric literal separator (e.g. `1_000_000`, `0xCAFE_F00d`, `0b0101_1111`) in the polyfill (#2829)
+
 Jun 16 2019, Phan 2.2.1
 -----------------------
 

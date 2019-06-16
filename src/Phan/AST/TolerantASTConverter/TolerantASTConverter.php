@@ -1041,7 +1041,8 @@ class TolerantASTConverter
             },
             /** @return int|float */
             'Microsoft\PhpParser\Node\NumericLiteral' => static function (PhpParser\Node\NumericLiteral $n, int $_) {
-                $text = static::tokenToString($n->children);
+                // Support php 7.4 numeric literal separators. Ignore `_`.
+                $text = \str_replace('_', '', static::tokenToString($n->children));
                 $as_int = \filter_var($text, FILTER_VALIDATE_INT, FILTER_FLAG_ALLOW_OCTAL | FILTER_FLAG_ALLOW_HEX);
                 if ($as_int !== false) {
                     return $as_int;
