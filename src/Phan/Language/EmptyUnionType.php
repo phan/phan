@@ -1230,6 +1230,11 @@ final class EmptyUnionType extends UnionType
         return false;
     }
 
+    public function isNonNullIntOrFloatType() : bool
+    {
+        return false;
+    }
+
     public function isNonNullNumberType() : bool
     {
         return false;
@@ -1428,5 +1433,13 @@ final class EmptyUnionType extends UnionType
     public function isExclusivelySubclassesOf(CodeBase $code_base, Type $class_type) : bool
     {
         return false;
+    }
+
+    /**
+     * Returns true if this type has types for which `+expr` isn't an integer.
+     */
+    public function hasTypesCoercingToNonInt() : bool
+    {
+        return true;
     }
 }

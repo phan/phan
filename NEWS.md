@@ -3,6 +3,9 @@ Phan NEWS
 ??? ?? 2019, Phan 2.2.2 (dev)
 -----------------------
 
+New features(Analysis):
++ Support inferring literal float types. Warn about redundant conditions with union types of floats that are always truthy/falsey.
+
 Maintenance:
 + Support parsing PHP 7.4's numeric literal separator (e.g. `1_000_000`, `0xCAFE_F00d`, `0b0101_1111`) in the polyfill (#2829)
 

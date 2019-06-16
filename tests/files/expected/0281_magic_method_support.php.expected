@@ -17,7 +17,7 @@
 %s:65 PhanParamTooFew Call with 0 arg(s) to \A281::myMethodWithUntypedParams() which requires 1 arg(s) defined at %s:14
 %s:68 PhanTypeMismatchArgument Argument 1 ($x) is 'str' but \A281::myMethodWithPHPDocParams() takes float defined at %s:15
 %s:68 PhanTypeMismatchArgument Argument 2 ($y) is null but \A281::myMethodWithPHPDocParams() takes object defined at %s:15
-%s:70 PhanTypeMismatchArgument Argument 4 ($x) is float but \A281::myMethodWithVariadicParams() takes int|string defined at %s:17
+%s:70 PhanTypeMismatchArgument Argument 4 ($x) is 4.2 but \A281::myMethodWithVariadicParams() takes int|string defined at %s:17
 %s:72 PhanTypeMismatchArgument Argument 1 ($x) is int|string but \expects_a281() takes \A281 defined at %s:30
 %s:74 PhanTypeMismatchArgument Argument 2 ($b) is 3 but \A281::fooWithOptionalArrayParam() takes array defined at %s:8
 %s:75 PhanTypeMismatchArgument Argument 2 ($b) is 3 but \A281::fooWithOptionalArrayParam2() takes array defined at %s:9

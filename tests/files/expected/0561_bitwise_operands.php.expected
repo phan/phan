@@ -3,7 +3,7 @@
 %s:5 PhanTypeInvalidBitwiseBinaryOperator Invalid non-int/non-string operand provided to operator '|' between types int and array
 %s:6 PhanTypeInvalidBitwiseBinaryOperator Invalid non-int/non-string operand provided to operator '|' between types int and array{}
 %s:7 PhanTypeInvalidBitwiseBinaryOperator Invalid non-int/non-string operand provided to operator '|' between types int and resource
-%s:8 PhanTypeInvalidBitwiseBinaryOperator Invalid non-int/non-string operand provided to operator '|' between types int and float
+%s:8 PhanTypeInvalidBitwiseBinaryOperator Invalid non-int/non-string operand provided to operator '|' between types int and 2.3
 %s:9 PhanTypeInvalidBitwiseBinaryOperator Invalid non-int/non-string operand provided to operator '|' between types int and \stdClass
 %s:11 PhanTypeMismatchBitwiseBinaryOperands Unexpected mix of int and string operands provided to operator '|' between types int and string (expected one type but not both)
 %s:12 PhanTypeMismatchBitwiseBinaryOperands Unexpected mix of int and string operands provided to operator '^' between types int and string (expected one type but not both)

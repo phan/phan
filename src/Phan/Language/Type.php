@@ -42,6 +42,7 @@ use Phan\Language\Type\GenericIterableType;
 use Phan\Language\Type\GenericMultiArrayType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
+use Phan\Language\Type\LiteralFloatType;
 use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
@@ -110,7 +111,7 @@ class Type
      * NOTE: The / is escaped
      */
     const noncapturing_literal_regex =
-        '\??(?:-?(?:0|[1-9][0-9]*)|\'(?:[- ,.\/?:;"!#$%^&*_+=a-zA-Z0-9_\x80-\xff]|\\\\(?:[\'\\\\]|x[0-9a-fA-F]{2}))*\')';
+        '\??(?:-?(?:0|[1-9][0-9]*(?:\.[0-9]+)?)|\'(?:[- ,.\/?:;"!#$%^&*_+=a-zA-Z0-9_\x80-\xff]|\\\\(?:[\'\\\\]|x[0-9a-fA-F]{2}))*\')';
         // '\??(?:-?(?:0|[1-9][0-9]*)|\'(?:[a-zA-Z0-9_])*\')';
 
     /**
@@ -579,7 +580,7 @@ class Type
             case 'NULL':
                 return NullType::instance(false);
             case 'double':
-                return FloatType::instance(false);
+                return LiteralFloatType::instanceForValue($object, false);
             case 'object':
                 // @phan-suppress-next-line PhanThrowTypeMismatchForCall
                 return Type::fromFullyQualifiedString('\\' . \get_class($object));
@@ -918,6 +919,10 @@ class Type
         $value = \filter_var($escaped_literal, \FILTER_VALIDATE_INT);
         if (\is_int($value)) {
             return LiteralIntType::instanceForValue($value, $is_nullable);
+        }
+        $value = \filter_var($escaped_literal, \FILTER_VALIDATE_FLOAT);
+        if (\is_float($value)) {
+            return LiteralFloatType::instanceForValue($value, $is_nullable);
         }
         return FloatType::instance($is_nullable);
     }

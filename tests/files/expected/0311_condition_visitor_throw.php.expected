@@ -6,6 +6,7 @@
 %s:13 PhanRedundantCondition Redundant attempt to cast 1 of type 1 to truthy
 %s:14 PhanImpossibleCondition Impossible attempt to cast '' of type '' to truthy
 %s:15 PhanRedundantCondition Redundant attempt to cast 'aa' of type 'aa' to truthy
+%s:16 PhanImpossibleCondition Impossible attempt to cast 0.0 of type 0.0 to truthy
 %s:17 PhanUndeclaredVariable Variable $x is undeclared
 %s:18 PhanUndeclaredVariable Variable $x2 is undeclared
 %s:19 PhanUndeclaredVariable Variable $z is undeclared

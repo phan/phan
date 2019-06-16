@@ -22,6 +22,7 @@ use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\GenericIterableType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
+use Phan\Language\Type\LiteralFloatType;
 use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
@@ -95,7 +96,8 @@ final class TypeTest extends BaseTest
         $this->assertParsesAsType(LiteralIntType::instanceForValue(-1, false), '-1');
         $this->assertParsesAsType(LiteralIntType::instanceForValue(9, false), '9');
         $this->assertParsesAsType(LiteralIntType::instanceForValue(190, false), '190');
-        $this->assertParsesAsType(FloatType::instance(false), '1111111111111111111111111111111111');
+        $this->assertParsesAsType(LiteralFloatType::instanceForValue(1111111111111111111111111111111111, false), '1111111111111111111111111111111111');
+        $this->assertParsesAsType(LiteralFloatType::instanceForValue(-1.5, false), '-1.5');
         $this->assertParsesAsType(LiteralIntType::instanceForValue(1, true), '?1');
         $this->assertParsesAsType(LiteralIntType::instanceForValue(-1, true), '?-1');
     }

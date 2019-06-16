@@ -28,6 +28,7 @@ use Phan\Language\Type\FloatType;
 use Phan\Language\Type\GenericArrayInterface;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\LiteralFloatType;
 use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\LiteralTypeInterface;
@@ -1360,6 +1361,22 @@ class UnionType implements Serializable
     }
 
     /**
+     * Returns true if this is exclusively non-null IntType or LiteralIntType or FloatType or LiteralFloatType
+     */
+    public function isNonNullIntOrFloatType() : bool
+    {
+        if (\count($this->type_set) === 0) {
+            return false;
+        }
+        foreach ($this->type_set as $type) {
+            if (!($type instanceof IntType || $type instanceof FloatType) || $type->isNullable()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Returns true if this is exclusively non-null IntType or FloatType or subclasses
      */
     public function isNonNullNumberType() : bool
@@ -2625,13 +2642,13 @@ class UnionType implements Serializable
     public function intTypes() : UnionType
     {
         return $this->makeFromFilter(static function (Type $type) : bool {
-            // IntType and LiteralType
+            // IntType and LiteralIntType
             return $type instanceof IntType;
         });
     }
 
     /**
-     * Returns the types for which is_float($x) would be true.
+     * Returns the types for which is_int($x) || is_float($x) would be true.
      *
      * @return UnionType
      * A UnionType with known int types kept, other types filtered out.
@@ -4017,7 +4034,7 @@ class UnionType implements Serializable
                 return LiteralIntType::instanceForValue($result, false);
             }
             // -INT_MIN is a float.
-            return FloatType::instance(false);
+            return LiteralFloatType::instanceForValue($result, false);
         }, true);
     }
 
@@ -4063,7 +4080,7 @@ class UnionType implements Serializable
             if (\is_int($result)) {
                 return LiteralIntType::instanceForValue($result, false);
             }
-            return FloatType::instance(false);
+            return LiteralFloatType::instanceForValue($result, false);
         }, true);
     }
 
@@ -4075,7 +4092,7 @@ class UnionType implements Serializable
         $added_fallbacks = false;
         $type_set = UnionType::empty();
         foreach ($this->type_set as $type) {
-            if ($type instanceof LiteralIntType) {
+            if ($type instanceof LiteralIntType || $type instanceof LiteralFloatType) {
                 $type_set = $type_set->withType($operation($type->getValue()));
                 if ($type->isNullable()) {
                     $type_set = $type_set->withType(LiteralIntType::instanceForValue(0, false));
@@ -4133,6 +4150,8 @@ class UnionType implements Serializable
         // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
         switch (\get_class($type)) {
             case LiteralIntType::class:
+                return $type->isNullable() ? null : $type->getValue();
+            case LiteralFloatType::class:
                 return $type->isNullable() ? null : $type->getValue();
             case LiteralStringType::class:
                 return $type->isNullable() ? null : $type->getValue();
@@ -4484,6 +4503,20 @@ class UnionType implements Serializable
             $representation .= "(real=" . $this->getRealUnionType()->__toString() . ")";
         }
         return $representation;
+    }
+
+    /**
+     * Returns true if this type has types for which `+expr` isn't an integer.
+     */
+    public function hasTypesCoercingToNonInt() : bool
+    {
+        foreach ($this->type_set as $type) {
+            if ($type instanceof FloatType || $type instanceof StringType) {
+                // TODO Could check for LiteralStringType
+                return true;
+            }
+        }
+        return \count($this->type_set) === 0;
     }
 }
 

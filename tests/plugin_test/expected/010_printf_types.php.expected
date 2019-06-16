@@ -1,4 +1,4 @@
-src/010_printf_types.php:7 PhanPluginPrintfIncompatibleArgumentTypeWeak Format string "Hello, %s" refers to argument #1 as %s, so type string is expected. However, printf was passed the type float (which is weaker than string)
+src/010_printf_types.php:7 PhanPluginPrintfIncompatibleArgumentTypeWeak Format string "Hello, %s" refers to argument #1 as %s, so type string is expected. However, printf was passed the type 3.3 (which is weaker than string)
 src/010_printf_types.php:8 PhanPluginPrintfIncompatibleArgumentTypeWeak Format string "Hello, %s" refers to argument #1 as %s, so type string is expected. However, printf was passed the type 2 (which is weaker than string)
 src/010_printf_types.php:9 PhanPluginPrintfIncompatibleArgumentType Format string "Hello, %s" refers to argument #1 as %s, so type string is expected, but printf was passed incompatible type ?int
 src/010_printf_types.php:9 PhanTypeMismatchArgumentNullableInternal Argument 2 ($args) is ?int but \printf() takes float|int|string (expected type to be non-nullable)

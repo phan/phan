@@ -78,10 +78,12 @@ final class UnionTypeTest extends BaseTest
         $this->assertUnionTypeStringEqual('42 + 2', '44');
         $this->assertUnionTypeStringEqual('46 - 2', '44');
         $this->assertUnionTypeStringEqual('PHP_INT_MAX', (string)\PHP_INT_MAX);
-        $this->assertUnionTypeStringEqual('PHP_INT_MAX + PHP_INT_MAX', 'float');
-        $this->assertUnionTypeStringEqual('2 ** -9999999', 'float');
+        $this->assertUnionTypeStringEqual('PHP_INT_MAX + PHP_INT_MAX', var_export(PHP_INT_MAX + PHP_INT_MAX, true));
+        $this->assertUnionTypeStringEqual('2 ** -9999999', '0.0');
         $this->assertUnionTypeStringEqual('2 ** 9999999', 'float');
         $this->assertUnionTypeStringEqual('0 ** 0', '1');
+        $this->assertUnionTypeStringEqual('1 - 2.5', '-1.5');
+        $this->assertUnionTypeStringEqual('1.2 / 0.0', 'float|int');
         $this->assertUnionTypeStringEqual('1 << 2.3', 'int');
         $this->assertUnionTypeStringEqual('1 | 1', '1');
         $this->assertUnionTypeStringEqual('1 | 2', '3');
@@ -108,7 +110,7 @@ final class UnionTypeTest extends BaseTest
         $this->assertUnionTypeStringEqual('constant($argv[0]) - constant($argv[1])', 'float|int');
         $this->assertUnionTypeStringEqual('constant($argv[0]) + constant($argv[1])', 'float|int');
         $this->assertUnionTypeStringEqual('-constant($argv[0])', 'float|int');
-        $this->assertUnionTypeStringEqual('-(1.5)', 'float');
+        $this->assertUnionTypeStringEqual('-(1.5)', '-1.5');
         $this->assertUnionTypeStringEqual('(rand(0,1) ? "12" : 2.5) - (rand(0,1) ? "3" : 1.5)', 'float|int');
         $this->assertUnionTypeStringEqual('(rand(0,1) ? "12" : 2.5) * (rand(0,1) ? "3" : 1.5)', 'float|int');
         $this->assertUnionTypeStringEqual('(rand(0,1) ? "12" : 2.5) + (rand(0,1) ? "3" : 1.5)', 'float|int');

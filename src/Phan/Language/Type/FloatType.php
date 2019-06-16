@@ -3,11 +3,12 @@
 namespace Phan\Language\Type;
 
 use Phan\Config;
+use Phan\Language\UnionType;
 
 /**
  * Phan's representation of the type for `float`
  */
-final class FloatType extends ScalarType
+class FloatType extends ScalarType
 {
     /** @phan-override */
     const NAME = 'float';
@@ -42,4 +43,10 @@ final class FloatType extends ScalarType
     {
         return false;
     }
+
+    public function getTypeAfterIncOrDec() : UnionType
+    {
+        return FloatType::instance(false)->asPHPDocUnionType();
+    }
+
 }
