@@ -5,6 +5,7 @@ namespace Phan\Analysis;
 use ast;
 use ast\Node;
 use Closure;
+use Exception;
 use Phan\Analysis\ConditionVisitor\BinaryCondition;
 use Phan\Analysis\ConditionVisitor\ComparisonCondition;
 use Phan\Analysis\ConditionVisitor\IdenticalCondition;
@@ -132,61 +133,88 @@ trait ConditionVisitorUtil
         return $this->updateVariableWithConditionalFilter(
             $var_node,
             $context,
-            /**
-             * @suppress PhanUndeclaredProperty did_check_redundant_condition
-             */
             function (UnionType $type) use ($context, $var_node, $suppress_issues) : bool {
-                $contains_falsey = $type->containsFalsey();
                 if (!$suppress_issues && Config::getValue('redundant_condition_detection') && $type->hasRealTypeSet()) {
-                    // Here, we only perform the redundant condition checks on whichever ran first, to avoid warning about both impossible and redundant conditions
-                    if (isset($var_node->did_check_redundant_condition)) {
-                        return $contains_falsey;
-                    }
-                    $var_node->did_check_redundant_condition = true;
-                    // for the same expression
-                    if ($contains_falsey) {
-                        if (!$type->getRealUnionType()->containsTruthy()) {
-                            RedundantCondition::emitInstance(
-                                $var_node,
-                                $this->code_base,
-                                $context,
-                                Issue::ImpossibleCondition,
-                                [
-                                    ASTReverter::toShortString($var_node),
-                                    $type->getRealUnionType(),
-                                    'truthy',
-                                ],
-                                static function (UnionType $type) : bool {
-                                    return !$type->containsTruthy();
-                                }
-                            );
-                        }
-                    } else {
-                        if (!$type->getRealUnionType()->containsFalsey()) {
-                            RedundantCondition::emitInstance(
-                                $var_node,
-                                $this->code_base,
-                                $context,
-                                Issue::RedundantCondition,
-                                [
-                                    ASTReverter::toShortString($var_node),
-                                    $type->getRealUnionType(),
-                                    'truthy',
-                                ],
-                                static function (UnionType $type) : bool {
-                                    return !$type->containsFalsey();
-                                }
-                            );
-                        }
-                    }
+                    $this->checkRedundantOrImpossibleTruthyCondition($var_node, $context, $type->getRealUnionType(), false);
                 }
-                return $contains_falsey;
+                return $type->containsFalsey();
             },
             static function (UnionType $type) : UnionType {
                 return $type->nonFalseyClone();
             },
             $suppress_issues
         );
+    }
+
+    /**
+     * Warn about a scalar expression literal node that is always truthy or always falsey, in a place expecting a condition.
+     * @param int|string|float $node
+     */
+    public function warnRedundantOrImpossibleScalar($node) : void
+    {
+        // TODO: Add LiteralFloatType so that this can consistently warn about floats
+        $this->checkRedundantOrImpossibleTruthyCondition($node, $this->context, null, false);
+    }
+
+    /**
+     * Check if the provided node has a redundant or impossible conditional.
+     * @param Node|string|int|float $node
+     * @suppress PhanUndeclaredProperty did_check_redundant_condition
+     */
+    public function checkRedundantOrImpossibleTruthyCondition($node, Context $context, ?UnionType $type, bool $is_negated) : void
+    {
+        if ($node instanceof Node) {
+            // Here, we only perform the redundant condition checks on whichever ran first, to avoid warning about both impossible and redundant conditions
+            if (isset($node->did_check_redundant_condition)) {
+                return;
+            }
+            $node->did_check_redundant_condition = true;
+        }
+        if (!$type) {
+            try {
+                $type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $context, $node, false);
+            } catch (Exception $_) {
+                return;
+            }
+            if (!$type->hasRealTypeSet()) {
+                return;
+            }
+            $type = $type->getRealUnionType();
+        } elseif ($type->isEmpty()) {
+            return;
+        }
+        // for the same expression
+        if (!$type->containsTruthy()) {
+            RedundantCondition::emitInstance(
+                $node,
+                $this->code_base,
+                $context,
+                $is_negated ? Issue::RedundantCondition : Issue::ImpossibleCondition,
+                [
+                    ASTReverter::toShortString($node),
+                    $type->getRealUnionType(),
+                    $is_negated ? 'falsey' : 'truthy'
+                ],
+                static function (UnionType $type) : bool {
+                    return !$type->containsTruthy();
+                }
+            );
+        } elseif (!$type->containsFalsey()) {
+            RedundantCondition::emitInstance(
+                $node,
+                $this->code_base,
+                $context,
+                $is_negated ? Issue::ImpossibleCondition : Issue::RedundantCondition,
+                [
+                    ASTReverter::toShortString($node),
+                    $type->getRealUnionType(),
+                    $is_negated ? 'falsey' : 'truthy'
+                ],
+                static function (UnionType $type) : bool {
+                    return !$type->containsFalsey();
+                }
+            );
+        }
     }
 
 

@@ -13,6 +13,7 @@ use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\KindVisitorImplementation;
 use Phan\BlockAnalysisVisitor;
 use Phan\CodeBase;
+use Phan\Config;
 use Phan\Exception\FQSENException;
 use Phan\Exception\IssueException;
 use Phan\Issue;
@@ -79,6 +80,9 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
     public function visit(Node $node) : Context
     {
         $this->checkVariablesDefined($node);
+        if (Config::getValue('redundant_condition_detection')) {
+            $this->checkRedundantOrImpossibleTruthyCondition($node, $this->context, null, false);
+        }
         return $this->context;
     }
 
@@ -87,7 +91,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
      * @param Node $node
      * A node to parse
      */
-    private function checkVariablesDefined(Node $node) : void
+    protected function checkVariablesDefined(Node $node) : void
     {
         while ($node->kind === ast\AST_UNARY_OP) {
             $node = $node->children['expr'];
@@ -275,6 +279,9 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         $expr_node = $node->children['expr'];
         $flags = $node->flags;
         if ($flags !== flags\UNARY_BOOL_NOT) {
+            if (Config::getValue('redundant_condition_detection')) {
+                $this->checkRedundantOrImpossibleTruthyCondition($node, $this->context, null, false);
+            }
             // TODO: Emit dead code issue for non-nodes
             if ($expr_node instanceof Node) {
                 if ($flags === flags\UNARY_SILENCE) {
@@ -287,6 +294,9 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         // TODO: Emit dead code issue for non-nodes
         if ($expr_node instanceof Node) {
             return (new NegatedConditionVisitor($this->code_base, $this->context))->__invoke($expr_node);
+        } elseif (Config::getValue('redundant_condition_detection')) {
+            // Check `scalar` of `if (!scalar)`
+            $this->checkRedundantOrImpossibleTruthyCondition($expr_node, $this->context, null, true);
         }
         return $this->context;
     }
@@ -811,6 +821,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         if ($map === null) {
             $map = self::initTypeModifyingClosuresForVisitCall();
         }
+        // TODO: Check if the return value of the function is void/always truthy (e.g. object)
 
         // Only look at things of the form
         // `\is_string($variable)`

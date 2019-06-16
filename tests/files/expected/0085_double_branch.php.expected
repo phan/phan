@@ -1,0 +1,2 @@
+%s:3 PhanRedundantCondition Redundant attempt to cast true of type true to truthy
+%s:4 PhanImpossibleCondition Impossible attempt to cast false of type false to truthy

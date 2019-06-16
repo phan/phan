@@ -1,8 +1,22 @@
+%s:8 PhanImpossibleCondition Impossible attempt to cast 0 of type 0 to truthy
+%s:9 PhanImpossibleCondition Impossible attempt to cast 0 of type 0 to truthy
+%s:10 PhanImpossibleCondition Impossible attempt to cast 0 of type 0 to truthy
 %s:10 PhanTypeArraySuspicious Suspicious array access to 3
+%s:11 PhanRedundantCondition Redundant attempt to cast 1 of type 1 to truthy
 %s:11 PhanTypeArraySuspicious Suspicious array access to 3
+%s:12 PhanRedundantCondition Redundant attempt to cast true of type true to truthy
 %s:12 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is true but \intdiv() takes int
+%s:13 PhanRedundantCondition Redundant attempt to cast \true of type true to truthy
 %s:13 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is true but \intdiv() takes int
+%s:14 PhanImpossibleCondition Impossible attempt to cast false of type false to truthy
+%s:15 PhanImpossibleCondition Impossible attempt to cast \false of type false to truthy
+%s:16 PhanImpossibleCondition Impossible attempt to cast false of type false to truthy
+%s:17 PhanRedundantCondition Redundant attempt to cast TRUE of type true to truthy
 %s:17 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is true but \intdiv() takes int
+%s:18 PhanRedundantCondition Redundant attempt to cast 'key' of type 'key' to truthy
 %s:18 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is 'key' but \intdiv() takes int
+%s:19 PhanRedundantCondition Redundant attempt to cast '1' of type '1' to truthy
 %s:19 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is '1' but \intdiv() takes int
+%s:20 PhanImpossibleCondition Impossible attempt to cast '' of type '' to truthy
+%s:21 PhanImpossibleCondition Impossible attempt to cast '0' of type '0' to truthy
 %s:22 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is float but \intdiv() takes int

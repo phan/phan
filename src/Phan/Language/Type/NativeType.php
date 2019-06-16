@@ -300,6 +300,7 @@ abstract class NativeType extends Type
 
     /**
      * @return Generator<mixed,Type>
+     * @suppress PhanImpossibleCondition deliberately creating empty generator
      */
     public function getReferencedClasses() : Generator
     {

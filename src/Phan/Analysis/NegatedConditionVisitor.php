@@ -11,6 +11,7 @@ use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\KindVisitorImplementation;
 use Phan\BlockAnalysisVisitor;
 use Phan\CodeBase;
+use Phan\Config;
 use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Context;
@@ -75,6 +76,9 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
     public function visit(Node $node) : Context
     {
         $this->checkVariablesDefined($node);
+        if (Config::getValue('redundant_condition_detection')) {
+            $this->checkRedundantOrImpossibleTruthyCondition($node, $this->context, null, true);
+        }
         return $this->context;
     }
 
@@ -232,6 +236,9 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
         $expr_node = $node->children['expr'];
         $flags = $node->flags;
         if ($flags !== flags\UNARY_BOOL_NOT) {
+            if (Config::getValue('redundant_condition_detection')) {
+                $this->checkRedundantOrImpossibleTruthyCondition($node, $this->context, null, true);
+            }
             if ($expr_node instanceof Node) {
                 if ($flags === flags\UNARY_SILENCE) {
                     return $this->__invoke($expr_node);
@@ -244,6 +251,9 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
         if ($expr_node instanceof Node) {
             // The negated version of a NegatedConditionVisitor is a ConditionVisitor.
             return (new ConditionVisitor($this->code_base, $this->context))($expr_node);
+        } elseif (Config::getValue('redundant_condition_detection')) {
+            // Check `scalar` of `if (!scalar)`
+            $this->checkRedundantOrImpossibleTruthyCondition($expr_node, $this->context, null, false);
         }
         return $this->context;
     }

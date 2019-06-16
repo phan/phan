@@ -383,6 +383,54 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
+     * Checks if the conditional of a ternary conditional is always true/false
+     * @override
+     */
+    /*
+    public function visitConditional(Node $node) : void
+    {
+        $cond_node = $node->children['cond'];
+        $cond_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $cond_node);
+        if (!$cond_type->hasRealTypeSet()) {
+            return;
+        }
+        $cond_type = $cond_type->getRealUnionType();
+
+        if (!$cond_type->containsFalsey()) {
+            RedundantCondition::emitInstance(
+                $cond_node,
+                $this->code_base,
+                $this->context,
+                Issue::RedundantCondition,
+                [
+                    ASTReverter::toShortString($cond_node),
+                    $cond_type->getRealUnionType(),
+                    'truthy',
+                ],
+                static function (UnionType $type) : bool {
+                    return !$type->containsFalsey();
+                }
+            );
+        } elseif (!$cond_type->containsTruthy()) {
+            RedundantCondition::emitInstance(
+                $cond_node,
+                $this->code_base,
+                $this->context,
+                Issue::ImpossibleCondition,
+                [
+                    ASTReverter::toShortString($cond_node),
+                    $cond_type->getRealUnionType(),
+                    'truthy',
+                ],
+                static function (UnionType $type) : bool {
+                    return !$type->containsTruthy();
+                }
+            );
+        }
+    }
+     */
+
+    /**
      * Checks if the left hand side of a null coalescing operator is never null or always null
      */
     public function analyzeBinaryCoalesce(Node $node) : void
