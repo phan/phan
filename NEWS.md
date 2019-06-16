@@ -1,6 +1,6 @@
 Phan NEWS
 
-??? ?? 2019, Phan 2.2.1 (dev)
+Jun 16 2019, Phan 2.2.1
 -----------------------
 
 New features(CLI, Configs):
@@ -20,6 +20,7 @@ Bug fixes:
 + Avoid false positives analyzing expressions within `assert()`.
 + Fix method signatures for php 7.4's `WeakReference`.
 + Fix false positives analyzing uses of `__call` and `__callStatic` (#702)
++ Fix false positive redundant conditions for casting `callable` to object types.
 
 Jun 14 2019, Phan 2.2.0
 -----------------------

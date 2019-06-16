@@ -69,6 +69,11 @@ final class CallableStringType extends StringType implements CallableInterface
         return $this->is_nullable;
     }
 
+    public function isPossiblyObject() : bool
+    {
+        return false;
+    }
+
     protected function __construct(bool $is_nullable)
     {
         parent::__construct('\\', self::NAME, [], $is_nullable);

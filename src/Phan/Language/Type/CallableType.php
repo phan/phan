@@ -39,6 +39,11 @@ final class CallableType extends NativeType implements CallableInterface
         return false;
     }
 
+    public function isPossiblyObject() : bool
+    {
+        return true;  // callable-object, Closure, etc. are objects
+    }
+
     public function asObjectType() : ?Type
     {
         return CallableObjectType::instance(false);
