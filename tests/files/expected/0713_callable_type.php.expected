@@ -1,0 +1,2 @@
+%s:8 PhanImpossibleCondition Impossible attempt to cast $c2 of type callable-object to string
+%s:13 PhanImpossibleCondition Impossible attempt to cast $c3 of type callable-string to object
