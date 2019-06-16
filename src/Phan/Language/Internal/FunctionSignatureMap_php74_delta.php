@@ -35,8 +35,8 @@ return [
 'ReflectionReference::fromArrayElement' => ['?ReflectionReference', 'array'=>'array', 'key'=>'int|string'],
 'ReflectionReference::getId' => ['string'],
 'SQLite3Stmt::getSQL' => ['string', 'expanded='=>'bool'],
-'WeakReference::__construct' => ['void', 'referent'=>'object'],
-'WeakReference::get' => ['object'],
+'WeakReference::create' => ['WeakReference', 'referent'=>'object'],
+'WeakReference::get' => ['?object'],
 ],
 'old' => [
 ]

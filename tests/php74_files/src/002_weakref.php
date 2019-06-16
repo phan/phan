@@ -1,6 +1,6 @@
 <?php
 function uses_weakref() {
-    $wr = new WeakReference(new stdClass());
+    $wr = WeakReference::create(new stdClass());
     try {
         $wr->disallow = "writes";
     } catch (Error $ex) {
@@ -8,7 +8,9 @@ function uses_weakref() {
     }
     echo strlen($wr->get());  // should warn that this is an object
     echo strlen($wr->missingMethod());  // should warn
-    // Phan should warn about wrong argument for __construct
-    var_export(new WeakReference(2));
+    // Phan should warn about wrong argument for create
+    var_export(WeakReference::create(2));
+    // Phan should warn about trying to construct WeakReference with a param
+    $wrInvalid = new WeakReference(new stdClass());
 }
 uses_weakref();

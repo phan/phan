@@ -780,7 +780,7 @@ class Type
         return self::fromStringInContext(
             self::stringFromReflectionType($reflection_type),
             new Context(),
-            Type::FROM_NODE
+            Type::FROM_TYPE
         );
     }
 
