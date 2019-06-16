@@ -16,7 +16,8 @@ New features(Analysis):
 
 Bug fixes:
 + Fix issue that would make Phan infer that a redundant/impossible condition outside a loop was in a loop.
-+ Avoid false positives analyzing expressions within `assert()`
++ Avoid false positives analyzing expressions within `assert()`.
++ Fix method signatures for php 7.4's `WeakReference`.
 
 Jun 14 2019, Phan 2.2.0
 -----------------------

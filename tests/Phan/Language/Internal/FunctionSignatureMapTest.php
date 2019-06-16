@@ -94,7 +94,7 @@ final class FunctionSignatureMapTest extends BaseTest implements CodeBaseAwareTe
         $context = new Context();
         $errors = '';
         foreach ($real_map as $function_name => $return_type_string) {
-            $real_signature = $map[$function_name] ?? null;
+            $real_signature = $map[\strtolower($function_name)] ?? null;
             if ($real_signature === null) {
                 $errors .= "Expected function name '$function_name' to be found in signatures for php 7.4\n";
                 continue;
