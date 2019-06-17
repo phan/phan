@@ -9,8 +9,8 @@
 %s:12 PhanTypeMismatchArgumentInternal Argument 1 ($string) is 123 but \strlen() takes string
 %s:13 PhanTypeMismatchArgumentInternal Argument 1 ($string) is -123 but \strlen() takes string
 %s:16 PhanTypeInvalidUnaryOperandNumeric Invalid operator: unary operand of - is string (expected number)
-%s:21 PhanTypeMismatchArgumentInternal Argument 1 ($string) is float but \strlen() takes string
-%s:22 PhanTypeMismatchArgumentInternal Argument 1 ($string) is float but \strlen() takes string
+%s:21 PhanTypeMismatchArgumentInternal Argument 1 ($string) is 1.2 but \strlen() takes string
+%s:22 PhanTypeMismatchArgumentInternal Argument 1 ($string) is -1.3 but \strlen() takes string
 %s:23 PhanTypeInvalidLeftOperandOfAdd Invalid operator: left operand of + is 'hello\x2c ' (expected array or number)
 %s:23 PhanTypeInvalidRightOperandOfAdd Invalid operator: right operand of + is 'world!' (expected array or number)
 %s:24 PhanTypeInvalidLeftOperandOfNumericOp Invalid operator: left operand of / is 'hello\x2c ' (expected number)

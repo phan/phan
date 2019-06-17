@@ -1,8 +1,8 @@
 src/031_sleep.php:4 PhanUnreferencedPHPDocProperty Possibly zero references to PHPDoc @property \A31->z
-src/031_sleep.php:17 PhanTypeMismatchReturn Returning type array{0:'_x',1:'z',2:'_z',3:'A31',4:2,5:float,6:\stdClass} but __sleep() is declared to return string[]
+src/031_sleep.php:17 PhanTypeMismatchReturn Returning type array{0:'_x',1:'z',2:'_z',3:'A31',4:2,5:42.1,6:\stdClass} but __sleep() is declared to return string[]
 src/031_sleep.php:17 SleepCheckerInvalidPropNameType __sleep is returning an array with a value of type 2, expected string
+src/031_sleep.php:17 SleepCheckerInvalidPropNameType __sleep is returning an array with a value of type 42.1, expected string
 src/031_sleep.php:17 SleepCheckerInvalidPropNameType __sleep is returning an array with a value of type \stdClass, expected string
-src/031_sleep.php:17 SleepCheckerInvalidPropNameType __sleep is returning an array with a value of type float, expected string
 src/031_sleep.php:17 SleepCheckerInvalidPropName __sleep is returning an array that includes A31, which cannot be found
 src/031_sleep.php:17 SleepCheckerInvalidPropName __sleep is returning an array that includes _x, which cannot be found
 src/031_sleep.php:17 SleepCheckerMagicPropName __sleep is returning an array that includes z, which is a magic property

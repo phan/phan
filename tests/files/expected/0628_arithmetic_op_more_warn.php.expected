@@ -13,6 +13,6 @@
 %s:27 PhanTypeInvalidLeftOperandOfIntegerOp Invalid operator: left operand of << is \stdClass (expected int)
 %s:28 PhanTypeInvalidRightOperandOfIntegerOp Invalid operator: right operand of >> is \stdClass (expected int)
 %s:29 PhanTypeInvalidLeftOperandOfIntegerOp Invalid operator: left operand of >> is \stdClass (expected int)
-%s:30 PhanTypeInvalidLeftOperandOfIntegerOp Invalid operator: left operand of >> is float (expected int)
+%s:30 PhanTypeInvalidLeftOperandOfIntegerOp Invalid operator: left operand of >> is 3.5 (expected int)
 %s:31 PhanTypeInvalidLeftOperandOfIntegerOp Invalid operator: left operand of >>= is \stdClass (expected int)
 %s:34 PhanTypeInvalidLeftOperandOfAdd Invalid operator: left operand of + is \stdClass (expected array or number)

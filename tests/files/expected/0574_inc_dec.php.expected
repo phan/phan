@@ -42,4 +42,4 @@
 %s:54 PhanTypeMismatchArgumentInternal Argument 1 ($string) is int but \strlen() takes string
 %s:56 PhanTypeMismatchArgumentInternal Argument 1 ($string) is int but \strlen() takes string
 %s:58 PhanTypeMismatchArgumentInternal Argument 1 ($string) is float but \strlen() takes string
-%s:61 PhanTypeMismatchArgumentInternal Argument 1 ($string) is float but \strlen() takes string
+%s:61 PhanTypeMismatchArgumentInternal Argument 1 ($string) is 3.1415 but \strlen() takes string

@@ -19,4 +19,6 @@
 %s:19 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is '1' but \intdiv() takes int
 %s:20 PhanImpossibleCondition Impossible attempt to cast '' of type '' to truthy
 %s:21 PhanImpossibleCondition Impossible attempt to cast '0' of type '0' to truthy
-%s:22 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is float but \intdiv() takes int
+%s:22 PhanRedundantCondition Redundant attempt to cast 4.2 of type 4.2 to truthy
+%s:22 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is 4.2 but \intdiv() takes int
+%s:23 PhanImpossibleCondition Impossible attempt to cast 0.0 of type 0.0 to truthy

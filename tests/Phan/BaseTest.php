@@ -42,6 +42,10 @@ abstract class BaseTest extends TestCase
             'canonical_object_map',
             'internal_fn_cache',
         ],
+        'Phan\Language\Type\LiteralFloatType' => [
+            'nullable_float_type',
+            'non_nullable_float_type',
+        ],
         'Phan\Language\Type\LiteralIntType' => [
             'nullable_int_type',
             'non_nullable_int_type',

@@ -20,6 +20,7 @@ use Phan\Language\Type\BoolType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\LiteralIntType;
+use Phan\Language\Type\LiteralFloatType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
@@ -234,7 +235,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
 
         if ($left->hasNonNullIntType()) {
             if ($right->hasNonNullIntType()) {
-                return self::computeIntegerOperationResult($node, $left, $right);
+                return self::computeIntOrFloatOperationResult($node, $left, $right);
             }
             if ($right->hasNonNullStringType()) {
                 $this->emitIssue(
@@ -273,7 +274,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
     }
 
     // TODO: Switch to asRealUnionType when both operands are real
-    private static function computeIntegerOperationResult(
+    private static function computeIntOrFloatOperationResult(
         Node $node,
         UnionType $left,
         UnionType $right
@@ -287,9 +288,9 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             $real_float = [FloatType::instance(false)];
         }
         $left_value = $left->asSingleScalarValueOrNull();
-        if (is_int($left_value)) {
+        if ($left_value !== null) {
             $right_value = $right->asSingleScalarValueOrNull();
-            if (is_int($right_value)) {
+            if ($right_value !== null) {
                 /**
                  * This will aggressively infer the real type for expressions where both values have known real literal types (e.g. 2+2*3),
                  * but fall back if the real type was less specific.
@@ -320,27 +321,45 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                         );
                     case ast\flags\BINARY_MUL:
                         $value = $left_value * $right_value;
-                        return is_int($value) ? $make_literal_union_type(LiteralIntType::instanceForValue($value, false), $real_float)
-                                              : FloatType::instance(false)->asRealUnionType();
+                        return $make_literal_union_type(
+                            is_int($value) ? LiteralIntType::instanceForValue($value, false)
+                                           : LiteralFloatType::instanceForValue($value, false),
+                            $real_float
+                        );
                     case ast\flags\BINARY_SUB:
                         $value = $left_value - $right_value;
-                        return is_int($value) ? $make_literal_union_type(LiteralIntType::instanceForValue($value, false), $real_float)
-                                              : FloatType::instance(false)->asRealUnionType();
+                        return $make_literal_union_type(
+                            is_int($value) ? LiteralIntType::instanceForValue($value, false)
+                                           : LiteralFloatType::instanceForValue($value, false),
+                            $real_float
+                        );
                     case ast\flags\BINARY_ADD:
                         $value = $left_value + $right_value;
-                        return is_int($value) ? $make_literal_union_type(LiteralIntType::instanceForValue($value, false), $real_float)
-                                              : FloatType::instance(false)->asRealUnionType();
+                        return $make_literal_union_type(
+                            is_int($value) ? LiteralIntType::instanceForValue($value, false)
+                                           : LiteralFloatType::instanceForValue($value, false),
+                            $real_float
+                        );
                     case ast\flags\BINARY_POW:
                         $value = $left_value ** $right_value;
-                        return is_int($value) ? $make_literal_union_type(LiteralIntType::instanceForValue($value, false), $real_float)
-                                              : FloatType::instance(false)->asRealUnionType();
+                        return $make_literal_union_type(
+                            is_int($value) ? LiteralIntType::instanceForValue($value, false)
+                                           : LiteralFloatType::instanceForValue($value, false),
+                            $real_float
+                        );
                 }
             }
         }
 
         $is_binary_op = \in_array($node->flags, [ast\flags\BINARY_BITWISE_XOR, ast\flags\BINARY_BITWISE_AND, ast\flags\BINARY_BITWISE_OR], true);
 
-        return UnionType::fromFullyQualifiedPHPDocAndRealString('int', $is_binary_op ? 'int|string' : 'int|float');
+        if ($is_binary_op) {
+            return UnionType::fromFullyQualifiedPHPDocAndRealString('int', 'int|string');
+        }
+        return UnionType::fromFullyQualifiedPHPDocAndRealString(
+            $left->hasTypesCoercingToNonInt() || $right->hasTypesCoercingToNonInt() ? 'float' : 'int',
+            'int|float'
+        );
     }
 
     /**
@@ -671,8 +690,8 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
 
 
         // fast-track common cases
-        if ($left->isNonNullIntType() && $right->isNonNullIntType()) {
-            return self::computeIntegerOperationResult($node, $left, $right);
+        if ($left->isNonNullIntOrFloatType() && $right->isNonNullIntOrFloatType()) {
+            return self::computeIntOrFloatOperationResult($node, $left, $right);
         }
 
         // If both left and right union types are arrays, then this is array
@@ -776,8 +795,8 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         );
 
         // fast-track common cases
-        if ($left->isNonNullIntType() && $right->isNonNullIntType()) {
-            return self::computeIntegerOperationResult($node, $left, $right);
+        if ($left->isNonNullIntOrFloatType() && $right->isNonNullIntOrFloatType()) {
+            return self::computeIntOrFloatOperationResult($node, $left, $right);
         }
 
         $this->warnAboutInvalidUnionType(

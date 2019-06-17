@@ -13,7 +13,7 @@ function testcondition311($y, $str) {
     if (!!1) { }
     if (!'') { }
     if (!'aa') { }
-    if (!0.0) { }  // TODO: warn
+    if (!0.0) { }
     if ($y && !$x) { }  // should emit undefined
     if ($y && $x2) { }  // should emit undefined
     if (!$z) { }  // should emit undefined
