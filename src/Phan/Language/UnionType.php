@@ -1332,6 +1332,19 @@ class UnionType implements Serializable
     }
 
     /**
+     * Returns true if this contains at least one IntType or LiteralIntType
+     */
+    public function hasIntType() : bool
+    {
+        foreach ($this->type_set as $type) {
+            if ($type instanceof IntType) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Returns true if this contains at least one non-null IntType or LiteralIntType
      */
     public function hasNonNullIntType() : bool

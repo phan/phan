@@ -356,8 +356,17 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         if ($is_binary_op) {
             return UnionType::fromFullyQualifiedPHPDocAndRealString('int', 'int|string');
         }
+        // A heuristic to reduce false positives.
+        // e.g. an operation on float and float returns float.
+        // e.g. an operation on int|float and int|float returns int|float.
+        // e.g. an operation on int and int returns int.
+        if ($left->hasTypesCoercingToNonInt() || $right->hasTypesCoercingToNonInt()) {
+            $main_type = ($left->hasIntType() && $right->hasIntType()) ? 'int|float' : 'float';
+        } else {
+            $main_type = 'int';
+        }
         return UnionType::fromFullyQualifiedPHPDocAndRealString(
-            $left->hasTypesCoercingToNonInt() || $right->hasTypesCoercingToNonInt() ? 'float' : 'int',
+            $main_type,
             'int|float'
         );
     }
