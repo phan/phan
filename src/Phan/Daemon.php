@@ -60,8 +60,12 @@ class Daemon
             if (\function_exists('pcntl_signal')) {
                 \pcntl_signal(
                     \SIGCHLD,
-                    static function (int $signo, ?int $status = null, ?int $pid = null) use (&$got_signal) : void {
+                    static function (int $signo, $status = null, ?int $pid = null) use (&$got_signal) : void {
                         $got_signal = true;
+                        if (is_array($status) and isset($status['status'])) {
+                            // Seems to struct siginto_t
+                            $status = $status['status'];
+                        }
                         Request::childSignalHandler($signo, $status, $pid);
                     }
                 );
