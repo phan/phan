@@ -114,7 +114,7 @@ class PHPDocToRealTypesPlugin extends PluginV3 implements
                 $code_base,
                 $method->getContext(),
                 $type->isNullable() ? self::CanUseNullableParamType : self::CanUseParamType,
-                'Can use {TYPE} as a return type of parameter ${PARAMETER} of {METHOD}',
+                'Can use {TYPE} as the type of parameter ${PARAMETER} of {METHOD}',
                 [$type->asSignatureType(), $parameter->getName(), $method->getName()]
             );
         }

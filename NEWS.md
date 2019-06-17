@@ -1,6 +1,6 @@
 Phan NEWS
 
-??? ?? 2019, Phan 2.2.2 (dev)
+Jun 17 2019, Phan 2.2.2
 -----------------------
 
 New features(Analysis):
@@ -8,6 +8,9 @@ New features(Analysis):
 
 Maintenance:
 + Support parsing PHP 7.4's numeric literal separator (e.g. `1_000_000`, `0xCAFE_F00d`, `0b0101_1111`) in the polyfill (#2829)
+
+Bug fixes:
++ Fix a crash in the Phan daemon on Mac/Linux (#2881)
 
 Jun 16 2019, Phan 2.2.1
 -----------------------
