@@ -85,8 +85,8 @@ class Request
     private static $child_pids = [];
 
     /**
-     * A set of process ids of child processes
-     * @var array<int,int>
+     * A map from process ids of exited child processes to their exit status.
+     * @var array<int,int|array>
      */
     private static $exited_pid_status = [];
 
