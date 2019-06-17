@@ -1,7 +1,10 @@
 Phan NEWS
 
-??? ?? 2019, Phan 2.2.3 (dev)
+Jun 17 2019, Phan 2.2.3
 -----------------------
+
+New features(Analysis):
++ Reduce false positives about `float` not casting to `int` introduced in 2.2.2
 
 Jun 17 2019, Phan 2.2.2
 -----------------------
