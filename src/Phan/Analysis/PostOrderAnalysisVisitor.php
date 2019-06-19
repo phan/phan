@@ -1037,7 +1037,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     private function analyzeIncOrDec(Node $node) : Context
     {
         $var = $node->children['var'];
-        $old_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $var)->withFlattenedArrayShapeOrLiteralTypeInstances();
+        $old_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $var);
         if (!$old_type->canCastToUnionType(UnionType::fromFullyQualifiedPHPDocString('int|string|float'))) {
             $this->emitIssue(
                 Issue::TypeInvalidUnaryOperandIncOrDec,
@@ -1054,7 +1054,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 return $this->context;
             }
             try {
-                $variable = (new ContextNode($this->code_base, $this->context, $node->children['var']))->getVariableStrict();
+                $variable = (new ContextNode($this->code_base, $this->context, $var))->getVariableStrict();
             } catch (IssueException $_) {
                 return $this->context;
             } catch (NodeException $_) {
