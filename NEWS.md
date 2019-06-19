@@ -1,5 +1,10 @@
 Phan NEWS
 
+Jun 17 2019, Phan 2.2.4 (dev)
+-----------------------
+
++ Reduce false positives inferring the resulting type of `$x++`, `--$x`, etc. (#2877)
+
 Jun 17 2019, Phan 2.2.3
 -----------------------
 
