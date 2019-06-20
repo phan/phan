@@ -1004,6 +1004,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      *
      * @return Context
      * The updated context after visiting the node
+     *
+     * NOTE: This should never get called.
      */
     public function visitIfElem(Node $node) : Context
     {
@@ -1296,6 +1298,14 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      *
      * @return Context
      * The updated context after visiting the node
+     *
+     * XXX this is complicated because we need to know for each `if`/`elseif` clause
+     *
+     * - What the side effects of executing the expression are on the chain (e.g. variable assignments, assignments by references)
+     * - What the context would be if that expression were truthy (ConditionVisitor)
+     * - What the context would be if that expression were falsey (NegatedConditionVisitor)
+     *
+     * The code in visitIfElem had to be inlined in order to properly modify the associated contexts.
      */
     public function visitIf(Node $node) : Context
     {
@@ -1328,64 +1338,111 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         foreach ($child_nodes as $child_node) {
             // The conditions need to communicate to the outer
             // scope for things like assigning variables.
-            $child_context = clone($fallthrough_context);
+            // $child_context = $fallthrough_context->withClonedScope();
 
-            $child_context->withLineNumberStart(
-                $child_node->lineno
-            );
+            $fallthrough_context->setLineNumberStart($child_node->lineno);
 
-            // Step into each child node and get an
-            // updated context for the node
-            $child_context = $this->analyzeAndGetUpdatedContext($child_context, $node, $child_node);
+            $old_context = $this->context;
+            $this->context = $fallthrough_context;
+            $this->parent_node_list[] = $node;
 
-            // Issue #406: We can improve analysis of `if` blocks by using
-            // a BlockExitStatusChecker to avoid propagating invalid inferences.
-            // TODO: we may wish to check for a try block between this line's scope
-            // and the parent function's (or global) scope,
-            // to reduce false positives.
-            // (Variables will be available in `catch` and `finally`)
-            // This is mitigated by finally and catch blocks being unaware of new variables from try{} blocks.
-            $cond_node = $child_node->children['cond'];
-            // inferred_value is either:
-            // 1. truthy non-Node if the value could be inferred
-            // 2. falsy non-Node if the value could be inferred
-            // 3. A Node if the value could not be inferred (most conditionals)
-            if ($cond_node instanceof Node) {
-                $inferred_cond_value = (new ContextNode($this->code_base, $fallthrough_context, $cond_node))->getEquivalentPHPValueForControlFlowAnalysis();
-            } else {
-                // Treat `else` as equivalent to `elseif (true)`
-                $inferred_cond_value = $cond_node ?? true;
-            }
-            $stmts_node = $child_node->children['stmts'];
-            if (!$stmts_node instanceof Node) {
-                throw new AssertionError('Did not expect null/empty statements list node');
-            }
-            if (!$inferred_cond_value) {
-                // Don't merge this scope into the outer scope
-                // e.g. "if (false) { anything }"
-                $excluded_elem_count++;
-            } elseif (BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($stmts_node)) {
-                // e.g. "if (!is_string($x)) { return; }" or break
-                $excluded_elem_count++;
-                if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_node)) {
-                    $this->recordLoopContextForBreakOrContinue($child_context);
+            try {
+
+                // NOTE: This is different from other analysis visitors because analyzing 'cond' with `||` has side effects
+                // after supporting `BlockAnalysisVisitor->visitBinaryOp()`
+                // TODO: Calling analyzeAndGetUpdatedContext before preOrderAnalyze is a hack.
+
+                // TODO: This is redundant and has worse knowledge of the specific types of blocks than ConditionVisitor does.
+                // TODO: Implement a hybrid BlockAnalysisVisitor+ConditionVisitor that will do a better job of inferences and reducing false positives? (and reduce the redundant work)
+
+                // E.g. the below code would update the context of BlockAnalysisVisitor in BlockAnalysisVisitor->visitBinaryOp()
+                //
+                //     if (!(is_string($x) || $x === null)) {}
+                //
+                // But we want to let BlockAnalysisVisitor modify the context for cases such as the below:
+                //
+                // $result = !($x instanceof User) || $x->meetsCondition()
+                $condition_node = $child_node->children['cond'];
+                if ($condition_node instanceof Node) {
+                    $fallthrough_context = $this->analyzeAndGetUpdatedContext(
+                        $fallthrough_context->withLineNumberStart($condition_node->lineno),
+                        $child_node,
+                        $condition_node
+                    );
+                } elseif (Config::getValue('redundant_condition_detection')) {
+                    (new ConditionVisitor($this->code_base, $fallthrough_context))->checkRedundantOrImpossibleTruthyCondition($condition_node, $fallthrough_context, null, false);
                 }
-            } else {
-                $child_context_list[] = $child_context;
-            }
 
-            if ($cond_node instanceof Node) {
-                // fwrite(STDERR, "Checking if unconditionally true: " . \Phan\Debug::nodeToString($cond_node) . "\n");
-                // TODO: Could add a check for conditions that are unconditionally falsey and warn
-                if (!$inferred_cond_value instanceof Node && $inferred_cond_value) {
-                    // TODO: Could warn if this is not a condition on a static variable
+                $child_context = $fallthrough_context->withClonedScope();
+
+                $child_context = $this->preOrderAnalyze($child_context, $child_node);
+
+                $stmts_node = $child_node->children['stmts'];
+                if (!$stmts_node instanceof Node) {
+                    throw new AssertionError('Did not expect null/empty statements list node');
+                }
+
+                $child_context = $this->analyzeAndGetUpdatedContext(
+                    $child_context->withScope(
+                        new BranchScope($child_context->getScope())
+                    )->withLineNumberStart($stmts_node->lineno),
+                    $child_node,
+                    $stmts_node
+                );
+
+                // Now that we know all about our context (like what
+                // 'self' means), we can analyze statements like
+                // assignments and method calls.
+                $child_context = $this->postOrderAnalyze($child_context, $child_node);
+
+                // Issue #406: We can improve analysis of `if` blocks by using
+                // a BlockExitStatusChecker to avoid propagating invalid inferences.
+                // TODO: we may wish to check for a try block between this line's scope
+                // and the parent function's (or global) scope,
+                // to reduce false positives.
+                // (Variables will be available in `catch` and `finally`)
+                // This is mitigated by finally and catch blocks being unaware of new variables from try{} blocks.
+
+                // inferred_value is either:
+                // 1. truthy non-Node if the value could be inferred
+                // 2. falsy non-Node if the value could be inferred
+                // 3. A Node if the value could not be inferred (most conditionals)
+                if ($condition_node instanceof Node) {
+                    $inferred_cond_value = (new ContextNode($this->code_base, $fallthrough_context, $condition_node))->getEquivalentPHPValueForControlFlowAnalysis();
+                } else {
+                    // Treat `else` as equivalent to `elseif (true)`
+                    $inferred_cond_value = $condition_node ?? true;
+                }
+                if (!$inferred_cond_value) {
+                    // Don't merge this scope into the outer scope
+                    // e.g. "if (false) { anything }"
+                    $excluded_elem_count++;
+                } elseif (BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($stmts_node)) {
+                    // e.g. "if (!is_string($x)) { return; }" or break
+                    $excluded_elem_count++;
+                    if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_node)) {
+                        $this->recordLoopContextForBreakOrContinue($child_context);
+                    }
+                } else {
+                    $child_context_list[] = $child_context;
+                }
+
+                if ($condition_node instanceof Node) {
+                    // fwrite(STDERR, "Checking if unconditionally true: " . \Phan\Debug::nodeToString($condition_node) . "\n");
+                    // TODO: Could add a check for conditions that are unconditionally falsey and warn
+                    if (!$inferred_cond_value instanceof Node && $inferred_cond_value) {
+                        // TODO: Could warn if this is not a condition on a static variable
+                        $first_unconditionally_true_index = $first_unconditionally_true_index ?? \count($child_context_list);
+                    }
+                    $fallthrough_context = (new NegatedConditionVisitor($this->code_base, $fallthrough_context))->__invoke($condition_node);
+                } elseif ($condition_node) {
                     $first_unconditionally_true_index = $first_unconditionally_true_index ?? \count($child_context_list);
                 }
-                $fallthrough_context = (new NegatedConditionVisitor($this->code_base, $fallthrough_context))->__invoke($cond_node);
-            } elseif ($cond_node) {
-                $first_unconditionally_true_index = $first_unconditionally_true_index ?? \count($child_context_list);
+                // If cond_node was null, it would be an else statement.
+            } finally {
+                $this->context = $old_context;
+                \array_pop($this->parent_node_list);
             }
-            // If cond_node was null, it would be an else statement.
         }
         // fprintf(STDERR, "First unconditionally true index is %s: %s\n", $first_unconditionally_true_index ?? 'null', \Phan\Debug::nodeToString($node));
 
