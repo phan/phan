@@ -757,6 +757,7 @@ class CLI
 
         self::checkPluginsExist();
         self::ensureASTParserExists();
+        self::checkValidFileConfig();
 
         $output = $this->output;
         $printer = $factory->getPrinter($printer_type, $output);
@@ -809,6 +810,25 @@ class CLI
             Config::setValue('color_issue_messages', false);
         } elseif (getenv('PHAN_ENABLE_COLOR_OUTPUT')) {
             Config::setValue('color_issue_messages_if_supported', true);
+        }
+    }
+
+    private static function checkValidFileConfig() : void {
+        $include_analysis_file_list = Config::getValue('include_analysis_file_list');
+        if ($include_analysis_file_list) {
+            $valid_files = 0;
+            foreach ($include_analysis_file_list as $file) {
+                $absolute_path = Config::projectPath($file);
+                if (file_exists($absolute_path)) {
+                    $valid_files++;
+                } else {
+                    fprintf(STDERR, "Warning: Could not find file '%s' passed in %s" . PHP_EOL, $absolute_path, self::colorizeHelpSectionIfSupported('--include-analysis-file-list'));
+                }
+            }
+            if ($valid_files === 0) {
+                // TODO convert this to an error in Phan 3.
+                fprintf(STDERR, "Warning: None of the files in %s exist - This will be an error in future Phan releases." . PHP_EOL, self::colorizeHelpSectionIfSupported('--include-analysis-file-list'));
+            }
         }
     }
 
@@ -1339,14 +1359,26 @@ EOB
         exit($exit_code);
     }
 
+    /**
+     * Prints a section of the help or usage message to stdout.
+     */
     private static function printHelpSection(string $section, bool $forbid_color = false) : void
     {
         if (!$forbid_color) {
-            if (Config::getValue('color_issue_messages') ?? (!getenv('PHAN_DISABLE_COLOR_OUTPUT') && self::supportsColor(\STDOUT))) {
-                $section = self::colorizeHelpSection($section);
-            }
+            $section = self::colorizeHelpSectionIfSupported($section);
         }
         echo $section;
+    }
+
+    /**
+     * Add ansi color codes to the CLI flags included in the --help or --extended-help message,
+     * but only if the CLI/config flags and environment supports it.
+     */
+    public static function colorizeHelpSectionIfSupported(string $section) : string {
+        if (Config::getValue('color_issue_messages') ?? (!getenv('PHAN_DISABLE_COLOR_OUTPUT') && self::supportsColor(\STDOUT))) {
+            $section = self::colorizeHelpSection($section);
+        }
+        return $section;
     }
 
     /**
@@ -1361,7 +1393,7 @@ EOB
         };
         $long_flag_regex = '(()((?:--)(?:' . \implode('|', array_map(static function (string $option) : string {
             return \preg_quote(\rtrim($option, ':'));
-        }, self::GETOPT_LONG_OPTIONS)) . '))([^\w-]))';
+        }, self::GETOPT_LONG_OPTIONS)) . '))([^\w-]|$))';
         $section = \preg_replace_callback($long_flag_regex, $colorize_flag_cb, $section);
         $short_flag_regex = '((\s|\b)(-[' . \str_replace(':', '', self::GETOPT_SHORT_OPTIONS) . '])([^\w-]))';
 
