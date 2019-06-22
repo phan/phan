@@ -46,7 +46,10 @@
         "psr-4": {"Phan\\": "src/Phan"}
     },
     "autoload-dev": {
-        "psr-4": {"Phan\\Tests\\": "tests/Phan"}
+        "psr-4": {
+            "Phan\\Tests\\": "tests/Phan",
+            "Tests\\Autoload\\": "tests/Autoload"
+        }
     },
     "bin": ["phan", "phan_client", "tocheckstyle"]
 }

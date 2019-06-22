@@ -2384,7 +2384,7 @@ class UnionType implements Serializable
             // Get the class FQSEN
             $class_fqsen = FullyQualifiedClassName::fromType($class_type);
             // See if the class exists
-            if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+            if (!$code_base->hasClassWithFQSEN($class_fqsen, true)) {
                 throw new CodeBaseException(
                     $class_fqsen,
                     "Cannot find class $class_fqsen"

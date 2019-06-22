@@ -111,7 +111,7 @@ class ParameterTypesAnalyzer
                 } else {
                     // Make sure the class exists
                     $type_fqsen = FullyQualifiedClassName::fromType($type);
-                    if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
+                    if (!$code_base->hasClassWithFQSEN($type_fqsen, true)) {
                         Issue::maybeEmitWithParameters(
                             $code_base,
                             $method->getContext(),

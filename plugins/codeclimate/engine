@@ -128,6 +128,9 @@ call_user_func(static function () use ($code_base) : void {
         }
     }
 
+    // Initialize the codebase, allows for pre-run setup
+    $code_base->init();
+
     // Analyze the file list provided via the CLI
     // @phan-suppress-next-line PhanThrowTypeAbsentForCall if this throws, it's not recoverable.
     Phan::analyzeFileList($code_base, /** @return string[] */ static function () use($include_paths) : array {

@@ -60,7 +60,7 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
             return;
         }
         $code_base = $this->code_base;
-        if (!$code_base->hasClassWithFQSEN(self::$phpunit_test_case_fqsen)) {
+        if (!$code_base->hasClassWithFQSEN(self::$phpunit_test_case_fqsen, true)) {
             if (!self::$did_warn_missing_class) {
                 fprintf(STDERR, "Using plugin %s but could not find PHPUnit\Framework\TestCase\n", self::class);
                 self::$did_warn_missing_class = true;

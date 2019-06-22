@@ -222,6 +222,7 @@ class Phan implements IgnoredFilesFilterInterface
                 $code_base->recordUnparsableFile($file_path);
             }
         }
+
         $code_base->setCurrentParsedFile(null);
         ConfigPluginSet::instance()->beforeAnalyze($code_base);
         if ($is_undoable_request) {
@@ -353,6 +354,12 @@ class Phan implements IgnoredFilesFilterInterface
                 $code_base->resolveClassAliases();
             }
 
+            // If a class resolver is registered, only analyse the $analyze_file_path_list files
+            if ($code_base->hasClassResolver()) {
+                $include = Config::getValue('include_analysis_file_list');
+                Config::setValue('include_analysis_file_list', array_merge($include, $analyze_file_path_list));
+            }
+
             // Take a pass over all classes verifying
             // various states now that we have the whole
             // state in memory
@@ -379,6 +386,7 @@ class Phan implements IgnoredFilesFilterInterface
                     return !self::isExcludedAnalysisFile($file_path);
                 }
             );
+
             if ($request instanceof Request && count($analyze_file_path_list) === 0) {
                 $request->respondWithNoFilesToAnalyze();
                 exit(0);

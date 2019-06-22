@@ -80,6 +80,7 @@ class Issue
     const InvalidFQSENInCallable    = 'PhanInvalidFQSENInCallable';
     const EmptyFQSENInClasslike     = 'PhanEmptyFQSENInClasslike';
     const InvalidFQSENInClasslike     = 'PhanInvalidFQSENInClasslike';
+    const AutoloaderMissingFile     = 'PhanAutoloaderMissingFile';
 
     // Issue::CATEGORY_TYPE
     const NonClassMethodCall        = 'PhanNonClassMethodCall';
@@ -1122,6 +1123,14 @@ class Issue
                 "Possible attempt to access missing magic method {FUNCTIONLIKE} of '{CLASS}'",
                 self::REMEDIATION_B,
                 11045
+            ),
+            new Issue(
+                self::AutoloaderMissingFile,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_CRITICAL,
+                "Expected autoloaded file to exist for '{CLASSLIKE}' at {FILE} but no such file exists.",
+                self::REMEDIATION_B,
+                11046
             ),
 
             // Issue::CATEGORY_ANALYSIS

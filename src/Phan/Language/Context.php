@@ -48,8 +48,6 @@ class Context extends FileRef
     /**
      * @var array<int,array<string,NamespaceMapEntry>>
      * Maps [int flags => [string name/namespace => NamespaceMapEntry(fqsen, is_used)]]
-     * Note that for \ast\USE_CONST (global constants), this is case-sensitive,
-     * but the remaining types are case-insensitive (stored with lowercase name).
      */
     private $namespace_map = [];
 
@@ -140,15 +138,10 @@ class Context extends FileRef
         if (\count($name_parts) > 1) {
             // We're looking for a namespace if there's more than one part
             // Namespaces are case-insensitive.
-            $namespace_map_key = \strtolower($name_parts[0]);
+            $namespace_map_key = $name_parts[0];
             $flags = \ast\flags\USE_NORMAL;
         } else {
-            if ($flags !== \ast\flags\USE_CONST) {
-                $namespace_map_key = \strtolower($name);
-            } else {
-                // Constants are case-sensitive, and stored in a case-sensitive manner.
-                $namespace_map_key = $name;
-            }
+            $namespace_map_key = $name;
         }
         return isset($this->namespace_map[$flags][$namespace_map_key]);
     }
@@ -166,22 +159,15 @@ class Context extends FileRef
         // slash
         $name_parts = \explode('\\', $name, 2);
         if (\count($name_parts) > 1) {
-            $name = \strtolower($name_parts[0]);
+            $name = $name_parts[0];
             $suffix = $name_parts[1];
-            // In php, namespaces, functions, and classes are case-insensitive.
-            // However, constants are almost always case-insensitive.
-            if ($flags !== \ast\flags\USE_CONST) {
-                $suffix = \strtolower($suffix);
-            }
+
             // The name we're looking for is a namespace(USE_NORMAL).
             // The suffix has type $flags
             $map_flags = \ast\flags\USE_NORMAL;
         } else {
             $suffix = '';
             $map_flags = $flags;
-            if ($flags !== \ast\flags\USE_CONST) {
-                $name = \strtolower($name);
-            }
         }
 
         $namespace_map_entry = $this->namespace_map[$map_flags][$name] ?? null;
@@ -228,16 +214,6 @@ class Context extends FileRef
         FullyQualifiedGlobalStructuralElement $target,
         int $lineno
     ) : Context {
-        $original_alias = $alias;
-        if ($flags !== \ast\flags\USE_CONST) {
-            $alias = \strtolower($alias);
-        } else {
-            $last_part_index = \strrpos($alias, '\\');
-            if ($last_part_index !== false) {
-                // Convert the namespace to lowercase, but not the constant name.
-                $alias = \strtolower(\substr($alias, 0, $last_part_index + 1)) . \substr($alias, $last_part_index + 1);
-            }
-        }
         // we may have imported this namespace map from the parse phase, making the target already exist
         // TODO: Warn if namespace_map already exists? Then again, `php -l` already does.
         $parse_entry = $this->parse_namespace_map[$flags][$alias] ?? null;
@@ -247,7 +223,7 @@ class Context extends FileRef
             $this->namespace_map[$flags][$alias] = $parse_entry;
             return $this;
         }
-        $this->namespace_map[$flags][$alias] = new NamespaceMapEntry($target, $original_alias, $lineno);
+        $this->namespace_map[$flags][$alias] = new NamespaceMapEntry($target, $alias, $lineno);
         return $this;
     }
 
@@ -516,7 +492,7 @@ class Context extends FileRef
             throw new AssertionError("Must be in class scope to get class");
         }
 
-        if (!$code_base->hasClassWithFQSEN($this->getClassFQSEN())) {
+        if (!$code_base->hasClassWithFQSEN($this->getClassFQSEN(), false)) {
             throw new CodeBaseException(
                 $this->getClassFQSEN(),
                 "Cannot find class with FQSEN {$this->getClassFQSEN()} in context {$this}"

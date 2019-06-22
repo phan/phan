@@ -21,6 +21,9 @@ use Phan\Phan;
 // Create our CLI interface and load arguments
 $cli = CLI::fromArgv();
 
+// Initialize the codebase, allows for pre-run setup
+$code_base->init();
+
 // Analyze the file list provided via the CLI
 $is_issue_found =
     Phan::analyzeFileList(

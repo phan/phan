@@ -741,6 +741,18 @@ class Config
         // since this may result in strange error messages for invalid files (e.g. if parsed but not analyzed).
         'use_fallback_parser' => false,
 
+        // If set, the project's composer autoloader will be used to locate unknown classes.
+        // This is especially useful if you have a large codebase and it takes a long time
+        // to analyze files. In this mode, pathing directly to a file with
+        // `phan --use-project-composer-autoloader path/to/file.php` will cause phan to skip
+        // analyzing all the files at startup, and instead only analyze files as they are
+        // required, much like how autoloading works.
+        'use_project_composer_autoloader' => false,
+
+        // If using `use_project_composer_autoloader` and the composer autoload file is not in the default location
+        // This config option can be defined to set the path to a custom location, relative to the project root
+        'composer_autoloader_path' => 'vendor/autoload.php',
+
         // Use the polyfill parser based on tolerant-php-parser instead of the possibly missing native implementation
         //
         // NOTE: This makes parsing several times slower than the native implementation.

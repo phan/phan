@@ -6,6 +6,8 @@ use AssertionError;
 use Closure;
 use Exception;
 use InvalidArgumentException;
+use Phan\ClassResolver\ClassResolverInterface;
+use Phan\ClassResolver\ComposerResolver;
 use Phan\CodeBase\ClassMap;
 use Phan\CodeBase\UndoTracker;
 use Phan\Exception\FQSENException;
@@ -19,6 +21,7 @@ use Phan\Language\Element\GlobalConstant;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
 use Phan\Language\Element\Property;
+use Phan\Language\FileRef;
 use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use Phan\Language\FQSEN\FullyQualifiedClassElement;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -197,6 +200,23 @@ class CodeBase
     private static $current_file = null;
 
     /**
+     * If a ClassResolver is set, Phan will attempt to autoload a class it does not have in its registry. This allows
+     * for Phan to skip analyzing the entire codebase and rather, use the ClassResolver to attempt to resolve classes
+     * at evaluation time, and dynamically analyze new classes as they are found.
+     *
+     * @var ClassResolverInterface|null
+     */
+    private $class_resolver;
+
+    /**
+     * Hash map of classes that have been loaded via class resolution, to ensure double resolution is not performed.
+     * Key is the class name, value is either the file or false if class was not found
+     *
+     * @var array<string,bool|string>
+     */
+    private $class_resolver_loaded = [];
+
+    /**
      * Initialize a new CodeBase
      * TODO: Remove internal_function_name_list completely?
      * @param string[] $internal_class_name_list
@@ -204,13 +224,15 @@ class CodeBase
      * @param string[] $internal_trait_name_list
      * @param string[] $internal_constant_name_list
      * @param string[] $internal_function_name_list
+     * @param ClassResolverInterface|null $class_resolver Optional class to resolve class => file name
      */
     public function __construct(
         array $internal_class_name_list,
         array $internal_interface_name_list,
         array $internal_trait_name_list,
         array $internal_constant_name_list,
-        array $internal_function_name_list
+        array $internal_function_name_list,
+        ClassResolverInterface $class_resolver = null
     ) {
         $this->fqsen_class_map = new Map();
         $this->fqsen_class_map_internal = new Map();
@@ -222,6 +244,7 @@ class CodeBase
         $this->class_fqsen_class_map_map = new Map();
         $this->method_set = new Set();
         $this->internal_function_fqsen_set = new Set();
+        $this->class_resolver = $class_resolver;
 
         // Add any pre-defined internal classes, interfaces,
         // constants, traits and functions
@@ -232,6 +255,52 @@ class CodeBase
         // We initialize the FQSENs early on so that they show up
         // in the proper casing.
         $this->addInternalFunctionsByNames($internal_function_name_list);
+    }
+
+    /**
+     * Initialization hook called after the CLI args are parsed and Config has been initialized
+     *
+     * @return void
+     */
+    public function init(): void
+    {
+        // Check if composer class loader is being used
+        if (Config::getValue('use_project_composer_autoloader')) {
+            $path = Config::getValue('composer_autoloader_path');
+            $autoload_path = $path[0] === '/' ? $path : Config::projectPath($path);
+
+            $autoloader = require $autoload_path;
+            $this->setClassResolver(new ComposerResolver($autoloader));
+        }
+    }
+
+    /**
+     * Get the configured class resolver if set
+     *
+     * @return null|ClassResolverInterface
+     */
+    public function getClassResolver()
+    {
+        return $this->class_resolver;
+    }
+
+    /**
+     * Returns true if a class resolver is registered
+     *
+     * @return bool
+     */
+    public function hasClassResolver(): bool
+    {
+        return $this->class_resolver instanceof ClassResolverInterface;
+    }
+
+    /**
+     * @param ClassResolverInterface $class_resolver
+     * @return void
+     */
+    protected function setClassResolver(ClassResolverInterface $class_resolver)
+    {
+        $this->class_resolver = $class_resolver;
     }
 
     /**
@@ -809,7 +878,7 @@ class CodeBase
 
     private function resolveClassAliasesForAliasSet(FullyQualifiedClassName $original_fqsen, Set $alias_set) : void
     {
-        if (!$this->hasClassWithFQSEN($original_fqsen)) {
+        if (!$this->hasClassWithFQSEN($original_fqsen, true)) {
             // The original class does not exist.
             // Emit issues at the point of every single class_alias call with that original class.
             foreach ($alias_set as $alias_record) {
@@ -837,7 +906,7 @@ class CodeBase
             }
             $alias_fqsen = $alias_record->alias_fqsen;
             // Don't do anything if there is a real class, or if an earlier class_alias created an alias.
-            if ($this->hasClassWithFQSEN($alias_fqsen)) {
+            if ($this->hasClassWithFQSEN($alias_fqsen, true)) {
                 // Emit a different issue type to make filtering out false positives easier.
                 $clazz = $this->getClassByFQSEN($alias_fqsen);
                 Issue::maybeEmit(
@@ -859,16 +928,100 @@ class CodeBase
     }
 
     /**
+     * @param FullyQualifiedClassName $fqsen The fully qualified class name for the class
+     * @param bool $autoload If true, attempt to autoload the class via a registered class resolver if present
+     *
      * @return bool
      * True if a Clazz with the given FQSEN exists
      */
     public function hasClassWithFQSEN(
-        FullyQualifiedClassName $fqsen
+        FullyQualifiedClassName $fqsen,
+        bool $autoload = false
     ) : bool {
         if ($this->fqsen_class_map->offsetExists($fqsen)) {
             return true;
         }
-        return $this->lazyLoadPHPInternalClassWithFQSEN($fqsen);
+
+        if ($this->lazyLoadPHPInternalClassWithFQSEN($fqsen)) {
+            return true;
+        }
+
+        if (!$autoload || !$this->hasClassResolver()) {
+            return false;
+        }
+
+        return $this->lazyLoadClassWithFQSEN($fqsen);
+    }
+
+    /**
+     * @return bool
+     * True if the class was able to be lazy loaded
+     */
+    public function lazyLoadClassWithFQSEN(
+        FullyQualifiedClassName $fqsen
+    ) : bool {
+        $resolver = $this->getClassResolver();
+        if (!$resolver) {
+            return false;
+        }
+
+        $class = $fqsen->getNamespacedName();
+        if (isset($this->class_resolver_loaded[$class])) {
+            return $this->class_resolver_loaded[$class] !== false;
+        }
+
+        // Resolve the file for the class
+        if (!$file = $resolver->fileForClass($fqsen)) {
+            return false;
+        }
+
+        $file_path = realpath($file);
+
+        // Ensure path exists
+        if (!$file_path || !file_exists($file_path)) {
+            Issue::maybeEmit(
+                $this,
+                (new Context())->withFile($file),
+                Issue::AutoloaderMissingFile,
+                0,
+                $class,
+                $file
+            );
+            return false;
+        }
+
+        // Attempt to make file relative to project
+        $file_path = FileRef::getProjectRelativePathForPath($file_path);
+
+        // As we're adding missing classes, we don't want to continue hydrating them
+        // so cache the current value and reset after we're done
+        $should_hydrate_requested_elements = $this->should_hydrate_requested_elements;
+        $current_parsed_file = self::$current_file;
+        $this->setShouldHydrateRequestedElements(false);
+        $this->setCurrentParsedFile($file_path);
+        $this->flushDependenciesForFile($file_path);
+
+        try {
+            // Parse the file
+            Analysis::parseFile($this, $file_path);
+        } catch (\Throwable $throwable) {
+            // Catch miscellaneous errors such as $throwable and print their stack traces.
+            error_log("While parsing $file_path, caught: " . $throwable . "\n");
+            $this->recordUnparsableFile($file_path);
+            return false;
+        }
+
+        // Reset temp state
+        $this->setShouldHydrateRequestedElements($should_hydrate_requested_elements);
+        $this->setCurrentParsedFile($current_parsed_file);
+
+        // Ensure this class was loaded successfully
+        if (!$this->fqsen_class_map->offsetExists($fqsen)) {
+            return $this->class_resolver_loaded[$class] = false;
+        }
+
+        $this->class_resolver_loaded[$class] = $file_path;
+        return true;
     }
 
     /**

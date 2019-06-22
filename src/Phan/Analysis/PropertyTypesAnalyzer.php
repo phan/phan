@@ -60,7 +60,7 @@ class PropertyTypesAnalyzer
                     // Make sure the class exists
                     $type_fqsen = FullyQualifiedClassName::fromType($type);
 
-                    if (!$code_base->hasClassWithFQSEN($type_fqsen)
+                    if (!$code_base->hasClassWithFQSEN($type_fqsen, true)
                         && !($type instanceof TemplateType)
                         && (
                             !$property->hasDefiningFQSEN()
