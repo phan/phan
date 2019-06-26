@@ -206,6 +206,9 @@ class Issue
     const ImpossibleTypeComparison          = 'PhanImpossibleTypeComparison';
     const ImpossibleTypeComparisonInLoop    = 'PhanImpossibleTypeComparisonInLoop';
     const ImpossibleTypeComparisonInGlobalScope    = 'PhanImpossibleTypeComparisonInGlobalScope';
+    const SuspiciousWeakTypeComparison          = 'PhanSuspiciousWeakTypeComparison';
+    const SuspiciousWeakTypeComparisonInLoop    = 'PhanSuspiciousWeakTypeComparisonInLoop';
+    const SuspiciousWeakTypeComparisonInGlobalScope    = 'PhanSuspiciousWeakTypeComparisonInGlobalScope';
     const CoalescingNeverNull               = 'PhanCoalescingNeverNull';
     const CoalescingNeverNullInLoop         = 'PhanCoalescingNeverNullInLoop';
     const CoalescingNeverNullInGlobalScope  = 'PhanCoalescingNeverNullInGlobalScope';
@@ -2135,6 +2138,30 @@ class Issue
                 "Impossible attempt to check if {CODE} of type {TYPE} is identical to {CODE} of type {TYPE} in the global scope (likely a false positive)",
                 self::REMEDIATION_B,
                 10125
+            ),
+            new Issue(
+                self::SuspiciousWeakTypeComparison,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Suspicious attempt to compare {CODE} of type {TYPE} to {CODE} of type {TYPE}",
+                self::REMEDIATION_B,
+                10128
+            ),
+            new Issue(
+                self::SuspiciousWeakTypeComparisonInLoop,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Suspicious attempt to compare {CODE} of type {TYPE} to {CODE} of type {TYPE} in a loop body (likely a false positive)",
+                self::REMEDIATION_B,
+                10129
+            ),
+            new Issue(
+                self::SuspiciousWeakTypeComparisonInGlobalScope,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Suspicious attempt to compare {CODE} of type {TYPE} to {CODE} of type {TYPE} in the global scope (likely a false positive)",
+                self::REMEDIATION_B,
+                10130
             ),
             new Issue(
                 self::CoalescingNeverNull,

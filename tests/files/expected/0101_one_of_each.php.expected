@@ -27,7 +27,9 @@
 %s:94 PhanStaticCallToNonStatic Static call to non-static method \C19::f() defined at %s:93
 %s:98 PhanNonClassMethodCall Call to method f on non-class type null
 %s:104 PhanTypeArraySuspicious Suspicious array access to false
+%s:107 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare [1,2] of type array{0:1,1:2} to 'string' of type 'string'
 %s:107 PhanTypeComparisonFromArray array to string comparison
+%s:110 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare 42 of type 42 to [1,2] of type array{0:1,1:2}
 %s:110 PhanTypeComparisonToArray int to array comparison
 %s:116 PhanTypeInstantiateAbstract Instantiation of abstract class \C6
 %s:119 PhanTypeInstantiateInterface Instantiation of interface \C7

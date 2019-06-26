@@ -348,7 +348,15 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
         switch ($node->flags) {
             case flags\BINARY_IS_IDENTICAL:
             case flags\BINARY_IS_NOT_IDENTICAL:
-                $this->checkImpossibleComparison($node);
+                $this->checkImpossibleComparison($node, true);
+                break;
+            case flags\BINARY_IS_EQUAL:
+            case flags\BINARY_IS_NOT_EQUAL:
+            case flags\BINARY_IS_SMALLER:
+            case flags\BINARY_IS_SMALLER_OR_EQUAL:
+            case flags\BINARY_IS_GREATER:
+            case flags\BINARY_IS_GREATER_OR_EQUAL:
+                $this->checkImpossibleComparison($node, false);
                 break;
             case flags\BINARY_COALESCE:
                 $this->analyzeBinaryCoalesce($node);
@@ -358,7 +366,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
         }
     }
 
-    private function checkImpossibleComparison(Node $node) : void
+    private function checkImpossibleComparison(Node $node, bool $strict) : void
     {
         $left = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['left']);
         if (!$left->hasRealTypeSet()) {
@@ -370,9 +378,9 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
         }
         $left = $left->getRealUnionType()->withStaticResolvedInContext($this->context);
         $right = $right->getRealUnionType()->withStaticResolvedInContext($this->context);
-        if (!$left->hasAnyTypeOverlap($this->code_base, $right)) {
+        if (!$left->hasAnyTypeOverlap($this->code_base, $right) && ($strict || !$left->hasAnyWeakTypeOverlap($right))) {
             $this->emitIssue(
-                $this->chooseIssue($node, Issue::ImpossibleTypeComparison),
+                $this->chooseIssue($node, $strict ? Issue::ImpossibleTypeComparison : Issue::SuspiciousWeakTypeComparison),
                 $node->lineno,
                 ASTReverter::toShortString($node->children['left']),
                 $left,

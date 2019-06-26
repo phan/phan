@@ -1984,6 +1984,26 @@ class UnionType implements Serializable
     }
 
     /**
+     * Checks if any type in this union type weakly overlaps with other types
+     *
+     * E.g. allows `1 <= 2`, `null == false`, ?T -> ?Other, etc.
+     * Does not allow ?T -> Other, etc.
+     *
+     * NOTE: callers should check that
+     */
+    protected function canAnyTypeWeakOverlapUnionType(UnionType $target) : bool
+    {
+        foreach ($this->type_set as $type) {
+            foreach ($target->type_set as $other_type) {
+                if ($type->weaklyOverlaps($other_type)) {
+                    return true;
+                }
+            }
+        }
+        return \count($this->type_set) === 0 || ($this->containsNullable() && $target->containsNullable());
+    }
+
+    /**
      * @param UnionType $target
      * A type to check to see if this can cast to it.
      *
@@ -2060,12 +2080,22 @@ class UnionType implements Serializable
      * (e.g. mixed <-> string, etc.)
      *
      * TODO: Make this work for callable <-> string, etc.
-     * TODO: Make this work for callable <-> string, etc.
      * @suppress PhanUnreferencedPublicMethod
      */
     public function hasAnyTypeOverlap(CodeBase $code_base, UnionType $other) : bool
     {
         return $this->canAnyTypeStrictCastToUnionType($code_base, $other) || $other->canAnyTypeStrictCastToUnionType($code_base, $this);
+    }
+
+    /**
+     * Check if these types have any possible similar types for weak type comparisons.
+     * (e.g. allows false == null checks)
+     *
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public function hasAnyWeakTypeOverlap(UnionType $other) : bool
+    {
+        return $this->canAnyTypeWeakOverlapUnionType($other) || $other->canAnyTypeWeakOverlapUnionType($this);
     }
 
     /**

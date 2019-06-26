@@ -206,6 +206,21 @@ final class LiteralFloatType extends FloatType implements LiteralTypeInterface
     {
         return FloatType::instance($this->is_nullable);
     }
+
+    public function weaklyOverlaps(Type $other) : bool
+    {
+        // TODO: Could be stricter
+        if ($other instanceof ScalarType) {
+            if ($other instanceof NullType || $other instanceof FalseType) {
+                // Allow 0 == null but not 1 == null
+                if (!$this->isPossiblyFalsey()) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return parent::weaklyOverlaps($other);
+    }
 }
 
 LiteralFloatType::init();

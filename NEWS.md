@@ -11,6 +11,7 @@ New features(Analysis):
 + Fix false positives analyzing variable modification in `elseif` conditions (#2878, #2860)
   (e.g. no longer emit `PhanRedundantCondition` analyzing `elseif ($offset = (int)$offset)`)
   (e.g. do a better job inferring variables set in complex `if` condition expressions)
++ Warn about suspicious comparisons (e.g. `new stdClass() <= new ArrayObject`, `2 >= $bool`, etc.) (#2892)
 
 Jun 17 2019, Phan 2.2.3
 -----------------------
