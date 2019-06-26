@@ -356,6 +356,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
             case flags\BINARY_IS_SMALLER_OR_EQUAL:
             case flags\BINARY_IS_GREATER:
             case flags\BINARY_IS_GREATER_OR_EQUAL:
+            case flags\BINARY_SPACESHIP:
                 $this->checkImpossibleComparison($node, false);
                 break;
             case flags\BINARY_COALESCE:

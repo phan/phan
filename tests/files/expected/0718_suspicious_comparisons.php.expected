@@ -12,3 +12,6 @@
 %s:16 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare $f of type \FinalClass718 to false of type false
 %s:17 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare $f of type \FinalClass718 to true of type true
 %s:18 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare $f of type \FinalClass718 to $b of type bool
+%s:19 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare $f of type \FinalClass718 to $b of type bool
+%s:20 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare $f of type \FinalClass718 to $b of type bool
+%s:21 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare $f of type \FinalClass718 to $b of type bool

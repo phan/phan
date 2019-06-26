@@ -16,4 +16,7 @@ function suspicious_comparisons(iterable $i, array $a, stdClass $s, float $f, bo
     var_export($f != false);
     var_export($f < true);
     var_export($f == $b);
+    var_export($f <=> $b);
+    var_export($f <> $b);
+    var_export($f != $b);
 }
