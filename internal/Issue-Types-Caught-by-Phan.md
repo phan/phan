@@ -2139,6 +2139,29 @@ Relative paths are harder to reason about, and opcache may have issues with rela
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0545_require_testing.php.expected#L5) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/files/src/0545_require_testing.php#L5).
 
+## PhanSuspiciousWeakTypeComparison
+
+Some of these issues may be valid, but these are often confusing ways of checking for empty/null/false.
+Phan does not support all types of comparisons (e.g. extensions may define comparisons on data types)
+
+```
+Suspicious attempt to compare {CODE} of type {TYPE} to {CODE} of type {TYPE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0254_array_bool_comparison.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0254_array_bool_comparison.php#L6).
+
+## PhanSuspiciousWeakTypeComparisonInGlobalScope
+
+```
+Suspicious attempt to compare {CODE} of type {TYPE} to {CODE} of type {TYPE} in the global scope (likely a false positive)
+```
+
+## PhanSuspiciousWeakTypeComparisonInLoop
+
+```
+Suspicious attempt to compare {CODE} of type {TYPE} to {CODE} of type {TYPE} in a loop body (likely a false positive)
+```
+
 ## PhanTypeArrayOperator
 
 ```

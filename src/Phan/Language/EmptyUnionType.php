@@ -1381,6 +1381,11 @@ final class EmptyUnionType extends UnionType
         return true;
     }
 
+    public function hasAnyWeakTypeOverlap(UnionType $other) : bool
+    {
+        return true;
+    }
+
     /**
      * @param ?array<int,Type> $real_type_set
      */

@@ -17,19 +17,21 @@ use Phan\Parse\ParseVisitor;
 class RedundantCondition
 {
     private const LOOP_ISSUE_NAMES = [
-        Issue::RedundantCondition       => Issue::RedundantConditionInLoop,
-        Issue::ImpossibleCondition      => Issue::ImpossibleConditionInLoop,
-        Issue::ImpossibleTypeComparison => Issue::ImpossibleTypeComparisonInLoop,
-        Issue::CoalescingNeverNull      => Issue::CoalescingNeverNullInLoop,
-        Issue::CoalescingAlwaysNull     => Issue::CoalescingAlwaysNullInLoop,
+        Issue::RedundantCondition           => Issue::RedundantConditionInLoop,
+        Issue::ImpossibleCondition          => Issue::ImpossibleConditionInLoop,
+        Issue::ImpossibleTypeComparison     => Issue::ImpossibleTypeComparisonInLoop,
+        Issue::SuspiciousWeakTypeComparison => Issue::SuspiciousWeakTypeComparisonInLoop,
+        Issue::CoalescingNeverNull          => Issue::CoalescingNeverNullInLoop,
+        Issue::CoalescingAlwaysNull         => Issue::CoalescingAlwaysNullInLoop,
     ];
 
     private const GLOBAL_ISSUE_NAMES = [
-        Issue::RedundantCondition       => Issue::RedundantConditionInGlobalScope,
-        Issue::ImpossibleCondition      => Issue::ImpossibleConditionInGlobalScope,
-        Issue::ImpossibleTypeComparison => Issue::ImpossibleTypeComparisonInGlobalScope,
-        Issue::CoalescingNeverNull      => Issue::CoalescingNeverNullInGlobalScope,
-        Issue::CoalescingAlwaysNull     => Issue::CoalescingAlwaysNullInGlobalScope,
+        Issue::RedundantCondition           => Issue::RedundantConditionInGlobalScope,
+        Issue::ImpossibleCondition          => Issue::ImpossibleConditionInGlobalScope,
+        Issue::ImpossibleTypeComparison     => Issue::ImpossibleTypeComparisonInGlobalScope,
+        Issue::SuspiciousWeakTypeComparison => Issue::SuspiciousWeakTypeComparisonInGlobalScope,
+        Issue::CoalescingNeverNull          => Issue::CoalescingNeverNullInGlobalScope,
+        Issue::CoalescingAlwaysNull         => Issue::CoalescingAlwaysNullInGlobalScope,
     ];
 
     /**
