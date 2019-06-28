@@ -249,7 +249,8 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
      * The representation may change - this should not be used for issue messages, etc.
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function getDebugRepresentation() : string {
+    public function getDebugRepresentation() : string
+    {
         $string = '';
 
         if (!$this->getUnionType()->isEmpty()) {

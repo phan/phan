@@ -2,6 +2,7 @@
 
 namespace Phan\Language\Element;
 
+use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
@@ -9,7 +10,6 @@ use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Type;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
-use Phan\Config;
 
 /**
  * This returns internal function declarations for a given function/method FQSEN,

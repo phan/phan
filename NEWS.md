@@ -12,6 +12,8 @@ New features(Analysis):
   (e.g. no longer emit `PhanRedundantCondition` analyzing `elseif ($offset = (int)$offset)`)
   (e.g. do a better job inferring variables set in complex `if` condition expressions)
 + Warn about suspicious comparisons (e.g. `new stdClass() <= new ArrayObject`, `2 >= $bool`, etc.) (#2892)
++ Be more accurate about inferring real union types from array destructuring assignments. (#2901)
++ Be more accurate about inferring real union types from assertions that expressions are non-null. (#2901)
 
 Jun 17 2019, Phan 2.2.3
 -----------------------

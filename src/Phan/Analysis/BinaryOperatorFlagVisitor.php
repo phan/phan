@@ -19,12 +19,11 @@ use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\IntType;
-use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\LiteralFloatType;
+use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
-
 use function is_int;
 
 /**

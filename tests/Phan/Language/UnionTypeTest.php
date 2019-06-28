@@ -78,7 +78,7 @@ final class UnionTypeTest extends BaseTest
         $this->assertUnionTypeStringEqual('42 + 2', '44');
         $this->assertUnionTypeStringEqual('46 - 2', '44');
         $this->assertUnionTypeStringEqual('PHP_INT_MAX', (string)\PHP_INT_MAX);
-        $this->assertUnionTypeStringEqual('PHP_INT_MAX + PHP_INT_MAX', var_export(PHP_INT_MAX + PHP_INT_MAX, true));
+        $this->assertUnionTypeStringEqual('PHP_INT_MAX + PHP_INT_MAX', \var_export(\PHP_INT_MAX + \PHP_INT_MAX, true));
         $this->assertUnionTypeStringEqual('2 ** -9999999', '0.0');
         $this->assertUnionTypeStringEqual('2 ** 9999999', 'float');
         $this->assertUnionTypeStringEqual('0 ** 0', '1');

@@ -48,5 +48,4 @@ class FloatType extends ScalarType
     {
         return FloatType::instance(false)->asPHPDocUnionType();
     }
-
 }

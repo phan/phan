@@ -1218,23 +1218,33 @@ class UnionType implements Serializable
      */
     public function nonNullableClone() : UnionType
     {
-        $builder = new UnionTypeBuilder();
-        $did_change = false;
-        foreach ($this->type_set as $type) {
+        return self::of(
+            self::toNonNullableTypeList($this->type_set),
+            self::toNonNullableTypeList($this->real_type_set)
+        );
+    }
+
+    /**
+     * @param Type[] $type_list
+     * @return array<int,Type> a list that may contain duplicates.
+     */
+    private static function toNonNullableTypeList(array $type_list) : array
+    {
+        $result = [];
+        foreach ($type_list as $type) {
             if (!$type->isNullable()) {
-                $builder->addType($type);
+                $result[] = $type;
                 continue;
             }
-            $did_change = true;
             if ($type instanceof NullType) {
                 continue;
             }
 
-            $builder->addType($type->withIsNullable(false));
+            $result[] = $type->withIsNullable(false);
         }
-        // TODO: Support preserving real type
-        return $did_change ? $builder->getPHPDocUnionType() : $this;
+        return $result;
     }
+
 
     /**
      * @return UnionType a clone of this that has the nullable equivalents of any types in this UnionType
