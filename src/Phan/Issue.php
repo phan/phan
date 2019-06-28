@@ -452,6 +452,7 @@ class Issue
     const TemplateTypeNotDeclaredInFunctionParams = 'PhanTemplateTypeNotDeclaredInFunctionParams';
 
     // Issue::CATEGORY_COMMENT
+    const DebugAnnotation                  = 'PhanDebugAnnotation';
     const InvalidCommentForDeclarationType = 'PhanInvalidCommentForDeclarationType';
     const MisspelledAnnotation             = 'PhanMisspelledAnnotation';
     const UnextractableAnnotation          = 'PhanUnextractableAnnotation';
@@ -4034,6 +4035,14 @@ class Issue
                 'Comment declares @method {METHOD} multiple times',
                 self::REMEDIATION_A,
                 16018
+            ),
+            new Issue(
+                self::DebugAnnotation,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                '@phan-debug-var requested for variable ${VARIABLE} - it has union type {TYPE}',
+                self::REMEDIATION_A,
+                16020
             ),
         ];
         // phpcs:enable Generic.Files.LineLength

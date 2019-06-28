@@ -1,6 +1,6 @@
 Phan NEWS
 
-Jun 17 2019, Phan 2.2.4 (dev)
+??? ?? 2019, Phan 2.2.4 (dev)
 -----------------------
 
 New features(CLI, Configs):
@@ -12,8 +12,12 @@ New features(Analysis):
   (e.g. no longer emit `PhanRedundantCondition` analyzing `elseif ($offset = (int)$offset)`)
   (e.g. do a better job inferring variables set in complex `if` condition expressions)
 + Warn about suspicious comparisons (e.g. `new stdClass() <= new ArrayObject`, `2 >= $bool`, etc.) (#2892)
++ Infer real union types from function/method calls.
++ Don't emit the specialized `*InLoop` or `*InGlobalScope` issues for `--redundant-condition-detection`
+  in more cases where being in a global or loop scope doesn't matter (e.g. `if (new stdClass())`)
 + Be more accurate about inferring real union types from array destructuring assignments. (#2901)
 + Be more accurate about inferring real union types from assertions that expressions are non-null. (#2901)
++ Support dumping Phan's internal representation of a variable's union type (and real union type) with `'@phan-debug-var $varName'` (useful for debugging)
 
 Jun 17 2019, Phan 2.2.3
 -----------------------

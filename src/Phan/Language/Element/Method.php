@@ -554,11 +554,12 @@ class Method extends ClassElement implements FunctionInterface
             $return_union_type = (new UnionTypeVisitor($code_base, $context))->fromTypeInSignature(
                 $node->children['returnType']
             );
-            $method->setUnionType($method->getUnionType()->withUnionType($return_union_type));
+            $method->setUnionType($method->getUnionType()->withUnionType($return_union_type)->withRealTypeSet($return_union_type->getTypeSet()));
             // TODO: Replace 'self' with the real class when not in a trait
         } else {
             $return_union_type = UnionType::empty();
         }
+        // TODO: Deprecate the setRealReturnType API due to properly tracking real return type?
         $method->setRealReturnType($return_union_type);
 
         // If available, add in the doc-block annotated return type

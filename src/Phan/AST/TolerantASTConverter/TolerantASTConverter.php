@@ -5,6 +5,7 @@ namespace Phan\AST\TolerantASTConverter;
 use AssertionError;
 use ast;
 use ast\flags;
+use Closure;
 use Error;
 use Exception;
 use InvalidArgumentException;
@@ -507,7 +508,7 @@ class TolerantASTConverter
      * - In php <= 7.1, the interpreter would loop through all possible cases, and compare against the value one by one.
      * - There are a lot of local variables to look at.
      *
-     * @return \Closure[]
+     * @return array<string,Closure(object,int):(\ast\Node|int|string|float|null)>
      */
     protected static function initHandleMap() : array
     {
@@ -1438,8 +1439,8 @@ class TolerantASTConverter
                 }
                 return \count($static_nodes) === 1 ? $static_nodes[0] : $static_nodes;
             },
-            'Microsoft\PhpParser\Node\Statement\SwitchStatementNode' => static function (PhpParser\Node\Statement\SwitchStatementNode $n, int $start_line) : ast\Node {
-                return static::phpParserSwitchListToAstSwitch($n, $start_line);
+            'Microsoft\PhpParser\Node\Statement\SwitchStatementNode' => static function (PhpParser\Node\Statement\SwitchStatementNode $n, int $_) : ast\Node {
+                return static::phpParserSwitchListToAstSwitch($n);
             },
             'Microsoft\PhpParser\Node\Statement\ThrowStatement' => static function (PhpParser\Node\Statement\ThrowStatement $n, int $start_line) : ast\Node {
                 return new ast\Node(
@@ -2240,10 +2241,10 @@ class TolerantASTConverter
         return new ast\Node(ast\AST_IF_ELEM, 0, ['cond' => $cond, 'stmts' => $stmts], $line);
     }
 
-    private static function phpParserSwitchListToAstSwitch(PhpParser\Node\Statement\SwitchStatementNode $node, int $start_line) : ast\Node
+    private static function phpParserSwitchListToAstSwitch(PhpParser\Node\Statement\SwitchStatementNode $node) : ast\Node
     {
         $stmts = [];
-        $node_line = static::getEndLine($node) ?? $start_line;
+        $node_line = static::getEndLine($node);
         foreach ($node->caseStatements as $case) {
             if (!($case instanceof PhpParser\Node\CaseStatementNode)) {
                 continue;
@@ -2256,7 +2257,7 @@ class TolerantASTConverter
                     'cond' => $case->expression !== null ? static::phpParserNodeToAstNode($case->expression) : null,
                     'stmts' => static::phpParserStmtlistToAstNode($case->statementList, $case_line, false),
                 ],
-                $case_line ?? $node_line
+                $case_line
             );
         }
         return new ast\Node(ast\AST_SWITCH, 0, [

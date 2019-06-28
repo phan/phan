@@ -1586,4 +1586,80 @@ class ParseVisitor extends ScopeVisitor
             return false;
         }
     }
+
+    protected const ALLOWED_NON_VARIABLE_EXPRESSION_KINDS = [
+        // Contains everything from ALLOWED_CONST_EXPRESSION_KINDS
+        ast\AST_ARRAY_ELEM => true,
+        ast\AST_ARRAY => true,
+        ast\AST_BINARY_OP => true,
+        ast\AST_CLASS_CONST => true,
+        ast\AST_CLASS_NAME => true,
+        ast\AST_CONDITIONAL => true,
+        ast\AST_CONST => true,
+        ast\AST_DIM => true,
+        ast\AST_MAGIC_CONST => true,
+        ast\AST_NAME => true,
+        ast\AST_UNARY_OP => true,
+
+        // In addition to expressions where the real type can be statically inferred (assuming types of child nodes were correctly inferred)
+        ast\AST_ARG_LIST => true,
+        ast\AST_CALL => true,
+        ast\AST_CLONE => true,
+        ast\AST_EMPTY => true,
+        ast\AST_ISSET => true,
+        ast\AST_NEW => true,
+        ast\AST_PRINT => true,
+        ast\AST_SHELL_EXEC => true,
+        ast\AST_STATIC_CALL => true,
+        ast\AST_STATIC_PROP => true,
+        ast\AST_UNPACK => true,
+
+        // Stop here
+        ast\AST_CLOSURE => false,
+        ast\AST_CLASS => false,
+    ];
+
+    /**
+     * This is meant to tell Phan expects an expression not depending on the current scope (e.g. global, loop) to be found.
+     *
+     * @param Node|string|float|int|bool|null $n
+     *
+     * @return void - If this doesn't throw, then $n is a valid constant AST.
+     *
+     * @throws InvalidArgumentException if this is not allowed in a constant expression
+     * Based on zend_bool zend_is_allowed_in_const_expr from Zend/zend_compile.c
+     *
+     * @internal
+     */
+    private static function checkIsNonVariableExpression($n) : void
+    {
+        if (!($n instanceof Node)) {
+            return;
+        }
+        $value = self::ALLOWED_NON_VARIABLE_EXPRESSION_KINDS[$n->kind] ?? null;
+        if ($value === true) {
+            foreach ($n->children as $child_node) {
+                self::checkIsNonVariableExpression($child_node);
+            }
+            return;
+        }
+        if ($value !== false) {
+            throw new InvalidArgumentException();
+        }
+        // Skip checking child nodes for anonymous classes, closures
+    }
+
+    /**
+     * @param Node|string|float|int|bool|null $n
+     * @return bool - If true, then the inferred type for $n does not depend on the current scope, but isn't necessarily constant (e.g. static method invocation in loop, global)
+     */
+    public static function isNonVariableExpr($n) : bool
+    {
+        try {
+            self::checkIsNonVariableExpression($n);
+            return true;
+        } catch (InvalidArgumentException $_) {
+            return false;
+        }
+    }
 }

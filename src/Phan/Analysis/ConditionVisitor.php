@@ -832,6 +832,9 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             }
             $type_modification_callback = $map[\strtolower($raw_function_name)] ?? null;
             if (!$type_modification_callback) {
+                if (Config::getValue('redundant_condition_detection')) {
+                    $this->checkRedundantOrImpossibleTruthyCondition($node, $this->context, null, false);
+                }
                 return $this->context;
             }
             // @phan-suppress-next-line PhanPartialTypeMismatchArgument
@@ -840,6 +843,9 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
 
         if (\count($args) !== 1) {
             if (!(\strcasecmp($raw_function_name, 'is_a') === 0 && \count($args) === 2)) {
+                if (Config::getValue('redundant_condition_detection')) {
+                    $this->checkRedundantOrImpossibleTruthyCondition($node, $this->context, null, false);
+                }
                 return $this->context;
             }
         }
@@ -847,6 +853,9 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         $function_name = \strtolower($raw_function_name);
         $type_modification_callback = $map[$function_name] ?? null;
         if ($type_modification_callback === null) {
+            if (Config::getValue('redundant_condition_detection')) {
+                $this->checkRedundantOrImpossibleTruthyCondition($node, $this->context, null, false);
+            }
             return $this->context;
         }
 

@@ -359,9 +359,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
             case flags\BINARY_SPACESHIP:
                 $this->checkImpossibleComparison($node, false);
                 break;
-            case flags\BINARY_COALESCE:
-                $this->analyzeBinaryCoalesce($node);
-                break;
+            // BINARY_COALESCE is checked for redundant conditions in BlockAnalysisVisitor
             default:
                 return;
         }
@@ -377,18 +375,70 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
         if (!$right->hasRealTypeSet()) {
             return;
         }
+        $code_base = $this->code_base;
         $left = $left->getRealUnionType()->withStaticResolvedInContext($this->context);
         $right = $right->getRealUnionType()->withStaticResolvedInContext($this->context);
-        if (!$left->hasAnyTypeOverlap($this->code_base, $right) && ($strict || !$left->hasAnyWeakTypeOverlap($right))) {
-            $this->emitIssue(
-                $this->chooseIssue($node, $strict ? Issue::ImpossibleTypeComparison : Issue::SuspiciousWeakTypeComparison),
-                $node->lineno,
-                ASTReverter::toShortString($node->children['left']),
+        if (!$left->hasAnyTypeOverlap($code_base, $right) && ($strict || !$left->hasAnyWeakTypeOverlap($right))) {
+            $this->emitIssueForBinaryOp(
+                $node,
                 $left,
-                ASTReverter::toShortString($node->children['right']),
-                $right
+                $right,
+                $strict ? Issue::ImpossibleTypeComparison : Issue::SuspiciousWeakTypeComparison,
+                static function (UnionType $new_left_type, UnionType $new_right_type) use ($strict, $code_base) : bool {
+                    return !$new_left_type->hasAnyTypeOverlap($code_base, $new_right_type) && ($strict || !$new_left_type->hasAnyWeakTypeOverlap($new_right_type));
+                }
             );
         }
+    }
+
+    /**
+     * Emit an issue. If this is in a loop, defer the check until more is known about possible types of the variable in the loop.
+     *
+     * @param Node $node a node of kind AST_BINARY_OP
+     * @param Closure(UnionType,UnionType):bool $is_still_issue
+     * @suppress PhanAccessMethodInternal
+     */
+    private function emitIssueForBinaryOp(Node $node, UnionType $left, UnionType $right, string $issue_name, Closure $is_still_issue) : void
+    {
+        $issue_args = [
+            ASTReverter::toShortString($node->children['left']),
+            $left,
+            ASTReverter::toShortString($node->children['right']),
+            $right,
+        ];
+        $code_base = $this->code_base;
+        $context = $this->context;
+
+        if ($this->context->isInLoop()) {
+            ['left' => $left_node, 'right' => $right_node] = $node->children;
+            $left_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($left_node);
+            $right_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($right_node);
+            if ($left_type_fetcher || $right_type_fetcher) {
+                // @phan-suppress-next-line PhanAccessMethodInternal
+                $context->deferCheckToOutermostLoop(static function (Context $context_after_loop) use ($code_base, $node, $left_type_fetcher, $right_type_fetcher, $left, $right, $is_still_issue, $issue_name, $issue_args, $context) : void {
+                    $left = ($left_type_fetcher ? $left_type_fetcher($context_after_loop) : null) ?? $left;
+                    $right = ($right_type_fetcher ? $right_type_fetcher($context_after_loop) : null) ?? $right;
+                    if (!$is_still_issue($left, $right)) {
+                        return;
+                    }
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        RedundantCondition::chooseSpecificImpossibleOrRedundantIssueKind($node, $context, $issue_name),
+                        $node->lineno,
+                        ...$issue_args
+                    );
+                });
+                return;
+            }
+        }
+        Issue::maybeEmit(
+            $code_base,
+            $context,
+            RedundantCondition::chooseSpecificImpossibleOrRedundantIssueKind($node, $context, $issue_name),
+            $node->lineno,
+            ...$issue_args
+        );
     }
 
     /**
@@ -438,48 +488,6 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
         }
     }
      */
-
-    /**
-     * Checks if the left hand side of a null coalescing operator is never null or always null
-     */
-    public function analyzeBinaryCoalesce(Node $node) : void
-    {
-        $left_node = $node->children['left'];
-        $left = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $left_node);
-        if (!$left->hasRealTypeSet()) {
-            return;
-        }
-        $left = $left->getRealUnionType();
-        if (!$left->containsNullableOrUndefined()) {
-            RedundantCondition::emitInstance(
-                $left_node,
-                $this->code_base,
-                clone($this->context)->withLineNumberStart($node->lineno),
-                Issue::CoalescingNeverNull,
-                [
-                    ASTReverter::toShortString($left_node),
-                    $left
-                ],
-                static function (UnionType $type) : bool {
-                    return !$type->containsNullableOrUndefined();
-                }
-            );
-        } elseif ($left->isNull()) {
-            RedundantCondition::emitInstance(
-                $left_node,
-                $this->code_base,
-                clone($this->context)->withLineNumberStart($node->lineno),
-                Issue::CoalescingAlwaysNull,
-                [
-                    ASTReverter::toShortString($left_node),
-                    $left
-                ],
-                static function (UnionType $type) : bool {
-                    return $type->isNull();
-                }
-            );
-        }
-    }
 
     /**
      * @override
