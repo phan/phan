@@ -362,15 +362,6 @@ class ASTSimplifier
                     $node = self::applyForDoubleNegateReduction($node);
                     continue;
                 }
-                break;
-            }
-            if ($for_cond->kind === \ast\AST_BINARY_OP &&
-                    $for_cond->flags === flags\BINARY_BOOL_AND) {
-                // TODO: Also support `and` operator.
-                $node = self::applyForAndReduction($node);
-                // for (init ; A && B; loop) {X} -> for (init; A; loop) { if (!B) {break;} X}
-                // Do this, unless there is an else statement that can be executed.
-                continue;
             }
             break;
         }
@@ -526,46 +517,6 @@ class ASTSimplifier
                     ast\AST_STMT_LIST,
                     $lineno,
                     array_merge([$conditional_break_elem], $node->children['stmts']->children),
-                    0
-                ),
-            ],
-            $node->lineno
-        );
-    }
-
-    /**
-     * Converts `for (INIT; A && B; LOOP) {X}` -> `for (INIT; A; LOOP) { if (!B) { break;} X}`
-     * @return Node simplified node logically equivalent to $node, with kind \ast\AST_IF.
-     */
-    private static function applyForAndReduction(Node $node) : Node
-    {
-        $children = $node->children;
-        $cond_node_array = $children['cond']->children;
-        $cond_node = array_pop($cond_node_array);
-        $right_node = $cond_node->children['right'];
-        $lineno = $right_node->lineno ?? $cond_node->lineno;
-        $conditional_break_elem = self::makeBreakWithNegatedConditional($right_node, $lineno);
-
-        $cond_node_array[] = $cond_node->children['left'];
-
-        $cond_node_list = new Node(
-            ast\AST_EXPR_LIST,
-            0,
-            $cond_node_array,
-            $children['cond']->lineno
-        );
-
-        return new Node(
-            ast\AST_FOR,
-            0,
-            [
-                'init' => $children['init'],
-                'cond' => $cond_node_list,
-                'loop' => $children['loop'],
-                'stmts' => new Node(
-                    ast\AST_STMT_LIST,
-                    $lineno,
-                    array_merge([$conditional_break_elem], $children['stmts']->children),
                     0
                 ),
             ],

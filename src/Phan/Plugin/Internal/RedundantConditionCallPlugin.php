@@ -633,6 +633,47 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
+     * Check if a loop is increasing or decreasing when it should be doing the opposite.
+     * @override
+     */
+    public function visitFor(Node $node) : void
+    {
+        $cond_list = $node->children['cond'];
+        if (!$cond_list instanceof Node) {
+            return;
+        }
+        $cond_node = end($cond_list->children);
+        if (!$cond_node instanceof Node) {
+            return;
+        }
+        $loop_node = $node->children['loop'];
+        if (!$loop_node instanceof Node) {
+            return;
+        }
+        $increment_directions = RedundantConditionLoopCheck::extractIncrementDirections($this->code_base, $this->context, $loop_node);
+        if (!$increment_directions) {
+            return;
+        }
+
+        $comparison_directions = RedundantConditionLoopCheck::extractComparisonDirections($cond_node);
+        if (!$comparison_directions) {
+            return;
+        }
+        foreach ($increment_directions as $key => $is_increasing) {
+            if (($comparison_directions[$key] ?? $is_increasing) === $is_increasing) {
+                continue;
+            }
+            $this->emitIssue(
+                Issue::SuspiciousLoopDirection,
+                $cond_node->lineno,
+                $is_increasing ? 'increase' : 'decrease',
+                ASTReverter::toShortString($loop_node),
+                ASTReverter::toShortString($cond_node)
+            );
+        }
+    }
+
+    /**
      * @override
      */
     public function visitInstanceof(Node $node) : void

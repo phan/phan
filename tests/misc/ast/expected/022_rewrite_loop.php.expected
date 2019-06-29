@@ -5,7 +5,7 @@ while ($x) { if (!$y) { break; }
     var_export($y);
 }
 
-for ($i = 0; true, $i < 2; $i++) { if (!is_string($x)) { break; }
+for ($i = 0; true, $i < 2 && is_string($x); $i++) {
     var_export([$i, $x]);
 }
 
