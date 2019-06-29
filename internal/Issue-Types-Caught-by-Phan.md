@@ -3690,6 +3690,12 @@ Saw an @param annotation for ${PARAMETER}, but it was not found in the param lis
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0373_reject_bad_type_narrowing.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/files/src/0373_reject_bad_type_narrowing.php#L4).
 
+## PhanDebugAnnotation
+
+```
+@phan-debug-var requested for variable ${VARIABLE} - it has union type {TYPE}
+```
+
 ## PhanInvalidCommentForDeclarationType
 
 ```

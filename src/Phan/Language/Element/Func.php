@@ -270,7 +270,7 @@ class Func extends AddressableElement implements FunctionInterface
             );
             $func->setRealReturnType($union_type);
 
-            $func->setUnionType($func->getUnionType()->withUnionType($union_type));
+            $func->setUnionType($func->getUnionType()->withUnionType($union_type)->withRealTypeSet($union_type->getTypeSet()));
         }
 
         if ($comment->hasReturnUnionType()) {
@@ -298,7 +298,7 @@ class Func extends AddressableElement implements FunctionInterface
                 }
             }
 
-            $func->setUnionType($func->getUnionType()->withUnionType($union_type));
+            $func->setUnionType($func->getUnionType()->withUnionType($union_type)->withRealTypeSet($func->getRealReturnType()->getTypeSet()));
             $func->setPHPDocReturnType($union_type);
         }
         $element_context->freeElementReference();

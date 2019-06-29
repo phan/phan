@@ -43,7 +43,7 @@ class RedundantCondition
      */
     public static function chooseSpecificImpossibleOrRedundantIssueKind($node, Context $context, string $issue_name) : string
     {
-        if (ParseVisitor::isConstExpr($node)) {
+        if (ParseVisitor::isNonVariableExpr($node)) {
             return $issue_name;
         }
         if ($context->isInGlobalScope()) {
@@ -65,17 +65,14 @@ class RedundantCondition
      */
     public static function emitInstance($node, CodeBase $code_base, Context $context, string $issue_name, array $issue_args, Closure $is_still_issue) : void
     {
-        if ($context->isInLoop() && $node instanceof Node && $node->kind === ast\AST_VAR) {
-            $var_name = $node->children['name'];
-            if (\is_string($var_name)) {
+        if ($context->isInLoop() && $node instanceof Node) {
+            $type_fetcher = self::getLoopNodeTypeFetcher($node);
+            if ($type_fetcher) {
                 // @phan-suppress-next-line PhanAccessMethodInternal
-                $context->deferCheckToOutermostLoop(static function (Context $context_after_loop) use ($code_base, $node, $var_name, $is_still_issue, $issue_name, $issue_args, $context) : void {
-                    $scope = $context_after_loop->getScope();
-                    if ($scope->hasVariableWithName($var_name)) {
-                        $var_type = $scope->getVariableByName($var_name)->getUnionType()->getRealUnionType();
-                        if ($var_type->isEmpty() || !$is_still_issue($var_type)) {
-                            return;
-                        }
+                $context->deferCheckToOutermostLoop(static function (Context $context_after_loop) use ($code_base, $node, $type_fetcher, $is_still_issue, $issue_name, $issue_args, $context) : void {
+                    $var_type = $type_fetcher($context_after_loop);
+                    if ($var_type !== null && ($var_type->isEmpty() || !$is_still_issue($var_type))) {
+                        return;
                     }
                     Issue::maybeEmit(
                         $code_base,
@@ -95,5 +92,31 @@ class RedundantCondition
             $node->lineno ?? $context->getLineNumberStart(),
             ...$issue_args
         );
+    }
+
+    /**
+     * Returns a closure to fetch the type of an expression that depends on the variables in this loop scope.
+     * Currently only supports regular variables
+     *
+     * @param Node|string|int|float|null $node
+     * @return ?Closure(Context):(?UnionType)
+     * @internal
+     */
+    public static function getLoopNodeTypeFetcher($node) : ?Closure
+    {
+        if ($node instanceof Node && $node->kind === ast\AST_VAR) {
+            $var_name = $node->children['name'];
+            if (\is_string($var_name)) {
+                // @phan-suppress-next-line PhanAccessMethodInternal
+                return static function (Context $context_after_loop) use ($var_name) : ?UnionType {
+                    $scope = $context_after_loop->getScope();
+                    if ($scope->hasVariableWithName($var_name)) {
+                        return $scope->getVariableByName($var_name)->getUnionType()->getRealUnionType();
+                    }
+                    return null;
+                };
+            }
+        }
+        return null;
     }
 }

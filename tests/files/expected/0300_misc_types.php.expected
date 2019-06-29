@@ -24,5 +24,5 @@
 %s:34 PhanTypeMismatchArgument Argument 1 ($x) is string but \expect_int_300() takes int defined at %s:4
 %s:35 PhanUnusedVariable Unused definition of variable $definedStrVar
 %s:37 PhanContextNotObject Cannot access self when not in object context
-%s:38 PhanRedundantConditionInGlobalScope Redundant attempt to cast new ArrayObject() of type \ArrayObject to object in the global scope (likely a false positive)
+%s:38 PhanRedundantCondition Redundant attempt to cast new ArrayObject() of type \ArrayObject to object
 %s:38 PhanTypeMismatchArgument Argument 1 ($x) is object but \expect_string_300() takes string defined at %s:3

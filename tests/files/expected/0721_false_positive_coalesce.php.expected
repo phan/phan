@@ -1,0 +1,2 @@
+%s:7 PhanCoalescingAlwaysNull Using $b of type null as the left hand side of a null coalescing (??) operation. The left hand side may be unnecessary.
+%s:7 PhanUnusedVariable Unused definition of variable $b

@@ -14,7 +14,9 @@ use Phan\Analysis\LoopConditionVisitor;
 use Phan\Analysis\NegatedConditionVisitor;
 use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\Analysis\PreOrderAnalysisVisitor;
+use Phan\Analysis\RedundantCondition;
 use Phan\AST\AnalysisVisitor;
+use Phan\AST\ASTReverter;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\Element;
@@ -110,9 +112,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $context = $this->analyzeAndGetUpdatedContext($context, $node, $name_node);
         }
 
-        $context = $this->postOrderAnalyze($context, $node);
-
-        return $context;
+        return $this->postOrderAnalyze($context, $node);
     }
 
     /**
@@ -287,6 +287,10 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         '/@(phan-var(?:-force)?)\b\s*(' . UnionType::union_type_regex . ')\s*&?\\$' . Builder::WORD_REGEX . '/';
     // @phan-suppress-previous-line PhanAccessClassConstantInternal
 
+    const PHAN_DEBUG_VAR_REGEX =
+        '/@phan-debug-var\s+\$(' . Builder::WORD_REGEX . '(,\s*\$' . Builder::WORD_REGEX . ')*)/';
+    // @phan-suppress-previous-line PhanAccessClassConstantInternal
+
     /**
      * Parses annotations such as "(at)phan-var int $myVar" and "(at)phan-var-force ?MyClass $varName" annotations from inline string literals.
      * (php-ast isn't able to parse inline doc comments, so string literals are used for rare edge cases where assert/if statements don't work)
@@ -315,6 +319,26 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     foreach (array_map('trim', explode(',', $issue_name_list)) as $issue_name) {
                         $code_base->addFileLevelSuppression($context->getFile(), $issue_name);
                     }
+                }
+            }
+        }
+        if (\preg_match_all(self::PHAN_DEBUG_VAR_REGEX, $text, $matches, \PREG_SET_ORDER) > 0) {
+            $has_known_annotations = true;
+            foreach ($matches as $group) {
+                foreach (array_map('trim', explode(',', $group[1])) as $var_name) {
+                    if ($context->getScope()->hasVariableWithName($var_name)) {
+                        $union_type_string = $context->getScope()->getVariableByName($var_name)->getUnionType()->getDebugRepresentation();
+                    } else {
+                        $union_type_string = '(undefined)';
+                    }
+                    Issue::maybeEmit(
+                        $this->code_base,
+                        $context,
+                        Issue::DebugAnnotation,
+                        $context->getLineNumberStart(),
+                        $var_name,
+                        $union_type_string
+                    );
                 }
             }
         }
@@ -583,12 +607,11 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // Now that we know all about our context (like what
         // 'self' means), we can analyze statements like
         // assignments and method calls.
-        $context = $this->postOrderAnalyze($context, $node);
 
         // When coming out of a scoped element, we pop the
         // context to be the incoming context. Otherwise,
         // we pass our new context up to our parent
-        return $context;
+        return $this->postOrderAnalyze($context, $node);
     }
 
     /**
@@ -695,12 +718,11 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // Now that we know all about our context (like what
         // 'self' means), we can analyze statements like
         // assignments and method calls.
-        $context = $this->postOrderAnalyze($context, $node);
 
         // When coming out of a scoped element, we pop the
         // context to be the incoming context. Otherwise,
         // we pass our new context up to our parent
-        return $context;
+        return $this->postOrderAnalyze($context, $node);
     }
 
     /**
@@ -1055,12 +1077,11 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // Now that we know all about our context (like what
         // 'self' means), we can analyze statements like
         // assignments and method calls.
-        $context = $this->postOrderAnalyze($context, $node);
 
         // When coming out of a scoped element, we pop the
         // context to be the incoming context. Otherwise,
         // we pass our new context up to our parent
-        return $context;
+        return $this->postOrderAnalyze($context, $node);
     }
 
     /**
@@ -1467,12 +1488,11 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             ))->visitIf($node);
         }
 
-        $context = $this->postOrderAnalyze($context, $node);
 
         // When coming out of a scoped element, we pop the
         // context to be the incoming context. Otherwise,
         // we pass our new context up to our parent
-        return $context;
+        return $this->postOrderAnalyze($context, $node);
     }
 
     /**
@@ -1625,12 +1645,10 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $context = $this->analyzeAndGetUpdatedContext($context, $node, $finally_node);
         }
 
-        $context = $this->postOrderAnalyze($context, $node);
-
         // When coming out of a scoped element, we pop the
         // context to be the incoming context. Otherwise,
         // we pass our new context up to our parent
-        return $context;
+        return $this->postOrderAnalyze($context, $node);
     }
 
     /**
@@ -1692,10 +1710,13 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     public function visitBinaryOp(Node $node) : Context
     {
         $flags = $node->flags;
-        if ($flags === ast\flags\BINARY_BOOL_AND) {
-            return $this->analyzeBinaryBoolAnd($node);
-        } elseif ($flags === ast\flags\BINARY_BOOL_OR) {
-            return $this->analyzeBinaryBoolOr($node);
+        switch ($flags) {
+            case ast\flags\BINARY_BOOL_AND:
+                return $this->analyzeBinaryBoolAnd($node);
+            case ast\flags\BINARY_BOOL_OR:
+                return $this->analyzeBinaryBoolOr($node);
+            case ast\flags\BINARY_COALESCE:
+                return $this->analyzeBinaryCoalesce($node);
         }
         return $this->visit($node);
     }
@@ -1759,9 +1780,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             ))->combineChildContextList();
         }
 
-        $context = $this->postOrderAnalyze($context, $node);
-
-        return $context;
+        return $this->postOrderAnalyze($context, $node);
     }
 
     /**
@@ -1823,10 +1842,95 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             ))->combineChildContextList();
         }
 
-        $context = $this->postOrderAnalyze($context, $node);
-
-        return $context;
+        return $this->postOrderAnalyze($context, $node);
     }
+
+    /**
+     * @param Node $node
+     * A node to parse (for `??` operator)
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function analyzeBinaryCoalesce(Node $node) : Context
+    {
+        $context = $this->context->withLineNumberStart(
+            $node->lineno
+        );
+
+        ConfigPluginSet::instance()->preAnalyzeNode(
+            $this->code_base,
+            $context,
+            $node
+        );
+
+        $left_node = $node->children['left'];
+        $right_node = $node->children['right'];
+
+        // With (left) ?? (right)
+        // 1. Analyze left and update context with any side effects of left
+        // 2. Check if left is always null or never null, if redundant_condition_detection is enabled
+        // 3. Analyze right-hand side and update context with any side effects of the right-hand side
+        //    (TODO: consider using a branch here for analyzing variable assignments, etc.)
+        // 4. Return the updated context
+
+        if ($left_node instanceof Node) {
+            $context = $this->analyzeAndGetUpdatedContext($context, $node, $left_node);
+        }
+        if (Config::getValue('redundant_condition_detection')) {
+            // Check for always null or never null values *before* modifying the context with inferences from the right hand side.
+            // Useful for analyzing `$x ?? ($x = expr)`
+            $this->analyzeBinaryCoalesceForRedundantCondition($context, $node);
+        }
+        if ($right_node instanceof Node) {
+            $context = $this->analyzeAndGetUpdatedContext($context, $node, $right_node);
+        }
+        return $this->postOrderAnalyze($context, $node);
+    }
+
+    /**
+     * Checks if the left hand side of a null coalescing operator is never null or always null
+     */
+    private function analyzeBinaryCoalesceForRedundantCondition(Context $context, Node $node) : void
+    {
+        $left_node = $node->children['left'];
+        $left = UnionTypeVisitor::unionTypeFromNode($this->code_base, $context, $left_node);
+        if (!$left->hasRealTypeSet()) {
+            return;
+        }
+        $left = $left->getRealUnionType();
+        if (!$left->containsNullableOrUndefined()) {
+            RedundantCondition::emitInstance(
+                $left_node,
+                $this->code_base,
+                clone($context)->withLineNumberStart($node->lineno),
+                Issue::CoalescingNeverNull,
+                [
+                    ASTReverter::toShortString($left_node),
+                    $left
+                ],
+                static function (UnionType $type) : bool {
+                    return !$type->containsNullableOrUndefined();
+                }
+            );
+        } elseif ($left->isNull()) {
+            RedundantCondition::emitInstance(
+                $left_node,
+                $this->code_base,
+                clone($context)->withLineNumberStart($node->lineno),
+                Issue::CoalescingAlwaysNull,
+                [
+                    ASTReverter::toShortString($left_node),
+                    $left
+                ],
+                static function (UnionType $type) : bool {
+                    return $type->isNull();
+                }
+            );
+        }
+    }
+
 
     public function visitConditional(Node $node) : Context
     {
@@ -1906,9 +2010,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             ))->combineChildContextList();
         }
 
-        $context = $this->postOrderAnalyze($context, $node);
-
-        return $context;
+        return $this->postOrderAnalyze($context, $node);
     }
 
     /**
@@ -2111,9 +2213,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $node
         );
 
-        $context = $this->postOrderAnalyze($context, $node);
-
-        return $context;
+        return $this->postOrderAnalyze($context, $node);
     }
 
     /**
@@ -2159,8 +2259,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $context = $this->analyzeAndGetUpdatedContext($context, $node, $default);
         }
 
-        $context = $this->postOrderAnalyze($context, $node);
-
-        return $context;
+        return $this->postOrderAnalyze($context, $node);
     }
 }
