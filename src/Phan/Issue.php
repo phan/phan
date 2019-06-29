@@ -209,6 +209,7 @@ class Issue
     const SuspiciousValueComparison             = 'PhanSuspiciousValueComparison';
     const SuspiciousValueComparisonInLoop       = 'PhanSuspiciousValueComparisonInLoop';
     const SuspiciousValueComparisonInGlobalScope = 'PhanSuspiciousValueComparisonInGlobalScope';
+    const SuspiciousLoopDirection               = 'PhanSuspiciousLoopDirection';
     const SuspiciousWeakTypeComparison          = 'PhanSuspiciousWeakTypeComparison';
     const SuspiciousWeakTypeComparisonInLoop    = 'PhanSuspiciousWeakTypeComparisonInLoop';
     const SuspiciousWeakTypeComparisonInGlobalScope    = 'PhanSuspiciousWeakTypeComparisonInGlobalScope';
@@ -2193,6 +2194,14 @@ class Issue
                 "Suspicious attempt to compare {CODE} of type {TYPE} to {CODE} of type {TYPE} with operator '{OPERATOR}' in the global scope (likely a false positive)",
                 self::REMEDIATION_B,
                 10133
+            ),
+            new Issue(
+                self::SuspiciousLoopDirection,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Suspicious loop appears to {DETAILS} after each iteration in {CODE}, but the loop condition is {CODE}",
+                self::REMEDIATION_B,
+                10134
             ),
             new Issue(
                 self::SuspiciousWeakTypeComparison,

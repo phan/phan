@@ -2139,6 +2139,34 @@ Relative paths are harder to reason about, and opcache may have issues with rela
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0545_require_testing.php.expected#L5) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/files/src/0545_require_testing.php#L5).
 
+## PhanSuspiciousLoopDirection
+
+```
+Suspicious loop appears to {DETAILS} after each iteration in {CODE}, but the loop condition is {CODE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0724_suspicious_comparison_in_loop.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0724_suspicious_comparison_in_loop.php#L8).
+
+## PhanSuspiciousValueComparison
+
+```
+Suspicious attempt to compare {CODE} of type {TYPE} to {CODE} of type {TYPE} with operator '{OPERATOR}'
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0526_crash.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0526_crash.php#L2).
+
+## PhanSuspiciousValueComparisonInGlobalScope
+
+```
+Suspicious attempt to compare {CODE} of type {TYPE} to {CODE} of type {TYPE} with operator '{OPERATOR}' in the global scope (likely a false positive)
+```
+
+## PhanSuspiciousValueComparisonInLoop
+
+```
+Suspicious attempt to compare {CODE} of type {TYPE} to {CODE} of type {TYPE} with operator '{OPERATOR}' in a loop (likely a false positive)
+```
+
 ## PhanSuspiciousWeakTypeComparison
 
 Some of these issues may be valid, but these are often confusing ways of checking for empty/null/false.
