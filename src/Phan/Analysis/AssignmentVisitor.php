@@ -5,6 +5,7 @@ namespace Phan\Analysis;
 use AssertionError;
 use ast;
 use ast\Node;
+use Closure;
 use Phan\AST\AnalysisVisitor;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
@@ -318,6 +319,12 @@ class AssignmentVisitor extends AnalysisVisitor
                         (string)$this->right_type
                     );
                     $element_type = $get_fallback_element_type();
+                } else {
+                    if ($element_type->hasRealTypeSet()) {
+                        $element_type = self::withComputedRealUnionType($element_type, $this->right_type, static function (UnionType $new_right_type) use ($key_value) : UnionType {
+                            return UnionTypeVisitor::resolveArrayShapeElementTypesForOffset($new_right_type, $key_value) ?: UnionType::empty();
+                        });
+                    }
                 }
             } else {
                 $element_type = $get_fallback_element_type();
@@ -329,6 +336,24 @@ class AssignmentVisitor extends AnalysisVisitor
         if (!Config::getValue('scalar_array_key_cast')) {
             $this->checkMismatchArrayDestructuringKey($expect_int_keys_lineno, $expect_string_keys_lineno);
         }
+    }
+
+    /**
+     * Utility function to compute accurate real union types
+     *
+     * TODO: Move this into a common class such as UnionType?
+     * @param Closure(UnionType):UnionType $recompute_inferred_type
+     */
+    private static function withComputedRealUnionType(UnionType $inferred_type, UnionType $source_type, Closure $recompute_inferred_type) : UnionType
+    {
+        if (!$inferred_type->hasRealTypeSet()) {
+            return $inferred_type;
+        }
+        if ($source_type->getRealTypeSet() === $source_type->getTypeSet()) {
+            return $inferred_type;
+        }
+        $real_inferred_type = $recompute_inferred_type($inferred_type->getRealUnionType());
+        return $inferred_type->withRealTypeSet($real_inferred_type->getTypeSet());
     }
 
     /**

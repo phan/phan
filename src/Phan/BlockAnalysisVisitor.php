@@ -1347,7 +1347,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $this->parent_node_list[] = $node;
 
             try {
-
                 // NOTE: This is different from other analysis visitors because analyzing 'cond' with `||` has side effects
                 // after supporting `BlockAnalysisVisitor->visitBinaryOp()`
                 // TODO: Calling analyzeAndGetUpdatedContext before preOrderAnalyze is a hack.
