@@ -87,6 +87,13 @@ class DefinitionResolver
                 case ast\AST_CLASS_CONST:
                     self::locateClassConstDefinition($request, $code_base, $context, $node);
                     return;
+                case ast\AST_CLASS_NAME:
+                    $class_node = $node->children['class'];
+                    if ($class_node instanceof Node) {
+                        // handle (2)::class from the polyfill
+                        self::locateClassDefinition($request, $code_base, $context, $class_node);
+                    }
+                    return;
                 case ast\AST_CONST:
                     self::locateGlobalConstDefinition($request, $code_base, $context, $node);
                     return;
