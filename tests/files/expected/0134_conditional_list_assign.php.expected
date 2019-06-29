@@ -1,1 +1,1 @@
-%s:2 PhanRedundantConditionInGlobalScope Redundant attempt to cast list($a) of type array{0:1} to truthy in the global scope (likely a false positive)
+%s:2 PhanRedundantCondition Redundant attempt to cast [1,2,3] of type array{0:1,1:2,2:3} to truthy

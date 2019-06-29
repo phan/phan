@@ -1,1 +1,1 @@
-%s:5 PhanRedundantCondition Redundant attempt to cast list($a) of type array{0:1} to truthy
+%s:5 PhanRedundantCondition Redundant attempt to cast [1] of type array{0:1} to truthy
