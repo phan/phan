@@ -18,6 +18,7 @@ New features(Analysis):
 + Be more accurate about inferring real union types from array destructuring assignments. (#2901)
 + Be more accurate about inferring real union types from assertions that expressions are non-null. (#2901)
 + Support dumping Phan's internal representation of a variable's union type (and real union type) with `'@phan-debug-var $varName'` (useful for debugging)
++ Fix false positive `PhanRedundantCondition` analyzing `if ([$a] = (expr))` (#2904)
 
 Jun 17 2019, Phan 2.2.3
 -----------------------

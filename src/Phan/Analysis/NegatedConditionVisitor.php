@@ -991,6 +991,13 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
             // Other code should warn about this invalid AST
             return $context;
         }
+        if ($left->kind === ast\AST_ARRAY) {
+            $expr_node = $node->children['expr'];
+            if ($expr_node instanceof Node) {
+                return (new self($this->code_base, $context))->__invoke($expr_node);
+            }
+            return $context;
+        }
         return (new self($this->code_base, $context))->__invoke($left);
     }
 
