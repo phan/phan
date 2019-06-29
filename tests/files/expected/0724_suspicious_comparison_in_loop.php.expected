@@ -1,0 +1,3 @@
+%s:4 PhanSuspiciousValueComparison Suspicious attempt to compare $j of type 0 to 20 of type 20 with operator '<'
+%s:7 PhanSuspiciousValueComparison Suspicious attempt to compare $i of type 100 to 20 of type 20 with operator '<'
+%s:10 PhanSuspiciousValueComparison Suspicious attempt to compare $j of type 0 to 20 of type 20 with operator '=='

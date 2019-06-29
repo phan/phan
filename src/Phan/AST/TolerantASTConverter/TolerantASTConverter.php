@@ -2799,6 +2799,11 @@ class TolerantASTConverter
      */
     private static function phpParserClassconstfetchToAstClassconstfetch($scope_resolution_qualifier, string $name, int $start_line) : ast\Node
     {
+        if (\strcasecmp($name, 'class') === 0) {
+            return new ast\Node(ast\AST_CLASS_NAME, 0, [
+                'class' => static::phpParserNonValueNodeToAstNode($scope_resolution_qualifier),
+            ], $start_line);
+        }
         return new ast\Node(ast\AST_CLASS_CONST, 0, [
             'class' => static::phpParserNonValueNodeToAstNode($scope_resolution_qualifier),
             'const' => $name,

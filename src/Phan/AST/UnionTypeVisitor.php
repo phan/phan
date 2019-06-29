@@ -1977,14 +1977,18 @@ class UnionTypeVisitor extends AnalysisVisitor
             throw $new_exception;
         }
         // Return the first class FQSEN
+        $types = [];
+        $name = $class_node->children['name'] ?? null;
         foreach ($class_list as $class) {
-            $type = LiteralStringType::instanceForValue(
+            $types[] = LiteralStringType::instanceForValue(
                 \ltrim($class->getFQSEN()->__toString(), '\\'),
                 false
             );
-            return ($class_node->kind ?? null) === ast\AST_NAME ? $type->asRealUnionType() : $type->asPHPDocUnionType();
         }
-        return StringType::instance(false)->asRealUnionType();
+        if (\is_string($name) && strcasecmp($name, 'static') === 0 && (!$class || !$class->isFinal())) {
+            return UnionType::of($types, [StringType::instance(false)]);
+        }
+        return UnionType::of($types, $types);
     }
 
     /**

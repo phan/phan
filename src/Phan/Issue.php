@@ -205,7 +205,10 @@ class Issue
     const RedundantConditionInGlobalScope   = 'PhanRedundantConditionInGlobalScope';
     const ImpossibleTypeComparison          = 'PhanImpossibleTypeComparison';
     const ImpossibleTypeComparisonInLoop    = 'PhanImpossibleTypeComparisonInLoop';
-    const ImpossibleTypeComparisonInGlobalScope    = 'PhanImpossibleTypeComparisonInGlobalScope';
+    const ImpossibleTypeComparisonInGlobalScope = 'PhanImpossibleTypeComparisonInGlobalScope';
+    const SuspiciousValueComparison             = 'PhanSuspiciousValueComparison';
+    const SuspiciousValueComparisonInLoop       = 'PhanSuspiciousValueComparisonInLoop';
+    const SuspiciousValueComparisonInGlobalScope = 'PhanSuspiciousValueComparisonInGlobalScope';
     const SuspiciousWeakTypeComparison          = 'PhanSuspiciousWeakTypeComparison';
     const SuspiciousWeakTypeComparisonInLoop    = 'PhanSuspiciousWeakTypeComparisonInLoop';
     const SuspiciousWeakTypeComparisonInGlobalScope    = 'PhanSuspiciousWeakTypeComparisonInGlobalScope';
@@ -2166,6 +2169,30 @@ class Issue
                 "Impossible attempt to check if {CODE} of type {TYPE} is identical to {CODE} of type {TYPE} in the global scope (likely a false positive)",
                 self::REMEDIATION_B,
                 10125
+            ),
+            new Issue(
+                self::SuspiciousValueComparison,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Suspicious attempt to compare {CODE} of type {TYPE} to {CODE} of type {TYPE} with operator '{OPERATOR}'",
+                self::REMEDIATION_B,
+                10131
+            ),
+            new Issue(
+                self::SuspiciousValueComparisonInLoop,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Suspicious attempt to compare {CODE} of type {TYPE} to {CODE} of type {TYPE} with operator '{OPERATOR}' in a loop (likely a false positive)",
+                self::REMEDIATION_B,
+                10132
+            ),
+            new Issue(
+                self::SuspiciousValueComparisonInGlobalScope,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Suspicious attempt to compare {CODE} of type {TYPE} to {CODE} of type {TYPE} with operator '{OPERATOR}' in the global scope (likely a false positive)",
+                self::REMEDIATION_B,
+                10133
             ),
             new Issue(
                 self::SuspiciousWeakTypeComparison,
