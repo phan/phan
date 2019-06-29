@@ -19,6 +19,7 @@ New features(Analysis):
 + Be more accurate about inferring real union types from assertions that expressions are non-null. (#2901)
 + Support dumping Phan's internal representation of a variable's union type (and real union type) with `'@phan-debug-var $varName'` (useful for debugging)
 + Fix false positive `PhanRedundantCondition` analyzing `if ([$a] = (expr))` (#2904)
++ Warn about suspicious comparisons that are always true or always false, e.g. the initial check for `for ($i = 100; $i < 20; $i++)` (#2888)
 + Emit critical errors for duplicate use for class/namespace, function, or constant (#2897)
   New issue types: `PhanDuplicateUseNormal`, `PhanDuplicateUseFunction`, `PhanDuplicateUseConstant`
 

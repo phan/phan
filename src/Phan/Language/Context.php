@@ -394,6 +394,15 @@ class Context extends FileRef
         return \count($this->loop_nodes) > 0;
     }
 
+    /**
+     * Fetches the innermost loop node.
+     * @suppress PhanPossiblyFalseTypeReturn
+     */
+    public function getInnermostLoopNode() : Node
+    {
+        return \end($this->loop_nodes);
+    }
+
     public function withoutLoops() : Context
     {
         $context = clone($this);

@@ -658,7 +658,7 @@ trait ConditionVisitorUtil
                 }
 
                 if ($expr == false) {
-                    // @phan-suppress-next-line PhanImpossibleCondition FIXME should not set real type for loose equality checks
+                    // @phan-suppress-next-line PhanImpossibleCondition, PhanSuspiciousValueComparison FIXME should not set real type for loose equality checks
                     if ($expr == null) {
                         return $this->removeFalseyFromVariable($var_node, $context, false);
                     }

@@ -7,8 +7,10 @@ use ast\flags;
 use ast\Node;
 use Closure;
 use Exception;
+use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\Analysis\RedundantCondition;
 use Phan\AST\ASTReverter;
+use Phan\AST\InferValue;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Issue;
@@ -388,7 +390,100 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
                     return !$new_left_type->hasAnyTypeOverlap($code_base, $new_right_type) && ($strict || !$new_left_type->hasAnyWeakTypeOverlap($new_right_type));
                 }
             );
+        } else {
+            $this->checkUselessScalarComparison($node, $left->getRealUnionType(), $right->getRealUnionType());
         }
+    }
+
+    /**
+     * @suppress PhanAccessMethodInternal
+     */
+    private function checkUselessScalarComparison(Node $node, UnionType $left, UnionType $right) : void
+    {
+        $left_value = $left->asSingleScalarValueOrNullOrSelf();
+        if ($left_value instanceof UnionType) {
+            return;
+        }
+        $right_value = $right->asSingleScalarValueOrNullOrSelf();
+        if ($right_value instanceof UnionType) {
+            return;
+        }
+        $issue_args = [
+            ASTReverter::toShortString($node->children['left']),
+            $left,
+            ASTReverter::toShortString($node->children['right']),
+            $right,
+            // @phan-suppress-next-line PhanAccessClassConstantInternal
+            PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$node->flags],
+        ];
+
+        $issue_name = Issue::SuspiciousValueComparison;
+
+        $context = $this->context;
+        $code_base = $this->code_base;
+        if ($this->shouldCheckScalarAsIfInLoopScope($node, $left_value, $right_value)) {
+            ['left' => $left_node, 'right' => $right_node] = $node->children;
+            $left_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($left_node);
+            $right_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($right_node);
+            if ($left_type_fetcher || $right_type_fetcher) {
+                // @phan-suppress-next-line PhanAccessMethodInternal
+                $context->deferCheckToOutermostLoop(static function (Context $context_after_loop) use ($code_base, $node, $left_type_fetcher, $right_type_fetcher, $left, $right, $issue_name, $issue_args, $context) : void {
+                    $new_left_type = ($left_type_fetcher ? $left_type_fetcher($context_after_loop) : null);
+                    if (!$new_left_type || $left->isEqualTo($new_left_type)) {
+                        return;
+                    }
+                    $new_right_type = ($right_type_fetcher ? $right_type_fetcher($context_after_loop) : null);
+                    if (!$new_right_type || $right->isEqualTo($new_right_type)) {
+                        return;
+                    }
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        RedundantCondition::chooseSpecificImpossibleOrRedundantIssueKind($node, $context, $issue_name),
+                        $node->lineno,
+                        ...$issue_args
+                    );
+                });
+                return;
+            }
+        }
+        Issue::maybeEmit(
+            $code_base,
+            $context,
+            $issue_name,
+            $node->lineno,
+            ...$issue_args
+        );
+    }
+
+    /**
+     * @param mixed $left_value
+     * @param mixed $right_value
+     */
+    private function shouldCheckScalarAsIfInLoopScope(Node $node, $left_value, $right_value) : bool {
+        if (!$this->context->isInLoop()) {
+            // This isn't even in a loop.
+            return false;
+        }
+        // while loops and for loops have a cond node, foreach loops don't.
+        $inner_loop_node_cond = $this->context->getInnermostLoopNode()->children['cond'] ?? null;
+        if ($inner_loop_node_cond instanceof Node) {
+            // For loops have a list of expressions, the last of which is a condition
+            if ($inner_loop_node_cond->kind === ast\AST_EXPR_LIST) {
+                $inner_loop_node_cond = \end($inner_loop_node_cond->children);
+            }
+            if ($inner_loop_node_cond === $node) {
+                try {
+                    $result = InferValue::computeBinaryOpResult($left_value, $right_value, $node->flags);
+                    // It's suspicious if a loop condition is initially false.
+                    // This heuristic isn't perfect, but catches bugs such as `for ($i = 0; $i > 10; $i++)`
+                    return (bool)$result;
+                } catch (\Error $_) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**
