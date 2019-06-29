@@ -25,6 +25,9 @@ New features(Analysis):
 + Emit critical errors for duplicate use for class/namespace, function, or constant (#2897)
   New issue types: `PhanDuplicateUseNormal`, `PhanDuplicateUseFunction`, `PhanDuplicateUseConstant`
 
+Language Server/Daemon mode:
++ Properly locate the defining class for `MyClass::class` when the polyfill/fallback is used.
+
 Jun 17 2019, Phan 2.2.3
 -----------------------
 
