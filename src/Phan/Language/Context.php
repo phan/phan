@@ -221,12 +221,15 @@ class Context extends FileRef
     /**
      * @return Context
      * This context with the given value is returned
+     *
+     * TODO: Make code_base mandatory in a subsequent release
      */
     public function withNamespaceMap(
         int $flags,
         string $alias,
         FullyQualifiedGlobalStructuralElement $target,
-        int $lineno
+        int $lineno,
+        CodeBase $code_base = null
     ) : Context {
         $original_alias = $alias;
         if ($flags !== \ast\flags\USE_CONST) {
@@ -247,8 +250,37 @@ class Context extends FileRef
             $this->namespace_map[$flags][$alias] = $parse_entry;
             return $this;
         }
+        if (isset($this->namespace_map[$flags][$alias])) {
+            if ($code_base) {
+                $this->warnDuplicateUse($code_base, $target, $lineno, $flags, $alias);
+            }
+        }
         $this->namespace_map[$flags][$alias] = new NamespaceMapEntry($target, $original_alias, $lineno);
         return $this;
+    }
+
+    private function warnDuplicateUse(CodeBase $code_base, FullyQualifiedGlobalStructuralElement $target, int $lineno, int $flags, string $alias) : void
+    {
+        switch ($flags) {
+            case \ast\flags\USE_FUNCTION:
+                $issue = Issue::DuplicateUseFunction;
+                break;
+            case \ast\flags\USE_CONST:
+                $issue = Issue::DuplicateUseConstant;
+                break;
+            default:
+                $issue = Issue::DuplicateUseNormal;
+                break;
+        }
+
+        Issue::maybeEmit(
+            $code_base,
+            $this,
+            $issue,
+            $lineno,
+            $target,
+            $alias
+        );
     }
 
     /**

@@ -337,6 +337,9 @@ class Issue
     const UnreferencedUseNormal         = 'PhanUnreferencedUseNormal';
     const UnreferencedUseFunction       = 'PhanUnreferencedUseFunction';
     const UnreferencedUseConstant       = 'PhanUnreferencedUseConstant';
+    const DuplicateUseNormal            = 'PhanDuplicateUseNormal';
+    const DuplicateUseFunction          = 'PhanDuplicateUseFunction';
+    const DuplicateUseConstant          = 'PhanDuplicateUseConstant';
     const UseNormalNoEffect             = 'PhanUseNormalNoEffect';
     const UseNormalNamespacedNoEffect   = 'PhanUseNormalNamespacedNoEffect';
     const UseFunctionNoEffect           = 'PhanUseFunctionNoEffect';
@@ -748,6 +751,30 @@ class Issue
                 'Cannot \'{OPERATOR}\' {INDEX} levels.',
                 self::REMEDIATION_A,
                 17007
+            ),
+            new Issue(
+                self::DuplicateUseNormal,
+                self::CATEGORY_SYNTAX,
+                self::SEVERITY_CRITICAL,
+                "Cannot use {CLASSLIKE} as {CLASSLIKE} because the name is already in use",
+                self::REMEDIATION_B,
+                17008
+            ),
+            new Issue(
+                self::DuplicateUseFunction,
+                self::CATEGORY_SYNTAX,
+                self::SEVERITY_CRITICAL,
+                "Cannot use function {FUNCTION} as {FUNCTION} because the name is already in use",
+                self::REMEDIATION_B,
+                17009
+            ),
+            new Issue(
+                self::DuplicateUseConstant,
+                self::CATEGORY_SYNTAX,
+                self::SEVERITY_CRITICAL,
+                "Cannot use constant {CONST} as {CONST} because the name is already in use",
+                self::REMEDIATION_B,
+                17010
             ),
 
             // Issue::CATEGORY_UNDEFINED

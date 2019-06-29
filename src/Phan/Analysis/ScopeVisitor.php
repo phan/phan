@@ -132,7 +132,8 @@ abstract class ScopeVisitor extends AnalysisVisitor
                 $flags,
                 $alias,
                 $target,
-                $lineno
+                $lineno,
+                $this->code_base
             );
         }
 
@@ -167,7 +168,8 @@ abstract class ScopeVisitor extends AnalysisVisitor
                 $flags,
                 $alias,
                 $target,
-                $lineno
+                $lineno,
+                $this->code_base
             );
         }
 

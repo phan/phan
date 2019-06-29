@@ -3805,6 +3805,30 @@ This detects code causing a [warning in PHP 7.3](http://php.net/manual/en/migrat
 ```
 
 
+## PhanDuplicateUseConstant
+
+```
+Cannot use constant {CONST} as {CONST} because the name is already in use
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0723_duplicate_use.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0723_duplicate_use.php#L8).
+
+## PhanDuplicateUseFunction
+
+```
+Cannot use function {FUNCTION} as {FUNCTION} because the name is already in use
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0723_duplicate_use.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0723_duplicate_use.php#L6).
+
+## PhanDuplicateUseNormal
+
+```
+Cannot use {CLASSLIKE} as {CLASSLIKE} because the name is already in use
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0723_duplicate_use.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0723_duplicate_use.php#L4).
+
 ## PhanInvalidConstantExpression
 
 ```
