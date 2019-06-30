@@ -8,6 +8,7 @@ namespace Phan\PluginV2;
  * For plugins which define their own post-order analysis behaviors in the analysis phase.
  * Called on a node after PluginAwarePreAnalysisVisitor implementations.
  * @deprecated use PluginV3
+ * @suppress PhanDeprecatedClass
  */
 abstract class PluginAwarePostAnalysisVisitor extends PluginAwareBaseAnalysisVisitor
 {

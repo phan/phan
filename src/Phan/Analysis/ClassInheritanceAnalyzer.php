@@ -142,7 +142,7 @@ class ClassInheritanceAnalyzer
         ) {
             Issue::maybeEmit(
                 $code_base,
-                $source_class->getContext(),
+                $source_class->getInternalContext(),
                 Issue::AccessClassInternal,
                 $source_class->getFileRef()->getLineNumberStart(),
                 (string)$target_class,
@@ -150,19 +150,24 @@ class ClassInheritanceAnalyzer
                 (string)$target_class->getFileRef()->getLineNumberStart()
             );
         }
-
-        /*
         if ($target_class->isDeprecated()) {
+            if ($target_class->isTrait()) {
+                $issue_type = Issue::DeprecatedTrait;
+            } elseif ($target_class->isInterface()) {
+                $issue_type = Issue::DeprecatedInterface;
+            } else {
+                $issue_type = Issue::DeprecatedClass;
+            }
             Issue::maybeEmit(
                 $code_base,
-                $source_class->getContext(),
-                Issue::DeprecatedClass,
+                $source_class->getInternalContext(),
+                $issue_type,
                 $source_class->getFileRef()->getLineNumberStart(),
-                (string)$target_class->getFQSEN(),
-                $target_class->getFileRef()->getFile(),
-                (string)$target_class->getFileRef()->getLineNumberStart()
+                $target_class->getFQSEN(),
+                $target_class->getContext()->getFile(),
+                $target_class->getContext()->getLineNumberStart(),
+                $target_class->getDeprecationReason()
             );
         }
-        */
     }
 }

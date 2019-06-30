@@ -1950,32 +1950,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         $node->lineno,
                         (string)$class->getFQSEN(),
                         $class->getContext()->getFile(),
-                        (string)$class->getContext()->getLineNumberStart()
+                        (string)$class->getContext()->getLineNumberStart(),
+                        $class->getDeprecationReason()
                     );
-                }
-                foreach ($class->getInterfaceFQSENList() as $interface) {
-                    $clazz = $this->code_base->getClassByFQSEN($interface);
-                    if ($clazz->isDeprecated()) {
-                        $this->emitIssue(
-                            Issue::DeprecatedInterface,
-                            $node->lineno,
-                            (string)$clazz->getFQSEN(),
-                            $clazz->getContext()->getFile(),
-                            (string)$clazz->getContext()->getLineNumberStart()
-                        );
-                    }
-                }
-                foreach ($class->getTraitFQSENList() as $trait) {
-                    $clazz = $this->code_base->getClassByFQSEN($trait);
-                    if ($clazz->isDeprecated()) {
-                        $this->emitIssue(
-                            Issue::DeprecatedTrait,
-                            $node->lineno,
-                            (string)$clazz->getFQSEN(),
-                            $clazz->getContext()->getFile(),
-                            (string)$clazz->getContext()->getLineNumberStart()
-                        );
-                    }
                 }
             }
 

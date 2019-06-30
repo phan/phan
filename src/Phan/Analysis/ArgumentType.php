@@ -188,7 +188,8 @@ final class ArgumentType
                     $context->getLineNumberStart(),
                     $method->getRepresentationForIssue(),
                     $method->getFileRef()->getFile(),
-                    $method->getFileRef()->getLineNumberStart()
+                    $method->getFileRef()->getLineNumberStart(),
+                    $method->getDeprecationReason()
                 );
             }
         }

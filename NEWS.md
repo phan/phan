@@ -25,6 +25,9 @@ New features(Analysis):
 + Emit critical errors for duplicate use for class/namespace, function, or constant (#2897)
   New issue types: `PhanDuplicateUseNormal`, `PhanDuplicateUseFunction`, `PhanDuplicateUseConstant`
 + Emit `PhanCompatibleUnsetCast` for uses of the deprecated `(unset)(expr)` cast. (#2871)
++ Emit `PhanDeprecatedClass`, `PhanDeprecatedTrait`, and `PhanDeprecatedInterface` on the class directly inheriting from the deprecated class, trait, or interface. (#972)
+  Stop emitting that issue when constructing a non-deprecated class inheriting from a deprecated class.
++ Include the deprecation reason for user-defined classes that were deprecated (#2807)
 
 Language Server/Daemon mode:
 + Properly locate the defining class for `MyClass::class` when the polyfill/fallback is used.

@@ -128,6 +128,11 @@ class Clazz extends AddressableElement
     private $decl_id = 0;
 
     /**
+     * @var Context
+     */
+    private $internal_context;
+
+    /**
      * @param Context $context
      * The context in which the structural element lives
      *
@@ -173,11 +178,13 @@ class Clazz extends AddressableElement
         $this->interface_fqsen_list = $interface_fqsen_list;
         $this->trait_fqsen_list = $trait_fqsen_list;
 
-        $this->setInternalScope(new ClassScope(
+        $internal_scope = new ClassScope(
             $context->getScope(),
             $fqsen,
             $flags
-        ));
+        );
+        $this->setInternalScope($internal_scope);
+        $this->internal_context = $context->withScope($internal_scope);
     }
 
     private static function getASTFlagsForReflectionProperty(ReflectionProperty $prop) : int
@@ -804,9 +811,7 @@ class Clazz extends AddressableElement
             return true;  // Vacuously true.
         }
         $class_fqsen = $this->getFQSEN();
-        $context = $this->getContext()->withScope(
-            $this->getInternalScope()
-        );
+        $context = $this->getInternalContext();
         foreach ($magic_property_map as $comment_parameter) {
             // $phan_flags can be used to indicate if something is property-read or property-write
             $phan_flags = $comment_parameter->getFlags();
@@ -848,9 +853,7 @@ class Clazz extends AddressableElement
             return true;  // Vacuously true.
         }
         $class_fqsen = $this->getFQSEN();
-        $context = $this->getContext()->withScope(
-            $this->getInternalScope()
-        );
+        $context = $this->internal_context;
         foreach ($magic_method_map as $comment_method) {
             // $flags is the same as the flags for `public` and non-internal?
             // Or \ast\flags\MODIFIER_PUBLIC.
@@ -3183,5 +3186,16 @@ class Clazz extends AddressableElement
     public function getDeclId() : int
     {
         return $this->decl_id;
+    }
+
+    /**
+     * Returns a context with the internal scope of this class (including suppression info)
+     * Equivalent to $clazz->getContext()->withScope($clazz->getInternalScope())
+     *
+     * TODO: Use this for more issues about class and class-like declarations.
+     */
+    public function getInternalContext() : Context
+    {
+        return $this->internal_context;
     }
 }

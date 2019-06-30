@@ -570,7 +570,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0
 ## PhanDeprecatedClass
 
 ```
-Call to deprecated class {CLASS} defined at {FILE}:{LINE}
+Using a deprecated class {CLASS} defined at {FILE}:{LINE}{DETAILS}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0123_deprecated_class.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/files/src/0123_deprecated_class.php#L12).
@@ -578,7 +578,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0
 ## PhanDeprecatedClassConstant
 
 ```
-Reference to deprecated property {PROPERTY} defined at {FILE}:{LINE}
+Reference to deprecated property {PROPERTY} defined at {FILE}:{LINE}{DETAILS}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/php72_files/expected/0007_deprecated_class_constant.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/php72_files/src/0007_deprecated_class_constant.php#L6).
@@ -588,7 +588,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/php72_files/expe
 If a class, method, function, property or constant is marked in its comment as `@deprecated`, any references to them will emit a deprecated error.
 
 ```
-Call to deprecated function {FUNCTIONLIKE} defined at {FILE}:{LINE}
+Call to deprecated function {FUNCTIONLIKE} defined at {FILE}:{LINE}{DETAILS}
 ```
 
 This will be emitted for the following code.
@@ -610,7 +610,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/php72_files/expe
 ## PhanDeprecatedInterface
 
 ```
-Using a deprecated interface {INTERFACE} defined at {FILE}:{LINE}
+Using a deprecated interface {INTERFACE} defined at {FILE}:{LINE}{DETAILS}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0269_deprecated_interface.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/files/src/0269_deprecated_interface.php#L7).
@@ -618,7 +618,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0
 ## PhanDeprecatedProperty
 
 ```
-Reference to deprecated property {PROPERTY} defined at {FILE}:{LINE}
+Reference to deprecated property {PROPERTY} defined at {FILE}:{LINE}{DETAILS}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0171_deprecated_property.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/files/src/0171_deprecated_property.php#L9).
@@ -626,7 +626,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0
 ## PhanDeprecatedTrait
 
 ```
-Using a deprecated trait {TRAIT} defined at {FILE}:{LINE}
+Using a deprecated trait {TRAIT} defined at {FILE}:{LINE}{DETAILS}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0270_deprecated_trait.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/files/src/0270_deprecated_trait.php#L7).
