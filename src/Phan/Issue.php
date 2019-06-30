@@ -448,6 +448,7 @@ class Issue
     const CompatibleMultiExceptionCatchPHP70 = 'PhanCompatibleMultiExceptionCatchPHP70';
     const CompatibleNegativeStringOffset     = 'PhanCompatibleNegativeStringOffset';
     const CompatibleAutoload                 = 'PhanCompatibleAutoload';
+    const CompatibleUnsetCast                = 'PhanCompatibleUnsetCast';
 
     // Issue::CATEGORY_GENERIC
     const TemplateTypeConstant       = 'PhanTemplateTypeConstant';
@@ -3834,6 +3835,14 @@ class Issue
                 "Declaring an autoloader with function __autoload() was deprecated in PHP 7.2 and will become a fatal error in PHP 8.0. Use spl_autoload_register() instead (supported since PHP 5.1).",
                 self::REMEDIATION_B,
                 3013
+            ),
+            new Issue(
+                self::CompatibleUnsetCast,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_NORMAL,
+                "The unset cast (in {CODE}) was deprecated in PHP 7.2 and will become a fatal error in PHP 8.0.",
+                self::REMEDIATION_B,
+                3014
             ),
 
             // Issue::CATEGORY_GENERIC

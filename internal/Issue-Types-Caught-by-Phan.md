@@ -479,6 +479,14 @@ Square bracket syntax for an array destructuring assignment is not compatible wi
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/php70_files/expected/003_short_array.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/php70_files/src/003_short_array.php#L8).
 
+## PhanCompatibleUnsetCast
+
+```
+The unset cast (in {CODE}) was deprecated in PHP 7.2 and will become a fatal error in PHP 8.0.
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/expected/061_cast_crash.php.expected#L11) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/src/061_cast_crash.php#L45).
+
 ## PhanCompatibleUseIterablePHP71
 
 ```

@@ -24,6 +24,7 @@ New features(Analysis):
   e.g. `for ($i = 0; $i <= 10; $i--)`
 + Emit critical errors for duplicate use for class/namespace, function, or constant (#2897)
   New issue types: `PhanDuplicateUseNormal`, `PhanDuplicateUseFunction`, `PhanDuplicateUseConstant`
++ Emit `PhanCompatibleUnsetCast` for uses of the deprecated `(unset)(expr)` cast. (#2871)
 
 Language Server/Daemon mode:
 + Properly locate the defining class for `MyClass::class` when the polyfill/fallback is used.
