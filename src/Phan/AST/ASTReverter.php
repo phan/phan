@@ -283,7 +283,8 @@ class ASTReverter
     /**
      * @param Node|string|int|float $node
      */
-    private static function formatIncDec(string $format, $node) : string {
+    private static function formatIncDec(string $format, $node) : string
+    {
         $str = self::toShortString($node);
         if (!($node instanceof Node && $node->kind === ast\AST_VAR)) {
             $str = '(' . $str . ')';

@@ -2965,11 +2965,28 @@ class TolerantASTConverter
             $details = \sha1(var_export([
                 \PHP_VERSION,
                 \PHP_BINARY,
+                self::getDevelopmentBuildDate(),
+                phpversion('ast'),
                 \ini_get('short_open_tag'),
                 class_exists(CLI::class) ? CLI::getDevelopmentVersionId() : 'unknown'
             ], true));
         }
         return $details;
+    }
+
+    /**
+     * For development PHP versions such as 8.0.0-dev, use the build date as part of the cache key to invalidate cached ASTs when this gets rebuilt.
+     */
+    private static function getDevelopmentBuildDate() : ?string
+    {
+        if (stripos(PHP_VERSION, '-dev') === false) {
+            return null;
+        }
+        ob_start();
+        phpinfo(\INFO_GENERAL);
+        $contents = (string)ob_get_clean();
+        preg_match('/^Build Date.*=>\s*(.+)$/m', $contents, $matches);
+        return $matches[1] ?? 'unknown';
     }
 
     /**

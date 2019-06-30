@@ -16,7 +16,7 @@ set_include_path(get_include_path() . PATH_SEPARATOR . CLASS_DIR);
 
 if (extension_loaded('ast')) {
     // Warn if the php-ast version is too low.
-    $ast_version = (new ReflectionExtension('ast'))->getVersion();
+    $ast_version = (string)phpversion('ast');
     if (version_compare($ast_version, '1.0.0') <= 0) {
         fprintf(
             STDERR,
@@ -28,6 +28,13 @@ if (extension_loaded('ast')) {
             "Exiting without analyzing files." . PHP_EOL
         );
         exit(1);
+    } elseif (PHP_VERSION_ID >= 70400 && version_compare($ast_version, '1.0.2') < 0) {
+        fprintf(
+            STDERR,
+            "Warning: Phan 2.x requires php-ast 1.0.2+ to properly analyze ASTs for php 7.4+. php-ast %s and php %s is installed." . PHP_EOL,
+            $ast_version,
+            PHP_VERSION
+        );
     }
 }
 if (PHP_VERSION_ID < 70100) {
@@ -228,7 +235,7 @@ if (!class_exists(CompileError::class)) {
      *
      * In PHP 7.3, a new CompileError class was introduced, and ParseError was turned into a subclass of CompileError.
      *
-     * Phan handles both of those separately, so that Phan will work with 7.0-7.3.
+     * Phan handles both of those separately, so that Phan will work in 7.1+
      *
      * @suppress PhanRedefineClassInternal
      */

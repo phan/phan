@@ -9,6 +9,7 @@ use ast\Node;
 use Closure;
 use Exception;
 use Phan\AST\AnalysisVisitor;
+use Phan\AST\ASTReverter;
 use Phan\AST\ASTSimplifier;
 use Phan\AST\ContextNode;
 use Phan\AST\PhanAnnotationAdder;
@@ -949,6 +950,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 Issue::NoopCast,
                 $node->lineno,
                 self::AST_CAST_FLAGS_LOOKUP[$node->flags] ?? 'unknown'
+            );
+        }
+        if ($node->flags === flags\TYPE_NULL) {
+            $this->emitIssue(
+                Issue::CompatibleUnsetCast,
+                $node->lineno,
+                ASTReverter::toShortString($node)
             );
         }
         return $this->context;

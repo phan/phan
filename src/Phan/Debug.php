@@ -5,6 +5,7 @@ namespace Phan;
 use ast;
 use ast\flags;
 use ast\Node;
+use LogicException;
 use Phan\Analysis\BlockExitStatusChecker;
 
 /**
@@ -91,7 +92,11 @@ class Debug
             // For placeholders created by tolerant-php-parser-to-php-ast
             return "string ($kind)";
         }
-        return ast\get_kind_name($kind);
+        try {
+            return ast\get_kind_name($kind);
+        } catch (LogicException $_) {
+            return "UNKNOWN_KIND($kind)";
+        }
     }
 
     /**

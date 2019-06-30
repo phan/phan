@@ -24,9 +24,14 @@ New features(Analysis):
   e.g. `for ($i = 0; $i <= 10; $i--)`
 + Emit critical errors for duplicate use for class/namespace, function, or constant (#2897)
   New issue types: `PhanDuplicateUseNormal`, `PhanDuplicateUseFunction`, `PhanDuplicateUseConstant`
++ Emit `PhanCompatibleUnsetCast` for uses of the deprecated `(unset)(expr)` cast. (#2871)
 
 Language Server/Daemon mode:
 + Properly locate the defining class for `MyClass::class` when the polyfill/fallback is used.
+
+Maintenance:
++ Warn if running Phan with php 7.4+ when the installed php-ast version is older than 1.0.2.
++ Make the AST caches for dev php versions (e.g. 7.4.0-dev, 8.0.0-dev) depend on the date when that PHP version was compiled.
 
 Jun 17 2019, Phan 2.2.3
 -----------------------
