@@ -28,6 +28,7 @@ New features(Analysis):
 + Emit `PhanDeprecatedClass`, `PhanDeprecatedTrait`, and `PhanDeprecatedInterface` on the class directly inheriting from the deprecated class, trait, or interface. (#972)
   Stop emitting that issue when constructing a non-deprecated class inheriting from a deprecated class.
 + Include the deprecation reason for user-defined classes that were deprecated (#2807)
++ Fix false positives seen when non-template class extends a template class (#2573)
 
 Language Server/Daemon mode:
 + Properly locate the defining class for `MyClass::class` when the polyfill/fallback is used.
