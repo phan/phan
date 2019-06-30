@@ -2335,7 +2335,7 @@ class Issue
                 self::DeprecatedFunction,
                 self::CATEGORY_DEPRECATED,
                 self::SEVERITY_NORMAL,
-                "Call to deprecated function {FUNCTIONLIKE} defined at {FILE}:{LINE}",
+                "Call to deprecated function {FUNCTIONLIKE} defined at {FILE}:{LINE}{DETAILS}",
                 self::REMEDIATION_B,
                 5000
             ),
@@ -2351,7 +2351,7 @@ class Issue
                 self::DeprecatedClass,
                 self::CATEGORY_DEPRECATED,
                 self::SEVERITY_NORMAL,
-                "Call to deprecated class {CLASS} defined at {FILE}:{LINE}",
+                "Using a deprecated class {CLASS} defined at {FILE}:{LINE}{DETAILS}",
                 self::REMEDIATION_B,
                 5001
             ),
@@ -2359,7 +2359,7 @@ class Issue
                 self::DeprecatedProperty,
                 self::CATEGORY_DEPRECATED,
                 self::SEVERITY_NORMAL,
-                "Reference to deprecated property {PROPERTY} defined at {FILE}:{LINE}",
+                "Reference to deprecated property {PROPERTY} defined at {FILE}:{LINE}{DETAILS}",
                 self::REMEDIATION_B,
                 5002
             ),
@@ -2367,7 +2367,7 @@ class Issue
                 self::DeprecatedClassConstant,
                 self::CATEGORY_DEPRECATED,
                 self::SEVERITY_NORMAL,
-                "Reference to deprecated property {PROPERTY} defined at {FILE}:{LINE}",
+                "Reference to deprecated property {PROPERTY} defined at {FILE}:{LINE}{DETAILS}",
                 self::REMEDIATION_B,
                 5007
             ),
@@ -2375,7 +2375,7 @@ class Issue
                 self::DeprecatedInterface,
                 self::CATEGORY_DEPRECATED,
                 self::SEVERITY_NORMAL,
-                "Using a deprecated interface {INTERFACE} defined at {FILE}:{LINE}",
+                "Using a deprecated interface {INTERFACE} defined at {FILE}:{LINE}{DETAILS}",
                 self::REMEDIATION_B,
                 5003
             ),
@@ -2383,7 +2383,7 @@ class Issue
                 self::DeprecatedTrait,
                 self::CATEGORY_DEPRECATED,
                 self::SEVERITY_NORMAL,
-                "Using a deprecated trait {TRAIT} defined at {FILE}:{LINE}",
+                "Using a deprecated trait {TRAIT} defined at {FILE}:{LINE}{DETAILS}",
                 self::REMEDIATION_B,
                 5004
             ),

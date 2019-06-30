@@ -349,6 +349,11 @@ interface FunctionInterface extends AddressableElementInterface
     public function getComment() : ?Comment;
 
     /**
+     * @return string - a suffix for an issue message indicating the cause for deprecation. This string is empty if the cause is unknown.
+     */
+    public function getDeprecationReason() : string;
+
+    /**
      * Set the comment data for this function/method
      */
     public function setComment(Comment $comment) : void;

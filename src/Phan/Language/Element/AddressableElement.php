@@ -317,6 +317,39 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     }
 
     /**
+     * @return string the reason why this element was deprecated, or null if this could not be determined.
+     */
+    public function getDeprecationReason() : string
+    {
+        return $this->memoize(__METHOD__, function () : string {
+            if (!is_string($this->doc_comment)) {
+                return '';
+            }
+            if (!\preg_match('/@deprecated\b/', $this->doc_comment, $matches, PREG_OFFSET_CAPTURE)) {
+                return '';
+            }
+            $doc_comment = \preg_replace('@(^/\*)|(\*/$)@', '', $this->doc_comment);
+            $lines = \explode("\n", $doc_comment);
+            foreach ($lines as $i => $line) {
+                $line = MarkupDescription::trimLine($line);
+                if (\preg_match('/^\s*@deprecated\b/', $line) > 0) {
+                    $new_lines = MarkupDescription::extractTagSummary($lines, $i);
+                    if (!$new_lines) {
+                        return '';
+                    }
+                    $new_lines[0] = preg_replace('/^\s*@deprecated\b\s*/', '', $new_lines[0]);
+                    $reason = implode(' ', array_filter(array_map('trim', $new_lines), function (string $line) : bool { return $line !== ''; }));
+                    if ($reason !== '') {
+                        return ' (Deprecated because: ' . $reason . ')';
+                    }
+                }
+            }
+
+            return '';
+        });
+    }
+
+    /**
      * @return string the representation of this FQSEN for issue messages.
      * Overridden in some subclasses
      * @suppress PhanUnreferencedPublicMethod (inference error?)

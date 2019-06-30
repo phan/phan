@@ -412,7 +412,11 @@ class MarkupDescription
         return $str;
     }
 
-    private static function trimLine(string $line) : string
+    /**
+     * Remove leading * and spaces (and trailing spaces) from the provided line of text.
+     * This is useful for trimming raw doc comment lines
+     */
+    public static function trimLine(string $line) : string
     {
         $line = \rtrim($line);
         $pos = \stripos($line, '*');

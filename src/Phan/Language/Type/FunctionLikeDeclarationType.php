@@ -416,6 +416,12 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     }
 
     /** @override */
+    public function getDeprecationReason() : string
+    {
+        return '';
+    }
+
+    /** @override */
     public function getDependentReturnType(CodeBase $code_base, Context $context, array $args) : UnionType
     {
         throw new \AssertionError('unexpected call to ' . __METHOD__);

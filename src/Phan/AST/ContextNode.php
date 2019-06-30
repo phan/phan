@@ -1372,7 +1372,8 @@ class ContextNode
                     $node->lineno,
                     $property->getRepresentationForIssue(),
                     $property->getFileRef()->getFile(),
-                    $property->getFileRef()->getLineNumberStart()
+                    $property->getFileRef()->getLineNumberStart(),
+                    $property->getDeprecationReason()
                 );
             }
 
@@ -1802,7 +1803,8 @@ class ContextNode
                     $node->lineno,
                     (string)$constant->getFQSEN(),
                     $constant->getFileRef()->getFile(),
-                    $constant->getFileRef()->getLineNumberStart()
+                    $constant->getFileRef()->getLineNumberStart(),
+                    $constant->getDeprecationReason()
                 );
             }
 

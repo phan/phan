@@ -7,6 +7,7 @@ namespace Phan\PluginV2;
  * Called on a node before PluginAwarePreAnalysisVisitor implementations.
  *
  * @deprecated use PluginV3
+ * @suppress PhanDeprecatedClass
  */
 abstract class PluginAwarePreAnalysisVisitor extends PluginAwareBaseAnalysisVisitor
 {
