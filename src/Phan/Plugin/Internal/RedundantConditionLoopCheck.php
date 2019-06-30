@@ -7,14 +7,15 @@ use ast\flags;
 use ast\Node;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
-use Phan\Parse\ParseVisitor;
 use Phan\Language\Context;
+use Phan\Parse\ParseVisitor;
 use function is_string;
 
 /**
  * Utilities to check for for loops such as `for (...; $i < MAXIMUM; decrease($i))`
  */
-class RedundantConditionLoopCheck {
+class RedundantConditionLoopCheck
+{
     /**
      * @param Node|int|float|string|null $cond_node
      * @return array<int|string,bool>
@@ -40,7 +41,8 @@ class RedundantConditionLoopCheck {
     /**
      * @return array<int|string,bool>
      */
-    private static function extractComparisonDirectionsFromUnaryOp(Node $cond_node, bool $negate) : array {
+    private static function extractComparisonDirectionsFromUnaryOp(Node $cond_node, bool $negate) : array
+    {
         if ($cond_node->flags === flags\UNARY_BOOL_NOT) {
             $negate = !$negate;
         } elseif ($cond_node->flags === flags\UNARY_SILENCE) {
@@ -55,7 +57,8 @@ class RedundantConditionLoopCheck {
     /**
      * @return array<int|string,bool>
      */
-    private static function extractComparisonDirectionsFromBinaryOp(Node $cond_node, bool $negate) : array {
+    private static function extractComparisonDirectionsFromBinaryOp(Node $cond_node, bool $negate) : array
+    {
         ['left' => $left_node, 'right' => $right_node] = $cond_node->children;
         switch ($cond_node->flags) {
             case flags\BINARY_IS_SMALLER:
@@ -64,7 +67,6 @@ class RedundantConditionLoopCheck {
                 $negate = !$negate;
             case flags\BINARY_IS_GREATER:
             case flags\BINARY_IS_GREATER_OR_EQUAL:
-
                 if (is_string($name = self::getVarName($left_node))) {
                     // e.g. if $i < 10
                     if (ParseVisitor::isConstExpr($right_node)) {
@@ -101,7 +103,8 @@ class RedundantConditionLoopCheck {
      * @param Node|int|string|float|null $cond_node
      * @return array<int|string,bool>
      */
-    public static function extractIncrementDirections(CodeBase $code_base, Context $context, $cond_node) : array {
+    public static function extractIncrementDirections(CodeBase $code_base, Context $context, $cond_node) : array
+    {
         if (!$cond_node instanceof Node) {
             return [];
         }
@@ -166,7 +169,6 @@ class RedundantConditionLoopCheck {
                         return [];
                     }
                     return self::extractIncrementDirectionForAssignOp($code_base, $context, $var_name, $operation->children['right'], $is_subtraction);
-
                 }
                 // handle $i = count + $i; but not $i = count - $i
                 if ($is_subtraction) {

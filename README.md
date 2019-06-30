@@ -48,6 +48,7 @@ Phan is able to perform the following kinds of analysis:
 * Check for No-Ops on arrays, closures, constants, properties, variables, unary operators, and binary operators.
 * Check for unused/dead/[unreachable](https://github.com/phan/phan/tree/master/.phan/plugins#unreachablecodepluginphp) code. (Pass in `--dead-code-detection`)
 * Check for unused variables and parameters. (Pass in `--unused-variable-detection`)
+* Check for redundant or impossible conditions and pointless casts. (Pass in `--redundant-condition-detection`)
 * Check for unused `use` statements.
 * Check for classes, functions and methods being redefined.
 * Check for sanity with class inheritance (e.g. checks method signature compatibility).

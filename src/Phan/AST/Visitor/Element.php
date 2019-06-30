@@ -159,7 +159,7 @@ class Element
     }
 
     const VISIT_BINARY_LOOKUP_TABLE = [
-        252 => 'visitBinaryConcat',  // ZEND_PARENTHESIZED_CONCAT is returned instead of ZEND_CONCAT in earlier php-ast versions in PHP 7.4. This is fixed in php-ast 1.0.2-dev
+        252 => 'visitBinaryConcat',  // ZEND_PARENTHESIZED_CONCAT is returned instead of ZEND_CONCAT in earlier php-ast versions in PHP 7.4. This is fixed in php-ast 1.0.2
         flags\BINARY_ADD => 'visitBinaryAdd',
         flags\BINARY_BITWISE_AND => 'visitBinaryBitwiseAnd',
         flags\BINARY_BITWISE_OR => 'visitBinaryBitwiseOr',

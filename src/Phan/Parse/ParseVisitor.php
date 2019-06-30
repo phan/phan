@@ -920,7 +920,7 @@ class ParseVisitor extends ScopeVisitor
     public function visitArrowFunc(Node $node) : Context
     {
         if (!isset($node->children['params'])) {
-            $msg = "php-ast 1.0.2dev or newer is required to correctly parse short arrow functions, but 1.0.1 is installed. A short arrow function was seen at $this->context";
+            $msg = "php-ast 1.0.2 or newer is required to correctly parse short arrow functions, but an older version is installed. A short arrow function was seen at $this->context";
             \fwrite(\STDERR, $msg . \PHP_EOL);
             throw new AssertionError($msg);
         }

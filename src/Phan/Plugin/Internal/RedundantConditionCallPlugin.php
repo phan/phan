@@ -460,7 +460,8 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
      * @param mixed $left_value
      * @param mixed $right_value
      */
-    private function shouldCheckScalarAsIfInLoopScope(Node $node, $left_value, $right_value) : bool {
+    private function shouldCheckScalarAsIfInLoopScope(Node $node, $left_value, $right_value) : bool
+    {
         if (!$this->context->isInLoop()) {
             // This isn't even in a loop.
             return false;
