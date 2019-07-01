@@ -940,6 +940,24 @@ class Method extends ClassElement implements FunctionInterface
                 return $result;
             }
         }
+        // E.g. we can have `MyClass @implements MyBaseClass<string>` - so we check the expanded types for any template types, as well
+        foreach ($object_union_type->asExpandedTypes($code_base)->getTypeSet() as $type) {
+            if (!$type->hasTemplateParameterTypes()) {
+                continue;
+            }
+            if (!$type->isObjectWithKnownFQSEN()) {
+                continue;
+            }
+            $expanded_type = $type->withIsNullable(false)->asExpandedTypes($code_base);
+            foreach ($expanded_type->getTypeSet() as $candidate) {
+                if (!$candidate->isTemplateSubtypeOf($expected_type)) {
+                    continue;
+                }
+                // $candidate is $expected_type<T...>
+                $result = $this->cloneWithTemplateParameterTypeMap($candidate->getTemplateParameterTypeMap($code_base));
+                return $result;
+            }
+        }
         return $this;
     }
 
