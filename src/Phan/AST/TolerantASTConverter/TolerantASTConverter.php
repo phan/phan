@@ -706,6 +706,38 @@ class TolerantASTConverter
                     static::resolveDocCommentForClosure($n)
                 );
             },
+            'Microsoft\PhpParser\Node\Expression\ArrowFunctionCreationExpression' => static function (
+                PhpParser\Node\Expression\ArrowFunctionCreationExpression $n,
+                int $start_line
+            ) : ast\Node {
+                $ast_return_type = static::phpParserTypeToAstNode($n->returnType, static::getEndLine($n->returnType) ?: $start_line);
+                if (($ast_return_type->children['name'] ?? null) === '') {
+                    $ast_return_type = null;
+                }
+                if ($n->questionToken !== null && $ast_return_type !== null) {
+                    $ast_return_type = new ast\Node(ast\AST_NULLABLE_TYPE, 0, ['type' => $ast_return_type], $start_line);
+                }
+                $return_line = self::getStartLine($n->resultExpression);
+                return static::newASTDecl(
+                    ast\AST_ARROW_FUNC,
+                    ($n->byRefToken !== null ? flags\FUNC_RETURNS_REF : 0) | ($n->staticModifier !== null ? flags\MODIFIER_STATIC : null),
+                    [
+                        'params' => static::phpParserParamsToAstParams($n->parameters, $start_line),
+                        'stmts' => new ast\Node(
+                            ast\AST_RETURN,
+                            0,
+                            ['expr' => static::phpParserNodeToAstNode($n->resultExpression)],
+                            $return_line
+                        ),
+                        'returnType' => $ast_return_type,
+                    ],
+                    $start_line,
+                    static::resolveDocCommentForClosure($n),
+                    '{closure}',
+                    static::getEndLine($n),
+                    self::nextDeclId()
+                );
+            },
             /**
              * @return ?ast\Node
              * @throws InvalidNodeException if the resulting AST would not be analyzable by Phan
@@ -1884,7 +1916,7 @@ class TolerantASTConverter
         return new ast\Node(ast\AST_CLOSURE_USES, 0, $ast_uses, $ast_uses[0]->lineno ?? $line);
     }
 
-    private static function resolveDocCommentForClosure(PhpParser\Node\Expression\AnonymousFunctionCreationExpression $node) : ?string
+    private static function resolveDocCommentForClosure(PhpParser\Node\Expression $node) : ?string
     {
         $doc_comment = $node->getDocCommentText();
         if ($doc_comment) {
@@ -2677,6 +2709,12 @@ class TolerantASTConverter
             }
             if (!($item instanceof PhpParser\Node\ArrayElement)) {
                 throw new AssertionError("Expected ArrayElement");
+            }
+            if ($item->dotDotDot) {
+                $ast_items[] = new ast\Node(ast\AST_UNPACK, 0, [
+                    'expr' => static::phpParserNodeToAstNode($item->elementValue),
+                ], self::getStartLine($item));
+                continue;
             }
             $flags = $item->byRef ? flags\PARAM_REF : 0;
             $element_key = $item->elementKey;

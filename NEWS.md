@@ -38,6 +38,9 @@ Language Server/Daemon mode:
 Maintenance:
 + Warn if running Phan with php 7.4+ when the installed php-ast version is older than 1.0.2.
 + Make the AST caches for dev php versions (e.g. 7.4.0-dev, 8.0.0-dev) depend on the date when that PHP version was compiled.
++ Make the polyfill support PHP 7.4's array spread operator (e.g. `[$a, ...$otherArray]`) (#2786)
++ Make the polyfill support PHP 7.4's short arrow functions (e.g. `fn($x) => $x*2`)
++ Fix parsing of `some_call(namespace\func_name())` in the polyfill
 
 Jun 17 2019, Phan 2.2.3
 -----------------------
