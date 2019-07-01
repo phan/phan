@@ -30,6 +30,7 @@ New features(Analysis):
 + Include the deprecation reason for user-defined classes that were deprecated (#2807)
 
 Language Server/Daemon mode:
++ Fix a crash - always run the language server or daemon with a single analysis process, regardless of CLI or config settings (#2898)
 + Properly locate the defining class for `MyClass::class` when the polyfill/fallback is used.
 
 Maintenance:

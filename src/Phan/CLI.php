@@ -791,6 +791,8 @@ class CLI
             && Config::getValue('dead_code_detection')) {
             throw new AssertionError("We cannot run dead code detection on more than one core.");
         }
+
+        self::ensureServerRunsSingleAnalysisProcess();
     }
 
     /**
@@ -894,6 +896,23 @@ class CLI
         if (!$all_plugins_exist) {
             \fwrite(STDERR, "Exiting due to invalid plugin config.\n");
             exit(1);
+        }
+    }
+
+    private static function ensureServerRunsSingleAnalysisProcess() : void
+    {
+        if (!self::isDaemonOrLanguageServer()) {
+            return;
+        }
+        // If the client has multiple files open at once (and requests analysis of multiple files),
+        // then there there would be multiple processes doing analysis.
+        //
+        // This would not work with Phan's current design - the socket used by the daemon can only be used by one process.
+        // Also, the implementation of some requests such as "Go to Definition", "Find References" (planned), etc. assume Phan runs as a single process.
+        $processes = Config::getValue('processes');
+        if ($processes !== 1) {
+            fprintf(STDERR, "Notice: Running with processes=1 instead of processes=%s - the daemon/language server assumes it will run as a single process" . \PHP_EOL, (string)json_encode($processes));
+            Config::setValue('processes', 1);
         }
     }
 
