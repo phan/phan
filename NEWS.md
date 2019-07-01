@@ -31,7 +31,9 @@ New features(Analysis):
 + Fix false positives seen when non-template class extends a template class (#2573)
 
 Language Server/Daemon mode:
++ Fix a crash - always run the language server or daemon with a single analysis process, regardless of CLI or config settings (#2898)
 + Properly locate the defining class for `MyClass::class` when the polyfill/fallback is used.
++ Don't emit color in responses from the daemon or language server unless the CLI flag `--color` is passed in.
 
 Maintenance:
 + Warn if running Phan with php 7.4+ when the installed php-ast version is older than 1.0.2.
