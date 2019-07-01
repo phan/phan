@@ -1,5 +1,11 @@
 Phan NEWS
 
+??? ?? 2019, Phan 2.2.5 (dev)
+-----------------------
+
+New features(CLI, Configs):
++ Add `-u` as an alias of `--unused-variable-detection`, and `-t` as an alias of `--redundant-condition-detection`
+
 Jul 01 2019, Phan 2.2.4
 -----------------------
 

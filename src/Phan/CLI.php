@@ -59,14 +59,14 @@ class CLI
     /**
      * This should be updated to x.y.z-dev after every release, and x.y.z before a release.
      */
-    const PHAN_VERSION = '2.2.4';
+    const PHAN_VERSION = '2.2.5-dev';
 
     /**
      * List of short flags passed to getopt
-     * still available: g,n,t,u,w
+     * still available: g,n,w
      * @internal
      */
-    const GETOPT_SHORT_OPTIONS = 'f:m:o:c:k:aeqbr:pid:3:y:l:xj:zhvs:SCP:I:D';
+    const GETOPT_SHORT_OPTIONS = 'f:m:o:c:k:aeqbr:pid:3:y:l:tuxj:zhvs:SCP:I:D';
 
     /**
      * List of long flags passed to getopt
@@ -694,6 +694,7 @@ class CLI
                 case 'dead-code-detection':
                     Config::setValue('dead_code_detection', true);
                     break;
+                case 'u':
                 case 'unused-variable-detection':
                     Config::setValue('unused_variable_detection', true);
                     break;
@@ -701,6 +702,7 @@ class CLI
                     Config::setValue('constant_variable_detection', true);
                     Config::setValue('unused_variable_detection', true);
                     break;
+                case 't':
                 case 'redundant-condition-detection':
                     Config::setValue('redundant_condition_detection', true);
                     break;
@@ -1161,12 +1163,12 @@ $init_help
   properties that are probably never referenced and can
   be removed. This implies `--unused-variable-detection`.
 
- --unused-variable-detection
+ -u, --unused-variable-detection
   Emit issues for variables, parameters and closure use variables
   that are probably never referenced.
   This has a few known false positives, e.g. for loops or branches.
 
- --redundant-condition-detection
+ -t, --redundant-condition-detection
   Emit issues for conditions such as `is_int(expr)` that are redundant or impossible.
 
   This has some known false positives for loops, variables set in loops,

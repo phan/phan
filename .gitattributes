@@ -1,5 +1,6 @@
 # Files and directories with the attribute export-ignore won't be added to archive files
 # (such as zips/tarballs in GitHub Releases)
+# Some of the tests are edge cases that would crash older versions of Phan or other static analyzers, which is why they're included.
 /.appveyor.yml     export-ignore
 /.codeclimate.yml  export-ignore
 /.gitattributes    export-ignore
@@ -11,4 +12,5 @@
 /phpdoc.dist.xml   export-ignore
 /phpunit.xml       export-ignore
 /plugins           export-ignore
+/test              export-ignore
 /tests             export-ignore
