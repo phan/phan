@@ -338,7 +338,9 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
                         return '';
                     }
                     $new_lines[0] = preg_replace('/^\s*@deprecated\b\s*/', '', $new_lines[0]);
-                    $reason = implode(' ', array_filter(array_map('trim', $new_lines), function (string $line) : bool { return $line !== ''; }));
+                    $reason = implode(' ', array_filter(array_map('trim', $new_lines), static function (string $line) : bool {
+                        return $line !== '';
+                    }));
                     if ($reason !== '') {
                         return ' (Deprecated because: ' . $reason . ')';
                     }
