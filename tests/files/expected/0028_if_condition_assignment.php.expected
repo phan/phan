@@ -1,2 +1,2 @@
-%s:2 PhanSuspiciousValueComparison Suspicious attempt to compare $x of type true to true of type true with operator '==='
+%s:2 PhanSuspiciousValueComparisonInGlobalScope Suspicious attempt to compare $x of type true to true of type true with operator '===' in the global scope (likely a false positive)
 %s:3 PhanTypeSuspiciousEcho Suspicious argument true for an echo/print statement
