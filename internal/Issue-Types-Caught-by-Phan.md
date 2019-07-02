@@ -2169,6 +2169,8 @@ e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/
 Suspicious attempt to compare {CODE} of type {TYPE} to {CODE} of type {TYPE} with operator '{OPERATOR}' in the global scope (likely a false positive)
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0526_crash.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0526_crash.php#L2).
+
 ## PhanSuspiciousValueComparisonInLoop
 
 ```

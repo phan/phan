@@ -417,11 +417,11 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
             PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$node->flags],
         ];
 
-        $issue_name = Issue::SuspiciousValueComparison;
-
         $context = $this->context;
         $code_base = $this->code_base;
-        if ($this->shouldCheckScalarAsIfInLoopScope($node, $left_value, $right_value)) {
+        $issue_name = Issue::SuspiciousValueComparison;
+        $check_as_if_in_loop_scope = $this->shouldCheckScalarAsIfInLoopScope($node, $left_value, $right_value);
+        if ($check_as_if_in_loop_scope) {
             ['left' => $left_node, 'right' => $right_node] = $node->children;
             $left_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($left_node);
             $right_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($right_node);
@@ -447,10 +447,16 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
                 return;
             }
         }
+        /** A context for choosing the name of the issue to emit. */
+        $issue_context = $context;
+        if ($issue_context->isInLoop() && !$check_as_if_in_loop_scope) {
+            $issue_context = $issue_context->withoutLoops();
+        }
+        // Don't emit the loop version of this issue if this is in the outermost loop, but still emit it if this is a loop inside of a different loop.
         Issue::maybeEmit(
             $code_base,
             $context,
-            $issue_name,
+            RedundantCondition::chooseSpecificImpossibleOrRedundantIssueKind($node, $issue_context, $issue_name),
             $node->lineno,
             ...$issue_args
         );
