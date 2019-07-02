@@ -426,14 +426,23 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
             $left_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($left_node);
             $right_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($right_node);
             if ($left_type_fetcher || $right_type_fetcher) {
+                if (!$left_type_fetcher || !$right_type_fetcher) {
+                    // Give up, we don't know how to fetch the new type
+                    return;
+                }
+
                 // @phan-suppress-next-line PhanAccessMethodInternal
                 $context->deferCheckToOutermostLoop(static function (Context $context_after_loop) use ($code_base, $node, $left_type_fetcher, $right_type_fetcher, $left, $right, $issue_name, $issue_args, $context) : void {
-                    $new_left_type = ($left_type_fetcher ? $left_type_fetcher($context_after_loop) : null);
-                    if (!$new_left_type || $left->isEqualTo($new_left_type)) {
+                    // Give up in any of these cases, for the left or right types
+                    // 1. We don't know how to fetch the new type after the loop.
+                    // 2. We don't know the real value of the new type after the loop.
+                    // 3. The new type changed to anything else after the loop.
+                    $new_left_type = $left_type_fetcher($context_after_loop);
+                    if (!$new_left_type || $new_left_type->isEmpty() || !$left->isEqualTo($new_left_type)) {
                         return;
                     }
-                    $new_right_type = ($right_type_fetcher ? $right_type_fetcher($context_after_loop) : null);
-                    if (!$new_right_type || $right->isEqualTo($new_right_type)) {
+                    $new_right_type = $right_type_fetcher($context_after_loop);
+                    if (!$new_right_type || $new_right_type->isEmpty() || !$right->isEqualTo($new_right_type)) {
                         return;
                     }
                     Issue::maybeEmit(
@@ -519,7 +528,13 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
                 // @phan-suppress-next-line PhanAccessMethodInternal
                 $context->deferCheckToOutermostLoop(static function (Context $context_after_loop) use ($code_base, $node, $left_type_fetcher, $right_type_fetcher, $left, $right, $is_still_issue, $issue_name, $issue_args, $context) : void {
                     $left = ($left_type_fetcher ? $left_type_fetcher($context_after_loop) : null) ?? $left;
+                    if ($left->isEmpty()) {
+                        return;
+                    }
                     $right = ($right_type_fetcher ? $right_type_fetcher($context_after_loop) : null) ?? $right;
+                    if ($right->isEmpty()) {
+                        return;
+                    }
                     if (!$is_still_issue($left, $right)) {
                         return;
                     }
