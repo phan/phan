@@ -1,0 +1,1 @@
+%s:30 PhanSuspiciousValueComparisonInLoop Suspicious attempt to compare $j of type 0 to $w of type 1 with operator '<' in a loop (likely a false positive)
