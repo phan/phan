@@ -6,6 +6,7 @@ use ast;
 use ast\Node;
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\UnionType;
 
@@ -20,17 +21,21 @@ class LoopConditionVisitor extends ConditionVisitor
     /** @var bool whether to allow conditions that are always false */
     protected $allow_false;
 
+    /** @var bool whether the loop body unconditionally proceeds - If it does, then enable checks for infinite loops such as while (true){} */
+    protected $loop_body_unconditionally_proceeds;
+
     /** @param Node|string|int|false $loop_condition_node the node for the condition of the loop */
-    public function __construct(CodeBase $code_base, Context $context, $loop_condition_node, bool $allow_false)
+    public function __construct(CodeBase $code_base, Context $context, $loop_condition_node, bool $allow_false, bool $loop_body_unconditionally_proceeds)
     {
         parent::__construct($code_base, $context);
         $this->loop_condition_node = $loop_condition_node;
         $this->allow_false = $allow_false;
+        $this->loop_body_unconditionally_proceeds = $loop_body_unconditionally_proceeds;
     }
 
     public function checkRedundantOrImpossibleTruthyCondition($node, Context $context, ?UnionType $type, bool $is_negated) : void
     {
-        if ($node === $this->loop_condition_node) {
+        if (!$this->loop_body_unconditionally_proceeds && $node === $this->loop_condition_node) {
             // Don't warn about `while (1)` or `while (true)`
             if ($node instanceof Node) {
                 if ($node->kind === ast\AST_CONST) {
@@ -47,6 +52,17 @@ class LoopConditionVisitor extends ConditionVisitor
             }
         }
         parent::checkRedundantOrImpossibleTruthyCondition($node, $context, $type, $is_negated);
+    }
+
+    /**
+     * @override
+     * @param Node|mixed $node
+     */
+    protected function chooseIssueForUnconditionallyTrue(bool $is_negated, $node) : string {
+        if (!$is_negated && $node === $this->loop_condition_node) {
+            return Issue::InfiniteLoop;
+        }
+        return parent::chooseIssueForUnconditionallyTrue($is_negated, $node);
     }
 
     /**
@@ -78,7 +94,7 @@ class LoopConditionVisitor extends ConditionVisitor
         if ($last_expression instanceof Node) {
             return $this->__invoke($last_expression);
         } elseif (Config::getValue('redundant_condition_detection')) {
-            // @phan-suppress-next-line PhanPartialTypeMismatchArgument
+            // @phan-suppress-next-line PhanPartialTypeMismatchArgument, PhanTypeMismatchArgumentNullable
             $this->checkRedundantOrImpossibleTruthyCondition($last_expression, $this->context, null, false);
         }
         return $this->context;

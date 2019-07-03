@@ -642,4 +642,12 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     {
         return ((new self())->__invoke($node) & ~self::STATUS_THROW_OR_RETURN_BITMASK) === 0;
     }
+
+    /**
+     * Will the node $node unconditionally proceed (no break/continue, throw, or goto)
+     */
+    public static function willUnconditionallyProceed(Node $node) : bool
+    {
+        return (new self())->__invoke($node) === self::STATUS_PROCEED;
+    }
 }

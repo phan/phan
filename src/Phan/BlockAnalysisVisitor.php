@@ -571,10 +571,17 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     $this->code_base,
                     $context,
                     $condition_node,
-                    false
+                    false,
+                    BlockExitStatusChecker::willUnconditionallyProceed($stmts_node)
                 ))->__invoke($condition_node);
             } elseif (Config::getValue('redundant_condition_detection')) {
-                (new LoopConditionVisitor($this->code_base, $context, $condition_node, false))->checkRedundantOrImpossibleTruthyCondition($condition_node, $context, null, false);
+                (new LoopConditionVisitor(
+                    $this->code_base,
+                    $context,
+                    $condition_node,
+                    false,
+                    BlockExitStatusChecker::willUnconditionallyProceed($stmts_node)
+                ))->checkRedundantOrImpossibleTruthyCondition($condition_node, $context, null, false);
             }
             if ($stmts_node instanceof Node) {
                 $context = $this->analyzeAndGetUpdatedContext(
@@ -685,14 +692,16 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     $this->code_base,
                     $context,
                     $condition_node,
-                    false
+                    false,
+                    BlockExitStatusChecker::willUnconditionallyProceed($stmts_node)
                 ))->__invoke($condition_node);
-            } elseif (!$condition_node && Config::getValue('redundant_condition_detection')) {
+            } elseif (Config::getValue('redundant_condition_detection')) {
                 (new LoopConditionVisitor(
                     $this->code_base,
                     $context,
                     $condition_node,
-                    false
+                    false,
+                    BlockExitStatusChecker::willUnconditionallyProceed($stmts_node)
                 ))->checkRedundantOrImpossibleTruthyCondition($condition_node, $context, null, false);
             }
 
@@ -1007,7 +1016,13 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         }
         if (Config::getValue('redundant_condition_detection')) {
             // Analyze - don't warn about `do...while(true)` or `do...while(false)` because they might be a way to `break;` out of a group of statements
-            (new LoopConditionVisitor($this->code_base, $context, $cond_node, true))->checkRedundantOrImpossibleTruthyCondition($cond_node, $context, null, false);
+            (new LoopConditionVisitor(
+                $this->code_base,
+                $context,
+                $cond_node,
+                true,
+                !$stmts_node || BlockExitStatusChecker::willUnconditionallyProceed($stmts_node)
+            ))->checkRedundantOrImpossibleTruthyCondition($cond_node, $context, null, false);
         }
 
         if (isset($node->phan_loop_contexts)) {

@@ -204,7 +204,7 @@ trait ConditionVisitorUtil
                 $node,
                 $this->code_base,
                 $context,
-                $is_negated ? Issue::ImpossibleCondition : Issue::RedundantCondition,
+                $this->chooseIssueForUnconditionallyTrue($is_negated, $node),
                 [
                     ASTReverter::toShortString($node),
                     $type->getRealUnionType(),
@@ -217,6 +217,13 @@ trait ConditionVisitorUtil
         }
     }
 
+    /**
+     * overridden in subclasses
+     * @param Node|mixed $_
+     */
+    protected function chooseIssueForUnconditionallyTrue(bool $is_negated, $_) : string {
+        return $is_negated ? Issue::ImpossibleCondition : Issue::RedundantCondition;
+    }
 
     final protected function removeNullFromVariable(Node $var_node, Context $context, bool $suppress_issues) : Context
     {
