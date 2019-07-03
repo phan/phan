@@ -107,10 +107,6 @@ use Phan\PluginV3\IssueEmitter;
  *     beforeAnalyze is invoked immediately after analyzing methods and before forking analysis workers and before starting the analysis phase.
  *
  *     (implement \Phan\PluginV3\BeforeAnalyzePhaseCapability)
- *
- * TODO: Implement a way to notify plugins that a parsed file is no longer valid,
- * if the replacement for pcntl is being used.
- * (Most of the plugins bundled with Phan don't need this)
  */
 abstract class PluginV3
 {

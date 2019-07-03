@@ -203,6 +203,7 @@ class Issue
     const RedundantCondition                = 'PhanRedundantCondition';
     const RedundantConditionInLoop          = 'PhanRedundantConditionInLoop';
     const RedundantConditionInGlobalScope   = 'PhanRedundantConditionInGlobalScope';
+    const InfiniteLoop                      = 'PhanInfiniteLoop';
     const ImpossibleTypeComparison          = 'PhanImpossibleTypeComparison';
     const ImpossibleTypeComparisonInLoop    = 'PhanImpossibleTypeComparisonInLoop';
     const ImpossibleTypeComparisonInGlobalScope = 'PhanImpossibleTypeComparisonInGlobalScope';
@@ -2147,6 +2148,14 @@ class Issue
                 "Redundant attempt to cast {CODE} of type {TYPE} to {TYPE} in the global scope (likely a false positive)",
                 self::REMEDIATION_B,
                 10124
+            ),
+            new Issue(
+                self::InfiniteLoop,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,
+                "The loop condition {CODE} of type {TYPE} is always {TYPE} and nothing seems to exit the loop",
+                self::REMEDIATION_B,
+                10135
             ),
             new Issue(
                 self::ImpossibleTypeComparison,
