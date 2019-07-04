@@ -1943,6 +1943,14 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.2.3/tests/files/expected/0
 Impossible attempt to check if {CODE} of type {TYPE} is identical to {CODE} of type {TYPE} in a loop body (likely a false positive)
 ```
 
+## PhanInfiniteLoop
+
+```
+The loop condition {CODE} of type {TYPE} is always {TYPE} and nothing seems to exit the loop
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0728_infinite_loops.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0728_infinite_loops.php#L4).
+
 ## PhanInfiniteRecursion
 
 NOTE: This is based on very simple heuristics. It has known false positives and false negatives.
@@ -2161,7 +2169,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/
 Suspicious attempt to compare {CODE} of type {TYPE} to {CODE} of type {TYPE} with operator '{OPERATOR}'
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0526_crash.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0526_crash.php#L2).
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0697_coalescing_always_never_null.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0697_coalescing_always_never_null.php#L4).
 
 ## PhanSuspiciousValueComparisonInGlobalScope
 
@@ -2176,6 +2184,8 @@ e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/
 ```
 Suspicious attempt to compare {CODE} of type {TYPE} to {CODE} of type {TYPE} with operator '{OPERATOR}' in a loop (likely a false positive)
 ```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0728_suspicious_value_comparison_in_loop_false_positive.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0728_suspicious_value_comparison_in_loop_false_positive.php#L30).
 
 ## PhanSuspiciousWeakTypeComparison
 

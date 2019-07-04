@@ -335,15 +335,21 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         // Treat $y in `$x[$y] = $z;` as a usage of $y
         $this->scope = $this->analyzeWhenValidNode($this->scope, $node->children['dim']);
         $expr = $node->children['expr'];
+
         while ($expr instanceof Node) {
             if ($expr->kind === \ast\AST_VAR) {
                 $name = $expr->children['name'];
                 if (is_string($name)) {
-                    // treat $x['dim_name'] = 2 like a usage of $x
+                    // treat $x['dim_name'] = 2 like a usage of $x, unless we're certain that $x is an array instead of ArrayAccess.
                     //
                     // TODO: More aggressively warn if there is only a single dimension to $x
                     self::$variable_graph->recordVariableUsage($name, $expr, $this->scope);
-                    self::$variable_graph->recordVariableModification($name);
+                    // @phan-suppress-next-line PhanUndeclaredProperty
+                    if (isset($expr->phan_is_assignment_to_real_array)) {
+                        self::$variable_graph->recordVariableDefinition($name, $expr, $this->scope, null);
+                    } else {
+                        self::$variable_graph->recordVariableModification($name);
+                    }
                 }
                 break;
             } elseif (\in_array($expr->kind, [ast\AST_DIM, ast\AST_PROP], true)) {

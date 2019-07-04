@@ -320,7 +320,7 @@ EOT;
             'phpdoc_type_mapping' => [],
             'dead_code_detection' => false,  // this is slow
             'unused_variable_detection' => !$is_average_level,
-            'redundant_condition_detection' => $is_strongest_level,
+            'redundant_condition_detection' => !$is_average_level,
             'quick_mode' => $is_weakest_level,
             'simplify_ast' => true,
             'generic_types_enabled' => true,
