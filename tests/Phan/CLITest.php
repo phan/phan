@@ -100,7 +100,11 @@ final class CLITest extends BaseTest
         }
         $this->assertSame($expected_changed_options, $changed);
 
-        $this->assertSame(['src' . \DIRECTORY_SEPARATOR . 'empty.php'], $cli->getFileList());
+        $this->assertSame([
+            'src' . \DIRECTORY_SEPARATOR . 'a.php',
+            'src' . \DIRECTORY_SEPARATOR . 'b.php',
+            'src' . \DIRECTORY_SEPARATOR . 'empty.php',
+        ], $cli->getFileList());
 
         $printer_class = $extra['printer_class'] ?? null;
         unset($extra['printer_class']);

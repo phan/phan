@@ -8,6 +8,11 @@ New features(CLI, Configs):
 
 New features(Analysis):
 + Fix false positive PhanSuspiciousValueComparisonInLoop when both sides change in a loop. (#2919)
++ Detect potential infinite loops such as `while (true) { does_not_exit_loop(); }`. (Requires `--redundant-condition-detection`)
+  New issue types: `PhanInfiniteRecursion`.
++ Track that the **real** type of an array variable is an array after adding fields to it (#2932)
+  (affects redundant condition detection and unused variable detection)
++ Warn about adding fields to an unused array variable, if Phan infers the real variable type is an array. (#2933)
 
 Jul 01 2019, Phan 2.2.4
 -----------------------

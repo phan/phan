@@ -87,15 +87,30 @@ class ArrayType extends IterableType
     /**
      * E.g. array{0:int} + array{0:string,1:float} becomes array{0:int,1:float}
      *
+     * This also handles `$x['field'] = expr`.
+     *
      * @param UnionType $left the left-hand side (e.g. of a `+` operator). Keys from these array shapes take precedence.
      * @param UnionType $right the right-hand side (e.g. of a `+` operator).
      * @return UnionType with ArrayType subclass(es)
      */
     public static function combineArrayTypesOverriding(UnionType $left, UnionType $right) : UnionType
     {
+        return UnionType::of(
+            ArrayType::combineArrayTypeListsOverriding($left->getTypeSet(), $right->getTypeSet()),
+            ArrayType::combineArrayTypeListsOverriding($left->getRealTypeSet(), $right->getRealTypeSet())
+        );
+    }
+
+    /**
+     * @param array<int,Type> $left_types
+     * @param array<int,Type> $right_types
+     * @return array<int,Type>
+     */
+    private static function combineArrayTypeListsOverriding(array $left_types, array $right_types) : array
+    {
         $result = new UnionTypeBuilder();
         $left_array_shape_types = [];
-        foreach ($left->getTypeSet() as $type) {
+        foreach ($left_types as $type) {
             if ($type instanceof GenericArrayInterface) {
                 if ($type instanceof ArrayShapeType) {
                     $left_array_shape_types[] = $type;
@@ -104,11 +119,11 @@ class ArrayType extends IterableType
                     $result->addType($type);
                 }
             } elseif ($type instanceof ArrayType) {
-                return $type->asPHPDocUnionType();
+                return [ArrayType::instance(false)];
             }
         }
         $right_array_shape_types = [];
-        foreach ($right->getTypeSet() as $type) {
+        foreach ($right_types as $type) {
             if ($type instanceof GenericArrayInterface) {
                 if ($type instanceof ArrayShapeType) {
                     $right_array_shape_types[] = $type;
@@ -117,28 +132,28 @@ class ArrayType extends IterableType
                     $result->addType($type);
                 }
             } elseif ($type instanceof ArrayType) {
-                return $type->asPHPDocUnionType();
+                return [$type];
             }
         }
         if ($result->isEmpty()) {
             if (\count($left_array_shape_types) === 0) {
-                return ArrayShapeType::union($right_array_shape_types)->asPHPDocUnionType();
+                return $right_array_shape_types;
             }
             if (\count($right_array_shape_types) === 0) {
-                return ArrayShapeType::union($left_array_shape_types)->asPHPDocUnionType();
+                return $left_array_shape_types;
             }
             // fields from the left take precedence (e.g. [0, false] + ['string'] becomes [0, false])
-            return ArrayShapeType::combineWithPrecedence(
+            return [ArrayShapeType::combineWithPrecedence(
                 ArrayShapeType::union($left_array_shape_types),
                 ArrayShapeType::union($right_array_shape_types)
-            )->asPHPDocUnionType();
+            )];
         }
         foreach (\array_merge($left_array_shape_types, $right_array_shape_types) as $type) {
             foreach ($type->withFlattenedArrayShapeOrLiteralTypeInstances() as $type_part) {
                 $result->addType($type_part);
             }
         }
-        return $result->getPHPDocUnionType();
+        return $result->getTypeSet();
     }
 
     /**

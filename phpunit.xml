@@ -50,9 +50,13 @@
             <file>tests/Phan/ForkPoolTest.php</file>
         </testsuite>
         <testsuite name="PhanTest">
+            <file>tests/Phan/PhanTest0.php</file>
             <file>tests/Phan/PhanTest1.php</file>
             <file>tests/Phan/PhanTest2.php</file>
             <file>tests/Phan/PhanTest3.php</file>
+            <file>tests/Phan/PhanTest4.php</file>
+            <file>tests/Phan/PhanTest5.php</file>
+            <file>tests/Phan/PhanTest6.php</file>
             <file>tests/Phan/PhanTestNew.php</file>
         </testsuite>
         <testsuite name="RasmusTest">

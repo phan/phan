@@ -120,11 +120,11 @@ class AssignmentVisitor extends AnalysisVisitor
      * an overriding method
      *
      * @param Node $node
-     * A node to parse
+     * A node to analyze as the target of an assignment
      *
      * @return Context
      * A new or an unchanged context resulting from
-     * parsing the node
+     * analyzing the node
      *
      * @throws UnanalyzableException
      */
@@ -153,11 +153,11 @@ class AssignmentVisitor extends AnalysisVisitor
      * ```
      *
      * @param Node $unused_node
-     * A node to parse
+     * A node to analyze as the target of an assignment
      *
      * @return Context
      * A new or an unchanged context resulting from
-     * parsing the node
+     * analyzing the node
      */
     public function visitMethodCall(Node $unused_node) : Context
     {
@@ -176,11 +176,11 @@ class AssignmentVisitor extends AnalysisVisitor
      * ```
      *
      * @param Node $unused_node
-     * A node to parse
+     * A node to analyze as the target of an assignment
      *
      * @return Context
      * A new or an unchanged context resulting from
-     * parsing the node
+     * analyzing the node
      */
     public function visitCall(Node $unused_node) : Context
     {
@@ -200,11 +200,11 @@ class AssignmentVisitor extends AnalysisVisitor
      * ```
      *
      * @param Node $unused_node
-     * A node to parse
+     * A node to analyze as the target of an assignment
      *
      * @return Context
      * A new or an unchanged context resulting from
-     * parsing the node
+     * analyzing the node
      */
     public function visitStaticCall(Node $unused_node) : Context
     {
@@ -218,11 +218,11 @@ class AssignmentVisitor extends AnalysisVisitor
      * ```
      *
      * @param Node $node
-     * A node to parse
+     * A node to analyze as the target of an assignment
      *
      * @return Context
      * A new or an unchanged context resulting from
-     * parsing the node
+     * analyzing the node
      */
     public function visitArray(Node $node) : Context
     {
@@ -575,11 +575,11 @@ class AssignmentVisitor extends AnalysisVisitor
 
     /**
      * @param Node $node
-     * A node to parse
+     * A node to analyze as the target of an assignment
      *
      * @return Context
      * A new or an unchanged context resulting from
-     * parsing the node
+     * analyzing the node
      */
     public function visitDim(Node $node) : Context
     {
@@ -629,7 +629,7 @@ class AssignmentVisitor extends AnalysisVisitor
             // TODO: This is probably why Phan has bugs with multi-dimensional assignment adding new union types instead of combining with existing ones.
             $right_type = ArrayShapeType::fromFieldTypes([
                 $dim_value => $this->right_type,
-            ], false)->asPHPDocUnionType();
+            ], false)->asRealUnionType();
         } else {
             // Make the right type a generic (i.e. int -> int[])
             if ($dim_type !== null) {
@@ -642,12 +642,15 @@ class AssignmentVisitor extends AnalysisVisitor
             $right_inner_type = $this->right_type;
             if ($right_inner_type->isEmpty()) {
                 if ($key_type_enum === GenericArrayType::KEY_MIXED) {
-                    $right_type = ArrayType::instance(false)->asPHPDocUnionType();
+                    $right_type = ArrayType::instance(false)->asRealUnionType();
                 } else {
-                    $right_type = GenericArrayType::fromElementType(MixedType::instance(false), false, $key_type_enum)->asPHPDocUnionType();
+                    $right_type = GenericArrayType::fromElementType(MixedType::instance(false), false, $key_type_enum)->asRealUnionType();
                 }
             } else {
                 $right_type = $right_inner_type->asGenericArrayTypes($key_type_enum);
+            }
+            if (!$right_type->hasRealTypeSet()) {
+                $right_type = $right_type->withRealTypeSet([ArrayType::instance(false)]);
             }
         }
 
@@ -702,11 +705,11 @@ class AssignmentVisitor extends AnalysisVisitor
 
     /**
      * @param Node $node
-     * A node to parse, for an instance property.
+     * A node to analyze as the target of an assignment.
      *
      * @return Context
      * A new or an unchanged context resulting from
-     * parsing the node
+     * analyzing the node
      */
     public function visitProp(Node $node) : Context
     {
@@ -1076,11 +1079,11 @@ class AssignmentVisitor extends AnalysisVisitor
 
     /**
      * @param Node $node
-     * A node to parse
+     * A node to analyze as the target of an assignment.
      *
      * @return Context
      * A new or an unchanged context resulting from
-     * parsing the node
+     * analyzing the node
      *
      * @see self::visitProp()
      */
@@ -1157,11 +1160,11 @@ class AssignmentVisitor extends AnalysisVisitor
 
     /**
      * @param Node $node
-     * A node to parse
+     * A node of type ast\AST_VAR to analyze as the target of an assignment
      *
      * @return Context
      * A new or an unchanged context resulting from
-     * parsing the node
+     * analyzing the node
      */
     public function visitVar(Node $node) : Context
     {
@@ -1209,6 +1212,10 @@ class AssignmentVisitor extends AnalysisVisitor
             // its union type rather than replace it.
             if ($this->dim_depth > 0) {
                 $old_variable_union_type = $variable->getUnionType();
+                if ($old_variable_union_type->getRealUnionType()->isExclusivelyArray()) {
+                    // @phan-suppress-next-line PhanUndeclaredProperty used in unused variable detection - array access to an object might have a side effect
+                    $node->phan_is_assignment_to_real_array = true;
+                }
                 $right_type = $this->typeCheckDimAssignment($old_variable_union_type, $node);
                 if ($old_variable_union_type->isEmpty()) {
                     $old_variable_union_type = ArrayType::instance(false)->asPHPDocUnionType();
@@ -1348,11 +1355,11 @@ class AssignmentVisitor extends AnalysisVisitor
 
     /**
      * @param Node $node
-     * A node to parse of type AST_REF (found only in foreach)
+     * A node to analyze as the target of an assignment of type AST_REF (found only in foreach)
      *
      * @return Context
      * A new or an unchanged context resulting from
-     * parsing the node
+     * analyzing the node
      */
     public function visitRef(Node $node) : Context
     {

@@ -3,10 +3,10 @@
 namespace Phan\Tests;
 
 /**
- * Runs tests/files/src/0400-0599
+ * Runs tests/files/src/0300-0399
  */
 class PhanTest3 extends PhanTestRange
 {
-    const START_RANGE = '0400';
-    const END_RANGE   = '0600';
+    const START_RANGE = '0300';
+    const END_RANGE   = '0400';
 }
