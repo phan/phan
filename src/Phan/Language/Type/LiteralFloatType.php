@@ -35,11 +35,11 @@ final class LiteralFloatType extends FloatType implements LiteralTypeInterface
      */
     public static function instanceForValue(float $value, bool $is_nullable) : FloatType
     {
-        $key = \var_export($value, true);
-        if (!\preg_match('/[0-9]/', $key)) {
-            // Don't want to represent INF, -INF, etc.
+        if (!\is_finite($value)) {
+            // Don't want to represent INF, -INF, NaN
             return FloatType::instance($is_nullable);
         }
+        $key = \var_export($value, true);
         if ($is_nullable) {
             static $nullable_cache = [];
             return $nullable_cache[$key] ?? ($nullable_cache[$key] = new self($value, true));
