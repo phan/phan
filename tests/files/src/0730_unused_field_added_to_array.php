@@ -22,3 +22,7 @@ function double_values_phpdoc(array $input, $result) : void {
     }
     echo "Result is: not used\n";
 }
+// Should not warn - https://github.com/phan/phan/issues/2935
+function modify_arg_by_reference(array $values) {
+    $values[0]['value'] = 'result';
+}
