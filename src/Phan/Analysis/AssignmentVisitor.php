@@ -1212,7 +1212,8 @@ class AssignmentVisitor extends AnalysisVisitor
             // its union type rather than replace it.
             if ($this->dim_depth > 0) {
                 $old_variable_union_type = $variable->getUnionType();
-                if ($old_variable_union_type->getRealUnionType()->isExclusivelyArray()) {
+                if ($this->dim_depth === 1 && $old_variable_union_type->getRealUnionType()->isExclusivelyArray()) {
+                    // We're certain of the types of $values, but not of $values[0], so check that the depth is exactly 1.
                     // @phan-suppress-next-line PhanUndeclaredProperty used in unused variable detection - array access to an object might have a side effect
                     $node->phan_is_assignment_to_real_array = true;
                 }
