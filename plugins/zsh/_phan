@@ -1,0 +1,76 @@
+#compdef phan
+# This is a zsh completion script for Phan.
+# Author: Tyson Andre
+
+# To install this, 
+# 1. Add `fpath=(/path/to/phan/plugins/zsh $fpath)` to the *start* of your ~/.zshrc (or copy the script to any appropriate path)
+#
+#    If you are not using oh-my-zsh, you should also make sure `compinit` is called in your .zshrc after the above line
+#
+# 2. Start a new terminal with zsh, then run `unfunction _phan > /dev/null; autoload -U _phan;`
+# 3. Test this with `path/to/phan -<TAB>`. If this was installed successfully, then completions for Phan's CLI options should show up.
+
+# Refer to https://github.com/zsh-users/zsh-completions/blob/master/zsh-completions-howto.org for details on what this does
+
+# TODO: Better completion for --plugins, also include completions from _files
+# plugin list generated with "ls .phan/plugins|grep '\.php'|sed 's,\.php,,'|xargs echo"
+# TODO: Switch to _dir_list with comma separator for some options - see http://zsh.sourceforge.net/Doc/Release/Completion-System.html
+
+# The language server is rarely ever started manually (but the daemon is), so the language server options are not suggested.
+
+_arguments \
+	-S -s \
+	'(--file-list -f)'{--file-list=,-f+}'[a file containing a list of files to analyze]:file:_files' \
+	'(1)*--exclude-file=[a file that should not be parsed or analyzed]:file:_files' \
+	'(1)*'{--exclude-directory-list=,-3+}'[a list of directories that with files that should be excluded from analysis]:dir_list:_directories' \
+	'(1)*'{--include-analysis-file-list=,-I+}'[a comma-separated list of files to include in static analysis]:file:_files' \
+	'(1)*'{--directory=,-l+}'[a directory to scan for class and method information]:dir:_directories' \
+	'(--project-root-directory -d)*'{--project-root-directory=,-d+}'[the directory of the project to analyze]:dir:_directories' \
+	'(--file-list-only -r)'{-r,--file-list-only}'[a list of php files to be analyzed instead of anything else]:file:_files' \
+	'(--config-file -k)'{--config-file=,-k+}'[a path to a config file to load]:file:_files' \
+	'(--output-mode -m)'{--output-mode=,-m+}'[the output mode]:output mode:(text json csv codeclimate checkstyle pylint)' \
+	'(--output -o)'{--output=,-o+}'[output filename]:output file:_files' \
+	'(--init)--init[generates a .phan/config.php file in the current directory]' \
+	'(--init-level)--init-level=[a number from 1(strictest) to 5(least strict)]:level:(1 2 3 4 5)' \
+	'(1)*--init-analyze-dir=[a relative path to a directory to analyze]:dir:_directories' \
+	'(1)*--init-analyze-file=[a relative path to a file to analyze]:file:_files' \
+	'(--init-no-composer)--init-no-composer[don'\''t require a composer installation when initializing]:file:_files' \
+	'(--init-overwrite)--init-overwrite[allow phan --init to override the existing .phan/config.php file]:file:_files' \
+	'(--color --no-color -C)'{--color,-C}'[add colors to phan'\''s output]' \
+	'(--color-scheme)--color-scheme[set the color scheme]:color_scheme:(default code eclipse-dark vim)' \
+	'(--progress-bar -p)'{--progress-bar,-p}'[show progress bar]' \
+	'(--debug -D)'{-D,--debug}'[print debugging output to stderr]' \
+	'(--quick -q)'{-q,--quick}'[quick mode]' \
+	'(--target-php-version)--target-php-version=[php version to check codebase for compatibility with]:version:(7.0 7.1 7.2 7.3 7.4 8.0 native)' \
+	'(--ignore-undeclared -i)'{--ignore-undeclared,-i}'[ignore undeclared functions and classes]' \
+	'(--minimum-severity -y)'{--minimum-severity=,-y+}'[minimum severity level to report (critical=0)]:severity:(0 5 10)' \
+	'(--parent-constructor-required -c)'{--parent-constructor-required,-c}'[list of classes requiring parent::__construct to be called]' \
+	'(--processes -j)'{--processes=,-j+}'[the number of parallel processes to run during analysis]' \
+	'(--signature-compatibility -z)'{--signature-compatibility,-z}'[analyze signatures for methods that are overrides to ensure compatibility with what they override]' \
+	'(--disable-cache)--disable-cache[don'\''t cache any ASTs from the polyfill/fallback]' \
+	'(--disable-plugins)--disable-plugins[don'\''t run any plugins]' \
+	'(1)*'{-P,--plugin}'[a name or path to a plugin to use]:file:(AlwaysReturnPlugin DemoPlugin DollarDollarPlugin DuplicateArrayKeyPlugin DuplicateExpressionPlugin FFIAnalysisPlugin HasPHPDocPlugin InvalidVariableIssetPlugin InvokePHPNativeSyntaxCheckPlugin NoAssertPlugin NonBoolBranchPlugin NonBoolInLogicalArithPlugin NotFullyQualifiedUsagePlugin NumericalComparisonPlugin PhanSelfCheckPlugin PHPDocRedundantPlugin PHPDocToRealTypesPlugin PHPUnitAssertionPlugin PHPUnitNotDeadCodePlugin PossiblyStaticMethodPlugin PreferNamespaceUsePlugin PregRegexCheckerPlugin PrintfCheckerPlugin SleepCheckerPlugin SuspiciousParamOrderPlugin UnknownElementTypePlugin UnreachableCodePlugin UnusedSuppressionPlugin UseReturnValuePlugin WhitespacePlugin)' \
+	'(--strict-method-checking)--strict-method-checking[warn if function or method calls are possibly invalid]' \
+	'(--strict-param-checking)--strict-param-checking[warn if arguments are possibly invalid]' \
+	'(--strict-property-checking)--strict-property-checking[warn if property assignments are possibly invalid]' \
+	'(--strict-return-checking)--strict-return-checking[warn if return statements are possibly invalid]' \
+	'(--strict-type-checking)--strict-type-checking[enable all strict type checking settings]' \
+	'(--use-fallback-parser)--use-fallback-parser[use fallback parser on parse error]' \
+	'(--allow-polyfill-parser)--allow-polyfill-parser[use a slower polyfill parser if php-ast can'\''t be used]' \
+	'(--force-polyfill-parser)--force-polyfill-parser[force Phan to use the slower polyfill parser]' \
+	'(--daemonize-socket -s)'{--daemonize-socket=,-s+}'[unix socket for Phan Daemon to listen for requests on]:socket:_files' \
+	'(--daemonize-tcp-host)--daemonize-tcp-host=[TCP hostname for Phan daemon to listen for JSON requests on]:host:(127.0.0.1 0.0.0.0 default)' \
+	'(--daemonize-tcp-port)--daemonize-tcp-port=[TCP port for Phan daemon to listen for JSON requests on]:port:()' \
+	'(--help -h)'{-h,--help}'[display help]' \
+	'(--version -v)'{-v,--version}'[show version]' \
+	'(--extended-help)--extended-help[show extended help]' \
+	'(--dump-ast -a)'{--dump-ast,-a}'[dump an AST for each file rather than analyze]' \
+	'(--dump-parsed-file-list)--dump-parsed-file-list[emit a newline-separated list of files Phan would parse to stdout]' \
+	'(--dump-signatures-file)--dump-signatures-file=[emit JSON serialized signatures to the given file]:file:_files' \
+	'(--automatic-fix)--automatic-fix[automatically fix any issues that can be fixed]' \
+	'(--find-signature)--find-signature=[find a signature (see tool/_phoogle)]:expr:()' \
+	'(--print-memory-usage-summary)--print-memory-usage-summary[print a summary of memory usage and maximum memory usage]' \
+	'(--markdown-issue-messages)--markdown-issue-messages[emit issues with markdown formatting]' \
+	'(--constant-variable-detection)--constant-variable-detection[warn about variables that could be constants]' \
+	'(--require-config-exists)--require-config-exists[exit immediately if .phan/config.php did not exist]' \
+	'(--help-annotations)--help-annotaitons[print annotations supported by Phan]' \

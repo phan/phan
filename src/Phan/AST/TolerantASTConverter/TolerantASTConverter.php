@@ -139,9 +139,6 @@ class TolerantASTConverter
     /** @var FilePositionMap maps byte offsets of the currently parsed file to line numbers */
     protected static $file_position_map;
 
-    /** @var bool if true, force all doc comments to be parsed */
-    private static $parse_all_doc_comments = false;
-
     /** @var bool Sets equivalent static option in self::_start_parsing() */
     protected $instance_should_add_placeholders = false;
 
@@ -150,11 +147,6 @@ class TolerantASTConverter
      * Set to a newer version to support comments on class constants, etc.
      */
     protected $instance_php_version_id_parsing = PHP_VERSION_ID;
-
-    /**
-     * @var bool if true, force all doc comments to be parsed
-     */
-    private $instance_parse_all_doc_comments = false;
 
     // No-op.
     public function __construct()
@@ -177,14 +169,6 @@ class TolerantASTConverter
     public function setPHPVersionId(int $value) : void
     {
         $this->instance_php_version_id_parsing = $value;
-    }
-
-    /**
-     * Parse all doc comments, even the ones the current php version's php-ast would be incapable of providing.
-     */
-    public function setParseAllDocComments(bool $value) : void
-    {
-        $this->instance_parse_all_doc_comments = $value;
     }
 
     /**
@@ -267,7 +251,6 @@ class TolerantASTConverter
         self::$decl_id = 0;
         self::$should_add_placeholders = $this->instance_should_add_placeholders;
         self::$php_version_id_parsing = $this->instance_php_version_id_parsing;
-        self::$parse_all_doc_comments = $this->instance_parse_all_doc_comments;
         self::$file_position_map = new FilePositionMap($file_contents);
         // $file_contents required for looking up line numbers.
         // TODO: Other data structures?
@@ -2460,9 +2443,7 @@ class TolerantASTConverter
             'value' => static::phpParserNodeToAstNode($n->assignment),
         ];
 
-        if (self::$php_version_id_parsing >= 70100 || self::$parse_all_doc_comments) {
-            $children['docComment'] = static::extractPhpdocComment($n) ?? $doc_comment;
-        }
+        $children['docComment'] = static::extractPhpdocComment($n) ?? $doc_comment;
         return new ast\Node(ast\AST_CONST_ELEM, 0, $children, $start_line);
     }
 
@@ -2575,9 +2556,7 @@ class TolerantASTConverter
             ];
             $doc_comment = static::extractPhpdocComment($declare) ?? $first_doc_comment;
             // $first_doc_comment = null;
-            if (self::$php_version_id_parsing >= 70100 || self::$parse_all_doc_comments) {
-                $children['docComment'] = $doc_comment;
-            }
+            $children['docComment'] = $doc_comment;
             $node = new ast\Node(ast\AST_CONST_ELEM, 0, $children, self::getStartLine($declare));
             $ast_declare_elements[] = $node;
         }
@@ -3037,7 +3016,6 @@ class TolerantASTConverter
             $version,
             self::getEnvironmentDetails(),
             $this->instance_should_add_placeholders,
-            $this->instance_parse_all_doc_comments,
         ], true);
         return \sha1($details);
     }
