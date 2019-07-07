@@ -14,5 +14,6 @@ function infiniteloops728() {
     while (true) { throw new RuntimeException("x"); }
     for (;true;) {throw new RuntimeException("x");}
     do {echo "."; throw new RuntimeException("x"); } while (true);
+    for (;;) {}
     return 2;
 }

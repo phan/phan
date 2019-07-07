@@ -575,6 +575,12 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     BlockExitStatusChecker::willUnconditionallyProceed($stmts_node)
                 ))->__invoke($condition_node);
             } elseif (Config::getValue('redundant_condition_detection')) {
+                $condition_node = $condition_node ?? new Node(
+                    ast\AST_CONST,
+                    0,
+                    ['name' => new Node(ast\AST_NAME, ast\flags\NAME_NOT_FQ, ['name' => 'true'], $node->lineno)],
+                    $node->lineno
+                );
                 (new LoopConditionVisitor(
                     $this->code_base,
                     $context,

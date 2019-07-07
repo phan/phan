@@ -86,7 +86,7 @@ class LoopConditionVisitor extends ConditionVisitor
             }
         }
         // Only analyze the last expression in the expression list for conditions.
-        $last_expression = \end($node->children);
+        $last_expression = \end($children);
         if ($node === $this->loop_condition_node) {
             // @phan-suppress-next-line PhanPartialTypeMismatchProperty
             $this->loop_condition_node = $last_expression;
