@@ -14,6 +14,7 @@ New features(Analysis):
   (affects redundant condition detection and unused variable detection)
 + Warn about adding fields to an unused array variable, if Phan infers the real variable type is an array. (#2933)
 + Check for `PhanInfiniteLoop` when the condition expression is omitted (e.g. `for (;;) {}`)
++ Avoid false positives in real condition checks from weak equality checks such as `if ($x == null) { if ($x !== null) {}}` (#2924)
 
 Jul 01 2019, Phan 2.2.4
 -----------------------

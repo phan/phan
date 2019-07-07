@@ -10,9 +10,9 @@ use Phan\AST\UnionTypeVisitor;
 use Phan\Language\Context;
 
 /**
- * This represents an identical assertion implementation acting on two sides of a condition (===)
+ * This represents an equals assertion implementation acting on two sides of a condition (==)
  */
-class IdenticalCondition implements BinaryCondition
+class EqualsCondition implements BinaryCondition
 {
     /**
      * Assert that this condition applies to the variable $var (i.e. $var === $expr)
@@ -24,7 +24,7 @@ class IdenticalCondition implements BinaryCondition
      */
     public function analyzeVar(ConditionVisitorInterface $visitor, Node $var, $expr) : Context
     {
-        return $visitor->updateVariableToBeIdentical($var, $expr);
+        return $visitor->updateVariableToBeEqual($var, $expr);
     }
 
     /**
@@ -46,9 +46,7 @@ class IdenticalCondition implements BinaryCondition
         $code_base = $visitor->getCodeBase();
         $context = $visitor->getContext();
         $value = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $expr)->asSingleScalarValueOrNullOrSelf();
-        if (!\is_bool($value)) {
-            return null;
-        }
+        // Skip check for `if is_bool`, allow weaker comparisons such as `is_string($x) == 1`
         if ($value) {
             // e.g. `if (is_string($x) === true)`
             return (new ConditionVisitor($code_base, $context))->visitCall($call_node);
