@@ -552,7 +552,8 @@ class CLI
                     Config::setValue('target_php_version', $value);
                     break;
                 case 'polyfill-parse-all-element-doc-comments':
-                    Config::setValue('polyfill_parse_all_element_doc_comments', true);
+                    // TODO: Drop in Phan 3
+                    fwrite(STDERR, "--polyfill-parse-all-element-doc-comments is a no-op and will be removed in a future Phan release (no longer needed since PHP 7.0 support was dropped)\n");
                     break;
                 case 'd':
                 case 'project-root-directory':
@@ -1038,7 +1039,7 @@ class CLI
     `--init-level` can be set to 1 (strictest) to 5 (least strict)
   [--init-analyze-dir <dir>] can be used as a relative path alongside directories
     that Phan infers from composer.json's "autoload" settings
-  [--init-analyze-file] can be used as a relative path alongside files
+  [--init-analyze-file <file>] can be used as a relative path alongside files
     that Phan infers from composer.json's "bin" settings
   [--init-no-composer] can be used to tell Phan that the project
     is not a composer project.
@@ -1103,19 +1104,20 @@ EOT;
   incremental analysis.
 
  -d, --project-root-directory </path/to/project>
-  Hunt for a directory named `.phan` in the provided directory
-  and read configuration file `.phan/config.php` from that path.
+  The directory of the project to analyze.
+  Phan expects this directory to contain the configuration file `.phan/config.php`.
+  If not provided, the current working directory is analyzed.
 
- -r, --file-list-only
+ -r, --file-list-only <file>
   A file containing a list of PHP files to be analyzed to the
   exclusion of any other directories or files passed in. This
   is unlikely to be useful.
 
- -k, --config-file
+ -k, --config-file <file>
   A path to a config file to load (instead of the default of
   `.phan/config.php`).
 
- -m <mode>, --output-mode
+ -m, --output-mode <mode>
   Output mode from 'text', 'json', 'csv', 'codeclimate', 'checkstyle', or 'pylint'
 
  -o, --output <filename>
@@ -1141,7 +1143,7 @@ $init_help
  -b, --backward-compatibility-checks
   Check for potential PHP 5 -> PHP 7 BC issues
 
- --target-php-version {7.0,7.1,7.2,7.3,7.4,native}
+ --target-php-version {7.0,7.1,7.2,7.3,7.4,8.0,native}
   The PHP version that the codebase will be checked for compatibility against.
   For best results, the PHP binary used to run Phan should have the same PHP version.
   (Phan relies on Reflection for some param counts
@@ -1301,10 +1303,6 @@ Extended help:
  --markdown-issue-messages
   Emit issue messages with markdown formatting.
 
- --polyfill-parse-all-element-doc-comments
-  Makes the polyfill aware of doc comments on class constants and declare statements
-  even when imitating parsing a PHP 7.0 codebase.
-
  --constant-variable-detection
   Emit issues for variables that could be replaced with literals or constants.
   (i.e. they are declared once (as a constant expression) and never modified).
@@ -1370,13 +1368,13 @@ Extended help:
  --language-server-min-diagnostics-delay-ms <0..1000>
   Sets a minimum delay between publishing diagnostics (i.e. Phan issues) to the language client.
   This can be increased to work around race conditions in clients processing Phan issues (e.g. if your editor/IDE shows outdated diagnostics)
-  Defaults to 0 (no delay)
+  Defaults to 0. (no delay)
 
  --require-config-exists
   Exit immediately with an error code if `.phan/config.php` does not exist.
 
  --help-annotations
-  Print details on annotations supported by Phan
+  Print details on annotations supported by Phan.
 
 EOB
             );

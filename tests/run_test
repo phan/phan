@@ -32,7 +32,6 @@ case "$TEST_SUITE" in
 		./phan --plugin PHPUnitNotDeadCodePlugin \
 			--plugin InvokePHPNativeSyntaxCheckPlugin \
 			--dead-code-detection \
-			--polyfill-parse-all-element-doc-comments \
 			--assume-real-types-for-internal-functions \
 			--force-polyfill-parser \
 			--disable-cache \
