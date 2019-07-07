@@ -7,3 +7,4 @@
 %s:10 PhanInfiniteLoop The loop condition new stdClass() of type \stdClass is always truthy and nothing seems to exit the loop
 %s:11 PhanInfiniteLoop The loop condition new stdClass() of type \stdClass is always truthy and nothing seems to exit the loop
 %s:12 PhanInfiniteLoop The loop condition new stdClass() of type \stdClass is always truthy and nothing seems to exit the loop
+%s:17 PhanInfiniteLoop The loop condition true of type true is always truthy and nothing seems to exit the loop
