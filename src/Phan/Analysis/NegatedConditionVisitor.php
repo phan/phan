@@ -128,10 +128,11 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                 $this->checkVariablesDefined($node);
                 return $this->analyzeAndUpdateToBeNotEqual($node->children['left'], $node->children['right']);
             case flags\BINARY_IS_NOT_IDENTICAL:
+                $this->checkVariablesDefined($node);
+                return $this->analyzeAndUpdateToBeIdentical($node->children['left'], $node->children['right']);
             case flags\BINARY_IS_NOT_EQUAL:
                 $this->checkVariablesDefined($node);
-                // TODO: Add a different function for IS_NOT_EQUAL, e.g. analysis of != null should be different from !== null (First would remove FalseType)
-                return $this->analyzeAndUpdateToBeIdentical($node->children['left'], $node->children['right']);
+                return $this->analyzeAndUpdateToBeEqual($node->children['left'], $node->children['right']);
             case flags\BINARY_IS_GREATER:
                 $this->checkVariablesDefined($node);
                 return $this->analyzeAndUpdateToBeCompared($node->children['left'], $node->children['right'], flags\BINARY_IS_SMALLER_OR_EQUAL);
@@ -722,8 +723,8 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
         if (($var_node->kind ?? null) !== ast\AST_VAR) {
             return $this->checkComplexIsset($var_node);
         }
-        // if (!isset($x))
-        return $this->updateVariableWithNewType($var_node, $this->context, NullType::instance(false)->asPHPDocUnionType(), true);
+        // if (!isset($x)) means that $x is definitely null
+        return $this->updateVariableWithNewType($var_node, $this->context, NullType::instance(false)->asRealUnionType(), true, false);
     }
 
     /**

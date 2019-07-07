@@ -32,6 +32,17 @@ interface ConditionVisitorInterface
      * @param Node|int|float|string $expr
      * @return Context - Constant after inferring type from an expression such as `if ($x === 'literal')`
      */
+    public function updateVariableToBeEqual(
+        Node $var_node,
+        $expr,
+        Context $context = null
+    ) : Context;
+
+    /**
+     * @param Node $var_node
+     * @param Node|int|float|string $expr
+     * @return Context - Constant after inferring type from an expression such as `if ($x === 'literal')`
+     */
     public function updateVariableToBeIdentical(
         Node $var_node,
         $expr,

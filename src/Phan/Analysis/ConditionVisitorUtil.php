@@ -8,6 +8,7 @@ use Closure;
 use Exception;
 use Phan\Analysis\ConditionVisitor\BinaryCondition;
 use Phan\Analysis\ConditionVisitor\ComparisonCondition;
+use Phan\Analysis\ConditionVisitor\EqualsCondition;
 use Phan\Analysis\ConditionVisitor\IdenticalCondition;
 use Phan\Analysis\ConditionVisitor\NotEqualsCondition;
 use Phan\Analysis\ConditionVisitor\NotIdenticalCondition;
@@ -473,10 +474,14 @@ trait ConditionVisitorUtil
         Node $var_node,
         Context $context,
         UnionType $new_union_type,
-        bool $suppress_issues
+        bool $suppress_issues,
+        bool $is_weak_type_assertion
     ) : Context {
         if ($var_node->kind === ast\AST_PROP) {
-            return $this->modifyPropertySimple($var_node, static function (UnionType $unused) use ($new_union_type) : UnionType {
+            return $this->modifyPropertySimple($var_node, function (UnionType $old_type) use ($new_union_type, $is_weak_type_assertion) : UnionType {
+                if ($is_weak_type_assertion) {
+                    return $this->combineTypesAfterWeakEqualityCheck($old_type, $new_union_type);
+                }
                 return $new_union_type;
             }, $context);
         }
@@ -492,7 +497,7 @@ trait ConditionVisitorUtil
             $variable = clone($variable);
 
             $variable->setUnionType(
-                $new_union_type
+                $this->combineTypesAfterWeakEqualityCheck($variable->getUnionType(), $new_union_type)
             );
 
             // Overwrite the variable with its new type in this
@@ -508,6 +513,35 @@ trait ConditionVisitorUtil
             // Swallow it
         }
         return $context;
+    }
+
+    protected function combineTypesAfterWeakEqualityCheck(UnionType $old_union_type, UnionType $new_union_type) : UnionType {
+        // TODO: Be more precise about these checks - e.g. forbid anything such as stdClass == false in the new type
+        if (!$new_union_type->hasRealTypeSet()) {
+            return $new_union_type;
+        }
+        $new_real_union_type = $new_union_type->getRealUnionType();
+        $combined_real_types = [];
+        foreach ($old_union_type->getRealTypeSet() as $type) {
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            // TODO: Implement Type->canWeakCastToUnionType?
+            if ($type->isPossiblyFalsey() && !$new_real_union_type->containsFalsey()) {
+                if ($type->isAlwaysFalsey()) {
+                    continue;
+                }
+                // e.g. if asserting ?stdClass == true, then remove null
+                $type = $type->asNonFalseyType();
+            } elseif ($type->isPossiblyTruthy() && !$new_real_union_type->containsTruthy()) {
+                if ($type->isAlwaysTruthy()) {
+                    continue;
+                }
+                // e.g. if asserting ?stdClass == false, then remove stdClass and leave null
+                $type = $type->asNonTruthyType();
+            }
+            $combined_real_types[] = $type;
+            break;
+        }
+        return $new_union_type->withRealTypeSet($combined_real_types);
     }
 
     /**
@@ -530,7 +564,30 @@ trait ConditionVisitorUtil
         } catch (\Exception $_) {
             return $context;
         }
-        return $this->updateVariableWithNewType($var_node, $context, $expr_type, true);
+        return $this->updateVariableWithNewType($var_node, $context, $expr_type, true, false);
+    }
+
+    /**
+     * @param Node $var_node
+     * @param Node|int|float|string $expr
+     * @return Context - Constant after inferring type from an expression such as `if ($x === 'literal')`
+     * @suppress PhanUnreferencedPublicMethod referenced in ConditionVisitorInterface
+     */
+    final public function updateVariableToBeEqual(
+        Node $var_node,
+        $expr,
+        Context $context = null
+    ) : Context {
+        $context = $context ?? $this->context;
+        try {
+            $expr_type = UnionTypeVisitor::unionTypeFromLiteralOrConstant($this->code_base, $context, $expr);
+            if (!$expr_type) {
+                return $context;
+            }
+        } catch (\Exception $_) {
+            return $context;
+        }
+        return $this->updateVariableWithNewType($var_node, $context, $expr_type, true, true);
     }
 
     /**
@@ -686,8 +743,6 @@ trait ConditionVisitorUtil
      * @param Node|int|float|string $left
      * @param Node|int|float|string $right
      * @return Context - Constant after inferring type from an expression such as `if ($x !== false)`
-     *
-     * TODO: Could improve analysis by adding analyzeAndUpdateToBeEqual for `==`
      */
     protected function analyzeAndUpdateToBeIdentical($left, $right) : Context
     {
@@ -695,6 +750,20 @@ trait ConditionVisitorUtil
             $left,
             $right,
             new IdenticalCondition()
+        );
+    }
+
+    /**
+     * @param Node|int|float|string $left
+     * @param Node|int|float|string $right
+     * @return Context - Constant after inferring type from an expression such as `if ($x !== false)`
+     */
+    protected function analyzeAndUpdateToBeEqual($left, $right) : Context
+    {
+        return $this->analyzeBinaryConditionPattern(
+            $left,
+            $right,
+            new EqualsCondition()
         );
     }
 
