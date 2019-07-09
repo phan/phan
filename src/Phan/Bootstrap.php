@@ -27,7 +27,6 @@ if (extension_loaded('ast')) {
             STDERR,
             "Exiting without analyzing files." . PHP_EOL
         );
-        exit(1);
     } elseif (PHP_VERSION_ID >= 70400 && version_compare($ast_version, '1.0.2') < 0) {
         fprintf(
             STDERR,
