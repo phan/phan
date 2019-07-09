@@ -222,7 +222,8 @@ trait ConditionVisitorUtil
      * overridden in subclasses
      * @param Node|mixed $_
      */
-    protected function chooseIssueForUnconditionallyTrue(bool $is_negated, $_) : string {
+    protected function chooseIssueForUnconditionallyTrue(bool $is_negated, $_) : string
+    {
         return $is_negated ? Issue::ImpossibleCondition : Issue::RedundantCondition;
     }
 
@@ -515,7 +516,8 @@ trait ConditionVisitorUtil
         return $context;
     }
 
-    protected function combineTypesAfterWeakEqualityCheck(UnionType $old_union_type, UnionType $new_union_type) : UnionType {
+    protected function combineTypesAfterWeakEqualityCheck(UnionType $old_union_type, UnionType $new_union_type) : UnionType
+    {
         // TODO: Be more precise about these checks - e.g. forbid anything such as stdClass == false in the new type
         if (!$new_union_type->hasRealTypeSet()) {
             return $new_union_type;

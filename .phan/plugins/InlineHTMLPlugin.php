@@ -1,16 +1,16 @@
 <?php declare(strict_types=1);
 
 use ast\Node;
+use Phan\AST\Parser;
 use Phan\CLI;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
-use Phan\Library\FileCacheEntry;
 use Phan\Library\StringUtil;
 use Phan\PluginV3;
 use Phan\PluginV3\AfterAnalyzeFileCapability;
-use Phan\PluginV3\PostAnalyzeNodeCapability;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV3\PostAnalyzeNodeCapability;
 
 /**
  * This plugin checks for accidental whitespace in regular php files.
@@ -34,13 +34,15 @@ class InlineHTMLPlugin extends PluginV3 implements
     /** @var ?string */
     private $blacklist_regex;
 
-    public function __construct() {
+    public function __construct()
+    {
         $plugin_config = Config::getValue('plugin_config');
         $this->whitelist_regex = $plugin_config['inline_html_whitelist_regex'] ?? null;
         $this->blacklist_regex = $plugin_config['inline_html_blacklist_regex'] ?? null;
     }
 
-    private function shouldCheckFile(string $path) : bool {
+    private function shouldCheckFile(string $path) : bool
+    {
         if ($this->blacklist_regex) {
             if (CLI::isPathMatchedByRegex($this->blacklist_regex, $path)) {
                 return false;
@@ -79,7 +81,7 @@ class InlineHTMLPlugin extends PluginV3 implements
         if (!self::shouldCheckFile($file)) {
             return;
         }
-        $file_contents = FileCacheEntry::removeShebang($file_contents);
+        $file_contents = Parser::removeShebang($file_contents);
         $tokens = token_get_all($file_contents);
         foreach ($tokens as $i => $token) {
             if (!is_array($token)) {
@@ -108,7 +110,8 @@ class InlineHTMLPlugin extends PluginV3 implements
     /**
      * @param array{0:int,1:string,2:int} $token a token from token_get_all
      */
-    private function warnAboutInlineHTML(CodeBase $code_base, Context $context, array $token, int $i, int $n) : void {
+    private function warnAboutInlineHTML(CodeBase $code_base, Context $context, array $token, int $i, int $n) : void
+    {
         if ($i == 0) {
             $issue = self::InlineHTMLLeading;
             $message = 'Saw inline HTML at the start of the file: {STRING_LITERAL}';
@@ -128,7 +131,8 @@ class InlineHTMLPlugin extends PluginV3 implements
         );
     }
 
-    private static function truncate(string $token) : string {
+    private static function truncate(string $token) : string
+    {
         if (strlen($token) > 20) {
             return mb_substr($token, 0, 20) . "...";
         }
@@ -140,7 +144,8 @@ class InlineHTMLPlugin extends PluginV3 implements
      *
      * @override
      */
-    public static function getPostAnalyzeNodeVisitorClassName() : string {
+    public static function getPostAnalyzeNodeVisitorClassName() : string
+    {
         return InlineHTMLVisitor::class;
     }
 }
@@ -150,12 +155,14 @@ class InlineHTMLPlugin extends PluginV3 implements
  *
  * php-ast (and the underlying AST implementation) doesn't provide a way to distinguish inline HTML from other types of echos.
  */
-class InlineHTMLVisitor extends PluginAwarePostAnalysisVisitor {
+class InlineHTMLVisitor extends PluginAwarePostAnalysisVisitor
+{
     /**
      * @override
      * @return void
      */
-    public function visitEcho(Node $_) {
+    public function visitEcho(Node $_)
+    {
         InlineHTMLPlugin::$file_set_to_analyze[$this->context->getFile()] = true;
     }
 }

@@ -150,7 +150,7 @@ _phan() {
             ;;
         --plugin | -P)
             # Suggest both local files and names of known phan plugins
-            COMPREPLY=( $(compgen -f -W "AlwaysReturnPlugin DemoPlugin DollarDollarPlugin DuplicateArrayKeyPlugin DuplicateExpressionPlugin FFIAnalysisPlugin HasPHPDocPlugin InvalidVariableIssetPlugin InvokePHPNativeSyntaxCheckPlugin NoAssertPlugin NonBoolBranchPlugin NonBoolInLogicalArithPlugin NotFullyQualifiedUsagePlugin NumericalComparisonPlugin PhanSelfCheckPlugin PHPDocRedundantPlugin PHPDocToRealTypesPlugin PHPUnitAssertionPlugin PHPUnitNotDeadCodePlugin PossiblyStaticMethodPlugin PreferNamespaceUsePlugin PregRegexCheckerPlugin PrintfCheckerPlugin SleepCheckerPlugin SuspiciousParamOrderPlugin UnknownElementTypePlugin UnreachableCodePlugin UnusedSuppressionPlugin UseReturnValuePlugin WhitespacePlugin" -- "${cur}" ) )
+            COMPREPLY=( $(compgen -f -W "AlwaysReturnPlugin DemoPlugin DollarDollarPlugin DuplicateArrayKeyPlugin DuplicateExpressionPlugin FFIAnalysisPlugin HasPHPDocPlugin InlineHTMLPlugin InvalidVariableIssetPlugin InvokePHPNativeSyntaxCheckPlugin NoAssertPlugin NonBoolBranchPlugin NonBoolInLogicalArithPlugin NotFullyQualifiedUsagePlugin NumericalComparisonPlugin PhanSelfCheckPlugin PHPDocRedundantPlugin PHPDocToRealTypesPlugin PHPUnitAssertionPlugin PHPUnitNotDeadCodePlugin PossiblyStaticMethodPlugin PreferNamespaceUsePlugin PregRegexCheckerPlugin PrintfCheckerPlugin SleepCheckerPlugin SuspiciousParamOrderPlugin UnknownElementTypePlugin UnreachableCodePlugin UnusedSuppressionPlugin UseReturnValuePlugin WhitespacePlugin" -- "${cur}" ) )
             return 0
             ;;
         --daemonize-tcp-host)

@@ -309,7 +309,9 @@ This can be limited to a subset of files with an `inline_html_whitelist_regex` -
 
 Files can be excluded with `inline_html_blacklist_regex`, e.g. `@(^src/templates/)|(\.html$)@`
 
-- **PhanPluginInlineHTML**: `The first occurrence of inline HTML is {STRING_LITERAL}`
+- **PhanPluginInlineHTML**: `Saw inline HTML between the first and last token: {STRING_LITERAL}`
+- **PhanPluginInlineHTMLLeading**: `Saw inline HTML at the start of the file: {STRING_LITERAL}`
+- **PhanPluginInlineHTMLTrailing**: `Saw inline HTML at the end of the file: {STRING_LITERAL}`
 
 #### SuspiciousParamOrderPlugin.php
 

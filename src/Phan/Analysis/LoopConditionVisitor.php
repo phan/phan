@@ -58,7 +58,8 @@ class LoopConditionVisitor extends ConditionVisitor
      * @override
      * @param Node|mixed $node
      */
-    protected function chooseIssueForUnconditionallyTrue(bool $is_negated, $node) : string {
+    protected function chooseIssueForUnconditionallyTrue(bool $is_negated, $node) : string
+    {
         if (!$is_negated && $node === $this->loop_condition_node) {
             return Issue::InfiniteLoop;
         }
