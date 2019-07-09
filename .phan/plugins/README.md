@@ -301,6 +301,16 @@ This plugin checks for unexpected whitespace in PHP files.
 - **PhanPluginWhitespaceTab**: `The first occurrence of a tab was seen here. Running "expand" can fix that.`
 - **PhanPluginWhitespaceTrailing**: `The first occurrence of trailing whitespace was seen here.`
 
+#### InlineHTMLPlugin.php
+
+This plugin checks for unexpected inline HTML.
+
+This can be limited to a subset of files with an `inline_html_whitelist_regex` - e.g. `@^(src/|lib/)@`.
+
+Files can be excluded with `inline_html_blacklist_regex`, e.g. `@(^src/templates/)|(\.html$)@`
+
+- **PhanPluginInlineHTML**: `The first occurrence of inline HTML is {STRING_LITERAL}`
+
 #### SuspiciousParamOrderPlugin.php
 
 This plugin guesses if arguments to a function call are out of order, based on heuristics on the name in the expression (e.g. variable name).

@@ -469,6 +469,8 @@ return [
         'DuplicateExpressionPlugin',
         // warns about carriage returns("\r"), trailing whitespace, and tabs in PHP files.
         'WhitespacePlugin',
+        // Warn about inline HTML anywhere in the files.
+        'InlineHTMLPlugin',
         ////////////////////////////////////////////////////////////////////////
         // Plugins for Phan's self-analysis
         ////////////////////////////////////////////////////////////////////////

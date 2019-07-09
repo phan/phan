@@ -1,0 +1,1 @@
+src/125_trailing_html.php:7 PhanPluginInlineHTML The first occurrence of inline HTML is "// This is inline HT..."

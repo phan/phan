@@ -5,6 +5,7 @@ use Phan\CLI;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
+use Phan\Library\FileCacheEntry;
 use Phan\PluginV3;
 use Phan\PluginV3\AfterAnalyzeFileCapability;
 use Phan\PluginV3\BeforeAnalyzeFileCapability;
@@ -22,6 +23,9 @@ use Phan\PluginV3\FinalizeProcessCapability;
  *      This can replace the default binary (PHP_BINARY) with an array of absolute path or program names(in $PATH)
  *       E.g. have 'plugin_config' => ['php_native_syntax_check_binaries' => ['php72', 'php70', 'php56']]
  * Note: This may cause Phan to take over twice as long. This is recommended for use with `--processes N`.
+ *
+ * Known issues:
+ * - short_open_tags may make php --syntax-check --no-php-ini behave differently from php --syntax-check, e.g. for '<?phpinvalid;'
  *
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
@@ -186,7 +190,7 @@ class InvokeExecutionPromise
     public function __construct(string $binary, string $file_contents, Context $context)
     {
         $this->context = clone($context);
-        $new_file_contents = self::removeShebang($file_contents);
+        $new_file_contents = FileCacheEntry::removeShebang($file_contents);
         // TODO: Use symfony process
         // Note: We might have invalid utf-8, ensure that the streams are opened in binary mode.
         // I'm not sure if this is necessary.
@@ -263,35 +267,6 @@ class InvokeExecutionPromise
             return null;
         }
         return $abs_path;
-    }
-
-    private static function removeShebang(string $file_contents) : string
-    {
-        if (substr($file_contents, 0, 2) !== "#!") {
-            return $file_contents;
-        }
-        for ($i = 2; $i < strlen($file_contents); $i++) {
-            $c = $file_contents[$i];
-            if ($c === "\r") {
-                if (($file_contents[$i + 1] ?? '') === "\n") {
-                    $i++;
-                    break;
-                }
-            } elseif ($c === "\n") {
-                break;
-            }
-        }
-        if ($i >= strlen($file_contents)) {
-            return '';
-        }
-        $rest = (string)substr($file_contents, $i + 1);
-        if (strcasecmp(substr($rest, 0, 5), "<?php") === 0) {
-            // declare(strict_types=1) must be the first part of the script.
-            // Even empty php tags aren't allowed prior to it, so avoid adding empty tags if possible.
-            return "<?php\n" . substr($rest, 5);
-        }
-        // Preserve the line numbers by adding a no-op newline instead of the removed shebang
-        return "<?php\n?>" . $rest;
     }
 
     /**
