@@ -1,1 +1,1 @@
-src/127_leading_html.php:1 PhanPluginInlineHTML The first occurrence of inline HTML is "\n"
+src/127_leading_html.php:1 PhanPluginInlineHTMLLeading Saw inline HTML at the start of the file: "\n"

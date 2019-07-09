@@ -23,6 +23,8 @@ class InlineHTMLPlugin extends PluginV3 implements
     PostAnalyzeNodeCapability
 {
     const InlineHTML = 'PhanPluginInlineHTML';
+    const InlineHTMLLeading = 'PhanPluginInlineHTMLLeading';
+    const InlineHTMLTrailing = 'PhanPluginInlineHTMLTrailing';
 
     /** @var array<string,true> set of files that have echo statements */
     public static $file_set_to_analyze = [];
@@ -78,22 +80,52 @@ class InlineHTMLPlugin extends PluginV3 implements
             return;
         }
         $file_contents = FileCacheEntry::removeShebang($file_contents);
-        foreach (\token_get_all($file_contents) as $token) {
+        $tokens = token_get_all($file_contents);
+        foreach ($tokens as $i => $token) {
             if (!is_array($token)) {
                 continue;
             }
             if ($token[0] !== T_INLINE_HTML) {
                 continue;
             }
-            $this->emitIssue(
-                $code_base,
-                clone($context)->withLineNumberStart($token[2]),
-                self::InlineHTML,
-                'The first occurrence of inline HTML is {STRING_LITERAL}',
-                [StringUtil::jsonEncode(self::truncate($token[1]))]
-            );
+            $N = count($tokens);
+            $this->warnAboutInlineHTML($code_base, $context, $token, $i, $N);
+            if ($i < $N - 1) {
+                // Make sure to always check if the last token is inline HTML
+                $token = $tokens[$N - 1] ?? null;
+                if (!is_array($token)) {
+                    break;
+                }
+                if ($token[0] !== T_INLINE_HTML) {
+                    break;
+                }
+                $this->warnAboutInlineHTML($code_base, $context, $token, $N - 1, $N);
+            }
             break;
         }
+    }
+
+    /**
+     * @param array{0:int,1:string,2:int} $token a token from token_get_all
+     */
+    private function warnAboutInlineHTML(CodeBase $code_base, Context $context, array $token, int $i, int $n) : void {
+        if ($i == 0) {
+            $issue = self::InlineHTMLLeading;
+            $message = 'Saw inline HTML at the start of the file: {STRING_LITERAL}';
+        } elseif ($i >= $n - 1) {
+            $issue = self::InlineHTMLTrailing;
+            $message = 'Saw inline HTML at the end of the file: {STRING_LITERAL}';
+        } else {
+            $issue = self::InlineHTML;
+            $message = 'Saw inline HTML between the first and last token: {STRING_LITERAL}';
+        }
+        $this->emitIssue(
+            $code_base,
+            clone($context)->withLineNumberStart($token[2]),
+            $issue,
+            $message,
+            [StringUtil::jsonEncode(self::truncate($token[1]))]
+        );
     }
 
     private static function truncate(string $token) : string {

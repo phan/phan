@@ -1,0 +1,1 @@
+src/129_no_php.php:1 PhanPluginInlineHTMLLeading Saw inline HTML at the start of the file: "<php\n// this is not ..."
