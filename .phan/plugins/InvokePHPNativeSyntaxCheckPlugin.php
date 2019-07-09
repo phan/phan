@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
 use ast\Node;
+use Phan\AST\Parser;
 use Phan\CLI;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
-use Phan\Library\FileCacheEntry;
 use Phan\PluginV3;
 use Phan\PluginV3\AfterAnalyzeFileCapability;
 use Phan\PluginV3\BeforeAnalyzeFileCapability;
@@ -190,7 +190,7 @@ class InvokeExecutionPromise
     public function __construct(string $binary, string $file_contents, Context $context)
     {
         $this->context = clone($context);
-        $new_file_contents = FileCacheEntry::removeShebang($file_contents);
+        $new_file_contents = Parser::removeShebang($file_contents);
         // TODO: Use symfony process
         // Note: We might have invalid utf-8, ensure that the streams are opened in binary mode.
         // I'm not sure if this is necessary.
