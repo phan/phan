@@ -18,6 +18,10 @@ New features(Analysis):
 + Check for `PhanInfiniteLoop` when the condition expression is omitted (e.g. `for (;;) {}`)
 + Avoid false positives in real condition checks from weak equality checks such as `if ($x == null) { if ($x !== null) {}}` (#2924)
 
+Plugins:
++ Add `InlineHTMLPlugin` to warn about inline HTML anywhere in an analyzed file's contents.
+  In the `plugin_config` config array, `inline_html_whitelist_regex` and `inline_html_blacklist_regex` can be used to limit the subset of analyzed files to check for inline HTML.
+
 Maintenance:
 + Made `--polyfill-parse-all-element-doc-comments` a no-op, it was only needed for compatibility with running Phan with php 7.0.
 + Minor updates to CLI help for Phan.

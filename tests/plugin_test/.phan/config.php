@@ -134,6 +134,7 @@ return [
         'DuplicateExpressionPlugin',
         'SuspiciousParamOrderPlugin',
         'WhitespacePlugin',
+        'InlineHTMLPlugin',
         'PossiblyStaticMethodPlugin',
     ],
 ];

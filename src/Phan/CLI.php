@@ -1505,7 +1505,7 @@ EOB
     public static function shouldParse(string $file_path) : bool
     {
         $exclude_file_regex = Config::getValue('exclude_file_regex');
-        if ($exclude_file_regex && self::isPathExcludedByRegex($exclude_file_regex, $file_path)) {
+        if ($exclude_file_regex && self::isPathMatchedByRegex($exclude_file_regex, $file_path)) {
             return false;
         }
         $file_extensions = Config::getValue('analyzed_file_extensions');
@@ -1567,7 +1567,7 @@ EOB
 
                     // Compare exclude_file_regex against the relative path within the project
                     // (E.g. src/foo.php)
-                    if ($exclude_file_regex && self::isPathExcludedByRegex($exclude_file_regex, $file_info->getPathname())) {
+                    if ($exclude_file_regex && self::isPathMatchedByRegex($exclude_file_regex, $file_info->getPathname())) {
                         return false;
                     }
 
@@ -1635,7 +1635,7 @@ EOB
      *
      * @return bool - True if the user's configured regex is meant to exclude $path_name
      */
-    private static function isPathExcludedByRegex(
+    public static function isPathMatchedByRegex(
         string $exclude_file_regex,
         string $path_name
     ) : bool {
