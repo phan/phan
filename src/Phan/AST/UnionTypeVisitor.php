@@ -1985,7 +1985,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 false
             );
         }
-        if (\is_string($name) && strcasecmp($name, 'static') === 0 && (!$class || !$class->isFinal())) {
+        if (\is_string($name) && \strcasecmp($name, 'static') === 0 && (!$class || !$class->isFinal())) {
             return UnionType::of($types, [StringType::instance(false)]);
         }
         return UnionType::of($types, $types);

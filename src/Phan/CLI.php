@@ -10,6 +10,8 @@ use Phan\Exception\UsageException;
 use Phan\Language\Element\AddressableElement;
 use Phan\Language\Element\Comment\Builder;
 use Phan\Language\FQSEN;
+use Phan\Library\Restarter;
+use Phan\Library\StderrLogger;
 use Phan\Library\StringUtil;
 use Phan\Output\Collector\BufferingCollector;
 use Phan\Output\Colorizing;
@@ -553,7 +555,7 @@ class CLI
                     break;
                 case 'polyfill-parse-all-element-doc-comments':
                     // TODO: Drop in Phan 3
-                    fwrite(STDERR, "--polyfill-parse-all-element-doc-comments is a no-op and will be removed in a future Phan release (no longer needed since PHP 7.0 support was dropped)\n");
+                    \fwrite(STDERR, "--polyfill-parse-all-element-doc-comments is a no-op and will be removed in a future Phan release (no longer needed since PHP 7.0 support was dropped)\n");
                     break;
                 case 'd':
                 case 'project-root-directory':
@@ -757,9 +759,9 @@ class CLI
                 Config::setValue('color_issue_messages', true);
             }
         }
-
-        self::checkPluginsExist();
         self::ensureASTParserExists();
+        self::restartWithoutProblematicExtensions();
+        self::checkPluginsExist();
         self::checkValidFileConfig();
 
         $output = $this->output;
@@ -917,7 +919,7 @@ class CLI
         // Also, the implementation of some requests such as "Go to Definition", "Find References" (planned), etc. assume Phan runs as a single process.
         $processes = Config::getValue('processes');
         if ($processes !== 1) {
-            fprintf(STDERR, "Notice: Running with processes=1 instead of processes=%s - the daemon/language server assumes it will run as a single process" . \PHP_EOL, (string)json_encode($processes));
+            \fprintf(STDERR, "Notice: Running with processes=1 instead of processes=%s - the daemon/language server assumes it will run as a single process" . \PHP_EOL, (string)\json_encode($processes));
             Config::setValue('processes', 1);
         }
     }
@@ -1961,5 +1963,81 @@ EOB
             $version .= '-' . \filesize($news_path);
         }
         return $version;
+    }
+
+    /**
+     * If any problematic extensions are installed, then restart without them
+     * @suppress PhanAccessMethodInternal
+     */
+    public function restartWithoutProblematicExtensions() : void
+    {
+        $extensions_to_disable = [];
+        if (self::shouldRestartToExclude('xdebug')) {
+            $extensions_to_disable[] = 'xdebug';
+            // Restart if xdebug is loaded, unless the environment variable PHAN_ALLOW_XDEBUG is set.
+            if (!getenv('PHAN_DISABLE_XDEBUG_WARN')) {
+                \fwrite(STDERR, <<<EOT
+[info] Disabling xdebug: Phan is around five times as slow when xdebug is enabled (xdebug only makes sense when debugging Phan itself)
+[info] To run Phan with xdebug, set the environment variable PHAN_ALLOW_XDEBUG to 1.
+[info] To disable this warning, set the environment variable PHAN_DISABLE_XDEBUG_WARN to 1.
+[info] To include function signatures of xdebug, see .phan/internal_stubs/xdebug.phan_php
+
+EOT
+                );
+            }
+        }
+        if (self::shouldRestartToExclude('uopz')) {
+            $extensions_to_disable[] = 'uopz';
+            \fwrite(
+                STDERR,
+                "[info] Restarting with uopz disabled, it can cause unpredictable behavior." . \PHP_EOL .
+                "[info] Set the environment variable PHAN_ALLOW_UOPZ to 1 to disable this message and to allow uopz." . \PHP_EOL
+            );
+        }
+        if (self::shouldRestartToExclude('grpc') && self::willUseMultipleProcesses()) {
+            // This still hangs when phan runs with --processes 2, even in 1.22.0
+            $extensions_to_disable[] = 'grpc';
+            \fwrite(
+                STDERR,
+                "[info] grpc can cause php to hang when Phan is run with options that require forking." . \PHP_EOL .
+                "[info] Restarting with grpc disabled." . \PHP_EOL .
+                "[info] Set the environment variable PHAN_ALLOW_GRPC to 1 to disable this message and to allow grpc." . \PHP_EOL
+            );
+        }
+        // php-ast + opcache causes issues if we suddenly restart without an outdated php-ast version, so there's no good way to exclude an outdated 'ast'.
+        // See https://github.com/phan/phan/issues/2954 for details.
+
+        if ($extensions_to_disable) {
+            $ini_handler = new Restarter('phan');
+            $ini_handler->setLogger(new StderrLogger());
+            foreach ($extensions_to_disable as $extension) {
+                $ini_handler->disableExtension($extension);
+            }
+            // Automatically restart if problematic extensions are loaded
+            $ini_handler->check();
+        }
+    }
+
+    private static function shouldRestartToExclude(string $extension) : bool
+    {
+        return \extension_loaded($extension) && !getenv('PHAN_ALLOW_' . \strtoupper($extension));
+    }
+
+    private static function willUseMultipleProcesses() : bool
+    {
+        if (Config::getValue('processes') > 1) {
+            return true;
+        }
+        if (Config::getValue('language_server_use_pcntl_fallback')) {
+            return false;
+        }
+        $config = Config::getValue('language_server_config');
+        if ($config && !isset($config['stdin'])) {
+            return true;
+        }
+        if (Config::getValue('daemonize_tcp')) {
+            return true;
+        }
+        return false;
     }
 }

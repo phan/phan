@@ -290,7 +290,7 @@ class ASTReverter
             $str = '(' . $str . ')';
         }
         // @phan-suppress-next-line PhanPluginPrintfVariableFormatString
-        return sprintf($format, $str);
+        return \sprintf($format, $str);
     }
 }
 ASTReverter::init();

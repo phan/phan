@@ -25,6 +25,9 @@ Plugins:
 Maintenance:
 + Made `--polyfill-parse-all-element-doc-comments` a no-op, it was only needed for compatibility with running Phan with php 7.0.
 + Minor updates to CLI help for Phan.
++ Restart without problematic extensions unless the corresponding `PHAN_ALLOW_$extension` flag is set. (#2900)
+  These include uopz and grpc (when Phan would use `pcntl_fork`) - Phan already restarts without xdebug.
++ Fix `Debug::nodeToString()` - Make it use a polyfill for `ast\get_kind_name` if the ast version is missing.
 
 Jul 01 2019, Phan 2.2.4
 -----------------------

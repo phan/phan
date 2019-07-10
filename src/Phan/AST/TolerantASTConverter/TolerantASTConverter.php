@@ -2983,7 +2983,7 @@ class TolerantASTConverter
                 \PHP_VERSION,
                 \PHP_BINARY,
                 self::getDevelopmentBuildDate(),
-                phpversion('ast'),
+                \phpversion('ast'),
                 \ini_get('short_open_tag'),
                 class_exists(CLI::class) ? CLI::getDevelopmentVersionId() : 'unknown'
             ], true));
@@ -2996,13 +2996,13 @@ class TolerantASTConverter
      */
     private static function getDevelopmentBuildDate() : ?string
     {
-        if (stripos(PHP_VERSION, '-dev') === false) {
+        if (\stripos(\PHP_VERSION, '-dev') === false) {
             return null;
         }
-        ob_start();
-        phpinfo(\INFO_GENERAL);
-        $contents = (string)ob_get_clean();
-        preg_match('/^Build Date.*=>\s*(.+)$/m', $contents, $matches);
+        \ob_start();
+        \phpinfo(\INFO_GENERAL);
+        $contents = (string)\ob_get_clean();
+        \preg_match('/^Build Date.*=>\s*(.+)$/m', $contents, $matches);
         return $matches[1] ?? 'unknown';
     }
 

@@ -664,7 +664,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
         if (!$cond_list instanceof Node) {
             return;
         }
-        $cond_node = end($cond_list->children);
+        $cond_node = \end($cond_list->children);
         if (!$cond_node instanceof Node) {
             return;
         }

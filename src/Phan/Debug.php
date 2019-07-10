@@ -7,6 +7,7 @@ use ast\flags;
 use ast\Node;
 use LogicException;
 use Phan\Analysis\BlockExitStatusChecker;
+use Phan\AST\Parser;
 
 /**
  * Debug utilities
@@ -93,7 +94,7 @@ class Debug
             return "string ($kind)";
         }
         try {
-            return ast\get_kind_name($kind);
+            return Parser::getKindName($kind);
         } catch (LogicException $_) {
             return "UNKNOWN_KIND($kind)";
         }
@@ -265,7 +266,7 @@ class Debug
     public static function astDump($ast, int $options = 0) : string
     {
         if ($ast instanceof Node) {
-            $result = ast\get_kind_name($ast->kind);
+            $result = Parser::getKindName($ast->kind);
 
             if ($options & self::AST_DUMP_LINENOS) {
                 $result .= " @ $ast->lineno";

@@ -8,6 +8,7 @@ use Error;
 use ParseError;
 use Phan\AST\TolerantASTConverter\ParseException;
 use Phan\AST\TolerantASTConverter\ParseResult;
+use Phan\AST\TolerantASTConverter\ShimFunctions;
 use Phan\AST\TolerantASTConverter\TolerantASTConverter;
 use Phan\AST\TolerantASTConverter\TolerantASTConverterWithNodeMapping;
 use Phan\CodeBase;
@@ -243,10 +244,10 @@ class Parser
      */
     public static function removeShebang(string $file_contents) : string
     {
-        if (substr($file_contents, 0, 2) !== "#!") {
+        if (\substr($file_contents, 0, 2) !== "#!") {
             return $file_contents;
         }
-        for ($i = 2; $i < strlen($file_contents); $i++) {
+        for ($i = 2; $i < \strlen($file_contents); $i++) {
             $c = $file_contents[$i];
             if ($c === "\r") {
                 if (($file_contents[$i + 1] ?? '') === "\n") {
@@ -257,14 +258,14 @@ class Parser
                 break;
             }
         }
-        if ($i >= strlen($file_contents)) {
+        if ($i >= \strlen($file_contents)) {
             return '';
         }
-        $rest = (string)substr($file_contents, $i + 1);
-        if (strcasecmp(substr($rest, 0, 5), "<?php") === 0) {
+        $rest = (string)\substr($file_contents, $i + 1);
+        if (\strcasecmp(\substr($rest, 0, 5), "<?php") === 0) {
             // declare(strict_types=1) must be the first part of the script.
             // Even empty php tags aren't allowed prior to it, so avoid adding empty tags if possible.
-            return "<?php\n" . substr($rest, 5);
+            return "<?php\n" . \substr($rest, 5);
         }
         // Preserve the line numbers by adding a no-op newline instead of the removed shebang
         return "<?php\n?>" . $rest;
@@ -301,5 +302,31 @@ class Parser
         }
 
         return new TolerantASTConverter();
+    }
+
+    /**
+     * Get a string representation of the AST kind value.
+     * @suppress PhanAccessMethodInternal
+     */
+    public static function getKindName(int $kind) : string
+    {
+        static $use_native = null;
+        $use_native = ($use_native ?? self::shouldUseNativeAST());
+        if ($use_native) {
+            return \ast\get_kind_name($kind);
+        }
+        // The native function doesn't exist or is missing some constants Phan would use.
+        return ShimFunctions::getKindName($kind);
+    }
+
+    // TODO: Refactor and make more code use this check
+    private static function shouldUseNativeAST() : bool
+    {
+        if (\PHP_VERSION_ID >= 70400) {
+            $min_version = '1.0.2';
+        } else {
+            $min_version = '1.0.1';
+        }
+        return \version_compare(\phpversion('ast') ?: '0.0.0', $min_version) >= 0;
     }
 }
