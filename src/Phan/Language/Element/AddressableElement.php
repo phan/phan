@@ -322,10 +322,10 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     public function getDeprecationReason() : string
     {
         return $this->memoize(__METHOD__, function () : string {
-            if (!is_string($this->doc_comment)) {
+            if (!\is_string($this->doc_comment)) {
                 return '';
             }
-            if (!\preg_match('/@deprecated\b/', $this->doc_comment, $matches, PREG_OFFSET_CAPTURE)) {
+            if (!\preg_match('/@deprecated\b/', $this->doc_comment, $matches, \PREG_OFFSET_CAPTURE)) {
                 return '';
             }
             $doc_comment = \preg_replace('@(^/\*)|(\*/$)@', '', $this->doc_comment);
@@ -337,8 +337,8 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
                     if (!$new_lines) {
                         return '';
                     }
-                    $new_lines[0] = preg_replace('/^\s*@deprecated\b\s*/', '', $new_lines[0]);
-                    $reason = implode(' ', array_filter(array_map('trim', $new_lines), static function (string $line) : bool {
+                    $new_lines[0] = \preg_replace('/^\s*@deprecated\b\s*/', '', $new_lines[0]);
+                    $reason = \implode(' ', \array_filter(\array_map('trim', $new_lines), static function (string $line) : bool {
                         return $line !== '';
                     }));
                     if ($reason !== '') {

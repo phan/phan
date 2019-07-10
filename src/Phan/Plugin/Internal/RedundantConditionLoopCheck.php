@@ -199,7 +199,7 @@ class RedundantConditionLoopCheck
             }
         }
 
-        if (is_numeric($expr) && (float)$expr) {
+        if (\is_numeric($expr) && (float)$expr) {
             return [$var_name => $expr > 0 xor $is_subtraction];
         }
         return [];
