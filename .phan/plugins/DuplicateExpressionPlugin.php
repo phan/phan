@@ -9,7 +9,9 @@ use Phan\AST\ASTReverter;
 use Phan\AST\InferValue;
 use Phan\PluginV3;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV3\PluginAwarePreAnalysisVisitor;
 use Phan\PluginV3\PostAnalyzeNodeCapability;
+use Phan\PluginV3\PreAnalyzeNodeCapability;
 
 /**
  * This plugin checks for duplicate expressions in a statement
@@ -18,11 +20,14 @@ use Phan\PluginV3\PostAnalyzeNodeCapability;
  * - E.g. `expr1 == expr1`
  *
  * This file demonstrates plugins for Phan. Plugins hook into various events.
- * DuplicateExpressionPlugin hooks into one event:
+ * DuplicateExpressionPlugin hooks into two events:
  *
  * - getPostAnalyzeNodeVisitorClassName
  *   This method returns a visitor that is called on every AST node from every
- *   file being analyzed
+ *   file being analyzed in post-order
+ * - getPreAnalyzeNodeVisitorClassName
+ *   This method returns a visitor that is called on every AST node from every
+ *   file being analyzed in pre-order
  *
  * A plugin file must
  *
@@ -36,23 +41,33 @@ use Phan\PluginV3\PostAnalyzeNodeCapability;
  * Note: When adding new plugins,
  * add them to the corresponding section of README.md
  */
-class DuplicateExpressionPlugin extends PluginV3 implements PostAnalyzeNodeCapability
+class DuplicateExpressionPlugin extends PluginV3 implements
+    PostAnalyzeNodeCapability,
+    PreAnalyzeNodeCapability
 {
 
     /**
-     * @return string - name of PluginAwarePostAnalysisVisitor subclass
+     * @return class-string - name of PluginAwarePostAnalysisVisitor subclass
      */
     public static function getPostAnalyzeNodeVisitorClassName() : string
     {
-        return RedundantNodeVisitor::class;
+        return RedundantNodePostAnalysisVisitor::class;
+    }
+
+    /**
+     * @return class-string - name of PluginAwarePreAnalysisVisitor subclass
+     */
+    public static function getPreAnalyzeNodeVisitorClassName() : string
+    {
+        return RedundantNodePreAnalysisVisitor::class;
     }
 }
 
 /**
  * This visitor analyzes node kinds that can be the root of expressions
- * containing duplicate expressions.
+ * containing duplicate expressions, and is called on nodes in post-order.
  */
-class RedundantNodeVisitor extends PluginAwarePostAnalysisVisitor
+class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
 {
     /**
      * These are types of binary operations for which it is
@@ -248,6 +263,18 @@ class RedundantNodeVisitor extends PluginAwarePostAnalysisVisitor
             );
             return;
         }
+        $false_node_hash = ASTHasher::hash($node->children['false']);
+        if ($true_node_hash === $false_node_hash) {
+            $this->emitPluginIssue(
+                $this->code_base,
+                $this->context,
+                'PhanPluginDuplicateConditionalUnnecessary',
+                '"X ? Y : Y" results in the same expression Y no matter what X evaluates to. Y was {CODE}',
+                [ASTReverter::toShortString($cond_node)]
+            );
+            return;
+        }
+
         if (!$cond_node instanceof Node) {
             return;
         }
@@ -337,6 +364,82 @@ class RedundantNodeVisitor extends PluginAwarePostAnalysisVisitor
             '"' . $expr . '" can usually be simplified to "X ?? Y" in PHP 7. The duplicated expression X was {CODE}',
             [ASTReverter::toShortString($x_node)]
         );
+    }
+}
+
+/**
+ * This visitor analyzes node kinds that can be the root of expressions
+ * containing duplicate expressions, and is called on nodes in pre-order.
+ */
+class RedundantNodePreAnalysisVisitor extends PluginAwarePreAnalysisVisitor
+{
+    /**
+     * @override
+     */
+    public function visitIf(Node $node) : void
+    {
+        if (count($node->children) <= 1) {
+            // There can't be any duplicates.
+            return;
+        }
+        // @phan-suppress-next-line PhanUndeclaredProperty
+        if (isset($node->is_inside_else)) {
+            return;
+        }
+        $children = self::extractIfElseifChain($node);
+        // The checks of visitIf are done in pre-order (parent nodes analyzed before child nodes)
+        // so that checked_duplicate_if can be set, to avoid redundant work.
+        // @phan-suppress-next-line PhanUndeclaredProperty
+        if (isset($node->checked_duplicate_if)) {
+            return;
+        }
+        // @phan-suppress-next-line PhanUndeclaredProperty
+        $node->checked_duplicate_if = true;
+        ['cond' => $prev_cond /*, 'stmts' => $prev_stmts */] = $children[0]->children;
+        // $prev_stmts_hash = ASTHasher::hash($prev_cond);
+        $condition_set = [ASTHasher::hash($prev_cond) => true];
+        for ($i = 1; $i < count($children); $i++) {
+            ['cond' => $cond /*, 'stmts' => $stmts */] = $children[$i]->children;
+            $cond_hash = ASTHasher::hash($cond);
+            if (isset($condition_set[$cond_hash])) {
+                $this->emitPluginIssue(
+                    $this->code_base,
+                    clone($this->context)->withLineNumberStart($cond->lineno ?? $children[$i]->lineno),
+                    'PhanPluginDuplicateIfCondition',
+                    'Saw the same condition {CODE} in an earlier if/elseif statement',
+                    [ASTReverter::toShortString($cond)]
+                );
+            } else {
+                $condition_set[$cond_hash] = true;
+            }
+        }
+    }
+
+    /**
+     * @param Node $node a node of kind ast\AST_IF
+     * @return array<int,Node> the list of AST_IF_ELEM nodes making up the chain of if/elseif/else if conditions.
+     * @suppress PhanPartialTypeMismatchReturn
+     */
+    private static function extractIfElseifChain(Node $node) : array
+    {
+        $children = $node->children;
+        if (count($children) <= 1) {
+            return $children;
+        }
+        $last_child = \end($children);
+        // Loop over the `} else {` blocks.
+        while ($last_child->children['cond'] === null) {
+            $first_stmt = $last_child->children['stmts']->children[0] ?? null;
+            if (($first_stmt->kind ?? null) !== ast\AST_IF) {
+                break;
+            }
+            // @phan-suppress-next-line PhanUndeclaredProperty
+            $first_stmt->is_inside_else = true;
+            \array_pop($children);
+            \array_push($children, ...$first_stmt->children);
+            $last_child = \end($children);
+        }
+        return $children;
     }
 }
 

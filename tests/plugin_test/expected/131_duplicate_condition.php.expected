@@ -1,0 +1,3 @@
+src/131_duplicate_condition.php:6 PhanPluginDuplicateIfCondition Saw the same condition ($a == 1) in an earlier if/elseif statement
+src/131_duplicate_condition.php:14 PhanPluginDuplicateIfCondition Saw the same condition ($a == 2) in an earlier if/elseif statement
+src/131_duplicate_condition.php:26 PhanPluginDuplicateIfCondition Saw the same condition ($a == 2) in an earlier if/elseif statement
