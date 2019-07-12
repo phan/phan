@@ -227,14 +227,14 @@ class UnusedSuppressionPlugin extends PluginV3 implements
         return Config::getValue('plugin_config')['unused_suppression_whitelisted_only'] ?? false;
     }
 
-    private static function shouldReportUnusedSuppression( string $issue_type ) : bool
+    private static function shouldReportUnusedSuppression(string $issue_type) : bool
     {
         $ignore_list = self::getUnusedSuppressionIgnoreList();
         $only_whitelisted = self::getReportOnlyWhitelisted();
         $issue_whitelist = Config::getValue('whitelist_issue_types') ?? [];
 
-        return !in_array($issue_type, $unused_suppression_ignore_list, true) &&
-            ( !$only_whitelisted || in_array($issue_type, $issue_whitelist, true) );
+        return !in_array($issue_type, $ignore_list, true) &&
+            (!$only_whitelisted || in_array($issue_type, $issue_whitelist, true));
     }
 
     private function analyzePluginSuppressionsForFile(CodeBase $code_base, SuppressionCapability $plugin, string $relative_file_path) : void
