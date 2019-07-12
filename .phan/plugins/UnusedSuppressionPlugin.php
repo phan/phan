@@ -222,6 +222,21 @@ class UnusedSuppressionPlugin extends PluginV3 implements
         return Config::getValue('plugin_config')['unused_suppression_ignore_list'] ?? [];
     }
 
+    private static function getReportOnlyWhitelisted() : bool
+    {
+        return Config::getValue('plugin_config')['unused_suppression_whitelisted_only'] ?? false;
+    }
+
+    private static function shouldReportUnusedSuppression( string $issue_type ) : bool
+    {
+        $ignore_list = self::getUnusedSuppressionIgnoreList();
+        $only_whitelisted = self::getReportOnlyWhitelisted();
+        $issue_whitelist = Config::getValue('whitelist_issue_types') ?? [];
+
+        return !in_array($issue_type, $unused_suppression_ignore_list, true) &&
+            ( !$only_whitelisted || in_array($issue_type, $issue_whitelist, true) );
+    }
+
     private function analyzePluginSuppressionsForFile(CodeBase $code_base, SuppressionCapability $plugin, string $relative_file_path) : void
     {
         $absolute_file_path = Config::projectPath($relative_file_path);
@@ -234,8 +249,6 @@ class UnusedSuppressionPlugin extends PluginV3 implements
         }
         $plugin_suppressions = $plugin->getIssueSuppressionList($code_base, $absolute_file_path);
         $plugin_successful_suppressions = $this->plugin_active_suppression_list[$plugin_class][$absolute_file_path] ?? null;
-
-        $unused_suppression_ignore_list = self::getUnusedSuppressionIgnoreList();
 
         foreach ($plugin_suppressions as $issue_type => $line_list) {
             foreach ($line_list as $lineno => $lineno_of_comment) {
@@ -255,7 +268,7 @@ class UnusedSuppressionPlugin extends PluginV3 implements
                 if (isset($plugin_suppressions[$issue_kind][$lineno_of_comment])) {
                     continue;
                 }
-                if (in_array($issue_type, $unused_suppression_ignore_list, true)) {
+                if (!self::shouldReportUnusedSuppression($issue_type)) {
                     continue;
                 }
                 self::emitIssue(
