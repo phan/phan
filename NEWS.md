@@ -21,6 +21,9 @@ New features(Analysis):
 + Fix failure to infer type when there is an assignment in a condition (#2964)
   (e.g. `return ($obj = maybeObj()) instanceof stdClass ? $obj : new stdClass();`)
 
+Bug fixes:
++ Fix crash in StringUtil seen in php 7.4-dev due to notice in `hexdec()` (affects polyfill/fallback parser).
+
 Plugins:
 + Add `InlineHTMLPlugin` to warn about inline HTML anywhere in an analyzed file's contents.
   In the `plugin_config` config array, `inline_html_whitelist_regex` and `inline_html_blacklist_regex` can be used to limit the subset of analyzed files to check for inline HTML.
