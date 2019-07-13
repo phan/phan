@@ -27,6 +27,7 @@ Bug fixes:
 Plugins:
 + Add `InlineHTMLPlugin` to warn about inline HTML anywhere in an analyzed file's contents.
   In the `plugin_config` config array, `inline_html_whitelist_regex` and `inline_html_blacklist_regex` can be used to limit the subset of analyzed files to check for inline HTML.
++ For `UnusedSuppressionPlugin`: `'plugin_config' => ['unused_suppression_whitelisted_only' => true]` will make this plugin report unused suppressions only for issues in `whitelist_issue_types`. (#2961)
 
 Maintenance:
 + Made `--polyfill-parse-all-element-doc-comments` a no-op, it was only needed for compatibility with running Phan with php 7.0.
