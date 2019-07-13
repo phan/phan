@@ -54,7 +54,7 @@ trait FunctionTrait
     /**
      * Did we initialize the inner scope of this method?
      * Deferred because hydrating parameter defaults requires having all class constants be known
-     * @var bool This is set to null immediately after scope initialization is finished.
+     * @var bool This is set to true immediately after scope initialization is finished.
      */
     protected $is_inner_scope_initialized  = false;
 

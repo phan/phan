@@ -528,7 +528,10 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             return $context;
         }
         $expr_node = $node->children['expr'];
-        if (!($expr_node instanceof Node) || $expr_node->kind !== ast\AST_VAR) {
+        if (!($expr_node instanceof Node)) {
+            return $context;
+        }
+        if ($expr_node->kind !== ast\AST_VAR) {
             return $this->modifyComplexExpression(
                 $expr_node,
                 /**

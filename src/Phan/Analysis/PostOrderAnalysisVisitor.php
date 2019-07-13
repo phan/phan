@@ -1769,7 +1769,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         // Allow nested ternary operators, or arrays within ternary operators
-        if (($node->children['true'] ?? null) !== null) {
+        if (isset($node->children['true'])) {
             yield from $this->getReturnTypes($true_context, $true_node, $true_node->lineno ?? $node->lineno);
         } else {
             // E.g. From the left-hand side of yield (int|false) ?: default,

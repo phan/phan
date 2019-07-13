@@ -18,6 +18,8 @@ New features(Analysis):
 + Check for `PhanInfiniteLoop` when the condition expression is omitted (e.g. `for (;;) {}`)
 + Avoid false positives in real condition checks from weak equality checks such as `if ($x == null) { if ($x !== null) {}}` (#2924)
 + Warn about `X ? Y : Y` and `if (cond1) {...} elseif (cond1) {...}` in DuplicateExpressionPlugin (#2955)
++ Fix failure to infer type when there is an assignment in a condition (#2964)
+  (e.g. `return ($obj = maybeObj()) instanceof stdClass ? $obj : new stdClass();`)
 
 Plugins:
 + Add `InlineHTMLPlugin` to warn about inline HTML anywhere in an analyzed file's contents.

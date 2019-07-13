@@ -1098,23 +1098,53 @@ trait ConditionVisitorUtil
     /**
      * @param Node|mixed $node
      * @param Closure(CodeBase,Context,Variable,array<int,mixed>):void $type_modification_callback
-     *        A closure acting on a Variable instance (not really a variable) to modify its type
+     *        A closure acting on a Variable instance (usually not really a variable) to modify its type
      * @param Context $context
      * @param array<int,mixed> $args
      */
     protected function modifyComplexExpression($node, Closure $type_modification_callback, Context $context, array $args) : Context
     {
-        if (!$node instanceof Node) {
-            return $context;
-        }
-        if ($node->kind === ast\AST_DIM) {
-            return $this->modifyComplexDimExpression($node, $type_modification_callback, $context, $args);
-        } elseif ($node->kind === ast\AST_PROP) {
-            if (self::isThisVarNode($node->children['expr'])) {
-                return $this->modifyPropertyOfThis($node, $type_modification_callback, $context, $args);
+        for (;;) {
+            if (!$node instanceof Node) {
+                return $context;
+            }
+            switch ($node->kind) {
+                case ast\AST_DIM:
+                    return $this->modifyComplexDimExpression($node, $type_modification_callback, $context, $args);
+                case ast\AST_PROP:
+                    if (self::isThisVarNode($node->children['expr'])) {
+                        return $this->modifyPropertyOfThis($node, $type_modification_callback, $context, $args);
+                    }
+                    return $context;
+                case ast\AST_ASSIGN:
+                case ast\AST_ASSIGN_REF:
+                    $var_node = $node->children['var'];
+                    if (!$var_node instanceof Node) {
+                        return $context;
+                    }
+                    // Act on the left (or right) hand side of the assignment instead. That side may be a regular variable.
+                    if ($var_node->kind === ast\AST_ARRAY) {
+                        $node = $node->children['expr'];
+                    } else {
+                        $node = $var_node;
+                    }
+                    continue 2;
+                case ast\AST_VAR:
+                    $variable = $this->getVariableFromScope($node, $context);
+                    if (\is_null($variable)) {
+                        return $context;
+                    }
+                    // Make a copy of the variable
+                    $variable = clone($variable);
+                    $type_modification_callback($this->code_base, $context, $variable, $args);
+                    // Overwrite the variable with its new type
+                    return $context->withScopeVariable(
+                        $variable
+                    );
+                default:
+                    return $context;
             }
         }
-        return $context;
     }
 
     /**
