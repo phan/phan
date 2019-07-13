@@ -1,0 +1,3 @@
+src/132_use_return_value_in_loop.php:2 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \is_int
+src/132_use_return_value_in_loop.php:3 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \sprintf
+src/132_use_return_value_in_loop.php:5 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \intdiv

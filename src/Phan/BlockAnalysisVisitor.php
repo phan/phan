@@ -545,17 +545,22 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
         $condition_node = $node->children['cond'];
         if ($condition_node instanceof Node) {
-            // The typical case is `for (init; $x; loop) {}`
-            // But `for (init; $x, $y; loop) {}` is rare but possible, which requires evaluating those in order.
-            // Evaluate the list of cond expressions in order.
-            foreach ($condition_node->children as $condition_subnode) {
-                if ($condition_subnode instanceof Node) {
-                    $context = $this->analyzeAndGetUpdatedContext(
-                        $context->withLineNumberStart($condition_subnode->lineno),
-                        $node,  // TODO: condition_node?
-                        $condition_subnode
-                    );
+            $this->parent_node_list[] = $node;
+            try {
+                // The typical case is `for (init; $x; loop) {}`
+                // But `for (init; $x, $y; loop) {}` is rare but possible, which requires evaluating those in order.
+                // Evaluate the list of cond expressions in order.
+                foreach ($condition_node->children as $condition_subnode) {
+                    if ($condition_subnode instanceof Node) {
+                        $context = $this->analyzeAndGetUpdatedContext(
+                            $context->withLineNumberStart($condition_subnode->lineno),
+                            $condition_node,
+                            $condition_subnode
+                        );
+                    }
                 }
+            } finally {
+                \array_pop($this->parent_node_list);
             }
         }
 

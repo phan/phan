@@ -20,6 +20,7 @@ New features(Analysis):
 + Warn about `X ? Y : Y` and `if (cond1) {...} elseif (cond1) {...}` in DuplicateExpressionPlugin (#2955)
 + Fix failure to infer type when there is an assignment in a condition (#2964)
   (e.g. `return ($obj = maybeObj()) instanceof stdClass ? $obj : new stdClass();`)
++ Warn about no-ops in for loops (e.g. `for ($x; $x < 10, $x < 20; $x + 1) {}`) (#2926)
 
 Bug fixes:
 + Fix crash in StringUtil seen in php 7.4-dev due to notice in `hexdec()` (affects polyfill/fallback parser).
@@ -28,6 +29,7 @@ Plugins:
 + Add `InlineHTMLPlugin` to warn about inline HTML anywhere in an analyzed file's contents.
   In the `plugin_config` config array, `inline_html_whitelist_regex` and `inline_html_blacklist_regex` can be used to limit the subset of analyzed files to check for inline HTML.
 + For `UnusedSuppressionPlugin`: `'plugin_config' => ['unused_suppression_whitelisted_only' => true]` will make this plugin report unused suppressions only for issues in `whitelist_issue_types`. (#2961)
++ For `UseReturnValuePlugin`: warn about unused results of function calls in loops (#2926)
 
 Maintenance:
 + Made `--polyfill-parse-all-element-doc-comments` a no-op, it was only needed for compatibility with running Phan with php 7.0.

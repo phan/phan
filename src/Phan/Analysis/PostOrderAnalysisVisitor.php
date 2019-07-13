@@ -763,7 +763,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     public function visitBinaryOp(Node $node) : Context
     {
         $flags = $node->flags;
-        if ((\end($this->parent_node_list)->kind ?? null) === ast\AST_STMT_LIST) {
+        if ($this->isInNoOpPosition($node)) {
             if (\in_array($flags, [flags\BINARY_BOOL_AND, flags\BINARY_BOOL_OR, flags\BINARY_COALESCE], true)) {
                 // @phan-suppress-next-line PhanAccessMethodInternal
                 if (ASTSimplifier::isExpressionWithoutSideEffects($node->children['right'])) {
@@ -912,7 +912,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitEmpty(Node $node) : Context
     {
-        if ((\end($this->parent_node_list)->kind ?? null) === ast\AST_STMT_LIST) {
+        if ($this->isInNoOpPosition($node)) {
             $this->emitIssue(
                 Issue::NoopEmpty,
                 $node->lineno
@@ -945,7 +945,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitCast(Node $node) : Context
     {
-        if ((\end($this->parent_node_list)->kind ?? null) === ast\AST_STMT_LIST) {
+        if ($this->isInNoOpPosition($node)) {
             $this->emitIssue(
                 Issue::NoopCast,
                 $node->lineno,
@@ -972,7 +972,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitIsset(Node $node) : Context
     {
-        if ((\end($this->parent_node_list)->kind ?? null) === ast\AST_STMT_LIST) {
+        if ($this->isInNoOpPosition($node)) {
             $this->emitIssue(
                 Issue::NoopIsset,
                 $node->lineno
@@ -992,7 +992,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     public function visitUnaryOp(Node $node) : Context
     {
         if ($node->flags !== flags\UNARY_SILENCE) {
-            if ((\end($this->parent_node_list)->kind ?? null) === ast\AST_STMT_LIST) {
+            if ($this->isInNoOpPosition($node)) {
                 $this->emitIssue(
                     Issue::NoopUnaryOperator,
                     $node->lineno,
@@ -3698,6 +3698,21 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $parameter_list[$parameter_offset] = $pass_by_reference_variable;
     }
 
+    private function isInNoOpPosition(Node $node) : bool
+    {
+        $parent_node = \end($this->parent_node_list);
+        if (!($parent_node instanceof Node)) {
+            return false;
+        }
+        switch ($parent_node->kind) {
+            case ast\AST_STMT_LIST:
+                return true;
+            case ast\AST_EXPR_LIST:
+                return $node !== end($parent_node->children) || $parent_node !== (\prev($this->parent_node_list)->children['cond'] ?? null);
+        }
+        return false;
+    }
+
     /**
      * @param Node $node
      * A node to check to see if it's a no-op
@@ -3707,7 +3722,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     private function analyzeNoOp(Node $node, string $issue_type) : void
     {
-        if ((\end($this->parent_node_list)->kind ?? null) === ast\AST_STMT_LIST) {
+        if ($this->isInNoOpPosition($node)) {
             $this->emitIssue(
                 $issue_type,
                 $node->lineno

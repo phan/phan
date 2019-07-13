@@ -873,24 +873,34 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
      * Skip unary ops when determining the parent node.
      * E.g. for `@foo();`, the parent node is AST_STMT_LIST (which we infer means the result is unused)
      * For `$x = +foo();` the parent node is AST_ASSIGN.
+     * @return array{0:?Node,1:bool} - [$parent, $used]
+     * $used is whether the expression is used - it should only be checked if the parent is known.
      */
-    private function findNonUnaryParentNodeNode() : ?Node
+    private function findNonUnaryParentNode(Node $node) : array
     {
         $parent = end($this->parent_node_list);
         if (!$parent) {
-            return null;
+            return [null, true];
         }
-        if ($parent->kind !== ast\AST_UNARY_OP) {
-            return $parent;
-        }
-
-        for ($i = key($this->parent_node_list) - 1; $i >= 0; $i--) {
-            $parent = $this->parent_node_list[$i];
-            if ($parent->kind !== ast\AST_UNARY_OP) {
-                return $parent;
+        while ($parent->kind === ast\AST_UNARY_OP) {
+            $node = $parent;
+            $parent = \prev($this->parent_node_list);
+            if (!$parent) {
+                return [null, true];
             }
         }
-        return null;
+        switch ($parent->kind) {
+            case ast\AST_STMT_LIST:
+                return [$parent, false];
+            case ast\AST_EXPR_LIST:
+                return [$parent, $this->isUsedExpressionInExprList($node, $parent)];
+        }
+        return [$parent, true];
+    }
+
+    private function isUsedExpressionInExprList(Node $node, Node $parent) : bool
+    {
+        return $node === end($parent->children) && $parent === (\prev($this->parent_node_list)->children['cond'] ?? null);
     }
 
     /**
@@ -900,12 +910,11 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
      */
     public function visitCall(Node $node) : void
     {
-        $parent = $this->findNonUnaryParentNodeNode();
+        [$parent, $used] = $this->findNonUnaryParentNode($node);
         if (!$parent) {
             //fwrite(STDERR, "No parent in " . __METHOD__ . "\n");
             return;
         }
-        $used = $parent->kind !== ast\AST_STMT_LIST;
         if ($used && !UseReturnValuePlugin::$use_dynamic) {
             return;
         }
@@ -950,12 +959,11 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
      */
     public function visitMethodCall(Node $node) : void
     {
-        $parent = $this->findNonUnaryParentNodeNode();
+        [$parent, $used] = $this->findNonUnaryParentNode($node);
         if (!$parent) {
             //fwrite(STDERR, "No parent in " . __METHOD__ . "\n");
             return;
         }
-        $used = $parent->kind !== ast\AST_STMT_LIST;
         if ($used && !UseReturnValuePlugin::$use_dynamic) {
             return;
         }
@@ -999,12 +1007,11 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
      */
     public function visitStaticCall(Node $node) : void
     {
-        $parent = $this->findNonUnaryParentNodeNode();
+        [$parent, $used] = $this->findNonUnaryParentNode($node);
         if (!$parent) {
             //fwrite(STDERR, "No parent in " . __METHOD__ . "\n");
             return;
         }
-        $used = $parent->kind !== ast\AST_STMT_LIST;
         if ($used && !UseReturnValuePlugin::$use_dynamic) {
             return;
         }

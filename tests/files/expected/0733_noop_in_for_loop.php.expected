@@ -1,0 +1,7 @@
+%s:5 PhanNoopBinaryOperator Unused result of a binary '+' operator
+%s:6 PhanNoopBinaryOperator Unused result of a binary '<' operator
+%s:7 PhanNoopIsset Unused result of an isset(expr) check
+%s:7 PhanRedundantConditionInGlobalScope Redundant attempt to cast $i of type 0 to isset in the global scope (likely a false positive)
+%s:8 PhanNoopVariable Unused variable
+%s:10 PhanNoopBinaryOperator Unused result of a binary '+' operator
+%s:13 PhanNoopBinaryOperator Unused result of a binary '+' operator
