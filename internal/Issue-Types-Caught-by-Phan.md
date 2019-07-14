@@ -485,7 +485,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/php70_files/expe
 The unset cast (in {CODE}) was deprecated in PHP 7.2 and will become a fatal error in PHP 8.0.
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/expected/061_cast_crash.php.expected#L11) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/src/061_cast_crash.php#L45).
+e.g. [this issue](https://github.com/phan/phan/tree/2.2.5/tests/misc/fallback_test/expected/061_cast_crash.php.expected#L11) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.5/tests/misc/fallback_test/src/061_cast_crash.php#L45).
 
 ## PhanCompatibleUseIterablePHP71
 
@@ -1949,7 +1949,7 @@ Impossible attempt to check if {CODE} of type {TYPE} is identical to {CODE} of t
 The loop condition {CODE} of type {TYPE} is always {TYPE} and nothing seems to exit the loop
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0728_infinite_loops.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0728_infinite_loops.php#L4).
+e.g. [this issue](https://github.com/phan/phan/tree/2.2.5/tests/files/expected/0728_infinite_loops.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.5/tests/files/src/0728_infinite_loops.php#L4).
 
 ## PhanInfiniteRecursion
 
@@ -2161,7 +2161,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0
 Suspicious loop appears to {DETAILS} after each iteration in {CODE}, but the loop condition is {CODE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0724_suspicious_comparison_in_loop.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0724_suspicious_comparison_in_loop.php#L8).
+e.g. [this issue](https://github.com/phan/phan/tree/2.2.5/tests/files/expected/0724_suspicious_comparison_in_loop.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.5/tests/files/src/0724_suspicious_comparison_in_loop.php#L8).
 
 ## PhanSuspiciousValueComparison
 
@@ -2169,7 +2169,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/
 Suspicious attempt to compare {CODE} of type {TYPE} to {CODE} of type {TYPE} with operator '{OPERATOR}'
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0697_coalescing_always_never_null.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0697_coalescing_always_never_null.php#L4).
+e.g. [this issue](https://github.com/phan/phan/tree/2.2.5/tests/files/expected/0697_coalescing_always_never_null.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.5/tests/files/src/0697_coalescing_always_never_null.php#L4).
 
 ## PhanSuspiciousValueComparisonInGlobalScope
 
@@ -2177,7 +2177,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/
 Suspicious attempt to compare {CODE} of type {TYPE} to {CODE} of type {TYPE} with operator '{OPERATOR}' in the global scope (likely a false positive)
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0526_crash.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0526_crash.php#L2).
+e.g. [this issue](https://github.com/phan/phan/tree/2.2.5/tests/files/expected/0526_crash.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.5/tests/files/src/0526_crash.php#L2).
 
 ## PhanSuspiciousValueComparisonInLoop
 
@@ -2185,7 +2185,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/
 Suspicious attempt to compare {CODE} of type {TYPE} to {CODE} of type {TYPE} with operator '{OPERATOR}' in a loop (likely a false positive)
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0728_suspicious_value_comparison_in_loop_false_positive.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0728_suspicious_value_comparison_in_loop_false_positive.php#L30).
+e.g. [this issue](https://github.com/phan/phan/tree/2.2.5/tests/files/expected/0728_suspicious_value_comparison_in_loop_false_positive.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.5/tests/files/src/0728_suspicious_value_comparison_in_loop_false_positive.php#L30).
 
 ## PhanSuspiciousWeakTypeComparison
 
@@ -2196,7 +2196,7 @@ Phan does not support all types of comparisons (e.g. extensions may define compa
 Suspicious attempt to compare {CODE} of type {TYPE} to {CODE} of type {TYPE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0254_array_bool_comparison.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0254_array_bool_comparison.php#L6).
+e.g. [this issue](https://github.com/phan/phan/tree/2.2.5/tests/files/expected/0254_array_bool_comparison.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.5/tests/files/src/0254_array_bool_comparison.php#L6).
 
 ## PhanSuspiciousWeakTypeComparisonInGlobalScope
 
@@ -3859,7 +3859,7 @@ This detects code causing a [warning in PHP 7.3](http://php.net/manual/en/migrat
 Cannot use constant {CONST} as {CONST} because the name is already in use
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0723_duplicate_use.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0723_duplicate_use.php#L8).
+e.g. [this issue](https://github.com/phan/phan/tree/2.2.5/tests/files/expected/0723_duplicate_use.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.5/tests/files/src/0723_duplicate_use.php#L8).
 
 ## PhanDuplicateUseFunction
 
@@ -3867,7 +3867,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/
 Cannot use function {FUNCTION} as {FUNCTION} because the name is already in use
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0723_duplicate_use.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0723_duplicate_use.php#L6).
+e.g. [this issue](https://github.com/phan/phan/tree/2.2.5/tests/files/expected/0723_duplicate_use.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.5/tests/files/src/0723_duplicate_use.php#L6).
 
 ## PhanDuplicateUseNormal
 
@@ -3875,7 +3875,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/
 Cannot use {CLASSLIKE} as {CLASSLIKE} because the name is already in use
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0723_duplicate_use.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0723_duplicate_use.php#L4).
+e.g. [this issue](https://github.com/phan/phan/tree/2.2.5/tests/files/expected/0723_duplicate_use.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.5/tests/files/src/0723_duplicate_use.php#L4).
 
 ## PhanInvalidConstantExpression
 
