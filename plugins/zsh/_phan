@@ -12,11 +12,10 @@
 
 # Refer to https://github.com/zsh-users/zsh-completions/blob/master/zsh-completions-howto.org for details on what this does
 
-# TODO: Better completion for --plugins, also include completions from _files
-# plugin list generated with "ls .phan/plugins|grep '\.php'|sed 's,\.php,,'|xargs echo"
 # TODO: Switch to _dir_list with comma separator for some options - see http://zsh.sourceforge.net/Doc/Release/Completion-System.html
 
 # The language server is rarely ever started manually (but the daemon is), so the language server options are not suggested.
+local state
 
 _arguments \
 	-S -s \
@@ -49,7 +48,7 @@ _arguments \
 	'(--signature-compatibility -z)'{--signature-compatibility,-z}'[analyze signatures for methods that are overrides to ensure compatibility with what they override]' \
 	'(--disable-cache)--disable-cache[don'\''t cache any ASTs from the polyfill/fallback]' \
 	'(--disable-plugins)--disable-plugins[don'\''t run any plugins]' \
-	'(1)*'{-P,--plugin}'[a name or path to a plugin to use]:file:(AlwaysReturnPlugin DemoPlugin DollarDollarPlugin DuplicateArrayKeyPlugin DuplicateExpressionPlugin FFIAnalysisPlugin HasPHPDocPlugin InlineHTMLPlugin InvalidVariableIssetPlugin InvokePHPNativeSyntaxCheckPlugin NoAssertPlugin NonBoolBranchPlugin NonBoolInLogicalArithPlugin NotFullyQualifiedUsagePlugin NumericalComparisonPlugin PhanSelfCheckPlugin PHPDocRedundantPlugin PHPDocToRealTypesPlugin PHPUnitAssertionPlugin PHPUnitNotDeadCodePlugin PossiblyStaticMethodPlugin PreferNamespaceUsePlugin PregRegexCheckerPlugin PrintfCheckerPlugin SleepCheckerPlugin SuspiciousParamOrderPlugin UnknownElementTypePlugin UnreachableCodePlugin UnusedSuppressionPlugin UseReturnValuePlugin WhitespacePlugin)' \
+	'(1)*'{-P,--plugin}'[a name or path to a plugin to use]:file:->plugins' \
 	'(--strict-method-checking)--strict-method-checking[warn if function or method calls are possibly invalid]' \
 	'(--strict-param-checking)--strict-param-checking[warn if arguments are possibly invalid]' \
 	'(--strict-property-checking)--strict-property-checking[warn if property assignments are possibly invalid]' \
@@ -73,4 +72,12 @@ _arguments \
 	'(--markdown-issue-messages)--markdown-issue-messages[emit issues with markdown formatting]' \
 	'(--constant-variable-detection)--constant-variable-detection[warn about variables that could be constants]' \
 	'(--require-config-exists)--require-config-exists[exit immediately if .phan/config.php did not exist]' \
-	'(--help-annotations)--help-annotaitons[print annotations supported by Phan]' \
+	'(--help-annotations)--help-annotations[print annotations supported by Phan]'
+
+case $state in
+	plugins)
+		# plugin list generated with "ls .phan/plugins|grep '\.php'|sed 's,\.php,,'|xargs echo"
+		compadd AlwaysReturnPlugin DemoPlugin DollarDollarPlugin DuplicateArrayKeyPlugin DuplicateExpressionPlugin FFIAnalysisPlugin HasPHPDocPlugin InlineHTMLPlugin InvalidVariableIssetPlugin InvokePHPNativeSyntaxCheckPlugin NoAssertPlugin NonBoolBranchPlugin NonBoolInLogicalArithPlugin NotFullyQualifiedUsagePlugin NumericalComparisonPlugin PhanSelfCheckPlugin PHPDocRedundantPlugin PHPDocToRealTypesPlugin PHPUnitAssertionPlugin PHPUnitNotDeadCodePlugin PossiblyStaticMethodPlugin PreferNamespaceUsePlugin PregRegexCheckerPlugin PrintfCheckerPlugin SleepCheckerPlugin SuspiciousParamOrderPlugin UnknownElementTypePlugin UnreachableCodePlugin UnusedSuppressionPlugin UseReturnValuePlugin WhitespacePlugin
+		_files
+		;;
+esac
