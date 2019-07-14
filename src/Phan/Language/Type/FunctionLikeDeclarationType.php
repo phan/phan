@@ -2,6 +2,7 @@
 
 namespace Phan\Language\Type;
 
+use ast\Node;
 use Closure;
 use Generator;
 use Phan\CodeBase;
@@ -369,7 +370,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     }
 
     /** @override */
-    public function analyzeFunctionCall(CodeBase $code_base, Context $context, array $args) : void
+    public function analyzeFunctionCall(CodeBase $code_base, Context $context, array $args, Node $node = null) : void
     {
         throw new \AssertionError('should not call ' . __METHOD__);
     }
@@ -474,7 +475,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         throw new \AssertionError('unexpected call to ' . __METHOD__);
     }
 
-    public function getNode() : ?\ast\Node
+    public function getNode() : ?Node
     {
         return null;
     }

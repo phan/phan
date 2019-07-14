@@ -597,9 +597,9 @@ final class ConfigPluginSet extends PluginV3 implements
     }
 
     /**
-     * @param Closure(CodeBase, Context, FunctionInterface, array<int,Node|mixed>):void $a
-     * @param ?Closure(CodeBase, Context, FunctionInterface, array<int,Node|mixed>):void $b
-     * @return Closure(CodeBase, Context, FunctionInterface, array<int,Node|mixed>):void $b
+     * @param Closure(CodeBase, Context, FunctionInterface, array<int,Node|mixed>, ?Node):void $a
+     * @param ?Closure(CodeBase, Context, FunctionInterface, array<int,Node|mixed>, ?Node):void $b
+     * @return Closure(CodeBase, Context, FunctionInterface, array<int,Node|mixed>, ?Node):void $b
      */
     public static function mergeAnalyzeFunctionCallClosures(Closure $a, Closure $b = null) : Closure
     {
@@ -609,9 +609,9 @@ final class ConfigPluginSet extends PluginV3 implements
         /**
          * @param array<int,Node|mixed> $args
          */
-        return static function (CodeBase $code_base, Context $context, FunctionInterface $func, array $args) use ($a, $b) : void {
-            $a($code_base, $context, $func, $args);
-            $b($code_base, $context, $func, $args);
+        return static function (CodeBase $code_base, Context $context, FunctionInterface $func, array $args, ?Node $node) use ($a, $b) : void {
+            $a($code_base, $context, $func, $args, $node);
+            $b($code_base, $context, $func, $args, $node);
         };
     }
     /**

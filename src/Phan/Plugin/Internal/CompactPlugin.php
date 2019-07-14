@@ -3,12 +3,15 @@
 namespace Phan\Plugin\Internal;
 
 use ast\Node;
+use Closure;
 use Phan\AST\ContextNode;
 use Phan\CodeBase;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
+use Phan\Language\Element\FunctionInterface;
+use Phan\Plugin\Internal\VariableTracker\VariableTrackerVisitor;
 use Phan\PluginV3;
 use Phan\PluginV3\AnalyzeFunctionCallCapability;
 
@@ -21,6 +24,7 @@ final class CompactPlugin extends PluginV3 implements
 
     /**
      * @param CodeBase $code_base @phan-unused-param
+     * @return array<string,Closure(CodeBase,Context,FunctionInterface,array,?Node):void>
      */
     public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array
     {
@@ -33,7 +37,7 @@ final class CompactPlugin extends PluginV3 implements
     }
 
     /**
-     * @return array<string,\Closure>
+     * @return array<string,Closure(CodeBase,Context,FunctionInterface,array,?Node):void>
      */
     private static function getAnalyzeFunctionCallClosuresStatic() : array
     {
@@ -44,9 +48,11 @@ final class CompactPlugin extends PluginV3 implements
             CodeBase $code_base,
             Context $context,
             Func $unused_func,
-            array $args
+            array $args,
+            ?Node $node
         ) : void {
-            $maybe_emit_issue = static function (string $variable_name, $arg = null) use ($code_base, $context) : void {
+            $check_variable_usage = static function (string $variable_name, $arg = null) use ($code_base, $context, $node) : void {
+                VariableTrackerVisitor::recordDynamicVariableUse($variable_name, $node);
                 if (!$context->getScope()->hasVariableWithName($variable_name)) {
                     Issue::maybeEmitWithParameters(
                         $code_base,
@@ -60,7 +66,7 @@ final class CompactPlugin extends PluginV3 implements
             };
             foreach ($args as $arg) {
                 if (\is_string($arg)) {
-                    $maybe_emit_issue($arg);
+                    $check_variable_usage($arg);
                     // NOTE: compact is **not** aware of superglobals
                     continue;
                 }
@@ -69,13 +75,13 @@ final class CompactPlugin extends PluginV3 implements
                 }
                 $value = (new ContextNode($code_base, $context, $arg))->getEquivalentPHPValue(ContextNode::RESOLVE_DEFAULT & ~ContextNode::RESOLVE_ARRAY_KEYS);
                 if (\is_string($value)) {
-                    $maybe_emit_issue($value, $arg);
+                    $check_variable_usage($value, $arg);
                     continue;
                 }
                 if (\is_array($value)) {
                     foreach ($value as $value_element) {
                         if (\is_string($value_element)) {
-                            $maybe_emit_issue($value_element, $arg);
+                            $check_variable_usage($value_element, $arg);
                         }
                     }
                 }

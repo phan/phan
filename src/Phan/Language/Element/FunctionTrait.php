@@ -1011,13 +1011,14 @@ trait FunctionTrait
      * @param CodeBase $code_base
      * @param Context $context
      * @param array<int,Node|int|string|float> $args
+     * @param ?Node $node - the node causing the call. This may be dynamic, e.g. call_user_func_array. This will be required in Phan 3.
      * @return void
      * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
-    public function analyzeFunctionCall(CodeBase $code_base, Context $context, array $args) : void
+    public function analyzeFunctionCall(CodeBase $code_base, Context $context, array $args, Node $node = null) : void
     {
         // @phan-suppress-next-line PhanTypePossiblyInvalidCallable - Callers should check hasFunctionCallAnalyzer
-        ($this->function_call_analyzer_callback)($code_base, $context, $this, $args);
+        ($this->function_call_analyzer_callback)($code_base, $context, $this, $args, $node);
     }
 
     /**
@@ -1566,7 +1567,7 @@ trait FunctionTrait
 
     /**
      * @param int $i the index of the parameter which $assertion acts upon.
-     * @return ?Closure(CodeBase, Context, FunctionInterface, array):void
+     * @return ?Closure(CodeBase, Context, FunctionInterface, array, ?Node):void
      * @suppress PhanAccessPropertyInternal
      * @internal
      */
@@ -1593,7 +1594,7 @@ trait FunctionTrait
      * @internal
      * @suppress PhanAccessClassConstantInternal
      * @param Closure(CodeBase, Context, array):UnionType $union_type_extractor
-     * @return ?Closure(CodeBase, Context, FunctionInterface, array):void
+     * @return ?Closure(CodeBase, Context, FunctionInterface, array, ?Node):void
      */
     public static function createClosureForUnionTypeExtractorAndAssertionType(Closure $union_type_extractor, int $assertion_type, int $i) : ?Closure
     {
@@ -1602,7 +1603,7 @@ trait FunctionTrait
                 /**
                  * @param array<int,Node|mixed> $args
                  */
-                return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($i, $union_type_extractor) : void {
+                return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args, ?Node $unused_node) use ($i, $union_type_extractor) : void {
                     $arg = $args[$i] ?? null;
                     if (!($arg instanceof Node)) {
                         return;
@@ -1616,7 +1617,7 @@ trait FunctionTrait
                 /**
                  * @param array<int,Node|mixed> $args
                  */
-                return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($i, $union_type_extractor) : void {
+                return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args, ?Node $unused_node) use ($i, $union_type_extractor) : void {
                     $arg = $args[$i] ?? null;
                     if (!($arg instanceof Node)) {
                         return;
@@ -1630,7 +1631,7 @@ trait FunctionTrait
                 /**
                  * @param array<int,Node|mixed> $args
                  */
-                return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($i) : void {
+                return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args, ?Node $unused_node) use ($i) : void {
                     $arg = $args[$i] ?? null;
                     if (!($arg instanceof Node)) {
                         return;
@@ -1643,7 +1644,7 @@ trait FunctionTrait
                 /**
                  * @param array<int,Node|mixed> $args
                  */
-                return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($i) : void {
+                return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args, ?Node $unused_node) use ($i) : void {
                     $arg = $args[$i] ?? null;
                     if (!($arg instanceof Node)) {
                         return;

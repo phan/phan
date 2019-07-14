@@ -41,8 +41,7 @@ final class MiscParamPlugin extends PluginV3 implements
     AnalyzeFunctionCallCapability
 {
     /**
-     * @return array<string,Closure>
-     * @phan-return array<string,Closure(CodeBase,Context,FunctionInterface,array):void>
+     * @return array<string,Closure(CodeBase,Context,FunctionInterface,array,?Node):void>
      */
     private static function getAnalyzeFunctionCallClosuresStatic() : array
     {
@@ -55,7 +54,8 @@ final class MiscParamPlugin extends PluginV3 implements
             CodeBase $code_base,
             Context $context,
             FunctionInterface $function,
-            array $args
+            array $args,
+            ?Node $_
         ) : void {
             if (\count($args) !== 1) {
                 return;
@@ -88,7 +88,8 @@ final class MiscParamPlugin extends PluginV3 implements
             CodeBase $code_base,
             Context $context,
             FunctionInterface $function,
-            array $args
+            array $args,
+            ?Node $_
         ) : void {
             $argcount = \count($args);
             if ($argcount < 3) {
@@ -145,7 +146,8 @@ final class MiscParamPlugin extends PluginV3 implements
             CodeBase $code_base,
             Context $context,
             FunctionInterface $function,
-            array $args
+            array $args,
+            ?Node $_
         ) use ($stop_exception) : void {
             $argcount = \count($args);
             // (string glue, string[] pieces),
@@ -259,7 +261,8 @@ final class MiscParamPlugin extends PluginV3 implements
             CodeBase $code_base,
             Context $context,
             FunctionInterface $function,
-            array $args
+            array $args,
+            ?Node $_
         ) : void {
             $argcount = \count($args);
             if ($argcount < 4) {
@@ -364,7 +367,8 @@ final class MiscParamPlugin extends PluginV3 implements
             CodeBase $code_base,
             Context $context,
             FunctionInterface $unused_function,
-            array $args
+            array $args,
+            ?Node $_
         ) : void {
             // TODO: support nested adds, like AssignmentVisitor
             // TODO: support properties, like AssignmentVisitor
@@ -409,7 +413,8 @@ final class MiscParamPlugin extends PluginV3 implements
             CodeBase $code_base,
             Context $context,
             FunctionInterface $unused_function,
-            array $args
+            array $args,
+            ?Node $_
         ) use ($get_variable) : void {
             // TODO: support nested adds, like AssignmentVisitor
             // TODO: Could be more specific for arrays with known length and order
@@ -430,7 +435,8 @@ final class MiscParamPlugin extends PluginV3 implements
             CodeBase $code_base,
             Context $context,
             FunctionInterface $unused_function,
-            array $args
+            array $args,
+            ?Node $_
         ) use ($get_variable) : void {
             // TODO: support nested adds, like AssignmentVisitor
             // TODO: Could be more specific for arrays with known length and order
@@ -454,12 +460,14 @@ final class MiscParamPlugin extends PluginV3 implements
 
         /**
          * @param array<int,Node|int|float|string> $args
+         * TODO: Could make unused variable detection more precise for https://github.com/phan/phan/issues/1812 , but low priority.
          */
         $extract_callback = static function (
             CodeBase $code_base,
             Context $context,
             FunctionInterface $unused_function,
-            array $args
+            array $args,
+            ?Node $_
         ) : void {
             // TODO: support nested adds, like AssignmentVisitor
             // TODO: Could be more specific for arrays with known length and order
@@ -570,7 +578,8 @@ final class MiscParamPlugin extends PluginV3 implements
             CodeBase $code_base,
             Context $context,
             FunctionInterface $unused_function,
-            array $args
+            array $args,
+            ?Node $_
         ) : void {
             if (count($args) < 2) {
                 return;
@@ -625,7 +634,8 @@ final class MiscParamPlugin extends PluginV3 implements
             CodeBase $code_base,
             Context $context,
             FunctionInterface $unused_function,
-            array $args
+            array $args,
+            ?Node $_
         ) : void {
             if (count($args) < 2) {
                 return;
