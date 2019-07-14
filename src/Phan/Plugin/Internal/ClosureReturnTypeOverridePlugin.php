@@ -196,7 +196,8 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
             CodeBase $code_base,
             Context $context,
             Func $unused_function,
-            array $args
+            array $args,
+            ?Node $_
         ) : void {
             if (\count($args) < 1) {
                 return;
@@ -216,7 +217,8 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
             CodeBase $code_base,
             Context $context,
             Func $unused_function,
-            array $args
+            array $args,
+            ?Node $_
         ) : void {
             if (\count($args) < 2) {
                 return;

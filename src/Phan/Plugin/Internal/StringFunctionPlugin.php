@@ -62,8 +62,7 @@ final class StringFunctionPlugin extends PluginV3 implements
     }
 
     /**
-     * @return array<string,Closure>
-     * @phan-return array<string,Closure(CodeBase,Context,FunctionInterface,array):void>
+     * @return array<string,Closure(CodeBase,Context,FunctionInterface,array,?Node):void>
      */
     private static function getAnalyzeFunctionCallClosuresStatic() : array
     {
@@ -76,7 +75,8 @@ final class StringFunctionPlugin extends PluginV3 implements
                 CodeBase $code_base,
                 Context $context,
                 FunctionInterface $function,
-                array $args
+                array $args,
+                ?Node $_
             ) use (
                 $expected_const_pos,
                 $expected_variable_pos,
@@ -196,7 +196,7 @@ final class StringFunctionPlugin extends PluginV3 implements
 
     /**
      * @param CodeBase $code_base @phan-unused-param
-     * @return array<string,\Closure>
+     * @return array<string,Closure(CodeBase,Context,FunctionInterface,array,?Node):void>
      * @override
      */
     public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array

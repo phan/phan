@@ -76,6 +76,51 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     }
 
     /**
+     * Record variable usage (in a dynamic manner) due to calls such as compact()
+     * @param ?Node $node a node of kind ast\AST_CALL
+     * @suppress PhanUndeclaredProperty
+     */
+    public static function recordDynamicVariableUse(string $var_name, ?Node $node) : void
+    {
+        if (!$node) {
+            return;
+        }
+        if (!isset($node->dynamic_var_uses)) {
+            $node->dynamic_var_uses = [];
+        }
+        $node->dynamic_var_uses[$var_name] = $var_name;
+    }
+
+    /**
+     * @suppress PhanUndeclaredProperty
+     */
+    public function visitCall(Node $node) : VariableTrackingScope
+    {
+        if (isset($node->dynamic_var_uses)) {
+            $this->handleDynamicVarUses($node, $node->dynamic_var_uses);
+        }
+        foreach ($node->children as $child_node) {
+            if (!($child_node instanceof Node)) {
+                continue;
+            }
+
+            $this->scope = $this->{Element::VISIT_LOOKUP_TABLE[$child_node->kind] ?? 'handleMissingNodeKind'}($child_node);
+        }
+        return $this->scope;
+    }
+
+    /**
+     * @param Node $node a node of kind ast\AST_CALL, e.g. for compact()
+     * @param array<string,string> $dynamic_var_uses
+     */
+    private function handleDynamicVarUses(Node $node, array $dynamic_var_uses) : void
+    {
+        foreach ($dynamic_var_uses as $name) {
+            self::$variable_graph->recordVariableUsage($name, $node, $this->scope);
+        }
+    }
+
+    /**
      * This is the default implementation for node types which don't have any overrides
      * @return VariableTrackingScope
      * @override

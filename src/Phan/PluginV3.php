@@ -47,7 +47,7 @@ use Phan\PluginV3\IssueEmitter;
  *     Called after the analysis phase is complete.
  *     (implement \Phan\PluginV3\FinalizeProcessCapability)
  *
- *  8. public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array<string, Closure(CodeBase,Context,Func|Method,array):void>
+ *  8. public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array<string, Closure(CodeBase,Context,Func|Method,array,?Node):void>
  *     Maps FQSEN of function or method to a closure used to analyze the function in question.
  *     'MyClass::myMethod' can be used as the FQSEN of a static or instance method.
  *     See .phan/plugins/PregRegexCheckerPlugin.php as an example.
