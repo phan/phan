@@ -3,6 +3,9 @@ Phan NEWS
 ??? ?? 2019, Phan 2.2.6 (dev)
 -----------------------
 
+New features(CLI, Configs):
++ Included files in completion suggestions for `-P`/`--plugin` in the [completion script for zsh](plugins/zsh/_phan).
+
 Jul 14 2019, Phan 2.2.5
 -----------------------
 
