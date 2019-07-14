@@ -1141,6 +1141,17 @@ trait ConditionVisitorUtil
                     return $context->withScopeVariable(
                         $variable
                     );
+                case ast\AST_ASSIGN_OP:
+                // Be conservative - analyze `cond(++$x)` but not `cond($x++)
+                // case ast\AST_POST_INC:
+                // case ast\AST_POST_DEC:
+                case ast\AST_PRE_INC:
+                case ast\AST_PRE_DEC:
+                    $node = $node->children['var'];
+                    if (!$node instanceof Node) {
+                        return $context;
+                    }
+                    continue 2;
                 default:
                     return $context;
             }
