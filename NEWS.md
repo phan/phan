@@ -1,6 +1,6 @@
 Phan NEWS
 
-??? ?? 2019, Phan 2.2.5 (dev)
+Jul 14 2019, Phan 2.2.5
 -----------------------
 
 New features(CLI, Configs):
@@ -9,7 +9,7 @@ New features(CLI, Configs):
 + Added a bash completion script ([`plugins/bash/phan`](plugins/bash/phan) has installation instructions).
 
 New features(Analysis):
-+ Fix false positive PhanSuspiciousValueComparisonInLoop when both sides change in a loop. (#2919)
++ Fix false positive `PhanSuspiciousValueComparisonInLoop` when both sides change in a loop. (#2919)
 + Detect potential infinite loops such as `while (true) { does_not_exit_loop(); }`. (Requires `--redundant-condition-detection`)
   New issue types: `PhanInfiniteRecursion`.
 + Track that the **real** type of an array variable is an array after adding fields to it (#2932)
@@ -39,7 +39,7 @@ Maintenance:
 + Minor updates to CLI help for Phan.
 + Restart without problematic extensions unless the corresponding `PHAN_ALLOW_$extension` flag is set. (#2900)
   These include uopz and grpc (when Phan would use `pcntl_fork`) - Phan already restarts without xdebug.
-+ Fix `Debug::nodeToString()` - Make it use a polyfill for `ast\get_kind_name` if the ast version is missing.
++ Fix `Debug::nodeToString()` - Make it use a polyfill for `ast\get_kind_name` if the php-ast version is missing or outdated.
 
 Jul 01 2019, Phan 2.2.4
 -----------------------
