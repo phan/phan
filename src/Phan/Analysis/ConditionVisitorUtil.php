@@ -431,7 +431,7 @@ trait ConditionVisitorUtil
     }
 
     /**
-     * @param Node|mixed $node
+     * @param Node|string|int|float $node
      */
     protected static function isThisVarNode($node) : bool
     {
@@ -1017,7 +1017,7 @@ trait ConditionVisitorUtil
     }
 
     /**
-     * @param array<mixed,Node|mixed> $args
+     * @param array<mixed,Node|string|int|float|null> $args
      */
     final protected static function isArgumentListWithVarAsFirstArgument(array $args) : bool
     {
@@ -1096,7 +1096,7 @@ trait ConditionVisitorUtil
     }
 
     /**
-     * @param Node|mixed $node
+     * @param Node|string|int|float $node
      * @param Closure(CodeBase,Context,Variable,array<int,mixed>):void $type_modification_callback
      *        A closure acting on a Variable instance (usually not really a variable) to modify its type
      * @param Context $context
@@ -1264,7 +1264,7 @@ trait ConditionVisitorUtil
     }
 
     /**
-     * @param Node|mixed $node
+     * @param Node|string|int|float $node
      * @return ?string the name of the variable in a chain of field accesses such as $varName['field'][$i]
      */
     private static function getVarNameOfDimNode($node) : ?string

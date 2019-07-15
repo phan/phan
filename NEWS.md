@@ -4,7 +4,10 @@ Phan NEWS
 -----------------------
 
 New features(CLI, Configs):
-+ Included files in completion suggestions for `-P`/`--plugin` in the [completion script for zsh](plugins/zsh/_phan).
++ Include files in completion suggestions for `-P`/`--plugin` in the [completion script for zsh](plugins/zsh/_phan).
+
+Bug fixes:
++ Fix crash analyzing `&&` and `||` conditions with literals on both sides (#2975)
 
 Jul 14 2019, Phan 2.2.5
 -----------------------

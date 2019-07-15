@@ -206,10 +206,10 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
 
     /**
      * Helper method
-     * @param Node|mixed $left
+     * @param Node|string|int|float $left
      * a Node or non-node to parse (possibly an AST literal)
      *
-     * @param Node|mixed $right
+     * @param Node|string|int|float $right
      * a Node or non-node to parse (possibly an AST literal)
      *
      * @return Context
@@ -232,10 +232,10 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
 
     /**
      * Helper method
-     * @param Node|mixed $left
+     * @param Node|string|int|float $left
      * a Node or non-node to parse (possibly an AST literal)
      *
-     * @param Node|mixed $right
+     * @param Node|string|int|float $right
      * a Node or non-node to parse (possibly an AST literal)
      *
      * @return Context
@@ -248,6 +248,9 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         // Inside of this conditional may be dead or redundant code.
         if (!($left instanceof Node)) {
             if ($left) {
+                return $this->context;
+            }
+            if (!($right instanceof Node)) {
                 return $this->context;
             }
             return $this->__invoke($right);
@@ -661,7 +664,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             $empty_type = UnionType::empty();
 
             /**
-             * @param array<int,Node|mixed> $args
+             * @param array<int,Node|string|int|float> $args
              */
             return static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $args) use ($asserted_union_type, $asserted_union_type_set, $empty_type) : void {
                 $new_types = $empty_type;
@@ -682,7 +685,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                 $union_type_string
             );
             /**
-             * @param array<int,Node|mixed> $args
+             * @param array<int,Node|string|int|float> $args
              */
             return static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $args) use ($asserted_union_type) : void {
                 // Otherwise, overwrite the type for any simple
