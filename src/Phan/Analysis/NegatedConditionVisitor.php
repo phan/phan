@@ -153,10 +153,10 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
 
     /**
      * Helper method
-     * @param Node|mixed $left
+     * @param Node|string|int|float $left
      * a Node or non-node to parse (possibly an AST literal)
      *
-     * @param Node|mixed $right
+     * @param Node|string|int|float $right
      * a Node or non-node to parse (possibly an AST literal)
      *
      * @return Context
@@ -175,6 +175,9 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
         // Inside of this conditional may be dead or redundant code.
         if (!($left instanceof Node)) {
             if (!$left) {
+                return $this->context;
+            }
+            if (!$right instanceof Node) {
                 return $this->context;
             }
             return $this($right);
@@ -198,10 +201,10 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
 
     /**
      * Helper method
-     * @param Node|mixed $left
+     * @param Node|string|int|float $left
      * a Node or non-node to parse (possibly an AST literal)
      *
-     * @param Node|mixed $right
+     * @param Node|string|int|float $right
      * a Node or non-node to parse (possibly an AST literal)
      *
      * @return Context
@@ -455,7 +458,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
 
     /**
      * Compute the type of $union_type after asserting `!(expr instanceof $class_node)`
-     * @param Node|mixed $class_node
+     * @param Node|string|int|float $class_node
      */
     private function computeNegatedInstanceofType(UnionType $union_type, $class_node) : ?UnionType
     {
