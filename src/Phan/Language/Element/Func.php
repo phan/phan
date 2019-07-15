@@ -232,21 +232,10 @@ class Func extends AddressableElement implements FunctionInterface
         // Keep an copy of the original parameter list, to check for fatal errors later on.
         $func->setRealParameterList($parameter_list);
 
-        $func->setNumberOfRequiredParameters(\array_reduce(
-            $parameter_list,
-            static function (int $carry, Parameter $parameter) : int {
-                return ($carry + ($parameter->isRequired() ? 1 : 0));
-            },
-            0
-        ));
+        $required_parameter_count = self::computeNumberOfRequiredParametersForList($parameter_list);
+        $func->setNumberOfRequiredParameters($required_parameter_count);
 
-        $func->setNumberOfOptionalParameters(\array_reduce(
-            $parameter_list,
-            static function (int $carry, Parameter $parameter) : int {
-                return ($carry + ($parameter->isOptional() ? 1 : 0));
-            },
-            0
-        ));
+        $func->setNumberOfOptionalParameters(\count($parameter_list) - $required_parameter_count);
 
         // Check to see if the comment specifies that the
         // function is deprecated

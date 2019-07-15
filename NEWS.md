@@ -8,6 +8,7 @@ New features(CLI, Configs):
 
 Bug fixes:
 + Fix crash analyzing `&&` and `||` conditions with literals on both sides (#2975)
++ Properly emit `PhanParamTooFew` when analyzing uses of functions/methods where a required parameter followed an optional parameter. (#2978)
 
 Jul 14 2019, Phan 2.2.5
 -----------------------

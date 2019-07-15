@@ -351,6 +351,7 @@ class Parameter extends Variable
     /**
      * @return bool
      * True if this is a required parameter
+     * @suppress PhanUnreferencedPublicMethod provided for API completeness
      */
     public function isRequired() : bool
     {

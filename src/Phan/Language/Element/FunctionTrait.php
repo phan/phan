@@ -574,17 +574,24 @@ trait FunctionTrait
             return clone($param);
         }, $parameter_list);
 
-        $required_count = 0;
-        $optional_count = 0;
-        foreach ($parameter_list as $parameter) {
-            if ($parameter->isOptional()) {
-                $optional_count++;
-            } else {
-                $required_count++;
-            }
-        }
+        $required_count = self::computeNumberOfRequiredParametersForList($parameter_list);
+        $optional_count = \count($parameter_list) - $required_count;
         $this->number_of_required_real_parameters = $required_count;
         $this->number_of_optional_real_parameters = $optional_count;
+    }
+
+    /**
+     * @param array<int,Parameter> $parameter_list
+     */
+    protected static function computeNumberOfRequiredParametersForList(array $parameter_list) : int
+    {
+        for ($i = \count($parameter_list) - 1; $i >= 0; $i--) {
+            $parameter = $parameter_list[$i];
+            if (!$parameter->isOptional()) {
+                return $i + 1;
+            }
+        }
+        return 0;
     }
 
     /**
