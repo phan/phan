@@ -2783,6 +2783,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     public function analyzeProp(Node $node, bool $is_static) : Context
     {
         $exception_or_null = null;
+        // TODO fix #2985
+        $property = null;
 
         try {
             $property = (new ContextNode(

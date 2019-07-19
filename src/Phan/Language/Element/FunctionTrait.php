@@ -1318,7 +1318,7 @@ trait FunctionTrait
                     $normalized_phpdoc_return_type = ParameterTypesAnalyzer::normalizeNarrowedParamType($phpdoc_return_type, $real_return_type);
                     if ($normalized_phpdoc_return_type) {
                         // TODO: How does this currently work when there are multiple types in the union type that are compatible?
-                        $this->setUnionType($normalized_phpdoc_return_type);
+                        $this->setUnionType($normalized_phpdoc_return_type->withRealTypeSet($real_return_type->getTypeSet()));
                     } else {
                         // This check isn't urgent to fix, and is specific to nullable casting rules,
                         // so use a different issue type.

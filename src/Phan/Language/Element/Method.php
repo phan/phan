@@ -558,8 +558,9 @@ class Method extends ClassElement implements FunctionInterface
             if (!$is_trait) {
                 $comment_return_union_type = $comment_return_union_type->withSelfResolvedInContext($context);
             }
+            $signature_union_type = $method->getUnionType();
 
-            $method->setUnionType($method->getUnionType()->withUnionType($comment_return_union_type));
+            $method->setUnionType($signature_union_type->withUnionType($comment_return_union_type)->withRealTypeSet($signature_union_type->getRealTypeSet()));
             $method->setPHPDocReturnType($comment_return_union_type);
         }
         $element_context->freeElementReference();

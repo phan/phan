@@ -67,9 +67,6 @@ class Initializer
             }
         }
         $phan_settings = self::createPhanSettingsForComposerSettings($composer_settings, $vendor_path, $opts);
-        if (!($phan_settings instanceof InitializedSettings)) {
-            throw new UsageException("phan --init failed to generate settings", EXIT_FAILURE, UsageException::PRINT_INIT_ONLY);
-        }
 
         $phan_dir = \dirname($config_path);
         if (!\file_exists($phan_dir)) {

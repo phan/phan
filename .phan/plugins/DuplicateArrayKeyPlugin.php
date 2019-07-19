@@ -88,7 +88,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
                     clone($this->context)->withLineNumberStart($case_node->lineno),
                     'PhanPluginDuplicateSwitchCase',
                     "Duplicate/Equivalent switch case({STRING_LITERAL}) detected in switch statement - the later entry will be ignored.",
-                    [(string)$normalized_case_cond],
+                    [$normalized_case_cond],
                     Issue::SEVERITY_NORMAL,
                     Issue::REMEDIATION_A,
                     15071
@@ -250,7 +250,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
             clone($this->context)->withLineNumberStart($entry->lineno ?? $node->lineno),
             'PhanPluginDuplicateArrayKey',
             "Duplicate/Equivalent array key value({STRING_LITERAL}) detected in array - the earlier entry will be ignored.",
-            [(string)$normalized_key],
+            [$normalized_key],
             Issue::SEVERITY_NORMAL,
             Issue::REMEDIATION_A,
             15071
