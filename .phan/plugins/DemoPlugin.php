@@ -75,8 +75,6 @@ class DemoPlugin extends PluginV3 implements
      * @param Clazz $class
      * A class being analyzed
      *
-     * @return void
-     *
      * @override
      */
     public function analyzeClass(
@@ -105,8 +103,6 @@ class DemoPlugin extends PluginV3 implements
      * @param Method $method
      * A method being analyzed
      *
-     * @return void
-     *
      * @override
      */
     public function analyzeMethod(
@@ -134,8 +130,6 @@ class DemoPlugin extends PluginV3 implements
      * @param Func $function
      * A function being analyzed
      *
-     * @return void
-     *
      * @override
      */
     public function analyzeFunction(
@@ -161,8 +155,6 @@ class DemoPlugin extends PluginV3 implements
      *
      * @param Property $property
      * A property being analyzed
-     *
-     * @return void
      *
      * @override
      */
@@ -203,8 +195,6 @@ class DemoNodeVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param Node $node
      * A node to analyze
-     *
-     * @return void
      *
      * @override
      */

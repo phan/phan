@@ -177,9 +177,6 @@ class UnionType implements Serializable
      * @param string $fully_qualified_string
      * A '|' delimited string representing a type in the form
      * 'int|string|null|ClassName'.
-     *
-     * @return UnionType
-     *
      * @throws InvalidArgumentException if any type name in the union type was invalid
      *
      * @see self::fromFullyQualifiedRealString() if you are absolutely sure this is the real type of the expression.
@@ -249,9 +246,6 @@ class UnionType implements Serializable
      * @param string $fully_qualified_string
      * A '|' delimited string representing a type in the form
      * 'int|string|null|ClassName'.
-     *
-     * @return UnionType
-     *
      * @throws InvalidArgumentException if any type name in the union type was invalid
      */
     public static function fromFullyQualifiedRealString(

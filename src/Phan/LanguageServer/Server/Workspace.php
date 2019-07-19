@@ -53,7 +53,6 @@ class Workspace
      * The watched files notification is sent from the client to the server when the client detects changes to files watched by the language client.
      *
      * @param FileEvent[] $changes
-     * @return void
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
     public function didChangeWatchedFiles(array $changes) : void

@@ -246,7 +246,6 @@ EOT;
      * @param array<string,mixed> $composer_settings (can be empty for --init-no-composer)
      * @param ?string $vendor_path (can be null for --init-no-composer)
      * @param array{init-analyze-file?:string,init-overwrite?:mixed,init-no-composer?:mixed,init-level?:(int|string)} $opts parsed from getopt
-     * @return InitializedSettings
      * @throws UsageException if provided settings are invalid
      * @internal
      */

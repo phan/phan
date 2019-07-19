@@ -35,7 +35,6 @@ class RequireExistsPlugin extends PluginV3 implements PostAnalyzeNodeCapability
 class RequireExistsVisitor extends PluginAwarePostAnalysisVisitor
 {
     /**
-     * @return void
      * @override
      */
     public function visitIncludeOrEval(Node $node) : void

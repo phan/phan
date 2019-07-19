@@ -19,7 +19,6 @@ class NotEqualsCondition implements BinaryCondition
      *
      * @param Node $var
      * @param Node|int|string|float $expr
-     * @return Context
      * @override
      */
     public function analyzeVar(ConditionVisitorInterface $visitor, Node $var, $expr) : Context
@@ -32,7 +31,6 @@ class NotEqualsCondition implements BinaryCondition
      *
      * @param Node|int|string|float $object
      * @param Node|int|string|float $expr
-     * @return Context
      * @override
      * @suppress PhanUnusedPublicMethodParameter
      */

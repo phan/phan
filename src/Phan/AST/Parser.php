@@ -83,7 +83,6 @@ class Parser
      * @param string $file_path file path for error reporting
      * @param string $file_contents file contents to pass to parser. This may deliberately differ from what is currently on disk (e.g. for the language server mode or daemon mode)
      * @param bool $suppress_parse_errors (If true, don't emit SyntaxError)
-     * @return ?Node
      * @throws ParseError
      * @throws CompileError (possible in php 7.3)
      * @throws ParseException
@@ -138,7 +137,6 @@ class Parser
      * @param string $file_path file path for error reporting
      * @param string $file_contents file contents to pass to parser. May be overridden to ignore what is currently on disk.
      * @param ParseError|CompileError $native_parse_error (can be CompileError in 7.3, will be ParseError in most cases)
-     * @return ?Node
      * @throws ParseError most of the time
      * @throws CompileError in PHP 7.3+
      */
@@ -195,7 +193,6 @@ class Parser
      * @param string $file_contents file contents to pass to parser. May be overridden to ignore what is currently on disk.
      * @param bool $suppress_parse_errors (If true, don't emit SyntaxError)
      * @param ?Request $request - May affect the parser used for $file_path
-     * @return ?Node
      * @throws ParseException
      */
     public static function parseCodePolyfill(CodeBase $code_base, Context $context, string $file_path, string $file_contents, bool $suppress_parse_errors, ?Request $request) : ?Node

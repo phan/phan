@@ -356,7 +356,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * @return void
      * @see ConditionVarUtil::getVariableFromScope()
      */
     private static function createVarForInlineComment(CodeBase $code_base, Context $context, string $var_name, UnionType $type, bool $create_variable) : void

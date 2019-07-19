@@ -1099,8 +1099,6 @@ class ParameterTypesAnalyzer
     /**
      * Guesses the return number of a method's PHPDoc's (at)return statement.
      * Returns null if that could not be found.
-     *
-     * @return ?int
      * @internal
      */
     public static function guessCommentReturnLineNumber(FunctionInterface $method) : ?int

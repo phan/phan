@@ -874,7 +874,6 @@ class Context extends FileRef
     }
 
     /**
-     * @return void
      * @internal
      * @suppress PhanAccessMethodInternal
      */

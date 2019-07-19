@@ -75,7 +75,6 @@ class NodeDumper
 
     /**
      * Sets the text used for indentation (e.g. 4 spaces)
-     * @return void
      * @suppress PhanUnreferencedPublicMethod
      */
     public function setIndent(string $indent) : void
@@ -114,7 +113,6 @@ class NodeDumper
     /**
      * @param Node|Token|null $ast_node
      * @param string $padding (to be echoed before the current node
-     * @return string
      * @throws Exception for invalid $ast_node values
      */
     public function dumpTreeAsString($ast_node, string $key = '', string $padding = '') : string
@@ -155,7 +153,6 @@ class NodeDumper
     /**
      * @param Node|Token $ast_node
      * @param string $padding (to be echoed before the current node
-     * @return void
      * @throws Exception for invalid $ast_node values
      * @suppress PhanUnreferencedPublicMethod
      */

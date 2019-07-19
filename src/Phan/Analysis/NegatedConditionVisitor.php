@@ -406,7 +406,6 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                 $expr_node,
                 /**
                  * @param array<int,mixed> $args
-                 * @return void
                  * @suppress PhanUnusedClosureParameter
                  */
                 function (CodeBase $code_base, Context $context, Variable $variable, array $args) use ($class_node) : void {

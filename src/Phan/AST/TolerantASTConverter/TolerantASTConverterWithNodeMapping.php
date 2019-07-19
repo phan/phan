@@ -88,9 +88,6 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
 
     /**
      * @param Diagnostic[] &$errors @phan-output-reference
-     *
-     * @return \ast\Node
-     *
      * @throws InvalidArgumentException for invalid $version
      * @throws Throwable (after logging) if anything is thrown by the parser
      */
@@ -426,7 +423,6 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
 
     /**
      * @param PhpParser\Node\QualifiedName|Token|null $type
-     * @return ?ast\Node
      * @override
      */
     protected static function phpParserTypeToAstNode($type, int $line) : ?\ast\Node

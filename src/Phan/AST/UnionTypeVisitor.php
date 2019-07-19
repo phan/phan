@@ -487,7 +487,6 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
-     * @return ?Type
      * @throws IssueException if the parent type could not be resolved
      */
     public static function findParentType(Context $context, CodeBase $code_base) : ?Type
@@ -2980,7 +2979,6 @@ class UnionTypeVisitor extends AnalysisVisitor
 
     /**
      * @param string $class_name (may also be 'self', 'parent', or 'static')
-     * @return ?FullyQualifiedClassName
      * @throws FQSENException
      */
     private function lookupClassOfCallableByName(string $class_name) : ?FullyQualifiedClassName

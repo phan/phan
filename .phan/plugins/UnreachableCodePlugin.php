@@ -60,9 +60,6 @@ final class UnreachableCodeVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param Node $node
      * A node to analyze
-     *
-     * @return void
-     *
      * @override
      */
     public function visitStmtList(Node $node) : void

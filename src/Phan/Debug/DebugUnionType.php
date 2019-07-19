@@ -18,8 +18,6 @@ class DebugUnionType extends UnionType
 
     /**
      * Add a type name to the list of types
-     *
-     * @return UnionType
      * @override
      */
     public function withType(Type $type) : UnionType

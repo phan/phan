@@ -164,7 +164,6 @@ class CLI
     private $output;
 
     /**
-     * @return OutputInterface
      * @suppress PhanUnreferencedPublicMethod not used yet.
      */
     public function getOutput() : OutputInterface
@@ -280,7 +279,6 @@ class CLI
      *
      * @param array<string,string|array<int,mixed>|false> $opts
      * @param array<int,string> $argv
-     * @return CLI
      * @throws ExitException
      * @throws UsageException
      * @internal - used for unit tests only
@@ -851,8 +849,6 @@ class CLI
      * (This is internal, so it was duplicated in case their API changed)
      *
      * @param mixed $output A valid CLI output stream
-     *
-     * @return bool
      * @suppress PhanUndeclaredFunction
      */
     public static function supportsColor($output) : bool
@@ -1441,7 +1437,6 @@ EOB
      * which match with a distance of <= 5
      *
      * @param string $key Misspelled key to attempt to correct
-     * @return string
      * @internal
      */
     public static function getFlagSuggestionString(
@@ -1754,7 +1749,6 @@ EOB
     }
 
     /**
-     * @return void
      * @param ?(string|FQSEN|AddressableElement) $details
      */
     public static function debugProgress(string $msg, float $p, $details) : void
@@ -1896,7 +1890,6 @@ EOB
 
     /**
      * This will assert that ast\parse_code or a polyfill can be called.
-     * @return void
      * @throws AssertionError on failure
      */
     private static function ensureASTParserExists() : void

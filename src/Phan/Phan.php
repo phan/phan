@@ -671,7 +671,6 @@ class Phan implements IgnoredFilesFilterInterface
 
     /**
      * Loads configured stubs for internal PHP extensions.
-     * @return void
      * @throws InvalidArgumentException if the stubs or stub config is invalid
      */
     private static function loadConfiguredPHPExtensionStubs(CodeBase $code_base) : void

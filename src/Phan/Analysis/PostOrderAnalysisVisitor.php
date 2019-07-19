@@ -231,7 +231,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     /**
      * @param Node $node a node of type AST_DIM in unset()
-     * @return void
      * @see UnionTypeVisitor::resolveArrayShapeElementTypes()
      * @see UnionTypeVisitor::visitDim()
      */
@@ -287,7 +286,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     /**
      * @param Node $node a node of type AST_PROP in unset()
-     * @return void
      * @see UnionTypeVisitor::resolveArrayShapeElementTypes()
      * @see UnionTypeVisitor::visitDim()
      */
@@ -3345,9 +3343,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      *
      * @param FunctionInterface $method
      * The method or function being called
-     *
-     * @return void
-     *
      * @see analyzeMethodWithArgumentTypes (Which takes AST nodes)
      */
     public function analyzeCallableWithArgumentTypes(

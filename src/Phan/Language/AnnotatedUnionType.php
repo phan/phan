@@ -79,8 +79,6 @@ class AnnotatedUnionType extends UnionType
 
     /**
      * Add a type name to the list of types
-     *
-     * @return UnionType
      * @override
      */
     public function withType(Type $type) : UnionType
@@ -90,8 +88,6 @@ class AnnotatedUnionType extends UnionType
 
     /**
      * Add a type name to the list of types
-     *
-     * @return UnionType
      * @override
      */
     public function withoutType(Type $type) : UnionType
@@ -101,8 +97,6 @@ class AnnotatedUnionType extends UnionType
 
     /**
      * Returns a union type which add the given types to this type
-     *
-     * @return UnionType
      * @override
      */
     public function withUnionType(UnionType $union_type) : UnionType

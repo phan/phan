@@ -44,9 +44,6 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param Node $node
      * A switch statement's case statement(AST_SWITCH_LIST) node to analyze
-     *
-     * @return void
-     *
      * @override
      */
     public function visitSwitchList(Node $node) : void
@@ -141,8 +138,6 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
      * This is intended to perform well for large arrays.
      *
      * TODO: Do a better job for small arrays.
-     *
-     * @return void
      * @param array<int,mixed> $values_to_check
      * @param array<int,mixed> $children an array of scalars
      */
@@ -181,9 +176,6 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param Node $node
      * An array literal(AST_ARRAY) node to analyze
-     *
-     * @return void
-     *
      * @override
      */
     public function visitArray(Node $node) : void

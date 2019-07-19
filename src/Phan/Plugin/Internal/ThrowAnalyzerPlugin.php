@@ -52,7 +52,6 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
     protected $parent_node_list;
 
     /**
-     * @return void
      * @override
      */
     public function visitThrow(Node $node) : void
@@ -216,7 +215,6 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
 class ThrowRecursiveVisitor extends ThrowVisitor
 {
     /**
-     * @return void
      * @override
      */
     public function visitCall(Node $node) : void
@@ -248,7 +246,6 @@ class ThrowRecursiveVisitor extends ThrowVisitor
     }
 
     /**
-     * @return void
      * @override
      */
     public function visitMethodCall(Node $node) : void
@@ -290,7 +287,6 @@ class ThrowRecursiveVisitor extends ThrowVisitor
     }
 
     /**
-     * @return void
      * @override
      */
     public function visitStaticCall(Node $node) : void

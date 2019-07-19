@@ -38,7 +38,6 @@ class Range
      * Checks if a position is within the range
      *
      * @param Position $position
-     * @return bool
      * @suppress PhanUnreferencedPublicMethod
      */
     public function includes(Position $position): bool

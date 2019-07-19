@@ -116,9 +116,6 @@ class ContextNode
 
     /**
      * Get a fully qualified name from a node
-     *
-     * @return string
-     *
      * @throws FQSENException if the node is invalid
      * @internal TODO: Stop using this
      */
@@ -327,7 +324,6 @@ class ContextNode
      * Handles a node of kind ast\AST_TRAIT_PRECEDENCE, modifying the corresponding TraitAdaptations instance
      * @param array<string,TraitAdaptations> $adaptations_map
      * @param Node $adaptation_node
-     * @return void
      * @throws UnanalyzableException (should be caught and emitted as an issue)
      */
     private function handleTraitPrecedence(array $adaptations_map, Node $adaptation_node) : void
@@ -1853,7 +1849,6 @@ class ContextNode
     }
 
     /**
-     * @return Func
      * @throws CodeBaseException if the closure could not be found
      */
     public function getClosure() : Func
@@ -2010,7 +2005,6 @@ class ContextNode
     }
 
     /**
-     * @return ?FullyQualifiedClassName
      * @throws IssueException if the list of possible classes couldn't be determined.
      */
     public function resolveClassNameInContext() : ?FullyQualifiedClassName

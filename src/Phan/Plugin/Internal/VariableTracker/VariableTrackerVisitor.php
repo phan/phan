@@ -60,7 +60,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
 
     /**
      * This is the default implementation for node types which don't have any overrides
-     * @return VariableTrackingScope
      * @override
      */
     public function visit(Node $node) : VariableTrackingScope
@@ -122,7 +121,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
 
     /**
      * This is the default implementation for node types which don't have any overrides
-     * @return VariableTrackingScope
      * @override
      */
     public function visitStmtList(Node $node) : VariableTrackingScope
@@ -142,7 +140,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     }
 
     /**
-     * @return VariableTrackingScope
      * @override
      */
     public function visitAssignRef(Node $node) : VariableTrackingScope
@@ -236,7 +233,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     }
 
     /**
-     * @return VariableTrackingScope
      * @override
      */
     public function visitAssignOp(Node $node) : VariableTrackingScope
@@ -276,7 +272,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     }
 
     /**
-     * @return VariableTrackingScope
      * @override
      */
     public function visitAssign(Node $node) : VariableTrackingScope
@@ -445,7 +440,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
 
     /**
      * Do not recurse into function declarations within a scope
-     * @return VariableTrackingScope
      * @override
      */
     public function visitFuncDecl(Node $unused_node) : VariableTrackingScope
@@ -455,7 +449,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
 
     /**
      * Do not recurse into class declarations within a scope
-     * @return VariableTrackingScope
      * @override
      */
     public function visitClass(Node $unused_node) : VariableTrackingScope
@@ -465,8 +458,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
 
     /**
      * Do not recurse into closure declarations within a scope.
-     *
-     * @return VariableTrackingScope
      * @override
      */
     public function visitClosure(Node $node) : VariableTrackingScope
@@ -495,8 +486,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * Do not recurse into short arrow (`fn() => ...`) closure declarations within a scope.
      *
      * TODO: This could be improved by checking if the short arrow redefines the variable and ignores the original value.
-     *
-     * @return VariableTrackingScope
      * @override
      */
     public function visitArrowFunc(Node $node) : VariableTrackingScope
@@ -519,7 +508,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
 
     /**
      * TODO: Check if the current context is a function call passing an argument by reference
-     * @return VariableTrackingScope
      * @override
      */
     public function visitVar(Node $node) : VariableTrackingScope
@@ -539,8 +527,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
 
     /**
      * Analyzes `static $var [ = default ];`
-     *
-     * @return VariableTrackingScope
      * @override
      */
     public function visitStatic(Node $node) : VariableTrackingScope
@@ -556,8 +542,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
 
     /**
      * Analyzes `global $var;` (analyzed like it was declared with the value from the global scope).
-     *
-     * @return VariableTrackingScope
      * @override
      */
     public function visitGlobal(Node $node) : VariableTrackingScope
@@ -600,7 +584,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
 
     /**
      * Analyzes `while (cond) { stmts }`
-     * @return VariableTrackingScope
      * @override
      */
     public function visitWhile(Node $node) : VariableTrackingScope
@@ -624,7 +607,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * TODO: Fix https://github.com/phan/phan/issues/2029
      *
      * @param Node $node a node of type AST_DO_WHILE
-     * @return VariableTrackingScope
      * @override
      */
     public function visitDoWhile(Node $node) : VariableTrackingScope
@@ -646,7 +628,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     /**
      * Analyzes `for (init; cond; loop) { stmts }`
      * @param Node $node a node of type AST_FOR
-     * @return VariableTrackingScope
      * @override
      */
     public function visitFor(Node $node) : VariableTrackingScope
@@ -695,8 +676,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * Analyzes if statements.
      *
      * @param Node $node a node of kind AST_IF
-     * @return VariableTrackingScope
-     *
      * @see BlockAnalysisVisitor::visitIf()
      * @override
      */
@@ -748,8 +727,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * Analyzes switch statements.
      *
      * @param Node $node a node of kind AST_SWITCH
-     * @return VariableTrackingScope
-     *
      * @override
      */
     public function visitSwitchList(Node $node) : VariableTrackingScope
@@ -797,7 +774,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
 
     /**
      * Implements analysis of `cond_node ? true_node : false_node` and `cond_node ?: false_node`
-     * @return VariableTrackingScope
      * @override
      */
     public function visitConditional(Node $node) : VariableTrackingScope
@@ -829,8 +805,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * Analyzes try nodes and their catch statement lists and finally blocks.
      *
      * @param Node $node a node of kind AST_TRY
-     * @return VariableTrackingScope
-     *
      * @override
      */
     public function visitTry(Node $node) : VariableTrackingScope
@@ -862,8 +836,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     /**
      * Analyzes catch statement lists.
      * @param Node $node a node of kind AST_CATCH_LIST
-     * @return VariableTrackingScope
-     *
      * @override
      */
     public function visitCatchList(Node $node) : VariableTrackingScope
@@ -891,8 +863,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     /**
      * Analyzes catch statement lists.
      * @param Node $node a node of kind AST_CATCH
-     * @return VariableTrackingScope
-     *
      * @override
      */
     public function visitCatch(Node $node) : VariableTrackingScope

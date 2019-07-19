@@ -188,9 +188,6 @@ final class PossiblyStaticMethodPlugin extends PluginV3 implements
      *
      * @param Method $method
      * A method being analyzed
-     *
-     * @return void
-     *
      * @override
      */
     public function analyzeMethod(

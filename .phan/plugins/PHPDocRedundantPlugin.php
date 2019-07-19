@@ -191,7 +191,7 @@ class PHPDocRedundantPlugin extends PluginV3 implements
                 return;
             }
             if (!preg_match('/^@(phan-)?return\s/', $line)) {
-                return;
+                continue;
             }
             // @phan-suppress-next-line PhanAccessClassConstantInternal
             if (!preg_match(Builder::RETURN_COMMENT_REGEX, $line, $matches)) {

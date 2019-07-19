@@ -121,7 +121,6 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
         $string_if_2_true_else_true = $make_dependent_type_method(1, $string_union_type, $true_union_type, $string_or_true_union_type);
 
         /**
-         * @return UnionType
          * @param Func $function @phan-unused-param
          * @param array<int,Node|int|float|string> $args
          */

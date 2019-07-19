@@ -191,7 +191,6 @@ function getUnionTypeStringForReflectionType(ReflectionType $reflection_type = n
  *
  * @param array<int|string,string> $fields the signature from Phan being checked for contradictions
  * @param array<string,array<int|string,string>> $signatures the set of all signatures (to check for existence of alternates)
- * @return void
  * @throws InvalidArgumentException for invalid return types
  */
 function check_fields(string $function_name, array $fields, array $signatures) : void

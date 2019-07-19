@@ -261,8 +261,6 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     /**
      * This method must be called before analysis
      * begins.
-     *
-     * @return void
      * @override
      */
     public function hydrate(CodeBase $code_base) : void

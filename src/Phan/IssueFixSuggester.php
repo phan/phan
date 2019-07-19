@@ -221,7 +221,6 @@ class IssueFixSuggester
     }
 
     /**
-     * @return ?FullyQualifiedClassName
      * @internal
      */
     public static function maybeGetClassInCurrentScope(Context $context) : ?FullyQualifiedClassName

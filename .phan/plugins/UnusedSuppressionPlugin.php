@@ -114,9 +114,6 @@ class UnusedSuppressionPlugin extends PluginV3 implements
      *
      * @param Clazz $class
      * A class being analyzed
-     *
-     * @return void
-     *
      * @override
      */
     public function analyzeClass(
@@ -132,9 +129,6 @@ class UnusedSuppressionPlugin extends PluginV3 implements
      *
      * @param Method $method
      * A method being analyzed
-     *
-     * @return void
-     *
      * @override
      */
     public function analyzeMethod(
@@ -156,9 +150,6 @@ class UnusedSuppressionPlugin extends PluginV3 implements
      *
      * @param Func $function
      * A function being analyzed
-     *
-     * @return void
-     *
      * @override
      */
     public function analyzeFunction(
@@ -174,9 +165,6 @@ class UnusedSuppressionPlugin extends PluginV3 implements
      *
      * @param Property $property
      * A property being analyzed
-     *
-     * @return void
-     *
      * @override
      */
     public function analyzeProperty(
@@ -295,8 +283,6 @@ class UnusedSuppressionPlugin extends PluginV3 implements
 
     /**
      * Record the fact that $plugin caused suppressions in $file_path for issue $issue_type due to an annotation around $line
-     *
-     * @return void
      * @internal
      */
     public function recordPluginSuppression(

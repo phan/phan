@@ -176,7 +176,6 @@ class TolerantASTConverter
      *
      * @param Diagnostic[] &$errors @phan-output-reference
      * @param ?Cache<ParseResult> $cache
-     * @return ast\Node
      * @throws InvalidArgumentException if the requested AST version is invalid.
      */
     public function parseCodeAsPHPAST(string $file_contents, int $version, array &$errors = [], Cache $cache = null) : \ast\Node
@@ -205,7 +204,6 @@ class TolerantASTConverter
      * Generates an ast\Node with this converter's current settings.
      *
      * @param Diagnostic[] &$errors @phan-output-reference
-     * @return ast\Node
      * @throws InvalidArgumentException if the requested AST version is invalid.
      */
     public function parseCodeAsPHPASTUncached(string $file_contents, int $version, array &$errors = []) : \ast\Node
@@ -232,7 +230,6 @@ class TolerantASTConverter
      * @param PhpParser\Node $parser_node
      * @param int $ast_version
      * @param string $file_contents
-     * @return ast\Node
      * @throws InvalidArgumentException if the provided AST version isn't valid
      */
     public function phpParserToPhpast(PhpParser\Node $parser_node, int $ast_version, string $file_contents) : \ast\Node
@@ -722,7 +719,6 @@ class TolerantASTConverter
                 );
             },
             /**
-             * @return ?ast\Node
              * @throws InvalidNodeException if the resulting AST would not be analyzable by Phan
              */
             'Microsoft\PhpParser\Node\Expression\ScopedPropertyAccessExpression' => static function (PhpParser\Node\Expression\ScopedPropertyAccessExpression $n, int $start_line) : ?\ast\Node {
@@ -1607,8 +1603,6 @@ class TolerantASTConverter
      * @param PhpParser\Node\NamespaceUseClause $use_clause
      * @param ?int $parser_use_kind
      * @param int $start_line
-     * @return ast\Node
-     *
      * @throws InvalidNodeException
      */
     protected static function astStmtUseOrGroupUseFromUseClause(PhpParser\Node\NamespaceUseClause $use_clause, ?int $parser_use_kind, int $start_line) : ast\Node
@@ -2828,7 +2822,6 @@ class TolerantASTConverter
     }
 
     /**
-     * @return string
      * @throws InvalidNodeException if the qualified type name could not be converted to a valid php-ast type name
      */
     private static function phpParserNameToString(PhpParser\Node\QualifiedName $name) : string

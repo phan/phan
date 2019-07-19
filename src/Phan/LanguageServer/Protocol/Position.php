@@ -60,7 +60,6 @@ class Position
      * Returns the offset of the position in a string
      *
      * @param string $content
-     * @return int
      * @suppress PhanUnreferencedPublicMethod
      */
     public function toOffset(string $content): int

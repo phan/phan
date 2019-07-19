@@ -1695,7 +1695,6 @@ EOT;
     /**
      * @param resource $proc_in
      * @param resource $proc_out
-     * @return void
      * @throws InvalidArgumentException
      */
     private function writeInitializeRequestAndAwaitResponse($proc_in, $proc_out) : void
@@ -1847,7 +1846,6 @@ EOT;
     /**
      * @param resource $proc_in
      * @param resource $proc_out
-     * @return void
      * @throws InvalidArgumentException
      */
     private function writeShutdownRequestAndAwaitResponse($proc_in, $proc_out) : void
@@ -1865,7 +1863,6 @@ EOT;
 
     /**
      * @param resource $proc_in
-     * @return void
      * @throws InvalidArgumentException
      */
     private function writeInitializedNotification($proc_in) : void
@@ -1880,7 +1877,6 @@ EOT;
 
     /**
      * @param resource $proc_in
-     * @return void
      * @throws InvalidArgumentException
      */
     private function writeExitNotification($proc_in) : void
@@ -1890,7 +1886,6 @@ EOT;
 
     /**
      * @param resource $proc_in
-     * @return void
      * @throws InvalidArgumentException
      */
     private function writeDidChangeNotificationToDefaultFile($proc_in, string $new_contents) : void
@@ -1900,7 +1895,6 @@ EOT;
 
     /**
      * @param resource $proc_in
-     * @return void
      * @throws InvalidArgumentException
      */
     private function writeDidChangeNotificationToFile($proc_in, string $requested_uri, string $new_contents) : void

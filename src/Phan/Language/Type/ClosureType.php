@@ -171,7 +171,6 @@ final class ClosureType extends Type
      * Gets the function-like this type was created from.
      *
      * TODO: Uses of this may keep outdated data in language server mode.
-     * @return ?FunctionInterface
      * @deprecated use asFunctionInterfaceOrNull
      * @suppress PhanUnreferencedPublicMethod
      */

@@ -41,9 +41,6 @@ class UnknownElementTypePlugin extends PluginV3 implements
      *
      * @param Method $method
      * A method being analyzed
-     *
-     * @return void
-     *
      * @override
      */
     public function analyzeMethod(
@@ -118,9 +115,6 @@ class UnknownElementTypePlugin extends PluginV3 implements
      *
      * @param Func $function
      * A function being analyzed
-     *
-     * @return void
-     *
      * @override
      */
     public function analyzeFunction(
@@ -200,9 +194,6 @@ class UnknownElementTypePlugin extends PluginV3 implements
      *
      * @param Property $property
      * A property being analyzed
-     *
-     * @return void
-     *
      * @override
      */
     public function analyzeProperty(

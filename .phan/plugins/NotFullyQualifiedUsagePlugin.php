@@ -91,9 +91,6 @@ class NotFullyQualifiedUsageVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param Node $node
      * A node to analyze of type ast\AST_CALL (call to a global function)
-     *
-     * @return void
-     *
      * @override
      */
     public function visitCall(Node $node) : void
@@ -145,9 +142,6 @@ class NotFullyQualifiedUsageVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param Node $node
      * A node to analyze of type ast\AST_CONST (reference to a constant)
-     *
-     * @return void
-     *
      * @override
      */
     public function visitConst(Node $node) : void

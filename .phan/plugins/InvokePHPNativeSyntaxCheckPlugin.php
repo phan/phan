@@ -54,7 +54,6 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV3 implements
      *
      * @param string $file_contents the unmodified file contents @phan-unused-param
      * @param Node $node the node @phan-unused-param
-     * @return void
      * @override
      */
     public function beforeAnalyzeFile(
@@ -79,7 +78,6 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV3 implements
      *
      * @param string $file_contents the unmodified file contents @phan-unused-param
      * @param Node $node the node @phan-unused-param
-     * @return void
      * @override
      * @throws Error if a process fails to shut down
      */
@@ -348,7 +346,6 @@ class InvokeExecutionPromise
     }
 
     /**
-     * @return void
      * @throws Error if reading failed
      */
     public function blockingRead() : void
@@ -365,7 +362,6 @@ class InvokeExecutionPromise
     }
 
     /**
-     * @return ?string
      * @throws RangeException if this was called before the process finished
      */
     public function getError() : ?string

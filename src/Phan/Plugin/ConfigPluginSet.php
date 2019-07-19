@@ -299,7 +299,6 @@ final class ConfigPluginSet extends PluginV3 implements
      *
      * @param string $file_contents
      * @param Node $node
-     * @return void
      * @override
      */
     public function beforeAnalyzeFile(
@@ -359,7 +358,6 @@ final class ConfigPluginSet extends PluginV3 implements
      *
      * @param string $file_contents
      * @param Node $node
-     * @return void
      * @override
      */
     public function afterAnalyzeFile(
@@ -384,8 +382,6 @@ final class ConfigPluginSet extends PluginV3 implements
      *
      * @param Clazz $class
      * A class being analyzed
-     *
-     * @return void
      * @override
      */
     public function analyzeClass(
@@ -411,8 +407,6 @@ final class ConfigPluginSet extends PluginV3 implements
      *
      * @param Method $method
      * A method being analyzed
-     *
-     * @return void
      * @override
      */
     public function analyzeMethod(
@@ -507,8 +501,6 @@ final class ConfigPluginSet extends PluginV3 implements
      *
      * @param Func $function
      * A function being analyzed
-     *
-     * @return void
      * @override
      */
     public function analyzeFunction(
@@ -531,8 +523,6 @@ final class ConfigPluginSet extends PluginV3 implements
      * A property being analyzed
      *
      * (Called by analyzeClass())
-     *
-     * @return void
      * @override
      */
     public function analyzeProperty(
@@ -560,8 +550,6 @@ final class ConfigPluginSet extends PluginV3 implements
     /**
      * @param CodeBase $code_base
      * The code base used for previous analysis steps
-     *
-     * @return void
      * @override
      */
     public function finalizeProcess(
@@ -656,7 +644,6 @@ final class ConfigPluginSet extends PluginV3 implements
 
     /**
      * @internal
-     * @return void
      * @see addTemporaryAnalysisPlugin
      */
     public function prepareNodeSelectionPluginForNode(Node $node) : void

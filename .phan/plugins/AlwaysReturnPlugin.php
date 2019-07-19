@@ -51,8 +51,6 @@ final class AlwaysReturnPlugin extends PluginV3 implements
      * @param Method $method
      * A method being analyzed
      *
-     * @return void
-     *
      * @override
      */
     public function analyzeMethod(
@@ -91,8 +89,6 @@ final class AlwaysReturnPlugin extends PluginV3 implements
      *
      * @param Func $function
      * A function or closure being analyzed
-     *
-     * @return void
      *
      * @override
      */

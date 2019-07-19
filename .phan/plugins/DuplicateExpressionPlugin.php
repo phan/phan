@@ -120,8 +120,6 @@ class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param Node $node
      * A binary operation node to analyze
-     *
-     * @return void
      * @override
      * @suppress PhanAccessClassConstantInternal
      */
@@ -185,8 +183,6 @@ class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param Node $node
      * An assignment operation node to analyze
-     *
-     * @return void
      * @override
      */
     public function visitAssignRef(Node $node) : void
@@ -197,8 +193,6 @@ class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param Node $node
      * An assignment operation node to analyze
-     *
-     * @return void
      * @override
      */
     public function visitAssign(Node $node) : void
@@ -244,8 +238,6 @@ class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param Node $node
      * A binary operation node to analyze
-     *
-     * @return void
      * @override
      */
     public function visitConditional(Node $node) : void

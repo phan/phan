@@ -75,7 +75,6 @@ class ParallelChildCollector implements IssueCollectorInterface
     /**
      * Collect issue
      * @param IssueInstance $issue
-     * @return void
      * @throws AssertionError if the message failed to be sent to the parent process
      */
     public function collectIssue(IssueInstance $issue) : void
@@ -122,8 +121,6 @@ class ParallelChildCollector implements IssueCollectorInterface
      * Called from daemon mode.
      *
      * @param string[] $files @phan-unused-param - the relative paths to those files
-     * @return void
-     *
      * @override
      */
     public function removeIssuesForFiles(array $files) : void

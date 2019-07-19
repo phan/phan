@@ -46,8 +46,6 @@ class SleepCheckerVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param Node $node
      * A node to analyze
-     *
-     * @return void
      * @override
      */
     public function visitMethod(Node $node) : void

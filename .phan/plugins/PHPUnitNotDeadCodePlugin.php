@@ -51,7 +51,6 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
 
     /**
      * This is called after the parse phase is completely finished, so $this->code_base contains all class definitions
-     * @return void
      * @override
      */
     public function visitClass(Node $unused_node) : void
@@ -135,7 +134,6 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
 
     /**
      * Static initializer for this plugin - Gets called below before any methods can be used
-     * @return void
      * @suppress PhanThrowTypeAbsentForCall this FQSEN is valid
      */
     public static function init() : void

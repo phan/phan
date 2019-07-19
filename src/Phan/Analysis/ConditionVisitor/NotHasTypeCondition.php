@@ -26,7 +26,6 @@ class NotHasTypeCondition implements BinaryCondition
      *
      * @param Node $var
      * @param Node|int|string|float $unused_expr
-     * @return Context
      * @override
      */
     public function analyzeVar(ConditionVisitorInterface $visitor, Node $var, $unused_expr) : Context

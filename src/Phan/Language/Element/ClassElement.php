@@ -35,7 +35,6 @@ abstract class ClassElement extends AddressableElement
 
     /**
      * @param FullyQualifiedClassElement $fqsen
-     * @return void
      * @override
      * @suppress PhanParamSignatureMismatch deliberately more specific
      */

@@ -38,7 +38,6 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
 
     /**
      * @param Node $node a node of type AST_CALL
-     * @return void
      * @override
      */
     public function visitCall(Node $node) : void
@@ -266,7 +265,6 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
 
     /**
      * @param Node $node a node of type AST_METHOD_CALL
-     * @return void
      * @override
      */
     public function visitMethodCall(Node $node) : void
@@ -297,7 +295,6 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
 
     /**
      * @param Node $node a node of type AST_STATIC_CALL
-     * @return void
      * @override
      */
     public function visitStaticCall(Node $node) : void

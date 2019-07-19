@@ -237,7 +237,6 @@ class AssignmentVisitor extends AnalysisVisitor
 
     /**
      * Analyzes code such as list($a) = [1, 2, 3];
-     * @return void
      * @see self::visitArray()
      */
     private function analyzeShapedArrayAssignment(Node $node) : void
@@ -424,7 +423,6 @@ class AssignmentVisitor extends AnalysisVisitor
 
     /**
      * Analyzes code such as list($a) = function_returning_array();
-     * @return void
      * @see self::visitArray()
      */
     private function analyzeGenericArrayAssignment(Node $node) : void
