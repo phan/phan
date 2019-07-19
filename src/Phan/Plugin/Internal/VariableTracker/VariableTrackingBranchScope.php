@@ -69,8 +69,6 @@ class VariableTrackingBranchScope extends VariableTrackingScope
      * @param VariableTrackingBranchScope $inner_scope @phan-unused-param
      * @param bool $exits true if this branch will exit.
      *             This would mean that the branch uses variables, but does not define them outside of that scope.
-     *
-     * @return void
      * @override
      */
     public function recordSkippedScope(VariableTrackingBranchScope $inner_scope, bool $exits) : void

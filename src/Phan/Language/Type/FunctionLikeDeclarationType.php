@@ -530,7 +530,6 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     }
 
     /**
-     * @return Parameter|null
      * @override
      */
     public function getParameterForCaller(int $i) : ?Parameter
@@ -548,7 +547,6 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     }
 
     /**
-     * @return Parameter|null
      * @override
      */
     public function getRealParameterForCaller(int $i) : ?Parameter
@@ -628,7 +626,6 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     }
 
     /**
-     * @return void
      * @unused
      */
     public function setComment(Comment $comment) : void

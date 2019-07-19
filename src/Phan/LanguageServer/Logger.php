@@ -90,7 +90,6 @@ class Logger
     /**
      * Overrides the log file to a different one
      * @param resource $new_file
-     * @return void
      * @suppress PhanUnreferencedPublicMethod this is made available for debugging issues
      */
     public static function setLogFile($new_file) : void

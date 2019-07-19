@@ -53,9 +53,6 @@ final class HasPHPDocPlugin extends PluginV3 implements
      *
      * @param Clazz $class
      * A class being analyzed
-     *
-     * @return void
-     *
      * @override
      */
     public function analyzeClass(
@@ -99,9 +96,6 @@ final class HasPHPDocPlugin extends PluginV3 implements
      *
      * @param Property $property
      * A property being analyzed
-     *
-     * @return void
-     *
      * @override
      */
     public function analyzeProperty(
@@ -153,9 +147,6 @@ final class HasPHPDocPlugin extends PluginV3 implements
      *
      * @param Method $method
      * A method being analyzed
-     *
-     * @return void
-     *
      * @override
      */
     public function analyzeMethod(
@@ -220,9 +211,6 @@ final class HasPHPDocPlugin extends PluginV3 implements
      *
      * @param Func $function
      * A function being analyzed
-     *
-     * @return void
-     *
      * @override
      */
     public function analyzeFunction(

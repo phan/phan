@@ -3,6 +3,12 @@ Phan NEWS
 ??? ?? 2019, Phan 2.2.7 (dev)
 -----------------------
 
+New features(Analysis):
++ Fix failure to infer real types when an invoked function or method had a phpdoc `@return` in addition to the real type.
+
+Plugins:
++ Properly warn about redundant `@return` annotations followed by other annotation lines in `PHPDocRedundantPlugin`.
+
 Jul 17 2019, Phan 2.2.6
 -----------------------
 

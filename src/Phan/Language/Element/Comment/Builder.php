@@ -814,9 +814,6 @@ final class Builder
 
         $entry = FileCache::getOrReadEntry(Config::projectPath($context->getFile()));
         $declaration_lineno = $context->getLineNumberStart();
-        if (!$entry) {
-            return $declaration_lineno;
-        }
         $lines_array = $entry->getLines();
         $count = \count($lines);
         $lineno_search = $declaration_lineno - ($count - $i - 1);

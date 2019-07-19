@@ -21,8 +21,6 @@ class Utils
      * Causes the sabre event loop to crash, for debugging.
      *
      * E.g. this is called if there is an unrecoverable error elsewhere.
-     *
-     * @return void
      * @suppress PhanUnreferencedPublicMethod
      */
     public static function crash(Throwable $err) : void
@@ -58,7 +56,6 @@ class Utils
      * Transforms URI into an absolute file path
      *
      * @param string $uri
-     * @return string
      * @throws InvalidArgumentException
      */
     public static function uriToPath(string $uri) : string

@@ -37,7 +37,6 @@ dump_main();
 
 /**
  * Dumps a snippet provided as a command line argument
- * @return void
  * @throws Exception if it can't render the AST
  */
 function dump_main() : void
@@ -128,7 +127,6 @@ function dump_expr_as_ast(string $expr, bool $with_placeholders, bool $native) :
 
 /**
  * Parses $expr and echoes the tolerant-php-parser AST to stdout.
- * @return void
  * @throws Exception
  */
 function dump_expr(string $expr) : void

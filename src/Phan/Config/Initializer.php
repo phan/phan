@@ -67,9 +67,6 @@ class Initializer
             }
         }
         $phan_settings = self::createPhanSettingsForComposerSettings($composer_settings, $vendor_path, $opts);
-        if (!($phan_settings instanceof InitializedSettings)) {
-            throw new UsageException("phan --init failed to generate settings", EXIT_FAILURE, UsageException::PRINT_INIT_ONLY);
-        }
 
         $phan_dir = \dirname($config_path);
         if (!\file_exists($phan_dir)) {
@@ -246,7 +243,6 @@ EOT;
      * @param array<string,mixed> $composer_settings (can be empty for --init-no-composer)
      * @param ?string $vendor_path (can be null for --init-no-composer)
      * @param array{init-analyze-file?:string,init-overwrite?:mixed,init-no-composer?:mixed,init-level?:(int|string)} $opts parsed from getopt
-     * @return InitializedSettings
      * @throws UsageException if provided settings are invalid
      * @internal
      */

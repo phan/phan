@@ -15,7 +15,6 @@ final class RegexKeyExtractorTest extends BaseTest
      *
      * @param string $regex a regular expression for preg_match
      * @param array<int,int|string> $expected_keys
-     * @return void
      * @dataProvider getKeysProvider
      */
     public function testGetKeys(string $regex, array $expected_keys) : void

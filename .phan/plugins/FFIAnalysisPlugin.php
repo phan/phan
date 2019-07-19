@@ -116,7 +116,6 @@ class FFIPreAnalysisVisitor extends PluginAwarePreAnalysisVisitor
 class FFIPostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
 {
     /**
-     * @return void
      * @override
      */
     public function visitAssign(Node $node) : void

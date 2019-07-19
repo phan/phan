@@ -32,7 +32,6 @@ class CapturerResponder implements Responder
 
     /**
      * @param array<string,mixed> $data
-     * @return void
      * @throws \RuntimeException if called twice
      */
     public function sendResponseAndClose(array $data) : void

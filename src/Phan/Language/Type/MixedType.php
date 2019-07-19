@@ -26,7 +26,6 @@ final class MixedType extends NativeType
 
     /**
      * @param Type[] $target_type_set 1 or more types @phan-unused-param
-     * @return bool
      * @override
      */
     public function canCastToAnyTypeInSet(array $target_type_set) : bool

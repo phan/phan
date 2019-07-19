@@ -57,7 +57,6 @@ final class CompletionRequest extends NodeInfoRequest
 
     /**
      * @param ?CompletionItem|?array<int,CompletionItem>|array<string,mixed> $completions
-     * @return void
      * @suppress PhanPartialTypeMismatchArgument this accepts multiple types of arrays
      */
     public function recordCompletionList($completions) : void

@@ -78,7 +78,6 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
     }
 
     /**
-     * @return void
      * @override
      */
     public function finalizeProcess(CodeBase $code_base) : void
@@ -905,7 +904,6 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
 
     /**
      * @param Node $node a node of type AST_CALL
-     * @return void
      * @override
      */
     public function visitCall(Node $node) : void
@@ -954,7 +952,6 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
 
     /**
      * @param Node $node a node of type AST_METHOD_CALL
-     * @return void
      * @override
      */
     public function visitMethodCall(Node $node) : void
@@ -1002,7 +999,6 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
 
     /**
      * @param Node $node a node of type AST_METHOD_CALL
-     * @return void
      * @override
      */
     public function visitStaticCall(Node $node) : void

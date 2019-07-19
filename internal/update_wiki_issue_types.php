@@ -81,8 +81,6 @@ EOT;
 
     /**
      * Updates the markdown document of issue types with minimal documentation of missing issue types.
-     *
-     * @return void
      * @throws InvalidArgumentException (uncaught) if the documented issue types can't be found.
      */
     public static function main() : void

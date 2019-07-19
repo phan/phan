@@ -316,7 +316,6 @@ class Property extends ClassElement
 
     /**
      * @param bool $from_phpdoc - True if this is a magic phpdoc property (declared via (at)property (-read,-write,) on class declaration phpdoc)
-     * @return void
      * @suppress PhanUnreferencedPublicMethod the caller now just sets all phan flags at once (including IS_READ_ONLY)
      */
     public function setIsFromPHPDoc(bool $from_phpdoc) : void

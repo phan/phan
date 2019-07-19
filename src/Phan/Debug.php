@@ -36,9 +36,6 @@ class Debug
      *
      * @param string|int|float|Node|null $node
      * An AST node
-     *
-     * @return void
-     *
      * @suppress PhanUnreferencedPublicMethod
      */
     public static function printNode($node) : void
@@ -62,8 +59,6 @@ class Debug
 
     /**
      * Print $message with the given indent level
-     *
-     * @return void
      * @suppress PhanUnreferencedPublicMethod
      */
     public static function print(string $message, int $indent = 0) : void
@@ -174,9 +169,6 @@ class Debug
     /**
      * Computes a string representation of AST node flags such as
      * 'ASSIGN_DIV|TYPE_ARRAY'
-     *
-     * @return string
-     *
      * @see self::formatFlags() for a similar function also printing the integer flag value.
      */
     public static function astFlagDescription(int $flags, int $kind) : string

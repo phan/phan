@@ -55,8 +55,6 @@ class DollarDollarVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param Node $node
      * A node to analyze
-     *
-     * @return void
      * @override
      */
     public function visitVar(Node $node) : void

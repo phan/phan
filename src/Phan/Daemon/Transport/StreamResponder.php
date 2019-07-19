@@ -63,7 +63,6 @@ class StreamResponder implements Responder
 
     /**
      * @param array<string,mixed> $data the response fields
-     * @return void
      * @throws \RuntimeException if called twice
      */
     public function sendResponseAndClose(array $data) : void

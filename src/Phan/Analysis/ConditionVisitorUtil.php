@@ -809,7 +809,6 @@ trait ConditionVisitorUtil
      * @param Node $var_node
      * @param Node|int|string|float $expr_node
      * @param BinaryCondition $condition
-     * @return ?Context
      * @suppress PhanPartialTypeMismatchArgument
      */
     private function analyzeBinaryConditionSide(Node $var_node, $expr_node, BinaryCondition $condition) : ?Context
@@ -856,7 +855,6 @@ trait ConditionVisitorUtil
      *
      * @param Node|string|int|float $object_node
      * @param Node|string|int|float|bool $expr_node
-     * @return ?Context
      * @suppress PhanUnreferencedPublicMethod referenced in ConditionVisitorInterface
      */
     public function analyzeClassAssertion($object_node, $expr_node) : ?Context

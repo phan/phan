@@ -57,7 +57,6 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
 
     /**
      * Check that this extracts the correct signature types from the folder.
-     * @return void
      * @suppress PhanPluginMixedKeyNoKey
      */
     public function selfTest() : void

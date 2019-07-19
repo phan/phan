@@ -132,7 +132,6 @@ final class ReachabilityChecker extends KindVisitorImplementation
     }
 
     /**
-     * @return ?bool
      * @override
      */
     public function visitClosure(Node $_) : ?bool
@@ -141,7 +140,6 @@ final class ReachabilityChecker extends KindVisitorImplementation
     }
 
     /**
-     * @return ?bool
      * @override
      */
     public function visitArrowFunc(Node $_) : ?bool
@@ -150,7 +148,6 @@ final class ReachabilityChecker extends KindVisitorImplementation
     }
 
     /**
-     * @return ?bool
      * @override
      */
     public function visitFuncDecl(Node $_) : ?bool
@@ -159,7 +156,6 @@ final class ReachabilityChecker extends KindVisitorImplementation
     }
 
     /**
-     * @return ?bool
      * @override
      */
     public function visitClass(Node $node) : ?bool

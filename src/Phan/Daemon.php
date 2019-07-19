@@ -182,7 +182,6 @@ class Daemon
     }
 
     /**
-     * @return void
      * @throws Exception if analysis throws
      */
     private static function analyzeDaemonRequestOnMainThread(CodeBase $code_base, Request $request) : void

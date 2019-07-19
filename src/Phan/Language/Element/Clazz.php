@@ -2278,8 +2278,6 @@ class Clazz extends AddressableElement
      * @param FileRef $file_ref
      * A reference to a location in which this typed structural
      * element is referenced.
-     *
-     * @return void
      * @override
      */
     public function addReference(FileRef $file_ref) : void
@@ -2840,8 +2838,6 @@ class Clazz extends AddressableElement
 
     /**
      * This method should be called after hydration
-     *
-     * @return void
      * @throws RecursionDepthException for deep class hierarchies
      */
     final public function analyze(CodeBase $code_base) : void
@@ -2936,8 +2932,6 @@ class Clazz extends AddressableElement
     /**
      * This method must be called before analysis
      * begins.
-     *
-     * @return void
      * @override
      */
     public function hydrate(CodeBase $code_base) : void

@@ -16,8 +16,6 @@ class StderrLogger implements LoggerInterface
      * @param string $level
      * @param string $message
      * @param array<string,mixed> $unused_context
-     * @return void
-     *
      * @override
      */
     public function log($level, $message, array $unused_context = []) : void

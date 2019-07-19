@@ -63,9 +63,6 @@ class Analysis
      * @param bool $is_php_internal_stub
      * If this is true, this function will act as though the parsed constants, functions, and classes are actually part of PHP or it's extension's internals.
      * See autoload_internal_extension_signatures.
-     *
-     * @return Context
-     *
      * @throws InvalidArgumentException for invalid stub files
      */
     public static function parseFile(CodeBase $code_base, string $file_path, bool $suppress_parse_errors = false, string $override_contents = null, bool $is_php_internal_stub = false) : Context

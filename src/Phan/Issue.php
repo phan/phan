@@ -4263,7 +4263,6 @@ class Issue
     }
 
     /**
-     * @return int
      * @suppress PhanUnreferencedPublicMethod (no reporters use this right now)
      */
     public function getRemediationDifficulty() : int
@@ -4342,8 +4341,6 @@ class Issue
      * @param string|int|float|bool|Type|UnionType|FQSEN|TypedElement|UnaddressableTypedElement ...$template_parameters
      * Any template parameters required for the issue
      * message
-     *
-     * @return void
      * @suppress PhanUnreferencedPublicMethod
      */
     public static function emit(

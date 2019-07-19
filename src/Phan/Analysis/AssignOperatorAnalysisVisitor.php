@@ -150,8 +150,6 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
     }
 
     /**
-     * @return Context
-     *
      * @see BinaryOperatorFlagVisitor::visitBinaryAdd() for analysis of "+", which is similar to "+="
      */
     public function visitBinaryAdd(Node $node) : Context

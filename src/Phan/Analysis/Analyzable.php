@@ -70,8 +70,6 @@ trait Analyzable
 
     /**
      * Ensure that annotations about what flags a function declaration has have been added
-     *
-     * @return void
      * @suppress PhanUndeclaredProperty deliberately using dynamic properties
      */
     public static function ensureDidAnnotate(Node $node) : void

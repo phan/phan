@@ -44,9 +44,6 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param Node $node
      * A switch statement's case statement(AST_SWITCH_LIST) node to analyze
-     *
-     * @return void
-     *
      * @override
      */
     public function visitSwitchList(Node $node) : void
@@ -91,7 +88,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
                     clone($this->context)->withLineNumberStart($case_node->lineno),
                     'PhanPluginDuplicateSwitchCase',
                     "Duplicate/Equivalent switch case({STRING_LITERAL}) detected in switch statement - the later entry will be ignored.",
-                    [(string)$normalized_case_cond],
+                    [$normalized_case_cond],
                     Issue::SEVERITY_NORMAL,
                     Issue::REMEDIATION_A,
                     15071
@@ -141,8 +138,6 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
      * This is intended to perform well for large arrays.
      *
      * TODO: Do a better job for small arrays.
-     *
-     * @return void
      * @param array<int,mixed> $values_to_check
      * @param array<int,mixed> $children an array of scalars
      */
@@ -181,9 +176,6 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param Node $node
      * An array literal(AST_ARRAY) node to analyze
-     *
-     * @return void
-     *
      * @override
      */
     public function visitArray(Node $node) : void
@@ -258,7 +250,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
             clone($this->context)->withLineNumberStart($entry->lineno ?? $node->lineno),
             'PhanPluginDuplicateArrayKey',
             "Duplicate/Equivalent array key value({STRING_LITERAL}) detected in array - the earlier entry will be ignored.",
-            [(string)$normalized_key],
+            [$normalized_key],
             Issue::SEVERITY_NORMAL,
             Issue::REMEDIATION_A,
             15071

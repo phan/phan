@@ -49,7 +49,6 @@ final class Suggestion
      * (Create a Suggestion with the empty string if the suggestion should not be visible in error messages)
      *
      * @param mixed $data
-     * @return void
      * @suppress PhanUnreferencedPublicMethod
      */
     public function setInternalData($data) : void

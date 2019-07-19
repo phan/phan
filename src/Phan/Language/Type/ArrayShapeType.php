@@ -188,7 +188,6 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     }
 
     /**
-     * @return UnionType
      * @phan-override
      */
     public function iterableKeyUnionType(CodeBase $unused_code_base) : UnionType
@@ -211,7 +210,6 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     }
 
     /**
-     * @return UnionType
      * @override
      */
     public function iterableValueUnionType(CodeBase $unused_code_base) : UnionType

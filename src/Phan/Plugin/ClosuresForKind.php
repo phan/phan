@@ -33,7 +33,6 @@ class ClosuresForKind
      *
      * @param int $kind - A valid value of a node kind
      * @param Closure $c
-     * @return void
      * @throws InvalidArgumentException if $kind is invalid
      */
     public function record(int $kind, Closure $c) : void

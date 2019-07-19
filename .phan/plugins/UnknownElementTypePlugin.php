@@ -41,9 +41,6 @@ class UnknownElementTypePlugin extends PluginV3 implements
      *
      * @param Method $method
      * A method being analyzed
-     *
-     * @return void
-     *
      * @override
      */
     public function analyzeMethod(
@@ -118,9 +115,6 @@ class UnknownElementTypePlugin extends PluginV3 implements
      *
      * @param Func $function
      * A function being analyzed
-     *
-     * @return void
-     *
      * @override
      */
     public function analyzeFunction(
@@ -141,7 +135,7 @@ class UnknownElementTypePlugin extends PluginV3 implements
                 $function->getContext(),
                 $issue,
                 $message,
-                [(string)$function->getNameForIssue()]
+                [$function->getNameForIssue()]
             );
         } elseif (self::isRegularArray($function->getUnionType())) {
             if ($function->getFQSEN()->isClosure()) {
@@ -156,7 +150,7 @@ class UnknownElementTypePlugin extends PluginV3 implements
                 $function->getContext(),
                 $issue,
                 $message,
-                [(string)$function->getNameForIssue()]
+                [$function->getNameForIssue()]
             );
         }
         foreach ($function->getParameterList() as $parameter) {
@@ -173,7 +167,7 @@ class UnknownElementTypePlugin extends PluginV3 implements
                     $parameter->createContext($function),
                     $issue,
                     $message,
-                    [(string)$function->getNameForIssue(), $parameter->getName()]
+                    [$function->getNameForIssue(), $parameter->getName()]
                 );
             } elseif (self::isRegularArray($parameter->getUnionType())) {
                 if ($function->getFQSEN()->isClosure()) {
@@ -188,7 +182,7 @@ class UnknownElementTypePlugin extends PluginV3 implements
                     $parameter->createContext($function),
                     $issue,
                     $message,
-                    [(string)$function->getNameForIssue(), $parameter->getName()]
+                    [$function->getNameForIssue(), $parameter->getName()]
                 );
             }
         }
@@ -200,9 +194,6 @@ class UnknownElementTypePlugin extends PluginV3 implements
      *
      * @param Property $property
      * A property being analyzed
-     *
-     * @return void
-     *
      * @override
      */
     public function analyzeProperty(

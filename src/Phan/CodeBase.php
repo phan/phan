@@ -354,7 +354,6 @@ class CodeBase
 
     /**
      * Returns the most recently parsed or analyzed file.
-     * @return ?string
      * @internal - For use only by the phan error handler, to help with debugging crashes
      */
     public static function getMostRecentlyParsedOrAnalyzedFile() : ?string
@@ -500,7 +499,6 @@ class CodeBase
 
     /**
      * @param string[] $internal_function_name_list
-     * @return void
      * @suppress PhanThrowTypeAbsentForCall
      */
     private function addInternalFunctionsByNames(array $internal_function_name_list) : void
@@ -694,8 +692,6 @@ class CodeBase
      * This should be called in the parse phase
      *
      * @param array<int,array<string,NamespaceMapEntry>> $namespace_map
-     *
-     * @return void
      * @internal
      */
     public function addParsedNamespaceMap(string $file, string $namespace, int $id, array $namespace_map) : void

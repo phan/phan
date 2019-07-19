@@ -495,8 +495,6 @@ trait FunctionTrait
      * A list of parameters to set on this method
      * (When quick_mode is false, this is also called to temporarily
      * override parameter types, etc.)
-     *
-     * @return void
      * @internal
      */
     public function setParameterList(array $parameter_list) : void
@@ -622,8 +620,6 @@ trait FunctionTrait
     /**
      * @param Parameter $parameter
      * A parameter to append to the parameter list
-     *
-     * @return void
      * @internal
      * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
@@ -846,7 +842,6 @@ trait FunctionTrait
 
     /**
      * @param array<string,UnionType> $parameter_map maps a subset of param names to the unmodified phpdoc parameter types. This may differ from real parameter types.
-     * @return void
      * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
     public function setPHPDocParameterTypeMap(array $parameter_map) : void
@@ -857,7 +852,6 @@ trait FunctionTrait
     /**
      * Records the fact that $parameter_name is an output-only reference.
      * @param string $parameter_name
-     * @return void
      * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
     public function recordOutputReferenceParamName(string $parameter_name) : void
@@ -1019,7 +1013,6 @@ trait FunctionTrait
      * @param Context $context
      * @param array<int,Node|int|string|float> $args
      * @param ?Node $node - the node causing the call. This may be dynamic, e.g. call_user_func_array. This will be required in Phan 3.
-     * @return void
      * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
     public function analyzeFunctionCall(CodeBase $code_base, Context $context, array $args, Node $node = null) : void
@@ -1325,7 +1318,7 @@ trait FunctionTrait
                     $normalized_phpdoc_return_type = ParameterTypesAnalyzer::normalizeNarrowedParamType($phpdoc_return_type, $real_return_type);
                     if ($normalized_phpdoc_return_type) {
                         // TODO: How does this currently work when there are multiple types in the union type that are compatible?
-                        $this->setUnionType($normalized_phpdoc_return_type);
+                        $this->setUnionType($normalized_phpdoc_return_type->withRealTypeSet($real_return_type->getTypeSet()));
                     } else {
                         // This check isn't urgent to fix, and is specific to nullable casting rules,
                         // so use a different issue type.

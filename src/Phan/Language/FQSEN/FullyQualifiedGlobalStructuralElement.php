@@ -162,7 +162,6 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         return self::memoizeStatic(
             $key,
             /**
-             * @return FullyQualifiedGlobalStructuralElement
              * @throws FQSENException
              */
             static function () use ($fully_qualified_string) : FullyQualifiedGlobalStructuralElement {
