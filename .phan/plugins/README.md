@@ -177,6 +177,17 @@ This plugin will make Phan infer side effects from calls to some of the helper m
 - Infer that $actual has the exact type of $expected after calling `assertSame($expected, $actual)`
 - Other methods aren't supported yet.
 
+#### EmptyStatementListPlugin.php
+
+This file checks for empty statement lists in loops/branches.
+Due to Phan's AST rewriting for easier analysis, this may miss some edge cases for if/elseif.
+
+- **PhanPluginEmptyStatementDoWhileLoop** `Empty statement list statement detected for the do-while loop`
+- **PhanPluginEmptyStatementForLoop** `Empty statement list statement detected for the for loop`
+- **PhanPluginEmptyStatementForeachLoop** `Empty statement list statement detected for the foreach loop`
+- **PhanPluginEmptyStatementIf**: `Empty statement list statement detected for the last if/elseif statement`
+- **PhanPluginEmptyStatementWhileLoop** `Empty statement list statement detected for the while loop`
+
 ### 3. Plugins Specific to Code Styles
 
 These plugins may be useful to enforce certain code styles,

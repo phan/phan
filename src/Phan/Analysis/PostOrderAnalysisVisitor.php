@@ -3144,7 +3144,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             || $argument->kind == ast\AST_PROP
         ) {
             $property_name = $argument->children['prop'];
+            if ($property_name instanceof Node) {
+                $property_name = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $property_name)->asSingleScalarValueOrNullOrSelf();
+            }
 
+            // Only try to handle known literals or strings, ignore properties with names that couldn't be inferred.
             if (\is_string($property_name)) {
                 // We don't do anything with it; just create it
                 // if it doesn't exist
@@ -3165,9 +3169,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     // If we can't figure out what kind of a call
                     // this is, don't worry about it
                 }
-            } else {
-                // This is stuff like `Class->$foo`. I'm ignoring
-                // it.
             }
         }
     }
@@ -3205,7 +3206,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             || $kind === ast\AST_PROP
         ) {
             $property_name = $argument->children['prop'];
+            if ($property_name instanceof Node) {
+                $property_name = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $property_name)->asSingleScalarValueOrNullOrSelf();
+            }
 
+            // Only try to handle property names that could be inferred.
             if (\is_string($property_name)) {
                 // We don't do anything with it; just create it
                 // if it doesn't exist
@@ -3226,9 +3231,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     // If we can't figure out what kind of a call
                     // this is, don't worry about it
                 }
-            } else {
-                // This is stuff like `Class->$foo`. I'm ignoring
-                // it.
             }
         }
 

@@ -14,8 +14,10 @@ New features(Analysis):
 + Warn about throwing from `__toString()` in php versions prior to php 7.4. (#2805)
 + Emit `PhanTypeArraySuspiciousNull` for code such as `null['foo']` (#2965)
 + If a property with no phpdoc type has a default of an empty array, assume that it's type can be any array (when reading it) until the first assignment is seen.
++ Attempt to analyze modifying dynamic properties by reference (e.g. `$var->$prop` when $prop is a variable with a known string)
 
 Plugins:
++ Add `EmptyStatementListPlugin` to warn about empty statement lists after if/elseif statements and loops.
 + Properly warn about redundant `@return` annotations followed by other annotation lines in `PHPDocRedundantPlugin`.
 
 Bug fixes:

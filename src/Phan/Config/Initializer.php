@@ -285,6 +285,7 @@ EOT;
                 'SleepCheckerPlugin',
                 'UnreachableCodePlugin',
                 'UseReturnValuePlugin',
+                'EmptyStatementListPlugin',
             ];
         }
 
