@@ -1169,11 +1169,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     public function visitClassName(Node $node) : Context
     {
         try {
-            (new ContextNode(
+            foreach ((new ContextNode(
                 $this->code_base,
                 $this->context,
                 $node->children['class']
-            ))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME);
+            ))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME) as $class) {
+                $class->addReference($this->context);
+            }
         } catch (CodeBaseException $exception) {
             $exception_fqsen = $exception->getFQSEN();
             $this->emitIssueWithSuggestion(
