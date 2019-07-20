@@ -596,6 +596,8 @@ class ASTSimplifier
         $new_node->children[0]->children['cond'] = $node->children[0]->children['cond']->children['expr'];
         $new_node->children[1]->children['cond'] = null;
         $new_node->flags = 0;
+        // @phan-suppress-next-line PhanUndeclaredProperty used by EmptyStatementListPlugin
+        $new_node->is_simplified = true;
         return $new_node;
     }
 

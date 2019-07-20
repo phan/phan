@@ -136,5 +136,6 @@ return [
         'WhitespacePlugin',
         'InlineHTMLPlugin',
         'PossiblyStaticMethodPlugin',
+        'EmptyStatementListPlugin',
     ],
 ];
