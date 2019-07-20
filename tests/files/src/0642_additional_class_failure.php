@@ -5,7 +5,7 @@ abstract class PhanUndeclaredClassFailureString
     private $fields = array();
     public function set($data, $value = null)
     {
-        $class = $this->fields[0]['opt']['class'];
+        $class = $this->fields[0]['opt']['class'];  // infers that $this->fields (empty array with no phpdoc) can be any array until an assignment is analyzed.
         $test = new $class();
     }
 

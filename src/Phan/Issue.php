@@ -82,16 +82,17 @@ class Issue
     const InvalidFQSENInClasslike     = 'PhanInvalidFQSENInClasslike';
 
     // Issue::CATEGORY_TYPE
-    const NonClassMethodCall        = 'PhanNonClassMethodCall';
-    const PossiblyNonClassMethodCall = 'PhanPossiblyNonClassMethodCall';
-    const TypeArrayOperator         = 'PhanTypeArrayOperator';
-    const TypeInvalidBitwiseBinaryOperator = 'PhanTypeInvalidBitwiseBinaryOperator';
+    const NonClassMethodCall                = 'PhanNonClassMethodCall';
+    const PossiblyNonClassMethodCall        = 'PhanPossiblyNonClassMethodCall';
+    const TypeArrayOperator                 = 'PhanTypeArrayOperator';
+    const TypeInvalidBitwiseBinaryOperator  = 'PhanTypeInvalidBitwiseBinaryOperator';
     const TypeMismatchBitwiseBinaryOperands = 'PhanTypeMismatchBitwiseBinaryOperands';
-    const TypeArraySuspicious       = 'PhanTypeArraySuspicious';
-    const TypeArrayUnsetSuspicious  = 'PhanTypeArrayUnsetSuspicious';
-    const TypeArraySuspiciousNullable = 'PhanTypeArraySuspiciousNullable';
-    const TypeSuspiciousIndirectVariable = 'PhanTypeSuspiciousIndirectVariable';
-    const TypeObjectUnsetDeclaredProperty  = 'PhanTypeObjectUnsetDeclaredProperty';
+    const TypeArraySuspicious               = 'PhanTypeArraySuspicious';
+    const TypeArrayUnsetSuspicious          = 'PhanTypeArrayUnsetSuspicious';
+    const TypeArraySuspiciousNullable       = 'PhanTypeArraySuspiciousNullable';
+    const TypeArraySuspiciousNull           = 'PhanTypeArraySuspiciousNull';
+    const TypeSuspiciousIndirectVariable    = 'PhanTypeSuspiciousIndirectVariable';
+    const TypeObjectUnsetDeclaredProperty   = 'PhanTypeObjectUnsetDeclaredProperty';
     const TypeComparisonFromArray   = 'PhanTypeComparisonFromArray';
     const TypeComparisonToArray     = 'PhanTypeComparisonToArray';
     const TypeConversionFromArray   = 'PhanTypeConversionFromArray';
@@ -1813,6 +1814,14 @@ class Issue
                 "Suspicious array access to nullable {TYPE}",
                 self::REMEDIATION_B,
                 10045
+            ),
+            new Issue(
+                self::TypeArraySuspiciousNull,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Suspicious array access to null",
+                self::REMEDIATION_B,
+                10136
             ),
             new Issue(
                 self::TypeInvalidDimOffset,

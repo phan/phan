@@ -4584,6 +4584,19 @@ class UnionType implements Serializable
         }
         return \count($this->type_set) === 0;
     }
+
+    /**
+     * Returns true if this is the empty array shape (or the nullable version of it)
+     */
+    public function isEmptyArrayShape() : bool
+    {
+        foreach ($this->type_set as $type) {
+            if (!($type instanceof ArrayShapeType) || $type->isNotEmptyArrayShape()) {
+                return false;
+            }
+        }
+        return \count($this->type_set) !== 0;
+    }
 }
 
 UnionType::init();

@@ -37,6 +37,11 @@ class Property extends ClassElement
     private $real_union_type;
 
     /**
+     * @var ?UnionType the phpdoc union type
+     */
+    private $phpdoc_union_type;
+
+    /**
      * @param Context $context
      * The context in which the structural element lives
      *
@@ -451,5 +456,15 @@ class Property extends ClassElement
         }
 
         return $union_type;
+    }
+
+    public function setPHPDocUnionType(UnionType $type) : void
+    {
+        $this->phpdoc_union_type = $type;
+    }
+
+    public function getPHPDocUnionType() : UnionType
+    {
+        return $this->phpdoc_union_type ?? UnionType::empty();
     }
 }
