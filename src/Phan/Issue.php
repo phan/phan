@@ -478,6 +478,8 @@ class Issue
     const ThrowTypeAbsentForCall           = 'PhanThrowTypeAbsentForCall';
     const ThrowTypeMismatch                = 'PhanThrowTypeMismatch';
     const ThrowTypeMismatchForCall         = 'PhanThrowTypeMismatchForCall';
+    const ThrowStatementInToString         = 'PhanThrowStatementInToString';
+    const ThrowCommentInToString           = 'PhanThrowCommentInToString';
     const CommentAmbiguousClosure          = 'PhanCommentAmbiguousClosure';
     const CommentDuplicateParam            = 'PhanCommentDuplicateParam';
     const CommentDuplicateMagicMethod      = 'PhanCommentDuplicateMagicMethod';
@@ -3852,6 +3854,22 @@ class Issue
                 "The unset cast (in {CODE}) was deprecated in PHP 7.2 and will become a fatal error in PHP 8.0.",
                 self::REMEDIATION_B,
                 3014
+            ),
+            new Issue(
+                self::ThrowStatementInToString,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_NORMAL,
+                "{FUNCTIONLIKE} throws {TYPE} here, but throwing in __toString() is a fatal error prior to PHP 7.4",
+                self::REMEDIATION_A,
+                3015
+            ),
+            new Issue(
+                self::ThrowCommentInToString,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_NORMAL,
+                "{FUNCTIONLIKE} documents that it throws {TYPE}, but throwing in __toString() is a fatal error prior to PHP 7.4",
+                self::REMEDIATION_A,
+                3016
             ),
 
             // Issue::CATEGORY_GENERIC

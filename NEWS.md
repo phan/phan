@@ -7,6 +7,7 @@ New features(Analysis):
 + Fix failure to infer real types when an invoked function or method had a phpdoc `@return` in addition to the real type.
 + Infer union type from all classes that an instance method could possibly be, not just the first type seen in the expression's union type. (#2988)
 + Preserve remaining real union types after negation of `instanceof` checks (e.g. to check for redundant conditions).
++ Warn about throwing from `__toString()` in php versions prior to php 7.4. (#2805)
 
 Plugins:
 + Properly warn about redundant `@return` annotations followed by other annotation lines in `PHPDocRedundantPlugin`.
