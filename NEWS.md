@@ -18,6 +18,9 @@ New features(Analysis):
 Plugins:
 + Properly warn about redundant `@return` annotations followed by other annotation lines in `PHPDocRedundantPlugin`.
 
+Bug fixes:
++ Treat `Foo::class` as a reference to the class/interface/trait `Foo` (#2945)
+
 Jul 17 2019, Phan 2.2.6
 -----------------------
 
