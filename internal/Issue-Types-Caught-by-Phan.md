@@ -519,6 +519,22 @@ Return type '{TYPE}' means the absence of a return value starting in PHP 7.1. In
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/php70_files/expected/004_void.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/php70_files/src/004_void.php#L4).
 
+## PhanThrowCommentInToString
+
+```
+{FUNCTIONLIKE} documents that it throws {TYPE}, but throwing in __toString() is a fatal error prior to PHP 7.4
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/133_throw_in_to_string.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/133_throw_in_to_string.php#L6).
+
+## PhanThrowStatementInToString
+
+```
+{FUNCTIONLIKE} throws {TYPE} here, but throwing in __toString() is a fatal error prior to PHP 7.4
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/133_throw_in_to_string.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/133_throw_in_to_string.php#L7).
+
 # Context
 
 This category of issue is for when you're doing stuff out of the context in which you're allowed to do it, e.g. referencing `self` or `parent` when not in a class, interface or trait.
@@ -2231,6 +2247,14 @@ This issue will be emitted for the following code
 ```php
 $a = false; if($a[1]) {}
 ```
+
+## PhanTypeArraySuspiciousNull
+
+```
+Suspicious array access to null
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0739_access_null.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0739_access_null.php#L5).
 
 ## PhanTypeArraySuspiciousNullable
 

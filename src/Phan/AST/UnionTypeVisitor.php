@@ -1452,7 +1452,14 @@ class UnionTypeVisitor extends AnalysisVisitor
         // If the only type is null, we don't know what
         // accessed items will be
         if ($union_type->isType($null_type)) {
-            return UnionType::empty();
+            $this->emitIssue(
+                Issue::TypeArraySuspiciousNull,
+                $node->lineno
+            );
+            if ($union_type->getRealUnionType()->isNull()) {
+                return NullType::instance(false)->asRealUnionType();
+            }
+            return NullType::instance(false)->asPHPDocUnionType();
         }
 
         $element_types = UnionType::empty();
@@ -2068,6 +2075,9 @@ class UnionTypeVisitor extends AnalysisVisitor
                 return $union_type;
             }
 
+            if ($union_type->isEmptyArrayShape() && $property->getPHPDocUnionType()->isEmpty()) {
+                return ArrayType::instance($union_type->containsNullable())->asPHPDocUnionType();
+            }
             return $union_type;
         } catch (IssueException $exception) {
             Issue::maybeEmitInstance(

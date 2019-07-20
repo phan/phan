@@ -1446,4 +1446,9 @@ final class EmptyUnionType extends UnionType
     {
         return true;
     }
+
+    public function isEmptyArrayShape() : bool
+    {
+        return false;
+    }
 }

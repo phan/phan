@@ -12,6 +12,8 @@ New features(Analysis):
 + Infer union type from all classes that an instance method could possibly be, not just the first type seen in the expression's union type. (#2988)
 + Preserve remaining real union types after negation of `instanceof` checks (e.g. to check for redundant conditions).
 + Warn about throwing from `__toString()` in php versions prior to php 7.4. (#2805)
++ Emit `PhanTypeArraySuspiciousNull` for code such as `null['foo']` (#2965)
++ If a property with no phpdoc type has a default of an empty array, assume that it's type can be any array (when reading it) until the first assignment is seen.
 
 Plugins:
 + Properly warn about redundant `@return` annotations followed by other annotation lines in `PHPDocRedundantPlugin`.
