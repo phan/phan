@@ -162,6 +162,14 @@ class IssueInstance
         return $this->file;
     }
 
+    public function getDisplayedFile() : string
+    {
+        if (Config::getValue('absolute_path_issue_messages')) {
+            return Config::projectPath($this->file);
+        }
+        return $this->file;
+    }
+
     public function getLine() : int
     {
         return $this->line;

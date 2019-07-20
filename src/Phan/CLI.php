@@ -75,6 +75,7 @@ class CLI
      * @internal
      */
     const GETOPT_LONG_OPTIONS = [
+        'absolute-path-issue-messages',
         'allow-polyfill-parser',
         'assume-real-types-for-internal-functions',
         'automatic-fix',
@@ -739,6 +740,9 @@ class CLI
                 case 'markdown-issue-messages':
                     Config::setValue('markdown_issue_messages', true);
                     break;
+                case 'absolute-path-issue-messages':
+                    Config::setValue('absolute_path_issue_messages', true);
+                    break;
                 case 'color-scheme':
                 case 'C':
                 case 'color':
@@ -1300,6 +1304,10 @@ Extended help:
 
  --markdown-issue-messages
   Emit issue messages with markdown formatting.
+
+ --absolute-path-issue-messages
+  Emit issues with their absolute paths instead of relative paths.
+  This does not affect files mentioned within the issue.
 
  --constant-variable-detection
   Emit issues for variables that could be replaced with literals or constants.

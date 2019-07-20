@@ -93,6 +93,7 @@ _phan() {
 --find-signature
 --print-memory-usage-summary
 --markdown-issue-messages
+--absolute-path-issue-messages
 --constant-variable-detection
 --require-config-exists
 --help-annotaitons

@@ -3,6 +3,10 @@ Phan NEWS
 ??? ?? 2019, Phan 2.2.7 (dev)
 -----------------------
 
+New features(CLI, Configs):
++ Add `--absolute-path-issue-messages` to emit absolute paths instead of relative paths for the file of an issue. (#1640)
+  Note that this does not affect files within the issue message.
+
 New features(Analysis):
 + Fix failure to infer real types when an invoked function or method had a phpdoc `@return` in addition to the real type.
 + Infer union type from all classes that an instance method could possibly be, not just the first type seen in the expression's union type. (#2988)

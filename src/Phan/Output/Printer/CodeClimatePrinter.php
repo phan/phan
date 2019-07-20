@@ -33,6 +33,7 @@ final class CodeClimatePrinter implements BufferedPrinterInterface
             'categories' => ['Bug Risk'],
             'severity' => self::mapSeverity($instance->getIssue()->getSeverity()),
             'location' => [
+                // XXX this puts the docker volume in /code/ when running on codeclimate.
                 'path' => \preg_replace('/^\/code\//', '', $instance->getFile()),
                 'lines' => [
                     'begin' => $instance->getLine(),

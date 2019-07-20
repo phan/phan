@@ -24,7 +24,7 @@ final class PylintPrinter implements IssuePrinterInterface
         );
         $line = \sprintf(
             "%s:%d: [%s] %s",
-            $instance->getFile(),
+            $instance->getDisplayedFile(),
             $instance->getLine(),
             self::getSeverityCode($instance),
             $message
