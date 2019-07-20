@@ -1140,22 +1140,41 @@ class UnionType implements Serializable
      */
     public function withoutSubclassesOf(CodeBase $code_base, Type $object_type) : UnionType
     {
-        $is_nullable = $this->containsNullable();
-        $new_variable_type = $this;
+        return UnionType::of(
+            self::typesWithoutSubclassesOf($code_base, $this->type_set, $object_type),
+            self::typesWithoutSubclassesOf($code_base, $this->real_type_set, $object_type)
+        );
+    }
 
-        foreach ($this->type_set as $type) {
+    /**
+     * @param array<int,Type> $type_set
+     * @return array<int,Type> without the subclasses/sub-types of $object_type
+     */
+    public static function typesWithoutSubclassesOf(CodeBase $code_base, array $type_set, Type $object_type) : array
+    {
+        $is_nullable = false;
+        $new_type_set = [];
+
+        foreach ($type_set as $type) {
+            if ($type->isNullable()) {
+                $is_nullable = true;
+            }
             if ($type->withIsNullable(false)->asExpandedTypes($code_base)->hasType($object_type)) {
-                $new_variable_type = $new_variable_type->withoutType($type);
+                continue;
             }
+            $new_type_set[] = $type;
         }
-        if ($is_nullable) {
-            if ($new_variable_type->isEmpty()) {
-                // There was a null somewhere in the old union type.
-                return NullType::instance(false)->asPHPDocUnionType();
-            }
-            return $new_variable_type->nullableClone();
+        if (!$is_nullable) {
+            return $new_type_set;
         }
-        return $new_variable_type;
+        if (!$new_type_set) {
+            // There was a null somewhere in the old union type.
+            return [NullType::instance(false)];
+        }
+        foreach ($new_type_set as $i => $type) {
+            $new_type_set[$i] = $type->withIsNullable(true);
+        }
+        return $new_type_set;
     }
 
     /**

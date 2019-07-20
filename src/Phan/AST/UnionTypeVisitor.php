@@ -2198,10 +2198,11 @@ class UnionTypeVisitor extends AnalysisVisitor
         // Give up on any complicated nonsense where the
         // method name is a variable such as in
         // `$variable->$function_name()`.
-        //
-        // TODO:
         if ($method_name instanceof Node) {
-            return UnionType::empty();
+            $method_name = $this->__invoke($method_name)->asSingleScalarValueOrNullOrSelf();
+            if (!is_string($method_name)) {
+                return UnionType::empty();
+            }
         }
 
         // Method names can some times turn up being
@@ -2223,6 +2224,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 );
                 return UnionType::empty();
             }
+            $combined_union_type = null;
             foreach ($this->classListFromNode($class_node) as $class) {
                 if (!$class->hasMethodWithName(
                     $this->code_base,
@@ -2280,9 +2282,13 @@ class UnionTypeVisitor extends AnalysisVisitor
                         }
                     }
 
-                    return $union_type;
+                    if ($combined_union_type) {
+                        $combined_union_type = $combined_union_type->withUnionType($union_type);
+                    } else {
+                        $combined_union_type = $union_type;
+                    }
                 } catch (IssueException $_) {
-                    return UnionType::empty();
+                    continue;
                 }
             }
         } catch (IssueException $_) {
@@ -2299,7 +2305,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             );
         }
 
-        return UnionType::empty();
+        return $combined_union_type ?? UnionType::empty();
     }
 
     /**

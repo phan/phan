@@ -673,7 +673,7 @@ class Clazz extends AddressableElement
      * @param Property $property
      * The property to copy onto this class
      *
-     * @param Option<Type>|None $type_option
+     * @param Option<Type> $type_option
      * A possibly defined type used to define template
      * parameter types when importing the property
      *
@@ -682,7 +682,7 @@ class Clazz extends AddressableElement
     public function addProperty(
         CodeBase $code_base,
         Property $property,
-        $type_option,
+        Option $type_option,
         bool $from_trait = false
     ) : void {
         // Ignore properties we already have
@@ -1390,14 +1390,14 @@ class Clazz extends AddressableElement
      * @param Method $method
      * The method to copy onto this class
      *
-     * @param Option<Type>|None $type_option
+     * @param Option<Type> $type_option
      * A possibly defined type used to define template
      * parameter types when importing the method
      */
     public function addMethod(
         CodeBase $code_base,
         Method $method,
-        $type_option
+        Option $type_option
     ) : void {
         $method_fqsen = FullyQualifiedMethodName::make(
             $this->getFQSEN(),
@@ -2309,7 +2309,7 @@ class Clazz extends AddressableElement
      * @param Clazz $class
      * A class to import from
      *
-     * @param Option<Type>|None $type_option
+     * @param Option<Type> $type_option
      * A possibly defined ancestor type used to define template
      * parameter types when importing ancestor properties and
      * methods
@@ -2317,7 +2317,7 @@ class Clazz extends AddressableElement
     public function importAncestorClass(
         CodeBase $code_base,
         Clazz $class,
-        $type_option
+        Option $type_option
     ) : void {
         $class_fqsen = $class->getFQSEN();
         $key = \strtolower($class_fqsen->__toString());
@@ -2441,7 +2441,7 @@ class Clazz extends AddressableElement
      * @param CodeBase $code_base
      * @param Clazz $class
      * @param TraitAdaptations $trait_adaptations
-     * @param Option<Type>|None $type_option
+     * @param Option<Type> $type_option
      * A possibly defined ancestor type used to define template
      * parameter types when importing ancestor properties and
      * methods
@@ -2450,7 +2450,7 @@ class Clazz extends AddressableElement
         CodeBase $code_base,
         Clazz $class,
         TraitAdaptations $trait_adaptations,
-        $type_option
+        Option $type_option
     ) : void {
         foreach ($trait_adaptations->alias_methods ?? [] as $alias_method_name => $original_trait_alias_source) {
             $source_method_name = $original_trait_alias_source->getSourceMethodName();
