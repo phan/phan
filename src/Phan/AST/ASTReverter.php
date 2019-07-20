@@ -240,6 +240,15 @@ class ASTReverter
                     self::toShortString($node->children['args'])
                 );
             },
+            ast\AST_METHOD_CALL => static function (Node $node) : string {
+                $method_node = $node->children['method'];
+                return \sprintf(
+                    '%s->%s%s',
+                    self::toShortString($node->children['expr']),
+                    is_string($method_node) ? $method_node : self::toShortString($method_node),
+                    self::toShortString($node->children['args'])
+                );
+            },
             ast\AST_STATIC_PROP => static function (Node $node) : string {
                 $prop_node = $node->children['prop'];
                 return \sprintf(
