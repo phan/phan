@@ -48,7 +48,7 @@ final class FilteringPrinter implements BufferedPrinterInterface
      */
     public function print(IssueInstance $instance) : void
     {
-        $file = $instance->getFile();
+        $file = $instance->getDisplayedFile();
         if (!isset($this->file_set[self::normalize($file)])) {
             return;
         }

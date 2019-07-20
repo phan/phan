@@ -23,7 +23,7 @@ final class CSVPrinter implements BufferedPrinterInterface
     public function print(IssueInstance $instance) : void
     {
         \fputcsv($this->stream, [
-            $instance->getFile(),
+            $instance->getDisplayedFile(),
             $instance->getLine(),
             $instance->getIssue()->getSeverity(),
             $instance->getIssue()->getSeverityName(),

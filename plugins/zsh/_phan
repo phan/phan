@@ -70,6 +70,7 @@ _arguments \
 	'(--find-signature)--find-signature=[find a signature (see tool/_phoogle)]:expr:()' \
 	'(--print-memory-usage-summary)--print-memory-usage-summary[print a summary of memory usage and maximum memory usage]' \
 	'(--markdown-issue-messages)--markdown-issue-messages[emit issues with markdown formatting]' \
+	'(--absolute-path-issue-messages)--absolute-path-issue-messages[emit issues with absolute paths]' \
 	'(--constant-variable-detection)--constant-variable-detection[warn about variables that could be constants]' \
 	'(--require-config-exists)--require-config-exists[exit immediately if .phan/config.php did not exist]' \
 	'(--help-annotations)--help-annotations[print annotations supported by Phan]'

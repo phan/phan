@@ -34,7 +34,7 @@ final class JSONPrinter implements BufferedPrinterInterface
                 $instance->getMessage(),  // suggestion included separately
             'severity' => $issue->getSeverity(),
             'location' => [
-                'path' => \preg_replace('/^\/code\//', '', $instance->getFile()),
+                'path' => $instance->getDisplayedFile(),
                 'lines' => [
                     'begin' => $instance->getLine(),
                     'end' => $instance->getLine(),

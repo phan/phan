@@ -657,6 +657,9 @@ class Config
         // Enable this to emit issue messages with markdown formatting.
         'markdown_issue_messages' => false,
 
+        // Enable this with `--absolute-path-issue-messages` to use absolute paths in issue messages
+        'absolute_path_issue_messages' => false,
+
         // Enable this to automatically use colorized phan output for the 'text' output format if the terminal supports it.
         // Alternately, set PHAN_ENABLE_COLOR_OUTPUT=1.
         // This config setting can be overridden with PHAN_DISABLE_COLOR_OUTPUT=1.

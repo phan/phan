@@ -21,12 +21,13 @@ final class CheckstylePrinter implements BufferedPrinterInterface
 
     public function print(IssueInstance $instance) : void
     {
-        if (!isset($this->files[$instance->getFile()])) {
-            $this->files[$instance->getFile()] = [];
+        $file = $instance->getDisplayedFile();
+        if (!isset($this->files[$file])) {
+            $this->files[$file] = [];
         }
 
         // Group issues by file
-        $this->files[$instance->getFile()][] = [
+        $this->files[$file][] = [
             'line' => $instance->getLine(),
             'source' => $instance->getIssue()->getType(),
             'message' => $instance->getMessageAndMaybeSuggestion(),
