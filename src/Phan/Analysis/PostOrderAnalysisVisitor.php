@@ -3709,7 +3709,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             case ast\AST_STMT_LIST:
                 return true;
             case ast\AST_EXPR_LIST:
-                return $node !== end($parent_node->children) || $parent_node !== (\prev($this->parent_node_list)->children['cond'] ?? null);
+                return $node !== \end($parent_node->children) || $parent_node !== (\prev($this->parent_node_list)->children['cond'] ?? null);
         }
         return false;
     }

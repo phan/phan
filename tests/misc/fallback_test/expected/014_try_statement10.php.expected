@@ -1,2 +1,2 @@
-src/014_try_statement10.php:5 PhanSyntaxError syntax error, unexpected ')', expecting identifier (T_STRING) or namespace (T_NAMESPACE) or \\ (T_NS_SEPARATOR)
+src/014_try_statement10.php:5 PhanSyntaxError syntax error, unexpected ')', expecting identifier (T_STRING) or namespace (T_NAMESPACE) or \\ (T_NS_SEPARATOR) (at column 9)
 src/014_try_statement10.php:5 PhanUndeclaredVariable Variable $ is undeclared

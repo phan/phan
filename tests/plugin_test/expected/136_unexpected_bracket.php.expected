@@ -1,0 +1,1 @@
+src/136_unexpected_bracket.php:2 PhanSyntaxError Fallback parser diagnostic error: Unexpected ')' (at column 1)

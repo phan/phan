@@ -41,6 +41,9 @@ final class JSONPrinter implements BufferedPrinterInterface
                 ],
             ],
         ];
+        if ($instance->getColumn() > 0) {
+            $message['location']['lines']['begin_column'] = $instance->getColumn();
+        }
         $suggestion = $instance->getSuggestionMessage();
         if ($suggestion) {
             $message['suggestion'] = $suggestion;

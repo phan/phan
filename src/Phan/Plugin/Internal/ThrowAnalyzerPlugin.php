@@ -60,7 +60,7 @@ class ThrowAnalyzerPlugin extends PluginV3 implements PostAnalyzeNodeCapability,
         if (Config::get_closest_target_php_version_id() >= 70400) {
             return;
         }
-        if (strcasecmp($method->getName(), '__toString') !== 0) {
+        if (\strcasecmp($method->getName(), '__toString') !== 0) {
             return;
         }
         $throws_union_type = $method->getThrowsUnionType();

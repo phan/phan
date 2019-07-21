@@ -508,20 +508,14 @@ class Analysis
                 return $context;
             }
             $node = Parser::parseCode($code_base, $context, $request, $file_path, $file_contents, false);
-        } catch (ParseException $parse_error) {
-            Issue::maybeEmit(
-                $code_base,
-                $context,
-                Issue::SyntaxError,
-                $parse_error->getLineNumberStart(),  // getLineNumberStart() is what differs from emitSyntaxError
-                $parse_error->getMessage()
-            );
+        } catch (ParseException $_) {
+            // Issue::SyntaxError was already emitted.
             return $context;
-        } catch (ParseError $parse_error) {
-            self::emitSyntaxError($code_base, $context, $parse_error);
+        } catch (ParseError $_) {
+            // Issue::SyntaxError was already emitted.
             return $context;
-        } catch (CompileError $parse_error) {
-            self::emitSyntaxError($code_base, $context, $parse_error);
+        } catch (CompileError $_) {
+            // Issue::SyntaxError was already emitted.
             return $context;
         }
 
