@@ -186,6 +186,8 @@ Due to Phan's AST rewriting for easier analysis, this may miss some edge cases f
 - **PhanPluginEmptyStatementForLoop** `Empty statement list statement detected for the for loop`
 - **PhanPluginEmptyStatementForeachLoop** `Empty statement list statement detected for the foreach loop`
 - **PhanPluginEmptyStatementIf**: `Empty statement list statement detected for the last if/elseif statement`
+- **PhanPluginEmptyStatementTryBody** `Empty statement list statement detected for the try statement's body`
+- **PhanPluginEmptyStatementTryFinally** `Empty statement list statement detected for the try's finally body`
 - **PhanPluginEmptyStatementWhileLoop** `Empty statement list statement detected for the while loop`
 
 ### 3. Plugins Specific to Code Styles

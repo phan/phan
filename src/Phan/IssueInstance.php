@@ -30,6 +30,9 @@ class IssueInstance
     /** @var int the line in which this issue was emitted. */
     private $line;
 
+    /** @var int the 1-based column in which this issue was emitted. 0 means the column is unknown (php-ast cannot provide it). */
+    private $column = 0;
+
     /** @var string the formatted issue message */
     private $message;
 
@@ -45,17 +48,20 @@ class IssueInstance
      * @param int $line
      * @param array<int,string|int|float|FQSEN|Type|UnionType|TypedElementInterface|UnaddressableTypedElement> $template_parameters
      * @param ?Suggestion $suggestion
+     * @param int $column
      */
     public function __construct(
         Issue $issue,
         string $file,
         int $line,
         array $template_parameters,
-        Suggestion $suggestion = null
+        Suggestion $suggestion = null,
+        int $column = 0
     ) {
         $this->issue = $issue;
         $this->file = $file;
         $this->line = $line;
+        $this->column = $column;
         $this->suggestion = $suggestion;
 
         if ($issue->getExpectedArgumentCount() !== \count($template_parameters)) {
@@ -114,15 +120,11 @@ class IssueInstance
      */
     private static function generateColorizedMessage(
         Issue $issue,
-        array $template_parameters,
-        string $suggestion = null
+        array $template_parameters
     ) : string {
         $template = $issue->getTemplateRaw();
 
         $result = Colorizing::colorizeTemplate($template, $template_parameters);
-        if ($suggestion) {
-            $result .= Colorizing::colorizeTemplate(" ({SUGGESTION})", [$suggestion]);
-        }
         return $result;
     }
 
@@ -173,6 +175,14 @@ class IssueInstance
     public function getLine() : int
     {
         return $this->line;
+    }
+
+    /**
+     * @return int the 1-based column, or 0 if the column is unknown.
+     */
+    public function getColumn() : int
+    {
+        return $this->column;
     }
 
     public function getMessage() : string

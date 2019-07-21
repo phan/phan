@@ -164,6 +164,33 @@ final class EmptyStatementListVisitor extends PluginAwarePostAnalysisVisitor
             []
         );
     }
+
+    /**
+     * @param Node $node
+     * A node to analyze
+     * @override
+     */
+    public function visitTry(Node $node) : void
+    {
+        if (!($node->children['try']->children ?? null)) {
+            $this->emitPluginIssue(
+                $this->code_base,
+                clone($this->context)->withLineNumberStart($node->children['try']->lineno ?? $node->lineno),
+                'PhanPluginEmptyStatementTryBody',
+                'Empty statement list statement detected for the try statement\'s body',
+                []
+            );
+        }
+        if (isset($node->children['finally']) && !$node->children['finally']->children) {
+            $this->emitPluginIssue(
+                $this->code_base,
+                clone($this->context)->withLineNumberStart($node->children['finally']->lineno),
+                'PhanPluginEmptyStatementTryFinally',
+                'Empty statement list statement detected for the try\'s finally body',
+                []
+            );
+        }
+    }
 }
 // Every plugin needs to return an instance of itself at the
 // end of the file in which it's defined.

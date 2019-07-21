@@ -24,6 +24,7 @@ class ParseException extends Exception
 
     /**
      * Returns the line of the file being parsed that caused this ParseException.
+     * @suppress PhanUnreferencedPublicMethod added for API completeness.
      */
     public function getLineNumberStart() : int
     {

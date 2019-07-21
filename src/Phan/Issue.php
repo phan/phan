@@ -4329,7 +4329,8 @@ class Issue
         string $file,
         int $line,
         array $template_parameters = [],
-        Suggestion $suggestion = null
+        Suggestion $suggestion = null,
+        int $column = 0
     ) : IssueInstance {
         // TODO: Add callable to expanded union types instead
         return new IssueInstance(
@@ -4337,7 +4338,8 @@ class Issue
             $file,
             $line,
             $template_parameters,
-            $suggestion
+            $suggestion,
+            $column
         );
     }
 
@@ -4405,12 +4407,13 @@ class Issue
         string $file,
         int $line,
         array $template_parameters,
-        Suggestion $suggestion = null
+        Suggestion $suggestion = null,
+        int $column = 0
     ) : void {
         $issue = self::fromType($type);
 
         self::emitInstance(
-            $issue($file, $line, $template_parameters, $suggestion)
+            $issue($file, $line, $template_parameters, $suggestion, $column)
         );
     }
 
@@ -4516,7 +4519,8 @@ class Issue
         string $issue_type,
         int $lineno,
         array $parameters,
-        Suggestion $suggestion = null
+        Suggestion $suggestion = null,
+        int $column = 0
     ) : void {
         if (self::shouldSuppressIssue(
             $code_base,
@@ -4534,7 +4538,8 @@ class Issue
             $context->getFile(),
             $lineno,
             $parameters,
-            $suggestion
+            $suggestion,
+            $column
         );
     }
 

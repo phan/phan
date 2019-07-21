@@ -4,6 +4,12 @@ Phan NEWS
 -----------------------
 
 New features(CLI, Configs):
++ Include columns with most (but not all) occurrences of `PhanSyntaxError`
+  (inferred using the polyfill - these may be incorrect a small fraction of the time)
+
+  When the error is from the native `php-ast` parser, this is a best guess at the column.
+
+  `hide_issue_column` can be used to remove the column from issue messages.
 + Add `--absolute-path-issue-messages` to emit absolute paths instead of relative paths for the file of an issue. (#1640)
   Note that this does not affect files within the issue message.
 
@@ -16,8 +22,12 @@ New features(Analysis):
 + If a property with no phpdoc type has a default of an empty array, assume that it's type can be any array (when reading it) until the first assignment is seen.
 + Attempt to analyze modifying dynamic properties by reference (e.g. `$var->$prop` when $prop is a variable with a known string)
 
+Language Server/Daemon mode:
++ When `PhanSyntaxError` is emitted, make the start of the error range
+  the column of the error instead of the start of the line.
+
 Plugins:
-+ Add `EmptyStatementListPlugin` to warn about empty statement lists after if/elseif statements and loops.
++ Add `EmptyStatementListPlugin` to warn about empty statement lists involving if/elseif statements, try statements, and loops.
 + Properly warn about redundant `@return` annotations followed by other annotation lines in `PHPDocRedundantPlugin`.
 
 Bug fixes:

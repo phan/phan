@@ -32,7 +32,12 @@ sed -i \
 # diff returns a non-zero exit code if files differ or are missing
 echo
 echo "Comparing the output:"
-diff $EXPECTED_PATH $ACTUAL_PATH
+if type colordiff 2>/dev/null >/dev/null; then
+    DIFF=colordiff
+else
+    DIFF=diff
+fi
+$DIFF $EXPECTED_PATH $ACTUAL_PATH
 EXIT_CODE=$?
 if [ "$EXIT_CODE" == 0 ]; then
 	echo "Files $EXPECTED_PATH and output $ACTUAL_PATH are identical"

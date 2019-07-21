@@ -1,1 +1,1 @@
-%s:3 PhanSyntaxError syntax error, unexpected ';'
+%s:3 PhanSyntaxError syntax error, unexpected ';' (at column 5)

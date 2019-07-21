@@ -3938,4 +3938,6 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0
 This emits warnings for unparsable PHP files (detected by `php-ast`).
 Note: This is not the same thing as running `php -l` on a file - PhanSyntaxError checks for syntax errors, but not semantics such as where certain expressions can occur (Which `php -l` would check for).
 
-e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/expected/028_parse_failure.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/src/028_parse_failure.php#L2).
+Note: If the native parser is used, the reported column is a guess. Phan will use the column of the error reported by the **polyfill** if the errors are on the same line.
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/136_unexpected_bracket.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/136_unexpected_bracket.php#L2).

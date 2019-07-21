@@ -660,6 +660,10 @@ class Config
         // Enable this with `--absolute-path-issue-messages` to use absolute paths in issue messages
         'absolute_path_issue_messages' => false,
 
+        // If true, then hide the issue's column in plaintext and pylint output printers.
+        // Note that phan only knows the column for a tiny subset of issues.
+        'hide_issue_column' => false,
+
         // Enable this to automatically use colorized phan output for the 'text' output format if the terminal supports it.
         // Alternately, set PHAN_ENABLE_COLOR_OUTPUT=1.
         // This config setting can be overridden with PHAN_DISABLE_COLOR_OUTPUT=1.
@@ -1246,6 +1250,7 @@ class Config
             return null;
         };
         $config_checks = [
+            'absolute_path_issue_messages' => $is_bool,
             'allow_method_param_type_widening' => $is_bool,
             'allow_missing_properties' => $is_bool,
             'analyzed_file_extensions' => $is_string_list,
@@ -1285,6 +1290,7 @@ class Config
             'generic_types_enabled' => $is_bool,
             'globals_type_map' => $is_associative_string_array,
             'guess_unknown_parameter_type_using_default' => $is_bool,
+            'hide_issue_column' => $is_bool,
             'ignore_undeclared_functions_with_known_signatures' => $is_bool,
             'ignore_undeclared_variables_in_global_scope' => $is_bool,
             'include_analysis_file_list' => $is_string_list,
