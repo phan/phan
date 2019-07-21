@@ -257,6 +257,10 @@ Extended help:
  --markdown-issue-messages
   Emit issue messages with markdown formatting.
 
+ --absolute-path-issue-messages
+  Emit issues with their absolute paths instead of relative paths.
+  This does not affect files mentioned within the issue.
+
  --constant-variable-detection
   Emit issues for variables that could be replaced with literals or constants.
   (i.e. they are declared once (as a constant expression) and never modified).

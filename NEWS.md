@@ -12,6 +12,7 @@ New features(CLI, Configs):
   `hide_issue_column` can be used to remove the column from issue messages.
 + Add `--absolute-path-issue-messages` to emit absolute paths instead of relative paths for the file of an issue. (#1640)
   Note that this does not affect files within the issue message.
++ Properly render the progress bar when Phan runs with multiple processes (#2928)
 
 New features(Analysis):
 + Fix failure to infer real types when an invoked function or method had a phpdoc `@return` in addition to the real type.
