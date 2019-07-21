@@ -89,19 +89,13 @@ class Phan implements IgnoredFilesFilterInterface
      * Take an array of serialized issues, unserialize them and then add
      * them to the issue collector.
      *
-     * @param IssueInstance[][] $results
+     * @param array<int,IssueInstance> $issues
      */
-    private static function collectSerializedResults(array $results) : void
+    private static function collectSerializedResults(array $issues) : void
     {
         $collector = self::getIssueCollector();
-        foreach ($results as $issues) {
-            if (!$issues) {
-                continue;
-            }
-
-            foreach ($issues as $issue) {
-                $collector->collectIssue($issue);
-            }
+        foreach ($issues as $issue) {
+            $collector->collectIssue($issue);
         }
     }
 
@@ -404,7 +398,7 @@ class Phan implements IgnoredFilesFilterInterface
             /**
              * This worker takes a file and analyzes it
              */
-            $analysis_worker = static function (int $i, string $file_path) use ($file_count, $code_base, $temporary_file_mapping, $request) : void {
+            $analysis_worker = static function (int $i, string $file_path, int $file_count) use ($code_base, $temporary_file_mapping, $request) : void {
                 CLI::progress('analyze', ($i + 1) / $file_count, $file_path);
                 Analysis::analyzeFile($code_base, $file_path, $request, $temporary_file_mapping[$file_path] ?? null);
             };
@@ -459,7 +453,7 @@ class Phan implements IgnoredFilesFilterInterface
                 // If we're not running as multiple processes, just iterate
                 // over the file list and analyze them
                 foreach ($analyze_file_path_list as $i => $file_path) {
-                    $analysis_worker($i, $file_path);
+                    $analysis_worker($i, $file_path, $file_count);
                 }
 
                 // Scan through all globally accessible elements

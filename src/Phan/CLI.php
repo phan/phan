@@ -7,6 +7,7 @@ use InvalidArgumentException;
 use Phan\Config\Initializer;
 use Phan\Daemon\ExitException;
 use Phan\Exception\UsageException;
+use Phan\ForkPool\Writer;
 use Phan\Language\Element\AddressableElement;
 use Phan\Language\Element\Comment\Builder;
 use Phan\Language\FQSEN;
@@ -1689,7 +1690,6 @@ EOB
         static $previous_update_time = 0.0;
         $time = \microtime(true);
 
-
         // If not enough time has elapsed, then don't update the progress bar.
         // Making the update frequency based on time (instead of the number of files)
         // prevents the terminal from rapidly flickering while processing small files.
@@ -1701,14 +1701,26 @@ EOB
             }
         }
         $previous_update_time = $time;
-
+        if ($msg === 'analyze' && Writer::isForkPoolWorker()) {
+            // The original process of the fork pool is responsible for rendering the combined progress.
+            Writer::recordProgress($p);
+            return;
+        }
         $memory = \memory_get_usage() / 1024 / 1024;
         $peak = \memory_get_peak_usage() / 1024 / 1024;
 
+        self::outputProgressLine($msg, $p, $memory, $peak);
+    }
+
+    /**
+     * @internal
+     */
+    public static function outputProgressLine(string $msg, float $p, float $memory, float $peak) : void
+    {
         $left_side = \str_pad($msg, 10, ' ', STR_PAD_LEFT) .  ' ';
         $right_side =
                " " . \sprintf("%1$ 3d", (int)(100 * $p)) . "%" .
-               \sprintf(' %0.2dMB/%0.2dMB', $memory, $peak);
+               \sprintf(' %0.2dMB/%0.2dMB', (int)$memory, (int)$peak);
 
         static $columns = null;
         if ($columns === null) {

@@ -845,7 +845,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                 }
                 return $this->context;
             }
-            // @phan-suppress-next-line PhanPartialTypeMismatchArgument
+            // @phan-suppress-next-line PhanPartialTypeMismatchArgument, PhanTypeMismatchArgumentNullable
             return $this->modifyComplexExpression($first_arg, $type_modification_callback, $this->context, $args);
         }
 
