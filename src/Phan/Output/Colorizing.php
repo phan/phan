@@ -222,6 +222,7 @@ class Colorizing
         'code' => \Phan\Output\ColorScheme\Code::class,
         'default' => self::class,
         'eclipse_dark' => \Phan\Output\ColorScheme\EclipseDark::class,
+        'light' => \Phan\Output\ColorScheme\Light::class,
         'vim' => \Phan\Output\ColorScheme\Vim::class,
     ];
 

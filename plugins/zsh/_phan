@@ -27,7 +27,7 @@ _arguments \
 	'(--project-root-directory -d)*'{--project-root-directory=,-d+}'[the directory of the project to analyze]:dir:_directories' \
 	'(--file-list-only -r)'{-r,--file-list-only}'[a list of php files to be analyzed instead of anything else]:file:_files' \
 	'(--config-file -k)'{--config-file=,-k+}'[a path to a config file to load]:file:_files' \
-	'(--output-mode -m)'{--output-mode=,-m+}'[the output mode]:output mode:(text json csv codeclimate checkstyle pylint)' \
+	'(--output-mode -m)'{--output-mode=,-m+}'[the output mode]:output mode:(text json csv codeclimate checkstyle pylint html)' \
 	'(--output -o)'{--output=,-o+}'[output filename]:output file:_files' \
 	'(--init)--init[generates a .phan/config.php file in the current directory]' \
 	'(--init-level)--init-level=[a number from 1(strictest) to 5(least strict)]:level:(1 2 3 4 5)' \
@@ -36,7 +36,7 @@ _arguments \
 	'(--init-no-composer)--init-no-composer[don'\''t require a composer installation when initializing]:file:_files' \
 	'(--init-overwrite)--init-overwrite[allow phan --init to override the existing .phan/config.php file]:file:_files' \
 	'(--color --no-color -C)'{--color,-C}'[add colors to phan'\''s output]' \
-	'(--color-scheme)--color-scheme[set the color scheme]:color_scheme:(default code eclipse-dark vim)' \
+	'(--color-scheme)--color-scheme[set the color scheme]:color_scheme:(default code eclipse-dark light vim)' \
 	'(--progress-bar -p)'{--progress-bar,-p}'[show progress bar]' \
 	'(--debug -D)'{-D,--debug}'[print debugging output to stderr]' \
 	'(--quick -q)'{-q,--quick}'[quick mode]' \

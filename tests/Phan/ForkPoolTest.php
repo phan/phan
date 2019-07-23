@@ -55,7 +55,7 @@ final class ForkPoolTest extends BaseTest
             }
         );
         $actual_data = $pool->wait();
-        sort($actual_data);
+        \sort($actual_data);
 
         $this->assertSame($combined_data, $actual_data);
     }
