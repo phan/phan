@@ -3,6 +3,7 @@
 namespace Phan\Output\Printer;
 
 use Phan\Config;
+use Phan\Issue;
 use Phan\IssueInstance;
 use Phan\Output\HTML;
 use Phan\Output\IssuePrinterInterface;
@@ -21,15 +22,28 @@ final class HTMLPrinter implements IssuePrinterInterface
 
     public function print(IssueInstance $instance) : void
     {
+        $issue = $instance->getIssue();
         $message = HTML::htmlTemplate(
-            $instance->getIssue()->getTemplateRaw(),
+            $issue->getTemplateRaw(),
             $instance->getTemplateParameters()
         );
         $prefix = HTML::htmlTemplate(
             "{FILE}:{LINE}",
             [$instance->getDisplayedFile(), $instance->getLine()]
         );
-        $inner_html = "$prefix: $message";
+        switch ($issue->getSeverity()) {
+            case Issue::SEVERITY_CRITICAL:
+                $issue_type_template = '{ISSUETYPE_CRITICAL}';
+                break;
+            case Issue::SEVERITY_NORMAL:
+                $issue_type_template = '{ISSUETYPE_NORMAL}';
+                break;
+            default:
+                $issue_type_template = '{ISSUETYPE}';
+                break;
+        }
+        $issue_type = HTML::htmlTemplate($issue_type_template, [$issue->getType()]);
+        $inner_html = "$prefix: $issue_type $message";
         $column = $instance->getColumn();
         if ($column > 0 && !Config::getValue('hide_issue_column')) {
             $inner_html .= HTML::htmlTemplate(" ({DETAILS})", ["at column $column"]);
