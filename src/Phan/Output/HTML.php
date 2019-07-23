@@ -46,6 +46,9 @@ class HTML
             } else {
                 $format_str = 'unknown';
             }
+            if ($matches[1] ?? null) {
+                $arg = $matches[1] . $arg;
+            }
             $format_str = \htmlentities($format_str);
             return \sprintf('<span class="phan_%s">%s</span>', \strtolower($format_str), $arg);
         }, $template);

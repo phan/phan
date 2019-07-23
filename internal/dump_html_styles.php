@@ -23,6 +23,14 @@ class DumpHTMLStyles {
                 $color_component = (string)substr($color_component, 3);
                 $name = 'background-color';
             }
+            switch ($color_component) {
+            case 'yellow':
+                $color_component = 'orange';
+                break;
+            case 'light_red':
+                $color_component = 'orangered';
+                break;
+            }
             $combination[] = sprintf('%s: %s;', $name, str_replace('_', '', ucwords($color_component, '_')));
         }
         return implode(' ', $combination);
