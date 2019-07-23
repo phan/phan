@@ -130,7 +130,7 @@ _phan() {
             return 0
             ;;
         --output-mode | -m)
-            COMPREPLY=( $(compgen -W "text json csv codeclimate checkstyle pylint" -- "${cur}" ))
+            COMPREPLY=( $(compgen -W "text json csv codeclimate checkstyle pylint html" -- "${cur}" ))
             return 0
             ;;
         --init-level)

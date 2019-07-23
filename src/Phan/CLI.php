@@ -1121,7 +1121,7 @@ EOT;
   `.phan/config.php`).
 
  -m, --output-mode <mode>
-  Output mode from 'text', 'json', 'csv', 'codeclimate', 'checkstyle', or 'pylint'
+  Output mode from 'text', 'json', 'csv', 'codeclimate', 'checkstyle', 'pylint', or 'html'
 
  -o, --output <filename>
   Output filename
