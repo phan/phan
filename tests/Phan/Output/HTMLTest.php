@@ -15,5 +15,6 @@ final class HTMLTest extends BaseTest
     {
         $this->assertSame('Regular issue message', HTML::htmlTemplate('Regular issue message', []));
         $this->assertSame('Message at <span class="phan_file">test.php</span>:<span class="phan_line">23</span>', HTML::htmlTemplate('Message at {FILE}:{LINE}', ['test.php', 23]));
+        $this->assertSame('Bad variable <span class="phan_variable">$varName</span>', HTML::htmlTemplate('Bad variable ${VARIABLE}', ['varName']));
     }
 }
