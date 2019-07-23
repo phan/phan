@@ -21,7 +21,7 @@ class DumpHTMLStyles {
             $name = 'color';
             if (preg_match('/^bg_/', $color_component)) {
                 $color_component = (string)substr($color_component, 3);
-                $name = 'background_color';
+                $name = 'background-color';
             }
             $combination[] = sprintf('%s: %s;', $name, str_replace('_', '', ucwords($color_component, '_')));
         }
@@ -64,7 +64,8 @@ class DumpHTMLStyles {
     public static function main() : void {
         foreach (Colorizing::COLOR_SCHEMES as $name => $_) {
             $contents = self::generateHTMLStyle($name);
-            echo "/* Colorscheme '$name': */\n" . $contents . "\n";
+            $background_color = stripos($name, 'light') !== false ? 'light' : 'dark';
+            echo "/* Colorscheme '$name' (for $background_color background): */\n" . $contents . "\n";
         }
     }
 }

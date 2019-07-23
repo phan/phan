@@ -146,7 +146,7 @@ _phan() {
             return 0
             ;;
         --color-scheme)
-            COMPREPLY=( $(compgen -W "default code eclipse-dark vim" -- "${cur}" ))
+            COMPREPLY=( $(compgen -W "default code eclipse-dark light vim" -- "${cur}" ))
             return 0
             ;;
         --plugin | -P)
