@@ -1,0 +1,4 @@
+%s:4 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is array{0:true} but \intdiv() takes int
+%s:14 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is array{0:true,1:'a'}|array{0:true,1:'b'} but \intdiv() takes int
+%s:16 PhanRedundantCondition Redundant attempt to cast $b of type true to truthy
+%s:16 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare $b of type true to false of type false

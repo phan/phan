@@ -27,7 +27,7 @@ foreach (['src', 'vendor', '.phan'] as $subdir) {
 // Include all files with suffix .php, excluding those found in the tests folder.
 $iterator = new CallbackFilterIterator(
     $iterators,
-    function (\SplFileInfo $file_info) : bool {
+    static function (SplFileInfo $file_info) : bool {
         if ($file_info->getExtension() !== 'php') {
             return false;
         }
@@ -38,9 +38,9 @@ $iterator = new CallbackFilterIterator(
     }
 );
 $phar->buildFromIterator($iterator, $dir);
-$phar->addFile('LICENSE');
-$phar->addFile('LICENSE.LANGUAGE_SERVER');
-$phar->addFile('LICENSE.PHP_PARSER');
+foreach (glob('LICENSE*') as $license) {
+    $phar->addFile($license);
+}
 foreach ($phar as $file) {
     echo $file->getFileName() . "\n";
 }

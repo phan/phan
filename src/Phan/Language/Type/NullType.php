@@ -2,6 +2,7 @@
 
 namespace Phan\Language\Type;
 
+use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
@@ -92,6 +93,48 @@ final class NullType extends ScalarType
     }
 
     /**
+     * @return bool
+     * True if this Type can be cast to the given Type
+     * cleanly (accounting for templates)
+     */
+    public function canCastToTypeHandlingTemplates(Type $type, CodeBase $code_base) : bool
+    {
+        // Check to see if we have an exact object match
+        if ($this === $type) {
+            return true;
+        }
+
+        // Null can cast to a nullable type.
+        if ($type->is_nullable) {
+            return true;
+        }
+
+        if (Config::get_null_casts_as_any_type()) {
+            return true;
+        }
+
+        // NullType is a sub-type of ScalarType. So it's affected by scalar_implicit_cast.
+        if ($type->isScalar()) {
+            if (Config::getValue('scalar_implicit_cast')) {
+                return true;
+            }
+            $scalar_implicit_partial = Config::getValue('scalar_implicit_partial');
+            // check if $type->getName() is in the list of permitted types $this->getName() can cast to.
+            if (\count($scalar_implicit_partial) > 0 &&
+                \in_array($type->getName(), $scalar_implicit_partial['null'] ?? [], true)) {
+                return true;
+            }
+        }
+        if ($type instanceof MixedType) {
+            return true;
+        }
+
+        // Test to see if we can cast to the non-nullable version
+        // of the target type.
+        return parent::canCastToNonNullableTypeHandlingTemplates($type, $code_base);
+    }
+
+    /**
      * @param bool $is_nullable (@phan-unused-param)
      * Set to true if the type should be nullable, else pass
      * false
@@ -110,19 +153,29 @@ final class NullType extends ScalarType
         return $this->name;
     }
 
-    public function getIsNullable() : bool
+    public function isNullable() : bool
     {
         return true;
     }
 
-    public function getIsPossiblyFalsey() : bool
+    public function isPossiblyFalsey() : bool
     {
         return true;  // Null is always falsey.
     }
 
-    public function getIsAlwaysFalsey() : bool
+    public function isPossiblyTruthy() : bool
+    {
+        return false;  // Null is always falsey.
+    }
+
+    public function isAlwaysFalsey() : bool
     {
         return true;  // Null is always falsey.
+    }
+
+    public function isAlwaysTruthy() : bool
+    {
+        return false;  // Null is always falsey.
     }
 
     public function isPrintableScalar() : bool
@@ -158,6 +211,21 @@ final class NullType extends ScalarType
      */
     public function getTypeAfterIncOrDec() : UnionType
     {
-        return IntType::instance(false)->asUnionType();
+        return IntType::instance(false)->asPHPDocUnionType();
+    }
+
+    public function canUseInRealSignature() : bool
+    {
+        return false;
+    }
+
+    public function asScalarType() : ?Type
+    {
+        return null;
+    }
+
+    public function isScalar() : bool
+    {
+        return false;
     }
 }

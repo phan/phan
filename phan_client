@@ -2,7 +2,7 @@
 <?php
 /**
  * Usage: phan_client -l path/to/file.php
- * Compatible with php 5.6, 7.0 and php 7.1.
+ * Compatible with php 5.6 and php 7.x
  * (The server itself requires a newer php version)
  *
  * See plugins/vim/snippet.vim for an example of a use of this program.
@@ -28,6 +28,7 @@
  *
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
  * @phan-file-suppress PhanPluginDuplicateConditionalNullCoalescing this can't use the `??` operator because it's compatible with php 5.6
+ * @phan-file-suppress PhanPluginCanUseParamType, PhanPluginCanUsePHP71Void
  */
 class PhanPHPLinter
 {
@@ -200,7 +201,6 @@ class PhanPHPLinter
             exit(1);
         }
 
-        // TODO: Make TCP port configurable
         // TODO: check if the folder is within a folder with subdirectory .phan/config.php
         // TODO: Check if there is a lock before attempting to connect?
         $client = @stream_socket_client($opts->url, $errno, $errstr, 20.0);
@@ -234,8 +234,9 @@ class PhanPHPLinter
     }
 
     /**
-     * @param array[] $response
+     * @param array<string,mixed> $response
      * @param string[] $file_mapping
+     * @param array<string,mixed> $request
      * @return void
      */
     private static function dumpJSONIssues(array $response, array $file_mapping, array $request)
@@ -275,6 +276,7 @@ class PhanPHPLinter
             }
             $pathInProject = $issue['location']['path'];  // relative path
             if (!isset($file_mapping[$pathInProject])) {
+                // @phan-suppress-next-line PhanRedundantConditionInLoop this is a known false positive in loops
                 if (!$did_debug) {
                     self::debugInfo(sprintf("Unexpected path for issue (expected %s): %s\n", json_encode($file_mapping) ?: 'invalid', json_encode($issue) ?: 'invalid'));
                 }

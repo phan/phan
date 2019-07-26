@@ -1,4 +1,10 @@
+%s:3 PhanRedundantCondition Redundant attempt to cast true of type true to truthy
+%s:4 PhanRedundantCondition Redundant attempt to cast true of type true to truthy
 %s:5 PhanTypeComparisonFromArray array to string comparison
+%s:6 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare 'string' of type 'string' to $p2 of type array
 %s:6 PhanTypeComparisonToArray string to array comparison
+%s:13 PhanRedundantCondition Redundant attempt to cast true of type true to truthy
+%s:14 PhanRedundantCondition Redundant attempt to cast true of type true to truthy
 %s:15 PhanTypeComparisonFromArray array to string comparison
+%s:16 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare 'string' of type 'string' to $p2 of type array
 %s:16 PhanTypeComparisonToArray string to array comparison

@@ -1,0 +1,3 @@
+%s:30 PhanTypeMismatchArgument Argument 1 ($arg) is \NS668\A but \NS668\test() takes string defined at %s:26
+%s:31 PhanTypeMismatchArgument Argument 1 ($arg) is \NS668\A|\NS668\B but \NS668\test() takes string defined at %s:26
+%s:32 PhanTypeMismatchArgument Argument 1 ($arg) is \NS668\A|\NS668\B|\NS668\C but \NS668\test() takes string defined at %s:26

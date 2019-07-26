@@ -6,6 +6,7 @@ use ast;
 use ast\Node;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
+use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
@@ -13,16 +14,18 @@ use Phan\Exception\NodeException;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
+use Phan\Language\Element\Method;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
-use Phan\PluginV2;
-use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\AnalyzeMethodCapability;
+use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV3\PostAnalyzeNodeCapability;
 
 /**
  * Analyzes throw statements and compares them against the phpdoc (at)throws annotations
  */
-class ThrowAnalyzerPlugin extends PluginV2 implements PostAnalyzeNodeCapability
+class ThrowAnalyzerPlugin extends PluginV3 implements PostAnalyzeNodeCapability, AnalyzeMethodCapability
 {
     /**
      * This is invalidated every time this plugin is loaded (e.g. for tests)
@@ -38,6 +41,41 @@ class ThrowAnalyzerPlugin extends PluginV2 implements PostAnalyzeNodeCapability
         }
         return ThrowVisitor::class;
     }
+
+    /**
+     * Check for throw statements in __toString()
+     *
+     * @param CodeBase $code_base
+     * The code base in which the method exists
+     *
+     * @param Method $method
+     * A method being analyzed
+     *
+     * @override
+     */
+    public function analyzeMethod(
+        CodeBase $code_base,
+        Method $method
+    ) : void {
+        if (Config::get_closest_target_php_version_id() >= 70400) {
+            return;
+        }
+        if (\strcasecmp($method->getName(), '__toString') !== 0) {
+            return;
+        }
+        $throws_union_type = $method->getThrowsUnionType();
+        if ($throws_union_type->isEmpty()) {
+            return;
+        }
+        Issue::maybeEmit(
+            $code_base,
+            $method->getContext(),
+            Issue::ThrowCommentInToString,
+            $method->getContext()->getLineNumberStart(),
+            $method->getRepresentationForIssue(),
+            $throws_union_type
+        );
+    }
 }
 
 /**
@@ -52,10 +90,9 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
     protected $parent_node_list;
 
     /**
-     * @return void
      * @override
      */
-    public function visitThrow(Node $node)
+    public function visitThrow(Node $node) : void
     {
         $context = $this->context;
         if (!$context->isInFunctionLikeScope()) {
@@ -64,14 +101,22 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
         $code_base = $this->code_base;
 
         $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $node->children['expr']);
-        $union_type = $this->withoutCaughtUnionTypes($union_type);
+        $union_type = $this->withoutCaughtUnionTypes($union_type, true);
         if ($union_type->isEmpty()) {
             // Give up if we don't know
-            // TODO: Infer Throwable, if the original $union_type was empty
-            // and there are no try/catch blocks wrapping this.
             return;
         }
         $analyzed_function = $context->getFunctionLikeInScope($code_base);
+        if (Config::get_closest_target_php_version_id() < 70400) {
+            if ($analyzed_function instanceof Method && \strcasecmp('__toString', $analyzed_function->getName()) === 0) {
+                $this->emitIssue(
+                    Issue::ThrowStatementInToString,
+                    $node->lineno,
+                    $analyzed_function->getRepresentationForIssue(),
+                    (string)$union_type
+                );
+            }
+        }
 
         // TODO: This seems like it didn't work for A::c(A::d()) - See #1960 (InvalidArgumentException wasn't detected)
         foreach ($this->parent_node_list as $parent) {
@@ -94,11 +139,20 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
         $this->warnAboutPossiblyThrownType($node, $analyzed_function, $union_type);
     }
 
-    protected function withoutCaughtUnionTypes(UnionType $union_type) : UnionType
+    protected function withoutCaughtUnionTypes(UnionType $union_type, bool $is_raw_throw) : UnionType
     {
         if ($union_type->isEmpty()) {
-            // Give up if we don't know
-            return $union_type;
+            if (!$is_raw_throw) {
+                return $union_type;
+            }
+            // Infer Throwable, if the original $union_type was empty
+            // and there are no try/catch blocks wrapping this throw statement.
+            foreach ($this->parent_node_list as $parent) {
+                if ($parent->kind === ast\AST_TRY) {
+                    return $union_type;
+                }
+            }
+            return UnionType::fromFullyQualifiedRealString('\Throwable');
         }
 
         foreach ($this->parent_node_list as $parent) {
@@ -121,15 +175,12 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
         return $union_type;
     }
 
-    /**
-     * @return void
-     */
     protected function warnAboutPossiblyThrownType(
         Node $node,
         FunctionInterface $analyzed_function,
         UnionType $union_type,
         FunctionInterface $call = null
-    ) {
+    ) : void {
         foreach ($union_type->getTypeSet() as $type) {
             $expanded_type = $type->asExpandedTypes($this->code_base);
             if (!$this->shouldWarnAboutThrowType($expanded_type)) {
@@ -219,10 +270,9 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
 class ThrowRecursiveVisitor extends ThrowVisitor
 {
     /**
-     * @return void
      * @override
      */
-    public function visitCall(Node $node)
+    public function visitCall(Node $node) : void
     {
         $context = $this->context;
         if (!$context->isInFunctionLikeScope()) {
@@ -242,7 +292,7 @@ class ThrowRecursiveVisitor extends ThrowVisitor
                 $this->warnAboutPossiblyThrownType(
                     $node,
                     $analyzed_function,
-                    $this->withoutCaughtUnionTypes($invoked_function->getThrowsUnionType())
+                    $this->withoutCaughtUnionTypes($invoked_function->getThrowsUnionType(), false)
                 );
             }
         } catch (CodeBaseException $_) {
@@ -251,10 +301,9 @@ class ThrowRecursiveVisitor extends ThrowVisitor
     }
 
     /**
-     * @return void
      * @override
      */
-    public function visitMethodCall(Node $node)
+    public function visitMethodCall(Node $node) : void
     {
         $context = $this->context;
         if (!$context->isInFunctionLikeScope()) {
@@ -287,16 +336,15 @@ class ThrowRecursiveVisitor extends ThrowVisitor
         $this->warnAboutPossiblyThrownType(
             $node,
             $analyzed_function,
-            $this->withoutCaughtUnionTypes($invoked_method->getThrowsUnionType()),
+            $this->withoutCaughtUnionTypes($invoked_method->getThrowsUnionType(), false),
             $invoked_method
         );
     }
 
     /**
-     * @return void
      * @override
      */
-    public function visitStaticCall(Node $node)
+    public function visitStaticCall(Node $node) : void
     {
         $context = $this->context;
         if (!$context->isInFunctionLikeScope()) {
@@ -328,7 +376,7 @@ class ThrowRecursiveVisitor extends ThrowVisitor
         $this->warnAboutPossiblyThrownType(
             $node,
             $analyzed_function,
-            $this->withoutCaughtUnionTypes($invoked_method->getThrowsUnionType()),
+            $this->withoutCaughtUnionTypes($invoked_method->getThrowsUnionType(), false),
             $invoked_method
         );
     }

@@ -1,0 +1,2 @@
+%s:3 PhanParamMustBeUserDefinedClassname First argument of class_alias() must be a name of user defined class ('%s' attempted)
+%s:4 PhanParamMustBeUserDefinedClassname First argument of class_alias() must be a name of user defined class ('%s' attempted)

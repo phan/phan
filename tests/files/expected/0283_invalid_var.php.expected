@@ -1,2 +1,3 @@
 %s:5 PhanUnextractableAnnotation Saw unextractable annotation for comment '* @var \ is $v - not a good var annotation'
 %s:6 PhanUnextractableAnnotation Saw unextractable annotation for comment '* @var \ $x is not good either'
+%s:7 PhanUnextractableAnnotation Saw unextractable annotation for comment '* @var string|\NS\ $y is not good either'

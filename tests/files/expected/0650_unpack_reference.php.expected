@@ -1,0 +1,2 @@
+%s:19 PhanTypeNonVarPassByRef Only variables can be passed by reference at argument 1 of \ns650\expects_reference()
+%s:19 PhanTypeNonVarPassByRef Only variables can be passed by reference at argument 2 of \ns650\expects_reference()

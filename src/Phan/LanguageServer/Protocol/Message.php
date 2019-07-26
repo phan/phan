@@ -27,17 +27,16 @@ class Message
      * Parses a message
      *
      * @param string $msg
-     * @return Message
      */
     public static function parse(string $msg): Message
     {
         $obj = new self();
-        $parts = explode("\r\n", $msg);
+        $parts = \explode("\r\n", $msg);
         // @phan-suppress-next-line PhanPossiblyFalseTypeArgument
-        $obj->body = MessageBody::parse(array_pop($parts));
+        $obj->body = MessageBody::parse(\array_pop($parts));
         foreach ($parts as $line) {
             if ($line) {
-                $pair = explode(': ', $line);
+                $pair = \explode(': ', $line);
                 $obj->headers[$pair[0]] = $pair[1];
             }
         }
@@ -60,7 +59,7 @@ class Message
     public function __toString(): string
     {
         $body = (string)$this->body;
-        $contentLength = strlen($body);
+        $contentLength = \strlen($body);
         $this->headers['Content-Length'] = (string)$contentLength;
         $headers = '';
         foreach ($this->headers as $name => $value) {

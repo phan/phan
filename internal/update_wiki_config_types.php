@@ -2,8 +2,6 @@
 <?php
 declare(strict_types=1);
 
-// @phan-file-suppress PhanNativePHPSyntaxCheckPlugin, UnusedPluginFileSuppression caused by inline HTML before declare
-
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 require_once __DIR__ . '/lib/WikiWriter.php';
 
@@ -56,6 +54,7 @@ class ConfigEntry
         'parent_constructor_required' => self::CATEGORY_ANALYSIS,
         'quick_mode' => self::CATEGORY_ANALYSIS,
         'analyze_signature_compatibility' => self::CATEGORY_ANALYSIS,
+        'assume_no_external_class_overrides' => self::CATEGORY_ANALYSIS,
         'allow_method_param_type_widening' => self::CATEGORY_ANALYSIS_VERSION,
         'guess_unknown_parameter_type_using_default' => self::CATEGORY_ANALYSIS,
         'inherit_phpdoc_types' => self::CATEGORY_ANALYSIS,
@@ -78,9 +77,13 @@ class ConfigEntry
         'prefer_narrowed_phpdoc_return_type' => self::CATEGORY_ANALYSIS,
         'dead_code_detection' => self::CATEGORY_DEAD_CODE_DETECTION,
         'unused_variable_detection' => self::CATEGORY_DEAD_CODE_DETECTION,
+        'unused_variable_detection_assume_override_exists' => self::CATEGORY_DEAD_CODE_DETECTION,
         'force_tracking_references' => self::CATEGORY_DEAD_CODE_DETECTION,
+        'constant_variable_detection' => self::CATEGORY_DEAD_CODE_DETECTION,
         'dead_code_detection_prefer_false_negative' => self::CATEGORY_DEAD_CODE_DETECTION,
         'warn_about_redundant_use_namespaced_class' => self::CATEGORY_DEAD_CODE_DETECTION,
+        'redundant_condition_detection' => self::CATEGORY_DEAD_CODE_DETECTION,
+        'assume_real_types_for_internal_functions' => self::CATEGORY_DEAD_CODE_DETECTION,
         'simplify_ast' => self::CATEGORY_ANALYSIS,
         'enable_class_alias_support' => self::CATEGORY_ANALYSIS,
         'read_magic_property_annotations' => self::CATEGORY_ANALYSIS,
@@ -96,6 +99,8 @@ class ConfigEntry
         'dump_ast' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'dump_signatures_file' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'dump_parsed_file_list' => self::CATEGORY_HIDDEN_CLI_ONLY,
+        'debug_max_frame_length' => self::CATEGORY_HIDDEN_CLI_ONLY,
+        'debug_output' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'progress_bar' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'progress_bar_sample_interval' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'processes' => self::CATEGORY_ANALYSIS,
@@ -108,6 +113,7 @@ class ConfigEntry
         'globals_type_map' => self::CATEGORY_ANALYSIS,
         'markdown_issue_messages' => self::CATEGORY_HIDDEN_CLI_ONLY, // self::CATEGORY_OUTPUT,
         'color_issue_messages' => self::CATEGORY_HIDDEN_CLI_ONLY, // self::CATEGORY_OUTPUT,
+        'color_issue_messages_if_supported' => self::CATEGORY_OUTPUT,
         'color_scheme' => self::CATEGORY_OUTPUT,
         'generic_types_enabled' => self::CATEGORY_ANALYSIS,
         'randomize_file_order' => self::CATEGORY_HIDDEN_CLI_ONLY,
@@ -119,6 +125,7 @@ class ConfigEntry
         'ignore_undeclared_functions_with_known_signatures' => self::CATEGORY_ANALYSIS,
         'use_fallback_parser' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'use_polyfill_parser' => self::CATEGORY_HIDDEN_CLI_ONLY,
+        'cache_polyfill_asts' => self::CATEGORY_ANALYSIS,
         'daemonize_socket' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'daemonize_tcp' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'daemonize_tcp_host' => self::CATEGORY_HIDDEN_CLI_ONLY,
@@ -126,15 +133,20 @@ class ConfigEntry
         'language_server_config' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'language_server_analyze_only_on_save' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'language_server_debug_level' => self::CATEGORY_HIDDEN_CLI_ONLY,
+        'language_server_disable_output_filter' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'language_server_use_pcntl_fallback' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'language_server_enable_go_to_definition' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'language_server_enable_hover' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'language_server_enable_completion' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'language_server_hide_category_of_issues' => self::CATEGORY_HIDDEN_CLI_ONLY,
+        'language_server_min_diagnostics_delay_ms' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'enable_internal_return_type_plugins' => self::CATEGORY_ANALYSIS,
+        'enable_extended_internal_return_type_plugins' => self::CATEGORY_ANALYSIS,
         'max_literal_string_type_length' => self::CATEGORY_ANALYSIS,
         'plugins' => self::CATEGORY_ANALYSIS,
         'plugin_config' => self::CATEGORY_ANALYSIS,
+        'maximum_recursion_depth' => self::CATEGORY_ANALYSIS,
+        'record_variable_context_and_scope' => self::CATEGORY_HIDDEN_CLI_ONLY,
     ];
 
     /** @var string the configuration setting name (e.g. 'null_casts_as_any_type') */
@@ -177,7 +189,7 @@ class ConfigEntry
             '@(?<!\[)`([A-Za-z_0-9]+)`@',
             /** @param array{0:string,1:string} $matches */
             function (array $matches) : string {
-                list($markdown, $name) = $matches;
+                [$markdown, $name] = $matches;
                 if ($name !== $this->config_name && isset(Config::DEFAULT_CONFIGURATION[$name])) {
                     return sprintf('[%s](#%s)', $markdown, $name);
                 }
@@ -220,6 +232,9 @@ class ConfigEntry
      */
     public function isHidden() : bool
     {
+        if (strncmp($this->config_name, '__', 2) === 0) {
+            return true;
+        }
         return $this->category === self::CATEGORY_HIDDEN_CLI_ONLY;
     }
 
@@ -248,7 +263,7 @@ class WikiConfigUpdater
      */
     private static $verbose = false;
 
-    private static function printUsageAndExit(int $exit_code = 1)
+    private static function printUsageAndExit(int $exit_code = 1) : void
     {
         global $argv;
         $program = $argv[0];
@@ -274,7 +289,7 @@ EOT;
             }
             $results[$config_name] = $entry;
         }
-        uasort($results, function (ConfigEntry $a, ConfigEntry $b) : int {
+        uasort($results, static function (ConfigEntry $a, ConfigEntry $b) : int {
             return
                 $a->getCategoryIndex() <=> $b->getCategoryIndex() ?:
                 strcasecmp($a->getCategory(), $b->getCategory()) ?:
@@ -318,11 +333,9 @@ EOT;
 
     /**
      * Updates the markdown document of issue types with minimal documentation of missing issue types.
-     *
-     * @return void
      * @throws InvalidArgumentException (uncaught) if the documented issue types can't be found.
      */
-    public static function main()
+    public static function main() : void
     {
         global $argv;
         if (count($argv) !== 1) {
@@ -367,7 +380,7 @@ EOT;
      * @param array<string,string> $old_text_for_section
      * @throws InvalidArgumentException
      */
-    private static function documentConfigCategorySection(WikiWriter $writer, ConfigEntry $config_entry, array $old_text_for_section)
+    private static function documentConfigCategorySection(WikiWriter $writer, ConfigEntry $config_entry, array $old_text_for_section) : void
     {
         $category = $config_entry->getCategory();
         if (!$category) {
@@ -387,7 +400,7 @@ EOT;
         }
     }
 
-    private static function documentConfig(WikiWriter $writer, ConfigEntry $config_entry)
+    private static function documentConfig(WikiWriter $writer, ConfigEntry $config_entry) : void
     {
         $header = '## ' . $config_entry->getConfigName();
 
@@ -406,7 +419,7 @@ EOT;
         $writer->append($placeholder);
     }
 
-    private static function debugLog(string $message)
+    private static function debugLog(string $message) : void
     {
         // Uncomment the below line to enable debugging
         if (self::$verbose) {

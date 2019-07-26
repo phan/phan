@@ -53,7 +53,7 @@ class Map extends SplObjectStorage
      * A new map containing the mapped keys and
      * values
      */
-    public function keyValueMap(Closure $key_closure, Closure $value_closure)
+    public function keyValueMap(Closure $key_closure, Closure $value_closure) : Map
     {
         $map = new Map();
         foreach ($this as $key => $value) {
@@ -75,7 +75,7 @@ class Map extends SplObjectStorage
              * @param K|V $element
              * @return K|V
              */
-            function ($element) {
+            static function ($element) {
                 return clone($element);
             };
         return $this->keyValueMap($clone, $clone);

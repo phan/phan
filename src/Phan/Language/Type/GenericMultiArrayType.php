@@ -4,6 +4,7 @@ namespace Phan\Language\Type;
 
 use InvalidArgumentException;
 use Phan\CodeBase;
+use Phan\Debug\Frame;
 use Phan\Exception\RecursionDepthException;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
@@ -97,7 +98,6 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
      * @param array<int,Type> $element_types
      * @param bool $is_nullable
      * @param int $key_type
-     * @return GenericMultiArrayType
      */
     public static function fromElementTypes(
         array $element_types,
@@ -156,7 +156,8 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
     {
         return $this->element_types_union_type
             ?? ($this->element_types_union_type = UnionType::of(
-                UnionType::normalizeMultiTypes($this->element_types)
+                UnionType::normalizeMultiTypes($this->element_types),
+                []
             ));
     }
 
@@ -191,7 +192,7 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
         // is taller than some value we probably messed up
         // and should bail out.
         if ($recursion_depth >= 20) {
-            throw new RecursionDepthException("Recursion has gotten out of hand");
+            throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
         }
 
         // TODO: Use UnionType::merge from a future change?
@@ -207,9 +208,9 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
                 );
             }
         } catch (RecursionDepthException $_) {
-            return ArrayType::instance($this->is_nullable)->asUnionType();
+            return ArrayType::instance($this->is_nullable)->asPHPDocUnionType();
         }
-        return $result->getUnionType();
+        return $result->getPHPDocUnionType();
     }
 
     /**
@@ -234,7 +235,7 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
         // is taller than some value we probably messed up
         // and should bail out.
         if ($recursion_depth >= 20) {
-            throw new RecursionDepthException("Recursion has gotten out of hand");
+            throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
         }
 
         // TODO: Use UnionType::merge from a future change?
@@ -250,8 +251,8 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
                 );
             }
         } catch (RecursionDepthException $_) {
-            return ArrayType::instance($this->is_nullable)->asUnionType();
+            return ArrayType::instance($this->is_nullable)->asPHPDocUnionType();
         }
-        return $result->getUnionType();
+        return $result->getPHPDocUnionType();
     }
 }

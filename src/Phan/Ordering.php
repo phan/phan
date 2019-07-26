@@ -54,7 +54,7 @@ class Ordering
 
         if (Config::getValue('randomize_file_order')) {
             $random_proc_file_map = [];
-            shuffle($analysis_file_list);
+            \shuffle($analysis_file_list);
             foreach ($analysis_file_list as $i => $file) {
                 $random_proc_file_map[$i % $process_count][] = $file;
             }
@@ -63,7 +63,7 @@ class Ordering
 
         // Construct a Hasher implementation based on config.
         if (Config::getValue('consistent_hashing_file_order')) {
-            sort($analysis_file_list, SORT_STRING);
+            \sort($analysis_file_list, \SORT_STRING);
             $hasher = new Consistent($process_count);
         } else {
             $hasher = new Sequential($process_count);
@@ -95,7 +95,7 @@ class Ordering
         }
 
         if (Config::getValue('consistent_hashing_file_order')) {
-            ksort($file_names_for_classes, SORT_STRING);
+            \ksort($file_names_for_classes, \SORT_STRING);
         }
 
         foreach ($file_names_for_classes as $file_name => $class) {
@@ -124,7 +124,7 @@ class Ordering
         // Sort the set of files with a given root by their
         // depth in the hierarchy
         foreach ($root_fqsen_list as $root_fqsen => $list) {
-            usort(
+            \usort(
                 $list,
                 /**
                  * Sort first by depth, and break ties by file name lexicographically
@@ -132,9 +132,9 @@ class Ordering
                  * @param array{depth:int,file:string} $a
                  * @param array{depth:int,file:string} $b
                  */
-                function (array $a, array $b) : int {
+                static function (array $a, array $b) : int {
                     return ($a['depth'] <=> $b['depth']) ?:
-                           strcmp($a['file'], $b['file']);
+                           \strcmp($a['file'], $b['file']);
                 }
             );
 
@@ -151,7 +151,7 @@ class Ordering
         // Distribute any remaining files without classes evenly
         // between the processes
         $hasher->reset();
-        foreach (array_keys($analysis_file_map) as $file) {
+        foreach (\array_keys($analysis_file_map) as $file) {
             // Choose which process this file list will be
             // run on
             $process_id = $hasher->getGroup((string)$file);

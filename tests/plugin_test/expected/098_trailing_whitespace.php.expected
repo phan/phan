@@ -1,0 +1,2 @@
+src/098_trailing_whitespace.php:4 PhanPluginWhitespaceTrailing The first occurrence of trailing whitespace was seen here.
+src/098_trailing_whitespace.php:6 PhanPluginWhitespaceTab The first occurrence of a tab was seen here. Running "expand" can fix that.

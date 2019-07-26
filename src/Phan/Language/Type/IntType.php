@@ -14,13 +14,33 @@ class IntType extends ScalarType
     const NAME = 'int';
 
     /** @override */
-    public function getIsPossiblyNumeric() : bool
+    public function isPossiblyNumeric() : bool
     {
         return true;
     }
 
     public function getTypeAfterIncOrDec() : UnionType
     {
-        return IntType::instance(false)->asUnionType();
+        return IntType::instance(false)->asPHPDocUnionType();
+    }
+
+    public function isPossiblyTruthy() : bool
+    {
+        return true;
+    }
+
+    public function isPossiblyFalsey() : bool
+    {
+        return true;
+    }
+
+    public function isAlwaysTruthy() : bool
+    {
+        return false;
+    }
+
+    public function isAlwaysFalsey() : bool
+    {
+        return false;
     }
 }

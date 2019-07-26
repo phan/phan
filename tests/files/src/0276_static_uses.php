@@ -1,5 +1,5 @@
 <?php
-
+error_reporting(E_ALL);
 interface I276 {
 
 }
@@ -28,7 +28,7 @@ class A276 implements I276 {
         $foo->baz($foo);  // should warn
         $foo->foo($this);
         // and check other classes
-        $b = B276::instance();
+        $b = B276::instance();  // Deprecated: Non-static method B276::instance() should not be called statically
         $this->foo($b);  // should warn
         $this->bar($b);
     }

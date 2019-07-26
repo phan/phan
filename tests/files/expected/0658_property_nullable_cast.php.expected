@@ -1,0 +1,2 @@
+%s:22 PhanPossiblyNullTypeMismatchProperty Assigning ?\NS658\Subclass to property but \NS658\O::$nonnull_var is \NS658\Base (null is incompatible)
+%s:23 PhanTypeMismatchProperty Assigning null to property but \NS658\O::$nonnull_var is \NS658\Base

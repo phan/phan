@@ -10,8 +10,9 @@ use Microsoft\PhpParser;
 use Microsoft\PhpParser\Diagnostic;
 use Microsoft\PhpParser\Token;
 use Microsoft\PhpParser\TokenKind;
+use Phan\Library\Cache;
 use Throwable;
-
+use function is_string;
 use function preg_match;
 
 /**
@@ -87,13 +88,10 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
 
     /**
      * @param Diagnostic[] &$errors @phan-output-reference
-     *
-     * @return \ast\Node
-     *
      * @throws InvalidArgumentException for invalid $version
      * @throws Throwable (after logging) if anything is thrown by the parser
      */
-    public function parseCodeAsPHPAST(string $file_contents, int $version, array &$errors = [])
+    public function parseCodeAsPHPAST(string $file_contents, int $version, array &$errors = [], Cache $unused_cache = null) : \ast\Node
     {
         // Force the byte offset to be within the
         $byte_offset = \max(0, \min(\strlen($file_contents), $this->instance_desired_byte_offset));
@@ -101,7 +99,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
         self::$handle_selected_node = $this->instance_handle_selected_node;
 
         if (!\in_array($version, self::SUPPORTED_AST_VERSIONS)) {
-            throw new InvalidArgumentException(sprintf("Unexpected version: want %s, got %d", \implode(', ', self::SUPPORTED_AST_VERSIONS), $version));
+            throw new InvalidArgumentException(\sprintf("Unexpected version: want %s, got %d", \implode(', ', self::SUPPORTED_AST_VERSIONS), $version));
         }
 
         // Aside: this can be implemented as a stub.
@@ -121,13 +119,19 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
     }
 
     /**
+     * @return ?string - null if this should not be cached
+     */
+    public function generateCacheKey(string $unused_file_contents, int $unused_version) : ?string
+    {
+        return null;
+    }
+
+    /**
      * Records the closest node or token to the given offset.
      * Heuristics are used to ensure that this can map to an ast\Node.
      * TODO: Finish implementing
-     *
-     * @return void
      */
-    private static function findNodeAtOffset(PhpParser\Node $parser_node, int $offset)
+    private static function findNodeAtOffset(PhpParser\Node $parser_node, int $offset) : void
     {
         self::$closest_node_or_token = null;
         self::$closest_node_or_token_symbol = null;
@@ -149,7 +153,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
      * @param PhpParser\Node $parser_node
      * @return bool|PhpParser\Node|PhpParser\Token (Returns $parser_node if that node was what the cursor is pointing directly to)
      */
-    private static function findNodeAtOffsetRecursive($parser_node, int $offset)
+    private static function findNodeAtOffsetRecursive(\Microsoft\PhpParser\Node $parser_node, int $offset)
     {
         foreach ($parser_node->getChildNodesAndTokens() as $key => $node_or_token) {
             if ($node_or_token instanceof Token) {
@@ -256,7 +260,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
      * @param PhpParser\Node|Token $n @phan-unused-param the tolerant-php-parser node that generated the $ast_node
      * @param mixed $ast_node the node that was selected because it was under the cursor
      */
-    private static function markNodeAsSelected($n, $ast_node)
+    private static function markNodeAsSelected($n, $ast_node) : void
     {
         // fwrite(STDERR, "Marking corresponding node as flagged: " . json_encode($n) . "\n" . \Phan\Debug::nodeToString($ast_node) . "\n");
         // fflush(STDERR);
@@ -277,7 +281,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
                 $ast_node->isSelectedApproximate = self::$closest_node_or_token_symbol;
                 $ast_node->selectedFragment = $fragment;
             }
-            // fwrite(STDERR, "Marking node with kind $ast_node->kind as selected\n");
+            // fwrite(STDERR, "Marking node with kind " . ast\get_kind_name($ast_node->kind) . " as selected\n");
             $ast_node->isSelected = true;
             $closure = self::$handle_selected_node;
             if ($closure) {
@@ -299,7 +303,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
      * TODO: Support variables?
      * TODO: Implement support for going to function definitions if no class could be found
      */
-    private static function extractFragmentFromCommentLike()
+    private static function extractFragmentFromCommentLike() : ?string
     {
         $offset = self::$desired_byte_offset;
         $contents = self::$file_contents;
@@ -343,7 +347,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
              * @throws InvalidArgumentException for invalid token classes
              * @suppress PhanThrowTypeMismatchForCall can throw if debugDumpNodeOrToken fails
              */
-            $fallback_closure = function ($n, int $unused_start_line) : ast\Node {
+            $fallback_closure = static function ($n, int $unused_start_line) : ast\Node {
                 if (!($n instanceof PhpParser\Node) && !($n instanceof Token)) {
                     throw new InvalidArgumentException("Invalid type for node: " . (\is_object($n) ? \get_class($n) : \gettype($n)) . ": " . static::debugDumpNodeOrToken($n));
                 }
@@ -382,7 +386,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
              * @param PhpParser\Node|Token $n
              * @throws InvalidArgumentException for invalid token classes
              */
-            $fallback_closure = function ($n, int $unused_start_line) : ast\Node {
+            $fallback_closure = static function ($n, int $unused_start_line) : ast\Node {
                 if (!($n instanceof PhpParser\Node) && !($n instanceof Token)) {
                     // @phan-suppress-next-line PhanThrowTypeMismatchForCall debugDumpNodeOrToken can throw
                     throw new InvalidArgumentException("Invalid type for node: " . (\is_object($n) ? \get_class($n) : \gettype($n)) . ": " . static::debugDumpNodeOrToken($n));
@@ -403,7 +407,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
      */
     protected static function astStmtUseOrGroupUseFromUseClause(
         PhpParser\Node\NamespaceUseClause $use_clause,
-        $parser_use_kind,
+        ?int $parser_use_kind,
         int $start_line
     ) : ast\Node {
         // fwrite(STDERR, "Calling astStmtUseOrGroupUseFromUseClause for " . json_encode($use_clause) . "\n");
@@ -419,10 +423,9 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
 
     /**
      * @param PhpParser\Node\QualifiedName|Token|null $type
-     * @return ?ast\Node
      * @override
      */
-    protected static function phpParserTypeToAstNode($type, int $line)
+    protected static function phpParserTypeToAstNode($type, int $line) : ?\ast\Node
     {
         $ast_node = parent::phpParserTypeToAstNode($type, $line);
         if ($type === self::$closest_node_or_token && $type !== null) {

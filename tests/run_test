@@ -28,12 +28,14 @@ case "$TEST_SUITE" in
 		exit $?
 		;;
 	__FakeSelfFallbackTest)
+		# This usually requires 1 GB with all plugins enabled.
 		./phan --plugin PHPUnitNotDeadCodePlugin \
 			--plugin InvokePHPNativeSyntaxCheckPlugin \
 			--dead-code-detection \
-			--polyfill-parse-all-element-doc-comments \
+			--assume-real-types-for-internal-functions \
 			--force-polyfill-parser \
-			--memory-limit 1G
+			--disable-cache \
+			--memory-limit 2G
 		exit $?
 		;;
 	__FakeRewritingTest)
@@ -51,17 +53,32 @@ case "$TEST_SUITE" in
 		./test.sh
 		exit $?
 		;;
+	__FakeRealTypesTest)
+		cd tests/real_types_test
+		./test.sh
+		exit $?
+		;;
 	__FakeToolTest)
 		cd tests/tool_test
 		./test.sh
 		exit $?
 		;;
 	__FakeAllPHPUnitTests)
-		vendor/bin/phpunit
+		PROCESSORS=$(nproc || echo 2)
+		if [[ "$PROCESSORS" > 1 ]]; then
+			vendor/bin/paratest --processes "$PROCESSORS" --runner WrapperRunner
+		else
+			vendor/bin/phpunit
+		fi
 		exit $?
 		;;
 	__FakeConfigOverrideTest)
 		cd tests/misc/config_override_test
+		./test.sh
+		exit $?
+		;;
+	__FakeFixerTest)
+		cd tests/fixer_test
 		./test.sh
 		exit $?
 		;;

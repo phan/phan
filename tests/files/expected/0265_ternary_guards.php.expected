@@ -1,1 +1,3 @@
-%s:9 PhanTypeMismatchArgumentInternal Argument 1 (str) is int but \urldecode() takes string
+%s:4 PhanImpossibleCondition Impossible attempt to cast $x of type array{} to string
+%s:9 PhanImpossibleCondition Impossible attempt to cast $x of type array{} to int
+%s:9 PhanTypeMismatchArgumentInternal Argument 1 ($str) is int but \urldecode() takes string

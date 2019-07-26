@@ -17,7 +17,7 @@ class ArrayType extends IterableType
     /** @phan-override */
     const NAME = 'array';
 
-    public function getIsAlwaysTruthy() : bool
+    public function isAlwaysTruthy() : bool
     {
         return false;
     }
@@ -31,6 +31,16 @@ class ArrayType extends IterableType
     public function isPossiblyObject() : bool
     {
         return false;  // Overrides IterableType returning true
+    }
+
+    public function isPossiblyTruthy() : bool
+    {
+        return true;
+    }
+
+    public function isPossiblyFalsey() : bool
+    {
+        return true;
     }
 
     public function isArrayLike() : bool
@@ -60,22 +70,24 @@ class ArrayType extends IterableType
                     $result->addType($type);
                 }
             } elseif ($type instanceof ArrayType) {
-                return $type->asUnionType();
+                return UnionType::of([$type], $union_type->getRealTypeSet());
             }
         }
         if ($result->isEmpty()) {
-            return ArrayShapeType::union($array_shape_types)->asUnionType();
+            return UnionType::of([ArrayShapeType::union($array_shape_types)], $union_type->getRealTypeSet());
         }
         foreach ($array_shape_types as $type) {
             foreach ($type->withFlattenedArrayShapeOrLiteralTypeInstances() as $type_part) {
                 $result->addType($type_part);
             }
         }
-        return $result->getUnionType();
+        return UnionType::of($result->getTypeSet(), $union_type->getRealTypeSet());
     }
 
     /**
      * E.g. array{0:int} + array{0:string,1:float} becomes array{0:int,1:float}
+     *
+     * This also handles `$x['field'] = expr`.
      *
      * @param UnionType $left the left-hand side (e.g. of a `+` operator). Keys from these array shapes take precedence.
      * @param UnionType $right the right-hand side (e.g. of a `+` operator).
@@ -83,9 +95,22 @@ class ArrayType extends IterableType
      */
     public static function combineArrayTypesOverriding(UnionType $left, UnionType $right) : UnionType
     {
+        return UnionType::of(
+            ArrayType::combineArrayTypeListsOverriding($left->getTypeSet(), $right->getTypeSet()),
+            ArrayType::combineArrayTypeListsOverriding($left->getRealTypeSet(), $right->getRealTypeSet())
+        );
+    }
+
+    /**
+     * @param array<int,Type> $left_types
+     * @param array<int,Type> $right_types
+     * @return array<int,Type>
+     */
+    private static function combineArrayTypeListsOverriding(array $left_types, array $right_types) : array
+    {
         $result = new UnionTypeBuilder();
         $left_array_shape_types = [];
-        foreach ($left->getTypeSet() as $type) {
+        foreach ($left_types as $type) {
             if ($type instanceof GenericArrayInterface) {
                 if ($type instanceof ArrayShapeType) {
                     $left_array_shape_types[] = $type;
@@ -94,11 +119,11 @@ class ArrayType extends IterableType
                     $result->addType($type);
                 }
             } elseif ($type instanceof ArrayType) {
-                return $type->asUnionType();
+                return [ArrayType::instance(false)];
             }
         }
         $right_array_shape_types = [];
-        foreach ($right->getTypeSet() as $type) {
+        foreach ($right_types as $type) {
             if ($type instanceof GenericArrayInterface) {
                 if ($type instanceof ArrayShapeType) {
                     $right_array_shape_types[] = $type;
@@ -107,28 +132,28 @@ class ArrayType extends IterableType
                     $result->addType($type);
                 }
             } elseif ($type instanceof ArrayType) {
-                return $type->asUnionType();
+                return [$type];
             }
         }
         if ($result->isEmpty()) {
             if (\count($left_array_shape_types) === 0) {
-                return ArrayShapeType::union($right_array_shape_types)->asUnionType();
+                return $right_array_shape_types;
             }
             if (\count($right_array_shape_types) === 0) {
-                return ArrayShapeType::union($left_array_shape_types)->asUnionType();
+                return $left_array_shape_types;
             }
             // fields from the left take precedence (e.g. [0, false] + ['string'] becomes [0, false])
-            return ArrayShapeType::combineWithPrecedence(
+            return [ArrayShapeType::combineWithPrecedence(
                 ArrayShapeType::union($left_array_shape_types),
                 ArrayShapeType::union($right_array_shape_types)
-            )->asUnionType();
+            )];
         }
         foreach (\array_merge($left_array_shape_types, $right_array_shape_types) as $type) {
             foreach ($type->withFlattenedArrayShapeOrLiteralTypeInstances() as $type_part) {
                 $result->addType($type_part);
             }
         }
-        return $result->getUnionType();
+        return $result->getTypeSet();
     }
 
     /**
@@ -157,7 +182,7 @@ class ArrayType extends IterableType
             // TODO: Add possibly_undefined annotations in union
             ArrayShapeType::union($left_array_shape_types)
         ));
-        return $result->getUnionType();
+        return $result->getPHPDocUnionType();
     }
 
     /**
@@ -186,7 +211,7 @@ class ArrayType extends IterableType
     /**
      * @return UnionType int|string for arrays
      */
-    public function iterableKeyUnionType(CodeBase $unused_code_base)
+    public function iterableKeyUnionType(CodeBase $unused_code_base) : UnionType
     {
         // Reduce false positive partial type mismatch errors
         return UnionType::empty();
@@ -219,9 +244,33 @@ class ArrayType extends IterableType
     {
         return parent::performComparison([], $scalar, $flags);
     }
+
+    // There are more specific checks in GenericArrayType and ArrayShapeType
+    public function asCallableType() : ?Type
+    {
+        return CallableArrayType::instance(false);
+    }
+
+    public function asArrayType() : ?Type
+    {
+        return $this->withIsNullable(false);
+    }
+
+    /** @override of IterableType */
+    public function asObjectType() : ?Type
+    {
+        return null;
+    }
+
+    public function canPossiblyCastToClass(CodeBase $unused_code_base, Type $unused_other) : bool
+    {
+        // arrays can't cast to object.
+        return false;
+    }
 }
 // Trigger the autoloader for GenericArrayType so that it won't be called
 // before ArrayType.
 // This won't pass if GenericArrayType is in the process of being instantiated.
 \class_exists(GenericArrayType::class);
 \class_exists(ArrayShapeType::class);
+\class_exists(CallableArrayType::class);

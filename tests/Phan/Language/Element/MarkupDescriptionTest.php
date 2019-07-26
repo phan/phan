@@ -2,7 +2,9 @@
 
 namespace Phan\Tests\Language\Element;
 
+use Phan\CodeBase;
 use Phan\Language\Element\Comment;
+use Phan\Language\Element\GlobalConstant;
 use Phan\Language\Element\MarkupDescription;
 use Phan\Tests\BaseTest;
 
@@ -14,7 +16,7 @@ final class MarkupDescriptionTest extends BaseTest
     /**
      * @dataProvider extractDocCommentProvider
      */
-    public function testExtractDocComment(string $expected, string $doc_comment, int $category = null)
+    public function testExtractDocComment(string $expected, string $doc_comment, int $category = null) : void
     {
         // @phan-suppress-next-line PhanAccessMethodInternal
         $this->assertSame($expected, MarkupDescription::extractDocComment($doc_comment, $category));
@@ -23,7 +25,7 @@ final class MarkupDescriptionTest extends BaseTest
     /**
      * @return array<int,array{0:string,1:string,2?:int}>
      */
-    public function extractDocCommentProvider()
+    public function extractDocCommentProvider() : array
     {
         return [
             [
@@ -210,7 +212,7 @@ EOT
     /**
      * @dataProvider getDocCommentWithoutWhitespaceProvider
      */
-    public function testGetDocCommentWithoutWhitespace(string $expected, string $doc_comment)
+    public function testGetDocCommentWithoutWhitespace(string $expected, string $doc_comment) : void
     {
         $this->assertSame($expected, MarkupDescription::getDocCommentWithoutWhitespace($doc_comment));
     }
@@ -218,7 +220,7 @@ EOT
     /**
      * @return array<int,array{0:string,1:string}>
      */
-    public function getDocCommentWithoutWhitespaceProvider()
+    public function getDocCommentWithoutWhitespaceProvider() : array
     {
         return [
             [
@@ -293,5 +295,21 @@ EOT
 EOT
             ],
         ];
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function testDescriptionForBuiltinConstant() : void
+    {
+        $const = GlobalConstant::fromGlobalConstantName('STDERR');
+        $expected = <<<EOT
+```php
+const STDERR = resource(stream)
+```
+
+An already opened stream to *stderr* (standard error).
+EOT;
+        $this->assertSame($expected, MarkupDescription::buildForElement($const, new CodeBase([], [], [], [], [])));
     }
 }

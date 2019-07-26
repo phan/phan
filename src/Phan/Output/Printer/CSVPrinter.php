@@ -20,11 +20,10 @@ final class CSVPrinter implements BufferedPrinterInterface
     /** @var resource in-memory stream for fputcsv() */
     private $stream;
 
-    /** @param IssueInstance $instance */
-    public function print(IssueInstance $instance)
+    public function print(IssueInstance $instance) : void
     {
-        fputcsv($this->stream, [
-            $instance->getFile(),
+        \fputcsv($this->stream, [
+            $instance->getDisplayedFile(),
             $instance->getLine(),
             $instance->getIssue()->getSeverity(),
             $instance->getIssue()->getSeverityName(),
@@ -35,37 +34,34 @@ final class CSVPrinter implements BufferedPrinterInterface
     }
 
     /** flush printer buffer */
-    public function flush()
+    public function flush() : void
     {
-        fseek($this->stream, 0);
-        $contents = stream_get_contents($this->stream);
-        if (!is_string($contents)) {
+        \fseek($this->stream, 0);
+        $contents = \stream_get_contents($this->stream);
+        if (!\is_string($contents)) {
             throw new AssertionError("Failed to read in-memory csv stream");
         }
         $this->output->write($contents);
-        fclose($this->stream);
+        \fclose($this->stream);
         $this->initStream();
     }
 
-    /**
-     * @param OutputInterface $output
-     */
-    public function configureOutput(OutputInterface $output)
+    public function configureOutput(OutputInterface $output) : void
     {
         $this->output = $output;
         $this->initStream();
     }
 
-    private function initStream()
+    private function initStream() : void
     {
         // Because fputcsv works on file pointers we need to do a bit
         // of dancing around with a memory stream.
-        $stream = fopen("php://memory", "rw");
+        $stream = \fopen("php://memory", "rw");
         if (!\is_resource($stream)) {
             throw new AssertionError('php://memory should always be openable');
         }
         $this->stream = $stream;
-        fputcsv($this->stream, [
+        \fputcsv($this->stream, [
             "filename", "line", "severity_ord", "severity_name",
             "category", "check_name", "message"
         ]);

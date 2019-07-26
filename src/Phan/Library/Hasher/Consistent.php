@@ -40,7 +40,7 @@ class Consistent implements Hasher
     /**
      * @return array<int,int> maps points in the field to the corresponding group (for consistent hashing)
      */
-    private static function generateMap(int $group_count)
+    private static function generateMap(int $group_count) : array
     {
         $map = [];
         for ($group = 0; $group < $group_count; $group++) {
@@ -59,7 +59,7 @@ class Consistent implements Hasher
     {
         $search_hash = self::generateKeyHash($key);
         $begin = 0;
-        $end = count($this->hash_ring_ids) - 1;
+        $end = \count($this->hash_ring_ids) - 1;
         while ($begin <= $end) {
             $pos = $begin + (($end - $begin) >> 1);
             $cur_val = $this->hash_ring_ids[$pos];
@@ -77,9 +77,8 @@ class Consistent implements Hasher
 
     /**
      * No-op reset
-     * @return void
      */
-    public function reset()
+    public function reset() : void
     {
     }
 

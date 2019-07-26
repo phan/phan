@@ -1,0 +1,4 @@
+%s:20 PhanImpossibleCondition Impossible attempt to cast false of type false to truthy
+%s:23 PhanImpossibleCondition Impossible attempt to cast 0 of type 0 to truthy
+%s:26 PhanImpossibleCondition Impossible attempt to cast false of type false to truthy
+%s:29 PhanImpossibleCondition Impossible attempt to cast 0 of type 0 to truthy

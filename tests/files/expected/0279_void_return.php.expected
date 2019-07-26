@@ -1,3 +1,5 @@
+%s:9 PhanRedundantCondition Redundant attempt to cast true of type true to truthy
 %s:9 PhanTypeMismatchReturn Returning type void but f() is declared to return \DateTime
+%s:10 PhanRedundantCondition Redundant attempt to cast true of type true to truthy
 %s:10 PhanTypeMismatchReturn Returning type 42 but f() is declared to return \DateTime
 %s:15 PhanTypeMismatchReturn Returning type void but g() is declared to return int

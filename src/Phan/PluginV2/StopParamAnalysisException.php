@@ -2,13 +2,12 @@
 
 namespace Phan\PluginV2;
 
-use Exception;
-
 /**
- * This is thrown to prevent Phan from running its own analysis after analyzeFunctionCall.
- *
- * This is used for tricky signatures such as join, which can take (array, string) or (string, array) when there are two arguments.
+ * Use PluginV3
+ * @deprecated use PluginV3
+ * @see \Phan\PluginV3\StopParamAnalysisException
+ * @suppress PhanUnreferencedClass
  */
-class StopParamAnalysisException extends Exception
+class StopParamAnalysisException extends \Phan\PluginV3\StopParamAnalysisException
 {
 }

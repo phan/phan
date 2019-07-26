@@ -68,11 +68,6 @@ class Comment
     ];
 
     /**
-     * @deprecated use Builder::WORD_REGEX
-     */
-    const WORD_REGEX = '([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)';
-
-    /**
      * @var int - contains a subset of flags to set on elements
      * Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES
      * Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS
@@ -121,10 +116,10 @@ class Comment
     protected $return_comment = null;
 
     /**
-     * @var array<int,string>
-     * A list of issue types to be suppressed
+     * @var array<string,int>
+     * A set of issue types to be suppressed
      */
-    protected $suppress_issue_list = [];
+    protected $suppress_issue_set = [];
 
     /**
      * @var array<string,CommentProperty>
@@ -179,8 +174,8 @@ class Comment
      *
      * @param ?ReturnComment $return_comment
      *
-     * @param array<int,string> $suppress_issue_list
-     * A list of tags for error type to be suppressed
+     * @param array<string,int> $suppress_issue_set
+     * A set of tags for error type to be suppressed
      *
      * @param array<int,CommentProperty> $magic_property_list
      *
@@ -193,6 +188,9 @@ class Comment
      * to which a closure will be bound.
      *
      * @param UnionType $throw_union_type
+     *
+     * @param array<string,Assertion> $param_assertion_map
+     *
      * @internal
      */
     public function __construct(
@@ -202,7 +200,7 @@ class Comment
         array $template_type_list,
         Option $inherited_type,
         $return_comment,
-        array $suppress_issue_list,
+        array $suppress_issue_set,
         array $magic_property_list,
         array $magic_method_list,
         array $phan_overrides,
@@ -218,7 +216,7 @@ class Comment
         $this->template_type_list = $template_type_list;
         $this->inherited_type = $inherited_type;
         $this->return_comment = $return_comment;
-        $this->suppress_issue_list = $suppress_issue_list;
+        $this->suppress_issue_set = $suppress_issue_set;
         $this->closure_scope = $closure_scope;
         $this->throw_union_type = $throw_union_type;
         $this->param_assertion_map = $param_assertion_map;
@@ -283,9 +281,8 @@ class Comment
 
     /**
      * @param mixed $value
-     * @return void
      */
-    private function applyOverride(string $key, $value)
+    private function applyOverride(string $key, $value) : void
     {
         switch ($key) {
             case 'param':
@@ -328,16 +325,17 @@ class Comment
                 $this->template_type_list = $value;
                 return;
             case 'inherits':
+            case 'extends':
                 $this->inherited_type = $value;
                 return;
         }
     }
 
     /**
-     * @var array<int,CommentParameter>
+     * @param array<int,CommentParameter> $override_comment_vars
      * A list of CommentParameters from var declarations
      */
-    private function mergeVariableList(array $override_comment_vars)
+    private function mergeVariableList(array $override_comment_vars) : void
     {
         $known_names = [];
         foreach ($override_comment_vars as $override_var) {
@@ -348,7 +346,7 @@ class Comment
                 unset($this->variable_list[$i]);
             }
         }
-        $this->variable_list = array_merge($this->variable_list, $override_comment_vars);
+        $this->variable_list = \array_merge($this->variable_list, $override_comment_vars);
     }
 
 
@@ -457,11 +455,10 @@ class Comment
      */
     public function getReturnType() : UnionType
     {
-        $return_comment = $this->return_comment;
-        if (!$return_comment) {
+        if (!$this->return_comment) {
             throw new AssertionError('Should check hasReturnUnionType');
         }
-        return $return_comment->getType();
+        return $this->return_comment->getType();
     }
 
     /**
@@ -470,11 +467,10 @@ class Comment
      */
     public function getReturnLineno() : int
     {
-        $return_comment = $this->return_comment;
-        if (!$return_comment) {
+        if (!$this->return_comment) {
             throw new AssertionError('Should check hasReturnUnionType');
         }
-        return $return_comment->getLineno();
+        return $this->return_comment->getLineno();
     }
 
     /**
@@ -537,12 +533,13 @@ class Comment
     }
 
     /**
-     * @return array<int,string>
-     * A set of issue names like 'PhanUnreferencedPublicMethod' to suppress
+     * @return array<string,int>
+     * A set of issue names like 'PhanUnreferencedPublicMethod' to suppress.
+     * If the values of fields are 0, the suppressions were not used yet.
      */
-    public function getSuppressIssueList() : array
+    public function getSuppressIssueSet() : array
     {
-        return $this->suppress_issue_list;
+        return $this->suppress_issue_set;
     }
 
     /**
@@ -656,9 +653,8 @@ class Comment
             $string  .= " * @param $parameter\n";
         }
 
-        $return_comment = $this->return_comment;
-        if ($return_comment) {
-            $string .= " * @return {$return_comment->getType()}\n";
+        if ($this->return_comment) {
+            $string .= " * @return {$this->return_comment->getType()}\n";
         }
         foreach ($this->throw_union_type->getTypeSet() as $type) {
             $string .= " * @throws {$type}\n";

@@ -6,15 +6,15 @@ use Generator;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
-use Phan\Language\Element\Comment;
+use Phan\Language\Element\Comment\Builder;
 use Phan\Language\Element\TypedElement;
 use Phan\Language\Element\UnaddressableTypedElement;
 use Phan\Language\FQSEN;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Library\FileCache;
-use Phan\PluginV2;
-use Phan\PluginV2\SuppressionCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\SuppressionCapability;
 use Phan\Suggestion;
 
 /**
@@ -22,7 +22,7 @@ use Phan\Suggestion;
  *
  * NOTE: This is automatically loaded by phan. Do not include it in a config.
  */
-final class BuiltinSuppressionPlugin extends PluginV2 implements
+final class BuiltinSuppressionPlugin extends PluginV3 implements
     SuppressionCapability
 {
     /**
@@ -64,7 +64,7 @@ final class BuiltinSuppressionPlugin extends PluginV2 implements
         string $issue_type,
         int $lineno,
         array $parameters,
-        $suggestion
+        ?Suggestion $suggestion
     ) : bool {
         $issue_suppression_list = $this->getRawIssueSuppressionList($code_base, $context->getFile());
         $suppressions_for_issue_type = $issue_suppression_list[$issue_type] ?? null;
@@ -144,33 +144,40 @@ final class BuiltinSuppressionPlugin extends PluginV2 implements
             return [];
         }
         $suggestion_list = [];
-        foreach (self::yieldSuppressionComments($file_contents) as list(
+        foreach (self::yieldSuppressionComments($file_contents) as [
             $comment_text,
             $comment_start_line,
             $comment_start_offset,
             $comment_name,
             $kind_list_text
-        )) {
-            $kind_list = array_map('trim', explode(',', $kind_list_text));
+        ]) {
+            $kind_list = \array_map('trim', \explode(',', $kind_list_text));
             foreach ($kind_list as $issue_kind) {
                 // Build a map where the line being suppressed is mapped to the line causing the suppression.
                 if ($comment_name === 'file-suppress') {
                     if (Config::getValue('disable_file_based_suppression')) {
                         continue;
                     }
-                    $suggestion_list[$issue_kind][0] = $comment_start_line + substr_count($comment_text, "\n", 0, $comment_start_offset);
+                    $suggestion_list[$issue_kind][0] = $comment_start_line + \substr_count($comment_text, "\n", 0, $comment_start_offset);
                     continue;
                 }
                 if (Config::getValue('disable_line_based_suppression')) {
                     continue;
                 }
-                $is_next_line = $comment_name === 'suppress-next-line';
                 // TODO: Why isn't the type of $comment_start_line inferred?
                 $line = (int)$comment_start_line;
-                if ($is_next_line) {
-                    $line++;
+                switch ($comment_name) {
+                    case 'suppress-previous-line':
+                        $line--;
+                        break;
+                    case 'suppress-next-line':
+                        $line++;
+                        break;
+                    case 'suppress-next-next-line':
+                        $line += 2;
+                        break;
                 }
-                $line += substr_count($comment_text, "\n", 0, $comment_start_offset);  // How many lines until that comment?
+                $line += \substr_count($comment_text, "\n", 0, $comment_start_offset);  // How many lines until that comment?
                 foreach ($kind_list as $issue_kind) {
                     // Store the suggestion for the issue kind.
                     // Make this an array set for easier lookup.
@@ -181,21 +188,22 @@ final class BuiltinSuppressionPlugin extends PluginV2 implements
         return $suggestion_list;
     }
 
-    const SUPPRESS_ISSUE_REGEX = '/@phan-(suppress-(next|current)-line|file-suppress)\s+(' . Comment::WORD_REGEX . '(,\s*' . Comment::WORD_REGEX . ')*)/';
+    // @phan-suppress-next-line PhanAccessClassConstantInternal
+    const SUPPRESS_ISSUE_REGEX = '/@phan-(suppress-(next(?:-next)?|current|previous)-line|file-suppress)\s+' . Builder::SUPPRESS_ISSUE_LIST . '/';
 
     /**
      * @return Generator<array{0:string,1:int,2:int,3:string,4:string}>
      * yields [$comment_text, $comment_start_line, $comment_start_offset, $comment_name, $kind_list_text];
      */
-    private function yieldSuppressionComments(
+    private static function yieldSuppressionComments(
         string $file_contents
-    ) {
+    ) : Generator {
         foreach (\token_get_all($file_contents) as $token) {
             if (!\is_array($token)) {
                 continue;
             }
             $kind = $token[0];
-            if ($kind !== T_COMMENT && $kind !== T_DOC_COMMENT) {
+            if ($kind !== \T_COMMENT && $kind !== \T_DOC_COMMENT) {
                 continue;
             }
             $comment_text = $token[1];
@@ -209,7 +217,7 @@ final class BuiltinSuppressionPlugin extends PluginV2 implements
                 self::SUPPRESS_ISSUE_REGEX,
                 $comment_text,
                 $matches,
-                PREG_OFFSET_CAPTURE
+                \PREG_OFFSET_CAPTURE
             );
             if (!$match_count) {
                 continue;

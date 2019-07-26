@@ -24,10 +24,6 @@ final class CategoryIssueFilter implements IssueFilterInterface
         $this->mask = $mask;
     }
 
-    /**
-     * @param IssueInstance $issue
-     * @return bool
-     */
     public function supports(IssueInstance $issue) : bool
     {
         return (bool)($issue->getIssue()->getCategory() & $this->mask);

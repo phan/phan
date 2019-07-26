@@ -1,0 +1,4 @@
+%s:5 PhanTypeInvalidStaticPropertyName Saw a dynamic usage of a static property with a name of type array{} but expected the name to be a string
+%s:6 PhanTypeInvalidMethodName Instance method name must be a string, got array{}
+%s:7 PhanTypeInvalidStaticMethodName Static method name must be a string, got array{}
+%s:8 PhanTypeInvalidPropertyName Saw a dynamic usage of an instance property with a name of type array{} but expected the name to be a string

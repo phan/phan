@@ -32,7 +32,7 @@ final class BufferingCollector implements IssueCollectorInterface
      * Collect issue
      * @param IssueInstance $issue
      */
-    public function collectIssue(IssueInstance $issue)
+    public function collectIssue(IssueInstance $issue) : void
     {
         if (!$this->filter->supports($issue)) {
             return;
@@ -41,18 +41,13 @@ final class BufferingCollector implements IssueCollectorInterface
         $this->issues[$this->formatSortableKey($issue)] = $issue;
     }
 
-    /**
-     * @param IssueInstance $issue
-     * @return string
-     */
     private function formatSortableKey(IssueInstance $issue) : string
     {
-
         // This needs to be a sortable key so that output
         // is in the expected order
-        return implode('|', [
+        return \implode('|', [
             $issue->getFile(),
-            str_pad((string)$issue->getLine(), 5, '0', STR_PAD_LEFT),
+            \str_pad((string)$issue->getLine(), 5, '0', \STR_PAD_LEFT),
             $issue->getIssue()->getType(),
             $issue->getMessage()
         ]);
@@ -63,18 +58,16 @@ final class BufferingCollector implements IssueCollectorInterface
      */
     public function getCollectedIssues():array
     {
-        ksort($this->issues);
-        return array_values($this->issues);
+        \ksort($this->issues);
+        return \array_values($this->issues);
     }
 
     /**
      * Clear the array of issues without outputting anything.
      *
      * Called after analysis ends.
-     *
-     * @return void
      */
-    public function flush()
+    public function flush() : void
     {
         $this->issues = [];
     }
@@ -84,11 +77,10 @@ final class BufferingCollector implements IssueCollectorInterface
      * Called from daemon mode.
      *
      * @param array<int,string> $files - the relative paths to those files
-     * @return void
      */
-    public function removeIssuesForFiles(array $files)
+    public function removeIssuesForFiles(array $files) : void
     {
-        $file_set = array_flip($files);
+        $file_set = \array_flip($files);
         foreach ($this->issues as $key => $issue) {
             if (\array_key_exists($issue->getFile(), $file_set)) {
                 unset($this->issues[$key]);
@@ -99,7 +91,7 @@ final class BufferingCollector implements IssueCollectorInterface
     /**
      * Removes all collected issues.
      */
-    public function reset()
+    public function reset() : void
     {
         $this->issues = [];
     }

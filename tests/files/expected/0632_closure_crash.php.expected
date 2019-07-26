@@ -1,0 +1,3 @@
+%s:7 PhanTypeMismatchReturn Returning type false but foo() is declared to return \Closure
+%s:15 PhanTypeMismatchReturn Returning type false but foo2() is declared to return \Closure
+%s:22 PhanTypeMismatchReturn Returning type false but foo_callable() is declared to return callable

@@ -1,0 +1,2 @@
+src/055_loop_false_positive.php:5 PhanPluginNumericalComparison numerical values compared by the operators '===' or '!=='
+src/055_loop_false_positive.php:14 PhanPluginNumericalComparison numerical values compared by the operators '===' or '!=='

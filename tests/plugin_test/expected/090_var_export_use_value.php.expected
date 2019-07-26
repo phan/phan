@@ -1,0 +1,2 @@
+src/090_var_export_use_value.php:4 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \var_export
+src/090_var_export_use_value.php:7 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \print_r

@@ -15,24 +15,25 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Type;
 use Phan\Language\Type\ClosureType;
+use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
-use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeFunctionCallCapability;
-use Phan\PluginV2\ReturnTypeOverrideCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\AnalyzeFunctionCallCapability;
+use Phan\PluginV3\ReturnTypeOverrideCapability;
 
 /**
  * NOTE: This is automatically loaded by phan. Do not include it in a config.
  *
  * TODO: Refactor this.
  */
-final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
+final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
     AnalyzeFunctionCallCapability,
     ReturnTypeOverrideCapability
 {
 
     /**
      * @param Node|int|string|float|null $arg_array_node
-     * @return ?array
+     * @return ?array<int,Node|int|string|float>
      */
     private static function extractArrayArgs($arg_array_node)
     {
@@ -134,11 +135,12 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
             array $args
         ) : UnionType {
             if (\count($args) < 1) {
-                return ClosureType::instance(false)->asUnionType();
+                // Emits warning and returns null if 0 args given
+                return NullType::instance(false)->asRealUnionType();
             }
             $function_like_list = UnionTypeVisitor::functionLikeListFromNodeAndContext($code_base, $context, $args[0], true);
             if (\count($function_like_list) === 0) {
-                return ClosureType::instance(false)->asUnionType();
+                return ClosureType::instance(false)->asPHPDocUnionType();
             }
             $closure_types = UnionType::empty();
             foreach ($function_like_list as $function_like) {
@@ -146,6 +148,9 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
             }
             return $closure_types;
         };
+        /**
+         * @param array<int,Node|int|float|string> $args
+         */
         $from_closure_callback = static function (
             CodeBase $code_base,
             Context $context,
@@ -153,10 +158,10 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
             array $args
         ) : UnionType {
             if (\count($args) < 1) {
-                return ClosureType::instance(false)->asUnionType();
+                return NullType::instance(false)->asRealUnionType();
             }
             $types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0], true);
-            $types = $types->makeFromFilter(function (Type $type) : bool {
+            $types = $types->makeFromFilter(static function (Type $type) : bool {
                 if ($type instanceof ClosureType) {
                     return $type->hasKnownFQSEN();
                 }
@@ -164,7 +169,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
             });
 
             if ($types->isEmpty()) {
-                return ClosureType::instance(false)->asUnionType();
+                return ClosureType::instance(false)->asPHPDocUnionType();
             }
             return $types;
         };
@@ -186,14 +191,14 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
     {
         /**
          * @param array<int,Node|int|string|float> $args
-         * @return void
          */
         $call_user_func_callback = static function (
             CodeBase $code_base,
             Context $context,
             Func $unused_function,
-            array $args
-        ) {
+            array $args,
+            ?Node $_
+        ) : void {
             if (\count($args) < 1) {
                 return;
             }
@@ -207,14 +212,14 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
 
         /**
          * @param array<int,Node|int|string|float> $args
-         * @return void
          */
         $call_user_func_array_callback = static function (
             CodeBase $code_base,
             Context $context,
             Func $unused_function,
-            array $args
-        ) {
+            array $args,
+            ?Node $_
+        ) : void {
             if (\count($args) < 2) {
                 return;
             }
@@ -282,7 +287,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
         /**
          * @param Node|int|string|float|null $argument
          */
-        return function ($argument, int $i) use ($code_base, $context, &$cache) : UnionType {
+        return static function ($argument, int $i) use ($code_base, $context, &$cache) : UnionType {
             $argument_type = $cache[$i] ?? null;
             if (isset($argument_type)) {
                 return $argument_type;
@@ -305,10 +310,8 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
      * @param Context $context
      * @param array<int,FunctionInterface> $function_like_list
      * @param array<int,Node|string|int|float> $arguments
-     *
-     * @return void
      */
-    private static function analyzeFunctionAndNormalArgumentList(CodeBase $code_base, Context $context, array $function_like_list, array $arguments)
+    private static function analyzeFunctionAndNormalArgumentList(CodeBase $code_base, Context $context, array $function_like_list, array $arguments) : void
     {
         $get_argument_type = self::createNormalArgumentCache($code_base, $context);
         foreach ($function_like_list as $function_like) {

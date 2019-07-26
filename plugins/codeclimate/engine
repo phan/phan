@@ -18,111 +18,119 @@ use Phan\Output\PrinterFactory;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Phan\Phan;
 
-// chdir to the code path in order to support the .phan/config.php file
-$old_cwd = getcwd();
+call_user_func(static function () use ($code_base) : void {
+    // Create our CLI interface and load arguments
+    chdir('/code');
+    $cli = CLI::fromArgv();
 
-// Create our CLI interface and load arguments
-chdir('/code');
-$cli = new CLI();
-chdir($old_cwd);
-
-// Obtain the config
-$codeclimate_config = json_decode(file_get_contents('/config.json'), true);
-
-$inner_config = $codeclimate_config['config'] ?? [];
-
-// Parse the config
-if (isset($inner_config['minimum-severity'])) {
-    $minimum_severity = (int) $codeclimate_config['config']['minimum-severity'];
-} else {
-    $minimum_severity = 0;
-}
-
-$mask = -1;
-
-if ($inner_config['ignore-undeclared'] ?? false) {
-    $mask &= ~Issue::CATEGORY_UNDEFINED;
-}
-
-if (isset($inner_config['quick'])) {
-    Config::setValue('quick_mode', (bool)$inner_config['quick']);
-}
-
-if (isset($inner_config['backward-compatibility-checks'])) {
-    Config::setValue('backward_compatibility_checks', (bool)$inner_config['backward-compatibility-checks']);
-}
-
-if (isset($inner_config['dead-code-detection'])) {
-    Config::setValue('dead_code_detection', (bool)$inner_config['dead-code-detection']);
-}
-
-if (isset($inner_config['file_extensions'])) {
-    $file_extensions = explode(",", $inner_config['file_extensions']);
-} else {
-    $file_extensions = ['php'];
-}
-
-$include_paths = [];
-
-$queue_file = function ($file_path) use (&$include_paths, $file_extensions) {
-    $file_info = new SplFileInfo($file_path);
-
-    if (in_array($file_info->getExtension(), $file_extensions))
-    {
-        $include_paths[] = realpath($file_path);
+    // Obtain the config
+    $config_path = '/config.json';
+    if (!is_file($config_path)) {
+        fwrite(STDERR, "Could not find '$config_path'" . PHP_EOL);
+        exit(1);
     }
-};
+    // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
+    $codeclimate_config = json_decode(file_get_contents($config_path), true);
 
-// Todo: wrap with `-l` console logic instead of custom function
-$queue_with_include_paths = function ($dir_path) use (&$include_paths, &$queue_with_include_paths, &$queue_file) {
-    foreach (scandir($dir_path) as $f) {
-        if ($f !== '.' and $f !== '..') {
-            if (is_dir("$dir_path/$f")) {
-                $queue_with_include_paths("$dir_path/$f");
-            } else {
-                $queue_file("$dir_path/$f");
+    $inner_config = $codeclimate_config['config'] ?? [];
+
+    // Parse the config
+    if (isset($inner_config['minimum-severity'])) {
+        $minimum_severity = (int) $codeclimate_config['config']['minimum-severity'];
+    } else {
+        $minimum_severity = 0;
+    }
+
+    $mask = -1;
+
+    if ($inner_config['ignore-undeclared'] ?? false) {
+        $mask &= ~Issue::CATEGORY_UNDEFINED;
+    }
+
+    if (isset($inner_config['quick'])) {
+        Config::setValue('quick_mode', (bool)$inner_config['quick']);
+    }
+
+    if (isset($inner_config['backward-compatibility-checks'])) {
+        Config::setValue('backward_compatibility_checks', (bool)$inner_config['backward-compatibility-checks']);
+    }
+
+    if (isset($inner_config['dead-code-detection'])) {
+        Config::setValue('dead_code_detection', (bool)$inner_config['dead-code-detection']);
+    }
+
+    if (isset($inner_config['file_extensions'])) {
+        $file_extensions = explode(",", $inner_config['file_extensions']);
+    } else {
+        $file_extensions = ['php'];
+    }
+
+    $include_paths = [];
+
+    /**
+     * @param string $file_path
+     */
+    $queue_file = function (string $file_path) use (&$include_paths, $file_extensions) : void {
+        $file_info = new SplFileInfo($file_path);
+
+        if (in_array($file_info->getExtension(), $file_extensions))
+        {
+            $include_paths[] = realpath($file_path);
+        }
+    };
+
+    // Todo: wrap with `-l` console logic instead of custom function
+    $queue_with_include_paths = function (string $dir_path) use (&$queue_with_include_paths, &$queue_file) : void {
+        foreach (scandir($dir_path) as $f) {
+            if ($f !== '.' and $f !== '..') {
+                if (is_dir("$dir_path/$f")) {
+                    $queue_with_include_paths("$dir_path/$f");
+                } else {
+                    $queue_file("$dir_path/$f");
+                }
             }
         }
+    };
+
+    foreach ($codeclimate_config['include_paths'] as $path) {
+        if (is_dir('/code/' . $path)) {
+            $queue_with_include_paths('/code/' . $path);
+        } else {
+            $queue_file("/code/$path");
+        }
     }
-};
 
-foreach ($codeclimate_config['include_paths'] as $path) {
-    if (is_dir('/code/' . $path)) {
-        $queue_with_include_paths('/code/' . $path);
-    } else {
-        $queue_file("/code/$path");
+    // skip run if there are no paths
+    if (empty($include_paths)) {
+        exit();
     }
-}
 
-// skip run if there are no paths
-if (empty($include_paths)) {
-    exit();
-}
+    $output = new ConsoleOutput();
+    $factory = new PrinterFactory();
+    Config::setValue('markdown_issue_messages', true);
+    $printer = $factory->getPrinter('codeclimate', $output);
+    Phan::setPrinter($printer);
 
-$output = new ConsoleOutput();
-$factory = new PrinterFactory();
-Config::setValue('markdown_issue_messages', true);
-$printer = $factory->getPrinter('codeclimate', $output);
-Phan::setPrinter($printer);
+    $filter = new ChainedIssueFilter([
+        new FileIssueFilter(new Phan()),
+        new MinimumSeverityFilter($minimum_severity),
+        new CategoryIssueFilter($mask)
+    ]);
+    $collector = new BufferingCollector($filter);
+    Phan::setIssueCollector($collector);
 
-$filter = new ChainedIssueFilter([
-    new FileIssueFilter(new Phan()),
-    new MinimumSeverityFilter($minimum_severity),
-    new CategoryIssueFilter($mask)
-]);
-$collector = new BufferingCollector($filter);
-Phan::setIssueCollector($collector);
+    // If .phan/config.php specified a list of files to parse and analyze, prefer those over codeclimate.
+    $file_list_from_cli = $cli->getFileList();
+    if (count($file_list_from_cli) > 0) {
+        $force_codeclimate_filelist = $inner_config['force-codeclimate-filelist'] ?? false;
+        if (!$force_codeclimate_filelist) {
+            $include_paths = $file_list_from_cli;
+        }
+    }
 
-// If .phan/config.php specified a list of files to parse and analyze, prefer those over codeclimate.
-$file_list_from_cli = $cli->getFileList();
-if (count($file_list_from_cli) > 0) {
-	$force_codeclimate_filelist = $inner_config['force-codeclimate-filelist'] ?? false;
-	if (!$force_codeclimate_filelist) {
-		$include_paths = $file_list_from_cli;
-	}
-}
-
-// Analyze the file list provided via the CLI
-Phan::analyzeFileList($code_base, function() use($include_paths) {
-	return $include_paths;
+    // Analyze the file list provided via the CLI
+    // @phan-suppress-next-line PhanThrowTypeAbsentForCall if this throws, it's not recoverable.
+    Phan::analyzeFileList($code_base, /** @return string[] */ static function () use($include_paths) : array {
+        return $include_paths;
+    });
 });

@@ -5,9 +5,11 @@ namespace Phan\Analysis;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
+use Phan\Exception\RecursionDepthException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Element\Clazz;
+use Phan\Language\Element\Comment\Parameter as CommentParameter;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
@@ -20,6 +22,8 @@ use Phan\Language\Type\StaticOrSelfType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
+use function array_merge;
+use function strcasecmp;
 
 /**
  * Analyzer of the parameters of function/closure/method signatures.
@@ -38,13 +42,24 @@ class ParameterTypesAnalyzer
      * Check function, closure, and method parameters to make sure they're valid
      *
      * This will also warn if method parameters are incompatible with the parameters of ancestor methods.
-     *
-     * @return void
      */
     public static function analyzeParameterTypes(
         CodeBase $code_base,
         FunctionInterface $method
-    ) {
+    ) : void {
+        try {
+            self::analyzeParameterTypesInner($code_base, $method);
+        } catch (RecursionDepthException $_) {
+        }
+    }
+
+    /**
+     * @see analyzeParameterTypes
+     */
+    private static function analyzeParameterTypesInner(
+        CodeBase $code_base,
+        FunctionInterface $method
+    ) : void {
         if (Config::getValue('check_docblock_signature_param_type_match')) {
             self::analyzeParameterTypesDocblockSignaturesMatch($code_base, $method);
         }
@@ -57,8 +72,22 @@ class ParameterTypesAnalyzer
 
         // Look at each parameter to make sure their types
         // are valid
+        $is_optional_seen = false;
         foreach ($method->getParameterList() as $parameter) {
             $union_type = $parameter->getUnionType();
+
+            if ($parameter->isOptional()) {
+                $is_optional_seen = true;
+            } else {
+                if ($is_optional_seen) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $method->getContext(),
+                        Issue::ParamReqAfterOpt,
+                        $parameter->getFileRef()->getLineNumberStart()
+                    );
+                }
+            }
 
             // Look at each type in the parameter's Union Type
             foreach ($union_type->getReferencedClasses() as $outer_type => $type) {
@@ -144,7 +173,7 @@ class ParameterTypesAnalyzer
     /**
      * Precondition: $target_php_version < 70200
      */
-    private static function analyzeRealSignatureCompatibility(CodeBase $code_base, FunctionInterface $method, int $target_php_version)
+    private static function analyzeRealSignatureCompatibility(CodeBase $code_base, FunctionInterface $method, int $target_php_version) : void
     {
         $php70_checks = $target_php_version < 70100;
 
@@ -152,8 +181,8 @@ class ParameterTypesAnalyzer
             foreach ($real_parameter->getUnionType()->getTypeSet() as $type) {
                 $type_class = \get_class($type);
                 if ($php70_checks) {
-                    if ($type->getIsNullable()) {
-                        if ($real_parameter->getIsUsingNullableSyntax()) {
+                    if ($type->isNullable()) {
+                        if ($real_parameter->isUsingNullableSyntax()) {
                             Issue::maybeEmit(
                                 $code_base,
                                 $method->getContext(),
@@ -187,7 +216,7 @@ class ParameterTypesAnalyzer
         foreach ($method->getRealReturnType()->getTypeSet() as $type) {
             $type_class = \get_class($type);
             if ($php70_checks) {
-                if ($type->getIsNullable()) {
+                if ($type->isNullable()) {
                     Issue::maybeEmit(
                         $code_base,
                         $method->getContext(),
@@ -227,10 +256,7 @@ class ParameterTypesAnalyzer
         }
     }
 
-    /**
-     * @return void
-     */
-    private static function checkCommentParametersAreInOrder(CodeBase $code_base, FunctionInterface $method)
+    private static function checkCommentParametersAreInOrder(CodeBase $code_base, FunctionInterface $method) : void
     {
         $comment = $method->getComment();
         if ($comment === null) {
@@ -278,7 +304,7 @@ class ParameterTypesAnalyzer
     private static function analyzeOverrideSignature(
         CodeBase $code_base,
         Method $method
-    ) {
+    ) : void {
         if (!Config::getValue('analyze_signature_compatibility')) {
             return;
         }
@@ -293,7 +319,7 @@ class ParameterTypesAnalyzer
 
         // Make sure we're actually overriding something
         // TODO(in another PR): check that signatures of magic methods are valid, if not done already (e.g. __get expects one param, most can't define return types, etc.)?
-        $is_actually_override = $method->getIsOverride();
+        $is_actually_override = $method->isOverride();
 
         if (!$is_actually_override && $method->isOverrideIntended()) {
             self::analyzeOverrideComment($code_base, $method);
@@ -328,12 +354,9 @@ class ParameterTypesAnalyzer
         }
     }
 
-    /**
-     * @return void
-     */
-    private static function analyzeOverrideComment(CodeBase $code_base, Method $method)
+    private static function analyzeOverrideComment(CodeBase $code_base, Method $method) : void
     {
-        if ($method->getIsMagic()) {
+        if ($method->isMagic()) {
             return;
         }
         // Only emit this issue on the base class, not for the subclass which inherited it
@@ -364,7 +387,7 @@ class ParameterTypesAnalyzer
         Method $method,
         Clazz $class,
         Method $o_method
-    ) {
+    ) : void {
         if ($o_method->isFinal()) {
             // Even if it is a constructor, verify that a method doesn't override a final method.
             // TODO: different warning for trait (#1126)
@@ -416,7 +439,7 @@ class ParameterTypesAnalyzer
         // template type parameters we may have
         if ($type_option->isDefined()) {
             $o_parameter_list =
-                \array_map(function (Parameter $parameter) use ($type_option, $code_base) : Parameter {
+                \array_map(static function (Parameter $parameter) use ($type_option, $code_base) : Parameter {
 
                     if (!$parameter->getUnionType()->hasTemplateTypeRecursive()) {
                         return $parameter;
@@ -592,7 +615,7 @@ class ParameterTypesAnalyzer
         }
 
         // Access must be compatible
-        if ($o_method->isStrictlyMoreVisibileThan($method)) {
+        if ($o_method->isStrictlyMoreVisibleThan($method)) {
             if ($o_method->isPHPInternal()) {
                 Issue::maybeEmit(
                     $code_base,
@@ -626,7 +649,6 @@ class ParameterTypesAnalyzer
      * @param $method - The overriding method
      * @param $o_method - The overridden method. E.g. if a subclass overrid a base class implementation, then $o_method would be from the base class.
      * @param $o_class the overridden class
-     * @return void
      */
     private static function analyzeOverrideRealSignature(
         CodeBase $code_base,
@@ -634,7 +656,7 @@ class ParameterTypesAnalyzer
         Clazz $class,
         Method $o_method,
         Clazz $o_class
-    ) {
+    ) : void {
         if ($o_class->isTrait() && $method->getDefiningFQSEN()->getFullyQualifiedClassName() === $class->getFQSEN()) {
             // Give up on analyzing if the class **directly** overrides any (abstract OR non-abstract) method defined by the trait
             // TODO: Fix edge cases caused by hack changing FQSEN of private methods
@@ -830,45 +852,84 @@ class ParameterTypesAnalyzer
         }
         if ($is_possibly_compatible) {
             if (Config::getValue('inherit_phpdoc_types')) {
-                self::inheritPHPDoc($method, $o_method);
+                self::inheritPHPDoc($code_base, $method, $o_method);
             }
         }
     }
 
     /**
+     * @return array<string,CommentParameter>
+     */
+    private static function extractCommentParameterMap(Method $method) : array
+    {
+        $comment = $method->getComment();
+        return $comment ? $comment->getParameterMap() : [];
+    }
+    /**
      * Inherit any missing phpdoc types for (at)return and (at)param of $method from $o_method.
      * This is the default behavior, see https://www.phpdoc.org/docs/latest/guides/inheritance.html
-     *
-     * @return void
      */
     private static function inheritPHPDoc(
+        CodeBase $code_base,
         Method $method,
         Method $o_method
-    ) {
+    ) : void {
         // Get the parameters for that method
         $phpdoc_parameter_list = $method->getParameterList();
         $o_phpdoc_parameter_list = $o_method->getParameterList();
+        $comment_parameter_map = null;
         foreach ($phpdoc_parameter_list as $i => $parameter) {
-            $parameter_type = $parameter->getUnionType();
+            $parameter_type = $parameter->getNonVariadicUnionType();
+            // If there is already a phpdoc parameter type, then don't bother inheriting the parameter type from $o_method
             if (!$parameter_type->isEmpty()) {
-                continue;
+                $comment_parameter_map = $comment_parameter_map ?? self::extractCommentParameterMap($method);
+                $comment_parameter = $comment_parameter_map[$parameter->getName()] ?? null;
+                if ($comment_parameter) {
+                    $comment_parameter_type = $comment_parameter->getUnionType();
+                    if (!$comment_parameter_type->isEmpty()) {
+                        continue;
+                    }
+                }
             }
             $parent_parameter = $o_phpdoc_parameter_list[$i] ?? null;
             if ($parent_parameter) {
-                $parent_parameter_type = $parent_parameter->getUnionType();
+                $parent_parameter_type = $parent_parameter->getNonVariadicUnionType();
                 if ($parent_parameter_type->isEmpty()) {
                     continue;
                 }
-                $parameter->setUnionType($parent_parameter_type);
+                if ($parameter_type->isEmpty() || $parent_parameter_type->isExclusivelyNarrowedFormOf($code_base, $parameter_type)) {
+                    $parameter->setUnionType($parent_parameter_type->eraseRealTypeSet());
+                }
             }
         }
 
-        $phpdoc_return_type = $method->getUnionType();
-        if ($phpdoc_return_type->isEmpty()) {
-            $parent_phpdoc_return_type = $o_method->getUnionType();
-            if (!$parent_phpdoc_return_type->isEmpty()) {
+        $parent_phpdoc_return_type = $o_method->getUnionType();
+        if (!$parent_phpdoc_return_type->isEmpty()) {
+            $phpdoc_return_type = $method->getUnionType();
+            if ($phpdoc_return_type->isEmpty()) {
                 $method->setUnionType($parent_phpdoc_return_type);
+            } else {
+                self::maybeInheritCommentReturnType($code_base, $method, $parent_phpdoc_return_type);
             }
+        }
+    }
+
+    /**
+     * @param Method $method a method which has a union type, but is permitted to inherit a more specific type.
+     * @param UnionType $inherited_union_type a non-empty union type
+     */
+    private static function maybeInheritCommentReturnType(CodeBase $code_base, Method $method, UnionType $inherited_union_type) : void
+    {
+        $comment = $method->getComment();
+        if ($comment && $comment->hasReturnUnionType()) {
+            if (!$comment->getReturnType()->isEmpty()) {
+                // This comment explicitly specified the desired return type.
+                // Give up on inheriting
+                return;
+            }
+        }
+        if ($inherited_union_type->isExclusivelyNarrowedFormOf($code_base, $method->getUnionType())) {
+            $method->setUnionType($inherited_union_type);
         }
     }
 
@@ -883,7 +944,6 @@ class ParameterTypesAnalyzer
      * @param string $phpdoc_issue_type the ParamSignaturePHPDocMismatch* (issue type if overriding internal method)
      * @param ?int $lineno
      * @param int|string ...$args
-     * @return void
      */
     private static function emitSignatureRealMismatchIssue(
         CodeBase $code_base,
@@ -892,9 +952,9 @@ class ParameterTypesAnalyzer
         string $issue_type,
         string $internal_issue_type,
         string $phpdoc_issue_type,
-        $lineno,
+        ?int $lineno,
         ...$args
-    ) {
+    ) : void {
         if ($method->isFromPHPDoc() || $o_method->isFromPHPDoc()) {
             Issue::maybeEmit(
                 $code_base,
@@ -934,15 +994,12 @@ class ParameterTypesAnalyzer
         }
     }
 
-    /**
-     * @return void
-     */
     private static function analyzeParameterTypesDocblockSignaturesMatch(
         CodeBase $code_base,
         FunctionInterface $method
-    ) {
+    ) : void {
         $phpdoc_parameter_map = $method->getPHPDocParameterTypeMap();
-        if (count($phpdoc_parameter_map) === 0) {
+        if (\count($phpdoc_parameter_map) === 0) {
             // nothing to check.
             return;
         }
@@ -960,9 +1017,6 @@ class ParameterTypesAnalyzer
         self::recordOutputReferences($method);
     }
 
-    /**
-     * @return void
-     */
     private static function tryToAssignPHPDocTypeToParameter(
         CodeBase $code_base,
         FunctionInterface $method,
@@ -970,7 +1024,7 @@ class ParameterTypesAnalyzer
         Parameter $parameter,
         UnionType $real_param_type,
         UnionType $phpdoc_param_union_type
-    ) {
+    ) : void {
         $context = $method->getContext();
         $resolved_real_param_type = $real_param_type->withStaticResolvedInContext($context);
         $is_exclusively_narrowed = true;
@@ -1004,7 +1058,7 @@ class ParameterTypesAnalyzer
                 $param_to_modify = $method->getParameterList()[$i] ?? null;
                 if ($param_to_modify) {
                     // TODO: Maybe have two different sets of methods for setUnionType and setCallerUnionType, this is easy to mix up for variadics.
-                    $param_to_modify->setUnionType($normalized_phpdoc_param_union_type);
+                    $param_to_modify->setUnionType($normalized_phpdoc_param_union_type->withRealTypeSet($real_param_type->getRealTypeSet()));
                 }
             } else {
                 $comment = $method->getComment();
@@ -1028,10 +1082,7 @@ class ParameterTypesAnalyzer
         }
     }
 
-    /**
-     * @return ?int
-     */
-    private static function guessCommentParamLineNumber(FunctionInterface $method, Parameter $param)
+    private static function guessCommentParamLineNumber(FunctionInterface $method, Parameter $param) : ?int
     {
         $comment = $method->getComment();
         if ($comment === null) {
@@ -1048,11 +1099,9 @@ class ParameterTypesAnalyzer
     /**
      * Guesses the return number of a method's PHPDoc's (at)return statement.
      * Returns null if that could not be found.
-     *
-     * @return ?int
      * @internal
      */
-    public static function guessCommentReturnLineNumber(FunctionInterface $method)
+    public static function guessCommentReturnLineNumber(FunctionInterface $method) : ?int
     {
         $comment = $method->getComment();
         if ($comment === null) {
@@ -1064,10 +1113,7 @@ class ParameterTypesAnalyzer
         return $comment->getReturnLineno();
     }
 
-    /**
-     * @param FunctionInterface $method
-     */
-    private static function recordOutputReferences(FunctionInterface $method)
+    private static function recordOutputReferences(FunctionInterface $method) : void
     {
         foreach ($method->getOutputReferenceParamNames() as $output_param_name) {
             foreach ($method->getRealParameterList() as $parameter) {
@@ -1093,7 +1139,7 @@ class ParameterTypesAnalyzer
      *           if Phan should proceed using phpdoc type instead of real types. (Converting T|null to ?T)
      *         - null if the type is an invalid narrowing, and Phan should warn.
      */
-    public static function normalizeNarrowedParamType(UnionType $phpdoc_param_union_type, UnionType $real_param_type)
+    public static function normalizeNarrowedParamType(UnionType $phpdoc_param_union_type, UnionType $real_param_type) : ?UnionType
     {
         // "@param null $x" is almost always a mistake. Forbid it for now.
         // But allow "@param T|null $x"
@@ -1116,9 +1162,8 @@ class ParameterTypesAnalyzer
 
     /**
      * Warns if a method is overriding a final method
-     * @return void
      */
-    private static function warnOverridingFinalMethod(CodeBase $code_base, Method $method, Clazz $class, Method $o_method)
+    private static function warnOverridingFinalMethod(CodeBase $code_base, Method $method, Clazz $class, Method $o_method) : void
     {
         if ($method->isFromPHPDoc()) {
             // TODO: Track phpdoc methods separately from real methods

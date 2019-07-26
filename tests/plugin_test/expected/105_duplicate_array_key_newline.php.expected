@@ -1,0 +1,2 @@
+src/105_duplicate_array_key_newline.php:15 PhanPluginDuplicateSwitchCase Duplicate/Equivalent switch case("help\n") detected in switch statement - the later entry will be ignored.
+src/105_duplicate_array_key_newline.php:24 PhanPluginDuplicateArrayKey Duplicate/Equivalent array key value("a\nb") detected in array - the earlier entry will be ignored.

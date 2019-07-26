@@ -11,7 +11,6 @@ use Sabre\Event\Promise;
  * @see \Phan\LanguageServer\DefinitionResolver for how this maps the found node to the type in the context.
  * @see \Phan\Plugin\Internal\NodeSelectionPlugin for how the node is found
  * @see \Phan\AST\TolerantASTConverter\TolerantASTConverterWithNodeMapping for how isSelected is set
- * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 abstract class NodeInfoRequest
 {
@@ -21,8 +20,13 @@ abstract class NodeInfoRequest
     protected $path;
     /** @var Position the position of the cursor within $this->uri where information is being requested. */
     protected $position;
-    /** @var Promise|null this should be resolve()d with the requested information, or null on failure or if the request was aborted */
+    /** @var Promise this should be resolve()d with the requested information, or resolve()d with null (or rejected) on failure or if the request was aborted */
     protected $promise;
+
+    /**
+     * @var bool
+     */
+    protected $fulfilled = false;
 
     public function __construct(
         string $uri,
@@ -34,8 +38,11 @@ abstract class NodeInfoRequest
         $this->promise = new Promise();
     }
 
-    /** @return void */
-    abstract public function finalize();
+    /**
+     * If a response hasn't been sent to the client, then send a null response
+     * so that it knows it should stop waiting.
+     */
+    abstract public function finalize() : void;
 
     /**
      * Returns the file URL for which info is being requested
@@ -63,8 +70,12 @@ abstract class NodeInfoRequest
         return $this->position;
     }
 
-    /** @return ?Promise */
-    final public function getPromise()
+    /**
+     * Returns the promise for the result of this NodeInfoRequest.
+     *
+     * (to be used to fetch/await the value)
+     */
+    final public function getPromise() : Promise
     {
         return $this->promise;
     }

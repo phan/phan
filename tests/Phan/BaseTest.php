@@ -2,6 +2,7 @@
 
 namespace Phan\Tests;
 
+use Phan\Config;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -11,13 +12,17 @@ use PHPUnit\Framework\TestCase;
 abstract class BaseTest extends TestCase
 {
     /**
-     * @return void
+     * @suppress PhanAccessMethodInternal
      */
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass() : void
     {
         parent::setUpBeforeClass();
-        ini_set('memory_limit', '1G');
+        // Need more than 1G to generate code coverage reports
+        \ini_set('memory_limit', '2G');
+        \chdir(\dirname(__DIR__, 2));
+        Config::reset();
     }
+
     /**
      * Needed to prevent phpunit from backing up these private static variables.
      * See https://phpunit.de/manual/current/en/fixtures.html#fixtures.global-state
@@ -30,10 +35,15 @@ abstract class BaseTest extends TestCase
         ],
         'Phan\AST\ASTReverter' => [
             'closure_map',
+            'noop',
         ],
         'Phan\Language\Type' => [
             'canonical_object_map',
             'internal_fn_cache',
+        ],
+        'Phan\Language\Type\LiteralFloatType' => [
+            'nullable_float_type',
+            'non_nullable_float_type',
         ],
         'Phan\Language\Type\LiteralIntType' => [
             'nullable_int_type',
@@ -45,6 +55,13 @@ abstract class BaseTest extends TestCase
         ],
         'Phan\Language\UnionType' => [
             'empty_instance',
+        ],
+        // Back this up because it takes 306 ms.
+        'Phan\Tests\Language\UnionTypeTest' => [
+            'code_base',
+        ],
+        'Phan\Tests\Plugin\Internal\MethodSearcherPluginTest' => [
+            'code_base',
         ],
     ];
 }

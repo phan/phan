@@ -2,8 +2,6 @@
 <?php
 declare(strict_types=1);
 
-// @phan-file-suppress PhanNativePHPSyntaxCheckPlugin, UnusedPluginFileSuppression
-
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 require_once __DIR__ . '/lib/WikiWriter.php';
 
@@ -22,7 +20,7 @@ class WikiIssueTypeUpdater
     /** @var array<string,array>|null an example for a subset of the issue types */
     private static $examples;
 
-    private static function printUsageAndExit(int $exit_code = 1)
+    private static function printUsageAndExit(int $exit_code = 1) : void
     {
         global $argv;
         $program = $argv[0];
@@ -40,7 +38,7 @@ EOT;
     private static function getSortedIssueMap() : array
     {
         $map = Issue::issueMap();
-        uasort($map, function (Issue $lhs, Issue $rhs) : int {
+        uasort($map, static function (Issue $lhs, Issue $rhs) : int {
             // Order by category, then by the issue name (natural order)
             return ($lhs->getCategory() <=> $rhs->getCategory())
                 // ?: ($rhs->getSeverity() <=> $lhs->getSeverity())
@@ -83,11 +81,9 @@ EOT;
 
     /**
      * Updates the markdown document of issue types with minimal documentation of missing issue types.
-     *
-     * @return void
      * @throws InvalidArgumentException (uncaught) if the documented issue types can't be found.
      */
-    public static function main()
+    public static function main() : void
     {
         global $argv;
         if (count($argv) !== 1) {
@@ -133,7 +129,7 @@ EOT;
      * @param array<string,string> $old_text_for_section
      * @throws InvalidArgumentException
      */
-    private static function documentIssueCategorySection(WikiWriter $writer, Issue $issue, array $old_text_for_section)
+    private static function documentIssueCategorySection(WikiWriter $writer, Issue $issue, array $old_text_for_section) : void
     {
         $category = $issue->getCategory();
         if (!$category) {
@@ -156,7 +152,7 @@ EOT;
     /**
      * @param array<string,string> $old_text_for_section
      */
-    private static function documentIssue(WikiWriter $writer, Issue $issue, array $old_text_for_section)
+    private static function documentIssue(WikiWriter $writer, Issue $issue, array $old_text_for_section) : void
     {
         // TODO: Print each severity as we see it?
         $header = '## ' . $issue->getType();
@@ -182,7 +178,7 @@ EOT;
         }
     }
 
-    private static function debugLog(string $message)
+    private static function debugLog(string $message) : void
     {
         // Uncomment the below line to enable debugging
         if (self::$verbose) {
@@ -202,13 +198,15 @@ EOT;
         if ($issue instanceof Issue) {
             self::debugLog("Found $issue_name\n");
             /** @param array<int,string> $unused_match */
-            $text = preg_replace_callback('@\n```\n[^\n]*\n```@', function ($unused_match) use ($issue) : string {
+            $text = preg_replace_callback('@\n```\n[^\n]*\n```@', static function (array $unused_match) use ($issue) : string {
                 return "\n```\n{$issue->getTemplateRaw()}\n```";
             }, $text);
             if (!preg_match('@```php|https?://@i', $text)) {
                 $example = self::findExamples()[$issue->getType()] ?? null;
                 if ($example) {
                     $text = rtrim($text, "\n") . "\n\n" . self::textForExample($example);
+                } else {
+                    fwrite(STDERR, "Failed to find text for {$issue->getType()}\n");
                 }
             }
         }
@@ -220,7 +218,7 @@ EOT;
      */
     private static function textForExample(array $example) : string
     {
-        list($record, $src_file_lineno, $expected_file_lineno) = $example;
+        [$record, $src_file_lineno, $expected_file_lineno] = $example;
         $src_url = preg_replace('@.*/tests/@', 'https://github.com/phan/phan/tree/master/tests/', $record->src_filename);
         $expected_url = preg_replace('@.*/tests/@', 'https://github.com/phan/phan/tree/master/tests/', $record->expected_filename);
 
@@ -231,6 +229,9 @@ e.g. [this issue]($expected_url#L$expected_file_lineno) is emitted when analyzin
 EOT;
     }
 
+    /**
+     * @return array<string,array>
+     */
     private static function findExamples() : array
     {
         return self::$examples ?? self::$examples = self::calculateExamples();
@@ -246,7 +247,19 @@ EOT;
         $files = array_merge(
             glob($base . '/tests/files/expected/*.php.expected') ?: [],
             glob($base . '/tests/misc/fallback_test/expected/*.php.expected') ?: [],
-            glob($base . '/tests/plugin_test/expected/*.php.expected') ?: []
+            glob($base . '/tests/plugin_test/expected/*.php.expected') ?: [],
+            glob($base . '/tests/php74_files/expected/*.php.expected') ?: [],
+            glob($base . '/tests/php73_files/expected/*.php.expected') ?: [],
+            glob($base . '/tests/php72_files/expected/*.php.expected') ?: [],
+            glob($base . '/tests/php70_files/expected/*.php.expected') ?: [],
+            glob($base . '/tests/misc/intl_files/expected/*.php.expected') ?: [],
+            glob($base . '/tests/misc/rewriting_test/expected/*.php.expected') ?: [],
+            glob($base . '/tests/misc/fallback_test/expected/*.php.expected') ?: [],
+            glob($base . '/tests/misc/config_override_test/expected/*.php.expected') ?: [],
+            glob($base . '/tests/misc/soap_test/expected/*.php.expected') ?: [],
+            glob($base . '/tests/misc/ast/expected/*.php.expected') ?: [],
+            glob($base . '/tests/rasmus_files/expected/*.php.expected') ?: []
+            //glob($base . '/tests/multi_files/expected/*.php.expected') ?: []
         );
         $records = [];
         foreach ($files as $expected_filename) {
@@ -258,7 +271,7 @@ EOT;
             }
         }
         // Put the longest files first, we overwrite issue names even if they were seen already
-        usort($records, function (UnitTestRecord $a, UnitTestRecord $b) : int {
+        usort($records, static function (UnitTestRecord $a, UnitTestRecord $b) : int {
             return (strlen($b->src_contents) <=> strlen($a->src_contents)) ?: strcmp($a->src_filename, $b->src_filename);
         });
 
@@ -267,7 +280,7 @@ EOT;
             // Process these backwards so we use the first issue occurrence in a file as the finally chosen example.
             $issues = $record->getIssues();
             krsort($issues);
-            foreach ($issues as $expected_file_lineno => list($ref, $issue_name, $unused_description)) {
+            foreach ($issues as $expected_file_lineno => [$ref, $issue_name, $unused_description]) {
                 if (preg_match('/[0-9]+$/', $ref, $matches)) {
                     $src_file_lineno = (int)$matches[0];
                     $examples[$issue_name] = [$record, $src_file_lineno, $expected_file_lineno];
@@ -313,7 +326,11 @@ class UnitTestRecord
                 continue;
             }
             $lineno = $i + 1;
-            $issues[$lineno] = explode(' ', $line, 3);
+            $details = explode(' ', $line, 3);
+            if (count($details) !== 3) {
+                continue;
+            }
+            $issues[$lineno] = $details;
         }
         return $issues;
     }

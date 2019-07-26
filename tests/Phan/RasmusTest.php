@@ -10,8 +10,8 @@ class RasmusTest extends AbstractPhanFileTest
     /**
      * @suppress PhanUndeclaredConstant
      */
-    public function getTestFiles()
+    public function getTestFiles() : array
     {
-        return $this->scanSourceFilesDir(RASMUS_TEST_FILE_DIR, RASMUS_EXPECTED_DIR);
+        return $this->scanSourceFilesDir(\RASMUS_TEST_FILE_DIR, \RASMUS_EXPECTED_DIR);
     }
 }

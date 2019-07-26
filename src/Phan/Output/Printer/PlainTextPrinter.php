@@ -20,18 +20,20 @@ final class PlainTextPrinter implements IssuePrinterInterface
     /** @var OutputInterface an output that plaintext formatted issues can be written to. */
     private $output;
 
-    /**
-     * @param IssueInstance $instance
-     * @return void
-     */
-    public function print(IssueInstance $instance)
+    public function print(IssueInstance $instance) : void
     {
-        $file    = $instance->getFile();
+        $file    = $instance->getDisplayedFile();
         $line    = $instance->getLine();
         $issue   = $instance->getIssue();
         $type    = $issue->getType();
         $message = $instance->getMessage();
         $suggestion_message = $instance->getSuggestionMessage();
+        $column  = $instance->getColumn();
+        if ($column > 0 && !Config::getValue('hide_issue_column')) {
+            $column_message = "at column $column";
+        } else {
+            $column_message = null;
+        }
 
         if (Config::getValue('color_issue_messages')) {
             switch ($issue->getSeverity()) {
@@ -51,17 +53,23 @@ final class PlainTextPrinter implements IssuePrinterInterface
                 $type,
                 $message
             ]);
+            if ($column_message) {
+                $issue .= Colorizing::colorizeTemplate(" ({DETAILS})", [$column_message]);
+            }
             if ($suggestion_message) {
                 $issue .= Colorizing::colorizeTemplate(" ({SUGGESTION})", [$suggestion_message]);
             }
         } else {
-            $issue = sprintf(
+            $issue = \sprintf(
                 '%s:%d %s %s',
                 $file,
                 $line,
                 $type,
                 $message
             );
+            if ($column_message) {
+                $issue .= " ($column_message)";
+            }
             if ($suggestion_message) {
                 $issue .= " ($suggestion_message)";
             }
@@ -70,11 +78,7 @@ final class PlainTextPrinter implements IssuePrinterInterface
         $this->output->writeln($issue);
     }
 
-    /**
-     * @param OutputInterface $output
-     * @return void
-     */
-    public function configureOutput(OutputInterface $output)
+    public function configureOutput(OutputInterface $output) : void
     {
         $this->output = $output;
     }

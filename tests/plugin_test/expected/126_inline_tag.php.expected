@@ -1,0 +1,1 @@
+src/126_inline_tag.php:5 PhanPluginInlineHTML Saw inline HTML between the first and last token: "<div>test</div>"

@@ -1,0 +1,6 @@
+%s:4 PhanCoalescingNeverNull Using non-null (0 == null) of type bool as the left hand side of a null coalescing (??) operation. The right hand side may be unnecessary.
+%s:4 PhanSuspiciousValueComparison Suspicious attempt to compare 0 of type 0 to null of type null with operator '=='
+%s:5 PhanCoalescingAlwaysNull Using null of type null as the left hand side of a null coalescing (??) operation. The left hand side may be unnecessary.
+%s:7 PhanCoalescingAlwaysNull Using $a of type null as the left hand side of a null coalescing (??) operation. The left hand side may be unnecessary.
+%s:8 PhanCoalescingNeverNull Using non-null $i of type int as the left hand side of a null coalescing (??) operation. The right hand side may be unnecessary.
+%s:9 PhanCoalescingNeverNull Using non-null ($i + 2) of type float|int as the left hand side of a null coalescing (??) operation. The right hand side may be unnecessary.

@@ -12,13 +12,13 @@ interface Responder
 {
 
     /**
-     * @return ?array the request data(E.g. returns null if JSON is malformed)
+     * @return ?array<string,mixed> the request data(E.g. returns null if JSON is malformed)
      */
-    public function getRequestData();
+    public function getRequestData() : ?array;
 
     /**
      * This must be called exactly once
-     * @return void
+     * @param array<string,mixed> $data the response fields
      */
-    public function sendResponseAndClose(array $data);
+    public function sendResponseAndClose(array $data) : void;
 }

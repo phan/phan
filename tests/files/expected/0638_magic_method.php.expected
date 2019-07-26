@@ -1,0 +1,2 @@
+%s:10 PhanUndeclaredMagicConstant Reference to magic constant __CLASS__ that is undeclared in the current scope
+%s:13 PhanParamReqAfterOpt Required argument follows optional

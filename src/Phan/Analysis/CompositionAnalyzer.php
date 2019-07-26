@@ -8,6 +8,8 @@ use Phan\Issue;
 use Phan\Language\Element\Clazz;
 use Phan\Language\UnionType;
 
+use function count;
+
 /**
  * This analyzer checks if the signatures of inherited properties match
  */
@@ -16,13 +18,11 @@ class CompositionAnalyzer
 
     /**
      * Check to see if the signatures of inherited properties match
-     *
-     * @return void
      */
     public static function analyzeComposition(
         CodeBase $code_base,
         Clazz $class
-    ) {
+    ) : void {
         // Get the list of all inherited classes.
         $inherited_class_list =
             $class->getAncestorClassList($code_base);

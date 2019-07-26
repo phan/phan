@@ -1,0 +1,2 @@
+src/097_template_nullable.php:31 PhanTypeMismatchReturn Returning type false but getX() is declared to return ?T
+src/097_template_nullable.php:34 PhanTypeSuspiciousEcho Suspicious argument \stdClass for an echo/print statement

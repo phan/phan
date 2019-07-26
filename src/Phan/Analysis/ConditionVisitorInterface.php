@@ -32,6 +32,17 @@ interface ConditionVisitorInterface
      * @param Node|int|float|string $expr
      * @return Context - Constant after inferring type from an expression such as `if ($x === 'literal')`
      */
+    public function updateVariableToBeEqual(
+        Node $var_node,
+        $expr,
+        Context $context = null
+    ) : Context;
+
+    /**
+     * @param Node $var_node
+     * @param Node|int|float|string $expr
+     * @return Context - Constant after inferring type from an expression such as `if ($x === 'literal')`
+     */
     public function updateVariableToBeIdentical(
         Node $var_node,
         $expr,
@@ -77,9 +88,8 @@ interface ConditionVisitorInterface
      *
      * @param Node|string|int|float $object_node
      * @param Node|string|int|float|bool $expr_node
-     * @return ?Context
      */
-    public function analyzeClassAssertion($object_node, $expr_node);
+    public function analyzeClassAssertion($object_node, $expr_node) : ?Context;
 
     /**
      * @return ?Variable - Returns null if the variable is undeclared and ignore_undeclared_variables_in_global_scope applies.
@@ -89,5 +99,5 @@ interface ConditionVisitorInterface
      *
      * TODO: support assertions on superglobals, within the current file scope?
      */
-    public function getVariableFromScope(Node $var_node, Context $context);
+    public function getVariableFromScope(Node $var_node, Context $context) : ?Variable;
 }

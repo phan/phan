@@ -5,21 +5,21 @@ namespace Phan\Plugin\Internal;
 use ast\Node;
 use Closure;
 use Phan\Language\Context;
-use Phan\PluginV2;
-use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV3\PostAnalyzeNodeCapability;
 
 /**
  * This plugin checks for the definition of a region selected by a user.
  */
-class NodeSelectionPlugin extends PluginV2 implements PostAnalyzeNodeCapability
+class NodeSelectionPlugin extends PluginV3 implements PostAnalyzeNodeCapability
 {
     /**
-     * @param ?Closure(Context,Node):void $closure
+     * @param ?Closure(Context,Node,array<int,Node>):void $closure
      * @return void
      * TODO: Fix false positive TypeMismatchDeclaredParam with Closure $closure = null in this method
      */
-    public function setNodeSelectorClosure($closure)
+    public function setNodeSelectorClosure(?Closure $closure) : void
     {
         NodeSelectionVisitor::$closure = $closure;
     }
@@ -42,7 +42,7 @@ class NodeSelectionPlugin extends PluginV2 implements PostAnalyzeNodeCapability
  */
 class NodeSelectionVisitor extends PluginAwarePostAnalysisVisitor
 {
-    /** @var ?Closure(Context,Node):void $closure */
+    /** @var ?Closure(Context,Node,Node[]):void $closure */
     public static $closure = null;
 
     // A plugin's visitors should not override visit() unless they need to.
@@ -52,10 +52,10 @@ class NodeSelectionVisitor extends PluginAwarePostAnalysisVisitor
      * @param Node $node
      * A node to check
      *
-     * @return void
+     * @param array<int,Node> $parent_node_list
      * @see ConfigPluginSet::prepareNodeSelectionPlugin() for how this is called
      */
-    public function visitCommonImplementation(Node $node)
+    public function visitCommonImplementation(Node $node, array $parent_node_list) : void
     {
         if (!\property_exists($node, 'isSelected')) {
             return;
@@ -66,7 +66,7 @@ class NodeSelectionVisitor extends PluginAwarePostAnalysisVisitor
             // fwrite(STDERR, "Calling NodeSelectionVisitor without a closure\n");
             return;
         }
-        $closure($this->context, $node);
+        $closure($this->context, $node, $parent_node_list);
     }
 }
 

@@ -6,7 +6,9 @@ namespace Phan\Language\Element\Comment;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Issue;
+use Phan\IssueFixSuggester;
 use Phan\Language\Context;
+use Phan\Language\Element\AddressableElementInterface;
 use Phan\Language\Element\Comment;
 use Phan\Language\Element\Flags;
 use Phan\Language\FQSEN;
@@ -19,6 +21,9 @@ use Phan\Library\FileCache;
 use Phan\Library\None;
 use Phan\Library\Option;
 use Phan\Library\Some;
+use Phan\Suggestion;
+
+use function count;
 
 /**
  * This constructs comments from doc comments (or other comment types).
@@ -53,10 +58,9 @@ final class Builder
     /** @var ?ReturnComment the (at)return annotation details */
     public $return_comment;
     /**
-     * @var array<int,string> the list of issue names from (at)suppress annotations
-     * @suppress PhanReadOnlyPublicProperty FIXME: array_push doesn't count as a write-reference
+     * @var array<string,int> the set of issue names from (at)suppress annotations
      */
-    public $suppress_issue_list = [];
+    public $suppress_issue_set = [];
     /** @var array<int,Property> the list of (at)property annotations (and property-read, property-write) */
     public $magic_property_list = [];
     /** @var array<int,Method> the list of (at)method annotations */
@@ -79,7 +83,7 @@ final class Builder
      * A list of issues detected in the comment being built.
      * This is stored instead of immediately emitting the issue because later lines might suppress these issues.
      *
-     * @var array<int,array{0:string,1:int,2:array<int,mixed>}>
+     * @var array<int,array{0:string,1:int,2:array<int,mixed>,3:?Suggestion}>
      */
     private $issues = [];
 
@@ -127,26 +131,39 @@ final class Builder
         string $line,
         bool $is_var,
         int $i
-    ) {
+    ) : Parameter {
         $matched = \preg_match(self::PARAM_COMMENT_REGEX, $line, $match);
         // Parse https://docs.phpdoc.org/references/phpdoc/tags/param.html
         // Exceptions: Deliberately allow "&" in "@param int &$x" when documenting references.
         // Warn if there is neither a union type nor a variable
-        if ($matched && (isset($match[2]) || isset($match[21]))) {
+        if ($matched && (isset($match[2]) || isset($match[17]))) {
             if (!isset($match[2])) {
                 return new Parameter('', UnionType::empty(), $this->guessActualLineLocation($i));
             }
-            if (!$is_var && !isset($match[21])) {
+            if (!$is_var && !isset($match[17])) {
                 $this->checkParamWithoutVarName($line, $match[0], $match[2], $i);
             }
             $original_type = $match[2];
 
-            $is_variadic = ($match[20] ?? '') === '...';
+            $is_variadic = ($match[16] ?? '') === '...';
 
             if ($is_var && $is_variadic) {
                 $variable_name = '';  // "@var int ...$x" is nonsense and invalid phpdoc.
             } else {
-                $variable_name = $match[21] ?? '';
+                $variable_name = $match[17] ?? '';
+                if ($is_var && $variable_name === '' && $this->comment_type === Comment::ON_PROPERTY) {
+                    $end_offset = (int)\strpos($line, $match[0]) + \strlen($match[0]);
+                    $char_at_end_offset = $line[$end_offset] ?? ' ';
+                    if (\ord($char_at_end_offset) > 32 && !\preg_match('@^\*+/$@', (string)\substr($line, $end_offset))) {  // Not a control character or space
+                        $this->emitIssue(
+                            Issue::UnextractableAnnotationSuffix,
+                            $this->guessActualLineLocation($i),
+                            \trim($line),
+                            $original_type,
+                            $char_at_end_offset
+                        );
+                    }
+                }
             }
             // Fix typos or non-standard phpdoc tags, according to the user's configuration.
             // Does nothing by default.
@@ -206,14 +223,15 @@ final class Builder
     private function returnTypeFromCommentLine(
         string $line,
         int $i
-    ) {
+    ) : UnionType {
         $return_union_type_string = '';
 
         if (\preg_match(self::RETURN_COMMENT_REGEX, $line, $match)) {
             $return_union_type_string = $match[2];
             $raw_match = $match[0];
-            $char_at_end_offset = $line[\strpos($line, $raw_match) + \strlen($raw_match)] ?? ' ';
-            if (\ord($char_at_end_offset) > 32) {  // Not a control character or space
+            $end_offset = (int)\strpos($line, $raw_match) + \strlen($raw_match);
+            $char_at_end_offset = $line[$end_offset] ?? ' ';
+            if (\ord($char_at_end_offset) > 32 && !\preg_match('@^\*+/$@', (string)\substr($line, $end_offset))) {  // Not a control character or space
                 $this->emitIssue(
                     Issue::UnextractableAnnotationSuffix,
                     $this->guessActualLineLocation($i),
@@ -226,7 +244,7 @@ final class Builder
             $this->emitIssue(
                 Issue::UnextractableAnnotation,
                 $this->guessActualLineLocation($i),
-                trim($line)
+                \trim($line)
             );
         }
         // Not emitting any issues about failing to extract, e.g. `@return - Description of what this returns` is a valid comment.
@@ -262,10 +280,10 @@ final class Builder
         string $raw_match,
         string $union_type_string,
         int $i
-    ) {
+    ) : void {
 
         $match_offset = \strpos($line, $raw_match);
-        $end_offset = $match_offset + strlen($raw_match);
+        $end_offset = $match_offset + \strlen($raw_match);
 
         $char_at_end_offset = $line[$end_offset] ?? ' ';
         $issue_line = $this->guessActualLineLocation($i);
@@ -314,10 +332,10 @@ final class Builder
             $this->comment_flags,
             $this->variable_list,
             $this->parameter_list,
-            array_values($this->template_type_list),
+            \array_values($this->template_type_list),
             $this->inherited_type,
             $this->return_comment,
-            $this->suppress_issue_list,
+            $this->suppress_issue_set,
             $this->magic_property_list,
             $this->magic_method_list,
             $this->phan_overrides,
@@ -346,15 +364,12 @@ final class Builder
         ))->build();
     }
 
-    /**
-     * @return void
-     */
-    private function parseCommentLine(int $i, string $line)
+    private function parseCommentLine(int $i, string $line) : void
     {
         // https://secure.php.net/manual/en/regexp.reference.internal-options.php
         // (?i) makes this case-sensitive, (?-1) makes it case-insensitive
         // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-        if (\preg_match('/@((?i)param|var|return|throws|throw|returns|inherits|suppress|phan-[a-z0-9_-]*(?-i)|method|property|property-read|property-write|template|PhanClosureScope)(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/', $line, $matches)) {
+        if (\preg_match('/@((?i)param|var|return|throws|throw|returns|inherits|extends|suppress|phan-[a-z0-9_-]*(?-i)|method|property|property-read|property-write|template|PhanClosureScope)(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/', $line, $matches)) {
             $case_sensitive_type = $matches[1];
             $type = \strtolower($case_sensitive_type);
 
@@ -364,8 +379,8 @@ final class Builder
                 $this->maybeParseVarLine($i, $line);
             } elseif ($type === 'template') {
                 $this->maybeParseTemplateType($i, $line);
-            } elseif ($type === 'inherits') {
-                $this->maybeParseInherits($i, $line);
+            } elseif ($type === 'inherits' || $type === 'extends') {
+                $this->maybeParseInherits($i, $line, $type);
             } elseif ($type === 'return') {
                 $this->maybeParseReturn($i, $line);
             } elseif ($type === 'returns') {
@@ -373,7 +388,7 @@ final class Builder
                     Issue::MisspelledAnnotation,
                     $this->guessActualLineLocation($i),
                     '@returns',
-                    '@return'
+                    'Did you mean @return?'
                 );
             } elseif ($type === 'throws') {
                 $this->maybeParseThrows($i, $line);
@@ -382,7 +397,7 @@ final class Builder
                     Issue::MisspelledAnnotation,
                     $this->guessActualLineLocation($i),
                     '@throw',
-                    '@throws'
+                    'Did you mean @throws?'
                 );
             } elseif ($type === 'suppress') {
                 $this->maybeParseSuppress($i, $line);
@@ -418,23 +433,33 @@ final class Builder
         }
     }
 
-    private function parseParamLine(int $i, string $line)
+    private function parseParamLine(int $i, string $line) : void
     {
         $this->checkCompatible('@param', Comment::FUNCTION_LIKE, $i);
         $this->parameter_list[] =
             self::parameterFromCommentLine($line, false, $i);
     }
 
-    private function maybeParseVarLine(int $i, string $line)
+    private function maybeParseVarLine(int $i, string $line) : void
     {
         $this->checkCompatible('@var', Comment::HAS_VAR_ANNOTATION, $i);
         $comment_var = self::parameterFromCommentLine($line, true, $i);
-        if ($comment_var->getName() !== '' || !\in_array($this->comment_type, Comment::FUNCTION_LIKE)) {
+        if (\in_array($this->comment_type, Comment::FUNCTION_LIKE)) {
+            if ($comment_var->getName() !== '') {
+                $this->variable_list[] = $comment_var;
+            } else {
+                $this->emitIssue(
+                    Issue::UnextractableAnnotation,
+                    $this->guessActualLineLocation($i),
+                    \trim($line)
+                );
+            }
+        } else {
             $this->variable_list[] = $comment_var;
         }
     }
 
-    private function maybeParseTemplateType(int $i, string $line)
+    private function maybeParseTemplateType(int $i, string $line) : void
     {
         // Make sure support for generic types is enabled
         if (Config::getValue('generic_types_enabled')) {
@@ -446,18 +471,18 @@ final class Builder
         }
     }
 
-    private function maybeParseInherits(int $i, string $line)
+    private function maybeParseInherits(int $i, string $line, string $type) : void
     {
-        $this->checkCompatible('@inherits', [Comment::ON_CLASS], $i);
+        $this->checkCompatible('@' . $type, [Comment::ON_CLASS], $i);
         // Make sure support for generic types is enabled
         if (Config::getValue('generic_types_enabled')) {
             $this->inherited_type = $this->inheritsFromCommentLine($line);
         }
     }
 
-    private function maybeParsePhanInherits(int $i, string $line)
+    private function maybeParsePhanInherits(int $i, string $line, string $type) : void
     {
-        $this->checkCompatible('@inherits', [Comment::ON_CLASS], $i);
+        $this->checkCompatible('@' . $type, [Comment::ON_CLASS], $i);
         // Make sure support for generic types is enabled
         if (Config::getValue('generic_types_enabled')) {
             $this->phan_overrides['inherits'] = $this->inheritsFromCommentLine($line);
@@ -468,12 +493,9 @@ final class Builder
      * @internal
      */
     const ASSERT_REGEX = '/@phan-assert(?:(-true-condition|-false-condition)|\s+(!?)(' . UnionType::union_type_regex . '))\s+\$' . self::WORD_REGEX . '/';
-    /**
-     * @return ?Assertion
-     */
-    private function assertFromCommentLine(string $line)
+    private function assertFromCommentLine(string $line) : ?Assertion
     {
-        if (!preg_match(self::ASSERT_REGEX, $line, $match)) {
+        if (!\preg_match(self::ASSERT_REGEX, $line, $match)) {
             return null;
         }
         $extra_text = $match[1];
@@ -490,15 +512,12 @@ final class Builder
                 $this->code_base
             );
         }
-        $param_name = $match[21];
+        $param_name = $match[17];
 
         return new Assertion($union_type, $param_name, $assertion_type);
     }
 
-    /**
-     * @return void
-     */
-    private function maybeParsePhanAssert(int $i, string $line)
+    private function maybeParsePhanAssert(int $i, string $line) : void
     {
         $this->checkCompatible('@phan-assert', Comment::FUNCTION_LIKE, $i);
         // Make sure support for generic types is enabled
@@ -508,7 +527,7 @@ final class Builder
         }
     }
 
-    private function setPhanAccessFlag(int $i, bool $write_only)
+    private function setPhanAccessFlag(int $i, bool $write_only) : void
     {
         // Make sure support for generic types is enabled
         if ($this->comment_type === Comment::ON_PROPERTY) {
@@ -519,7 +538,7 @@ final class Builder
         }
     }
 
-    private function maybeParseReturn(int $i, string $line)
+    private function maybeParseReturn(int $i, string $line) : void
     {
         $this->checkCompatible('@return', Comment::FUNCTION_LIKE, $i);
         $return_comment = $this->return_comment;
@@ -531,7 +550,7 @@ final class Builder
         }
     }
 
-    private function maybeParseThrows(int $i, string $line)
+    private function maybeParseThrows(int $i, string $line) : void
     {
         $this->checkCompatible('@throws', Comment::FUNCTION_LIKE, $i);
         $this->throw_union_type = $this->throw_union_type->withUnionType(
@@ -539,21 +558,23 @@ final class Builder
         );
     }
 
-    private function maybeParseSuppress(int $i, string $line)
+    private function maybeParseSuppress(int $i, string $line) : void
     {
         $suppress_issue_types = $this->suppressIssuesFromCommentLine($line);
         if (count($suppress_issue_types) > 0) {
-            array_push($this->suppress_issue_list, ...$suppress_issue_types);
+            foreach ($suppress_issue_types as $issue_type) {
+                $this->suppress_issue_set[$issue_type] = 0;
+            }
         } else {
             $this->emitIssue(
                 Issue::UnextractableAnnotation,
                 $this->guessActualLineLocation($i),
-                trim($line)
+                \trim($line)
             );
         }
     }
 
-    private function maybeParseProperty(int $i, string $line)
+    private function maybeParseProperty(int $i, string $line) : void
     {
         $this->checkCompatible('@property', [Comment::ON_CLASS], $i);
         // Make sure support for magic properties is enabled.
@@ -565,7 +586,7 @@ final class Builder
         }
     }
 
-    private function maybeParseMethod(int $i, string $line)
+    private function maybeParseMethod(int $i, string $line) : void
     {
         // Make sure support for magic methods is enabled.
         if (Config::getValue('read_magic_method_annotations')) {
@@ -577,14 +598,14 @@ final class Builder
         }
     }
 
-    private function maybeParsePhanClosureScope(int $i, string $line)
+    private function maybeParsePhanClosureScope(int $i, string $line) : void
     {
         // TODO: different type for closures
         $this->checkCompatible('@phan-closure-scope', Comment::FUNCTION_LIKE, $i);
         $this->closure_scope = $this->getPhanClosureScopeFromCommentLine($line, $i);
     }
 
-    private function maybeParsePhanCustomAnnotation(int $i, string $line, string $type, string $case_sensitive_type)
+    private function maybeParsePhanCustomAnnotation(int $i, string $line, string $type, string $case_sensitive_type) : void
     {
         switch ($type) {
             case 'phan-forbid-undeclared-magic-properties':
@@ -615,7 +636,17 @@ final class Builder
             case 'phan-var':
                 $this->checkCompatible('@phan-var', Comment::HAS_VAR_ANNOTATION, $i);
                 $comment_var = $this->parameterFromCommentLine($line, true, $i);
-                if ($comment_var->getName() !== '' || !\in_array($this->comment_type, Comment::FUNCTION_LIKE)) {
+                if (\in_array($this->comment_type, Comment::FUNCTION_LIKE)) {
+                    if ($comment_var->getName() !== '') {
+                        $this->phan_overrides['var'][] = $comment_var;
+                    } else {
+                        $this->emitIssue(
+                            Issue::UnextractableAnnotation,
+                            $this->guessActualLineLocation($i),
+                            \trim($line)
+                        );
+                    }
+                } else {
                     $this->phan_overrides['var'][] = $comment_var;
                 }
                 return;
@@ -623,7 +654,7 @@ final class Builder
                 // See BuiltinSuppressionPlugin
                 return;
             case 'phan-suppress':
-                $this->parsePhanSuppress($i, $line);
+                $this->maybeParseSuppress($i, $line);
                 return;
             case 'phan-property':
             case 'phan-property-read':
@@ -634,14 +665,17 @@ final class Builder
                 $this->parsePhanMethod($i, $line);
                 return;
             case 'phan-suppress-next-line':
+            case 'phan-suppress-next-next-line':
             case 'phan-suppress-current-line':
+            case 'phan-suppress-previous-line':
                 // Do nothing, see BuiltinSuppressionPlugin
                 return;
             case 'phan-template':
                 $this->maybeParseTemplateType($i, $line);
                 return;
             case 'phan-inherits':
-                $this->maybeParsePhanInherits($i, $line);
+            case 'phan-extends':
+                $this->maybeParsePhanInherits($i, $line, (string)\substr($type, 5));
                 return;
             case 'phan-read-only':
                 $this->setPhanAccessFlag($i, false);
@@ -658,54 +692,60 @@ final class Builder
                 $this->maybeParsePhanAssert($i, $line);
                 return;
             default:
-                $this->emitIssue(
+                $this->emitIssueWithSuggestion(
                     Issue::MisspelledAnnotation,
                     $this->guessActualLineLocation($i),
-                    '@' . $case_sensitive_type,
-                    implode(' ', [
-                        '@phan-assert',
-                        '@phan-assert-true-condition',
-                        '@phan-assert-false-condition',
-                        '@phan-closure-scope',
-                        '@phan-file-suppress',
-                        '@phan-forbid-undeclared-magic-methods',
-                        '@phan-forbid-undeclared-magic-properties',
-                        '@phan-inherits',
-                        '@phan-method',
-                        '@phan-override',
-                        '@phan-param',
-                        '@phan-property',
-                        '@phan-property-read',
-                        '@phan-property-write',
-                        '@phan-read-only',
-                        '@phan-return',
-                        '@phan-suppress',
-                        '@phan-suppress-current-line',
-                        '@phan-suppress-next-line',
-                        '@phan-template',
-                        '@phan-var',
-                        '@phan-write-only',
-                    ])
+                    [
+                        '@' . $case_sensitive_type,
+                        "The annotations that this version of Phan supports can be seen by running 'phan --help-annotations' or by visiting https://github.com/phan/phan/wiki/Annotating-Your-Source-Code",
+                    ],
+                    self::generateSuggestionForMisspelledAnnotation($case_sensitive_type)
                 );
                 return;
         }
     }
 
-    private function parsePhanSuppress(int $i, string $line)
+    private static function generateSuggestionForMisspelledAnnotation(string $annotation) : ?Suggestion
     {
-        $suppress_issue_types = $this->suppressIssuesFromCommentLine($line);
-        if (count($suppress_issue_types) > 0) {
-            array_push($this->suppress_issue_list, ...$suppress_issue_types);
-        } else {
-            $this->emitIssue(
-                Issue::UnextractableAnnotation,
-                $this->guessActualLineLocation($i),
-                trim($line)
-            );
+        $suggestions = IssueFixSuggester::getSuggestionsForStringSet('@' . $annotation, self::SUPPORTED_ANNOTATIONS);
+        if (!$suggestions) {
+            return null;
         }
+        return Suggestion::fromString('Did you mean ' . \implode(' or ', \array_keys($suggestions)));
     }
 
-    private function parsePhanProperty(int $i, string $line)
+    /**
+     * Maps supported annotations starting with phan- to the empty string or a description
+     */
+    const SUPPORTED_ANNOTATIONS = [
+        '@phan-assert' => '',
+        '@phan-assert-true-condition' => '',
+        '@phan-assert-false-condition' => '',
+        '@phan-closure-scope' => '',
+        '@phan-extends' => '',
+        '@phan-file-suppress' => '',
+        '@phan-forbid-undeclared-magic-methods' => '',
+        '@phan-forbid-undeclared-magic-properties' => '',
+        '@phan-inherits' => '',
+        '@phan-method' => '',
+        '@phan-override' => '',
+        '@phan-param' => '',
+        '@phan-property' => '',
+        '@phan-property-read' => '',
+        '@phan-property-write' => '',
+        '@phan-read-only' => '',
+        '@phan-return' => '',
+        '@phan-suppress' => '',
+        '@phan-suppress-current-line' => '',
+        '@phan-suppress-next-line' => '',
+        '@phan-suppress-next-next-line' => '',
+        '@phan-suppress-previous-line' => '',
+        '@phan-template' => '',
+        '@phan-var' => '',
+        '@phan-write-only' => '',
+    ];
+
+    private function parsePhanProperty(int $i, string $line) : void
     {
         $this->checkCompatible('@phan-property', [Comment::ON_CLASS], $i);
         // Make sure support for magic properties is enabled.
@@ -717,7 +757,7 @@ final class Builder
         }
     }
 
-    private function parsePhanMethod(int $i, string $line)
+    private function parsePhanMethod(int $i, string $line) : void
     {
         // Make sure support for magic methods is enabled.
         if (Config::getValue('read_magic_method_annotations')) {
@@ -744,13 +784,14 @@ final class Builder
         $lines_array = $entry->getLines();
 
         $line = $this->lines[$i];
+        $trimmed_line = \trim($line);
         for ($check_lineno = $lineno_search; $check_lineno >= $lineno_stop; $check_lineno--) {
             $cur_line = $lines_array[$check_lineno];
             if (\stripos($cur_line, $line) !== false) {
                 // Better heuristic: Lines in the middle of phpdoc are guaranteed to be complete, including a few newlines at the end.
                 $j = $i - ($lineno_search - $check_lineno);
                 if ($j > 0 && $j < $this->comment_lines_count - 1) {
-                    if (\trim($line) !== \trim($cur_line)) {
+                    if ($trimmed_line !== \trim($cur_line)) {
                         continue;
                     }
                 }
@@ -761,11 +802,44 @@ final class Builder
         return $declaration_lineno;
     }
 
+    /**
+     * Find the line number of line $i of the doc comment with lines $lines
+     *
+     * @param array<int,string> $lines
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public static function findLineNumberOfCommentForElement(AddressableElementInterface $element, array $lines, int $i) : int
+    {
+        $context = $element->getContext();
+
+        $entry = FileCache::getOrReadEntry(Config::projectPath($context->getFile()));
+        $declaration_lineno = $context->getLineNumberStart();
+        $lines_array = $entry->getLines();
+        $count = \count($lines);
+        $lineno_search = $declaration_lineno - ($count - $i - 1);
+        $lineno_stop = \max(1, $lineno_search - 9);
+        $line = $lines[$i];
+        $trimmed_line = \trim($lines[$i]);
+        for ($check_lineno = $lineno_search; $check_lineno >= $lineno_stop; $check_lineno--) {
+            $cur_line = $lines_array[$check_lineno];
+            if (\stripos($cur_line, $line) !== false) {
+                // Better heuristic: Lines in the middle of phpdoc are guaranteed to be complete, including a few newlines at the end.
+                $j = $i - ($lineno_search - $check_lineno);
+                if ($j > 0 && $j < $count - 1) {
+                    if ($trimmed_line !== \trim($cur_line)) {
+                        continue;
+                    }
+                }
+                return $check_lineno;
+            }
+        }
+        return $declaration_lineno;
+    }
 
     /**
-     * @var array<int,int> $valid_types
+     * @param array<int,int> $valid_types
      */
-    private function checkCompatible(string $param_name, array $valid_types, int $i)
+    private function checkCompatible(string $param_name, array $valid_types, int $i) : void
     {
         if (!\in_array($this->comment_type, $valid_types, true)) {
             $this->emitInvalidCommentForDeclarationType(
@@ -775,13 +849,10 @@ final class Builder
         }
     }
 
-    /**
-     * @return void
-     */
     private function emitInvalidCommentForDeclarationType(
         string $annotation_type,
         int $issue_lineno
-    ) {
+    ) : void {
         $this->emitIssue(
             Issue::InvalidCommentForDeclarationType,
             $issue_lineno,
@@ -800,9 +871,9 @@ final class Builder
      */
     private static function templateTypeFromCommentLine(
         string $line
-    ) {
+    ) : ?TemplateType {
         // Backslashes or nested templates wouldn't make sense, so use WORD_REGEX.
-        if (preg_match('/@(?:phan-)?template\s+(' . self::WORD_REGEX . ')/', $line, $match)) {
+        if (\preg_match('/@(?:phan-)?template\s+(' . self::WORD_REGEX . ')/', $line, $match)) {
             $template_type_identifier = $match[1];
             return TemplateType::instanceForId($template_type_identifier, false);
         }
@@ -819,9 +890,9 @@ final class Builder
      */
     private function inheritsFromCommentLine(
         string $line
-    ) {
+    ) : Option {
         $match = [];
-        if (preg_match('/@(?:phan-)?inherits\s+(' . Type::type_regex . ')/', $line, $match)) {
+        if (\preg_match('/@(?:phan-)?(?:inherits|extends)\s+(' . Type::type_regex . ')/', $line, $match)) {
             $type_string = $match[1];
 
             $type = new Some(Type::fromStringInContext(
@@ -839,15 +910,25 @@ final class Builder
 
     /**
      * This regex contains a single pattern, which matches a valid PHP identifier.
-     * (e.g. for variable names, magic property names, etc.
+     * (e.g. for variable names, magic property names, etc.)
      * This does not allow backslashes.
      */
     const WORD_REGEX = '([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)';
 
     /**
+     * This regex contains a single pattern, which matches a reasonable Phan issue name
+     * (e.g. for variable names, magic property names, etc.)
+     *
+     * E.g. "PhanPluginSomeIssueName" (preferred), "PhanPlugin_some_issue_name", and "PhanPlugin-some-issue-name".
+     *
+     * Note that Phan doesn't forbid using names not matching this regex in the Issue constructor at the time of writing.
+     */
+    const ISSUE_REGEX = '([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(-[a-zA-Z0-9_\x7f-\xff]+)*)';
+
+    /**
      * @internal
      */
-    const SUPPRESS_ISSUE_LIST = '(' . self::WORD_REGEX . '(,\s*' . self::WORD_REGEX . ')*)';
+    const SUPPRESS_ISSUE_LIST = '(' . self::ISSUE_REGEX . '(,\s*' . self::ISSUE_REGEX . ')*)';
 
     /**
      * @internal
@@ -864,8 +945,8 @@ final class Builder
     private static function suppressIssuesFromCommentLine(
         string $line
     ) : array {
-        if (preg_match(self::PHAN_SUPPRESS_REGEX, $line, $match)) {
-            return array_map('trim', explode(',', $match[1]));
+        if (\preg_match(self::PHAN_SUPPRESS_REGEX, $line, $match)) {
+            return \array_map('trim', \explode(',', $match[1]));
         }
 
         return [];
@@ -882,8 +963,8 @@ final class Builder
         string $param_string,
         int $param_index,
         int $comment_line_offset
-    ) {
-        $param_string = trim($param_string);
+    ) : ?Parameter {
+        $param_string = \trim($param_string);
         // Don't support trailing commas, or omitted params. Provide at least one of [type] or [parameter]
         if ($param_string === '') {
             return null;
@@ -892,7 +973,7 @@ final class Builder
         // https://github.com/phpDocumentor/phpDocumentor2/pull/1271/files - phpdoc allows passing an default value.
         // Phan allows `=.*`, to indicate that a parameter is optional
         // TODO: in another PR, check that optional parameters aren't before required parameters.
-        if (preg_match(self::MAGIC_PARAM_REGEX, $param_string, $param_match)) {
+        if (\preg_match(self::MAGIC_PARAM_REGEX, $param_string, $param_match)) {
             // Note: a magic method parameter can be variadic, but it can't be pass-by-reference? (No support in __call)
             $union_type_string = $param_match[1];
             $union_type = UnionType::fromStringInContext(
@@ -901,16 +982,16 @@ final class Builder
                 Type::FROM_PHPDOC,
                 $this->code_base
             );
-            $is_variadic = $param_match[19] === '...';
-            $default_str = $param_match[21];
+            $is_variadic = $param_match[15] === '...';
+            $default_str = $param_match[17];
             $has_default_value = $default_str !== '';
             if ($has_default_value) {
-                $default_value_repr = trim(explode('=', $default_str, 2)[1]);
-                if (strcasecmp($default_value_repr, 'null') === 0) {
+                $default_value_repr = \trim(\explode('=', $default_str, 2)[1]);
+                if (\strcasecmp($default_value_repr, 'null') === 0) {
                     $union_type = $union_type->nullableClone();
                 }
             }
-            $var_name = $param_match[20];
+            $var_name = $param_match[16];
             if ($var_name === '') {
                 // placeholder names are p1, p2, ...
                 $var_name = 'p' . ($param_index + 1);
@@ -930,7 +1011,7 @@ final class Builder
     private function magicMethodFromCommentLine(
         string $line,
         int $comment_line_offset
-    ) {
+    ) : ?Method {
         // https://phpdoc.org/docs/latest/references/phpdoc/tags/method.html
         // > Going to assume "static" is a magic keyword, based on https://github.com/phpDocumentor/phpDocumentor2/issues/822
         // > TODO: forbid in trait?
@@ -940,7 +1021,7 @@ final class Builder
         //    Assumes the parameters end at the first ")" after "("
         //    As an exception, allows one level of matching brackets
         //    to support old style arrays such as $x = array(), $x = array(2) (Default values are ignored)
-        if (preg_match('/@(?:phan-)?method(?:\s+(static))?(?:(?:\s+(' . UnionType::union_type_regex_or_this . '))?)\s+' . self::WORD_REGEX . '\s*\(((?:[^()]|\([()]*\))*)\)\s*(.*)/', $line, $match)) {
+        if (\preg_match('/@(?:phan-)?method(?:\s+(static))?(?:(?:\s+(' . UnionType::union_type_regex_or_this . '))?)\s+' . self::WORD_REGEX . '\s*\(((?:[^()]|\([()]*\))*)\)\s*(.*)/', $line, $match)) {
             $is_static = $match[1] === 'static';
             $return_union_type_string = $match[2];
             if ($return_union_type_string !== '') {
@@ -954,17 +1035,17 @@ final class Builder
             } else {
                 // From https://phpdoc.org/docs/latest/references/phpdoc/tags/method.html
                 // > When the intended method does not have a return value then the return type MAY be omitted; in which case 'void' is implied.
-                $return_union_type = VoidType::instance(false)->asUnionType();
+                $return_union_type = VoidType::instance(false)->asPHPDocUnionType();
             }
-            $method_name = $match[26];
+            $method_name = $match[22];
 
-            $arg_list = trim($match[27]);
+            $arg_list = \trim($match[23]);
             $comment_params = [];
             // Special check if param list has 0 params.
             if ($arg_list !== '') {
                 // TODO: Would need to use a different approach if templates were ever supported
                 //       e.g. The magic method parsing doesn't support commas?
-                $params_strings = explode(',', $arg_list);
+                $params_strings = self::extractMethodParts($arg_list);
                 $failed = false;
                 foreach ($params_strings as $i => $param_string) {
                     $param = $this->magicParamFromMagicMethodParamString($param_string, $i, $comment_line_offset);
@@ -996,11 +1077,69 @@ final class Builder
             $this->emitIssue(
                 Issue::UnextractableAnnotation,
                 $this->guessActualLineLocation($comment_line_offset),
-                trim($line)
+                \trim($line)
             );
         }
 
         return null;
+    }
+
+    /**
+     * @return array<int,string>
+     */
+    private static function extractMethodParts(string $type_string) : array
+    {
+        $parts = [];
+        foreach (\explode(',', $type_string) as $part) {
+            $parts[] = \trim($part);
+        }
+
+        if (\count($parts) <= 1) {
+            return $parts;
+        }
+        if (!\preg_match('/[<({]/', $type_string)) {
+            return $parts;
+        }
+        return self::mergeMethodParts($parts);
+    }
+
+    /**
+     * @param string[] $parts (already trimmed)
+     * @return string[]
+     * @see Type::extractTemplateParameterTypeNameList() (Similar method)
+     */
+    private static function mergeMethodParts(array $parts) : array
+    {
+        $prev_parts = [];
+        $delta = 0;
+        $results = [];
+        foreach ($parts as $part) {
+            if (\count($prev_parts) > 0) {
+                $prev_parts[] = $part;
+                $delta += \substr_count($part, '<') + \substr_count($part, '(') + \substr_count($part, '{') - \substr_count($part, '>') - \substr_count($part, ')') - \substr_count($part, '}');
+                if ($delta <= 0) {
+                    if ($delta === 0) {
+                        $results[] = \implode(',', $prev_parts);
+                    }  // ignore unparsable data such as "<T,T2>>"
+                    $prev_parts = [];
+                    $delta = 0;
+                    continue;
+                }
+                continue;
+            }
+            $bracket_count = \substr_count($part, '<') + \substr_count($part, '(') + \substr_count($part, '{');
+            if ($bracket_count === 0) {
+                $results[] = $part;
+                continue;
+            }
+            $delta = $bracket_count - \substr_count($part, '>') - \substr_count($part, ')') - \substr_count($part, '}');
+            if ($delta === 0) {
+                $results[] = $part;
+            } elseif ($delta > 0) {
+                $prev_parts[] = $part;
+            }  // otherwise ignore unparsable data such as ">" (should be impossible)
+        }
+        return $results;
     }
 
     /**
@@ -1015,7 +1154,7 @@ final class Builder
     private function magicPropertyFromCommentLine(
         string $line,
         int $i
-    ) {
+    ) : ?Property {
         // Note that the type of a property can be left out (@property $myVar) - This is equivalent to @property mixed $myVar
         // TODO: properly handle duplicates...
         if (\preg_match('/@(?:phan-)?(property|property-read|property-write)(?:\s+(' . UnionType::union_type_regex . '))?(?:\s+(?:\\$' . self::WORD_REGEX . '))/', $line, $match)) {
@@ -1029,7 +1168,7 @@ final class Builder
             }
             $type = $match[2] ?? '';
 
-            $property_name = $match[20] ?? '';
+            $property_name = $match[16] ?? '';
             if ($property_name === '') {
                 return null;
             }
@@ -1054,7 +1193,7 @@ final class Builder
             $this->emitIssue(
                 Issue::UnextractableAnnotation,
                 $this->guessActualLineLocation($i),
-                trim($line)
+                \trim($line)
             );
         }
 
@@ -1082,7 +1221,7 @@ final class Builder
         // a Closure would be bound with bind() or bindTo(), so using a custom tag.
         //
         // TODO: Also add a version which forbids using $this in the closure?
-        if (preg_match('/@(PhanClosureScope|phan-closure-scope)\s+(' . Type::type_regex . ')/', $line, $match)) {
+        if (\preg_match('/@(PhanClosureScope|phan-closure-scope)\s+(' . Type::type_regex . ')/', $line, $match)) {
             $closure_scope_union_type_string = $match[2];
         }
 
@@ -1097,7 +1236,7 @@ final class Builder
         $this->emitIssue(
             Issue::UnextractableAnnotation,
             $this->guessActualLineLocation($comment_line_offset),
-            trim($line)
+            \trim($line)
         );
         return new None();
     }
@@ -1111,25 +1250,52 @@ final class Builder
      *
      * @param int|string|FQSEN|UnionType|Type ...$parameters
      * Template parameters for the issue's error message
-     *
-     * @return void
      */
     protected function emitIssue(
         string $issue_type,
         int $issue_lineno,
         ...$parameters
-    ) {
+    ) : void {
         $this->issues[] = [
             $issue_type,
             $issue_lineno,
-            $parameters
+            $parameters,
+            null,
         ];
     }
 
-    protected function emitDeferredIssues()
+    /**
+     * @param string $issue_type
+     * The type of issue to emit such as Issue::ParentlessClass
+     *
+     * @param int $issue_lineno
+     * The line number where the issue was found
+     *
+     * @param array<int,int|string|FQSEN|UnionType|Type> $parameters
+     * Template parameters for the issue's error message
+     *
+     * @param ?Suggestion $suggestion
+     */
+    protected function emitIssueWithSuggestion(
+        string $issue_type,
+        int $issue_lineno,
+        array $parameters,
+        Suggestion $suggestion = null
+    ) : void {
+        $this->issues[] = [
+            $issue_type,
+            $issue_lineno,
+            $parameters,
+            $suggestion
+        ];
+    }
+
+    protected function emitDeferredIssues() : void
     {
-        foreach ($this->issues as list($issue_type, $issue_lineno, $parameters)) {
-            if (\in_array($issue_type, $this->suppress_issue_list, true)) {
+        foreach ($this->issues as [$issue_type, $issue_lineno, $parameters, $suggestion]) {
+            if (\array_key_exists($issue_type, $this->suppress_issue_set)) {
+                // Record that this suppression has been used.
+                $this->suppress_issue_set[$issue_type] = 1;
                 continue;
             }
             Issue::maybeEmitWithParameters(
@@ -1137,7 +1303,8 @@ final class Builder
                 $this->context,
                 $issue_type,
                 $issue_lineno,
-                $parameters
+                $parameters,
+                $suggestion
             );
         }
         $this->issues = [];

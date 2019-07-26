@@ -1,0 +1,1 @@
+%s:4 PhanImpossibleConditionInGlobalScope Impossible attempt to cast $v of type \C211 to \DateTime in the global scope (may be a false positive)

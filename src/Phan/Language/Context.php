@@ -3,6 +3,8 @@
 namespace Phan\Language;
 
 use AssertionError;
+use ast\Node;
+use Closure;
 use Phan\CodeBase;
 use Phan\Exception\CodeBaseException;
 use Phan\Issue;
@@ -19,20 +21,23 @@ use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Scope\GlobalScope;
+use Phan\Language\Type\ArrayShapeType;
 use RuntimeException;
 
 /**
  * An object representing the context in which any
  * structural element (such as a class or method) lives.
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
+ * @phan-file-suppress PhanPluginNoCommentOnPublicMethod TODO: Add comments
  */
 class Context extends FileRef
 {
     /**
      * @var string
-     * The namespace of the file
+     * The namespace of the file.
+     * To be consistent with what ScopeVisitor sets in visitNamespace(), this is '\\' for the root namespace as well.
      */
-    private $namespace = '';
+    private $namespace = '\\';
 
     /**
      * @var int
@@ -62,6 +67,11 @@ class Context extends FileRef
      * strict_types setting for the file
      */
     protected $strict_types = 0;
+
+    /**
+     * @var array<int,Node>
+     */
+    protected $loop_nodes = [];
 
     /**
      * @var Scope
@@ -211,12 +221,15 @@ class Context extends FileRef
     /**
      * @return Context
      * This context with the given value is returned
+     *
+     * TODO: Make code_base mandatory in a subsequent release
      */
     public function withNamespaceMap(
         int $flags,
         string $alias,
         FullyQualifiedGlobalStructuralElement $target,
-        int $lineno
+        int $lineno,
+        CodeBase $code_base = null
     ) : Context {
         $original_alias = $alias;
         if ($flags !== \ast\flags\USE_CONST) {
@@ -225,7 +238,7 @@ class Context extends FileRef
             $last_part_index = \strrpos($alias, '\\');
             if ($last_part_index !== false) {
                 // Convert the namespace to lowercase, but not the constant name.
-                $alias = \strtolower(\substr($alias, 0, $last_part_index + 1)) . substr($alias, $last_part_index + 1);
+                $alias = \strtolower(\substr($alias, 0, $last_part_index + 1)) . \substr($alias, $last_part_index + 1);
             }
         }
         // we may have imported this namespace map from the parse phase, making the target already exist
@@ -237,8 +250,37 @@ class Context extends FileRef
             $this->namespace_map[$flags][$alias] = $parse_entry;
             return $this;
         }
+        if (isset($this->namespace_map[$flags][$alias])) {
+            if ($code_base) {
+                $this->warnDuplicateUse($code_base, $target, $lineno, $flags, $alias);
+            }
+        }
         $this->namespace_map[$flags][$alias] = new NamespaceMapEntry($target, $original_alias, $lineno);
         return $this;
+    }
+
+    private function warnDuplicateUse(CodeBase $code_base, FullyQualifiedGlobalStructuralElement $target, int $lineno, int $flags, string $alias) : void
+    {
+        switch ($flags) {
+            case \ast\flags\USE_FUNCTION:
+                $issue = Issue::DuplicateUseFunction;
+                break;
+            case \ast\flags\USE_CONST:
+                $issue = Issue::DuplicateUseConstant;
+                break;
+            default:
+                $issue = Issue::DuplicateUseNormal;
+                break;
+        }
+
+        Issue::maybeEmit(
+            $code_base,
+            $this,
+            $issue,
+            $lineno,
+            $target,
+            $alias
+        );
     }
 
     /**
@@ -256,12 +298,21 @@ class Context extends FileRef
 
     /**
      * @return bool
-     * True if strict_types is set to 1 in this
-     * context.
+     * Returns true if strict_types is set to 1 in this context.
      */
-    public function getIsStrictTypes() : bool
+    public function isStrictTypes() : bool
     {
         return (1 === $this->strict_types);
+    }
+
+    /**
+     * Returns true if strict_types is set to 1 in this context.
+     * @deprecated use isStrictTypes
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    final public function getIsStrictTypes() : bool
+    {
+        return $this->isStrictTypes();
     }
 
     /**
@@ -276,10 +327,8 @@ class Context extends FileRef
 
     /**
      * Set the scope on the context
-     *
-     * @return void
      */
-    public function setScope(Scope $scope)
+    public function setScope(Scope $scope) : void
     {
         $this->scope = $scope;
         // TODO: Less aggressive? ConditionVisitor creates a lot of scopes
@@ -294,6 +343,84 @@ class Context extends FileRef
     {
         $context = clone($this);
         $context->setScope($scope);
+        return $context;
+    }
+
+    public function withEnterLoop(Node $node) : Context
+    {
+        $context = clone($this);
+        $context->loop_nodes[] = $node;
+        return $context;
+    }
+
+    public function withExitLoop(Node $node) : Context
+    {
+        $context = clone($this);
+
+        while ($context->loop_nodes) {
+            if (\array_pop($context->loop_nodes) === $node) {
+                if (\count($context->loop_nodes) === 0) {
+                    // @phan-suppress-next-line PhanUndeclaredProperty
+                    foreach ($node->phan_deferred_checks ?? [] as $cb) {
+                        $cb($context);
+                    }
+                }
+                break;
+            }
+        }
+        return $context;
+    }
+
+    /**
+     * @suppress PhanUndeclaredProperty
+     * @internal
+     */
+    public function deferCheckToOutermostLoop(Closure $closure) : void
+    {
+        $node = $this->loop_nodes[0] ?? null;
+        if ($node) {
+            if (!isset($node->phan_deferred_checks)) {
+                $node->phan_deferred_checks = [];
+            }
+            $node->phan_deferred_checks[] = $closure;
+        }
+    }
+
+    /**
+     * Is this in a loop of the current function body (or global scope)?
+     */
+    public function isInLoop() : bool
+    {
+        return \count($this->loop_nodes) > 0;
+    }
+
+    /**
+     * Fetches the innermost loop node.
+     * @suppress PhanPossiblyFalseTypeReturn
+     */
+    public function getInnermostLoopNode() : Node
+    {
+        return \end($this->loop_nodes);
+    }
+
+    public function withoutLoops() : Context
+    {
+        $context = clone($this);
+        $context->loop_nodes = [];
+        return $context;
+    }
+
+    /**
+     * @return Context
+     *
+     * A new context with the a clone of the current scope.
+     * This is useful when using AssignmentVisitor for things that aren't actually assignment operations.
+     * (AssignmentVisitor modifies the passed in scope variables in place)
+     */
+    public function withClonedScope() : Context
+    {
+        $context = clone($this);
+        $context->scope = clone($context->scope);
         return $context;
     }
 
@@ -318,10 +445,8 @@ class Context extends FileRef
      * @param Variable $variable
      * A variable to add to the scope for the new
      * context
-     *
-     * @return void
      */
-    public function addGlobalScopeVariable(Variable $variable)
+    public function addGlobalScopeVariable(Variable $variable) : void
     {
         $this->scope->addGlobalVariable($variable);
     }
@@ -334,12 +459,10 @@ class Context extends FileRef
      *
      * @param Variable $variable
      * A variable to inject into this context
-     *
-     * @return void
      */
     public function addScopeVariable(
         Variable $variable
-    ) {
+    ) : void {
         $this->scope->addVariable($variable);
     }
 
@@ -351,12 +474,10 @@ class Context extends FileRef
      *
      * @param string $variable_name
      * The name of a variable to remove from the context.
-     *
-     * @return void
      */
     public function unsetScopeVariable(
         string $variable_name
-    ) {
+    ) : void {
         $this->scope->unsetVariable($variable_name);
     }
 
@@ -393,10 +514,7 @@ class Context extends FileRef
         return $this->scope->getClassFQSEN();
     }
 
-    /**
-     * @return ?FullyQualifiedClassName
-     */
-    public function getClassFQSENOrNull()
+    public function getClassFQSENOrNull() : ?FullyQualifiedClassName
     {
         return $this->scope->getClassFQSENOrNull();
     }
@@ -642,15 +760,14 @@ class Context extends FileRef
      * 0x10(node_id) is used for getUnionTypeOfNodeIfCached(int $node_id, true)
      * 0x01(node_id) is used for getCachedClassListOfNode(int $node_id)
      */
-    const HIGH_BIT_1 = (1 << (PHP_INT_SIZE * 8) - 1);
-    const HIGH_BIT_2 = (1 << (PHP_INT_SIZE * 8) - 2);
+    const HIGH_BIT_1 = (1 << (\PHP_INT_SIZE * 8) - 1);
+    const HIGH_BIT_2 = (1 << (\PHP_INT_SIZE * 8) - 2);
 
     /**
      * @param int $node_id \spl_object_id($node)
      * @param bool $should_catch_issue_exception the value passed to UnionTypeVisitor
-     * @return ?UnionType
      */
-    public function getUnionTypeOfNodeIfCached(int $node_id, bool $should_catch_issue_exception)
+    public function getUnionTypeOfNodeIfCached(int $node_id, bool $should_catch_issue_exception) : ?UnionType
     {
         if ($should_catch_issue_exception) {
             return $this->cache[$node_id] ?? null;
@@ -666,9 +783,8 @@ class Context extends FileRef
      * @param int $node_id \spl_object_id($node)
      * @param UnionType $type the type to cache.
      * @param bool $should_catch_issue_exception the value passed to UnionTypeVisitor
-     * @return void
      */
-    public function setCachedUnionTypeOfNode(int $node_id, UnionType $type, bool $should_catch_issue_exception)
+    public function setCachedUnionTypeOfNode(int $node_id, UnionType $type, bool $should_catch_issue_exception) : void
     {
         if (!$should_catch_issue_exception) {
             $this->cache[$node_id ^ self::HIGH_BIT_1] = $type;
@@ -684,7 +800,7 @@ class Context extends FileRef
      * @return ?array{0:UnionType,1:Clazz[]} $result
      * @suppress PhanPartialTypeMismatchReturn cache is mixed with other cache objects
      */
-    public function getCachedClassListOfNode(int $node_id)
+    public function getCachedClassListOfNode(int $node_id) : ?array
     {
         return $this->cache[$node_id ^ self::HIGH_BIT_2] ?? null;
     }
@@ -693,17 +809,13 @@ class Context extends FileRef
      * TODO: This may be unsafe? Clear the cache after a function goes out of scope.
      * @param int $node_id \spl_object_id($node)
      * @param array{0:UnionType,1:Clazz[]} $result
-     * @return void
      */
-    public function setCachedClassListOfNode(int $node_id, array $result)
+    public function setCachedClassListOfNode(int $node_id, array $result) : void
     {
         $this->cache[$node_id ^ self::HIGH_BIT_2] = $result;
     }
 
-    /**
-     * @return void
-     */
-    public function clearCachedUnionTypes()
+    public function clearCachedUnionTypes() : void
     {
         $this->cache = [];
     }
@@ -729,10 +841,8 @@ class Context extends FileRef
      * The code base within which we're operating
      *
      * @internal
-     *
-     * @return void
      */
-    public function warnAboutUnusedUseElements(CodeBase $code_base)
+    public function warnAboutUnusedUseElements(CodeBase $code_base) : void
     {
         foreach ($this->namespace_map as $flags => $entries_for_flag) {
             foreach ($entries_for_flag as $namespace_map_entry) {
@@ -764,11 +874,10 @@ class Context extends FileRef
     }
 
     /**
-     * @return void
      * @internal
      * @suppress PhanAccessMethodInternal
      */
-    public function importNamespaceMapFromParsePhase(CodeBase $code_base)
+    public function importNamespaceMapFromParsePhase(CodeBase $code_base) : void
     {
         $this->parse_namespace_map = $code_base->getNamespaceMapFromParsePhase($this->getFile(), $this->namespace, $this->namespace_id);
     }
@@ -776,12 +885,120 @@ class Context extends FileRef
     /**
      * Copy private properties of $other to this
      * @suppress PhanTypeSuspiciousNonTraversableForeach
-     * @return void
      */
-    final protected function copyPropertiesFrom(Context $other)
+    final protected function copyPropertiesFrom(Context $other) : void
     {
         foreach ($other as $k => $v) {
             $this->{$k} = $v;
         }
+    }
+
+    /**
+     * This name is internally used by Phan to track the properties of $this similarly to the way array shapes are represented.
+     */
+    const VAR_NAME_THIS_PROPERTIES = "phan\0\$this";
+
+    /**
+     * Analyzes the side effects of setting the type of $this->property to $type
+     */
+    public function withThisPropertySetToType(Property $property, UnionType $type) : Context
+    {
+        $old_union_type = $property->getUnionType();
+        if ($this->scope->hasVariableWithName(self::VAR_NAME_THIS_PROPERTIES)) {
+            $variable = clone($this->scope->getVariableByName(self::VAR_NAME_THIS_PROPERTIES));
+            $old_type = $variable->getUnionType();
+            $override_type = ArrayShapeType::fromFieldTypes([$property->getName() => $type], false);
+            $override_type = self::addArrayShapeTypes($override_type, $old_type->getTypeSet());
+
+            $variable->setUnionType($override_type->asPHPDocUnionType());
+        } else {
+            // There is nothing inferred about any type
+
+            if ($old_union_type->isEqualTo($type)) {
+                // And this new type is what we already inferred, so there's nothing to do
+                return $this;
+            }
+            $override_type = ArrayShapeType::fromFieldTypes([$property->getName() => $type], false);
+            $variable = new Variable(
+                $this,
+                self::VAR_NAME_THIS_PROPERTIES,
+                $override_type->asPHPDocUnionType(),
+                0
+            );
+        }
+        return $this->withScopeVariable($variable);
+    }
+
+    /**
+     * Analyzes the side effects of setting the type of $this->property_name to $type
+     *
+     * The caller should check if it is necessary to do this.
+     */
+    public function withThisPropertySetToTypeByName(string $property_name, UnionType $type) : Context
+    {
+        if ($this->scope->hasVariableWithName(self::VAR_NAME_THIS_PROPERTIES)) {
+            $variable = clone($this->scope->getVariableByName(self::VAR_NAME_THIS_PROPERTIES));
+            $old_type = $variable->getUnionType();
+            $override_type = ArrayShapeType::fromFieldTypes([$property_name => $type], false);
+            $override_type = self::addArrayShapeTypes($override_type, $old_type->getTypeSet());
+
+            $variable->setUnionType($override_type->asPHPDocUnionType());
+        } else {
+            // There is nothing inferred about any type
+
+            $override_type = ArrayShapeType::fromFieldTypes([$property_name => $type], false);
+            $variable = new Variable(
+                $this,
+                self::VAR_NAME_THIS_PROPERTIES,
+                $override_type->asPHPDocUnionType(),
+                0
+            );
+        }
+        return $this->withScopeVariable($variable);
+    }
+
+    /**
+     * @param array<int,Type> $type_set
+     */
+    private static function addArrayShapeTypes(ArrayShapeType $override_type, array $type_set) : ArrayShapeType
+    {
+        if (!$type_set) {
+            return $override_type;
+        }
+        $array_shape_type_set = [];
+        foreach ($type_set as $type) {
+            if ($type instanceof ArrayShapeType) {
+                $array_shape_type_set[] = $type;
+            }
+        }
+        if ($array_shape_type_set) {
+            // Add in all of the locally known types for other properties
+            $override_type = ArrayShapeType::combineWithPrecedence($override_type, ArrayShapeType::union($array_shape_type_set));
+        }
+        return $override_type;
+    }
+
+    public function getThisPropertyIfOverridden(string $name) : ?UnionType
+    {
+        if (!$this->scope->hasVariableWithName(self::VAR_NAME_THIS_PROPERTIES)) {
+            return null;
+        }
+        $types = $this->scope->getVariableByName(self::VAR_NAME_THIS_PROPERTIES)->getUnionType();
+        if ($types->isEmpty()) {
+            return null;
+        }
+
+        $result = UnionType::empty();
+        foreach ($types->getTypeSet() as $type) {
+            if (!$type instanceof ArrayShapeType) {
+                return null;
+            }
+            $extra = $type->getFieldTypes()[$name] ?? null;
+            if (!$extra || $extra->isPossiblyUndefined()) {
+                return null;
+            }
+            $result = $result->withUnionType($extra);
+        }
+        return $result;
     }
 }

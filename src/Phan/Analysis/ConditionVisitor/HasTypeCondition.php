@@ -24,7 +24,6 @@ class HasTypeCondition implements BinaryCondition
      *
      * @param Node $var
      * @param Node|int|string|float $unused_expr
-     * @return Context
      * @override
      */
     public function analyzeVar(ConditionVisitorInterface $visitor, Node $var, $unused_expr) : Context
@@ -57,7 +56,6 @@ class HasTypeCondition implements BinaryCondition
      *
      * @param Node|int|string|float $object
      * @param Node|int|string|float $unused_expr
-     * @return Context
      */
     public function analyzeClassCheck(ConditionVisitorInterface $visitor, $object, $unused_expr) : Context
     {
@@ -66,5 +64,13 @@ class HasTypeCondition implements BinaryCondition
             return $visitor->getContext();
         }
         return $visitor->analyzeClassAssertion($object, $class_string) ?? $visitor->getContext();
+    }
+
+    /**
+     * @suppress PhanUnusedPublicMethodParameter
+     */
+    public function analyzeCall(ConditionVisitorInterface $visitor, Node $call_node, $expr) : ?Context
+    {
+        return null;
     }
 }

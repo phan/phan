@@ -20,8 +20,6 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
     /**
      * Override the default getter to fill in a future
      * union type if available.
-     *
-     * @return UnionType
      */
     public function getUnionType() : UnionType
     {
@@ -61,16 +59,17 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
         string $name
     ) : GlobalConstant {
         if (!\defined($name)) {
-            throw new InvalidArgumentException(sprintf("This should not happen, defined(%s) is false, but the constant was returned by get_defined_constants()", var_export($name, true)));
+            throw new InvalidArgumentException(\sprintf("This should not happen, defined(%s) is false, but the constant was returned by get_defined_constants()", \var_export($name, true)));
         }
         $value = \constant($name);
         $constant_fqsen = FullyQualifiedGlobalConstantName::fromFullyQualifiedString(
             '\\' . $name
         );
+        $type = Type::fromObject($value);
         $result = new self(
             new Context(),
             $name,
-            Type::fromObject($value)->asUnionType(),
+            UnionType::of([$type], [$type->asNonLiteralType()]),
             0,
             $constant_fqsen
         );
@@ -84,9 +83,9 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
      */
     public function toStub() : string
     {
-        list($namespace, $string) = $this->toStubInfo();
+        [$namespace, $string] = $this->toStubInfo();
         $namespace_text = $namespace === '' ? '' : "$namespace ";
-        $string = sprintf("namespace %s{\n%s}\n", $namespace_text, $string);
+        $string = \sprintf("namespace %s{\n%s}\n", $namespace_text, $string);
         return $string;
     }
 
@@ -111,7 +110,7 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
 
         $is_defined = \defined($fqsen);
         if ($is_defined) {
-            $repr = \var_export(constant($fqsen), true);
+            $repr = \var_export(\constant($fqsen), true);
             $comment = '';
         } else {
             $repr = 'null';
@@ -122,7 +121,7 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
             $string = "const $name = $repr;$comment\n";
         } else {
             // Internal extension defined a constant with an invalid identifier.
-            $string = \sprintf("define(%s, %s);%s\n", var_export($name, true), $repr, $comment);
+            $string = \sprintf("define(%s, %s);%s\n", \var_export($name, true), $repr, $comment);
         }
         return [$namespace, $string];
     }

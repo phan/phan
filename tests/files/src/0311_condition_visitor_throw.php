@@ -5,7 +5,7 @@
  * @param int $str
  */
 function testcondition311($y, $str) {
-    if (!0) { }
+    if (!0) { }  // These all warn about having known truthiness
     if (!STDERR) { }
     if (!!0) { }
     if (!1) { }

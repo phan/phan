@@ -5,9 +5,9 @@ use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\Config;
 use Phan\Language\Type\StringType;
-use Phan\PluginV2;
-use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV3\PostAnalyzeNodeCapability;
 
 /**
  * This plugin checks uses of __sleep()
@@ -19,7 +19,7 @@ use Phan\PluginV2\PostAnalyzeNodeCapability;
  * It is assumed without being checked that plugins aren't
  * mangling state within the passed code base or context.
  */
-class SleepCheckerPlugin extends PluginV2 implements PostAnalyzeNodeCapability
+class SleepCheckerPlugin extends PluginV3 implements PostAnalyzeNodeCapability
 {
 
     /**
@@ -46,11 +46,9 @@ class SleepCheckerVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param Node $node
      * A node to analyze
-     *
-     * @return void
      * @override
      */
-    public function visitMethod(Node $node)
+    public function visitMethod(Node $node) : void
     {
         if (strcasecmp('__sleep', (string)$node->children['name']) !== 0) {
             return;
@@ -65,15 +63,13 @@ class SleepCheckerVisitor extends PluginAwarePostAnalysisVisitor
      * and don't have (at)transient or (at)phan-transient
      *
      * @param array<string,true> $sleep_properties
-     * @return void
      */
-    private function warnAboutTransientSleepProperties(array $sleep_properties)
+    private function warnAboutTransientSleepProperties(array $sleep_properties) : void
     {
         if (count($sleep_properties) === 0) {
             // Give up, failed to extract property names
             return;
         }
-        // @phan-suppress-next-line PhanThrowTypeAbsentForCall we're in class scope
         $class = $this->context->getClassInScope($this->code_base);
         $class_fqsen = $class->getFQSEN();
         foreach ($class->getPropertyMap($this->code_base) as $property_name => $property) {
@@ -113,9 +109,8 @@ class SleepCheckerVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param Node|int|string|float|null $node
      * @param array<string,true> $sleep_properties
-     * @return void
      */
-    private function analyzeStatementsOfSleep($node, array &$sleep_properties = [])
+    private function analyzeStatementsOfSleep($node, array &$sleep_properties = []) : void
     {
         if (!($node instanceof Node)) {
             if (is_array($node)) {
@@ -150,7 +145,7 @@ class SleepCheckerVisitor extends PluginAwarePostAnalysisVisitor
      * @param int $lineno
      * @param array<string,true> $sleep_properties
      */
-    private function analyzeReturnValue($expr_node, int $lineno, array &$sleep_properties)
+    private function analyzeReturnValue($expr_node, int $lineno, array &$sleep_properties) : void
     {
         $context = clone($this->context)->withLineNumberStart($lineno);
         if (!($expr_node instanceof Node)) {
@@ -188,7 +183,6 @@ class SleepCheckerVisitor extends PluginAwarePostAnalysisVisitor
         if (!is_array($value)) {
             return;
         }
-        // @phan-suppress-next-line PhanThrowTypeAbsentForCall we're in class scope
         $class = $context->getClassInScope($code_base);
 
         foreach ($value as $prop_name) {

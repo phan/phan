@@ -4,6 +4,7 @@ namespace Phan\Language\Type;
 
 /**
  * Empty interface used by quick checks if a Type is a specific literal int/string.
+ * @method mixed getValue()
  */
 interface LiteralTypeInterface
 {

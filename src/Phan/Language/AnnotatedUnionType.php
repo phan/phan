@@ -25,8 +25,11 @@ class AnnotatedUnionType extends UnionType
      */
     public function withIsPossiblyUndefined(bool $is_possibly_undefined) : UnionType
     {
+        if ($this->is_possibly_undefined === $is_possibly_undefined) {
+            return $this;
+        }
         if (!$is_possibly_undefined) {
-            return UnionType::ofUniqueTypes($this->getTypeSet());
+            return UnionType::of($this->getTypeSet(), $this->getRealTypeSet());
         }
         if (!$this->is_possibly_undefined) {
             return $this;
@@ -36,7 +39,31 @@ class AnnotatedUnionType extends UnionType
         return $result;
     }
 
-    public function getIsPossiblyUndefined() : bool
+    public function asSingleScalarValueOrNull()
+    {
+        if ($this->is_possibly_undefined) {
+            return null;
+        }
+        return parent::asSingleScalarValueOrNull();
+    }
+
+    public function asSingleScalarValueOrNullOrSelf()
+    {
+        if ($this->is_possibly_undefined) {
+            return $this;
+        }
+        return parent::asSingleScalarValueOrNullOrSelf();
+    }
+
+    public function asValueOrNullOrSelf()
+    {
+        if ($this->is_possibly_undefined) {
+            return $this;
+        }
+        return parent::asValueOrNullOrSelf();
+    }
+
+    public function isPossiblyUndefined() : bool
     {
         return $this->is_possibly_undefined;
     }
@@ -52,33 +79,27 @@ class AnnotatedUnionType extends UnionType
 
     /**
      * Add a type name to the list of types
-     *
-     * @return UnionType
      * @override
      */
-    public function withType(Type $type)
+    public function withType(Type $type) : UnionType
     {
         return parent::withType($type)->withIsPossiblyUndefined(false);
     }
 
     /**
      * Add a type name to the list of types
-     *
-     * @return UnionType
      * @override
      */
-    public function withoutType(Type $type)
+    public function withoutType(Type $type) : UnionType
     {
         return parent::withoutType($type)->withIsPossiblyUndefined(false);
     }
 
     /**
      * Returns a union type which add the given types to this type
-     *
-     * @return UnionType
      * @override
      */
-    public function withUnionType(UnionType $union_type)
+    public function withUnionType(UnionType $union_type) : UnionType
     {
         return parent::withUnionType($union_type)->withIsPossiblyUndefined(false);
     }

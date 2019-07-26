@@ -1,0 +1,6 @@
+src/123_throw_static.php:2 PhanUnreferencedClass Possibly zero references to class \ThrowingException688
+src/123_throw_static.php:6 PhanUnreferencedPublicMethod Possibly zero references to public method \ThrowingException688::throw()
+src/123_throw_static.php:13 PhanUnreferencedPublicMethod Possibly zero references to public method \ThrowingException688::throwOther()
+src/123_throw_static.php:14 PhanThrowTypeMismatch \ThrowingException688::throwOther() throws \RuntimeException, but it only has declarations of '@throws static'
+src/123_throw_static.php:20 PhanUnreferencedPublicMethod Possibly zero references to public method \ThrowingException688::throwStatic()
+src/123_throw_static.php:21 PhanThrowTypeMismatch \ThrowingException688::throwStatic() throws static, but it only has declarations of '@throws \RuntimeException'

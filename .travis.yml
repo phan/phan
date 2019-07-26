@@ -1,9 +1,8 @@
 language: php
 
-# The 1.0 releases can be used with any PHP version from 7.0 to 7.2.
-# Some small tasks remain for php 7.3.
+# The 2.0 releases can be used with any PHP version from 7.1 to 7.3.
+# PHP 7.4 support is planned for 2.x
 php:
-  - 7.0
   - 7.1
   - 7.2
   - 7.3
@@ -20,6 +19,7 @@ cache:
 
 # We invoke php multiple times via CLI in several tests, so enable the opcache file cache.
 before_install:
+  # NOTE: This is testing compatibility with the latest version of php-ast. Most ci jobs can just use `pecl install ast` to install php-ast 1.0.1+
   - ./tests/travis_setup.sh
   - mkdir /tmp/opcache || true; echo -e 'opcache.enable_cli=1\nopcache.file_cache=/tmp/opcache' >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
   - composer validate

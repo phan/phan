@@ -35,6 +35,9 @@ class GenericArrayTemplateKeyType extends GenericArrayType
         return new self($type, $is_nullable, $key_type);
     }
 
+    /**
+     * @param array<string,UnionType> $template_parameter_type_map
+     */
     public function withTemplateParameterTypeMap(
         array $template_parameter_type_map
     ) : UnionType {
@@ -42,11 +45,11 @@ class GenericArrayTemplateKeyType extends GenericArrayType
         $new_element_type = $element_type->withTemplateParameterTypeMap($template_parameter_type_map);
         $new_key_type = $this->template_key_type->withTemplateParameterTypeMap($template_parameter_type_map);
         if ($element_type === $new_element_type && $new_key_type === $this->template_key_type) {
-            return $this->asUnionType();
+            return $this->asPHPDocUnionType();
         }
         if ($this->template_key_type !== $new_key_type) {
             if ($new_element_type->isEmpty()) {
-                $new_element_type = MixedType::instance(false)->asUnionType();
+                $new_element_type = MixedType::instance(false)->asPHPDocUnionType();
             }
             return $new_element_type->asGenericArrayTypes(
                 GenericArrayType::keyTypeFromUnionTypeValues($new_key_type)
@@ -69,7 +72,7 @@ class GenericArrayTemplateKeyType extends GenericArrayType
      * @param CodeBase $code_base
      * @return ?Closure(UnionType, Context):UnionType
      */
-    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type)
+    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type) : ?Closure
     {
         $element_closure = parent::getTemplateTypeExtractorClosure($code_base, $template_type);
         $key_closure = $this->template_key_type->getTemplateTypeExtractorClosure($code_base, $template_type);

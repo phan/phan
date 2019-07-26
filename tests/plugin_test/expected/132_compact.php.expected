@@ -1,0 +1,1 @@
+src/132_compact.php:2 PhanUnusedGlobalFunctionParameter Parameter $myUnusedVar is never used

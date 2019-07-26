@@ -1,0 +1,5 @@
+%s:10 PhanTraitParentReference Reference to parent from trait \NS671\T
+%s:12 PhanTraitParentReference Reference to parent from trait \NS671\T
+%s:14 PhanTraitParentReference Reference to parent from trait \NS671\T
+%s:14 PhanTypeMismatchArgument Argument 1 ($a) is string but \NS671\T::expectIntString() takes int defined at %s:6
+%s:14 PhanTypeMismatchArgument Argument 2 ($x) is true but \NS671\T::expectIntString() takes string defined at %s:6

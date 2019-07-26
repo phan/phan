@@ -15,12 +15,12 @@ use TypeError;
  *
  * - Afterwards, remove this boilerplate overriding methods of SplObjectStorage<T,T>
  *
- * @method attach(T,mixed=):void
- * @method detach(T):void
- * @method offsetExists(T):bool
- * @method offsetGet(T):bool
- * @method offsetSet(T,mixed=):void
- * @method offsetUnset(T):void
+ * @method attach(T $object,mixed $data = null):void
+ * @method detach(T $object):void
+ * @method offsetExists(T $object):bool
+ * @method offsetGet(T $object ):bool
+ * @method offsetSet(T $object,mixed $data = null):void
+ * @method offsetUnset(T $object):void
  *
  * @phan-file-suppress PhanParamSignatureMismatchInternal, PhanParamSignaturePHPDocMismatchHasParamType for these comment method overrides
  * TODO: Make suppressions in the class doc comment work for magic methods.
@@ -31,8 +31,6 @@ class Set extends \SplObjectStorage
     /**
      * @param iterable<T> $element_iterator
      * An optional set of items to add to the set
-     *
-     * @suppress PhanGenericConstructorTypes TODO: Support inferring the template from iterable<T>
      */
     public function __construct($element_iterator = null)
     {
@@ -170,7 +168,7 @@ class Set extends \SplObjectStorage
      * closure return true
      * @suppress PhanUnreferencedPublicMethod potentially useful but currently unused
      */
-    public function filter(Closure $closure)
+    public function filter(Closure $closure) : Set
     {
         $set = new Set();
         foreach ($this as $element) {
@@ -210,7 +208,7 @@ class Set extends \SplObjectStorage
              * @param T $element
              * @return object
              */
-            function ($element) {
+            static function ($element) {
                 return clone($element);
             }
         );

@@ -15,7 +15,7 @@ trait ConstantTrait
 {
     use ElementFutureUnionType;
 
-    /** @var Node|string|float|int the node which defined the value of this constant. */
+    /** @var Node|string|float|int|resource the node (or built-in value) which defined the value of this constant. */
     protected $defining_node;
 
     /**
@@ -32,10 +32,10 @@ trait ConstantTrait
     /**
      * Sets the node with the AST representing the value of this constant.
      *
-     * @param Node|string|float|int $node Either a node or a constant to be used as the value of the constant.
-     * @return void
+     * @param Node|string|float|int|resource $node Either a node or a constant to be used as the value of the constant.
+     * Can be resource for STDERR, etc.
      */
-    public function setNodeForValue($node)
+    public function setNodeForValue($node) : void
     {
         $this->defining_node = $node;
     }
@@ -43,7 +43,7 @@ trait ConstantTrait
     /**
      * Gets the node with the AST representing the value of this constant.
      *
-     * @return Node|string|float|int
+     * @return Node|string|float|int|resource
      */
     public function getNodeForValue()
     {
@@ -53,9 +53,8 @@ trait ConstantTrait
     /**
      * Used by daemon mode to restore an element to the state it had before parsing.
      * @internal
-     * @return ?Closure
      */
-    public function createRestoreCallback()
+    public function createRestoreCallback() : ?Closure
     {
         $future_union_type = $this->future_union_type;
         if ($future_union_type === null) {
@@ -65,7 +64,7 @@ trait ConstantTrait
         }
         // If this refers to a class constant in another file,
         // the resolved union type might change if that file changes.
-        return function () use ($future_union_type) {
+        return function () use ($future_union_type) : void {
             $this->future_union_type = $future_union_type;
             // Probably don't need to call setUnionType(mixed) again...
         };

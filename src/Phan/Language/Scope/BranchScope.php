@@ -34,9 +34,6 @@ class BranchScope extends Scope
         );
     }
 
-    /**
-     * @return Variable
-     */
     public function getVariableByName(string $name) : Variable
     {
         return (
@@ -68,7 +65,7 @@ class BranchScope extends Scope
      * Crawl the scope hierarchy to get a class FQSEN.
      * Return null if there is no class FQSEN.
      */
-    public function getClassFQSENOrNull()
+    public function getClassFQSENOrNull() : ?FullyQualifiedClassName
     {
         return $this->parent_scope->getClassFQSENOrNull();
     }

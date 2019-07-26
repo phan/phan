@@ -1,1 +1,2 @@
-%s:17 PhanTypeMismatchArgument Argument 1 (v) is 'str' but \f() takes int defined at %s:16
+%s:6 PhanRedundantCondition Redundant attempt to cast true of type true to truthy
+%s:17 PhanTypeMismatchArgument Argument 1 ($v) is 'str' but \f() takes int defined at %s:16

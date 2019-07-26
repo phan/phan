@@ -69,7 +69,7 @@ class FileRef implements \Serializable
      * root directory
      * @see Config::getProjectRootDirectory() for converting paths to absolute paths
      */
-    public static function getProjectRelativePathForPath($cwd_relative_path)
+    public static function getProjectRelativePathForPath(string $cwd_relative_path) : string
     {
         // Get a path relative to the project root
         $path = \str_replace(
@@ -79,7 +79,7 @@ class FileRef implements \Serializable
         );
 
         // Strip any beginning directory separators
-        if (0 === ($pos = \strpos($path, DIRECTORY_SEPARATOR))) {
+        if (0 === ($pos = \strpos($path, \DIRECTORY_SEPARATOR))) {
             // Work around substr being pedantic
             $path = (string)\substr($path, $pos + 1);
         }
@@ -110,12 +110,24 @@ class FileRef implements \Serializable
      * The starting line number of the element within the file
      *
      * @return static
-     * This context with the given value is returned
+     * This context with the given line number is returned
      */
     public function withLineNumberStart(int $line_number)
     {
         $this->line_number_start = $line_number;
         return $this;
+    }
+
+    /**
+     * @var int $line_number
+     * The starting line number of the element within the file
+     *
+     * @return void
+     * Both this and withLineNumberStart modify the original context.
+     */
+    public function setLineNumberStart(int $line_number) : void
+    {
+        $this->line_number_start = $line_number;
     }
 
     /**
@@ -150,7 +162,7 @@ class FileRef implements \Serializable
         return $this->file . ':' . $this->line_number_start;
     }
 
-    public function serialize()
+    public function serialize() : string
     {
         return $this->__toString();
     }
@@ -158,9 +170,9 @@ class FileRef implements \Serializable
     /**
      * @param string $serialized
      */
-    public function unserialize($serialized)
+    public function unserialize($serialized) : void
     {
-        $map = explode(':', $serialized);
+        $map = \explode(':', $serialized);
         $this->file = $map[0];
         $this->line_number_start = (int)$map[1];
         $this->line_number_end = (int)($map[2] ?? 0);

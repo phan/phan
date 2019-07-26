@@ -1,0 +1,2 @@
+%s:5 PhanUnextractableAnnotation Saw unextractable annotation for comment '/** @var int unrelated */'
+%s:10 PhanUnextractableAnnotation Saw unextractable annotation for comment '/** @phan-var int unrelated */'

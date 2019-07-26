@@ -6,6 +6,8 @@ use AssertionError;
 use ast\Node;
 use Phan\AST\Visitor\KindVisitorImplementation;
 
+use function count;
+
 /**
  * This checks what exit statuses are possible for AST nodes: `break;`, `continue;`, `throw`, `return`, proceeding, etc.
  *
@@ -86,7 +88,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      * If we don't know how to analyze a node type (or left it out), assume it always proceeds
      * @return int - The status bitmask corresponding to always proceeding
      */
-    public function visit(Node $node)
+    public function visit(Node $node) : int
     {
         return self::STATUS_PROCEED;
     }
@@ -102,7 +104,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
                 $cond_name = $cond->children['name'];
                 if ($cond_name->kind === \ast\AST_NAME) {
                     $cond_name_string = $cond_name->children['name'];
-                    return \is_string($cond_name_string) && strcasecmp($cond_name_string, 'true') === 0;
+                    return \is_string($cond_name_string) && \strcasecmp($cond_name_string, 'true') === 0;
                 }
             }
             return false;
@@ -115,7 +117,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      * A break statement unconditionally breaks out of a loop/switch
      * @return int the corresponding status code
      */
-    public function visitBreak(Node $node)
+    public function visitBreak(Node $node) : int
     {
         return self::STATUS_BREAK;
     }
@@ -125,7 +127,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      * TODO: Make this account for levels
      * @return int the corresponding status code
      */
-    public function visitContinue(Node $node)
+    public function visitContinue(Node $node) : int
     {
         return self::STATUS_CONTINUE;
     }
@@ -134,7 +136,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      * A throw statement unconditionally throws
      * @return int the corresponding status code
      */
-    public function visitThrow(Node $node)
+    public function visitThrow(Node $node) : int
     {
         return self::STATUS_THROW;
     }
@@ -142,7 +144,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     /**
      * @return int the corresponding status code for the try/catch/finally block
      */
-    public function visitTry(Node $node)
+    public function visitTry(Node $node) : int
     {
         $status = $node->flags & self::STATUS_BITMASK;
         if ($status) {
@@ -187,7 +189,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     /**
      * @return int the corresponding status code
      */
-    public function visitCatchList(Node $node)
+    public function visitCatchList(Node $node) : int
     {
         $status = $node->flags & self::STATUS_BITMASK;
         if ($status) {
@@ -208,6 +210,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         $combined_status = 0;
         // Try to cover all possible cases, such as try { return throwsException(); } catch(Exception $e) { break; }
         foreach ($node->children as $catch_node) {
+            // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this is never null for catch nodes
             $catch_node_status = $this->visitStmtList($catch_node->children['stmts']);
             $combined_status |= $catch_node_status;
         }
@@ -228,7 +231,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     /**
      * @return int the corresponding status code
      */
-    public function visitSwitch(Node $node)
+    public function visitSwitch(Node $node) : int
     {
         $status = $node->flags & self::STATUS_BITMASK;
         if ($status) {
@@ -278,8 +281,12 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         return $status;
     }
 
+    /**
+     * @param array<mixed,Node|int|string|float> $siblings
+     */
     private function computeStatusOfSwitchCase(Node $case_node, int $index, array $siblings) : int
     {
+        // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this is never null
         $status = $this->visitStmtList($case_node->children['stmts']);
         if (($status & self::STATUS_PROCEED) === 0) {
             // Check if the current switch case will not fall through.
@@ -300,10 +307,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
 
     const STATUS_CONTINUE_OR_BREAK = self::STATUS_CONTINUE | self::STATUS_BREAK;
 
-    /**
-     * @return int
-     */
-    public function visitForeach(Node $node)
+    public function visitForeach(Node $node) : int
     {
         // We assume foreach loops are over a finite sequence, and that it's possible for that sequence to have at least one element.
         $inner_status = $this->check($node->children['stmts']);
@@ -315,17 +319,14 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         return ($inner_status & ~self::STATUS_CONTINUE_OR_BREAK) | self::STATUS_PROCEED;
     }
 
-    /**
-     * @return int
-     */
-    public function visitWhile(Node $node)
+    public function visitWhile(Node $node) : int
     {
         $inner_status = $this->check($node->children['stmts']);
         // TODO: Check for unconditionally false conditions.
         if (self::isTruthyLiteral($node->children['cond'])) {
             // Use a special case to analyze "while (1) {exprs}" or "for (; true; ) {exprs}"
             // TODO: identify infinite loops, mark those as STATUS_NO_PROCEED or STATUS_RETURN.
-            return $this->computeDerivedStatusOfInfiniteLoop($inner_status);
+            return self::computeDerivedStatusOfInfiniteLoop($inner_status);
         }
         // This is (to our awareness) **not** an infinite loop
 
@@ -339,7 +340,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     /**
      * @return int the corresponding status code
      */
-    public function visitFor(Node $node)
+    public function visitFor(Node $node) : int
     {
         $inner_status = $this->check($node->children['stmts']);
         // for loops have an expression list as a condition.
@@ -348,7 +349,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         if (count($cond_nodes) === 0 || self::isTruthyLiteral(\end($cond_nodes))) {
             // Use a special case to analyze "while (1) {exprs}" or "for (; true; ) {exprs}"
             // TODO: identify infinite loops, mark those as STATUS_NO_PROCEED or STATUS_RETURN.
-            return $this->computeDerivedStatusOfInfiniteLoop($inner_status);
+            return self::computeDerivedStatusOfInfiniteLoop($inner_status);
         }
         // This is (to our awareness) **not** an infinite loop
 
@@ -368,7 +369,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
 
     // Logic to determine status of "while (1) {exprs}" or "for (; true; ) {exprs}"
     // TODO: identify infinite loops, mark those as STATUS_NO_PROCEED or STATUS_RETURN.
-    private function computeDerivedStatusOfInfiniteLoop(int $inner_status) : int
+    private static function computeDerivedStatusOfInfiniteLoop(int $inner_status) : int
     {
         $status = $inner_status & ~self::UNEXITABLE_LOOP_INNER_STATUS;
         if ($status === 0) {
@@ -386,7 +387,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      * A return statement unconditionally returns (Assume expression passed in doesn't throw)
      * @return int the corresponding status code
      */
-    public function visitReturn(Node $node)
+    public function visitReturn(Node $node) : int
     {
         return self::STATUS_RETURN;
     }
@@ -395,7 +396,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      * An exit statement unconditionally exits (Assume expression passed in doesn't throw)
      * @return int the corresponding status code
      */
-    public function visitExit(Node $node)
+    public function visitExit(Node $node) : int
     {
         return self::STATUS_RETURN;
     }
@@ -403,7 +404,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     /**
      * @return int the corresponding status code
      */
-    public function visitUnaryOp(Node $node)
+    public function visitUnaryOp(Node $node) : int
     {
         // Don't modify $node->flags, use unmodified flags here
         if ($node->flags !== \ast\flags\UNARY_SILENCE) {
@@ -423,7 +424,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      * NOTE: A trigger_error() statement may or may not exit, depending on the constant and user configuration.
      * @return int the corresponding status code
      */
-    public function visitCall(Node $node)
+    public function visitCall(Node $node) : int
     {
         $status = $node->flags & self::STATUS_BITMASK;
         if ($status) {
@@ -459,7 +460,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         }
         // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
         if (\strcasecmp($function_name, 'trigger_error') === 0) {
-            return $this->computeTriggerErrorStatusCodeForConstant($node->children['args']->children[1] ?? null);
+            return self::computeTriggerErrorStatusCodeForConstant($node->children['args']->children[1] ?? null);
         }
         // TODO: Could allow .phan/config.php or plugins to define additional behaviors, e.g. for methods.
         // E.g. if (!$var) {HttpFramework::generate_302_and_die(); }
@@ -469,7 +470,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     /**
      * @param Node|string|int|float $constant_ast
      */
-    private function computeTriggerErrorStatusCodeForConstant($constant_ast) : int
+    private static function computeTriggerErrorStatusCodeForConstant($constant_ast) : int
     {
         // return PROCEED if this can't be determined.
         // TODO: Could check for integer literals
@@ -499,7 +500,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      *       (We don't check for STATUS_CONTINUE yet, so this doesn't matter yet.)
      * @return int the corresponding status code
      */
-    public function visitStmtList(Node $node)
+    public function visitStmtList(Node $node) : int
     {
         $status = $node->flags & self::STATUS_BITMASK;
         if ($status) {
@@ -515,7 +516,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      * @return int the exit status of a block (whether or not it would unconditionally exit, return, throw, etc.
      * @override
      */
-    public function visitIf(Node $node)
+    public function visitIf(Node $node) : int
     {
         $status = $node->flags & self::STATUS_BITMASK;
         if ($status) {
@@ -531,6 +532,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         $has_if_elems_for_all_cases = false;
         $combined_statuses = 0;
         foreach ($node->children as $child_node) {
+            // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this is never null
             $status = $this->visitStmtList($child_node->children['stmts']);
             $combined_statuses |= $status;
 
@@ -552,8 +554,9 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      * Analyzes a node with kind \ast\AST_DO_WHILE
      * @return int the exit status of a block (whether or not it would unconditionally exit, return, throw, etc.
      */
-    public function visitDoWhile(Node $node)
+    public function visitDoWhile(Node $node) : int
     {
+        // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this is never null
         $inner_status = $this->visitStmtList($node->children['stmts']);
         if (($inner_status & ~self::STATUS_THROW_OR_RETURN_BITMASK) === 0) {
             // The inner block throws or returns before the end can be reached.
@@ -578,12 +581,13 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      * Analyzes a node with kind \ast\AST_IF_ELEM
      * @return int the exit status of a block (whether or not it would unconditionally exit, return, throw, etc.
      */
-    public function visitIfElem(Node $node)
+    public function visitIfElem(Node $node) : int
     {
         $status = $node->flags & self::STATUS_BITMASK;
         if ($status) {
             return $status;
         }
+        // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this is never null
         $status = $this->visitStmtList($node->children['stmts']);
         $node->flags = $status;
         return $status;
@@ -592,7 +596,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     /**
      * @return int the corresponding status code
      */
-    public function visitGoto(Node $node)
+    public function visitGoto(Node $node) : int
     {
         return self::STATUS_GOTO;
     }
@@ -637,5 +641,13 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     public static function willUnconditionallyThrowOrReturn(Node $node) : bool
     {
         return ((new self())->__invoke($node) & ~self::STATUS_THROW_OR_RETURN_BITMASK) === 0;
+    }
+
+    /**
+     * Will the node $node unconditionally proceed (no break/continue, throw, or goto)
+     */
+    public static function willUnconditionallyProceed(Node $node) : bool
+    {
+        return (new self())->__invoke($node) === self::STATUS_PROCEED;
     }
 }

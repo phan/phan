@@ -5,6 +5,7 @@ namespace Phan\Language\Element;
 use AssertionError;
 use Phan\CodeBase;
 use Phan\Exception\CodeBaseException;
+use Phan\Exception\RecursionDepthException;
 use Phan\Language\Context;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassElement;
@@ -34,11 +35,10 @@ abstract class ClassElement extends AddressableElement
 
     /**
      * @param FullyQualifiedClassElement $fqsen
-     * @return void
      * @override
      * @suppress PhanParamSignatureMismatch deliberately more specific
      */
-    public function setFQSEN(FQSEN $fqsen)
+    public function setFQSEN(FQSEN $fqsen) : void
     {
         if (!($fqsen instanceof FullyQualifiedClassElement)) {
             throw new TypeError('Expected $fqsen to be a subclass of Phan\Language\Element\FullyQualifiedClassElement');
@@ -70,11 +70,21 @@ abstract class ClassElement extends AddressableElement
      */
     public function getDefiningFQSEN() : FullyQualifiedClassElement
     {
-        $defining_fqsen = $this->defining_fqsen;
-        if ($defining_fqsen === null) {
+        if ($this->defining_fqsen === null) {
             throw new AssertionError('should check hasDefiningFQSEN');
         }
-        return $defining_fqsen;
+        return $this->defining_fqsen;
+    }
+
+    /**
+     * Gets the real defining FQSEN.
+     * This differs from getDefiningFQSEN() if the definition was from a trait.
+     *
+     * @return FullyQualifiedClassElement
+     */
+    public function getRealDefiningFQSEN()
+    {
+        return $this->getDefiningFQSEN();
     }
 
     /**
@@ -93,7 +103,6 @@ abstract class ClassElement extends AddressableElement
                 "No defining class for {$this->getFQSEN()}"
             );
         }
-        // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
         return $this->defining_fqsen->getFullyQualifiedClassName();
     }
 
@@ -102,11 +111,10 @@ abstract class ClassElement extends AddressableElement
      * the element was originally defined.
      *
      * @param FullyQualifiedClassElement $defining_fqsen
-     * @return void
      */
     public function setDefiningFQSEN(
         FullyQualifiedClassElement $defining_fqsen
-    ) {
+    ) : void {
         $this->defining_fqsen = $defining_fqsen;
     }
 
@@ -166,22 +174,30 @@ abstract class ClassElement extends AddressableElement
 
     /**
      * @return bool
-     * True if this method overrides another method
+     * True if this element overrides another element
      */
-    public function getIsOverride() : bool
+    public function isOverride() : bool
     {
         return $this->getPhanFlagsHasState(Flags::IS_OVERRIDE);
     }
 
     /**
-     * Sets whether this method overrides another method
+     * True if this element overrides another element
+     * @deprecated use isOverride
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    final public function getIsOverride() : bool
+    {
+        return $this->isOverride();
+    }
+
+    /**
+     * Sets whether this element overrides another element
      *
      * @param bool $is_override
-     * True if this method overrides another method
-     *
-     * @return void
+     * True if this element overrides another element
      */
-    public function setIsOverride(bool $is_override)
+    public function setIsOverride(bool $is_override) : void
     {
         $this->setPhanFlags(Flags::bitVectorWithState(
             $this->getPhanFlags(),
@@ -192,7 +208,7 @@ abstract class ClassElement extends AddressableElement
 
     /**
      * @return bool
-     * True if this is a static method
+     * True if this is a static element
      */
     public function isStatic() : bool
     {
@@ -226,7 +242,7 @@ abstract class ClassElement extends AddressableElement
      *                                    null if in the global scope.
      * @return bool true if this can be accessed from the scope of $accessing_class_fqsen
      */
-    public function isAccessibleFromClass(CodeBase $code_base, $accessing_class_fqsen) : bool
+    public function isAccessibleFromClass(CodeBase $code_base, ?FullyQualifiedClassName $accessing_class_fqsen) : bool
     {
         if ($this->isPublic()) {
             return true;
@@ -239,10 +255,22 @@ abstract class ClassElement extends AddressableElement
         if ($defining_fqsen === $accessing_class_fqsen) {
             return true;
         }
+        $real_defining_fqsen = $this->getRealDefiningFQSEN()->getFullyQualifiedClassName();
+        if ($real_defining_fqsen === $accessing_class_fqsen) {
+            return true;
+        }
         if ($this->isPrivate()) {
+            if ($code_base->hasClassWithFQSEN($defining_fqsen)) {
+                $defining_class = $code_base->getClassByFQSEN($defining_fqsen);
+                foreach ($defining_class->getTraitFQSENList() as $trait_fqsen) {
+                    if ($trait_fqsen === $accessing_class_fqsen) {
+                        return true;
+                    }
+                }
+            }
             return false;
         }
-        return $this->checkCanAccessProtectedElement($code_base, $defining_fqsen, $accessing_class_fqsen);
+        return self::checkCanAccessProtectedElement($code_base, $defining_fqsen, $accessing_class_fqsen);
     }
 
     /**
@@ -250,23 +278,26 @@ abstract class ClassElement extends AddressableElement
      *
      * Precondition: The property in $defining_fqsen is protected.
      */
-    private function checkCanAccessProtectedElement(CodeBase $code_base, FullyQualifiedClassName $defining_fqsen, FullyQualifiedClassName $accessing_class_fqsen) : bool
+    private static function checkCanAccessProtectedElement(CodeBase $code_base, FullyQualifiedClassName $defining_fqsen, FullyQualifiedClassName $accessing_class_fqsen) : bool
     {
         $accessing_class_type = $accessing_class_fqsen->asType();
         $type_of_class_of_property = $defining_fqsen->asType();
 
         // If the definition of the property is protected,
         // then the subclasses of the defining class can access it.
-        foreach ($accessing_class_type->asExpandedTypes($code_base)->getTypeSet() as $type) {
-            if ($type->canCastToType($type_of_class_of_property)) {
-                return true;
+        try {
+            foreach ($accessing_class_type->asExpandedTypes($code_base)->getTypeSet() as $type) {
+                if ($type->canCastToType($type_of_class_of_property)) {
+                    return true;
+                }
             }
-        }
-        // and base classes of the defining class can access it
-        foreach ($type_of_class_of_property->asExpandedTypes($code_base)->getTypeSet() as $type) {
-            if ($type->canCastToType($accessing_class_type)) {
-                return true;
+            // and base classes of the defining class can access it
+            foreach ($type_of_class_of_property->asExpandedTypes($code_base)->getTypeSet() as $type) {
+                if ($type->canCastToType($accessing_class_type)) {
+                    return true;
+                }
             }
+        } catch (RecursionDepthException $_) {
         }
         return false;
     }

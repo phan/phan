@@ -24,7 +24,7 @@
 # SOFTWARE.
 
 
-FROM alpine:3.7
+FROM alpine:3.9
 
 WORKDIR /usr/src/app
 
@@ -32,7 +32,7 @@ RUN adduser -u 9000 -D app
 
 ENV LAST_MODIFIED_DATE 2018-01-20
 
-ENV PHP_AST_VERSION=0.1.6
+ENV PHP_AST_VERSION=1.0.1
 
 RUN apk add --no-cache \
 	php7 && \
@@ -95,8 +95,6 @@ RUN apk add --no-cache bash \
       build-base \
       php7-dev \
       wget
-COPY plugins/codeclimate/ast.ini /etc/php7/conf.d/
-COPY plugins/codeclimate/engine /usr/src/app/plugins/codeclimate/engine
 
 COPY composer.json composer.lock ./
 RUN apk add --no-cache curl && \
@@ -107,6 +105,9 @@ RUN apk add --no-cache curl && \
 
 COPY .phan .phan
 COPY src src
+
+COPY plugins/codeclimate/ast.ini /etc/php7/conf.d/
+COPY plugins/codeclimate/engine /usr/src/app/plugins/codeclimate/engine
 
 USER app
 

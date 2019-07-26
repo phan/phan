@@ -29,10 +29,27 @@ class ParallelChildCollector implements IssueCollectorInterface
     {
         self::assertSharedMemoryCommunicationEnabled();
 
+        $this->message_queue_resource = self::getQueueForProcessGroup();
+    }
+
+    /**
+     * @return resource the result of msg_get_queue()
+     * @throws AssertionError if this could not create a resource with msg_get_queue.
+     * @internal
+     */
+    public static function getQueueForProcessGroup()
+    {
         // Create a message queue for this process group
-        $message_queue_key = posix_getpgid(posix_getpid());
-        $this->message_queue_resource =
-            msg_get_queue($message_queue_key);
+        $message_queue_key = \posix_getpgid(\posix_getpid());
+        if (!\is_int($message_queue_key)) {
+            throw new AssertionError('Expected posix_getpgid to return a valid id');
+        }
+
+        $resource = \msg_get_queue($message_queue_key);
+        if (!$resource) {
+            throw new AssertionError('Expected msg_get_queue to return a valid resource');
+        }
+        return $resource;
     }
 
     /**
@@ -40,15 +57,15 @@ class ParallelChildCollector implements IssueCollectorInterface
      * @throws AssertionError if PHP modules needed for shared communication aren't loaded
      * @internal
      */
-    final public static function assertSharedMemoryCommunicationEnabled()
+    final public static function assertSharedMemoryCommunicationEnabled() : void
     {
-        if (!extension_loaded('sysvsem')) {
+        if (!\extension_loaded('sysvsem')) {
             throw new AssertionError(
                 'PHP must be compiled with --enable-sysvsem in order to use -j(>=2).'
             );
         }
 
-        if (!extension_loaded('sysvmsg')) {
+        if (!\extension_loaded('sysvmsg')) {
             throw new AssertionError(
                 'PHP must be compiled with --enable-sysvmsg in order to use -j(>=2).'
             );
@@ -58,17 +75,16 @@ class ParallelChildCollector implements IssueCollectorInterface
     /**
      * Collect issue
      * @param IssueInstance $issue
-     * @return void
      * @throws AssertionError if the message failed to be sent to the parent process
      */
-    public function collectIssue(IssueInstance $issue)
+    public function collectIssue(IssueInstance $issue) : void
     {
         $error_code = 0;
 
         // Send messages along to the message queue
         // that is hopefully being listened to by a
         // ParallelParentCollector.
-        $success = msg_send(
+        $success = \msg_send(
             $this->message_queue_resource,
             ParallelParentCollector::MESSAGE_TYPE_ISSUE,
             $issue,
@@ -105,20 +121,17 @@ class ParallelChildCollector implements IssueCollectorInterface
      * Called from daemon mode.
      *
      * @param string[] $files @phan-unused-param - the relative paths to those files
-     * @return void
-     *
      * @override
      */
-    public function removeIssuesForFiles(array $files)
+    public function removeIssuesForFiles(array $files) : void
     {
         return;  // Never going to be called - daemon mode isn't combined with parallel execution.
     }
 
     /**
      * This method has no effect on a ParallelChildCollector.
-     * @return void
      */
-    public function reset()
+    public function reset() : void
     {
     }
 }

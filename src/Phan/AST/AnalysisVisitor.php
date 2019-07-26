@@ -57,14 +57,12 @@ abstract class AnalysisVisitor extends KindVisitorImplementation
      *
      * @param int|string|FQSEN|UnionType|Type ...$parameters
      * Template parameters for the issue's error message
-     *
-     * @return void
      */
     protected function emitIssue(
         string $issue_type,
         int $lineno,
         ...$parameters
-    ) {
+    ) : void {
         Issue::maybeEmitWithParameters(
             $this->code_base,
             $this->context,
@@ -86,15 +84,13 @@ abstract class AnalysisVisitor extends KindVisitorImplementation
      *
      * @param ?Suggestion $suggestion
      * A suggestion (may be null)
-     *
-     * @return void
      */
     protected function emitIssueWithSuggestion(
         string $issue_type,
         int $lineno,
         array $parameters,
-        $suggestion
-    ) {
+        ?Suggestion $suggestion
+    ) : void {
         Issue::maybeEmitWithParameters(
             $this->code_base,
             $this->context,
@@ -102,6 +98,23 @@ abstract class AnalysisVisitor extends KindVisitorImplementation
             $lineno,
             $parameters,
             $suggestion
+        );
+    }
+
+    /**
+     * Check if an issue type (different from the one being emitted) should be suppressed.
+     *
+     * This is useful for ensuring that TypeMismatchProperty also suppresses PhanPossiblyNullTypeMismatchProperty,
+     * for example.
+     */
+    protected function shouldSuppressIssue(string $issue_type, int $lineno) : bool
+    {
+        return Issue::shouldSuppressIssue(
+            $this->code_base,
+            $this->context,
+            $issue_type,
+            $lineno,
+            []
         );
     }
 }

@@ -7,7 +7,7 @@ use Phan\Language\Type;
 /**
  * Represents the type `object` (an instance of an unspecified class)
  */
-final class ObjectType extends NativeType
+class ObjectType extends NativeType
 {
     /** @phan-override */
     const NAME = 'object';
@@ -48,4 +48,22 @@ final class ObjectType extends NativeType
     {
         return true;
     }
+
+    public function canUseInRealSignature() : bool
+    {
+        // Callers should check this separately if they want to support php 7.2
+        return false;
+    }
+
+    /** For ObjectType/CallableObjectType  */
+    public function asObjectType() : ?Type
+    {
+        return $this->withIsNullable(false);
+    }
+
+    public function asCallableType() : ?Type
+    {
+        return CallableObjectType::instance(false);
+    }
 }
+\class_exists(CallableObjectType::class);

@@ -7,9 +7,9 @@ class ExampleLoopUnused {
         $prev_was_element = false;
         foreach ([2,3] as $item) {
             if ($item > 2) {
-                // should not warn
+                // should not warn about $prev_was_element being unused in subsequent definitions
                 if (!$prev_was_element) {
-                    $ast_items[] = null;
+                    $ast_items[] = null;  // warns because ast_items isn't used
                     continue;
                 }
                 $prev_was_element = false;

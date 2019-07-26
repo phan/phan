@@ -1,0 +1,1 @@
+%s:7 PhanTypeMismatchArgumentInternal Argument 1 ($string) is float|int but \strlen() takes string

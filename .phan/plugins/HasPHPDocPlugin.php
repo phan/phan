@@ -7,11 +7,11 @@ use Phan\Language\Element\Func;
 use Phan\Language\Element\MarkupDescription;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
-use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeClassCapability;
-use Phan\PluginV2\AnalyzeFunctionCapability;
-use Phan\PluginV2\AnalyzeMethodCapability;
-use Phan\PluginV2\AnalyzePropertyCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\AnalyzeClassCapability;
+use Phan\PluginV3\AnalyzeFunctionCapability;
+use Phan\PluginV3\AnalyzeMethodCapability;
+use Phan\PluginV3\AnalyzePropertyCapability;
 
 /**
  * This file checks if an element (class or property) has a PHPDoc comment,
@@ -31,7 +31,7 @@ use Phan\PluginV2\AnalyzePropertyCapability;
  *
  * A plugin file must
  *
- * - Contain a class that inherits from \Phan\PluginV2
+ * - Contain a class that inherits from \Phan\PluginV3
  *
  * - End by returning an instance of that class.
  *
@@ -41,7 +41,7 @@ use Phan\PluginV2\AnalyzePropertyCapability;
  * Note: When adding new plugins,
  * add them to the corresponding section of README.md
  */
-final class HasPHPDocPlugin extends PluginV2 implements
+final class HasPHPDocPlugin extends PluginV3 implements
     AnalyzeClassCapability,
     AnalyzeFunctionCapability,
     AnalyzeMethodCapability,
@@ -53,18 +53,19 @@ final class HasPHPDocPlugin extends PluginV2 implements
      *
      * @param Clazz $class
      * A class being analyzed
-     *
-     * @return void
-     *
      * @override
      */
     public function analyzeClass(
         CodeBase $code_base,
         Clazz $class
-    ) {
+    ) : void {
+        if ($class->isAnonymous()) {
+            // Probably not useful in many cases to document a short anonymous class.
+            return;
+        }
         $doc_comment = $class->getDocComment();
         if (!$doc_comment) {
-            $this->emitIssue(
+            self::emitIssue(
                 $code_base,
                 $class->getContext(),
                 'PhanPluginNoCommentOnClass',
@@ -75,7 +76,10 @@ final class HasPHPDocPlugin extends PluginV2 implements
         }
         $description = MarkupDescription::extractDescriptionFromDocComment($class);
         if (!$description) {
-            $this->emitIssue(
+            if (strpos($doc_comment, '@deprecated') !== false) {
+                return;
+            }
+            self::emitIssue(
                 $code_base,
                 $class->getContext(),
                 'PhanPluginDescriptionlessCommentOnClass',
@@ -92,15 +96,12 @@ final class HasPHPDocPlugin extends PluginV2 implements
      *
      * @param Property $property
      * A property being analyzed
-     *
-     * @return void
-     *
      * @override
      */
     public function analyzeProperty(
         CodeBase $code_base,
         Property $property
-    ) {
+    ) : void {
         if ($property->isDynamicProperty()) {
             // And dynamic properties don't have phpdoc.
             return;
@@ -117,7 +118,7 @@ final class HasPHPDocPlugin extends PluginV2 implements
         $doc_comment = $property->getDocComment();
         if (!$doc_comment) {
             $visibility_upper = ucfirst($property->getVisibilityName());
-            $this->emitIssue(
+            self::emitIssue(
                 $code_base,
                 $property->getContext(),
                 "PhanPluginNoCommentOn${visibility_upper}Property",
@@ -129,7 +130,7 @@ final class HasPHPDocPlugin extends PluginV2 implements
         $description = MarkupDescription::extractDescriptionFromDocComment($property);
         if (!$description) {
             $visibility_upper = ucfirst($property->getVisibilityName());
-            $this->emitIssue(
+            self::emitIssue(
                 $code_base,
                 $property->getContext(),
                 "PhanPluginDescriptionlessCommentOn${visibility_upper}Property",
@@ -146,20 +147,17 @@ final class HasPHPDocPlugin extends PluginV2 implements
      *
      * @param Method $method
      * A method being analyzed
-     *
-     * @return void
-     *
      * @override
      */
     public function analyzeMethod(
         CodeBase $code_base,
         Method $method
-    ) {
+    ) : void {
         if ($method->isFromPHPDoc()) {
             // Phan does not track descriptions of (at)method.
             return;
         }
-        if ($method->getIsMagic()) {
+        if ($method->isMagic()) {
             // Don't require a description for `__construct()`, `__sleep()`, etc.
             return;
         }
@@ -168,7 +166,7 @@ final class HasPHPDocPlugin extends PluginV2 implements
             // Don't warn about subclasses inheriting this method.
             return;
         }
-        if ($method->getIsOverride()) {
+        if ($method->isOverride()) {
             // Note: This deliberately avoids requiring a summary for methods that are just overrides of other methods
             // This reduces the number of false positives
             return;
@@ -184,7 +182,7 @@ final class HasPHPDocPlugin extends PluginV2 implements
         $doc_comment = $method->getDocComment();
         if (!$doc_comment) {
             $visibility_upper = ucfirst($method->getVisibilityName());
-            $this->emitIssue(
+            self::emitIssue(
                 $code_base,
                 $method->getContext(),
                 "PhanPluginNoCommentOn${visibility_upper}Method",
@@ -196,7 +194,7 @@ final class HasPHPDocPlugin extends PluginV2 implements
         $description = MarkupDescription::extractDescriptionFromDocComment($method);
         if (!$description) {
             $visibility_upper = ucfirst($method->getVisibilityName());
-            $this->emitIssue(
+            self::emitIssue(
                 $code_base,
                 $method->getContext(),
                 "PhanPluginDescriptionlessCommentOn${visibility_upper}Method",
@@ -213,15 +211,12 @@ final class HasPHPDocPlugin extends PluginV2 implements
      *
      * @param Func $function
      * A function being analyzed
-     *
-     * @return void
-     *
      * @override
      */
     public function analyzeFunction(
         CodeBase $code_base,
         Func $function
-    ) {
+    ) : void {
         $doc_comment = $function->getDocComment();
         if ($function->isPHPInternal()) {
             // This isn't user-defined, there's no reason to warn or way to change it.
@@ -236,7 +231,7 @@ final class HasPHPDocPlugin extends PluginV2 implements
             return;
         }
         if (!$doc_comment) {
-            $this->emitIssue(
+            self::emitIssue(
                 $code_base,
                 $function->getContext(),
                 "PhanPluginNoCommentOnFunction",
@@ -247,7 +242,7 @@ final class HasPHPDocPlugin extends PluginV2 implements
         }
         $description = MarkupDescription::extractDescriptionFromDocComment($function);
         if (!$description) {
-            $this->emitIssue(
+            self::emitIssue(
                 $code_base,
                 $function->getContext(),
                 "PhanPluginDescriptionlessCommentOnFunction",
@@ -258,7 +253,7 @@ final class HasPHPDocPlugin extends PluginV2 implements
         }
     }
 
-    private function getDocCommentRepresentation(string $doc_comment) : string
+    private static function getDocCommentRepresentation(string $doc_comment) : string
     {
         return (string)json_encode(MarkupDescription::getDocCommentWithoutWhitespace($doc_comment), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }

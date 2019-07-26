@@ -18,8 +18,8 @@ trait Foo
 
     public function setOther(self $other)
     {
-        $this->other = [$other];
-        $this->other = [$this];
+        $this->other = [$other];  // should not warn
+        $this->other = [$this];  // should not warn, static is self or a subtype of self
         $this->other = [null];
     }
 }

@@ -89,7 +89,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         $context = $this->context;
         $try_context = $this->child_context_list[0];
 
-        if ($this->willRemainingStatementsBeAnalyzedAsIfTryMightFail($node)) {
+        if (self::willRemainingStatementsBeAnalyzedAsIfTryMightFail($node)) {
             return $this->combineScopeList([
                 $context->getScope(),
                 $try_context->getScope()
@@ -98,7 +98,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         return $try_context;
     }
 
-    private function willRemainingStatementsBeAnalyzedAsIfTryMightFail(Node $node) : bool
+    private static function willRemainingStatementsBeAnalyzedAsIfTryMightFail(Node $node) : bool
     {
         if ($node->children['finally'] !== null) {
             // We want to analyze finally as if the try block (and one or more of the catch blocks) was or wasn't executed.
@@ -112,11 +112,12 @@ class ContextMergeVisitor extends KindVisitorImplementation
         //      try { $x = expr(); } catch (Exception $e) { echo "Caught"; return; } catch (OtherException $e) { continue; }
         // Phan should infer that $x is guaranteed to be defined.
         foreach ($node->children['catches']->children ?? [] as $catch_node) {
+            // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this is never null
             if (BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($catch_node->children['stmts'])) {
-                return true;
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     /**
@@ -130,13 +131,14 @@ class ContextMergeVisitor extends KindVisitorImplementation
         }
         // Get the list of scopes for each branch of the
         // conditional
-        $scope_list = \array_map(function (Context $context) : Scope {
+        $scope_list = \array_map(static function (Context $context) : Scope {
             return $context->getScope();
         }, $this->child_context_list);
 
         $catch_scope_list = [];
         $catch_nodes = $node->children['catches']->children;
         foreach ($catch_nodes as $i => $catch_node) {
+            // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this is never null
             if (!BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($catch_node->children['stmts'])) {
                 $catch_scope_list[] = $scope_list[$i + 1];
             }
@@ -212,11 +214,11 @@ class ContextMergeVisitor extends KindVisitorImplementation
     {
         // Get the list of scopes for each branch of the
         // conditional
-        $scope_list = \array_map(function (Context $context) : Scope {
+        $scope_list = \array_map(static function (Context $context) : Scope {
             return $context->getScope();
         }, $this->child_context_list);
 
-        $has_else = $this->hasElse($node->children);
+        $has_else = self::hasElse($node->children);
 
         // If we're not guaranteed to hit at least one
         // branch, mark the incoming scope as a possibility
@@ -234,7 +236,31 @@ class ContextMergeVisitor extends KindVisitorImplementation
         return $this->combineScopeList($scope_list);
     }
 
-    private function hasElse(array $children) : bool
+    /**
+     * Similar to visitIf, but only includes contexts up to (and including) the first context inferred to be unconditionally true.
+     */
+    public function mergePossiblySingularChildContextList() : Context
+    {
+        // Get the list of scopes for each branch of the
+        // conditional
+        $scope_list = \array_map(static function (Context $context) : Scope {
+            return $context->getScope();
+        }, $this->child_context_list);
+
+        // If there weren't multiple branches, continue on
+        // as if the conditional never happened
+        if (\count($scope_list) < 2) {
+            // @phan-suppress-next-line PhanPossiblyFalseTypeReturn child_context_list is not empty
+            return \reset($this->child_context_list);
+        }
+
+        return $this->combineScopeList($scope_list);
+    }
+
+    /**
+     * @param array<mixed,Node|mixed> $children children of a Node of kind AST_IF
+     */
+    private static function hasElse(array $children) : bool
     {
         foreach ($children as $child_node) {
             if ($child_node instanceof Node
@@ -255,7 +281,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         if (\count($child_context_list) < 2) {
             throw new AssertionError("Expected at least two child contexts in " . __METHOD__);
         }
-        $scope_list = \array_map(function (Context $context) : Scope {
+        $scope_list = \array_map(static function (Context $context) : Scope {
             return $context->getScope();
         }, $child_context_list);
         return $this->combineScopeList($scope_list);
@@ -282,8 +308,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         // A function that determines if a variable is defined on
         // every branch
         $is_defined_on_all_branches =
-            /** @return bool */
-            function (string $variable_name) use ($scope_list) {
+            static function (string $variable_name) use ($scope_list) : bool {
                 foreach ($scope_list as $scope) {
                     if (!$scope->hasVariableWithName($variable_name)) {
                         return false;
@@ -295,8 +320,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         // Get the intersection of all types for all versions of
         // the variable from every side of the branch
         $union_type =
-            /** @return UnionType */
-            function (string $variable_name) use ($scope_list) {
+            static function (string $variable_name) use ($scope_list) : UnionType {
                 $previous_type = null;
                 $type_list = [];
                 // Get a list of all variables with the given name from
@@ -345,7 +369,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
             $name = (string)$name;
             // Skip variables that are only partially defined
             if (!$is_defined_on_all_branches($name)) {
-                if ($this->context->getIsStrictTypes()) {
+                if ($this->context->isStrictTypes()) {
                     continue;
                 } else {
                     // Limit the type of the variable to the subset

@@ -23,8 +23,10 @@ class FullyQualifiedMethodName extends FullyQualifiedClassElement implements Ful
         '__isset'       => '__isset',
         '__set'         => '__set',
         '__set_state'   => '__set_state',
+        '__serialize'   => '__serialize',
         '__sleep'       => '__sleep',
         '__tostring'    => '__toString',
+        '__unserialize' => '__unserialize',
         '__unset'       => '__unset',
         '__wakeup'      => '__wakeup',
     ];
@@ -39,12 +41,34 @@ class FullyQualifiedMethodName extends FullyQualifiedClassElement implements Ful
         '__get'         => true,
         '__invoke'      => true,
         '__isset'       => true,
+        '__serialize'   => true,
         '__set'         => true,
         '__set_state'   => true,
         '__sleep'       => true,
         '__toString'    => true,
+        '__unserialize' => true,
         '__unset'       => true,
         '__wakeup'      => true,
+    ];
+
+    /**
+     * Maps magic method names with known types to those types.
+     * Excludes values with mixed types.
+     */
+    const MAGIC_METHOD_TYPE_MAP = [
+        '__clone'       => 'void',
+        '__construct'   => 'void',
+        '__debugInfo'   => 'array<string,mixed>',
+        '__destruct'    => 'void',
+        '__isset'       => 'bool',
+        '__serialize'   => 'array',
+        '__set'         => 'void',
+        '__set_state'   => 'object',
+        '__sleep'       => 'string[]',
+        '__toString'    => 'string',
+        '__unserialize' => 'void',
+        '__unset'       => 'void',
+        '__wakeup'      => 'void',
     ];
 
     /**
@@ -56,6 +80,7 @@ class FullyQualifiedMethodName extends FullyQualifiedClassElement implements Ful
         '__destruct'    => true,
         '__set'         => true,
         '__unset'       => true,
+        '__unserialize' => true,
         '__wakeup'      => true,
     ];
 

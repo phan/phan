@@ -6,9 +6,11 @@ use ast\Node;
 use Phan\AST\AnalysisVisitor;
 use Phan\AST\Visitor\Element;
 use Phan\Issue;
+use Phan\PluginV3\IssueEmitter;
 
 /**
  * This augments AnalysisVisitor with public and internal methods.
+ * @deprecated use PluginV3
  */
 abstract class PluginAwareBaseAnalysisVisitor extends AnalysisVisitor
 {
@@ -27,33 +29,11 @@ abstract class PluginAwareBaseAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * Emit an issue with the provided arguments,
-     * unless that issue is suppressed.
-     *
-     * @param string $issue_type
-     * A name for the type of issue such as 'PhanPluginMyIssue'
-     *
-     * @param string $issue_message_fmt
-     * The complete issue message format string to emit such as
-     * 'class with fqsen {CLASS} is broken in some fashion' (preferred)
-     * or 'class with fqsen %s is broken in some fashion'
-     * The list of placeholders for between braces can be found
-     * in \Phan\Issue::UNCOLORED_FORMAT_STRING_FOR_TEMPLATE.
-     *
+     * See documentation for PluginV3
      * @param array<int,string> $issue_message_args
-     * The arguments for this issue format.
-     * If this array is empty, $issue_message_args is kept in place
-     *
-     * @param int $severity
-     * A value from the set {Issue::SEVERITY_LOW,
-     * Issue::SEVERITY_NORMAL, Issue::SEVERITY_HIGH}.
-     *
-     * @param int $remediation_difficulty
-     * A guess at how hard the issue will be to fix from the
-     * set {Issue:REMEDIATION_A, Issue:REMEDIATION_B, ...
-     * Issue::REMEDIATION_F} with F being the hardest.
-     * @suppress PhanUnreferencedPublicMethod (this plugin type is deprecated)
      * @return void
+     * @suppress PhanPluginCanUsePHP71Void
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function emit(
         string $issue_type,
@@ -100,7 +80,7 @@ abstract class PluginAwareBaseAnalysisVisitor extends AnalysisVisitor
     private static function isDefinedInSubclass(string $method_name) : bool
     {
         $method = new \ReflectionMethod(static::class, $method_name);
-        return is_subclass_of($method->getDeclaringClass()->name, self::class);
+        return \is_subclass_of($method->getDeclaringClass()->name, self::class);
     }
     // End of methods for internal use.
 }

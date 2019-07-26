@@ -98,8 +98,18 @@ return [
 
     'analyzed_file_extensions' => ['php'],
 
+    // Set this to true to enable the plugins that Phan uses to infer more accurate literal return types of `implode`, `implode`, and many other functions.
+    //
+    // Phan is slightly faster when these are disabled.
+    'enable_extended_internal_return_type_plugins' => true,
+
+    // This is a unit test of Phan itself, so don't cache it because the polyfill implementation may change before the next release.
+    'cache_polyfill_asts' => false,
+
     'plugin_config' => [
         'php_native_syntax_check_max_processes' => 4,
+        'unused_suppression_ignore_list' => ['Unused-Issue-In-Config'],
+        'possibly_static_method_ignore_regex' => '/^(?!PSM)/',
     ],
 
     // A list of plugin files to execute
@@ -119,7 +129,13 @@ return [
         'PrintfCheckerPlugin',
         'UnreachableCodePlugin',
         'UnusedSuppressionPlugin',
+        'UseReturnValuePlugin',
         'SleepCheckerPlugin',
         'DuplicateExpressionPlugin',
+        'SuspiciousParamOrderPlugin',
+        'WhitespacePlugin',
+        'InlineHTMLPlugin',
+        'PossiblyStaticMethodPlugin',
+        'EmptyStatementListPlugin',
     ],
 ];

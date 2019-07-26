@@ -9,8 +9,8 @@ use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
-use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeFunctionCallCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\AnalyzeFunctionCallCapability;
 
 /**
  * NOTE: This is automatically loaded by phan. Do not include it in a config.
@@ -20,7 +20,7 @@ use Phan\PluginV2\AnalyzeFunctionCallCapability;
  *
  * e.g. explode($var, ':') or strpos(':', $x)
  */
-final class StringFunctionPlugin extends PluginV2 implements
+final class StringFunctionPlugin extends PluginV3 implements
     AnalyzeFunctionCallCapability
 {
     /**
@@ -37,7 +37,7 @@ final class StringFunctionPlugin extends PluginV2 implements
         }
         if ($arg instanceof Node) {
             $kind = $arg->kind;
-            if ($kind === ast\AST_CONST || $kind === ast\AST_CLASS_CONST) {
+            if (\in_array($kind, [ast\AST_CONST, ast\AST_CLASS_CONST, ast\AST_CLASS_NAME], true)) {
                 return true;
             }
             if ($kind === ast\AST_BINARY_OP) {
@@ -62,26 +62,26 @@ final class StringFunctionPlugin extends PluginV2 implements
     }
 
     /**
-     * @return array<string,Closure>
-     * @phan-return array<string,Closure(CodeBase,Context,FunctionInterface,array):void>
+     * @return array<string,Closure(CodeBase,Context,FunctionInterface,array,?Node):void>
      */
     private static function getAnalyzeFunctionCallClosuresStatic() : array
     {
         $make_order_warner = static function (int $expected_const_pos, int $expected_variable_pos) : Closure {
-            $expected_arg_count = 1 + (int)max($expected_const_pos, $expected_variable_pos);
+            $expected_arg_count = 1 + (int)\max($expected_const_pos, $expected_variable_pos);
             /**
-             * @return void
+             * @param array<int,Node|int|float|string> $args
              */
             return static function (
                 CodeBase $code_base,
                 Context $context,
                 FunctionInterface $function,
-                array $args
+                array $args,
+                ?Node $_
             ) use (
                 $expected_const_pos,
                 $expected_variable_pos,
                 $expected_arg_count
-) {
+) : void {
                 if (\count($args) < $expected_arg_count) {
                     return;
                 }
@@ -196,7 +196,7 @@ final class StringFunctionPlugin extends PluginV2 implements
 
     /**
      * @param CodeBase $code_base @phan-unused-param
-     * @return array<string,\Closure>
+     * @return array<string,Closure(CodeBase,Context,FunctionInterface,array,?Node):void>
      * @override
      */
     public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array

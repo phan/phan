@@ -2,6 +2,10 @@
 
 namespace Phan\Tests;
 
+use const DIRECTORY_SEPARATOR;
+use const MULTI_EXPECTED_DIR;
+use const MULTI_FILE_DIR;
+
 /**
  * Integration tests that require more than 1 files in a codebase to reproduce
  * (e.g. regression tests for bugs, tests of expected functionality for multiple files, etc)
@@ -13,12 +17,11 @@ class MultiFileTest extends AbstractPhanFileTest
 
     /**
      * @suppress PhanUndeclaredConstant
-     * @suppress PhanParamSignatureMismatch
      *
      * The constant MULTI_FILE_DIR is defined in `phpunit.xml`.
      * @return array<int,array{0:array<int,string>,1:string}>
      */
-    public function getTestFiles()
+    public function getTestFiles() : array
     {
         return [
             // Issue #157

@@ -1,0 +1,9 @@
+%s:9 PhanCoalescingAlwaysNullInLoop Using $x of type null as the left hand side of a null coalescing (??) operation. The left hand side may be unnecessary. (in a loop body - this is likely a false positive)
+%s:15 PhanCoalescingNeverNull Using non-null $varInLoop of type 2.3 as the left hand side of a null coalescing (??) operation. The right hand side may be unnecessary.
+%s:17 PhanCoalescingNeverNullInLoop Using non-null $y of type 2|3 as the left hand side of a null coalescing (??) operation. The right hand side may be unnecessary. (in a loop body - this is likely a false positive)
+%s:18 PhanImpossibleConditionInLoop Impossible attempt to cast $x of type null to truthy in a loop body (may be a false positive)
+%s:24 PhanCoalescingNeverNullInLoop Using non-null $varInLoop of type 2.3 as the left hand side of a null coalescing (??) operation. The right hand side may be unnecessary. (in a loop body - this is likely a false positive)
+%s:28 PhanCoalescingAlwaysNullInGlobalScope Using $nullVarInGlobalScope of type null as the left hand side of a null coalescing (??) operation. The left hand side may be unnecessary. (in the global scope - this is likely a false positive)
+%s:29 PhanCoalescingAlwaysNull Using null of type null as the left hand side of a null coalescing (??) operation. The left hand side may be unnecessary.
+%s:30 PhanCoalescingNeverNullInGlobalScope Using non-null $zeroInGlobalScope of type 0 as the left hand side of a null coalescing (??) operation. The right hand side may be unnecessary. (in the global scope - this is likely a false positive)
+%s:31 PhanImpossibleTypeComparisonInGlobalScope Impossible attempt to check if $zeroInGlobalScope of type 0 is identical to $nullVarInGlobalScope of type null in the global scope (likely a false positive)

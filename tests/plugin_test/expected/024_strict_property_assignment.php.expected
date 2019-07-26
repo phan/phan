@@ -1,3 +1,4 @@
+src/024_strict_property_assignment.php:3 PhanUnreferencedClass Possibly zero references to class \MyClass24
 src/024_strict_property_assignment.php:5 PhanWriteOnlyPrivateProperty Possibly zero read references to private property \MyClass24->a
 src/024_strict_property_assignment.php:8 PhanWriteOnlyProtectedProperty Possibly zero read references to protected property \MyClass24->b
 src/024_strict_property_assignment.php:11 PhanWriteOnlyPublicProperty Possibly zero read references to public property \MyClass24->c

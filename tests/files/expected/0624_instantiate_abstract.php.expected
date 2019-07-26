@@ -1,0 +1,15 @@
+%s:12 PhanTypeInstantiateInterface Instantiation of interface \NS624\AbstractInterface
+%s:13 PhanTypeInstantiateAbstract Instantiation of abstract class \NS624\AbstractExample
+%s:17 PhanTypeInstantiateInterface Instantiation of interface \NS624\AbstractInterface
+%s:18 PhanTypeInstantiateAbstract Instantiation of abstract class \NS624\AbstractExample
+%s:20 PhanInvalidFQSENInClasslike Possible use of a classlike '\..' with an invalid FQSEN.
+%s:20 PhanTypeExpectedObjectOrClassName Expected an object instance or the name of a class but saw expression with type '..'
+%s:25 PhanTypeInstantiateAbstract Instantiation of abstract class \NS624\AbstractExample
+%s:26 PhanTypeInstantiateAbstract Instantiation of abstract class \NS624\AbstractExample
+%s:31 PhanTypeInstantiateAbstractStatic Potential instantiation of abstract class \NS624\AbstractExample (not an issue if this method is only called from a non-abstract subclass)
+%s:33 PhanTypeInstantiateAbstract Instantiation of abstract class \NS624\AbstractExample
+%s:42 PhanTypeInstantiateTrait Instantiation of trait \NS624\T
+%s:43 PhanTypeInstantiateTraitStaticOrSelf Potential instantiation of trait \NS624\T (not an issue if this method is only called from a non-abstract class using the trait)
+%s:44 PhanTypeInstantiateTraitStaticOrSelf Potential instantiation of trait \NS624\T (not an issue if this method is only called from a non-abstract class using the trait)
+%s:47 PhanTypeInstantiateTrait Instantiation of trait \NS624\T
+%s:48 PhanTypeInstantiateTraitStaticOrSelf Potential instantiation of trait \NS624\T (not an issue if this method is only called from a non-abstract class using the trait)

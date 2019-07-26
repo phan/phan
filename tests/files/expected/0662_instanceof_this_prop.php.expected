@@ -1,0 +1,3 @@
+%s:23 PhanUndeclaredMethod Call to undeclared method \N662\C::asdf
+%s:26 PhanUndeclaredMethod Call to undeclared method \N662\C::asdf
+%s:30 PhanNonClassMethodCall Call to method asdf on non-class type null

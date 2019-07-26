@@ -1,1 +1,1 @@
-src/045_invalid_const.php:3 PhanSyntaxError Fallback parser diagnostic error: ';' expected.
+src/045_invalid_const.php:3 PhanSyntaxError Fallback parser diagnostic error: ';' expected. (at column 24)

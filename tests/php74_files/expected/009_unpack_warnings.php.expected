@@ -1,0 +1,13 @@
+%s:4 PhanTypeMismatchUnpackValue Attempting to unpack a value of type 'a string' which does not contain any subtypes of iterable (such as array or Traversable)
+%s:5 PhanTypeMismatchUnpackValue Attempting to unpack a value of type 'a string' which does not contain any subtypes of iterable (such as array or Traversable)
+%s:6 PhanTypeMismatchUnpackValue Attempting to unpack a value of type '' which does not contain any subtypes of iterable (such as array or Traversable)
+%s:6 PhanTypeMismatchUnpackValue Attempting to unpack a value of type 0 which does not contain any subtypes of iterable (such as array or Traversable)
+%s:6 PhanTypeMismatchUnpackValue Attempting to unpack a value of type 1 which does not contain any subtypes of iterable (such as array or Traversable)
+%s:6 PhanTypeMismatchUnpackValue Attempting to unpack a value of type null which does not contain any subtypes of iterable (such as array or Traversable)
+%s:7 PhanUndeclaredVariable Variable $undef is undeclared
+%s:10 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is 3[] but \intdiv() takes int
+%s:11 PhanTypeMismatchUnpackKeyArraySpread When unpacking a value of type array{dos:2}, the value's keys were of type string, but the keys should be integers
+%s:19 PhanTypeMismatchReturn Returning type array<int,array<string,object>> but expects_stringmap() is declared to return array<int,false>
+%s:20 PhanTypeMismatchReturn Returning type array<int,object> but expects_stringmap() is declared to return array<int,false>
+%s:20 PhanTypeMismatchUnpackKeyArraySpread When unpacking a value of type array<string,object>, the value's keys were of type string, but the keys should be integers
+%s:20 PhanTypeMismatchUnpackKey When unpacking a value of type array<string,object>, the value's keys were of type string, but the keys should be consecutive integers starting from 0

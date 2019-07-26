@@ -53,10 +53,9 @@ class Workspace
      * The watched files notification is sent from the client to the server when the client detects changes to files watched by the language client.
      *
      * @param FileEvent[] $changes
-     * @return void
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
-    public function didChangeWatchedFiles(array $changes)
+    public function didChangeWatchedFiles(array $changes) : void
     {
         // invalidate Phan's cache for these files if changed, added, or modified outside of the IDE
         foreach ($changes as $change) {
@@ -84,9 +83,10 @@ class Workspace
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      *
      * @param array $settings @phan-unused-param
+     * @phan-param array<string,mixed> $settings @phan-unused-param NOTE: reflection-docblock does not support generic arrays
      * @return void (unimplemented)
      */
-    public function didChangeConfiguration($settings)
+    public function didChangeConfiguration(array $settings) : void
     {
     }
 }

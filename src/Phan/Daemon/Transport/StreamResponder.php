@@ -15,7 +15,7 @@ class StreamResponder implements Responder
     /** @var ?resource a stream */
     private $connection;
 
-    /** @var ?array the request data */
+    /** @var ?array<string,mixed> the request data */
     private $request_data;
 
     /** @var bool did this process already finish reading the data of the request? */
@@ -24,8 +24,8 @@ class StreamResponder implements Responder
     /** @param resource $connection a stream */
     public function __construct($connection, bool $expect_request)
     {
-        if (!is_resource($connection)) {
-            throw new TypeError("Expected connection to be resource, saw " . gettype($connection));
+        if (!\is_resource($connection)) {
+            throw new TypeError("Expected connection to be resource, saw " . \gettype($connection));
         }
         $this->connection = $connection;
         if (!$expect_request) {
@@ -35,9 +35,9 @@ class StreamResponder implements Responder
     }
 
     /**
-     * @return ?array the request data(E.g. returns null if JSON is malformed)
+     * @return ?array<string,mixed> the request data(E.g. returns null if JSON is malformed)
      */
-    public function getRequestData()
+    public function getRequestData() : ?array
     {
         if (!$this->did_read_request_data) {
             $response_connection = $this->connection;
@@ -47,11 +47,11 @@ class StreamResponder implements Responder
             }
             Daemon::debugf("Got a connection");  // debugging code
             $request_bytes = '';
-            while (!feof($response_connection)) {
-                $request_bytes .= fgets($response_connection);
+            while (!\feof($response_connection)) {
+                $request_bytes .= \fgets($response_connection);
             }
-            $request = json_decode($request_bytes, true);
-            if (!is_array($request)) {
+            $request = \json_decode($request_bytes, true);
+            if (!\is_array($request)) {
                 Daemon::debugf("Received invalid request, expected JSON: %s", StringUtil::jsonEncode($request_bytes));
                 $request = null;
             }
@@ -62,10 +62,10 @@ class StreamResponder implements Responder
     }
 
     /**
-     * @return void
+     * @param array<string,mixed> $data the response fields
      * @throws \RuntimeException if called twice
      */
-    public function sendResponseAndClose(array $data)
+    public function sendResponseAndClose(array $data) : void
     {
         $connection = $this->connection;
         if (!$this->did_read_request_data) {
@@ -74,13 +74,13 @@ class StreamResponder implements Responder
         if ($connection === null) {
             throw new \RuntimeException("Called sendAndClose twice: data = " . StringUtil::jsonEncode($data));
         }
-        fwrite($connection, StringUtil::jsonEncode($data) . "\n");
+        \fwrite($connection, StringUtil::jsonEncode($data) . "\n");
         // disable further receptions and transmissions
         // Note: This is likely a giant hack,
         // and pcntl and sockets may break in the future if used together. (multiple processes owning a single resource).
         // Not sure how to do that safely.
-        stream_socket_shutdown($connection, STREAM_SHUT_RDWR);
-        fclose($connection);
+        \stream_socket_shutdown($connection, \STREAM_SHUT_RDWR);
+        \fclose($connection);
         $this->connection = null;
     }
 }

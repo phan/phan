@@ -1,0 +1,2 @@
+%s:13 PhanUnextractableAnnotationSuffix Saw a token Phan may have failed to parse after '/** @var array*something */': after array, saw '*'
+%s:16 PhanUnextractableAnnotationSuffix Saw a token Phan may have failed to parse after '/** @return array*something */': after array, saw '*'

@@ -36,7 +36,7 @@ class Daemon
      *
      * @throws Exception if analysis fails unexpectedly
      */
-    public static function run(CodeBase $code_base, Closure $file_path_lister)
+    public static function run(CodeBase $code_base, Closure $file_path_lister) : ?Request
     {
         if (Config::getValue('language_server_use_pcntl_fallback')) {
             self::runWithoutPcntl($code_base, $file_path_lister);
@@ -57,16 +57,11 @@ class Daemon
         try {
             $got_signal = false;
 
-            if (function_exists('pcntl_signal')) {
-                pcntl_signal(
-                    SIGCHLD,
-                    /**
-                     * @param int $signo
-                     * @param int|null $status
-                     * @param int|null $pid
-                     * @return void
-                     */
-                    function ($signo, $status = null, $pid = null) use (&$got_signal) {
+            if (\function_exists('pcntl_signal')) {
+                \pcntl_signal(
+                    \SIGCHLD,
+                    /** @param ?(int|array) $status */
+                    static function (int $signo, $status = null, ?int $pid = null) use (&$got_signal) : void {
                         $got_signal = true;
                         Request::childSignalHandler($signo, $status, $pid);
                     }
@@ -82,9 +77,9 @@ class Daemon
                  * @param int $line
                  * @return bool
                  */
-                $previous_error_handler = set_error_handler(function ($severity, $message, $file, $line) use (&$previous_error_handler) {
+                $previous_error_handler = \set_error_handler(static function (int $severity, string $message, string $file, int $line) use (&$previous_error_handler) : bool {
                     self::debugf("In new error handler '$message'");
-                    if (!preg_match('/stream_socket_accept/i', $message)) {
+                    if (!\preg_match('/stream_socket_accept/i', $message)) {
                         return $previous_error_handler($severity, $message, $file, $line);
                     }
                     throw new RuntimeException("Got signal");
@@ -92,16 +87,16 @@ class Daemon
 
                 $conn = false;
                 try {
-                    $conn = stream_socket_accept($socket_server, -1);
+                    $conn = \stream_socket_accept($socket_server, -1);
                 } catch (RuntimeException $_) {
                     self::debugf("Got signal");
-                    pcntl_signal_dispatch();
+                    \pcntl_signal_dispatch();
                     self::debugf("done processing signals");
                     if ($got_signal) {
                         continue;  // Ignore notices from stream_socket_accept if it's due to being interrupted by a child process terminating.
                     }
                 } finally {
-                    restore_error_handler();
+                    \restore_error_handler();
                 }
 
                 if (!\is_resource($conn)) {
@@ -118,9 +113,9 @@ class Daemon
                     return $request;  // We forked off a worker process successfully, and this is the worker process
                 }
             }
-            error_log("Stopped accepting connections");
+            \error_log("Stopped accepting connections");
         } finally {
-            restore_error_handler();
+            \restore_error_handler();
         }
         return null;
     }
@@ -131,25 +126,17 @@ class Daemon
      *
      * @throws Exception if analysis failed in an unexpected way
      */
-    private static function runWithoutPcntl(CodeBase $code_base, Closure $file_path_lister)
+    private static function runWithoutPcntl(CodeBase $code_base, Closure $file_path_lister) : void
     {
         // This is a single threaded server, it only analyzes one TCP request at a time
         $socket_server = self::createDaemonStreamSocketServer();
         try {
             while (true) {
-                $got_signal = false;  // reset this.
                 // We get an error from stream_socket_accept. After the RuntimeException is thrown, pcntl_signal is called.
-                $previous_error_handler = set_error_handler(
-                    /**
-                     * @param int $severity
-                     * @param string $message
-                     * @param string $file
-                     * @param int $line
-                     * @return bool
-                     */
-                    function ($severity, $message, $file, $line) use (&$previous_error_handler) {
+                $previous_error_handler = \set_error_handler(
+                    static function (int $severity, string $message, string $file, int $line) use (&$previous_error_handler) : bool {
                         self::debugf("In new error handler '$message'");
-                        if (!preg_match('/stream_socket_accept/i', $message)) {
+                        if (!\preg_match('/stream_socket_accept/i', $message)) {
                             return $previous_error_handler($severity, $message, $file, $line);
                         }
                         throw new RuntimeException("Got signal");
@@ -158,16 +145,13 @@ class Daemon
 
                 $conn = false;
                 try {
-                    $conn = stream_socket_accept($socket_server, -1);
+                    $conn = \stream_socket_accept($socket_server, -1);
                 } catch (RuntimeException $_) {
                     self::debugf("Got signal");
-                    pcntl_signal_dispatch();
+                    \pcntl_signal_dispatch();
                     self::debugf("done processing signals");
-                    if ($got_signal) {
-                        continue;  // Ignore notices from stream_socket_accept if it's due to being interrupted by a child process terminating.
-                    }
                 } finally {
-                    restore_error_handler();
+                    \restore_error_handler();
                 }
 
                 if (!\is_resource($conn)) {
@@ -191,17 +175,16 @@ class Daemon
                     // We did not terminate, we keep accepting
                 }
             }
-            error_log("Stopped accepting connections");
+            \error_log("Stopped accepting connections");
         } finally {
-            restore_error_handler();
+            \restore_error_handler();
         }
     }
 
     /**
-     * @return void
      * @throws Exception if analysis throws
      */
-    private static function analyzeDaemonRequestOnMainThread(CodeBase $code_base, Request $request)
+    private static function analyzeDaemonRequestOnMainThread(CodeBase $code_base, Request $request) : void
     {
         $restore_point = $code_base->createRestorePoint();
 
@@ -210,7 +193,7 @@ class Daemon
         $analyze_file_path_list = $request->filterFilesToAnalyze($code_base->getParsedFilePathList());
         $code_base->disableUndoTracking();
         Phan::setPrinter($request->getPrinter());
-        if (count($analyze_file_path_list) === 0) {
+        if (\count($analyze_file_path_list) === 0) {
             // Nothing to do, don't start analysis
             $request->respondWithNoFilesToAnalyze();  // respond and exit.
             return;
@@ -235,18 +218,18 @@ class Daemon
         if (Config::getValue('daemonize_socket')) {
             $listen_url = 'unix://' . Config::getValue('daemonize_socket');
         } elseif (Config::getValue('daemonize_tcp')) {
-            $listen_url = sprintf('tcp://%s:%d', Config::getValue('daemonize_tcp_host'), Config::getValue('daemonize_tcp_port'));
+            $listen_url = \sprintf('tcp://%s:%d', Config::getValue('daemonize_tcp_host'), Config::getValue('daemonize_tcp_port'));
         } else {
             throw new InvalidArgumentException("Should not happen, no port/socket for daemon to listen on.");
         }
-        printf(
+        \printf(
             "Listening for Phan analysis requests at %s\nAwaiting analysis requests for directory %s\n",
             $listen_url,
-            var_export(Config::getProjectRootDirectory(), true)
+            \var_export(Config::getProjectRootDirectory(), true)
         );
-        $socket_server = stream_socket_server($listen_url, $errno, $errstr);
+        $socket_server = \stream_socket_server($listen_url, $errno, $errstr);
         if (!$socket_server) {
-            error_log("Failed to create Unix socket server $listen_url: $errstr ($errno)\n");
+            \error_log("Failed to create Unix socket server $listen_url: $errstr ($errno)\n");
             exit(1);
         }
         return $socket_server;
@@ -258,9 +241,8 @@ class Daemon
      *
      * @param string $format - printf style format string @phan-unused-param
      * @param mixed ...$args - printf args @phan-unused-param
-     * @return void
      */
-    public static function debugf(string $format, ...$args)
+    public static function debugf(string $format, ...$args) : void
     {
         /*
         if (count($args) > 0) {

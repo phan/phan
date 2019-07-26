@@ -11,6 +11,7 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
+use Phan\Exception\RecursionDepthException;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
@@ -21,7 +22,9 @@ use Phan\Language\Type;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
-use Phan\PluginV2\StopParamAnalysisException;
+use Phan\PluginV3\StopParamAnalysisException;
+
+use function is_string;
 
 /**
  * This visitor analyzes arguments of calls to methods, functions, and closures
@@ -45,19 +48,17 @@ final class ArgumentType
      *
      * @param CodeBase $code_base
      * The global code base
-     *
-     * @return void
      */
     public static function analyze(
         FunctionInterface $method,
         Node $node,
         Context $context,
         CodeBase $code_base
-    ) {
+    ) : void {
         self::checkIsDeprecatedOrInternal($code_base, $context, $method);
         if ($method->hasFunctionCallAnalyzer()) {
             try {
-                $method->analyzeFunctionCall($code_base, $context->withLineNumberStart($node->lineno ?? 0), $node->children['args']->children);
+                $method->analyzeFunctionCall($code_base, $context->withLineNumberStart($node->lineno), $node->children['args']->children, $node);
             } catch (StopParamAnalysisException $_) {
                 return;
             }
@@ -134,9 +135,9 @@ final class ArgumentType
         FunctionInterface $method,
         Node $node,
         int $argcount
-    ) {
+    ) : void {
         $max = $method->getNumberOfParameters();
-        $caused_by_variadic = $argcount === $max + 1 && (end($node->children['args']->children)->kind ?? null) === \ast\AST_UNPACK;
+        $caused_by_variadic = $argcount === $max + 1 && (\end($node->children['args']->children)->kind ?? null) === \ast\AST_UNPACK;
         if ($method->isPHPInternal()) {
             Issue::maybeEmit(
                 $code_base,
@@ -162,10 +163,7 @@ final class ArgumentType
         }
     }
 
-    /**
-     * @return void
-     */
-    private static function checkIsDeprecatedOrInternal(CodeBase $code_base, Context $context, FunctionInterface $method)
+    private static function checkIsDeprecatedOrInternal(CodeBase $code_base, Context $context, FunctionInterface $method) : void
     {
         // Special common cases where we want slightly
         // better multi-signature error messages
@@ -190,7 +188,8 @@ final class ArgumentType
                     $context->getLineNumberStart(),
                     $method->getRepresentationForIssue(),
                     $method->getFileRef()->getFile(),
-                    $method->getFileRef()->getLineNumberStart()
+                    $method->getFileRef()->getLineNumberStart(),
+                    $method->getDeprecationReason()
                 );
             }
         }
@@ -230,7 +229,7 @@ final class ArgumentType
 
     /**
      * Figure out if any of the arguments are a call to unpack()
-     * @param array $children
+     * @param array<mixed,Node|int|string|float> $children
      */
     private static function isUnpack(array $children) : bool
     {
@@ -266,7 +265,7 @@ final class ArgumentType
         Context $context,
         CodeBase $code_base,
         Closure $get_argument_type
-    ) {
+    ) : void {
         // Special common cases where we want slightly
         // better multi-signature error messages
         self::checkIsDeprecatedOrInternal($code_base, $context, $method);
@@ -349,8 +348,6 @@ final class ArgumentType
      * The context in which we see the call
      *
      * @param Closure $get_argument_type (Node|string|int $node, int $i) -> UnionType
-     *
-     * @return void
      */
     private static function analyzeParameterListForCallback(
         CodeBase $code_base,
@@ -358,10 +355,10 @@ final class ArgumentType
         array $arg_nodes,
         Context $context,
         Closure $get_argument_type
-    ) {
+    ) : void {
         // There's nothing reasonable we can do here
         if ($method instanceof Method) {
-            if ($method->getIsMagicCall() || $method->getIsMagicCallStatic()) {
+            if ($method->isMagicCall() || $method->isMagicCallStatic()) {
                 return;
             }
         }
@@ -379,11 +376,32 @@ final class ArgumentType
 
             // Get the type of the argument. We'll check it against
             // the parameter in a moment
-            $argument_type = $get_argument_type($argument, $i);
+            try {
+                $argument_type = $get_argument_type($argument, $i);
+            } catch (IssueException $e) {
+                Issue::maybeEmitInstance($code_base, $context, $e->getIssueInstance());
+                continue;
+            }
             self::analyzeParameter($code_base, $context, $method, $argument_type, $argument->lineno ?? $context->getLineNumberStart(), $i);
+            if ($parameter->isPassByReference()) {
+                if ($argument instanceof Node) {
+                    // @phan-suppress-next-line PhanUndeclaredProperty this is added for analyzers
+                    $argument->is_reference = true;
+                }
+            }
         }
     }
 
+    /**
+     * These node types are guaranteed to be usable as references
+     * @internal
+     */
+    const REFERENCE_NODE_KINDS = [
+        \ast\AST_VAR,
+        \ast\AST_DIM,
+        \ast\AST_PROP,
+        \ast\AST_STATIC_PROP,
+    ];
 
     /**
      * @param CodeBase $code_base
@@ -397,18 +415,16 @@ final class ArgumentType
      *
      * @param Context $context
      * The context in which we see the call
-     *
-     * @return void
      */
     private static function analyzeParameterList(
         CodeBase $code_base,
         FunctionInterface $method,
         Node $node,
         Context $context
-    ) {
+    ) : void {
         // There's nothing reasonable we can do here
         if ($method instanceof Method) {
-            if ($method->getIsMagicCall() || $method->getIsMagicCallStatic()) {
+            if ($method->isMagicCall() || $method->isMagicCallStatic()) {
                 return;
             }
         }
@@ -431,21 +447,15 @@ final class ArgumentType
             // If this is a pass-by-reference parameter, make sure
             // we're passing an allowable argument
             if ($parameter->isPassByReference()) {
-                if ((!$argument instanceof Node)
-                    || ($argument_kind !== \ast\AST_VAR
-                        && $argument_kind !== \ast\AST_DIM
-                        && $argument_kind !== \ast\AST_PROP
-                        && $argument_kind !== \ast\AST_STATIC_PROP
-                    )
-                ) {
-                    $is_possible_reference = self::isFunctionReturningReference($code_base, $context, $argument);
+                if ((!$argument instanceof Node) || !\in_array($argument_kind, self::REFERENCE_NODE_KINDS, true)) {
+                    $is_possible_reference = self::isExpressionReturningReference($code_base, $context, $argument);
 
                     if (!$is_possible_reference) {
                         Issue::maybeEmit(
                             $code_base,
                             $context,
                             Issue::TypeNonVarPassByRef,
-                            $node->lineno ?? 0,
+                            $argument->lineno ?? $node->lineno ?? 0,
                             ($i + 1),
                             $method->getRepresentationForIssue()
                         );
@@ -465,7 +475,7 @@ final class ArgumentType
                             $code_base,
                             $context,
                             Issue::ContextNotObject,
-                            $node->lineno ?? 0,
+                            $argument->lineno ?? $node->lineno ?? 0,
                             "$variable_name"
                         );
                     }
@@ -481,22 +491,85 @@ final class ArgumentType
                 true
             );
             self::analyzeParameter($code_base, $context, $method, $argument_type, $argument->lineno ?? $node->lineno ?? 0, $i);
+            if ($parameter->isPassByReference()) {
+                if ($argument instanceof Node) {
+                    // @phan-suppress-next-line PhanUndeclaredProperty this is added for analyzers
+                    $argument->is_reference = true;
+                }
+            }
+            if ($argument_kind === \ast\AST_UNPACK) {
+                self::analyzeRemainingParametersForVariadic($code_base, $context, $method, $i + 1, $node, $argument, $argument_type);
+            }
+        }
+    }
+
+    private static function analyzeRemainingParametersForVariadic(
+        CodeBase $code_base,
+        Context $context,
+        FunctionInterface $method,
+        int $start_index,
+        Node $node,
+        Node $argument,
+        UnionType $argument_type
+    ) : void {
+        // Check the remaining required parameters for this variadic argument.
+        // To avoid false positives, don't check optional parameters for now.
+
+        // TODO: Could do better (e.g. warn about too few/many params, warn about individual types)
+        // if the array shape type is known or available in phpdoc.
+        $param_count = $method->getNumberOfRequiredParameters();
+        for ($i = $start_index; $i < $param_count; $i++) {
+            // Get the parameter associated with this argument
+            $parameter = $method->getParameterForCaller($i);
+
+            // Shouldn't be possible?
+            if (!$parameter) {
+                return;
+            }
+
+            $argument_kind = $argument->kind;
+
+            // If this is a pass-by-reference parameter, make sure
+            // we're passing an allowable argument
+            if ($parameter->isPassByReference()) {
+                if (!\in_array($argument_kind, self::REFERENCE_NODE_KINDS, true)) {
+                    $is_possible_reference = self::isExpressionReturningReference($code_base, $context, $argument);
+
+                    if (!$is_possible_reference) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::TypeNonVarPassByRef,
+                            $argument->lineno ?? $node->lineno ?? 0,
+                            ($i + 1),
+                            $method->getRepresentationForIssue()
+                        );
+                    }
+                }
+                // Omit ContextNotObject check, this was checked for the first matching parameter
+            }
+
+            self::analyzeParameter($code_base, $context, $method, $argument_type, $argument->lineno, $i);
+            if ($parameter->isPassByReference()) {
+                // @phan-suppress-next-line PhanUndeclaredProperty this is added for analyzers
+                $argument->is_reference = true;
+            }
         }
     }
 
     /**
-     * @param CodeBase $code_base
-     * @param Context $context
-     * @param FunctionInterface $method
-     * @param UnionType $argument_type
-     * @param int $lineno
-     * @return void
+     * Analyze passing the an argument of type $argument_type to the ith parameter of the (possibly variadic) method $method,
+     * for a call made from the line $lineno.
      */
-    public static function analyzeParameter(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, int $lineno, int $i)
+    public static function analyzeParameter(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, int $lineno, int $i) : void
     {
         // Expand it to include all parent types up the chain
-        $argument_type_expanded =
-            $argument_type->asExpandedTypes($code_base);
+        try {
+            $argument_type_expanded_resolved =
+                $argument_type->withStaticResolvedInContext($context)->asExpandedTypes($code_base);
+        } catch (RecursionDepthException $_) {
+            return;
+        }
 
         // Check the method to see if it has the correct
         // parameter types. If not, keep hunting through
@@ -512,17 +585,13 @@ final class ArgumentType
             }
 
             $alternate_parameter = $candidate_alternate_parameter;
-            if (!($alternate_parameter instanceof Variable)) {
-                throw new AssertionError('Expected alternate_parameter to be Variable or subclass');
-            }
+            $alternate_parameter_type = $alternate_parameter->getNonVariadicUnionType()->withStaticResolvedInFunctionLike($alternate_method);
 
             // See if the argument can be cast to the
             // parameter
-            if ($argument_type_expanded->canCastToUnionType(
-                $alternate_parameter->getNonVariadicUnionType()
-            )) {
+            if ($argument_type_expanded_resolved->canCastToUnionType($alternate_parameter_type)) {
                 if (Config::get_strict_param_checking() && $argument_type->typeCount() > 1) {
-                    self::analyzeParameterStrict($code_base, $context, $method, $argument_type, $alternate_parameter, $lineno, $i);
+                    self::analyzeParameterStrict($code_base, $context, $method, $argument_type, $alternate_parameter, $alternate_parameter_type, $lineno, $i);
                 }
                 return;
             }
@@ -531,22 +600,23 @@ final class ArgumentType
         if (!($alternate_parameter instanceof Parameter)) {
             return;  // skip type check - is this possible?
         }
+        if (!isset($alternate_parameter_type)) {
+            throw new AssertionError('Impossible - should be set if $alternate_parameter is set');
+        }
 
         if ($alternate_parameter->isPassByReference() && $alternate_parameter->getReferenceType() === Parameter::REFERENCE_WRITE_ONLY) {
             return;
         }
 
-        $parameter_type = $alternate_parameter->getNonVariadicUnionType();
-
-        if ($parameter_type->hasTemplateTypeRecursive()) {
+        if ($alternate_parameter_type->hasTemplateTypeRecursive()) {
             // Don't worry about **unresolved** template types.
             // We resolve them if possible in ContextNode->getMethod()
             return;
         }
-        if ($parameter_type->hasTemplateParameterTypes()) {
+        if ($alternate_parameter_type->hasTemplateParameterTypes()) {
             // TODO: Make the check for templates recursive
             $argument_type_expanded_templates = $argument_type->asExpandedTypesPreservingTemplate($code_base);
-            if ($argument_type_expanded_templates->canCastToUnionTypeHandlingTemplates($parameter_type, $code_base)) {
+            if ($argument_type_expanded_templates->canCastToUnionTypeHandlingTemplates($alternate_parameter_type, $code_base)) {
                 // - can cast MyClass<\stdClass> to MyClass<mixed>
                 // - can cast Some<\stdClass> to Option<\stdClass>
                 // - cannot cast Some<\SomeOtherClass> to Option<\stdClass>
@@ -558,9 +628,9 @@ final class ArgumentType
         if ($method->isPHPInternal()) {
             // If we are not in strict mode and we accept a string parameter
             // and the argument we are passing has a __toString method then it is ok
-            if (!$context->getIsStrictTypes() && $parameter_type->hasNonNullStringType()) {
+            if (!$context->isStrictTypes() && $alternate_parameter_type->hasNonNullStringType()) {
                 try {
-                    foreach ($argument_type_expanded->asClassList($code_base, $context) as $clazz) {
+                    foreach ($argument_type_expanded_resolved->asClassList($code_base, $context) as $clazz) {
                         if ($clazz->hasMethodWithName($code_base, "__toString")) {
                             return;
                         }
@@ -569,35 +639,74 @@ final class ArgumentType
                     // Swallow "Cannot find class", go on to emit issue
                 }
             }
+        }
+        // Check suppressions and emit the issue
+        self::warnInvalidArgumentType($code_base, $context, $method, $alternate_parameter, $alternate_parameter_type, $argument_type->asExpandedTypes($code_base), $argument_type_expanded_resolved, $lineno, $i);
+    }
+
+    private static function warnInvalidArgumentType(
+        CodeBase $code_base,
+        Context $context,
+        FunctionInterface $method,
+        Parameter $alternate_parameter,
+        UnionType $alternate_parameter_type,
+        UnionType $argument_type_expanded,
+        UnionType $argument_type_expanded_resolved,
+        int $lineno,
+        int $i
+    ) : void {
+        /**
+         * @return ?string
+         */
+        $choose_issue_type = static function (string $issue_type, string $nullable_issue_type) use ($argument_type_expanded_resolved, $alternate_parameter_type, $code_base, $context, $lineno) : ?string {
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            if (!$argument_type_expanded_resolved->canCastToUnionTypeIfNonNull($alternate_parameter_type)) {
+                return $issue_type;
+            }
+            if (Issue::shouldSuppressIssue($code_base, $context, $issue_type, $lineno, [])) {
+                return null;
+            }
+            return $nullable_issue_type;
+        };
+
+        if ($method->isPHPInternal()) {
+            $issue_type = $choose_issue_type(Issue::TypeMismatchArgumentInternal, Issue::TypeMismatchArgumentNullableInternal);
+            if (!$issue_type) {
+                return;
+            }
             Issue::maybeEmit(
                 $code_base,
                 $context,
-                Issue::TypeMismatchArgumentInternal,
+                $issue_type,
                 $lineno,
                 ($i + 1),
                 $alternate_parameter->getName(),
                 $argument_type_expanded,
                 $method->getRepresentationForIssue(),
-                (string)$parameter_type
+                (string)$alternate_parameter_type
             );
+            return;
+        }
+        $issue_type = $choose_issue_type(Issue::TypeMismatchArgument, Issue::TypeMismatchArgumentNullable);
+        if (!$issue_type) {
             return;
         }
         Issue::maybeEmit(
             $code_base,
             $context,
-            Issue::TypeMismatchArgument,
+            $issue_type,
             $lineno,
             ($i + 1),
             $alternate_parameter->getName(),
-            $argument_type_expanded,
+            $argument_type_expanded->withUnionType($argument_type_expanded_resolved),
             $method->getRepresentationForIssue(),
-            (string)$parameter_type,
+            (string)$alternate_parameter_type,
             $method->getFileRef()->getFile(),
             $method->getFileRef()->getLineNumberStart()
         );
     }
 
-    private static function analyzeParameterStrict(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, Variable $alternate_parameter, int $lineno, int $i)
+    private static function analyzeParameterStrict(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, Variable $alternate_parameter, UnionType $parameter_type, int $lineno, int $i) : void
     {
         if ($alternate_parameter instanceof Parameter && $alternate_parameter->isPassByReference() && $alternate_parameter->getReferenceType() === Parameter::REFERENCE_WRITE_ONLY) {
             return;
@@ -607,15 +716,13 @@ final class ArgumentType
             throw new AssertionError("Expected to have at least two parameter types when checking if parameter types match in strict mode");
         }
 
-        $parameter_type = $alternate_parameter->getNonVariadicUnionType();
-
         $mismatch_type_set = UnionType::empty();
         $mismatch_expanded_types = null;
 
         // For the strict
         foreach ($type_set as $type) {
             // Expand it to include all parent types up the chain
-            $individual_type_expanded = $type->asExpandedTypes($code_base);
+            $individual_type_expanded = $type->withStaticResolvedInContext($context)->asExpandedTypes($code_base);
 
             // See if the argument can be cast to the
             // parameter
@@ -625,7 +732,7 @@ final class ArgumentType
                 if ($method->isPHPInternal()) {
                     // If we are not in strict mode and we accept a string parameter
                     // and the argument we are passing has a __toString method then it is ok
-                    if (!$context->getIsStrictTypes() && $parameter_type->hasNonNullStringType()) {
+                    if (!$context->isStrictTypes() && $parameter_type->hasNonNullStringType()) {
                         if ($individual_type_expanded->hasClassWithToStringMethod($code_base, $context)) {
                             continue;  // don't warn about $type
                         }
@@ -649,7 +756,7 @@ final class ArgumentType
             Issue::maybeEmit(
                 $code_base,
                 $context,
-                self::getStrictIssueType($mismatch_type_set, true),
+                self::getStrictArgumentIssueType($mismatch_type_set, true),
                 $lineno,
                 ($i + 1),
                 $alternate_parameter->getName(),
@@ -663,7 +770,7 @@ final class ArgumentType
         Issue::maybeEmit(
             $code_base,
             $context,
-            self::getStrictIssueType($mismatch_type_set, false),
+            self::getStrictArgumentIssueType($mismatch_type_set, false),
             $lineno,
             ($i + 1),
             $alternate_parameter->getName(),
@@ -676,7 +783,7 @@ final class ArgumentType
         );
     }
 
-    private static function getStrictIssueType(UnionType $union_type, bool $is_internal) : string
+    private static function getStrictArgumentIssueType(UnionType $union_type, bool $is_internal) : string
     {
         if ($union_type->typeCount() === 1) {
             $type = $union_type->getTypeSet()[0];
@@ -698,12 +805,18 @@ final class ArgumentType
      *
      * @return bool - True if this node is a call to a function that may return a reference?
      */
-    private static function isFunctionReturningReference(CodeBase $code_base, Context $context, $node) : bool
+    private static function isExpressionReturningReference(CodeBase $code_base, Context $context, $node) : bool
     {
         if (!($node instanceof Node)) {
             return false;
         }
         $node_kind = $node->kind;
+        if (\in_array($node_kind, self::REFERENCE_NODE_KINDS, true)) {
+            return true;
+        }
+        if ($node_kind === \ast\AST_UNPACK) {
+            return self::isExpressionReturningReference($code_base, $context, $node->children['expr']);
+        }
         if ($node_kind === \ast\AST_CALL) {
             foreach ((new ContextNode(
                 $code_base,

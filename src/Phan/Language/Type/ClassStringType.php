@@ -19,7 +19,7 @@ final class ClassStringType extends StringType
     const NAME = 'class-string';
 
     /** @override */
-    public function getIsPossiblyNumeric() : bool
+    public function isPossiblyNumeric() : bool
     {
         return false;
     }
@@ -29,7 +29,7 @@ final class ClassStringType extends StringType
      */
     public function getTypeAfterIncOrDec() : UnionType
     {
-        return UnionType::fromFullyQualifiedString('string');
+        return UnionType::fromFullyQualifiedPHPDocString('string');
     }
 
     public function hasTemplateTypeRecursive() : bool
@@ -55,7 +55,7 @@ final class ClassStringType extends StringType
         if (!$template_union_type) {
             return UnionType::empty();
         }
-        return $template_union_type->makeFromFilter(function (Type $type) : bool {
+        return $template_union_type->makeFromFilter(static function (Type $type) : bool {
             return $type instanceof TemplateType || $type->isObjectWithKnownFQSEN();
         });
     }
@@ -67,7 +67,7 @@ final class ClassStringType extends StringType
      * @return ?Closure(UnionType):UnionType a closure to determine the union type(s) that are in the same position(s) as the template type.
      * This is overridden in subclasses.
      */
-    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type)
+    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type) : ?Closure
     {
         $template_union_type = $this->template_parameter_type_list[0] ?? null;
         if (!$template_union_type) {
@@ -105,5 +105,25 @@ final class ClassStringType extends StringType
         }
 
         return $string;
+    }
+
+    public function canUseInRealSignature() : bool
+    {
+        return false;
+    }
+
+    public function withIsNullable(bool $is_nullable) : Type
+    {
+        if ($is_nullable === $this->is_nullable) {
+            return $this;
+        }
+        // make() will throw if the namespace is the empty string
+        return static::make(
+            '\\',
+            $this->name,
+            $this->template_parameter_type_list,
+            $is_nullable,
+            Type::FROM_TYPE
+        );
     }
 }

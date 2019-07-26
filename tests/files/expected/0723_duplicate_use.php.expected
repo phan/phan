@@ -1,0 +1,4 @@
+%s:4 PhanDuplicateUseNormal Cannot use \Foo as foo because the name is already in use
+%s:6 PhanDuplicateUseFunction Cannot use function \ast\parse_file as parse_code because the name is already in use
+%s:8 PhanDuplicateUseConstant Cannot use constant \PHP_VERSION as PHP_VERSION because the name is already in use
+%s:11 PhanUndeclaredClassMethod Call to method __construct from undeclared class \Foo

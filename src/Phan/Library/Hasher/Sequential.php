@@ -32,9 +32,8 @@ class Sequential implements Hasher
 
     /**
      * Resets counter
-     * @return void
      */
-    public function reset()
+    public function reset() : void
     {
         $this->counter = 1;
     }

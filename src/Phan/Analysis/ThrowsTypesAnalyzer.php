@@ -3,6 +3,7 @@
 namespace Phan\Analysis;
 
 use Phan\CodeBase;
+use Phan\Exception\RecursionDepthException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Context;
@@ -23,16 +24,17 @@ class ThrowsTypesAnalyzer
 
     /**
      * Check phpdoc (at)throws types of function-likes to make sure they're valid
-     *
-     * @return void
      */
     public static function analyzeThrowsTypes(
         CodeBase $code_base,
         FunctionInterface $method
-    ) {
-        foreach ($method->getThrowsUnionType()->getTypeSet() as $type) {
-            // TODO: When analyzing the method body, only check the valid exceptions
-            self::analyzeSingleThrowType($code_base, $method, $type);
+    ) : void {
+        try {
+            foreach ($method->getThrowsUnionType()->getTypeSet() as $type) {
+                // TODO: When analyzing the method body, only check the valid exceptions
+                self::analyzeSingleThrowType($code_base, $method, $type);
+            }
+        } catch (RecursionDepthException $_) {
         }
     }
 
@@ -45,11 +47,11 @@ class ThrowsTypesAnalyzer
         CodeBase $code_base,
         FunctionInterface $method,
         Type $type
-    ) {
+    ) : bool {
         /**
          * @param array<int,int|string|Type> $args
          */
-        $maybe_emit_for_method = function (string $issue_type, array $args, Suggestion $suggestion = null) use ($code_base, $method) {
+        $maybe_emit_for_method = static function (string $issue_type, array $args, Suggestion $suggestion = null) use ($code_base, $method) : void {
             Issue::maybeEmitWithParameters(
                 $code_base,
                 $method->getContext(),
@@ -90,6 +92,7 @@ class ThrowsTypesAnalyzer
             // allow (at)throws Throwable.
             return true;
         }
+        $type = $type->withStaticResolvedInContext($method->getContext());
 
         $type_fqsen = FullyQualifiedClassName::fromType($type);
         if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
@@ -120,23 +123,19 @@ class ThrowsTypesAnalyzer
         return true;
     }
 
-    /**
-     * @return ?Suggestion
-     */
     protected static function suggestSimilarClassForThrownClass(
         CodeBase $code_base,
         Context $context,
         FullyQualifiedClassName $type_fqsen
-    ) {
+    ) : ?Suggestion {
         return IssueFixSuggester::suggestSimilarClass(
             $code_base,
             $context,
             $type_fqsen,
-            IssueFixSuggester::createFQSENFilterFromClassFilter($code_base, function (Clazz $class) use ($code_base) : bool {
+            IssueFixSuggester::createFQSENFilterFromClassFilter($code_base, static function (Clazz $class) use ($code_base) : bool {
                 if ($class->isTrait()) {
                     return false;
                 }
-                // @phan-suppress-next-line PhanThrowTypeAbsentForCall
                 return $class->getFQSEN()->asType()->asExpandedTypes($code_base)->hasType(Type::throwableInstance());
             })
         );

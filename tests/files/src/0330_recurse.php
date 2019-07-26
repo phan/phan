@@ -1,5 +1,5 @@
 <?php
-
+error_reporting(E_ALL);
 function callSelf(bool $x = false) {
     if (!$x) {
         callSelf(true);

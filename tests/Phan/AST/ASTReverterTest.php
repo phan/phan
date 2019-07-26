@@ -16,12 +16,12 @@ final class ASTReverterTest extends BaseTest
      * @param string $snippet
      * @dataProvider revertShorthandProvider
      */
-    public function testRevertShorthand(string $snippet, string $expected = null)
+    public function testRevertShorthand(string $snippet, string $expected = null) : void
     {
         $expected = $expected ?? $snippet;
         $file_contents = '<' . '?php ' . $snippet . ';';
         $statements = \ast\parse_code($file_contents, Config::AST_VERSION);
-        $this->assertSame(1, count($statements->children));
+        $this->assertSame(1, \count($statements->children));
         $snippet_node = $statements->children[0];
         if ($snippet_node === null) {
             throw new AssertionError("invalid first statement in statement list");
@@ -31,10 +31,17 @@ final class ASTReverterTest extends BaseTest
         $this->assertSame($expected, $reverter->toShortString($snippet_node));
     }
 
+    /**
+     * @return array<int,array{0:string}>
+     */
     public function revertShorthandProvider() : array
     {
         return [
             ["'2'"],
+            ['"a\tc\nb"'],
+            ['"\0"'],
+            ['"\07"', '"\7"'],
+            ['"\0072"', '"\0072"'],
             ['2'],
             ['false'],
             ['null'],

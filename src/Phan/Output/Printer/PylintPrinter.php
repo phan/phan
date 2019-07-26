@@ -2,6 +2,7 @@
 
 namespace Phan\Output\Printer;
 
+use Phan\Config;
 use Phan\Issue;
 use Phan\IssueInstance;
 use Phan\Output\IssuePrinterInterface;
@@ -15,21 +16,24 @@ final class PylintPrinter implements IssuePrinterInterface
     /** @var OutputInterface an output that pylint formatted issues can be written to. */
     private $output;
 
-    /** @param IssueInstance $instance */
-    public function print(IssueInstance $instance)
+    public function print(IssueInstance $instance) : void
     {
-        $message = sprintf(
+        $message = \sprintf(
             "%s: %s",
             $instance->getIssue()->getType(),
             $instance->getMessage()
         );
-        $line = sprintf(
+        $line = \sprintf(
             "%s:%d: [%s] %s",
-            $instance->getFile(),
+            $instance->getDisplayedFile(),
             $instance->getLine(),
             self::getSeverityCode($instance),
             $message
         );
+        $column  = $instance->getColumn();
+        if ($column > 0 && !Config::getValue('hide_issue_column')) {
+            $line .= " (at column $column)";
+        }
         $suggestion = $instance->getSuggestionMessage();
         if ($suggestion) {
             $line .= " ($suggestion)";
@@ -54,15 +58,12 @@ final class PylintPrinter implements IssuePrinterInterface
             case Issue::SEVERITY_CRITICAL:
                 return 'E' . $category_id;
             default:
-                fwrite(STDERR, "Unrecognized severity for " . $instance . ": " . $issue->getSeverity() . " (expected 0, 5, or 10)\n");
+                \fwrite(\STDERR, "Unrecognized severity for " . $instance . ": " . $issue->getSeverity() . " (expected 0, 5, or 10)\n");
                 return 'E' . $category_id;
         }
     }
 
-    /**
-     * @param OutputInterface $output
-     */
-    public function configureOutput(OutputInterface $output)
+    public function configureOutput(OutputInterface $output) : void
     {
         $this->output = $output;
     }

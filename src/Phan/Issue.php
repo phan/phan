@@ -10,6 +10,7 @@ use Phan\Language\Element\UnaddressableTypedElement;
 use Phan\Language\FQSEN;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
+use Phan\Library\ConversionSpec;
 use Phan\Plugin\ConfigPluginSet;
 
 /**
@@ -68,6 +69,7 @@ class Issue
     const UndeclaredTypeThrowsType  = 'PhanUndeclaredTypeThrowsType';
     const UndeclaredVariable        = 'PhanUndeclaredVariable';
     const UndeclaredGlobalVariable  = 'PhanUndeclaredGlobalVariable';
+    const UndeclaredThis            = 'PhanUndeclaredThis';
     const UndeclaredVariableDim     = 'PhanUndeclaredVariableDim';
     const UndeclaredVariableAssignOp = 'PhanUndeclaredVariableAssignOp';
     const UndeclaredClassInCallable = 'PhanUndeclaredClassInCallable';
@@ -81,21 +83,25 @@ class Issue
     const InvalidFQSENInClasslike     = 'PhanInvalidFQSENInClasslike';
 
     // Issue::CATEGORY_TYPE
-    const NonClassMethodCall        = 'PhanNonClassMethodCall';
-    const PossiblyNonClassMethodCall = 'PhanPossiblyNonClassMethodCall';
-    const TypeArrayOperator         = 'PhanTypeArrayOperator';
-    const TypeInvalidBitwiseBinaryOperator = 'PhanTypeInvalidBitwiseBinaryOperator';
+    const NonClassMethodCall                = 'PhanNonClassMethodCall';
+    const PossiblyNonClassMethodCall        = 'PhanPossiblyNonClassMethodCall';
+    const TypeArrayOperator                 = 'PhanTypeArrayOperator';
+    const TypeInvalidBitwiseBinaryOperator  = 'PhanTypeInvalidBitwiseBinaryOperator';
     const TypeMismatchBitwiseBinaryOperands = 'PhanTypeMismatchBitwiseBinaryOperands';
-    const TypeArraySuspicious       = 'PhanTypeArraySuspicious';
-    const TypeArrayUnsetSuspicious  = 'PhanTypeArrayUnsetSuspicious';
-    const TypeArraySuspiciousNullable = 'PhanTypeArraySuspiciousNullable';
-    const TypeSuspiciousIndirectVariable = 'PhanTypeSuspiciousIndirectVariable';
-    const TypeObjectUnsetDeclaredProperty  = 'PhanTypeObjectUnsetDeclaredProperty';
+    const TypeArraySuspicious               = 'PhanTypeArraySuspicious';
+    const TypeArrayUnsetSuspicious          = 'PhanTypeArrayUnsetSuspicious';
+    const TypeArraySuspiciousNullable       = 'PhanTypeArraySuspiciousNullable';
+    const TypeArraySuspiciousNull           = 'PhanTypeArraySuspiciousNull';
+    const TypeSuspiciousIndirectVariable    = 'PhanTypeSuspiciousIndirectVariable';
+    const TypeObjectUnsetDeclaredProperty   = 'PhanTypeObjectUnsetDeclaredProperty';
     const TypeComparisonFromArray   = 'PhanTypeComparisonFromArray';
     const TypeComparisonToArray     = 'PhanTypeComparisonToArray';
     const TypeConversionFromArray   = 'PhanTypeConversionFromArray';
     const TypeInstantiateAbstract   = 'PhanTypeInstantiateAbstract';
+    const TypeInstantiateAbstractStatic = 'PhanTypeInstantiateAbstractStatic';
     const TypeInstantiateInterface  = 'PhanTypeInstantiateInterface';
+    const TypeInstantiateTrait      = 'PhanTypeInstantiateTrait';
+    const TypeInstantiateTraitStaticOrSelf = 'PhanTypeInstantiateTraitStaticOrSelf';
     const TypeInvalidCloneNotObject = 'PhanTypeInvalidCloneNotObject';
     const TypeInvalidClosureScope   = 'PhanTypeInvalidClosureScope';
     const TypeInvalidLeftOperand    = 'PhanTypeInvalidLeftOperand';
@@ -104,6 +110,8 @@ class Issue
     const TypeInvalidRightOperandOfAdd = 'PhanTypeInvalidRightOperandOfAdd';
     const TypeInvalidLeftOperandOfNumericOp = 'PhanTypeInvalidLeftOperandOfNumericOp';
     const TypeInvalidRightOperandOfNumericOp = 'PhanTypeInvalidRightOperandOfNumericOp';
+    const TypeInvalidLeftOperandOfIntegerOp = 'PhanTypeInvalidLeftOperandOfIntegerOp';
+    const TypeInvalidRightOperandOfIntegerOp = 'PhanTypeInvalidRightOperandOfIntegerOp';
     const TypeInvalidUnaryOperandNumeric = 'PhanTypeInvalidUnaryOperandNumeric';
     const TypeInvalidUnaryOperandBitwiseNot = 'PhanTypeInvalidUnaryOperandBitwiseNot';
     const TypeInvalidUnaryOperandIncOrDec = 'PhanTypeInvalidUnaryOperandIncOrDec';
@@ -117,7 +125,9 @@ class Issue
     const TypeInvalidThrowsIsInterface           = 'PhanTypeInvalidThrowsIsInterface';
     const TypeMagicVoidWithReturn                = 'PhanTypeMagicVoidWithReturn';
     const TypeMismatchArgument                   = 'PhanTypeMismatchArgument';
+    const TypeMismatchArgumentNullable           = 'PhanTypeMismatchArgumentNullable';
     const TypeMismatchArgumentInternal           = 'PhanTypeMismatchArgumentInternal';
+    const TypeMismatchArgumentNullableInternal   = 'PhanTypeMismatchArgumentNullableInternal';
     const PartialTypeMismatchArgument            = 'PhanPartialTypeMismatchArgument';
     const PartialTypeMismatchArgumentInternal    = 'PhanPartialTypeMismatchArgumentInternal';
     const PossiblyNullTypeArgument  = 'PhanPossiblyNullTypeArgument';
@@ -131,6 +141,7 @@ class Issue
     const TypeMismatchDimFetch      = 'PhanTypeMismatchDimFetch';
     const TypeMismatchDimFetchNullable = 'PhanTypeMismatchDimFetchNullable';
     const TypeMismatchUnpackKey     = 'PhanTypeMismatchUnpackKey';
+    const TypeMismatchUnpackKeyArraySpread = 'PhanTypeMismatchUnpackKeyArraySpread';
     const TypeMismatchUnpackValue   = 'PhanTypeMismatchUnpackValue';
     const TypeMismatchArrayDestructuringKey = 'PhanTypeMismatchArrayDestructuringKey';
     const TypeMismatchVariadicComment = 'PhanMismatchVariadicComment';
@@ -144,6 +155,7 @@ class Issue
     const PossiblyFalseTypeMismatchProperty = 'PhanPossiblyFalseTypeMismatchProperty';
     const PartialTypeMismatchProperty = 'PhanPartialTypeMismatchProperty';
     const TypeMismatchReturn        = 'PhanTypeMismatchReturn';
+    const TypeMismatchReturnNullable = 'PhanTypeMismatchReturnNullable';
     const PartialTypeMismatchReturn = 'PhanPartialTypeMismatchReturn';
     const PossiblyNullTypeReturn  = 'PhanPossiblyNullTypeReturn';
     const PossiblyFalseTypeReturn  = 'PhanPossiblyFalseTypeReturn';
@@ -182,11 +194,40 @@ class Issue
     const InfiniteRecursion               = 'PhanInfiniteRecursion';
     const TypeComparisonToInvalidClass    = 'PhanTypeComparisonToInvalidClass';
     const TypeComparisonToInvalidClassType = 'PhanTypeComparisonToInvalidClassType';
+    const TypeInvalidPropertyName = 'PhanTypeInvalidPropertyName';
+    const TypeInvalidStaticPropertyName = 'PhanTypeInvalidStaticPropertyName';
+    const TypeErrorInInternalCall = 'PhanTypeErrorInInternalCall';
+    const TypeErrorInOperation = 'PhanTypeErrorInOperation';
+    const TypeInvalidPropertyDefaultReal  = 'PhanTypeInvalidPropertyDefaultReal';
+    const ImpossibleCondition               = 'PhanImpossibleCondition';
+    const ImpossibleConditionInLoop         = 'PhanImpossibleConditionInLoop';
+    const ImpossibleConditionInGlobalScope  = 'PhanImpossibleConditionInGlobalScope';
+    const RedundantCondition                = 'PhanRedundantCondition';
+    const RedundantConditionInLoop          = 'PhanRedundantConditionInLoop';
+    const RedundantConditionInGlobalScope   = 'PhanRedundantConditionInGlobalScope';
+    const InfiniteLoop                      = 'PhanInfiniteLoop';
+    const ImpossibleTypeComparison          = 'PhanImpossibleTypeComparison';
+    const ImpossibleTypeComparisonInLoop    = 'PhanImpossibleTypeComparisonInLoop';
+    const ImpossibleTypeComparisonInGlobalScope = 'PhanImpossibleTypeComparisonInGlobalScope';
+    const SuspiciousValueComparison             = 'PhanSuspiciousValueComparison';
+    const SuspiciousValueComparisonInLoop       = 'PhanSuspiciousValueComparisonInLoop';
+    const SuspiciousValueComparisonInGlobalScope = 'PhanSuspiciousValueComparisonInGlobalScope';
+    const SuspiciousLoopDirection               = 'PhanSuspiciousLoopDirection';
+    const SuspiciousWeakTypeComparison          = 'PhanSuspiciousWeakTypeComparison';
+    const SuspiciousWeakTypeComparisonInLoop    = 'PhanSuspiciousWeakTypeComparisonInLoop';
+    const SuspiciousWeakTypeComparisonInGlobalScope    = 'PhanSuspiciousWeakTypeComparisonInGlobalScope';
+    const CoalescingNeverNull               = 'PhanCoalescingNeverNull';
+    const CoalescingNeverNullInLoop         = 'PhanCoalescingNeverNullInLoop';
+    const CoalescingNeverNullInGlobalScope  = 'PhanCoalescingNeverNullInGlobalScope';
+    const CoalescingAlwaysNull              = 'PhanCoalescingAlwaysNull';
+    const CoalescingAlwaysNullInLoop        = 'PhanCoalescingAlwaysNullInLoop';
+    const CoalescingAlwaysNullInGlobalScope = 'PhanCoalescingAlwaysNullInGlobalScope';
 
     // Issue::CATEGORY_ANALYSIS
     const Unanalyzable              = 'PhanUnanalyzable';
     const UnanalyzableInheritance   = 'PhanUnanalyzableInheritance';
     const InvalidConstantFQSEN      = 'PhanInvalidConstantFQSEN';
+    const ReservedConstantName      = 'PhanReservedConstantName';
 
     // Issue::CATEGORY_VARIABLE
     const VariableUseClause         = 'PhanVariableUseClause';
@@ -207,6 +248,7 @@ class Issue
     const DeprecatedFunction        = 'PhanDeprecatedFunction';
     const DeprecatedFunctionInternal = 'PhanDeprecatedFunctionInternal';
     const DeprecatedProperty        = 'PhanDeprecatedProperty';
+    const DeprecatedClassConstant   = 'PhanDeprecatedClassConstant';
     const DeprecatedCaseInsensitiveDefine = 'PhanDeprecatedCaseInsensitiveDefine';
 
     // Issue::CATEGORY_PARAMETER
@@ -228,6 +270,7 @@ class Issue
     const ParamSignatureMismatch    = 'PhanParamSignatureMismatch';
     const ParamSignatureMismatchInternal = 'PhanParamSignatureMismatchInternal';
     const ParamRedefined            = 'PhanParamRedefined';
+    const ParamMustBeUserDefinedClassname = 'PhanParamMustBeUserDefinedClassname';
 
     const ParamSignatureRealMismatchReturnType                        = 'PhanParamSignatureRealMismatchReturnType';
     const ParamSignatureRealMismatchReturnTypeInternal                = 'PhanParamSignatureRealMismatchReturnTypeInternal';
@@ -265,12 +308,16 @@ class Issue
     const NoopClosure                   = 'PhanNoopClosure';
     const NoopConstant                  = 'PhanNoopConstant';
     const NoopProperty                  = 'PhanNoopProperty';
+    const NoopArrayAccess               = 'PhanNoopArrayAccess';
     const NoopVariable                  = 'PhanNoopVariable';
     const NoopUnaryOperator             = 'PhanNoopUnaryOperator';
     const NoopBinaryOperator            = 'PhanNoopBinaryOperator';
     const NoopStringLiteral             = 'PhanNoopStringLiteral';
     const NoopEncapsulatedStringLiteral = 'PhanNoopEncapsulatedStringLiteral';
     const NoopNumericLiteral            = 'PhanNoopNumericLiteral';
+    const NoopEmpty                     = 'PhanNoopEmpty';
+    const NoopIsset                     = 'PhanNoopIsset';
+    const NoopCast                      = 'PhanNoopCast';
     const UnreachableCatch              = 'PhanUnreachableCatch';
     const UnreferencedClass             = 'PhanUnreferencedClass';
     const UnreferencedFunction          = 'PhanUnreferencedFunction';
@@ -280,12 +327,15 @@ class Issue
     const UnreferencedPublicProperty    = 'PhanUnreferencedPublicProperty';
     const UnreferencedProtectedProperty = 'PhanUnreferencedProtectedProperty';
     const UnreferencedPrivateProperty   = 'PhanUnreferencedPrivateProperty';
+    const UnreferencedPHPDocProperty    = 'PhanUnreferencedPHPDocProperty';
     const ReadOnlyPublicProperty        = 'PhanReadOnlyPublicProperty';
     const ReadOnlyProtectedProperty     = 'PhanReadOnlyProtectedProperty';
     const ReadOnlyPrivateProperty       = 'PhanReadOnlyPrivateProperty';
+    const ReadOnlyPHPDocProperty        = 'PhanReadOnlyPHPDocProperty';
     const WriteOnlyPublicProperty       = 'PhanWriteOnlyPublicProperty';
     const WriteOnlyProtectedProperty    = 'PhanWriteOnlyProtectedProperty';
     const WriteOnlyPrivateProperty      = 'PhanWriteOnlyPrivateProperty';
+    const WriteOnlyPHPDocProperty       = 'PhanWriteOnlyPHPDocProperty';
     const UnreferencedConstant          = 'PhanUnreferencedConstant';
     const UnreferencedPublicClassConstant = 'PhanUnreferencedPublicClassConstant';
     const UnreferencedProtectedClassConstant = 'PhanUnreferencedProtectedClassConstant';
@@ -294,23 +344,41 @@ class Issue
     const UnreferencedUseNormal         = 'PhanUnreferencedUseNormal';
     const UnreferencedUseFunction       = 'PhanUnreferencedUseFunction';
     const UnreferencedUseConstant       = 'PhanUnreferencedUseConstant';
+    const DuplicateUseNormal            = 'PhanDuplicateUseNormal';
+    const DuplicateUseFunction          = 'PhanDuplicateUseFunction';
+    const DuplicateUseConstant          = 'PhanDuplicateUseConstant';
     const UseNormalNoEffect             = 'PhanUseNormalNoEffect';
     const UseNormalNamespacedNoEffect   = 'PhanUseNormalNamespacedNoEffect';
     const UseFunctionNoEffect           = 'PhanUseFunctionNoEffect';
-    const UseContantNoEffect           = 'PhanUseContantNoEffect';
+    const UseConstantNoEffect           = 'PhanUseConstantNoEffect';
 
     const UnusedVariable                        = 'PhanUnusedVariable';
     const UnusedPublicMethodParameter           = 'PhanUnusedPublicMethodParameter';
     const UnusedPublicFinalMethodParameter      = 'PhanUnusedPublicFinalMethodParameter';
+    const UnusedPublicNoOverrideMethodParameter = 'PhanUnusedPublicNoOverrideMethodParameter';
     const UnusedProtectedMethodParameter        = 'PhanUnusedProtectedMethodParameter';
     const UnusedProtectedFinalMethodParameter   = 'PhanUnusedProtectedFinalMethodParameter';
+    const UnusedProtectedNoOverrideMethodParameter = 'PhanUnusedProtectedNoOverrideMethodParameter';
     const UnusedPrivateMethodParameter          = 'PhanUnusedPrivateMethodParameter';
     const UnusedPrivateFinalMethodParameter     = 'PhanUnusedPrivateFinalMethodParameter';
     const UnusedClosureUseVariable              = 'PhanUnusedClosureUseVariable';
+    const ShadowedVariableInArrowFunc           = 'PhanShadowedVariableInArrowFunc';
     const UnusedClosureParameter                = 'PhanUnusedClosureParameter';
     const UnusedGlobalFunctionParameter         = 'PhanUnusedGlobalFunctionParameter';
     const UnusedVariableValueOfForeachWithKey   = 'PhanUnusedVariableValueOfForeachWithKey';  // has higher false positive rates than UnusedVariable
     const UnusedVariableCaughtException         = 'PhanUnusedVariableCaughtException';  // has higher false positive rates than UnusedVariable
+    const UnusedGotoLabel                       = 'PhanUnusedGotoLabel';
+    const UnusedVariableReference               = 'PhanUnusedVariableReference';
+    const UnusedVariableStatic                  = 'PhanUnusedVariableStatic';
+    const UnusedVariableGlobal                  = 'PhanUnusedVariableGlobal';
+    const VariableDefinitionCouldBeConstant     = 'PhanVariableDefinitionCouldBeConstant';
+    const VariableDefinitionCouldBeConstantEmptyArray = 'PhanVariableDefinitionCouldBeConstantEmptyArray';
+    const VariableDefinitionCouldBeConstantString = 'PhanVariableDefinitionCouldBeConstantString';
+    const VariableDefinitionCouldBeConstantFloat = 'PhanVariableDefinitionCouldBeConstantFloat';
+    const VariableDefinitionCouldBeConstantInt = 'PhanVariableDefinitionCouldBeConstantInt';
+    const VariableDefinitionCouldBeConstantTrue = 'PhanVariableDefinitionCouldBeConstantTrue';
+    const VariableDefinitionCouldBeConstantFalse = 'PhanVariableDefinitionCouldBeConstantFalse';
+    const VariableDefinitionCouldBeConstantNull = 'PhanVariableDefinitionCouldBeConstantNull';
 
     // Issue::CATEGORY_REDEFINE
     const RedefineClass             = 'PhanRedefineClass';
@@ -318,6 +386,8 @@ class Issue
     const RedefineClassInternal     = 'PhanRedefineClassInternal';
     const RedefineFunction          = 'PhanRedefineFunction';
     const RedefineFunctionInternal  = 'PhanRedefineFunctionInternal';
+    const RedefineClassConstant     = 'PhanRedefineClassConstant';
+    const RedefineProperty          = 'PhanRedefineProperty';
     const IncompatibleCompositionProp = 'PhanIncompatibleCompositionProp';
     const IncompatibleCompositionMethod = 'PhanIncompatibleCompositionMethod';
     const RedefinedUsedTrait            = 'PhanRedefinedUsedTrait';
@@ -341,8 +411,8 @@ class Issue
     const AccessSignatureMismatchInternal = 'PhanAccessSignatureMismatchInternal';
     const PropertyAccessSignatureMismatch = 'PhanPropertyAccessSignatureMismatch';
     const PropertyAccessSignatureMismatchInternal  = 'PhanPropertyAccessSignatureMismatchInternal';
-    const AccessConstantSignatureMismatch = 'PhanConstantAccessSignatureMismatch';
-    const AccessConstantSignatureMismatchInternal  = 'PhanConstantAccessSignatureMismatchInternal';
+    const ConstantAccessSignatureMismatch = 'PhanConstantAccessSignatureMismatch';
+    const ConstantAccessSignatureMismatchInternal  = 'PhanConstantAccessSignatureMismatchInternal';
     const AccessStaticToNonStatic         = 'PhanAccessStaticToNonStatic';
     const AccessNonStaticToStatic         = 'PhanAccessNonStaticToStatic';
     const AccessStaticToNonStaticProperty = 'PhanAccessStaticToNonStaticProperty';
@@ -380,6 +450,8 @@ class Issue
     const CompatibleUseObjectPHP71           = 'PhanCompatibleUseObjectPHP71';
     const CompatibleMultiExceptionCatchPHP70 = 'PhanCompatibleMultiExceptionCatchPHP70';
     const CompatibleNegativeStringOffset     = 'PhanCompatibleNegativeStringOffset';
+    const CompatibleAutoload                 = 'PhanCompatibleAutoload';
+    const CompatibleUnsetCast                = 'PhanCompatibleUnsetCast';
 
     // Issue::CATEGORY_GENERIC
     const TemplateTypeConstant       = 'PhanTemplateTypeConstant';
@@ -391,6 +463,7 @@ class Issue
     const TemplateTypeNotDeclaredInFunctionParams = 'PhanTemplateTypeNotDeclaredInFunctionParams';
 
     // Issue::CATEGORY_COMMENT
+    const DebugAnnotation                  = 'PhanDebugAnnotation';
     const InvalidCommentForDeclarationType = 'PhanInvalidCommentForDeclarationType';
     const MisspelledAnnotation             = 'PhanMisspelledAnnotation';
     const UnextractableAnnotation          = 'PhanUnextractableAnnotation';
@@ -407,6 +480,8 @@ class Issue
     const ThrowTypeAbsentForCall           = 'PhanThrowTypeAbsentForCall';
     const ThrowTypeMismatch                = 'PhanThrowTypeMismatch';
     const ThrowTypeMismatchForCall         = 'PhanThrowTypeMismatchForCall';
+    const ThrowStatementInToString         = 'PhanThrowStatementInToString';
+    const ThrowCommentInToString           = 'PhanThrowCommentInToString';
     const CommentAmbiguousClosure          = 'PhanCommentAmbiguousClosure';
     const CommentDuplicateParam            = 'PhanCommentDuplicateParam';
     const CommentDuplicateMagicMethod      = 'PhanCommentDuplicateMagicMethod';
@@ -422,7 +497,7 @@ class Issue
     const CATEGORY_COMPATIBLE        = 1 << 3;
     /** This category of issue is for when you're doing stuff out of the context in which you're allowed to do it, e.g. referencing `self` or `parent` when not in a class, interface or trait. */
     const CATEGORY_CONTEXT           = 1 << 4;
-    /** This category of issue comes up when you're accessing deprecated elements (as marked by the `@deprecated` comment). */
+    /** This category of issue comes up when you're accessing deprecated elements (as marked by the `(at)deprecated` comment). */
     const CATEGORY_DEPRECATED        = 1 << 5;
     /** Issues in this category are emitted when you have reasonable code but it isn't doing anything. */
     const CATEGORY_NOOP              = 1 << 6;
@@ -545,6 +620,9 @@ class Issue
     /** @var string The printf format string for this issue type. If --color is enabled, this will have unix color codes. */
     private $template;
 
+    /** @var int the expected number of arguments to the format string $this->template */
+    private $argument_count;
+
     /** @var int self::REMEDIATION_* */
     private $remediation_difficulty;
 
@@ -573,19 +651,22 @@ class Issue
         $this->type_id = $type_id;
     }
 
-    private static function templateToFormatString(
+    /**
+     * Converts the Phan template string to a regular format string.
+     */
+    public static function templateToFormatString(
         string $template
     ) : string {
         /** @param array<int,string> $matches */
-        return preg_replace_callback('/{([A-Z_]+)}/', function (array $matches) use ($template): string {
+        return \preg_replace_callback('/{([A-Z_]+)}/', static function (array $matches) use ($template): string {
             $key = $matches[1];
             $replacement_exists = \array_key_exists($key, self::UNCOLORED_FORMAT_STRING_FOR_TEMPLATE);
             if (!$replacement_exists) {
-                error_log(sprintf(
+                \error_log(\sprintf(
                     "No coloring info for issue message (%s), key {%s}. Valid template types: %s",
                     $template,
                     $key,
-                    implode(', ', array_keys(self::UNCOLORED_FORMAT_STRING_FOR_TEMPLATE))
+                    \implode(', ', \array_keys(self::UNCOLORED_FORMAT_STRING_FOR_TEMPLATE))
                 ));
                 return '%s';
             }
@@ -596,14 +677,17 @@ class Issue
     /**
      * @return array<string,Issue>
      */
-    public static function issueMap()
+    public static function issueMap() : array
     {
         static $error_map;
+        return $error_map ?? ($error_map = self::generateIssueMap());
+    }
 
-        if (\is_array($error_map)) {
-            return $error_map;
-        }
-
+    /**
+     * @return array<string,Issue>
+     */
+    private static function generateIssueMap() : array
+    {
         // phpcs:disable Generic.Files.LineLength
         /**
          * @var array<int,Issue>
@@ -678,6 +762,30 @@ class Issue
                 self::REMEDIATION_A,
                 17007
             ),
+            new Issue(
+                self::DuplicateUseNormal,
+                self::CATEGORY_SYNTAX,
+                self::SEVERITY_CRITICAL,
+                "Cannot use {CLASSLIKE} as {CLASSLIKE} because the name is already in use",
+                self::REMEDIATION_B,
+                17008
+            ),
+            new Issue(
+                self::DuplicateUseFunction,
+                self::CATEGORY_SYNTAX,
+                self::SEVERITY_CRITICAL,
+                "Cannot use function {FUNCTION} as {FUNCTION} because the name is already in use",
+                self::REMEDIATION_B,
+                17009
+            ),
+            new Issue(
+                self::DuplicateUseConstant,
+                self::CATEGORY_SYNTAX,
+                self::SEVERITY_CRITICAL,
+                "Cannot use constant {CONST} as {CONST} because the name is already in use",
+                self::REMEDIATION_B,
+                17010
+            ),
 
             // Issue::CATEGORY_UNDEFINED
             new Issue(
@@ -691,7 +799,7 @@ class Issue
             new Issue(
                 self::MissingRequireFile,
                 self::CATEGORY_UNDEFINED,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "Missing required file {FILE}",
                 self::REMEDIATION_B,
                 11040
@@ -699,7 +807,7 @@ class Issue
             new Issue(
                 self::InvalidRequireFile,
                 self::CATEGORY_UNDEFINED,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "Required file {FILE} is not a file",
                 self::REMEDIATION_B,
                 11041
@@ -865,12 +973,20 @@ class Issue
                 11018
             ),
             new Issue(
+                self::UndeclaredThis,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_CRITICAL,
+                "Variable \${VARIABLE} is undeclared",
+                self::REMEDIATION_B,
+                11046
+            ),
+            new Issue(
                 self::UndeclaredGlobalVariable,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_NORMAL,
                 "Global variable \${VARIABLE} is undeclared",
                 self::REMEDIATION_B,
-                11046
+                11047
             ),
             new Issue(
                 self::UndeclaredTypeParameter,
@@ -899,7 +1015,7 @@ class Issue
             new Issue(
                 self::ClassContainsAbstractMethod,
                 self::CATEGORY_UNDEFINED,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "non-abstract class {CLASS} contains abstract method {METHOD} declared at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 11022
@@ -907,7 +1023,7 @@ class Issue
             new Issue(
                 self::ClassContainsAbstractMethodInternal,
                 self::CATEGORY_UNDEFINED,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "non-abstract class {CLASS} contains abstract internal method {METHOD}",
                 self::REMEDIATION_B,
                 11023
@@ -1077,10 +1193,18 @@ class Issue
             new Issue(
                 self::InvalidConstantFQSEN,
                 self::CATEGORY_ANALYSIS,
-                self::SEVERITY_LOW,
+                self::SEVERITY_NORMAL,
                 "'{CONST}' is an invalid FQSEN for a constant",
                 self::REMEDIATION_B,
                 2002
+            ),
+            new Issue(
+                self::ReservedConstantName,
+                self::CATEGORY_ANALYSIS,
+                self::SEVERITY_NORMAL,
+                "'{CONST}' has a reserved keyword in the constant name",
+                self::REMEDIATION_B,
+                2003
             ),
 
             // Issue::CATEGORY_TYPE
@@ -1120,7 +1244,7 @@ class Issue
                 self::TypeMismatchDefault,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Default value for {TYPE} \${VARIABLE} can't be {TYPE}",
+                "Default value for {TYPE} \${PARAMETER} can't be {TYPE}",
                 self::REMEDIATION_B,
                 10002
             ),
@@ -1136,7 +1260,7 @@ class Issue
                 self::TypeMismatchVariadicParam,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_LOW,
-                "{PARAMETER} is not variadic in comment, but variadic in param ({PARAMETER})",
+                '{PARAMETER} is not variadic in comment, but variadic in param ({PARAMETER})',
                 self::REMEDIATION_B,
                 10023
             ),
@@ -1144,17 +1268,33 @@ class Issue
                 self::TypeMismatchArgument,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} defined at {FILE}:{LINE}",
+                'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} defined at {FILE}:{LINE}',
                 self::REMEDIATION_B,
                 10003
+            ),
+            new Issue(
+                self::TypeMismatchArgumentNullable,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} defined at {FILE}:{LINE} (expected type to be non-nullable)',
+                self::REMEDIATION_B,
+                10105
             ),
             new Issue(
                 self::TypeMismatchArgumentInternal,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE}",
+                'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE}',
                 self::REMEDIATION_B,
                 10004
+            ),
+            new Issue(
+                self::TypeMismatchArgumentNullableInternal,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} (expected type to be non-nullable)',
+                self::REMEDIATION_B,
+                10106
             ),
             new Issue(
                 self::TypeMismatchGeneratorYieldValue,
@@ -1184,7 +1324,7 @@ class Issue
                 self::PartialTypeMismatchArgument,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}",
+                'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}',
                 self::REMEDIATION_B,
                 10054
             ),
@@ -1192,7 +1332,7 @@ class Issue
                 self::PartialTypeMismatchArgumentInternal,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible)",
+                'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible)',
                 self::REMEDIATION_B,
                 10055
             ),
@@ -1200,7 +1340,7 @@ class Issue
                 self::PossiblyNullTypeArgument,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}",
+                'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}',
                 self::REMEDIATION_B,
                 10056
             ),
@@ -1208,7 +1348,7 @@ class Issue
                 self::PossiblyNullTypeArgumentInternal,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible)",
+                'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible)',
                 self::REMEDIATION_B,
                 10057
             ),
@@ -1216,7 +1356,7 @@ class Issue
                 self::PossiblyFalseTypeArgument,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}",
+                'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}',
                 self::REMEDIATION_B,
                 10058
             ),
@@ -1224,7 +1364,7 @@ class Issue
                 self::PossiblyFalseTypeArgumentInternal,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible)",
+                'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible)',
                 self::REMEDIATION_B,
                 10059
             ),
@@ -1235,6 +1375,14 @@ class Issue
                 "Returning type {TYPE} but {FUNCTIONLIKE} is declared to return {TYPE}",
                 self::REMEDIATION_B,
                 10005
+            ),
+            new Issue(
+                self::TypeMismatchReturnNullable,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Returning type {TYPE} but {FUNCTIONLIKE} is declared to return {TYPE} (expected returned value to be non-nullable)",
+                self::REMEDIATION_B,
+                10107
             ),
             new Issue(
                 self::PartialTypeMismatchReturn,
@@ -1280,7 +1428,7 @@ class Issue
                 self::TypeMismatchDeclaredParam,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Doc-block of \${VARIABLE} in {METHOD} contains phpdoc param type {TYPE} which is incompatible with the param type {TYPE} declared in the signature",
+                "Doc-block of \${PARAMETER} in {METHOD} contains phpdoc param type {TYPE} which is incompatible with the param type {TYPE} declared in the signature",
                 self::REMEDIATION_B,
                 10022
             ),
@@ -1288,7 +1436,7 @@ class Issue
                 self::TypeMismatchDeclaredParamNullable,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Doc-block of \${VARIABLE} in {METHOD} is phpdoc param type {TYPE} which is not a permitted replacement of the nullable param type {TYPE} declared in the signature ('?T' should be documented as 'T|null' or '?T')",
+                "Doc-block of \${PARAMETER} in {METHOD} is phpdoc param type {TYPE} which is not a permitted replacement of the nullable param type {TYPE} declared in the signature ('?T' should be documented as 'T|null' or '?T')",
                 self::REMEDIATION_B,
                 10027
             ),
@@ -1365,12 +1513,36 @@ class Issue
                 10013
             ),
             new Issue(
+                self::TypeInstantiateAbstractStatic,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Potential instantiation of abstract class {CLASS} (not an issue if this method is only called from a non-abstract subclass)",
+                self::REMEDIATION_B,
+                10111
+            ),
+            new Issue(
                 self::TypeInstantiateInterface,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
                 "Instantiation of interface {INTERFACE}",
                 self::REMEDIATION_B,
                 10014
+            ),
+            new Issue(
+                self::TypeInstantiateTrait,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Instantiation of trait {TRAIT}",
+                self::REMEDIATION_B,
+                10074
+            ),
+            new Issue(
+                self::TypeInstantiateTraitStaticOrSelf,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Potential instantiation of trait {TRAIT} (not an issue if this method is only called from a non-abstract class using the trait)",
+                self::REMEDIATION_B,
+                10112
             ),
             new Issue(
                 self::TypeInvalidClosureScope,
@@ -1400,7 +1572,7 @@ class Issue
                 self::TypeInvalidRightOperandOfAdd,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Invalid operator: right operand is {TYPE} (expected array or number)",
+                "Invalid operator: right operand of {OPERATOR} is {TYPE} (expected array or number)",
                 self::REMEDIATION_B,
                 10070
             ),
@@ -1408,7 +1580,7 @@ class Issue
                 self::TypeInvalidLeftOperandOfAdd,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Invalid operator: left operand is {TYPE} (expected array or number)",
+                "Invalid operator: left operand of {OPERATOR} is {TYPE} (expected array or number)",
                 self::REMEDIATION_B,
                 10071
             ),
@@ -1416,7 +1588,7 @@ class Issue
                 self::TypeInvalidRightOperandOfNumericOp,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Invalid operator: right operand is {TYPE} (expected number)",
+                "Invalid operator: right operand of {OPERATOR} is {TYPE} (expected number)",
                 self::REMEDIATION_B,
                 10072
             ),
@@ -1424,9 +1596,25 @@ class Issue
                 self::TypeInvalidLeftOperandOfNumericOp,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Invalid operator: left operand is {TYPE} (expected number)",
+                "Invalid operator: left operand of {OPERATOR} is {TYPE} (expected number)",
                 self::REMEDIATION_B,
                 10073
+            ),
+            new Issue(
+                self::TypeInvalidRightOperandOfIntegerOp,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Invalid operator: right operand of {OPERATOR} is {TYPE} (expected int)",
+                self::REMEDIATION_B,
+                10100
+            ),
+            new Issue(
+                self::TypeInvalidLeftOperandOfIntegerOp,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Invalid operator: left operand of {OPERATOR} is {TYPE} (expected int)",
+                self::REMEDIATION_B,
+                10101
             ),
             new Issue(
                 self::TypeInvalidUnaryOperandNumeric,
@@ -1605,6 +1793,14 @@ class Issue
                 10041
             ),
             new Issue(
+                self::TypeMismatchUnpackKeyArraySpread,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'When unpacking a value of type {TYPE}, the value\'s keys were of type {TYPE}, but the keys should be integers',
+                self::REMEDIATION_B,
+                10109
+            ),
+            new Issue(
                 self::TypeMismatchUnpackValue,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
@@ -1627,6 +1823,14 @@ class Issue
                 "Suspicious array access to nullable {TYPE}",
                 self::REMEDIATION_B,
                 10045
+            ),
+            new Issue(
+                self::TypeArraySuspiciousNull,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Suspicious array access to null",
+                self::REMEDIATION_B,
+                10136
             ),
             new Issue(
                 self::TypeInvalidDimOffset,
@@ -1728,7 +1932,7 @@ class Issue
             new Issue(
                 self::TypeObjectUnsetDeclaredProperty,
                 self::CATEGORY_TYPE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_LOW,  // There are valid reasons to do this, e.g. for the typed properties V2 RFC or to change serialization
                 "Suspicious attempt to unset class {TYPE}'s property {PROPERTY} declared at {FILE}:{LINE} (This can be done, but is more commonly done for dynamic properties and Phan does not expect this)",
                 self::REMEDIATION_B,
                 10081
@@ -1760,7 +1964,7 @@ class Issue
             new Issue(
                 self::TypeInvalidRequire,
                 self::CATEGORY_TYPE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "Require statement was passed an invalid expression of type {TYPE} (expected a string)",
                 self::REMEDIATION_B,
                 10085
@@ -1768,7 +1972,7 @@ class Issue
             new Issue(
                 self::TypeInvalidEval,
                 self::CATEGORY_TYPE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "Eval statement was passed an invalid expression of type {TYPE} (expected a string)",
                 self::REMEDIATION_B,
                 10086
@@ -1784,7 +1988,7 @@ class Issue
             new Issue(
                 self::TypeInvalidCloneNotObject,
                 self::CATEGORY_TYPE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "Expected an object to be passed to clone() but got {TYPE}",
                 self::REMEDIATION_B,
                 10088
@@ -1792,7 +1996,7 @@ class Issue
             new Issue(
                 self::TypeInvalidTraitReturn,
                 self::CATEGORY_TYPE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "Expected a class or interface (or built-in type) to be the real return type of {FUNCTIONLIKE} but got trait {TRAIT}",
                 self::REMEDIATION_B,
                 10089
@@ -1800,7 +2004,7 @@ class Issue
             new Issue(
                 self::TypeInvalidTraitParam,
                 self::CATEGORY_TYPE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "{FUNCTIONLIKE} is declared to have a parameter \${PARAMETER} with a real type of trait {TYPE} (expected a class or interface or built-in type)",
                 self::REMEDIATION_B,
                 10090
@@ -1877,6 +2081,230 @@ class Issue
                 self::REMEDIATION_B,
                 10099
             ),
+            new Issue(
+                self::TypeInvalidPropertyName,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,  // Not a runtime Error for an instance property
+                "Saw a dynamic usage of an instance property with a name of type {TYPE} but expected the name to be a string",
+                self::REMEDIATION_B,
+                10102
+            ),
+            new Issue(
+                self::TypeInvalidStaticPropertyName,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,  // Likely to be an Error for a static property
+                "Saw a dynamic usage of a static property with a name of type {TYPE} but expected the name to be a string",
+                self::REMEDIATION_B,
+                10103
+            ),
+            new Issue(
+                self::TypeErrorInInternalCall,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Saw a call to an internal function {FUNCTION}() with what would be invalid arguments in strict mode, when trying to infer the return value literal type: {DETAILS}",
+                self::REMEDIATION_B,
+                10104
+            ),
+            new Issue(
+                self::TypeErrorInOperation,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Saw an error when attempting to infer the type of expression {CODE}: {DETAILS}",
+                self::REMEDIATION_B,
+                10110
+            ),
+            new Issue(
+                self::TypeInvalidPropertyDefaultReal,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,
+                "Default value for {TYPE} \${PROPERTY} can't be {TYPE}",
+                self::REMEDIATION_B,
+                10108
+            ),
+            new Issue(
+                self::ImpossibleCondition,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Impossible attempt to cast {CODE} of type {TYPE} to {TYPE}",
+                self::REMEDIATION_B,
+                10113
+            ),
+            new Issue(
+                self::ImpossibleConditionInLoop,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Impossible attempt to cast {CODE} of type {TYPE} to {TYPE} in a loop body (may be a false positive)",
+                self::REMEDIATION_B,
+                10118
+            ),
+            new Issue(
+                self::ImpossibleConditionInGlobalScope,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Impossible attempt to cast {CODE} of type {TYPE} to {TYPE} in the global scope (may be a false positive)",
+                self::REMEDIATION_B,
+                10123
+            ),
+            new Issue(
+                self::RedundantCondition,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Redundant attempt to cast {CODE} of type {TYPE} to {TYPE}",
+                self::REMEDIATION_B,
+                10114
+            ),
+            new Issue(
+                self::RedundantConditionInLoop,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Redundant attempt to cast {CODE} of type {TYPE} to {TYPE} in a loop body (likely a false positive)",
+                self::REMEDIATION_B,
+                10119
+            ),
+            new Issue(
+                self::RedundantConditionInGlobalScope,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Redundant attempt to cast {CODE} of type {TYPE} to {TYPE} in the global scope (likely a false positive)",
+                self::REMEDIATION_B,
+                10124
+            ),
+            new Issue(
+                self::InfiniteLoop,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,
+                "The loop condition {CODE} of type {TYPE} is always {TYPE} and nothing seems to exit the loop",
+                self::REMEDIATION_B,
+                10135
+            ),
+            new Issue(
+                self::ImpossibleTypeComparison,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Impossible attempt to check if {CODE} of type {TYPE} is identical to {CODE} of type {TYPE}",
+                self::REMEDIATION_B,
+                10115
+            ),
+            new Issue(
+                self::ImpossibleTypeComparisonInLoop,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Impossible attempt to check if {CODE} of type {TYPE} is identical to {CODE} of type {TYPE} in a loop body (likely a false positive)",
+                self::REMEDIATION_B,
+                10120
+            ),
+            new Issue(
+                self::ImpossibleTypeComparisonInGlobalScope,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Impossible attempt to check if {CODE} of type {TYPE} is identical to {CODE} of type {TYPE} in the global scope (likely a false positive)",
+                self::REMEDIATION_B,
+                10125
+            ),
+            new Issue(
+                self::SuspiciousValueComparison,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Suspicious attempt to compare {CODE} of type {TYPE} to {CODE} of type {TYPE} with operator '{OPERATOR}'",
+                self::REMEDIATION_B,
+                10131
+            ),
+            new Issue(
+                self::SuspiciousValueComparisonInLoop,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Suspicious attempt to compare {CODE} of type {TYPE} to {CODE} of type {TYPE} with operator '{OPERATOR}' in a loop (likely a false positive)",
+                self::REMEDIATION_B,
+                10132
+            ),
+            new Issue(
+                self::SuspiciousValueComparisonInGlobalScope,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Suspicious attempt to compare {CODE} of type {TYPE} to {CODE} of type {TYPE} with operator '{OPERATOR}' in the global scope (likely a false positive)",
+                self::REMEDIATION_B,
+                10133
+            ),
+            new Issue(
+                self::SuspiciousLoopDirection,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Suspicious loop appears to {DETAILS} after each iteration in {CODE}, but the loop condition is {CODE}",
+                self::REMEDIATION_B,
+                10134
+            ),
+            new Issue(
+                self::SuspiciousWeakTypeComparison,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Suspicious attempt to compare {CODE} of type {TYPE} to {CODE} of type {TYPE}",
+                self::REMEDIATION_B,
+                10128
+            ),
+            new Issue(
+                self::SuspiciousWeakTypeComparisonInLoop,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Suspicious attempt to compare {CODE} of type {TYPE} to {CODE} of type {TYPE} in a loop body (likely a false positive)",
+                self::REMEDIATION_B,
+                10129
+            ),
+            new Issue(
+                self::SuspiciousWeakTypeComparisonInGlobalScope,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Suspicious attempt to compare {CODE} of type {TYPE} to {CODE} of type {TYPE} in the global scope (likely a false positive)",
+                self::REMEDIATION_B,
+                10130
+            ),
+            new Issue(
+                self::CoalescingNeverNull,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Using non-null {CODE} of type {TYPE} as the left hand side of a null coalescing (??) operation. The right hand side may be unnecessary.",
+                self::REMEDIATION_B,
+                10116
+            ),
+            new Issue(
+                self::CoalescingNeverNullInLoop,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Using non-null {CODE} of type {TYPE} as the left hand side of a null coalescing (??) operation. The right hand side may be unnecessary. (in a loop body - this is likely a false positive)",
+                self::REMEDIATION_B,
+                10121
+            ),
+            new Issue(
+                self::CoalescingNeverNullInGlobalScope,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Using non-null {CODE} of type {TYPE} as the left hand side of a null coalescing (??) operation. The right hand side may be unnecessary. (in the global scope - this is likely a false positive)",
+                self::REMEDIATION_B,
+                10126
+            ),
+            new Issue(
+                self::CoalescingAlwaysNull,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Using {CODE} of type {TYPE} as the left hand side of a null coalescing (??) operation. The left hand side may be unnecessary.",
+                self::REMEDIATION_B,
+                10117
+            ),
+            new Issue(
+                self::CoalescingAlwaysNullInLoop,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Using {CODE} of type {TYPE} as the left hand side of a null coalescing (??) operation. The left hand side may be unnecessary. (in a loop body - this is likely a false positive)",
+                self::REMEDIATION_B,
+                10122
+            ),
+            new Issue(
+                self::CoalescingAlwaysNullInGlobalScope,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Using {CODE} of type {TYPE} as the left hand side of a null coalescing (??) operation. The left hand side may be unnecessary. (in the global scope - this is likely a false positive)",
+                self::REMEDIATION_B,
+                10127
+            ),
             // Issue::CATEGORY_VARIABLE
             new Issue(
                 self::VariableUseClause,
@@ -1936,7 +2364,7 @@ class Issue
                 self::DeprecatedFunction,
                 self::CATEGORY_DEPRECATED,
                 self::SEVERITY_NORMAL,
-                "Call to deprecated function {FUNCTIONLIKE} defined at {FILE}:{LINE}",
+                "Call to deprecated function {FUNCTIONLIKE} defined at {FILE}:{LINE}{DETAILS}",
                 self::REMEDIATION_B,
                 5000
             ),
@@ -1952,7 +2380,7 @@ class Issue
                 self::DeprecatedClass,
                 self::CATEGORY_DEPRECATED,
                 self::SEVERITY_NORMAL,
-                "Call to deprecated class {CLASS} defined at {FILE}:{LINE}",
+                "Using a deprecated class {CLASS} defined at {FILE}:{LINE}{DETAILS}",
                 self::REMEDIATION_B,
                 5001
             ),
@@ -1960,15 +2388,23 @@ class Issue
                 self::DeprecatedProperty,
                 self::CATEGORY_DEPRECATED,
                 self::SEVERITY_NORMAL,
-                "Reference to deprecated property {PROPERTY} defined at {FILE}:{LINE}",
+                "Reference to deprecated property {PROPERTY} defined at {FILE}:{LINE}{DETAILS}",
                 self::REMEDIATION_B,
                 5002
+            ),
+            new Issue(
+                self::DeprecatedClassConstant,
+                self::CATEGORY_DEPRECATED,
+                self::SEVERITY_NORMAL,
+                "Reference to deprecated property {PROPERTY} defined at {FILE}:{LINE}{DETAILS}",
+                self::REMEDIATION_B,
+                5007
             ),
             new Issue(
                 self::DeprecatedInterface,
                 self::CATEGORY_DEPRECATED,
                 self::SEVERITY_NORMAL,
-                "Using a deprecated interface {INTERFACE} defined at {FILE}:{LINE}",
+                "Using a deprecated interface {INTERFACE} defined at {FILE}:{LINE}{DETAILS}",
                 self::REMEDIATION_B,
                 5003
             ),
@@ -1976,7 +2412,7 @@ class Issue
                 self::DeprecatedTrait,
                 self::CATEGORY_DEPRECATED,
                 self::SEVERITY_NORMAL,
-                "Using a deprecated trait {TRAIT} defined at {FILE}:{LINE}",
+                "Using a deprecated trait {TRAIT} defined at {FILE}:{LINE}{DETAILS}",
                 self::REMEDIATION_B,
                 5004
             ),
@@ -2050,7 +2486,7 @@ class Issue
                 self::ParamSpecial1,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
-                "Argument {INDEX} ({PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} when argument {INDEX} is {TYPE}",
+                'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} when argument {INDEX} is {TYPE}',
                 self::REMEDIATION_B,
                 7005
             ),
@@ -2058,7 +2494,7 @@ class Issue
                 self::ParamSpecial2,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
-                "Argument {INDEX} ({PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} when passed only one argument",
+                'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} when passed only one argument',
                 self::REMEDIATION_B,
                 7006
             ),
@@ -2105,7 +2541,7 @@ class Issue
             new Issue(
                 self::ParamRedefined,
                 self::CATEGORY_PARAMETER,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "Redefinition of parameter {PARAMETER}",
                 self::REMEDIATION_B,
                 7012
@@ -2129,6 +2565,8 @@ class Issue
                 self::REMEDIATION_B,
                 7014
             ),
+            // NOTE: Incompatibilities in param types does not cause the php interpreter to throw an error.
+            // It emits a warning instead, so these are SEVERITY_NORMAL.
             new Issue(
                 self::ParamSignaturePHPDocMismatchReturnType,
                 self::CATEGORY_PARAMETER,
@@ -2188,7 +2626,7 @@ class Issue
             new Issue(
                 self::ParamSignatureRealMismatchHasNoParamType,
                 self::CATEGORY_PARAMETER,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_NORMAL,  // NOTE: See allow_method_param_type_widening
                 "Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} with no type cannot replace original parameter with type '{TYPE}') defined in {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 7019
@@ -2377,6 +2815,14 @@ class Issue
                 self::REMEDIATION_B,
                 7047
             ),
+            new Issue(
+                self::ParamMustBeUserDefinedClassname,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_CRITICAL,
+                "First argument of class_alias() must be a name of user defined class ('{CLASS}' attempted)",
+                self::REMEDIATION_B,
+                7048
+            ),
 
             // Issue::CATEGORY_NOOP
             new Issue(
@@ -2444,6 +2890,30 @@ class Issue
                 6029
             ),
             new Issue(
+                self::NoopEmpty,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                "Unused result of an empty(expr) check",
+                self::REMEDIATION_B,
+                6051
+            ),
+            new Issue(
+                self::NoopIsset,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                "Unused result of an isset(expr) check",
+                self::REMEDIATION_B,
+                6052
+            ),
+            new Issue(
+                self::NoopCast,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                "Unused result of a ({TYPE})(expr) cast",
+                self::REMEDIATION_B,
+                6053
+            ),
+            new Issue(
                 self::NoopEncapsulatedStringLiteral,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_LOW,
@@ -2455,7 +2925,7 @@ class Issue
                 self::NoopNumericLiteral,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_LOW,
-                "Unused result of a numeric literal {STRING_LITERAL} near this line",
+                "Unused result of a numeric literal {SCALAR} near this line",
                 self::REMEDIATION_B,
                 6031
             ),
@@ -2524,6 +2994,14 @@ class Issue
                 6014
             ),
             new Issue(
+                self::UnreferencedPHPDocProperty,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero references to PHPDoc @property {PROPERTY}",
+                self::REMEDIATION_B,
+                6056
+            ),
+            new Issue(
                 self::UnreferencedProtectedProperty,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
@@ -2564,6 +3042,14 @@ class Issue
                 6034
             ),
             new Issue(
+                self::ReadOnlyPHPDocProperty,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero write references to PHPDoc @property {PROPERTY}",
+                self::REMEDIATION_B,
+                6058
+            ),
+            new Issue(
                 self::WriteOnlyPublicProperty,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
@@ -2588,6 +3074,14 @@ class Issue
                 6027
             ),
             new Issue(
+                self::WriteOnlyPHPDocProperty,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero read references to PHPDoc @property {PROPERTY}",
+                self::REMEDIATION_B,
+                6057
+            ),
+            new Issue(
                 self::UnreferencedPublicClassConstant,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
@@ -2607,7 +3101,7 @@ class Issue
                 self::UnreferencedPrivateClassConstant,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
-                "Possibly zero references to public class constant {CONST}",
+                "Possibly zero references to private class constant {CONST}",
                 self::REMEDIATION_B,
                 6019
             ),
@@ -2668,12 +3162,28 @@ class Issue
                 6037
             ),
             new Issue(
+                self::UnusedPublicNoOverrideMethodParameter,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Parameter ${PARAMETER} is never used',
+                self::REMEDIATION_B,
+                6060
+            ),
+            new Issue(
                 self::UnusedProtectedMethodParameter,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
                 'Parameter ${PARAMETER} is never used',
                 self::REMEDIATION_B,
                 6038
+            ),
+            new Issue(
+                self::UnusedProtectedNoOverrideMethodParameter,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Parameter ${PARAMETER} is never used',
+                self::REMEDIATION_B,
+                6059
             ),
             new Issue(
                 self::UnusedProtectedFinalMethodParameter,
@@ -2708,6 +3218,14 @@ class Issue
                 6042
             ),
             new Issue(
+                self::ShadowedVariableInArrowFunc,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Short arrow function shadows variable ${VARIABLE} from the outer scope',
+                self::REMEDIATION_B,
+                6072
+            ),
+            new Issue(
                 self::UnusedClosureParameter,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
@@ -2740,6 +3258,30 @@ class Issue
                 6046
             ),
             new Issue(
+                self::UnusedVariableReference,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Unused definition of variable ${VARIABLE} as a reference',
+                self::REMEDIATION_B,
+                6069
+            ),
+            new Issue(
+                self::UnusedVariableStatic,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Unreferenced definition of variable ${VARIABLE} as a static variable',
+                self::REMEDIATION_B,
+                6070
+            ),
+            new Issue(
+                self::UnusedVariableGlobal,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Unreferenced definition of variable ${VARIABLE} as a global variable',
+                self::REMEDIATION_B,
+                6071
+            ),
+            new Issue(
                 self::UseNormalNamespacedNoEffect,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_LOW,
@@ -2764,12 +3306,92 @@ class Issue
                 6049
             ),
             new Issue(
-                self::UseContantNoEffect,
+                self::UseConstantNoEffect,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
                 'The use statement for constant {CONST} has no effect',
                 self::REMEDIATION_A,
                 6050
+            ),
+            new Issue(
+                self::NoopArrayAccess,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                "Unused array offset fetch",
+                self::REMEDIATION_B,
+                6054
+            ),
+            new Issue(
+                self::UnusedGotoLabel,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                "Unused goto label {CODE}",
+                self::REMEDIATION_B,
+                6055
+            ),
+            new Issue(
+                self::VariableDefinitionCouldBeConstant,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Uses of ${VARIABLE} could probably be replaced with a literal or constant',
+                self::REMEDIATION_B,
+                6061
+            ),
+            new Issue(
+                self::VariableDefinitionCouldBeConstantEmptyArray,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Uses of ${VARIABLE} could probably be replaced with an empty array',
+                self::REMEDIATION_B,
+                6062
+            ),
+            new Issue(
+                self::VariableDefinitionCouldBeConstantString,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Uses of ${VARIABLE} could probably be replaced with a literal or constant string',
+                self::REMEDIATION_B,
+                6063
+            ),
+            new Issue(
+                self::VariableDefinitionCouldBeConstantFloat,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Uses of ${VARIABLE} could probably be replaced with a literal or constant float',
+                self::REMEDIATION_B,
+                6064
+            ),
+            new Issue(
+                self::VariableDefinitionCouldBeConstantInt,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Uses of ${VARIABLE} could probably be replaced with literal integer or a named constant',
+                self::REMEDIATION_B,
+                6065
+            ),
+            new Issue(
+                self::VariableDefinitionCouldBeConstantTrue,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Uses of ${VARIABLE} could probably be replaced with true or a named constant',
+                self::REMEDIATION_B,
+                6066
+            ),
+            new Issue(
+                self::VariableDefinitionCouldBeConstantFalse,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Uses of ${VARIABLE} could probably be replaced with false or a named constant',
+                self::REMEDIATION_B,
+                6067
+            ),
+            new Issue(
+                self::VariableDefinitionCouldBeConstantNull,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Uses of ${VARIABLE} could probably be replaced with null or a named constant',
+                self::REMEDIATION_B,
+                6068
             ),
 
             // Issue::CATEGORY_REDEFINE
@@ -2789,6 +3411,7 @@ class Issue
                 self::REMEDIATION_B,
                 8001
             ),
+            // TODO: Split into RedefineMethod, which would be fatal
             new Issue(
                 self::RedefineFunction,
                 self::CATEGORY_REDEFINE,
@@ -2852,6 +3475,22 @@ class Issue
                 "{CLASS} extends {CLASS} declared at {FILE}:{LINE} which is also declared at {FILE}:{LINE}. This may lead to confusing errors.",
                 self::REMEDIATION_B,
                 8009
+            ),
+            new Issue(
+                self::RedefineClassConstant,
+                self::CATEGORY_REDEFINE,
+                self::SEVERITY_CRITICAL,
+                "Class constant {CONST} defined at {FILE}:{LINE} was previously defined at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                8010
+            ),
+            new Issue(
+                self::RedefineProperty,
+                self::CATEGORY_REDEFINE,
+                self::SEVERITY_CRITICAL,
+                'Property ${PROPERTY} defined at {FILE}:{LINE} was previously defined at {FILE}:{LINE}',
+                self::REMEDIATION_B,
+                8011
             ),
 
             // Issue::CATEGORY_ACCESS
@@ -2952,7 +3591,7 @@ class Issue
                 1023
             ),
             new Issue(
-                self::AccessConstantSignatureMismatch,
+                self::ConstantAccessSignatureMismatch,
                 self::CATEGORY_ACCESS,
                 self::SEVERITY_CRITICAL,
                 "Access level to {CONST} must be compatible with {CONST} defined in {FILE}:{LINE}",
@@ -2960,7 +3599,7 @@ class Issue
                 1024
             ),
             new Issue(
-                self::AccessConstantSignatureMismatchInternal,
+                self::ConstantAccessSignatureMismatchInternal,
                 self::CATEGORY_ACCESS,
                 self::SEVERITY_CRITICAL,
                 "Access level to {CONST} must be compatible with internal {CONST}",
@@ -3217,6 +3856,39 @@ class Issue
                 self::REMEDIATION_B,
                 3012
             ),
+            // TODO: Increase the severity when PHP 8.0 alphas are released
+            new Issue(
+                self::CompatibleAutoload,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_NORMAL,
+                "Declaring an autoloader with function __autoload() was deprecated in PHP 7.2 and will become a fatal error in PHP 8.0. Use spl_autoload_register() instead (supported since PHP 5.1).",
+                self::REMEDIATION_B,
+                3013
+            ),
+            new Issue(
+                self::CompatibleUnsetCast,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_NORMAL,
+                "The unset cast (in {CODE}) was deprecated in PHP 7.2 and will become a fatal error in PHP 8.0.",
+                self::REMEDIATION_B,
+                3014
+            ),
+            new Issue(
+                self::ThrowStatementInToString,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_NORMAL,
+                "{FUNCTIONLIKE} throws {TYPE} here, but throwing in __toString() is a fatal error prior to PHP 7.4",
+                self::REMEDIATION_A,
+                3015
+            ),
+            new Issue(
+                self::ThrowCommentInToString,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_NORMAL,
+                "{FUNCTIONLIKE} documents that it throws {TYPE}, but throwing in __toString() is a fatal error prior to PHP 7.4",
+                self::REMEDIATION_A,
+                3016
+            ),
 
             // Issue::CATEGORY_GENERIC
             new Issue(
@@ -3231,7 +3903,7 @@ class Issue
                 self::TemplateTypeStaticMethod,
                 self::CATEGORY_GENERIC,
                 self::SEVERITY_NORMAL,
-                "static method {METHOD} may not use template types",
+                "static method {METHOD} does not declare template type in its own comment and may not use the template type of class instances",
                 self::REMEDIATION_B,
                 14001
             ),
@@ -3259,6 +3931,7 @@ class Issue
                 self::REMEDIATION_B,
                 14004
             ),
+            // TODO: Reword this if template types can be used for phan-assert or for compatibility with other arguments
             new Issue(
                 self::TemplateTypeNotUsedInFunctionReturn,
                 self::CATEGORY_GENERIC,
@@ -3331,7 +4004,7 @@ class Issue
                 self::MisspelledAnnotation,
                 self::CATEGORY_COMMENT,
                 self::SEVERITY_LOW,
-                "Saw misspelled annotation {COMMENT}, should be one of {COMMENT}",
+                "Saw misspelled annotation {COMMENT}. {SUGGESTION}",
                 self::REMEDIATION_B,
                 16001
             ),
@@ -3371,7 +4044,7 @@ class Issue
                 self::CommentParamWithoutRealParam,
                 self::CATEGORY_COMMENT,
                 self::SEVERITY_LOW,
-                "Saw an @param annotation for {VARIABLE}, but it was not found in the param list of {FUNCTIONLIKE}",
+                'Saw an @param annotation for ${PARAMETER}, but it was not found in the param list of {FUNCTIONLIKE}',
                 self::REMEDIATION_B,
                 16004
             ),
@@ -3379,7 +4052,7 @@ class Issue
                 self::CommentParamAssertionWithoutRealParam,
                 self::CATEGORY_COMMENT,
                 self::SEVERITY_LOW,
-                "Saw an @phan-assert annotation for {VARIABLE}, but it was not found in the param list of {FUNCTIONLIKE}",
+                'Saw an @phan-assert annotation for ${PARAMETER}, but it was not found in the param list of {FUNCTIONLIKE}',
                 self::REMEDIATION_B,
                 16019
             ),
@@ -3387,7 +4060,7 @@ class Issue
                 self::CommentParamOnEmptyParamList,
                 self::CATEGORY_COMMENT,
                 self::SEVERITY_LOW,
-                "Saw an @param annotation for {VARIABLE}, but the param list of {FUNCTIONLIKE} is empty",
+                'Saw an @param annotation for ${PARAMETER}, but the param list of {FUNCTIONLIKE} is empty',
                 self::REMEDIATION_B,
                 16005
             ),
@@ -3411,7 +4084,7 @@ class Issue
                 self::CommentParamOutOfOrder,
                 self::CATEGORY_COMMENT,
                 self::SEVERITY_LOW,
-                "Expected @param annotation for {VARIABLE} to be before the @param annotation for {VARIABLE}",
+                'Expected @param annotation for ${PARAMETER} to be before the @param annotation for ${PARAMETER}',
                 self::REMEDIATION_A,
                 16008
             ),
@@ -3480,11 +4153,20 @@ class Issue
                 self::REMEDIATION_A,
                 16018
             ),
+            new Issue(
+                self::DebugAnnotation,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                '@phan-debug-var requested for variable ${VARIABLE} - it has union type {TYPE}',
+                self::REMEDIATION_A,
+                16020
+            ),
         ];
         // phpcs:enable Generic.Files.LineLength
 
         self::sanityCheckErrorList($error_list);
         // Verified the error meets preconditions, now add it.
+        $error_map = [];
         foreach ($error_list as $error) {
             $error_type = $error->getType();
             $error_map[$error_type] = $error;
@@ -3493,10 +4175,13 @@ class Issue
         return $error_map;
     }
 
-    private static function getNextTypeId(array $error_list, int $invalid_type_id) : int
+    /**
+     * @param array<int,Issue> $issue_list the declared Issue types
+     */
+    private static function getNextTypeId(array $issue_list, int $invalid_type_id) : int
     {
         for ($id = $invalid_type_id + 1; true; $id++) {
-            foreach ($error_list as $error) {
+            foreach ($issue_list as $error) {
                 if ($error->getTypeId() === $id) {
                     continue 2;
                 }
@@ -3507,9 +4192,8 @@ class Issue
 
     /**
      * @param array<int,Issue> $error_list
-     * @return void
      */
-    private static function sanityCheckErrorList(array $error_list)
+    private static function sanityCheckErrorList(array $error_list) : void
     {
         $error_map = [];
         $unique_type_id_set = [];
@@ -3530,15 +4214,15 @@ class Issue
             }
             $unique_type_id_set[$error_type_id] = $error;
             $category = $error->getCategory();
-            $expected_category_for_type_id_bitpos = (int)floor($error_type_id / 1000);
+            $expected_category_for_type_id_bitpos = (int)\floor($error_type_id / 1000);
             $expected_category_for_type_id = 1 << $expected_category_for_type_id_bitpos;
             if ($category !== $expected_category_for_type_id) {
-                throw new AssertionError(sprintf(
+                throw new AssertionError(\sprintf(
                     "Expected error %s of type %d to be category %d(1<<%d), got 1<<%d\n",
                     $error_type,
                     $error_type_id,
                     $category,
-                    (int)round(log($category, 2)),
+                    (int)\round(\log($category, 2)),
                     $expected_category_for_type_id_bitpos
                 ));
             }
@@ -3546,9 +4230,8 @@ class Issue
         }
     }
 
-
     /**
-     * @return string
+     * Returns the type name of this issue (e.g. Issue::UndeclaredVariable)
      */
     public function getType() : string
     {
@@ -3564,7 +4247,7 @@ class Issue
     }
 
     /**
-     * @return int
+     * Returns the category of this issue (e.g. Issue::CATEGORY_UNDEFINED)
      */
     public function getCategory() : int
     {
@@ -3590,7 +4273,7 @@ class Issue
     }
 
     /**
-     * @return int
+     * Returns the severity of this issue (Issue::SEVERITY_LOW, Issue::SEVERITY_NORMAL, or Issue::SEVERITY_CRITICAL)
      */
     public function getSeverity() : int
     {
@@ -3616,7 +4299,6 @@ class Issue
     }
 
     /**
-     * @return int
      * @suppress PhanUnreferencedPublicMethod (no reporters use this right now)
      */
     public function getRemediationDifficulty() : int
@@ -3625,11 +4307,19 @@ class Issue
     }
 
     /**
-     * @return string
+     * Returns the template text of this issue (e.g. `'Variable ${VARIABLE} is undeclared'`)
      */
     public function getTemplate() : string
     {
         return $this->template;
+    }
+
+    /**
+     * Returns the number of arguments expected for the format string $this->getTemplate()
+     */
+    public function getExpectedArgumentCount() : int
+    {
+        return $this->argument_count ?? $this->argument_count = ConversionSpec::computeExpectedArgumentCount($this->template);
     }
 
     /**
@@ -3648,7 +4338,8 @@ class Issue
         string $file,
         int $line,
         array $template_parameters = [],
-        Suggestion $suggestion = null
+        Suggestion $suggestion = null,
+        int $column = 0
     ) : IssueInstance {
         // TODO: Add callable to expanded union types instead
         return new IssueInstance(
@@ -3656,7 +4347,8 @@ class Issue
             $file,
             $line,
             $template_parameters,
-            $suggestion
+            $suggestion,
+            $column
         );
     }
 
@@ -3687,8 +4379,6 @@ class Issue
      * @param string|int|float|bool|Type|UnionType|FQSEN|TypedElement|UnaddressableTypedElement ...$template_parameters
      * Any template parameters required for the issue
      * message
-     *
-     * @return void
      * @suppress PhanUnreferencedPublicMethod
      */
     public static function emit(
@@ -3696,7 +4386,7 @@ class Issue
         string $file,
         int $line,
         ...$template_parameters
-    ) {
+    ) : void {
         self::emitWithParameters(
             $type,
             $file,
@@ -3720,32 +4410,29 @@ class Issue
      * message
      *
      * @param ?Suggestion $suggestion (optional details on fixing this)
-     *
-     * @return void
      */
     public static function emitWithParameters(
         string $type,
         string $file,
         int $line,
         array $template_parameters,
-        Suggestion $suggestion = null
-    ) {
+        Suggestion $suggestion = null,
+        int $column = 0
+    ) : void {
         $issue = self::fromType($type);
 
         self::emitInstance(
-            $issue($file, $line, $template_parameters, $suggestion)
+            $issue($file, $line, $template_parameters, $suggestion, $column)
         );
     }
 
     /**
      * @param IssueInstance $issue_instance
      * An issue instance to emit
-     *
-     * @return void
      */
     public static function emitInstance(
         IssueInstance $issue_instance
-    ) {
+    ) : void {
         Phan::getIssueCollector()->collectIssue($issue_instance);
     }
 
@@ -3758,14 +4445,12 @@ class Issue
      *
      * @param IssueInstance $issue_instance
      * An issue instance to emit
-     *
-     * @return void
      */
     public static function maybeEmitInstance(
         CodeBase $code_base,
         Context $context,
         IssueInstance $issue_instance
-    ) {
+    ) : void {
         // If this issue type has been suppressed in
         // the config, ignore it
 
@@ -3801,8 +4486,6 @@ class Issue
      * @param string|int|float|bool|Type|UnionType|FQSEN|TypedElement|UnaddressableTypedElement ...$parameters
      * Template parameters for the issue's error message.
      * If these are objects, they should define __toString()
-     *
-     * @return void
      */
     public static function maybeEmit(
         CodeBase $code_base,
@@ -3810,7 +4493,7 @@ class Issue
         string $issue_type,
         int $lineno,
         ...$parameters
-    ) {
+    ) : void {
         self::maybeEmitWithParameters(
             $code_base,
             $context,
@@ -3838,8 +4521,6 @@ class Issue
      * @param ?Suggestion $suggestion (optional)
      *
      * Template parameters for the issue's error message
-     *
-     * @return void
      */
     public static function maybeEmitWithParameters(
         CodeBase $code_base,
@@ -3847,8 +4528,9 @@ class Issue
         string $issue_type,
         int $lineno,
         array $parameters,
-        Suggestion $suggestion = null
-    ) {
+        Suggestion $suggestion = null,
+        int $column = 0
+    ) : void {
         if (self::shouldSuppressIssue(
             $code_base,
             $context,
@@ -3865,11 +4547,15 @@ class Issue
             $context->getFile(),
             $lineno,
             $parameters,
-            $suggestion
+            $suggestion,
+            $column
         );
     }
 
-    private static function shouldSuppressIssue(
+    /**
+     * @param array<int,mixed> $parameters
+     */
+    public static function shouldSuppressIssue(
         CodeBase $code_base,
         Context $context,
         string $issue_type,
@@ -3882,14 +4568,14 @@ class Issue
         }
         // If this issue type has been suppressed in
         // the config, ignore it
-        if (in_array($issue_type, Config::getValue('suppress_issue_types') ?? [])) {
+        if (\in_array($issue_type, Config::getValue('suppress_issue_types') ?? [])) {
             return true;
         }
         // If a white-list of allowed issue types is defined,
         // only emit issues on the white-list
         $whitelist_issue_types = Config::getValue('whitelist_issue_types') ?? [];
-        if (count($whitelist_issue_types) > 0 &&
-            !in_array($issue_type, $whitelist_issue_types)) {
+        if (\count($whitelist_issue_types) > 0 &&
+            !\in_array($issue_type, $whitelist_issue_types)) {
             return true;
         }
 

@@ -1,0 +1,1 @@
+src/130_duplicate_ternary.php:3 PhanPluginDuplicateConditionalUnnecessary "X ? Y : Y" results in the same expression Y no matter what X evaluates to. Y was $x
