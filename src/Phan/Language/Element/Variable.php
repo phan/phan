@@ -8,6 +8,7 @@ use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\IssueException;
+use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
@@ -258,5 +259,20 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
         }
 
         return "$string\${$this->getName()}";
+    }
+
+    /**
+     * Determine which issue type should be used when Phan finds an undefined var
+     *
+     * @param Context $context
+     * @param string $variable_name
+     */
+    public static function chooseIssueForUndeclaredVariable(Context $context, string $variable_name): string
+    {
+        if ($variable_name === 'this') {
+            return Issue::UndeclaredThis;
+        }
+
+        return $context->isInGlobalScope() ? Issue::UndeclaredGlobalVariable : Issue::UndeclaredVariable;
     }
 }
