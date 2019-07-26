@@ -6,13 +6,13 @@ use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
-use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeClassCapability;
-use Phan\PluginV2\AnalyzeFunctionCapability;
-use Phan\PluginV2\AnalyzeMethodCapability;
-use Phan\PluginV2\AnalyzePropertyCapability;
-use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\AnalyzeClassCapability;
+use Phan\PluginV3\AnalyzeFunctionCapability;
+use Phan\PluginV3\AnalyzeMethodCapability;
+use Phan\PluginV3\AnalyzePropertyCapability;
+use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV3\PostAnalyzeNodeCapability;
 
 /**
  * This file demonstrates plugins for Phan.
@@ -40,7 +40,7 @@ use Phan\PluginV2\PostAnalyzeNodeCapability;
  *
  * A plugin file must
  *
- * - Contain a class that inherits from \Phan\PluginV2
+ * - Contain a class that inherits from \Phan\PluginV3
  *   and implements one or more `Capability`s.
  *
  * - End by returning an instance of that class.
@@ -51,7 +51,7 @@ use Phan\PluginV2\PostAnalyzeNodeCapability;
  * Note: When adding new plugins,
  * add them to the corresponding section of README.md
  */
-class DemoPlugin extends PluginV2 implements
+class DemoPlugin extends PluginV3 implements
     AnalyzeClassCapability,
     AnalyzeFunctionCapability,
     AnalyzeMethodCapability,
@@ -75,20 +75,18 @@ class DemoPlugin extends PluginV2 implements
      * @param Clazz $class
      * A class being analyzed
      *
-     * @return void
-     *
      * @override
      */
     public function analyzeClass(
         CodeBase $code_base,
         Clazz $class
-    ) {
+    ) : void {
         // As an example, we test to see if the name of
         // the class is `Class`, and emit an issue explain that
         // the name is not allowed.
         // NOTE: Placeholders can be found in \Phan\Issue::uncolored_format_string_for_replace
         if ($class->getName() == 'Class') {
-            $this->emitIssue(
+            self::emitIssue(
                 $code_base,
                 $class->getContext(),
                 'DemoPluginClassName',
@@ -105,19 +103,17 @@ class DemoPlugin extends PluginV2 implements
      * @param Method $method
      * A method being analyzed
      *
-     * @return void
-     *
      * @override
      */
     public function analyzeMethod(
         CodeBase $code_base,
         Method $method
-    ) {
+    ) : void {
         // As an example, we test to see if the name of the
         // method is `function`, and emit an issue if it is.
         // NOTE: Placeholders can be found in \Phan\Issue::uncolored_format_string_for_replace
         if ($method->getName() == 'function') {
-            $this->emitIssue(
+            self::emitIssue(
                 $code_base,
                 $method->getContext(),
                 'DemoPluginMethodName',
@@ -134,18 +130,16 @@ class DemoPlugin extends PluginV2 implements
      * @param Func $function
      * A function being analyzed
      *
-     * @return void
-     *
      * @override
      */
     public function analyzeFunction(
         CodeBase $code_base,
         Func $function
-    ) {
+    ) : void {
         // As an example, we test to see if the name of the
         // function is `function`, and emit an issue if it is.
         if ($function->getName() == 'function') {
-            $this->emitIssue(
+            self::emitIssue(
                 $code_base,
                 $function->getContext(),
                 'DemoPluginFunctionName',
@@ -162,18 +156,16 @@ class DemoPlugin extends PluginV2 implements
      * @param Property $property
      * A property being analyzed
      *
-     * @return void
-     *
      * @override
      */
     public function analyzeProperty(
         CodeBase $code_base,
         Property $property
-    ) {
+    ) : void {
         // As an example, we test to see if the name of the
         // property is `property`, and emit an issue if it is.
         if ($property->getName() == 'property') {
-            $this->emitIssue(
+            self::emitIssue(
                 $code_base,
                 $property->getContext(),
                 'DemoPluginPropertyName',
@@ -204,11 +196,9 @@ class DemoNodeVisitor extends PluginAwarePostAnalysisVisitor
      * @param Node $node
      * A node to analyze
      *
-     * @return void
-     *
      * @override
      */
-    public function visitInstanceof(Node $node)
+    public function visitInstanceof(Node $node) : void
     {
         // Debug::printNode($node);
 

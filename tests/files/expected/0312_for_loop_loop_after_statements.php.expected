@@ -1,1 +1,2 @@
-%s:16 PhanTypeMismatchArgumentInternal Argument 1 (string) is 0|\Node312 but \strlen() takes string
+%s:16 PhanTypeMismatchArgumentInternal Argument 1 ($string) is 0|\Node312 but \strlen() takes string
+%s:23 PhanInfiniteLoop The loop condition $node of type \Node312 is always truthy and nothing seems to exit the loop

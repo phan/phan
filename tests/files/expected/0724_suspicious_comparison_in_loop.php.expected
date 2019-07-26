@@ -1,0 +1,4 @@
+%s:4 PhanSuspiciousValueComparison Suspicious attempt to compare $j of type 0 to 20 of type 20 with operator '<'
+%s:7 PhanSuspiciousValueComparison Suspicious attempt to compare $i of type 100 to 20 of type 20 with operator '<'
+%s:8 PhanSuspiciousLoopDirection Suspicious loop appears to decrease after each iteration in $i--, but the loop condition is ($i < 10)
+%s:10 PhanSuspiciousValueComparison Suspicious attempt to compare $j of type 0 to 20 of type 20 with operator '=='

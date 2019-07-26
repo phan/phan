@@ -2,7 +2,6 @@
 
 namespace Phan\Language\FQSEN;
 
-use Phan\Exception\FQSENException;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Memoize;
@@ -63,23 +62,6 @@ class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement
     }
 
     /**
-     * Parses a FQSEN from a string
-     *
-     * @param $fully_qualified_string
-     * An fully qualified string like '\Namespace\Class'
-     *
-     * @return static
-     *
-     * @throws FQSENException on failure.
-     * @deprecated use self::fromFullyQualifiedString()
-     * @suppress PhanUnreferencedPublicMethod
-     */
-    public static function fromFullyQualifiedUserProvidedString(string $fully_qualified_string) : FullyQualifiedClassName
-    {
-        return self::fromFullyQualifiedString($fully_qualified_string);
-    }
-
-    /**
      * @return Type
      * The type of this class
      */
@@ -94,10 +76,30 @@ class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement
     /**
      * @return UnionType
      * The union type of just this class type
+     * @deprecated use asPHPDocUnionType()
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function asUnionType() : UnionType
     {
-        return $this->asType()->asUnionType();
+        return $this->asType()->asPHPDocUnionType();
+    }
+
+    /**
+     * @return UnionType
+     * The union type of just this class type
+     */
+    public function asPHPDocUnionType() : UnionType
+    {
+        return $this->asType()->asPHPDocUnionType();
+    }
+
+    /**
+     * @return UnionType
+     * The union type of just this class type
+     */
+    public function asRealUnionType() : UnionType
+    {
+        return $this->asType()->asRealUnionType();
     }
 
     /**

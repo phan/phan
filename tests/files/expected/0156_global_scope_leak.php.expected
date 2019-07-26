@@ -1,1 +1,2 @@
-%s:12 PhanTypeMismatchReturn Returning type null|string but f() is declared to return int
+%s:9 PhanImpossibleCondition Impossible attempt to cast false of type false to truthy
+%s:12 PhanUndeclaredVariable Variable $c is undeclared

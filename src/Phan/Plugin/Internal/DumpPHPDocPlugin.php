@@ -10,19 +10,19 @@ use Phan\Language\Element\MarkupDescription;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
 use Phan\Phan;
-use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeClassCapability;
-use Phan\PluginV2\AnalyzeFunctionCapability;
-use Phan\PluginV2\AnalyzeMethodCapability;
-use Phan\PluginV2\AnalyzePropertyCapability;
-use Phan\PluginV2\FinalizeProcessCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\AnalyzeClassCapability;
+use Phan\PluginV3\AnalyzeFunctionCapability;
+use Phan\PluginV3\AnalyzeMethodCapability;
+use Phan\PluginV3\AnalyzePropertyCapability;
+use Phan\PluginV3\FinalizeProcessCapability;
 
 /**
  * This file dumps Phan's inferred signatures and markup descriptions as markdown.
  *
  * NOTE: This is automatically loaded by phan. Do not include it in a config.
  */
-final class DumpPHPDocPlugin extends PluginV2 implements
+final class DumpPHPDocPlugin extends PluginV3 implements
     AnalyzeClassCapability,
     AnalyzeFunctionCapability,
     AnalyzeMethodCapability,
@@ -34,9 +34,9 @@ final class DumpPHPDocPlugin extends PluginV2 implements
      */
     private $stubs = [];
 
-    private function generatePHPMarkdownBlock(string $php_snippet) : string
+    private static function generatePHPMarkdownBlock(string $php_snippet) : string
     {
-        $php_snippet = trim($php_snippet);
+        $php_snippet = \trim($php_snippet);
         return "```php\n$php_snippet\n```";
     }
 
@@ -46,15 +46,12 @@ final class DumpPHPDocPlugin extends PluginV2 implements
      *
      * @param Clazz $class
      * A class being analyzed
-     *
-     * @return void
-     *
      * @override
      */
     public function analyzeClass(
         CodeBase $unused_code_base,
         Clazz $class
-    ) {
+    ) : void {
         if ($class->getFQSEN()->isAlternate()) {
             return;
         }
@@ -67,12 +64,12 @@ final class DumpPHPDocPlugin extends PluginV2 implements
         );
     }
 
-    private function recordStub(AddressableElement $element, string $header_text, string $doc_comment_markup = null)
+    private function recordStub(AddressableElement $element, string $header_text, string $doc_comment_markup = null) : void
     {
         if (Phan::isExcludedAnalysisFile($element->getFileRef()->getFile())) {
             return;
         }
-        $markup = "## " . ltrim($element->getFQSEN()->__toString(), "\\") . "\n\n";
+        $markup = "## " . \ltrim($element->getFQSEN()->__toString(), "\\") . "\n\n";
         $markup .= $header_text . "\n\n";
         if ($doc_comment_markup !== null) {
             $markup .= "Description:\n\n";
@@ -87,15 +84,12 @@ final class DumpPHPDocPlugin extends PluginV2 implements
      *
      * @param Property $property
      * A property being analyzed
-     *
-     * @return void
-     *
      * @override
      */
     public function analyzeProperty(
         CodeBase $unused_code_base,
         Property $property
-    ) {
+    ) : void {
         if ($property->isDynamicProperty()) {
             // Dynamic properties don't have declarations or phpdoc.
             return;
@@ -124,15 +118,12 @@ final class DumpPHPDocPlugin extends PluginV2 implements
      *
      * @param Method $method
      * A method being analyzed
-     *
-     * @return void
-     *
      * @override
      */
     public function analyzeMethod(
         CodeBase $unused_code_base,
         Method $method
-    ) {
+    ) : void {
         if ($method->isFromPHPDoc()) {
             // Phan does not track descriptions of (at)method.
             return;
@@ -143,7 +134,7 @@ final class DumpPHPDocPlugin extends PluginV2 implements
             return;
         }
         $description = MarkupDescription::extractDescriptionFromDocComment($method);
-        if (!($method->getDocComment() || !$description) && $method->getIsOverride()) {
+        if (!($method->getDocComment() || !$description) && $method->isOverride()) {
             // Note: This deliberately avoids showing a summary for methods that are just overrides of other methods,
             // unless they have their own phpdoc.
             // Eventually, extractDescriptionFromDocComment will search ancestor classes for $description
@@ -170,15 +161,12 @@ final class DumpPHPDocPlugin extends PluginV2 implements
      *
      * @param Func $function
      * A function being analyzed
-     *
-     * @return void
-     *
      * @override
      */
     public function analyzeFunction(
         CodeBase $code_base,
         Func $function
-    ) {
+    ) : void {
         if ($function->isPHPInternal()) {
             // This isn't user-defined, there's no reason to warn or way to change it.
             return;
@@ -212,11 +200,11 @@ final class DumpPHPDocPlugin extends PluginV2 implements
      * Executed before the analysis phase starts.
      * @override
      */
-    public function finalizeProcess(CodeBase $unused_code_base)
+    public function finalizeProcess(CodeBase $unused_code_base) : void
     {
-        ksort($this->stubs);
+        \ksort($this->stubs);
         echo "# Phan Signatures\n\n";
-        echo implode('', $this->stubs);
+        echo \implode('', $this->stubs);
         exit(\EXIT_SUCCESS);
     }
 }

@@ -24,8 +24,7 @@ final class CodeClimatePrinter implements BufferedPrinterInterface
     /** @var array<int,array> a list of associative arrays with codeclimate issue fields. */
     private $messages = [];
 
-    /** @param IssueInstance $instance */
-    public function print(IssueInstance $instance)
+    public function print(IssueInstance $instance) : void
     {
         $this->messages[] = [
             'type' => 'issue',
@@ -34,7 +33,8 @@ final class CodeClimatePrinter implements BufferedPrinterInterface
             'categories' => ['Bug Risk'],
             'severity' => self::mapSeverity($instance->getIssue()->getSeverity()),
             'location' => [
-                'path' => preg_replace('/^\/code\//', '', $instance->getFile()),
+                // XXX this puts the docker volume in /code/ when running on codeclimate.
+                'path' => \preg_replace('/^\/code\//', '', $instance->getFile()),
                 'lines' => [
                     'begin' => $instance->getLine(),
                     'end' => $instance->getLine(),
@@ -43,10 +43,6 @@ final class CodeClimatePrinter implements BufferedPrinterInterface
         ];
     }
 
-    /**
-     * @param int $raw_severity
-     * @return string
-     */
     private static function mapSeverity(int $raw_severity) : string
     {
         $severity = self::CODECLIMATE_SEVERITY_INFO;
@@ -63,7 +59,7 @@ final class CodeClimatePrinter implements BufferedPrinterInterface
     }
 
     /** flush printer buffer */
-    public function flush()
+    public function flush() : void
     {
 
         // See https://github.com/codeclimate/spec/blob/master/SPEC.md#output
@@ -75,10 +71,7 @@ final class CodeClimatePrinter implements BufferedPrinterInterface
         $this->messages = [];
     }
 
-    /**
-     * @param OutputInterface $output
-     */
-    public function configureOutput(OutputInterface $output)
+    public function configureOutput(OutputInterface $output) : void
     {
         $this->output = $output;
     }

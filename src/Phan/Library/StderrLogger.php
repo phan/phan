@@ -15,13 +15,11 @@ class StderrLogger implements LoggerInterface
     /**
      * @param string $level
      * @param string $message
-     * @param array $unused_context
-     * @return void
-     *
+     * @param array<string,mixed> $unused_context
      * @override
      */
-    public function log($level, $message, array $unused_context = [])
+    public function log($level, $message, array $unused_context = []) : void
     {
-        fprintf(\STDERR, "[%s] %s\n", $level, $message);
+        \fprintf(\STDERR, "[%s] %s\n", $level, $message);
     }
 }

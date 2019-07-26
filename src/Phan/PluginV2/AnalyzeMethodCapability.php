@@ -6,19 +6,12 @@ use Phan\CodeBase;
 use Phan\Language\Element\Method;
 
 /**
- * Plugins can implement this to analyze (and modify) a method definition,
- * after parsing and before analyzing.
+ * Use PluginV3 instead
  */
 interface AnalyzeMethodCapability
 {
     /**
      * Analyze (and modify) a method definition, after parsing and before analyzing.
-     *
-     * @param CodeBase $code_base
-     * The code base in which the method exists
-     *
-     * @param Method $method
-     * A method being analyzed
      *
      * @return void
      */

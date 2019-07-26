@@ -44,12 +44,12 @@ class ProtocolStreamReader extends Emitter implements ProtocolReader
     {
         $this->input = $input;
 
-        $this->on('close', function () {
+        $this->on('close', function () : void {
             Loop\removeReadStream($this->input);
         });
 
-        Loop\addReadStream($this->input, function () {
-            if (feof($this->input)) {
+        Loop\addReadStream($this->input, function () : void {
+            if (\feof($this->input)) {
                 // If stream_select reported a status change for this stream,
                 // but the stream is EOF, it means it was closed.
                 $this->emitClose();
@@ -67,13 +67,10 @@ class ProtocolStreamReader extends Emitter implements ProtocolReader
         });
     }
 
-    /**
-     * @return int
-     */
     private function readMessages() : int
     {
         $emitted_messages = 0;
-        while (($c = fgetc($this->input)) !== false && $c !== '') {
+        while (($c = \fgetc($this->input)) !== false && $c !== '') {
             $this->buffer .= $c;
             switch ($this->parsing_mode) {
                 case self::PARSE_HEADERS:
@@ -81,13 +78,20 @@ class ProtocolStreamReader extends Emitter implements ProtocolReader
                         $this->parsing_mode = self::PARSE_BODY;
                         $this->content_length = (int)$this->headers['Content-Length'];
                         $this->buffer = '';
-                    } elseif (substr($this->buffer, -2) === "\r\n") {
-                        $parts = explode(':', $this->buffer);
-                        $this->headers[$parts[0]] = trim($parts[1]);
+                    } elseif (\substr($this->buffer, -2) === "\r\n") {
+                        $parts = \explode(':', $this->buffer);
+                        $this->headers[$parts[0]] = \trim($parts[1]);
                         $this->buffer = '';
                     }
                     break;
                 case self::PARSE_BODY:
+                    if (\strlen($this->buffer) < $this->content_length) {
+                        // We know the number of remaining bytes to read - try to read them all at once.
+                        $buf = \fread($this->input, $this->content_length - \strlen($this->buffer));
+                        if (\is_string($buf) && \strlen($buf) > 0) {
+                            $this->buffer .= $buf;
+                        }
+                    }
                     if (\strlen($this->buffer) === $this->content_length) {
                         if (!$this->is_accepting_new_requests) {
                             // If we fork, don't read any bytes in the input buffer from the worker process.
@@ -120,18 +124,12 @@ class ProtocolStreamReader extends Emitter implements ProtocolReader
         return $emitted_messages;
     }
 
-    /**
-     * @return void
-     */
-    public function stopAcceptingNewRequests()
+    public function stopAcceptingNewRequests() : void
     {
         $this->is_accepting_new_requests = false;
     }
 
-    /**
-     * @return void
-     */
-    private function emitClose()
+    private function emitClose() : void
     {
         if ($this->did_emit_close) {
             return;

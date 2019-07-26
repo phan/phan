@@ -5,7 +5,8 @@ namespace Phan\Tests;
 use Phan\Config;
 
 /**
- * Unit tests of analysis targeting PHP 7.0 codebases
+ * Unit tests of analysis **targeting PHP 7.0 codebases**.
+ * These tests are run in all PHP versions.
  */
 class PHP70Test extends AbstractPhanFileTest
 {
@@ -19,7 +20,7 @@ class PHP70Test extends AbstractPhanFileTest
         ],
     ];
 
-    public function setUp()
+    public function setUp() : void
     {
         parent::setUp();
         foreach (self::OVERRIDES as $key => $value) {
@@ -30,8 +31,8 @@ class PHP70Test extends AbstractPhanFileTest
     /**
      * @suppress PhanUndeclaredConstant
      */
-    public function getTestFiles()
+    public function getTestFiles() : array
     {
-        return $this->scanSourceFilesDir(PHP70_TEST_FILE_DIR, PHP70_EXPECTED_DIR);
+        return $this->scanSourceFilesDir(\PHP70_TEST_FILE_DIR, \PHP70_EXPECTED_DIR);
     }
 }

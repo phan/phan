@@ -36,6 +36,16 @@ or if the relevant parts of the codebase fixed the bug/added annotations)
 - **UnusedPluginSuppression**: `Plugin {STRING_LITERAL} suppresses issue {ISSUETYPE} on this line but this suppression is unused or suppressed elsewhere`
 - **UnusedPluginFileSuppression**: `Plugin {STRING_LITERAL} suppresses issue {ISSUETYPE} in this file but this suppression is unused or suppressed elsewhere`
 
+The following settings can be used in `.phan/config.php`:
+ - `'plugin_config' => ['unused_suppression_ignore_list' => ['FlakyPluginIssueName']]` will make this plugin avoid emitting `Unused*Suppression` for a list of issue names.
+ - `'plugin_config' => ['unused_suppression_whitelisted_only' => true]` will make this plugin report unused suppressions only for issues in `whitelist_issue_types`.
+
+#### FFIAnalysisPlugin.php
+
+This is only necessary if you are using [PHP 7.4's FFI (Foreign Function Interface) support](https://wiki.php.net/rfc/ffi)
+
+This makes Phan infer that assignments to variables that originally contained CData will continue to be CData.
+
 ### 2. General-Use Plugins
 
 These plugins are useful across a wide variety of code styles, and should give low false positives.
@@ -58,6 +68,9 @@ Warns about common errors in php array keys and switch statements. Has the follo
 - **PhanPluginDuplicateSwitchCase**: a duplicate or equivalent case statement.
 
   (E.g `switch ($x) { case 2: echo "A\n"; break; case 2: echo "B\n"; break;}` duplicates the key `2`. The later case statements are ignored.)
+- **PhanPluginDuplicateSwitchCaseLooseEquality**: a case statement that is loosely equivalent to an earlier case statement.
+
+  (E.g `switch ('foo') { case 0: echo "0\n"; break; case 'foo': echo "foo\n"; break;}` has `0 == 'foo'`, and echoes `0` because of that)
 - **PhanPluginMixedKeyNoKey**: mixing array entries of the form [key => value,] with entries of the form [value,].
 
   (E.g. `['key' => 'value', 'othervalue']` is often found in code because the key for `'othervalue'` was forgotten)
@@ -86,7 +99,8 @@ This plugin is able to resolve literals, global constants, and class constants a
 - **PhanPluginPrintfWidthNotPosition**: `Format string {STRING_LITERAL} is specifying a width({STRING_LITERAL}) instead of a position({STRING_LITERAL})`
 - **PhanPluginPrintfIncompatibleSpecifier**: `Format string {STRING_LITERAL} refers to argument #{INDEX} in different ways: {DETAILS}` (e.g. `"%1$s of #%1$d"`. May be an off by one error.)
 - **PhanPluginPrintfIncompatibleArgumentTypeWeak**: `Format string {STRING_LITERAL} refers to argument #{INDEX} as {DETAILS}, so type {TYPE} is expected. However, {FUNCTION} was passed the type {TYPE} (which is weaker than {TYPE})`
-- **PhanPluginPrintfIncompatibleArgumentType**: `PhanPluginPrintfIncompatibleArgumentType`
+- **PhanPluginPrintfIncompatibleArgumentType**: `Format string {STRING_LITERAL} refers to argument #{INDEX} as {DETAILS}, so type {TYPE} is expected, but {FUNCTION} was passed incompatible type {TYPE}`
+- **PhanPluginPrintfVariableFormatString**: `Code {CODE} has a dynamic format string that could not be inferred by Phan`
 
 Note (for projects using `gettext`):
 Subclassing this plugin (and overriding `gettextForAllLocales`) will allow you to analyze translations of a project for compatibility.
@@ -163,6 +177,19 @@ This plugin will make Phan infer side effects from calls to some of the helper m
 - Infer that $actual has the exact type of $expected after calling `assertSame($expected, $actual)`
 - Other methods aren't supported yet.
 
+#### EmptyStatementListPlugin.php
+
+This file checks for empty statement lists in loops/branches.
+Due to Phan's AST rewriting for easier analysis, this may miss some edge cases for if/elseif.
+
+- **PhanPluginEmptyStatementDoWhileLoop** `Empty statement list statement detected for the do-while loop`
+- **PhanPluginEmptyStatementForLoop** `Empty statement list statement detected for the for loop`
+- **PhanPluginEmptyStatementForeachLoop** `Empty statement list statement detected for the foreach loop`
+- **PhanPluginEmptyStatementIf**: `Empty statement list statement detected for the last if/elseif statement`
+- **PhanPluginEmptyStatementTryBody** `Empty statement list statement detected for the try statement's body`
+- **PhanPluginEmptyStatementTryFinally** `Empty statement list statement detected for the try's finally body`
+- **PhanPluginEmptyStatementWhileLoop** `Empty statement list statement detected for the while loop`
+
 ### 3. Plugins Specific to Code Styles
 
 These plugins may be useful to enforce certain code styles,
@@ -235,9 +262,9 @@ Encourages the usage of fully qualified global functions and constants (slightly
 
 Enforces that loose equality is used for numeric operands (e.g. `2 == 2.0`), and that strict equality is used for non-numeric operands (e.g. `"2" === "2e0"` is false).
 
-- **PhanPluginNumericalComparison**: non numerical values compared by the operators '==' or '!=='; numerical values compared by the operators '===' or '!=='
+- **PhanPluginNumericalComparison**: nonnumerical values compared by the operators '==' or '!=='; numerical values compared by the operators '===' or '!=='
 
-#### PHPUnitNotDeadCodePlugin
+#### PHPUnitNotDeadCodePlugin.php
 
 Marks unit tests and dataProviders of subclasses of PHPUnit\Framework\TestCase as referenced.
 Avoids false positives when `--dead-code-detection` is enabled.
@@ -274,10 +301,94 @@ Warns about elements containing unknown types (function/method/closure return ty
 This plugin checks for duplicate expressions in a statement
 that are likely to be a bug. (e.g. `expr1 == expr`)
 
+- **PhanPluginDuplicateExpressionAssignment**: `Both sides of the assignment {OPERATOR} are the same: {CODE}`
 - **PhanPluginDuplicateExpressionBinaryOp**: `Both sides of the binary operator {OPERATOR} are the same: {CODE}`
 - **PhanPluginDuplicateConditionalTernaryDuplication**: `"X ? X : Y" can usually be simplified to "X ?: Y". The duplicated expression X was {CODE}`
 - **PhanPluginDuplicateConditionalNullCoalescing**: `"isset(X) ? X : Y" can usually be simplified to "X ?? Y" in PHP 7. The duplicated expression X was {CODE}`
 - **PhanPluginBothLiteralsBinaryOp**: `Suspicious usage of a binary operator where both operands are literals. Expression: {CODE} {OPERATOR} {CODE} (result is {CODE})` (e.g. warns about `null == 'a literal` in `$x ?? null == 'a literal'`)
+- **PhanPluginDuplicateConditionalUnnecessary**: `"X ? Y : Y" results in the same expression Y no matter what X evaluates to. Y was {CODE}`
+
+#### WhitespacePlugin.php
+
+This plugin checks for unexpected whitespace in PHP files.
+
+- **PhanPluginWhitespaceCarriageReturn**: `The first occurrence of a carriage return ("\r") was seen here. Running "dos2unix" can fix that.`
+- **PhanPluginWhitespaceTab**: `The first occurrence of a tab was seen here. Running "expand" can fix that.`
+- **PhanPluginWhitespaceTrailing**: `The first occurrence of trailing whitespace was seen here.`
+
+#### InlineHTMLPlugin.php
+
+This plugin checks for unexpected inline HTML.
+
+This can be limited to a subset of files with an `inline_html_whitelist_regex` - e.g. `@^(src/|lib/)@`.
+
+Files can be excluded with `inline_html_blacklist_regex`, e.g. `@(^src/templates/)|(\.html$)@`
+
+- **PhanPluginInlineHTML**: `Saw inline HTML between the first and last token: {STRING_LITERAL}`
+- **PhanPluginInlineHTMLLeading**: `Saw inline HTML at the start of the file: {STRING_LITERAL}`
+- **PhanPluginInlineHTMLTrailing**: `Saw inline HTML at the end of the file: {STRING_LITERAL}`
+
+#### SuspiciousParamOrderPlugin.php
+
+This plugin guesses if arguments to a function call are out of order, based on heuristics on the name in the expression (e.g. variable name).
+This will only warn if the argument types are compatible with the alternate parameters being suggested.
+This may be useful when analyzing methods with long parameter lists.
+
+E.g. warns about invoking `function example($first, $second, $third)` as `example($mySecond, $myThird, $myFirst)`
+
+- **PhanPluginSuspiciousParamOrder**: `Suspicious order for arguments named {DETAILS} - These are being passed to parameters {DETAILS} of {FUNCTION} defined at {FILE}:{LINE}`
+- **PhanPluginSuspiciousParamOrderInternal**: `Suspicious order for arguments named {DETAILS} - These are being passed to parameters {DETAILS}`
+
+#### PossiblyStaticMethodPlugin.php
+
+Checks if a method can be made static without causing any errors.
+
+- **PhanPluginPossiblyStaticPublicMethod**: `Public method {PROPERTY} can be static` (Also exists for Private and Protected)
+
+Warnings may need to be completely disabled due to the large number of method declarations in a typical codebase:
+
+- Warnings are not emitted for methods that override methods in the parent class.
+- Warnings are not emitted for methods that are overridden in child classes.
+- Warnings can be suppressed based on the method FQSEN with `plugin_config => [..., 'possibly_static_method_ignore_regex' => (a PCRE regex)]`
+
+#### PHPDocToRealTypesPlugin.php
+
+This plugin suggests real types that can be used instead of phpdoc types.
+Currently, this just checks param and return types.
+Some of the suggestions made by this plugin will cause inheritance errors.
+
+This doesn't suggest changes if classes have subclasses (but this check doesn't work when inheritance involves traits).
+`PHPDOC_TO_REAL_TYPES_IGNORE_INHERITANCE=1` can be used to force this to check **all** methods and emit issues.
+
+This also supports `--automatic-fix` to add the types to the real type signatures.
+
+- **PhanPluginCanUseReturnType**: `Can use {TYPE} as a return type of {METHOD}`
+- **PhanPluginCanUseNullableReturnType**: `Can use {TYPE} as a return type of {METHOD}` (useful if there is a minimum php version of 7.1)
+- **PhanPluginCanUsePHP71Void**: `Can use php 7.1's void as a return type of {METHOD}` (useful if there is a minimum php version of 7.1)
+
+This supports `--automatic-fix`.
+- `PHPDocRedundantPlugin` will be useful for cleaning up redundant phpdoc after real types were added.
+- `PreferNamespaceUsePlugin` can be used to convert types from fully qualified types back to unqualified types ()
+
+#### PHPDocRedundantPlugin.php
+
+This plugin warns about function/method/closure phpdoc that does nothing but repeat the information in the type signature.
+E.g. this will warn about `/** @return void */ function () : void {}` and `/** */`, but not `/** @return void description of what it does or other annotations */`
+
+This supports `--automatic-fix`
+
+- **PhanPluginRedundantFunctionComment**: `Redundant doc comment on function {FUNCTION}(): {COMMENT}`
+- **PhanPluginRedundantMethodComment**: `Redundant doc comment on method {METHOD}(): {COMMENT}`
+- **PhanPluginRedundantClosureComment**: `Redundant doc comment on closure {FUNCTION}: {COMMENT}`
+- **PhanPluginRedundantReturnComment**: `Redundant @return {TYPE} on function {FUNCTION}: {COMMENT}`
+
+#### PreferNamespaceUsePlugin.php
+
+This plugin suggests using `ClassName` instead of `\My\Ns\ClassName` when there is a `use My\Ns\ClassName` annotation (or for uses in namespace `\My\Ns`)
+Currently, this only checks **real** (not phpdoc) param/return annotations.
+
+- **PhanPluginPreferNamespaceUseParamType**: `Could write param type of ${PARAMETER} of {FUNCTION} as {TYPE} instead of {TYPE}`
+- **PhanPluginPreferNamespaceUseReturnType**: `Could write return type of {FUNCTION} as {TYPE} instead of {TYPE}`
 
 ### 4. Demo plugins:
 
@@ -299,3 +410,24 @@ Generates the following issue types under the types:
 Checks for complex variable access expressions `$$x`, which may be hard to read, and make the variable accesses hard/impossible to analyze.
 
 - **PhanPluginDollarDollar**: Warns about the use of $$x, ${(expr)}, etc.
+
+### 5. Third party plugins
+
+- https://github.com/Drenso/PhanExtensions is a third party project with several plugins to do the following:
+
+  - Analyze Symfony doc comment annotations.
+  - Mark elements in inline doc comments (which Phan doesn't parse) as referencing types from `use statements` as not dead code.
+
+- https://github.com/TysonAndre/PhanTypoCheck checks all tokens of PHP files for typos, including within string literals.
+  It is also able to analyze calls to `gettext()`.
+
+### 6. Self-analysis plugins:
+
+#### PhanSelfCheckPlugin.php
+
+This plugin checks for invalid calls to `PluginV2::emitIssue`, `Issue::maybeEmit()`, etc.
+This is useful for developing Phan and Phan plugins.
+
+- **PhanPluginTooFewArgumentsForIssue**: `Too few arguments for issue {STRING_LITERAL}: expected {COUNT}, got {COUNT}`
+- **PhanPluginTooManyArgumentsForIssue**: `Too many arguments for issue {STRING_LITERAL}: expected {COUNT}, got {COUNT}`
+- **PhanPluginUnknownIssueType**: `Unknown issue type {STRING_LITERAL} in a call to {METHOD}(). (may be a false positive - check if the version of Phan running PhanSelfCheckPlugin is the same version that the analyzed codebase is using)`

@@ -85,8 +85,8 @@ class Request
     private static $child_pids = [];
 
     /**
-     * A set of process ids of child processes
-     * @var array<int,int>
+     * A map from process ids of exited child processes to their exit status.
+     * @var array<int,int|array>
      */
     private static $exited_pid_status = [];
 
@@ -130,9 +130,8 @@ class Request
      */
     public function shouldUseMappingPolyfill(string $file_path) : bool
     {
-        $most_recent_node_info_request = $this->most_recent_node_info_request;
-        if ($most_recent_node_info_request) {
-            return $most_recent_node_info_request->getPath() === Config::projectPath($file_path);
+        if ($this->most_recent_node_info_request) {
+            return $this->most_recent_node_info_request->getPath() === Config::projectPath($file_path);
         }
         return false;
     }
@@ -142,22 +141,19 @@ class Request
      */
     public function shouldAddPlaceholdersForPath(string $file_path) : bool
     {
-        $most_recent_node_info_request = $this->most_recent_node_info_request;
-        if ($most_recent_node_info_request) {
-            return $most_recent_node_info_request->getPath() === Config::projectPath($file_path) &&
-                $most_recent_node_info_request instanceof CompletionRequest;
+        if ($this->most_recent_node_info_request instanceof CompletionRequest) {
+            return $this->most_recent_node_info_request->getPath() === Config::projectPath($file_path);
         }
         return false;
     }
 
     /**
-     * @return int
+     * Computes the byte offset of the node targeted by a language client's request (e.g. for a "Go to definition" request)
      */
     public function getTargetByteOffset(string $file_contents) : int
     {
-        $most_recent_node_info_request = $this->most_recent_node_info_request;
-        if ($most_recent_node_info_request) {
-            $position = $most_recent_node_info_request->getPosition();
+        if ($this->most_recent_node_info_request) {
+            $position = $this->most_recent_node_info_request->getPosition();
             return $position->toOffset($file_contents);
         }
         return -1;
@@ -167,7 +163,7 @@ class Request
      * @return void (unreachable)
      * @throws ExitException to imitate an exit without actually exiting
      */
-    public function exit(int $exit_code)
+    public function exit(int $exit_code) : void
     {
         if ($this->should_exit) {
             Daemon::debugf("Exiting");
@@ -191,7 +187,7 @@ class Request
         CodeBase $code_base,
         Closure $file_path_lister,
         FileMapping $file_mapping,
-        $most_recent_node_info_request,
+        ?NodeInfoRequest $most_recent_node_info_request,
         bool $should_exit
     ) : Request {
         FileCache::clear();
@@ -222,23 +218,24 @@ class Request
      * When a user types :: or -> and requests code completion at the end of a line,
      * then add __INCOMPLETE_PROPERTY__ or __INCOMPLETE_CLASS_CONST__ so that this
      * can get parsed and completed.
+     * @param array<string,string> $file_mapping_contents old map from relative file paths to contents.
      * @return array<string,string>
      */
     private static function adjustFileMappingContentsForCompletionRequest(
         array $file_mapping_contents,
         CompletionRequest $completion_request
-    ) {
+    ) : array {
         $file = FileRef::getProjectRelativePathForPath($completion_request->getPath());
         // fwrite(STDERR, "\nSaw $file in " . json_encode(array_keys($file_mapping_contents)) . "\n");
         $contents = $file_mapping_contents[$file] ?? null;
         if ($contents) {
             $position = $completion_request->getPosition();
-            $lines = explode("\n", $contents);
+            $lines = \explode("\n", $contents);
             $line = $lines[$position->line] ?? null;
             // $len = strlen($line ?? ''); fwrite(STDERR, "Looking at $line : $position of $len\n");
             if (is_string($line) && strlen($line) === $position->character + 1 && $position->character > 0) {
                 // fwrite(STDERR, "cursor at the end of the line\n");
-                if (preg_match('/(::|->)$/', $line, $matches)) {
+                if (\preg_match('/(::|->)$/', $line, $matches)) {
                     // fwrite(STDERR, "Updating the file\n");
                     if ($matches[1] === '::') {
                         $addition = TolerantASTConverter::INCOMPLETE_CLASS_CONST;
@@ -246,7 +243,7 @@ class Request
                         $addition = TolerantASTConverter::INCOMPLETE_PROPERTY;
                     }
                     $lines[$position->line] .= $addition;
-                    $new_contents = implode("\n", $lines);
+                    $new_contents = \implode("\n", $lines);
                     $file_mapping_contents[$file] = $new_contents;
                     // fwrite(STDERR, "Going to complete\n$new_contents\n====\nA");
                 }
@@ -285,7 +282,7 @@ class Request
     /**
      * Handle a request created by the client with `phan_client --color`
      */
-    private function handleClientColorOutput()
+    private function handleClientColorOutput() : void
     {
         // Back up the original state: If pcntl isn't used, we don't want subsequent requests to be accidentally colorized.
         static $original_color = null;
@@ -298,16 +295,15 @@ class Request
 
     /**
      * Respond with issues in the requested format
-     * @return void
      * @see LanguageServer::handleJSONResponseFromWorker() for one possible usage of this
      */
-    public function respondWithIssues(int $issue_count)
+    public function respondWithIssues(int $issue_count) : void
     {
         $raw_issues = $this->buffered_output->fetch();
         if (($this->request_config[self::PARAM_FORMAT] ?? null) === 'json') {
-            $issues = json_decode($raw_issues, true);
+            $issues = \json_decode($raw_issues, true);
             if (!\is_array($issues)) {
-                $issues = "(Failed to decode) " . json_last_error_msg() . ': ' . $raw_issues;
+                $issues = "(Failed to decode) " . \json_last_error_msg() . ': ' . $raw_issues;
             }
         } else {
             $issues = $raw_issues;
@@ -328,11 +324,11 @@ class Request
     }
 
     /**
-     * @return void
+     * Sends a response to the client indicating that
+     * the requested file wasn't in .phan/config.php's list of files to analyze.
      */
-    public function respondWithNoFilesToAnalyze()
+    public function respondWithNoFilesToAnalyze() : void
     {
-        // The mentioned file wasn't in .phan/config.php's list of files to analyze.
         $this->sendJSONResponse([
             "status" => self::STATUS_NO_FILES,
         ]);
@@ -349,7 +345,7 @@ class Request
             return $analyze_file_path_list;
         }
 
-        $analyze_file_path_set = array_flip($analyze_file_path_list);
+        $analyze_file_path_set = \array_flip($analyze_file_path_list);
         $filtered_files = [];
         foreach ($this->files as $file) {
             // Must be relative to project, allow absolute paths to be passed in.
@@ -377,26 +373,29 @@ class Request
         if (!is_array($mapping)) {
             $mapping = [];
         }
-        Daemon::debugf("Have the following files in mapping: %s", StringUtil::jsonEncode(array_keys($mapping)));
+        Daemon::debugf("Have the following files in mapping: %s", StringUtil::jsonEncode(\array_keys($mapping)));
         return $mapping;
     }
 
     /**
-     * @return ?NodeInfoRequest
+     * Fetches the most recently made request for information about a node of the file.
+     * (e.g. for "go to definition")
      */
-    public function getMostRecentNodeInfoRequest()
+    public function getMostRecentNodeInfoRequest() : ?NodeInfoRequest
     {
         return $this->most_recent_node_info_request;
     }
 
     /**
-     * @return void
+     * Send null responses for any open requests so that clients won't hang
+     * or encounter errors.
+     *
+     * (e.g. if we encountered a newer request before that request could be processed)
      */
-    public function rejectLanguageServerRequestsRequiringAnalysis()
+    public function rejectLanguageServerRequestsRequiringAnalysis() : void
     {
-        $most_recent_node_info_request = $this->most_recent_node_info_request;
-        if ($most_recent_node_info_request) {
-            $most_recent_node_info_request->finalize();
+        if ($this->most_recent_node_info_request) {
+            $this->most_recent_node_info_request->finalize();
             $this->most_recent_node_info_request = null;
         }
     }
@@ -407,61 +406,58 @@ class Request
      * TODO: HTTP protocol.
      *
      * @param array<string,mixed> $response
-     * @return void
      */
-    public function sendJSONResponse(array $response)
+    public function sendJSONResponse(array $response) : void
     {
-        $responder = $this->responder;
-        if (!$responder) {
+        if (!$this->responder) {
             Daemon::debugf("Already sent response");
             return;
         }
-        $responder->sendResponseAndClose($response);
+        $this->responder->sendResponseAndClose($response);
         $this->responder = null;
     }
 
     public function __destruct()
     {
-        $responder = $this->responder;
-        if ($responder) {
-            $responder->sendResponseAndClose([
+        if ($this->responder) {
+            $this->responder->sendResponseAndClose([
                 'status' => self::STATUS_ERROR_UNKNOWN,
-                'message' => 'failed to send a response - Possibly encountered an exception. See daemon output: ' . StringUtil::jsonEncode(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS)),
+                'message' => 'failed to send a response - Possibly encountered an exception. See daemon output: ' . StringUtil::jsonEncode(\debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS)),
             ]);
             $this->responder = null;
         }
     }
 
     /**
-     * @param int $signo
-     * @param int|null $status
-     * @param int|null $pid
-     * @return void
+     * @param ?(int|array) $status
      */
-    public static function childSignalHandler($signo, $status = null, $pid = null)
+    public static function childSignalHandler(int $signo, $status = null, ?int $pid = null) : void
     {
         // test
         if ($signo !== SIGCHLD) {
             return;
         }
         if (!$pid) {
-            $pid = pcntl_waitpid(-1, $status, WNOHANG);
+            $pid = \pcntl_waitpid(-1, $status, WNOHANG);
         }
         Daemon::debugf("Got signal pid=%s", StringUtil::jsonEncode($pid));
 
-        while ($pid > 0) {
+        // Add additional check for Phan - pid > 0 implies status is non-null and an integer
+        while ($pid > 0 && $status !== null) {
             if (\array_key_exists($pid, self::$child_pids)) {
-                $exit_code = pcntl_wexitstatus($status);
+                // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal
+                $exit_code = \pcntl_wexitstatus($status);
                 if ($exit_code != 0) {
-                    error_log(sprintf("child process %d exited with status %d\n", $pid, $exit_code));
+                    \error_log(\sprintf("child process %d exited with status %d\n", $pid, $exit_code));
                 } else {
                     Daemon::debugf("child process %d completed successfully", $pid);
                 }
                 unset(self::$child_pids[$pid]);
             } elseif ($pid > 0) {
+                // @phan-suppress-next-line PhanPartialTypeMismatchProperty
                 self::$exited_pid_status[$pid] = $status;
             }
-            $pid = pcntl_waitpid(-1, $status, WNOHANG);
+            $pid = \pcntl_waitpid(-1, $status, WNOHANG);
         }
     }
 
@@ -470,15 +466,11 @@ class Request
      * @param ?string &$error_message @phan-output-reference
      * @return array<string,string>
      */
-    public static function normalizeFileMappingContents($file_mapping_contents, &$error_message) : array
+    public static function normalizeFileMappingContents(array $file_mapping_contents, ?string &$error_message) : array
     {
         $error_message = null;
-        if (!\is_array($file_mapping_contents)) {
-            $error_message = 'Invalid value of temporary_file_mapping_contents';
-            return [];
-        }
         $new_file_mapping_contents = [];
-        foreach ($file_mapping_contents ?? [] as $file => $contents) {
+        foreach ($file_mapping_contents as $file => $contents) {
             if (!\is_string($file)) {
                 $error_message = 'Passed non-string in list of files to map';
                 return [];
@@ -496,7 +488,7 @@ class Request
      * @param Responder $responder
      * @return ?Request - non-null if this is a worker process with work to do. null if request failed or this is the master.
      */
-    public static function accept(CodeBase $code_base, \Closure $file_path_lister, Responder $responder, bool $fork)
+    public static function accept(CodeBase $code_base, Closure $file_path_lister, Responder $responder, bool $fork) : ?Request
     {
         FileCache::clear();
 
@@ -559,7 +551,7 @@ class Request
                 break;
                 // TODO(optional): add APIs to resolve types of variables/properties/etc (e.g. accept byte offset or line/column offset)
             default:
-                $message = sprintf("expected method to be analyze_all or analyze_files, got %s", StringUtil::jsonEncode($method));
+                $message = \sprintf("expected method to be analyze_all or analyze_files, got %s", StringUtil::jsonEncode($method));
                 Daemon::debugf($message);
                 $responder->sendResponseAndClose([
                     'status'  => self::STATUS_INVALID_METHOD,
@@ -586,9 +578,9 @@ class Request
             return $request_obj;
         }
 
-        $fork_result = pcntl_fork();
+        $fork_result = \pcntl_fork();
         if ($fork_result < 0) {
-            error_log("The daemon failed to fork. Going to terminate");
+            \error_log("The daemon failed to fork. Going to terminate");
         } elseif ($fork_result == 0) {
             Daemon::debugf("This is the fork");
             self::handleBecomingChildAnalysisProcess();
@@ -607,10 +599,15 @@ class Request
     }
 
     /**
+     * Handle becoming a parent of a forked process $pid.
+     *
+     * This tracks the information needed for the
+     * main process of the daemon to properly clean up
+     * after $pid once it exits. (to avoid leaving zombie processes)
+     *
      * @param int $pid the child PID of this process that is performing analysis
-     * @return void
      */
-    public static function handleBecomingParentOfChildAnalysisProcess(int $pid)
+    public static function handleBecomingParentOfChildAnalysisProcess(int $pid) : void
     {
         $status = self::$exited_pid_status[$pid] ?? null;
         if (isset($status)) {
@@ -627,19 +624,19 @@ class Request
     }
 
     /**
-     * @return void
+     * Handle becoming a child analysis process - this should no longer be waiting to clean up previously forked child processes.
      */
-    public static function handleBecomingChildAnalysisProcess()
+    public static function handleBecomingChildAnalysisProcess() : void
     {
         self::$child_pids = [];
     }
 
     /**
      * Reloads the file path list.
-     * @param ?array $file_names
-     * @return void
+     * @param array<string,string> $file_mapping_contents maps relative paths to file contents
+     * @param ?array<int,string> $file_names
      */
-    public static function reloadFilePathListForDaemon(CodeBase $code_base, \Closure $file_path_lister, array $file_mapping_contents, array $file_names = null)
+    public static function reloadFilePathListForDaemon(CodeBase $code_base, Closure $file_path_lister, array $file_mapping_contents, array $file_names = null) : void
     {
         $old_count = $code_base->getParsedFilePathCount();
 
@@ -649,7 +646,7 @@ class Request
             // Parse the files in lexicographic order.
             // If there are duplicate class/function definitions,
             // this ensures they are added to the maps in the same order.
-            sort($file_list, SORT_STRING);
+            \sort($file_list, SORT_STRING);
         }
 
         $changed_or_added_files = $code_base->updateFileList($file_list, $file_mapping_contents, $file_names);
@@ -667,18 +664,23 @@ class Request
             // of this file
             $code_base->flushDependenciesForFile($file_path);
 
-            // If the file is gone, no need to continue
-            $real = realpath($file_path);
-            if ($real === false || !file_exists($real)) {
-                Daemon::debugf("file $file_path does not exist");
-                continue;
+            // If we have an override for the contents of this file, assume it's open in the IDE.
+            // (even if it doesn't exist on disk)
+            $file_contents_override = $file_mapping_contents[$file_path] ?? null;
+            if (!is_string($file_contents_override)) {
+                // If the file is gone, no need to continue
+                $real = \realpath($file_path);
+                if ($real === false || !\file_exists($real)) {
+                    Daemon::debugf("file $file_path does not exist");
+                    continue;
+                }
             }
             Daemon::debugf("Parsing %s yet again", $file_path);
             try {
                 // Parse the file
-                Analysis::parseFile($code_base, $file_path, false, $file_mapping_contents[$file_path] ?? null);
+                Analysis::parseFile($code_base, $file_path, false, $file_contents_override);
             } catch (\Throwable $throwable) {
-                error_log(sprintf("Analysis::parseFile threw %s for %s: %s\n%s", get_class($throwable), $file_path, $throwable->getMessage(), $throwable->getTraceAsString()));
+                \error_log(\sprintf("Analysis::parseFile threw %s for %s: %s\n%s", get_class($throwable), $file_path, $throwable->getMessage(), $throwable->getTraceAsString()));
             }
         }
         Daemon::debugf("Done parsing modified files");
@@ -689,9 +691,8 @@ class Request
      * (i.e. it was returned by $file_path_lister in the past)
      *
      * @param array<string,string> $temporary_file_mapping_contents
-     * @return void
      */
-    private static function applyTemporaryFileMappingForParsePhase(CodeBase $code_base, array $temporary_file_mapping_contents)
+    private static function applyTemporaryFileMappingForParsePhase(CodeBase $code_base, array $temporary_file_mapping_contents) : void
     {
         if (count($temporary_file_mapping_contents) === 0) {
             return;
@@ -706,7 +707,7 @@ class Request
                 $changes_to_add[$file_name] = $contents;
             }
         }
-        Daemon::debugf("Done setting temporary file contents: Will replace contents of the following files: %s", StringUtil::jsonEncode(array_keys($changes_to_add)));
+        Daemon::debugf("Done setting temporary file contents: Will replace contents of the following files: %s", StringUtil::jsonEncode(\array_keys($changes_to_add)));
         if (count($changes_to_add) === 0) {
             return;
         }
@@ -718,8 +719,8 @@ class Request
             $code_base->flushDependenciesForFile($file_path);
 
             // If the file is gone, no need to continue
-            $real = realpath($file_path);
-            if ($real === false || !file_exists($real)) {
+            $real = \realpath($file_path);
+            if ($real === false || !\file_exists($real)) {
                 Daemon::debugf("file $file_path no longer exists on disk, but we tried to replace it?");
                 continue;
             }
@@ -728,7 +729,7 @@ class Request
                 // Parse the file
                 Analysis::parseFile($code_base, $file_path, false, $new_contents);
             } catch (\Throwable $throwable) {
-                error_log(sprintf("Analysis::parseFile threw %s for %s: %s\n%s", get_class($throwable), $file_path, $throwable->getMessage(), $throwable->getTraceAsString()));
+                \error_log(\sprintf("Analysis::parseFile threw %s for %s: %s\n%s", get_class($throwable), $file_path, $throwable->getMessage(), $throwable->getTraceAsString()));
             }
         }
     }

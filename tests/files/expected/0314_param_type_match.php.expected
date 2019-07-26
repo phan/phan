@@ -8,4 +8,4 @@
 %s:58 PhanTypeMismatchReturn Returning type array<int,int> but a13() is declared to return int
 %s:74 PhanTypeMismatchDeclaredParam Doc-block of $arg1 in g2 contains phpdoc param type \C314_1 which is incompatible with the param type \C314_2 declared in the signature
 %s:78 PhanTypeMismatchDeclaredParam Doc-block of $arg1 in g3 contains phpdoc param type \C314_1 which is incompatible with the param type \C314_2 declared in the signature
-%s:84 PhanTypeMismatchArgumentInternal Argument 1 (string) is int[] but \strlen() takes string
+%s:84 PhanTypeMismatchArgumentInternal Argument 1 ($string) is int[] but \strlen() takes string

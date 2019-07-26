@@ -1,0 +1,3 @@
+src_copy/000_unused_use.php:4 PhanUnreferencedUseNormal Possibly zero references to use statement for classlike/namespace Node (\ast\Node)
+src_copy/000_unused_use.php:5 PhanUnreferencedUseFunction Possibly zero references to use statement for function is_string (\is_string)
+src_copy/000_unused_use.php:6 PhanUnreferencedUseConstant Possibly zero references to use statement for constant PHP_VERSION_ID (\PHP_VERSION_ID)

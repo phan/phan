@@ -27,6 +27,11 @@ interface KindVisitor
     public function visitArrayElem(Node $node);
 
     /**
+     * Visit a node with kind `ast\AST_ARROW_FUNC`
+     */
+    public function visitArrowFunc(Node $node);
+
+    /**
      * Visit a node with kind `\ast\AST_ASSIGN`
      */
     public function visitAssign(Node $node);
@@ -80,6 +85,11 @@ interface KindVisitor
      * Visit a node with kind `\ast\AST_CLASS_CONST_DECL`
      */
     public function visitClassConstDecl(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_CLASS_NAME`
+     */
+    public function visitClassName(Node $node);
 
     /**
      * Visit a node with kind `\ast\AST_CLOSURE`
@@ -250,6 +260,11 @@ interface KindVisitor
      * Visit a node with kind `\ast\AST_PROP_DECL`
      */
     public function visitPropDecl(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_PROP_GROUP`
+     */
+    public function visitPropGroup(Node $node);
 
     /**
      * Visit a node with kind `\ast\AST_PROP_ELEM`

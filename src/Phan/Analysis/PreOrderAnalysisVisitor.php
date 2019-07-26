@@ -5,12 +5,13 @@ namespace Phan\Analysis;
 use AssertionError;
 use ast;
 use ast\Node;
+use Phan\AST\ArrowFunc;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
+use Phan\BlockAnalysisVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
-use Phan\Exception\NodeException;
 use Phan\Exception\RecursionDepthException;
 use Phan\Exception\UnanalyzableException;
 use Phan\Issue;
@@ -24,8 +25,8 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\Scope\ClosureScope;
 use Phan\Language\Type;
+use Phan\Language\Type\NullType;
 use Phan\Language\Type\VoidType;
-use Phan\Language\UnionType;
 
 /**
  * PreOrderAnalysisVisitor is where we do the pre-order part of the analysis
@@ -116,12 +117,13 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             );
         } while ($this->context->getProjectRelativePath()
                 != $clazz->getFileRef()->getProjectRelativePath()
+            || $node->children['__declId'] != $clazz->getDeclId()
             || $this->context->getLineNumberStart() != $clazz->getFileRef()->getLineNumberStart()
         );
 
         return $clazz->getContext()->withScope(
             $clazz->getInternalScope()
-        );
+        )->withoutLoops();
     }
 
     /**
@@ -163,13 +165,15 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             $method_name
         );
         $method->ensureScopeInitialized($code_base);
+        // Fix #2504 - add flags to ensure that DimOffset warnings aren't emitted inside closures
+        Analyzable::ensureDidAnnotate($node);
 
         // Parse the comment above the method to get
         // extra meta information about the method.
         $comment = $method->getComment();
 
         $context = $this->context->withScope(
-            $method->getInternalScope()
+            clone($method->getInternalScope())
         );
 
         // For any @var references in the method declaration,
@@ -208,7 +212,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         }
 
         // TODO: Why is the check for yield in PreOrderAnalysisVisitor?
-        if ($method->getHasYield()) {
+        if ($method->hasYield()) {
             $this->setReturnTypeOfGenerator($method, $node);
         }
 
@@ -264,18 +268,20 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         }
 
         $function->ensureScopeInitialized($code_base);
+        // Fix #2504 - add flags to ensure that DimOffset warnings aren't emitted inside closures
+        Analyzable::ensureDidAnnotate($node);
 
         $context = $original_context->withScope(
             $function->getInternalScope()
-        );
+        )->withoutLoops();
 
         // Parse the comment above the function to get
-        // extra meta information about the method.
+        // extra meta information about the function.
         // TODO: Investigate caching information from Comment::fromStringInContext?
         $comment = $function->getComment();
 
-        // For any @var references in the method declaration,
-        // add them as variables to the method's scope
+        // For any @var references in the function declaration,
+        // add them as variables to the function's scope
         if ($comment !== null) {
             foreach ($comment->getVariableList() as $parameter) {
                 $context->addScopeVariable(
@@ -295,20 +301,18 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             }
         }
 
-        if ($function->getHasYield()) {
+        if ($function->hasYield()) {
             $this->setReturnTypeOfGenerator($function, $node);
         }
-        if (!$function->getHasReturn() && $function->getUnionType()->isEmpty()) {
-            $function->setUnionType(VoidType::instance(false)->asUnionType());
+        if (!$function->hasReturn() && $function->getUnionType()->isEmpty()) {
+            // TODO: This is a global function - also guarantee that it's a real type elsewhere if phpdoc matches the implementation.
+            $function->setUnionType(VoidType::instance(false)->asRealUnionType());
         }
 
         return $context;
     }
 
-    /**
-     * @return ?FullyQualifiedClassName
-     */
-    private static function getOverrideClassFQSEN(CodeBase $code_base, Func $func)
+    private static function getOverrideClassFQSEN(CodeBase $code_base, Func $func) : ?FullyQualifiedClassName
     {
         $closure_scope = $func->getInternalScope();
         if ($closure_scope instanceof ClosureScope) {
@@ -328,7 +332,9 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                     $func_context->getLineNumberStart(),
                     (string)$class_fqsen
                 );
-                $closure_scope->overrideClassFQSEN(null);  // Avoid an uncaught CodeBaseException due to missing class for @phan-closure-scope
+                // Avoid an uncaught CodeBaseException due to missing class for @phan-closure-scope
+                // Just pretend it's the containing class instead of the missing class.
+                $closure_scope->overrideClassFQSEN($func_context->getScope()->getParentScope()->getClassFQSENOrNull());
                 return null;
             }
             return $class_fqsen;
@@ -339,13 +345,12 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     /**
      * If a Closure overrides the scope(class) it will be executed in (via doc comment)
      * then return a context with the new scope instead.
-     * @return void
      */
     private static function addThisVariableToInternalScope(
         CodeBase $code_base,
         Context $context,
         Func $func
-    ) {
+    ) : void {
         // skip adding $this to internal scope if the closure is a static one
         if ($func->getFlags() == ast\flags\MODIFIER_STATIC) {
             return;
@@ -359,7 +364,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                     new Variable(
                         $context,
                         'this',
-                        $override_this_fqsen->asUnionType(),
+                        $override_this_fqsen->asRealUnionType(),
                         0
                     )
                 );
@@ -375,7 +380,6 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         }
     }
 
-
     /**
      * Visit a node with kind `ast\AST_CLOSURE`
      *
@@ -389,13 +393,15 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     public function visitClosure(Node $node) : Context
     {
         $code_base = $this->code_base;
-        $context = $this->context;
+        $context = $this->context->withoutLoops();
         $closure_fqsen = FullyQualifiedFunctionName::fromClosureInContext(
             $context->withLineNumberStart($node->lineno),
             $node
         );
         $func = $code_base->getFunctionByFQSEN($closure_fqsen);
         $func->ensureScopeInitialized($code_base);
+        // Fix #2504 - add flags to ensure that DimOffset warnings aren't emitted inside closures
+        Analyzable::ensureDidAnnotate($node);
 
         // If we have a 'this' variable in our current scope,
         // pass it down into the closure
@@ -425,8 +431,6 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                     continue;
                 }
 
-                $variable = null;
-
                 // Check to see if the variable exists in this scope
                 if (!$context->getScope()->hasVariableWithName(
                     $variable_name
@@ -436,13 +440,13 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                     if (!($use->flags & ast\flags\PARAM_REF)) {
                         Issue::maybeEmitWithParameters(
                             $this->code_base,
-                            clone($context)->withLineNumberStart($use->lineno),
+                            $context,
                             Issue::UndeclaredVariable,
-                            $node->lineno,
+                            $use->lineno,
                             [$variable_name],
                             IssueFixSuggester::suggestVariableTypoFix($this->code_base, $context, $variable_name)
                         );
-                        continue;
+                        $variable = new Variable($context, $variable_name, NullType::instance(false)->asPHPDocUnionType(), 0);
                     } else {
                         // If the variable doesn't exist, but it's
                         // a pass-by-reference variable, we can
@@ -453,9 +457,9 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                             $this->code_base,
                             false
                         );
-                        // And add it to the scope of the parent (For https://github.com/phan/phan/issues/367)
-                        $context->getScope()->addVariable($variable);
                     }
+                    // And add it to the scope of the parent (For https://github.com/phan/phan/issues/367)
+                    $context->addScopeVariable($variable);
                 } else {
                     $variable = $context->getScope()->getVariableByName(
                         $variable_name
@@ -466,6 +470,11 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                     // doesn't update the outer scope
                     if (!($use->flags & ast\flags\PARAM_REF)) {
                         $variable = clone($variable);
+                    } else {
+                        $union_type = $variable->getUnionType();
+                        if ($union_type->hasRealTypeSet()) {
+                            $variable->setUnionType($union_type->eraseRealTypeSet());
+                        }
                     }
                 }
 
@@ -473,8 +482,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 $func->getInternalScope()->addVariable($variable);
             }
         }
-        if (!$func->getHasReturn() && $func->getUnionType()->isEmpty()) {
-            $func->setUnionType(VoidType::instance(false)->asUnionType());
+        if (!$func->hasReturn() && $func->getUnionType()->isEmpty()) {
+            $func->setUnionType(VoidType::instance(false)->asRealUnionType());
         }
 
         // Add parameters to the context.
@@ -502,7 +511,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             }
         }
 
-        if ($func->getHasYield()) {
+        if ($func->hasYield()) {
             $this->setReturnTypeOfGenerator($func, $node);
         }
 
@@ -510,11 +519,98 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     }
 
     /**
+     * Visit a node with kind `ast\AST_ARROW_FUNC`
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     * @override
+     */
+    public function visitArrowFunc(Node $node) : Context
+    {
+        $code_base = $this->code_base;
+        $context = $this->context->withoutLoops();
+        $closure_fqsen = FullyQualifiedFunctionName::fromClosureInContext(
+            $context->withLineNumberStart($node->lineno),
+            $node
+        );
+        $func = $code_base->getFunctionByFQSEN($closure_fqsen);
+        $func->ensureScopeInitialized($code_base);
+        // Fix #2504 - add flags to ensure that DimOffset warnings aren't emitted inside closures
+        Analyzable::ensureDidAnnotate($node);
+
+        // If we have a 'this' variable in our current scope,
+        // pass it down into the closure
+        self::addThisVariableToInternalScope($code_base, $context, $func);
+
+        // Make the closure reachable by FQSEN from anywhere
+        $code_base->addFunction($func);
+
+        foreach (ArrowFunc::getUses($node) as $variable_name => $use) {
+            $variable_name = (string)$variable_name;
+            // Check to see if the variable exists in this scope
+            // (If it doesn't, then don't add it - Phan will check later if it properly declares the variable in the scope.)
+            if ($context->getScope()->hasVariableWithName($variable_name)) {
+                ArrowFunc::recordVariableExistsInOuterScope($node, $variable_name);
+                $variable = $context->getScope()->getVariableByName(
+                    $variable_name
+                );
+
+                // If this isn't a pass-by-reference variable, we
+                // clone the variable so state within this scope
+                // doesn't update the outer scope
+                if (!($use->flags & ast\flags\PARAM_REF)) {
+                    $variable = clone($variable);
+                }
+                // Pass the variable into a new scope
+                $func->getInternalScope()->addVariable($variable);
+            }
+        }
+        if (!$func->hasReturn() && $func->getUnionType()->isEmpty()) {
+            $func->setUnionType(VoidType::instance(false)->asRealUnionType());
+        }
+
+        // Add parameters to the context.
+        $context = $context->withScope($func->getInternalScope());
+
+        $comment = $func->getComment();
+
+        // For any @var references in the method declaration,
+        // add them as variables to the method's scope
+        if ($comment !== null) {
+            foreach ($comment->getVariableList() as $parameter) {
+                $context->addScopeVariable(
+                    $parameter->asVariable($this->context)
+                );
+            }
+        }
+        if ($func->getRecursionDepth() === 0) {
+            // Add each closure parameter to the scope. We clone it
+            // so that changes to the variable don't alter the
+            // parameter definition
+            foreach ($func->getParameterList() as $parameter) {
+                $context->addScopeVariable(
+                    $parameter->cloneAsNonVariadic()
+                );
+            }
+        }
+
+        if ($func->hasYield()) {
+            $this->setReturnTypeOfGenerator($func, $node);
+        }
+
+        return $context;
+    }
+
+
+    /**
      * The return type of the given FunctionInterface to a Generator.
      * Emit an Issue if the documented return type is incompatible with that.
-     * @return void
      */
-    private function setReturnTypeOfGenerator(FunctionInterface $func, Node $node)
+    private function setReturnTypeOfGenerator(FunctionInterface $func, Node $node) : void
     {
         // Currently, there is no way to describe the types passed to
         // a Generator in phpdoc.
@@ -529,7 +625,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             $func_return_type = $func->getUnionType();
             try {
                 $func_return_type_can_cast = $func_return_type->canCastToExpandedUnionType(
-                    Type::fromNamespaceAndName('\\', 'Generator', false)->asUnionType(),
+                    Type::fromNamespaceAndName('\\', 'Generator', false)->asPHPDocUnionType(),
                     $this->code_base
                 );
             } catch (RecursionDepthException $_) {
@@ -562,159 +658,24 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     {
         $var_node = $node->children['var'];
         if (Config::get_closest_target_php_version_id() < 70100 && $var_node instanceof Node && $var_node->kind === ast\AST_ARRAY) {
-            $this->analyzeArrayAssignBackwardsCompatibility($var_node);
+            BlockAnalysisVisitor::analyzeArrayAssignBackwardsCompatibility($this->code_base, $this->context, $var_node);
         }
         return $this->context;
     }
 
     /**
-     * @param Node $node
+     * No-op - all work is done in BlockAnalysisVisitor
+     *
+     * @param Node $_
      * A node to parse
      *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
-     *
-     * @throws NodeException
-     * if the key is invalid
      */
-    public function visitForeach(Node $node) : Context
+    public function visitForeach(Node $_) : Context
     {
-        $code_base = $this->code_base;
-        $context = $this->context;
-
-        $expression_union_type = UnionTypeVisitor::unionTypeFromNode(
-            $code_base,
-            $context,
-            $node->children['expr']
-        );
-
-        // Check the expression type to make sure it's
-        // something we can iterate over
-        $this->checkCanIterate($expression_union_type, $node);
-
-        $value_node = $node->children['value'];
-        if (!($value_node instanceof Node)) {
-            return $context;
-        }
-        if ($value_node->kind == ast\AST_ARRAY) {
-            if (Config::get_closest_target_php_version_id() < 70100) {
-                $this->analyzeArrayAssignBackwardsCompatibility($value_node);
-            }
-        }
-
-        $context = (new AssignmentVisitor(
-            $code_base,
-            $context,
-            $value_node,
-            $expression_union_type->iterableValueUnionType($code_base)
-        ))->__invoke($value_node);
-
-        // If there's a key, make a variable out of that too
-        $key_node = $node->children['key'];
-        if ($key_node instanceof Node) {
-            if ($key_node->kind === ast\AST_ARRAY) {
-                $this->emitIssue(
-                    Issue::InvalidNode,
-                    $key_node->lineno,
-                    "Can't use list() as a key element - aborting"
-                );
-            } else {
-                // TODO: Support Traversable<Key, T> then return Key.
-                // If we see array<int,T> or array<string,T> and no other array types, we're reasonably sure the foreach key is an integer or a string, so set it.
-                // (Or if we see iterable<int,T>
-                $context = (new AssignmentVisitor(
-                    $code_base,
-                    $context,
-                    $key_node,
-                    $expression_union_type->iterableKeyUnionType($code_base)
-                ))->__invoke($key_node);
-            }
-        }
-
-        // Note that we're not creating a new scope, just
-        // adding variables to the existing scope
-        return $context;
-    }
-
-    /**
-     * @param UnionType $union_type the type of $node->children['expr']
-     * @param Node $node a node of kind AST_FOREACH
-     */
-    private function checkCanIterate(UnionType $union_type, Node $node)
-    {
-        if ($union_type->isScalar()) {
-            $this->emitIssue(
-                Issue::TypeMismatchForeach,
-                $node->children['expr']->lineno ?? $node->lineno,
-                (string)$union_type
-            );
-        }
-        foreach ($union_type->getTypeSet() as $type) {
-            try {
-                if ($type->asExpandedTypes($this->code_base)->hasTraversable()) {
-                    continue;
-                }
-            } catch (RecursionDepthException $_) {
-            }
-            if (!$type->isObjectWithKnownFQSEN()) {
-                continue;
-            }
-            $this->warnAboutNonTraversableType($node, $type);
-        }
-    }
-
-    private function warnAboutNonTraversableType(Node $node, Type $type)
-    {
-        $fqsen = FullyQualifiedClassName::fromType($type);
-        if (!$this->code_base->hasClassWithFQSEN($fqsen)) {
-            return;
-        }
-        if ($fqsen->__toString() === '\stdClass') {
-            // stdClass is the only non-Traversable that I'm aware of that's commonly traversed over.
-            return;
-        }
-        $class = $this->code_base->getClassByFQSEN($fqsen);
-        $status = $class->checkCanIterateFromContext(
-            $this->code_base,
-            $this->context
-        );
-        switch ($status) {
-            case Clazz::CAN_ITERATE_STATUS_NO_ACCESSIBLE_PROPERTIES:
-                $issue = Issue::TypeNoAccessiblePropertiesForeach;
-                break;
-            case Clazz::CAN_ITERATE_STATUS_NO_PROPERTIES:
-                $issue = Issue::TypeNoPropertiesForeach;
-                break;
-            default:
-                $issue = Issue::TypeSuspiciousNonTraversableForeach;
-                break;
-        }
-
-        $this->emitIssue(
-            $issue,
-            $node->children['expr']->lineno ?? $node->lineno,
-            $type
-        );
-    }
-
-    private function analyzeArrayAssignBackwardsCompatibility(Node $node)
-    {
-        if ($node->flags !== ast\flags\ARRAY_SYNTAX_LIST) {
-            $this->emitIssue(
-                Issue::CompatibleShortArrayAssignPHP70,
-                $node->lineno
-            );
-        }
-        foreach ($node->children as $array_elem) {
-            if (isset($array_elem->children['key'])) {
-                $this->emitIssue(
-                    Issue::CompatibleKeyedArrayAssignPHP70,
-                    $array_elem->lineno
-                );
-                break;
-            }
-        }
+        return $this->context;
     }
 
     /**
@@ -838,31 +799,16 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     }
 
     /**
-     * @param Node $node
+     * @param Node $_
      * A node to parse
      *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitCall(Node $node) : Context
+    public function visitCall(Node $_) : Context
     {
-        $name = $node->children['expr']->children['name'] ?? null;
-        // Look only at nodes of the form `assert(expr, ...)`.
-        if ($name !== 'assert') {
-            return $this->context;
-        }
-        $args_first_child = $node->children['args']->children[0] ?? null;
-        if (!($args_first_child instanceof Node)) {
-            return $this->context;
-        }
-
-        // Look to see if the asserted expression says anything about
-        // the types of any variables.
-        return (new ConditionVisitor(
-            $this->code_base,
-            $this->context
-        ))->__invoke($args_first_child);
+        return $this->context;
     }
 
     /**

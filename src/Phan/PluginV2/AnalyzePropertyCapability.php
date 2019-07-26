@@ -6,20 +6,13 @@ use Phan\CodeBase;
 use Phan\Language\Element\Property;
 
 /**
- * Plugins can implement this to analyze (and modify) a property definition,
- * after parsing and before analyzing.
+ * @deprecated use PluginV3 instead
  */
 interface AnalyzePropertyCapability
 {
     /**
      * Analyze (and modify) a property definition,
      * after parsing and before analyzing.
-     *
-     * @param CodeBase $code_base
-     * The code base in which the property exists
-     *
-     * @param Property $property
-     * A property being analyzed
      *
      * @return void
      */

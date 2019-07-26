@@ -5,7 +5,7 @@
 %s:6 PhanTypeInvalidRequire Require statement was passed an invalid expression of type \stdClass (expected a string)
 %s:7 PhanTypeInvalidEval Eval statement was passed an invalid expression of type array{} (expected a string)
 %s:8 PhanTypeInvalidRequire Require statement was passed an invalid expression of type false (expected a string)
-%s:9 PhanTypeInvalidRequire Require statement was passed an invalid expression of type float (expected a string)
+%s:9 PhanTypeInvalidRequire Require statement was passed an invalid expression of type 2.5 (expected a string)
 %s:11 PhanMissingRequireFile Missing required file "%stests%sfiles%ssrc%s0529_require_once.php"
 %s:12 PhanInvalidRequireFile Required file "" is not a file
 %s:12 PhanRelativePathUsed require_once() statement was passed a relative path "" instead of an absolute path
@@ -18,7 +18,7 @@
 %s:18 PhanMissingRequireFile Missing required file "%stests%sfiles%ssrc%s0546_require_other_testing.php/missing"
 %s:19 PhanMissingRequireFile Missing required file "%stests%sfiles/src/missing2"
 %s:20 PhanMissingRequireFile Missing required file "%stests%sfiles/src/missing3"
-%s:21 PhanTypeMismatchArgumentInternal Argument 1 (string) is null but \strlen() takes string
-%s:22 PhanTypeMismatchArgumentInternal Argument 1 (string) is null but \strlen() takes string
+%s:21 PhanTypeMismatchArgumentInternal Argument 1 ($string) is null but \strlen() takes string
+%s:22 PhanTypeMismatchArgumentInternal Argument 1 ($string) is null but \strlen() takes string
 %s:23 PhanMissingRequireFile Missing required file "%stests%sfiles/src/missing4"
 %s:24 PhanMissingRequireFile Missing required file "%stests%sfiles%ssrc/0546_require_other_testing.php.missing"

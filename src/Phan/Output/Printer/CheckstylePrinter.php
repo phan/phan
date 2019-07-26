@@ -19,15 +19,15 @@ final class CheckstylePrinter implements BufferedPrinterInterface
     /** @var array<string,array<int,array>> maps files with issues to the list of those issues */
     private $files = [];
 
-    /** @param IssueInstance $instance */
-    public function print(IssueInstance $instance)
+    public function print(IssueInstance $instance) : void
     {
-        if (!isset($this->files[$instance->getFile()])) {
-            $this->files[$instance->getFile()] = [];
+        $file = $instance->getDisplayedFile();
+        if (!isset($this->files[$file])) {
+            $this->files[$file] = [];
         }
 
         // Group issues by file
-        $this->files[$instance->getFile()][] = [
+        $this->files[$file][] = [
             'line' => $instance->getLine(),
             'source' => $instance->getIssue()->getType(),
             'message' => $instance->getMessageAndMaybeSuggestion(),
@@ -36,7 +36,7 @@ final class CheckstylePrinter implements BufferedPrinterInterface
     }
 
     /** flush printer buffer */
-    public function flush()
+    public function flush() : void
     {
         $document = new \DOMDocument('1.0', 'ISO-8859-15');
 
@@ -58,7 +58,7 @@ final class CheckstylePrinter implements BufferedPrinterInterface
                 // Write each element of the error as an attribute
                 // of the error
                 $error->appendChild(
-                    new \DOMAttr('line', htmlspecialchars((string)$error_map['line'], ENT_NOQUOTES, 'UTF-8'))
+                    new \DOMAttr('line', \htmlspecialchars((string)$error_map['line'], ENT_NOQUOTES, 'UTF-8'))
                 );
 
                 // Map phan severity to Jenkins/Checkstyle severity levels
@@ -76,15 +76,15 @@ final class CheckstylePrinter implements BufferedPrinterInterface
                 }
 
                 $error->appendChild(
-                    new \DOMAttr('severity', htmlspecialchars((string)$level, ENT_NOQUOTES, 'UTF-8'))
+                    new \DOMAttr('severity', \htmlspecialchars($level, ENT_NOQUOTES, 'UTF-8'))
                 );
 
                 $error->appendChild(
-                    new \DOMAttr('message', htmlspecialchars((string)$error_map['message'], ENT_NOQUOTES, 'UTF-8'))
+                    new \DOMAttr('message', \htmlspecialchars((string)$error_map['message'], ENT_NOQUOTES, 'UTF-8'))
                 );
 
                 $error->appendChild(
-                    new \DOMAttr('source', htmlspecialchars((string)$error_map['source'], ENT_NOQUOTES, 'UTF-8'))
+                    new \DOMAttr('source', \htmlspecialchars((string)$error_map['source'], ENT_NOQUOTES, 'UTF-8'))
                 );
             }
         }
@@ -94,10 +94,7 @@ final class CheckstylePrinter implements BufferedPrinterInterface
         $this->files = [];
     }
 
-    /**
-     * @param OutputInterface $output
-     */
-    public function configureOutput(OutputInterface $output)
+    public function configureOutput(OutputInterface $output) : void
     {
         $this->output = $output;
     }

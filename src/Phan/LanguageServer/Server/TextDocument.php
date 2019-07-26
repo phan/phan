@@ -86,16 +86,15 @@ class TextDocument
      * document's uri.
      *
      * @param TextDocumentItem $textDocument The document that was opened.
-     * @return void
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
-    public function didOpen(TextDocumentItem $textDocument)
+    public function didOpen(TextDocumentItem $textDocument) : void
     {
         Logger::logInfo("Called textDocument/didOpen, uri={$textDocument->uri}");
         try {
             Utils::pathToUri(Utils::uriToPath($textDocument->uri));
         } catch (InvalidArgumentException $e) {
-            Logger::logError(sprintf("Language server could not understand uri %s in %s: %s\n", $textDocument->uri, __METHOD__, $e->getMessage()));
+            Logger::logError(\sprintf("Language server could not understand uri %s in %s: %s\n", $textDocument->uri, __METHOD__, $e->getMessage()));
             return;
         }
         // TODO: Look into replacing this call with the normalized URI.
@@ -116,16 +115,15 @@ class TextDocument
      *
      * @param VersionedTextDocumentIdentifier $textDocument
      * @param string|null $text (NOTE: can't use ?T here)
-     * @return void
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
-    public function didSave(TextDocumentIdentifier $textDocument, string $text = null)
+    public function didSave(TextDocumentIdentifier $textDocument, string $text = null) : void
     {
         Logger::logInfo("Called textDocument/didSave, uri={$textDocument->uri} len(text)=" . \strlen($text ?? ''));
         try {
             Utils::pathToUri(Utils::uriToPath($textDocument->uri));
         } catch (InvalidArgumentException $e) {
-            Logger::logError(sprintf("Language server could not understand uri %s in %s: %s\n", $textDocument->uri, __METHOD__, $e->getMessage()));
+            Logger::logError(\sprintf("Language server could not understand uri %s in %s: %s\n", $textDocument->uri, __METHOD__, $e->getMessage()));
             return;
         }
         // TODO: Look into replacing this with the normalized URI
@@ -138,10 +136,9 @@ class TextDocument
      *
      * @param VersionedTextDocumentIdentifier $textDocument
      * @param TextDocumentContentChangeEvent[] $contentChanges
-     * @return void
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
-    public function didChange(VersionedTextDocumentIdentifier $textDocument, array $contentChanges)
+    public function didChange(VersionedTextDocumentIdentifier $textDocument, array $contentChanges) : void
     {
         foreach ($contentChanges as $change) {
             $this->file_mapping->addOverrideURI($textDocument->uri, $change->text);
@@ -161,16 +158,15 @@ class TextDocument
      * truth now exists on disk).
      *
      * @param TextDocumentIdentifier $textDocument The document that was closed
-     * @return void
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
-    public function didClose(TextDocumentIdentifier $textDocument)
+    public function didClose(TextDocumentIdentifier $textDocument) : void
     {
         Logger::logInfo("Called textDocument/didClose, uri={$textDocument->uri}");
         try {
             $uri = Utils::pathToUri(Utils::uriToPath($textDocument->uri));
         } catch (InvalidArgumentException $e) {
-            Logger::logError(sprintf("Language server could not understand uri %s in %s: %s\n", $textDocument->uri, __METHOD__, $e->getMessage()));
+            Logger::logError(\sprintf("Language server could not understand uri %s in %s: %s\n", $textDocument->uri, __METHOD__, $e->getMessage()));
             return;
         }
         $this->client->textDocument->publishDiagnostics($uri, []);
@@ -187,13 +183,13 @@ class TextDocument
      * @return ?Promise <Location|Location[]|null>
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
-    public function definition(TextDocumentIdentifier $textDocument, Position $position)
+    public function definition(TextDocumentIdentifier $textDocument, Position $position) : ?Promise
     {
         Logger::logInfo("Called textDocument/definition, uri={$textDocument->uri} position={$position->line}:{$position->character}");
         try {
             $uri = Utils::pathToUri(Utils::uriToPath($textDocument->uri));
         } catch (InvalidArgumentException $e) {
-            Logger::logError(sprintf("Language server could not understand uri %s in %s: %s\n", $textDocument->uri, __METHOD__, $e->getMessage()));
+            Logger::logError(\sprintf("Language server could not understand uri %s in %s: %s\n", $textDocument->uri, __METHOD__, $e->getMessage()));
             return null;
         }
         return $this->server->awaitDefinition($uri, $position, false);
@@ -208,13 +204,13 @@ class TextDocument
      * @return ?Promise <Location|Location[]|null>
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
-    public function typeDefinition(TextDocumentIdentifier $textDocument, Position $position)
+    public function typeDefinition(TextDocumentIdentifier $textDocument, Position $position) : ?Promise
     {
         Logger::logInfo("Called textDocument/typeDefinition, uri={$textDocument->uri} position={$position->line}:{$position->character}");
         try {
             $uri = Utils::pathToUri(Utils::uriToPath($textDocument->uri));
         } catch (InvalidArgumentException $e) {
-            Logger::logError(sprintf("Language server could not understand uri %s in %s: %s\n", $textDocument->uri, __METHOD__, $e->getMessage()));
+            Logger::logError(\sprintf("Language server could not understand uri %s in %s: %s\n", $textDocument->uri, __METHOD__, $e->getMessage()));
             return null;
         }
         return $this->server->awaitDefinition($uri, $position, true);
@@ -229,9 +225,8 @@ class TextDocument
      * @param TextDocumentIdentifier $textDocument @phan-unused-param
      * @param Position $position @phan-unused-param
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
-     * @return ?Promise
      */
-    public function hover(TextDocumentIdentifier $textDocument, Position $position)
+    public function hover(TextDocumentIdentifier $textDocument, Position $position) : ?Promise
     {
         // Some clients (e.g. emacs-lsp, the last time I checked)
         // don't respect the server's reported hover capability, and send this unconditionally.
@@ -245,7 +240,7 @@ class TextDocument
         try {
             $uri = Utils::pathToUri(Utils::uriToPath($textDocument->uri));
         } catch (InvalidArgumentException $e) {
-            Logger::logError(sprintf("Language server could not understand uri %s in %s: %s\n", $textDocument->uri, __METHOD__, $e->getMessage()));
+            Logger::logError(\sprintf("Language server could not understand uri %s in %s: %s\n", $textDocument->uri, __METHOD__, $e->getMessage()));
             return null;
         }
         return $this->server->awaitHover($uri, $position);
@@ -261,7 +256,7 @@ class TextDocument
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      * @return ?Promise <CompletionItem[]|CompletionList>
      */
-    public function completion(TextDocumentIdentifier $textDocument, Position $position, CompletionContext $context = null)
+    public function completion(TextDocumentIdentifier $textDocument, Position $position, CompletionContext $context = null) : ?Promise
     {
         if (!Config::getValue('language_server_enable_completion')) {
             // Placeholder to avoid a performance degradation on clients
@@ -273,12 +268,12 @@ class TextDocument
         try {
             $uri = Utils::pathToUri(Utils::uriToPath($textDocument->uri));
         } catch (InvalidArgumentException $e) {
-            Logger::logError(sprintf("Language server could not understand uri %s in %s: %s\n", $textDocument->uri, __METHOD__, $e->getMessage()));
+            Logger::logError(\sprintf("Language server could not understand uri %s in %s: %s\n", $textDocument->uri, __METHOD__, $e->getMessage()));
             return null;
         }
         // Workaround: Phan needs the cursor to be on the character that's within the expression in order to select it.
         // So shift the cursor left by one.
-        $position->character = max(0, $position->character - 1);
+        $position->character = \max(0, $position->character - 1);
         return $this->server->awaitCompletion($uri, $position, $context);
     }
 }

@@ -18,8 +18,6 @@ class DebugUnionType extends UnionType
 
     /**
      * Add a type name to the list of types
-     *
-     * @return UnionType
      * @override
      */
     public function withType(Type $type) : UnionType
@@ -31,8 +29,6 @@ class DebugUnionType extends UnionType
 
     /**
      * Add the given types to this type
-     *
-     * @return UnionType
      */
     public function withUnionType(UnionType $union_type) : UnionType
     {

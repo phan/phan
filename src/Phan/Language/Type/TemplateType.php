@@ -130,7 +130,7 @@ final class TemplateType extends Type
     public function withTemplateParameterTypeMap(
         array $template_parameter_type_map
     ) : UnionType {
-        return $template_parameter_type_map[$this->template_type_identifier] ?? $this->asUnionType();
+        return $template_parameter_type_map[$this->template_type_identifier] ?? $this->asPHPDocUnionType();
     }
 
     /**
@@ -139,7 +139,7 @@ final class TemplateType extends Type
      * @param ?Closure(mixed, Context):UnionType $right
      * @return ?Closure(mixed, Context):UnionType
      */
-    public static function combineParameterClosures($left, $right)
+    public static function combineParameterClosures(?Closure $left, ?Closure $right) : ?Closure
     {
         if (!$left) {
             return $right;
@@ -161,7 +161,7 @@ final class TemplateType extends Type
      *
      * @return ?Closure(UnionType, Context):UnionType a closure to map types to the template type wherever it was in the original union type
      */
-    public function getTemplateTypeExtractorClosure(CodeBase $unused_code_base, TemplateType $template_type)
+    public function getTemplateTypeExtractorClosure(CodeBase $unused_code_base, TemplateType $template_type) : ?Closure
     {
         if ($this === $template_type) {
             return static function (UnionType $type, Context $_) : UnionType {
@@ -170,5 +170,13 @@ final class TemplateType extends Type
         }
         // Overridden in subclasses
         return null;
+    }
+
+    /**
+     * @override
+     */
+    public function canUseInRealSignature() : bool
+    {
+        return false;
     }
 }

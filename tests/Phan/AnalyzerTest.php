@@ -3,10 +3,10 @@
 namespace Phan\Tests;
 
 // Grab these before we define our own classes
-$internal_class_name_list = get_declared_classes();
-$internal_interface_name_list = get_declared_interfaces();
-$internal_trait_name_list = get_declared_traits();
-$internal_function_name_list = get_defined_functions()['internal'];
+$internal_class_name_list = \get_declared_classes();
+$internal_interface_name_list = \get_declared_interfaces();
+$internal_trait_name_list = \get_declared_traits();
+$internal_function_name_list = \get_defined_functions()['internal'];
 
 use Phan\Analysis;
 use Phan\CodeBase;
@@ -25,7 +25,7 @@ final class AnalyzerTest extends BaseTest
      */
     private $code_base;
 
-    protected function setUp()
+    protected function setUp() : void
     {
         $this->code_base = new CodeBase(
             [], // $this->class_name_list,
@@ -36,7 +36,7 @@ final class AnalyzerTest extends BaseTest
         );
     }
 
-    public function testClassInCodeBase()
+    public function testClassInCodeBase() : void
     {
 
         $this->contextForCode("
@@ -50,7 +50,7 @@ final class AnalyzerTest extends BaseTest
         );
     }
 
-    public function testNamespaceClassInCodeBase()
+    public function testNamespaceClassInCodeBase() : void
     {
         $this->contextForCode("
             namespace A;
@@ -64,7 +64,7 @@ final class AnalyzerTest extends BaseTest
         );
     }
 
-    public function testMethodInCodeBase()
+    public function testMethodInCodeBase() : void
     {
         $this->contextForCode("
             namespace A;

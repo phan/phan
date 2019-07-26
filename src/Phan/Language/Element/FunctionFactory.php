@@ -2,6 +2,7 @@
 
 namespace Phan\Language\Element;
 
+use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
@@ -28,9 +29,11 @@ class FunctionFactory
 
         $context = new Context();
 
+        $namespaced_name = $fqsen->getNamespacedName();
+
         $function = new Func(
             $context,
-            $fqsen->getNamespacedName(),
+            $namespaced_name,
             UnionType::empty(),
             0,
             $fqsen,
@@ -46,7 +49,15 @@ class FunctionFactory
             - $reflection_function->getNumberOfRequiredParameters()
         );
         $function->setIsDeprecated($reflection_function->isDeprecated());
-        $function->setRealReturnType(UnionType::fromReflectionType($reflection_function->getReturnType()));
+        $real_return_type = UnionType::fromReflectionType($reflection_function->getReturnType());
+        if ($real_return_type->isEmpty() && Config::getValue('assume_real_types_for_internal_functions')) {
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            $real_type_string = UnionType::getLatestRealFunctionSignatureMap()[$namespaced_name] ?? null;
+            if (\is_string($real_type_string)) {
+                $real_return_type = UnionType::fromStringInContext($real_type_string, new Context(), Type::FROM_TYPE);
+            }
+        }
+        $function->setRealReturnType($real_return_type);
         $function->setRealParameterList(Parameter::listFromReflectionParameterList($reflection_function->getParameters()));
 
         return self::functionListFromFunction($function);
@@ -63,6 +74,7 @@ class FunctionFactory
         array $signature
     ) : array {
 
+        // TODO: Look into adding helper method in UnionType caching this to speed up loading.
         $context = new Context();
 
         $return_type = UnionType::fromStringInContext(
@@ -119,7 +131,7 @@ class FunctionFactory
             - $reflection_method->getNumberOfRequiredParameters()
         );
 
-        if ($method->getIsMagicCall() || $method->getIsMagicCallStatic()) {
+        if ($method->isMagicCall() || $method->isMagicCallStatic()) {
             $method->setNumberOfOptionalParameters(FunctionInterface::INFINITE_PARAMETERS);
             $method->setNumberOfRequiredParameters(0);
         }
@@ -159,7 +171,7 @@ class FunctionFactory
          * @param array<string,mixed> $map
          * @suppress PhanPossiblyFalseTypeArgumentInternal, PhanPossiblyFalseTypeArgument
          */
-        return \array_map(static function ($map) use (
+        return \array_map(static function (array $map) use (
             $function,
             &$alternate_id
         ) : FunctionInterface {
@@ -172,8 +184,13 @@ class FunctionFactory
             );
 
             // Set the return type if one is defined
-            if (isset($map['return_type'])) {
-                $alternate_function->setUnionType($map['return_type']);
+            $return_type = $map['return_type'] ?? null;
+            if ($return_type) {
+                $real_return_type = $function->getRealReturnType();
+                if (!$real_return_type->isEmpty()) {
+                    $return_type = UnionType::of($return_type->getTypeSet(), $real_return_type->getTypeSet());
+                }
+                $alternate_function->setUnionType($return_type);
             }
             $alternate_function->clearParameterList();
 
@@ -220,7 +237,7 @@ class FunctionFactory
                     // TODO: could check isDefaultValueAvailable and getDefaultValue, for a better idea.
                     // I don't see any cases where this will be used for internal types, though.
                     $parameter->setDefaultValueType(
-                        NullType::instance(false)->asUnionType()
+                        NullType::instance(false)->asPHPDocUnionType()
                     );
                 }
 
@@ -249,7 +266,7 @@ class FunctionFactory
             );
 
             if ($alternate_function instanceof Method) {
-                if ($alternate_function->getIsMagicCall() || $alternate_function->getIsMagicCallStatic()) {
+                if ($alternate_function->isMagicCall() || $alternate_function->isMagicCallStatic()) {
                     $alternate_function->setNumberOfOptionalParameters(999);
                     $alternate_function->setNumberOfRequiredParameters(0);
                 }

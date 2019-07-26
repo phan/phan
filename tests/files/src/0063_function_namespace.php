@@ -1,4 +1,4 @@
 <?php
 namespace A\B\C;
-function fn() { }
-fn();
+function f() { }
+f();

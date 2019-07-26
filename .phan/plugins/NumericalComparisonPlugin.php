@@ -3,15 +3,15 @@
 use ast\Node;
 use Phan\AST\UnionTypeVisitor;
 use Phan\Language\Context;
-use Phan\PluginV2;
-use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV3\PostAnalyzeNodeCapability;
 
 /**
  * This plugin enforces that loose equality is used for numeric operands (e.g. `2 == 2.0`),
  * and that strict equality is used for non-numeric operands (e.g. `"2" === "2e0"` is false).
  */
-class NumericalComparisonPlugin extends PluginV2 implements PostAnalyzeNodeCapability
+class NumericalComparisonPlugin extends PluginV3 implements PostAnalyzeNodeCapability
 {
 
     /**
@@ -59,8 +59,8 @@ class NumericalComparisonVisitor extends PluginAwarePostAnalysisVisitor
 
         // non numerical values are not allowed in the operator equal(==, !=)
         if (in_array($node->flags, self::BINARY_EQUAL_OPERATORS)) {
-            if (!($this->isNumericalType($left_type->serialize())) &
-                !($this->isNumericalType($right_type->serialize()))
+            if (!$left_type->isNonNullNumberType() &&
+                !$right_type->isNonNullNumberType()
             ) {
                 $this->emit(
                     'PhanPluginNumericalComparison',
@@ -70,9 +70,8 @@ class NumericalComparisonVisitor extends PluginAwarePostAnalysisVisitor
             }
             // numerical values are not allowed in the operator identical('===', '!==')
         } elseif (in_array($node->flags, self::BINARY_IDENTICAL_OPERATORS)) {
-            if ($this->isNumericalType($left_type->serialize()) |
-                $this->isNumericalType($right_type->serialize())
-            ) {
+            if ($left_type->isNonNullNumberType() ||
+                $right_type->isNonNullNumberType()) {
                 // TODO: different name for this issue type?
                 $this->emit(
                     'PhanPluginNumericalComparison',
@@ -82,17 +81,6 @@ class NumericalComparisonVisitor extends PluginAwarePostAnalysisVisitor
             }
         }
         return $this->context;
-    }
-
-    /**
-     * Judge the argument is 'int', 'float' or not
-     *
-     * @param string $type serialized UnionType string
-     * @return bool argument string indicates numerical type or not
-     */
-    private function isNumericalType(string $type) : bool
-    {
-        return $type === 'int' || $type === 'float';
     }
 }
 

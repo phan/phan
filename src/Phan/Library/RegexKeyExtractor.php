@@ -56,7 +56,7 @@ class RegexKeyExtractor
         return $matcher->getMatchKeys();
     }
 
-    private function consumeUntil(string $next_char)
+    private function consumeUntil(string $next_char) : void
     {
         $end = strpos($this->pattern, $next_char, $this->offset);
         if ($end === false) {
@@ -68,7 +68,7 @@ class RegexKeyExtractor
     /**
      * @throws InvalidArgumentException if an invalid pattern was seen
      */
-    private function extractGroup()
+    private function extractGroup() : void
     {
         $pattern = $this->pattern;
         if ($pattern[$this->offset] === '?') {
@@ -115,6 +115,9 @@ class RegexKeyExtractor
                 case '#':
                     $this->consumeUntil(')');
                     return;
+                case '|':
+                    $this->extractCombinationGroup();
+                    return;
                 default:
                     throw new InvalidArgumentException('Support for complex patterns is not implemented');
             }
@@ -143,6 +146,38 @@ class RegexKeyExtractor
         throw new InvalidArgumentException('Reached the end of the pattern before extracting the group');
     }
 
+    private function extractCombinationGroup() : void
+    {
+        $original_matches = $this->matches;
+        $possible_matches = $original_matches;
+        $pattern = $this->pattern;
+        $len = strlen($pattern);
+        while ($this->offset < $len) {
+            $c = $pattern[$this->offset++];
+            if ($c === '\\') {
+                // Skip over escaped characters
+                $this->offset++;
+                continue;
+            }
+            if ($c === '|') {
+                $possible_matches += $this->matches;
+                $this->matches = $original_matches;
+                continue;
+            }
+            if ($c === ')') {
+                $possible_matches += $this->matches;
+                $this->matches = $possible_matches;
+                // We have reached the end of this group
+                return;
+            }
+            if ($c === '(') {
+                // TODO: Handle ?: and the general case
+
+                $this->extractGroup();
+            }
+        }
+    }
+
     /** @return array<int|string,true> */
     private function getMatchKeys() : array
     {
@@ -160,7 +195,7 @@ class RegexKeyExtractor
 
         $start_chr = $pattern[0] ?? '/';
         // @phan-suppress-next-line PhanParamSuspiciousOrder this is deliberate
-        $i = stripos('({[', $start_chr);
+        $i = \stripos('({[', $start_chr);
         if ($i !== false) {
             $end_chr = ')}]'[$i];
         } else {

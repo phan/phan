@@ -1,11 +1,12 @@
 src/061_cast_crash.php:7 PhanParamTooFewCallable Call with 0 arg(s) to Closure($x) (as a provided callable) which requires 1 arg(s) defined at src/061_cast_crash.php:9
-src/061_cast_crash.php:12 PhanSyntaxError syntax error, unexpected ')', expecting '('
-src/061_cast_crash.php:12 PhanTypeMismatchArgument Argument 1 (x) is array but \accepts_cast_argument() takes string defined at src/061_cast_crash.php:3
-src/061_cast_crash.php:18 PhanTypeMismatchArgument Argument 1 (x) is bool but \accepts_cast_argument() takes string defined at src/061_cast_crash.php:3
-src/061_cast_crash.php:21 PhanTypeMismatchArgument Argument 1 (x) is bool but \accepts_cast_argument() takes string defined at src/061_cast_crash.php:3
-src/061_cast_crash.php:24 PhanTypeMismatchArgument Argument 1 (x) is float but \accepts_cast_argument() takes string defined at src/061_cast_crash.php:3
-src/061_cast_crash.php:27 PhanTypeMismatchArgument Argument 1 (x) is int but \accepts_cast_argument() takes string defined at src/061_cast_crash.php:3
-src/061_cast_crash.php:30 PhanTypeMismatchArgument Argument 1 (x) is int but \accepts_cast_argument() takes string defined at src/061_cast_crash.php:3
-src/061_cast_crash.php:33 PhanTypeMismatchArgument Argument 1 (x) is float but \accepts_cast_argument() takes string defined at src/061_cast_crash.php:3
-src/061_cast_crash.php:36 PhanTypeMismatchArgument Argument 1 (x) is object but \accepts_cast_argument() takes string defined at src/061_cast_crash.php:3
-src/061_cast_crash.php:45 PhanTypeMismatchArgument Argument 1 (x) is null but \accepts_cast_argument() takes string defined at src/061_cast_crash.php:3
+src/061_cast_crash.php:12 PhanSyntaxError syntax error, unexpected ')', expecting '(' (at column 13)
+src/061_cast_crash.php:12 PhanTypeMismatchArgument Argument 1 ($x) is array but \accepts_cast_argument() takes string defined at src/061_cast_crash.php:3
+src/061_cast_crash.php:18 PhanTypeMismatchArgument Argument 1 ($x) is bool but \accepts_cast_argument() takes string defined at src/061_cast_crash.php:3
+src/061_cast_crash.php:21 PhanTypeMismatchArgument Argument 1 ($x) is bool but \accepts_cast_argument() takes string defined at src/061_cast_crash.php:3
+src/061_cast_crash.php:24 PhanTypeMismatchArgument Argument 1 ($x) is float but \accepts_cast_argument() takes string defined at src/061_cast_crash.php:3
+src/061_cast_crash.php:27 PhanTypeMismatchArgument Argument 1 ($x) is int but \accepts_cast_argument() takes string defined at src/061_cast_crash.php:3
+src/061_cast_crash.php:30 PhanTypeMismatchArgument Argument 1 ($x) is int but \accepts_cast_argument() takes string defined at src/061_cast_crash.php:3
+src/061_cast_crash.php:33 PhanTypeMismatchArgument Argument 1 ($x) is float but \accepts_cast_argument() takes string defined at src/061_cast_crash.php:3
+src/061_cast_crash.php:36 PhanTypeMismatchArgument Argument 1 ($x) is object but \accepts_cast_argument() takes string defined at src/061_cast_crash.php:3
+src/061_cast_crash.php:45 PhanCompatibleUnsetCast The unset cast (in (unset)($x)) was deprecated in PHP 7.2 and will become a fatal error in PHP 8.0.
+src/061_cast_crash.php:45 PhanTypeMismatchArgument Argument 1 ($x) is null but \accepts_cast_argument() takes string defined at src/061_cast_crash.php:3

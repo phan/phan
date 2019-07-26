@@ -1,0 +1,10 @@
+%s:4 PhanInfiniteLoop The loop condition true of type true is always truthy and nothing seems to exit the loop
+%s:5 PhanInfiniteLoop The loop condition true of type true is always truthy and nothing seems to exit the loop
+%s:6 PhanInfiniteLoop The loop condition true of type true is always truthy and nothing seems to exit the loop
+%s:7 PhanInfiniteLoop The loop condition 1 of type 1 is always truthy and nothing seems to exit the loop
+%s:8 PhanInfiniteLoop The loop condition 1 of type 1 is always truthy and nothing seems to exit the loop
+%s:9 PhanInfiniteLoop The loop condition 1 of type 1 is always truthy and nothing seems to exit the loop
+%s:10 PhanInfiniteLoop The loop condition new stdClass() of type \stdClass is always truthy and nothing seems to exit the loop
+%s:11 PhanInfiniteLoop The loop condition new stdClass() of type \stdClass is always truthy and nothing seems to exit the loop
+%s:12 PhanInfiniteLoop The loop condition new stdClass() of type \stdClass is always truthy and nothing seems to exit the loop
+%s:17 PhanInfiniteLoop The loop condition true of type true is always truthy and nothing seems to exit the loop

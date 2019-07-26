@@ -1,1 +1,1 @@
-src/044_crash.php:5 PhanSyntaxError Fallback parser diagnostic error: '}' expected.
+src/044_crash.php:5 PhanSyntaxError Fallback parser diagnostic error: '}' expected. (at column 6)

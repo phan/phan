@@ -58,7 +58,7 @@ final class GenericIterableType extends IterableType
      *
      * @see self::getKeyUnionType()
      */
-    public function iterableKeyUnionType(CodeBase $unused_code_base)
+    public function iterableKeyUnionType(CodeBase $unused_code_base) : UnionType
     {
         return $this->key_union_type;
     }
@@ -69,7 +69,7 @@ final class GenericIterableType extends IterableType
      *
      * @see self::getElementUnionType()
      */
-    public function iterableValueUnionType(CodeBase $unused_code_base)
+    public function iterableValueUnionType(CodeBase $unused_code_base) : UnionType
     {
         return $this->element_union_type;
     }
@@ -125,9 +125,9 @@ final class GenericIterableType extends IterableType
         $new_element_type = $this->element_union_type->withTemplateParameterTypeMap($template_parameter_type_map);
         if ($new_element_type === $this->element_union_type &&
             $new_key_type === $this->key_union_type) {
-            return $this->asUnionType();
+            return $this->asPHPDocUnionType();
         }
-        return self::fromKeyAndValueTypes($new_key_type, $new_element_type, $this->is_nullable)->asUnionType();
+        return self::fromKeyAndValueTypes($new_key_type, $new_element_type, $this->is_nullable)->asPHPDocUnionType();
     }
 
     public function __toString() : string
@@ -151,7 +151,7 @@ final class GenericIterableType extends IterableType
      * @param CodeBase $code_base
      * @return ?Closure(UnionType, Context):UnionType
      */
-    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type)
+    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type) : ?Closure
     {
         $closure = $this->element_union_type->getTemplateTypeExtractorClosure($code_base, $template_type);
         if ($closure) {
@@ -171,6 +171,29 @@ final class GenericIterableType extends IterableType
             $key_closure = null;
         }
         return TemplateType::combineParameterClosures($key_closure, $element_closure);
+    }
+
+    /**
+     * Returns the corresponding type that would be used in a signature
+     * @override
+     */
+    public function asSignatureType() : Type
+    {
+        return IterableType::instance($this->is_nullable);
+    }
+
+    public function asArrayType() : ?Type
+    {
+        $key_type = GenericArrayType::keyTypeFromUnionTypeValues($this->key_union_type);
+        if ($this->element_union_type->typeCount() === 1) {
+            $element_type = $this->element_union_type->getTypeSet()[0];
+        } else {
+            if ($key_type === GenericArrayType::KEY_MIXED) {
+                return ArrayType::instance(false);
+            }
+            $element_type = MixedType::instance(false);
+        }
+        return GenericArrayType::fromElementType($element_type, false, $key_type);
     }
 }
 // Trigger autoloader for subclass before make() can get called.

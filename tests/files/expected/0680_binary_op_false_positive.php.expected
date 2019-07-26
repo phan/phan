@@ -1,0 +1,2 @@
+%s:6 PhanTypeMismatchArgumentInternal Argument 1 ($var) is string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:9 PhanTypeMismatchArgumentNullableInternal Argument 1 ($string) is ?string but \strlen() takes string (expected type to be non-nullable)

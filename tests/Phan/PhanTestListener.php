@@ -7,14 +7,15 @@ global $internal_interface_name_list;
 global $internal_trait_name_list;
 global $internal_function_name_list;
 
-$internal_class_name_list = get_declared_classes();
-$internal_interface_name_list = get_declared_interfaces();
-$internal_trait_name_list = get_declared_traits();
-$internal_function_name_list = get_defined_functions()['internal'];
+$internal_class_name_list = \get_declared_classes();
+$internal_interface_name_list = \get_declared_interfaces();
+$internal_trait_name_list = \get_declared_traits();
+$internal_function_name_list = \get_defined_functions()['internal'];
 
 use Phan\CodeBase;
-use PHPUnit\Framework\BaseTestListener;
 use PHPUnit\Framework\Test;
+use PHPUnit\Framework\TestListener;
+use PHPUnit\Framework\TestListenerDefaultImplementation;
 
 /**
  * Utilities for creating and cleaning up clones of CodeBase instances when running tests
@@ -22,9 +23,11 @@ use PHPUnit\Framework\Test;
  * @suppress PhanUnreferencedClass
  * This class is referenced in phpunit.xml
  */
-final class PhanTestListener extends BaseTestListener
+final class PhanTestListener implements TestListener
 {
-    public function startTest(Test $test)
+    use TestListenerDefaultImplementation;
+
+    public function startTest(Test $test) : void
     {
         if ($test instanceof CodeBaseAwareTestInterface) {
             // We're holding a static reference to the
@@ -55,7 +58,7 @@ final class PhanTestListener extends BaseTestListener
     /**
      * @param float $time @phan-unused-param
      */
-    public function endTest(Test $test, $time)
+    public function endTest(Test $test, float $time) : void
     {
         if ($test instanceof CodeBaseAwareTestInterface) {
             $test->setCodeBase(null);

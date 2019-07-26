@@ -1,0 +1,4 @@
+%s:14 PhanUndeclaredStaticMethod Static call to undeclared method \AccessProtectedTest\Unrelated::staticMethod
+%s:15 PhanUndeclaredStaticProperty Static property 'static_something' on \AccessProtectedTest\Unrelated is undeclared
+%s:17 PhanUndeclaredStaticMethod Static call to undeclared method \AccessProtectedTest\Unrelated::staticMethod
+%s:18 PhanUndeclaredStaticProperty Static property 'static_something' on \AccessProtectedTest\Unrelated is undeclared

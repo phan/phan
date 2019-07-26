@@ -1,0 +1,6 @@
+%s:14 PhanTypeMismatchUnpackKeyArraySpread When unpacking a value of type \Generator<float,\stdClass>, the value's keys were of type float, but the keys should be integers
+%s:15 PhanTypeMismatchUnpackKeyArraySpread When unpacking a value of type iterable<float,int>, the value's keys were of type float, but the keys should be integers
+%s:16 PhanTypeMismatchUnpackKeyArraySpread When unpacking a value of type array<string,int>, the value's keys were of type string, but the keys should be integers
+%s:17 PhanTypeMismatchUnpackKeyArraySpread When unpacking a value of type \Generator<string,\stdClass>, the value's keys were of type string, but the keys should be integers
+%s:18 PhanTypeMismatchUnpackKeyArraySpread When unpacking a value of type iterable<string,int>, the value's keys were of type string, but the keys should be integers
+%s:19 PhanTypeMismatchUnpackKeyArraySpread When unpacking a value of type \Generator<void,\stdClass>, the value's keys were of type void, but the keys should be integers

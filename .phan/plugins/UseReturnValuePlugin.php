@@ -8,10 +8,10 @@ use Phan\Exception\CodeBaseException;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
-use Phan\PluginV2;
-use Phan\PluginV2\FinalizeProcessCapability;
-use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\FinalizeProcessCapability;
+use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV3\PostAnalyzeNodeCapability;
 
 /**
  * A plugin that checks for invocations of functions/methods where the return value should be used.
@@ -33,7 +33,7 @@ use Phan\PluginV2\PostAnalyzeNodeCapability;
  *
  *   For dynamic checks, use this value instead of the default of 98 (should be between 0.01 and 100)
  */
-class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability, FinalizeProcessCapability
+class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability, FinalizeProcessCapability
 {
     // phpcs:disable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
     // this is deliberate for issue names
@@ -78,9 +78,9 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
     }
 
     /**
-     * @return void
+     * @override
      */
-    public function finalizeProcess(CodeBase $code_base)
+    public function finalizeProcess(CodeBase $code_base) : void
     {
         if (!self::$use_dynamic) {
             return;
@@ -110,13 +110,13 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
                 $percentage_string = number_format($used_percentage, 2);
                 foreach ($counter->unused_locations as $key => $context) {
                     if (!preg_match('/:(\d+)$/', $key, $matches)) {
-                        fprintf(STDERR, "Failed to extract line number from $key\n");
+                        fprintf(STDERR, "Failed to extract line number from %s\n", $key);
                         continue;
                     }
                     $line = (int)$matches[1];
                     $context = $context->withLineNumberStart($line);
                     if ($known_must_use_return_value) {
-                        $this->emitIssue(
+                        self::emitIssue(
                             $code_base,
                             $context,
                             self::UseReturnValueInternalKnown,
@@ -124,7 +124,7 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
                             [$fqsen]
                         );
                     } elseif ($counter->is_internal) {
-                        $this->emitIssue(
+                        self::emitIssue(
                             $code_base,
                             $context,
                             self::UseReturnValueInternal,
@@ -132,7 +132,7 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
                             [$fqsen, $percentage_string]
                         );
                     } else {
-                        $this->emitIssue(
+                        self::emitIssue(
                             $code_base,
                             $context,
                             self::UseReturnValue,
@@ -178,6 +178,8 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'arrayiterator::key' => true,
         'arrayiterator::valid' => true,
         'array_key_exists' => true,
+        'array_key_first' => true,
+        'array_key_last' => true,
         'array_keys' => true,
         'array_map' => true,
         'array_merge_recursive' => true,
@@ -258,6 +260,7 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'date_default_timezone_get' => true,
         'dateinterval::format' => true,
         'datetime::createfromformat' => true,
+        'datetime::createfromimmutable' => true,
         'datetime::diff' => true,
         'datetime::format' => true,
         'datetime::gettimestamp' => true,
@@ -344,6 +347,7 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'func_get_arg' => true,
         'func_num_args' => true,
         'function_exists' => true,
+        'gc_status' => true,
         'get_called_class' => true,
         'get_cfg_var' => true,
         'get_class_methods' => true,
@@ -390,6 +394,7 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'headers_sent' => true,
         'hex2bin' => true,
         'hexdec' => true,
+        'hrtime' => true,
         'htmlentities' => true,
         'html_entity_decode' => true,
         'htmlspecialchars_decode' => true,
@@ -823,15 +828,17 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'next' => false,  // move array cursor
         'preg_match' => false,  // useful if known
         'prev' => false,  // move array cursor
-        'print_r' => false,  // has mode to return string
+        'print_r' => self::USE_IF_SECOND_ARGUMENT_TRUE,  // returns a string if second arg is true
         'reflectionmethod::invokeargs' => false,  // may be a void
         'rename' => false,  // some code is optimistic
         'reset' => false,  // move array cursor
         'session_id' => false,  // Triggers regeneration
         'strtok' => false,  // advances a cursor if called with 1 argument
         'trait_exists' => false,  // triggers class autoloader to load the trait
-        'var_export' => false,  // can also dump to stdout
+        'var_export' => self::USE_IF_SECOND_ARGUMENT_TRUE,  // returns a string if second arg is true
     ];
+
+    const USE_IF_SECOND_ARGUMENT_TRUE = 'if2ndtrue';
 }
 
 /**
@@ -865,40 +872,47 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
      * Skip unary ops when determining the parent node.
      * E.g. for `@foo();`, the parent node is AST_STMT_LIST (which we infer means the result is unused)
      * For `$x = +foo();` the parent node is AST_ASSIGN.
-     * @return ?Node
+     * @return array{0:?Node,1:bool} - [$parent, $used]
+     * $used is whether the expression is used - it should only be checked if the parent is known.
      */
-    private function findNonUnaryParentNodeNode()
+    private function findNonUnaryParentNode(Node $node) : array
     {
         $parent = end($this->parent_node_list);
         if (!$parent) {
-            return null;
+            return [null, true];
         }
-        if ($parent->kind !== ast\AST_UNARY_OP) {
-            return $parent;
-        }
-
-        for ($i = key($this->parent_node_list) - 1; $i >= 0; $i--) {
-            $parent = $this->parent_node_list[$i];
-            if ($parent->kind !== ast\AST_UNARY_OP) {
-                return $parent;
+        while ($parent->kind === ast\AST_UNARY_OP) {
+            $node = $parent;
+            $parent = \prev($this->parent_node_list);
+            if (!$parent) {
+                return [null, true];
             }
         }
-        return null;
+        switch ($parent->kind) {
+            case ast\AST_STMT_LIST:
+                return [$parent, false];
+            case ast\AST_EXPR_LIST:
+                return [$parent, $this->isUsedExpressionInExprList($node, $parent)];
+        }
+        return [$parent, true];
+    }
+
+    private function isUsedExpressionInExprList(Node $node, Node $parent) : bool
+    {
+        return $node === end($parent->children) && $parent === (\prev($this->parent_node_list)->children['cond'] ?? null);
     }
 
     /**
      * @param Node $node a node of type AST_CALL
-     * @return void
      * @override
      */
-    public function visitCall(Node $node)
+    public function visitCall(Node $node) : void
     {
-        $parent = $this->findNonUnaryParentNodeNode();
+        [$parent, $used] = $this->findNonUnaryParentNode($node);
         if (!$parent) {
             //fwrite(STDERR, "No parent in " . __METHOD__ . "\n");
             return;
         }
-        $used = $parent->kind !== ast\AST_STMT_LIST;
         if ($used && !UseReturnValuePlugin::$use_dynamic) {
             return;
         }
@@ -919,7 +933,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
                 }
                 $fqsen = $function->getFQSEN()->__toString();
                 if (!UseReturnValuePlugin::$use_dynamic) {
-                    $this->quickWarn($fqsen, $node->lineno);
+                    $this->quickWarn($fqsen, $node);
                     continue;
                 }
                 $counter = UseReturnValuePlugin::$stats[$fqsen] ?? null;
@@ -938,17 +952,15 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
 
     /**
      * @param Node $node a node of type AST_METHOD_CALL
-     * @return void
      * @override
      */
-    public function visitMethodCall(Node $node)
+    public function visitMethodCall(Node $node) : void
     {
-        $parent = $this->findNonUnaryParentNodeNode();
+        [$parent, $used] = $this->findNonUnaryParentNode($node);
         if (!$parent) {
             //fwrite(STDERR, "No parent in " . __METHOD__ . "\n");
             return;
         }
-        $used = $parent->kind !== ast\AST_STMT_LIST;
         if ($used && !UseReturnValuePlugin::$use_dynamic) {
             return;
         }
@@ -971,7 +983,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         }
         $fqsen = $method->getDefiningFQSEN()->__toString();
         if (!UseReturnValuePlugin::$use_dynamic) {
-            $this->quickWarn($fqsen, $node->lineno);
+            $this->quickWarn($fqsen, $node);
             return;
         }
         $counter = UseReturnValuePlugin::$stats[$fqsen] ?? null;
@@ -987,17 +999,15 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
 
     /**
      * @param Node $node a node of type AST_METHOD_CALL
-     * @return void
      * @override
      */
-    public function visitStaticCall(Node $node)
+    public function visitStaticCall(Node $node) : void
     {
-        $parent = $this->findNonUnaryParentNodeNode();
+        [$parent, $used] = $this->findNonUnaryParentNode($node);
         if (!$parent) {
             //fwrite(STDERR, "No parent in " . __METHOD__ . "\n");
             return;
         }
-        $used = $parent->kind !== ast\AST_STMT_LIST;
         if ($used && !UseReturnValuePlugin::$use_dynamic) {
             return;
         }
@@ -1020,7 +1030,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         }
         $fqsen = $method->getDefiningFQSEN()->__toString();
         if (!UseReturnValuePlugin::$use_dynamic) {
-            $this->quickWarn($fqsen, $node->lineno);
+            $this->quickWarn($fqsen, $node);
             return;
         }
         $counter = UseReturnValuePlugin::$stats[$fqsen] ?? null;
@@ -1034,18 +1044,40 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         }
     }
 
-    private function quickWarn(string $fqsen, int $lineno)
+    private static function isSecondArgumentTrue(Node $node) : bool
+    {
+        $args = $node->children['args']->children;
+        $bool_node = $args[1] ?? null;
+        if (!$bool_node) {
+            return false;
+        }
+        if ($bool_node->kind !== ast\AST_CONST) {
+            return false;
+        }
+        $name = $bool_node->children['name']->children['name'] ?? null;
+        return is_string($name) && strcasecmp($name, 'true') === 0;
+    }
+
+    private function quickWarn(string $fqsen, Node $node) : void
     {
         $fqsen_key = strtolower(ltrim($fqsen, "\\"));
-        if (UseReturnValuePlugin::HARDCODED_FQSENS[$fqsen_key] ?? false) {
-            $this->emitPluginIssue(
-                $this->code_base,
-                clone($this->context)->withLineNumberStart($lineno),
-                UseReturnValuePlugin::UseReturnValueInternalKnown,
-                'Expected to use the return value of the internal function/method {FUNCTION}',
-                [$fqsen]
-            );
+        $result = UseReturnValuePlugin::HARDCODED_FQSENS[$fqsen_key] ?? false;
+        if (!$result) {
+            return;
         }
+        if ($result !== true) {
+            // var_export and print_r take a second bool argument
+            if (!self::isSecondArgumentTrue($node)) {
+                return;
+            }
+        }
+        $this->emitPluginIssue(
+            $this->code_base,
+            clone($this->context)->withLineNumberStart($node->lineno),
+            UseReturnValuePlugin::UseReturnValueInternalKnown,
+            'Expected to use the return value of the internal function/method {FUNCTION}',
+            [$fqsen]
+        );
     }
 }
 

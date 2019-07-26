@@ -1,0 +1,1 @@
+%s:2 PhanRedundantCondition Redundant attempt to cast [1,2,3] of type array{0:1,1:2,2:3} to truthy

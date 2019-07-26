@@ -9,6 +9,6 @@ class C2 {
         if (false) {
             $c = $s;
         }
-        return $c;
+        return $c;  // Phan infers that the above branch is never taken
     }
 }

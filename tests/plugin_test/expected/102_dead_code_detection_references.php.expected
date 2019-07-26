@@ -1,0 +1,1 @@
+src/102_dead_code_detection_references.php:9 PhanWriteOnlyPublicProperty Possibly zero read references to public property \Test102->z

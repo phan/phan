@@ -5,6 +5,7 @@ namespace Phan\Output;
 use Phan\Output\Printer\CheckstylePrinter;
 use Phan\Output\Printer\CodeClimatePrinter;
 use Phan\Output\Printer\CSVPrinter;
+use Phan\Output\Printer\HTMLPrinter;
 use Phan\Output\Printer\JSONPrinter;
 use Phan\Output\Printer\PlainTextPrinter;
 use Phan\Output\Printer\PylintPrinter;
@@ -22,14 +23,14 @@ class PrinterFactory
      */
     public function getTypes():array
     {
-        return ['text', 'json', 'csv', 'codeclimate', 'checkstyle', 'pylint'];
+        return ['text', 'json', 'csv', 'codeclimate', 'checkstyle', 'pylint', 'html'];
     }
 
     /**
      * Return an IssuePrinterInterface of type $type that outputs issues to $output
      * @param ?string $type the configured type of printer
      */
-    public function getPrinter($type, OutputInterface $output):IssuePrinterInterface
+    public function getPrinter(?string $type, OutputInterface $output):IssuePrinterInterface
     {
         switch ($type) {
             case 'codeclimate':
@@ -46,6 +47,9 @@ class PrinterFactory
                 break;
             case 'pylint':
                 $printer = new PylintPrinter();
+                break;
+            case 'html':
+                $printer = new HTMLPrinter();
                 break;
             case 'text':
             default:

@@ -77,14 +77,13 @@ class Parameter
      * Returns this comment parameter as a real variable.
      */
     public function asVariable(
-        Context $context,
-        int $flags = 0
+        Context $context
     ) : Variable {
         return new Variable(
             $context,
             $this->getName(),
             $this->getUnionType(),
-            $flags
+            0
         );
     }
 

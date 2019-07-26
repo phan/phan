@@ -64,7 +64,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
      * there are multiple definitions of the element
      *
      * @return static
-     * @suppress PhanTypeInstantiateAbstract this error is correct, but this should never be called directly
+     * @suppress PhanTypeInstantiateAbstractStatic this error is correct, but this should never be called directly
      */
     public static function make(
         FullyQualifiedClassName $fully_qualified_class_name,
@@ -107,6 +107,8 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
      * @param $fully_qualified_string
      * An FQSEN string like '\Namespace\Class::methodName'
      *
+     * @return static
+     *
      * @throws InvalidArgumentException if the $fully_qualified_string doesn't have a '::' delimiter
      *
      * @throws FQSENException if the class or element FQSEN is invalid
@@ -114,15 +116,15 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
     public static function fromFullyQualifiedString(
         string $fully_qualified_string
     ) {
-        $parts = explode('::', $fully_qualified_string);
+        $parts = \explode('::', $fully_qualified_string);
         if (\count($parts) !== 2) {
             throw new InvalidArgumentException("Fully qualified class element lacks '::' delimiter");
         }
 
-        list(
+        [
             $fully_qualified_class_name_string,
             $name_string
-        ) = $parts;
+        ] = $parts;
 
         $fully_qualified_class_name =
             FullyQualifiedClassName::fromFullyQualifiedString(
@@ -130,7 +132,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
             );
 
         // Split off the alternate ID
-        $parts = explode(',', $name_string);
+        $parts = \explode(',', $name_string);
         $name = $parts[0];
         $alternate_id = (int)($parts[1] ?? 0);
 
@@ -171,10 +173,10 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
             if (\count($parts) > 2) {
                 throw new InvalidArgumentException("Too many '::' in $fqsen_string");
             }
-            list(
+            [
                 $class_name_string,
                 $fqsen_string
-            ) = $parts;
+            ] = $parts;
 
             $fully_qualified_class_name =
                 FullyQualifiedClassName::fromStringInContext(
@@ -249,7 +251,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
      */
     public function __toString() : string
     {
-        $fqsen_string = $this->memoize(__METHOD__, /** @return string */ function () {
+        $fqsen_string = $this->memoize(__METHOD__, function () : string {
             return self::toString(
                 $this->getFullyQualifiedClassName(),
                 $this->getName(),

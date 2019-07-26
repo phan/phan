@@ -1,0 +1,1 @@
+%s:42 PhanTypeMismatchArgument Argument 1 ($i) is null but \NS661\DoubleInt() takes int defined at %s:6

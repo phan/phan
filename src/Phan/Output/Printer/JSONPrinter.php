@@ -21,8 +21,7 @@ final class JSONPrinter implements BufferedPrinterInterface
     /** @var array<int,array<string,mixed>> the issue data to be JSON encoded. */
     private $messages = [];
 
-    /** @param IssueInstance $instance */
-    public function print(IssueInstance $instance)
+    public function print(IssueInstance $instance) : void
     {
         $issue = $instance->getIssue();
         $message = [
@@ -35,13 +34,16 @@ final class JSONPrinter implements BufferedPrinterInterface
                 $instance->getMessage(),  // suggestion included separately
             'severity' => $issue->getSeverity(),
             'location' => [
-                'path' => preg_replace('/^\/code\//', '', $instance->getFile()),
+                'path' => $instance->getDisplayedFile(),
                 'lines' => [
                     'begin' => $instance->getLine(),
                     'end' => $instance->getLine(),
                 ],
             ],
         ];
+        if ($instance->getColumn() > 0) {
+            $message['location']['lines']['begin_column'] = $instance->getColumn();
+        }
         $suggestion = $instance->getSuggestionMessage();
         if ($suggestion) {
             $message['suggestion'] = $suggestion;
@@ -50,11 +52,11 @@ final class JSONPrinter implements BufferedPrinterInterface
     }
 
     /** flush printer buffer */
-    public function flush()
+    public function flush() : void
     {
         // NOTE: Need to use OUTPUT_RAW for JSON.
         // Otherwise, error messages such as "...Unexpected << (T_SL)" don't get formatted properly (They get escaped into unparsable JSON)
-        $encoded_message = json_encode($this->messages, \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE | \JSON_PARTIAL_OUTPUT_ON_ERROR);
+        $encoded_message = \json_encode($this->messages, \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE | \JSON_PARTIAL_OUTPUT_ON_ERROR);
         if (!\is_string($encoded_message)) {
             throw new AssertionError("Failed to encode anything for what should be an array");
         }
@@ -62,10 +64,7 @@ final class JSONPrinter implements BufferedPrinterInterface
         $this->messages = [];
     }
 
-    /**
-     * @param OutputInterface $output
-     */
-    public function configureOutput(OutputInterface $output)
+    public function configureOutput(OutputInterface $output) : void
     {
         $this->output = $output;
     }

@@ -7,12 +7,12 @@
 %s:12 PhanTypeInvalidRightOperandOfNumericOp Invalid operator: right operand of /= is \stdClass (expected number)
 %s:14 PhanTypeInvalidRightOperandOfNumericOp Invalid operator: right operand of -= is \stdClass (expected number)
 %s:16 PhanTypeInvalidRightOperandOfIntegerOp Invalid operator: right operand of >>= is \stdClass (expected int)
-%s:19 PhanTypeMismatchArgumentInternal Argument 1 (string) is float|int but \strlen() takes string
+%s:19 PhanTypeMismatchArgumentInternal Argument 1 ($string) is float|int but \strlen() takes string
 %s:21 PhanTypeInvalidRightOperandOfNumericOp Invalid operator: right operand of %= is \stdClass (expected number)
 %s:26 PhanTypeInvalidRightOperandOfIntegerOp Invalid operator: right operand of << is \stdClass (expected int)
 %s:27 PhanTypeInvalidLeftOperandOfIntegerOp Invalid operator: left operand of << is \stdClass (expected int)
 %s:28 PhanTypeInvalidRightOperandOfIntegerOp Invalid operator: right operand of >> is \stdClass (expected int)
 %s:29 PhanTypeInvalidLeftOperandOfIntegerOp Invalid operator: left operand of >> is \stdClass (expected int)
-%s:30 PhanTypeInvalidLeftOperandOfIntegerOp Invalid operator: left operand of >> is float (expected int)
+%s:30 PhanTypeInvalidLeftOperandOfIntegerOp Invalid operator: left operand of >> is 3.5 (expected int)
 %s:31 PhanTypeInvalidLeftOperandOfIntegerOp Invalid operator: left operand of >>= is \stdClass (expected int)
 %s:34 PhanTypeInvalidLeftOperandOfAdd Invalid operator: left operand of + is \stdClass (expected array or number)

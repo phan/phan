@@ -63,13 +63,13 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
 
     /**
     public function __construct(
-        FileRef $file_ref,
+        Context $context,
         string $name,
         UnionType $type,
         int $flags
     ) {
         parent::__construct(
-            $file_ref,
+            $context,
             $name,
             $type,
             $flags
@@ -82,7 +82,7 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
      * This will always return false in so far as variables
      * cannot be passed by reference.
      */
-    public function isPassByReference()
+    public function isPassByReference() : bool
     {
         return false;
     }
@@ -92,7 +92,7 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
      * This will always return false in so far as variables
      * cannot be variadic
      */
-    public function isVariadic()
+    public function isVariadic() : bool
     {
         return false;
     }
@@ -135,7 +135,7 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
                 ->withLineNumberStart($node->lineno ?? 0),
             $variable_name,
             $union_type,
-            $node->flags ?? 0
+            0
         );
 
         return $variable;
@@ -195,10 +195,11 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
      */
     public static function getUnionTypeOfHardcodedGlobalVariableWithName(
         string $name
-    ) {
+    ) : ?UnionType {
         if (\array_key_exists($name, self::_BUILTIN_GLOBAL_TYPES)) {
             // More efficient than using context.
-            return UnionType::fromFullyQualifiedString(self::_BUILTIN_GLOBAL_TYPES[$name]);
+            // Note that global constants can be modified by user code
+            return UnionType::fromFullyQualifiedPHPDocString(self::_BUILTIN_GLOBAL_TYPES[$name]);
         }
 
         if (\array_key_exists($name, Config::getValue('globals_type_map'))
@@ -238,6 +239,22 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
 
         if (!$this->getUnionType()->isEmpty()) {
             $string .= "{$this->getUnionType()} ";
+        }
+
+        return "$string\${$this->getName()}";
+    }
+
+    /**
+     * Returns a representation that can be used to debug issues with union types.
+     * The representation may change - this should not be used for issue messages, etc.
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public function getDebugRepresentation() : string
+    {
+        $string = '';
+
+        if (!$this->getUnionType()->isEmpty()) {
+            $string .= "{$this->getUnionType()->getDebugRepresentation()} ";
         }
 
         return "$string\${$this->getName()}";

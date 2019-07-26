@@ -5,6 +5,7 @@ namespace Phan\Tests\AST\TolerantASTConverter;
 use AssertionError;
 use ast;
 use Phan\AST\TolerantASTConverter\NodeDumper;
+use Phan\AST\TolerantASTConverter\Shim;
 use Phan\AST\TolerantASTConverter\TolerantASTConverter;
 use Phan\Debug;
 use Phan\Tests\BaseTest;
@@ -19,10 +20,10 @@ use function is_array;
 use function is_int;
 use function is_string;
 
+Shim::load();
+
 /**
  * Tests that the polyfill works with valid ASTs
- *
- * @phan-file-suppress PhanThrowTypeAbsent it's a test
  */
 final class ConversionTest extends BaseTest
 {
@@ -36,14 +37,14 @@ final class ConversionTest extends BaseTest
             $filename = $file_info->getFilename();
             if ($filename &&
                 !in_array($filename, ['.', '..'], true) &&
-                substr($filename, 0, 1) !== '.' &&
-                strpos($filename, '.') !== false &&
-                pathinfo($filename)['extension'] === 'php') {
+                \substr($filename, 0, 1) !== '.' &&
+                \strpos($filename, '.') !== false &&
+                \pathinfo($filename)['extension'] === 'php') {
                 $files[] = $file_path;
             }
         }
         if (count($files) === 0) {
-            throw new \InvalidArgumentException(sprintf("RecursiveDirectoryIterator iteration returned no files for %s\n", $source_dir));
+            throw new \InvalidArgumentException(\sprintf("RecursiveDirectoryIterator iteration returned no files for %s\n", $source_dir));
         }
         return $files;
     }
@@ -51,7 +52,7 @@ final class ConversionTest extends BaseTest
     /**
      * @return bool does php-ast support $ast_version
      */
-    public static function hasNativeASTSupport(int $ast_version)
+    public static function hasNativeASTSupport(int $ast_version) : bool
     {
         try {
             ast\parse_code('', $ast_version);
@@ -65,19 +66,18 @@ final class ConversionTest extends BaseTest
      * This is used to sort by token count, so that the failures with the fewest token
      * (i.e. simplest ASTs) appear first.
      * @param string[] $files
-     * @return void
      */
-    private static function sortByTokenCount(array &$files)
+    private static function sortByTokenCount(array &$files) : void
     {
         $token_counts = [];
         foreach ($files as $file) {
-            $contents = file_get_contents($file);
+            $contents = \file_get_contents($file);
             if (!is_string($contents)) {
                 throw new AssertionError("Failed to read $file");
             }
-            $token_counts[$file] = count(token_get_all($contents));
+            $token_counts[$file] = count(\token_get_all($contents));
         }
-        usort($files, static function (string $path1, string $path2) use ($token_counts) : int {
+        \usort($files, static function (string $path1, string $path2) use ($token_counts) : int {
             return $token_counts[$path1] <=> $token_counts[$path2];
         });
     }
@@ -87,29 +87,28 @@ final class ConversionTest extends BaseTest
      *
      * @return array{0:string,1:int}[] array of [string $file_path, int $ast_version]
      */
-    public function astValidFileExampleProvider()
+    public function astValidFileExampleProvider() : array
     {
         $tests = [];
         // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
-        $source_dir = dirname(dirname(dirname(realpath(__DIR__)))) . '/misc/fallback_ast_src';
+        $source_dir = \dirname(\dirname(\dirname(\realpath(__DIR__)))) . '/misc/fallback_ast_src';
         $paths = $this->scanSourceDirForPHP($source_dir);
 
         self::sortByTokenCount($paths);
-        $supports50 = self::hasNativeASTSupport(50);
-        if (!$supports50) {
-            throw new RuntimeException("Version 50 is not natively supported");
+        $supports70 = self::hasNativeASTSupport(70);
+        if (!$supports70) {
+            throw new RuntimeException("Version 70 is not natively supported");
         }
         foreach ($paths as $path) {
-            $tests[] = [$path, 50];
+            $tests[] = [$path, 70];
         }
         return $tests;
     }
 
     /**
      * @param ast\Node|int|string|float|null $node
-     * @return void
      */
-    private static function normalizeOriginalAST($node)
+    private static function normalizeOriginalAST($node) : void
     {
         if ($node instanceof ast\Node) {
             $kind = $node->kind;
@@ -148,16 +147,43 @@ final class ConversionTest extends BaseTest
         return $node;
     }
 
-    /** @dataProvider astValidFileExampleProvider */
-    public function testFallbackFromParser(string $file_name, int $ast_version)
+    private const FUNCTION_DECLARATION_KINDS = [
+        ast\AST_FUNC_DECL,
+        ast\AST_METHOD,
+        ast\AST_CLOSURE,
+        ast\AST_ARROW_FUNC,
+    ];
+
+    /**
+     * Normalizes the flags on function declaration caused by \ast\flags\FUNC_GENERATOR.
+     *
+     * Phan does not use these flags because they are not natively provided in all PHP versions.
+     */
+    public static function normalizeYieldFlags(ast\Node $node) : void
     {
-        $test_folder_name = basename(dirname($file_name));
-        if (PHP_VERSION_ID < 70100 && $test_folder_name === 'php71_or_newer') {
-            $this->markTestIncomplete('php-ast cannot parse php7.1 syntax when running in php7.0');
-        } elseif (PHP_VERSION_ID < 70300 && $test_folder_name === 'php73_or_newer') {
+        if (\in_array($node->kind, self::FUNCTION_DECLARATION_KINDS, true)) {
+            // Alternately, could make Phan do this.
+            $node->flags &= ~ast\flags\FUNC_GENERATOR;
+        }
+
+        foreach ($node->children as $v) {
+            if ($v instanceof ast\Node) {
+                self::normalizeYieldFlags($v);
+            }
+        }
+    }
+
+    /** @dataProvider astValidFileExampleProvider */
+    public function testFallbackFromParser(string $file_name, int $ast_version) : void
+    {
+        $test_folder_name = \basename(\dirname($file_name));
+        if (\PHP_VERSION_ID < 70300 && $test_folder_name === 'php73_or_newer') {
             $this->markTestIncomplete('php-ast cannot parse php7.3 syntax when running in php7.2 or older');
         }
-        $contents = file_get_contents($file_name);
+        if (\PHP_VERSION_ID < 70400 && $test_folder_name === 'php74_or_newer') {
+            $this->markTestIncomplete('php-ast cannot parse php7.4 syntax when running in php7.3 or older');
+        }
+        $contents = \file_get_contents($file_name);
         if ($contents === false) {
             $this->fail("Failed to read $file_name");
             return;  // unreachable
@@ -166,7 +192,7 @@ final class ConversionTest extends BaseTest
         self::normalizeOriginalAST($ast);
         $this->assertInstanceOf('\ast\Node', $ast, 'Examples must be syntactically valid PHP parsable by php-ast');
         $converter = new TolerantASTConverter();
-        $converter->setPHPVersionId(PHP_VERSION_ID);
+        $converter->setPHPVersionId(\PHP_VERSION_ID);
         try {
             $fallback_ast = $converter->parseCodeAsPHPAST($contents, $ast_version);
         } catch (\Throwable $e) {
@@ -179,9 +205,11 @@ final class ConversionTest extends BaseTest
             $fallback_ast = self::normalizeLineNumbers($fallback_ast);
             $ast          = self::normalizeLineNumbers($ast);
         }
+        self::normalizeYieldFlags($ast);
+        self::normalizeYieldFlags($fallback_ast);
         // TODO: Remove $ast->parent recursively
-        $fallback_ast_repr = var_export($fallback_ast, true);
-        $original_ast_repr = var_export($ast, true);
+        $fallback_ast_repr = \var_export($fallback_ast, true);
+        $original_ast_repr = \var_export($ast, true);
 
         if ($fallback_ast_repr !== $original_ast_repr) {
             $node_dumper = new NodeDumper($contents);

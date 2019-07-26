@@ -1,0 +1,2 @@
+%s:19 PhanNonClassMethodCall Call to method __construct on non-class type ?class-string<\SplObjectHash>
+%s:20 PhanNonClassMethodCall Call to method __construct on non-class type ?class-string<\SplObjectHash>

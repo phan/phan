@@ -25,7 +25,7 @@ class VariableTrackingBranchScope extends VariableTrackingScope
      * @return ?array<int,true>
      * @override
      */
-    public function getDefinition(string $variable_name)
+    public function getDefinition(string $variable_name) : ?array
     {
         $definitions = $this->defs[$variable_name] ?? null;
         if ($definitions === null) {
@@ -42,7 +42,7 @@ class VariableTrackingBranchScope extends VariableTrackingScope
      * @return ?array<int,true>
      * @override
      */
-    public function getDefinitionUpToScope(string $variable_name, VariableTrackingScope $forbidden_scope)
+    public function getDefinitionUpToScope(string $variable_name, VariableTrackingScope $forbidden_scope) : ?array
     {
         if ($this === $forbidden_scope) {
             return null;
@@ -53,7 +53,7 @@ class VariableTrackingBranchScope extends VariableTrackingScope
     /**
      * @return array<string,array<int,true>>
      */
-    public function getDefinitionsRecursively()
+    public function getDefinitionsRecursively() : array
     {
         $defs = $this->parent_scope->getDefinitionsRecursively();
         foreach ($this->defs as $variable_name => $def) {
@@ -69,11 +69,9 @@ class VariableTrackingBranchScope extends VariableTrackingScope
      * @param VariableTrackingBranchScope $inner_scope @phan-unused-param
      * @param bool $exits true if this branch will exit.
      *             This would mean that the branch uses variables, but does not define them outside of that scope.
-     *
-     * @return void
      * @override
      */
-    public function recordSkippedScope(VariableTrackingBranchScope $inner_scope, bool $exits)
+    public function recordSkippedScope(VariableTrackingBranchScope $inner_scope, bool $exits) : void
     {
         $this->parent_scope->recordSkippedScope($inner_scope, $exits);
     }

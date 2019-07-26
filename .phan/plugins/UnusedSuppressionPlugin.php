@@ -10,14 +10,14 @@ use Phan\Language\Element\Func;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
 use Phan\Plugin\ConfigPluginSet;
-use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeClassCapability;
-use Phan\PluginV2\AnalyzeFunctionCapability;
-use Phan\PluginV2\AnalyzeMethodCapability;
-use Phan\PluginV2\AnalyzePropertyCapability;
-use Phan\PluginV2\BeforeAnalyzeFileCapability;
-use Phan\PluginV2\FinalizeProcessCapability;
-use Phan\PluginV2\SuppressionCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\AnalyzeClassCapability;
+use Phan\PluginV3\AnalyzeFunctionCapability;
+use Phan\PluginV3\AnalyzeMethodCapability;
+use Phan\PluginV3\AnalyzePropertyCapability;
+use Phan\PluginV3\BeforeAnalyzeFileCapability;
+use Phan\PluginV3\FinalizeProcessCapability;
+use Phan\PluginV3\SuppressionCapability;
 
 /**
  * Check for unused (at)suppress annotations.
@@ -25,7 +25,7 @@ use Phan\PluginV2\SuppressionCapability;
  * NOTE! This plugin only produces correct results when Phan
  *       is run on a single processor (via the `-j1` flag).
  */
-class UnusedSuppressionPlugin extends PluginV2 implements
+class UnusedSuppressionPlugin extends PluginV3 implements
     BeforeAnalyzeFileCapability,
     AnalyzeClassCapability,
     AnalyzeFunctionCapability,
@@ -67,13 +67,11 @@ class UnusedSuppressionPlugin extends PluginV2 implements
      * @param AddressableElement $element
      * Any element such as function, method, class
      * (which has an FQSEN)
-     *
-     * @return void
      */
-    private function analyzeAddressableElement(
+    private static function analyzeAddressableElement(
         CodeBase $code_base,
         AddressableElement $element
-    ) {
+    ) : void {
         // Get the set of suppressed issues on the element
         $suppress_issue_list =
             $element->getSuppressIssueList();
@@ -85,16 +83,29 @@ class UnusedSuppressionPlugin extends PluginV2 implements
 
         // Check to see if any are unused
         foreach ($suppress_issue_list as $issue_type => $use_count) {
-            if (0 === $use_count) {
-                $this->emitIssue(
-                    $code_base,
-                    $element->getContext(),
-                    'UnusedSuppression',
-                    "Element {FUNCTIONLIKE} suppresses issue {ISSUETYPE} but does not use it",
-                    [(string)$element->getFQSEN(), $issue_type]
-                );
+            if (0 !== $use_count) {
+                continue;
             }
+            if (in_array($issue_type, self::getUnusedSuppressionIgnoreList())) {
+                continue;
+            }
+            self::emitIssue(
+                $code_base,
+                $element->getContext(),
+                'UnusedSuppression',
+                "Element {FUNCTIONLIKE} suppresses issue {ISSUETYPE} but does not use it",
+                [(string)$element->getFQSEN(), $issue_type]
+            );
         }
+    }
+
+    private function postponeAnalysisOfElement(AddressableElement $element) : void
+    {
+        if (count($element->getSuppressIssueList()) === 0) {
+            // There are no suppressions, so there's no reason to check this
+            return;
+        }
+        $this->elements_for_postponed_analysis[] = $element;
     }
 
     /**
@@ -103,16 +114,13 @@ class UnusedSuppressionPlugin extends PluginV2 implements
      *
      * @param Clazz $class
      * A class being analyzed
-     *
-     * @return void
-     *
      * @override
      */
     public function analyzeClass(
         CodeBase $unused_code_base,
         Clazz $class
-    ) {
-        $this->elements_for_postponed_analysis[] = $class;
+    ) : void {
+        $this->postponeAnalysisOfElement($class);
     }
 
     /**
@@ -121,22 +129,19 @@ class UnusedSuppressionPlugin extends PluginV2 implements
      *
      * @param Method $method
      * A method being analyzed
-     *
-     * @return void
-     *
      * @override
      */
     public function analyzeMethod(
         CodeBase $unused_code_base,
         Method $method
-    ) {
+    ) : void {
 
         // Ignore methods inherited by subclasses
         if ($method->getFQSEN() !== $method->getDefiningFQSEN()) {
             return;
         }
 
-        $this->elements_for_postponed_analysis[] = $method;
+        $this->postponeAnalysisOfElement($method);
     }
 
     /**
@@ -145,16 +150,13 @@ class UnusedSuppressionPlugin extends PluginV2 implements
      *
      * @param Func $function
      * A function being analyzed
-     *
-     * @return void
-     *
      * @override
      */
     public function analyzeFunction(
         CodeBase $unused_code_base,
         Func $function
-    ) {
-        $this->elements_for_postponed_analysis[] = $function;
+    ) : void {
+        $this->postponeAnalysisOfElement($function);
     }
 
     /**
@@ -163,15 +165,12 @@ class UnusedSuppressionPlugin extends PluginV2 implements
      *
      * @param Property $property
      * A property being analyzed
-     *
-     * @return void
-     *
      * @override
      */
     public function analyzeProperty(
         CodeBase $unused_code_base,
         Property $property
-    ) {
+    ) : void {
         $this->elements_for_postponed_analysis[] = $property;
     }
 
@@ -181,15 +180,15 @@ class UnusedSuppressionPlugin extends PluginV2 implements
      *       Putting this hook in finalizeProcess() just minimizes the incorrect result counts.
      * @override
      */
-    public function finalizeProcess(CodeBase $code_base)
+    public function finalizeProcess(CodeBase $code_base) : void
     {
         foreach ($this->elements_for_postponed_analysis as $element) {
-            $this->analyzeAddressableElement($code_base, $element);
+            self::analyzeAddressableElement($code_base, $element);
         }
         $this->analyzePluginSuppressions($code_base);
     }
 
-    private function analyzePluginSuppressions(CodeBase $code_base)
+    private function analyzePluginSuppressions(CodeBase $code_base) : void
     {
         $suppression_plugin_set = ConfigPluginSet::instance()->getSuppressionPluginSet();
         if (count($suppression_plugin_set) === 0) {
@@ -204,9 +203,29 @@ class UnusedSuppressionPlugin extends PluginV2 implements
     }
 
     /**
-     * @return void
+     * @return array<int,string>
      */
-    private function analyzePluginSuppressionsForFile(CodeBase $code_base, SuppressionCapability $plugin, string $relative_file_path)
+    private static function getUnusedSuppressionIgnoreList() : array
+    {
+        return Config::getValue('plugin_config')['unused_suppression_ignore_list'] ?? [];
+    }
+
+    private static function getReportOnlyWhitelisted() : bool
+    {
+        return Config::getValue('plugin_config')['unused_suppression_whitelisted_only'] ?? false;
+    }
+
+    private static function shouldReportUnusedSuppression(string $issue_type) : bool
+    {
+        $ignore_list = self::getUnusedSuppressionIgnoreList();
+        $only_whitelisted = self::getReportOnlyWhitelisted();
+        $issue_whitelist = Config::getValue('whitelist_issue_types') ?? [];
+
+        return !in_array($issue_type, $ignore_list, true) &&
+            (!$only_whitelisted || in_array($issue_type, $issue_whitelist, true));
+    }
+
+    private function analyzePluginSuppressionsForFile(CodeBase $code_base, SuppressionCapability $plugin, string $relative_file_path) : void
     {
         $absolute_file_path = Config::projectPath($relative_file_path);
         $plugin_class = \get_class($plugin);
@@ -237,7 +256,10 @@ class UnusedSuppressionPlugin extends PluginV2 implements
                 if (isset($plugin_suppressions[$issue_kind][$lineno_of_comment])) {
                     continue;
                 }
-                $this->emitIssue(
+                if (!self::shouldReportUnusedSuppression($issue_type)) {
+                    continue;
+                }
+                self::emitIssue(
                     $code_base,
                     (new Context())->withFile($relative_file_path)->withLineNumberStart($lineno_of_comment),
                     $issue_kind,
@@ -254,15 +276,13 @@ class UnusedSuppressionPlugin extends PluginV2 implements
         Context $context,
         string $unused_file_contents,
         Node $unused_node
-    ) {
+    ) : void {
         $file = $context->getFile();
         $this->files_for_postponed_analysis[$file] = $file;
     }
 
     /**
      * Record the fact that $plugin caused suppressions in $file_path for issue $issue_type due to an annotation around $line
-     *
-     * @return void
      * @internal
      */
     public function recordPluginSuppression(
@@ -270,7 +290,7 @@ class UnusedSuppressionPlugin extends PluginV2 implements
         string $file_path,
         string $issue_type,
         int $line
-    ) {
+    ) : void {
         $file_name = Config::projectPath($file_path);
         $plugin_class = \get_class($plugin);
         $this->plugin_active_suppression_list[$plugin_class][$file_name][$issue_type][$line] = $line;

@@ -38,11 +38,11 @@ class RegexAnalyzer
         static $shape_array_inner_type = null;
         if ($string_array_type === null) {
             // Note: Patterns **can** have named subpatterns
-            $string_array_type = UnionType::fromFullyQualifiedString('string[]');
-            $string_type       = UnionType::fromFullyQualifiedString('string');
-            $array_type        = UnionType::fromFullyQualifiedString('array');
-            $shape_array_type  = UnionType::fromFullyQualifiedString('array{0:string,1:int}[]');
-            $shape_array_inner_type  = UnionType::fromFullyQualifiedString('array{0:string,1:int}');
+            $string_array_type = UnionType::fromFullyQualifiedPHPDocString('string[]');
+            $string_type       = UnionType::fromFullyQualifiedPHPDocString('string');
+            $array_type        = UnionType::fromFullyQualifiedPHPDocString('array');
+            $shape_array_type  = UnionType::fromFullyQualifiedPHPDocString('array{0:string,1:int}[]');
+            $shape_array_inner_type  = UnionType::fromFullyQualifiedPHPDocString('array{0:string,1:int}');
         }
         $regex_node = $argument_list[0];
         $regex = $regex_node instanceof Node ? (new ContextNode($code_base, $context, $regex_node))->getEquivalentPHPScalarValue() : $regex_node;
@@ -94,7 +94,7 @@ class RegexAnalyzer
         }
 
         if (!\is_int($bit)) {
-            return UnionType::fromFullyQualifiedString('array[]');
+            return UnionType::fromFullyQualifiedPHPDocString('array[]');
         }
 
         $shape_array_type = self::getPregMatchUnionType($code_base, $context, $argument_list);
@@ -113,13 +113,14 @@ class RegexAnalyzer
         array $regex_group_keys,
         UnionType $type
     ) : UnionType {
-        $field_types = array_map(
+        $field_types = \array_map(
             /** @param true $_ */
-            static function ($_) use ($type) : UnionType {
+            static function (bool $_) use ($type) : UnionType {
                 return $type;
             },
             $regex_group_keys
         );
-        return ArrayShapeType::fromFieldTypes($field_types, false)->asUnionType();
+        // NOTE: This is treated as not 100% guaranteed to be an array to avoid false positives about comparing to non-arrays
+        return ArrayShapeType::fromFieldTypes($field_types, false)->asPHPDocUnionType();
     }
 }

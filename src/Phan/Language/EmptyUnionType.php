@@ -8,9 +8,12 @@ use Phan\CodeBase;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
 use Phan\Language\Element\Clazz;
+use Phan\Language\Element\FunctionInterface;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\ArrayType;
+use Phan\Language\Type\BoolType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\TemplateType;
 
 /**
@@ -26,7 +29,7 @@ final class EmptyUnionType extends UnionType
      */
     public function __construct()
     {
-        parent::__construct([], true);
+        parent::__construct([], true, []);
     }
 
     /**
@@ -35,6 +38,7 @@ final class EmptyUnionType extends UnionType
     protected static function instance() : EmptyUnionType
     {
         static $self = null;
+        // @phan-suppress-next-line PhanCoalescingNeverNull false positive involving assignment within null coalescing operator
         return $self ?? ($self = new EmptyUnionType());
     }
 
@@ -51,13 +55,11 @@ final class EmptyUnionType extends UnionType
 
     /**
      * Add a type name to the list of types
-     *
-     * @return UnionType
      * @override
      */
-    public function withType(Type $type)
+    public function withType(Type $type) : UnionType
     {
-        return $type->asUnionType();
+        return $type->asPHPDocUnionType();
     }
 
     /**
@@ -66,11 +68,9 @@ final class EmptyUnionType extends UnionType
      * keeping the keys in a consecutive order.
      *
      * Each type in $this->type_set occurs exactly once.
-     *
-     * @return UnionType
      * @override
      */
-    public function withoutType(Type $type)
+    public function withoutType(Type $type) : UnionType
     {
         return $this;
     }
@@ -88,13 +88,11 @@ final class EmptyUnionType extends UnionType
 
     /**
      * Returns a union type which add the given types to this type
-     *
-     * @return UnionType
      * @override
      */
-    public function withUnionType(UnionType $union_type)
+    public function withUnionType(UnionType $union_type) : UnionType
     {
-        return $union_type;
+        return $union_type->eraseRealTypeSet();
     }
 
     /**
@@ -231,6 +229,17 @@ final class EmptyUnionType extends UnionType
 
     /**
      * @return UnionType
+     * A new UnionType with any references to 'static' resolved
+     * in the given context.
+     */
+    public function withStaticResolvedInFunctionLike(
+        FunctionInterface $function
+    ) : UnionType {
+        return $this;
+    }
+
+    /**
+     * @return UnionType
      * A new UnionType *plus* any references to 'self' (but not 'static') resolved
      * in the given context.
      */
@@ -308,6 +317,11 @@ final class EmptyUnionType extends UnionType
     public function containsNullableOrIsEmpty() : bool
     {
         return true;
+    }
+
+    public function isNull() : bool
+    {
+        return false;
     }
 
     /**
@@ -479,6 +493,19 @@ final class EmptyUnionType extends UnionType
         return true;  // Empty can cast to anything. See parent implementation.
     }
 
+    /**
+     * Precondition: $this->canCastToUnionType() is false.
+     *
+     * This tells us if it would have succeeded if the source type was not nullable.
+     *
+     * @internal
+     * @override
+     */
+    public function canCastToUnionTypeIfNonNull(UnionType $target) : bool
+    {
+        return false;
+    }
+
     public function canCastToUnionTypeHandlingTemplates(
         UnionType $target,
         CodeBase $code_base
@@ -618,10 +645,11 @@ final class EmptyUnionType extends UnionType
      * context
      *
      * TODO: Add a method to ContextNode to directly get FQSEN instead?
+     * @suppress PhanImpossibleCondition deliberately making a generator yielding nothing
      */
     public function asClassFQSENList(
         Context $context
-    ) {
+    ) : Generator {
         if (false) {
             yield;
         }
@@ -651,7 +679,7 @@ final class EmptyUnionType extends UnionType
     public function asClassList(
         CodeBase $code_base,
         Context $context
-    ) {
+    ) : Generator {
         yield from [];
     }
 
@@ -694,6 +722,16 @@ final class EmptyUnionType extends UnionType
         return $this;
     }
 
+    public function objectTypesStrict() : UnionType
+    {
+        return ObjectType::instance(false)->asRealUnionType();
+    }
+
+    public function objectTypesStrictAllowEmpty() : UnionType
+    {
+        return $this;
+    }
+
     /**
      * Takes "MyClass|int|array|?object" and returns "MyClass|?object"
      *
@@ -709,8 +747,6 @@ final class EmptyUnionType extends UnionType
 
     /**
      * Returns true if objectTypes would be non-empty.
-     *
-     * @return bool
      */
     public function hasObjectTypes() : bool
     {
@@ -780,6 +816,11 @@ final class EmptyUnionType extends UnionType
         return $this;
     }
 
+    public function floatTypes() : UnionType
+    {
+        return $this;
+    }
+
     /**
      * Returns the types for which is_string($x) would be true.
      *
@@ -791,6 +832,11 @@ final class EmptyUnionType extends UnionType
     public function stringTypes() : UnionType
     {
         return $this;
+    }
+
+    public function isExclusivelyStringTypes() : bool
+    {
+        return true;
     }
 
     /**
@@ -857,6 +903,15 @@ final class EmptyUnionType extends UnionType
     public function hasTypeMatchingCallback(Closure $matcher_callback) : bool
     {
         return false;
+    }
+
+    /**
+     * @return bool
+     * True if all of the types in this UnionType made $matcher_callback return true
+     */
+    public function allTypesMatchCallback(Closure $matcher_callback) : bool
+    {
+        return true;
     }
 
     /**
@@ -942,7 +997,7 @@ final class EmptyUnionType extends UnionType
      */
     public function asNonEmptyGenericArrayTypes(int $key_type) : UnionType
     {
-        return ArrayType::instance(false)->asUnionType();
+        return ArrayType::instance(false)->asPHPDocUnionType();
     }
 
     /**
@@ -987,7 +1042,7 @@ final class EmptyUnionType extends UnionType
 
     public function replaceWithTemplateTypes(UnionType $template_union_type) : UnionType
     {
-        return $template_union_type;
+        return $template_union_type->eraseRealTypeSet();
     }
 
     public function hasTypeWithFQSEN(Type $other) : bool
@@ -1110,7 +1165,12 @@ final class EmptyUnionType extends UnionType
         return $this;
     }
 
-    public function canStrictCastToUnionType(UnionType $target) : bool
+    public function canAnyTypeStrictCastToUnionType(CodeBase $code_base, UnionType $target) : bool
+    {
+        return true;
+    }
+
+    public function canStrictCastToUnionType(CodeBase $code_base, UnionType $target) : bool
     {
         return true;
     }
@@ -1145,6 +1205,7 @@ final class EmptyUnionType extends UnionType
      * @return Generator<Type,Type>
      * @suppress PhanTypeMismatchGeneratorYieldValue (deliberate empty stub code)
      * @suppress PhanTypeMismatchGeneratorYieldKey (deliberate empty stub code)
+     * @suppress PhanImpossibleCondition
      */
     public function getReferencedClasses() : Generator
     {
@@ -1153,12 +1214,22 @@ final class EmptyUnionType extends UnionType
         }
     }
 
+    public function hasIntType() : bool
+    {
+        return false;
+    }
+
     public function hasNonNullIntType() : bool
     {
         return false;
     }
 
     public function isNonNullIntType() : bool
+    {
+        return false;
+    }
+
+    public function isNonNullIntOrFloatType() : bool
     {
         return false;
     }
@@ -1200,12 +1271,12 @@ final class EmptyUnionType extends UnionType
 
     public function applyUnaryBitwiseNotOperator() : UnionType
     {
-        return IntType::instance(false)->asUnionType();
+        return IntType::instance(false)->asPHPDocUnionType();
     }
 
     public function applyUnaryPlusOperator() : UnionType
     {
-        return UnionType::fromFullyQualifiedString('int|float');
+        return UnionType::fromFullyQualifiedPHPDocString('int|float');
     }
 
     /** @return null */
@@ -1215,6 +1286,11 @@ final class EmptyUnionType extends UnionType
     }
 
     public function asSingleScalarValueOrNullOrSelf()
+    {
+        return $this;
+    }
+
+    public function asValueOrNullOrSelf()
     {
         return $this;
     }
@@ -1259,12 +1335,119 @@ final class EmptyUnionType extends UnionType
         return $this;
     }
 
-    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type)
+    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type) : ?Closure
     {
         return null;
     }
 
     public function usesTemplateType(TemplateType $template_type) : bool
+    {
+        return false;
+    }
+
+    public function isVoidType() : bool
+    {
+        return false;
+    }
+
+    public function withRealType(Type $type) : UnionType
+    {
+        return $type->asRealUnionType();
+    }
+
+    public function getRealTypeSet() : array
+    {
+        return [];
+    }
+
+    public function hasRealTypeSet() : bool
+    {
+        return false;
+    }
+
+    public function eraseRealTypeSet() : UnionType
+    {
+        return $this;
+    }
+
+    public function hasAnyTypeOverlap(CodeBase $code_base, UnionType $other) : bool
+    {
+        return true;
+    }
+
+    public function hasAnyWeakTypeOverlap(UnionType $other) : bool
+    {
+        return true;
+    }
+
+    /**
+     * @param ?array<int,Type> $real_type_set
+     */
+    public function withRealTypeSet(?array $real_type_set) : UnionType
+    {
+        if (!$real_type_set) {
+            return $this;
+        }
+        return UnionType::of($real_type_set, $real_type_set);
+    }
+
+    public function getRealUnionType() : UnionType
+    {
+        return $this;
+    }
+
+    public function arrayTypesStrictCast() : UnionType
+    {
+        return ArrayType::instance(false)->asRealUnionType();
+    }
+
+    public function arrayTypesStrictCastAllowEmpty() : UnionType
+    {
+        return $this;
+    }
+
+    public function boolTypes() : UnionType
+    {
+        return BoolType::instance(false)->asRealUnionType();
+    }
+
+    public function scalarTypesStrict(bool $allow_empty = false) : UnionType
+    {
+        if ($allow_empty) {
+            return $this;
+        }
+        return UnionType::fromFullyQualifiedRealString('int|float|string|bool');
+    }
+
+    public function isExclusivelyRealTypes() : bool
+    {
+        return false;
+    }
+
+    public function getDebugRepresentation() : string
+    {
+        return '';
+    }
+
+    public function canPossiblyCastToClass(CodeBase $code_base, Type $class_type) : bool
+    {
+        return true;
+    }
+
+    public function isExclusivelySubclassesOf(CodeBase $code_base, Type $class_type) : bool
+    {
+        return false;
+    }
+
+    /**
+     * Returns true if this type has types for which `+expr` isn't an integer.
+     */
+    public function hasTypesCoercingToNonInt() : bool
+    {
+        return true;
+    }
+
+    public function isEmptyArrayShape() : bool
     {
         return false;
     }

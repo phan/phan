@@ -3,17 +3,18 @@
 namespace Phan\Language\Type;
 
 use Phan\Config;
+use Phan\Language\UnionType;
 
 /**
  * Phan's representation of the type for `float`
  */
-final class FloatType extends ScalarType
+class FloatType extends ScalarType
 {
     /** @phan-override */
     const NAME = 'float';
 
     /** @override */
-    public function getIsPossiblyNumeric() : bool
+    public function isPossiblyNumeric() : bool
     {
         return true;
     }
@@ -21,5 +22,30 @@ final class FloatType extends ScalarType
     public function isValidBitwiseOperand() : bool
     {
         return Config::getValue('scalar_implicit_cast');
+    }
+
+    public function isPossiblyTruthy() : bool
+    {
+        return true;
+    }
+
+    public function isPossiblyFalsey() : bool
+    {
+        return true;
+    }
+
+    public function isAlwaysTruthy() : bool
+    {
+        return false;
+    }
+
+    public function isAlwaysFalsey() : bool
+    {
+        return false;
+    }
+
+    public function getTypeAfterIncOrDec() : UnionType
+    {
+        return FloatType::instance(false)->asPHPDocUnionType();
     }
 }

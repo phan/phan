@@ -12,12 +12,10 @@ use Phan\Tests\BaseTest;
 
 /**
  * Tests that the fallback works with ASTs, and can point an ast\Node to the original.
- *
- * @phan-file-suppress PhanThrowTypeAbsent it's a test
  */
 final class TolerantASTConverterWithNodeMappingTest extends BaseTest
 {
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass() : void
     {
         parent::setUpBeforeClass();
         // @phan-suppress-next-line PhanAccessMethodInternal
@@ -30,7 +28,7 @@ final class TolerantASTConverterWithNodeMappingTest extends BaseTest
      * @dataProvider byteOffsetLookupProvider
      * @suppress PhanUndeclaredProperty isSelected
      */
-    public function testByteOffsetLookup(int $line, int $column, string $file_contents, Node $expected_node)
+    public function testByteOffsetLookup(int $line, int $column, string $file_contents, Node $expected_node) : void
     {
         $expected_node->isSelected = true;
 
@@ -38,7 +36,7 @@ final class TolerantASTConverterWithNodeMappingTest extends BaseTest
         $ast = $this->parseASTWithDefaultOptions($file_contents, $byte_offset);
         // TODO: Create a reusable abstraction in Util to walk / filter nodes from the AST
         $selected_node = $this->findSelectedNode($ast);
-        $this->assertEquals(\Phan\Debug::nodeToString($expected_node), \Phan\Debug::nodeToString($selected_node));
+        $this->assertSame(\Phan\Debug::nodeToString($expected_node), \Phan\Debug::nodeToString($selected_node));
         $this->assertEquals($expected_node, $selected_node);
     }
 
@@ -56,9 +54,8 @@ final class TolerantASTConverterWithNodeMappingTest extends BaseTest
     /**
      * @param Node|int|string|float|null $node
      * @param array<int,Node> &$candidates
-     * @return void
      */
-    private function findSelectedNodeInner($node, array &$candidates)
+    private function findSelectedNodeInner($node, array &$candidates) : void
     {
         if ($node instanceof Node) {
             if (\property_exists($node, 'isSelected')) {
@@ -76,17 +73,14 @@ final class TolerantASTConverterWithNodeMappingTest extends BaseTest
         }
     }
 
-    /**
-     * @return Node
-     */
-    private function parseASTWithDefaultOptions(string $file_contents, int $byte_offset)
+    private function parseASTWithDefaultOptions(string $file_contents, int $byte_offset) : Node
     {
         $converter = new TolerantASTConverterWithNodeMapping($byte_offset);
         $errors = [];
         // @phan-suppress-next-line PhanThrowTypeAbsentForCall don't care in unit test
         $ast = $converter->parseCodeAsPHPAST($file_contents, TolerantASTConverter::AST_VERSION, $errors);
         if (\count($errors) > 0) {
-            throw new InvalidArgumentException("Unexpected errors: " . json_encode($errors));
+            throw new InvalidArgumentException("Unexpected errors: " . \json_encode($errors));
         }
         return $ast;
     }
@@ -98,7 +92,7 @@ final class TolerantASTConverterWithNodeMappingTest extends BaseTest
         $byte_offset = 0;
         while ($line > 1) {
             $line--;
-            $newline_pos = strpos($file_contents, "\n", $byte_offset);
+            $newline_pos = \strpos($file_contents, "\n", $byte_offset);
             if ($newline_pos === false) {
                 throw new \InvalidArgumentException("too many lines");
             }
@@ -110,7 +104,7 @@ final class TolerantASTConverterWithNodeMappingTest extends BaseTest
     /**
      * @return array<int,array{0:int,1:int,2:string,3:Node}>
      */
-    public function byteOffsetLookupProvider()
+    public function byteOffsetLookupProvider() : array
     {
         // using 1-based lines, 0-based columns
         $default_file = <<<'EOT'

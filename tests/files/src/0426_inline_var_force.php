@@ -6,11 +6,11 @@ function example(int ...$values) {
     $sum = 0;
     '@phan-var int $prev';
     foreach ($values as $value) {
-        if (!$first) {
+        if (!$first) {  // should not emit PhanRedundantConditionInLoop
             $sum += $prev * $value;
         } else {
             $first = false;
-            $prev = $value;  // FIXME should not warn about $prev being unused
+            $prev = $value;  // emits different issue type for loops (usually false positive)
         }
     }
     return $sum;

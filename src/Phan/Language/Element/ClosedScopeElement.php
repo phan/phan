@@ -18,9 +18,8 @@ trait ClosedScopeElement
 
     /**
      * Sets the internal scope of this closed scope element.
-     * @return void
      */
-    public function setInternalScope(ClosedScope $internal_scope)
+    public function setInternalScope(ClosedScope $internal_scope) : void
     {
         $this->internal_scope = $internal_scope;
     }

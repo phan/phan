@@ -5,21 +5,21 @@ namespace Phan\Plugin\Internal;
 use ast\Node;
 use Closure;
 use Phan\Language\Context;
-use Phan\PluginV2;
-use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV3\PostAnalyzeNodeCapability;
 
 /**
  * This plugin checks for the definition of a region selected by a user.
  */
-class NodeSelectionPlugin extends PluginV2 implements PostAnalyzeNodeCapability
+class NodeSelectionPlugin extends PluginV3 implements PostAnalyzeNodeCapability
 {
     /**
      * @param ?Closure(Context,Node,array<int,Node>):void $closure
      * @return void
      * TODO: Fix false positive TypeMismatchDeclaredParam with Closure $closure = null in this method
      */
-    public function setNodeSelectorClosure($closure)
+    public function setNodeSelectorClosure(?Closure $closure) : void
     {
         NodeSelectionVisitor::$closure = $closure;
     }
@@ -53,11 +53,9 @@ class NodeSelectionVisitor extends PluginAwarePostAnalysisVisitor
      * A node to check
      *
      * @param array<int,Node> $parent_node_list
-     *
-     * @return void
      * @see ConfigPluginSet::prepareNodeSelectionPlugin() for how this is called
      */
-    public function visitCommonImplementation(Node $node, array $parent_node_list)
+    public function visitCommonImplementation(Node $node, array $parent_node_list) : void
     {
         if (!\property_exists($node, 'isSelected')) {
             return;

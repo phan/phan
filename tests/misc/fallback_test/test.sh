@@ -21,6 +21,8 @@ sed -i \
     -e "s/ syntax error, unexpected return (T_RETURN)/ syntax error, unexpected 'return' (T_RETURN)/" \
     -e "s/ syntax error, unexpected new (T_NEW)/ syntax error, unexpected 'new' (T_NEW)/" \
     -e "/src\/018_list_expression_18\.php:2 PhanSyntaxError syntax error, unexpected '0'/d" \
+    -e "s/is \\\\Countable|\\\\SimpleXMLElement|\\\\Traversable|iterable/is \\\\SimpleXMLElement|\\\\Traversable|iterable/" \
+    -e "s/ expecting ';' or ','/ expecting ',' or ';'/" \
     -e "/PhanSyntaxError syntax error, unexpected ',', expecting ']'/d" \
     -e "/030_crash_extract_type.php:3 PhanSyntaxError syntax error, unexpected ',', expecting ')'/d" \
     -e "s/047_invalid_define.php:3 PhanSyntaxError syntax error, unexpected 'a' (T_STRING), expecting ',' or ')'/047_invalid_define.php:3 PhanSyntaxError syntax error, unexpected 'a' (T_STRING), expecting ')'/" \
@@ -30,7 +32,12 @@ sed -i \
 # diff returns a non-zero exit code if files differ or are missing
 echo
 echo "Comparing the output:"
-diff $EXPECTED_PATH $ACTUAL_PATH
+if type colordiff 2>/dev/null >/dev/null; then
+    DIFF=colordiff
+else
+    DIFF=diff
+fi
+$DIFF $EXPECTED_PATH $ACTUAL_PATH
 EXIT_CODE=$?
 if [ "$EXIT_CODE" == 0 ]; then
 	echo "Files $EXPECTED_PATH and output $ACTUAL_PATH are identical"

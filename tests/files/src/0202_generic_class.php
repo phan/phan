@@ -23,8 +23,8 @@ class Tuple2 {
         $e0,
         $e1
     ) {
-        $this->$e0 = $e0;
-        $this->$e1 = $e1;
+        $this->e0 = $e0;
+        $this->e1 = $e1;
     }
 
     /** @return T0 */

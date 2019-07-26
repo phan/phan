@@ -1,0 +1,2 @@
+src/128_leading_and_trailing.php:1 PhanPluginInlineHTMLLeading Saw inline HTML at the start of the file: "\n"
+src/128_leading_and_trailing.php:7 PhanPluginInlineHTMLTrailing Saw inline HTML at the end of the file: "\n"

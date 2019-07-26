@@ -24,7 +24,6 @@ class ComparisonCondition implements BinaryCondition
      *
      * @param Node $var
      * @param Node|int|string|float $expr
-     * @return Context
      * @override
      */
     public function analyzeVar(ConditionVisitorInterface $visitor, Node $var, $expr) : Context
@@ -37,11 +36,18 @@ class ComparisonCondition implements BinaryCondition
      *
      * @param Node|int|string|float $object
      * @param Node|int|string|float $expr
-     * @return Context
      * @suppress PhanUnusedPublicMethodParameter
      */
     public function analyzeClassCheck(ConditionVisitorInterface $visitor, $object, $expr) : Context
     {
         return $visitor->getContext();
+    }
+
+    /**
+     * @suppress PhanUnusedPublicMethodParameter
+     */
+    public function analyzeCall(ConditionVisitorInterface $visitor, Node $call_node, $expr) : ?Context
+    {
+        return null;
     }
 }

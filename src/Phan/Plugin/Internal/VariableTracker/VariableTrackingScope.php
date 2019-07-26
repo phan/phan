@@ -7,8 +7,8 @@ use ast\Node;
 use function spl_object_id;
 
 /**
- * This will represent a variable scope, similar to \Phan\Language\Scope.
- * Instead of tracking the union types for variable names, this will instead track definitions and uses of variable names.
+ * This represents a variable scope, similar to \Phan\Language\Scope.
+ * Instead of tracking the union types for variable names, this instead tracks definitions and uses of variable names.
  *
  * @see ContextMergeVisitor for something similar for union types.
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
@@ -34,23 +34,27 @@ class VariableTrackingScope
     protected $uses = [];
 
     /**
-     * Record that $variable_name had a definition that was created by the Node $node
-     *
-     * @return void
+     * @var array<string,true>
+     * Maps variable names to whether they were redefined in the scope.
      */
-    public function recordDefinition(string $variable_name, Node $node)
+    private $defs_shadowing_set = [];
+
+    /**
+     * Record that $variable_name had a definition that was created by the Node $node
+     */
+    public function recordDefinition(string $variable_name, Node $node) : void
     {
         // Create a new definition for variable_name.
         // Replace the definitions for $variable_name.
         $this->defs[$variable_name] = [spl_object_id($node) => true];
+        // TODO: handle merging branch scopes. If all branches (e.g. if/else, conditional) shadow the variable, then this scope shadows that variable.
+        $this->defs_shadowing_set[$variable_name] = true;
     }
 
     /**
      * Record that $variable_name had a definition that was created by the Node $node where spl_object_id($node) is $node_id
-     *
-     * @return void
      */
-    public function recordDefinitionById(string $variable_name, int $node_id)
+    public function recordDefinitionById(string $variable_name, int $node_id) : void
     {
         // Create a new definition for variable_name.
         // Replace the definitions for $variable_name.
@@ -63,14 +67,14 @@ class VariableTrackingScope
      * If it is already a definition of $variable_name, then don't record that.
      *
      * @suppress PhanUnreferencedPublicMethod used by reference
-     * @return void
      */
-    public function recordUsage(string $variable_name, Node $node)
+    public function recordUsage(string $variable_name, Node $node) : void
     {
         $node_id = spl_object_id($node);
         // Create a new usage for variable_name.
 
-        if (($this->defs[$variable_name][$node_id] ?? false) !== true) {
+        if (!isset($this->defs_shadowing_set[$variable_name]) &&
+                ($this->defs[$variable_name][$node_id] ?? false) !== true) {
             $this->uses[$variable_name][$node_id] = true;
         }
     }
@@ -79,13 +83,12 @@ class VariableTrackingScope
      * Record the fact that a node is a usage of $variable_name.
      *
      * Equivalent to $this->recordUsage($variable_name, spl_object_id($node))
-     *
-     * @return void
      */
-    public function recordUsageById(string $variable_name, int $node_id)
+    public function recordUsageById(string $variable_name, int $node_id) : void
     {
         // Create a new usage for variable_name.
-        if (($this->defs[$variable_name][$node_id] ?? false) !== true) {
+        if (!isset($this->defs_shadowing_set[$variable_name]) &&
+                ($this->defs[$variable_name][$node_id] ?? false) !== true) {
             $this->uses[$variable_name][$node_id] = true;
         }
     }
@@ -97,7 +100,7 @@ class VariableTrackingScope
      *
      * @return ?array<int,true> the Nodes which defined $variable_name
      */
-    public function getDefinition(string $variable_name)
+    public function getDefinition(string $variable_name) : ?array
     {
         return $this->defs[$variable_name] ?? null;
     }
@@ -109,7 +112,7 @@ class VariableTrackingScope
      *
      * @return ?array<int,true> the Nodes which defined $variable_name
      */
-    public function getDefinitionUpToScope(string $variable_name, VariableTrackingScope $forbidden_scope)
+    public function getDefinitionUpToScope(string $variable_name, VariableTrackingScope $forbidden_scope) : ?array
     {
         if ($this === $forbidden_scope) {
             return null;
@@ -122,7 +125,7 @@ class VariableTrackingScope
      *
      * @return array<string,array<int,true>>
      */
-    public function getDefinitionsRecursively()
+    public function getDefinitionsRecursively() : array
     {
         return $this->defs;
     }
@@ -150,14 +153,11 @@ class VariableTrackingScope
         return $result;
     }
 
-    /**
-     * @return void
-     */
     protected function flattenScopeToMergedLoopResult(
         VariableTrackingLoopScope $inner_loop_scope,
         VariableTrackingBranchScope $alternate_scope,
         VariableGraph $graph
-    ) {
+    ) : void {
         // Need to flatten these to the same level
         // The LoopScope might have been cloned, so just keep going until the closest loop scope.
         // TODO: Look at this, see if this way of merging definitions and usages will miss any false positives
@@ -170,14 +170,11 @@ class VariableTrackingScope
         $inner_loop_scope->mergeUses($alternate_scope->uses);
     }
 
-    /**
-     * @return void
-     */
     protected function flattenUsesFromScopeToMergedLoopResult(
         VariableTrackingLoopScope $inner_loop_scope,
         VariableTrackingBranchScope $alternate_scope,
         VariableGraph $graph
-    ) {
+    ) : void {
         // Need to flatten these to the same level
         // The LoopScope might have been cloned, so just keep going until the closest loop scope.
         // TODO: Look at this, see if this way of merging definitions and usages will miss any false positives
@@ -189,14 +186,11 @@ class VariableTrackingScope
         $inner_loop_scope->mergeUses($alternate_scope->uses);
     }
 
-    /**
-     * @return void
-     */
     private function addScopeToMergedLoopResult(
         VariableTrackingScope $result,
         VariableTrackingBranchScope $scope,
         VariableGraph $graph
-    ) {
+    ) : void {
         // @phan-suppress-next-line PhanUndeclaredProperty
         $parent_scope = $result->parent_scope ?? $result;
         foreach ($scope->getDefinitionsRecursively() as $variable_name => $defs) {
@@ -217,7 +211,7 @@ class VariableTrackingScope
     /**
      * @param array<string,array<int,bool>> $uses
      */
-    private function mergeUses(array $uses)
+    private function mergeUses(array $uses) : void
     {
         foreach ($uses as $variable_name => $def_id_set) {
             if (!isset($this->uses[$variable_name])) {
@@ -292,7 +286,31 @@ class VariableTrackingScope
             }
             $result->defs[$variable_name] = $defs_for_variable;
         }
+        if (!$merge_parent_scope && \count($inner_exiting_scope_list) === 0) {
+            $result->defs_shadowing_set += self::computeCommonDefsShadowingSet($branch_scopes);
+        }
         return $result;
+    }
+
+    /**
+     * @param array<int,VariableTrackingScope> $branch_scopes
+     * @return array<string,true>
+     */
+    private static function computeCommonDefsShadowingSet(array $branch_scopes) : array
+    {
+        $result = null;
+        foreach ($branch_scopes as $scope) {
+            $deps = $scope->defs_shadowing_set;
+            if (!\is_array($result)) {
+                $result = $deps;
+            } else {
+                $result = \array_intersect_key($result, $deps);
+            }
+            if (!$result) {
+                return [];
+            }
+        }
+        return $result ?? [];
     }
 
     /**
@@ -301,9 +319,8 @@ class VariableTrackingScope
      * @param VariableTrackingBranchScope $inner_scope @phan-unused-param
      * @param bool $exits true if the branch of $inner_scope will exit. @phan-unused-param
      *             This would mean that the branch uses variables, but does not define them outside of that scope.
-     * @return void
      */
-    public function recordSkippedScope(VariableTrackingBranchScope $inner_scope, bool $exits)
+    public function recordSkippedScope(VariableTrackingBranchScope $inner_scope, bool $exits) : void
     {
         // Subclasses will implement this
     }

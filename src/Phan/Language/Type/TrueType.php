@@ -16,22 +16,22 @@ final class TrueType extends ScalarType
     /** @phan-override */
     const NAME = 'true';
 
-    public function getIsPossiblyTruthy() : bool
+    public function isPossiblyTruthy() : bool
     {
         return true;
     }
 
-    public function getIsAlwaysTruthy() : bool
+    public function isAlwaysTruthy() : bool
     {
         return true;
     }
 
-    public function getIsPossiblyTrue() : bool
+    public function isPossiblyTrue() : bool
     {
         return true;
     }
 
-    public function getIsAlwaysTrue() : bool
+    public function isAlwaysTrue() : bool
     {
         return !$this->is_nullable;  // If it can be null, it's not **always** identical to true
     }
@@ -44,7 +44,7 @@ final class TrueType extends ScalarType
         return NullType::instance(true);
     }
 
-    public function getIsInBoolFamily() : bool
+    public function isInBoolFamily() : bool
     {
         return true;
     }
@@ -80,4 +80,13 @@ final class TrueType extends ScalarType
     }
 
     // public function getTypeAfterIncOrDec() : UnionType - doesn't need to be changed
+
+    /**
+     * Returns the corresponding type that would be used in a signature
+     * @override
+     */
+    public function asSignatureType() : Type
+    {
+        return BoolType::instance($this->is_nullable);
+    }
 }

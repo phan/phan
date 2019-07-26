@@ -1,13 +1,15 @@
 <?php declare(strict_types=1);
 
 use ast\Node;
+use Phan\AST\Parser;
+use Phan\CLI;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
-use Phan\PluginV2;
-use Phan\PluginV2\AfterAnalyzeFileCapability;
-use Phan\PluginV2\BeforeAnalyzeFileCapability;
-use Phan\PluginV2\FinalizeProcessCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\AfterAnalyzeFileCapability;
+use Phan\PluginV3\BeforeAnalyzeFileCapability;
+use Phan\PluginV3\FinalizeProcessCapability;
 
 /**
  * This plugin invokes the equivalent of `php --no-php-ini --syntax-check $analyzed_file_path`.
@@ -22,9 +24,12 @@ use Phan\PluginV2\FinalizeProcessCapability;
  *       E.g. have 'plugin_config' => ['php_native_syntax_check_binaries' => ['php72', 'php70', 'php56']]
  * Note: This may cause Phan to take over twice as long. This is recommended for use with `--processes N`.
  *
+ * Known issues:
+ * - short_open_tags may make php --syntax-check --no-php-ini behave differently from php --syntax-check, e.g. for '<?phpinvalid;'
+ *
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
-class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
+class InvokePHPNativeSyntaxCheckPlugin extends PluginV3 implements
     AfterAnalyzeFileCapability,
     BeforeAnalyzeFileCapability,
     FinalizeProcessCapability
@@ -41,8 +46,6 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
     private $processes = [];
 
     /**
-     * TODO: Disable in LSP mode?
-     *
      * @param CodeBase $code_base @phan-unused-param
      * The code base in which the node exists
      *
@@ -51,7 +54,6 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
      *
      * @param string $file_contents the unmodified file contents @phan-unused-param
      * @param Node $node the node @phan-unused-param
-     * @return void
      * @override
      */
     public function beforeAnalyzeFile(
@@ -59,7 +61,7 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
         Context $context,
         string $file_contents,
         Node $node
-    ) {
+    ) : void {
         $php_binaries = (Config::getValue('plugin_config')['php_native_syntax_check_binaries'] ?? null) ?: [PHP_BINARY];
 
         foreach ($php_binaries as $binary) {
@@ -68,8 +70,6 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
     }
 
     /**
-     * TODO: Disable in LSP mode?
-     *
      * @param CodeBase $code_base
      * The code base in which the node exists
      *
@@ -78,7 +78,6 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
      *
      * @param string $file_contents the unmodified file contents @phan-unused-param
      * @param Node $node the node @phan-unused-param
-     * @return void
      * @override
      * @throws Error if a process fails to shut down
      */
@@ -87,7 +86,7 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
         Context $context,
         string $file_contents,
         Node $node
-    ) {
+    ) : void {
         $configured_max_incomplete_processes = (int)(Config::getValue('plugin_config')['php_native_syntax_check_max_processes'] ?? 1) - 1;
         $max_incomplete_processes = max(0, $configured_max_incomplete_processes);
         $this->awaitIncompleteProcesses($code_base, $max_incomplete_processes);
@@ -96,14 +95,14 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
     /**
      * @throws Error if a syntax check process fails to shut down
      */
-    private function awaitIncompleteProcesses(CodeBase $code_base, int $max_incomplete_processes)
+    private function awaitIncompleteProcesses(CodeBase $code_base, int $max_incomplete_processes) : void
     {
         foreach ($this->processes as $i => $process) {
             if (!$process->read()) {
                 continue;
             }
             unset($this->processes[$i]);
-            $this->handleError($code_base, $process);
+            self::handleError($code_base, $process);
         }
         $max_incomplete_processes = max(0, $max_incomplete_processes);
         while (count($this->processes) > $max_incomplete_processes) {
@@ -112,7 +111,7 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
                 throw new AssertionError("Process list should be non-empty");
             }
             $process->blockingRead();
-            $this->handleError($code_base, $process);
+            self::handleError($code_base, $process);
         }
     }
 
@@ -120,15 +119,12 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
      * @override
      * @throws Error if a syntax check process fails to shut down.
      */
-    public function finalizeProcess(CodeBase $code_base)
+    public function finalizeProcess(CodeBase $code_base) : void
     {
         $this->awaitIncompleteProcesses($code_base, 0);
     }
 
-    /**
-     * @return void
-     */
-    private function handleError(CodeBase $code_base, InvokeExecutionPromise $process)
+    private static function handleError(CodeBase $code_base, InvokeExecutionPromise $process) : void
     {
         $check_error_message = $process->getError();
         if (!is_string($check_error_message)) {
@@ -144,7 +140,7 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
         $check_error_message = preg_replace(self::STDIN_FILENAME_REGEX, '', $check_error_message);
 
 
-        $this->emitIssue(
+        self::emitIssue(
             $code_base,
             clone($context)->withLineNumberStart($lineno),
             'PhanNativePHPSyntaxCheckPlugin',
@@ -186,17 +182,21 @@ class InvokeExecutionPromise
     /** @var Context has the file name being analyzed */
     private $context;
 
+    /** @var ?string the temporary path, if needed for Windows. */
+    private $tmp_path;
+
     public function __construct(string $binary, string $file_contents, Context $context)
     {
+        $this->context = clone($context);
+        $new_file_contents = Parser::removeShebang($file_contents);
         // TODO: Use symfony process
         // Note: We might have invalid utf-8, ensure that the streams are opened in binary mode.
         // I'm not sure if this is necessary.
         if (DIRECTORY_SEPARATOR === "\\") {
             $cmd = $binary . ' --syntax-check --no-php-ini';
-            $abs_path = Config::projectPath($context->getFile());
-            if (!file_exists($abs_path)) {
-                $this->done = true;
-                $this->error = "File does not exist";
+            $abs_path = $this->getAbsPathForFileContents($new_file_contents, $file_contents !== $new_file_contents);
+            if (!is_string($abs_path)) {
+                // The helper function has set the error and done flags
                 return;
             }
 
@@ -232,14 +232,39 @@ class InvokeExecutionPromise
             }
             $this->process = $process;
 
-            self::streamPutContents($pipes[0], $file_contents);
+            self::streamPutContents($pipes[0], $new_file_contents);
         }
         $this->pipes = $pipes;
 
         if (!stream_set_blocking($pipes[1], false)) {
             $this->error = "unable to set read stdout to non-blocking";
         }
-        $this->context = clone($context);
+    }
+
+    private function getAbsPathForFileContents(string $new_file_contents, bool $force_tmp_file) : ?string
+    {
+        $file_name = $this->context->getFile();
+        if ($force_tmp_file || CLI::isDaemonOrLanguageServer()) {
+            // This is inefficient, but
+            // - Windows has problems with using stdio/stdout at the same time
+            // - During regular analysis, we won't need to create temporary files.
+            $tmp_path = tempnam(sys_get_temp_dir(), 'phan');
+            if (!$tmp_path) {
+                $this->done = true;
+                $this->error = "Could not create temporary path for $file_name";
+                return null;
+            }
+            file_put_contents($tmp_path, $new_file_contents);
+            $this->tmp_path = $tmp_path;
+            return $tmp_path;
+        }
+        $abs_path = Config::projectPath($file_name);
+        if (!file_exists($abs_path)) {
+            $this->done = true;
+            $this->error = "File does not exist";
+            return null;
+        }
+        return $abs_path;
     }
 
     /**
@@ -248,7 +273,7 @@ class InvokeExecutionPromise
      * @return void
      * See https://bugs.php.net/bug.php?id=39598
      */
-    private static function streamPutContents($stream, string $file_contents)
+    private static function streamPutContents($stream, string $file_contents) : void
     {
         try {
             while (strlen($file_contents) > 0) {
@@ -321,10 +346,9 @@ class InvokeExecutionPromise
     }
 
     /**
-     * @return void
      * @throws Error if reading failed
      */
-    public function blockingRead()
+    public function blockingRead() : void
     {
         if ($this->done) {
             return;
@@ -338,10 +362,9 @@ class InvokeExecutionPromise
     }
 
     /**
-     * @return ?string
      * @throws RangeException if this was called before the process finished
      */
-    public function getError()
+    public function getError() : ?string
     {
         if (!$this->done) {
             throw new RangeException("Called " . __METHOD__ . " too early");
@@ -363,6 +386,20 @@ class InvokeExecutionPromise
     public function getBinary() : string
     {
         return $this->binary;
+    }
+
+    public function __wakeup()
+    {
+        $this->tmp_path = null;
+        throw new RuntimeException("Cannot unserialize");
+    }
+
+    public function __destruct()
+    {
+        // We created a temporary path for Windows
+        if (is_string($this->tmp_path)) {
+            unlink($this->tmp_path);
+        }
     }
 }
 

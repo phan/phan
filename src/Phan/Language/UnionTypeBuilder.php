@@ -9,6 +9,7 @@ namespace Phan\Language;
  * @see UnionType::withType()
  * @see UnionType::withoutType()
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
+ * @phan-file-suppress PhanPluginNoCommentOnPublicMethod TODO: Add comments
  */
 final class UnionTypeBuilder
 {
@@ -21,10 +22,7 @@ final class UnionTypeBuilder
         $this->type_set = $type_set;
     }
 
-    /**
-     * @return void
-     */
-    public function addType(Type $type)
+    public function addType(Type $type) : void
     {
         if (\in_array($type, $this->type_set, true)) {
             return;
@@ -32,10 +30,7 @@ final class UnionTypeBuilder
         $this->type_set[] = $type;
     }
 
-    /**
-     * @return void
-     */
-    public function addUnionType(UnionType $union_type)
+    public function addUnionType(UnionType $union_type) : void
     {
         $old_type_set = $this->type_set;
         foreach ($union_type->getTypeSet() as $type) {
@@ -45,10 +40,7 @@ final class UnionTypeBuilder
         }
     }
 
-    /**
-     * @return void
-     */
-    public function removeType(Type $type)
+    public function removeType(Type $type) : void
     {
         $i = \array_search($type, $this->type_set, true);
         if ($i !== false) {
@@ -81,8 +73,17 @@ final class UnionTypeBuilder
     /**
      * Build and return the UnionType for the unique type set that this was building.
      */
+    public function getPHPDocUnionType() : UnionType
+    {
+        return UnionType::of($this->type_set, []);
+    }
+
+    /**
+     * Build and return the UnionType for the unique type set that this was building.
+     * @deprecated use self::getPHPDocUnionType()
+     */
     public function getUnionType() : UnionType
     {
-        return UnionType::of($this->type_set);
+        return self::getPHPDocUnionType();
     }
 }

@@ -17,9 +17,11 @@ rm $ACTUAL_PATH -f || exit 1
 # We use the polyfill parser because it behaves consistently in all php versions.
 ../../phan --force-polyfill-parser --memory-limit 1G | tee $ACTUAL_PATH
 
-sed -i 's,\<closure_[0-9a-f]\{12\}\>,closure_%s,g' $ACTUAL_PATH $EXPECTED_PATH
-sed -i "s,[^\\']*plugin_test[/\\\\],,g" $ACTUAL_PATH $EXPECTED_PATH
-# php 7.3 compat
+sed -i -e 's,\<closure_[0-9a-f]\{12\}\>,closure_%s,g' \
+    -e "s,[^\\']*plugin_test[/\\\\],,g" \
+    -e 's,\(PhanTypeErrorInInternalCall.*\)integer given,\1int given,g' \
+    $ACTUAL_PATH $EXPECTED_PATH
+
 sed -i 's,missing closing parenthesis,missing ),g' $ACTUAL_PATH
 
 # diff returns a non-zero exit code if files differ or are missing
@@ -27,14 +29,19 @@ sed -i 's,missing closing parenthesis,missing ),g' $ACTUAL_PATH
 echo
 echo "Comparing the output:"
 
-if [[ "$(php -r 'echo PHP_VERSION_ID;')" < 70100 ]]; then
-    echo "Skipping test cases that rely on Closure::fromCallable() or native syntax checks, the current php version is php 7.0";
-    # Ignore results of a subset of tests in php 7.0
-    # TODO: If we imitate the reflection of php 7.1 in php 7.0, we can restore this.
-    sed -i "/^.*PhanNativePHPSyntaxCheckPlugin.*unexpected '\\?'/d" $ACTUAL_PATH
+# Normalize PHP_VERSION_ID
+# and remove php 8.0 warnings
+sed -i -e 's/^\(src.020_bool.php.*of type\) [0-9]\+ \(evaluated\)/\1 int \2/g' \
+    -e '/__autoload() is no longer supported, use spl_autoload_register/d' \
+    $ACTUAL_PATH
+
+if type colordiff >/dev/null; then
+    DIFF=colordiff
+else
+    DIFF=diff
 fi
 
-diff $EXPECTED_PATH $ACTUAL_PATH
+$DIFF $EXPECTED_PATH $ACTUAL_PATH
 EXIT_CODE=$?
 if [ "$EXIT_CODE" == 0 ]; then
 	echo "Files $EXPECTED_PATH and output $ACTUAL_PATH are identical"

@@ -14,7 +14,7 @@ class PHP72Test extends AbstractPhanFileTest
         'target_php_version' => '7.2',
     ];
 
-    public function setUp()
+    public function setUp() : void
     {
         parent::setUp();
         foreach (self::OVERRIDES as $key => $value) {
@@ -30,23 +30,28 @@ class PHP72Test extends AbstractPhanFileTest
      * @param string[] $test_file_list
      * @param string $expected_file_path
      * @param ?string $config_file_path
-     * @return void
-     *
      * @dataProvider getTestFiles
      * @override
      */
-    public function testFiles($test_file_list, $expected_file_path, $config_file_path = null)
+    public function testFiles(array $test_file_list, string $expected_file_path, ?string $config_file_path = null) : void
     {
         $skip_reason = null;
         // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
-        $main_path = basename(reset($test_file_list));
-        if (PHP_VERSION_ID < 70200) {
+        $main_path = \basename(\reset($test_file_list));
+        if (\PHP_VERSION_ID < 70200) {
             switch ($main_path) {
                 case '0002_hash.php':
                     $skip_reason = 'Skip HashContext has no stub';
                     break;
                 case '0003_is_iterable.php':
                     $skip_reason = 'Skip isIterateable not added in php < 7.2, no stub exists';
+                    break;
+            }
+        }
+        if (\PHP_VERSION_ID >= 80000) {
+            switch ($main_path) {
+                case '0006_deprecated_create_internal_function.php':
+                    $skip_reason = 'Skip create_internal_function was removed';
                     break;
             }
         }
@@ -60,8 +65,8 @@ class PHP72Test extends AbstractPhanFileTest
     /**
      * @suppress PhanUndeclaredConstant
      */
-    public function getTestFiles()
+    public function getTestFiles() : array
     {
-        return $this->scanSourceFilesDir(PHP72_TEST_FILE_DIR, PHP72_EXPECTED_DIR);
+        return $this->scanSourceFilesDir(\PHP72_TEST_FILE_DIR, \PHP72_EXPECTED_DIR);
     }
 }

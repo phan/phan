@@ -1,0 +1,1 @@
+src/122_closure_reference.php:21 PhanUnusedVariableReference Unused definition of variable $was_called as a reference

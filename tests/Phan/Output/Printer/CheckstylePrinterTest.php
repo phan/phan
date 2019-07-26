@@ -21,7 +21,7 @@ final class CheckstylePrinterTest extends BaseTest
      *
      * @dataProvider invalidUTF8StringsProvider
      */
-    public function testUTF8CharactersDoNotCauseDOMAttrToFail($string)
+    public function testUTF8CharactersDoNotCauseDOMAttrToFail(string $string) : void
     {
         $output = new BufferedOutput();
 
@@ -34,9 +34,12 @@ final class CheckstylePrinterTest extends BaseTest
 
         // Note: assertContains would call iconv_strpos(), which would emit a notice if phpunit is using symfony/polyfill-mbstring.
         // That notice would trigger phan_error_handler
-        $this->assertTrue(strpos($issue_messages_text, 'PhanSyntaxError') !== false, "output should contain PhanSyntaxError");
+        $this->assertTrue(\strpos($issue_messages_text, 'PhanSyntaxError') !== false, "output should contain PhanSyntaxError");
     }
 
+    /**
+     * @return array<int,array{0:string}>
+     */
     public function invalidUTF8StringsProvider() : array
     {
         return [

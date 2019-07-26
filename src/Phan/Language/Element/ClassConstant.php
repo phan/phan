@@ -4,6 +4,7 @@ namespace Phan\Language\Element;
 
 use Phan\AST\ASTReverter;
 use Phan\Language\Context;
+use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use Phan\Language\UnionType;
 
@@ -59,8 +60,6 @@ class ClassConstant extends ClassElement implements ConstantInterface
     /**
      * Override the default getter to fill in a future
      * union type if available.
-     *
-     * @return UnionType
      */
     public function getUnionType() : UnionType
     {
@@ -76,7 +75,7 @@ class ClassConstant extends ClassElement implements ConstantInterface
      * The fully-qualified structural element name of this
      * structural element
      */
-    public function getFQSEN() : FullyQualifiedClassConstantName
+    public function getFQSEN() : FQSEN
     {
         return $this->fqsen;
     }
@@ -110,9 +109,8 @@ class ClassConstant extends ClassElement implements ConstantInterface
      * Records whether or not this class constant is intended to be an override of another class constant (contains (at)override in PHPDoc)
      * @param bool $is_override_intended
 
-     * @return void
      */
-    public function setIsOverrideIntended(bool $is_override_intended)
+    public function setIsOverrideIntended(bool $is_override_intended) : void
     {
         $this->setPhanFlags(
             Flags::bitVectorWithState(
@@ -174,7 +172,7 @@ class ClassConstant extends ClassElement implements ConstantInterface
         if (\defined($fqsen)) {
             // TODO: Could start using $this->getNodeForValue()?
             // NOTE: This is used by tool/make_stubs, which is why it uses reflection instead of getting a node.
-            $string .= var_export(\constant($fqsen), true) . ';';
+            $string .= \var_export(\constant($fqsen), true) . ';';
         } else {
             $string .= "null;  // could not find";
         }

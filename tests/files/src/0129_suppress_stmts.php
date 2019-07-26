@@ -21,6 +21,8 @@ class C {
      * @suppress PhanUndeclaredClassMethod
      * @suppress PhanUndeclaredVariable
      * @suppress PhanUndeclaredVariable
+     * @suppress PhanImpossibleCondition
+     * @suppress PhanImpossibleWeakTypeComparison
      */
     function f() {
         $v = Undef::undef();

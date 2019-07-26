@@ -18,9 +18,6 @@ class None extends Option
     {
     }
 
-    /**
-     * @return bool
-     */
     public function isDefined() : bool
     {
         return false;

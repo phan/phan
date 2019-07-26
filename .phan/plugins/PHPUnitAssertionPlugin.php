@@ -1,5 +1,6 @@
 <?php declare(strict_types=1);
 
+use ast\Node;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Language\Context;
@@ -8,8 +9,8 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\UnionType;
-use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeFunctionCallCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\AnalyzeFunctionCallCapability;
 
 /**
  * Mark PHPUnit helper assertions as having side effects.
@@ -23,7 +24,7 @@ use Phan\PluginV2\AnalyzeFunctionCallCapability;
  *
  * NOTE: This will probably be rewritten
  */
-class PHPUnitAssertionPlugin extends PluginV2 implements AnalyzeFunctionCallCapability
+class PHPUnitAssertionPlugin extends PluginV3 implements AnalyzeFunctionCallCapability
 {
     /**
      * @override
@@ -55,10 +56,10 @@ class PHPUnitAssertionPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
     }
 
     /**
-     * @return ?Closure(CodeBase, Context, FunctionInterface, array):void
+     * @return ?Closure(CodeBase, Context, FunctionInterface, array, ?Node):void
      * @suppress PhanAccessClassConstantInternal, PhanAccessMethodInternal
      */
-    private function createClosureForMethod(CodeBase $code_base, Method $method, string $name)
+    private function createClosureForMethod(CodeBase $code_base, Method $method, string $name) : ?Closure
     {
         // TODO: Add a helper method which will convert a doc comment and a stub php function source code to a closure for a param index (or indices)
         switch (\strtolower($name)) {
@@ -76,16 +77,24 @@ class PHPUnitAssertionPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
                     new Assertion(UnionType::empty(), 'unusedParamName', Assertion::IS_FALSE),
                     0
                 );
+                // TODO: Rest of https://github.com/sebastianbergmann/phpunit/issues/3368
+            case 'assertisstring':
+                // TODO: Could convert to real types?
+                return $method->createClosureForAssertion(
+                    $code_base,
+                    new Assertion(UnionType::fromFullyQualifiedPHPDocString('string'), 'unusedParamName', Assertion::IS_OF_TYPE),
+                    0
+                );
             case 'assertnull':
                 return $method->createClosureForAssertion(
                     $code_base,
-                    new Assertion(UnionType::fromFullyQualifiedString('null'), 'unusedParamName', Assertion::IS_OF_TYPE),
+                    new Assertion(UnionType::fromFullyQualifiedPHPDocString('null'), 'unusedParamName', Assertion::IS_OF_TYPE),
                     0
                 );
             case 'assertnotnull':
                 return $method->createClosureForAssertion(
                     $code_base,
-                    new Assertion(UnionType::fromFullyQualifiedString('null'), 'unusedParamName', Assertion::IS_NOT_OF_TYPE),
+                    new Assertion(UnionType::fromFullyQualifiedPHPDocString('null'), 'unusedParamName', Assertion::IS_NOT_OF_TYPE),
                     0
                 );
             case 'assertsame':
@@ -100,6 +109,9 @@ class PHPUnitAssertionPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
                 // (at)param mixed $actual
                 // (at)phan-assert T $actual
                 return $method->createClosureForUnionTypeExtractorAndAssertionType(
+                    /**
+                     * @param array<int,Node|string|int|float> $args
+                     */
                     static function (CodeBase $code_base, Context $context, array $args) : UnionType {
                         if (\count($args) < 2) {
                             return UnionType::empty();
@@ -111,6 +123,9 @@ class PHPUnitAssertionPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
                 );
             case 'assertinternaltype':
                 return $method->createClosureForUnionTypeExtractorAndAssertionType(
+                    /**
+                     * @param array<int,Node|string|int|float> $args
+                     */
                     function (CodeBase $code_base, Context $context, array $args) : UnionType {
                         if (\count($args) < 2) {
                             return UnionType::empty();
@@ -125,51 +140,51 @@ class PHPUnitAssertionPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
                         $original_type = (UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[1]));
                         switch ($string) {
                             case 'numeric':
-                                return UnionType::fromFullyQualifiedString('int|float|string');
+                                return UnionType::fromFullyQualifiedPHPDocString('int|float|string');
                             case 'integer':
                             case 'int':
-                                return UnionType::fromFullyQualifiedString('int');
+                                return UnionType::fromFullyQualifiedPHPDocString('int');
 
                             case 'double':
                             case 'float':
                             case 'real':
-                                return UnionType::fromFullyQualifiedString('float');
+                                return UnionType::fromFullyQualifiedPHPDocString('float');
 
                             case 'string':
-                                return UnionType::fromFullyQualifiedString('string');
+                                return UnionType::fromFullyQualifiedPHPDocString('string');
 
                             case 'boolean':
                             case 'bool':
-                                return UnionType::fromFullyQualifiedString('bool');
+                                return UnionType::fromFullyQualifiedPHPDocString('bool');
 
                             case 'null':
-                                return UnionType::fromFullyQualifiedString('null');
+                                return UnionType::fromFullyQualifiedPHPDocString('null');
 
                             case 'array':
                                 $result = $original_type->arrayTypes();
                                 if ($result->isEmpty()) {
-                                    return UnionType::fromFullyQualifiedString('array');
+                                    return UnionType::fromFullyQualifiedPHPDocString('array');
                                 }
                                 return $result;
                             case 'object':
                                 $result = $original_type->objectTypes();
                                 if ($result->isEmpty()) {
-                                    return UnionType::fromFullyQualifiedString('object');
+                                    return UnionType::fromFullyQualifiedPHPDocString('object');
                                 }
                                 return $result;
                             case 'resource':
-                                return UnionType::fromFullyQualifiedString('resource');
+                                return UnionType::fromFullyQualifiedPHPDocString('resource');
                             case 'scalar':
                                 $result = $original_type->scalarTypes();
                                 if ($result->isEmpty()) {
-                                    return UnionType::fromFullyQualifiedString('int|string|float|bool');
+                                    return UnionType::fromFullyQualifiedPHPDocString('int|string|float|bool');
                                 }
                                 return $result;
 
                             case 'callable':
                                 $result = $original_type->callableTypes();
                                 if ($result->isEmpty()) {
-                                    return UnionType::fromFullyQualifiedString('callable');
+                                    return UnionType::fromFullyQualifiedPHPDocString('callable');
                                 }
                                 return $result;
                         }
@@ -198,6 +213,9 @@ class PHPUnitAssertionPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
                 // (at)param mixed $actual
                 // (at)phan-assert T $actual
                 return $method->createClosureForUnionTypeExtractorAndAssertionType(
+                    /**
+                     * @param array<int,Node|string|int|float> $args
+                     */
                     static function (CodeBase $code_base, Context $context, array $args) : UnionType {
                         if (\count($args) < 2) {
                             return UnionType::empty();
@@ -207,7 +225,7 @@ class PHPUnitAssertionPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
                             return UnionType::empty();
                         }
                         try {
-                            return FullyQualifiedClassName::fromFullyQualifiedString($string)->asType()->asUnionType();
+                            return FullyQualifiedClassName::fromFullyQualifiedString($string)->asType()->asPHPDocUnionType();
                         } catch (\Exception $_) {
                             return UnionType::empty();
                         }
@@ -216,6 +234,7 @@ class PHPUnitAssertionPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
                     1
                 );
         }
+        return null;
     }
 }
 

@@ -1,0 +1,4 @@
+%s:23 PhanTypeMismatchArgument Argument 1 ($criteria) is array{0:2} but \TestGeneric\X::findOneBy() takes array<string,mixed> defined at %s:9
+%s:23 PhanTypeMismatchArgument Argument 2 ($orderBy) is array{0:2} but \TestGeneric\X::findOneBy() takes ?array<string,string> defined at %s:9
+%s:25 PhanTypeMismatchArgument Argument 1 ($args) is 2 but \TestGeneric\X::findGenericBy() takes array<int,\stdClass> defined at %s:10
+%s:26 PhanTypeMismatchArgument Argument 1 ($args) is \stdClass but \TestGeneric\X::findGenericBy() takes array<int,\stdClass> defined at %s:10

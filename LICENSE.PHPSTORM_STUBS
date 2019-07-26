@@ -1,0 +1,5 @@
+Some of Phan's type signature info (e.g. for functions, methods, etc.) 
+and documentation (for classes, functions, constants, etc.)
+was extracted from https://github.com/JetBrains/phpstorm-stubs
+
+phpstorm-stubs is available under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0)

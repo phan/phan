@@ -122,7 +122,7 @@ class Method
      */
     public function getNumberOfRequiredParameters() : int
     {
-        return array_reduce(
+        return \array_reduce(
             $this->parameters,
             static function (int $carry, Parameter $parameter) : int {
                 return ($carry + ($parameter->isRequired() ? 1 : 0));
@@ -137,7 +137,7 @@ class Method
      */
     public function getNumberOfOptionalParameters() : int
     {
-        return array_reduce(
+        return \array_reduce(
             $this->parameters,
             static function (int $carry, Parameter $parameter) : int {
                 return ($carry + ($parameter->isOptional() ? 1 : 0));
@@ -156,7 +156,7 @@ class Method
         // Magic methods can't be by ref?
         $string .= $this->getName();
 
-        $string .= '(' . implode(', ', $this->getParameterList()) . ')';
+        $string .= '(' . \implode(', ', $this->getParameterList()) . ')';
 
         if (!$this->getUnionType()->isEmpty()) {
             $string .= ' : ' . (string)$this->getUnionType();

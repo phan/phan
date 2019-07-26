@@ -98,7 +98,6 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
      * @param array<int,Type> $element_types
      * @param bool $is_nullable
      * @param int $key_type
-     * @return GenericMultiArrayType
      */
     public static function fromElementTypes(
         array $element_types,
@@ -157,7 +156,8 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
     {
         return $this->element_types_union_type
             ?? ($this->element_types_union_type = UnionType::of(
-                UnionType::normalizeMultiTypes($this->element_types)
+                UnionType::normalizeMultiTypes($this->element_types),
+                []
             ));
     }
 
@@ -208,9 +208,9 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
                 );
             }
         } catch (RecursionDepthException $_) {
-            return ArrayType::instance($this->is_nullable)->asUnionType();
+            return ArrayType::instance($this->is_nullable)->asPHPDocUnionType();
         }
-        return $result->getUnionType();
+        return $result->getPHPDocUnionType();
     }
 
     /**
@@ -251,8 +251,8 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
                 );
             }
         } catch (RecursionDepthException $_) {
-            return ArrayType::instance($this->is_nullable)->asUnionType();
+            return ArrayType::instance($this->is_nullable)->asPHPDocUnionType();
         }
-        return $result->getUnionType();
+        return $result->getPHPDocUnionType();
     }
 }

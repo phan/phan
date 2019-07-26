@@ -7,22 +7,13 @@ use Phan\CodeBase;
 use Phan\Language\Context;
 
 /**
- * BeforeAnalyzeFileCapability is used when you want to perform checks before analyzing a file
- * NOTE: This does not run on empty files.
+ * Use PluginV3 instead
  */
 interface BeforeAnalyzeFileCapability
 {
     /**
      * This method is called before analyzing a file.
      *
-     * @param CodeBase $code_base
-     * The code base in which the node exists
-     *
-     * @param Context $context
-     * A context with the file name for $file_contents and the scope before analyzing $node.
-     *
-     * @param string $file_contents the unmodified file contents
-     * @param Node $node the node parsed from $file_contents
      * @return void
      */
     public function beforeAnalyzeFile(

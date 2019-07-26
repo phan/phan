@@ -29,11 +29,16 @@ TEST_SUITES+=" __FakeSelfTest"
 TEST_SUITES+=" __FakeSelfFallbackTest"
 TEST_SUITES+=" __FakeRewritingTest"
 TEST_SUITES+=" __FakePluginTest"
+TEST_SUITES+=" __FakeRealTypesTest"
 TEST_SUITES+=" __FakeFallbackTest"
 TEST_SUITES+=" __FakeToolTest"
 TEST_SUITES+=" __FakeConfigOverrideTest"
+TEST_SUITES+=" __FakeFixerTest"
 
 FAILURES=""
+
+# Suppress this notice when running tests to save screen space
+export PHAN_SUPPRESS_PHP_UPGRADE_NOTICE=1
 
 if [[ "$PHAN_TEST_PARALLEL" == 1 ]]; then
 	# Note: Must install GNU parallel for this to work.

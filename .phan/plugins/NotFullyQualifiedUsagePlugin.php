@@ -1,9 +1,10 @@
 <?php declare(strict_types=1);
 
 use ast\Node;
-use Phan\PluginV2;
-use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
+use Phan\Config;
+use Phan\PluginV3;
+use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV3\PostAnalyzeNodeCapability;
 
 /**
  * This warns if references to global functions or global constants are not fully qualified.
@@ -14,7 +15,7 @@ use Phan\PluginV2\PostAnalyzeNodeCapability;
  *   This method returns a class that is called on every AST node from every
  *   file being analyzed
  */
-class NotFullyQualifiedUsagePlugin extends PluginV2 implements PostAnalyzeNodeCapability
+class NotFullyQualifiedUsagePlugin extends PluginV3 implements PostAnalyzeNodeCapability
 {
 
     /**
@@ -43,9 +44,11 @@ class NotFullyQualifiedUsageVisitor extends PluginAwarePostAnalysisVisitor
 
     // A plugin's visitors should NOT implement visit(), unless they need to.
 
+    // phpcs:disable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
     const NotFullyQualifiedFunctionCall = 'PhanPluginNotFullyQualifiedFunctionCall';
     const NotFullyQualifiedOptimizableFunctionCall = 'PhanPluginNotFullyQualifiedOptimizableFunctionCall';
     const NotFullyQualifiedGlobalConstant = 'PhanPluginNotFullyQualifiedGlobalConstant';
+    // phpcs:enable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
 
     /**
      * Source of functions: `zend_try_compile_special_func` from https://github.com/php/php-src/blob/master/Zend/zend_compile.c
@@ -88,12 +91,9 @@ class NotFullyQualifiedUsageVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param Node $node
      * A node to analyze of type ast\AST_CALL (call to a global function)
-     *
-     * @return void
-     *
      * @override
      */
-    public function visitCall(Node $node)
+    public function visitCall(Node $node) : void
     {
         $expression = $node->children['expr'];
         if (!($expression instanceof Node) || $expression->kind !== ast\AST_NAME) {
@@ -120,11 +120,12 @@ class NotFullyQualifiedUsageVisitor extends PluginAwarePostAnalysisVisitor
         $this->warnNotFullyQualifiedFunctionCall($function_name, $expression);
     }
 
-    private function warnNotFullyQualifiedFunctionCall(string $function_name, Node $expression)
+    private function warnNotFullyQualifiedFunctionCall(string $function_name, Node $expression) : void
     {
         if (array_key_exists(strtolower($function_name), self::OPTIMIZABLE_FUNCTIONS)) {
             $issue_type = self::NotFullyQualifiedOptimizableFunctionCall;
-            $issue_msg = 'Expected function call to {FUNCTION}() to be fully qualified or have a use statement but none were found in namespace {NAMESPACE} (opcache can optimize fully qualified calls to this function in recent php versions)';
+            $issue_msg = 'Expected function call to {FUNCTION}() to be fully qualified or have a use statement but none were found in namespace {NAMESPACE}'
+               . ' (opcache can optimize fully qualified calls to this function in recent php versions)';
         } else {
             $issue_type = self::NotFullyQualifiedFunctionCall;
             $issue_msg = 'Expected function call to {FUNCTION}() to be fully qualified or have a use statement but none were found in namespace {NAMESPACE}';
@@ -141,12 +142,9 @@ class NotFullyQualifiedUsageVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param Node $node
      * A node to analyze of type ast\AST_CONST (reference to a constant)
-     *
-     * @return void
-     *
      * @override
      */
-    public function visitConst(Node $node)
+    public function visitConst(Node $node) : void
     {
         $expression = $node->children['name'];
         if (!($expression instanceof Node) || $expression->kind !== ast\AST_NAME) {
@@ -179,7 +177,7 @@ class NotFullyQualifiedUsageVisitor extends PluginAwarePostAnalysisVisitor
         $this->warnNotFullyQualifiedConstantUsage($constant_name, $expression);
     }
 
-    private function warnNotFullyQualifiedConstantUsage(string $constant_name, Node $expression)
+    private function warnNotFullyQualifiedConstantUsage(string $constant_name, Node $expression) : void
     {
         $this->emitPluginIssue(
             $this->code_base,
@@ -189,6 +187,10 @@ class NotFullyQualifiedUsageVisitor extends PluginAwarePostAnalysisVisitor
             [$constant_name, $this->context->getNamespace()]
         );
     }
+}
+
+if (Config::isIssueFixingPluginEnabled()) {
+    require_once __DIR__ . '/NotFullyQualifiedUsagePlugin/fixers.php';
 }
 
 // Every plugin needs to return an instance of itself at the

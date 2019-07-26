@@ -1,0 +1,3 @@
+%s:2 PhanCompatibleNullableTypePHP71 Type 'object' refers to any object starting in PHP 7.2. In PHP 7.1 and earlier, it refers to a class/interface with the name 'object'
+%s:6 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare $o of type object to true of type true
+%s:7 PhanRedundantCondition Redundant attempt to cast $o of type object to object

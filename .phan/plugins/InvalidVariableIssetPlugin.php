@@ -5,14 +5,14 @@
 use ast\Node;
 use Phan\Language\Context;
 use Phan\Language\Element\Variable;
-use Phan\PluginV2;
-use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV3\PostAnalyzeNodeCapability;
 
 /**
  * This plugin detects undeclared variables within isset() checks.
  */
-class InvalidVariableIssetPlugin extends PluginV2 implements PostAnalyzeNodeCapability
+class InvalidVariableIssetPlugin extends PluginV3 implements PostAnalyzeNodeCapability
 {
 
     /**
@@ -61,6 +61,8 @@ class InvalidVariableIssetVisitor extends PluginAwarePostAnalysisVisitor
                 $variable = $variable->children['expr'];
             } elseif (in_array($variable->kind, self::CLASSES, true)) {
                 $variable = $variable->children['class'];
+            } else {
+                return $this->context;
             }
         }
         $name = $variable->children['name'];

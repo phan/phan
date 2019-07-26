@@ -1,0 +1,6 @@
+%s:8 PhanCompatibleNullableTypePHP71 Type 'object' refers to any object starting in PHP 7.2. In PHP 7.1 and earlier, it refers to a class/interface with the name 'object'
+%s:16 PhanRedundantCondition Redundant attempt to cast returns_stdclass() of type \stdClass to truthy
+%s:19 PhanRedundantCondition Redundant attempt to cast X::returns_object() of type object to truthy
+%s:22 PhanImpossibleCondition Impossible attempt to cast X::returns_object() of type object to array
+%s:25 PhanRedundantCondition Redundant attempt to cast X::returns_array() of type array to array
+%s:28 PhanImpossibleCondition Impossible attempt to cast new ArrayObject([]) of type \ArrayObject to array

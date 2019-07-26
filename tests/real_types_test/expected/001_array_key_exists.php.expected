@@ -1,0 +1,4 @@
+src/001_array_key_exists.php:2 PhanImpossibleCondition Impossible attempt to cast true of type true to int
+src/001_array_key_exists.php:5 PhanImpossibleCondition Impossible attempt to cast true of type true to array
+src/001_array_key_exists.php:8 PhanImpossibleCondition Impossible attempt to cast [] of type array{} to object
+src/001_array_key_exists.php:12 PhanImpossibleCondition Impossible attempt to cast array_key_exists('foo', []) of type bool to array

@@ -1,6 +1,8 @@
+%s:21 PhanStaticCallToNonStatic Static call to non-static method \D261B::__construct() defined at %s:42
 %s:21 PhanUndeclaredStaticMethod Static call to undeclared method D261B::__construct()
 %s:26 PhanUndeclaredClassMethod Call to method __construct from undeclared class \Missing261
 %s:26 PhanUndeclaredStaticMethod Static call to undeclared method Missing261::__construct()
+%s:37 PhanStaticCallToNonStatic Static call to non-static method \Other261::__construct() defined at %s:31
 %s:37 PhanUndeclaredStaticMethod Static call to undeclared method Other261::__construct()
 %s:49 PhanAccessOwnConstructor Accessing own constructor directly via self::__construct
 %s:49 PhanInfiniteRecursion __construct() is calling itself in a way that may cause infinite recursion.

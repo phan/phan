@@ -10,18 +10,14 @@ use Phan\CodeBase;
 use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Context;
-use Phan\Language\FileRef;
+use Phan\Language\Element\Comment\Builder;
 use Phan\Language\FutureUnionType;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
-use Phan\Language\Type\BoolType;
 use Phan\Language\Type\ClosureDeclarationParameter;
 use Phan\Language\Type\FalseType;
-use Phan\Language\Type\FloatType;
-use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
-use Phan\Language\Type\StringType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\UnionType;
 use Phan\Parse\ParseVisitor;
@@ -39,7 +35,7 @@ class Parameter extends Variable
     const REFERENCE_READ_WRITE = 2;
     const REFERENCE_WRITE_ONLY = 3;
 
-    // __construct(FileRef $file_ref, string $name, UnionType $type, int $flags) inherited from Variable
+    // __construct(Context $context, string $name, UnionType $type, int $flags) inherited from Variable
 
     /**
      * @var UnionType|null
@@ -63,7 +59,7 @@ class Parameter extends Variable
      * @return static
      */
     public static function create(
-        FileRef $context,
+        Context $context,
         string $name,
         UnionType $type,
         int $flags
@@ -87,10 +83,8 @@ class Parameter extends Variable
     /**
      * @param UnionType $type
      * The type of the default value for this parameter
-     *
-     * @return void
      */
-    public function setDefaultValueType(UnionType $type)
+    public function setDefaultValueType(UnionType $type) : void
     {
         $this->default_value_type = $type;
     }
@@ -98,10 +92,8 @@ class Parameter extends Variable
     /**
      * @param FutureUnionType $type
      * The future type of the default value for this parameter
-     *
-     * @return void
      */
-    public function setDefaultValueFutureType(FutureUnionType $type)
+    public function setDefaultValueFutureType(FutureUnionType $type) : void
     {
         $this->default_value_future_type = $type;
     }
@@ -137,10 +129,8 @@ class Parameter extends Variable
     /**
      * @param mixed $value
      * The value of the default for this parameter
-     *
-     * @return void
      */
-    public function setDefaultValue($value)
+    public function setDefaultValue($value) : void
     {
         $this->default_value = $value;
     }
@@ -149,12 +139,10 @@ class Parameter extends Variable
      * If the value's default is null, or a constant evaluating to null,
      * then the parameter type should be converted to nullable
      * (E.g. `int $x = null` and `?int $x = null` are equivalent.
-     * @return void
      */
-    public function handleDefaultValueOfNull()
+    public function handleDefaultValueOfNull() : void
     {
-        $default_value_type = $this->default_value_type;
-        if ($default_value_type && $default_value_type->isType(NullType::instance(false))) {
+        if ($this->default_value_type && $this->default_value_type->isType(NullType::instance(false))) {
             // If it isn't already nullable, convert the parameter type to nullable.
             $this->convertToNullable();
         }
@@ -180,24 +168,9 @@ class Parameter extends Variable
         Node $node
     ) : array {
         $parameter_list = [];
-        $is_optional_seen = false;
         foreach ($node->children as $child_node) {
             $parameter =
                 Parameter::fromNode($context, $code_base, $child_node);
-
-            if (!$parameter->isOptional() && $is_optional_seen) {
-                Issue::maybeEmit(
-                    $code_base,
-                    $context,
-                    Issue::ParamReqAfterOpt,
-                    $node->lineno ?? 0
-                );
-            } elseif ($parameter->isOptional()
-                && !$is_optional_seen
-                && $parameter->getNonVariadicUnionType()->isEmpty()
-            ) {
-                $is_optional_seen = true;
-            }
 
             $parameter_list[] = $parameter;
         }
@@ -239,7 +212,7 @@ class Parameter extends Variable
         );
         if ($reflection_parameter->isOptional()) {
             $parameter->setDefaultValueType(
-                NullType::instance(false)->asUnionType()
+                NullType::instance(false)->asPHPDocUnionType()
             );
         }
         return $parameter;
@@ -249,21 +222,23 @@ class Parameter extends Variable
      * @param Node|string|float|int $node
      * @return ?UnionType - Returns if we know the exact type of $node and can easily resolve it
      */
-    private static function maybeGetKnownDefaultValueForNode($node)
+    private static function maybeGetKnownDefaultValueForNode($node) : ?UnionType
     {
         if (!($node instanceof Node)) {
-            return Type::nonLiteralFromObject($node)->asUnionType();
+            return Type::nonLiteralFromObject($node)->asRealUnionType();
         }
+        // XXX: This could be made more precise and handle things like unary/binary ops.
+        // However, this doesn't know about constants that haven't been parsed yet.
         if ($node->kind === \ast\AST_CONST) {
             $name = $node->children['name']->children['name'] ?? null;
             if (\is_string($name)) {
                 switch (\strtolower($name)) {
                     case 'false':
-                        return FalseType::instance(false)->asUnionType();
+                        return FalseType::instance(false)->asRealUnionType();
                     case 'true':
-                        return TrueType::instance(false)->asUnionType();
+                        return TrueType::instance(false)->asRealUnionType();
                     case 'null':
-                        return NullType::instance(false)->asUnionType();
+                        return NullType::instance(false)->asRealUnionType();
                 }
             }
         }
@@ -281,7 +256,16 @@ class Parameter extends Variable
     ) : Parameter {
         // Get the type of the parameter
         $type_node = $node->children['type'];
-        $union_type = $type_node ? (new UnionTypeVisitor($code_base, $context))->fromTypeInSignature($type_node) : UnionType::empty();
+        if ($type_node) {
+            try {
+                $union_type = (new UnionTypeVisitor($code_base, $context))->fromTypeInSignature($type_node);
+            } catch (IssueException $e) {
+                Issue::maybeEmitInstance($code_base, $context, $e->getIssueInstance());
+                $union_type = UnionType::empty();
+            }
+        } else {
+            $union_type = UnionType::empty();
+        }
 
         // Create the skeleton parameter from what we know so far
         $parameter = Parameter::create(
@@ -330,19 +314,13 @@ class Parameter extends Variable
                 if ($default_node->kind === \ast\AST_ARRAY) {
                     // We know the parameter default is some sort of array, but we don't know any more (e.g. key types, value types).
                     // When the future type is resolved, we'll know something more specific.
-                    $default_value_union_type = ArrayType::instance(false)->asUnionType();
+                    $default_value_union_type = ArrayType::instance(false)->asRealUnionType();
                 } else {
                     static $possible_parameter_default_union_type = null;
                     if ($possible_parameter_default_union_type === null) {
                         // These can be constants or literals (or null/true/false)
-                        $possible_parameter_default_union_type = new UnionType([
-                            ArrayType::instance(false),
-                            BoolType::instance(false),
-                            FloatType::instance(false),
-                            IntType::instance(false),
-                            StringType::instance(false),
-                            NullType::instance(false),
-                        ]);
+                        // (STDERR, etc. are constants)
+                        $possible_parameter_default_union_type = UnionType::fromFullyQualifiedRealString('array|bool|float|int|string|resource|null');
                     }
                     $default_value_union_type = $possible_parameter_default_union_type;
                 }
@@ -373,6 +351,7 @@ class Parameter extends Variable
     /**
      * @return bool
      * True if this is a required parameter
+     * @suppress PhanUnreferencedPublicMethod provided for API completeness
      */
     public function isRequired() : bool
     {
@@ -431,10 +410,8 @@ class Parameter extends Variable
      *
      * @param UnionType $union_type
      * The type to add to this parameter's union type
-     *
-     * @return void
      */
-    public function addUnionType(UnionType $union_type)
+    public function addUnionType(UnionType $union_type) : void
     {
         parent::setUnionType(self::getUnionType()->withUnionType($union_type));
     }
@@ -444,10 +421,8 @@ class Parameter extends Variable
      *
      * @param Type $type
      * The type to add to this parameter's union type
-     *
-     * @return void
      */
-    public function addType(Type $type)
+    public function addType(Type $type) : void
     {
         parent::setUnionType(self::getUnionType()->withType($type));
     }
@@ -480,18 +455,15 @@ class Parameter extends Variable
     }
 
     /**
-     * @return void
+     * Records that this parameter is an output reference (it overwrites the value of the argument by reference
      */
-    public function setIsOutputReference()
+    public function setIsOutputReference() : void
     {
         $this->enablePhanFlagBits(Flags::IS_WRITE_REFERENCE);
         $this->disablePhanFlagBits(Flags::IS_READ_REFERENCE);
     }
 
-    /**
-     * @return void
-     */
-    private function setIsUsingNullableSyntax()
+    private function setIsUsingNullableSyntax() : void
     {
         $this->enablePhanFlagBits(Flags::IS_PARAM_USING_NULLABLE_SYNTAX);
     }
@@ -503,7 +475,7 @@ class Parameter extends Variable
      *
      * This is needed to deal with edge cases of analysis.
      */
-    public function getIsUsingNullableSyntax() : bool
+    public function isUsingNullableSyntax() : bool
     {
         return $this->getPhanFlagsHasState(Flags::IS_PARAM_USING_NULLABLE_SYNTAX);
     }
@@ -532,7 +504,7 @@ class Parameter extends Variable
             if ($default_value instanceof Node) {
                 $string .= ' = null';
             } else {
-                $string .= ' = ' . var_export($default_value, true);
+                $string .= ' = ' . \var_export($default_value, true);
             }
         }
 
@@ -543,6 +515,7 @@ class Parameter extends Variable
      * Convert this parameter to a stub that can be used by `tool/make_stubs`
      *
      * @param bool $is_internal is this being requested for the language server instead of real PHP code?
+     * @suppress PhanAccessClassConstantInternal
      */
     public function toStubString(bool $is_internal = false) : string
     {
@@ -562,11 +535,11 @@ class Parameter extends Variable
         }
 
         $name = $this->getName();
-        if (!\preg_match('@' . Comment::WORD_REGEX . '@', $name)) {
+        if (!\preg_match('@' . Builder::WORD_REGEX . '@', $name)) {
             // Some PECL extensions have invalid parameter names.
             // Replace invalid characters with U+FFFD replacement character.
             $name = \preg_replace('@[^a-zA-Z0-9_\x7f-\xff]@', '�', $name);
-            if (!\preg_match('@' . Comment::WORD_REGEX . '@', $name)) {
+            if (!\preg_match('@' . Builder::WORD_REGEX . '@', $name)) {
                 $name = '_' . $name;
             }
         }
@@ -585,9 +558,9 @@ class Parameter extends Variable
                     $default_repr = 'null';
                 }
             } else {
-                $default_repr = var_export($this->getDefaultValue(), true);
+                $default_repr = \var_export($this->getDefaultValue(), true);
             }
-            if (strtolower($default_repr) === 'null') {
+            if (\strtolower($default_repr) === 'null') {
                 $default_repr = 'null';
                 // If we're certain the parameter isn't nullable,
                 // then render the default as `default`, not `null`
@@ -613,7 +586,7 @@ class Parameter extends Variable
     {
         $param_type = $this->getNonVariadicUnionType();
         if ($param_type->isEmpty()) {
-            $param_type = MixedType::instance(false)->asUnionType();
+            $param_type = MixedType::instance(false)->asPHPDocUnionType();
         }
         return new ClosureDeclarationParameter(
             $param_type,

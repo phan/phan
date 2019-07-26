@@ -1,1 +1,2 @@
 %s:3 PhanUnusedProtectedMethodParameter Parameter $data is never used
+%s:4 PhanRedundantCondition Redundant attempt to cast true of type true to truthy

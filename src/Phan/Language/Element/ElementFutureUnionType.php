@@ -30,20 +30,16 @@ trait ElementFutureUnionType
     /**
      * Set the type of this element
      * @param UnionType $type
-     *
-     * @return void
      */
-    abstract public function setUnionType(UnionType $type);
+    abstract public function setUnionType(UnionType $type) : void;
 
     /**
      * Sets a value that can be used once parsing/hydration is completed,
      * to resolve the union type of this element.
-     *
-     * @return void
      */
     public function setFutureUnionType(
         FutureUnionType $future_union_type
-    ) {
+    ) : void {
         $this->future_union_type = $future_union_type;
     }
 
@@ -65,7 +61,7 @@ trait ElementFutureUnionType
      * on this object or null if there is no future
      * union type.
      */
-    public function getFutureUnionType()
+    public function getFutureUnionType() : ?UnionType
     {
         $future_union_type = $this->future_union_type;
         if ($future_union_type === null) {

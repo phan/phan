@@ -136,7 +136,7 @@ strlen(42);
 
 // Issue::PhanTypeMismatchForeach
 foreach (null as $i) {}
-
+foreach (STDIN as $i) {}
 // Issue::PhanTypeMismatchProperty
 function f3(int $p = false) {}
 

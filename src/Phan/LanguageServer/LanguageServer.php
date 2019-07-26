@@ -6,6 +6,7 @@ use AdvancedJsonRpc;
 use AssertionError;
 use Closure;
 use Exception;
+use Phan\CLI;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Daemon\ExitException;
@@ -13,6 +14,7 @@ use Phan\Daemon\Request;
 use Phan\Daemon\Transport\CapturerResponder;
 use Phan\Daemon\Transport\StreamResponder;
 use Phan\Issue;
+use Phan\Language\Element\MarkupDescription;
 use Phan\Language\FileRef;
 use Phan\LanguageServer\Protocol\ClientCapabilities;
 use Phan\LanguageServer\Protocol\CompletionContext;
@@ -172,7 +174,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         parent::__construct($this, '/');
         $this->protocolReader = $reader;
         $this->file_mapping = new FileMapping();
-        $reader->on('close', function () {
+        $reader->on('close', function () : void {
             if (!$this->is_accepting_new_requests) {
                 // This is the forked process, which forced the ProtocolReader to close. Don't exit().
                 // Instead, carry on and analyze the input files.
@@ -181,19 +183,23 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             $this->shutdown();
             $this->exit();
         });
-        $reader->on('message', function (Message $msg) {
+        $reader->on('message', function (Message $msg) : void {
             /** @suppress PhanUndeclaredProperty Request->body->id is a request with an id */
             coroutine(function () use ($msg) : \Generator {
-                // Ignore responses, this is the handler for requests and notifications
-                if (AdvancedJsonRpc\Response::isResponse($msg->body)) {
+                $body = $msg->body;
+                if (!$body) {
                     return;
                 }
-                Logger::logInfo('Received message in coroutine: ' . (string)$msg->body);
+                // Ignore responses, this is the handler for requests and notifications
+                if (AdvancedJsonRpc\Response::isResponse($body)) {
+                    return;
+                }
+                Logger::logInfo('Received message in coroutine: ' . (string)$body);
                 $result = null;
                 $error = null;
                 try {
                     // Invoke the method handler to get a result
-                    $result = yield $this->dispatch($msg->body);
+                    $result = yield $this->dispatch($body);
                 } catch (AdvancedJsonRpc\Error $e) {
                     Logger::logInfo('Saw error: ' . $e->getMessage());
                     // If a ResponseError is thrown, send it back in the Response
@@ -210,18 +216,18 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
                 }
                 // Only send a Response for a Request
                 // Notifications do not send Responses
-                if (AdvancedJsonRpc\Request::isRequest($msg->body)) {
+                if (AdvancedJsonRpc\Request::isRequest($body)) {
                     if ($error !== null) {
-                        $responseBody = new AdvancedJsonRpc\ErrorResponse($msg->body->id, $error);
+                        $responseBody = new AdvancedJsonRpc\ErrorResponse($body->id, $error);
                     } else {
-                        $responseBody = new AdvancedJsonRpc\SuccessResponse($msg->body->id, $result);
+                        $responseBody = new AdvancedJsonRpc\SuccessResponse($body->id, $result);
                     }
                     $this->protocolWriter->write(new Message($responseBody));
                 }
             })->otherwise('\\Phan\\LanguageServer\\Utils::crash');
         });
 
-        $reader->on('readMessageGroup', function () {
+        $reader->on('readMessageGroup', function () : void {
             $this->finalizeAnalyzingURIs();
         });
 
@@ -255,22 +261,18 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      *
      * @suppress PhanUndeclaredConstant, UnusedSuppression (pcntl unavailable on Windows)
      */
-    public static function run(CodeBase $code_base, \Closure $file_path_lister, array $options)
+    public static function run(CodeBase $code_base, Closure $file_path_lister, array $options) : ?Request
     {
         if (!$code_base->isUndoTrackingEnabled()) {
             throw new AssertionError("Expected undo tracking to be enabled");
         }
-        if (function_exists('pcntl_signal')) {
-            pcntl_signal(
+        if (\function_exists('pcntl_signal')) {
+            \pcntl_signal(
                 SIGCHLD,
                 /**
-                 * @param int $signo
-                 * @param int|null $status
-                 * @param int|null $pid
-                 * @return void
+                 * @param ?(int|array) $status
                  */
-                static function ($signo, $status = null, $pid = null) use (&$got_signal) {
-                    $got_signal = true;
+                static function (int $signo, $status = null, ?int $pid = null) : void {
                     Request::childSignalHandler($signo, $status, $pid);
                 }
             );
@@ -345,12 +347,12 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         if (isset($options['tcp'])) {
             // Connect to a TCP server
             $address = $options['tcp'];
-            $socket = stream_socket_client('tcp://' . $address, $errno, $errstr);
+            $socket = \stream_socket_client('tcp://' . $address, $errno, $errstr);
             if ($socket === false) {
-                fwrite(STDERR, "Could not connect to language client. Error $errno\n$errstr");
+                \fwrite(STDERR, "Could not connect to language client. Error $errno\n$errstr");
                 exit(1);
             }
-            stream_set_blocking($socket, false);
+            \stream_set_blocking($socket, false);
             $ls = $make_language_server(new ProtocolStreamReader($socket), new ProtocolStreamWriter($socket));
             Logger::logInfo("Connected to $address to receive requests");
             Loop\run();
@@ -361,18 +363,18 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         } elseif (isset($options['tcp-server'])) {
             // Run a TCP Server
             $address = $options['tcp-server'];
-            $tcpServer = stream_socket_server('tcp://' . $address, $errno, $errstr);
+            $tcpServer = \stream_socket_server('tcp://' . $address, $errno, $errstr);
             if ($tcpServer === false) {
-                fwrite(STDERR, "Could not listen on $address. Error $errno\n$errstr");
+                \fwrite(STDERR, "Could not listen on $address. Error $errno\n$errstr");
                 exit(1);
             }
-            fwrite(STDOUT, "Server listening on $address\n");
-            if (!extension_loaded('pcntl')) {
-                fwrite(STDERR, "PCNTL is not available. Only a single connection will be accepted\n");
+            \fwrite(STDOUT, "Server listening on $address\n");
+            if (!\extension_loaded('pcntl')) {
+                \fwrite(STDERR, "PCNTL is not available. Only a single connection will be accepted\n");
             }
-            while ($socket = stream_socket_accept($tcpServer, -1)) {
-                fwrite(STDOUT, "Connection accepted\n");
-                stream_set_blocking($socket, false);
+            while ($socket = \stream_socket_accept($tcpServer, -1)) {
+                \fwrite(STDOUT, "Connection accepted\n");
+                \stream_set_blocking($socket, false);
                 /**if (false && extension_loaded('pcntl')) {  // FIXME re-enable, this was disabled to simplify testing
                     // TODO: This will work, but does it make sense?
 
@@ -413,12 +415,13 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
                     return $most_recent_request;
                 /* } */
             }
+            return null;
         } else {
             if ($options['stdin'] !== true) {
                 throw new AssertionError("Expected either 'stdin', 'tcp-server', or 'tcp' as the language server communication option");
             }
             // Use STDIO
-            stream_set_blocking(STDIN, false);
+            \stream_set_blocking(STDIN, false);
             $ls = $make_language_server(
                 new ProtocolStreamReader(STDIN),
                 new ProtocolStreamWriter(STDOUT)
@@ -434,9 +437,8 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
 
     /**
      * Asynchronously analyze the given URI.
-     * @return void
      */
-    public function analyzeURIAsync(string $uri)
+    public function analyzeURIAsync(string $uri) : void
     {
         $path_to_analyze = Utils::uriToPath($uri);
         Logger::logInfo("Called analyzeURIAsync, uri=$uri, path=$path_to_analyze");
@@ -486,6 +488,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         $this->discardPreviousNodeInfoRequest();
         $request = new GoToDefinitionRequest($uri, $position, GoToDefinitionRequest::REQUEST_HOVER);
         $this->most_recent_node_info_request = $request;
+        MarkupDescription::eagerlyLoadAllDescriptionMaps();
 
         // We analyze this url so that Phan is aware enough of the types and namespace maps to trigger "Go to definition"
         // E.g. going to the definition of `Bar` in `use Foo as Bar; Bar::method();` requires parsing other statements in this file, not just the name in question.
@@ -519,7 +522,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         return $request->getPromise();
     }
 
-    private function discardPreviousNodeInfoRequest()
+    private function discardPreviousNodeInfoRequest() : void
     {
         $prev_node_info_request = $this->most_recent_node_info_request;
         if ($prev_node_info_request) {
@@ -533,17 +536,20 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      * Gets URIs (and corresponding paths) which the language server client needs Phan to re-analyze.
      * This excludes any files that aren't in files and directories of .phan/config.php
      *
-     * @return array<string,string> maps relative path to the file URI.
+     * @return array{0:array<string,string>,1:array<int,string>}
+     * First element maps relative path to the file URI.
+     * Second element is the result of file_path_lister (unless there's nothing to analyze)
      */
     private function getFilteredURIsToAnalyze() : array
     {
         $uris_to_analyze = $this->analyze_request_set;
         if (\count($uris_to_analyze) === 0) {
-            return [];
+            return [[], []];
         }
         $this->analyze_request_set = [];
 
         // Always recompute the file list from the directory list : see src/phan.php
+        // The caller will reuse the cached file list.
         $file_path_list = ($this->file_path_lister)(true);
         $filtered_uris_to_analyze = [];
         foreach ($uris_to_analyze as $path_to_analyze => $uri) {
@@ -553,20 +559,23 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             }
             $relative_path_to_analyze = FileRef::getProjectRelativePathForPath($path_to_analyze);
             if (!\in_array($uri, $file_path_list) && !\in_array($relative_path_to_analyze, $file_path_list)) {
-                Logger::logInfo("Path '$relative_path_to_analyze' (URI '$uri') not in parse list, skipping");
-                continue;
+                // fwrite(STDERR, "Checking if should parse missing $relative_path_to_analyze for $uri\n");
+                if (CLI::shouldParse($relative_path_to_analyze)) {
+                    $file_path_list[] = $relative_path_to_analyze;
+                    Logger::logInfo("Path '$relative_path_to_analyze' (URI '$uri') was not in list - adding it");
+                } else {
+                    Logger::logInfo("Path '$relative_path_to_analyze' (URI '$uri') not in parse list, skipping");
+                    continue;
+                }
             }
             $filtered_uris_to_analyze[$relative_path_to_analyze] = $uri;
         }
-        return $filtered_uris_to_analyze;
+        return [$filtered_uris_to_analyze, $file_path_list];
     }
 
-    /**
-     * @return void
-     */
-    private function finalizeAnalyzingURIs()
+    private function finalizeAnalyzingURIs() : void
     {
-        $uris_to_analyze = $this->getFilteredURIsToAnalyze();
+        [$uris_to_analyze, $file_path_list] = $this->getFilteredURIsToAnalyze();
         // TODO: Add a better abstraction of
         if (\count($uris_to_analyze) === 0) {
             // Discard any node info requests, we haven't created a request yet.
@@ -589,9 +598,9 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         }
 
         // TODO: check if $path_to_analyze can be analyzed first.
-        $sockets = stream_socket_pair(\STREAM_PF_UNIX, \STREAM_SOCK_STREAM, \STREAM_IPPROTO_IP);
+        $sockets = \stream_socket_pair(\STREAM_PF_UNIX, \STREAM_SOCK_STREAM, \STREAM_IPPROTO_IP);
         if (!$sockets) {
-            error_log("unable to create stream socket pair");
+            \error_log("unable to create stream socket pair");
             exit(EXIT_FAILURE);
         }
 
@@ -599,12 +608,12 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
 
         // Give our signal handler time to collect the status of any zombie processes
         // so that they don't accumulate.
-        pcntl_signal_dispatch();
+        \pcntl_signal_dispatch();
 
         // Fork a new process to handle the analysis request
-        $pid = pcntl_fork();
+        $pid = \pcntl_fork();
         if ($pid < 0) {
-            error_log(posix_strerror(posix_get_last_error()));
+            \error_log(\posix_strerror(\posix_get_last_error()));
             exit(EXIT_FAILURE);
         }
 
@@ -614,8 +623,8 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             Request::handleBecomingParentOfChildAnalysisProcess($pid);
             $read_stream = self::streamForParent($sockets);
             $concatenated = '';
-            while (!feof($read_stream)) {
-                $buffer = fread($read_stream, 1024);
+            while (!\feof($read_stream)) {
+                $buffer = \fread($read_stream, 1024);
                 if ($buffer === false) {
                     Logger::logError("fread from language client failed");
                     break;
@@ -624,7 +633,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
                     $concatenated .= $buffer;
                 }
             }
-            $json_contents = json_decode($concatenated, true);
+            $json_contents = \json_decode($concatenated, true);
             if (!\is_array($json_contents)) {
                 Logger::logInfo("Fetched non-json: " . $concatenated);
                 return;
@@ -636,12 +645,15 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         Request::handleBecomingChildAnalysisProcess();
 
         $child_stream = self::streamForChild($sockets);
-        $paths_to_analyze = array_keys($uris_to_analyze);
+        $paths_to_analyze = \array_keys($uris_to_analyze);
         $this->most_recent_request = Request::makeLanguageServerAnalysisRequest(
             new StreamResponder($child_stream, false),
             $paths_to_analyze,
             $this->code_base,
-            $this->file_path_lister,
+            /** @return array<int,string> */
+            static function (bool $unused_recompute_file_list = false) use ($file_path_list) : array {
+                return $file_path_list;
+            },
             $this->file_mapping,
             $this->most_recent_node_info_request,
             true  // We are the fork. Call exit() instead of throwing ExitException
@@ -657,15 +669,13 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
 
     /**
      * @param array<string,string> $uris_to_analyze
-     * @return void
-     *
      * @throws Exception if analysis throws an exception
      *
      * @suppress PhanAccessMethodInternal
      */
-    private function finishAnalyzingURIsWithoutPcntl(array $uris_to_analyze)
+    private function finishAnalyzingURIsWithoutPcntl(array $uris_to_analyze) : void
     {
-        $paths_to_analyze = array_keys($uris_to_analyze);
+        $paths_to_analyze = \array_keys($uris_to_analyze);
         Logger::logInfo('in ' . __METHOD__ . ' paths: ' . StringUtil::jsonEncode($paths_to_analyze));
         // When there is no pcntl:
         // Create a fake request object.
@@ -729,15 +739,14 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     /**
      * @param array<string,string> $uris_to_analyze
      * @param array{issues:array[],definitions?:?Location|?(Location[]),completions?:?(CompletionItem[]),hover_response?:Hover} $response_data
-     * @return void
      * @see Request::respondWithIssues() for where $response_data is serialized
      */
-    private function handleJSONResponseFromWorker(array $uris_to_analyze, array $response_data)
+    private function handleJSONResponseFromWorker(array $uris_to_analyze, array $response_data) : void
     {
         $most_recent_node_info_request = $this->most_recent_node_info_request;
         if ($most_recent_node_info_request) {
             if ($most_recent_node_info_request instanceof GoToDefinitionRequest) {
-                // @phan-suppress-next-line PhanPossiblyNullTypeArgument
+                // @phan-suppress-next-line PhanPartialTypeMismatchArgument
                 $most_recent_node_info_request->recordDefinitionLocationList($response_data['definitions'] ?? null);
                 $most_recent_node_info_request->setHoverResponse($response_data['hover_response'] ?? null);
             } elseif ($most_recent_node_info_request instanceof CompletionRequest) {
@@ -765,22 +774,64 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             return;
         }
         foreach ($issues as $issue) {
-            list($issue_uri, $diagnostic) = self::generateDiagnostic($issue);
+            [$issue_uri, $diagnostic] = self::generateDiagnostic($issue);
             if ($diagnostic instanceof Diagnostic) {
                 $diagnostics[$issue_uri][] = $diagnostic;
             }
         }
 
+        $this->publishDiagnosticsListsForURIs($diagnostics);
+    }
+
+    /**
+     * @param array<string,array<int,Diagnostic>> $diagnostics
+     */
+    private function publishDiagnosticsListsForURIs(array $diagnostics) : void
+    {
+        if (count($diagnostics) === 0) {
+            return;
+        }
+        self::delayBeforePublishDiagnostics();
         foreach ($diagnostics as $diagnostics_uri => $diagnostics_list) {
             $this->client->textDocument->publishDiagnostics($diagnostics_uri, $diagnostics_list);
+        }
+        self::delayAfterPublishDiagnostics();
+    }
+
+    /**
+     * @var float the timestamp when the last group of calls to publishDiagnostics occurred.
+     * This is used for working around issues with language clients that have race conditions processing diagnostics.
+     */
+    private static $last_publish_timestamp = 0;
+
+    private static function delayBeforePublishDiagnostics() : void
+    {
+        $delay = Config::getMinDiagnosticsDelayMs();
+        if ($delay > 0) {
+            $elapsed_ms = 1000 * (\microtime(true) - self::$last_publish_timestamp);
+            $remaining_ms = ($delay - $elapsed_ms);
+            if ($remaining_ms > 0) {
+                \usleep((int)($remaining_ms * 1000));
+            }
+            self::$last_publish_timestamp = \microtime(true);
+        }
+    }
+
+    private static function delayAfterPublishDiagnostics() : void
+    {
+        $delay = Config::getMinDiagnosticsDelayMs();
+        if ($delay > 0) {
+            // Sleep for half of the interval so that when analysis starts,
+            // it's acting on a newer version of the file's contents.
+            \usleep((int)($delay * 1000 / 2));
         }
     }
 
     /**
-     * @param array{type:string,description:string,suggestion?:string,severity:int,location:array{path:string,lines:array{begin:int,end:int}}} $issue
+     * @param array{type:string,description:string,suggestion?:string,severity:int,location:array{path:string,lines:array{begin:int,begin_column?:int,end:int}}} $issue
      * @return null[]|string[]|Diagnostic[] - On success, returns [string $uri, Diagnostic $diagnostic]
      */
-    private static function generateDiagnostic($issue) : array
+    private static function generateDiagnostic(array $issue) : array
     {
         if ($issue['type'] !== 'issue') {
             return [null, null];
@@ -789,7 +840,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         $description = $issue['description'];
         if (Config::getValue('language_server_hide_category_of_issues')) {
             // See JSONPrinter.php for how $description is built
-            $description = explode(' ', $description, 2)[1];
+            $description = \explode(' ', $description, 2)[1];
         }
         if (isset($issue['suggestion'])) {
             $description .= ' (' . $issue['suggestion'] . ')';
@@ -799,12 +850,14 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         $path = Config::projectPath($issue['location']['path']);
         $issue_uri = Utils::pathToUri($path);
         $start_line = $issue['location']['lines']['begin'];
-        $start_line = (int)max($start_line, 1);
+        $column = $issue['location']['lines']['begin_column'] ?? 0;
+
+        $start_line = (int)\max($start_line, 1);
         // If we ever supported end_line:
         // $end_line = $issue['location']['lines']['end'] ?? $start_line;
         // $end_line = max($end_line, 1);
         // Language server has 0 based lines and columns, phan has 1-based lines and columns.
-        $range = new Range(new Position($start_line - 1, 0), new Position($start_line, 0));
+        $range = new Range(new Position($start_line - 1, \max($column - 1, 0)), new Position($start_line, 0));
         $diagnostic_severity = self::diagnosticSeverityFromPhanSeverity($severity);
         // TODO: copy issue code in 'json' format
         return [$issue_uri, new Diagnostic($description, $range, null, $diagnostic_severity, 'Phan')];
@@ -815,7 +868,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      * @return int
      * A DiagnosticSeverity constant used by the language server protocol.
      */
-    public static function diagnosticSeverityFromPhanSeverity($severity) : int
+    public static function diagnosticSeverityFromPhanSeverity(int $severity) : int
     {
         switch ($severity) {
             case Issue::SEVERITY_LOW:
@@ -836,16 +889,16 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      */
     private static function streamForParent(array $sockets)
     {
-        list($for_read, $for_write) = $sockets;
+        [$for_read, $for_write] = $sockets;
 
         // The parent will not use the write channel, so it
         // must be closed to prevent deadlock.
-        fclose($for_write);
+        \fclose($for_write);
 
         // stream_select will be used to read multiple streams, so these
         // must be set to non-blocking mode.
-        if (!stream_set_blocking($for_read, false)) {
-            error_log('unable to set read stream to non-blocking');
+        if (!\stream_set_blocking($for_read, false)) {
+            \error_log('unable to set read stream to non-blocking');
             exit(EXIT_FAILURE);
         }
 
@@ -861,11 +914,11 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      */
     private static function streamForChild(array $sockets)
     {
-        list($for_read, $for_write) = $sockets;
+        [$for_read, $for_write] = $sockets;
 
         // The while will not use the read channel, so it must
         // be closed to prevent deadlock.
-        fclose($for_read);
+        \fclose($for_read);
         return $for_write;
     }
 
@@ -887,6 +940,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     {
         return coroutine(function () : \Generator {
             // Eventually, this might block on something. Leave it as a generator.
+            // @phan-suppress-next-line PhanImpossibleCondition deliberately unreachable yield
             if (false) {
                 yield;
             }
@@ -955,9 +1009,8 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      * but before the client is sending any other request or notification to the server.
      *
      * @suppress PhanUnreferencedPublicMethod
-     * @return void
      */
-    public function initialized()
+    public function initialized() : void
     {
         Logger::logInfo("Called initialized on language server, currently a no-op");
     }
@@ -966,10 +1019,8 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      * The shutdown request is sent from the client to the server. It asks the server to shut down, but to not exit
      * (otherwise the response might not be delivered correctly to the client). There is a separate exit notification that
      * asks the server to exit.
-     *
-     * @return void
      */
-    public function shutdown()
+    public function shutdown() : void
     {
         // TODO: Does phan need to do anything else except respond?
         Logger::logInfo("Called shutdown on language server");
@@ -977,10 +1028,8 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
 
     /**
      * A notification to ask the server to exit its process.
-     *
-     * @return void
      */
-    public function exit()
+    public function exit() : void
     {
         // This is handled by the main process. No forks are active.
         Logger::logInfo("Called exit on language server");

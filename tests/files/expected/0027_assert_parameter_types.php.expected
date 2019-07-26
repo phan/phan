@@ -1,0 +1,1 @@
+%s:11 PhanSuspiciousValueComparison Suspicious attempt to compare 10 of type 10 to 1 of type 1 with operator '>'

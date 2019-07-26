@@ -1,0 +1,1 @@
+src/125_trailing_html.php:7 PhanPluginInlineHTMLTrailing Saw inline HTML at the end of the file: "// This is inline HT..."

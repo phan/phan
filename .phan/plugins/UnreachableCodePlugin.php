@@ -2,9 +2,9 @@
 
 use ast\Node;
 use Phan\Analysis\BlockExitStatusChecker;
-use Phan\PluginV2;
-use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
+use Phan\PluginV3;
+use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV3\PostAnalyzeNodeCapability;
 
 /**
  * This file checks for syntactically unreachable statements in
@@ -18,7 +18,7 @@ use Phan\PluginV2\PostAnalyzeNodeCapability;
  *
  * A plugin file must
  *
- * - Contain a class that inherits from \Phan\PluginV2
+ * - Contain a class that inherits from \Phan\PluginV3
  *
  * - End by returning an instance of that class.
  *
@@ -28,7 +28,7 @@ use Phan\PluginV2\PostAnalyzeNodeCapability;
  * Note: When adding new plugins,
  * add them to the corresponding section of README.md
  */
-final class UnreachableCodePlugin extends PluginV2 implements PostAnalyzeNodeCapability
+final class UnreachableCodePlugin extends PluginV3 implements PostAnalyzeNodeCapability
 {
 
     /**
@@ -60,12 +60,9 @@ final class UnreachableCodeVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param Node $node
      * A node to analyze
-     *
-     * @return void
-     *
      * @override
      */
-    public function visitStmtList(Node $node)
+    public function visitStmtList(Node $node) : void
     {
         $child_nodes = $node->children;
 

@@ -37,7 +37,7 @@ abstract class KindVisitorImplementation implements KindVisitor
      */
     public function handleMissingNodeKind(Node $node)
     {
-        fprintf(STDERR, "Unexpected Node kind. Node:\n%s\n", Debug::nodeToString($node));
+        \fprintf(STDERR, "Unexpected Node kind. Node:\n%s\n", Debug::nodeToString($node));
         throw new AssertionError('All node kinds must match');
     }
 
@@ -52,6 +52,11 @@ abstract class KindVisitorImplementation implements KindVisitor
     }
 
     public function visitArrayElem(Node $node)
+    {
+        return $this->visit($node);
+    }
+
+    public function visitArrowFunc(Node $node)
     {
         return $this->visit($node);
     }
@@ -107,6 +112,11 @@ abstract class KindVisitorImplementation implements KindVisitor
     }
 
     public function visitClassConstDecl(Node $node)
+    {
+        return $this->visit($node);
+    }
+
+    public function visitClassName(Node $node)
     {
         return $this->visit($node);
     }
@@ -272,6 +282,11 @@ abstract class KindVisitorImplementation implements KindVisitor
     }
 
     public function visitProp(Node $node)
+    {
+        return $this->visit($node);
+    }
+
+    public function visitPropGroup(Node $node)
     {
         return $this->visit($node);
     }

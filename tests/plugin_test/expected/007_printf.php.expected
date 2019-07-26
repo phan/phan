@@ -8,9 +8,10 @@ src/007_printf.php:8 PhanPluginPrintfNoSpecifiers None of the formatting argumen
 src/007_printf.php:9 PhanPluginPrintfNoSpecifiers None of the formatting arguments passed alongside format string "Not using args\n" are used
 src/007_printf.php:10 PhanPluginPrintfNoSpecifiers None of the formatting arguments passed alongside format string "Not using args\n" are used
 src/007_printf.php:11 PhanPluginPrintfNoSpecifiers None of the formatting arguments passed alongside format string "Not using args\n" are used
-src/007_printf.php:13 PhanTypeMismatchArgumentInternal Argument 1 (format) is array{} but \printf() takes string
+src/007_printf.php:13 PhanPluginPrintfVariableFormatString Code [] has a dynamic format string that could not be inferred by Phan
+src/007_printf.php:13 PhanTypeMismatchArgumentInternal Argument 1 ($format) is array{} but \printf() takes string
 src/007_printf.php:14 PhanPluginPrintfNoSpecifiers None of the formatting arguments passed alongside format string "3" are used
-src/007_printf.php:14 PhanTypeMismatchArgumentInternal Argument 1 (format) is 3 but \printf() takes string
+src/007_printf.php:14 PhanTypeMismatchArgumentInternal Argument 1 ($format) is 3 but \printf() takes string
 src/007_printf.php:16 PhanPluginPrintfNoArguments No format string arguments are given for "Hello world\n", consider using fwrite instead
 src/007_printf.php:19 PhanPluginPrintfUnusedArgument Format string "Hello %10s" does not use provided argument #2
 src/007_printf.php:20 PhanPluginPrintfNoArguments No format string arguments are given for "Hello %10s", consider using fwrite instead
@@ -32,10 +33,10 @@ src/007_printf.php:33 PhanPluginPrintfIncompatibleArgumentTypeWeak Format string
 src/007_printf.php:34 PhanPluginPrintfIncompatibleArgumentTypeWeak Format string "%1s of %2s" refers to argument #1 as %1s, so type string is expected. However, printf was passed the type 5 (which is weaker than string)
 src/007_printf.php:34 PhanPluginPrintfIncompatibleArgumentTypeWeak Format string "%1s of %2s" refers to argument #2 as %2s, so type string is expected. However, printf was passed the type 9 (which is weaker than string)
 src/007_printf.php:36 PhanPluginPrintfNoArguments No format string arguments are given for "1", consider using echo instead
-src/007_printf.php:36 PhanTypeMismatchArgumentInternal Argument 1 (format) is true but \printf() takes string
+src/007_printf.php:36 PhanTypeMismatchArgumentInternal Argument 1 ($format) is true but \printf() takes string
 src/007_printf.php:37 PhanPluginPrintfNoArguments No format string arguments are given for "", consider using echo instead
-src/007_printf.php:37 PhanTypeMismatchArgumentInternal Argument 1 (format) is false but \printf() takes string
+src/007_printf.php:37 PhanTypeMismatchArgumentInternal Argument 1 ($format) is false but \printf() takes string
 src/007_printf.php:38 PhanPluginPrintfNoArguments No format string arguments are given for "", consider using echo instead
-src/007_printf.php:38 PhanTypeMismatchArgumentInternal Argument 1 (format) is null but \printf() takes string
+src/007_printf.php:38 PhanTypeMismatchArgumentInternal Argument 1 ($format) is null but \printf() takes string
 src/007_printf.php:39 PhanPluginPrintfNoArguments No format string arguments are given for "1", consider using echo instead
-src/007_printf.php:39 PhanTypeMismatchArgumentInternal Argument 1 (format) is int but \printf() takes string
+src/007_printf.php:39 PhanTypeMismatchArgumentInternal Argument 1 ($format) is 1 but \printf() takes string

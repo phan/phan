@@ -12,7 +12,7 @@ Usage: ./phan [options] [files...]
   Thus, both first-party and third-party code being used by
   your application should be included in this list.
 
-  You may include multiple `--directory DIR` options.
+  You may include multiple `--directory <directory>` options.
 
  --exclude-file <file>
   A file that should not be parsed or analyzed (or read
@@ -23,7 +23,7 @@ Usage: ./phan [options] [files...]
   A comma-separated list of directories that defines files
   that will be excluded from static analysis, but whose
   class and method information should be included.
-  (can be repeated, ignored if --include-analysis-directory-list is used)
+  (can be repeated, ignored if --include-analysis-file-list is used)
 
   Generally, you'll want to include the directories for
   third-party code (such as "vendor/") in this list.
@@ -37,19 +37,20 @@ Usage: ./phan [options] [files...]
   incremental analysis.
 
  -d, --project-root-directory </path/to/project>
-  Hunt for a directory named `.phan` in the provided directory
-  and read configuration file `.phan/config.php` from that path.
+  The directory of the project to analyze.
+  Phan expects this directory to contain the configuration file `.phan/config.php`.
+  If not provided, the current working directory is analyzed.
 
- -r, --file-list-only
+ -r, --file-list-only <file>
   A file containing a list of PHP files to be analyzed to the
   exclusion of any other directories or files passed in. This
   is unlikely to be useful.
 
- -k, --config-file
+ -k, --config-file <file>
   A path to a config file to load (instead of the default of
   `.phan/config.php`).
 
- -m <mode>, --output-mode
+ -m, --output-mode <mode>
   Output mode from 'text', 'json', 'csv', 'codeclimate', 'checkstyle', or 'pylint'
 
  -o, --output <filename>
@@ -69,12 +70,12 @@ Usage: ./phan [options] [files...]
   and you may end up with a large number of issues to be manually suppressed.
   See https://github.com/phan/phan/wiki/Tutorial-for-Analyzing-a-Large-Sloppy-Code-Base
 
-  [--init-level] affects the generated settings in `.phan/config.php`
+  [--init-level <level>] affects the generated settings in `.phan/config.php`
     (e.g. null_casts_as_array).
     `--init-level` can be set to 1 (strictest) to 5 (least strict)
-  [--init-analyze-dir] can be used as a relative path alongside directories
+  [--init-analyze-dir <dir>] can be used as a relative path alongside directories
     that Phan infers from composer.json's "autoload" settings
-  [--init-analyze-file] can be used as a relative path alongside files
+  [--init-analyze-file <file>] can be used as a relative path alongside files
     that Phan infers from composer.json's "bin" settings
   [--init-no-composer] can be used to tell Phan that the project
     is not a composer project.
@@ -82,12 +83,18 @@ Usage: ./phan [options] [files...]
     and will not include those paths in the generated config.
   [--init-overwrite] will allow 'phan --init' to overwrite .phan/config.php.
 
- -C, --color
-  Add colors to the outputted issues. Tested in Unix.
+ -C, --color, --no-color
+  Add colors to the outputted issues.
   This is recommended for only the default --output-mode ('text')
+
+  [--color-scheme={default,code,eclipse_dark,vim}]
+    This (or the environment variable PHAN_COLOR_SCHEME) can be used to set the color scheme for emitted issues.
 
  -p, --progress-bar
   Show progress bar
+
+ -D, --debug
+  Print debugging output to stderr. Useful for looking into performance issues or crashes.
 
  -q, --quick
   Quick mode - doesn't recurse into all function calls
@@ -95,7 +102,7 @@ Usage: ./phan [options] [files...]
  -b, --backward-compatibility-checks
   Check for potential PHP 5 -> PHP 7 BC issues
 
- --target-php-version {7.0,7.1,7.2,7.3,native}
+ --target-php-version {7.0,7.1,7.2,7.3,7.4,8.0,native}
   The PHP version that the codebase will be checked for compatibility against.
   For best results, the PHP binary used to run Phan should have the same PHP version.
   (Phan relies on Reflection for some param counts
@@ -104,7 +111,7 @@ Usage: ./phan [options] [files...]
  -i, --ignore-undeclared
   Ignore undeclared functions and classes
 
- -y, --minimum-severity <level in {0,5,10}>
+ -y, --minimum-severity <level>
   Minimum severity level (low=0, normal=5, critical=10) to report.
   Defaults to 0.
 
@@ -117,10 +124,16 @@ Usage: ./phan [options] [files...]
   properties that are probably never referenced and can
   be removed. This implies `--unused-variable-detection`.
 
- --unused-variable-detection
+ -u, --unused-variable-detection
   Emit issues for variables, parameters and closure use variables
   that are probably never referenced.
   This has a few known false positives, e.g. for loops or branches.
+
+ -t, --redundant-condition-detection
+  Emit issues for conditions such as `is_int(expr)` that are redundant or impossible.
+
+  This has some known false positives for loops, variables set in loops,
+  and global variables.
 
  -j, --processes <int>
   The number of parallel processes to run during the analysis
@@ -129,6 +142,13 @@ Usage: ./phan [options] [files...]
  -z, --signature-compatibility
   Analyze signatures for methods that are overrides to ensure
   compatibility with what they're overriding.
+
+ --disable-cache
+  Don't cache any ASTs from the polyfill/fallback.
+
+  ASTs from the native parser (php-ast) don't need to be cached.
+
+  This is useful if Phan will be run only once and php-ast is unavailable (e.g. in Travis)
 
  --disable-plugins
   Don't run any plugins. Slightly faster.
@@ -183,14 +203,14 @@ Usage: ./phan [options] [files...]
  -s, --daemonize-socket </path/to/file.sock>
   Unix socket for Phan to listen for requests on, in daemon mode.
 
- --daemonize-tcp-host
+ --daemonize-tcp-host <hostname>
   TCP hostname for Phan to listen for JSON requests on, in daemon mode.
-  (e.g. 'default', which is an alias for host 127.0.0.1, or `0.0.0.0` for
+  (e.g. `default`, which is an alias for host `127.0.0.1`, or `0.0.0.0` for
   usage with Docker). `phan_client` can be used to communicate with the Phan Daemon.
 
  --daemonize-tcp-port <default|1024-65535>
   TCP port for Phan to listen for JSON requests on, in daemon mode.
-  (e.g. 'default', which is an alias for port 4846.)
+  (e.g. `default`, which is an alias for port 4846.)
   `phan_client` can be used to communicate with the Phan Daemon.
 
  -v, --version
@@ -216,9 +236,14 @@ Extended help:
   Emit JSON serialized signatures to the given file.
   This uses a method signature format similar to FunctionSignatureMap.php.
 
- --find-signature 'paramUnionType1->paramUnionType2->returnUnionType'
+ --automatic-fix
+  Automatically fix any issues Phan is capable of fixing.
+  NOTE: This is a work in progress and limited to a small subset of issues
+  (e.g. unused imports on their own line)
+
+ --find-signature <paramUnionType1->paramUnionType2->returnUnionType>
   Find a signature in the analyzed codebase that is similar to the argument.
-  See tool/phoogle for examples.
+  See `tool/phoogle` for examples.
 
  --memory-limit <memory_limit>
   Sets the memory limit for analysis (per process).
@@ -232,9 +257,15 @@ Extended help:
  --markdown-issue-messages
   Emit issue messages with markdown formatting.
 
- --polyfill-parse-all-element-doc-comments
-  Makes the polyfill aware of doc comments on class constants and declare statements
-  even when imitating parsing a PHP 7.0 codebase.
+ --absolute-path-issue-messages
+  Emit issues with their absolute paths instead of relative paths.
+  This does not affect files mentioned within the issue.
+
+ --constant-variable-detection
+  Emit issues for variables that could be replaced with literals or constants.
+  (i.e. they are declared once (as a constant expression) and never modified).
+  This is almost entirely false positives for most coding styles.
+  Implies --unused-variable-detection
 
  --language-server-on-stdin
   Start the language server (For the Language Server protocol).
@@ -250,17 +281,17 @@ Extended help:
   Prevent the client from sending change notifications (Only notify the language server when the user saves a document)
   This significantly reduces CPU usage, but clients won't get notifications about issues immediately.
 
- --language-server-enable-go-to-definition
-  Enables support for "Go To Definition" and "Go To Type Definition" in the Phan Language Server.
-  Disabled by default.
+ --language-server-disable-go-to-definition, --language-server-enable-go-to-definition
+  Disables/Enables support for "Go To Definition" and "Go To Type Definition" in the Phan Language Server.
+  Enabled by default.
 
- --language-server-enable-hover
-  Enables support for "Hover" in the Phan Language Server.
-  Disabled by default.
+ --language-server-disable-hover, --language-server-enable-hover
+  Disables/Enables support for "Hover" in the Phan Language Server.
+  Enabled by default.
 
- --language-server-enable-completion
-  Enables support for "Completion" in the Phan Language Server.
-  Disabled by default.
+ --language-server-disable-completion, --language-server-enable-completion
+  Disables/Enables support for "Completion" in the Phan Language Server.
+  Enabled by default.
 
  --language-server-completion-vscode
   Adds a workaround to make completion of variables and static properties
@@ -268,6 +299,13 @@ Extended help:
 
  --language-server-verbose
   Emit verbose logging messages related to the language server implementation to stderr.
+  This is useful when developing or debugging language server clients.
+
+ --language-server-disable-output-filter
+  Emit all issues detected from the language server (e.g. invalid phpdoc in parsed files),
+  not just issues in files currently open in the editor/IDE.
+  This can be very verbose and has more false positives.
+
   This is useful when developing or debugging language server clients.
 
  --language-server-allow-missing-pcntl
@@ -285,6 +323,14 @@ Extended help:
  --language-server-require-pcntl
   Don't start the language server if PCNTL isn't installed (don't use the fallback). Useful for debugging.
 
+ --language-server-min-diagnostics-delay-ms <0..1000>
+  Sets a minimum delay between publishing diagnostics (i.e. Phan issues) to the language client.
+  This can be increased to work around race conditions in clients processing Phan issues (e.g. if your editor/IDE shows outdated diagnostics)
+  Defaults to 0. (no delay)
+
  --require-config-exists
   Exit immediately with an error code if `.phan/config.php` does not exist.
+
+ --help-annotations
+  Print details on annotations supported by Phan.
 ```

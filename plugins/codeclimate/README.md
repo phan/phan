@@ -4,7 +4,7 @@ Building a new codeclimate image
 From the root directory of the phan installation (Change build tag if publishing)
 
 ```sh
-	sudo docker build -t phan:0.10.3 -f plugins/codeclimate/Dockerfile .
+	sudo docker build -t phan:1.2.6 -f plugins/codeclimate/Dockerfile .
 ```
 
 
@@ -15,7 +15,7 @@ The following example uses the phan codeclimate image to analyze the phan checko
 By running it from a different folder passing in a different config.json to `-v`, options can be changed.
 
 ```sh
-sudo docker run -v $PWD:/code:ro -v $PWD:/code:ro -v $PWD/plugins/codeclimate/config-example.json:/config.json phan:0.10.3
+sudo docker run -v $PWD:/code:ro -v $PWD:/code:ro -v $PWD/plugins/codeclimate/config-example.json:/config.json phan:1.2.6
 ```
 
 Future work

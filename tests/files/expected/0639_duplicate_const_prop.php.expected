@@ -1,0 +1,2 @@
+%s:5 PhanRedefineProperty Property $x defined at %s:5 was previously defined at %s:4
+%s:9 PhanRedefineClassConstant Class constant a defined at %s:9 was previously defined at %s:8

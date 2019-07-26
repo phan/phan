@@ -27,10 +27,8 @@ interface TypedElementInterface
     /**
      * Set the type of this element
      * @param UnionType $type
-     *
-     * @return void
      */
-    public function setUnionType(UnionType $type);
+    public function setUnionType(UnionType $type) : void;
 
     /**
      * @return FileRef

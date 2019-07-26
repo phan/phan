@@ -10,14 +10,14 @@ use Phan\Tests\BaseTest;
  */
 final class UtilsTest extends BaseTest
 {
-    public function testUriToPath()
+    public function testUriToPath() : void
     {
         $this->assertSame('/foo/bar/baz.php', Utils::uriToPath('file:///foo/bar/baz.php'));
         $this->assertSame('/foo/bar/baz:2.php', Utils::uriToPath('file:///foo/bar/baz:2.php'));
         $this->assertSame('/foo/bar/baz bat.php', Utils::uriToPath('file:///foo/bar/baz%20bat.php'));
     }
 
-    public function testNormalizePathFromWindowsURI()
+    public function testNormalizePathFromWindowsURI() : void
     {
         $this->assertSame('C:\foo\bar\baz.php', Utils::normalizePathFromWindowsURI('C:/foo/bar/baz.php'));
         $this->assertSame('C:\foo\bar\baz:2.php', Utils::normalizePathFromWindowsURI('/C:/foo/bar/baz:2.php'));

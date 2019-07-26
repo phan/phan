@@ -28,6 +28,7 @@ use function is_string;
 /**
  * This implements closures for finding definitions for nodes where isSelected is set
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
+ * @phan-file-suppress PhanPluginNoCommentOnPublicMethod TODO: Add comments
  */
 class DefinitionResolver
 {
@@ -35,14 +36,14 @@ class DefinitionResolver
      * @return Closure(Context,Node,array<int,Node>):void
      * NOTE: The helper methods distinguish between "Go to definition"
      * and "go to type definition" in their implementations,
-     * based on $request->getIsTypeDefinitionRequest()
+     * based on $request->isTypeDefinitionRequest()
      */
-    public static function createGoToDefinitionClosure(GoToDefinitionRequest $request, CodeBase $code_base)
+    public static function createGoToDefinitionClosure(GoToDefinitionRequest $request, CodeBase $code_base) : Closure
     {
         /**
          * @param array<int,Node> $parent_node_list
          */
-        return static function (Context $context, Node $node, array $parent_node_list = []) use ($request, $code_base) {
+        return static function (Context $context, Node $node, array $parent_node_list = []) use ($request, $code_base) : void {
             // @phan-suppress-next-line PhanUndeclaredProperty this is overridden
             $selected_fragment = $node->selectedFragment ?? null;
             if (is_string($selected_fragment)) {
@@ -50,7 +51,7 @@ class DefinitionResolver
                 return;
             }
 
-            $parent_node = end($parent_node_list);
+            $parent_node = \end($parent_node_list);
             if ($parent_node instanceof Node) {
                 if ($node->kind === ast\AST_NAME && $parent_node->kind === ast\AST_NEW) {
                     $node = $parent_node;
@@ -63,7 +64,7 @@ class DefinitionResolver
             // $location = new Location($go_to_definition_request->getUri(), $node->lineno);
 
             // Log as strings in case TolerantASTConverter generates the wrong type
-            Logger::logInfo(sprintf("Saw a node of kind %s at line %s", (string)$node->kind, (string)$node->lineno));
+            Logger::logInfo(\sprintf("Saw a node of kind %s at line %s", (string)$node->kind, (string)$node->lineno));
 
             switch ($node->kind) {
                 case ast\AST_NAME:
@@ -85,6 +86,13 @@ class DefinitionResolver
                     return;
                 case ast\AST_CLASS_CONST:
                     self::locateClassConstDefinition($request, $code_base, $context, $node);
+                    return;
+                case ast\AST_CLASS_NAME:
+                    $class_node = $node->children['class'];
+                    if ($class_node instanceof Node) {
+                        // handle (2)::class from the polyfill
+                        self::locateClassDefinition($request, $code_base, $context, $class_node);
+                    }
                     return;
                 case ast\AST_CONST:
                     self::locateGlobalConstDefinition($request, $code_base, $context, $node);
@@ -118,7 +126,7 @@ class DefinitionResolver
         CodeBase $code_base,
         Context $context,
         string $selected_fragment
-    ) {
+    ) : void {
         // fprintf(STDERR, "locateCommentDefinition called for %s\n", $selected_fragment);
         if (self::locateClassDefinitionFromComment($request, $code_base, $context, $selected_fragment)) {
             return;
@@ -165,7 +173,7 @@ class DefinitionResolver
         }
         // fwrite(STDERR, "Looking up function with fqsen $fqsen\n");
         if (!$code_base->hasFunctionWithFQSEN($fqsen)) {
-            if (substr($selected_fragment, 0, 1) !== '\\') {
+            if (\substr($selected_fragment, 0, 1) !== '\\') {
                 try {
                     $fqsen = FullyQualifiedFunctionName::make($context->getNamespace(), $selected_fragment);
                 } catch (Exception $_) {
@@ -194,7 +202,7 @@ class DefinitionResolver
         }
         // fwrite(STDERR, "Looking up function with fqsen $fqsen\n");
         if (!$code_base->hasGlobalConstantWithFQSEN($fqsen)) {
-            if (substr($selected_fragment, 0, 1) !== '\\') {
+            if (\substr($selected_fragment, 0, 1) !== '\\') {
                 try {
                     $fqsen = FullyQualifiedGlobalConstantName::make($context->getNamespace(), $selected_fragment);
                 } catch (Exception $_) {
@@ -211,15 +219,13 @@ class DefinitionResolver
 
     /**
      * Record information about this definition, to send back to the language client after all possible definitions were found.
-     *
-     * @return void
      */
     public static function locateClassDefinition(
         GoToDefinitionRequest $request,
         CodeBase $code_base,
         Context $context,
         Node $node
-    ) {
+    ) : void {
         try {
             $union_type = UnionTypeVisitor::unionTypeFromClassNode($code_base, $context, $node);
         } catch (FQSENException $_) {
@@ -252,10 +258,7 @@ class DefinitionResolver
         return $found;
     }
 
-    /**
-     * @return void
-     */
-    public static function locatePropDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node)
+    public static function locatePropDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node) : void
     {
         $is_static = $node->kind === ast\AST_STATIC_PROP;
         try {
@@ -272,15 +275,14 @@ class DefinitionResolver
 
     /**
      * @param Node $node a node of type AST_CLASS_CONST
-     * @return void
      */
-    public static function locateClassConstDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node)
+    public static function locateClassConstDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node) : void
     {
         $name = $node->children['const'];
         if (!is_string($name)) {
             return;
         }
-        if (strtolower($name) === 'class') {
+        if (\strtolower($name) === 'class') {
             self::locateClassDefinition($request, $code_base, $context, $node->children['class']);
             return;
         }
@@ -298,10 +300,7 @@ class DefinitionResolver
         $request->recordDefinitionElement($code_base, $class_const, false);
     }
 
-    /**
-     * @return void
-     */
-    public static function locateGlobalConstDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node)
+    public static function locateGlobalConstDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node) : void
     {
         try {
             $global_const = (new ContextNode($code_base, $context, $node))->getConst();
@@ -315,32 +314,30 @@ class DefinitionResolver
         $request->recordDefinitionElement($code_base, $global_const, false);
     }
 
-    /**
-     * @return void
-     */
-    public static function locateVariableDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node)
+    public static function locateVariableDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node) : void
     {
         $name = $node->children['name'];
         if (!is_string($name)) {
             return;
         }
-        if (!$context->getScope()->hasVariableWithName($name)) {
-            return;
-        }
-        if (!$request->getIsTypeDefinitionRequest() && !$request->getIsHoverRequest()) {
+        if (!$request->isTypeDefinitionRequest() && !$request->isHoverRequest()) {
             // TODO: Implement "Go To Definition" for variables with heuristics or create a new plugin
             return;
         }
-        $variable = $context->getScope()->getVariableByName($name);
+        // Get the variable or superglobal
+        try {
+            $variable = (new ContextNode($code_base, $context, $node))->getVariable();
+        } catch (Exception $_) {
+            return;
+        }
 
         $request->recordDefinitionOfVariableType($code_base, $context, $variable);
     }
 
     /**
      * Given a node of type AST_NEW, locate the constructor definition (or class definition)
-     * @return void
      */
-    private static function locateNewDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node)
+    private static function locateNewDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node) : void
     {
         try {
             $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $node);
@@ -355,7 +352,7 @@ class DefinitionResolver
         GoToDefinitionRequest $request,
         CodeBase $code_base,
         UnionType $union_type
-    ) {
+    ) : void {
         foreach ($union_type->getTypeSet() as $type) {
             if ($type->isNativeType()) {
                 continue;
@@ -366,16 +363,17 @@ class DefinitionResolver
             }
             $class = $code_base->getClassByFQSEN($class_fqsen);
             $method = $class->getMethodByName($code_base, '__construct');
+            if ($method->isPHPInternal() && !$class->isPHPInternal() && !$request->isHoverRequest()) {
+                $request->recordDefinitionElement($code_base, $class, false);
+                continue;
+            }
             // Note: Does the same thing (Return the class)
             // both for "Go To Definition" and "Go To Type Definition"
             $request->recordDefinitionElement($code_base, $method, false);
         }
     }
 
-    /**
-     * @return void
-     */
-    public static function locateMethodDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node)
+    public static function locateMethodDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node) : void
     {
         $is_static = $node->kind === ast\AST_STATIC_CALL;
         $method_name = $node->children['method'];
@@ -394,10 +392,7 @@ class DefinitionResolver
         $request->recordDefinitionElement($code_base, $method, true);
     }
 
-    /**
-     * @return void
-     */
-    public static function locateFuncDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node)
+    public static function locateFuncDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node) : void
     {
         try {
             foreach ((new ContextNode($code_base, $context, $node->children['expr']))->getFunctionFromNode() as $function_interface) {
@@ -414,9 +409,8 @@ class DefinitionResolver
 
     /**
      * @param Node $node a node of type AST_USE to find the definition of
-     * @return void
      */
-    public static function locateNamespaceUseDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Node $node)
+    public static function locateNamespaceUseDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Node $node) : void
     {
         // TODO: Support GroupUse (See ScopeVisitor->visitGroupUse)
         $targets = ScopeVisitor::aliasTargetMapFromUseNode($node);
@@ -450,7 +444,7 @@ class DefinitionResolver
             $name = $use_elem->children['name'];
             if (is_string($name)) {
                 try {
-                    $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString('\\' . ltrim($name, '\\'));
+                    $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString('\\' . \ltrim($name, '\\'));
                 } catch (AssertionError $_) {
                     return;  // ignore, probably still typing the requested definition
                 } catch (FQSENException $_) {

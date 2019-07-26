@@ -55,20 +55,6 @@ abstract class ScalarType extends NativeType
     }
 
     /**
-     * @param CodeBase $code_base (@phan-unused-param)
-     *
-     * @param Type $parent (@phan-unused-param)
-     *
-     * @return bool
-     * True if this type represents a class which is a sub-type of
-     * the class represented by the passed type.
-     */
-    public function isSubclassOf(CodeBase $code_base, Type $parent) : bool
-    {
-        return false;
-    }
-
-    /**
      * @return bool
      * True if this Type can be cast to the given Type
      * cleanly
@@ -76,7 +62,8 @@ abstract class ScalarType extends NativeType
     protected function canCastToNonNullableType(Type $type) : bool
     {
         // Scalars may be configured to always cast to each other.
-        if ($type->isScalar()) {
+        // NOTE: This deliberately includes NullType, which doesn't satisfy `is_scalar()`
+        if ($type instanceof ScalarType) {
             if (Config::getValue('scalar_implicit_cast')) {
                 return true;
             }
@@ -100,7 +87,7 @@ abstract class ScalarType extends NativeType
         Context $unused_context,
         CodeBase $unused_code_base
     ) : bool {
-        return $union_type->hasType($this) || $this->asUnionType()->canCastToUnionType($union_type);
+        return $union_type->hasType($this) || $this->asPHPDocUnionType()->canCastToUnionType($union_type);
     }
 
     /**
@@ -111,7 +98,7 @@ abstract class ScalarType extends NativeType
         return $this->name;
     }
 
-    public function getIsAlwaysTruthy() : bool
+    public function isAlwaysTruthy() : bool
     {
         // Most scalars (Except ResourceType) have a false value, e.g. 0/""/"0"/0.0/false.
         // (But ResourceType isn't a subclass of ScalarType in Phan's implementation)
@@ -155,6 +142,16 @@ abstract class ScalarType extends NativeType
     public function isDefiniteNonCallableType() : bool
     {
         return true;
+    }
+
+    public function asScalarType() : ?Type
+    {
+        return $this->withIsNullable(false);
+    }
+
+    public function canPossiblyCastToClass(CodeBase $unused_codebase, Type $unused_class_type) : bool
+    {
+        return false;
     }
 }
 \class_exists(IntType::class);

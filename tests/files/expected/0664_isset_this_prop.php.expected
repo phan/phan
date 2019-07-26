@@ -1,0 +1,2 @@
+%s:14 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is string but \intdiv() takes int
+%s:17 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is null but \intdiv() takes int

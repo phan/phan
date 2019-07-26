@@ -1,18 +1,28 @@
+%s:8 PhanImpossibleCondition Impossible attempt to cast 0 of type 0 to truthy
+%s:9 PhanRedundantCondition Redundant attempt to cast STDERR of type resource to truthy
+%s:10 PhanImpossibleCondition Impossible attempt to cast 0 of type 0 to truthy
+%s:11 PhanRedundantCondition Redundant attempt to cast 1 of type 1 to truthy
+%s:12 PhanImpossibleCondition Impossible attempt to cast null of type null to truthy
+%s:13 PhanRedundantCondition Redundant attempt to cast 1 of type 1 to truthy
+%s:14 PhanImpossibleCondition Impossible attempt to cast '' of type '' to truthy
+%s:15 PhanRedundantCondition Redundant attempt to cast 'aa' of type 'aa' to truthy
+%s:16 PhanImpossibleCondition Impossible attempt to cast 0.0 of type 0.0 to truthy
 %s:17 PhanUndeclaredVariable Variable $x is undeclared
 %s:18 PhanUndeclaredVariable Variable $x2 is undeclared
 %s:19 PhanUndeclaredVariable Variable $z is undeclared
 %s:20 PhanUndeclaredVariable Variable $a is undeclared
 %s:21 PhanUndeclaredVariable Variable $b is undeclared
 %s:23 PhanUndeclaredVariable Variable $strTypo is undeclared
-%s:24 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int
-%s:25 PhanTypeMismatchArgumentInternal Argument 1 (string) is 3 but \strlen() takes string
+%s:24 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is string but \intdiv() takes int
+%s:25 PhanRedundantCondition Redundant attempt to cast $inCondVar of type 3 to truthy
+%s:25 PhanTypeMismatchArgumentInternal Argument 1 ($string) is 3 but \strlen() takes string
 %s:26 PhanUndeclaredVariable Variable $c is undeclared
 %s:27 PhanUndeclaredVariable Variable $unaryMissing1 is undeclared
 %s:28 PhanUndeclaredVariable Variable $unaryMissing2 is undeclared
 %s:30 PhanUndeclaredVariable Variable $unaryMissing3 is undeclared
 %s:31 PhanUndeclaredVariable Variable $c2 is undeclared
-%s:33 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int
+%s:33 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is string but \intdiv() takes int
 %s:35 PhanUndeclaredVariable Variable $unaryMissing3 is undeclared
 %s:36 PhanUndeclaredVariable Variable $c2 is undeclared
-%s:38 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int
+%s:38 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is string but \intdiv() takes int
 %s:39 PhanUndeclaredVariable Variable $x3 is undeclared

@@ -4,6 +4,7 @@ namespace Phan\Language\Type;
 
 use Closure;
 use Exception;
+use Generator;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Debug\Frame;
@@ -156,14 +157,13 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      */
     private function computeGenericArrayTypeInstances() : array
     {
-        $field_types = $this->field_types;
-        if (\count($field_types) === 0) {
+        if (\count($this->field_types) === 0) {
             // there are 0 fields, so we know nothing about the field types (and there's no way to indicate an empty array yet)
             return [ArrayType::instance($this->is_nullable)];
         }
 
         $union_type_builder = new UnionTypeBuilder();
-        foreach ($field_types as $key => $field_union_type) {
+        foreach ($this->field_types as $key => $field_union_type) {
             foreach ($field_union_type->getTypeSet() as $type) {
                 $union_type_builder->addType(GenericArrayType::fromElementType(
                     $type->asNonLiteralType(),
@@ -188,10 +188,9 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     }
 
     /**
-     * @return UnionType
      * @phan-override
      */
-    public function iterableKeyUnionType(CodeBase $unused_code_base)
+    public function iterableKeyUnionType(CodeBase $unused_code_base) : UnionType
     {
         return $this->getKeyUnionType();
     }
@@ -211,10 +210,9 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     }
 
     /**
-     * @return UnionType
      * @override
      */
-    public function iterableValueUnionType(CodeBase $unused_code_base)
+    public function iterableValueUnionType(CodeBase $unused_code_base) : UnionType
     {
         return $this->genericArrayElementUnionType();
     }
@@ -283,7 +281,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
                     $this_field_type = $this->field_types[$key] ?? null;
                     // Can't cast {a:int} to {a:int, other:string} if other is missing
                     if ($this_field_type === null) {
-                        if ($field_type->getIsPossiblyUndefined()) {
+                        if ($field_type->isPossiblyUndefined()) {
                             // ... unless the other field is allowed to be undefined.
                             continue;
                         }
@@ -340,7 +338,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         $field_types = $this->field_types;
         $unique = [];
         foreach ($field_types as $value_union_type) {
-            if ($value_union_type->getIsPossiblyUndefined()) {
+            if ($value_union_type->isPossiblyUndefined()) {
                 continue;
             }
 
@@ -398,7 +396,6 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     /**
      * Returns an empty array shape (for `array{}`)
      * @param bool $is_nullable
-     * @return ArrayShapeType
      */
     public static function empty(
         bool $is_nullable = false
@@ -417,10 +414,33 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         return true;
     }
 
+    /**
+     * @internal - For use within ArrayShapeType
+     */
+    const ESCAPE_CHARACTER_LOOKUP = [
+        "\n" => '\\n',
+        "\r" => '\\r',
+        "\t" => '\\t',
+        "\\" => '\\\\',
+    ];
+
+    /**
+     * @internal - For use within ArrayShapeType
+     */
+    const UNESCAPE_CHARACTER_LOOKUP = [
+        '\\n' => "\n",
+        '\\r' => "\r",
+        '\\t' => "\t",
+        '\\\\' => "\\",
+    ];
+
     public function __toString() : string
     {
         $parts = [];
         foreach ($this->field_types as $key => $value) {
+            if (\is_string($key)) {
+                $key = self::escapeKey($key);
+            }
             $value_repr = $value->__toString();
             if (\substr($value_repr, -1) === '=') {
                 // convert {key:type=} to {key?:type} in representation.
@@ -430,6 +450,24 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
             }
         }
         return ($this->is_nullable ? '?' : '') . 'array{' . \implode(',', $parts) . '}';
+    }
+
+    /**
+     * Escape the key for display purposes
+     */
+    public static function escapeKey(string $key) : string
+    {
+        return \preg_replace_callback(
+            '([^-./^;$%*+_a-zA-Z0-9\x7f-\xff])',
+            /**
+             * @param array{0:string} $match
+             */
+            static function (array $match) : string {
+                $c = $match[0];
+                return self::ESCAPE_CHARACTER_LOOKUP[$c] ?? \sprintf('\\x%02x', \ord($c));
+            },
+            $key
+        );
     }
 
     /**
@@ -467,15 +505,15 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
                 try {
                     $expanded_field_type = $union_type->asExpandedTypes($code_base, $recursion_depth);
                 } catch (RecursionDepthException $_) {
-                    $expanded_field_type = MixedType::instance(false)->asUnionType();
+                    $expanded_field_type = MixedType::instance(false)->asPHPDocUnionType();
                 }
-                if ($union_type->getIsPossiblyUndefined()) {
+                if ($union_type->isPossiblyUndefined()) {
                     // array{key?:string} should become array{key?:string}.
                     $expanded_field_type = $union_type->withIsPossiblyUndefined(true);
                 }
                 $result_fields[$key] = $expanded_field_type;
             }
-            return ArrayShapeType::fromFieldTypes($result_fields, $this->is_nullable)->asUnionType();
+            return ArrayShapeType::fromFieldTypes($result_fields, $this->is_nullable)->asPHPDocUnionType();
         });
     }
 
@@ -514,15 +552,15 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
                 try {
                     $expanded_field_type = $union_type->asExpandedTypesPreservingTemplate($code_base, $recursion_depth);
                 } catch (RecursionDepthException $_) {
-                    $expanded_field_type = MixedType::instance(false)->asUnionType();
+                    $expanded_field_type = MixedType::instance(false)->asPHPDocUnionType();
                 }
-                if ($union_type->getIsPossiblyUndefined()) {
+                if ($union_type->isPossiblyUndefined()) {
                     // array{key?:string} should become array{key?:string}.
                     $expanded_field_type = $union_type->withIsPossiblyUndefined(true);
                 }
                 $result_fields[$key] = $expanded_field_type;
             }
-            return ArrayShapeType::fromFieldTypes($result_fields, $this->is_nullable)->asUnionType();
+            return ArrayShapeType::fromFieldTypes($result_fields, $this->is_nullable)->asPHPDocUnionType();
         });
     }
 
@@ -596,17 +634,32 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      * @return bool true if there is guaranteed to be at least one property
      * @phan-override
      */
-    public function getIsAlwaysTruthy() : bool
+    public function isAlwaysTruthy() : bool
     {
         if ($this->is_nullable) {
             return false;
         }
         foreach ($this->field_types as $field) {
-            if (!$field->getIsPossiblyUndefined()) {
+            if (!$field->isPossiblyUndefined()) {
                 return true;
             }
         }
         return false;
+    }
+
+    public function isAlwaysFalsey() : bool
+    {
+        return \count($this->field_types) === 0;
+    }
+
+    public function isPossiblyTruthy() : bool
+    {
+        return \count($this->field_types) > 0;
+    }
+
+    public function isPossiblyFalsey() : bool
+    {
+        return !$this->isAlwaysTruthy();
     }
 
     /**
@@ -619,11 +672,11 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         if (\array_keys($this->field_types) !== [0, 1]) {
             return true;
         }
-        if (!$this->field_types[0]->canCastToUnionType(UnionType::fromFullyQualifiedString('string|object'))) {
+        if (!$this->field_types[0]->canCastToUnionType(UnionType::fromFullyQualifiedPHPDocString('string|object'))) {
             // First field of callable array should be a string or object. (the expression or class)
             return true;
         }
-        if (!$this->field_types[1]->canCastToUnionType(StringType::instance(false)->asUnionType())) {
+        if (!$this->field_types[1]->canCastToUnionType(StringType::instance(false)->asPHPDocUnionType())) {
             // Second field of callable array should be the method name.
             return true;
         }
@@ -651,9 +704,9 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
             }
         }
         if ($field_types === $this->field_types) {
-            return $this->asUnionType();
+            return $this->asPHPDocUnionType();
         }
-        return self::fromFieldTypes($field_types, $this->is_nullable)->asUnionType();
+        return self::fromFieldTypes($field_types, $this->is_nullable)->asPHPDocUnionType();
     }
 
     /**
@@ -662,7 +715,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      * @param CodeBase $code_base
      * @return ?Closure(UnionType, Context):UnionType
      */
-    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type)
+    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type) : ?Closure
     {
         $closure = null;
         foreach ($this->field_types as $key => $type) {
@@ -691,10 +744,30 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     }
 
     /**
-     * Returns the function interface this references
-     * @return ?FunctionInterface
+     * If all types in this array shape can be converted to a single PHP value,
+     * and all fields are required, return the array shape represented by that.
+     *
+     * Otherwise, return null
+     *
+     * @return ?array<mixed,?string|?int|?float|?bool|?array>
      */
-    public function asFunctionInterfaceOrNull(CodeBase $code_base, Context $context)
+    public function asArrayLiteralOrNull()
+    {
+        $result = [];
+        foreach ($this->field_types as $key => $field_type) {
+            $field_value = $field_type->asValueOrNullOrSelf();
+            if (\is_object($field_value)) {
+                return null;
+            }
+            $result[$key] = $field_value;
+        }
+        return $result;
+    }
+
+    /**
+     * Returns the function interface this references
+     */
+    public function asFunctionInterfaceOrNull(CodeBase $code_base, Context $context) : ?FunctionInterface
     {
         if (\count($this->field_types) !== 2) {
             Issue::maybeEmit(
@@ -753,5 +826,86 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         }
 
         return null;
+    }
+
+    /**
+     * @return Generator<mixed,Type> (void => $inner_type)
+     */
+    public function getReferencedClasses() : Generator
+    {
+        // Whether union types or types have been seen already for this ArrayShapeType
+        $seen = [];
+        foreach ($this->field_types as $type) {
+            $id = \spl_object_id($type);
+            if (isset($seen[$id])) {
+                continue;
+            }
+            $seen[$id] = true;
+
+            foreach ($type->getReferencedClasses() as $inner_type) {
+                $id = \spl_object_id($inner_type);
+                if (isset($seen[$id])) {
+                    continue;
+                }
+                $seen[$id] = true;
+                yield $inner_type;
+            }
+        }
+    }
+
+    /**
+     * Convert an escaped key to an unescaped key
+     */
+    public static function unescapeKey(string $escaped_key) : string
+    {
+        return \preg_replace_callback(
+            '/\\\\(?:[nrt\\\\]|x[0-9a-fA-F]{2})/',
+            /** @param array{0:string} $matches */
+            static function (array $matches) : string {
+                $x = $matches[0];
+                if (\strlen($x) === 2) {
+                    // Parses \\, \n, \t, and \r
+                    return self::UNESCAPE_CHARACTER_LOOKUP[$x];
+                }
+                // convert 2 hex bytes to a single character
+                // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal, PhanPartialTypeMismatchArgumentInternal
+                return \chr(\hexdec(\substr($x, 2)));
+            },
+            $escaped_key
+        );
+    }
+
+    /**
+     * Returns the corresponding type that would be used in a signature
+     * @override
+     */
+    public function asSignatureType() : Type
+    {
+        return ArrayType::instance($this->is_nullable);
+    }
+
+    public function withStaticResolvedInContext(Context $context) : Type
+    {
+        $did_change = false;
+        $new_field_types = $this->field_types;
+        foreach ($new_field_types as $i => $field_type) {
+            $new_field_type = $field_type->withStaticResolvedInContext($context);
+            if ($new_field_type !== $field_type) {
+                $did_change = true;
+                $new_field_types[$i] = $new_field_type;
+            }
+        }
+        if (!$did_change) {
+            return $this;
+        }
+        return self::fromFieldTypes($new_field_types, $this->is_nullable);
+    }
+
+    public function asCallableType() : ?Type
+    {
+        if ($this->isDefiniteNonCallableType()) {
+            return null;
+        }
+        return $this->withIsNullable(false);
     }
 }

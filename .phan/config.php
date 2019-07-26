@@ -193,6 +193,12 @@ return [
     // to be tracked.
     'force_tracking_references' => false,
 
+    // Set to true in order to attempt to detect redundant and impossible conditions.
+    //
+    // This has some false positives involving loops,
+    // variables set in branches of loops, and global variables.
+    'redundant_condition_detection' => true,
+
     // Enable this to warn about harmless redundant use for classes and namespaces such as `use Foo\bar` in namespace Foo.
     //
     // Note: This does not affect warnings about redundant uses in the global namespace.
@@ -248,6 +254,9 @@ return [
 
         // TODO: Undo the suppressions for the below categories of issues:
         'Phan\Exception\CodeBaseException',
+        // phpunit
+        'PHPUnit\Framework\ExpectationFailedException',
+        'SebastianBergmann\RecursionContext\InvalidArgumentException',
     ],
 
     // Increase this to properly analyze require_once statements
@@ -281,6 +290,8 @@ return [
         'PhanPluginDescriptionlessCommentOnProtectedMethod',
         'PhanPluginNoCommentOnPrivateMethod',
         'PhanPluginDescriptionlessCommentOnPrivateMethod',
+        // TODO: Fix edge cases in --automatic-fix for PhanPluginRedundantClosureComment
+        'PhanPluginRedundantClosureComment',
     ],
 
     // If empty, no filter against issues types will be applied.
@@ -300,14 +311,20 @@ return [
     'file_list' => [
         'phan',
         'phan_client',
+        'plugins/codeclimate/engine',
         'tool/make_stubs',
         'internal/dump_fallback_ast.php',
+        'internal/dump_html_styles.php',
+        'internal/extract_arg_info.php',
         'internal/internalsignatures.php',
         'internal/package.php',
         'internal/reflection_completeness_check.php',
         'internal/sanitycheck.php',
         'internal/update_wiki_config_types.php',
         'internal/update_wiki_issue_types.php',
+        'vendor/phpdocumentor/type-resolver/src/Types/ContextFactory.php',
+        'vendor/phpdocumentor/reflection-docblock/src/DocBlockFactory.php',
+        'vendor/phpdocumentor/reflection-docblock/src/DocBlock.php',
         // 'vendor/phpunit/phpunit/src/Framework/TestCase.php',
     ],
 
@@ -402,6 +419,7 @@ return [
     'autoload_internal_extension_signatures' => [
         'ast'         => '.phan/internal_stubs/ast.phan_php',
         'ctype'       => '.phan/internal_stubs/ctype.phan_php',
+        'igbinary'    => '.phan/internal_stubs/igbinary.phan_php',
         'pcntl'       => '.phan/internal_stubs/pcntl.phan_php',
         'posix'       => '.phan/internal_stubs/posix.phan_php',
         'readline'    => '.phan/internal_stubs/readline.phan_php',
@@ -450,14 +468,24 @@ return [
         // UnknownElementTypePlugin warns about unknown types in element signatures.
         'UnknownElementTypePlugin',
         'DuplicateExpressionPlugin',
+        // warns about carriage returns("\r"), trailing whitespace, and tabs in PHP files.
+        'WhitespacePlugin',
+        // Warn about inline HTML anywhere in the files.
+        'InlineHTMLPlugin',
         ////////////////////////////////////////////////////////////////////////
         // Plugins for Phan's self-analysis
         ////////////////////////////////////////////////////////////////////////
 
-        // TODO: warn about the usage of assert() for Phan's self-analysis. See https://github.com/phan/phan/issues/288
+        // Warns about the usage of assert() for Phan's self-analysis. See https://github.com/phan/phan/issues/288
         'NoAssertPlugin',
 
         'HasPHPDocPlugin',
+        'PHPDocToRealTypesPlugin',  // suggests replacing (at)return void with `: void` in the declaration, etc.
+        'PHPDocRedundantPlugin',
+        'PreferNamespaceUsePlugin',
+
+        // This should only be enabled if the code being analyzed contains Phan plugins.
+        'PhanSelfCheckPlugin',
 
         ////////////////////////////////////////////////////////////////////////
         // End plugins for Phan's self-analysis

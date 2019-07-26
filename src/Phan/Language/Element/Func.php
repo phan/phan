@@ -11,6 +11,7 @@ use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Context;
+use Phan\Language\ElementContext;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\Scope\ClosureScope;
@@ -103,7 +104,7 @@ class Func extends AddressableElement implements FunctionInterface
         Context $context,
         Type $closure_scope_type,
         Node $node
-    ) {
+    ) : ?FullyQualifiedClassName {
         if ($node->kind !== ast\AST_CLOSURE) {
             return null;
         }
@@ -154,15 +155,6 @@ class Func extends AddressableElement implements FunctionInterface
         Node $node,
         FullyQualifiedFunctionName $fqsen
     ) : Func {
-        // @var array<int,Parameter>
-        // The list of parameters specified on the
-        // function
-        $parameter_list = Parameter::listFromNode(
-            $context,
-            $code_base,
-            $node->children['params']
-        );
-
         // Create the skeleton function object from what
         // we know so far
         $func = new Func(
@@ -171,7 +163,7 @@ class Func extends AddressableElement implements FunctionInterface
             UnionType::empty(),
             $node->flags ?? 0,
             $fqsen,
-            $parameter_list
+            null
         );
         $doc_comment = $node->children['docComment'] ?? '';
         $func->setDocComment($doc_comment);
@@ -185,6 +177,22 @@ class Func extends AddressableElement implements FunctionInterface
             $node->lineno ?? 0,
             Comment::ON_FUNCTION
         );
+
+        // Defer adding params to the local scope for user functions. (FunctionTrait::addParamsToScopeOfFunctionOrMethod)
+        // See PreOrderAnalysisVisitor->visitFuncDecl and visitClosure
+        $func->setComment($comment);
+
+        $element_context = new ElementContext($func);
+
+        // @var array<int,Parameter>
+        // The list of parameters specified on the
+        // method
+        $parameter_list = Parameter::listFromNode(
+            $element_context,
+            $code_base,
+            $node->children['params']
+        );
+        $func->setParameterList($parameter_list);
 
         // Redefine the function's internal scope to point to the new class before adding any variables to the scope.
 
@@ -224,21 +232,10 @@ class Func extends AddressableElement implements FunctionInterface
         // Keep an copy of the original parameter list, to check for fatal errors later on.
         $func->setRealParameterList($parameter_list);
 
-        $func->setNumberOfRequiredParameters(\array_reduce(
-            $parameter_list,
-            static function (int $carry, Parameter $parameter) : int {
-                return ($carry + ($parameter->isRequired() ? 1 : 0));
-            },
-            0
-        ));
+        $required_parameter_count = self::computeNumberOfRequiredParametersForList($parameter_list);
+        $func->setNumberOfRequiredParameters($required_parameter_count);
 
-        $func->setNumberOfOptionalParameters(\array_reduce(
-            $parameter_list,
-            static function (int $carry, Parameter $parameter) : int {
-                return ($carry + ($parameter->isOptional() ? 1 : 0));
-            },
-            0
-        ));
+        $func->setNumberOfOptionalParameters(\count($parameter_list) - $required_parameter_count);
 
         // Check to see if the comment specifies that the
         // function is deprecated
@@ -248,8 +245,8 @@ class Func extends AddressableElement implements FunctionInterface
         // the namespace.
         $func->setIsNSInternal($comment->isNSInternal());
 
-        $func->setSuppressIssueList(
-            $comment->getSuppressIssueList()
+        $func->setSuppressIssueSet(
+            $comment->getSuppressIssueSet()
         );
 
         // Take a look at function return types
@@ -262,7 +259,7 @@ class Func extends AddressableElement implements FunctionInterface
             );
             $func->setRealReturnType($union_type);
 
-            $func->setUnionType($func->getUnionType()->withUnionType($union_type));
+            $func->setUnionType($func->getUnionType()->withUnionType($union_type)->withRealTypeSet($union_type->getTypeSet()));
         }
 
         if ($comment->hasReturnUnionType()) {
@@ -290,20 +287,14 @@ class Func extends AddressableElement implements FunctionInterface
                 }
             }
 
-            $func->setUnionType($func->getUnionType()->withUnionType($union_type));
+            $func->setUnionType($func->getUnionType()->withUnionType($union_type)->withRealTypeSet($func->getRealReturnType()->getTypeSet()));
             $func->setPHPDocReturnType($union_type);
         }
-
-        // Defer adding params to the local scope for user functions. (FunctionTrait::addParamsToScopeOfFunctionOrMethod)
-        // See PreOrderAnalysisVisitor->visitFuncDecl and visitClosure
-        $func->setComment($comment);
+        $element_context->freeElementReference();
 
         return $func;
     }
 
-    /**
-     * @return FullyQualifiedFunctionName
-     */
     public function getFQSEN() : FullyQualifiedFunctionName
     {
         return $this->fqsen;
@@ -335,7 +326,7 @@ class Func extends AddressableElement implements FunctionInterface
 
         $string .= 'function ' . $this->getName();
 
-        $string .= '(' . implode(', ', $this->getParameterList()) . ')';
+        $string .= '(' . \implode(', ', $this->getParameterList()) . ')';
 
         if (!$this->getUnionType()->isEmpty()) {
             $string .= ' : ' . (string)$this->getUnionType();
@@ -372,21 +363,21 @@ class Func extends AddressableElement implements FunctionInterface
     }
 
     /**
-     * Returns a string that can be used as a stand-alone PHP stub for this global function.
+     * Returns a string that can be used as a standalone PHP stub for this global function.
      * @suppress PhanUnreferencedPublicMethod (toStubInfo is used by callers for more flexibility)
      */
     public function toStub() : string
     {
-        list($namespace, $string) = $this->toStubInfo();
+        [$namespace, $string] = $this->toStubInfo();
         $namespace_text = $namespace === '' ? '' : "$namespace ";
-        $string = sprintf("namespace %s{\n%s}\n", $namespace_text, $string);
+        $string = \sprintf("namespace %s{\n%s}\n", $namespace_text, $string);
         return $string;
     }
 
     public function getMarkupDescription() : string
     {
         $fqsen = $this->getFQSEN();
-        $namespace = ltrim($fqsen->getNamespace(), '\\');
+        $namespace = \ltrim($fqsen->getNamespace(), '\\');
         $stub = '';
         if ($namespace) {
             $stub = "namespace $namespace;\n";
@@ -400,7 +391,7 @@ class Func extends AddressableElement implements FunctionInterface
         $stub .= '(' . $this->getParameterStubText() . ')';
 
         $return_type = $this->getUnionType();
-        if ($return_type && !$return_type->isEmpty()) {
+        if (!$return_type->isEmpty()) {
             $stub .= ' : ' . (string)$return_type;
         }
         return $stub;
@@ -426,7 +417,7 @@ class Func extends AddressableElement implements FunctionInterface
             $stub .= ' : ' . (string)$return_type;
         }
         $stub .= " {}\n";
-        $namespace = ltrim($fqsen->getNamespace(), '\\');
+        $namespace = \ltrim($fqsen->getNamespace(), '\\');
         return [$namespace, $stub];
     }
 
@@ -455,7 +446,7 @@ class Func extends AddressableElement implements FunctionInterface
         if ($this->returnsRef()) {
             $stub .= '&';
         }
-        $stub .= '(' . implode(', ', array_map(static function (Parameter $parameter) : string {
+        $stub .= '(' . \implode(', ', \array_map(static function (Parameter $parameter) : string {
             return $parameter->toStubString();
         }, $this->getRealParameterList())) . ')';
         if ($this->real_return_type && !$this->getRealReturnType()->isEmpty()) {

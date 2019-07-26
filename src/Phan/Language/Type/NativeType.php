@@ -2,6 +2,7 @@
 
 namespace Phan\Language\Type;
 
+use Generator;
 use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\Type;
@@ -139,7 +140,9 @@ abstract class NativeType extends Type
                 BoolType::NAME     => in_array(BoolType::NAME, $permitted_cast_type_names, true),
                 CallableType::NAME => in_array(CallableType::NAME, $permitted_cast_type_names, true),
                 ClassStringType::NAME => in_array(ClassStringType::NAME, $permitted_cast_type_names, true),
+                CallableArrayType::NAME => in_array(CallableArrayType::NAME, $permitted_cast_type_names, true),
                 CallableStringType::NAME => in_array(CallableStringType::NAME, $permitted_cast_type_names, true),
+                CallableObjectType::NAME => in_array(CallableObjectType::NAME, $permitted_cast_type_names, true),
                 FalseType::NAME    => in_array(FalseType::NAME, $permitted_cast_type_names, true),
                 FloatType::NAME    => in_array(FloatType::NAME, $permitted_cast_type_names, true),
                 IntType::NAME      => in_array(IntType::NAME, $permitted_cast_type_names, true),
@@ -161,6 +164,8 @@ abstract class NativeType extends Type
         return [
             ArrayType::NAME    => $generate_row(ArrayType::NAME, IterableType::NAME, CallableType::NAME),
             BoolType::NAME     => $generate_row(BoolType::NAME, FalseType::NAME, TrueType::NAME, ScalarRawType::NAME),
+            CallableArrayType::NAME => $generate_row(CallableArrayType::NAME, CallableType::NAME, ArrayType::NAME),
+            CallableObjectType::NAME => $generate_row(CallableObjectType::NAME, CallableType::NAME, ObjectType::NAME),
             CallableType::NAME => $generate_row(CallableType::NAME),
             CallableStringType::NAME => $generate_row(CallableStringType::NAME, CallableType::NAME, StringType::NAME),
             ClassStringType::NAME => $generate_row(ClassStringType::NAME, CallableType::NAME, StringType::NAME),
@@ -213,7 +218,7 @@ abstract class NativeType extends Type
         CodeBase $code_base,
         int $recursion_depth = 0
     ) : UnionType {
-        return $this->asUnionType();
+        return $this->asPHPDocUnionType();
     }
 
     /**
@@ -233,7 +238,7 @@ abstract class NativeType extends Type
         CodeBase $code_base,
         int $recursion_depth = 0
     ) : UnionType {
-        return $this->asUnionType();
+        return $this->asPHPDocUnionType();
     }
 
     public function hasTemplateParameterTypes() : bool
@@ -244,7 +249,7 @@ abstract class NativeType extends Type
     /**
      * @return ?UnionType returns the iterable value's union type if this is a subtype of iterable, null otherwise.
      */
-    public function iterableKeyUnionType(CodeBase $unused_code_base)
+    public function iterableKeyUnionType(CodeBase $unused_code_base) : ?UnionType
     {
         return null;
     }
@@ -252,18 +257,19 @@ abstract class NativeType extends Type
     /**
      * @return ?UnionType returns the iterable value's union type if this is a subtype of iterable, null otherwise.
      */
-    public function iterableValueUnionType(CodeBase $unused_code_base)
+    public function iterableValueUnionType(CodeBase $unused_code_base) : ?UnionType
     {
         return null;
     }
 
     /**
+     * @param array<string,UnionType> $unused_template_parameter_type_map
      * @override
      */
     public function withTemplateParameterTypeMap(
         array $unused_template_parameter_type_map
     ) : UnionType {
-        return $this->asUnionType();
+        return $this->asPHPDocUnionType();
     }
 
     public function isTemplateSubtypeOf(Type $unused_type) : bool
@@ -281,14 +287,30 @@ abstract class NativeType extends Type
         return false;
     }
 
-    public function getTemplateTypeExtractorClosure(CodeBase $unused_code_base, TemplateType $unused_template_type)
+    public function getTemplateTypeExtractorClosure(CodeBase $unused_code_base, TemplateType $unused_template_type) : ?\Closure
     {
         return null;
     }
 
-    public function asFunctionInterfaceOrNull(CodeBase $unused_codebase, Context $unused_context)
+    public function asFunctionInterfaceOrNull(CodeBase $unused_codebase, Context $unused_context) : ?\Phan\Language\Element\FunctionInterface
     {
         // overridden in subclasses
+        return null;
+    }
+
+    /**
+     * @return Generator<mixed,Type>
+     * @suppress PhanImpossibleCondition deliberately creating empty generator
+     */
+    public function getReferencedClasses() : Generator
+    {
+        if (false) {
+            yield $this;
+        }
+    }
+
+    public function asObjectType() : ?Type
+    {
         return null;
     }
 }

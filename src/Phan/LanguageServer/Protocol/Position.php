@@ -26,7 +26,7 @@ class Position
     public $character;
 
     /**
-     * @suppress PhanTypeMismatchProperty
+     * @suppress PhanPossiblyNullTypeMismatchProperty
      */
     public function __construct(int $line = null, int $character = null)
     {
@@ -42,7 +42,6 @@ class Position
      *  - a positive number otherwise
      *
      * @param Position $position
-     * @return int
      */
     public function compare(Position $position): int
     {
@@ -61,19 +60,19 @@ class Position
      * Returns the offset of the position in a string
      *
      * @param string $content
-     * @return int
      * @suppress PhanUnreferencedPublicMethod
      */
     public function toOffset(string $content): int
     {
-        $lines = explode("\n", $content);
+        $lines = \explode("\n", $content);
         $slice = \array_slice($lines, 0, $this->line);
         // TODO: array_sum should infer sum of ints is typically an int
-        return ((int)array_sum(array_map('strlen', $slice))) + \count($slice) + $this->character;
+        return ((int)\array_sum(\array_map('strlen', $slice))) + \count($slice) + $this->character;
     }
 
     /**
      * Creates a Position from a serialized array $data
+     * @param array{line:int,character?:?int} $data
      */
     public static function fromArray(array $data) : Position
     {

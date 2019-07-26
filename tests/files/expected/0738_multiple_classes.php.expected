@@ -1,0 +1,2 @@
+%s:20 PhanImpossibleCondition Impossible attempt to cast $original->makeOther() of type \NS738\B to \NS738\A
+%s:29 PhanRedundantCondition Redundant attempt to cast $new_other of type \NS738\B to \NS738\B
