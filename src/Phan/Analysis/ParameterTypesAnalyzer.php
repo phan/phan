@@ -10,6 +10,7 @@ use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Comment\Parameter as CommentParameter;
+use Phan\Language\Element\Flags;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
@@ -395,7 +396,7 @@ class ParameterTypesAnalyzer
         }
 
         if ($method->getName() === '__construct') {
-            if (Config::get_closest_target_php_version_id() < 70200 && $o_method->isStrictlyMoreVisibileThan($method)) {
+            if (Config::get_closest_target_php_version_id() < 70200 && !$o_method->getPhanFlagsHasState(Flags::IS_FAKE_CONSTRUCTOR) && $o_method->isStrictlyMoreVisibleThan($method)) {
                 Issue::maybeEmit(
                     $code_base,
                     $method->getContext(),

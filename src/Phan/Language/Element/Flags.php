@@ -54,6 +54,11 @@ class Flags
     // Currently applies only to some variables (e.g. static variables)
     const IS_CONSTANT_DEFINITION = (1 << 26);
 
+    // Flag to be set on fake __construct methods (e.g. for classes/interfaces without having them defined explicitly)
+    // Currently for strict visibility checking, because fake constructors have public visibility by default, and Phan
+    // fails thinking that child classes are violating the visibility if they have a private or protected __construct
+    const IS_FAKE_CONSTRUCTOR = (1 << 27);
+
     /**
      * Either enable or disable the given flag on
      * the given bit vector.
