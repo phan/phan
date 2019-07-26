@@ -11,6 +11,7 @@ use Phan\IssueFixSuggester;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
+use Phan\Language\Element\Variable;
 use Phan\Plugin\Internal\VariableTracker\VariableTrackerVisitor;
 use Phan\PluginV3;
 use Phan\PluginV3\AnalyzeFunctionCallCapability;
@@ -57,7 +58,7 @@ final class CompactPlugin extends PluginV3 implements
                     Issue::maybeEmitWithParameters(
                         $code_base,
                         $context,
-                        $context->isInGlobalScope() ? Issue::UndeclaredGlobalVariable : Issue::UndeclaredVariable,
+                        Variable::chooseIssueForUndeclaredVariable($context, $variable_name),
                         $arg->lineno ?? $context->getLineNumberStart(),
                         [$variable_name],
                         IssueFixSuggester::suggestVariableTypoFix($code_base, $context, $variable_name)

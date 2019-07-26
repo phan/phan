@@ -984,31 +984,25 @@ trait ConditionVisitorUtil
             return null;
         }
 
-        $var_name = (string)$var_name_node;
+        $variable_name = (string)$var_name_node;
 
-        if (!$context->getScope()->hasVariableWithName($var_name)) {
-            if (Variable::isHardcodedVariableInScopeWithName($var_name, $context->isInGlobalScope())) {
+        if (!$context->getScope()->hasVariableWithName($variable_name)) {
+            if (Variable::isHardcodedVariableInScopeWithName($variable_name, $context->isInGlobalScope())) {
                 return null;
             }
             if (!($context->isInGlobalScope() && Config::getValue('ignore_undeclared_variables_in_global_scope'))) {
-                if ($var_name === 'this') {
-                    $issue_type = Issue::UndeclaredThis;
-                } else {
-                    $issue_type = $context->isInGlobalScope() ? Issue::UndeclaredGlobalVariable : Issue::UndeclaredVariable;
-                }
-
                 throw new IssueException(
-                    Issue::fromType($issue_type)(
+                    Issue::fromType(Variable::chooseIssueForUndeclaredVariable($context, $variable_name))(
                         $context->getFile(),
                         $var_node->lineno ?? 0,
-                        [$var_name],
-                        IssueFixSuggester::suggestVariableTypoFix($this->code_base, $context, $var_name)
+                        [$variable_name],
+                        IssueFixSuggester::suggestVariableTypoFix($this->code_base, $context, $variable_name)
                     )
                 );
             }
             $variable = new Variable(
                 $context,
-                $var_name,
+                $variable_name,
                 UnionType::empty(),
                 0
             );
@@ -1016,7 +1010,7 @@ trait ConditionVisitorUtil
             return $variable;
         }
         return $context->getScope()->getVariableByName(
-            $var_name
+            $variable_name
         );
     }
 

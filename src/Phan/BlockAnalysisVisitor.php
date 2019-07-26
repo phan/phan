@@ -358,26 +358,26 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     /**
      * @see ConditionVarUtil::getVariableFromScope()
      */
-    private static function createVarForInlineComment(CodeBase $code_base, Context $context, string $var_name, UnionType $type, bool $create_variable) : void
+    private static function createVarForInlineComment(CodeBase $code_base, Context $context, string $variable_name, UnionType $type, bool $create_variable) : void
     {
-        if (!$context->getScope()->hasVariableWithName($var_name)) {
-            if (Variable::isHardcodedVariableInScopeWithName($var_name, $context->isInGlobalScope())) {
+        if (!$context->getScope()->hasVariableWithName($variable_name)) {
+            if (Variable::isHardcodedVariableInScopeWithName($variable_name, $context->isInGlobalScope())) {
                 return;
             }
             if (!$create_variable && !($context->isInGlobalScope() && Config::getValue('ignore_undeclared_variables_in_global_scope'))) {
                 Issue::maybeEmitWithParameters(
                     $code_base,
                     $context,
-                    $context->isInGlobalScope() ? Issue::UndeclaredGlobalVariable : Issue::UndeclaredVariable,
+                    Variable::chooseIssueForUndeclaredVariable($context, $variable_name),
                     $context->getLineNumberStart(),
-                    [$var_name],
-                    IssueFixSuggester::suggestVariableTypoFix($code_base, $context, $var_name)
+                    [$variable_name],
+                    IssueFixSuggester::suggestVariableTypoFix($code_base, $context, $variable_name)
                 );
                 return;
             }
             $variable = new Variable(
                 $context,
-                $var_name,
+                $variable_name,
                 $type,
                 0
             );
@@ -385,7 +385,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             return;
         }
         $variable = clone($context->getScope()->getVariableByName(
-            $var_name
+            $variable_name
         ));
         $variable->setUnionType($type);
         $context->addScopeVariable($variable);

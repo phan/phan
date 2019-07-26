@@ -1081,14 +1081,8 @@ class ContextNode
                 );
             }
 
-            if ($variable_name === 'this') {
-                $issue_type = Issue::UndeclaredThis;
-            } else {
-                $issue_type = $this->context->isInGlobalScope() ? Issue::UndeclaredGlobalVariable : Issue::UndeclaredVariable;
-            }
-
             throw new IssueException(
-                Issue::fromType($issue_type)(
+                Issue::fromType(Variable::chooseIssueForUndeclaredVariable($this->context, $variable_name))(
                     $this->context->getFile(),
                     $node->lineno,
                     [ $variable_name ],
@@ -1145,14 +1139,8 @@ class ContextNode
                     );
                 }
 
-                if ($variable_name === 'this') {
-                    $issue_type = Issue::UndeclaredThis;
-                } else {
-                    $issue_type = $this->context->isInGlobalScope() ? Issue::UndeclaredGlobalVariable : Issue::UndeclaredVariable;
-                }
-
                 throw new IssueException(
-                    Issue::fromType($issue_type)(
+                    Issue::fromType(Variable::chooseIssueForUndeclaredVariable($this->context, $variable_name))(
                         $this->context->getFile(),
                         $node->lineno,
                         [ $variable_name ],
