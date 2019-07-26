@@ -1803,7 +1803,8 @@ class UnionTypeVisitor extends AnalysisVisitor
                 // @phan-suppress-next-line PhanTypeMismatchReturnNullable variable existence was checked
                 return Variable::getUnionTypeOfHardcodedGlobalVariableWithName($variable_name);
             }
-            if (!Config::getValue('ignore_undeclared_variables_in_global_scope')) {
+
+            if (!($this->context->isInGlobalScope() && Config::getValue('ignore_undeclared_variables_in_global_scope'))) {
                 if ($variable_name === 'this') {
                     $issue_type = Issue::UndeclaredThis;
                 } else {
