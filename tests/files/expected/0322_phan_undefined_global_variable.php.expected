@@ -1,1 +1,1 @@
-%s:5 PhanUndeclaredVariable Variable $undefVar is undeclared
+%s:5 PhanUndeclaredGlobalVariable Global variable $undefVar is undeclared

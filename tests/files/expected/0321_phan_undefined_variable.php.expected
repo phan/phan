@@ -3,6 +3,6 @@
 %s:5 PhanUndeclaredVariable Variable $undef is undeclared
 %s:6 PhanUndeclaredVariable Variable $undefB is undeclared
 %s:6 PhanUnusedVariable Unused definition of variable $y
-%s:8 PhanUndeclaredVariable Variable $cond321 is undeclared
-%s:10 PhanUndeclaredVariable Variable $undef321 is undeclared
-%s:11 PhanUndeclaredVariable Variable $undefB321 is undeclared
+%s:8 PhanUndeclaredGlobalVariable Global variable $cond321 is undeclared
+%s:10 PhanUndeclaredGlobalVariable Global variable $undef321 is undeclared
+%s:11 PhanUndeclaredGlobalVariable Global variable $undefB321 is undeclared

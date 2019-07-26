@@ -1,8 +1,8 @@
 %s:5 PhanAccessPropertyPrivate Cannot access private property \C1::$p defined at %s:4
 %s:9 PhanAccessPropertyProtected Cannot access protected property \C2::$p defined at %s:8
 %s:14 PhanCompatiblePHP7 Expression may not be PHP 7 compatible
-%s:14 PhanUndeclaredVariable Variable $v1 is undeclared
-%s:14 PhanUndeclaredVariable Variable $v2 is undeclared
+%s:14 PhanUndeclaredGlobalVariable Global variable $v1 is undeclared
+%s:14 PhanUndeclaredGlobalVariable Global variable $v2 is undeclared
 %s:17 PhanContextNotObject Cannot access parent when not in object context
 %s:22 PhanDeprecatedFunction Call to deprecated function \f1() defined at %s:21
 %s:25 PhanNoopArray Unused array
@@ -58,4 +58,4 @@
 %s:210 PhanUndeclaredStaticMethod Static call to undeclared method \C21::f
 %s:214 PhanUndeclaredStaticProperty Static property 'p' on \C22 is undeclared
 %s:217 PhanUndeclaredTrait Class uses undeclared trait \T2 (Did you mean trait \T1)
-%s:220 PhanUndeclaredVariable Variable $v10 is undeclared
+%s:220 PhanUndeclaredGlobalVariable Global variable $v10 is undeclared
