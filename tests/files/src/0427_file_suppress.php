@@ -2,6 +2,7 @@
 
 <<<'PHAN'
 @phan-file-suppress PhanUnreferencedUseFunction
+@phan-file-suppress PhanUndeclaredGlobalVariable
 @phan-file-suppress PhanUndeclaredVariable
 PHAN;
 

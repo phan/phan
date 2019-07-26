@@ -368,7 +368,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 Issue::maybeEmitWithParameters(
                     $code_base,
                     $context,
-                    Issue::UndeclaredVariable,
+                    $context->isInGlobalScope() ? Issue::UndeclaredGlobalVariable : Issue::UndeclaredVariable,
                     $context->getLineNumberStart(),
                     [$var_name],
                     IssueFixSuggester::suggestVariableTypoFix($code_base, $context, $var_name)
