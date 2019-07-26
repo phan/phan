@@ -57,7 +57,7 @@ final class CompactPlugin extends PluginV3 implements
                     Issue::maybeEmitWithParameters(
                         $code_base,
                         $context,
-                        Issue::UndeclaredVariable,
+                        $context->isInGlobalScope() ? Issue::UndeclaredGlobalVariable : Issue::UndeclaredVariable,
                         $arg->lineno ?? $context->getLineNumberStart(),
                         [$variable_name],
                         IssueFixSuggester::suggestVariableTypoFix($code_base, $context, $variable_name)

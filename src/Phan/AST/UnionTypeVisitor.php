@@ -1810,7 +1810,6 @@ class UnionTypeVisitor extends AnalysisVisitor
                     $issue_type = $this->context->isInGlobalScope() ? Issue::UndeclaredGlobalVariable : Issue::UndeclaredVariable;
                 }
 
-
                 throw new IssueException(
                     Issue::fromType($issue_type)(
                         $this->context->getFile(),

@@ -991,8 +991,14 @@ trait ConditionVisitorUtil
                 return null;
             }
             if (!($context->isInGlobalScope() && Config::getValue('ignore_undeclared_variables_in_global_scope'))) {
+                if ($var_name === 'this') {
+                    $issue_type = Issue::UndeclaredThis;
+                } else {
+                    $issue_type = $context->isInGlobalScope() ? Issue::UndeclaredGlobalVariable : Issue::UndeclaredVariable;
+                }
+
                 throw new IssueException(
-                    Issue::fromType($var_name === 'this' ? Issue::UndeclaredThis : Issue::UndeclaredVariable)(
+                    Issue::fromType($issue_type)(
                         $context->getFile(),
                         $var_node->lineno ?? 0,
                         [$var_name],
