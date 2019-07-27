@@ -39,6 +39,7 @@ Plugins:
 Bug fixes:
 + Treat `Foo::class` as a reference to the class/interface/trait `Foo` (#2945)
 + Fix crash for `(real)` cast in php 7.4. (#3012)
++ Work around crash due to deprecation notices in composer dependencies in php 7.4
 
 Jul 17 2019, Phan 2.2.6
 -----------------------

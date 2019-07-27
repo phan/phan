@@ -483,6 +483,7 @@ return [
         'PHPDocToRealTypesPlugin',  // suggests replacing (at)return void with `: void` in the declaration, etc.
         'PHPDocRedundantPlugin',
         'PreferNamespaceUsePlugin',
+        'EmptyStatementListPlugin',
 
         // This should only be enabled if the code being analyzed contains Phan plugins.
         'PhanSelfCheckPlugin',
