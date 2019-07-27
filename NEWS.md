@@ -25,6 +25,8 @@ New features(Analysis):
 + Emit `PhanTypeArraySuspiciousNull` for code such as `null['foo']` (#2965)
 + If a property with no phpdoc type has a default of an empty array, assume that it's type can be any array (when reading it) until the first assignment is seen.
 + Attempt to analyze modifying dynamic properties by reference (e.g. `$var->$prop` when $prop is a variable with a known string)
++ For undeclared variables in the global scope, emit `PhanUndeclaredGlobalVariable` instead of `PhanUndeclaredVariable` to distinguish those from undeclared variables within functions/methods. (#1652)
++ Emit `PhanCompatibleSyntaxNotice` for notices such as the deprecated `(real)` cast in php 7.4, when the real parser is used (#3012)
 
 Language Server/Daemon mode:
 + When `PhanSyntaxError` is emitted, make the start of the error range
@@ -36,6 +38,7 @@ Plugins:
 
 Bug fixes:
 + Treat `Foo::class` as a reference to the class/interface/trait `Foo` (#2945)
++ Fix crash for `(real)` cast in php 7.4. (#3012)
 
 Jul 17 2019, Phan 2.2.6
 -----------------------

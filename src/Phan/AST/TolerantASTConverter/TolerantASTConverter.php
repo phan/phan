@@ -58,7 +58,7 @@ Shim::load();
  * each time they are invoked,
  * so it's possible to have multiple callers use this without affecting each other.
  *
- * Compatibility: PHP 7.0-7.3
+ * Compatibility: PHP 7.0-7.4
  *
  * ----------------------------------------------------------------------------
  *
@@ -94,6 +94,9 @@ Shim::load();
  * @phan-file-suppress PhanPartialTypeMismatchReturn
  * @phan-file-suppress PhanPartialTypeMismatchArgument
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
+ *
+ * TODO: Add a way to report notices that aren't syntax errors?
+ * e.g. `The (real) cast is deprecated, use (float) instead`, ending a function call with a comma, etc.
  */
 class TolerantASTConverter
 {
