@@ -49,7 +49,7 @@ function f2($p1 = null, $p2) {}
 
 // Issue::PhanParamSpecial1
 echo join('str', 'str');
-echo join([], 'str');
+echo join([], 'str');  // Issue::PhanCompatibleImplodeOrder
 // Issue::PhanParamSpecial2
 echo join('notanarray');
 

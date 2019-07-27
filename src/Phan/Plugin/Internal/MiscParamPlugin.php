@@ -189,9 +189,11 @@ final class MiscParamPlugin extends PluginV3 implements
 
                 // TODO: better array checks
                 if ($arg1_type->isExclusivelyArray()) {
+                    $did_warn = false;
                     if (!$arg2_type->canCastToUnionType(
                         StringType::instance(false)->asPHPDocUnionType()
                     )) {
+                        $did_warn = true;
                         Issue::maybeEmit(
                             $code_base,
                             $context,
@@ -207,6 +209,7 @@ final class MiscParamPlugin extends PluginV3 implements
                         );
                     }
                     if (!self::canCastToStringArrayLike($code_base, $context, $arg1_type)) {
+                        $did_warn = true;
                         Issue::maybeEmit(
                             $code_base,
                             $context,
@@ -217,6 +220,17 @@ final class MiscParamPlugin extends PluginV3 implements
                             $arg1_type,
                             $function->getRepresentationForIssue(),
                             'string[]'
+                        );
+                    }
+                    if (!$did_warn) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::CompatibleImplodeOrder,
+                            $context->getLineNumberStart(),
+                            $function->getRepresentationForIssue(),
+                            (string)$arg1_type->asNonLiteralType(),
+                            (string)$arg2_type->asNonLiteralType()
                         );
                     }
                     throw $stop_exception;

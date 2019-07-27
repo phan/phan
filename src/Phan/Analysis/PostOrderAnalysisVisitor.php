@@ -2676,7 +2676,15 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         );
         $this->analyzeNoOp($node, Issue::NoopArrayAccess);
 
-        if ($node->flags & PhanAnnotationAdder::FLAG_IGNORE_NULLABLE_AND_UNDEF) {
+        $flags = $node->flags;
+        if ($flags & ast\flags\DIM_ALTERNATIVE_SYNTAX) {
+            $this->emitIssue(
+                Issue::CompatibleDimAlternativeSyntax,
+                $node->children['dim']->lineno ?? $node->lineno,
+                ASTReverter::toShortString($node)
+            );
+        }
+        if ($flags & PhanAnnotationAdder::FLAG_IGNORE_NULLABLE_AND_UNDEF) {
             return $context;
         }
         // Check the array type to trigger TypeArraySuspicious

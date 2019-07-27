@@ -515,10 +515,15 @@ class TolerantASTConverter
             'Microsoft\PhpParser\Node\Expression\SubscriptExpression' => static function (PhpParser\Node\Expression\SubscriptExpression $n, int $start_line) {
                 $expr = static::phpParserNodeToAstNode($n->postfixExpression);
                 try {
-                    return new ast\Node(ast\AST_DIM, 0, [
-                        'expr' => $expr,
-                        'dim' => $n->accessExpression !== null ? static::phpParserNodeToAstNode($n->accessExpression) : null,
-                    ], $start_line);
+                    return new ast\Node(
+                        ast\AST_DIM,
+                        ($n->openBracketOrBrace->kind ?? null) === TokenKind::OpenBraceToken ? ast\flags\DIM_ALTERNATIVE_SYNTAX : 0,
+                        [
+                            'expr' => $expr,
+                            'dim' => $n->accessExpression !== null ? static::phpParserNodeToAstNode($n->accessExpression) : null,
+                        ],
+                        $start_line
+                    );
                 } catch (InvalidNodeException $_) {
                     return $expr;
                 }
@@ -909,7 +914,11 @@ class TolerantASTConverter
             },
             /** @return mixed */
             'Microsoft\PhpParser\Node\Expression\ParenthesizedExpression' => static function (PhpParser\Node\Expression\ParenthesizedExpression $n, int $_) {
-                return static::phpParserNodeToAstNode($n->expression);
+                $result = static::phpParserNodeToAstNode($n->expression);
+                if (($result->kind ?? null) === ast\AST_CONDITIONAL) {
+                    $result->flags = ast\flags\PARENTHESIZED_CONDITIONAL;
+                }
+                return $result;
             },
             'Microsoft\PhpParser\Node\Expression\PrefixUpdateExpression' => static function (PhpParser\Node\Expression\PrefixUpdateExpression $n, int $start_line) : ast\Node {
                 $type = $n->incrementOrDecrementOperator->kind === TokenKind::PlusPlusToken ? ast\AST_PRE_INC : ast\AST_PRE_DEC;
