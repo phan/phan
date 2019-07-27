@@ -3,7 +3,7 @@
 function emitType($var) {}
 
 function emitResourceType(string $var) {}
-/** @suppress PhanDeprecatedFunction is_real is deprecated in php 7.4 */
+/** @suppress PhanDeprecatedFunctionInternal is_real is deprecated in php 7.4 */
 function check($var) {
 	if (is_array($var)) {
 		emitType($var);
