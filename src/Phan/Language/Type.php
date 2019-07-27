@@ -767,7 +767,7 @@ class Type
             }
             return $reflection_type_string;
         }
-        // Unreachable in php 7.1+? Also, ReflectionType::__toString() is deprecated in php 8.0
+        // Unreachable in php 7.1+? Also, ReflectionType::__toString() is deprecated in php 7.4
         return (string)$reflection_type;
     }
 

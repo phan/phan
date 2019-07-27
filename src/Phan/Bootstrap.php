@@ -181,9 +181,12 @@ function phan_error_handler(int $errno, string $errstr, string $errfile, int $er
     global $__no_echo_phan_errors;
     if ($__no_echo_phan_errors) {
         if ($__no_echo_phan_errors instanceof Closure) {
-            return $__no_echo_phan_errors($errno, $errstr, $errfile, $errline);
+            if ($__no_echo_phan_errors($errno, $errstr, $errfile, $errline)) {
+                return true;
+            }
+        } else {
+            return false;
         }
-        return false;
     }
     // php-src/ext/standard/streamsfuncs.c suggests that this is the only error caused by signal handlers and there are no translations
     if ($errno === E_WARNING && preg_match('/^stream_select.*unable to select/', $errstr)) {
@@ -195,7 +198,13 @@ function phan_error_handler(int $errno, string $errstr, string $errfile, int $er
         // Don't execute the PHP internal error handler.
         return true;
     }
-    if ($errno === E_DEPRECATED && preg_match('/ast\\\\parse_/', $errstr)) {
+    if (in_array(basename($errfile), ['JsonMapper.php', 'Dispatcher.php'])) {
+        // TODO get rid of this once the minimum jsonmapper version is bumped to 1.5.2
+        // for https://github.com/cweiske/jsonmapper/pull/130
+        // and when php-advanced-json-rpc releases https://github.com/felixfbecker/php-advanced-json-rpc/pull/33
+        return true;
+    }
+    if ($errno === E_DEPRECATED && preg_match('/ast\\\\parse_.*Version.*is deprecated/i', $errstr)) {
         static $did_warn = false;
         if (!$did_warn) {
             $did_warn = true;
