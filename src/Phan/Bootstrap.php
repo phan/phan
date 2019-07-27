@@ -180,6 +180,9 @@ function phan_error_handler(int $errno, string $errstr, string $errfile, int $er
 {
     global $__no_echo_phan_errors;
     if ($__no_echo_phan_errors) {
+        if ($__no_echo_phan_errors instanceof Closure) {
+            return $__no_echo_phan_errors($errno, $errstr, $errfile, $errline);
+        }
         return false;
     }
     // php-src/ext/standard/streamsfuncs.c suggests that this is the only error caused by signal handlers and there are no translations

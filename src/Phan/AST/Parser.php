@@ -106,25 +106,44 @@ class Parser
                 // It may throw a ParseException, which is unintentionally not caught here.
                 return self::parseCodePolyfill($code_base, $context, $file_path, $file_contents, $suppress_parse_errors, $request);
             }
-            // Suppress "declare(encoding=...) ignored because Zend multibyte feature is turned off by settings" (#1076)
-            // E_COMPILE_WARNING can't be caught by a PHP error handler,
-            // the errors are printed to stderr by default (can't be captured),
-            // and those errors might mess up language servers, etc. if ever printed to stdout
-            $original_error_reporting = error_reporting();
-            error_reporting($original_error_reporting & ~\E_COMPILE_WARNING);
-            try {
-                return \ast\parse_code(
-                    $file_contents,
-                    Config::AST_VERSION,
-                    $file_path
-                );
-            } finally {
-                error_reporting($original_error_reporting);
-            }
+            return self::parseCodeHandlingDeprecation($code_base, $context, $file_contents, $file_path);
         } catch (ParseError $native_parse_error) {
             return self::handleParseError($code_base, $context, $file_path, $file_contents, $suppress_parse_errors, $native_parse_error);
         } catch (CompileError $native_parse_error) {
             return self::handleParseError($code_base, $context, $file_path, $file_contents, $suppress_parse_errors, $native_parse_error);
+        }
+    }
+
+
+    private static function parseCodeHandlingDeprecation(CodeBase $code_base, Context $context, string $file_contents, string $file_path) : Node {
+        global $__no_echo_phan_errors;
+        // Suppress errors such as "declare(encoding=...) ignored because Zend multibyte feature is turned off by settings" (#1076)
+        // E_COMPILE_WARNING can't be caught by a PHP error handler,
+        // the errors are printed to stderr by default (can't be captured),
+        // and those errors might mess up language servers, etc. if ever printed to stdout
+        $original_error_reporting = error_reporting();
+        error_reporting($original_error_reporting & ~\E_COMPILE_WARNING);
+        $__no_echo_phan_errors = static function (int $unused_errno, string $errstr, string $unused_errfile, int $errline) use ($code_base, $context) : bool {
+            // Catch errors such as E_DEPRECATION in php 7.4 for the (real) cast.
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::CompatibleSyntaxNotice,
+                $errline,
+                $errstr
+            );
+            // Return true to prevent printing to stderr
+            return true;
+        };
+        try {
+            return \ast\parse_code(
+                $file_contents,
+                Config::AST_VERSION,
+                $file_path
+            );
+        } finally {
+            $__no_echo_phan_errors = false;
+            error_reporting($original_error_reporting);
         }
     }
 

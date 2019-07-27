@@ -479,6 +479,17 @@ Square bracket syntax for an array destructuring assignment is not compatible wi
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/php70_files/expected/003_short_array.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/php70_files/src/003_short_array.php#L8).
 
+## PhanCompatibleSyntaxNotice
+
+This is used for notices that are emitted while Phan is parsing with the native parser.
+Currently, this only catches the notice about the `(real)` cast from the native parser in php 7.4.
+
+```
+Saw a notice while parsing with the native parser: {DETAILS}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php74_files/expected/012_real_cast.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php74_files/src/012_real_cast.php#L2).
+
 ## PhanCompatibleUnsetCast
 
 ```
@@ -3367,6 +3378,14 @@ Call to undeclared function {FUNCTION} in callable
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/expected/094_shutdown_function.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/src/094_shutdown_function.php#L3).
+
+## PhanUndeclaredGlobalVariable
+
+```
+Global variable ${VARIABLE} is undeclared
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/misc/rewriting_test/expected/004_crash_rewrite_if.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/misc/rewriting_test/src/004_crash_rewrite_if.php#L2).
 
 ## PhanUndeclaredInterface
 

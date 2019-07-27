@@ -452,6 +452,7 @@ class Issue
     const CompatibleNegativeStringOffset     = 'PhanCompatibleNegativeStringOffset';
     const CompatibleAutoload                 = 'PhanCompatibleAutoload';
     const CompatibleUnsetCast                = 'PhanCompatibleUnsetCast';
+    const CompatibleSyntaxNotice             = 'PhanCompatibleSyntaxNotice';
 
     // Issue::CATEGORY_GENERIC
     const TemplateTypeConstant       = 'PhanTemplateTypeConstant';
@@ -3888,6 +3889,14 @@ class Issue
                 "{FUNCTIONLIKE} documents that it throws {TYPE}, but throwing in __toString() is a fatal error prior to PHP 7.4",
                 self::REMEDIATION_A,
                 3016
+            ),
+            new Issue(
+                self::CompatibleSyntaxNotice,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_NORMAL,
+                "Saw a notice while parsing with the native parser: {DETAILS}",
+                self::REMEDIATION_B,
+                3017
             ),
 
             // Issue::CATEGORY_GENERIC
