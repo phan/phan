@@ -115,7 +115,8 @@ class Parser
     }
 
 
-    private static function parseCodeHandlingDeprecation(CodeBase $code_base, Context $context, string $file_contents, string $file_path) : Node {
+    private static function parseCodeHandlingDeprecation(CodeBase $code_base, Context $context, string $file_contents, string $file_path) : Node
+    {
         global $__no_echo_phan_errors;
         // Suppress errors such as "declare(encoding=...) ignored because Zend multibyte feature is turned off by settings" (#1076)
         // E_COMPILE_WARNING can't be caught by a PHP error handler,
