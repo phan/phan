@@ -3,6 +3,9 @@ Phan NEWS
 ??? ?? 2019, Phan 2.2.8 (dev)
 -----------------------
 
+New features(CLI):
++ Add heuristics to `tool/phoogle` to better handle `object`, and to include functions with nullable params in the results of searches for all functions. (#3014)
+
 New features(Analysis):
 + Emit `PhanCompatibleImplodeOrder` when the glue string is passed as the second instead of the first argument (#2089)
 + Emit `PhanCompatibleDimAlternativeSyntax` when using array and string array access syntax with curly braces
