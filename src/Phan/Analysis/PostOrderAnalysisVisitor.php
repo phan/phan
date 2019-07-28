@@ -2737,7 +2737,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     private function checkDeprecatedUnparenthesizedConditional(Node $node) : void
     {
-        ['cond' => $cond, 'true' => $true] = $node->children;
+        $cond = $node->children['cond'];
         if ($cond->flags & flags\PARENTHESIZED_CONDITIONAL) {
             // The condition is unambiguously parenthesized.
             return;
