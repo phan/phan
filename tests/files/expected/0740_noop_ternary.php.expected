@@ -1,0 +1,6 @@
+%s:3 PhanNoopTernary Unused result of a ternary expression where the true/false results don't seen to have side effects
+%s:4 PhanNoopTernary Unused result of a ternary expression where the true/false results don't seen to have side effects
+%s:5 PhanNoopTernary Unused result of a ternary expression where the true/false results don't seen to have side effects
+%s:5 PhanRedundantCondition Redundant attempt to cast 1 of type 1 to truthy
+%s:6 PhanImpossibleCondition Impossible attempt to cast 0 of type 0 to truthy
+%s:6 PhanNoopTernary Unused result of a ternary expression where the true/false results don't seen to have side effects

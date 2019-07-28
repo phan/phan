@@ -55,7 +55,12 @@ final class EmptyStatementListVisitor extends PluginAwarePostAnalysisVisitor
      */
     public function visitIf(Node $node) : void
     {
-        $last_if_elem = end($node->children);
+        // @phan-suppress-next-line PhanUndeclaredProperty set by ASTSimplifier
+        if (isset($node->is_simplified)) {
+            $last_if_elem = reset($node->children);
+        } else {
+            $last_if_elem = end($node->children);
+        }
         if (!$last_if_elem instanceof Node) {
             // probably impossible
             return;
@@ -69,10 +74,6 @@ final class EmptyStatementListVisitor extends PluginAwarePostAnalysisVisitor
             return;
         }
 
-        // @phan-suppress-next-line PhanUndeclaredProperty set by ASTSimplifier
-        if (isset($node->is_simplified)) {
-            return;
-        }
         $this->emitPluginIssue(
             $this->code_base,
             clone($this->context)->withLineNumberStart($last_if_elem->children['stmts']->lineno ?? $last_if_elem->lineno),

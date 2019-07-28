@@ -1,0 +1,6 @@
+%s:6 PhanCompatibleUnparenthesizedTernary Unparenthesized 'a ? b : c ? d : e' is deprecated. Use either '(a ? b : c) ? d : e' or 'a ? b : (c ? d : e)'
+%s:7 PhanCompatibleUnparenthesizedTernary Unparenthesized 'a ? b : c ? d : e' is deprecated. Use either '(a ? b : c) ? d : e' or 'a ? b : (c ? d : e)'
+%s:8 PhanCompatibleUnparenthesizedTernary Unparenthesized 'a ? b : c ?: d' is deprecated. Use either '(a ? b : c) ?: d' or 'a ? b : (c ?: d)'
+%s:9 PhanCompatibleUnparenthesizedTernary Unparenthesized 'a ? b : c ?: d' is deprecated. Use either '(a ? b : c) ?: d' or 'a ? b : (c ?: d)'
+%s:10 PhanCompatibleUnparenthesizedTernary Unparenthesized 'a ?: b ? c : d' is deprecated. Use either '(a ?: b) ? c : d' or 'a ?: (b ? c : d)'
+%s:11 PhanCompatibleUnparenthesizedTernary Unparenthesized 'a ?: b ? c : d' is deprecated. Use either '(a ?: b) ? c : d' or 'a ?: (b ? c : d)'

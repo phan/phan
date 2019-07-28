@@ -1,0 +1,9 @@
+src/067_ambiguous_ternary.php:6 PhanCompatibleUnparenthesizedTernary Unparenthesized 'a ? b : c ? d : e' is deprecated. Use either '(a ? b : c) ? d : e' or 'a ? b : (c ? d : e)'
+src/067_ambiguous_ternary.php:7 PhanCompatibleUnparenthesizedTernary Unparenthesized 'a ? b : c ? d : e' is deprecated. Use either '(a ? b : c) ? d : e' or 'a ? b : (c ? d : e)'
+src/067_ambiguous_ternary.php:8 PhanCompatibleUnparenthesizedTernary Unparenthesized 'a ? b : c ?: d' is deprecated. Use either '(a ? b : c) ?: d' or 'a ? b : (c ?: d)'
+src/067_ambiguous_ternary.php:9 PhanCompatibleUnparenthesizedTernary Unparenthesized 'a ? b : c ?: d' is deprecated. Use either '(a ? b : c) ?: d' or 'a ? b : (c ?: d)'
+src/067_ambiguous_ternary.php:10 PhanCompatibleUnparenthesizedTernary Unparenthesized 'a ?: b ? c : d' is deprecated. Use either '(a ?: b) ? c : d' or 'a ?: (b ? c : d)'
+src/067_ambiguous_ternary.php:10 PhanUndeclaredVariable Variable $undefined is undeclared
+src/067_ambiguous_ternary.php:11 PhanCompatibleUnparenthesizedTernary Unparenthesized 'a ?: b ? c : d' is deprecated. Use either '(a ?: b) ? c : d' or 'a ?: (b ? c : d)'
+src/067_ambiguous_ternary.php:20 PhanUndeclaredVariable Variable $undefined is undeclared
+src/067_ambiguous_ternary.php:24 PhanSyntaxError syntax error, unexpected '<', expecting end of file (at column 1)

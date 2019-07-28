@@ -14,6 +14,7 @@ use Microsoft\PhpParser\Diagnostic;
 use Microsoft\PhpParser\DiagnosticsProvider;
 use Microsoft\PhpParser\FilePositionMap;
 use Microsoft\PhpParser\MissingToken;
+use Microsoft\PhpParser\Node\Expression\TernaryExpression;
 use Microsoft\PhpParser\Parser;
 use Microsoft\PhpParser\Token;
 use Microsoft\PhpParser\TokenKind;
@@ -914,11 +915,7 @@ class TolerantASTConverter
             },
             /** @return mixed */
             'Microsoft\PhpParser\Node\Expression\ParenthesizedExpression' => static function (PhpParser\Node\Expression\ParenthesizedExpression $n, int $_) {
-                $result = static::phpParserNodeToAstNode($n->expression);
-                if (($result->kind ?? null) === ast\AST_CONDITIONAL) {
-                    $result->flags = ast\flags\PARENTHESIZED_CONDITIONAL;
-                }
-                return $result;
+                return static::phpParserNodeToAstNode($n->expression);
             },
             'Microsoft\PhpParser\Node\Expression\PrefixUpdateExpression' => static function (PhpParser\Node\Expression\PrefixUpdateExpression $n, int $start_line) : ast\Node {
                 $type = $n->incrementOrDecrementOperator->kind === TokenKind::PlusPlusToken ? ast\AST_PRE_INC : ast\AST_PRE_DEC;
@@ -942,10 +939,12 @@ class TolerantASTConverter
             'Microsoft\PhpParser\Node\Expression\MemberAccessExpression' => static function (PhpParser\Node\Expression\MemberAccessExpression $n, int $start_line) : ?\ast\Node {
                 return static::phpParserMemberAccessExpressionToAstProp($n, $start_line);
             },
-            'Microsoft\PhpParser\Node\Expression\TernaryExpression' => static function (PhpParser\Node\Expression\TernaryExpression $n, int $start_line) : ast\Node {
-                return new ast\Node(
+            'Microsoft\PhpParser\Node\Expression\TernaryExpression' => static function (TernaryExpression $n, int $start_line) : ast\Node {
+                $n = self::normalizeTernaryExpression($n);
+                $is_parenthesized = $n->parent instanceof PhpParser\Node\Expression\ParenthesizedExpression;
+                $result = new ast\Node(
                     ast\AST_CONDITIONAL,
-                    0,
+                    $is_parenthesized ? ast\flags\PARENTHESIZED_CONDITIONAL : 0,
                     [
                         'cond' => static::phpParserNodeToAstNode($n->condition),
                         'true' => $n->ifExpression !== null ? static::phpParserNodeToAstNode($n->ifExpression) : null,
@@ -953,6 +952,12 @@ class TolerantASTConverter
                     ],
                     $start_line
                 );
+                if (PHP_VERSION_ID < 70400 && !$is_parenthesized) {
+                    // This is a way to indicate that this AST is definitely unparenthesized in cases where the native parser would not provide this information.
+                    // @phan-suppress-next-line PhanUndeclaredProperty
+                    $result->is_not_parenthesized = true;
+                }
+                return $result;
             },
             /**
              * @return ?ast\Node
@@ -3023,6 +3028,21 @@ class TolerantASTConverter
             $this->instance_should_add_placeholders,
         ], true);
         return \sha1($details);
+    }
+
+    private static function normalizeTernaryExpression(TernaryExpression $n) : TernaryExpression {
+        $else = $n->elseExpression;
+        if (!($else instanceof TernaryExpression)) {
+            return $n;
+        }
+        // The else expression is an unparenthesized ternary expression. Rearrange the parts.
+        // (Convert a ? b : (c ? d : e) to (a ? b : c) ? d : e)
+        $inner_left = clone($n);
+        // @phan-suppress-next-line PhanPartialTypeMismatchProperty pretty much all expressions can be tokens, type is incorrect
+        $inner_left->elseExpression = $else->condition;
+        $outer = clone($else);
+        $outer->condition = $inner_left;
+        return $outer;
     }
 }
 class_exists(TolerantASTConverterWithNodeMapping::class);
