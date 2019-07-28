@@ -11,6 +11,7 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\MixedType;
+use Phan\Language\Type\ObjectType;
 use Phan\Language\UnionType;
 use Phan\PluginV3;
 use Phan\PluginV3\BeforeAnalyzeCapability;
@@ -232,7 +233,7 @@ final class MethodSearcherPlugin extends PluginV3 implements
             }
             $signature_param_types[] = $param->getUnionType();
         }
-        if ($function instanceof Method) {
+        if ($function instanceof Method && !$function->isStatic()) {
             $signature_param_types[] = $function->getFQSEN()->getFullyQualifiedClassName()->asType()->asPHPDocUnionType();
         }
         if (count($signature_param_types) < count(self::$param_types)) {
@@ -281,12 +282,20 @@ final class MethodSearcherPlugin extends PluginV3 implements
         if (self::isMixed($desired_type) || self::isMixed($actual_signature_type)) {
             return 0;
         }
+        $bonus = 0;
+        if ($actual_signature_type->containsNullable() === $desired_type->containsNullable()) {
+            $bonus += 0.1;
+        }
+        if ($desired_type->isEqualTo($actual_signature_type)) {
+            return $bonus + 5;
+        }
+        $desired_type_normalized = $desired_type->withIsNullable(true);
         $expanded_actual_signature_type = $actual_signature_type->asExpandedTypes($code_base);
         $result = 0;
         // TODO: This should handle Liskov Substitution Principle
-        foreach ($desired_type->getTypeSet() as $inner_type) {
-            if ($expanded_actual_signature_type->hasType($inner_type)) {
-                if ($inner_type->isObjectWithKnownFQSEN()) {
+        foreach ($desired_type_normalized->getTypeSet() as $inner_type) {
+            if ($expanded_actual_signature_type->hasType($inner_type) || $expanded_actual_signature_type->hasType($inner_type->withIsNullable(false))) {
+                if ($inner_type->isObjectWithKnownFQSEN() && !$desired_type->objectTypesWithKnownFQSENs()->isEmpty()) {
                     $result += 5;
                 } else {
                     if ($inner_type->isScalar() && !$actual_signature_type->canCastToUnionType($inner_type->asPHPDocUnionType())) {
@@ -296,10 +305,26 @@ final class MethodSearcherPlugin extends PluginV3 implements
                     $result += 1;
                 }
             } elseif ($expanded_actual_signature_type->canCastToUnionType($inner_type->asPHPDocUnionType())) {
+                if (self::isCastableButNotSubtype($expanded_actual_signature_type, $inner_type)) {
+                    continue;
+                }
                 $result += 0.5;
             }
         }
-        return $result / \max($desired_type->typeCount(), $actual_signature_type->typeCount());
+        return $bonus + ($result / \max($desired_type->typeCount(), $actual_signature_type->typeCount()));
+    }
+
+    private static function isCastableButNotSubtype(UnionType $actual_type, Type $inner_type) : bool
+    {
+        if ($inner_type instanceof ObjectType) {
+            foreach ($actual_type->getTypeSet() as $type) {
+                if ($type->isPossiblyObject() && !$type->isObjectWithKnownFQSEN()) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -319,8 +344,13 @@ final class MethodSearcherPlugin extends PluginV3 implements
             // Phan can't tell this array is non-empty
             throw new TypeError("Expected signature_param_types to be an array of UnionType");
         }
+        if ($desired_param_type->isEmpty()) {
+            $desired_param_type_for_comparison = $desired_param_type;
+        } else {
+            $desired_param_type_for_comparison = $desired_param_type->withIsNullable(true);
+        }
         foreach ($signature_param_types as $i => $actual_type) {
-            if ($actual_type->asExpandedTypes($code_base)->canCastToUnionType($desired_param_type)) {
+            if ($actual_type->asExpandedTypes($code_base)->canCastToUnionType($desired_param_type_for_comparison)) {
                 $signature_subset = $signature_param_types;
                 unset($signature_subset[$i]);
                 $result = self::matchesParamTypes($code_base, $search_param_types, $signature_subset);

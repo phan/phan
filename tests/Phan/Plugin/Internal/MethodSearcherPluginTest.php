@@ -42,9 +42,10 @@ final class MethodSearcherPluginTest extends BaseTest implements CodeBaseAwareTe
             [0.0, 'int', 'mixed'],
             [0.0, 'int', ''],
             [0.0, '', 'int'],
-            [0.5, 'int|string', 'int'],
-            [1.0, 'int|string', 'int|string'],
-            [5.0, '\stdClass', '\stdClass'],
+            [0.6, 'int|string', 'int'],
+            // exact type matches have the highest score
+            [5.1, 'int|string', 'int|string'],
+            [5.1, '\stdClass', '\stdClass'],
         ];
     }
 
@@ -67,13 +68,18 @@ final class MethodSearcherPluginTest extends BaseTest implements CodeBaseAwareTe
     public function matchesParamTypesProvider() : array
     {
         return [
-            [8.5, ['\stdClass'], ['\stdClass']],
-            [6.0, ['\stdClass|false'], ['\stdClass']],
-            [4.5, ['int'], ['int']],
-            [4.0, ['int|false'], ['int']],
+            [8.6, ['\stdClass'], ['\stdClass']],
+            [8.5, ['?\stdClass'], ['\stdClass']],
+            [8.5, ['\stdClass'], ['?\stdClass']],
+            [4.1, ['\stdClass'], ['object']],
+            [6.1, ['\stdClass|false'], ['\stdClass']],
+            [6.0, ['?\stdClass|?false'], ['\stdClass']],
+            [8.6, ['int'], ['int']],
+            [4.5, ['?int'], ['int']],
+            [4.1, ['int|false'], ['int']],
             [0.0, ['int'], []],
             [2.0, [], ['int']],
-            [10.0, ['\stdClass', 'bool'], ['bool', '\stdClass']],
+            [14.2, ['\stdClass', 'bool'], ['bool', '\stdClass']],
         ];
     }
 }
