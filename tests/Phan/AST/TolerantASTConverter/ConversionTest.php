@@ -158,6 +158,7 @@ final class ConversionTest extends BaseTest
      * Normalizes the flags on function declaration caused by \ast\flags\FUNC_GENERATOR.
      *
      * Phan does not use these flags because they are not natively provided in all PHP versions.
+     * TODO: Shouldn't they be available in PHP 7.1+
      */
     public static function normalizeYieldFlags(ast\Node $node) : void
     {
@@ -165,6 +166,8 @@ final class ConversionTest extends BaseTest
             // Alternately, could make Phan do this.
             $node->flags &= ~ast\flags\FUNC_GENERATOR;
         }
+        // @phan-suppress-next-line PhanUndeclaredProperty
+        unset($node->is_not_parenthesized);
 
         foreach ($node->children as $v) {
             if ($v instanceof ast\Node) {

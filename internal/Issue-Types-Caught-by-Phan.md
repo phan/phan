@@ -417,6 +417,14 @@ The config `backward_compatibility_checks` must be enabled for this to run such 
 {CLASS} expression may not be PHP 7 compatible
 ```
 
+## PhanCompatibleImplodeOrder
+
+```
+In php 7.4, passing glue string after the array is deprecated for {FUNCTION}. Should this swap the parameters of type {TYPE} and {TYPE}?
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0511_implode.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0511_implode.php#L7).
+
 ## PhanCompatibleIterableTypePHP70
 
 ```
@@ -499,6 +507,14 @@ Saw a notice while parsing with the native parser: {DETAILS}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php74_files/expected/012_real_cast.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php74_files/src/012_real_cast.php#L2).
+
+## PhanCompatibleUnparenthesizedTernary
+
+```
+Unparenthesized '{CODE}' is deprecated. Use either '{CODE}' or '{CODE}'
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/expected/067_ambiguous_ternary.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/src/067_ambiguous_ternary.php#L6).
 
 ## PhanCompatibleUnsetCast
 
@@ -797,6 +813,14 @@ Unused result of a string literal {STRING_LITERAL} near this line
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/misc/fallback_test/expected/051_invalid_function_node.php.expected#L5) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/misc/fallback_test/src/051_invalid_function_node.php#L3).
+
+## PhanNoopTernary
+
+```
+Unused result of a ternary expression where the true/false results don't seen to have side effects
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0740_noop_ternary.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0740_noop_ternary.php#L3).
 
 ## PhanNoopUnaryOperator
 

@@ -2705,6 +2705,81 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
+     * Visit a node with kind `ast\AST_CONDITIONAL`
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     *
+     * @suppress PhanAccessMethodInternal
+     */
+    public function visitConditional(Node $node) : Context
+    {
+        if ($this->isInNoOpPosition($node)) {
+            if (ASTSimplifier::isExpressionWithoutSideEffects($node->children['true']) && ASTSimplifier::isExpressionWithoutSideEffects($node->children['false'])) {
+                $this->emitIssue(
+                    Issue::NoopTernary,
+                    $node->lineno
+                );
+            }
+        }
+        if (($node->children['cond']->kind ?? null) === ast\AST_CONDITIONAL) {
+            $this->checkDeprecatedUnparenthesizedConditional($node);
+        }
+        return $this->context;
+    }
+
+    /**
+     * @param Node $node a node of kind AST_CONDITIONAL with a condition that is also of kind AST_CONDITIONAL
+     */
+    private function checkDeprecatedUnparenthesizedConditional(Node $node) : void
+    {
+        $cond = $node->children['cond'];
+        if ($cond->flags & flags\PARENTHESIZED_CONDITIONAL) {
+            // The condition is unambiguously parenthesized.
+            return;
+        }
+        // @phan-suppress-next-line PhanUndeclaredProperty
+        if (PHP_VERSION_ID < 70400 && !isset($cond->is_not_parenthesized)) {
+            // This is from the native parser in php 7.3 or earlier.
+            // We don't know whether or not the AST is parenthesized.
+            return;
+        }
+        if (isset($cond->children['true'])) {
+            if (isset($node->children['true'])) {
+                $description = 'a ? b : c ? d : e';
+                $first_suggestion = '(a ? b : c) ? d : e';
+                $second_suggestion = 'a ? b : (c ? d : e)';
+            } else {
+                $description = 'a ? b : c ?: d';
+                $first_suggestion = '(a ? b : c) ?: d';
+                $second_suggestion = 'a ? b : (c ?: d)';
+            }
+        } else {
+            if (isset($node->children['true'])) {
+                $description = 'a ?: b ? c : d';
+                $first_suggestion = '(a ?: b) ? c : d';
+                $second_suggestion = 'a ?: (b ? c : d)';
+            } else {
+                // This is harmless - (a ?: b) ?: c always produces the same result and side
+                // effects as a ?: (b ?: c).
+                // Don't warn.
+                return;
+            }
+        }
+        $this->emitIssue(
+            Issue::CompatibleUnparenthesizedTernary,
+            $node->lineno,
+            $description,
+            $first_suggestion,
+            $second_suggestion
+        );
+    }
+
+    /**
      * @param array<int,Node> $parent_node_list
      * @return bool true if the union type should skip analysis due to being the left-hand side expression of an assignment
      * We skip checks for $x['key'] being valid in expressions such as `$x['key']['key2']['key3'] = 'value';`

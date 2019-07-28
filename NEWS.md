@@ -10,6 +10,10 @@ New features(Analysis):
 + Emit `PhanCompatibleImplodeOrder` when the glue string is passed as the second instead of the first argument (#2089)
 + Emit `PhanCompatibleDimAlternativeSyntax` when using array and string array access syntax with curly braces
   when using the polyfill parser or php 7.4+. (#2989)
++ Emit `PhanCompatibleUnparenthesizedTernary` for expressions such as `a ? b : c ? d : e`. (#2989)
+
+Plugins:
++ Make `EmptyStatementListPlugin` check if statements with negated conditions (those were previously skipped because they were simplified).
 
 Jul 27 2019, Phan 2.2.7
 -----------------------

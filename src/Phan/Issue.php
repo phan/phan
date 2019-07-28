@@ -318,6 +318,7 @@ class Issue
     const NoopEmpty                     = 'PhanNoopEmpty';
     const NoopIsset                     = 'PhanNoopIsset';
     const NoopCast                      = 'PhanNoopCast';
+    const NoopTernary                   = 'PhanNoopTernary';
     const UnreachableCatch              = 'PhanUnreachableCatch';
     const UnreferencedClass             = 'PhanUnreferencedClass';
     const UnreferencedFunction          = 'PhanUnreferencedFunction';
@@ -455,6 +456,7 @@ class Issue
     const CompatibleSyntaxNotice             = 'PhanCompatibleSyntaxNotice';
     const CompatibleDimAlternativeSyntax     = 'PhanCompatibleDimAlternativeSyntax';
     const CompatibleImplodeOrder             = 'PhanCompatibleImplodeOrder';
+    const CompatibleUnparenthesizedTernary   = 'PhanCompatibleUnparenthesizedTernary';
 
     // Issue::CATEGORY_GENERIC
     const TemplateTypeConstant       = 'PhanTemplateTypeConstant';
@@ -3396,6 +3398,14 @@ class Issue
                 self::REMEDIATION_B,
                 6068
             ),
+            new Issue(
+                self::NoopTernary,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                "Unused result of a ternary expression where the true/false results don't seen to have side effects",
+                self::REMEDIATION_B,
+                6073
+            ),
 
             // Issue::CATEGORY_REDEFINE
             new Issue(
@@ -3915,6 +3925,14 @@ class Issue
                 "In php 7.4, passing glue string after the array is deprecated for {FUNCTION}. Should this swap the parameters of type {TYPE} and {TYPE}?",
                 self::REMEDIATION_B,
                 3019
+            ),
+            new Issue(
+                self::CompatibleUnparenthesizedTernary,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_NORMAL,
+                "Unparenthesized '{CODE}' is deprecated. Use either '{CODE}' or '{CODE}'",
+                self::REMEDIATION_B,
+                3020
             ),
 
             // Issue::CATEGORY_GENERIC
