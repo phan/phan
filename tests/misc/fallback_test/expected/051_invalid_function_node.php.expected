@@ -1,3 +1,4 @@
+src/051_invalid_function_node.php:2 PhanCompatibleDimAlternativeSyntax Array and string offset access syntax with curly braces is deprecated in PHP 7.4. Use square brackets instead. Seen for stdClass{}
 src/051_invalid_function_node.php:2 PhanNoopArrayAccess Unused array offset fetch
 src/051_invalid_function_node.php:2 PhanSyntaxError syntax error, unexpected '(' (at column 10)
 src/051_invalid_function_node.php:2 PhanTypeInvalidCallable Saw type 0 which cannot be a callable

@@ -453,6 +453,8 @@ class Issue
     const CompatibleAutoload                 = 'PhanCompatibleAutoload';
     const CompatibleUnsetCast                = 'PhanCompatibleUnsetCast';
     const CompatibleSyntaxNotice             = 'PhanCompatibleSyntaxNotice';
+    const CompatibleDimAlternativeSyntax     = 'PhanCompatibleDimAlternativeSyntax';
+    const CompatibleImplodeOrder             = 'PhanCompatibleImplodeOrder';
 
     // Issue::CATEGORY_GENERIC
     const TemplateTypeConstant       = 'PhanTemplateTypeConstant';
@@ -3897,6 +3899,22 @@ class Issue
                 "Saw a notice while parsing with the native parser: {DETAILS}",
                 self::REMEDIATION_B,
                 3017
+            ),
+            new Issue(
+                self::CompatibleDimAlternativeSyntax,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_NORMAL,
+                "Array and string offset access syntax with curly braces is deprecated in PHP 7.4. Use square brackets instead. Seen for {CODE}",
+                self::REMEDIATION_B,
+                3018
+            ),
+            new Issue(
+                self::CompatibleImplodeOrder,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_NORMAL,
+                "In php 7.4, passing glue string after the array is deprecated for {FUNCTION}. Should this swap the parameters of type {TYPE} and {TYPE}?",
+                self::REMEDIATION_B,
+                3019
             ),
 
             // Issue::CATEGORY_GENERIC

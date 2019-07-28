@@ -2,6 +2,7 @@
 
 namespace Phan\Tests\AST\TolerantASTConverter;
 
+use ast;
 use Phan\AST\TolerantASTConverter\NodeDumper;
 use Phan\AST\TolerantASTConverter\TolerantASTConverter;
 use Phan\Debug;
@@ -288,6 +289,7 @@ EOT;
 <?php
 $obj->
 if (true) {
+    $y;
 }
 $obj->
 if (true) {
@@ -297,8 +299,9 @@ EOT;
         $valid_contents = <<<'EOT'
 <?php
 $obj->
-if (true)[];
-
+if (true){
+    $y
+};
 $obj->
 if (true);
 echo "example";
@@ -312,6 +315,7 @@ EOT;
 <?php
 $obj->
 if (true) {
+    foo();
 }
 $obj->
 if (true) {
@@ -321,8 +325,9 @@ EOT;
         $valid_contents = <<<'EOT'
 <?php
 $obj->
-if (true)[];
-
+if (true){
+    foo()
+};
 $obj->
 if (true);
 echo "example";
@@ -356,6 +361,21 @@ class C{
 EOT;
  */
 
+    private static function normalizePolyfillAST(ast\Node $ast) : void {
+        switch ($ast->kind) {
+            case ast\AST_DIM:
+                if (PHP_VERSION_ID < 70400) {
+                    $ast->flags = 0;
+                }
+                break;
+        }
+        foreach ($ast->children as $c) {
+            if ($c instanceof ast\Node) {
+                self::normalizePolyfillAST($c);
+            }
+        }
+    }
+
     private function runTestFallbackFromParser(string $incomplete_contents, string $valid_contents, bool $should_add_placeholders = false) : void
     {
         $supports70 = ConversionTest::hasNativeASTSupport(70);
@@ -374,6 +394,7 @@ EOT;
         $converter->setShouldAddPlaceholders($should_add_placeholders);
         $php_parser_node = $converter->phpParserParse($incomplete_contents, $errors);
         $fallback_ast = $converter->phpParserToPhpAst($php_parser_node, $ast_version, $incomplete_contents);
+        self::normalizePolyfillAST($fallback_ast);
         $this->assertInstanceOf('\ast\Node', $fallback_ast, 'The fallback must also return a tree of php-ast nodes');
         $fallback_ast_repr = \var_export($fallback_ast, true);
         $original_ast_repr = \var_export($ast, true);

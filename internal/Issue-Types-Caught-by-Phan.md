@@ -397,6 +397,16 @@ Declaring an autoloader with function __autoload() was deprecated in PHP 7.2 and
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/expected/000_plugins.php.expected#L20) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/src/000_plugins.php#L64).
 
+## PhanCompatibleDimAlternativeSyntax
+
+This is emitted deliberately when using the polyfill and/or using php 7.4+.
+
+```
+Array and string offset access syntax with curly braces is deprecated in PHP 7.4. Use square brackets instead. Seen for {CODE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/expected/062_test.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/src/062_test.php#L2).
+
 ## PhanCompatibleExpressionPHP7
 
 This issue will be thrown if there is an expression that may be treated differently in PHP7 than it was in previous major versions of the PHP runtime. Take a look at the [PHP7 Migration Manual](http://php.net/manual/en/migration70.incompatible.php) to understand changes in behavior.

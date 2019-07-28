@@ -148,8 +148,16 @@ class ASTReverter
                     return  '(unknown)';
                 }
 
-                $dim_str = self::toShortString($node->children['dim']);
-                return "${expr_str}[${dim_str}]";
+                $dim = $node->children['dim'];
+                if ($dim !== null) {
+                    $dim_str = self::toShortString($dim);
+                } else {
+                    $dim_str = '';
+                }
+                if ($node->flags & ast\flags\DIM_ALTERNATIVE_SYNTAX) {
+                    return "${expr_str}{{$dim_str}}";
+                }
+                return "${expr_str}[$dim_str]";
             },
             ast\AST_NAME => static function (Node $node) : string {
                 $result = $node->children['name'];

@@ -25,5 +25,11 @@ class Shim
         if (!\defined('ast\AST_ARROW_FUNC')) {
             \define('ast\AST_ARROW_FUNC', 71);
         }
+        if (!\defined('ast\flags\DIM_ALTERNATIVE_SYNTAX')) {
+            \define('ast\flags\DIM_ALTERNATIVE_SYNTAX', 1 << 1);
+        }
+        if (!\defined('ast\flags\PARENTHESIZED_CONDITIONAL')) {
+            \define('ast\flags\PARENTHESIZED_CONDITIONAL', 1);
+        }
     }
 }

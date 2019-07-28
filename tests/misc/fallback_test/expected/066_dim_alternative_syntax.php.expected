@@ -1,0 +1,3 @@
+src/066_dim_alternative_syntax.php:3 PhanCompatibleDimAlternativeSyntax Array and string offset access syntax with curly braces is deprecated in PHP 7.4. Use square brackets instead. Seen for $y{'dim'}
+src/066_dim_alternative_syntax.php:4 PhanCompatibleDimAlternativeSyntax Array and string offset access syntax with curly braces is deprecated in PHP 7.4. Use square brackets instead. Seen for $x{0}
+src/066_dim_alternative_syntax.php:9 PhanSyntaxError syntax error, unexpected '<', expecting end of file (at column 1)

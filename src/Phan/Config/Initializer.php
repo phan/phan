@@ -513,7 +513,7 @@ EOT;
         $parts = \array_map(static function (string $path) : string {
             return \preg_quote($path, '@');
         }, $directory_list);
-        $prefix_filter = '@^(' . \implode($parts, '|') . ')[\\\\/]@';
+        $prefix_filter = '@^(' . \implode('|', $parts) . ')[\\\\/]@';
         return static function (string $path) use ($prefix_filter) : bool {
             return !\preg_match($prefix_filter, $path);
         };

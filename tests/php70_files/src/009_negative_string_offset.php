@@ -1,7 +1,7 @@
 <?php
 
 $string = "Phan is awesome";
-
+// @phan-suppress-next-line PhanCompatibleDimAlternativeSyntax this is emitted deliberately when phan is running with php 7.4+ to encourage fixing the code.
 $char1 = $string{-1};
 $char2 = $string[-2];
 $char3 = $string[-(-2)];
