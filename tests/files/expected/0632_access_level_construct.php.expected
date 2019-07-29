@@ -1,2 +1,0 @@
-%s:8 PhanConstructAccessSignatureMismatch Access level to function __construct() must be compatible with function __construct() : void defined in %s:4
-%s:18 PhanConstructAccessSignatureMismatch Access level to function __construct() must be compatible with function __construct() : void defined in %s:14

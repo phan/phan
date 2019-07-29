@@ -3570,7 +3570,7 @@ class Issue
                 self::ConstructAccessSignatureMismatch,
                 self::CATEGORY_ACCESS,
                 self::SEVERITY_NORMAL,
-                "Access level to {METHOD} must be compatible with {METHOD} defined in {FILE}:{LINE}",
+                "Access level to {METHOD} must be compatible with {METHOD} defined in {FILE}:{LINE} in PHP versions 7.1 and below",
                 self::REMEDIATION_B,
                 1032
             ),

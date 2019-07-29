@@ -407,9 +407,13 @@ class ParameterTypesAnalyzer
                     $o_method->getFileRef()->getFile(),
                     $o_method->getFileRef()->getLineNumberStart()
                 );
+
+                return;
             }
 
-            return;
+            if (!$o_method->isAbstract()) {
+                return;
+            }
         }
 
         // Don't bother warning about incompatible signatures for private methods.
