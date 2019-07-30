@@ -10,6 +10,7 @@ use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Comment\Parameter as CommentParameter;
+use Phan\Language\Element\Flags;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
@@ -394,14 +395,24 @@ class ParameterTypesAnalyzer
             self::warnOverridingFinalMethod($code_base, $method, $class, $o_method);
         }
 
-        // Unless it is an abstract constructor,
-        // don't worry about signatures lining up on
-        // constructors. We just want to make sure that
-        // calling a method on a subclass won't cause
-        // a runtime error. We usually know what we're
-        // constructing at instantiation time, so there
-        // is less of a risk.
+        $construct_access_signature_mismatch_thrown = false;
         if ($method->getName() === '__construct') {
+            // flip the switch on so we don't throw both ConstructAccessSignatureMismatch now and AccessSignatureMismatch later
+            $construct_access_signature_mismatch_thrown = Config::get_closest_target_php_version_id() < 70200 && !$o_method->getPhanFlagsHasState(Flags::IS_FAKE_CONSTRUCTOR) && $o_method->isStrictlyMoreVisibleThan($method);
+
+            if ($construct_access_signature_mismatch_thrown) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $method->getContext(),
+                    Issue::ConstructAccessSignatureMismatch,
+                    $method->getFileRef()->getLineNumberStart(),
+                    $method,
+                    $o_method,
+                    $o_method->getFileRef()->getFile(),
+                    $o_method->getFileRef()->getLineNumberStart()
+                );
+            }
+
             if (!$o_method->isAbstract()) {
                 return;
             }
@@ -615,7 +626,7 @@ class ParameterTypesAnalyzer
         }
 
         // Access must be compatible
-        if ($o_method->isStrictlyMoreVisibleThan($method)) {
+        if (!$construct_access_signature_mismatch_thrown && $o_method->isStrictlyMoreVisibleThan($method)) {
             if ($o_method->isPHPInternal()) {
                 Issue::maybeEmit(
                     $code_base,

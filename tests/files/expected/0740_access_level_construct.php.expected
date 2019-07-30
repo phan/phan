@@ -1,0 +1,5 @@
+%s:8 PhanConstructAccessSignatureMismatch Access level to function __construct() must be compatible with function __construct() : void defined in %s:4 in PHP versions 7.1 and below
+%s:18 PhanConstructAccessSignatureMismatch Access level to function __construct() must be compatible with function __construct() : void defined in %s:14 in PHP versions 7.1 and below
+%s:27 PhanConstructAccessSignatureMismatch Access level to function __construct(string $value) must be compatible with function __construct(\stdClass $value) : void defined in %s:22 in PHP versions 7.1 and below
+%s:27 PhanParamSignatureMismatch Declaration of function __construct(string $value) should be compatible with function __construct(\stdClass $value) : void defined in %s:22
+%s:27 PhanParamSignatureRealMismatchParamType Declaration of function __construct(string $value) should be compatible with function __construct(\stdClass $value) (parameter #1 of type 'string' cannot replace original parameter of type '\stdClass') defined in %s:22

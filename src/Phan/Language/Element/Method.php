@@ -357,6 +357,8 @@ class Method extends ClassElement implements FunctionInterface
             $method->setUnionType($old_style_constructor->getUnionType());
         }
 
+        $method->setPhanFlags(Flags::IS_FAKE_CONSTRUCTOR);
+
         return $method;
     }
 
