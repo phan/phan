@@ -24,7 +24,7 @@ abstract class AbstracClass740_2 {
 
 class ChildClass740_2 extends AbstracClass740_2 {
     private $value;
-    public function __construct(string $value) {
+    protected function __construct(string $value) {
         $this->value = $value;
     }
 }

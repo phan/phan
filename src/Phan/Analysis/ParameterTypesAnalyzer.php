@@ -395,8 +395,12 @@ class ParameterTypesAnalyzer
             self::warnOverridingFinalMethod($code_base, $method, $class, $o_method);
         }
 
+        $construct_access_signature_mismatch_thrown = false;
         if ($method->getName() === '__construct') {
-            if (Config::get_closest_target_php_version_id() < 70200 && !$o_method->getPhanFlagsHasState(Flags::IS_FAKE_CONSTRUCTOR) && $o_method->isStrictlyMoreVisibleThan($method)) {
+            // flip the switch on so we don't throw both ConstructAccessSignatureMismatch now and AccessSignatureMismatch later
+            $construct_access_signature_mismatch_thrown = Config::get_closest_target_php_version_id() < 70200 && !$o_method->getPhanFlagsHasState(Flags::IS_FAKE_CONSTRUCTOR) && $o_method->isStrictlyMoreVisibleThan($method);
+
+            if ($construct_access_signature_mismatch_thrown) {
                 Issue::maybeEmit(
                     $code_base,
                     $method->getContext(),
@@ -407,8 +411,6 @@ class ParameterTypesAnalyzer
                     $o_method->getFileRef()->getFile(),
                     $o_method->getFileRef()->getLineNumberStart()
                 );
-
-                return;
             }
 
             if (!$o_method->isAbstract()) {
@@ -624,7 +626,7 @@ class ParameterTypesAnalyzer
         }
 
         // Access must be compatible
-        if ($o_method->isStrictlyMoreVisibleThan($method)) {
+        if (!$construct_access_signature_mismatch_thrown && $o_method->isStrictlyMoreVisibleThan($method)) {
             if ($o_method->isPHPInternal()) {
                 Issue::maybeEmit(
                     $code_base,
