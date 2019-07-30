@@ -15,6 +15,9 @@ New features(Analysis):
 Plugins:
 + Make `EmptyStatementListPlugin` check if statements with negated conditions (those were previously skipped because they were simplified).
 
+Bug fixes:
++ Fix a crash analyzing a dynamic property by reference (introduced in 2.2.7) (#3020)
+
 Jul 27 2019, Phan 2.2.7
 -----------------------
 

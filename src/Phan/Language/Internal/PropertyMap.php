@@ -2,6 +2,8 @@
 
 namespace Phan\Language\Internal;
 
+// NOTE: PHP allows some code that would be a runtime error to be parsed, e.g. `$x->{2}()`.
+// Documenting all of these helps prevent Phan from crashing when analyzing it.
 $ordinary_ast_node = 'ast\Node|float|int|string';
 $ast_node_shape_inner = \implode(',', [
     "args?:ast\Node",
@@ -16,8 +18,9 @@ $ast_node_shape_inner = \implode(',', [
     "insteadof?:ast\Node",
     "key?:$ordinary_ast_node",
     "left?:$ordinary_ast_node",
-    "method?:ast\Node|string",
+    "method?:$ordinary_ast_node",
     "name?:$ordinary_ast_node",
+    "prop?:$ordinary_ast_node",
     "right?:$ordinary_ast_node",
     "stmts?:?ast\Node",
     "try?:ast\Node",
