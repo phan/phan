@@ -3240,7 +3240,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         $this->code_base,
                         $this->context,
                         $argument
-                    ))->getOrCreateProperty($argument->children['prop'], $argument->kind == ast\AST_STATIC_PROP);
+                    ))->getOrCreateProperty($property_name, $argument->kind == ast\AST_STATIC_PROP);
                     $property->setHasWriteReference();
                 } catch (IssueException $exception) {
                     Issue::maybeEmitInstance(
@@ -3302,7 +3302,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         $code_base,
                         $context,
                         $argument
-                    ))->getOrCreateProperty($argument->children['prop'], $argument->kind == ast\AST_STATIC_PROP);
+                    ))->getOrCreateProperty($property_name, $argument->kind == ast\AST_STATIC_PROP);
                     $variable->addReference($context);
                 } catch (IssueException $exception) {
                     Issue::maybeEmitInstance(
