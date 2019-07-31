@@ -1,5 +1,8 @@
 Phan NEWS
 
+??? ?? 2019, Phan 2.2.9 (dev)
+-----------------------
+
 Jul 30 2019, Phan 2.2.8
 -----------------------
 
@@ -11,11 +14,12 @@ New features(Analysis):
 + Emit `PhanCompatibleDimAlternativeSyntax` when using array and string array access syntax with curly braces
   when using the polyfill parser or php 7.4+. (#2989)
 + Emit `PhanCompatibleUnparenthesizedTernary` for expressions such as `a ? b : c ? d : e`. (#2989)
+  (when using the polyfill parser or php 7.4+)
 + Emit `PhanConstructAccessSignatureMismatch` when a constructor is less visible than the parent class's constructor
   and the target php version is 7.1 or older. (#1405)
 
 Plugins:
-+ Make `EmptyStatementListPlugin` check if statements with negated conditions (those were previously skipped because they were simplified).
++ Make `EmptyStatementListPlugin` check `if` statements with negated conditions (those were previously skipped because they were simplified).
 
 Bug fixes:
 + Fix a crash analyzing a dynamic property by reference (introduced in 2.2.7) (#3020)
