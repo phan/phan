@@ -331,6 +331,14 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0
 Access level to {CONST} must be compatible with internal {CONST}
 ```
 
+## PhanConstructAccessSignatureMismatch
+
+```
+Access level to {METHOD} must be compatible with {METHOD} defined in {FILE}:{LINE} in PHP versions 7.1 and below
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0740_access_level_construct.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0740_access_level_construct.php#L8).
+
 ## PhanPropertyAccessSignatureMismatch
 
 ```
