@@ -2514,8 +2514,9 @@ class TolerantASTConverter
 
         $line = $prop_elems[0]->lineno ?? (self::getStartLine($n) ?: $start_line);
         $prop_decl = new ast\Node(ast\AST_PROP_DECL, 0, $prop_elems, $line);
+        $type_line = static::getEndLine($n->typeDeclaration) ?: $start_line;
         return new ast\Node(ast\AST_PROP_GROUP, $flags, [
-            'type' => null,  // TODO
+            'type' => static::phpParserTypeToAstNode($n->typeDeclaration, $type_line),
             'props' => $prop_decl,
         ], $line);
     }
@@ -3030,7 +3031,8 @@ class TolerantASTConverter
         return \sha1($details);
     }
 
-    private static function normalizeTernaryExpression(TernaryExpression $n) : TernaryExpression {
+    private static function normalizeTernaryExpression(TernaryExpression $n) : TernaryExpression
+    {
         $else = $n->elseExpression;
         if (!($else instanceof TernaryExpression)) {
             return $n;

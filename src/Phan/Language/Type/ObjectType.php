@@ -21,6 +21,11 @@ class ObjectType extends NativeType
         return parent::canCastToNonNullableType($type);
     }
 
+    protected function isSubtypeOfNonNullableType(Type $type) : bool
+    {
+        return $type instanceof ObjectType || $type instanceof MixedType;
+    }
+
     /**
      * @return bool
      * True if this type is an object (or the phpdoc `object`)

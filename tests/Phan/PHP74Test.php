@@ -14,6 +14,7 @@ final class PHP74Test extends AbstractPhanFileTest
     const OVERRIDES = [
         'allow_method_param_type_widening' => true,
         'unused_variable_detection' => true,  // for use with tests of arrow functions
+        'redundant_condition_detection' => true,  // for use with typed properties
         'target_php_version' => '7.4',
     ];
 

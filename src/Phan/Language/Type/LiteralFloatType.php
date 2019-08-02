@@ -171,6 +171,26 @@ final class LiteralFloatType extends FloatType implements LiteralTypeInterface
     }
 
     /**
+     * @return bool
+     * True if this Type can be cast to the given Type
+     * cleanly
+     */
+    protected function isSubtypeOfNonNullableType(Type $type) : bool
+    {
+        if ($type instanceof ScalarType) {
+            if ($type::NAME === 'float') {
+                if ($type instanceof LiteralFloatType) {
+                    return $type->getValue() === $this->getValue();
+                }
+                return true;
+            }
+            return false;
+        }
+
+        return parent::isSubtypeOfNonNullableType($type);
+    }
+
+    /**
      * @param bool $is_nullable
      * Set to true if the type should be nullable, else pass
      * false

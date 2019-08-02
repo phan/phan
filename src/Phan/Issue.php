@@ -198,7 +198,8 @@ class Issue
     const TypeInvalidStaticPropertyName = 'PhanTypeInvalidStaticPropertyName';
     const TypeErrorInInternalCall = 'PhanTypeErrorInInternalCall';
     const TypeErrorInOperation = 'PhanTypeErrorInOperation';
-    const TypeInvalidPropertyDefaultReal  = 'PhanTypeInvalidPropertyDefaultReal';
+    const TypeInvalidPropertyDefaultReal    = 'PhanTypeInvalidPropertyDefaultReal';
+    const TypeMismatchPropertyReal          = 'PhanTypeMismatchPropertyReal';
     const ImpossibleCondition               = 'PhanImpossibleCondition';
     const ImpossibleConditionInLoop         = 'PhanImpossibleConditionInLoop';
     const ImpossibleConditionInGlobalScope  = 'PhanImpossibleConditionInGlobalScope';
@@ -458,6 +459,7 @@ class Issue
     const CompatibleDimAlternativeSyntax     = 'PhanCompatibleDimAlternativeSyntax';
     const CompatibleImplodeOrder             = 'PhanCompatibleImplodeOrder';
     const CompatibleUnparenthesizedTernary   = 'PhanCompatibleUnparenthesizedTernary';
+    const CompatibleTypedProperty            = 'PhanCompatibleTypedProperty';
 
     // Issue::CATEGORY_GENERIC
     const TemplateTypeConstant       = 'PhanTemplateTypeConstant';
@@ -2126,6 +2128,14 @@ class Issue
                 "Default value for {TYPE} \${PROPERTY} can't be {TYPE}",
                 self::REMEDIATION_B,
                 10108
+            ),
+            new Issue(
+                self::TypeMismatchPropertyReal,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,
+                "Assigning {TYPE} to property but {PROPERTY} is {TYPE}",
+                self::REMEDIATION_B,
+                10137
             ),
             new Issue(
                 self::ImpossibleCondition,
@@ -3942,6 +3952,14 @@ class Issue
                 "Unparenthesized '{CODE}' is deprecated. Use either '{CODE}' or '{CODE}'",
                 self::REMEDIATION_B,
                 3020
+            ),
+            new Issue(
+                self::CompatibleTypedProperty,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_NORMAL,
+                "Cannot use typed properties before php 7.4. This property group has type {TYPE}",
+                self::REMEDIATION_B,
+                3021
             ),
 
             // Issue::CATEGORY_GENERIC

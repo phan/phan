@@ -516,6 +516,14 @@ Saw a notice while parsing with the native parser: {DETAILS}
 
 e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php74_files/expected/012_real_cast.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php74_files/src/012_real_cast.php#L2).
 
+## PhanCompatibleTypedProperty
+
+```
+Cannot use typed properties before php 7.4. This property group has type {TYPE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php70_files/expected/011_typed_properties.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php70_files/src/011_typed_properties.php#L4).
+
 ## PhanCompatibleUnparenthesizedTernary
 
 ```
@@ -2960,6 +2968,14 @@ This issue is emitted from the following code
 ```php
 function f(int $p = false) {}
 ```
+
+## PhanTypeMismatchPropertyReal
+
+```
+Assigning {TYPE} to property but {PROPERTY} is {TYPE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php74_files/expected/014_real_type_mismatch.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php74_files/src/014_real_type_mismatch.php#L9).
 
 ## PhanTypeMismatchReturn
 

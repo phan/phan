@@ -804,8 +804,12 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
                 }
                 break;
             case \ast\flags\TYPE_DOUBLE:
+                // the int `2` and the float `2.0` are not identical
+                // in terms of json encoding, var_export, etc.
                 if ($real_expr_type->floatTypes()->isEqualTo($real_expr_type)) {
-                    $this->warnForCast($node, $real_expr_type, 'float');
+                    if (!$real_expr_type->intTypes()->isEqualTo($real_expr_type)) {
+                        $this->warnForCast($node, $real_expr_type, 'float');
+                    }
                 }
                 break;
             case \ast\flags\TYPE_STRING:

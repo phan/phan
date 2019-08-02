@@ -628,6 +628,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     public function visitNullableType(Node $node) : UnionType
     {
         // Get the type
+        // @phan-suppress-next-line PhanTypeMismatchArgumentNullable other node kinds have nullable type
         $union_type = $this->__invoke($node->children['type']);
 
         // Make each nullable

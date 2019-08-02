@@ -141,6 +141,9 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
                     }
                     break;
                 case 'float':
+                    if ($type instanceof LiteralFloatType) {
+                        return $type->getValue() == $this->getValue();
+                    }
                     return true;
                 case 'true':
                     if (!$this->value) {
@@ -159,6 +162,25 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
                     }
                     break;
             }
+        }
+
+        return parent::canCastToNonNullableType($type);
+    }
+
+    /**
+     * @return bool
+     * True if this Type is a subtype of the given type
+     */
+    protected function isSubtypeOfNonNullableType(Type $type) : bool
+    {
+        if ($type instanceof ScalarType) {
+            if ($type instanceof IntType) {
+                if ($type instanceof LiteralIntType) {
+                    return $type->getValue() === $this->getValue();
+                }
+                return true;
+            }
+            return false;
         }
 
         return parent::canCastToNonNullableType($type);

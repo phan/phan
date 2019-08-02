@@ -361,10 +361,11 @@ class C{
 EOT;
  */
 
-    private static function normalizePolyfillAST(ast\Node $ast) : void {
+    private static function normalizePolyfillAST(ast\Node $ast) : void
+    {
         switch ($ast->kind) {
             case ast\AST_DIM:
-                if (PHP_VERSION_ID < 70400) {
+                if (\PHP_VERSION_ID < 70400) {
                     $ast->flags = 0;
                 }
                 break;

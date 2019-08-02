@@ -458,6 +458,11 @@ class Property extends ClassElement
         return $union_type;
     }
 
+    public function getRealUnionType() : UnionType
+    {
+        return $this->real_union_type;
+    }
+
     public function setPHPDocUnionType(UnionType $type) : void
     {
         $this->phpdoc_union_type = $type;

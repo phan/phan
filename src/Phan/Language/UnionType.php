@@ -2007,6 +2007,84 @@ class UnionType implements Serializable
     }
 
     /**
+     * @param UnionType $target
+     * A type to check to see if this has subtypes of.
+     *
+     * @return bool
+     * True if this type contains subtypes of the other type
+     *
+     * i.e. array -> iterable is allowed, but iterable -> array is not
+     * i.e. MyClass -> mixed is allowed, but mixed -> MyClass is not
+     */
+    public function hasSubtypeOf(
+        UnionType $target
+    ) : bool {
+        // Fast-track most common cases first
+        $type_set = $this->type_set;
+        // If either type is unknown, we can't call it
+        // a success
+        if (\count($type_set) === 0) {
+            return true;
+        }
+        $target_type_set = $target->type_set;
+        if (\count($target_type_set) === 0) {
+            return true;
+        }
+
+        // T overlaps with T, a future call to Type->canCastToType will pass.
+        $target = $target->asNormalizedTypes();
+        if ($this->hasCommonType($target)) {
+            return true;
+        }
+
+        static $float_type;
+        static $int_type;
+        static $mixed_type;
+        static $null_type;
+        if ($null_type === null) {
+            $int_type   = IntType::instance(false);
+            $float_type = FloatType::instance(false);
+            $mixed_type = MixedType::instance(false);
+            $null_type  = NullType::instance(false);
+        }
+
+        // any -> mixed
+        if (\in_array($mixed_type, $target_type_set, true)) {
+            return true;
+        }
+
+        // int -> float
+        if (\in_array($int_type, $type_set, true)
+            && \in_array($float_type, $target_type_set, true)
+        ) {
+            return true;
+        }
+
+        // Check conversion on the cross product of all
+        // type combinations and see if any can cast to
+        // any.
+        foreach ($type_set as $source_type) {
+            if ($source_type->isSubtypeOfAnyTypeInSet($target_type_set)) {
+                return true;
+            }
+        }
+
+        // Allow casting ?T to T|null for any type T. Check if null is part of this type first.
+        if (\in_array($null_type, $target_type_set, true)) {
+            foreach ($type_set as $source_type) {
+                // Only redo this check for the nullable types, we already failed the checks for non-nullable types.
+                if ($source_type->isNullable()) {
+                    return $source_type->withIsNullable(false)->isSubtypeOfAnyTypeInSet($target_type_set);
+                }
+            }
+        }
+
+        // Only if no source types can be cast to any target
+        // types do we say that we cannot perform the cast
+        return false;
+    }
+
+    /**
      * Checks if any type in this union type weakly overlaps with other types
      *
      * E.g. allows `1 <= 2`, `null == false`, ?T -> ?Other, etc.
@@ -2087,6 +2165,78 @@ class UnionType implements Serializable
             foreach ($type_set as $source_type) {
                 // Only redo this check for the nullable types, we already failed the checks for non-nullable types.
                 if (!$source_type->withIsNullable(false)->asExpandedTypes($code_base)->canCastToUnionType($target)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // Only if no source types can be cast to any target
+        // types do we say that we cannot perform the cast
+        return false;
+    }
+
+    /**
+     * @param UnionType $target
+     * A type to check to see if this is a strict subtype of this.
+     *
+     * Every single type in this type must be a strict subtype of a type in $target (Empty types can cast to empty)
+     *
+     * @return bool
+     * True if this type is allowed to cast to the given type
+     * i.e. int->float is allowed  while float->int is not.
+     *
+     * @suppress PhanUnreferencedPublicMethod may be used elsewhere in the future
+     */
+    public function isStrictSubtypeOf(CodeBase $code_base, UnionType $target) : bool
+    {
+        // Fast-track most common cases first
+        $type_set = $this->type_set;
+        // If either type is unknown, we can't call it
+        // a success
+        if (\count($type_set) === 0) {
+            return true;
+        }
+        $target_type_set = $target->type_set;
+        if (\count($target_type_set) === 0) {
+            return true;
+        }
+
+        // every single type in T overlaps with T, a future call to Type->canCastToType will pass.
+        $matches = true;
+        foreach ($type_set as $type) {
+            if (!\in_array($type, $target_type_set, true)) {
+                $matches = false;
+                break;
+            }
+        }
+        if ($matches) {
+            return true;
+        }
+        static $null_type;
+        if ($null_type === null) {
+            $null_type  = NullType::instance(false);
+        }
+
+        // Check conversion on the cross product of all
+        // type combinations and see if any can cast to
+        // any.
+        $matches = true;
+        foreach ($type_set as $source_type) {
+            if (!$source_type->asExpandedTypes($code_base)->hasSubtypeOf($target)) {
+                $matches = false;
+                break;
+            }
+        }
+        if ($matches) {
+            return true;
+        }
+
+        // Allow casting ?T to T|null for any type T. Check if null is part of this type first.
+        if (\in_array($null_type, $target_type_set, true)) {
+            foreach ($type_set as $source_type) {
+                // Only redo this check for the nullable types, we already failed the checks for non-nullable types.
+                if (!$source_type->withIsNullable(false)->asExpandedTypes($code_base)->hasSubtypeOf($target)) {
                     return false;
                 }
             }

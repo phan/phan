@@ -52,6 +52,16 @@ final class NullType extends ScalarType
             || parent::canCastToNonNullableType($type);
     }
 
+    public function isSubtypeOf(Type $type) : bool
+    {
+        return $type->isNullable();
+    }
+
+    public function isSubtypeOfNonNullableType(Type $unused_type) : bool
+    {
+        return false;
+    }
+
     /**
      * @return bool
      * True if this Type can be cast to the given Type
