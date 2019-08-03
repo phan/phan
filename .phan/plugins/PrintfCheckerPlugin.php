@@ -130,13 +130,37 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
                 }
                 break;
         }
-        $result = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $ast_node)->asSingleScalarValueOrNullOrSelf();
+        $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $ast_node);
+        $result = $union_type->asSingleScalarValueOrNullOrSelf();
+
         if (!is_object($result)) {
             return new PrimitiveValue($result);
         }
-        // We don't know how to convert this to a primitive, give up.
-        // (Subclasses may add their own logic first, then call self::astNodeToPrimitive)
-        return null;
+        $scalar_union_types = $union_type->asScalarValues();
+        if (!$scalar_union_types) {
+            // We don't know how to convert this to a primitive, give up.
+            // (Subclasses may add their own logic first, then call self::astNodeToPrimitive)
+            return null;
+        }
+        $known_specs = null;
+        $first_str = null;
+        foreach ($scalar_union_types as $str) {
+            if (!is_string($str)) {
+                return null;
+            }
+            $new_specs = ConversionSpec::extractAll($str);
+            if (is_array($known_specs)) {
+                if ($known_specs != $new_specs) {
+                    // We have different specs, e.g. %s and %d, %1$s and %2$s, etc.
+                    // TODO: Could allow differences in padding or alignment
+                    return null;
+                }
+            } else {
+                $known_specs = $new_specs;
+                $first_str = $str;
+            }
+        }
+        return new PrimitiveValue($first_str);
     }
 
     /**
