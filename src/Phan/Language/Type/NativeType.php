@@ -125,6 +125,29 @@ abstract class NativeType extends Type
             ?? parent::canCastToNonNullableType($type);
     }
 
+    protected function isSubtypeOfNonNullableType(Type $type) : bool
+    {
+        // Anything is a subtype of mixed or ?mixed
+        if ($type instanceof MixedType) {
+            return true;
+        }
+
+        if (!($type instanceof NativeType)
+            || $this instanceof GenericArrayType
+            || $type instanceof GenericArrayType
+        ) {
+            return parent::canCastToNonNullableType($type);
+        }
+
+        static $matrix;
+        if ($matrix === null) {
+            $matrix = self::initializeTypeCastingMatrix();
+        }
+
+        return $matrix[$this->getName()][$type->getName()]
+            ?? parent::canCastToNonNullableType($type);
+    }
+
     /**
      * @return array<string,array<string,bool>>
      */

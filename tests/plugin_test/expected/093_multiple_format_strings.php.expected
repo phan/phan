@@ -1,3 +1,3 @@
-src/093_multiple_format_strings.php:10 PhanPluginPrintfVariableFormatString Code (unknown) has a dynamic format string that could not be inferred by Phan
-src/093_multiple_format_strings.php:11 PhanPluginPrintfVariableFormatString Code (unknown) has a dynamic format string that could not be inferred by Phan
+src/093_multiple_format_strings.php:10 PhanPluginPrintfVariableFormatString Code (rand(0, 2) ? 'a%s' : 'b%s') has a dynamic format string that could not be inferred by Phan
+src/093_multiple_format_strings.php:11 PhanPluginPrintfVariableFormatString Code (rand(0, 2) ? '%sa' : '%sb') has a dynamic format string that could not be inferred by Phan
 src/093_multiple_format_strings.php:11 PhanTypeMismatchArgument Argument 1 ($x) is 'xa'|'xb' but \expect_ab() takes 'ax'|'bx' defined at src/093_multiple_format_strings.php:6

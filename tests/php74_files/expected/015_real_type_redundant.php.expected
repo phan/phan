@@ -1,0 +1,6 @@
+%s:19 PhanRedundantCondition Redundant attempt to cast self::$my_int of type int to int
+%s:20 PhanRedundantCondition Redundant attempt to cast self::$my_int2 of type int to int
+%s:23 PhanImpossibleCondition Impossible attempt to cast self::$my_int of type int to string
+%s:26 PhanRedundantCondition Redundant attempt to cast self::$my_array of type array to array
+%s:27 PhanRedundantCondition Redundant attempt to cast self::$my_array2 of type array to array
+%s:28 PhanRedundantCondition Redundant attempt to cast self::$my_string of type string to string

@@ -263,6 +263,25 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
     }
 
     /**
+     * @return bool
+     * True if this Type is a subtype of the given type.
+     */
+    protected function isSubtypeOfNonNullableType(Type $type) : bool
+    {
+        if ($type instanceof ScalarType) {
+            if ($type instanceof StringType) {
+                if ($type instanceof LiteralStringType) {
+                    return $type->value === $this->value;
+                }
+                return true;
+            }
+            return false;
+        }
+
+        return parent::canCastToNonNullableType($type);
+    }
+
+    /**
      * @param bool $is_nullable
      * Set to true if the type should be nullable, else pass
      * false

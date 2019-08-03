@@ -2515,6 +2515,22 @@ class Type
      * True if this Type can be cast to the given Type cleanly.
      * This is overridden by ArrayShapeType to allow array{a:string,b:stdClass} to cast to string[]|stdClass[]
      */
+    public function isSubtypeOfAnyTypeInSet(array $target_type_set) : bool
+    {
+        foreach ($target_type_set as $target_type) {
+            if ($this->isSubtypeOf($target_type)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param Type[] $target_type_set 1 or more types
+     * @return bool
+     * True if this Type can be cast to the given Type cleanly.
+     * This is overridden by ArrayShapeType to allow array{a:string,b:stdClass} to cast to string[]|stdClass[]
+     */
     public function canCastToAnyTypeInSetHandlingTemplates(array $target_type_set, CodeBase $code_base) : bool
     {
         foreach ($target_type_set as $target_type) {
@@ -2677,6 +2693,55 @@ class Type
             }
         }
         return false;
+    }
+
+    /**
+     * @return bool
+     * True if this Type is a subtype of the other type.
+     */
+    public function isSubtypeOf(Type $type) : bool
+    {
+        // Check to see if we have an exact object match
+        if ($this === $type) {
+            return true;
+        }
+
+        if ($type instanceof MixedType) {
+            return true;
+        }
+
+        // A nullable type is not a subtype of a non-nullable type
+        if ($this->is_nullable && !$type->is_nullable) {
+            return false;
+        }
+
+        // Get a non-null version of the type we're comparing
+        // against.
+        if ($type->is_nullable) {
+            $type = $type->withIsNullable(false);
+
+            // Check one more time to see if the types are equal
+            if ($this === $type) {
+                return true;
+            }
+        }
+
+        // Test to see if we are a subtype of the non-nullable version
+        // of the target type.
+        return $this->isSubtypeOfNonNullableType($type);
+    }
+
+    /**
+     * Returns true if this can cast to the non-nullable version of the target type
+     *
+     * This is overridden in subclasses such as MixedType.
+     * (All types are sub-types of mixed, but mixed isn't a subtype of those types)
+     *
+     * TODO: Override everywhere else
+     */
+    protected function isSubtypeOfNonNullableType(Type $type) : bool
+    {
+        return $this->canCastToNonNullableType($type);
     }
 
     /**

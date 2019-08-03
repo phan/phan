@@ -391,9 +391,17 @@ class ParseVisitor extends ScopeVisitor
                 Issue::maybeEmitInstance($this->code_base, $this->context, $e->getIssueInstance());
                 $real_union_type = UnionType::empty();
             }
+            if (Config::get_closest_target_php_version_id() < 70400) {
+                $this->emitIssue(
+                    Issue::CompatibleTypedProperty,
+                    $type_node->lineno,
+                    ((string)$real_union_type) ?: '(unknown)'
+                );
+            }
         } else {
             $real_union_type = UnionType::empty();
         }
+        $real_type_set = $real_union_type->getTypeSet();
 
         $class = $this->getContextClass();
         $doc_comment = '';
@@ -468,17 +476,23 @@ class ParseVisitor extends ScopeVisitor
                         $union_type = Type::nonLiteralFromObject($default_node)->asPHPDocUnionType();
                     }
                 }
-                if (!$real_union_type->isEmpty() && !$union_type->canStrictCastToUnionType($this->code_base, $real_union_type)) {
-                    $this->emitIssue(
-                        Issue::TypeInvalidPropertyDefaultReal,
-                        $context_for_property->getLineNumberStart(),
-                        $real_union_type,
-                        $property_name,
-                        $union_type
-                    );
-                }
-                if ($union_type->isType(NullType::instance(false))) {
-                    $union_type = UnionType::empty();
+                if ($real_union_type->isEmpty()) {
+                    if ($union_type->isType(NullType::instance(false))) {
+                        $union_type = UnionType::empty();
+                    }
+                } else {
+                    if (!$union_type->isStrictSubtypeOf($this->code_base, $real_union_type)) {
+                        $this->emitIssue(
+                            Issue::TypeInvalidPropertyDefaultReal,
+                            $context_for_property->getLineNumberStart(),
+                            $real_union_type,
+                            $property_name,
+                            $union_type
+                        );
+                        $union_type = $real_union_type;
+                    } else {
+                        $union_type = $union_type->withRealTypeSet($real_type_set);
+                    }
                 }
             }
 
@@ -554,7 +568,7 @@ class ParseVisitor extends ScopeVisitor
                             $union_type = $original_union_type;
                         }
                         // Replace the empty union type with the resolved union type.
-                        $property->setUnionType($union_type);
+                        $property->setUnionType($union_type->withRealTypeSet($real_type_set));
                     }
                 }
 
@@ -599,11 +613,11 @@ class ParseVisitor extends ScopeVisitor
                     return \get_class($type) !== ArrayType::class;
                 })) {
                     // Don't convert `/** @var T[] */ public $x = []` to union type `T[]|array`
-                    $property->setUnionType($variable_type);
+                    $property->setUnionType($variable_type->withRealTypeSet($real_type_set));
                 } else {
                     // Set the declared type to the doc-comment type and add
                     // |null if the default value is null
-                    $property->setUnionType($original_property_type->withUnionType($variable_type));
+                    $property->setUnionType($original_property_type->withUnionType($variable_type)->withRealTypeSet($real_type_set));
                 }
             }
 

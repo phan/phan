@@ -24,6 +24,7 @@ $ast_node_shape_inner = \implode(',', [
     "right?:$ordinary_ast_node",
     "stmts?:?ast\Node",
     "try?:ast\Node",
+    "type?:?ast\Node",
     "value?:$ordinary_ast_node",
     "var?:ast\Node",
 ]);

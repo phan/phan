@@ -931,6 +931,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         flags\TYPE_STRING => 'string',
         flags\TYPE_ARRAY => 'array',
         flags\TYPE_OBJECT => 'object',
+        // These aren't casts, but they are used in various places
+        flags\TYPE_CALLABLE => 'callable',
+        flags\TYPE_VOID => 'void',
+        flags\TYPE_ITERABLE => 'iterable',
     ];
 
     /**
@@ -2743,7 +2747,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             return;
         }
         // @phan-suppress-next-line PhanUndeclaredProperty
-        if (PHP_VERSION_ID < 70400 && !isset($cond->is_not_parenthesized)) {
+        if (\PHP_VERSION_ID < 70400 && !isset($cond->is_not_parenthesized)) {
             // This is from the native parser in php 7.3 or earlier.
             // We don't know whether or not the AST is parenthesized.
             return;

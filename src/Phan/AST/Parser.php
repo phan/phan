@@ -125,7 +125,7 @@ class Parser
         $original_error_reporting = error_reporting();
         error_reporting($original_error_reporting & ~\E_COMPILE_WARNING);
         $__no_echo_phan_errors = static function (int $errno, string $errstr, string $unused_errfile, int $errline) use ($code_base, $context) : bool {
-            if ($errno == E_DEPRECATED && preg_match('/Version.*is deprecated/i', $errstr)) {
+            if ($errno == \E_DEPRECATED && \preg_match('/Version.*is deprecated/i', $errstr)) {
                 return false;
             }
             // Catch errors such as E_DEPRECATED in php 7.4 for the (real) cast.

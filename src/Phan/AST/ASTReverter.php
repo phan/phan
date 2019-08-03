@@ -111,6 +111,15 @@ class ASTReverter
             return '(unknown)';
         };
         self::$closure_map = [
+            /**
+             * @suppress PhanAccessClassConstantInternal
+             */
+            ast\AST_TYPE => static function (Node $node) : string {
+                return PostOrderAnalysisVisitor::AST_CAST_FLAGS_LOOKUP[$node->flags];
+            },
+            ast\AST_NULLABLE_TYPE => static function (Node $node) : string {
+                return '?' . self::toShortString($node->children['type']);
+            },
             ast\AST_POST_INC => static function (Node $node) : string {
                 return self::formatIncDec('%s++', $node->children['var']);
             },
@@ -293,6 +302,13 @@ class ASTReverter
                     self::toShortString($node->children['class']),
                     self::toShortString($node->children['args'])
                 );
+            },
+            ast\AST_CONDITIONAL => static function (Node $node) : string {
+                ['cond' => $cond, 'true' => $true, 'false' => $false] = $node->children;
+                if ($true !== null) {
+                    return \sprintf('(%s ? %s : %s)', self::toShortString($cond), self::toShortString($true), self::toShortString($false));
+                }
+                return \sprintf('(%s ?: %s)', self::toShortString($cond), self::toShortString($false));
             },
         ];
     }

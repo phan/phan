@@ -1451,4 +1451,14 @@ final class EmptyUnionType extends UnionType
     {
         return false;
     }
+
+    public function hasSubtypeOf(UnionType $type) : bool
+    {
+        return true;
+    }
+
+    public function isStrictSubtypeOf(CodeBase $code_base, UnionType $type) : bool
+    {
+        return true;
+    }
 }

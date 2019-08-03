@@ -1,0 +1,12 @@
+%s:8 PhanCompatibleTypedProperty Cannot use typed properties before php 7.4. This property group has type (unknown)
+%s:8 PhanParentlessClass Reference to parent of class \NS11\Bar that does not extend anything
+%s:8 PhanUnreferencedPrivateProperty Possibly zero references to private property \NS11\Bar->invalid
+%s:12 PhanCompatibleTypedProperty Cannot use typed properties before php 7.4. This property group has type \NS11\Bar
+%s:12 PhanWriteOnlyPublicProperty Possibly zero read references to public property \NS11\Foo->foo
+%s:14 PhanCompatibleTypedProperty Cannot use typed properties before php 7.4. This property group has type \NS11\stdClass
+%s:14 PhanUndeclaredTypeProperty Property \NS11\Foo->std has undeclared type \NS11\stdClass (Did you mean class \stdClass)
+%s:14 PhanWriteOnlyPublicProperty Possibly zero read references to public property \NS11\Foo->std
+%s:15 PhanCompatibleTypedProperty Cannot use typed properties before php 7.4. This property group has type \ArrayObject
+%s:15 PhanWriteOnlyPublicProperty Possibly zero read references to public property \NS11\Foo->arrayObject
+%s:20 PhanTypeMismatchPropertyReal Assigning \stdClass to property but \NS11\Foo->std is \NS11\stdClass
+%s:21 PhanTypeMismatchPropertyReal Assigning \NS11\Foo to property but \NS11\Foo->arrayObject is \ArrayObject

@@ -40,6 +40,16 @@ final class MixedType extends NativeType
         return true;
     }
 
+    public function isSubtypeOf(Type $type) : bool
+    {
+        return $type instanceof MixedType;
+    }
+
+    public function isSubtypeOfNonNullableType(Type $type) : bool
+    {
+        return $type instanceof MixedType;
+    }
+
     public function isExclusivelyNarrowedFormOrEquivalentTo(
         UnionType $union_type,
         Context $unused_context,
