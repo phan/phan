@@ -776,7 +776,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 return UnionTypeVisitor::unionTypeFromNode(
                     $this->code_base,
                     $this->context,
-                    $node->children['false'] ?? ''
+                    $node->children['false']
                 );
             }
         }
@@ -820,7 +820,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $false_type = UnionTypeVisitor::unionTypeFromNode(
                     $this->code_base,
                     $false_context,
-                    $node->children['false'] ?? ''
+                    $node->children['false']
                 );
                 $true_type_is_empty = $true_type->isEmpty();
                 if (!$false_type->isEmpty()) {
@@ -862,7 +862,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         $false_type = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $false_context,
-            $node->children['false'] ?? ''
+            $node->children['false']
         );
 
         // Add the type for the 'true' side to the 'false' side
