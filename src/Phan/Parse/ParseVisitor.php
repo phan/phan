@@ -7,7 +7,6 @@ use ast;
 use ast\Node;
 use InvalidArgumentException;
 use Phan\Analysis\ScopeVisitor;
-use Phan\AST\ASTReverter;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
@@ -386,18 +385,18 @@ class ParseVisitor extends ScopeVisitor
         $props_node = $node->children['props'];
         $type_node = $node->children['type'];
         if ($type_node) {
-            if (Config::get_closest_target_php_version_id() < 70400) {
-                $this->emitIssue(
-                    Issue::CompatibleTypedProperty,
-                    $type_node->lineno,
-                    ASTReverter::toShortString($type_node)
-                );
-            }
             try {
                 $real_union_type = (new UnionTypeVisitor($this->code_base, $this->context))->fromTypeInSignature($type_node);
             } catch (IssueException $e) {
                 Issue::maybeEmitInstance($this->code_base, $this->context, $e->getIssueInstance());
                 $real_union_type = UnionType::empty();
+            }
+            if (Config::get_closest_target_php_version_id() < 70400) {
+                $this->emitIssue(
+                    Issue::CompatibleTypedProperty,
+                    $type_node->lineno,
+                    ((string)$real_union_type) ?: '(unknown)'
+                );
             }
         } else {
             $real_union_type = UnionType::empty();

@@ -1,3 +1,3 @@
 %s:3 PhanCompatibleTypedProperty Cannot use typed properties before php 7.4. This property group has type callable
 %s:4 PhanCompatibleTypedProperty Cannot use typed properties before php 7.4. This property group has type int
-%s:5 PhanCompatibleTypedProperty Cannot use typed properties before php 7.4. This property group has type self
+%s:5 PhanCompatibleTypedProperty Cannot use typed properties before php 7.4. This property group has type \Foo

@@ -522,7 +522,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php74_files/exp
 Cannot use typed properties before php 7.4. This property group has type {TYPE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php70_files/expected/011_typed_properties.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php70_files/src/011_typed_properties.php#L4).
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php70_files/expected/011_typed_properties.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php70_files/src/011_typed_properties.php#L3).
 
 ## PhanCompatibleUnparenthesizedTernary
 
@@ -2975,7 +2975,7 @@ function f(int $p = false) {}
 Assigning {TYPE} to property but {PROPERTY} is {TYPE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php74_files/expected/014_real_type_mismatch.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php74_files/src/014_real_type_mismatch.php#L9).
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php70_files/expected/012_typed_properties_errors.php.expected#L11) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php70_files/src/012_typed_properties_errors.php#L20).
 
 ## PhanTypeMismatchReturn
 
