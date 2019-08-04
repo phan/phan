@@ -6,6 +6,10 @@ use ast\Node;
 use Phan\AST\AnalysisVisitor;
 use Phan\AST\Visitor\Element;
 use Phan\Issue;
+use Phan\Language\Element\TypedElement;
+use Phan\Language\Type;
+use Phan\Language\UnionType;
+use Phan\Language\FQSEN;
 
 /**
  * This augments AnalysisVisitor with public and internal methods.
@@ -38,7 +42,7 @@ abstract class PluginAwareBaseAnalysisVisitor extends AnalysisVisitor
      * The list of placeholders for between braces can be found
      * in \Phan\Issue::UNCOLORED_FORMAT_STRING_FOR_TEMPLATE.
      *
-     * @param array<int,string> $issue_message_args
+     * @param array<int,string|Type|UnionType|FQSEN|TypedElement> $issue_message_args
      * The arguments for this issue format.
      * If this array is empty, $issue_message_args is kept in place
      *

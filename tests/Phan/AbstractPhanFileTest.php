@@ -151,7 +151,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
             // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
             $expected_output = \trim(\file_get_contents($expected_file_path));
         }
-        if (!in_array(\basename($expected_file_path), self::WHITELIST)) {
+        if (!in_array(\basename($expected_file_path), self::WHITELIST, true)) {
             $this->assertNotRegExp('@tests[/\\\\]files[/\\\\]@', $expected_output, 'Expected output should contain a %s placeholder instead of the relative path to the file');
         }
 

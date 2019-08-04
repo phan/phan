@@ -81,7 +81,7 @@ EOB;
         } elseif ($arg === '--php-ast-with-placeholders') {
             $as_php_ast = true;
             $as_php_ast_with_placeholders = true;
-        } elseif (in_array($argv[$i], ['help', '-h', '--help'])) {
+        } elseif (in_array($argv[$i], ['help', '-h', '--help'], true)) {
             $print_help(0);
         } else {
             continue;

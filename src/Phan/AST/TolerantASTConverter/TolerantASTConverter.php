@@ -184,7 +184,7 @@ class TolerantASTConverter
      */
     public function parseCodeAsPHPAST(string $file_contents, int $version, array &$errors = [], Cache $cache = null) : \ast\Node
     {
-        if (!\in_array($version, self::SUPPORTED_AST_VERSIONS)) {
+        if (!\in_array($version, self::SUPPORTED_AST_VERSIONS, true)) {
             throw new \InvalidArgumentException(sprintf("Unexpected version: want %s, got %d", \implode(', ', self::SUPPORTED_AST_VERSIONS), $version));
         }
         $errors = [];
@@ -238,7 +238,7 @@ class TolerantASTConverter
      */
     public function phpParserToPhpast(PhpParser\Node $parser_node, int $ast_version, string $file_contents) : \ast\Node
     {
-        if (!\in_array($ast_version, self::SUPPORTED_AST_VERSIONS)) {
+        if (!\in_array($ast_version, self::SUPPORTED_AST_VERSIONS, true)) {
             throw new \InvalidArgumentException(sprintf("Unexpected version: want %s, got %d", implode(', ', self::SUPPORTED_AST_VERSIONS), $ast_version));
         }
         $this->startParsing($file_contents);

@@ -98,7 +98,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
         self::$desired_byte_offset = $byte_offset;
         self::$handle_selected_node = $this->instance_handle_selected_node;
 
-        if (!\in_array($version, self::SUPPORTED_AST_VERSIONS)) {
+        if (!\in_array($version, self::SUPPORTED_AST_VERSIONS, true)) {
             throw new InvalidArgumentException(\sprintf("Unexpected version: want %s, got %d", \implode(', ', self::SUPPORTED_AST_VERSIONS), $version));
         }
 

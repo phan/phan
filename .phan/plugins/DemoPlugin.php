@@ -194,7 +194,7 @@ class DemoNodeVisitor extends PluginAwarePostAnalysisVisitor
 
     /**
      * @param Node $node
-     * A node to analyze
+     * A node of kind ast\AST_INSTANCEOF to analyze
      *
      * @override
      */

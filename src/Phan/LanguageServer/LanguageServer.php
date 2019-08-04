@@ -558,7 +558,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
                 continue;
             }
             $relative_path_to_analyze = FileRef::getProjectRelativePathForPath($path_to_analyze);
-            if (!\in_array($uri, $file_path_list) && !\in_array($relative_path_to_analyze, $file_path_list)) {
+            if (!\in_array($uri, $file_path_list, true) && !\in_array($relative_path_to_analyze, $file_path_list, true)) {
                 // fwrite(STDERR, "Checking if should parse missing $relative_path_to_analyze for $uri\n");
                 if (CLI::shouldParse($relative_path_to_analyze)) {
                     $file_path_list[] = $relative_path_to_analyze;

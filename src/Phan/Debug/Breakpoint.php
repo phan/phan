@@ -30,7 +30,7 @@ do {
         'continue',
         'run',
         'c'
-    ])) {
+    ], true)) {
         break;
     }
     try {

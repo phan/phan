@@ -1,0 +1,10 @@
+src/138_suspicious_object_comparison.php:8 PhanPluginComparisonObjectEqualityNotStrict Saw a weak equality check on possible object types \C138 and \C138 in ($c1 == $c2)
+src/138_suspicious_object_comparison.php:8 PhanPluginNumericalComparison non numerical values compared by the operators '==' or '!='
+src/138_suspicious_object_comparison.php:9 PhanPluginComparisonObjectEqualityNotStrict Saw a weak equality check on possible object types \C138 and \C138 in ($c1 != $c2)
+src/138_suspicious_object_comparison.php:9 PhanPluginNumericalComparison non numerical values compared by the operators '==' or '!='
+src/138_suspicious_object_comparison.php:10 PhanPluginComparisonObjectOrdering Using comparison operator on possible object types \C138 and \C138 in ($c1 <= $c2)
+src/138_suspicious_object_comparison.php:11 PhanPluginComparisonObjectOrdering Using comparison operator on possible object types \C138 and \C138 in ($c1 >= $c2)
+src/138_suspicious_object_comparison.php:12 PhanPluginComparisonObjectOrdering Using comparison operator on possible object types \C138 and \C138 in ($c1 < $c2)
+src/138_suspicious_object_comparison.php:13 PhanPluginComparisonObjectOrdering Using comparison operator on possible object types \C138 and \C138 in ($c1 > $c2)
+src/138_suspicious_object_comparison.php:14 PhanPluginComparisonObjectOrdering Using comparison operator on possible object types \C138 and \C138 in ($c1 <=> $c2)
+src/138_suspicious_object_comparison.php:15 PhanTypeInvalidBitwiseBinaryOperator Invalid non-int/non-string operand provided to operator '|' between types \C138 and \C138

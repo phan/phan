@@ -229,7 +229,7 @@ class CLI
             foreach ($argv as $key => $chunk) {
                 $regex = '/^' . (isset($opt[1]) ? '--' : '-') . \preg_quote((string) $opt, '/') . '/';
 
-                if (in_array($chunk, is_array($value) ? $value : [$value])
+                if (in_array($chunk, is_array($value) ? $value : [$value], true)
                     && $argv[$key - 1][0] == '-'
                     || \preg_match($regex, $chunk)
                 ) {
@@ -1000,7 +1000,7 @@ class CLI
     private static function checkCanDaemonize(string $protocol, string $opt) : void
     {
         $opt = strlen($opt) >= 2 ? "--$opt" : "-$opt";
-        if (!in_array($protocol, \stream_get_transports())) {
+        if (!in_array($protocol, \stream_get_transports(), true)) {
             throw new UsageException("The $protocol:///path/to/file schema is not supported on this system, cannot create a daemon with $opt", 1);
         }
         if (!Config::getValue('language_server_use_pcntl_fallback') && !\function_exists('pcntl_fork')) {
@@ -1464,7 +1464,7 @@ EOB
         $short_options = \array_filter(array_map($trim, \str_split(self::GETOPT_SHORT_OPTIONS)));
         if (strlen($key) === 1) {
             $alternate = \ctype_lower($key) ? \strtoupper($key) : \strtolower($key);
-            if (in_array($alternate, $short_options)) {
+            if (in_array($alternate, $short_options, true)) {
                 return $generate_suggestion_text($alternate);
             }
             return '';
@@ -1520,7 +1520,7 @@ EOB
             return false;
         }
         $extension = \pathinfo($file_path, \PATHINFO_EXTENSION);
-        if (!$extension || !in_array($extension, $file_extensions)) {
+        if (!$extension || !in_array($extension, $file_extensions, true)) {
             return false;
         }
 

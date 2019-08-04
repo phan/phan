@@ -15,6 +15,12 @@ New features(Analysis):
 + Make `unset($this->prop)` make Phan infer that the property is unset in the current scope (and treat it like null) (only affects `$this`). (#3025)
   Emit `PhanPossiblyUnsetPropertyOfThis` if the property is read from without setting it.
 
+Plugins:
++ Add `StrictComparisonPlugin`, which warns about the following issue types:
+
+  1. Using `in_array` or `array_search` without specifying `$strict`. (`PhanPluginComparisonNotStrictInCall`)
+  2. Using comparison or weak equality operators when both sides are possibly objects. (`PhanPluginComparisonObjectEqualityNotStrict`, `PhanPluginComparisonObjectOrdering`)
+
 Bug fixes:
 + When a typed property has an incompatible default, don't infer the union type from the default. (#3024)
 

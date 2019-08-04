@@ -58,7 +58,7 @@ class NumericalComparisonVisitor extends PluginAwarePostAnalysisVisitor
         $right_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $right_node);
 
         // non numerical values are not allowed in the operator equal(==, !=)
-        if (in_array($node->flags, self::BINARY_EQUAL_OPERATORS)) {
+        if (in_array($node->flags, self::BINARY_EQUAL_OPERATORS, true)) {
             if (!$left_type->isNonNullNumberType() &&
                 !$right_type->isNonNullNumberType()
             ) {
@@ -69,7 +69,7 @@ class NumericalComparisonVisitor extends PluginAwarePostAnalysisVisitor
                 );
             }
             // numerical values are not allowed in the operator identical('===', '!==')
-        } elseif (in_array($node->flags, self::BINARY_IDENTICAL_OPERATORS)) {
+        } elseif (in_array($node->flags, self::BINARY_IDENTICAL_OPERATORS, true)) {
             if ($left_type->isNonNullNumberType() ||
                 $right_type->isNonNullNumberType()) {
                 // TODO: different name for this issue type?

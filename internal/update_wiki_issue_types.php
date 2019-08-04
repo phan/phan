@@ -87,7 +87,7 @@ EOT;
     {
         global $argv;
         if (count($argv) !== 1) {
-            if (count($argv) === 2 && in_array($argv[1], ['-v', '--verbose'])) {
+            if (count($argv) === 2 && in_array($argv[1], ['-v', '--verbose'], true)) {
                 self::$verbose = true;
             } else {
                 self::printUsageAndExit();

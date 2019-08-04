@@ -444,7 +444,7 @@ final class Builder
     {
         $this->checkCompatible('@var', Comment::HAS_VAR_ANNOTATION, $i);
         $comment_var = self::parameterFromCommentLine($line, true, $i);
-        if (\in_array($this->comment_type, Comment::FUNCTION_LIKE)) {
+        if (\in_array($this->comment_type, Comment::FUNCTION_LIKE, true)) {
             if ($comment_var->getName() !== '') {
                 $this->variable_list[] = $comment_var;
             } else {
@@ -636,7 +636,7 @@ final class Builder
             case 'phan-var':
                 $this->checkCompatible('@phan-var', Comment::HAS_VAR_ANNOTATION, $i);
                 $comment_var = $this->parameterFromCommentLine($line, true, $i);
-                if (\in_array($this->comment_type, Comment::FUNCTION_LIKE)) {
+                if (\in_array($this->comment_type, Comment::FUNCTION_LIKE, true)) {
                     if ($comment_var->getName() !== '') {
                         $this->phan_overrides['var'][] = $comment_var;
                     } else {

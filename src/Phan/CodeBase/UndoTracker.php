@@ -183,7 +183,7 @@ class UndoTracker
             } else {
                 $new_state = self::getFileState($path);
             }
-            if ($new_state !== $state || in_array($path, $reanalyze_files ?? [])) {
+            if ($new_state !== $state || in_array($path, $reanalyze_files ?? [], true)) {
                 $removed_file_list[] = $path;
                 $this->undoFileChanges($code_base, $path);
                 // TODO: This will call stat() twice as much as necessary for the modified files. Not important.

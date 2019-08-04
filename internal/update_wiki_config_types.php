@@ -223,7 +223,7 @@ class ConfigEntry
      */
     public function getCategoryIndex() : int
     {
-        $category_index = array_search($this->category, ConfigEntry::ORDER_OF_CATEGORIES);
+        $category_index = array_search($this->category, ConfigEntry::ORDER_OF_CATEGORIES, true);
         return is_int($category_index) ? $category_index : 99999;
     }
 
@@ -339,7 +339,7 @@ EOT;
     {
         global $argv;
         if (count($argv) !== 1) {
-            if (count($argv) === 2 && in_array($argv[1], ['-v', '--verbose'])) {
+            if (count($argv) === 2 && in_array($argv[1], ['-v', '--verbose'], true)) {
                 self::$verbose = true;
             } else {
                 self::printUsageAndExit();

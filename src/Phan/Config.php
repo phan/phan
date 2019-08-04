@@ -1383,7 +1383,7 @@ class Config
      */
     public static function isIssueFixingPluginEnabled() : bool
     {
-        return \in_array(__DIR__ . '/Plugin/Internal/IssueFixingPlugin.php', Config::getValue('plugins'));
+        return \in_array(__DIR__ . '/Plugin/Internal/IssueFixingPlugin.php', Config::getValue('plugins'), true);
     }
 
     /**
