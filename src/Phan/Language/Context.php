@@ -900,6 +900,7 @@ class Context extends FileRef
 
     /**
      * Analyzes the side effects of setting the type of $this->property to $type
+     * @suppress PhanUnreferencedPublicMethod this might be used in the future
      */
     public function withThisPropertySetToType(Property $property, UnionType $type) : Context
     {
@@ -988,16 +989,20 @@ class Context extends FileRef
             return null;
         }
 
-        $result = UnionType::empty();
+        $result = null;
         foreach ($types->getTypeSet() as $type) {
             if (!$type instanceof ArrayShapeType) {
                 return null;
             }
             $extra = $type->getFieldTypes()[$name] ?? null;
-            if (!$extra || $extra->isPossiblyUndefined()) {
+            if (!$extra || ($extra->isPossiblyUndefined() && !$extra->isDefinitelyUndefined())) {
                 return null;
             }
-            $result = $result->withUnionType($extra);
+            if ($result) {
+                $result = $result->withUnionType($extra);
+            } else {
+                $result = $extra;
+            }
         }
         return $result;
     }

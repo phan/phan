@@ -14,8 +14,10 @@ namespace Phan\Language;
  */
 class AnnotatedUnionType extends UnionType
 {
+    protected const DEFINITELY_UNDEFINED = 1;
+
     /**
-     * @var bool is this union type possibly undefined
+     * @var bool|1 is this union type possibly undefined
      * (e.g. a possibly undefined array shape offset)
      */
     protected $is_possibly_undefined = false;
@@ -31,13 +33,24 @@ class AnnotatedUnionType extends UnionType
         if (!$is_possibly_undefined) {
             return UnionType::of($this->getTypeSet(), $this->getRealTypeSet());
         }
-        if (!$this->is_possibly_undefined) {
-            return $this;
-        }
         $result = clone($this);
         $result->is_possibly_undefined = $is_possibly_undefined;
         return $result;
     }
+
+    /**
+     * @override
+     */
+    public function withIsDefinitelyUndefined() : UnionType
+    {
+        if ($this->is_possibly_undefined === self::DEFINITELY_UNDEFINED) {
+            return $this;
+        }
+        $result = clone($this);
+        $result->is_possibly_undefined = self::DEFINITELY_UNDEFINED;
+        return $result;
+    }
+
 
     public function asSingleScalarValueOrNull()
     {
@@ -65,7 +78,12 @@ class AnnotatedUnionType extends UnionType
 
     public function isPossiblyUndefined() : bool
     {
-        return $this->is_possibly_undefined;
+        return (bool) $this->is_possibly_undefined;
+    }
+
+    public function isDefinitelyUndefined() : bool
+    {
+        return $this->is_possibly_undefined === self::DEFINITELY_UNDEFINED;
     }
 
     public function __toString() : string

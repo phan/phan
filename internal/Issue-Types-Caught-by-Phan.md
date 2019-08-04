@@ -3245,6 +3245,14 @@ This issue will be emitted from the following code
 class F { function f() { $v = parent::f(); } }
 ```
 
+## PhanPossiblyUnsetPropertyOfThis
+
+```
+Attempting to read property {PROPERTY} which was unset in the current scope
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0742_dynamic_property_tracking.php.expected#L5) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0742_dynamic_property_tracking.php#L10).
+
 ## PhanRequiredTraitNotAdded
 
 This happens when a trait name is used in a trait adaptations clause, but that trait wasn't added to the class.

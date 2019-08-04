@@ -1461,4 +1461,9 @@ final class EmptyUnionType extends UnionType
     {
         return true;
     }
+
+    public function isDefinitelyUndefined() : bool
+    {
+        return false;
+    }
 }
