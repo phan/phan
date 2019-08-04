@@ -175,7 +175,7 @@ class SleepCheckerVisitor extends PluginAwarePostAnalysisVisitor
         }
 
         $kind = $expr_node->kind;
-        if (!\in_array($kind, [ast\AST_CONST, ast\AST_ARRAY, ast\AST_CLASS_CONST])) {
+        if (!\in_array($kind, [ast\AST_CONST, ast\AST_ARRAY, ast\AST_CLASS_CONST], true)) {
             return;
         }
 

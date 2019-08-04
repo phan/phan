@@ -362,7 +362,7 @@ class MarkupDescription
                 $saw_phpdoc_tag = true;
                 if (count($results) === 0) {
                     // Special cases:
-                    if (\in_array($comment_category, [Comment::ON_PROPERTY, Comment::ON_CONST])) {
+                    if (\in_array($comment_category, [Comment::ON_PROPERTY, Comment::ON_CONST], true)) {
                         // Treat `@var T description of T` as a valid single-line comment of constants and properties.
                         // Variables don't currently have associated comments
                         if (\preg_match('/^\s*@var\s/', $line) > 0) {
@@ -374,7 +374,7 @@ class MarkupDescription
                             }
                             $results = \array_merge($results, $new_lines);
                         }
-                    } elseif (\in_array($comment_category, Comment::FUNCTION_LIKE)) {
+                    } elseif (\in_array($comment_category, Comment::FUNCTION_LIKE, true)) {
                         // Treat `@return T description of return value` as a valid single-line comment of closures, functions, and methods.
                         // Variables don't currently have associated comments
                         if (\preg_match('/^\s*@return(\s|$)/', $line) > 0) {

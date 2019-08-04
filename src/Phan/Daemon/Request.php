@@ -261,7 +261,7 @@ class Request
 
         $factory = new PrinterFactory();
         $format = $this->request_config[self::PARAM_FORMAT] ?? 'json';
-        if (!in_array($format, $factory->getTypes())) {
+        if (!in_array($format, $factory->getTypes(), true)) {
             $this->sendJSONResponse([
                 "status" => self::STATUS_INVALID_FORMAT,
             ]);

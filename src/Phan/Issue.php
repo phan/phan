@@ -4649,14 +4649,14 @@ class Issue
         }
         // If this issue type has been suppressed in
         // the config, ignore it
-        if (\in_array($issue_type, Config::getValue('suppress_issue_types') ?? [])) {
+        if (\in_array($issue_type, Config::getValue('suppress_issue_types') ?? [], true)) {
             return true;
         }
         // If a white-list of allowed issue types is defined,
         // only emit issues on the white-list
         $whitelist_issue_types = Config::getValue('whitelist_issue_types') ?? [];
         if (\count($whitelist_issue_types) > 0 &&
-            !\in_array($issue_type, $whitelist_issue_types)) {
+            !\in_array($issue_type, $whitelist_issue_types, true)) {
             return true;
         }
 

@@ -427,7 +427,7 @@ EOB;
         }
 
         // Check for this first, since the option parser may also emit debug output in the future.
-        if (in_array('-v', $argv) || in_array('--verbose', $argv)) {
+        if (in_array('-v', $argv, true) || in_array('--verbose', $argv, true)) {
             PhanPHPLinter::$verbose = true;
             $this->verbose = true;
         }
@@ -528,7 +528,7 @@ EOB;
                     break;
                 case 'm':
                 case 'output-mode':
-                    if (!is_string($value) || !in_array($value, ['text', 'json', 'csv', 'codeclimate', 'checkstyle', 'pylint', 'phan_client'])) {
+                    if (!is_string($value) || !in_array($value, ['text', 'json', 'csv', 'codeclimate', 'checkstyle', 'pylint', 'phan_client'], true)) {
                         $this->usage("Expected --output-mode {text,json,csv,codeclimate,checkstyle,pylint}, but got " . json_encode($value), 1);
                         break;  // unreachable
                     }
@@ -549,7 +549,7 @@ EOB;
         }
         if (\is_array($this->temporary_file_map)) {
             foreach ($this->temporary_file_map as $original_path => $unused_temporary_path) {
-                if (!in_array($original_path, $this->file_list)) {
+                if (!in_array($original_path, $this->file_list, true)) {
                     $this->usage("Need to specify -l '$original_path' if a mapping is included", 1);
                 }
             }
@@ -570,7 +570,7 @@ EOB;
     private function checkCanConnectToDaemon($protocol)
     {
         $opt = $protocol === 'unix' ? '--daemonize-socket' : '--daemonize-tcp-port';
-        if (!in_array($protocol, stream_get_transports())) {
+        if (!in_array($protocol, stream_get_transports(), true)) {
             $this->usage("The $protocol:///path/to/file schema is not supported on this system, cannot connect to a daemon with $opt", 1);
         }
         if ($this->url !== null) {

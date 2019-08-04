@@ -198,7 +198,7 @@ function phan_error_handler(int $errno, string $errstr, string $errfile, int $er
         // Don't execute the PHP internal error handler.
         return true;
     }
-    if (in_array(basename($errfile), ['JsonMapper.php', 'Dispatcher.php'])) {
+    if (in_array(basename($errfile), ['JsonMapper.php', 'Dispatcher.php'], true)) {
         // TODO get rid of this once the minimum jsonmapper version is bumped to 1.5.2
         // for https://github.com/cweiske/jsonmapper/pull/130
         // and when php-advanced-json-rpc releases https://github.com/felixfbecker/php-advanced-json-rpc/pull/33

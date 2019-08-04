@@ -154,7 +154,7 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
         if (\array_key_exists($name, self::_BUILTIN_SUPERGLOBAL_TYPES)) {
             return true;
         }
-        return \in_array($name, Config::getValue('runkit_superglobals'));
+        return \in_array($name, Config::getValue('runkit_superglobals'), true);
     }
 
     /**
@@ -204,7 +204,7 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
         }
 
         if (\array_key_exists($name, Config::getValue('globals_type_map'))
-            || \in_array($name, Config::getValue('runkit_superglobals'))
+            || \in_array($name, Config::getValue('runkit_superglobals'), true)
         ) {
             $type_string = Config::getValue('globals_type_map')[$name] ?? '';
             // Want to allow 'resource' or 'mixed' as a type here,

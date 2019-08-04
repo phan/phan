@@ -64,7 +64,7 @@ class PropertyTypesAnalyzer
                         && !($type instanceof TemplateType)
                         && (
                             !$property->hasDefiningFQSEN()
-                            || $property->getDefiningFQSEN() == $property->getFQSEN()
+                            || $property->getDefiningFQSEN() === $property->getFQSEN()
                         )
                     ) {
                         Issue::maybeEmitWithParameters(

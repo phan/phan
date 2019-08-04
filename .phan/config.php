@@ -487,6 +487,8 @@ return [
 
         // This should only be enabled if the code being analyzed contains Phan plugins.
         'PhanSelfCheckPlugin',
+        // These are specific to Phan's coding style
+        '.phan/plugins/StrictComparisonPlugin.php',
 
         ////////////////////////////////////////////////////////////////////////
         // End plugins for Phan's self-analysis

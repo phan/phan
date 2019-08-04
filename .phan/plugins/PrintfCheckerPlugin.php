@@ -445,7 +445,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
                     self::ERR_UNTRANSLATED_NONEXISTENT
                 );
             }
-            $replacement_function_name = \in_array($function->getName(), ['vprintf', 'fprintf', 'vfprintf']) ? 'fwrite' : 'echo';
+            $replacement_function_name = \in_array($function->getName(), ['vprintf', 'fprintf', 'vfprintf'], true) ? 'fwrite' : 'echo';
             $emit_issue(
                 "PhanPluginPrintfNoArguments",
                 "No format string arguments are given for {STRING_LITERAL}, consider using {FUNCTION} instead",

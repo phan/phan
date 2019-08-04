@@ -137,5 +137,6 @@ return [
         'InlineHTMLPlugin',
         'PossiblyStaticMethodPlugin',
         'EmptyStatementListPlugin',
+        'StrictComparisonPlugin',
     ],
 ];

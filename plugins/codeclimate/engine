@@ -73,8 +73,7 @@ call_user_func(static function () use ($code_base) : void {
     $queue_file = function (string $file_path) use (&$include_paths, $file_extensions) : void {
         $file_info = new SplFileInfo($file_path);
 
-        if (in_array($file_info->getExtension(), $file_extensions))
-        {
+        if (in_array($file_info->getExtension(), $file_extensions, true)) {
             $include_paths[] = realpath($file_path);
         }
     };

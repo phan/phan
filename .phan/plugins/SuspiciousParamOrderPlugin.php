@@ -219,7 +219,7 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
      */
     private static function normalizeCycle(array $values, int $next) : array
     {
-        $pos = array_search($next, $values);
+        $pos = array_search($next, $values, true);
         $values = array_slice($values, $pos ?: 0);
         $min_pos = 0;
         foreach ($values as $i => $value) {
@@ -246,7 +246,7 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
                 $values[] = $key;
                 $next = $destination_map[$key];
                 unset($destination_map[$key]);
-                if (in_array($next, $values)) {
+                if (in_array($next, $values, true)) {
                     $values = self::normalizeCycle($values, $next);
                     if (count($values) >= 2) {
                         $result[] = $values;

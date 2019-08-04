@@ -288,6 +288,9 @@ EOT;
                 'EmptyStatementListPlugin',
             ];
         }
+        if ($is_strongest_level) {
+            $plugins[] = 'StrictComparisonPlugin';
+        }
 
         $comments = [];
         [$target_php_version, $comments['target_php_version']] = self::determineTargetPHPVersion($composer_settings);

@@ -390,6 +390,17 @@ Currently, this only checks **real** (not phpdoc) param/return annotations.
 - **PhanPluginPreferNamespaceUseParamType**: `Could write param type of ${PARAMETER} of {FUNCTION} as {TYPE} instead of {TYPE}`
 - **PhanPluginPreferNamespaceUseReturnType**: `Could write return type of {FUNCTION} as {TYPE} instead of {TYPE}`
 
+##### StrictComparisonPlugin.php
+
+This plugin warns about non-strict comparisons. It warns about the following issue types:
+
+1. Using `in_array` and `array_search` without explicitly passing true or false to `$strict`.
+2. Using equality or comparison operators when both sides are possible objects.
+
+- **PhanPluginComparisonNotStrictInCall**: `Expected {FUNCTION} to be called with a third argument for {PARAMETER} (either true or false)`
+- **PhanPluginComparisonObjectEqualityNotStrict**: `Saw a weak equality check on possible object types {TYPE} and {TYPE} in {CODE}`
+- **PhanPluginComparisonObjectOrdering**: `Saw a weak equality check on possible object types {TYPE} and {TYPE} in {CODE}`
+
 ### 4. Demo plugins:
 
 These files demonstrate plugins for Phan.

@@ -86,7 +86,7 @@ class UnusedSuppressionPlugin extends PluginV3 implements
             if (0 !== $use_count) {
                 continue;
             }
-            if (in_array($issue_type, self::getUnusedSuppressionIgnoreList())) {
+            if (in_array($issue_type, self::getUnusedSuppressionIgnoreList(), true)) {
                 continue;
             }
             self::emitIssue(
