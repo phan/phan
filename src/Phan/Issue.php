@@ -80,7 +80,8 @@ class Issue
     const EmptyFQSENInCallable      = 'PhanEmptyFQSENInCallable';
     const InvalidFQSENInCallable    = 'PhanInvalidFQSENInCallable';
     const EmptyFQSENInClasslike     = 'PhanEmptyFQSENInClasslike';
-    const InvalidFQSENInClasslike     = 'PhanInvalidFQSENInClasslike';
+    const InvalidFQSENInClasslike   = 'PhanInvalidFQSENInClasslike';
+    const PossiblyUnsetPropertyOfThis = 'PhanPossiblyUnsetPropertyOfThis';
 
     // Issue::CATEGORY_TYPE
     const NonClassMethodCall                = 'PhanNonClassMethodCall';
@@ -1179,6 +1180,14 @@ class Issue
                 "Possible attempt to access missing magic method {FUNCTIONLIKE} of '{CLASS}'",
                 self::REMEDIATION_B,
                 11045
+            ),
+            new Issue(
+                self::PossiblyUnsetPropertyOfThis,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_LOW,
+                'Attempting to read property {PROPERTY} which was unset in the current scope',
+                self::REMEDIATION_B,
+                11048
             ),
 
             // Issue::CATEGORY_ANALYSIS

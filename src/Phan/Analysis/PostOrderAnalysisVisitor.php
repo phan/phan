@@ -224,7 +224,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         } elseif ($kind === ast\AST_DIM) {
             $this->analyzeUnsetDim($var_node);
         } elseif ($kind === ast\AST_PROP) {
-            $this->analyzeUnsetProp($var_node);
+            return $this->analyzeUnsetProp($var_node);
         }
         return $context;
     }
@@ -289,19 +289,23 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * @see UnionTypeVisitor::resolveArrayShapeElementTypes()
      * @see UnionTypeVisitor::visitDim()
      */
-    private function analyzeUnsetProp(Node $node) : void
+    private function analyzeUnsetProp(Node $node) : Context
     {
         $expr_node = $node->children['expr'];
+        $context = $this->context;
         if (!($expr_node instanceof Node)) {
             // php -l would warn
-            return;
+            return $context;
         }
         $prop_name = $node->children['prop'];
         if (!\is_string($prop_name)) {
             $prop_name = (new ContextNode($this->code_base, $this->context, $prop_name))->getEquivalentPHPScalarValue();
             if (!\is_string($prop_name)) {
-                return;
+                return $context;
             }
+        }
+        if ($expr_node->kind === \ast\AST_VAR && $expr_node->children['name'] === 'this' && $context === $this->context) {
+            $context = $context->withThisPropertySetToTypeByName($prop_name, NullType::instance(false)->asPHPDocUnionType()->withIsDefinitelyUndefined());
         }
 
         $union_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $expr_node)->withStaticResolvedInContext($this->context);
@@ -316,7 +320,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 // NOTE: We deliberately emit this issue whether or not the access is to a public or private variable,
                 // because unsetting a private variable at runtime is also a (failed) attempt to unset a declared property.
                 $prop = $class->getPropertyByName($this->code_base, $prop_name);
-                if ($prop->isFromPHPDoc() || $prop->isDynamicProperty()) {
+                if ($prop->isFromPHPDoc()) {
+                    // TODO: Warn if __get is defined but __unset isn't defined?
+                    continue;
+                }
+                if ($prop->isDynamicProperty()) {
                     continue;
                 }
                 $this->emitIssue(
@@ -329,6 +337,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 );
             }
         }
+        return $context;
     }
 
     /**

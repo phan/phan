@@ -149,7 +149,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
                 return null;
             }
             $new_specs = ConversionSpec::extractAll($str);
-            if (is_array($known_specs)) {
+            if (\is_array($known_specs)) {
                 if ($known_specs != $new_specs) {
                     // We have different specs, e.g. %s and %d, %1$s and %2$s, etc.
                     // TODO: Could allow differences in padding or alignment

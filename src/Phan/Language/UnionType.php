@@ -4140,12 +4140,35 @@ class UnionType implements Serializable
     }
 
     /**
+     * Mark this union type as being possibly definitely undefined.
+     * This is used for properties (of $this) and is planned for local variables.
+     *
+     * Base implementation. Overridden by AnnotatedUnionType.
+     */
+    public function withIsDefinitelyUndefined() : UnionType
+    {
+        $result = new AnnotatedUnionType($this->getTypeSet(), true, []);
+        $result->is_possibly_undefined = AnnotatedUnionType::DEFINITELY_UNDEFINED;
+        return $result;
+    }
+
+    /**
      * Base implementation. Overridden by AnnotatedUnionType.
      * Used for fields of array shapes.
      *
      * This is distinct from null - The array shape offset potentially doesn't exist at all, which is different from existing and being null.
      */
     public function isPossiblyUndefined() : bool
+    {
+        return false;
+    }
+
+    /**
+     * Base implementation. Overridden by AnnotatedUnionType.
+     *
+     * Used for properties(tracking unset of $this) and planned for variables.
+     */
+    public function isDefinitelyUndefined() : bool
     {
         return false;
     }

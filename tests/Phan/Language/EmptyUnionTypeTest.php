@@ -42,6 +42,8 @@ final class EmptyUnionTypeTest extends BaseTest
         'withIsPossiblyUndefined',
         'isPossiblyUndefined',
         'getIsPossiblyUndefined',  // alias of isPossiblyUndefined
+        'isDefinitelyUndefined',
+        'withIsDefinitelyUndefined',
     ];
 
     public function testMethods() : void

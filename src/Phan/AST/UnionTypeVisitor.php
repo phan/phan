@@ -2029,6 +2029,8 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     private function analyzeProp(Node $node, bool $is_static) : UnionType
     {
+        // Either expr(instance) or class(static) is set
+        $expr_node = $node->children['expr'] ?? null;
         try {
             $property = (new ContextNode(
                 $this->code_base,
@@ -2046,14 +2048,13 @@ class UnionTypeVisitor extends AnalysisVisitor
                 );
             }
 
-            $expr_node = $node->children['expr'] ?? null;
             if ($expr_node instanceof Node &&
                     $expr_node->kind === ast\AST_VAR &&
                     $expr_node->children['name'] === 'this') {
                 $override_union_type = $this->context->getThisPropertyIfOverridden($property->getName());
                 if ($override_union_type) {
-                    // There was an earlier expression such as `$this->prop = 2;`
-                    // fwrite(STDERR, "Saw override '$override_union_type' for $property\n");
+                    $this->warnIfPossiblyUndefinedProperty($node, $property->getName(), $override_union_type);
+                    // There was an earlier assignment in scope such as `$this->prop = 2;`
                     return $override_union_type;
                 }
             }
@@ -2112,8 +2113,32 @@ class UnionTypeVisitor extends AnalysisVisitor
             // Swallow it. There are some constructs that we
             // just can't figure out.
         }
+        $property_name = $property_name ?? $node->children['prop'];
+        if (\is_string($property_name) && $expr_node instanceof Node &&
+                $expr_node->kind === ast\AST_VAR &&
+                $expr_node->children['name'] === 'this') {
+            $override_union_type = $this->context->getThisPropertyIfOverridden($property_name);
+            if ($override_union_type) {
+                $this->warnIfPossiblyUndefinedProperty($node, $property_name, $override_union_type);
+                // There was an earlier expression such as `$this->prop = 2;`
+                // fwrite(STDERR, "Saw override '$override_union_type' for $property\n");
+                return $override_union_type;
+            }
+        }
 
         return UnionType::empty();
+    }
+
+    private function warnIfPossiblyUndefinedProperty(Node $node, string $prop_name, UnionType $union_type) : void
+    {
+        if (!$union_type->isPossiblyUndefined()) {
+            return;
+        }
+        $this->emitIssue(
+            Issue::PossiblyUnsetPropertyOfThis,
+            $node->lineno,
+            '$this->' . $prop_name
+        );
     }
 
     /**

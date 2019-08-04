@@ -730,10 +730,19 @@ class AssignmentVisitor extends AnalysisVisitor
         }
 
         $property_name = $node->children['prop'];
+        if ($property_name instanceof Node) {
+            $property_name = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $property_name)->asSingleScalarValueOrNull();
+        }
 
         // Things like $foo->$bar
         if (!\is_string($property_name)) {
             return $this->context;
+        }
+        if ($this->dim_depth === 0 &&
+                ($node->children['expr']->kind ?? null) === \ast\AST_VAR &&
+                $node->children['expr']->children['name'] === 'this') {
+            // TODO: Implement merging for arrays with $this->prop['field'] = 'offset' and handle ArrayAccess
+            $this->handleThisPropertyAssignmentInLocalScopeByName($property_name);
         }
 
         foreach ($class_list as $clazz) {
@@ -873,9 +882,6 @@ class AssignmentVisitor extends AnalysisVisitor
             // stdClass is an exception to this, for issues such as https://github.com/phan/phan/pull/700
             return $this->context;
         } else {
-            if (($node->children['expr']->kind ?? null) === \ast\AST_VAR && $node->children['expr']->children['name'] === 'this') {
-                $this->handleThisPropertyAssignmentInLocalScope($property);
-            }
             // This is a regular assignment, not an assignment to an offset
             if (!$resolved_right_type->canCastToExpandedUnionType(
                 $property_union_type,
@@ -934,11 +940,19 @@ class AssignmentVisitor extends AnalysisVisitor
     /**
      * Modifies $this->context (if needed) to track the assignment to a property of $this within a function-like.
      * This handles conditional branches.
+     * @param string|Node|int|float $prop_name
      */
-    private function handleThisPropertyAssignmentInLocalScope(Property $property) : void
+    private function handleThisPropertyAssignmentInLocalScopeByName($prop_name) : void
     {
-        $this->context = $this->context->withThisPropertySetToType($property, $this->right_type);
+        if ($prop_name instanceof Node) {
+            $prop_name = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $prop_name)->asSingleScalarValueOrNull();
+        }
+        if (!\is_string($prop_name)) {
+            return;
+        }
+        $this->context = $this->context->withThisPropertySetToTypeByName($prop_name, $this->right_type);
     }
+
 
     private function analyzeAssignmentToReadOnlyProperty(Property $property, Node $node) : void
     {

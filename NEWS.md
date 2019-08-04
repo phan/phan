@@ -10,6 +10,10 @@ New features(Analysis):
 + Emit `PhanCompatibleTypedProperty` if the target php version is less than 7.4 but typed properties are used.
 + Emit `PhanTypeMismatchPropertyReal` instead of `PhanTypeMismatchProperty` if the properties have real types that are incompatible with the inferred type of the assignment.
 + Stop warning about `(float) $int` being redundant - there are small differences in how ints and floats are treated by `serialize`, `var_export`, `is_int`, etc.
++ Treat all assignments to `$this->prop` in a scope the same way (for real, dynamic, and magic properties)
+  Previously, Phan would not track the effects of some assignments to dynamic properties.
++ Make `unset($this->prop)` make Phan infer that the property is unset in the current scope (and treat it like null) (only affects `$this`). (#3025)
+  Emit `PhanPossiblyUnsetPropertyOfThis` if the property is read from without setting it.
 
 Bug fixes:
 + When a typed property has an incompatible default, don't infer the union type from the default. (#3024)
