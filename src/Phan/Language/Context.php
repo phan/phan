@@ -900,6 +900,7 @@ class Context extends FileRef
 
     /**
      * Analyzes the side effects of setting the type of $this->property to $type
+     * @suppress PhanUnreferencedPublicMethod this might be used in the future
      */
     public function withThisPropertySetToType(Property $property, UnionType $type) : Context
     {
