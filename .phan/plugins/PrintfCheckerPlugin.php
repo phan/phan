@@ -144,10 +144,11 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
         }
         $known_specs = null;
         $first_str = null;
-        foreach ($scalar_union_types as $str) {
-            if (!is_string($str)) {
+        foreach ($union_type->getTypeSet() as $type) {
+            if (!$type instanceof LiteralStringType || $type->isNullable()) {
                 return null;
             }
+            $str = $type->getValue();
             $new_specs = ConversionSpec::extractAll($str);
             if (\is_array($known_specs)) {
                 if ($known_specs != $new_specs) {
