@@ -24,6 +24,7 @@ Plugins:
 
 Bug fixes:
 + When a typed property has an incompatible default, don't infer the union type from the default. (#3024)
++ Don't emit `PhanTypeMismatchProperties` for assignments to dynamic properties. (#3042)
 
 Jul 30 2019, Phan 2.2.8
 -----------------------
