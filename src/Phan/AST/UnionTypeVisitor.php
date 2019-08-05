@@ -1545,17 +1545,19 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
         if ($resulting_element_type === false) {
             // XXX not sure what to do here. For now, just return null and only warn in cases where requested to.
-            $exception = new IssueException(
-                Issue::fromType(Issue::TypeInvalidDimOffset)(
-                    $this->context->getFile(),
-                    $dim_node->lineno ?? $node->lineno,
-                    [StringUtil::jsonEncode($dim_value), (string)$union_type]
-                )
-            );
-            if ($this->should_catch_issue_exception) {
-                Issue::maybeEmitInstance($this->code_base, $this->context, $exception->getIssueInstance());
-            } else {
-                throw $exception;
+            if (!($node->flags & self::FLAG_IGNORE_NULLABLE)) {
+                $exception = new IssueException(
+                    Issue::fromType(Issue::TypeInvalidDimOffset)(
+                        $this->context->getFile(),
+                        $dim_node->lineno ?? $node->lineno,
+                        [StringUtil::jsonEncode($dim_value), (string)$union_type]
+                    )
+                );
+                if ($this->should_catch_issue_exception) {
+                    Issue::maybeEmitInstance($this->code_base, $this->context, $exception->getIssueInstance());
+                } else {
+                    throw $exception;
+                }
             }
             // $union_type is exclusively array shape types, but those don't contain the field $dim_value.
             // It's undefined (which becomes null)
