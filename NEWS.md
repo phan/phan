@@ -22,6 +22,9 @@ Plugins:
 
   1. Using `in_array` or `array_search` without specifying `$strict`. (`PhanPluginComparisonNotStrictInCall`)
   2. Using comparison or weak equality operators when both sides are possibly objects. (`PhanPluginComparisonObjectEqualityNotStrict`, `PhanPluginComparisonObjectOrdering`)
++ Don't warn in `EmptyStatementListPlugin` if a TODO/FIXME/"Deliberately empty" comment is seen around the empty statement list. (#3036)
+  (This may miss some TODOs due to `php-ast` not providing the end line numbers)
+  The setting `'plugin_config' => ['empty_statement_list_ignore_todos' => true]` can be used to make it unconditionally warn about empty statement lists.
 
 Bug fixes:
 + When a typed property has an incompatible default, don't infer the union type from the default. (#3024)

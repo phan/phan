@@ -450,6 +450,9 @@ return [
 
         // blacklist of methods to warn about for HasPHPDocPlugin
         'has_phpdoc_method_ignore_regex' => '@^Phan\\\\Tests\\\\.*::(test.*|.*Provider)$@',
+
+        // If true, then never allow empty statement lists, even if there is a TODO/FIXME/"deliberately empty" comment.
+        'empty_statement_list_ignore_todos' => true,
     ],
 
     // A list of plugin files to execute
