@@ -15,6 +15,7 @@ New features(Analysis):
 + Make `unset($this->prop)` make Phan infer that the property is unset in the current scope (and treat it like null) (only affects `$this`). (#3025)
   Emit `PhanPossiblyUnsetPropertyOfThis` if the property is read from without setting it.
 + Don't emit `PhanTypeArraySuspiciousNull` when array access is used with the null coalescing operator. (#3032)
++ Don't emit `PhanTypeInvalidDimOffset` when array access is used with the null coalescing operator. (#2123)
 
 Plugins:
 + Add `StrictComparisonPlugin`, which warns about the following issue types:
