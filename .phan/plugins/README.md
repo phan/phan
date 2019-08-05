@@ -182,6 +182,10 @@ This plugin will make Phan infer side effects from calls to some of the helper m
 This file checks for empty statement lists in loops/branches.
 Due to Phan's AST rewriting for easier analysis, this may miss some edge cases for if/elseif.
 
+By default, this plugin won't warn if it can find a TODO/FIXME/"Deliberately empty" comment around the empty statement list (case insensitive).
+(This may miss some TODOs due to `php-ast` not providing the end line numbers)
+The setting `'plugin_config' => ['empty_statement_list_ignore_todos' => true]` can be used to make it unconditionally warn about empty statement lists.
+
 - **PhanPluginEmptyStatementDoWhileLoop** `Empty statement list statement detected for the do-while loop`
 - **PhanPluginEmptyStatementForLoop** `Empty statement list statement detected for the for loop`
 - **PhanPluginEmptyStatementForeachLoop** `Empty statement list statement detected for the foreach loop`
