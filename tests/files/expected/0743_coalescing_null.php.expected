@@ -1,0 +1,3 @@
+%s:5 PhanCoalescingAlwaysNull Using $a[0] of type null as the left hand side of a null coalescing (??) operation. The left hand side may be unnecessary.
+%s:6 PhanTypeArraySuspiciousNull Suspicious array access to null
+%s:9 PhanTypeArraySuspiciousNull Suspicious array access to null

@@ -1453,10 +1453,12 @@ class UnionTypeVisitor extends AnalysisVisitor
         // If the only type is null, we don't know what
         // accessed items will be
         if ($union_type->isType($null_type)) {
-            $this->emitIssue(
-                Issue::TypeArraySuspiciousNull,
-                $node->lineno
-            );
+            if (!($node->flags & self::FLAG_IGNORE_NULLABLE)) {
+                $this->emitIssue(
+                    Issue::TypeArraySuspiciousNull,
+                    $node->lineno
+                );
+            }
             if ($union_type->getRealUnionType()->isNull()) {
                 return NullType::instance(false)->asRealUnionType();
             }
