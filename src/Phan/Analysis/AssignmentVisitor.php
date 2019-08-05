@@ -889,6 +889,7 @@ class AssignmentVisitor extends AnalysisVisitor
             )
                 && !($resolved_right_type->hasTypeInBoolFamily() && $property_union_type->hasTypeInBoolFamily())
                 && !$clazz->hasDynamicProperties($this->code_base)
+                && !$property->isDynamicProperty()
             ) {
                 if ($resolved_right_type->nonNullableClone()->canCastToExpandedUnionType($property_union_type, $this->code_base) &&
                         !$resolved_right_type->isType(NullType::instance(false))) {
