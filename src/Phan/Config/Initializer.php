@@ -2,7 +2,6 @@
 
 namespace Phan\Config;
 
-use ast\Node;
 use Closure;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\VersionParser;
@@ -564,9 +563,6 @@ EOT;
                 $contents,
                 true
             );
-            if (!($ast instanceof Node)) {
-                return false;
-            }
             $child_nodes = $ast->children;
             if (count($child_nodes) !== 1) {
                 return true;

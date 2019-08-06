@@ -229,6 +229,8 @@ class CodeBase
         $this->addClassesByNames($internal_interface_name_list);
         $this->addClassesByNames($internal_trait_name_list);
         $this->addGlobalConstantsByNames($internal_constant_name_list);
+        // These are keywords that Phan expects to always exist - make sure to add them even if they weren't provided.
+        $this->addGlobalConstantsByNames(['true', 'false', 'null']);
         // We initialize the FQSENs early on so that they show up
         // in the proper casing.
         $this->addInternalFunctionsByNames($internal_function_name_list);
@@ -1530,7 +1532,7 @@ class CodeBase
         // Unit tests call this on every test case. Cache the **internal** constants in a static variable for efficiency; those won't change.
         static $constant_name_list = null;
         if ($constant_name_list === null) {
-            // 'true', 'false', and 'null' aren't actually defined constants, they're keywords? Add them so that analysis won't break.
+            // 'true', 'false', and 'null' aren't actually defined constants, they're keywords? Add them because anything using AST_CONST would expect them to exist.
             $constant_name_list = \array_keys(\array_merge(['true' => true, 'false' => false, 'null' => null], ...\array_values(
                 \array_diff_key(\get_defined_constants(true), ['user' => []])
             )));

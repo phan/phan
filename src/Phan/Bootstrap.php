@@ -258,3 +258,7 @@ if (!class_exists(CompileError::class)) {
     {
     }
 }
+
+if (!function_exists('spl_object_id')) {
+    require_once dirname(__DIR__) . '/spl_object_id.php';
+}
