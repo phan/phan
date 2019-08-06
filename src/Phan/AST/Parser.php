@@ -96,7 +96,7 @@ class Parser
         string $file_path,
         string $file_contents,
         bool $suppress_parse_errors
-    ) : ?Node {
+    ) : Node {
         try {
             // This will choose the parser to use based on the config and $file_path
             // (For "Go To Definition", one of the files will have a slower parser which records the requested AST node)
@@ -125,7 +125,7 @@ class Parser
         $original_error_reporting = error_reporting();
         error_reporting($original_error_reporting & ~\E_COMPILE_WARNING);
         $__no_echo_phan_errors = static function (int $errno, string $errstr, string $unused_errfile, int $errline) use ($code_base, $context) : bool {
-            if ($errno == \E_DEPRECATED && \preg_match('/Version.*is deprecated/i', $errstr)) {
+            if ($errno == E_DEPRECATED && preg_match('/Version.*is deprecated/i', $errstr)) {
                 return false;
             }
             // Catch errors such as E_DEPRECATED in php 7.4 for the (real) cast.
@@ -170,7 +170,7 @@ class Parser
         string $file_contents,
         bool $suppress_parse_errors,
         Error $native_parse_error
-    ) : ?Node {
+    ) : Node {
         if (!$suppress_parse_errors) {
             self::emitSyntaxErrorForNativeParseError($code_base, $context, $file_path, $file_contents, $native_parse_error);
         }
@@ -269,7 +269,7 @@ class Parser
      * @param array<int,Diagnostic> &$errors @phan-output-reference
      * @throws ParseException
      */
-    public static function parseCodePolyfill(CodeBase $code_base, Context $context, string $file_path, string $file_contents, bool $suppress_parse_errors, ?Request $request, array &$errors = []) : ?Node
+    public static function parseCodePolyfill(CodeBase $code_base, Context $context, string $file_path, string $file_contents, bool $suppress_parse_errors, ?Request $request, array &$errors = []) : Node
     {
         $converter = self::createConverter($file_path, $file_contents, $request);
         $converter->setPHPVersionId(Config::get_closest_target_php_version_id());

@@ -121,19 +121,6 @@ class Analysis
             return $context;
         }
 
-        if (!$node) {
-            // php-ast would return an empty node for 0 byte files in older releases.
-            Issue::maybeEmit(
-                $code_base,
-                $context,
-                Issue::EmptyFile,
-                0,
-                $original_file_path
-            );
-
-            return $context;
-        }
-
         if (Config::getValue('simplify_ast')) {
             try {
                 // Transform the original AST, and if successful, then analyze the new AST instead of the original
@@ -516,18 +503,6 @@ class Analysis
             return $context;
         } catch (CompileError $_) {
             // Issue::SyntaxError was already emitted.
-            return $context;
-        }
-
-        // Ensure we have some content
-        if (!$node) {
-            Issue::maybeEmit(
-                $code_base,
-                $context,
-                Issue::EmptyFile,
-                0,
-                $file_path
-            );
             return $context;
         }
 
