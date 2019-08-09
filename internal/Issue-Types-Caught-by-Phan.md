@@ -2986,7 +2986,7 @@ Returning type {TYPE} but {FUNCTIONLIKE} is declared to return {TYPE}
 This issue is emitted from the following code
 
 ```php
-class G { function f() : int { return 'string'; } }
+class G { /** @param string $s */ function f($s) : int { return $s; } }
 ```
 
 ## PhanTypeMismatchReturnNullable
@@ -2996,6 +2996,28 @@ Returning type {TYPE} but {FUNCTIONLIKE} is declared to return {TYPE} (expected 
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0656_nullable_return.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/files/src/0656_nullable_return.php#L4).
+
+## PhanTypeMismatchReturnReal
+
+This is a more severe version of `PhanTypeMismatchReturn` for code that Phan infers is likely to throw an Error at runtime.
+This ignores some configuration settings allowing nulls to cast to other types, etc.
+It is emitted instead of `PhanTypeMismatchReturn` under the following conditions:
+
+- Phan infers real types for both the returned expression and the function's signature
+- The union type of the returned expression doesn't have any types that are partially compatible with the return type from the signature.
+- If `strict_types` isn't enabled, it won't be emitted if the returned expression could be a non-null scalar and the declared return type has any scalars.
+
+```
+Returning type {TYPE}{DETAILS} but {FUNCTIONLIKE} is declared to return {TYPE}{DETAILS}
+```
+
+This issue is emitted from the following code
+
+```php
+class G { function f() : int { return 'string'; } }
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/rasmus_files/expected/0006_var_combo.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/rasmus_files/src/0006_var_combo.php#L3).
 
 ## PhanTypeMismatchUnpackKey
 

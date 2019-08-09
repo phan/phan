@@ -1,2 +1,2 @@
-%s:4 PhanTypeMismatchReturn Returning type array{0:1,1:2,2:3} but test() is declared to return int
+%s:4 PhanTypeMismatchReturnReal Returning type array{0:1,1:2,2:3} but test() is declared to return int
 %s:13 PhanTypeMismatchReturn Returning type 1.5 but test3() is declared to return int

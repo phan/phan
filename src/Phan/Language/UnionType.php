@@ -2272,6 +2272,35 @@ class UnionType implements Serializable
     }
 
     /**
+     * Used for deciding whether to emit PhanTypeMismatchReturnReal.
+     * Precondition: The source and target types are non-empty.
+     *
+     * - Doesn't allow null or void to cast to $other even if with null casting allowed in config,
+     *   because that would always throw at runtime
+     * - The strictness (e.g. allowing casts from string to bool) depends on the strict_types setting of the Context from which the source type was found.
+     */
+    public function canCastToDeclaredType(CodeBase $code_base, Context $context, UnionType $other) : bool
+    {
+        if ($this->isNull()) {
+            return $other->containsNullable();
+        }
+        if ($this->hasAnyTypeOverlap($code_base, $other)) {
+            return true;
+        }
+        foreach ($other->getTypeSet() as $other_type) {
+            // allow classes to cast to interfaces outside of the class hierarchy, etc.
+            if ($other_type->isPossiblyObject() && $this->canPossiblyCastToClass($code_base, $other_type)) {
+                return true;
+            }
+        }
+        if (!$context->isStrictTypes()) {
+            // Allow scalar types (except null) to cast to other scalars
+            return !$other->scalarTypes()->isEmpty() && !$this->scalarTypes()->nonNullableClone()->isEmpty();
+        }
+        return false;
+    }
+
+    /**
      * @return bool
      * True if all types in this union are definitely scalars
      * @see scalarTypes

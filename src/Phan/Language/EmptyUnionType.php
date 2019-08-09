@@ -1380,6 +1380,11 @@ final class EmptyUnionType extends UnionType
         return true;
     }
 
+    public function canCastToDeclaredType(CodeBase $code_base, Context $context, UnionType $other) : bool
+    {
+        return true;
+    }
+
     /**
      * @param ?array<int,Type> $real_type_set
      */

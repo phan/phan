@@ -141,7 +141,7 @@ foreach (STDIN as $i) {}
 function f3(int $p = false) {}
 
 // Issue::PhanTypeMismatchReturn
-class C8 { function f() : int { return 'string'; } }
+class C8 { /** @param string $s */ function f($s) : int { return $s; } }
 
 // Issue::PhanTypeMissingReturn
 class C9 { function f() : int {} }
