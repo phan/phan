@@ -1,41 +1,41 @@
-%s:7 PhanTypeMismatchArgument Argument 1 ($x) is float|int but \expect_string_298() takes string defined at %s:3
+%s:7 PhanTypeMismatchArgumentReal Argument 1 ($x) is float|int (real type array|float|int) but \expect_string_298() takes string defined at %s:3
 %s:10 PhanTypeMismatchArgument Argument 1 ($x) is string but \expect_int_298() takes int defined at %s:4
-%s:11 PhanTypeMismatchArgument Argument 1 ($x) is 3 but \expect_string_298() takes string defined at %s:3
-%s:12 PhanTypeMismatchArgument Argument 1 ($x) is bool but \expect_string_298() takes string defined at %s:3
-%s:13 PhanTypeMismatchArgument Argument 1 ($x) is bool but \expect_int_298() takes int defined at %s:4
-%s:14 PhanTypeMismatchArgument Argument 1 ($x) is bool but \expect_int_298() takes int defined at %s:4
-%s:15 PhanTypeMismatchArgument Argument 1 ($x) is '01' but \expect_int_298() takes int defined at %s:4
+%s:11 PhanTypeMismatchArgumentReal Argument 1 ($x) is 3 but \expect_string_298() takes string defined at %s:3
+%s:12 PhanTypeMismatchArgumentReal Argument 1 ($x) is bool but \expect_string_298() takes string defined at %s:3
+%s:13 PhanTypeMismatchArgumentReal Argument 1 ($x) is bool but \expect_int_298() takes int defined at %s:4
+%s:14 PhanTypeMismatchArgumentReal Argument 1 ($x) is bool but \expect_int_298() takes int defined at %s:4
+%s:15 PhanTypeMismatchArgumentReal Argument 1 ($x) is '01' but \expect_int_298() takes int defined at %s:4
 %s:16 PhanTypeMismatchArgument Argument 1 ($x) is int but \expect_string_298() takes string defined at %s:3
 %s:17 PhanSuspiciousValueComparison Suspicious attempt to compare 4 of type 4 to 2 of type 2 with operator '=='
-%s:17 PhanTypeMismatchArgument Argument 1 ($x) is bool but \expect_string_298() takes string defined at %s:3
+%s:17 PhanTypeMismatchArgumentReal Argument 1 ($x) is bool but \expect_string_298() takes string defined at %s:3
 %s:18 PhanImpossibleTypeComparison Impossible attempt to check if 4 of type 4 is identical to 2 of type 2
-%s:18 PhanTypeMismatchArgument Argument 1 ($x) is bool but \expect_string_298() takes string defined at %s:3
+%s:18 PhanTypeMismatchArgumentReal Argument 1 ($x) is bool but \expect_string_298() takes string defined at %s:3
 %s:19 PhanSuspiciousValueComparison Suspicious attempt to compare 4 of type 4 to 2 of type 2 with operator '!='
-%s:19 PhanTypeMismatchArgument Argument 1 ($x) is bool but \expect_string_298() takes string defined at %s:3
+%s:19 PhanTypeMismatchArgumentReal Argument 1 ($x) is bool but \expect_string_298() takes string defined at %s:3
 %s:20 PhanImpossibleTypeComparison Impossible attempt to check if 4 of type 4 is identical to 2 of type 2
-%s:20 PhanTypeMismatchArgument Argument 1 ($x) is bool but \expect_string_298() takes string defined at %s:3
+%s:20 PhanTypeMismatchArgumentReal Argument 1 ($x) is bool but \expect_string_298() takes string defined at %s:3
 %s:21 PhanSuspiciousValueComparison Suspicious attempt to compare 4 of type 4 to 2 of type 2 with operator '<'
-%s:21 PhanTypeMismatchArgument Argument 1 ($x) is bool but \expect_string_298() takes string defined at %s:3
+%s:21 PhanTypeMismatchArgumentReal Argument 1 ($x) is bool but \expect_string_298() takes string defined at %s:3
 %s:22 PhanSuspiciousValueComparison Suspicious attempt to compare 4 of type 4 to 2 of type 2 with operator '<='
-%s:22 PhanTypeMismatchArgument Argument 1 ($x) is bool but \expect_string_298() takes string defined at %s:3
-%s:23 PhanTypeMismatchArgument Argument 1 ($x) is 28 but \expect_string_298() takes string defined at %s:3
-%s:24 PhanTypeMismatchArgument Argument 1 ($x) is int but \expect_string_298() takes string defined at %s:3
-%s:25 PhanTypeMismatchArgument Argument 1 ($x) is 16384 but \expect_string_298() takes string defined at %s:3
-%s:26 PhanTypeMismatchArgument Argument 1 ($x) is int but \expect_string_298() takes string defined at %s:3
-%s:27 PhanTypeMismatchArgument Argument 1 ($x) is int but \expect_string_298() takes string defined at %s:3
+%s:22 PhanTypeMismatchArgumentReal Argument 1 ($x) is bool but \expect_string_298() takes string defined at %s:3
+%s:23 PhanTypeMismatchArgumentReal Argument 1 ($x) is 28 but \expect_string_298() takes string defined at %s:3
+%s:24 PhanTypeMismatchArgumentReal Argument 1 ($x) is int but \expect_string_298() takes string defined at %s:3
+%s:25 PhanTypeMismatchArgumentReal Argument 1 ($x) is 16384 but \expect_string_298() takes string defined at %s:3
+%s:26 PhanTypeMismatchArgumentReal Argument 1 ($x) is int but \expect_string_298() takes string defined at %s:3
+%s:27 PhanTypeMismatchArgumentReal Argument 1 ($x) is int but \expect_string_298() takes string defined at %s:3
 %s:28 PhanSuspiciousValueComparison Suspicious attempt to compare 4 of type 4 to 2 of type 2 with operator '<=>'
-%s:28 PhanTypeMismatchArgument Argument 1 ($x) is -1|0|1 but \expect_string_298() takes string defined at %s:3
+%s:28 PhanTypeMismatchArgumentReal Argument 1 ($x) is -1|0|1 but \expect_string_298() takes string defined at %s:3
 %s:29 PhanSuspiciousValueComparison Suspicious attempt to compare 4 of type 4 to 2 of type 2 with operator '<=>'
-%s:30 PhanTypeMismatchArgument Argument 1 ($x) is 2 but \expect_string_298() takes string defined at %s:3
-%s:31 PhanTypeMismatchArgument Argument 1 ($x) is 4 but \expect_string_298() takes string defined at %s:3
-%s:32 PhanTypeMismatchArgument Argument 1 ($x) is 7 but \expect_string_298() takes string defined at %s:3
+%s:30 PhanTypeMismatchArgumentReal Argument 1 ($x) is 2 but \expect_string_298() takes string defined at %s:3
+%s:31 PhanTypeMismatchArgumentReal Argument 1 ($x) is 4 but \expect_string_298() takes string defined at %s:3
+%s:32 PhanTypeMismatchArgumentReal Argument 1 ($x) is 7 but \expect_string_298() takes string defined at %s:3
 %s:33 PhanCoalescingNeverNull Using non-null 4 of type 4 as the left hand side of a null coalescing (??) operation. The right hand side may be unnecessary.
-%s:33 PhanTypeMismatchArgument Argument 1 ($x) is 4 but \expect_string_298() takes string defined at %s:3
+%s:33 PhanTypeMismatchArgumentReal Argument 1 ($x) is 4 but \expect_string_298() takes string defined at %s:3
 %s:34 PhanSuspiciousValueComparison Suspicious attempt to compare 4 of type 4 to 7 of type 7 with operator '>'
-%s:34 PhanTypeMismatchArgument Argument 1 ($x) is bool but \expect_string_298() takes string defined at %s:3
+%s:34 PhanTypeMismatchArgumentReal Argument 1 ($x) is bool but \expect_string_298() takes string defined at %s:3
 %s:35 PhanSuspiciousValueComparison Suspicious attempt to compare 4 of type 4 to 7 of type 7 with operator '>='
-%s:35 PhanTypeMismatchArgument Argument 1 ($x) is bool but \expect_string_298() takes string defined at %s:3
-%s:39 PhanTypeMismatchArgument Argument 1 ($x) is string but \expect_int_298() takes int defined at %s:4
+%s:35 PhanTypeMismatchArgumentReal Argument 1 ($x) is bool but \expect_string_298() takes string defined at %s:3
+%s:39 PhanTypeMismatchArgumentReal Argument 1 ($x) is string but \expect_int_298() takes int defined at %s:4
 %s:40 PhanTypeMismatchArgument Argument 1 ($x) is int but \expect_string_298() takes string defined at %s:3
 %s:41 PhanTypeMismatchArgument Argument 1 ($x) is string but \expect_int_298() takes int defined at %s:4
 %s:41 PhanUnusedVariable Unused definition of variable $strVar
@@ -43,13 +43,13 @@
 %s:43 PhanTypeMismatchArgument Argument 1 ($x) is int but \expect_string_298() takes string defined at %s:3
 %s:44 PhanTypeMismatchArgument Argument 1 ($x) is int but \expect_string_298() takes string defined at %s:3
 %s:45 PhanTypeMismatchArgumentInternal Argument 1 ($string) is float|int but \strlen() takes string
-%s:45 PhanTypeMismatchArgument Argument 1 ($x) is float but \expect_string_298() takes string defined at %s:3
-%s:46 PhanTypeMismatchArgument Argument 1 ($x) is int but \expect_string_298() takes string defined at %s:3
-%s:47 PhanTypeMismatchArgument Argument 1 ($x) is float but \expect_string_298() takes string defined at %s:3
-%s:48 PhanTypeMismatchArgument Argument 1 ($x) is int but \expect_string_298() takes string defined at %s:3
+%s:45 PhanTypeMismatchArgumentReal Argument 1 ($x) is float but \expect_string_298() takes string defined at %s:3
+%s:46 PhanTypeMismatchArgumentReal Argument 1 ($x) is int (real type float) but \expect_string_298() takes string defined at %s:3
+%s:47 PhanTypeMismatchArgumentReal Argument 1 ($x) is float but \expect_string_298() takes string defined at %s:3
+%s:48 PhanTypeMismatchArgumentReal Argument 1 ($x) is int but \expect_string_298() takes string defined at %s:3
 %s:48 PhanUnusedVariable Unused definition of variable $intVar
-%s:50 PhanTypeMismatchArgument Argument 1 ($x) is int but \expect_string_298() takes string defined at %s:3
-%s:51 PhanTypeMismatchArgument Argument 1 ($x) is int but \expect_string_298() takes string defined at %s:3
-%s:52 PhanTypeMismatchArgument Argument 1 ($x) is int but \expect_string_298() takes string defined at %s:3
-%s:53 PhanTypeMismatchArgument Argument 1 ($x) is int but \expect_string_298() takes string defined at %s:3
+%s:50 PhanTypeMismatchArgumentReal Argument 1 ($x) is int (real type array|float|int) but \expect_string_298() takes string defined at %s:3
+%s:51 PhanTypeMismatchArgumentReal Argument 1 ($x) is int (real type float) but \expect_string_298() takes string defined at %s:3
+%s:52 PhanTypeMismatchArgumentReal Argument 1 ($x) is int but \expect_string_298() takes string defined at %s:3
+%s:53 PhanTypeMismatchArgumentReal Argument 1 ($x) is int but \expect_string_298() takes string defined at %s:3
 %s:55 PhanTypeMismatchArgument Argument 1 ($x) is string but \expect_int_298() takes int defined at %s:4

@@ -9,7 +9,7 @@ src/071_other_callable_methods.php:30 PhanTypeInvalidCallableArraySize In a plac
 src/071_other_callable_methods.php:35 PhanUndeclaredStaticMethodInCallable Reference to undeclared static method \InvokableTemplateTest::missingMethod in callable
 src/071_other_callable_methods.php:37 PhanUndeclaredMethodInCallable Call to undeclared method missingMethod in callable. Possible object type(s) for that method are \InvokableTemplateTest
 src/071_other_callable_methods.php:38 PhanTypeMismatchArgument Argument 1 ($c) is \ArrayAccess|\ArrayObject|\Countable|\IteratorAggregate|\Serializable|\Traversable|iterable but \non_template_return_test() takes callable defined at src/071_other_callable_methods.php:31
-src/071_other_callable_methods.php:39 PhanTypeMismatchArgument Argument 1 ($c) is array{0:\InvokableTemplateTest|callable} but \non_template_return_test() takes callable defined at src/071_other_callable_methods.php:31
+src/071_other_callable_methods.php:39 PhanTypeMismatchArgumentReal Argument 1 ($c) is array{0:\InvokableTemplateTest|callable} but \non_template_return_test() takes callable defined at src/071_other_callable_methods.php:31
 src/071_other_callable_methods.php:41 PhanUnreferencedFunction Possibly zero references to function \create_from_closure()
 src/071_other_callable_methods.php:59 PhanUndeclaredInvokeInCallable Possible attempt to access missing magic method __invoke of '\stdClass'
 src/071_other_callable_methods.php:60 PhanTypeMismatchArgumentInternal Argument 1 ($string) is int[] but \strlen() takes string

@@ -126,8 +126,10 @@ class Issue
     const TypeInvalidThrowsIsInterface           = 'PhanTypeInvalidThrowsIsInterface';
     const TypeMagicVoidWithReturn                = 'PhanTypeMagicVoidWithReturn';
     const TypeMismatchArgument                   = 'PhanTypeMismatchArgument';
+    const TypeMismatchArgumentReal               = 'PhanTypeMismatchArgumentReal';
     const TypeMismatchArgumentNullable           = 'PhanTypeMismatchArgumentNullable';
     const TypeMismatchArgumentInternal           = 'PhanTypeMismatchArgumentInternal';
+    const TypeMismatchArgumentInternalReal       = 'PhanTypeMismatchArgumentInternalReal';
     const TypeMismatchArgumentNullableInternal   = 'PhanTypeMismatchArgumentNullableInternal';
     const PartialTypeMismatchArgument            = 'PhanPartialTypeMismatchArgument';
     const PartialTypeMismatchArgumentInternal    = 'PhanPartialTypeMismatchArgumentInternal';
@@ -1285,10 +1287,18 @@ class Issue
             new Issue(
                 self::TypeMismatchArgument,
                 self::CATEGORY_TYPE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} defined at {FILE}:{LINE}',
                 self::REMEDIATION_B,
                 10003
+            ),
+            new Issue(
+                self::TypeMismatchArgumentReal,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'Argument {INDEX} (${PARAMETER}) is {TYPE}{DETAILS} but {FUNCTIONLIKE} takes {TYPE}{DETAILS} defined at {FILE}:{LINE}',
+                self::REMEDIATION_B,
+                10140
             ),
             new Issue(
                 self::TypeMismatchArgumentNullable,
@@ -1305,6 +1315,14 @@ class Issue
                 'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE}',
                 self::REMEDIATION_B,
                 10004
+            ),
+            new Issue(
+                self::TypeMismatchArgumentInternalReal,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,
+                'Argument {INDEX} (${PARAMETER}) is {TYPE}{DETAILS} but {FUNCTIONLIKE} takes {TYPE}{DETAILS}',
+                self::REMEDIATION_B,
+                10139
             ),
             new Issue(
                 self::TypeMismatchArgumentNullableInternal,

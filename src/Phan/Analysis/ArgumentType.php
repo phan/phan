@@ -590,6 +590,17 @@ final class ArgumentType
             // See if the argument can be cast to the
             // parameter
             if ($argument_type_expanded_resolved->canCastToUnionType($alternate_parameter_type)) {
+                if ($alternate_parameter_type->hasRealTypeSet() && $argument_type->hasRealTypeSet()) {
+                    $real_parameter_type = $alternate_parameter_type->getRealUnionType();
+                    $real_argument_type = $argument_type->getRealUnionType();
+                    $real_argument_type_expanded_resolved = $real_argument_type->withStaticResolvedInContext($context)->asExpandedTypes($code_base);
+                    if (!$real_argument_type_expanded_resolved->canCastToDeclaredType($code_base, $context, $real_parameter_type)) {
+                        // We know that the inferred real types don't match with the strict_types setting of the caller
+                        // (e.g. null -> any non-null type)
+                        // Try checking any other alternates, and emit PhanTypeMismatchArgumentReal if that fails.
+                        continue;
+                    }
+                }
                 if (Config::get_strict_param_checking() && $argument_type->typeCount() > 1) {
                     self::analyzeParameterStrict($code_base, $context, $method, $argument_type, $alternate_parameter, $alternate_parameter_type, $lineno, $i);
                 }
@@ -611,6 +622,8 @@ final class ArgumentType
         if ($alternate_parameter_type->hasTemplateTypeRecursive()) {
             // Don't worry about **unresolved** template types.
             // We resolve them if possible in ContextNode->getMethod()
+            //
+            // TODO: Warn about the type without the templates?
             return;
         }
         if ($alternate_parameter_type->hasTemplateParameterTypes()) {
@@ -641,7 +654,7 @@ final class ArgumentType
             }
         }
         // Check suppressions and emit the issue
-        self::warnInvalidArgumentType($code_base, $context, $method, $alternate_parameter, $alternate_parameter_type, $argument_type->asExpandedTypes($code_base), $argument_type_expanded_resolved, $lineno, $i);
+        self::warnInvalidArgumentType($code_base, $context, $method, $alternate_parameter, $alternate_parameter_type, $argument_type, $argument_type->asExpandedTypes($code_base), $argument_type_expanded_resolved, $lineno, $i);
     }
 
     private static function warnInvalidArgumentType(
@@ -650,6 +663,7 @@ final class ArgumentType
         FunctionInterface $method,
         Parameter $alternate_parameter,
         UnionType $alternate_parameter_type,
+        UnionType $argument_type,
         UnionType $argument_type_expanded,
         UnionType $argument_type_expanded_resolved,
         int $lineno,
@@ -658,9 +672,21 @@ final class ArgumentType
         /**
          * @return ?string
          */
-        $choose_issue_type = static function (string $issue_type, string $nullable_issue_type) use ($argument_type_expanded_resolved, $alternate_parameter_type, $code_base, $context, $lineno) : ?string {
+        $choose_issue_type = static function (string $issue_type, string $nullable_issue_type, string $real_issue_type) use ($argument_type, $argument_type_expanded_resolved, $alternate_parameter_type, $code_base, $context, $lineno) : ?string {
+            if ($context->hasSuppressIssue($code_base, $real_issue_type)) {
+                // Suppressing the most severe argument type mismatch error will suppress related issues.
+                // Record that the most severe issue type suppression was used and don't emit any issue.
+                return null;
+            }
             // @phan-suppress-next-line PhanAccessMethodInternal
             if (!$argument_type_expanded_resolved->canCastToUnionTypeIfNonNull($alternate_parameter_type)) {
+                if ($argument_type->hasRealTypeSet() && $alternate_parameter_type->hasRealTypeSet()) {
+                    $real_arg_type = $argument_type->getRealUnionType();
+                    $real_parameter_type = $alternate_parameter_type->getRealUnionType();
+                    if (!$real_arg_type->canCastToDeclaredType($code_base, $context, $real_parameter_type)) {
+                        return $real_issue_type;
+                    }
+                }
                 return $issue_type;
             }
             if (Issue::shouldSuppressIssue($code_base, $context, $issue_type, $lineno, [])) {
@@ -670,8 +696,24 @@ final class ArgumentType
         };
 
         if ($method->isPHPInternal()) {
-            $issue_type = $choose_issue_type(Issue::TypeMismatchArgumentInternal, Issue::TypeMismatchArgumentNullableInternal);
+            $issue_type = $choose_issue_type(Issue::TypeMismatchArgumentInternal, Issue::TypeMismatchArgumentNullableInternal, Issue::TypeMismatchArgumentInternalReal);
             if (!$issue_type) {
+                return;
+            }
+            if ($issue_type === Issue::TypeMismatchArgumentInternalReal) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::TypeMismatchArgumentInternalReal,
+                    $lineno,
+                    ($i + 1),
+                    $alternate_parameter->getName(),
+                    $argument_type_expanded,
+                    PostOrderAnalysisVisitor::toDetailsForRealTypeMismatch($argument_type),
+                    $method->getRepresentationForIssue(),
+                    (string)$alternate_parameter_type,
+                    PostOrderAnalysisVisitor::toDetailsForRealTypeMismatch($alternate_parameter_type)
+                );
                 return;
             }
             Issue::maybeEmit(
@@ -687,8 +729,26 @@ final class ArgumentType
             );
             return;
         }
-        $issue_type = $choose_issue_type(Issue::TypeMismatchArgument, Issue::TypeMismatchArgumentNullable);
+        $issue_type = $choose_issue_type(Issue::TypeMismatchArgument, Issue::TypeMismatchArgumentNullable, Issue::TypeMismatchArgumentReal);
         if (!$issue_type) {
+            return;
+        }
+        if ($issue_type === Issue::TypeMismatchArgumentReal) {
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                $issue_type,
+                $lineno,
+                ($i + 1),
+                $alternate_parameter->getName(),
+                $argument_type_expanded->withUnionType($argument_type_expanded_resolved),
+                PostOrderAnalysisVisitor::toDetailsForRealTypeMismatch($argument_type),
+                $method->getRepresentationForIssue(),
+                (string)$alternate_parameter_type,
+                PostOrderAnalysisVisitor::toDetailsForRealTypeMismatch($alternate_parameter_type),
+                $method->getFileRef()->getFile(),
+                $method->getFileRef()->getLineNumberStart()
+            );
             return;
         }
         Issue::maybeEmit(

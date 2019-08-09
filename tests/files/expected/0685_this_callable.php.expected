@@ -8,4 +8,4 @@
 %s:27 PhanParamTooFewCallable Call with 0 arg(s) to \Invokable685::dynamic() (as a provided callable) which requires 1 arg(s) defined at %s:11
 %s:33 PhanParamTooFew Call with 0 arg(s) to \Invokable685::dynamic() which requires 1 arg(s) defined at %s:11
 %s:37 PhanParamTooFew Call with 0 arg(s) to \Invokable685::__construct() which requires 1 arg(s) defined at %s:4
-%s:38 PhanTypeMismatchArgument Argument 1 ($o) is null but \Invokable685::dynamic() takes \stdClass defined at %s:11
+%s:38 PhanTypeMismatchArgumentReal Argument 1 ($o) is null but \Invokable685::dynamic() takes \stdClass defined at %s:11
