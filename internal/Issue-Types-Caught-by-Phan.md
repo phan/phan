@@ -2823,6 +2823,15 @@ This will be emitted for the code
 strlen(42);
 ```
 
+## PhanTypeMismatchArgumentInternalReal
+
+Due to lack of reflection information, this will rarely ever be emitted when phan is run with php 7.3 or older.
+PHP 7.4 and 8.0 are expected to add more reflection type information for parameters of internal functions/methods.
+
+```
+Argument {INDEX} (${PARAMETER}) is {TYPE}{DETAILS} but {FUNCTIONLIKE} takes {TYPE}{DETAILS}
+```
+
 ## PhanTypeMismatchArgumentNullable
 
 ```
@@ -2838,6 +2847,24 @@ Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} (expec
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0152_closure_casts_callable.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/files/src/0152_closure_casts_callable.php#L4).
+
+## PhanTypeMismatchArgumentReal
+
+This is a more severe version of `PhanTypeMismatchArgument` for code that Phan infers is likely to throw an Error at runtime.
+This ignores some configuration settings allowing nulls to cast to other types, etc.
+It is emitted instead of `PhanTypeMismatchArgument` under the following conditions:
+
+- Phan infers real types for both the argument expression and the parameter's real signature.
+- The union type of the argument doesn't have any types that are partially compatible with the return type from the signature.
+- If `strict_types` isn't enabled in the caller, it won't be emitted if the returned expression could be a non-null scalar and the declared return type has any scalars.
+
+This does not attempt to account for the possibility of overriding methods being more permissive about what argument types are accepted.
+
+```
+Argument {INDEX} (${PARAMETER}) is {TYPE}{DETAILS} but {FUNCTIONLIKE} takes {TYPE}{DETAILS} defined at {FILE}:{LINE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/rasmus_files/expected/0006_var_combo.php.expected#L5) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/rasmus_files/src/0006_var_combo.php#L6).
 
 ## PhanTypeMismatchArrayDestructuringKey
 

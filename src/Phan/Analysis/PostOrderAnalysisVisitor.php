@@ -1368,10 +1368,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         Issue::TypeMismatchReturnReal,
                         $lineno,
                         (string)$expression_type,
-                        $real_expression_type->isEqualTo($expression_type) ? "": " (real type $real_expression_type)",
+                        self::toDetailsForRealTypeMismatch($expression_type),
                         $method->getNameForIssue(),
                         (string)$method_return_type,
-                        $real_method_return_type->isEqualTo($method_return_type) ? "" : " (real type $real_method_return_type)"
+                        self::toDetailsForRealTypeMismatch($method_return_type)
                     );
                     return;
                 }
@@ -1384,6 +1384,16 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $method->getNameForIssue(),
             (string)$method_return_type
         );
+    }
+
+    /**
+     * Converts the type to a description of the real type (if different from phpdoc type) for Phan's issue messages
+     * @internal
+     */
+    public static function toDetailsForRealTypeMismatch(UnionType $type) : string
+    {
+        $real_type = $type->getRealUnionType();
+        return $real_type->isEqualTo($type) ? "" : " (real type $real_type)";
     }
 
     private function analyzeReturnInGenerator(

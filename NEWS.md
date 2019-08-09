@@ -4,9 +4,11 @@ Phan NEWS
 -----------------------
 
 New features(Analysis):
-+ Emit stricter issue type `PhanTypeMismatchReturnReal` instead of `PhanTypeMismatchReturn`
-  when Phan infers that the real type of the returned expression is likely to cause an Error (accounting for `strict_types` in the file). (#403)
++ Emit the stricter issue type `PhanTypeMismatchReturnReal` instead of `PhanTypeMismatchReturn`
+  when Phan infers that the real type of the returned expression is likely to cause a TypeError (accounting for `strict_types` in the file). (#403)
   See `internal/Issue-Types-Caught-by-Phan.md` for details on when it is thrown.
++ Emit the stricter issue type `PhanTypeMismatchArgumentReal` instead of `PhanTypeMismatchArgument`
+  when Phan infers that the real type of the argument is likely to cause a TypeError at runtime (#403)
 + Support php 7.4 typed property groups in the polyfill/fallback parser.
 + Detect redundant conditions such as `is_array($this->array_prop)` on typed properties.
   Their values will either be a value of the correct type, or unset. (Reading from unset properties will throw an Error at runtime)

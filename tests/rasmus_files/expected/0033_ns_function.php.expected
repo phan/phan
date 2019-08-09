@@ -1,1 +1,1 @@
-%s:7 PhanTypeMismatchArgument Argument 1 ($arg) is array{0:1,1:2,2:3} but \NS1\test() takes string defined at %s:3
+%s:7 PhanTypeMismatchArgumentReal Argument 1 ($arg) is array{0:1,1:2,2:3} but \NS1\test() takes string defined at %s:3
