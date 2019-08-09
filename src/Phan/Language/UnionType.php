@@ -2287,6 +2287,12 @@ class UnionType implements Serializable
         if ($this->hasAnyTypeOverlap($code_base, $other)) {
             return true;
         }
+        foreach ($other->getTypeSet() as $other_type) {
+            // allow classes to cast to interfaces outside of the class hierarchy, etc.
+            if ($other_type->isPossiblyObject() && $this->canPossiblyCastToClass($code_base, $other_type)) {
+                return true;
+            }
+        }
         if (!$context->isStrictTypes()) {
             // Allow scalar types (except null) to cast to other scalars
             return !$other->scalarTypes()->isEmpty() && !$this->scalarTypes()->nonNullableClone()->isEmpty();
