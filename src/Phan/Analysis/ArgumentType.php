@@ -673,6 +673,11 @@ final class ArgumentType
          * @return ?string
          */
         $choose_issue_type = static function (string $issue_type, string $nullable_issue_type, string $real_issue_type) use ($argument_type, $argument_type_expanded_resolved, $alternate_parameter_type, $code_base, $context, $lineno) : ?string {
+            if ($context->hasSuppressIssue($code_base, $real_issue_type)) {
+                // Suppressing the most severe argument type mismatch error will suppress related issues.
+                // Record that the most severe issue type suppression was used and don't emit any issue.
+                return null;
+            }
             // @phan-suppress-next-line PhanAccessMethodInternal
             if (!$argument_type_expanded_resolved->canCastToUnionTypeIfNonNull($alternate_parameter_type)) {
                 if ($argument_type->hasRealTypeSet() && $alternate_parameter_type->hasRealTypeSet()) {
