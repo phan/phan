@@ -157,6 +157,7 @@ class Issue
     const PartialTypeMismatchProperty = 'PhanPartialTypeMismatchProperty';
     const TypeMismatchReturn        = 'PhanTypeMismatchReturn';
     const TypeMismatchReturnNullable = 'PhanTypeMismatchReturnNullable';
+    const TypeMismatchReturnReal     = 'PhanTypeMismatchReturnReal';
     const PartialTypeMismatchReturn = 'PhanPartialTypeMismatchReturn';
     const PossiblyNullTypeReturn  = 'PhanPossiblyNullTypeReturn';
     const PossiblyFalseTypeReturn  = 'PhanPossiblyFalseTypeReturn';
@@ -1400,6 +1401,14 @@ class Issue
                 "Returning type {TYPE} but {FUNCTIONLIKE} is declared to return {TYPE} (expected returned value to be non-nullable)",
                 self::REMEDIATION_B,
                 10107
+            ),
+            new Issue(
+                self::TypeMismatchReturnReal,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,
+                "Returning type {TYPE}{DETAILS} but {FUNCTIONLIKE} is declared to return {TYPE}{DETAILS}",
+                self::REMEDIATION_B,
+                10138
             ),
             new Issue(
                 self::PartialTypeMismatchReturn,

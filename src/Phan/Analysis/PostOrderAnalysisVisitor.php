@@ -1318,7 +1318,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $resolved_expression_type = $expression_type->withStaticResolvedInContext($context);
                 // We allow base classes to cast to subclasses, and subclasses to cast to base classes,
                 // but don't allow subclasses to cast to subclasses on a separate branch of the inheritance tree
-                if (!self::checkCanCastToReturnType($code_base, $resolved_expression_type, $method_return_type)) {
+                if (!$this->checkCanCastToReturnType($resolved_expression_type, $method_return_type)) {
                     $this->emitTypeMismatchReturnIssue($resolved_expression_type, $method, $method_return_type, $lineno);
                 } elseif (Config::get_strict_return_checking() && $resolved_expression_type->typeCount() > 1) {
                     self::analyzeReturnStrict($code_base, $method, $resolved_expression_type, $method_return_type, $lineno);
@@ -1347,7 +1347,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     private function emitTypeMismatchReturnIssue(UnionType $expression_type, FunctionInterface $method, UnionType $method_return_type, int $lineno) : void
     {
-        if (self::checkCanCastToReturnTypeIfWasNonNullInstead($this->code_base, $expression_type, $method_return_type)) {
+        if ($this->shouldSuppressIssue(Issue::TypeMismatchReturnReal, $lineno)) {
+            // Suppressing TypeMismatchReturnReal also suppresses less severe return type mismatches
+            return;
+        }
+        if ($this->checkCanCastToReturnTypeIfWasNonNullInstead($expression_type, $method_return_type)) {
             if ($this->shouldSuppressIssue(Issue::TypeMismatchReturn, $lineno)) {
                 // Suppressing TypeMismatchReturn also suppresses TypeMismatchReturnNullable
                 return;
@@ -1355,6 +1359,23 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $issue_type = Issue::TypeMismatchReturnNullable;
         } else {
             $issue_type = Issue::TypeMismatchReturn;
+            // TODO: Don't warn for callable <-> string
+            if ($expression_type->hasRealTypeSet() && $method_return_type->hasRealTypeSet()) {
+                $real_expression_type = $expression_type->getRealUnionType();
+                $real_method_return_type = $method_return_type->getRealUnionType();
+                if (!$real_expression_type->canCastToDeclaredType($this->code_base, $this->context, $real_method_return_type)) {
+                    $this->emitIssue(
+                        Issue::TypeMismatchReturnReal,
+                        $lineno,
+                        (string)$expression_type,
+                        $real_expression_type->isEqualTo($expression_type) ? "": " (real type $real_expression_type)",
+                        $method->getNameForIssue(),
+                        (string)$method_return_type,
+                        $real_method_return_type->isEqualTo($method_return_type) ? "" : " (real type $real_method_return_type)"
+                    );
+                    return;
+                }
+            }
         }
         $this->emitIssue(
             $issue_type,
@@ -1387,7 +1408,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $expression_type = $expression_type->withStaticResolvedInContext($context);
             // We allow base classes to cast to subclasses, and subclasses to cast to base classes,
             // but don't allow subclasses to cast to subclasses on a separate branch of the inheritance tree
-            if (!self::checkCanCastToReturnType($code_base, $expression_type, $expected_return_type)) {
+            if (!self::checkCanCastToReturnType($expression_type, $expected_return_type)) {
                 $this->emitTypeMismatchReturnIssue($expression_type, $method, $expected_return_type, $lineno);
             } elseif (Config::get_strict_return_checking() && $expression_type->typeCount() > 1) {
                 self::analyzeReturnStrict($code_base, $method, $expression_type, $expected_return_type, $lineno);
@@ -1571,19 +1592,26 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         return $context;
     }
 
-    private static function checkCanCastToReturnType(CodeBase $code_base, UnionType $expression_type, UnionType $method_return_type) : bool
+    private function checkCanCastToReturnType(UnionType $expression_type, UnionType $method_return_type) : bool
     {
+        if ($expression_type->hasRealTypeSet() && $method_return_type->hasRealTypeSet()) {
+            $real_expression_type = $expression_type->getRealUnionType();
+            $real_method_return_type = $method_return_type->getRealUnionType();
+            if (!$real_method_return_type->isNull() && !$real_expression_type->canCastToDeclaredType($this->code_base, $this->context, $real_method_return_type)) {
+                return false;
+            }
+        }
         if ($method_return_type->hasTemplateParameterTypes()) {
             // Perform a check that does a better job understanding rules of templates.
             // (E.g. should be able to cast None to Option<MyClass>, but not Some<int> to Option<MyClass>
-            return $expression_type->asExpandedTypesPreservingTemplate($code_base)->canCastToUnionTypeHandlingTemplates($method_return_type, $code_base) ||
-                $expression_type->canCastToUnionTypeHandlingTemplates($method_return_type->asExpandedTypesPreservingTemplate($code_base), $code_base);
+            return $expression_type->asExpandedTypesPreservingTemplate($this->code_base)->canCastToUnionTypeHandlingTemplates($method_return_type, $this->code_base) ||
+                $expression_type->canCastToUnionTypeHandlingTemplates($method_return_type->asExpandedTypesPreservingTemplate($this->code_base), $this->code_base);
         }
         // We allow base classes to cast to subclasses, and subclasses to cast to base classes,
         // but don't allow subclasses to cast to subclasses on a separate branch of the inheritance tree
         try {
-            return $expression_type->asExpandedTypes($code_base)->canCastToUnionType($method_return_type) ||
-                $expression_type->canCastToUnionType($method_return_type->asExpandedTypes($code_base));
+            return $expression_type->asExpandedTypes($this->code_base)->canCastToUnionType($method_return_type) ||
+                $expression_type->canCastToUnionType($method_return_type->asExpandedTypes($this->code_base));
         } catch (RecursionDepthException $_) {
             return false;
         }
@@ -1592,13 +1620,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     /**
      * Precondition: checkCanCastToReturnType is false
      */
-    private static function checkCanCastToReturnTypeIfWasNonNullInstead(CodeBase $code_base, UnionType $expression_type, UnionType $method_return_type) : bool
+    private function checkCanCastToReturnTypeIfWasNonNullInstead(UnionType $expression_type, UnionType $method_return_type) : bool
     {
         $nonnull_expression_type = $expression_type->nonNullableClone();
         if ($nonnull_expression_type === $expression_type || $nonnull_expression_type->isEmpty()) {
             return false;
         }
-        return self::checkCanCastToReturnType($code_base, $nonnull_expression_type, $method_return_type);
+        return $this->checkCanCastToReturnType($nonnull_expression_type, $method_return_type);
     }
 
     private function analyzeReturnStrict(
