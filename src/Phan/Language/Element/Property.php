@@ -66,6 +66,11 @@ class Property extends ClassElement
         FullyQualifiedPropertyName $fqsen,
         UnionType $real_union_type
     ) {
+        $internal_scope = new PropertyScope(
+            $context->getScope(),
+            $fqsen
+        );
+        $context = $context->withScope($internal_scope);
         parent::__construct(
             $context,
             $name,
@@ -84,10 +89,7 @@ class Property extends ClassElement
         // Set an internal scope, so that issue suppressions can be placed on property doc comments.
         // (plugins acting on properties would then pick those up).
         // $fqsen is used to locate this property.
-        $this->setInternalScope(new PropertyScope(
-            $context->getScope(),
-            $fqsen
-        ));
+        $this->setInternalScope($internal_scope);
     }
 
     /**

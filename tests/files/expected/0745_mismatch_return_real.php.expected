@@ -1,5 +1,6 @@
-%s:7 PhanTypeMismatchReturnReal Returning type string but test745SoftCast() is declared to return bool
-%s:10 PhanTypeMismatchReturnReal Returning type \stdClass but test745SoftCast() is declared to return bool
-%s:13 PhanTypeMismatchReturnReal Returning type int but test745SoftCast() is declared to return bool
-%s:16 PhanTypeMismatchReturnReal Returning type iterable but test745SoftCast() is declared to return bool
-%s:19 PhanTypeMismatchReturnReal Returning type null but test745SoftCast() is declared to return bool
+%s:6 PhanTypeMismatchReturnReal Returning type string but test745SoftCast() is declared to return bool
+%s:8 PhanTypeMismatchReturnReal Returning type int but test745SoftCast() is declared to return bool
+%s:10 PhanTypeMismatchReturnReal Returning type float but test745SoftCast() is declared to return bool
+%s:12 PhanTypeMismatchReturnReal Returning type \stdClass but test745SoftCast() is declared to return bool
+%s:14 PhanTypeMismatchReturnReal Returning type iterable but test745SoftCast() is declared to return bool
+%s:17 PhanTypeMismatchReturnReal Returning type null but test745SoftCast() is declared to return bool
