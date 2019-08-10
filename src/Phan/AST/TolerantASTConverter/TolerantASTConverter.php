@@ -218,9 +218,9 @@ class TolerantASTConverter
     }
 
     /**
-     * @param null|Diagnostic[] &$errors @phan-output-reference (TODO: param-out)
+     * @param Diagnostic[] &$errors @phan-output-reference (TODO: param-out)
      */
-    public static function phpParserParse(string $file_contents, array &$errors = null) : PhpParser\Node
+    public static function phpParserParse(string $file_contents, array &$errors = []) : PhpParser\Node
     {
         $parser = new Parser();  // TODO: In php 7.3, we might need to provide a version, due to small changes in lexing?
         $result = $parser->parseSourceFile($file_contents);

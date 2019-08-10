@@ -10,6 +10,8 @@ New features(Analysis):
 + Emit the stricter issue type `PhanTypeMismatchArgumentReal` instead of `PhanTypeMismatchArgument`
   when Phan infers that the real type of the argument is likely to cause a TypeError at runtime (#403)
 + Support php 7.4 typed property groups in the polyfill/fallback parser.
++ Warn about passing properties with incompatible types to reference parameters (#3060)
+  New issue types: `PhanTypeMismatchArgumentPropertyReference`, `PhanTypeMismatchArgumentPropertyReferenceReal`
 + Detect redundant conditions such as `is_array($this->array_prop)` on typed properties.
   Their values will either be a value of the correct type, or unset. (Reading from unset properties will throw an Error at runtime)
 + Emit `PhanCompatibleTypedProperty` if the target php version is less than 7.4 but typed properties are used.

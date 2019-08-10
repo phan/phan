@@ -1,3 +1,4 @@
+%s:4 PhanTypeMismatchArgumentInternal Argument 1 ($object_or_string) is int but \is_a() takes object|string
 %s:5 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is \stdClass but \intdiv() takes int
 %s:7 PhanTypeMismatchArgumentInternal Argument 1 ($object_or_string) is int but \is_a() takes object|string
 %s:8 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is \stdClass but \intdiv() takes int
