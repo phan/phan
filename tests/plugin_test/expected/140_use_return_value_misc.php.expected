@@ -6,3 +6,4 @@ src/140_use_return_value_misc.php:16 PhanPluginUseReturnValueInternalKnown Expec
 src/140_use_return_value_misc.php:17 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \call_user_func_array
 src/140_use_return_value_misc.php:19 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \call_user_func
 src/140_use_return_value_misc.php:20 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \call_user_func_array
+src/140_use_return_value_misc.php:29 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \preg_match_all

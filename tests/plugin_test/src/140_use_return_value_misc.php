@@ -24,3 +24,8 @@ call_user_func($c2, 1, 2);
 call_user_func_array($c2, [1, 2]);
 call_user_func('var_dump', 1, 2);
 call_user_func_array('var_dump', [1, 2]);
+
+// should warn
+preg_match_all('/x/', 'executable');
+// should not warn
+preg_match_all('/x/', 'executable', $matches);

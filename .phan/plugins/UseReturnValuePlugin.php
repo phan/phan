@@ -827,6 +827,7 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
         'mkdir' => false,  // some code is optimistic
         'next' => false,  // move array cursor
         'preg_match' => self::SPECIAL_CASE,  // useful if known
+        'preg_match_all' => self::SPECIAL_CASE,  // useful if known
         'prev' => false,  // move array cursor
         'print_r' => self::SPECIAL_CASE,  // returns a string if second arg is true
         'reflectionmethod::invokeargs' => false,  // may be a void
@@ -1075,6 +1076,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
                 // advances a cursor if called with 1 argument
                 return count($node->children['args']->children) <= 1;
             case 'preg_match':
+            case 'preg_match_all':
                 return count($node->children['args']->children) >= 3;
             case 'call_user_func':
             case 'call_user_func_array':
