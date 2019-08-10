@@ -1047,18 +1047,95 @@ class AssignmentVisitor extends AnalysisVisitor
     }
 
     /**
+     * Based on AssignmentVisitor->addTypesToProperty
+     * Used for analyzing reference parameters' possible effects on properties.
+     * @internal the API will likely change
+     */
+    public static function addTypesToPropertyStandalone(
+        CodeBase $code_base,
+        Context $context,
+        Property $property,
+        UnionType $new_types
+    ) : void {
+        $original_property_types = $property->getUnionType();
+        if ($property->getRealUnionType()->isEmpty() && $property->getPHPDocUnionType()->isEmpty()) {
+            $property->setUnionType(
+                $new_types
+                     ->withUnionType($property->getUnionType())
+                     ->withStaticResolvedInContext($context)
+                     ->withFlattenedArrayShapeOrLiteralTypeInstances()
+                     ->eraseRealTypeSet()
+            );
+            return;
+        }
+        if ($original_property_types->isEmpty()) {
+            // TODO: Be more precise?
+            $property->setUnionType(
+                $new_types
+                     ->withStaticResolvedInContext($context)
+                     ->withFlattenedArrayShapeOrLiteralTypeInstances()
+                     ->withRealTypeSet($property->getRealUnionType()->getTypeSet())
+            );
+            return;
+        }
+
+        $has_literals = $original_property_types->hasLiterals();
+        $new_types = $new_types->withStaticResolvedInContext($context)->withFlattenedArrayShapeTypeInstances();
+
+        $updated_property_types = $original_property_types;
+        foreach ($new_types->getTypeSet() as $new_type) {
+            if ($new_type instanceof MixedType) {
+                // Don't add MixedType to a non-empty property - It makes inferences on that property useless.
+                continue;
+            }
+
+            // Only allow compatible types to be added to declared properties.
+            // Allow anything to be added to dynamic properties.
+            // TODO: Be more permissive about declared properties without phpdoc types.
+            if (!$new_type->asExpandedTypes($code_base)->canCastToUnionType($original_property_types) && !$property->isDynamicProperty()) {
+                continue;
+            }
+
+            // Check for adding a specific array to as generic array as a workaround for #1783
+            if (\get_class($new_type) === ArrayType::class && $original_property_types->hasGenericArray()) {
+                continue;
+            }
+            if (!$has_literals) {
+                $new_type = $new_type->asNonLiteralType();
+            }
+            $updated_property_types = $updated_property_types->withType($new_type);
+        }
+
+        // TODO: Add an option to check individual types, not just the whole union type?
+        //       If that is implemented, verify that generic arrays will properly cast to regular arrays (public $x = [];)
+        $property->setUnionType($updated_property_types->withRealTypeSet($property->getRealUnionType()->getTypeSet()));
+    }
+
+
+
+    /**
      * @param Property $property - The property which should have types added to it
      */
     private function addTypesToProperty(Property $property, Node $node) : void
     {
+        if ($property->getRealUnionType()->isEmpty() && $property->getPHPDocUnionType()->isEmpty()) {
+            $property->setUnionType(
+                $this->right_type
+                     ->withUnionType($property->getUnionType())
+                     ->withStaticResolvedInContext($this->context)
+                     ->withFlattenedArrayShapeOrLiteralTypeInstances()
+                     ->eraseRealTypeSet()
+            );
+            return;
+        }
         $original_property_types = $property->getUnionType();
         if ($original_property_types->isEmpty()) {
             // TODO: Be more precise?
             $property->setUnionType(
                 $this->right_type
-                     ->eraseRealTypeSet()
                      ->withStaticResolvedInContext($this->context)
                      ->withFlattenedArrayShapeOrLiteralTypeInstances()
+                     ->withRealTypeSet($property->getRealUnionType()->getTypeSet())
             );
             return;
         }

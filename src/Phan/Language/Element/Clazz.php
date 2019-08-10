@@ -304,6 +304,9 @@ class Clazz extends AddressableElement
                 $property_fqsen,
                 UnionType::empty()
             );
+            // Record that Phan has known union types for this internal property,
+            // so that analysis of assignments to the property can account for it.
+            $property->setPHPDocUnionType($property_type);
 
             $clazz->addProperty($code_base, $property, new None());
         }

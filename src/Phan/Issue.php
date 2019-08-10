@@ -227,6 +227,8 @@ class Issue
     const CoalescingAlwaysNull              = 'PhanCoalescingAlwaysNull';
     const CoalescingAlwaysNullInLoop        = 'PhanCoalescingAlwaysNullInLoop';
     const CoalescingAlwaysNullInGlobalScope = 'PhanCoalescingAlwaysNullInGlobalScope';
+    const TypeMismatchArgumentPropertyReference = 'PhanTypeMismatchArgumentPropertyReference';
+    const TypeMismatchArgumentPropertyReferenceReal = 'PhanTypeMismatchArgumentPropertyReferenceReal';
 
     // Issue::CATEGORY_ANALYSIS
     const Unanalyzable              = 'PhanUnanalyzable';
@@ -1331,6 +1333,22 @@ class Issue
                 'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} (expected type to be non-nullable)',
                 self::REMEDIATION_B,
                 10106
+            ),
+            new Issue(
+                self::TypeMismatchArgumentPropertyReference,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'Argument {INDEX} is property {PROPERTY} with type {TYPE} but {FUNCTIONLIKE} takes a reference of type {TYPE}',
+                self::REMEDIATION_B,
+                10141
+            ),
+            new Issue(
+                self::TypeMismatchArgumentPropertyReferenceReal,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'Argument {INDEX} is property {PROPERTY} with type {TYPE}{DETAILS} but {FUNCTIONLIKE} takes a reference of type {TYPE}{DETAILS}',
+                self::REMEDIATION_B,
+                10142
             ),
             new Issue(
                 self::TypeMismatchGeneratorYieldValue,

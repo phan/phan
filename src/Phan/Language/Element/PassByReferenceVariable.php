@@ -2,6 +2,8 @@
 
 namespace Phan\Language\Element;
 
+use Phan\Analysis\AssignmentVisitor;
+use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\FileRef;
 use Phan\Language\UnionType;
@@ -28,14 +30,26 @@ class PassByReferenceVariable extends Variable
      */
     private $element;
 
-    /** @param TypedElement|UnaddressableTypedElement $element */
+    /**
+     * @var ?CodeBase set if $element is a Property, for type checking
+     */
+    private $code_base;
+
+    /**
+     * @param TypedElement|UnaddressableTypedElement $element
+     * NOTE: Non-null $code_base will be mandatory for $element Property in a future Phan release
+     */
     public function __construct(
         Variable $parameter,
-        $element
+        $element,
+        CodeBase $code_base = null
     ) {
         $this->parameter = $parameter;
         $this->element = $element;
-        $this->type = $this->element->getNonVariadicUnionType();
+        $this->type = $element->getNonVariadicUnionType();
+        if ($element instanceof Property) {
+            $this->code_base = $code_base;
+        }
     }
 
     public function getName() : string
@@ -58,9 +72,22 @@ class PassByReferenceVariable extends Variable
         return $this->type;
     }
 
+    /**
+     * @suppress PhanAccessMethodInternal
+     */
     public function setUnionType(UnionType $type) : void
     {
         $this->type = $type;
+        if ($this->element instanceof Property && $this->code_base) {
+            // TODO: Also warn about incompatible types
+            AssignmentVisitor::addTypesToPropertyStandalone(
+                $this->code_base,
+                $this->element->getContext(),
+                $this->element,
+                $type
+            );
+            return;
+        }
         $this->element->setUnionType($type->eraseRealTypeSet());
     }
 

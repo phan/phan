@@ -28,4 +28,4 @@ $test->add('katze');
 echo $test->x[0];
 $test2 = new TestArrayUnshift();
 $test2->add(new stdClass(), new ast\Node());
-echo $test2->x[0];
+echo $test2->x[0];  // Sadly not able to associate candidate types with individual instances - just takes the union of all known types

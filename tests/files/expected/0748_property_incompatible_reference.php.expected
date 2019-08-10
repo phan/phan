@@ -1,0 +1,8 @@
+%s:25 PhanTypeMismatchArgumentPropertyReference Argument 2 is property \MyClass->x with type string but \fn16b() takes a reference of type array
+%s:25 PhanTypeMismatchArgument Argument 3 ($x) is 'default' but \fn16b() takes array defined at %s:13
+%s:31 PhanTypeMismatchArgumentPropertyReference Argument 2 is property \MyClass->x with type string but \fn16() takes a reference of type array
+%s:32 PhanTypeMismatchArgumentPropertyReference Argument 2 is property \MyClass::$phpdocString with type string but \fn16() takes a reference of type array
+%s:34 PhanTypeMismatchArgumentPropertyReference Argument 2 is property \MyClass->x with type string but \fn16b() takes a reference of type array
+%s:34 PhanTypeMismatchArgument Argument 3 ($x) is string but \fn16b() takes array defined at %s:13
+%s:35 PhanTypeMismatchArgumentPropertyReference Argument 2 is property \MyClass::$phpdocString with type string but \fn16b() takes a reference of type array
+%s:35 PhanTypeMismatchArgument Argument 3 ($x) is string but \fn16b() takes array defined at %s:13

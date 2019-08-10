@@ -1393,7 +1393,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     public static function toDetailsForRealTypeMismatch(UnionType $type) : string
     {
         $real_type = $type->getRealUnionType();
-        return $real_type->isEqualTo($type) ? "" : " (real type $real_type)";
+        if ($real_type->isEqualTo($type)) {
+            return '';
+        }
+        if ($real_type->isEmpty()) {
+            return ' (no real type)';
+        }
+        return " (real type $real_type)";
     }
 
     private function analyzeReturnInGenerator(
@@ -3219,7 +3225,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $argument_list,
                     $method,
                     $parameter,
-                    $method->getRealParameterForCaller($i)
+                    $method->getRealParameterForCaller($i),
+                    $i
                 );
             }
         }
@@ -3321,7 +3328,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         array $argument_list,
         FunctionInterface $method,
         Parameter $parameter,
-        ?Parameter $real_parameter
+        ?Parameter $real_parameter,
+        int $parameter_offset
     ) : void {
         $variable = null;
         $kind = $argument->kind;
@@ -3369,25 +3377,26 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         if ($variable) {
-            $set_variable_type = static function (UnionType $new_type) use ($context, $variable) : void {
+            $set_variable_type = static function (UnionType $new_type) use ($code_base, $context, $variable) : void {
                 if ($variable instanceof Variable) {
                     $variable = clone($variable);
                     $variable->setUnionType($new_type);
                     $context->addScopeVariable($variable);
-                } else {
-                    // This is a Property
-                    // TODO: Do a better job of analyzing assignments to properties
-                    $variable->setUnionType($new_type);
+                } elseif ($variable instanceof Property) {
+                    // This is a Property. Add any compatible new types to the type of the property.
+                    AssignmentVisitor::addTypesToPropertyStandalone($code_base, $context, $variable, $new_type);
                 }
             };
+            if ($variable instanceof Property) {
+                // TODO: If @param-out is ever supported, then use that type to check
+                self::checkPassingPropertyByReference($code_base, $context, $method, $parameter, $argument, $variable, $parameter_offset);
+            }
             switch ($parameter->getReferenceType()) {
                 case Parameter::REFERENCE_WRITE_ONLY:
                     if ($variable instanceof Variable) {
-                        $variable = clone($variable);
-                        self::analyzeWriteOnlyReference($code_base, $context, $method, $variable, $argument_list, $parameter);
-                        $context->addScopeVariable($variable);
+                        self::analyzeWriteOnlyReference($code_base, $context, $method, $set_variable_type, $argument_list, $parameter);
                     } else {
-                        self::analyzeWriteOnlyReference($code_base, $context, $method, $variable, $argument_list, $parameter);
+                        self::analyzeWriteOnlyReference($code_base, $context, $method, $set_variable_type, $argument_list, $parameter);
                     }
                     break;
                 case Parameter::REFERENCE_READ_WRITE:
@@ -3424,25 +3433,25 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param Property|Variable $variable
+     * @param Closure(UnionType):void $set_variable_type
      * @param array<int,Node|string|int|float> $argument_list
      */
     private static function analyzeWriteOnlyReference(
         CodeBase $code_base,
         Context $context,
         FunctionInterface $method,
-        $variable,
+        Closure $set_variable_type,
         array $argument_list,
         Parameter $parameter
     ) : void {
         switch ($method->getFQSEN()->__toString()) {
             case '\preg_match':
-                $variable->setUnionType(
+                $set_variable_type(
                     RegexAnalyzer::getPregMatchUnionType($code_base, $context, $argument_list)
                 );
                 return;
             case '\preg_match_all':
-                $variable->setUnionType(
+                $set_variable_type(
                     RegexAnalyzer::getPregMatchAllUnionType($code_base, $context, $argument_list)
                 );
                 return;
@@ -3450,7 +3459,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $reference_parameter_type = $parameter->getNonVariadicUnionType();
 
                 // The previous value is being ignored, and being replaced.
-                $variable->setUnionType(
+                // FIXME: Do something different for properties, e.g. limit it to a scope, combine with old property, etc.
+                $set_variable_type(
                     $reference_parameter_type
                 );
         }
@@ -3613,7 +3623,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             foreach ($parameter_list as $i => $parameter_clone) {
                 $argument = $argument_list_node->children[$i] ?? null;
 
-                if (!$argument
+                if ($argument === null
                     && $parameter_clone->hasDefaultValue()
                 ) {
                     $parameter_type = $parameter_clone->getDefaultValueType();
@@ -3634,9 +3644,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
                 // If there's no parameter at that offset, we may be in
                 // a ParamTooMany situation. That is caught elsewhere.
-                if (!$argument
-                    || !$parameter_clone->getUnionType()->isEmpty()
-                ) {
+                if ($argument === null) {
+                    continue;
+                }
+
+                // If there's a declared type for the parameter,
+                // then don't bother overriding the type to analyze the function/method body (unless the parameter is pass-by-reference)
+                if (!$parameter_clone->getUnionType()->isEmpty() && !$parameter_clone->isPassByReference()) {
                     continue;
                 }
 
@@ -3821,9 +3835,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $pass_by_reference_variable =
             new PassByReferenceVariable(
                 $parameter,
-                $variable
+                $variable,
+                $this->code_base
             );
-
         // Add it to the (cloned) scope of the function wrapped
         // in a way that makes it addressable as the
         // parameter its mimicking
@@ -3833,6 +3847,48 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $parameter_list[$parameter_offset] = $pass_by_reference_variable;
     }
 
+    /**
+     * Emit warnings if the pass-by-reference call would set the property to an invalid type
+     */
+    private static function checkPassingPropertyByReference(CodeBase $code_base, Context $context, FunctionInterface $method, Parameter $parameter, Node $argument, Property $property, int $parameter_offset) : void
+    {
+        $parameter_type = $parameter->getUnionType();
+        $property_type = $property->getUnionType();
+        if ($property_type->hasRealTypeSet()) {
+            // Barely any reference parameters will have real union types (and phan would already warn about passing them in if they did),
+            // so warn if the phpdoc type doesn't match the property's real type.
+            if (!$parameter_type->canCastToDeclaredType($code_base, $context, $property_type)) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::TypeMismatchArgumentPropertyReferenceReal,
+                    $argument->lineno,
+                    $parameter_offset,
+                    $property->getRepresentationForIssue(),
+                    $property_type,
+                    self::toDetailsForRealTypeMismatch($property_type),
+                    $method->getRepresentationForIssue(),
+                    $parameter_type,
+                    self::toDetailsForRealTypeMismatch($parameter_type)
+                );
+                return;
+            }
+        }
+        if ($parameter_type->canCastToDeclaredType($code_base, $context, $property_type)) {
+            return;
+        }
+        Issue::maybeEmit(
+            $code_base,
+            $context,
+            Issue::TypeMismatchArgumentPropertyReference,
+            $argument->lineno,
+            $parameter_offset,
+            $property->getRepresentationForIssue(),
+            $property->getUnionType(),
+            $method->getRepresentationForIssue(),
+            $parameter->getUnionType()
+        );
+    }
     private function isInNoOpPosition(Node $node) : bool
     {
         $parent_node = \end($this->parent_node_list);

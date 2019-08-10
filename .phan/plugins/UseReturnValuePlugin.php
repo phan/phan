@@ -834,7 +834,7 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
         'rename' => false,  // some code is optimistic
         'reset' => false,  // move array cursor
         'session_id' => false,  // Triggers regeneration
-        'strtok' => self::SPECIAL_CASE,  // advances a cursor if called with 1 argument
+        'strtok' => false,  // advances a cursor if called with 1 argument - Any argument position can be ignored.
         'trait_exists' => self::SPECIAL_CASE,  // triggers class autoloader to load the trait
         'var_export' => self::SPECIAL_CASE,  // returns a string if second arg is true
     ];
@@ -1072,9 +1072,6 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
             case 'trait_exists':
                 // Triggers autoloader unless second argument is false
                 return !self::isSecondArgumentEqualToConst($node, 'false');
-            case 'strtok':
-                // advances a cursor if called with 1 argument
-                return count($node->children['args']->children) <= 1;
             case 'preg_match':
             case 'preg_match_all':
                 return count($node->children['args']->children) >= 3;
