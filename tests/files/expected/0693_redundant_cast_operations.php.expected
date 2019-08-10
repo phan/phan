@@ -20,8 +20,6 @@
 %s:27 PhanRedundantCondition Redundant attempt to cast (int)($a) of type int to int
 %s:28 PhanRedundantCondition Redundant attempt to cast (array)($a) of type array to array
 %s:29 PhanRedundantCondition Redundant attempt to cast (object)($a) of type object to object
-%s:30 PhanRedundantCondition Redundant attempt to cast ($a * $b) of type float|int to float
-%s:34 PhanRedundantCondition Redundant attempt to cast ($a - $b) of type float|int to float
 %s:35 PhanRedundantCondition Redundant attempt to cast ($a . $b) of type string to string
 %s:37 PhanRedundantCondition Redundant attempt to cast ($a >> $b) of type int to int
 %s:38 PhanRedundantCondition Redundant attempt to cast ($a << $b) of type int to int

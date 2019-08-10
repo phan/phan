@@ -22,6 +22,7 @@ New features(Analysis):
 + Don't emit `PhanTypeArraySuspiciousNull` when array access is used with the null coalescing operator. (#3032)
 + Don't emit `PhanTypeInvalidDimOffset` when array access is used with the null coalescing operator. (#2123)
 + Make Phan check for `PhanUndeclaredTypeProperty` suppressions on the property's doc comment, not the class. (#3047)
++ Make inferred real/phpdoc types for results of division more accurate.
 
 Plugins:
 + Add `StrictComparisonPlugin`, which warns about the following issue types:
@@ -31,6 +32,7 @@ Plugins:
 + Don't warn in `EmptyStatementListPlugin` if a TODO/FIXME/"Deliberately empty" comment is seen around the empty statement list. (#3036)
   (This may miss some TODOs due to `php-ast` not providing the end line numbers)
   The setting `'plugin_config' => ['empty_statement_list_ignore_todos' => true]` can be used to make it unconditionally warn about empty statement lists.
++ Improve checks for UseReturnValuePlugin for functions where warning depend on their arg count (`call_user_func`, `trait`/`interface`/`class_exists`, `preg_match`, etc)
 
 Bug fixes:
 + When a typed property has an incompatible default, don't infer the union type from the default. (#3024)

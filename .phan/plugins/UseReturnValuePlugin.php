@@ -815,30 +815,31 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
         'zlib_decode' => true,
         'zlib_encode' => true,
 
-        'call_user_func' => false,  // dynamic
-        'call_user_func_array' => false,
+        'call_user_func' => self::SPECIAL_CASE,  // dynamic
+        'call_user_func_array' => self::SPECIAL_CASE,
         'chmod' => false,  // some code is optimistic
-        'class_exists' => false,  // triggers class autoloader to load the class
+        'class_exists' => self::SPECIAL_CASE,  // triggers class autoloader to load the class
         'copy' => false,  // some code is optimistic
         'define' => false,
         'end' => false,  // move array cursor
         'file_get_contents' => false,  // can be used for urls
-        'interface_exists' => false,  // triggers class autoloader to load the interface
+        'interface_exists' => self::SPECIAL_CASE,  // triggers class autoloader to load the interface
         'mkdir' => false,  // some code is optimistic
         'next' => false,  // move array cursor
-        'preg_match' => false,  // useful if known
+        'preg_match' => self::SPECIAL_CASE,  // useful if known
+        'preg_match_all' => self::SPECIAL_CASE,  // useful if known
         'prev' => false,  // move array cursor
-        'print_r' => self::USE_IF_SECOND_ARGUMENT_TRUE,  // returns a string if second arg is true
+        'print_r' => self::SPECIAL_CASE,  // returns a string if second arg is true
         'reflectionmethod::invokeargs' => false,  // may be a void
         'rename' => false,  // some code is optimistic
         'reset' => false,  // move array cursor
         'session_id' => false,  // Triggers regeneration
-        'strtok' => false,  // advances a cursor if called with 1 argument
-        'trait_exists' => false,  // triggers class autoloader to load the trait
-        'var_export' => self::USE_IF_SECOND_ARGUMENT_TRUE,  // returns a string if second arg is true
+        'strtok' => self::SPECIAL_CASE,  // advances a cursor if called with 1 argument
+        'trait_exists' => self::SPECIAL_CASE,  // triggers class autoloader to load the trait
+        'var_export' => self::SPECIAL_CASE,  // returns a string if second arg is true
     ];
 
-    const USE_IF_SECOND_ARGUMENT_TRUE = 'if2ndtrue';
+    const SPECIAL_CASE = 'specialcase';
 }
 
 /**
@@ -1044,7 +1045,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         }
     }
 
-    private static function isSecondArgumentTrue(Node $node) : bool
+    private static function isSecondArgumentEqualToConst(Node $node, string $const_name) : bool
     {
         $args = $node->children['args']->children;
         $bool_node = $args[1] ?? null;
@@ -1055,7 +1056,55 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
             return false;
         }
         $name = $bool_node->children['name']->children['name'] ?? null;
-        return is_string($name) && strcasecmp($name, 'true') === 0;
+        return is_string($name) && strcasecmp($name, $const_name) === 0;
+    }
+
+    private function shouldNotWarnForSpecialCase(string $fqsen_key, Node $node) : bool
+    {
+        switch ($fqsen_key) {
+            case 'var_export':
+            case 'print_r':
+                // var_export and print_r take a second bool argument.
+                // Warn if that argument is true.
+                return !self::isSecondArgumentEqualToConst($node, 'true');
+            case 'class_exists':
+            case 'interface_exists':
+            case 'trait_exists':
+                // Triggers autoloader unless second argument is false
+                return !self::isSecondArgumentEqualToConst($node, 'false');
+            case 'strtok':
+                // advances a cursor if called with 1 argument
+                return count($node->children['args']->children) <= 1;
+            case 'preg_match':
+            case 'preg_match_all':
+                return count($node->children['args']->children) >= 3;
+            case 'call_user_func':
+            case 'call_user_func_array':
+                return $this->shouldNotWarnForDynamicCall($node->children['args']->children[0] ?? null);
+        }
+        return true;
+    }
+
+    /**
+     * @param ?(Node|string|int|float) $node_name
+     */
+    private function shouldNotWarnForDynamicCall($node_name) : bool
+    {
+        if ($node_name instanceof Node) {
+            foreach ((new ContextNode(
+                $this->code_base,
+                $this->context,
+                $node_name
+            ))->getFunctionFromNode() as $function) {
+                $node_name = $function->getFQSEN()->__toString();
+                break;
+            }
+        }
+        if (!is_string($node_name)) {
+            return true;
+        }
+        $fqsen_key = strtolower(ltrim($node_name, "\\"));
+        return (UseReturnValuePlugin::HARDCODED_FQSENS[$fqsen_key] ?? null) !== true;
     }
 
     private function quickWarn(string $fqsen, Node $node) : void
@@ -1066,8 +1115,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
             return;
         }
         if ($result !== true) {
-            // var_export and print_r take a second bool argument
-            if (!self::isSecondArgumentTrue($node)) {
+            if ($this->shouldNotWarnForSpecialCase($fqsen_key, $node)) {
                 return;
             }
         }
