@@ -7,9 +7,9 @@ use Phan\AST\AnalysisVisitor;
 use Phan\AST\Visitor\Element;
 use Phan\Issue;
 use Phan\Language\Element\TypedElement;
+use Phan\Language\FQSEN;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
-use Phan\Language\FQSEN;
 
 /**
  * This augments AnalysisVisitor with public and internal methods.

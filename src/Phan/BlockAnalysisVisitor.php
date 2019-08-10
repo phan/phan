@@ -545,6 +545,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         $condition_node = $node->children['cond'];
         if ($condition_node instanceof Node) {
             $this->parent_node_list[] = $node;
+            $condition_subnode = false;
             try {
                 // The typical case is `for (init; $x; loop) {}`
                 // But `for (init; $x, $y; loop) {}` is rare but possible, which requires evaluating those in order.
@@ -561,47 +562,53 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             } finally {
                 \array_pop($this->parent_node_list);
             }
+            $always_iterates_at_least_once = $condition_subnode instanceof Node ? UnionTypeVisitor::checkCondUnconditionalTruthiness($condition_subnode) : (bool) $condition_subnode;
+        } else {
+            $always_iterates_at_least_once = true;
         }
+        $original_context = $context;
 
-        if ($stmts_node = $node->children['stmts']) {
-            // Look to see if any proofs we do within the condition of the for
-            // can say anything about types within the statement
-            // list.
-            // TODO: Distinguish between inner and outer context.
-            //   E.g. `for (; $x = cond(); ) {}` will have truthy $x within the loop
-            //   but falsey outside the loop, if there are no breaks.
-            if ($condition_node instanceof Node) {
-                $context = (new LoopConditionVisitor(
-                    $this->code_base,
-                    $context,
-                    $condition_node,
-                    false,
-                    BlockExitStatusChecker::willUnconditionallyProceed($stmts_node)
-                ))->__invoke($condition_node);
-            } elseif (Config::getValue('redundant_condition_detection')) {
-                $condition_node = $condition_node ?? new Node(
-                    ast\AST_CONST,
-                    0,
-                    ['name' => new Node(ast\AST_NAME, ast\flags\NAME_NOT_FQ, ['name' => 'true'], $node->lineno)],
-                    $node->lineno
-                );
-                (new LoopConditionVisitor(
-                    $this->code_base,
-                    $context,
-                    $condition_node,
-                    false,
-                    BlockExitStatusChecker::willUnconditionallyProceed($stmts_node)
-                ))->checkRedundantOrImpossibleTruthyCondition($condition_node, $context, null, false);
-            }
-            if ($stmts_node instanceof Node) {
-                $context = $this->analyzeAndGetUpdatedContext(
-                    $context->withScope(
-                        new BranchScope($context->getScope())
-                    )->withLineNumberStart($stmts_node->lineno),
-                    $node,
-                    $stmts_node
-                );
-            }
+        $stmts_node = $node->children['stmts'];
+        if (!($stmts_node instanceof Node)) {
+            throw new AssertionError('Expected php-ast to always return a statement list for ast\AST_FOR');
+        }
+        // Look to see if any proofs we do within the condition of the for
+        // can say anything about types within the statement
+        // list.
+        // TODO: Distinguish between inner and outer context.
+        //   E.g. `for (; $x = cond(); ) {}` will have truthy $x within the loop
+        //   but falsey outside the loop, if there are no breaks.
+        if ($condition_node instanceof Node) {
+            $context = (new LoopConditionVisitor(
+                $this->code_base,
+                $context,
+                $condition_node,
+                false,
+                BlockExitStatusChecker::willUnconditionallyProceed($stmts_node)
+            ))->__invoke($condition_node);
+        } elseif (Config::getValue('redundant_condition_detection')) {
+            $condition_node = $condition_node ?? new Node(
+                ast\AST_CONST,
+                0,
+                ['name' => new Node(ast\AST_NAME, ast\flags\NAME_NOT_FQ, ['name' => 'true'], $node->lineno)],
+                $node->lineno
+            );
+            (new LoopConditionVisitor(
+                $this->code_base,
+                $context,
+                $condition_node,
+                false,
+                BlockExitStatusChecker::willUnconditionallyProceed($stmts_node)
+            ))->checkRedundantOrImpossibleTruthyCondition($condition_node, $context, null, false);
+        }
+        if ($stmts_node instanceof Node) {
+            $context = $this->analyzeAndGetUpdatedContext(
+                $context->withScope(
+                    new BranchScope($context->getScope())
+                )->withLineNumberStart($stmts_node->lineno),
+                $node,
+                $stmts_node
+            );
         }
         // Analyze the loop after analyzing the statements, in case it uses variables defined within the statements.
         $loop_node = $node->children['loop'];
@@ -620,6 +627,9 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         }
 
         $context = $context->withExitLoop($node);
+        if (!$always_iterates_at_least_once) {
+            $context = (new ContextMergeVisitor($context, [$original_context, $context]))->combineChildContextList();
+        }
 
         // Now that we know all about our context (like what
         // 'self' means), we can analyze statements like
@@ -682,49 +692,56 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
         $condition_node = $node->children['cond'];
         if ($condition_node instanceof Node) {
-            // Analyze the cond expression.
+            // Analyze the cond expression for its side effects and the code it contains,
+            // not the effect of the condition.
+            // e.g. `while ($x = foo())`
             $context = $this->analyzeAndGetUpdatedContext(
                 $context->withLineNumberStart($condition_node->lineno),
                 $node,
                 $condition_node
             );
+            $always_iterates_at_least_once = UnionTypeVisitor::checkCondUnconditionalTruthiness($condition_node);
+        } else {
+            $always_iterates_at_least_once = (bool)$condition_node;
+        }
+        $original_context = $context;
+
+        $stmts_node = $node->children['stmts'];
+        if (!$stmts_node instanceof Node) {
+            throw new AssertionError('Expected php-ast to always return an ast\AST_STMT_LIST for a while loop\'s statement list');
         }
 
-        if ($stmts_node = $node->children['stmts']) {
-            // Look to see if any proofs we do within the condition of the while
-            // can say anything about types within the statement
-            // list.
-            // TODO: Distinguish between inner and outer context.
-            //   E.g. `while ($x = cond()) {}` will have truthy $x within the loop
-            //   but falsey outside the loop, if there are no breaks.
-            if ($condition_node instanceof Node) {
-                $context = (new LoopConditionVisitor(
-                    $this->code_base,
-                    $context,
-                    $condition_node,
-                    false,
-                    BlockExitStatusChecker::willUnconditionallyProceed($stmts_node)
-                ))->__invoke($condition_node);
-            } elseif (Config::getValue('redundant_condition_detection')) {
-                (new LoopConditionVisitor(
-                    $this->code_base,
-                    $context,
-                    $condition_node,
-                    false,
-                    BlockExitStatusChecker::willUnconditionallyProceed($stmts_node)
-                ))->checkRedundantOrImpossibleTruthyCondition($condition_node, $context, null, false);
-            }
-
-            if ($stmts_node instanceof Node) {
-                $context = $this->analyzeAndGetUpdatedContext(
-                    $context->withScope(
-                        new BranchScope($context->getScope())
-                    )->withLineNumberStart($stmts_node->lineno),
-                    $node,
-                    $stmts_node
-                );
-            }
+        // Look to see if any proofs we do within the condition of the while
+        // can say anything about types within the statement
+        // list.
+        // TODO: Distinguish between inner and outer context.
+        //   E.g. `while ($x = cond()) {}` will have truthy $x within the loop
+        //   but falsey outside the loop, if there are no breaks.
+        if ($condition_node instanceof Node) {
+            $context = (new LoopConditionVisitor(
+                $this->code_base,
+                $context,
+                $condition_node,
+                false,
+                BlockExitStatusChecker::willUnconditionallyProceed($stmts_node)
+            ))->__invoke($condition_node);
+        } elseif (Config::getValue('redundant_condition_detection')) {
+            (new LoopConditionVisitor(
+                $this->code_base,
+                $context,
+                $condition_node,
+                false,
+                BlockExitStatusChecker::willUnconditionallyProceed($stmts_node)
+            ))->checkRedundantOrImpossibleTruthyCondition($condition_node, $context, null, false);
         }
+
+        $context = $this->analyzeAndGetUpdatedContext(
+            $context->withScope(
+                new BranchScope($context->getScope())
+            )->withLineNumberStart($stmts_node->lineno),
+            $node,
+            $stmts_node
+        );
 
         if (isset($node->phan_loop_contexts)) {
             // Combine contexts from continue/break statements within this while loop
@@ -733,6 +750,9 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         }
 
         $context = $context->withExitLoop($node);
+        if (!$always_iterates_at_least_once) {
+            $context = (new ContextMergeVisitor($original_context, [$original_context, $context]))->combineChildContextList();
+        }
 
         // Now that we know all about our context (like what
         // 'self' means), we can analyze statements like

@@ -764,6 +764,9 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                     $new_type = $default_if_empty;
                 } else {
                     $new_type = $new_type->nonNullableClone();
+                    if (!$new_type->hasRealTypeSet()) {
+                        $new_type = $new_type->withRealTypeSet($default_if_empty->getRealTypeSet());
+                    }
                 }
                 $variable->setUnionType($new_type);
             };

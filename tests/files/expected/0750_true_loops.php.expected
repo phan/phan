@@ -1,0 +1,6 @@
+%s:8 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is string but \intdiv() takes int
+%s:9 PhanImpossibleCondition Impossible attempt to cast $i of type string to int
+%s:16 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is string but \intdiv() takes int
+%s:17 PhanImpossibleCondition Impossible attempt to cast $j of type string to int
+%s:23 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is string but \intdiv() takes int
+%s:24 PhanImpossibleCondition Impossible attempt to cast $k of type string to int

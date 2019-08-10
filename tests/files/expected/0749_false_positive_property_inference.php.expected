@@ -1,0 +1,1 @@
+%s:15 PhanRedundantCondition Redundant attempt to cast $x of type int to int

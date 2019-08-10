@@ -38,7 +38,8 @@ final class EmptyStatementListPlugin extends PluginV3 implements PostAnalyzeNode
      */
     public static $ignore_todos = false;
 
-    public function __construct() {
+    public function __construct()
+    {
         self::$ignore_todos = (bool) (Config::getValue('plugin_config')['empty_statement_list_ignore_todos'] ?? false);
     }
 
