@@ -32,6 +32,7 @@ Plugins:
 + Don't warn in `EmptyStatementListPlugin` if a TODO/FIXME/"Deliberately empty" comment is seen around the empty statement list. (#3036)
   (This may miss some TODOs due to `php-ast` not providing the end line numbers)
   The setting `'plugin_config' => ['empty_statement_list_ignore_todos' => true]` can be used to make it unconditionally warn about empty statement lists.
++ Improve checks for UseReturnValuePlugin for functions where warning depend on their arg count (`call_user_func`, `trait`/`interface`/`class_exists`, `preg_match`, etc)
 
 Bug fixes:
 + When a typed property has an incompatible default, don't infer the union type from the default. (#3024)
