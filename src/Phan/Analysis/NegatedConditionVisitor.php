@@ -502,9 +502,17 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                     $var_node,
                     $context,
                     static function (UnionType $union_type) use ($base_class_name) : bool {
-                        return $union_type->hasTypeMatchingCallback(static function (Type $type) use ($base_class_name) : bool {
-                            return $type instanceof $base_class_name;
-                        });
+                        foreach ($union_type->getTypeSet() as $type) {
+                            if ($type instanceof $base_class_name) {
+                                return true;
+                            }
+                        }
+                        foreach ($union_type->getRealTypeSet() as $type) {
+                            if ($type instanceof $base_class_name) {
+                                return true;
+                            }
+                        }
+                        return false;
                     },
                     static function (UnionType $union_type) use ($base_class_name) : UnionType {
                         $new_type_builder = new UnionTypeBuilder();

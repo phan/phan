@@ -25,6 +25,8 @@ New features(Analysis):
 + Don't emit `PhanTypeInvalidDimOffset` when array access is used with the null coalescing operator. (#2123)
 + Make Phan check for `PhanUndeclaredTypeProperty` suppressions on the property's doc comment, not the class. (#3047)
 + Make inferred real/phpdoc types for results of division more accurate.
++ Improve analysis of for loops and while loops.
+  Account for the possibility of the loop iteration never occurring. (unless the condition is unconditionally true)
 
 Plugins:
 + Add `StrictComparisonPlugin`, which warns about the following issue types:
@@ -39,6 +41,8 @@ Plugins:
 Bug fixes:
 + When a typed property has an incompatible default, don't infer the union type from the default. (#3024)
 + Don't emit `PhanTypeMismatchProperties` for assignments to dynamic properties. (#3042)
++ Fix false positive RedundantConditions analyzing properties of `$this` in the local scope. (#3038)
++ Properly infer that real type is always `int` (or a subtype) after the `is_int($var)` condition.
 
 Jul 30 2019, Phan 2.2.8
 -----------------------

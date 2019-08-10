@@ -2893,10 +2893,11 @@ class UnionType implements Serializable
     }
 
     /**
-     * Returns the types for which is_int($x) || is_float($x) would be true.
+     * Returns the types for which is_float($x) would be true.
+     * Note that is_float($int) is false in PHP.
      *
      * @return UnionType
-     * A UnionType with known int types kept, other types filtered out.
+     * A UnionType with known float types kept, other types filtered out.
      *
      * @see nonGenericArrayTypes
      * @suppress PhanUnreferencedPublicMethod
@@ -2904,8 +2905,7 @@ class UnionType implements Serializable
     public function floatTypes() : UnionType
     {
         return $this->makeFromFilter(static function (Type $type) : bool {
-            // IntType and LiteralIntType and FloatType
-            return $type instanceof IntType || $type instanceof FloatType;
+            return $type instanceof FloatType;
         });
     }
 
@@ -3955,13 +3955,17 @@ class UnionType implements Serializable
     }
 
     /**
-     * Generates a variable length string identifier that uniquely identifies the Type instances in this UnionType.
+     * Generates a variable length string identifier that uniquely identifies the Type instances in this UnionType. (both phpdoc and real)
      * `int|string` will generate the same id as `string|int`.
      */
     public function generateUniqueId() : string
     {
         /** @var array<int,int> $ids */
+        // Real types are given negative ids, and phpdoc types are given non-negative ids.
         $ids = [];
+        foreach ($this->real_type_set as $type) {
+            $ids[] = ~\spl_object_id($type);
+        }
         foreach ($this->type_set as $type) {
             $ids[] = \spl_object_id($type);
         }

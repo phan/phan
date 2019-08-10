@@ -52,7 +52,11 @@ class StrictComparisonPlugin extends PluginV3 implements
                 Context $context,
                 Func $func,
                 array $args
-            ) use ($index, $index_name, $min_args) : void {
+            ) use (
+                $index,
+                $index_name,
+                $min_args
+) : void {
                 if (count($args) < $min_args) {
                     return;
                 }
@@ -96,7 +100,8 @@ class StrictComparisonPlugin extends PluginV3 implements
 /**
  * Warns about using weak comparison operators when both sides are possibly objects
  */
-class StrictComparisonVisitor extends PluginAwarePostAnalysisVisitor {
+class StrictComparisonVisitor extends PluginAwarePostAnalysisVisitor
+{
     /**
      * @param Node $node
      * A node of kind ast\AST_BINARY_OP to analyze
@@ -141,7 +146,8 @@ class StrictComparisonVisitor extends PluginAwarePostAnalysisVisitor {
         }
     }
 
-    private function bothSidesArePossiblyObjects(Node $node) : bool {
+    private function bothSidesArePossiblyObjects(Node $node) : bool
+    {
         ['left' => $left, 'right' => $right] = $node->children;
         if (!($left instanceof Node) || !($right instanceof Node)) {
             return false;
