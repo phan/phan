@@ -1,0 +1,11 @@
+%s:8 PhanRedundantCondition Redundant attempt to cast ($a / $s) of type float|int to numeric
+%s:8 PhanTypeInvalidRightOperandOfNumericOp Invalid operator: right operand of / is string (expected number)
+%s:9 PhanRedundantCondition Redundant attempt to cast ($a / 2) of type float|int to numeric
+%s:10 PhanRedundantCondition Redundant attempt to cast ($a / $v2) of type float|int to numeric
+%s:11 PhanRedundantCondition Redundant attempt to cast ($v1 / $v2) of type float|int to numeric
+%s:12 PhanTypeMismatchArgumentReal Argument 1 ($s) is float|int but \expect_string() takes string defined at %s:3
+%s:13 PhanTypeMismatchArgumentReal Argument 1 ($s) is float|int but \expect_string() takes string defined at %s:3
+%s:14 PhanTypeMismatchArgumentReal Argument 1 ($s) is float|int but \expect_string() takes string defined at %s:3
+%s:15 PhanTypeInvalidLeftOperandOfNumericOp Invalid operator: left operand of / is true (expected number)
+%s:15 PhanTypeInvalidRightOperandOfNumericOp Invalid operator: right operand of / is string (expected number)
+%s:15 PhanTypeMismatchArgumentReal Argument 1 ($s) is float|int but \expect_string() takes string defined at %s:3

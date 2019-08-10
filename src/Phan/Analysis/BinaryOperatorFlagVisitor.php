@@ -281,10 +281,12 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         static $real_int_or_string;
         static $real_int;
         static $real_float;
+        static $real_int_or_float;
         if ($real_int_or_string === null) {
             $real_int_or_string = [IntType::instance(false), StringType::instance(false)];
             $real_int = [IntType::instance(false)];
             $real_float = [FloatType::instance(false)];
+            $real_int_or_float = [IntType::instance(false), FloatType::instance(false)];
         }
         $left_value = $left->asSingleScalarValueOrNull();
         if ($left_value !== null) {
@@ -323,28 +325,39 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                         return $make_literal_union_type(
                             is_int($value) ? LiteralIntType::instanceForValue($value, false)
                                            : LiteralFloatType::instanceForValue($value, false),
-                            $real_float
+                            $real_int_or_float
+                        );
+                    case ast\flags\BINARY_DIV:
+                        if (!$right_value) {
+                            // TODO: Emit warning about division by zero.
+                            return FloatType::instance(false)->asRealUnionType();
+                        }
+                        $value = $left_value / $right_value;
+                        return $make_literal_union_type(
+                            is_int($value) ? LiteralIntType::instanceForValue($value, false)
+                                           : LiteralFloatType::instanceForValue($value, false),
+                            $real_int_or_float
                         );
                     case ast\flags\BINARY_SUB:
                         $value = $left_value - $right_value;
                         return $make_literal_union_type(
                             is_int($value) ? LiteralIntType::instanceForValue($value, false)
                                            : LiteralFloatType::instanceForValue($value, false),
-                            $real_float
+                            $real_int_or_float
                         );
                     case ast\flags\BINARY_ADD:
                         $value = $left_value + $right_value;
                         return $make_literal_union_type(
                             is_int($value) ? LiteralIntType::instanceForValue($value, false)
                                            : LiteralFloatType::instanceForValue($value, false),
-                            $real_float
+                            $real_int_or_float
                         );
                     case ast\flags\BINARY_POW:
                         $value = $left_value ** $right_value;
                         return $make_literal_union_type(
                             is_int($value) ? LiteralIntType::instanceForValue($value, false)
                                            : LiteralFloatType::instanceForValue($value, false),
-                            $real_float
+                            $real_int_or_float
                         );
                 }
             }
@@ -354,6 +367,9 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
 
         if ($is_binary_op) {
             return UnionType::fromFullyQualifiedPHPDocAndRealString('int', 'int|string');
+        }
+        if ($node->flags === ast\flags\BINARY_DIV) {
+            return UnionType::fromFullyQualifiedRealString('int|float');
         }
         // A heuristic to reduce false positives.
         // e.g. an operation on float and float returns float.
@@ -825,6 +841,9 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             $float_type = FloatType::instance(false);
             $int_or_float_union_type = UnionType::fromFullyQualifiedRealString('int|float');
         }
+        if ($node->flags === ast\flags\BINARY_DIV) {
+            return $int_or_float_union_type;
+        }
 
         if ($left->isNonNullNumberType() && $right->isNonNullNumberType()) {
             if (!$left->hasNonNullIntType() || !$right->hasNonNullIntType()) {
@@ -859,6 +878,18 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      * The resulting type(s) of the binary operation
      */
     public function visitBinaryMul(Node $node) : UnionType
+    {
+        return $this->getTypeOfNumericArithmeticOp($node);
+    }
+
+    /**
+     * @param Node $node
+     * A node to check types on
+     *
+     * @return UnionType
+     * The resulting type(s) of the binary operation
+     */
+    public function visitBinaryDiv(Node $node) : UnionType
     {
         return $this->getTypeOfNumericArithmeticOp($node);
     }

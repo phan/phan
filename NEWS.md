@@ -22,6 +22,7 @@ New features(Analysis):
 + Don't emit `PhanTypeArraySuspiciousNull` when array access is used with the null coalescing operator. (#3032)
 + Don't emit `PhanTypeInvalidDimOffset` when array access is used with the null coalescing operator. (#2123)
 + Make Phan check for `PhanUndeclaredTypeProperty` suppressions on the property's doc comment, not the class. (#3047)
++ Make inferred real/phpdoc types for results of division more accurate.
 
 Plugins:
 + Add `StrictComparisonPlugin`, which warns about the following issue types:

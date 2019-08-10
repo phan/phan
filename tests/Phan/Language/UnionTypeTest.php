@@ -83,7 +83,10 @@ final class UnionTypeTest extends BaseTest
         $this->assertUnionTypeStringEqual('2 ** 9999999', 'float');
         $this->assertUnionTypeStringEqual('0 ** 0', '1');
         $this->assertUnionTypeStringEqual('1 - 2.5', '-1.5');
-        $this->assertUnionTypeStringEqual('1.2 / 0.0', 'float|int');
+        $this->assertUnionTypeStringEqual('1.2 / 0.0', 'float');
+        $this->assertUnionTypeStringEqual('0.0 / 3', '0.0');
+        $this->assertUnionTypeStringEqual('rand() / getrandmax()', 'float|int');
+        $this->assertUnionTypeStringEqual('1.2 / 0.5', '2.4');
         $this->assertUnionTypeStringEqual('1 << 2.3', 'int');
         $this->assertUnionTypeStringEqual('1 | 1', '1');
         $this->assertUnionTypeStringEqual('1 | 2', '3');
