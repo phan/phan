@@ -831,7 +831,7 @@ class AssignmentVisitor extends AnalysisVisitor
         // know what the array structure of the parameter is
         // outside of the scope of this assignment, so we add to
         // its union type rather than replace it.
-        $property_union_type = $property->getUnionType();
+        $property_union_type = $property->getPHPDocUnionType()->withStaticResolvedInContext($this->context);
         $resolved_right_type = $this->right_type->withStaticResolvedInContext($this->context);
         if ($this->dim_depth > 0) {
             if ($resolved_right_type->canCastToExpandedUnionType(

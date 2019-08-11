@@ -595,15 +595,15 @@ final class TypeTest extends BaseTest
                 'array{field:int[],field2:?int}'
             ],
             [
-                'array<string,array{}>',
+                'array<string,array>',
                 'array{field:array{}}'
             ],
             [
-                'array<string,array{innerField:int}>',
+                'array<string,array<string,int>>',
                 'array{field:array{innerField:int}}'
             ],
             [
-                'array<string,array{0:\'test\x2cother\',1:\'x\'}>',
+                'array<string,array<int,string>>',
                 'array{field:array{0:\'test,other\',1:\'x\'}}'
             ],
         ];

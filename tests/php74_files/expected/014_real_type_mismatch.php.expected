@@ -1,6 +1,6 @@
 %s:6 PhanTypeInvalidPropertyDefaultReal Default value for string $incompatibleVal can't be int
 %s:9 PhanTypeMismatchPropertyReal Assigning 'bar' to property but \Example742->intVal is int
 %s:12 PhanTypeMismatchPropertyReal Assigning array{0:'x'} to property but \Example742->strVal is string
-%s:13 PhanTypeMismatchPropertyReal Assigning array<int,array{}> to property but \Example742->strVal is string
-%s:14 PhanTypeMismatchPropertyReal Assigning array<int,array{}> to property but \Example742->strVal is string
+%s:13 PhanTypeMismatchPropertyReal Assigning array<int,array> to property but \Example742->strVal is string
+%s:14 PhanTypeMismatchPropertyReal Assigning array<int,array> to property but \Example742->strVal is string
 %s:16 PhanTypeMismatchPropertyReal Assigning 2 to property but \Example742->incompatibleVal is string

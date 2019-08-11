@@ -628,7 +628,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
         $context = $context->withExitLoop($node);
         if (!$always_iterates_at_least_once) {
-            $context = (new ContextMergeVisitor($context, [$original_context, $context]))->combineChildContextList();
+            $context = (new ContextMergeVisitor($context, [$context, $original_context]))->combineChildContextList();
         }
 
         // Now that we know all about our context (like what
@@ -751,7 +751,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
         $context = $context->withExitLoop($node);
         if (!$always_iterates_at_least_once) {
-            $context = (new ContextMergeVisitor($original_context, [$original_context, $context]))->combineChildContextList();
+            $context = (new ContextMergeVisitor($context, [$context, $original_context]))->combineChildContextList();
         }
 
         // Now that we know all about our context (like what
