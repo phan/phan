@@ -112,8 +112,10 @@ class ConfigEntry
         'runkit_superglobals' => self::CATEGORY_ANALYSIS,
         'globals_type_map' => self::CATEGORY_ANALYSIS,
         'markdown_issue_messages' => self::CATEGORY_HIDDEN_CLI_ONLY, // self::CATEGORY_OUTPUT,
+        'absolute_path_issue_messages' => self::CATEGORY_HIDDEN_CLI_ONLY, // self::CATEGORY_OUTPUT,
         'color_issue_messages' => self::CATEGORY_HIDDEN_CLI_ONLY, // self::CATEGORY_OUTPUT,
         'color_issue_messages_if_supported' => self::CATEGORY_OUTPUT,
+        'hide_issue_column' => self::CATEGORY_OUTPUT,
         'color_scheme' => self::CATEGORY_OUTPUT,
         'generic_types_enabled' => self::CATEGORY_ANALYSIS,
         'randomize_file_order' => self::CATEGORY_HIDDEN_CLI_ONLY,
@@ -396,7 +398,7 @@ EOT;
         if (array_key_exists($header, $old_text_for_section)) {
             $writer->append($old_text_for_section[$header]);
         } else {
-            $writer->append("\nTODO: Document issue category $category_name\n\n");
+            $writer->append("\nTODO: Document config category $category_name\n\n");
         }
     }
 

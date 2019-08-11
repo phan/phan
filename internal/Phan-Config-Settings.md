@@ -731,6 +731,16 @@ Setting this to true will introduce numerous false positives
 
 These settings affect how Phan will track what elements are referenced to warn about them.
 
+## assume_real_types_for_internal_functions
+
+If enabled, Phan will act as though it's certain of real return types of a subset of internal functions,
+even if those return types aren't available in reflection (real types were taken from php 8.0-dev).
+
+Note that in php 7 and earlier, php would return null or false if the argument types or counts were incorrect.
+As a result, enabling this setting may result in false positives for `--redundant-condition-detection`.
+
+(Default: `false`)
+
 ## constant_variable_detection
 
 Set to true in order to attempt to detect variables that could be replaced with constants or literals.
@@ -773,6 +783,15 @@ Set to true in order to force tracking references to elements
 
 [`dead_code_detection`](#dead_code_detection) is another option which also causes references
 to be tracked.
+
+(Default: `false`)
+
+## redundant_condition_detection
+
+Set to true in order to attempt to detect redundant and impossible conditions.
+
+This has some false positives involving loops,
+variables set in branches of loops, and global variables.
 
 (Default: `false`)
 
@@ -830,6 +849,13 @@ E.g. to use the terminal's default color for the line (of an issue instance), se
 ## disable_suggestions
 
 Set this to true to disable suggestions for what to use instead of undeclared variables/classes/etc.
+
+(Default: `false`)
+
+## hide_issue_column
+
+If true, then hide the issue's column in plaintext and pylint output printers.
+Note that phan only knows the column for a tiny subset of issues.
 
 (Default: `false`)
 
