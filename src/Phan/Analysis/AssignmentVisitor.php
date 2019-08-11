@@ -738,11 +738,9 @@ class AssignmentVisitor extends AnalysisVisitor
         if (!\is_string($property_name)) {
             return $this->context;
         }
-        if ($this->dim_depth === 0 &&
-                ($node->children['expr']->kind ?? null) === \ast\AST_VAR &&
+        if (($node->children['expr']->kind ?? null) === \ast\AST_VAR &&
                 $node->children['expr']->children['name'] === 'this') {
-            // TODO: Implement merging for arrays with $this->prop['field'] = 'offset' and handle ArrayAccess
-            $this->handleThisPropertyAssignmentInLocalScopeByName($property_name);
+            $this->handleThisPropertyAssignmentInLocalScopeByName($node, $property_name);
         }
 
         foreach ($class_list as $clazz) {
@@ -941,19 +939,32 @@ class AssignmentVisitor extends AnalysisVisitor
     /**
      * Modifies $this->context (if needed) to track the assignment to a property of $this within a function-like.
      * This handles conditional branches.
-     * @param string|Node|int|float $prop_name
+     * @param string $prop_name
      */
-    private function handleThisPropertyAssignmentInLocalScopeByName($prop_name) : void
+    private function handleThisPropertyAssignmentInLocalScopeByName(Node $node, string $prop_name) : void
     {
-        if ($prop_name instanceof Node) {
-            $prop_name = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $prop_name)->asSingleScalarValueOrNull();
+        if ($this->dim_depth === 0) {
+            $new_type = $this->right_type;
+        } else {
+            // Copied from visitVar
+            $old_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node);
+            $right_type = $this->typeCheckDimAssignment($old_type, $node);
+            if ($old_type->isEmpty()) {
+                $old_type = ArrayType::instance(false)->asPHPDocUnionType();
+            }
+            if ($this->dim_depth > 1 || ($old_type->hasTopLevelNonArrayShapeTypeInstances() || $right_type->hasTopLevelNonArrayShapeTypeInstances() || $right_type->isEmpty())) {
+                $new_type = $old_type->withUnionType(
+                    $right_type
+                );
+            } else {
+                $new_type = ArrayType::combineArrayTypesOverriding(
+                    $right_type,
+                    $old_type
+                );
+            }
         }
-        if (!\is_string($prop_name)) {
-            return;
-        }
-        $this->context = $this->context->withThisPropertySetToTypeByName($prop_name, $this->right_type);
+        $this->context = $this->context->withThisPropertySetToTypeByName($prop_name, $new_type);
     }
-
 
     private function analyzeAssignmentToReadOnlyProperty(Property $property, Node $node) : void
     {

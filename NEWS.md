@@ -29,6 +29,8 @@ New features(Analysis):
   Account for the possibility of the loop iteration never occurring. (unless the condition is unconditionally true)
 + Fix some edge cases that can cause PhanTypeMismatchProperty (#3067, #1867)
   If there was a phpdoc or real type, check against that instead when emitting issues.
++ Analyze assignments to fields of properties of `$this` (e.g. `$this->prop[] = 'value';`)
+  for correctness and for the new type combination. (#3059)
 
 Plugins:
 + Add `StrictComparisonPlugin`, which warns about the following issue types:
