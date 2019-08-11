@@ -27,6 +27,8 @@ New features(Analysis):
 + Make inferred real/phpdoc types for results of division more accurate.
 + Improve analysis of for loops and while loops.
   Account for the possibility of the loop iteration never occurring. (unless the condition is unconditionally true)
++ Fix some edge cases that can cause PhanTypeMismatchProperty (#3067, #1867)
+  If there was a phpdoc or real type, check against that instead when emitting issues.
 
 Plugins:
 + Add `StrictComparisonPlugin`, which warns about the following issue types:
