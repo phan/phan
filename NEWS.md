@@ -3,6 +3,9 @@ Phan NEWS
 ??? ?? 2019, Phan 2.2.10 (dev)
 ------------------------
 
+Plugins:
++ In EmptyStatementListPlugin, warn about switch statements where all cases are no-ops. (#3030)
+
 Aug 11 2019, Phan 2.2.9
 -----------------------
 

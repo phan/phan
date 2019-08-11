@@ -3,6 +3,7 @@
 use ast\Node;
 use Phan\Config;
 use Phan\Library\FileCache;
+use Phan\Parse\ParseVisitor;
 use Phan\PluginV3;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
 use Phan\PluginV3\PostAnalyzeNodeCapability;
@@ -157,7 +158,7 @@ final class EmptyStatementListVisitor extends PluginAwarePostAnalysisVisitor
 
     /**
      * @param Node $node
-     * A node to analyze
+     * A node of kind ast\AST_FOR to analyze
      * @override
      */
     public function visitFor(Node $node) : void
@@ -285,6 +286,44 @@ final class EmptyStatementListVisitor extends PluginAwarePostAnalysisVisitor
                 );
             }
         }
+    }
+
+    /**
+     * @param Node $node
+     * A node of kind ast\AST_SWITCH to analyze
+     * @override
+     */
+    public function visitSwitch(Node $node) : void
+    {
+        // Check all case statements and return if something that isn't a no-op is seen.
+        foreach ($node->children['stmts']->children ?? [] as $c) {
+            $children = $c->children['stmts']->children ?? null;
+            if ($children) {
+                if (count($children) > 1) {
+                    return;
+                }
+                $only_node = $children[0];
+                if ($only_node instanceof Node) {
+                    if (!in_array($only_node->kind, [ast\AST_CONTINUE, ast\AST_BREAK], true)) {
+                        return;
+                    }
+                    if (($only_node->children['depth'] ?? 1) !== 1) {
+                        // not a no-op
+                        return;
+                    }
+                }
+            }
+            if (!ParseVisitor::isConstExpr($c->children['cond'])) {
+                return;
+            }
+        }
+        $this->emitPluginIssue(
+            $this->code_base,
+            clone($this->context)->withLineNumberStart($node->lineno),
+            'PhanPluginEmptyStatementSwitch',
+            'No side effects seen for any cases of this switch statement',
+            []
+        );
     }
 }
 // Every plugin needs to return an instance of itself at the
