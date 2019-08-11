@@ -50,6 +50,7 @@ Bug fixes:
 + Don't emit `PhanTypeMismatchProperties` for assignments to dynamic properties. (#3042)
 + Fix false positive RedundantConditions analyzing properties of `$this` in the local scope. (#3038)
 + Properly infer that real type is always `int` (or a subtype) after the `is_int($var)` condition.
++ Emit `TypeMismatchUnpack*` for nullable key types of iterables if the union type didn't contain any int/mixed types. (fix logic error)
 
 Jul 30 2019, Phan 2.2.8
 -----------------------
