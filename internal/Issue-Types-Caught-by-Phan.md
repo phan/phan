@@ -337,7 +337,7 @@ Access level to {CONST} must be compatible with internal {CONST}
 Access level to {METHOD} must be compatible with {METHOD} defined in {FILE}:{LINE} in PHP versions 7.1 and below
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0740_access_level_construct.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0740_access_level_construct.php#L8).
+e.g. [this issue](https://github.com/phan/phan/tree/2.2.9/tests/files/expected/0740_access_level_construct.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.9/tests/files/src/0740_access_level_construct.php#L8).
 
 ## PhanPropertyAccessSignatureMismatch
 
@@ -413,7 +413,7 @@ This is emitted deliberately when using the polyfill and/or using php 7.4+.
 Array and string offset access syntax with curly braces is deprecated in PHP 7.4. Use square brackets instead. Seen for {CODE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/expected/062_test.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/src/062_test.php#L2).
+e.g. [this issue](https://github.com/phan/phan/tree/2.2.9/tests/misc/fallback_test/expected/062_test.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.9/tests/misc/fallback_test/src/062_test.php#L2).
 
 ## PhanCompatibleExpressionPHP7
 
@@ -431,7 +431,7 @@ The config `backward_compatibility_checks` must be enabled for this to run such 
 In php 7.4, passing glue string after the array is deprecated for {FUNCTION}. Should this swap the parameters of type {TYPE} and {TYPE}?
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0511_implode.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0511_implode.php#L7).
+e.g. [this issue](https://github.com/phan/phan/tree/2.2.9/tests/files/expected/0511_implode.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.9/tests/files/src/0511_implode.php#L7).
 
 ## PhanCompatibleIterableTypePHP70
 
@@ -514,7 +514,7 @@ Currently, this only catches the notice about the `(real)` cast from the native 
 Saw a notice while parsing with the native parser: {DETAILS}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php74_files/expected/012_real_cast.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php74_files/src/012_real_cast.php#L2).
+e.g. [this issue](https://github.com/phan/phan/tree/2.2.9/tests/php74_files/expected/012_real_cast.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.9/tests/php74_files/src/012_real_cast.php#L2).
 
 ## PhanCompatibleTypedProperty
 
@@ -522,7 +522,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php74_files/exp
 Cannot use typed properties before php 7.4. This property group has type {TYPE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php70_files/expected/011_typed_properties.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php70_files/src/011_typed_properties.php#L3).
+e.g. [this issue](https://github.com/phan/phan/tree/2.2.9/tests/php70_files/expected/011_typed_properties.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.9/tests/php70_files/src/011_typed_properties.php#L3).
 
 ## PhanCompatibleUnparenthesizedTernary
 
@@ -530,7 +530,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php70_files/exp
 Unparenthesized '{CODE}' is deprecated. Use either '{CODE}' or '{CODE}'
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/expected/067_ambiguous_ternary.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/src/067_ambiguous_ternary.php#L6).
+e.g. [this issue](https://github.com/phan/phan/tree/2.2.9/tests/misc/fallback_test/expected/067_ambiguous_ternary.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.9/tests/misc/fallback_test/src/067_ambiguous_ternary.php#L6).
 
 ## PhanCompatibleUnsetCast
 
@@ -578,7 +578,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/php70_files/expe
 {FUNCTIONLIKE} documents that it throws {TYPE}, but throwing in __toString() is a fatal error prior to PHP 7.4
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/133_throw_in_to_string.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/133_throw_in_to_string.php#L6).
+e.g. [this issue](https://github.com/phan/phan/tree/2.2.9/tests/plugin_test/expected/133_throw_in_to_string.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.9/tests/plugin_test/src/133_throw_in_to_string.php#L6).
 
 ## PhanThrowStatementInToString
 
@@ -586,7 +586,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/exp
 {FUNCTIONLIKE} throws {TYPE} here, but throwing in __toString() is a fatal error prior to PHP 7.4
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/133_throw_in_to_string.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/133_throw_in_to_string.php#L7).
+e.g. [this issue](https://github.com/phan/phan/tree/2.2.9/tests/plugin_test/expected/133_throw_in_to_string.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.9/tests/plugin_test/src/133_throw_in_to_string.php#L7).
 
 # Context
 
@@ -836,7 +836,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/misc/fallback_te
 Unused result of a ternary expression where the true/false results don't seen to have side effects
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0740_noop_ternary.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0740_noop_ternary.php#L3).
+e.g. [this issue](https://github.com/phan/phan/tree/2.2.9/tests/files/expected/0740_noop_ternary.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.9/tests/files/src/0740_noop_ternary.php#L3).
 
 ## PhanNoopUnaryOperator
 
@@ -2315,7 +2315,7 @@ $a = false; if($a[1]) {}
 Suspicious array access to null
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0739_access_null.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0739_access_null.php#L5).
+e.g. [this issue](https://github.com/phan/phan/tree/2.2.9/tests/files/expected/0739_access_null.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.9/tests/files/src/0739_access_null.php#L5).
 
 ## PhanTypeArraySuspiciousNullable
 
@@ -2848,6 +2848,22 @@ Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} (expec
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0152_closure_casts_callable.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/files/src/0152_closure_casts_callable.php#L4).
 
+## PhanTypeMismatchArgumentPropertyReference
+
+```
+Argument {INDEX} is property {PROPERTY} with type {TYPE} but {FUNCTIONLIKE} takes a reference of type {TYPE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/2.2.9/tests/files/expected/0752_local_property_reference.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.9/tests/files/src/0752_local_property_reference.php#L13).
+
+## PhanTypeMismatchArgumentPropertyReferenceReal
+
+```
+Argument {INDEX} is property {PROPERTY} with type {TYPE}{DETAILS} but {FUNCTIONLIKE} takes a reference of type {TYPE}{DETAILS}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/2.2.9/tests/files/expected/0748_property_incompatible_reference.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.9/tests/files/src/0748_property_incompatible_reference.php#L25).
+
 ## PhanTypeMismatchArgumentReal
 
 This is a more severe version of `PhanTypeMismatchArgument` for code that Phan infers is likely to throw an Error at runtime.
@@ -2864,7 +2880,7 @@ This does not attempt to account for the possibility of overriding methods being
 Argument {INDEX} (${PARAMETER}) is {TYPE}{DETAILS} but {FUNCTIONLIKE} takes {TYPE}{DETAILS} defined at {FILE}:{LINE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/rasmus_files/expected/0006_var_combo.php.expected#L5) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/rasmus_files/src/0006_var_combo.php#L6).
+e.g. [this issue](https://github.com/phan/phan/tree/2.2.9/tests/rasmus_files/expected/0006_var_combo.php.expected#L5) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.9/tests/rasmus_files/src/0006_var_combo.php#L6).
 
 ## PhanTypeMismatchArrayDestructuringKey
 
@@ -3002,7 +3018,7 @@ function f(int $p = false) {}
 Assigning {TYPE} to property but {PROPERTY} is {TYPE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php70_files/expected/012_typed_properties_errors.php.expected#L11) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php70_files/src/012_typed_properties_errors.php#L20).
+e.g. [this issue](https://github.com/phan/phan/tree/2.2.9/tests/php70_files/expected/012_typed_properties_errors.php.expected#L11) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.9/tests/php70_files/src/012_typed_properties_errors.php#L20).
 
 ## PhanTypeMismatchReturn
 
@@ -3044,7 +3060,7 @@ This issue is emitted from the following code
 class G { function f() : int { return 'string'; } }
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/rasmus_files/expected/0006_var_combo.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/rasmus_files/src/0006_var_combo.php#L3).
+e.g. [this issue](https://github.com/phan/phan/tree/2.2.9/tests/rasmus_files/expected/0006_var_combo.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.9/tests/rasmus_files/src/0006_var_combo.php#L3).
 
 ## PhanTypeMismatchUnpackKey
 
@@ -3300,7 +3316,7 @@ class F { function f() { $v = parent::f(); } }
 Attempting to read property {PROPERTY} which was unset in the current scope
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0742_dynamic_property_tracking.php.expected#L5) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0742_dynamic_property_tracking.php#L10).
+e.g. [this issue](https://github.com/phan/phan/tree/2.2.9/tests/files/expected/0742_dynamic_property_tracking.php.expected#L5) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.9/tests/files/src/0742_dynamic_property_tracking.php#L10).
 
 ## PhanRequiredTraitNotAdded
 
@@ -3500,7 +3516,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/expe
 Global variable ${VARIABLE} is undeclared
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/misc/rewriting_test/expected/004_crash_rewrite_if.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/misc/rewriting_test/src/004_crash_rewrite_if.php#L2).
+e.g. [this issue](https://github.com/phan/phan/tree/2.2.9/tests/misc/rewriting_test/expected/004_crash_rewrite_if.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.9/tests/misc/rewriting_test/src/004_crash_rewrite_if.php#L2).
 
 ## PhanUndeclaredInterface
 
@@ -4074,4 +4090,4 @@ Note: This is not the same thing as running `php -l` on a file - PhanSyntaxError
 
 Note: If the native parser is used, the reported column is a guess. Phan will use the column of the error reported by the **polyfill** if the errors are on the same line.
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/136_unexpected_bracket.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/136_unexpected_bracket.php#L2).
+e.g. [this issue](https://github.com/phan/phan/tree/2.2.9/tests/plugin_test/expected/136_unexpected_bracket.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.9/tests/plugin_test/src/136_unexpected_bracket.php#L2).
