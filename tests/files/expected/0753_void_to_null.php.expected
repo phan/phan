@@ -1,0 +1,2 @@
+%s:5 PhanSuspiciousValueComparison Suspicious attempt to compare void_753() of type void to null of type null with operator '==='
+%s:8 PhanRedundantCondition Redundant attempt to cast void_753() of type void to null

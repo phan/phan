@@ -217,15 +217,6 @@ class ParameterTypesAnalyzer
         foreach ($method->getRealReturnType()->getTypeSet() as $type) {
             $type_class = \get_class($type);
             if ($php70_checks) {
-                if ($type->isNullable()) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $method->getContext(),
-                        Issue::CompatibleNullableTypePHP70,
-                        $method->getFileRef()->getLineNumberStart(),
-                        (string)$type
-                    );
-                }
                 // Could check for use statements, but `php7.1 -l path/to/file.php` would do that already.
                 if ($type_class === VoidType::class) {
                     Issue::maybeEmit(
@@ -235,14 +226,26 @@ class ParameterTypesAnalyzer
                         $method->getFileRef()->getLineNumberStart(),
                         (string)$type
                     );
-                } elseif ($type_class === IterableType::class) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $method->getContext(),
-                        Issue::CompatibleIterableTypePHP70,
-                        $method->getFileRef()->getLineNumberStart(),
-                        (string)$type
-                    );
+                } else {
+                    if ($type->isNullable()) {
+                        // Don't emit CompatibleNullableTypePHP70 for `void`.
+                        Issue::maybeEmit(
+                            $code_base,
+                            $method->getContext(),
+                            Issue::CompatibleNullableTypePHP70,
+                            $method->getFileRef()->getLineNumberStart(),
+                            (string)$type
+                        );
+                    }
+                    if ($type_class === IterableType::class) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $method->getContext(),
+                            Issue::CompatibleIterableTypePHP70,
+                            $method->getFileRef()->getLineNumberStart(),
+                            (string)$type
+                        );
+                    }
                 }
             }
             if ($type_class === ObjectType::class) {
@@ -834,9 +837,10 @@ class ParameterTypesAnalyzer
         $return_union_type = $method->isFromPHPDoc() ? $method->getUnionType() : $method->getRealReturnType();
         // If the parent has a return type, then return types should be equal.
         // A non-nullable return type can override a nullable return type of the same type.
+        // Be sure to handle `void`, which contains nullable types
         if (!$o_return_union_type->isEmpty()) {
             if (!($o_return_union_type->isEqualTo($return_union_type) || (
-                $o_return_union_type->containsNullable() && ($o_return_union_type->nonNullableClone()->isEqualTo($return_union_type)))
+                ($o_return_union_type->containsNullable() && !$o_return_union_type->isNull()) && ($o_return_union_type->nonNullableClone()->isEqualTo($return_union_type)))
                 )) {
                 // There is one exception to this in php 7.1 - the pseudo-type "iterable" can replace ArrayAccess/array in a subclass
                 // TODO: Traversable and array work, but Iterator doesn't. Check for those specific cases?

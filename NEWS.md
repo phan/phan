@@ -31,6 +31,9 @@ New features(Analysis):
   If there was a phpdoc or real type, check against that instead when emitting issues.
 + Analyze assignments to fields of properties of `$this` (e.g. `$this->prop[] = 'value';`)
   for correctness and for the new type combination. (#3059)
++ Infer that the `void` should be treated similarly to null
+  (in addition to existing checks, it's redundant to compare them to null).
+  Don't warn about `return null;` in functions/methods with phpdoc-only `@return void`.
 
 Plugins:
 + Add `StrictComparisonPlugin`, which warns about the following issue types:
@@ -47,6 +50,7 @@ Bug fixes:
 + Don't emit `PhanTypeMismatchProperties` for assignments to dynamic properties. (#3042)
 + Fix false positive RedundantConditions analyzing properties of `$this` in the local scope. (#3038)
 + Properly infer that real type is always `int` (or a subtype) after the `is_int($var)` condition.
++ Emit `TypeMismatchUnpack*` for nullable key types of iterables if the union type didn't contain any int/mixed types. (fix logic error)
 
 Jul 30 2019, Phan 2.2.8
 -----------------------

@@ -1696,8 +1696,9 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
             $key_type = $union_type->iterableKeyUnionType($this->code_base);
             // Check that this is possibly valid, e.g. array<int, mixed>, Generator<int, mixed>, or iterable<int, mixed>
-            // TODO: Could add stricter type checks (e.g. nullable checks)
-            if (!$key_type->isEmpty() && !$key_type->containsNullable() && !$key_type->hasTypeMatchingCallback(static function (Type $type) : bool {
+            // TODO: Warn if key_type contains nullable types (excluding VoidType)
+            // TODO: Warn about union types that are partially invalid.
+            if (!$key_type->isEmpty() && !$key_type->hasTypeMatchingCallback(static function (Type $type) : bool {
                 return $type instanceof IntType || $type instanceof MixedType;
             })) {
                 throw new IssueException(
