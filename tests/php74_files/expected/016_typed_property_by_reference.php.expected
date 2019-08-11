@@ -1,4 +1,4 @@
-%s:25 PhanTypeMismatchArgumentPropertyReferenceReal Argument 2 is property \MyClass->x with type string but \fn16b() takes a reference of type array (no real type)
+%s:25 PhanTypeMismatchArgumentPropertyReferenceReal Argument 2 is property \MyClass->x with type 'default' but \fn16b() takes a reference of type array (no real type)
 %s:25 PhanTypeMismatchArgument Argument 3 ($x) is 'default' but \fn16b() takes array defined at %s:13
 %s:31 PhanTypeMismatchArgumentPropertyReferenceReal Argument 2 is property \MyClass->x with type string but \fn16() takes a reference of type array (no real type)
 %s:32 PhanTypeMismatchArgumentPropertyReferenceReal Argument 2 is property \MyClass::$typedX with type string but \fn16() takes a reference of type array (no real type)
