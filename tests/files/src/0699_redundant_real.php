@@ -7,7 +7,7 @@ class Example699 {
 
     public function modify() {
         if (!isset($this->p1)) {
-            $this->p1 = 'other';  // TODO: Don't emit PhanTypeMismatchProperty
+            $this->p1 = 'other';  // Doesn't warn because type was undeclared.
         }
     }
 }

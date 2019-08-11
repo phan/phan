@@ -165,11 +165,12 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         $union_type_builder = new UnionTypeBuilder();
         foreach ($this->field_types as $key => $field_union_type) {
             foreach ($field_union_type->getTypeSet() as $type) {
-                $union_type_builder->addType(GenericArrayType::fromElementType(
-                    $type->asNonLiteralType(),
-                    $this->is_nullable,
-                    \is_string($key) ? GenericArrayType::KEY_STRING : GenericArrayType::KEY_INT
-                ));
+                $union_type_builder->addUnionType(
+                    $type->asPHPDocUnionType()
+                         ->withFlattenedArrayShapeOrLiteralTypeInstances()
+                         ->asGenericArrayTypes(\is_string($key) ? GenericArrayType::KEY_STRING : GenericArrayType::KEY_INT)
+                         ->withIsNullable($this->is_nullable)
+                );
             }
         }
         return $union_type_builder->getTypeSet();

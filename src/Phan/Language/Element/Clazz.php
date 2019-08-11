@@ -833,6 +833,7 @@ class Clazz extends AddressableElement
                 $property_fqsen,
                 UnionType::empty()
             );
+            $property->setPHPDocUnionType($union_type);
             if ($original_union_type !== $union_type) {
                 $phan_flags |= Flags::HAS_STATIC_UNION_TYPE;
             }

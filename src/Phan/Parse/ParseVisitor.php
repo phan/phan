@@ -531,6 +531,8 @@ class ParseVisitor extends ScopeVisitor
             );
             if ($variable) {
                 $property->setPHPDocUnionType($variable->getUnionType());
+            } elseif ($real_union_type) {
+                $property->setPHPDocUnionType($real_union_type);
             }
 
             $property->setPhanFlags($comment->getPhanFlagsForProperty());
