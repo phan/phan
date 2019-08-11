@@ -3849,11 +3849,20 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     /**
      * Emit warnings if the pass-by-reference call would set the property to an invalid type
+     * @param Node $argument a node of kind ast\AST_PROP or ast\AST_STATIC_PROP
      */
     private static function checkPassingPropertyByReference(CodeBase $code_base, Context $context, FunctionInterface $method, Parameter $parameter, Node $argument, Property $property, int $parameter_offset) : void
     {
         $parameter_type = $parameter->getUnionType();
-        $property_type = $property->getUnionType();
+        $expr_node = $argument->children['expr'] ?? null;
+        if ($expr_node instanceof Node &&
+                $expr_node->kind === ast\AST_VAR &&
+                $expr_node->children['name'] === 'this') {
+            // If the property is of the form $this->prop, check for local assignments and conditions on $this->prop
+            $property_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $argument);
+        } else {
+            $property_type = $property->getUnionType();
+        }
         if ($property_type->hasRealTypeSet()) {
             // Barely any reference parameters will have real union types (and phan would already warn about passing them in if they did),
             // so warn if the phpdoc type doesn't match the property's real type.
@@ -3884,7 +3893,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $argument->lineno,
             $parameter_offset,
             $property->getRepresentationForIssue(),
-            $property->getUnionType(),
+            $property_type,
             $method->getRepresentationForIssue(),
             $parameter->getUnionType()
         );
