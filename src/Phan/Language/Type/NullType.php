@@ -23,7 +23,7 @@ final class NullType extends ScalarType
      * @param string $name
      * The name of the type such as 'int' or 'MyClass'
      *
-     * @param array<int,UnionType> $template_parameter_type_list
+     * @param array<int,UnionType> $template_parameter_type_list @phan-unused-param
      * A (possibly empty) list of template parameter types
      *
      * @param bool $is_nullable (@phan-unused-param)
@@ -39,7 +39,7 @@ final class NullType extends ScalarType
         parent::__construct(
             $namespace,
             $name,
-            $template_parameter_type_list,
+            [],
             true
         );
     }
@@ -160,7 +160,7 @@ final class NullType extends ScalarType
 
     public function __toString() : string
     {
-        return $this->name;
+        return self::NAME;
     }
 
     public function isNullable() : bool

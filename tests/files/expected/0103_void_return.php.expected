@@ -1,3 +1,2 @@
 %s:7 PhanTypeMismatchReturn Returning type 42 but f1() is declared to return null
-%s:13 PhanTypeMismatchReturn Returning type null but g0() is declared to return void
 %s:16 PhanTypeMismatchReturn Returning type 42 but g1() is declared to return void

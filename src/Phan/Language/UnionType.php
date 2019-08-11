@@ -1249,7 +1249,7 @@ class UnionType implements Serializable
                 $result[] = $type;
                 continue;
             }
-            if ($type instanceof NullType) {
+            if ($type instanceof NullType || $type instanceof VoidType) {
                 continue;
             }
 
@@ -4432,6 +4432,7 @@ class UnionType implements Serializable
             case TrueType::class:
                 return true;
             // case NullType::class:
+            // case VoidType::class:
             default:
                 return null;
         }
@@ -4453,7 +4454,7 @@ class UnionType implements Serializable
         $type = \reset($type_set);
         // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
         if ($type->isNullable()) {
-            return $type instanceof NullType ? null : $this;
+            return ($type instanceof NullType || $type instanceof VoidType) ? null : $this;
         }
         // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
         switch (\get_class($type)) {
@@ -4485,7 +4486,7 @@ class UnionType implements Serializable
         $type = \reset($type_set);
         // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
         if ($type->isNullable()) {
-            return $type instanceof NullType ? null : $this;
+            return ($type instanceof NullType || $type instanceof VoidType) ? null : $this;
         }
         // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
         switch (\get_class($type)) {

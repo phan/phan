@@ -9,7 +9,7 @@ function f1() { return 42; }
 /** @return null */
 function f2() {}
 
-/** @return void */
+/** @return void - doesn't warn because null can currently cast to void and callers can't tell. */
 function g0() { return null; }
 
 /** @return void */
@@ -17,4 +17,3 @@ function g1() { return 42; }
 
 /** @return void */
 function g2() {}
-
