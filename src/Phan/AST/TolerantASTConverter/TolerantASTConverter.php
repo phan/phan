@@ -2270,7 +2270,7 @@ class TolerantASTConverter
     private static function phpParserSwitchListToAstSwitch(PhpParser\Node\Statement\SwitchStatementNode $node) : ast\Node
     {
         $stmts = [];
-        $node_line = static::getEndLine($node);
+        $node_line = static::getStartLine($node);
         foreach ($node->caseStatements as $case) {
             if (!($case instanceof PhpParser\Node\CaseStatementNode)) {
                 continue;
