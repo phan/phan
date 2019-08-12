@@ -2,6 +2,7 @@
 
 namespace Phan\Language\Type;
 
+use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
@@ -43,6 +44,16 @@ final class VoidType extends NativeType
         );
     }
 
+    public function isSubtypeOf(Type $type) : bool
+    {
+        return $type->isNullable();
+    }
+
+    public function isSubtypeOfNonNullableType(Type $unused_type) : bool
+    {
+        return false;
+    }
+
     /**
      * Returns true if this contains a type that is definitely nullable or a non-object.
      * e.g. returns true false, array, int
@@ -54,6 +65,47 @@ final class VoidType extends NativeType
     }
 
     /**
+     * @return bool
+     * True if this Type can be cast to the given Type
+     * cleanly
+     */
+    public function canCastToType(Type $type) : bool
+    {
+        // Check to see if we have an exact object match
+        if ($this === $type) {
+            return true;
+        }
+
+        // Null(void) can cast to a nullable type.
+        if ($type->is_nullable) {
+            return true;
+        }
+
+        if (Config::get_null_casts_as_any_type()) {
+            return true;
+        }
+
+        // NullType is a sub-type of ScalarType. So it's affected by scalar_implicit_cast.
+        if ($type->isScalar()) {
+            if (Config::getValue('scalar_implicit_cast')) {
+                return true;
+            }
+            $scalar_implicit_partial = Config::getValue('scalar_implicit_partial');
+            // check if $type->getName() is in the list of permitted types $this->getName() can cast to.
+            if (\count($scalar_implicit_partial) > 0 &&
+                \in_array($type->getName(), $scalar_implicit_partial['null'] ?? [], true)) {
+                return true;
+            }
+        }
+        if ($type instanceof MixedType) {
+            return true;
+        }
+
+        return false;
+    }
+
+
+    /**
      * Returns true if this contains a type that is definitely nullable or a non-object.
      * e.g. returns true false, array, int
      *      returns false for callable, object, iterable, T, etc.
@@ -63,32 +115,53 @@ final class VoidType extends NativeType
         return true;
     }
 
+    /**
+     * @return bool
+     * True if this Type can be cast to the given Type
+     * cleanly (accounting for templates)
+     */
+    public function canCastToTypeHandlingTemplates(Type $type, CodeBase $code_base) : bool
+    {
+        // Check to see if we have an exact object match
+        if ($this === $type) {
+            return true;
+        }
+
+        // Null can cast to a nullable type.
+        if ($type->is_nullable) {
+            return true;
+        }
+
+        if (Config::get_null_casts_as_any_type()) {
+            return true;
+        }
+
+        // NullType is a sub-type of ScalarType. So it's affected by scalar_implicit_cast.
+        if ($type->isScalar()) {
+            if (Config::getValue('scalar_implicit_cast')) {
+                return true;
+            }
+            $scalar_implicit_partial = Config::getValue('scalar_implicit_partial');
+            // check if $type->getName() is in the list of permitted types $this->getName() can cast to.
+            if (\count($scalar_implicit_partial) > 0 &&
+                \in_array($type->getName(), $scalar_implicit_partial['null'] ?? [], true)) {
+                return true;
+            }
+        }
+        if ($type instanceof MixedType) {
+            return true;
+        }
+
+        // Test to see if we can cast to the non-nullable version
+        // of the target type.
+        return parent::canCastToNonNullableTypeHandlingTemplates($type, $code_base);
+    }
+
     public function canCastToNonNullableType(Type $_) : bool
     {
         // null_casts_as_any_type means that null or nullable can cast to any type?
         // But don't allow it for void?
         return false;
-    }
-
-    public function canUseInRealSignature() : bool
-    {
-        return true;
-    }
-
-    public function isSubtypeOf(Type $type) : bool
-    {
-        return $type->isNullable();
-    }
-
-    public function isSubtypeOfNonNullableType(Type $unused_type) : bool
-    {
-        return false;
-    }
-
-
-    public function asScalarType() : ?Type
-    {
-        return null;
     }
 
     public function withIsNullable(bool $unused_is_nullable) : Type
@@ -104,11 +177,6 @@ final class VoidType extends NativeType
     public function isNullable() : bool
     {
         return true;
-    }
-
-    public function isScalar() : bool
-    {
-        return false;
     }
 
     public function isPossiblyFalsey() : bool
@@ -130,7 +198,6 @@ final class VoidType extends NativeType
     {
         return false;  // Null is always falsey.
     }
-
 
     public function isPrintableScalar() : bool
     {
@@ -158,5 +225,29 @@ final class VoidType extends NativeType
     public function canSatisfyComparison($scalar, int $flags) : bool
     {
         return self::performComparison(null, $scalar, $flags);
+    }
+
+    /**
+     * Returns the type after an expression such as `++$x`
+     */
+    public function getTypeAfterIncOrDec() : UnionType
+    {
+        return IntType::instance(false)->asPHPDocUnionType();
+    }
+
+    // TODO: Emit an issue if used for a parameter/property type.
+    public function canUseInRealSignature() : bool
+    {
+        return true;
+    }
+
+    public function asScalarType() : ?Type
+    {
+        return null;
+    }
+
+    public function isScalar() : bool
+    {
+        return false;
     }
 }
