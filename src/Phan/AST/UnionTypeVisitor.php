@@ -2323,7 +2323,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             $class_name = (string)$node->children['name'];
         }
 
-        if (!$class_name) {
+        if ($class_name === '') {
             // Should only occur with --use-fallback-parser
             throw new UnanalyzableException($node, "Class name cannot be empty");
         }
@@ -3048,7 +3048,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $result = $result->withType($fqsen->asType());
             } elseif (\get_class($sub_type) === Type::class || $sub_type instanceof ClosureType || $sub_type instanceof StaticType) {
                 $result = $result->withType($sub_type);
-            } elseif ($is_valid) {
+            } else {
                 if ($sub_type instanceof StringType) {
                     if ($sub_type instanceof ClassStringType) {
                         $result = $result->withUnionType($sub_type->getClassUnionType());

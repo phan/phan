@@ -713,7 +713,7 @@ final class ArgumentType
 
         if ($method->isPHPInternal()) {
             $issue_type = $choose_issue_type(Issue::TypeMismatchArgumentInternal, Issue::TypeMismatchArgumentNullableInternal, Issue::TypeMismatchArgumentInternalReal);
-            if (!$issue_type) {
+            if (!is_string($issue_type)) {
                 return;
             }
             if ($issue_type === Issue::TypeMismatchArgumentInternal) {
@@ -762,7 +762,7 @@ final class ArgumentType
             return;
         }
         $issue_type = $choose_issue_type(Issue::TypeMismatchArgument, Issue::TypeMismatchArgumentNullable, Issue::TypeMismatchArgumentReal);
-        if (!$issue_type) {
+        if (!is_string($issue_type)) {
             return;
         }
         if ($issue_type === Issue::TypeMismatchArgumentReal) {

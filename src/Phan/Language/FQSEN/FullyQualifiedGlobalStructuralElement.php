@@ -310,6 +310,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         // Split the parts into the namespace(0 or more components) and the last name.
         $name = \array_pop($parts);
 
+        // @phan-suppress-next-line PhanSuspiciousTruthyString
         if (!$name) {
             throw new InvalidFQSENException("The name cannot be empty", $fqsen_string);
         }
@@ -327,7 +328,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         // n.b.: Functions must override this method because
         //       they don't prefix the namespace for naked
         //       calls
-        if (!$namespace) {
+        if ($namespace === '') {
             $namespace = $context->getNamespace();
         }
 
@@ -443,7 +444,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
     ): string {
         $fqsen_string = $namespace;
 
-        if ($fqsen_string && $fqsen_string !== '\\') {
+        if ($fqsen_string !== '' && $fqsen_string !== '\\') {
             $fqsen_string .= '\\';
         }
 

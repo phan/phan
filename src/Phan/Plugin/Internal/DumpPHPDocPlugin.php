@@ -11,6 +11,7 @@ use Phan\Language\Element\Func;
 use Phan\Language\Element\MarkupDescription;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
+use Phan\Library\StringUtil;
 use Phan\Phan;
 use Phan\PluginV3;
 use Phan\PluginV3\AnalyzeClassCapability;
@@ -136,7 +137,7 @@ final class DumpPHPDocPlugin extends PluginV3 implements
             return;
         }
         $description = MarkupDescription::extractDescriptionFromDocComment($method);
-        if (!($method->getDocComment() || !$description) && $method->isOverride()) {
+        if (!($method->getDocComment() || !StringUtil::isNonZeroLengthString($description)) && $method->isOverride()) {
             // Note: This deliberately avoids showing a summary for methods that are just overrides of other methods,
             // unless they have their own phpdoc.
             // Eventually, extractDescriptionFromDocComment will search ancestor classes for $description

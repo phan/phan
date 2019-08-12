@@ -307,7 +307,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
             return $status;
         }
         $next_sibling = $siblings[$index + 1] ?? null;
-        if (!$next_sibling) {
+        if (!$next_sibling instanceof Node) {
             return $status;
         }
         $next_status = self::getStatusOfSwitchCase($next_sibling, $index + 1, $siblings);
@@ -466,7 +466,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
             }
             $function_name = $expression;
         }
-        if (!$function_name) {
+        if ($function_name === '') {
             return self::STATUS_THROW;  // nonsense such as ''();
         }
         if ($function_name[0] === '\\') {

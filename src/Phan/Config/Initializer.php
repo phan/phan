@@ -57,7 +57,7 @@ class Initializer
                 throw new UsageException("phan --init assumes that there will be a composer.json file (at '$composer_json_path')\n(Can pass --init-no-composer if this is not a composer project)", EXIT_FAILURE, UsageException::PRINT_INIT_ONLY);
             }
             $contents = \file_get_contents($composer_json_path);
-            if (!$contents) {
+            if (!is_string($contents)) {
                 throw new UsageException("phan --init failed to read contents of $composer_json_path", EXIT_FAILURE, UsageException::PRINT_INIT_ONLY);
             }
             $composer_settings = \json_decode($contents, true);

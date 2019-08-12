@@ -164,6 +164,8 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      * @return Context
      * A new or an unchanged context resulting from
      * analyzing the negation of the short-circuiting and.
+     *
+     * @suppress PhanSuspiciousTruthyString deliberate cast of literal to boolean
      */
     private function analyzeShortCircuitingAnd($left, $right): Context
     {
@@ -343,7 +345,10 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
         }
         return $this->modifyPropertyOfThisSimple(
             $node,
-            static function (UnionType $type): UnionType {
+            function (UnionType $type) use ($node): UnionType {
+                if (Config::getValue('error_prone_truthy_condition_detection')) {
+                    $this->checkErrorProneTruthyCast($node, $this->context, $type);
+                }
                 return $type->nonTruthyClone();
             },
             $this->context

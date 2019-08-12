@@ -390,13 +390,9 @@ EOT;
      */
     private static function documentConfigCategorySection(WikiWriter $writer, ConfigEntry $config_entry, array $old_text_for_section): void
     {
-        $category = $config_entry->getCategory();
-        if (!$category) {
-            throw new InvalidArgumentException("Failed to find category for {$config_entry->getConfigName()}");
-        }
-        $category_name = $category;
-        if (!$category_name) {
-            throw new InvalidArgumentException("Failed to find category name for category $category of {$config_entry->getConfigName()}");
+        $category_name = $config_entry->getCategory();
+        if ($category_name === '') {
+            throw new InvalidArgumentException("Failed to find category for config {$config_entry->getConfigName()}");
         }
 
         $header = '# ' . $category_name;

@@ -65,6 +65,7 @@ use Phan\Language\Type\StringType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\Type\VoidType;
+use Phan\Library\StringUtil;
 use Phan\Library\Tuple5;
 
 use function count;
@@ -85,6 +86,7 @@ use function trim;
  *
  *
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
+ * @phan-file-suppress PhanSuspiciousTruthyString
  * phpcs:disable Generic.NamingConventions.UpperCaseConstantName
  * @phan-pure types/union types are immutable, but technically not pure (some methods cause issues to be emitted with Issue::maybeEmit()).
  *            However, it's useful to treat them as if they were pure, to warn about not using return types.
@@ -1555,7 +1557,7 @@ class Type
         bool $is_nullable
     ): FunctionLikeDeclarationType {
         $return_type = \array_pop($shape_components);
-        if (!$return_type) {
+        if (!StringUtil::isNonZeroLengthString($return_type)) {
             throw new AssertionError("Expected a return type");
         }
         if ($return_type[0] === '(' && \substr($return_type, -1) === ')') {
@@ -2722,7 +2724,7 @@ class Type
         int $recursion_depth = 0
     ): UnionType {
         $memoized = $this->memoized_data['expanded_types_preserving_template'] ?? null;
-        if ($memoized) {
+        if (\is_object($memoized)) {
             return $memoized;
         }
         // We're going to assume that if the type hierarchy

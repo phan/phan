@@ -16,6 +16,7 @@ use Phan\Language\Element\Property;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
+use Phan\Library\StringUtil;
 use Phan\Output\Collector\BufferingCollector;
 use Phan\Phan;
 
@@ -263,7 +264,7 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
                     $description = (string)MarkupDescription::extractDescriptionFromDocComment($property, null);
                     $description = preg_replace('(^`@var [^`]*`\s*)', '', $description);
                     $description = self::removeBoilerplateFromDescription($description);
-                    if (!$description) {
+                    if (strlen($description) === 0) {
                         continue;
                     }
                     $property_name = ltrim((string)$property->getFQSEN(), "\\");
@@ -297,7 +298,7 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
                 }
                 $description = (string)MarkupDescription::extractDescriptionFromDocComment($class, null);
                 $description = self::removeBoilerplateFromDescription($description);
-                if (!$description) {
+                if (strlen($description) === 0) {
                     continue;
                 }
                 $class_name = ltrim((string)$class->getFQSEN(), "\\");
@@ -333,7 +334,7 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
                 }
                 $description = (string)MarkupDescription::extractDescriptionFromDocComment($const, null);
                 $description = self::removeBoilerplateFromDescription($description);
-                if (!$description) {
+                if (strlen($description) === 0) {
                     continue;
                 }
                 $const_name = ltrim((string)$const->getFQSEN(), "\\");
@@ -353,7 +354,7 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
                     $description = preg_replace('(^`@var [^`]*`\s*)', '', $description);
 
                     $description = self::removeBoilerplateFromDescription($description);
-                    if (!$description) {
+                    if (strlen($description) === 0) {
                         continue;
                     }
 
@@ -385,7 +386,7 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
                 }
                 $description = (string)MarkupDescription::extractDescriptionFromDocComment($method, null);
                 $description = self::removeBoilerplateFromDescription($description);
-                if (!$description) {
+                if (strlen($description) === 0) {
                     continue;
                 }
                 $function_name = $method->getClassFQSEN()->getNamespacedName() . '::' . $method->getName();
@@ -400,7 +401,7 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
                     throw new AssertionError('expected $function to be a Func');
                 }
                 $description = MarkupDescription::extractDescriptionFromDocComment($function, null);
-                if (!$description) {
+                if (!StringUtil::isNonZeroLengthString($description)) {
                     continue;
                 }
                 $function_name = ltrim((string)$function->getFQSEN(), "\\");

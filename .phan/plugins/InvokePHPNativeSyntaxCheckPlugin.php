@@ -251,7 +251,7 @@ class InvokeExecutionPromise
             // - Windows has problems with using stdio/stdout at the same time
             // - During regular analysis, we won't need to create temporary files.
             $tmp_path = tempnam(sys_get_temp_dir(), 'phan');
-            if (!$tmp_path) {
+            if (!is_string($tmp_path)) {
                 $this->done = true;
                 $this->error = "Could not create temporary path for $file_name";
                 return null;

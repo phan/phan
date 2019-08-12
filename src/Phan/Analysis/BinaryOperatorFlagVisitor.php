@@ -339,6 +339,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                             $real_int_or_float
                         );
                     case ast\flags\BINARY_DIV:
+                        // @phan-suppress-next-line PhanSuspiciousTruthyString deliberate check - this possible string is implicitly cast to a number.
                         if (!$right_value) {
                             // TODO: Emit warning about division by zero.
                             return FloatType::instance(false)->asRealUnionType();
@@ -350,6 +351,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                             $real_int_or_float
                         );
                     case ast\flags\BINARY_MOD:
+                        // @phan-suppress-next-line PhanSuspiciousTruthyString deliberate check - this possible string is implicitly cast to a number.
                         if (!$right_value) {
                             // TODO: Emit warning about division by zero.
                             return IntType::instance(false)->asRealUnionType();

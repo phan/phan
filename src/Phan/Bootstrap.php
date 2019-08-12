@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Phan\CLI;
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Library\StringUtil;
 
 // Listen for all errors
 error_reporting(E_ALL);
@@ -37,7 +38,7 @@ function phan_output_ast_installation_instructions(): void
 {
     $ini_path = php_ini_loaded_file() ?: '(php.ini path could not be determined - try creating one at ' . dirname(PHP_BINARY) . '\\php.ini as a new empty file, or one based on php.ini.development or php.ini.production)';
     $configured_extension_dir = ini_get('extension_dir');
-    $extension_dir = $configured_extension_dir ?: '(extension directory could not be determined)';
+    $extension_dir = StringUtil::isNonZeroLengthString($configured_extension_dir) ? $configured_extension_dir : '(extension directory could not be determined)';
     $extension_dir = "'$extension_dir'";
     $new_extension_dir = dirname(PHP_BINARY) . '\\ext';
     if (!is_dir((string)$configured_extension_dir)) {

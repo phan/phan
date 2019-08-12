@@ -287,10 +287,7 @@ class CLI
             self::usage($e->getMessage(), (int)$e->getCode(), $e->print_type, $e->forbid_color);
             exit((int)$e->getCode());  // unreachable
         } catch (ExitException $e) {
-            $message = $e->getMessage();
-            if ($message) {
-                fwrite(STDERR, $message);
-            }
+            \fwrite(STDERR, $e->getMessage());
             exit($e->getCode());
         }
     }
@@ -1876,7 +1873,7 @@ EOB
             return false;
         }
         $extension = \pathinfo($file_path, \PATHINFO_EXTENSION);
-        if (!$extension || !in_array($extension, $file_extensions, true)) {
+        if (!is_string($extension) || !in_array($extension, $file_extensions, true)) {
             return false;
         }
 
@@ -2373,7 +2370,7 @@ EOB
         // If the file doesn't exist here, try a directory up
         $config_file_name = $this->config_file;
         $config_file_name =
-            $config_file_name
+            StringUtil::isNonZeroLengthString($config_file_name)
             ? \realpath($config_file_name)
             : \implode(DIRECTORY_SEPARATOR, [
                 Config::getProjectRootDirectory(),

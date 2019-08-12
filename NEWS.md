@@ -34,6 +34,10 @@ Maintenance:
 + Make Phan's code follow more PSR-12 style guidelines
   (`<?php` on its own line, `function(): T` instead of `function() : T`, declare visibility for class constants)
 
+Maintenance:
++ Internal: Check if strings are non-zero length in Phan's implementation instead of checking for variable truthiness.
+  (`'0'` is falsey)
+
 Dec 29 2019, Phan 2.4.6
 -----------------------
 

@@ -30,6 +30,7 @@ use Phan\Language\Type;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\VoidType;
+use Phan\Library\StringUtil;
 
 /**
  * PreOrderAnalysisVisitor is where we do the pre-order part of the analysis
@@ -92,7 +93,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             $class_name = (string)$node->children['name'];
         }
 
-        if (!$class_name) {
+        if (!StringUtil::isNonZeroLengthString($class_name)) {
             // Should only occur with --use-fallback-parser
             throw new UnanalyzableException($node, "Class name cannot be empty");
         }
@@ -470,7 +471,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                     $use->children['name']
                 ))->getVariableName();
 
-                if (!$variable_name) {
+                // TODO: Distinguish between the empty string and the lack of a name
+                if ($variable_name === '') {
                     continue;
                 }
 
@@ -773,7 +775,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             $node->children['var']
         ))->getVariableName();
 
-        if ($variable_name) {
+        if ($variable_name !== '') {
             $variable = Variable::fromNodeInContext(
                 $node->children['var'],
                 $this->context,

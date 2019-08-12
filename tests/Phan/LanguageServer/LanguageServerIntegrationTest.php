@@ -1157,7 +1157,7 @@ EOT
 
     private static function shouldExpectDiagnosticNotificationForURI(?string $requested_uri): bool
     {
-        if ($requested_uri && \basename(\dirname($requested_uri)) !== 'src') {
+        if (\is_string($requested_uri) && \basename(\dirname($requested_uri)) !== 'src') {
             return false;
         }
         return true;
@@ -1354,7 +1354,7 @@ EOT
             };
             $hover_response = $perform_hover_request();
 
-            if ($expected_hover_string) {
+            if (\is_string($expected_hover_string)) {
                 $expected_hover_result = [
                     'contents' => [
                         'kind' => MarkupContent::MARKDOWN,

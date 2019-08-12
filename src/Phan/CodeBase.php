@@ -398,17 +398,15 @@ class CodeBase
     private function addGlobalConstantsByNames(array $const_name_list): void
     {
         foreach ($const_name_list as $const_name) {
-            if (!$const_name) {
-                // #1015 workaround for empty constant names ('' and '0').
-                \fprintf(STDERR, "Saw constant with empty name of %s. There may be a bug in a PECL extension you are using (php -m will list those)\n", \var_export($const_name, true));
+            // #1015 workaround for empty constant names ('' and '0').
+            if (!\is_string($const_name)) {
+                \fprintf(STDERR, "Saw constant with non-string name of %s. There may be a bug in a PECL extension you are using (php -m will list those)\n", \var_export($const_name, true));
                 continue;
             }
             try {
                 $const_obj = GlobalConstant::fromGlobalConstantName($const_name);
                 $this->addGlobalConstant($const_obj);
-            } catch (FQSENException $e) {
-                $this->handleGlobalConstantException($const_name, $e);
-            } catch (InvalidArgumentException $e) {
+            } catch (InvalidArgumentException | FQSENException $e) {
                 self::handleGlobalConstantException($const_name, $e);
             }
         }

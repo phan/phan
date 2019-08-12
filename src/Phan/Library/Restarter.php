@@ -73,6 +73,7 @@ class Restarter extends XdebugHandler
      */
     protected function restart($command)
     {
+        // @phan-suppress-next-line PhanSuspiciousTruthyString
         if ($this->required && $this->tmpIni) {
             $regex = '/^\s*(extension\s*=.*(' . implode('|', $this->disabledExtensions) . ').*)$/mi';
             $content = file_get_contents($this->tmpIni);

@@ -24,6 +24,7 @@ use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Scope\GlobalScope;
 use Phan\Language\Type\ArrayShapeType;
+use Phan\Library\StringUtil;
 use RuntimeException;
 
 /**
@@ -198,7 +199,7 @@ class Context extends FileRef
         $namespace_map_entry->is_used = true;
 
         // Create something of the corresponding type (which may or may not be within a suffix)
-        if (!$suffix) {
+        if (!StringUtil::isNonZeroLengthString($suffix)) {
             return $fqsen;
         }
 

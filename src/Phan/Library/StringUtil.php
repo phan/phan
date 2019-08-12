@@ -68,4 +68,17 @@ class StringUtil
         }
         return \str_replace(["\n", "\r"], "�", self::asUtf8($str));
     }
+
+    /**
+     * Returns true if the provided argument is a non-zero length string.
+     * Unlike (bool)$str, this allows the literal string '0', and rejects types other than strings.
+     *
+     * @param ?string|?false $str typical inputs are nullable/falsable strings
+     * @phan-assert string $str TODO: This unconditionally sets the type of $str to string - add an equivalent that only sets the type when true.
+     * @psalm-assert-if-true string $str
+     */
+    public static function isNonZeroLengthString($str) : bool
+    {
+        return \is_string($str) && $str !== '';
+    }
 }

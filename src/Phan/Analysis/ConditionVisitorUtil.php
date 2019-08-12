@@ -31,6 +31,7 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\FalseType;
+use Phan\Language\Type\IterableType;
 use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\LiteralTypeInterface;
@@ -84,48 +85,53 @@ trait ConditionVisitorUtil
              */
             function (UnionType $type) use ($var_node, $context, $suppress_issues): bool {
                 $contains_truthy = $type->containsTruthy();
-                if (!$suppress_issues && Config::getValue('redundant_condition_detection') && $type->hasRealTypeSet()) {
-                    // Here, we only perform the redundant condition checks on whichever ran first, to avoid warning about both impossible and redundant conditions
-                    if (isset($var_node->did_check_redundant_condition)) {
-                        return $contains_truthy;
+                if (!$suppress_issues) {
+                    if (Config::getValue('redundant_condition_detection') && $type->hasRealTypeSet()) {
+                        // Here, we only perform the redundant condition checks on whichever ran first, to avoid warning about both impossible and redundant conditions
+                        if (isset($var_node->did_check_redundant_condition)) {
+                            return $contains_truthy;
+                        }
+                        $var_node->did_check_redundant_condition = true;
+                        // Here, we only perform the redundant condition checks on the ConditionVisitor to avoid warning about both impossible and redundant conditions
+                        // for the same expression
+                        if ($contains_truthy) {
+                            if (!$type->getRealUnionType()->containsFalsey()) {
+                                RedundantCondition::emitInstance(
+                                    $var_node,
+                                    $this->code_base,
+                                    $context,
+                                    Issue::ImpossibleCondition,
+                                    [
+                                        ASTReverter::toShortString($var_node),
+                                        $type->getRealUnionType(),
+                                        'falsey',
+                                    ],
+                                    static function (UnionType $type): bool {
+                                        return !$type->containsFalsey();
+                                    }
+                                );
+                            }
+                        } else {
+                            if (!$type->getRealUnionType()->containsTruthy()) {
+                                RedundantCondition::emitInstance(
+                                    $var_node,
+                                    $this->code_base,
+                                    $context,
+                                    Issue::RedundantCondition,
+                                    [
+                                        ASTReverter::toShortString($var_node),
+                                        $type->getRealUnionType(),
+                                        'falsey',
+                                    ],
+                                    static function (UnionType $type): bool {
+                                        return !$type->containsTruthy();
+                                    }
+                                );
+                            }
+                        }
                     }
-                    $var_node->did_check_redundant_condition = true;
-                    // Here, we only perform the redundant condition checks on the ConditionVisitor to avoid warning about both impossible and redundant conditions
-                    // for the same expression
-                    if ($contains_truthy) {
-                        if (!$type->getRealUnionType()->containsFalsey()) {
-                            RedundantCondition::emitInstance(
-                                $var_node,
-                                $this->code_base,
-                                $context,
-                                Issue::ImpossibleCondition,
-                                [
-                                    ASTReverter::toShortString($var_node),
-                                    $type->getRealUnionType(),
-                                    'falsey',
-                                ],
-                                static function (UnionType $type): bool {
-                                    return !$type->containsFalsey();
-                                }
-                            );
-                        }
-                    } else {
-                        if (!$type->getRealUnionType()->containsTruthy()) {
-                            RedundantCondition::emitInstance(
-                                $var_node,
-                                $this->code_base,
-                                $context,
-                                Issue::RedundantCondition,
-                                [
-                                    ASTReverter::toShortString($var_node),
-                                    $type->getRealUnionType(),
-                                    'falsey',
-                                ],
-                                static function (UnionType $type): bool {
-                                    return !$type->containsTruthy();
-                                }
-                            );
-                        }
+                    if (Config::getValue('error_prone_truthy_condition_detection')) {
+                        $this->checkErrorProneTruthyCast($var_node, $context, $type);
                     }
                 }
                 return $contains_truthy;
@@ -192,8 +198,13 @@ trait ConditionVisitorUtil
             $var_node,
             $context,
             function (UnionType $type) use ($context, $var_node, $suppress_issues): bool {
-                if (!$suppress_issues && Config::getValue('redundant_condition_detection') && $type->hasRealTypeSet()) {
-                    $this->checkRedundantOrImpossibleTruthyCondition($var_node, $context, $type->getRealUnionType(), false);
+                if (!$suppress_issues) {
+                    if (Config::getValue('redundant_condition_detection') && $type->hasRealTypeSet()) {
+                        $this->checkRedundantOrImpossibleTruthyCondition($var_node, $context, $type->getRealUnionType(), false);
+                    }
+                    if (Config::getValue('error_prone_truthy_condition_detection')) {
+                        $this->checkErrorProneTruthyCast($var_node, $context, $type);
+                    }
                 }
                 return $type->containsFalsey();
             },
@@ -221,6 +232,61 @@ trait ConditionVisitorUtil
     {
         // TODO: Add LiteralFloatType so that this can consistently warn about floats
         $this->checkRedundantOrImpossibleTruthyCondition($node, $this->context, null, false);
+    }
+
+    /**
+     * Check if the provided node has a comparison to truthy that's error prone.
+     *
+     * E.g. checking if an object|int is truthy - A more appropriate check may be is_object()
+     *
+     * @suppress PhanUndeclaredProperty did_check_redundant_condition
+     */
+    private function checkErrorProneTruthyCast(Node $node, Context $context, UnionType $union_type) : void
+    {
+        // Here, we only perform the redundant condition checks on whichever ran first, to avoid warning about both impossible and redundant conditions
+        if (isset($node->did_check_error_prone_truthy)) {
+            return;
+        }
+        $node->did_check_error_prone_truthy = true;
+        $has_array_or_object = false;
+        $has_falsey = false;
+        $has_truthy = false;
+        $has_string = false;
+        foreach ($union_type->getTypeSet() as $type) {
+            if ($type->isObject() || $type instanceof IterableType) {
+                $has_array_or_object = true;
+                continue;
+            }
+            if ($type->isPossiblyTruthy()) {
+                $has_truthy = true;
+                $has_falsey = $has_falsey || $type->withIsNullable(false)->isPossiblyFalsey();
+                if (\get_class($type) === StringType::class) {
+                    $has_string = true;
+                }
+            } else {
+                $has_falsey = $has_falsey || !($type instanceof NullType || $type instanceof FalseType);
+            }
+        }
+        if ($has_truthy && $has_falsey && $has_array_or_object) {
+            Issue::maybeEmit(
+                $this->code_base,
+                $context,
+                Issue::SuspiciousTruthyCondition,
+                $node->lineno,
+                ASTReverter::toShortString($node),
+                $union_type
+            );
+        }
+        if ($has_string) {
+            Issue::maybeEmit(
+                $this->code_base,
+                $context,
+                Issue::SuspiciousTruthyString,
+                $node->lineno,
+                ASTReverter::toShortString($node),
+                $union_type
+            );
+        }
     }
 
     /**
@@ -874,7 +940,7 @@ trait ConditionVisitorUtil
         $context = $this->context;
         $var_name = $var_node->children['name'] ?? null;
         // Don't analyze variables such as $$a
-        if (\is_string($var_name) && $var_name) {
+        if (\is_string($var_name)) {
             try {
                 $expr_type = UnionTypeVisitor::unionTypeFromLiteralOrConstant($this->code_base, $context, $expr);
                 if (!$expr_type) {
@@ -962,6 +1028,7 @@ trait ConditionVisitorUtil
      * @param Node|int|float|string $expr
      * @return Context - Context after inferring type from an expression such as `if ($x != 'literal')`
      * @suppress PhanUnreferencedPublicMethod referenced in ConditionVisitorInterface
+     * @suppress PhanSuspiciousTruthyCondition, PhanSuspiciousTruthyString didn't implement special handling of `if ($x != [...])`
      */
     final public function updateVariableToBeNotEqual(
         Node $var_node,
@@ -1177,7 +1244,7 @@ trait ConditionVisitorUtil
 
         $var_name = $object_node->children['name'] ?? null;
         // Don't analyze variables such as $$a
-        if (!(\is_string($var_name) && $var_name)) {
+        if (!\is_string($var_name)) {
             return null;
         }
         try {
@@ -1327,6 +1394,7 @@ trait ConditionVisitorUtil
 
     /**
      * Fetches the function name. Does not check for function uses or namespaces.
+     * @param Node $node a node of kind ast\AST_CALL
      * @return ?string (null if function name could not be found)
      */
     final public static function getFunctionName(Node $node): ?string
@@ -1336,7 +1404,7 @@ trait ConditionVisitorUtil
             return null;
         }
         $raw_function_name = $expr->children['name'] ?? null;
-        if (!(\is_string($raw_function_name) && $raw_function_name)) {
+        if (!\is_string($raw_function_name)) {
             return null;
         }
         return $raw_function_name;

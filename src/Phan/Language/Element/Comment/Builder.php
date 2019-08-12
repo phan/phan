@@ -579,7 +579,7 @@ final class Builder
             return null;
         }
         $extra_text = $match[1];
-        if ($extra_text) {
+        if (\strlen($extra_text) > 0) {
             $assertion_type = $extra_text === '-true-condition' ? Assertion::IS_TRUE : Assertion::IS_FALSE;
             $union_type = UnionType::empty();
         } else {

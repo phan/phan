@@ -23,6 +23,7 @@ use Phan\Language\Context;
 use Phan\Library\Cache;
 use Phan\Library\DiskCache;
 use Phan\Library\FileCacheEntry;
+use Phan\Library\StringUtil;
 use Phan\Phan;
 use Phan\Plugin\ConfigPluginSet;
 use Throwable;
@@ -77,7 +78,7 @@ class Parser
 
         $user = \getenv('USERNAME') ?: \getenv('USER');
         $directory = \sys_get_temp_dir() . '/phan';
-        if ($user) {
+        if (StringUtil::isNonZeroLengthString($user)) {
             $directory .= "-$user";
         }
         return new DiskCache($directory, '-ast', ParseResult::class, $use_igbinary);

@@ -241,6 +241,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
      * @return Context
      * A new or an unchanged context resulting from
      * analyzing the short-circuiting logical or.
+     * @suppress PhanSuspiciousTruthyString deliberate check
      */
     private function analyzeShortCircuitingOr($left, $right): Context
     {
@@ -573,7 +574,10 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         }
         return $this->modifyPropertyOfThisSimple(
             $node,
-            static function (UnionType $type): UnionType {
+            function (UnionType $type): UnionType {
+                if (Config::getValue('error_prone_truthy_condition_detection')) {
+                    $this->checkErrorProneTruthyCast($node, $this->context, $type);
+                }
                 return $type->nonFalseyClone();
             },
             $this->context

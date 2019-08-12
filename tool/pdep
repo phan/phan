@@ -147,7 +147,11 @@ call_user_func(static function () : void {
                 break;
             case 'd':
             case 'depth':
-                $depth = $options[$opt];
+                $depth = filter_var($value, FILTER_VALIDATE_INT);
+                if ($depth === false) {
+                    echo "ERROR: Invalid depth '$value' (expected int)\n";
+                    usage(1);
+                }
                 break;
             case 'l':
             case 'file-list':
@@ -191,18 +195,18 @@ call_user_func(static function () : void {
     $putenv("PDEP_GRAPH_FLAGS", (string)$graph_flags);
 
     if (isset($options['i'])) {
-        $data = file_get_contents($graph_file);
-        if (!$data) {
+        $data = @file_get_contents($graph_file);
+        if (!is_string($data)) {
             echo "Unable to read $graph_file\n";
             exit(1);
         }
-        $cached_graph = json_decode($data, true);
-        if (!$cached_graph) {
-            echo json_last_error_msg();
+        $cached_graph = @json_decode($data, true);
+        if (!is_array($cached_graph)) {
+            echo "Invalid JSON contents of $graph_file: " . (json_last_error() !== JSON_ERROR_NONE ? json_last_error_msg() : 'expected array, got ' . gettype($cached_graph)) . "\n";
             exit(1);
         }
         require_once __DIR__ . '/../src/Phan/Plugin/Internal/DependencyGraphPlugin.php';
-        (new \Phan\Plugin\Internal\DependencyGraphPlugin)->processGraph((array)$cached_graph);
+        (new \Phan\Plugin\Internal\DependencyGraphPlugin)->processGraph($cached_graph);
     } else {
         // @phan-suppress-next-line PhanThrowTypeAbsentForCall
         Phan::analyzeFileList($code_base, /** @return string[] */ static function () use($cli) : array {

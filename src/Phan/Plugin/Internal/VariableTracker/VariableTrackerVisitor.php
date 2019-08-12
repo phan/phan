@@ -752,6 +752,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
             } else {
                 $inner_scope_list[] = $inner_scope;
             }
+            // @phan-suppress-next-line PhanSuspiciousTruthyString
             if ($cond_node === null || (\is_scalar($cond_node) && $cond_node)) {
                 $merge_parent_scope = false;
             }

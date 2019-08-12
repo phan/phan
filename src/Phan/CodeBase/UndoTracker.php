@@ -92,7 +92,7 @@ class UndoTracker
     {
         \clearstatcache(true, $path);  // TODO: does this work properly with symlinks? seems to.
         $real = \realpath($path);
-        if (!$real) {
+        if (!\is_string($real)) {
             return null;
         }
         if (!\file_exists($real)) {

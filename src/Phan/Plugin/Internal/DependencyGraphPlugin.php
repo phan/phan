@@ -245,7 +245,7 @@ class DependencyGraphPlugin extends PluginV3 implements
         if (!($flags & \PDEP_IGNORE_STATIC)) {
             foreach (self::$static_calls as $c) {
                 $cnode = \key($c);
-                if (!$cnode) {
+                if ($cnode === null) {
                     continue;
                 }
                 if (!\array_key_exists($cnode, $this->class_to_file)) {
@@ -257,7 +257,7 @@ class DependencyGraphPlugin extends PluginV3 implements
             }
             foreach (self::$static_vars as $c) {
                 $cnode = \key($c);
-                if (!$cnode) {
+                if ($cnode === null) {
                     continue;
                 }
                 if (!\array_key_exists($cnode, $this->class_to_file)) {

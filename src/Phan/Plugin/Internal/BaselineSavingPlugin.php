@@ -175,17 +175,16 @@ EOT;
                 \sprintf("    // %s : %s %s\n", $issueType, $count_name, $count !== 1 ? "occurrences" : "occurrence"),
             ];
         }
+        if (!$entries) {
+            return "    // This baseline has no suppressions\n";
+        }
         // Sort by most common issues first, breaking ties by the name of the issue.
         \sort($entries);
         $result = "    // # Issue statistics:\n";
         foreach ($entries as [2 => $entry_text]) {
             $result .= $entry_text;
         }
-        if ($result) {
-            $result .= "\n";
-        } else {
-            $result .= "    // This baseline has no suppressions\n";
-        }
+        $result .= "\n";
         return $result;
     }
 

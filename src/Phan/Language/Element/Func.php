@@ -20,6 +20,7 @@ use Phan\Language\Scope\ClosureScope;
 use Phan\Language\Scope\FunctionLikeScope;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
+use Phan\Library\StringUtil;
 use Phan\Memoize;
 
 /**
@@ -401,7 +402,7 @@ class Func extends AddressableElement implements FunctionInterface
         $fqsen = $this->getFQSEN();
         $namespace = \ltrim($fqsen->getNamespace(), '\\');
         $stub = '';
-        if ($namespace) {
+        if (StringUtil::isNonZeroLengthString($namespace)) {
             $stub = "namespace $namespace;\n";
         }
         $stub .= 'function ';

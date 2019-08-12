@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phan;
 
 use Phan\Library\Paths;
+use Phan\Library\StringUtil;
 
 use function array_key_exists;
 use function gettype;
@@ -464,6 +465,11 @@ class Config
         // This has some false positives involving loops,
         // variables set in branches of loops, and global variables.
         'redundant_condition_detection' => false,
+
+        // Set to true in order to attempt to detect error-prone truthiness/falsiness checks.
+        //
+        // This is not suitable for all codebases.
+        'error_prone_truthy_condition_detection' => false,
 
         // Set to true in order to attempt to detect variables that could be replaced with constants or literals.
         // (i.e. they are declared once (as a constant expression) and never modified)
@@ -1137,9 +1143,10 @@ class Config
                 }
                 break;
             case 'target_php_version':
-                if (is_float($value)) {
+                if (is_int($value) || is_float($value)) {
                     $value = \sprintf("%.1f", $value);
                 }
+                // @phan-suppress-next-line PhanSuspiciousTruthyString
                 $value = (string) ($value ?: PHP_VERSION);
                 if (\strtolower($value) === 'native') {
                     $value = PHP_VERSION;
@@ -1428,7 +1435,7 @@ class Config
             }
             $value = $configuration[$config_name];
             $error = $check_closure($value);
-            if ($error) {
+            if (StringUtil::isNonZeroLengthString($error)) {
                 $result[] = "Invalid config value for '$config_name': $error";
             }
         }
