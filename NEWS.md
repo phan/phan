@@ -1,10 +1,14 @@
 Phan NEWS
 
-??? ?? 2019, Phan 2.2.10 (dev)
+Aug 12 2019, Phan 2.2.10
 ------------------------
 
 Plugins:
 + In EmptyStatementListPlugin, warn about switch statements where all cases are no-ops. (#3030)
+
+Bug fixes
++ Fix infinite recursion seen when passing `void` to something expecting a non-null type. (#3085)
+  This only occurs with some settings, e.g. when `null_casts_as_any_type` is true. (introduced in 2.2.9)
 
 Aug 11 2019, Phan 2.2.9
 -----------------------
