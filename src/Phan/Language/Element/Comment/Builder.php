@@ -184,6 +184,7 @@ final class Builder
                 $union_type = UnionType::empty();
             }
             $is_output_parameter = \stripos($line, '@phan-output-reference') !== false;
+            $is_ignored_parameter = \stripos($line, '@phan-ignore-reference') !== false;
 
             return new Parameter(
                 $variable_name,
@@ -191,7 +192,8 @@ final class Builder
                 $this->guessActualLineLocation($i),
                 $is_variadic,
                 false,  // has_default_value
-                $is_output_parameter
+                $is_output_parameter,
+                $is_ignored_parameter
             );
         }
 

@@ -34,6 +34,7 @@ class Parameter extends Variable
     const REFERENCE_DEFAULT = 1;
     const REFERENCE_READ_WRITE = 2;
     const REFERENCE_WRITE_ONLY = 3;
+    const REFERENCE_IGNORED = 4;
 
     // __construct(Context $context, string $name, UnionType $type, int $flags) inherited from Variable
 
@@ -446,7 +447,9 @@ class Parameter extends Variable
     public function getReferenceType() : int
     {
         $flags = $this->getPhanFlags();
-        if (Flags::bitVectorHasState($flags, Flags::IS_READ_REFERENCE)) {
+        if (Flags::bitVectorHasState($flags, Flags::IS_IGNORED_REFERENCE)) {
+            return self::REFERENCE_IGNORED;
+        } elseif (Flags::bitVectorHasState($flags, Flags::IS_READ_REFERENCE)) {
             return self::REFERENCE_READ_WRITE;
         } elseif (Flags::bitVectorHasState($flags, Flags::IS_WRITE_REFERENCE)) {
             return self::REFERENCE_WRITE_ONLY;
@@ -461,6 +464,15 @@ class Parameter extends Variable
     {
         $this->enablePhanFlagBits(Flags::IS_WRITE_REFERENCE);
         $this->disablePhanFlagBits(Flags::IS_READ_REFERENCE);
+    }
+
+    /**
+     * Records that this parameter is an output reference (it overwrites the value of the argument by reference
+     */
+    public function setIsIgnoredReference() : void
+    {
+        $this->enablePhanFlagBits(Flags::IS_IGNORED_REFERENCE);
+        $this->disablePhanFlagBits(Flags::IS_READ_REFERENCE | Flags::IS_WRITE_REFERENCE);
     }
 
     private function setIsUsingNullableSyntax() : void
