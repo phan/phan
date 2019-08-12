@@ -31,6 +31,7 @@ class Flags
     // These can be combined in 3 ways, see Parameter->getReferenceType()
     const IS_READ_REFERENCE            = (1 << 14);
     const IS_WRITE_REFERENCE           = (1 << 15);
+    const IS_IGNORED_REFERENCE         = (1 << 16);  // only applies to parameters, does not conflict with other types
     // End of reference types
 
     // This will be compared against IS_OVERRIDE

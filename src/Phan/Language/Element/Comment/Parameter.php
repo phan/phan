@@ -13,6 +13,9 @@ use Phan\Language\UnionType;
  */
 class Parameter
 {
+    private const REFERENCE_DEFAULT = 0;
+    private const REFERENCE_OUTPUT  = 1;
+    private const REFERENCE_IGNORED = 2;
 
     /**
      * @var string
@@ -45,10 +48,9 @@ class Parameter
     private $has_default_value;
 
     /**
-     * @var bool
-     * True if a given parameter is an output-only parameter and ignores the passed in type.
+     * @var int one of the REFERENCE_* constants.
      */
-    private $is_output_reference;
+    private $reference_type;
 
     /**
      * @param string $name
@@ -63,14 +65,21 @@ class Parameter
         int $lineno = 0,
         bool $is_variadic = false,
         bool $has_default_value = false,
-        bool $is_output_reference = false
+        bool $is_output_reference = false,
+        bool $is_ignored_reference = false
     ) {
         $this->name = $name;
         $this->type = $type;
         $this->lineno = $lineno;
         $this->is_variadic = $is_variadic;
         $this->has_default_value = $has_default_value;
-        $this->is_output_reference = $is_output_reference;
+        if ($is_ignored_reference) {
+            $this->reference_type = self::REFERENCE_IGNORED;
+        } elseif ($is_output_reference) {
+            $this->reference_type = self::REFERENCE_OUTPUT;
+        } else {
+            $this->reference_type = self::REFERENCE_DEFAULT;
+        }
     }
 
     /**
@@ -157,7 +166,16 @@ class Parameter
      */
     public function isOutputReference() : bool
     {
-        return $this->is_output_reference;
+        return $this->reference_type === self::REFERENCE_OUTPUT;
+    }
+
+    /**
+     * @return bool
+     * Whether or not the parameter is an ignored reference
+     */
+    public function isIgnoredReference() : bool
+    {
+        return $this->reference_type === self::REFERENCE_IGNORED;
     }
 
     /**

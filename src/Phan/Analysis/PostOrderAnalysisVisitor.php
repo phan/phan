@@ -3419,6 +3419,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     // and we want to preserve generic array types for sorting functions (May change later on)
                     // TODO: Check type compatibility earlier, and don't modify?
                     break;
+                case Parameter::REFERENCE_IGNORED:
+                    // Pretend this reference doesn't modify the passed in argument.
+                    break;
                 case Parameter::REFERENCE_DEFAULT:
                 default:
                     $reference_parameter_type = $parameter->getNonVariadicUnionType();
@@ -3829,6 +3832,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         // If we couldn't find a variable, give up
         if (!$variable) {
+            return;
+        }
+        // For @phan-ignore-reference, don't bother modifying the type
+        if ($parameter->getReferenceType() === Parameter::REFERENCE_IGNORED) {
             return;
         }
 

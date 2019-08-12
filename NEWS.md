@@ -3,6 +3,11 @@ Phan NEWS
 ??? ?? 2019, Phan 2.2.10 (dev)
 ------------------------
 
+New features(Analysis):
++ Add support for `@param MyClass &$x @phan-ignore-reference`,
+  to make Phan ignore the impact of references on the passed in argument. (#3082)
+  This can be used when the result should be treated exactly like the original type for static analysis.
+
 Plugins:
 + In EmptyStatementListPlugin, warn about switch statements where all cases are no-ops. (#3030)
 

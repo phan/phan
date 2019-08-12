@@ -702,7 +702,9 @@ trait FunctionTrait
             if (!$comment_parameter_type->isEmpty()) {
                 $valid_comment_parameter_type_map[$comment_parameter_name] = $comment_parameter_type;
             }
-            if ($comment_parameter->isOutputReference()) {
+            if ($comment_parameter->isIgnoredReference()) {
+                $real_parameter_name_map[$comment_parameter_name]->setIsIgnoredReference();
+            } elseif ($comment_parameter->isOutputReference()) {
                 $real_parameter_name_map[$comment_parameter_name]->setIsOutputReference();
             }
         }
