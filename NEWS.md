@@ -3,6 +3,9 @@ Phan NEWS
 ??? ?? 2019, Phan 2.2.11 (dev)
 ------------------------
 
+Plugins:
++ Fix false positive in InvalidVariableIssetPlugin for expressions such as `isset(self::$prop['field'])` (#3089)
+
 Aug 12 2019, Phan 2.2.10
 ------------------------
 

@@ -605,7 +605,7 @@ class ContextNode
                 }
                 $this->emitIssue(
                     $custom_issue_type ?? ($expected_type_categories === self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME ? Issue::TypeExpectedObjectOrClassName : Issue::TypeExpectedObject),
-                    $this->node->lineno ?? 0,
+                    $this->node->lineno ?? $this->context->getLineNumberStart(),
                     (string)$union_type->asNonLiteralType()
                 );
             } elseif ($expected_type_categories === self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME) {

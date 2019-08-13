@@ -1,0 +1,6 @@
+src/143_invalid_variable_isset_nonvar.php:4 PhanReadOnlyPublicProperty Possibly zero write references to public property \X143::$queryCache
+src/143_invalid_variable_isset_nonvar.php:10 PhanPluginUndeclaredVariableIsset undeclared variable $self in isset()
+src/143_invalid_variable_isset_nonvar.php:10 PhanUndeclaredVariable Variable $self is undeclared
+src/143_invalid_variable_isset_nonvar.php:11 PhanUndeclaredVariable Variable $self is undeclared
+src/143_invalid_variable_isset_nonvar.php:13 PhanPluginInvalidVariableIsset Unexpected expression in isset()
+src/143_invalid_variable_isset_nonvar.php:13 PhanTypeExpectedObjectPropAccess Expected an object instance when accessing an instance property, but saw an expression with type string

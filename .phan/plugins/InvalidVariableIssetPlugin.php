@@ -1,7 +1,5 @@
 <?php declare(strict_types=1);
 
-// .phan/plugins/InvalidVariableIssetPlugin.php
-
 use ast\Node;
 use Phan\Language\Context;
 use Phan\Language\Element\Variable;
@@ -57,6 +55,15 @@ class InvalidVariableIssetVisitor extends PluginAwarePostAnalysisVisitor
 
         // get variable name from argument
         while (!isset($variable->children['name'])) {
+            if (!$variable instanceof Node) {
+                // e.g. 'foo' in `isset('foo'[$i])` or `isset('foo'->bar)`.
+                $this->emit(
+                    'PhanPluginInvalidVariableIsset',
+                    "Unexpected expression in isset()",
+                    []
+                );
+                return $this->context;
+            }
             if (in_array($variable->kind, self::EXPRESSIONS, true)) {
                 $variable = $variable->children['expr'];
             } elseif (in_array($variable->kind, self::CLASSES, true)) {
@@ -65,11 +72,23 @@ class InvalidVariableIssetVisitor extends PluginAwarePostAnalysisVisitor
                 return $this->context;
             }
         }
-        $name = $variable->children['name'];
+        if (!$variable instanceof Node) {
+            $this->emit(
+                'PhanPluginUnexpectedExpressionIsset',
+                "Unexpected expression in isset()",
+                []
+            );
+            return $this->context;
+        }
+        $name = $variable->children['name'] ?? null;
 
         // emit issue if name is not declared
         // Check for edge cases such as isset($$var)
-        if (is_string($name) && $name) {
+        if (is_string($name)) {
+            if ($variable->kind !== ast\AST_VAR)  {
+                // e.g. ast\AST_NAME of an ast\AST_CONST
+                return $this->context;
+            }
             if (!Variable::isHardcodedVariableInScopeWithName($name, $this->context->isInGlobalScope()) &&
                     !$this->context->getScope()->hasVariableWithName($name)) {
                 $this->emit(
@@ -78,13 +97,14 @@ class InvalidVariableIssetVisitor extends PluginAwarePostAnalysisVisitor
                     [$name]
                 );
             }
-        } elseif ($argument->kind !== ast\AST_VAR) {
+        } elseif ($variable->kind !== ast\AST_VAR) {
             // emit issue if argument is not array access
             $this->emit(
                 'PhanPluginInvalidVariableIsset',
                 "non array/property access in isset()",
                 []
             );
+            return $this->context;
         } elseif (!is_string($name)) {
             // emit issue if argument is not array access
             $this->emit(
