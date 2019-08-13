@@ -85,7 +85,7 @@ class InvalidVariableIssetVisitor extends PluginAwarePostAnalysisVisitor
         // emit issue if name is not declared
         // Check for edge cases such as isset($$var)
         if (is_string($name)) {
-            if ($variable->kind !== ast\AST_VAR)  {
+            if ($variable->kind !== ast\AST_VAR) {
                 // e.g. ast\AST_NAME of an ast\AST_CONST
                 return $this->context;
             }

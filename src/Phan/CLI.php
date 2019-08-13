@@ -1553,32 +1553,47 @@ EOB
             }
 
             $exclude_file_regex = Config::getValue('exclude_file_regex');
-            $iterator = new \CallbackFilterIterator(
-                new \RecursiveIteratorIterator(
-                    new \RecursiveDirectoryIterator(
-                        $directory_name,
-                        \RecursiveDirectoryIterator::FOLLOW_SYMLINKS
-                    )
-                ),
-                static function (\SplFileInfo $file_info) use ($file_extensions, $exclude_file_regex) : bool {
-                    if (!in_array($file_info->getExtension(), $file_extensions, true)) {
+            $filter_folder_or_file = /** @param mixed $unused_key */ static function (\SplFileInfo $file_info, $unused_key, \RecursiveIterator $iterator) use ($file_extensions, $exclude_file_regex) : bool {
+                if ($file_info->isDir()) {
+                    if (!$iterator->hasChildren()) {
+                        // Exclude '.' and '..'
                         return false;
                     }
-
-                    if (!$file_info->isFile() || !$file_info->isReadable()) {
-                        $file_path = $file_info->getRealPath();
-                        \error_log("Unable to read file {$file_path}");
-                        return false;
-                    }
-
-                    // Compare exclude_file_regex against the relative path within the project
-                    // (E.g. src/foo.php)
-                    if ($exclude_file_regex && self::isPathMatchedByRegex($exclude_file_regex, $file_info->getPathname())) {
+                    // Compare exclude_file_regex against the relative path of the folder within the project
+                    // (E.g. src/subfolder/)
+                    if ($exclude_file_regex && self::isPathMatchedByRegex($exclude_file_regex, $file_info->getPathname() . '/')) {
+                        // E.g. for phan itself, excludes vendor/psr/log/Psr/Log/Test and vendor/symfony/console/Tests
                         return false;
                     }
 
                     return true;
                 }
+
+                if (!in_array($file_info->getExtension(), $file_extensions, true)) {
+                    return false;
+                }
+                if (!$file_info->isFile() || !$file_info->isReadable()) {
+                    $file_path = $file_info->getRealPath();
+                    \error_log("Unable to read file {$file_path}");
+                    return false;
+                }
+
+                // Compare exclude_file_regex against the relative path within the project
+                // (E.g. src/foo.php)
+                if ($exclude_file_regex && self::isPathMatchedByRegex($exclude_file_regex, $file_info->getPathname())) {
+                    return false;
+                }
+
+                return true;
+            };
+            $iterator = new \RecursiveIteratorIterator(
+                new \RecursiveCallbackFilterIterator(
+                    new \RecursiveDirectoryIterator(
+                        $directory_name,
+                        \RecursiveDirectoryIterator::FOLLOW_SYMLINKS
+                    ),
+                    $filter_folder_or_file
+                )
             );
 
             $file_list = \array_keys(\iterator_to_array($iterator));
