@@ -42,6 +42,7 @@ use Phan\Language\Type\IntType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
+use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
@@ -2898,13 +2899,25 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $node->children['expr'],
             true
         );
-        if (!$type->isEmpty() && !$type->hasPossiblyObjectTypes()) {
+        if ($type->isEmpty()) {
+            return $this->context;
+        }
+        if (!$type->hasPossiblyObjectTypes()) {
             $this->emitIssue(
                 Issue::TypeInvalidCloneNotObject,
                 $node->children['expr']->lineno ?? $node->lineno,
                 $type
             );
+        } elseif (Config::get_strict_param_checking()) {
+            if ($type->containsNullable() || !$type->canStrictCastToUnionType($this->code_base, ObjectType::instance(false)->asPHPDocUnionType())) {
+                $this->emitIssue(
+                    Issue::TypePossiblyInvalidCloneNotObject,
+                    $node->children['expr']->lineno ?? $node->lineno,
+                    $type
+                );
+            }
         }
+
         return $this->context;
     }
 

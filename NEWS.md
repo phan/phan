@@ -3,6 +3,11 @@ Phan NEWS
 ??? ?? 2019, Phan 2.2.11 (dev)
 ------------------------
 
+New features(Analysis):
++ Improve union type inferred for clone() - It must be an object if clone() doesn't throw.
+  Emit `PhanTypePossiblyInvalidCloneNotObject` for cloning possible non-objects when strict param checking is enabled.
++ Infer that `new $expr()` has a real type of object in all cases, not just common ones.
+
 Plugins:
 + Fix false positive in InvalidVariableIssetPlugin for expressions such as `isset(self::$prop['field'])` (#3089)
 
