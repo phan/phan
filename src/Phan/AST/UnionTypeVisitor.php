@@ -1213,6 +1213,10 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitNew(Node $node) : UnionType
     {
+        static $object_type;
+        if ($object_type === null) {
+            $object_type = ObjectType::instance(false);
+        }
         $class_node = $node->children['class'];
         if (!($class_node instanceof Node)) {
             $this->emitIssue(
@@ -1220,11 +1224,11 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $node->lineno,
                 "Invalid ClassName for new ClassName()"
             );
-            return ObjectType::instance(false)->asRealUnionType();
+            return $object_type->asRealUnionType();
         }
         $union_type = $this->visitClassNameNode($class_node);
         if ($union_type->isEmpty()) {
-            return ObjectType::instance(false)->asRealUnionType();
+            return $object_type->asRealUnionType();
         }
 
         // TODO: re-use the underlying type set in the common case
@@ -1281,7 +1285,17 @@ class UnionTypeVisitor extends AnalysisVisitor
             return Type::fromType($type, $template_type_list);
         }, $union_type->getTypeSet());
 
-        return UnionType::of($type_set, $class_node->kind === ast\AST_NAME ? $type_set : []);
+        if (!$type_set) {
+            return $object_type->asRealUnionType();
+        }
+
+        if ($class_node->kind === ast\AST_NAME) {
+            $real_type_set = $type_set;
+        } else {
+            $real_type_set = [$object_type];
+        }
+
+        return UnionType::of($type_set, $real_type_set);
     }
 
     /**
