@@ -1,0 +1,3 @@
+%s:6 PhanImpossibleCondition Impossible attempt to cast $y of type float|int to array
+%s:9 PhanImpossibleCondition Impossible attempt to cast ~$x of type int|string to array
+%s:12 PhanImpossibleCondition Impossible attempt to cast -$x of type float|int to array

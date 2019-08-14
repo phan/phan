@@ -220,6 +220,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitPostInc(Node $node) : UnionType
     {
+        // Real types aren't certain, since this doesn't throw even for object or array types
         // TODO: Check if union type is sane (string/int)
         return self::unionTypeFromNode(
             $this->code_base,
@@ -241,6 +242,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitPostDec(Node $node) : UnionType
     {
+        // Real types aren't certain, since this doesn't throw even for object or array types
         // TODO: Check if union type is sane (string/int)
         return self::unionTypeFromNode(
             $this->code_base,
@@ -262,6 +264,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitPreDec(Node $node) : UnionType
     {
+        // Real types aren't certain, since this doesn't throw even for object or array types
         // TODO: Check if union type is sane (string/int)
         return self::unionTypeFromNode(
             $this->code_base,
@@ -285,6 +288,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitPreInc(Node $node) : UnionType
     {
+        // Real types aren't certain, since this doesn't throw even for object or array types
         // TODO: Check if union type is sane (string/int)
         return self::unionTypeFromNode(
             $this->code_base,
@@ -622,7 +626,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
-     * Visit a node with kind `\ast\AST_TYPE` representing
+     * Visit a node with kind `\ast\AST_NULLABLE_TYPE` representing
      * a nullable type such as `?string`.
      *
      * @param Node $node
@@ -1186,18 +1190,48 @@ class UnionTypeVisitor extends AnalysisVisitor
             case \ast\flags\TYPE_ARRAY:
                 return ArrayType::instance(false)->asRealUnionType();
             case \ast\flags\TYPE_OBJECT:
-                $expr_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr']);
-                if ($expr_type->isExclusivelyArray()) {
-                    // @phan-suppress-next-line PhanThrowTypeMismatchForCall
-                    return Type::fromFullyQualifiedString('\stdClass')->asRealUnionType();
-                }
-                return ObjectType::instance(false)->asRealUnionType();
+                return $this->typeAfterCastToObject($node->children['expr']);
             default:
                 throw new NodeException(
                     $node,
                     'Unknown type (' . $node->flags . ') in cast'
                 );
         }
+    }
+
+    /**
+     * @param Node|string|int|float $expr
+     * @suppress PhanThrowTypeAbsentForCall
+     */
+    private function typeAfterCastToObject($expr) : UnionType {
+        static $stdclass;
+        if ($stdclass === null) {
+            $stdclass = Type::fromFullyQualifiedString('\stdClass');
+        }
+        $expr_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $expr);
+        $has_array = $expr_type->hasArray();
+        if ($has_array) {
+            if ($expr_type->isExclusivelyArray()) {
+                return $stdclass->asRealUnionType();
+            }
+        }
+        $expr_type = $expr_type->objectTypes();
+        if ($expr_type->isEmpty()) {
+            return ObjectType::instance(false)->asRealUnionType();
+        }
+        $expr_type = $expr_type->nonNullableClone();
+        if ($has_array) {
+            $expr_type = $expr_type->withType($stdclass);
+            if ($expr_type->hasRealTypeSet()) {
+                return $expr_type->withRealTypeSet(array_merge($expr_type->getRealTypeSet(), [$stdclass]));
+            } else {
+                return $expr_type->withRealType(ObjectType::instance(false));
+            }
+        }
+        if (!$expr_type->hasRealTypeSet()) {
+            return $expr_type->withRealType(ObjectType::instance(false));
+        }
+        return $expr_type;
     }
 
     /**
@@ -1985,7 +2019,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         } catch (IssueException $exception) {
             if ($this->should_catch_issue_exception) {
                 Issue::maybeEmitInstance($this->code_base, $this->context, $exception->getIssueInstance());
-                return StringType::instance(false)->asRealUnionType();
+                return ClassStringType::instance(false)->asRealUnionType();
             }
             throw $exception;
         } catch (CodeBaseException $exception) {
@@ -2009,6 +2043,9 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
             throw $new_exception;
         }
+        if (!$class_list) {
+            return ClassStringType::instance(false)->asRealUnionType();
+        }
         // Return the first class FQSEN
         $types = [];
         $name = $class_node->children['name'] ?? null;
@@ -2019,7 +2056,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             );
         }
         if (\is_string($name) && \strcasecmp($name, 'static') === 0 && (!$class || !$class->isFinal())) {
-            return UnionType::of($types, [StringType::instance(false)]);
+            return UnionType::of($types, [ClassStringType::instance(false)]);
         }
         return UnionType::of($types, $types);
     }
@@ -2104,7 +2141,10 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
 
             if ($union_type->isEmptyArrayShape() && $property->getPHPDocUnionType()->isEmpty()) {
-                return ArrayType::instance($union_type->containsNullable())->asPHPDocUnionType();
+                return UnionType::of(
+                    [ArrayType::instance($union_type->containsNullable())],
+                    $property->getRealUnionType()->getTypeSet()
+                );
             }
             return $union_type;
         } catch (IssueException $exception) {
@@ -2424,7 +2464,8 @@ class UnionTypeVisitor extends AnalysisVisitor
                 '-',
                 Issue::TypeInvalidUnaryOperandNumeric
             );
-            return $result->applyUnaryMinusOperator();
+            $new_result = $result->applyUnaryMinusOperator();
+            return $new_result;
         } elseif ($flags === \ast\flags\UNARY_PLUS) {
             $this->warnAboutInvalidUnaryOp(
                 $node,

@@ -78,6 +78,7 @@ final class EmptyUnionTypeTest extends BaseTest
         }
 
         $empty_regular = new UnionType([], true, []);
+        $empty_union_type = UnionType::empty();
 
         $candidate_arg_lists = $this->generateArgLists($method);
         if (count($candidate_arg_lists) === 0) {
@@ -86,7 +87,7 @@ final class EmptyUnionTypeTest extends BaseTest
         $failures = '';
         foreach ($candidate_arg_lists as $arg_list) {
             $expected_result = $empty_regular->{$method_name}(...$arg_list);
-            $actual_result = $empty_regular->{$method_name}(...$arg_list);
+            $actual_result = $empty_union_type->{$method_name}(...$arg_list);
             if ($expected_result instanceof Generator && $actual_result instanceof Generator) {
                 $expected_result = \iterator_to_array($expected_result);
                 $actual_result = \iterator_to_array($actual_result);
@@ -108,7 +109,7 @@ final class EmptyUnionTypeTest extends BaseTest
             return true;
         }
         if ($expected_result instanceof UnionType && $actual_result instanceof UnionType) {
-            return (string)$expected_result === (string)$actual_result;
+            return $expected_result->getDebugRepresentation() === $actual_result->getDebugRepresentation();
         }
         return false;
     }
