@@ -12,7 +12,6 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
-use Phan\Language\Type\IntType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\TemplateType;
 
@@ -1266,17 +1265,17 @@ final class EmptyUnionType extends UnionType
 
     public function applyUnaryMinusOperator() : UnionType
     {
-        return $this;
+        return UnionType::fromFullyQualifiedRealString('int|float');
     }
 
     public function applyUnaryBitwiseNotOperator() : UnionType
     {
-        return IntType::instance(false)->asPHPDocUnionType();
+        return UnionType::fromFullyQualifiedPHPDocAndRealString('int', 'int|string');
     }
 
     public function applyUnaryPlusOperator() : UnionType
     {
-        return UnionType::fromFullyQualifiedPHPDocString('int|float');
+        return UnionType::fromFullyQualifiedRealString('int|float');
     }
 
     /** @return null */

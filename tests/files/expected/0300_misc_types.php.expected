@@ -25,4 +25,4 @@
 %s:35 PhanUnusedVariable Unused definition of variable $definedStrVar
 %s:37 PhanContextNotObject Cannot access self when not in object context
 %s:38 PhanRedundantCondition Redundant attempt to cast new ArrayObject() of type \ArrayObject to object
-%s:38 PhanTypeMismatchArgumentReal Argument 1 ($x) is object but \expect_string_300() takes string defined at %s:3
+%s:38 PhanTypeMismatchArgumentReal Argument 1 ($x) is \ArrayAccess|\ArrayObject|\Countable|\IteratorAggregate|\Serializable|\Traversable|iterable but \expect_string_300() takes string defined at %s:3

@@ -3546,6 +3546,9 @@ class UnionType implements Serializable
      */
     public function serialize() : string
     {
+        if ($this->real_type_set) {
+            return (string)$this . "\x00" . implode('|', $this->real_type_set);
+        }
         return (string)$this;
     }
 
@@ -3559,9 +3562,16 @@ class UnionType implements Serializable
      */
     public function unserialize($serialized) : void
     {
-        // NOTE: Potentially need to handle "array{field:int|string}" in the future.
-        // TODO: Not going to work with template types
-        // NOTE: Not going to track whether this is real or phpdoc
+        $i = stripos($serialized, "\x00");
+        if ($i !== false) {
+            $result = UnionType::fromFullyQualifiedPHPDocAndRealString(
+                substr($serialized, 0, $i),
+                (string)substr($serialized, $i + 1)
+            );
+            $this->type_set = $result->getTypeSet();
+            $this->real_type_set = $result->getRealTypeSet();
+            return;
+        }
         $this->type_set = UnionType::fromFullyQualifiedPHPDocString($serialized)->getTypeSet();
     }
 
@@ -4298,7 +4308,6 @@ class UnionType implements Serializable
      */
     public function applyUnaryMinusOperator() : UnionType
     {
-        // TODO: Extend to LiteralFloatType
         /** @param int|float $value */
         return $this->applyNumericOperation(static function ($value) : ScalarType {
             $result = -$value;
@@ -4307,7 +4316,7 @@ class UnionType implements Serializable
             }
             // -INT_MIN is a float.
             return LiteralFloatType::instanceForValue($result, false);
-        }, true);
+        }, true)->withRealTypeSet(self::intOrFloatTypeSet());
     }
 
     /**
@@ -4317,7 +4326,7 @@ class UnionType implements Serializable
     {
         if ($this->isEmpty()) {
             // Can be int|string
-            return IntType::instance(false)->asPHPDocUnionType();
+            return UnionType::fromFullyQualifiedPHPDocAndRealString('int', 'int|string');
         }
         $added_fallbacks = false;
         $type_set = UnionType::empty();
@@ -4338,7 +4347,19 @@ class UnionType implements Serializable
                 $added_fallbacks = true;
             }
         }
-        return $type_set;
+        return $type_set->withRealTypeSet(self::intOrStringTypeSet());
+    }
+
+    /** @return array<int,Type> */
+    private static function intOrFloatTypeSet() : array {
+        static $types;
+        return $types ?? ($types = [IntType::instance(false), FloatType::instance(false)]);
+    }
+
+    /** @return array<int,Type> */
+    private static function intOrStringTypeSet() : array {
+        static $types;
+        return $types ?? ($types = [IntType::instance(false), StringType::instance(false)]);
     }
 
     /**
@@ -4353,7 +4374,7 @@ class UnionType implements Serializable
                 return LiteralIntType::instanceForValue($result, false);
             }
             return LiteralFloatType::instanceForValue($result, false);
-        }, true);
+        }, true)->withRealTypeSet(self::intOrFloatTypeSet());
     }
 
     /**
