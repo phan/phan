@@ -1,0 +1,6 @@
+src/144_bad_clone.php:5 PhanUnreferencedFunction Possibly zero references to function \test_clone_return_type()
+src/144_bad_clone.php:6 PhanTypeInvalidCloneNotObject Expected an object to be passed to clone() but got string
+src/144_bad_clone.php:10 PhanTypeMismatchReturnReal Returning type object but test_clone_return_type() is declared to return string
+src/144_bad_clone.php:13 PhanUnreferencedFunction Possibly zero references to function \test_clone_return_type2()
+src/144_bad_clone.php:14 PhanTypeMismatchReturnReal Returning type \stdClass but test_clone_return_type2() is declared to return \ArrayObject
+src/144_bad_clone.php:14 PhanTypePossiblyInvalidCloneNotObject Expected an object to be passed to clone() but got possible non-object ?\stdClass

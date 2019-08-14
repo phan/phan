@@ -104,6 +104,7 @@ class Issue
     const TypeInstantiateTrait      = 'PhanTypeInstantiateTrait';
     const TypeInstantiateTraitStaticOrSelf = 'PhanTypeInstantiateTraitStaticOrSelf';
     const TypeInvalidCloneNotObject = 'PhanTypeInvalidCloneNotObject';
+    const TypePossiblyInvalidCloneNotObject = 'PhanTypePossiblyInvalidCloneNotObject';
     const TypeInvalidClosureScope   = 'PhanTypeInvalidClosureScope';
     const TypeInvalidLeftOperand    = 'PhanTypeInvalidLeftOperand';
     const TypeInvalidRightOperand   = 'PhanTypeInvalidRightOperand';
@@ -2054,6 +2055,14 @@ class Issue
                 "Expected an object to be passed to clone() but got {TYPE}",
                 self::REMEDIATION_B,
                 10088
+            ),
+            new Issue(
+                self::TypePossiblyInvalidCloneNotObject,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Expected an object to be passed to clone() but got possible non-object {TYPE}",
+                self::REMEDIATION_B,
+                10143
             ),
             new Issue(
                 self::TypeInvalidTraitReturn,

@@ -306,12 +306,20 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitClone(Node $node) : UnionType
     {
-        // TODO: Check if union type is sane (Any object type)
-        return self::unionTypeFromNode(
+        // Phan checks elsewhere if union type is sane (Any object type)
+        $type = self::unionTypeFromNode(
             $this->code_base,
             $this->context,
             $node->children['expr']
-        );
+        )->objectTypes();
+        if ($type->isEmpty()) {
+            return ObjectType::instance(false)->asRealUnionType();
+        }
+        $type = $type->nonNullableClone();
+        if (!$type->hasRealTypeSet()) {
+            $type = $type->withRealTypeSet([ObjectType::instance(false)]);
+        }
+        return $type;
     }
 
     /**

@@ -373,6 +373,7 @@ class ASTSimplifier
      * if (($var = A) === B) {X} -> $var = A; if ($var === B) { X }
      *
      * @return array{0:Node,1:Node}
+     * @suppress PhanTypePossiblyInvalidCloneNotObject this was checked by the caller.
      */
     private static function applyAssignInLeftSideOfBinaryOpReduction(Node $node) : array
     {
@@ -400,6 +401,7 @@ class ASTSimplifier
      * if (B === ($var = A)) {X} -> $var = A; if (B === $var) { X }
      *
      * @return array{0:Node,1:Node}
+     * @suppress PhanTypePossiblyInvalidCloneNotObject this was checked by the caller.
      */
     private static function applyAssignInRightSideOfBinaryOpReduction(Node $node) : array
     {
@@ -465,6 +467,7 @@ class ASTSimplifier
     /**
      * Converts if (A && B) {X}` -> `if (A) { if (B){X}}`
      * @return Node simplified node logically equivalent to $node, with kind \ast\AST_IF.
+     * @suppress PhanTypePossiblyInvalidCloneNotObject this was checked by the caller.
      */
     private static function applyIfAndReduction(Node $node) : Node
     {
@@ -561,6 +564,7 @@ class ASTSimplifier
      * Converts if ($x = A) {Y} -> $x = A; if ($x) {Y}
      * This allows analyzing variables set in if blocks outside of the `if` block
      * @return array{0:Node,1:Node} [$outer_assign_statement, $new_node]
+     * @suppress PhanTypePossiblyInvalidCloneNotObject this was checked by the caller.
      */
     private static function applyIfAssignReduction(Node $node) : array
     {
@@ -581,6 +585,7 @@ class ASTSimplifier
     /**
      * Converts if (!x) {Y} else {Z} -> if (x) {Z} else {Y}
      * This improves Phan's analysis for cases such as `if (!is_string($x))`.
+     * @suppress PhanTypePossiblyInvalidCloneNotObject this was checked by the caller.
      */
     private static function applyIfNegateReduction(Node $node) : Node
     {
@@ -604,6 +609,7 @@ class ASTSimplifier
     /**
      * Converts if (!!(x)) {Y} -> if (x) {Y}
      * This improves Phan's analysis for cases such as `if (!!x)`
+     * @suppress PhanTypePossiblyInvalidCloneNotObject this was checked by the caller.
      */
     private static function applyIfDoubleNegateReduction(Node $node) : Node
     {
