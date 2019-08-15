@@ -1,2 +1,2 @@
 src/020_issue.php:2 PhanRedefineClass Class \anonymous_class_1c87386a defined at src/020_issue.php:2 was previously defined as Class \anonymous_class_1c87386a at src/020_issue.php:2
-src/020_issue.php:2 PhanSyntaxError syntax error, unexpected '{', expecting identifier (T_STRING) (at column 6)
+src/020_issue.php:2 PhanSyntaxError syntax error, unexpected '{', expecting identifier (T_STRING) (at column 7)

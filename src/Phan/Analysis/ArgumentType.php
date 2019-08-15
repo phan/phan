@@ -84,9 +84,9 @@ final class ArgumentType
                         $code_base,
                         $context,
                         Issue::ParamTooFewInternal,
-                        $node->lineno ?? 0,
+                        $node->lineno,
                         $argcount,
-                        $method->getRepresentationForIssue(),
+                        $method->getRepresentationForIssue(true),
                         $method->getNumberOfRequiredParameters()
                     );
                 } else {
@@ -96,7 +96,7 @@ final class ArgumentType
                         Issue::ParamTooFew,
                         $node->lineno ?? 0,
                         $argcount,
-                        $method->getRepresentationForIssue(),
+                        $method->getRepresentationForIssue(true),
                         $method->getNumberOfRequiredParameters(),
                         $method->getFileRef()->getFile(),
                         $method->getFileRef()->getLineNumberStart()
@@ -145,7 +145,7 @@ final class ArgumentType
                 $caused_by_variadic ? Issue::ParamTooManyUnpackInternal : Issue::ParamTooManyInternal,
                 $node->lineno ?? 0,
                 $caused_by_variadic ? $max : $argcount,
-                $method->getRepresentationForIssue(),
+                $method->getRepresentationForIssue(true),
                 $max
             );
         } else {
@@ -155,7 +155,7 @@ final class ArgumentType
                 $caused_by_variadic ? Issue::ParamTooManyUnpack : Issue::ParamTooMany,
                 $node->lineno ?? 0,
                 $caused_by_variadic ? $max : $argcount,
-                $method->getRepresentationForIssue(),
+                $method->getRepresentationForIssue(true),
                 $max,
                 $method->getFileRef()->getFile(),
                 $method->getFileRef()->getLineNumberStart()
@@ -290,7 +290,7 @@ final class ArgumentType
                     Issue::ParamTooFewCallable,
                     $context->getLineNumberStart(),
                     $argcount,
-                    $method->getRepresentationForIssue(),
+                    $method->getRepresentationForIssue(true),
                     $method->getNumberOfRequiredParameters(),
                     $method->getFileRef()->getFile(),
                     $method->getFileRef()->getLineNumberStart()

@@ -1,1 +1,1 @@
-src/042_invalid_namespace_use.php:3 PhanSyntaxError syntax error, unexpected ',', expecting identifier (T_STRING) or '{' (at column 22)
+src/042_invalid_namespace_use.php:3 PhanSyntaxError syntax error, unexpected ',', expecting identifier (T_STRING) or '{' (at column 21)

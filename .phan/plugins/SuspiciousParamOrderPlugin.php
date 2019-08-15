@@ -192,7 +192,7 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
                     [
                         $arg_details,
                         $param_details,
-                        $function->getRepresentationForIssue(),
+                        $function->getRepresentationForIssue(true),
                     ]
                 );
             } else {
@@ -204,7 +204,7 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
                     [
                         $arg_details,
                         $param_details,
-                        $function->getRepresentationForIssue(),
+                        $function->getRepresentationForIssue(true),
                         $function->getContext()->getFile(),
                         $function->getContext()->getLineNumberStart(),
                     ]

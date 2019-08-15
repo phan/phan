@@ -9,6 +9,8 @@ New features(Analysis):
 + Infer that `new $expr()` has a real type of object in all cases, not just common ones.
 + Improve real type inferred for `+(expr)`/`-(expr)`/`~(expr)` and warn about redundant conditions.
   This does not attempt to account for custom behavior for objects provided by PECL extensions.
++ Show argument names and types in issue messages for functions/methods for PhanParamTooFew and PhanParamTooMany.
++ Show more accurate columns for PhanSyntaxError for unexpected tokens in more cases.
 
 Plugins:
 + Fix false positive in InvalidVariableIssetPlugin for expressions such as `isset(self::$prop['field'])` (#3089)

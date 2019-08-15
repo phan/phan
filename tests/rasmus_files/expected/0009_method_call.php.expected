@@ -1,1 +1,1 @@
-%s:7 PhanParamTooFew Call with 1 arg(s) to \A::test() which requires 2 arg(s) defined at %s:3
+%s:7 PhanParamTooFew Call with 1 arg(s) to \A::test($arg1, $arg2, int|mixed $arg3 = 0) which requires 2 arg(s) defined at %s:3

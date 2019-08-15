@@ -29,7 +29,9 @@ class Func extends AddressableElement implements FunctionInterface
 {
     use Analyzable;
     use Memoize;
-    use FunctionTrait;
+    use FunctionTrait {
+        getRepresentationForIssue as private getRepresentationForIssueInternal;
+    }
     use ClosedScopeElement;
 
     /**
@@ -432,12 +434,12 @@ class Func extends AddressableElement implements FunctionInterface
      * structural element (or something else for closures and callables)
      * @override
      */
-    public function getRepresentationForIssue() : string
+    public function getRepresentationForIssue(bool $show_args = false) : string
     {
         if ($this->isClosure()) {
             return $this->getStubForClosure();
         }
-        return $this->getFQSEN()->__toString() . '()';
+        return $this->getRepresentationForIssueInternal($show_args);
     }
 
     private function getStubForClosure() : string

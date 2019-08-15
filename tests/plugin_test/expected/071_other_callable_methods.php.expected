@@ -3,7 +3,7 @@ src/071_other_callable_methods.php:23 PhanUndeclaredStaticMethodInCallable Refer
 src/071_other_callable_methods.php:24 PhanTypeMismatchArgumentInternal Argument 1 ($string) is \ArrayAccess|\ArrayObject|\Countable|\IteratorAggregate|\Serializable|\Traversable|iterable but \strlen() takes string
 src/071_other_callable_methods.php:25 PhanUndeclaredMethodInCallable Call to undeclared method missingMethod in callable. Possible object type(s) for that method are \InvokableTemplateTest
 src/071_other_callable_methods.php:26 PhanUndeclaredInvokeInCallable Possible attempt to access missing magic method __invoke of '\ArrayObject'
-src/071_other_callable_methods.php:28 PhanParamTooFew Call with 0 arg(s) to \InvokableTemplateTest::__invoke() which requires 1 arg(s) defined at src/071_other_callable_methods.php:4
+src/071_other_callable_methods.php:28 PhanParamTooFew Call with 0 arg(s) to \InvokableTemplateTest::__invoke($arg) which requires 1 arg(s) defined at src/071_other_callable_methods.php:4
 src/071_other_callable_methods.php:29 PhanUndeclaredInvokeInCallable Possible attempt to access missing magic method __invoke of '\stdClass'
 src/071_other_callable_methods.php:30 PhanTypeInvalidCallableArraySize In a place where phan was expecting a callable, saw an array of size 1, but callable arrays must be of size 2
 src/071_other_callable_methods.php:35 PhanUndeclaredStaticMethodInCallable Reference to undeclared static method \InvokableTemplateTest::missingMethod in callable
