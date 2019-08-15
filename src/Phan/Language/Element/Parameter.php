@@ -21,6 +21,7 @@ use Phan\Language\Type\NullType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\UnionType;
 use Phan\Parse\ParseVisitor;
+use function strlen;
 
 /**
  * Represents the information Phan has about a function-like's Parameter
@@ -586,6 +587,109 @@ class Parameter extends Variable
         }
 
         return $string;
+    }
+
+    /**
+     * Convert this parameter to a stub that can be used for issue messages.
+     *
+     * @suppress PhanAccessClassConstantInternal
+     */
+    public function getShortRepresentationForIssue(bool $is_internal = false) : string
+    {
+        $string = '';
+
+        $union_type_string = $this->getUnionTypeRepresentationForIssue();
+        if ($union_type_string !== '') {
+            $string = $union_type_string . ' ';
+        }
+        if ($this->isPassByReference()) {
+            $string .= '&';
+        }
+
+        if ($this->isVariadic()) {
+            $string .= '...';
+        }
+
+        $name = $this->getName();
+        if (!\preg_match('@' . Builder::WORD_REGEX . '@', $name)) {
+            // Some PECL extensions have invalid parameter names.
+            // Replace invalid characters with U+FFFD replacement character.
+            $name = \preg_replace('@[^a-zA-Z0-9_\x7f-\xff]@', '�', $name);
+            if (!\preg_match('@' . Builder::WORD_REGEX . '@', $name)) {
+                $name = '_' . $name;
+            }
+        }
+
+        $string .= "\$$name";
+
+        if ($this->hasDefaultValue() && !$this->isVariadic()) {
+            $default_value = $this->getDefaultValue();
+            if ($default_value instanceof Node) {
+                $kind = $default_value->kind;
+                if ($kind === \ast\AST_NAME) {
+                    $default_repr = (string)$default_value->children['name'];
+                } elseif ($kind === \ast\AST_ARRAY) {
+                    $default_repr = '[]';
+                } else {
+                    $default_repr = 'null';
+                }
+            } else {
+                $default_repr = \var_export($this->getDefaultValue(), true);
+                if (strlen($default_repr) >= 50) {
+                    $default_repr = 'default';
+                }
+            }
+            if (\strtolower($default_repr) === 'null') {
+                $default_repr = 'null';
+                // If we're certain the parameter isn't nullable,
+                // then render the default as `default`, not `null`
+                if ($is_internal) {
+                    $union_type = $this->getNonVariadicUnionType();
+                    if (!$union_type->isEmpty() && !$union_type->containsNullable()) {
+                        $default_repr = 'default';
+                    }
+                }
+            }
+            $string .= ' = ' . $default_repr;
+        }
+
+        return $string;
+    }
+
+    /**
+     * Returns a limited length union type representation for issue messages.
+     * Long types are truncated or omitted.
+     */
+    private function getUnionTypeRepresentationForIssue() : string
+    {
+        $union_type = $this->getNonVariadicUnionType()->asNormalizedTypes();
+        if ($union_type->isEmpty()) {
+            return '';
+        }
+        $real_union_type = $union_type->getRealUnionType();
+        if ($union_type->typeCount() >= 3) {
+            if (!$real_union_type->isEmpty()) {
+                $real_union_type_string = $real_union_type->__toString();
+                if (strlen($real_union_type_string) <= 100) {
+                    return $real_union_type_string;
+                }
+            }
+            return '';
+        }
+
+        // TODO: hide template types, generic array or real array types
+        $union_type_string = $union_type->__toString();
+        if ($union_type_string === 'mixed')  {
+            return '';
+        }
+        if (strlen($union_type_string) < 100) {
+            return $union_type_string;
+        }
+        $real_union_type_string = $real_union_type->__toString();
+        if (strlen($real_union_type_string) <= 100) {
+            return $real_union_type_string;
+        }
+        return '';
     }
 
     /**

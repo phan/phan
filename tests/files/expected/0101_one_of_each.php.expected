@@ -18,9 +18,9 @@
 %s:57 PhanTypeConversionFromArray array to string conversion
 %s:60 PhanParamSpecial4 The second to last argument to \array_uintersect_uassoc() must be of type callable
 %s:60 PhanTypeConversionFromArray array to string conversion
-%s:64 PhanParamTooFew Call with 0 arg(s) to \f6() which requires 1 arg(s) defined at %s:63
-%s:71 PhanParamTooMany Call with 2 arg(s) to \f7() which only takes 1 arg(s) defined at %s:70
-%s:74 PhanParamTooManyInternal Call with 2 arg(s) to \strlen() which only takes 1 arg(s)
+%s:64 PhanParamTooFew Call with 0 arg(s) to \f6($i) which requires 1 arg(s) defined at %s:63
+%s:71 PhanParamTooMany Call with 2 arg(s) to \f7($i) which only takes 1 arg(s) defined at %s:70
+%s:74 PhanParamTooManyInternal Call with 2 arg(s) to \strlen(string $string) which only takes 1 arg(s)
 %s:80 PhanRedefineClass Class \C15 defined at %s:80 was previously defined as Class \C15 at %s:79
 %s:83 PhanRedefineClassInternal Class \DateTime defined at %s:83 was previously defined as Class \DateTime internally
 %s:87 PhanRedefineFunction Function f9 defined at %s:87 was previously defined at %s:86

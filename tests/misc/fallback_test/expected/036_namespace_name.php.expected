@@ -1,1 +1,1 @@
-src/036_namespace_name.php:3 PhanSyntaxError syntax error, unexpected ';', expecting identifier (T_STRING) (at column 20)
+src/036_namespace_name.php:3 PhanSyntaxError syntax error, unexpected ';', expecting identifier (T_STRING) (at column 21)

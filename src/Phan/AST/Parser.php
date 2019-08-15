@@ -217,34 +217,12 @@ class Parser
         string $file_contents,
         Error $native_parse_error
     ) : void {
-        static $last_file_contents = null;
-        static $errors = [];
-
         // Try to get the raw diagnostics by reference.
         // For efficiency, reuse the last result if this was called multiple times in a row.
-        if ($last_file_contents !== $file_contents) {
-            unset($errors);
-            $errors = [];
-            try {
-                self::parseCodePolyfill($code_base, $context, $file_path, $file_contents, true, null, $errors);
-            } catch (Throwable $_) {
-                // ignore this exception
-            }
-        }
         $line = $native_parse_error->getLine();
         $message = $native_parse_error->getMessage();
-        // If the polyfill parser emits the first error on the same line as the native parser,
-        // mention the column that the polyfill parser found for the error.
-        $diagnostic = $errors[0] ?? null;
-        // $diagnostic_error_column is either 0 or the column of the error determined by the polyfill parser
-        $diagnostic_error_column = 0;
-        if ($diagnostic) {
-            $start = (int) $diagnostic->start;
-            $diagnostic_error_start_line = 1 + \substr_count($file_contents, "\n", 0, $start);
-            if ($diagnostic_error_start_line == $line) {
-                $diagnostic_error_column = $diagnostic->start - (\strrpos($file_contents, "\n", $start - \strlen($file_contents) - 1) ?: 0);
-            }
-        }
+        $diagnostic_error_column = self::guessErrorColumnUsingTokens($file_contents, $native_parse_error) ?:
+            self::guessErrorColumnUsingPolyfill($code_base, $context, $file_path, $file_contents, $native_parse_error);
 
         Issue::maybeEmitWithParameters(
             $code_base,
@@ -255,6 +233,141 @@ class Parser
             null,
             $diagnostic_error_column
         );
+    }
+
+    /**
+     * Returns the 1-based error column, or 0 if unknown.
+     *
+     * This will return the corresponding unexpected token only when there's exactly one token with that value on the line with the error.
+     */
+    private static function guessErrorColumnUsingTokens(
+        string $file_contents,
+        Error $native_parse_error
+    ) : int {
+        if (!\function_exists('token_get_all')) {
+            return 0;
+        }
+        $message = $native_parse_error->getMessage();
+        if (!preg_match("/ unexpected '(.+)' \((T_\w+)\)/", $message, $matches)) {
+            if (!preg_match("/ unexpected '(.+)', expecting/", $message, $matches)) {
+                if (!preg_match("/ unexpected '(.+)'$/", $message, $matches)) {
+                    return 0;
+                }
+            }
+        }
+        $token_name = $matches[2] ?? null;
+        if (\is_string($token_name)) {
+            if (!defined($token_name)) {
+                return 0;
+            }
+            $token_kind = constant($token_name);
+        } else {
+            $token_kind = null;
+        }
+        $token_str = $matches[1];
+        $tokens = \token_get_all($file_contents);
+        $candidates = [];
+        $desired_line = $native_parse_error->getLine();
+        foreach ($tokens as $i => $token) {
+            if (!is_array($token)) {
+                if ($token_str === $token) {
+                    $candidates[] = $i;
+                }
+                continue;
+            }
+            $line = $token[2];
+            if ($line < $desired_line) {
+                continue;
+            } elseif ($line > $desired_line) {
+                break;
+            }
+            if ($token_kind !== $token[0]) {
+                continue;
+            }
+            if ($token_str !== $token[1]) {
+                continue;
+            }
+            $candidates[] = $i;
+        }
+        if (count($candidates) !== 1) {
+            return 0;
+        }
+        return self::computeColumnForTokenAtIndex($tokens, $candidates[0], $desired_line);
+    }
+
+    /**
+     * @param array<int,array{0:int,1:string,2:int}|string> $tokens
+     * @return int the 1-based line number, or 0 on failure
+     */
+    private static function computeColumnForTokenAtIndex(array $tokens, int $i, int $desired_line) : int {
+        if ($i == 0) {
+            return 1;
+        }
+        $column = 0;
+        for ($j = $i - 1; $j >= 0; $j--) {
+            $token = $tokens[$j];
+            if (!is_array($token)) {
+                $column += strlen($token);
+                continue;
+            }
+            $token_str = $token[1];
+            if ($token[2] >= $desired_line) {
+                $column += strlen($token_str);
+                continue;
+            }
+            $last_newline = strrpos($token_str, "\n");
+            if ($last_newline !== false) {
+                $column += strlen($token_str) - $last_newline;
+            }
+            break;
+        }
+        return $column;
+    }
+
+    /**
+     * Returns the 1-based error column, or 0 if unknown.
+     */
+    private static function guessErrorColumnUsingPolyfill(
+        CodeBase $code_base,
+        Context $context,
+        string $file_path,
+        string $file_contents,
+        Error $native_parse_error
+    ) : int {
+        static $last_file_contents = null;
+        static $errors = [];
+
+        if ($last_file_contents !== $file_contents) {
+            unset($errors);
+            $errors = [];
+            try {
+                self::parseCodePolyfill($code_base, $context, $file_path, $file_contents, true, null, $errors);
+            } catch (Throwable $_) {
+                // ignore this exception
+            }
+        }
+        // If the polyfill parser emits the first error on the same line as the native parser,
+        // mention the column that the polyfill parser found for the error.
+        $diagnostic = $errors[0] ?? null;
+        // $diagnostic_error_column is either 0 or the column of the error determined by the polyfill parser
+        if (!$diagnostic) {
+            return 0;
+        }
+        $start = (int) $diagnostic->start;
+        $diagnostic_error_start_line = 1 + \substr_count($file_contents, "\n", 0, $start);
+        if ($diagnostic_error_start_line > $native_parse_error->getLine()) {
+            return 0;
+        }
+        // If the current character is whitespace, keep searching forward for the next non-whitespace character
+        $file_length = strlen($file_contents);
+        while ($start + 1 < $file_length && \ctype_space($file_contents[$start])) {
+            $start++;
+        }
+        $diagnostic_error_start_line = 1 + \substr_count($file_contents, "\n", 0, $start);
+        if ($diagnostic_error_start_line !== $native_parse_error->getLine()) {
+            return 0;
+        }
+        return $start - (\strrpos($file_contents, "\n", $start - \strlen($file_contents) - 1) ?: 0);
     }
 
     /**

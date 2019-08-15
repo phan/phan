@@ -11,7 +11,7 @@
 %s:92 PhanTypeMismatchArgument Argument 1 ($x) is 'x' but \Foo\Bar\C371::createArray() takes int defined at %s:54
 %s:92 PhanTypeMismatchReturn Returning type array<int,int[]> but test371D() is declared to return string[]
 %s:101 PhanParamTooManyCallable Call with 1 arg(s) to \Foo\Bar\accepts_no_args() (As a provided callable) which only takes 0 arg(s) defined at %s:95
-%s:111 PhanParamTooFewCallable Call with 1 arg(s) to \Foo\Bar\accepts_twoargs() (as a provided callable) which requires 2 arg(s) defined at %s:104
+%s:111 PhanParamTooFewCallable Call with 1 arg(s) to \Foo\Bar\accepts_twoargs($x, $y) (as a provided callable) which requires 2 arg(s) defined at %s:104
 %s:122 PhanUndeclaredFunctionInCallable Call to undeclared function \accepts_enough_args in callable
 %s:128 PhanUndeclaredMethodInCallable Call to undeclared method missingMethod in callable. Possible object type(s) for that method are \Foo\Bar\C371
 %s:134 PhanTypeMismatchReturn Returning type array<int,\ast\Node> but test371GNamespacedValid() is declared to return string[]

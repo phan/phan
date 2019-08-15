@@ -1,2 +1,2 @@
-src/013_traits12.php:3 PhanSyntaxError syntax error, unexpected 'insteadof' (T_INSTEADOF), expecting :: (T_PAAMAYIM_NEKUDOTAYIM)
+src/013_traits12.php:3 PhanSyntaxError syntax error, unexpected 'insteadof' (T_INSTEADOF), expecting :: (T_PAAMAYIM_NEKUDOTAYIM) (at column 19)
 src/013_traits12.php:3 PhanUndeclaredAliasedMethodOfTrait Alias \A13::D was defined for a method \A13::C which does not exist in trait A13

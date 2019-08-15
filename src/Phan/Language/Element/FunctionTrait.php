@@ -84,9 +84,19 @@ trait FunctionTrait
      * The fully-qualified structural element name of this
      * structural element
      */
-    public function getRepresentationForIssue() : string
+    public function getRepresentationForIssue(bool $show_args = false) : string
     {
-        return $this->getFQSEN()->__toString() . '()';
+        $args_repr = '';
+        if ($show_args) {
+            $parameter_list = $this->getParameterList();
+            if ($parameter_list) {
+                $is_internal = $this->isPHPInternal();
+                $args_repr = implode(', ', array_map(static function (Parameter $parameter) use ($is_internal) : string {
+                    return $parameter->getShortRepresentationForIssue($is_internal);
+                }, $this->getParameterList()));
+            }
+        }
+        return $this->getFQSEN()->__toString() . '(' . $args_repr . ')';
     }
 
     /**

@@ -450,7 +450,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     }
 
     /** @override */
-    public function getRepresentationForIssue() : string
+    public function getRepresentationForIssue(bool $unused_show_args = false) : string
     {
         // Represent this as "Closure(int):void" in issue messages instead of \closure_phpdoc_abcd123456Df
         return $this->__toString();
