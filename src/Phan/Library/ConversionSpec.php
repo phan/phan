@@ -46,7 +46,7 @@ class ConversionSpec
         . '([+-]?)' // optional alignment specifier
         . '(\d*)'  // optional width specifier
         . '(\.\d*)?'   // Optional precision specifier in the form of a period followed by an optional decimal digit string
-        . '([bcdeEfFgGosuxX])';  // A type specifier
+        . '([bcdeEfFgGosuxX]|lf)';  // A type specifier
 
 
     const FORMAT_STRING_REGEX = '/%%|' . self::FORMAT_STRING_INNER_REGEX_PART . '/';
@@ -112,6 +112,7 @@ class ConversionSpec
         'e' => 'float',
         'E' => 'float',
         'f' => 'float',
+        'lf' => 'float',
         'F' => 'float',
         'g' => 'float',
         'G' => 'float',
