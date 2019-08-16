@@ -34,6 +34,7 @@ TEST_SUITES+=" __FakeFallbackTest"
 TEST_SUITES+=" __FakeToolTest"
 TEST_SUITES+=" __FakeConfigOverrideTest"
 TEST_SUITES+=" __FakeFixerTest"
+TEST_SUITES+=" __FakeEmptyMethodsPluginTest"
 
 FAILURES=""
 

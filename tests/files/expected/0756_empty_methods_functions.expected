@@ -1,4 +1,0 @@
-%s:6 PhanEmptyPublicMethod Empty public method two
-%s:8 PhanEmptyProtectedMethod Empty protected method three
-%s:10 PhanEmptyPrivateMethod Empty private method four
-%s:22 PhanEmptyFunction Empty function emptyFunction756

@@ -1,70 +1,91 @@
 <?php declare(strict_types=1);
 
 use ast\Node;
-use Phan\CodeBase;
 use Phan\Issue;
-use Phan\Language\Element\Func;
+use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\PluginV3;
-use Phan\PluginV3\AnalyzeFunctionCapability;
-use Phan\PluginV3\AnalyzeMethodCapability;
+use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV3\PostAnalyzeNodeCapability;
 
 /**
- * Checks for empty methods/functions
+ * Plugin which looks for empty methods/functions
  */
-final class EmptyMethodAndFunctionPlugin extends PluginV3 implements AnalyzeMethodCapability, AnalyzeFunctionCapability
+final class EmptyMethodAndFunctionPlugin extends PluginV3 implements PostAnalyzeNodeCapability
 {
-
-    /**
-     * @param CodeBase $code_base
-     * @param Method $method
-     */
-    public function analyzeMethod(CodeBase $code_base, Method $method): void
+    public static function getPostAnalyzeNodeVisitorClassName(): string
     {
-        if ($method->getNode()
-            && $method->getNode()->children['stmts'] instanceof Node
-            && !$method->getNode()->children['stmts']->children
-            && !$method->isOverriddenByAnother()
-            && !$method->isOverride()
-            && !$method->isDeprecated()
-        ) {
-            Issue::maybeEmit(
-                $code_base,
-                $method->getContext(),
-                $this->getIssueTypeForEmptyMethodOrFunction($method),
-                $method->getNode()->lineno,
-                $method->getName()
-            );
+        return EmptyMethodAndFunctionVisitor::class;
+    }
+}
+
+/**
+ * Visit method/function/closure
+ */
+final class EmptyMethodAndFunctionVisitor extends PluginAwarePostAnalysisVisitor {
+
+    public function visitMethod(Node $node) : void
+    {
+        $stmts_node = $node->children['stmts'] ?? null;
+
+        if ($stmts_node && !$stmts_node->children) {
+            $method = $this->context->getFunctionLikeInScope($this->code_base);
+
+            if (!$method->isOverriddenByAnother()
+                && !$method->isOverride()
+                && !$method->isDeprecated()
+            ) {
+                $this->emitIssue(
+                    $this->getIssueTypeForEmptyMethod($method),
+                    $method->getNode()->lineno,
+                    $method->getName()
+                );
+            }
         }
     }
 
-    /**
-     * @param CodeBase $code_base
-     * @param Func $function
-     */
-    public function analyzeFunction(CodeBase $code_base, Func $function): void
+    public function visitFuncDecl(Node $node) : void
     {
-        if ($function->getNode()
-            && $function->getNode()->children['stmts'] instanceof Node
-            && !$function->getNode()->children['stmts']->children
-            && !$function->isDeprecated()
-        ) {
-            Issue::maybeEmit(
-                $code_base,
-                $function->getContext(),
-                Issue::EmptyFunction,
-                $function->getNode()->lineno,
-                $function->getName()
-            );
+        $this->analyzeFunction($node);
+    }
+
+    public function visitClosure(Node $node) : void
+    {
+        $this->analyzeFunction($node);
+    }
+
+    private function analyzeFunction(Node $node): void
+    {
+        $stmts_node = $node->children['stmts'] ?? null;
+
+        if ($stmts_node && !$stmts_node->children) {
+
+            $function = $this->context->getFunctionLikeInScope($this->code_base);
+
+            if ( ! $function->isDeprecated())
+            {
+                if (!$function->isClosure()) {
+                    $this->emitIssue(
+                        Issue::EmptyFunction,
+                        $function->getNode()->lineno,
+                        $function->getName()
+                    );
+                } else {
+                    $this->emitIssue(
+                        Issue::EmptyClosure,
+                        $function->getNode()->lineno
+                    );
+                }
+            }
         }
     }
 
-    /**
-     * @param Method $method
-     * @return string
-     */
-    private function getIssueTypeForEmptyMethodOrFunction(Method $method) : string
+    private function getIssueTypeForEmptyMethod(FunctionInterface $method) : string
     {
+        if (!$method instanceof Method) {
+            throw new \InvalidArgumentException("\$method is not an instance of Method");
+        }
+
         if ($method->isPrivate()) {
             return Issue::EmptyPrivateMethod;
         }
@@ -77,4 +98,4 @@ final class EmptyMethodAndFunctionPlugin extends PluginV3 implements AnalyzeMeth
     }
 }
 
-return new EmptyMethodAndFunctionPlugin;
+return new EmptyMethodAndFunctionPlugin();

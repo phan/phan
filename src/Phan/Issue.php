@@ -82,10 +82,6 @@ class Issue
     const EmptyFQSENInClasslike     = 'PhanEmptyFQSENInClasslike';
     const InvalidFQSENInClasslike   = 'PhanInvalidFQSENInClasslike';
     const PossiblyUnsetPropertyOfThis = 'PhanPossiblyUnsetPropertyOfThis';
-    const EmptyPublicMethod = 'PhanEmptyPublicMethod';
-    const EmptyProtectedMethod = 'PhanEmptyProtectedMethod';
-    const EmptyPrivateMethod = 'PhanEmptyPrivateMethod';
-    const EmptyFunction = 'PhanEmptyFunction';
 
     // Issue::CATEGORY_TYPE
     const NonClassMethodCall                = 'PhanNonClassMethodCall';
@@ -364,6 +360,11 @@ class Issue
     const UseNormalNamespacedNoEffect   = 'PhanUseNormalNamespacedNoEffect';
     const UseFunctionNoEffect           = 'PhanUseFunctionNoEffect';
     const UseConstantNoEffect           = 'PhanUseConstantNoEffect';
+    const EmptyPublicMethod = 'PhanEmptyPublicMethod';
+    const EmptyProtectedMethod = 'PhanEmptyProtectedMethod';
+    const EmptyPrivateMethod = 'PhanEmptyPrivateMethod';
+    const EmptyFunction = 'PhanEmptyFunction';
+    const EmptyClosure = 'PhanEmptyClosure';
 
     const UnusedVariable                        = 'PhanUnusedVariable';
     const UnusedPublicMethodParameter           = 'PhanUnusedPublicMethodParameter';
@@ -1199,38 +1200,7 @@ class Issue
                 self::REMEDIATION_B,
                 11048
             ),
-            new Issue(
-                self::EmptyPublicMethod,
-                self::CATEGORY_UNDEFINED,
-                self::SEVERITY_LOW,
-                'Empty public method {METHOD}',
-                self::REMEDIATION_B,
-                11049
-            ),
-            new Issue(
-                self::EmptyProtectedMethod,
-                self::CATEGORY_UNDEFINED,
-                self::SEVERITY_LOW,
-                'Empty protected method {METHOD}',
-                self::REMEDIATION_B,
-                11050
-            ),
-            new Issue(
-                self::EmptyPrivateMethod,
-                self::CATEGORY_UNDEFINED,
-                self::SEVERITY_LOW,
-                'Empty private method {METHOD}',
-                self::REMEDIATION_B,
-                11051
-            ),
-            new Issue(
-                self::EmptyFunction,
-                self::CATEGORY_UNDEFINED,
-                self::SEVERITY_LOW,
-                'Empty function {FUNCTION}',
-                self::REMEDIATION_B,
-                11052
-            ),
+
 
             // Issue::CATEGORY_ANALYSIS
             new Issue(
@@ -3515,6 +3485,46 @@ class Issue
                 "Unused result of a ternary expression where the true/false results don't seen to have side effects",
                 self::REMEDIATION_B,
                 6073
+            ),
+            new Issue(
+                self::EmptyPublicMethod,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Empty public method {METHOD}',
+                self::REMEDIATION_B,
+                6074
+            ),
+            new Issue(
+                self::EmptyProtectedMethod,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Empty protected method {METHOD}',
+                self::REMEDIATION_B,
+                6075
+            ),
+            new Issue(
+                self::EmptyPrivateMethod,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Empty private method {METHOD}',
+                self::REMEDIATION_B,
+                6076
+            ),
+            new Issue(
+                self::EmptyFunction,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Empty function {FUNCTION}',
+                self::REMEDIATION_B,
+                6077
+            ),
+            new Issue(
+                self::EmptyClosure,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Empty closure',
+                self::REMEDIATION_B,
+                6078
             ),
 
             // Issue::CATEGORY_REDEFINE

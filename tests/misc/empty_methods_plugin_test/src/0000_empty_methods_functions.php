@@ -21,3 +21,5 @@ function emptyFunction756() {}
 
 /** @deprecated */
 function deprecatedEmptyFunction756() {} // no warning, deprecated
+
+array_map(function() {}, []);
