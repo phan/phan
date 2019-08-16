@@ -144,6 +144,9 @@ class ASTReverter
             ast\AST_CLASS_NAME => static function (Node $node) : string {
                 return self::toShortString($node->children['class']) . '::class';
             },
+            ast\AST_MAGIC_CONST => static function (Node $node) : string {
+                return UnionTypeVisitor::MAGIC_CONST_NAME_MAP[$node->flags] ?? '(unknown)';
+            },
             ast\AST_CONST => static function (Node $node) : string {
                 return self::toShortString($node->children['name']);
             },

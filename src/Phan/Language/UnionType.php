@@ -4776,6 +4776,14 @@ class UnionType implements Serializable
     }
 
     /**
+     * Converts a phpdoc type into the real union type equivalent.
+     */
+    public function asRealUnionType() : UnionType
+    {
+        return UnionType::of($this->type_set, $this->type_set);
+    }
+
+    /**
      * Check if this is exclusively real types.
      * TODO: Could check if real types are in a different order
      */

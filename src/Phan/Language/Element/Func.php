@@ -289,7 +289,11 @@ class Func extends AddressableElement implements FunctionInterface
                 }
             }
 
-            $func->setUnionType($func->getUnionType()->withUnionType($union_type)->withRealTypeSet($func->getRealReturnType()->getTypeSet()));
+            $new_type = $func->getUnionType()->withUnionType($union_type)->withRealTypeSet($func->getRealReturnType()->getTypeSet());
+            if ($union_type->hasRealTypeSet() && !$new_type->hasRealTypeSet()) {
+                $new_type = $new_type->withRealTypeSet($union_type->getRealTypeSet());
+            }
+            $func->setUnionType($new_type);
             $func->setPHPDocReturnType($union_type);
         }
         $element_context->freeElementReference();

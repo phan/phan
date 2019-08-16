@@ -213,7 +213,7 @@ final class Builder
     }
 
     /** @internal */
-    const RETURN_COMMENT_REGEX = '/@(?:phan-)?(?:return|throws)\s+(&\s*)?(' . UnionType::union_type_regex_or_this . ')/';
+    const RETURN_COMMENT_REGEX = '/@(?:phan-)?(?:real-)?(?:return|throws)\s+(&\s*)?(' . UnionType::union_type_regex_or_this . ')/';
 
     /**
      * @param string $line
@@ -627,6 +627,10 @@ final class Builder
                 $this->phan_overrides['param'][] =
                     $this->parameterFromCommentLine($line, false, $i);
                 return;
+            case 'phan-real-return':
+                $this->checkCompatible('@phan-real-return', Comment::FUNCTION_LIKE, $i);
+                $this->phan_overrides['real-return'] = new ReturnComment($this->returnTypeFromCommentLine($line, $i)->asRealUnionType(), $this->guessActualLineLocation($i));
+                return;
             case 'phan-return':
                 $this->checkCompatible('@phan-return', Comment::FUNCTION_LIKE, $i);
                 $this->phan_overrides['return'] = new ReturnComment($this->returnTypeFromCommentLine($line, $i), $this->guessActualLineLocation($i));
@@ -737,6 +741,7 @@ final class Builder
         '@phan-property-write' => '',
         '@phan-read-only' => '',
         '@phan-return' => '',
+        '@phan-real-return' => '',
         '@phan-suppress' => '',
         '@phan-suppress-current-line' => '',
         '@phan-suppress-next-line' => '',

@@ -562,7 +562,11 @@ class Method extends ClassElement implements FunctionInterface
             }
             $signature_union_type = $method->getUnionType();
 
-            $method->setUnionType($signature_union_type->withUnionType($comment_return_union_type)->withRealTypeSet($signature_union_type->getRealTypeSet()));
+            $new_type = $signature_union_type->withUnionType($comment_return_union_type)->withRealTypeSet($signature_union_type->getRealTypeSet());
+            if ($comment_return_union_type->hasRealTypeSet() && !$new_type->hasRealTypeSet()) {
+                $new_type = $new_type->withRealTypeSet($comment_return_union_type->getRealTypeSet());
+            }
+            $method->setUnionType($new_type);
             $method->setPHPDocReturnType($comment_return_union_type);
         }
         $element_context->freeElementReference();
