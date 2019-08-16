@@ -21,6 +21,15 @@ class ObjectType extends NativeType
         return parent::canCastToNonNullableType($type);
     }
 
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type) : bool
+    {
+        // Inverse of check in Type->canCastToNullableType
+        if (!$type->isNativeType() && !($type instanceof ArrayType)) {
+            return true;
+        }
+        return parent::canCastToNonNullableTypeWithoutConfig($type);
+    }
+
     protected function isSubtypeOfNonNullableType(Type $type) : bool
     {
         return $type instanceof ObjectType || $type instanceof MixedType;

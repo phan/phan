@@ -1970,6 +1970,84 @@ class UnionType implements Serializable
     }
 
     /**
+     * @param UnionType $target
+     * A type to check to see if this can cast to it
+     *
+     * @return bool
+     * True if this type is allowed to cast to the given type
+     * i.e. int->float is allowed  while float->int is not.
+     */
+    public function canCastToUnionTypeWithoutConfig(
+        UnionType $target
+    ) : bool {
+        // Fast-track most common cases first
+        $type_set = $this->type_set;
+        // If either type is unknown, we can't call it
+        // a success
+        if (\count($type_set) === 0) {
+            return true;
+        }
+        $target_type_set = $target->type_set;
+        if (\count($target_type_set) === 0) {
+            return true;
+        }
+
+        // T overlaps with T, a future call to Type->canCastToType will pass.
+        $target = $target->asNormalizedTypes();
+        if ($this->hasCommonType($target)) {
+            return true;
+        }
+
+        static $float_type;
+        static $int_type;
+        static $mixed_type;
+        static $null_type;
+        if ($null_type === null) {
+            $int_type   = IntType::instance(false);
+            $float_type = FloatType::instance(false);
+            $mixed_type = MixedType::instance(false);
+            $null_type  = NullType::instance(false);
+        }
+
+        // mixed <-> mixed
+        if (\in_array($mixed_type, $type_set, true)
+            || \in_array($mixed_type, $target_type_set, true)
+        ) {
+            return true;
+        }
+
+        // int -> float
+        if (\in_array($int_type, $type_set, true)
+            && \in_array($float_type, $target_type_set, true)
+        ) {
+            return true;
+        }
+
+        // Check conversion on the cross product of all
+        // type combinations and see if any can cast to
+        // any.
+        foreach ($type_set as $source_type) {
+            if ($source_type->canCastToAnyTypeInSetWithoutConfig($target_type_set)) {
+                return true;
+            }
+        }
+
+        // Allow casting ?T to T|null for any type T. Check if null is part of this type first.
+        if (\in_array($null_type, $target_type_set, true)) {
+            foreach ($type_set as $source_type) {
+                // Only redo this check for the nullable types, we already failed the checks for non-nullable types.
+                if ($source_type->isNullable()) {
+                    return $source_type->withIsNullable(false)->canCastToAnyTypeInSetWithoutConfig($target_type_set);
+                }
+            }
+        }
+
+        // Only if no source types can be cast to any target
+        // types do we say that we cannot perform the cast
+        return false;
+    }
+
+    /**
      * Precondition: $this->canCastToUnionType() is false.
      *
      * This tells us if it would have succeeded if the source type was not nullable.
@@ -2151,7 +2229,7 @@ class UnionType implements Serializable
         // any.
         $matches = true;
         foreach ($type_set as $source_type) {
-            if (!$source_type->asExpandedTypes($code_base)->canCastToUnionType($target)) {
+            if (!$source_type->asExpandedTypes($code_base)->canCastToUnionTypeWithoutConfig($target)) {
                 $matches = false;
                 break;
             }
@@ -2164,7 +2242,7 @@ class UnionType implements Serializable
         if (\in_array($null_type, $target_type_set, true)) {
             foreach ($type_set as $source_type) {
                 // Only redo this check for the nullable types, we already failed the checks for non-nullable types.
-                if (!$source_type->withIsNullable(false)->asExpandedTypes($code_base)->canCastToUnionType($target)) {
+                if (!$source_type->withIsNullable(false)->asExpandedTypes($code_base)->canCastToUnionTypeWithoutConfig($target)) {
                     return false;
                 }
             }

@@ -169,6 +169,33 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
 
     /**
      * @return bool
+     * True if this Type can be cast to the given Type
+     * cleanly
+     */
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type) : bool
+    {
+        if ($type instanceof ScalarType) {
+            switch ($type::NAME) {
+                case 'int':
+                    if ($type instanceof LiteralIntType) {
+                        return $type->getValue() === $this->getValue();
+                    }
+                    return true;
+                case 'float':
+                    if ($type instanceof LiteralFloatType) {
+                        return $type->getValue() == $this->getValue();
+                    }
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        return parent::canCastToNonNullableType($type);
+    }
+
+    /**
+     * @return bool
      * True if this Type is a subtype of the given type
      */
     protected function isSubtypeOfNonNullableType(Type $type) : bool

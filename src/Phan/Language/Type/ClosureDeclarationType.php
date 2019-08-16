@@ -30,6 +30,18 @@ final class ClosureDeclarationType extends FunctionLikeDeclarationType
         return parent::canCastToNonNullableType($type);
     }
 
+    public function canCastToNonNullableTypeWithoutConfig(Type $type) : bool
+    {
+        if ($type->isCallable()) {
+            if ($type instanceof FunctionLikeDeclarationType) {
+                return $this->canCastToNonNullableFunctionLikeDeclarationType($type);
+            }
+            return true;
+        }
+
+        return parent::canCastToNonNullableTypeWithoutConfig($type);
+    }
+
     /**
      * Returns the corresponding type that would be used in a signature
      * @override

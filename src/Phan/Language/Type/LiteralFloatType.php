@@ -173,6 +173,28 @@ final class LiteralFloatType extends FloatType implements LiteralTypeInterface
     /**
      * @return bool
      * True if this Type can be cast to the given Type
+     * cleanly, ignoring permissive config casting rules
+     */
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type) : bool
+    {
+        if ($type instanceof ScalarType) {
+            switch ($type::NAME) {
+                case 'float':
+                    if ($type instanceof LiteralFloatType) {
+                        return $type->getValue() === $this->getValue();
+                    }
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        return parent::canCastToNonNullableType($type);
+    }
+
+    /**
+     * @return bool
+     * True if this Type can be cast to the given Type
      * cleanly
      */
     protected function isSubtypeOfNonNullableType(Type $type) : bool

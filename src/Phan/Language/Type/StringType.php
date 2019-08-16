@@ -21,6 +21,12 @@ class StringType extends ScalarType
         return parent::canCastToNonNullableType($type) || $type instanceof CallableDeclarationType;
     }
 
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type) : bool
+    {
+        // CallableDeclarationType is not a native type, we check separately here
+        return parent::canCastToNonNullableTypeWithoutConfig($type) || $type instanceof CallableDeclarationType;
+    }
+
     protected function isSubtypeOfNonNullableType(Type $type) : bool
     {
         return \get_class($type) === self::class || $type instanceof MixedType;

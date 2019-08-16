@@ -40,6 +40,11 @@ final class MixedType extends NativeType
         return true;
     }
 
+    protected function canCastToNonNullableTypeWithoutConfig(Type $unused_type) : bool
+    {
+        return true;
+    }
+
     public function isSubtypeOf(Type $type) : bool
     {
         return $type instanceof MixedType;

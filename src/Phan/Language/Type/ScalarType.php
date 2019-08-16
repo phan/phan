@@ -79,6 +79,8 @@ abstract class ScalarType extends NativeType
         return parent::canCastToNonNullableType($type);
     }
 
+    // inherit canCastToNonNullableTypeWithoutConfig
+
     /**
      * @override
      */

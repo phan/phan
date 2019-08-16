@@ -164,6 +164,48 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
         return parent::canCastToNonNullableType($type);
     }
 
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type) : bool
+    {
+        if ($type instanceof ArrayType) {
+            if ($type instanceof GenericArrayType) {
+                if (!$this->genericArrayElementType()
+                    ->canCastToTypeWithoutConfig($type->genericArrayElementType())) {
+                    return false;
+                }
+                if ((($this->key_type ?: self::KEY_MIXED) & ($type->key_type ?: self::KEY_MIXED)) === 0) {
+                    // Attempting to cast an int key to a string key (or vice versa) is normally invalid.
+                    return false;
+                }
+                return true;
+            } elseif ($type instanceof ArrayShapeType) {
+                if ((($this->key_type ?: self::KEY_MIXED) & $type->getKeyType()) === 0) {
+                    // Attempting to cast an int key to a string key (or vice versa) is normally invalid.
+                    return false;
+                }
+                return $this->genericArrayElementUnionType()->canCastToUnionTypeWithoutConfig($type->genericArrayElementUnionType());
+            }
+            return true;
+        }
+
+        if (\get_class($type) === IterableType::class) {
+            // can cast to Iterable but not Traversable
+            return true;
+        }
+        if ($type instanceof GenericIterableType) {
+            return $this->canCastToGenericIterableType($type);
+        }
+
+        $d = \strtolower($type->__toString());
+        if ($d[0] == '\\') {
+            $d = \substr($d, 1);
+        }
+        if ($d === 'callable') {
+            return $this->key_type !== self::KEY_STRING;
+        }
+
+        return parent::canCastToNonNullableTypeWithoutConfig($type);
+    }
+
     private function canCastToGenericIterableType(
         GenericIterableType $iterable_type
     ) : bool {

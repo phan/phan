@@ -318,6 +318,63 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         return parent::canCastToNonNullableType($type);
     }
 
+    /**
+     * @return bool
+     * True if this Type can be cast to the given Type
+     * cleanly
+     */
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type) : bool
+    {
+        if ($type instanceof ArrayType) {
+            if ($type instanceof GenericArrayType) {
+                if (($this->getKeyType() & ($type->getKeyType() ?: GenericArrayType::KEY_MIXED)) === 0) {
+                    // Attempting to cast an int key to a string key (or vice versa) is normally invalid.
+                    // However, the scalar_array_key_cast config would make any cast of array keys a valid cast.
+                    return false;
+                }
+                // TODO: WithoutConfig here as well?
+                return $this->canEachFieldTypeCastToExpectedUnionType($type->genericArrayElementUnionType());
+            } elseif ($type instanceof ArrayShapeType) {
+                foreach ($type->field_types as $key => $field_type) {
+                    $this_field_type = $this->field_types[$key] ?? null;
+                    // Can't cast {a:int} to {a:int, other:string} if other is missing
+                    if ($this_field_type === null) {
+                        if ($field_type->isPossiblyUndefined()) {
+                            // ... unless the other field is allowed to be undefined.
+                            continue;
+                        }
+                        return false;
+                    }
+                    // can't cast {a:int} to {a:string} or {a:string=}
+                    if (!$this_field_type->canCastToUnionTypeWithoutConfig($field_type)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            // array{key:T} can cast to array.
+            return true;
+        }
+
+        if (\get_class($type) === IterableType::class) {
+            // can cast to Iterable but not Traversable
+            return true;
+        }
+        if ($type instanceof GenericIterableType) {
+            return $this->canCastToGenericIterableType($type);
+        }
+
+        $d = \strtolower($type->__toString());
+        if ($d[0] == '\\') {
+            $d = \substr($d, 1);
+        }
+        if ($d === 'callable') {
+            return !$this->isDefiniteNonCallableType();
+        }
+
+        return parent::canCastToNonNullableTypeWithoutConfig($type);
+    }
+
     private function canCastToGenericIterableType(GenericIterableType $iterable_type) : bool
     {
         if (!$this->getKeyUnionType()->canCastToUnionType($iterable_type->getKeyUnionType())) {
