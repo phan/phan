@@ -82,6 +82,10 @@ class Issue
     const EmptyFQSENInClasslike     = 'PhanEmptyFQSENInClasslike';
     const InvalidFQSENInClasslike   = 'PhanInvalidFQSENInClasslike';
     const PossiblyUnsetPropertyOfThis = 'PhanPossiblyUnsetPropertyOfThis';
+    const EmptyPublicMethod = 'PhanEmptyPublicMethod';
+    const EmptyProtectedMethod = 'PhanEmptyProtectedMethod';
+    const EmptyPrivateMethod = 'PhanEmptyPrivateMethod';
+    const EmptyFunction = 'PhanEmptyFunction';
 
     // Issue::CATEGORY_TYPE
     const NonClassMethodCall                = 'PhanNonClassMethodCall';
@@ -1194,6 +1198,38 @@ class Issue
                 'Attempting to read property {PROPERTY} which was unset in the current scope',
                 self::REMEDIATION_B,
                 11048
+            ),
+            new Issue(
+                self::EmptyPublicMethod,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_LOW,
+                'Empty public method {METHOD}',
+                self::REMEDIATION_B,
+                11049
+            ),
+            new Issue(
+                self::EmptyProtectedMethod,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_LOW,
+                'Empty protected method {METHOD}',
+                self::REMEDIATION_B,
+                11050
+            ),
+            new Issue(
+                self::EmptyPrivateMethod,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_LOW,
+                'Empty private method {METHOD}',
+                self::REMEDIATION_B,
+                11051
+            ),
+            new Issue(
+                self::EmptyFunction,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_LOW,
+                'Empty function {FUNCTION}',
+                self::REMEDIATION_B,
+                11052
             ),
 
             // Issue::CATEGORY_ANALYSIS
