@@ -360,6 +360,16 @@ interface FunctionInterface extends AddressableElementInterface
     public function setComment(Comment $comment) : void;
 
     /**
+     * Mark this function or method as pure (having no visible side effects)
+     */
+    public function setIsPure() : void;
+
+    /**
+     * Check if this function or method is marked as pure (having no visible side effects)
+     */
+    public function isPure() : bool;
+
+    /**
      * @return UnionType of 0 or more types from (at)throws annotations on this function-like
      */
     public function getThrowsUnionType() : UnionType;

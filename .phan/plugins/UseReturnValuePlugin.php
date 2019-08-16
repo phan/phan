@@ -5,10 +5,14 @@ use Phan\AST\ContextNode;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
+use Phan\Exception\NodeException;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
+use Phan\Language\Element\Method;
+use Phan\Phan;
 use Phan\PluginV3;
+use Phan\PluginV3\BeforeAnalyzePhaseCapability;
 use Phan\PluginV3\FinalizeProcessCapability;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
 use Phan\PluginV3\PostAnalyzeNodeCapability;
@@ -32,14 +36,17 @@ use Phan\PluginV3\PostAnalyzeNodeCapability;
  * - ['plugin_config']['use_return_value_warn_threshold_percentage'] (or PHAN_USE_RETURN_VALUE_WARN_THRESHOLD_PERCENTAGE=1 as an environment variable)
  *
  *   For dynamic checks, use this value instead of the default of 98 (should be between 0.01 and 100)
+ * - ['plugin_config']['infer_pure_methods'] to automatically infer which methods are pure.
  */
-class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability, FinalizeProcessCapability
+class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability, FinalizeProcessCapability, BeforeAnalyzePhaseCapability
 {
     // phpcs:disable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
     // this is deliberate for issue names
     const UseReturnValue = 'PhanPluginUseReturnValue';
+    const UseReturnValueKnown = 'PhanPluginUseReturnValueKnown';
     const UseReturnValueInternal = 'PhanPluginUseReturnValueInternal';
     const UseReturnValueInternalKnown = 'PhanPluginUseReturnValueInternalKnown';
+    const UseReturnValueNoopVoid = 'PhanPluginUseReturnValueNoopVoid';
     // phpcs:enable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
 
     const DEFAULT_THRESHOLD_PERCENTAGE = 98;
@@ -75,6 +82,102 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
         self::$use_dynamic = Config::getValue('plugin_config')['use_return_value_dynamic_checks'] ??
             (bool)getenv('PHAN_USE_RETURN_VALUE_DYNAMIC_CHECKS');
         return UseReturnValueVisitor::class;
+    }
+
+    /** @override */
+    public function beforeAnalyzePhase(CodeBase $code_base) : void
+    {
+        if (!(Config::getValue('plugin_config')['infer_pure_methods'] ?? false)) {
+            return;
+        }
+        // $start = microtime(true);
+        require_once __DIR__ . '/UseReturnValuePlugin/InferPureVisitor.php';
+        foreach ($code_base->getMethodSet() as $method) {
+            self::checkIsReadOnlyMethod($code_base, $method);
+        }
+        foreach ($code_base->getFunctionMap() as $func) {
+            self::checkIsReadOnlyFunction($code_base, $func);
+        }
+        // This takes around 0.12 seconds for Phan itself.
+        // $end = microtime(true);
+        // printf("Marking functions as pure took %.f seconds\n", $end - $start);
+    }
+
+    private static function checkIsReadOnlyMethod(CodeBase $code_base, Method $method) : void
+    {
+        if ($method->isPHPInternal() || $method->isAbstract()) {
+            return;
+        }
+        if ($method->isOverriddenByAnother() || $method->isOverride()) {
+            return;
+        }
+        if ($method->getDefiningFQSEN() !== $method->getFQSEN()) {
+            return;
+        }
+        if (Phan::isExcludedAnalysisFile($method->getContext()->getFile())) {
+            // For functions that aren't analyzed, we won't necessarily have enough information to know if they're overridden,
+            // because the files they're related to might not be parsed.
+            return;
+        }
+        self::checkIsReadOnlyFunctionCommon($code_base, $method);
+    }
+
+    private static function checkIsReadOnlyFunction(CodeBase $code_base, Func $func) : void
+    {
+        if ($func->isPHPInternal()) {
+            return;
+        }
+        self::checkIsReadOnlyFunctionCommon($code_base, $func);
+    }
+
+    /**
+     * @param Func|Method $method
+     */
+    private static function checkIsReadOnlyFunctionCommon(CodeBase $code_base, FunctionInterface $method) : void
+    {
+        $context = $method->getContext();
+        if ($method->getFlags() & ast\flags\FUNC_RETURNS_REF) {
+            return;
+        }
+        foreach ($method->getParameterList() as $param) {
+            if ($param->isPassByReference()) {
+                return;
+            }
+        }
+        $node = $method->getNode()->children['stmts'] ?? null;
+        if (!$node) {
+            return;
+        }
+        try {
+            (new InferPureVisitor($code_base, $context))($node);
+        } catch (NodeException $_) {
+            // echo "Skipping due to {$method->getFQSEN()} {$context->getFile()}:{$e->getNode()->lineno}\n";
+            // \Phan\Debug::printNode($e->getNode());
+            return;
+        }
+        if ($method->getUnionType()->isNull()) {
+            if ($method instanceof Func) {
+                if ($method->isClosure()) {
+                    // no-op closures are usually normal
+                    return;
+                }
+            }
+            if ($method instanceof Method && $method->isMagic()) {
+                // Don't warn about __construct
+                return;
+            }
+            // Don't warn about the **caller** of void methods that do nothing.
+            // Instead, warn about the implementation of void methods.
+            self::emitIssue(
+                $code_base,
+                $context,
+                self::UseReturnValueNoopVoid,
+                'The internal function/method {FUNCTION} is declared to return {TYPE} and it has no side effects',
+                [$method->getFQSEN(), $method->getUnionType()]
+            );
+            return;
+        }
+        $method->setIsPure();
     }
 
     /**
@@ -934,7 +1037,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
                 }
                 $fqsen = $function->getFQSEN()->__toString();
                 if (!UseReturnValuePlugin::$use_dynamic) {
-                    $this->quickWarn($fqsen, $node);
+                    $this->quickWarn($function, $fqsen, $node);
                     continue;
                 }
                 $counter = UseReturnValuePlugin::$stats[$fqsen] ?? null;
@@ -984,7 +1087,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         }
         $fqsen = $method->getDefiningFQSEN()->__toString();
         if (!UseReturnValuePlugin::$use_dynamic) {
-            $this->quickWarn($fqsen, $node);
+            $this->quickWarn($method, $fqsen, $node);
             return;
         }
         $counter = UseReturnValuePlugin::$stats[$fqsen] ?? null;
@@ -1031,7 +1134,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         }
         $fqsen = $method->getDefiningFQSEN()->__toString();
         if (!UseReturnValuePlugin::$use_dynamic) {
-            $this->quickWarn($fqsen, $node);
+            $this->quickWarn($method, $fqsen, $node);
             return;
         }
         $counter = UseReturnValuePlugin::$stats[$fqsen] ?? null;
@@ -1104,23 +1207,35 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         return (UseReturnValuePlugin::HARDCODED_FQSENS[$fqsen_key] ?? null) !== true;
     }
 
-    private function quickWarn(string $fqsen, Node $node) : void
+    private function quickWarn(FunctionInterface $method, string $fqsen, Node $node) : void
     {
-        $fqsen_key = strtolower(ltrim($fqsen, "\\"));
-        $result = UseReturnValuePlugin::HARDCODED_FQSENS[$fqsen_key] ?? false;
-        if (!$result) {
-            return;
-        }
-        if ($result !== true) {
-            if ($this->shouldNotWarnForSpecialCase($fqsen_key, $node)) {
+        if (!$method->isPure()) {
+            $fqsen_key = strtolower(ltrim($fqsen, "\\"));
+            $result = UseReturnValuePlugin::HARDCODED_FQSENS[$fqsen_key] ?? false;
+            if (!$result) {
                 return;
             }
+            if ($result !== true) {
+                if ($this->shouldNotWarnForSpecialCase($fqsen_key, $node)) {
+                    return;
+                }
+            }
+        }
+        if ($method->isPHPInternal()) {
+            $this->emitPluginIssue(
+                $this->code_base,
+                clone($this->context)->withLineNumberStart($node->lineno),
+                UseReturnValuePlugin::UseReturnValueInternalKnown,
+                'Expected to use the return value of the internal function/method {FUNCTION}',
+                [$fqsen]
+            );
+            return;
         }
         $this->emitPluginIssue(
             $this->code_base,
             clone($this->context)->withLineNumberStart($node->lineno),
-            UseReturnValuePlugin::UseReturnValueInternalKnown,
-            'Expected to use the return value of the internal function/method {FUNCTION}',
+            UseReturnValuePlugin::UseReturnValueKnown,
+            'Expected to use the return value of the user-defined function/method {FUNCTION}',
             [$fqsen]
         );
     }

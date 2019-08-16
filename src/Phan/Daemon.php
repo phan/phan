@@ -241,6 +241,7 @@ class Daemon
      *
      * @param string $format - printf style format string @phan-unused-param
      * @param mixed ...$args - printf args @phan-unused-param
+     * @suppress PhanPluginUseReturnValueNoopVoid
      */
     public static function debugf(string $format, ...$args) : void
     {

@@ -1,4 +1,5 @@
 src/083_unreferenced_class_element.php:4 PhanUnreferencedPrivateClassConstant Possibly zero references to private class constant \CUnref::X
 src/083_unreferenced_class_element.php:5 PhanUnreferencedProtectedClassConstant Possibly zero references to protected class constant \CUnref::Y
 src/083_unreferenced_class_element.php:6 PhanUnreferencedProtectedProperty Possibly zero references to protected property \CUnref::$protectedProp
+src/083_unreferenced_class_element.php:7 PhanPluginUseReturnValueNoopVoid The internal function/method \CUnref::privateMethod is declared to return void and it has no side effects
 src/083_unreferenced_class_element.php:7 PhanUnreferencedPrivateMethod Possibly zero references to private method \CUnref::privateMethod()

@@ -344,6 +344,7 @@ EOT;
 
     /**
      * @param string $msg @phan-unused-param
+     * @suppress PhanPluginUseReturnValueNoopVoid implementation is usually commented out
      */
     protected static function debug(string $msg) : void
     {

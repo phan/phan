@@ -453,6 +453,9 @@ return [
 
         // If true, then never allow empty statement lists, even if there is a TODO/FIXME/"deliberately empty" comment.
         'empty_statement_list_ignore_todos' => true,
+
+        // Automatically infer which methods are pure (i.e. should have no side effects) in UseReturnValuePlugin.
+        'infer_pure_methods' => true,
     ],
 
     // A list of plugin files to execute
