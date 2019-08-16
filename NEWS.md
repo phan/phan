@@ -4,6 +4,10 @@ Phan NEWS
 ------------------------
 
 New features(Analysis):
++ Add a `@phan-real-return` annotation for functions/methods/closure (#3099),
+  to make Phan act as if that method has the specified union type
+  when analyzing callers for redundant conditions, etc. (if there was no real type).
+  This can be used for multiple types, e.g. `@phan-real-return string|false`.
 + Improve union type inferred for clone() - It must be an object if clone() doesn't throw.
   Emit `PhanTypePossiblyInvalidCloneNotObject` for cloning possible non-objects when strict param checking is enabled.
 + Infer that `new $expr()` has a real type of object in all cases, not just common ones.

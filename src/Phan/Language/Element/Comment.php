@@ -277,6 +277,20 @@ class Comment
         foreach ($phan_overrides as $key => $override_value) {
             $this->applyOverride($key, $override_value);
         }
+        if (isset($phan_overrides['real-return'])) {
+            $this->applyRealReturnOverride($phan_overrides['real-return']);
+        }
+    }
+
+    private function applyRealReturnOverride(ReturnComment $real_return_comment) : void
+    {
+        $old_comment = $this->return_comment;
+        if (!$old_comment) {
+            $this->return_comment = $real_return_comment;
+            return;
+        }
+        $return_type = $old_comment->getType()->withRealTypeSet($real_return_comment->getType()->getRealTypeSet());
+        $this->return_comment = new ReturnComment($return_type, $old_comment->getLineno());
     }
 
     /**
@@ -294,6 +308,8 @@ class Comment
                         $this->parameter_map[$name] = $parameter;
                     }
                 }
+                return;
+            case 'real-return':
                 return;
             case 'return':
                 // TODO: could check that @phan-return is compatible with the original @return
