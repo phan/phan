@@ -28,6 +28,15 @@ final class CallableObjectType extends ObjectType
         return parent::canCastToNonNullableType($type);
     }
 
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type) : bool
+    {
+        // Inverse of check in Type->canCastToNullableType
+        if ($type instanceof CallableType) {
+            return true;
+        }
+        return parent::canCastToNonNullableTypeWithoutConfig($type);
+    }
+
     /**
      * @return bool
      * True if this type is a callable

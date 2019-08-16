@@ -104,6 +104,24 @@ final class VoidType extends NativeType
         return false;
     }
 
+    public function canCastToTypeWithoutConfig(Type $type) : bool
+    {
+        // Check to see if we have an exact object match
+        if ($this === $type) {
+            return true;
+        }
+
+        // Null(void) can cast to a nullable type or mixed.
+        if ($type->is_nullable) {
+            return true;
+        }
+
+        if ($type instanceof MixedType) {
+            return true;
+        }
+
+        return false;
+    }
 
     /**
      * Returns true if this contains a type that is definitely nullable or a non-object.
@@ -161,6 +179,11 @@ final class VoidType extends NativeType
     {
         // null_casts_as_any_type means that null or nullable can cast to any type?
         // But don't allow it for void?
+        return false;
+    }
+
+    public function canCastToNonNullableTypeWithoutConfig(Type $_) : bool
+    {
         return false;
     }
 

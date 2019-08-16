@@ -105,6 +105,30 @@ final class NullType extends ScalarType
     /**
      * @return bool
      * True if this Type can be cast to the given Type
+     * cleanly
+     */
+    public function canCastToTypeWithoutConfig(Type $type) : bool
+    {
+        // Check to see if we have an exact object match
+        if ($this === $type) {
+            return true;
+        }
+
+        // Null can cast to a nullable type or mixed.
+        if ($type->is_nullable) {
+            return true;
+        }
+
+        if ($type instanceof MixedType) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @return bool
+     * True if this Type can be cast to the given Type
      * cleanly (accounting for templates)
      */
     public function canCastToTypeHandlingTemplates(Type $type, CodeBase $code_base) : bool

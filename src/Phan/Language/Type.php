@@ -2512,6 +2512,22 @@ class Type
     /**
      * @param Type[] $target_type_set 1 or more types
      * @return bool
+     * True if this Type can be cast to the given Type cleanly, ignoring permissive config settings.
+     * This is overridden by ArrayShapeType to allow array{a:string,b:stdClass} to cast to string[]|stdClass[]
+     */
+    public function canCastToAnyTypeInSetWithoutConfig(array $target_type_set) : bool
+    {
+        foreach ($target_type_set as $target_type) {
+            if ($this->canCastToTypeWithoutConfig($target_type)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param Type[] $target_type_set 1 or more types
+     * @return bool
      * True if this Type can be cast to the given Type cleanly.
      * This is overridden by ArrayShapeType to allow array{a:string,b:stdClass} to cast to string[]|stdClass[]
      */
@@ -2634,6 +2650,45 @@ class Type
     }
 
     /**
+     * @return bool
+     * True if this Type can be cast to the given Type
+     * cleanly without config settings.
+     */
+    public function canCastToTypeWithoutConfig(Type $type) : bool
+    {
+        // Check to see if we have an exact object match
+        if ($this === $type) {
+            return true;
+        }
+
+        if ($type instanceof MixedType) {
+            return true;
+        }
+
+        if ($this->is_nullable) {
+            // A nullable type cannot cast to a non-nullable type.
+            if (!$type->isNullable()) {
+                return false;
+            }
+        }
+
+        // Get a non-null version of the type we're comparing
+        // against.
+        if ($type->is_nullable) {
+            $type = $type->withIsNullable(false);
+
+            // Check one more time to see if the types are equal
+            if ($this === $type) {
+                return true;
+            }
+        }
+
+        // Test to see if we can cast to the non-nullable version
+        // of the target type.
+        return $this->canCastToNonNullableTypeWithoutConfig($type);
+    }
+
+    /**
      * @param Type $type
      * A Type which is not nullable. This constraint is not
      * enforced, so be careful.
@@ -2643,6 +2698,46 @@ class Type
      * cleanly
      */
     protected function canCastToNonNullableType(Type $type) : bool
+    {
+        // can't cast native types (includes iterable or array) to object. ObjectType overrides this function.
+        if ($type instanceof ObjectType
+            && !$this->isNativeType()
+        ) {
+            return true;
+        }
+
+        if (!($type instanceof NativeType)) {
+            return false;
+        }
+
+        if ($type instanceof MixedType) {
+            return true;
+        }
+
+        // Check for allowable type conversions from object types to native types
+        if ($type::NAME === 'iterable') {
+            if ($this->namespace === '\\' && in_array($this->name, ['Generator', 'Traversable', 'Iterator'], true)) {
+                if (count($this->template_parameter_type_list) === 0 || !($type instanceof GenericIterableType)) {
+                    return true;
+                }
+                return $this->canCastTraversableToIterable($type);
+            }
+        } elseif (\get_class($type) === CallableType::class) {
+            return $this->namespace === '\\' && $this->name === 'Closure';
+        }
+        return false;
+    }
+
+    /**
+     * @param Type $type
+     * A Type which is not nullable. This constraint is not
+     * enforced, so be careful.
+     *
+     * @return bool
+     * True if this Type can be cast to the given Type
+     * cleanly, ignoring permissive config casting rules
+     */
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type) : bool
     {
         // can't cast native types (includes iterable or array) to object. ObjectType overrides this function.
         if ($type instanceof ObjectType

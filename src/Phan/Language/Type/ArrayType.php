@@ -208,6 +208,12 @@ class ArrayType extends IterableType
         return parent::canCastToNonNullableType($type) || $type instanceof ArrayType || $type instanceof CallableDeclarationType;
     }
 
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type) : bool
+    {
+        // CallableDeclarationType is not a native type, we check separately here
+        return parent::canCastToNonNullableTypeWithoutConfig($type) || $type instanceof ArrayType || $type instanceof CallableDeclarationType;
+    }
+
     /**
      * @return UnionType int|string for arrays
      */

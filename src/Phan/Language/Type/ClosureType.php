@@ -104,6 +104,21 @@ final class ClosureType extends Type
         return parent::canCastToNonNullableType($type);
     }
 
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type) : bool
+    {
+        if ($type->isCallable()) {
+            if ($type instanceof FunctionLikeDeclarationType) {
+                // Check if the function declaration is known and available. It's not available for the generic \Closure.
+                if ($this->func) {
+                    return $this->func->asFunctionLikeDeclarationType()->canCastToNonNullableFunctionLikeDeclarationType($type);
+                }
+            }
+            return true;
+        }
+
+        return parent::canCastToNonNullableTypeWithoutConfig($type);
+    }
+
     /**
      * @param bool $is_nullable
      * If true, returns a nullable instance of this closure type

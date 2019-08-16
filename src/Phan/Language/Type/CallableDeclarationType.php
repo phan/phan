@@ -30,6 +30,19 @@ final class CallableDeclarationType extends FunctionLikeDeclarationType implemen
         return parent::canCastToNonNullableType($type);
     }
 
+    public function canCastToNonNullableTypeWithoutConfig(Type $type) : bool
+    {
+        if ($type->isCallable()) {
+            if ($type instanceof FunctionLikeDeclarationType) {
+                // TODO: Weaker mode to allow callable to cast to Closure
+                return $type instanceof CallableDeclarationType && $this->canCastToNonNullableFunctionLikeDeclarationType($type);
+            }
+            return true;
+        }
+
+        return parent::canCastToNonNullableTypeWithoutConfig($type);
+    }
+
     /**
      * @override to prevent Phan from emitting PhanUndeclaredTypeParameter when using this in phpdoc
      */

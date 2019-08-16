@@ -100,6 +100,19 @@ final class GenericIterableType extends IterableType
         return parent::canCastToNonNullableType($type);
     }
 
+    public function canCastToNonNullableTypeWithoutConfig(Type $type) : bool
+    {
+        if ($type instanceof GenericIterableType) {
+            if (!$this->key_union_type->canCastToUnionTypeWithoutConfig($type->key_union_type)) {
+                return false;
+            }
+            if (!$this->element_union_type->canCastToUnionTypeWithoutConfig($type->element_union_type)) {
+                return false;
+            }
+            return true;
+        }
+        return parent::canCastToNonNullableTypeWithoutConfig($type);
+    }
     /**
      * Returns true for `T` and `T[]` and `\MyClass<T>`, but not `\MyClass<\OtherClass>` or `false`
      */

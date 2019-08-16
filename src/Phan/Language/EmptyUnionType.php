@@ -492,6 +492,12 @@ final class EmptyUnionType extends UnionType
         return true;  // Empty can cast to anything. See parent implementation.
     }
 
+    public function canCastToUnionTypeWithoutConfig(
+        UnionType $target
+    ) : bool {
+        return true;  // Empty can cast to anything. See parent implementation.
+    }
+
     /**
      * Precondition: $this->canCastToUnionType() is false.
      *

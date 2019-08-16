@@ -264,6 +264,29 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
 
     /**
      * @return bool
+     * True if this Type can be cast to the given Type
+     * cleanly without config overrides
+     * @override
+     */
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type) : bool
+    {
+        if ($type instanceof ScalarType) {
+            switch ($type::NAME) {
+                case 'string':
+                    if ($type instanceof LiteralStringType) {
+                        return $type->value === $this->value;
+                    }
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        return parent::canCastToNonNullableType($type);
+    }
+
+    /**
+     * @return bool
      * True if this Type is a subtype of the given type.
      */
     protected function isSubtypeOfNonNullableType(Type $type) : bool

@@ -30,6 +30,12 @@ final class CallableStringType extends StringType implements CallableInterface
         return parent::canCastToNonNullableType($type) || $type instanceof CallableDeclarationType;
     }
 
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type) : bool
+    {
+        // CallableDeclarationType is not a native type, we check separately here
+        return parent::canCastToNonNullableTypeWithoutConfig($type) || $type instanceof CallableDeclarationType;
+    }
+
     /**
      * Returns true if this contains a type that is definitely non-callable
      * e.g. returns true for false, array, int

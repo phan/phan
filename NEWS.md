@@ -15,6 +15,7 @@ New features(Analysis):
   This does not attempt to account for custom behavior for objects provided by PECL extensions.
 + Show argument names and types in issue messages for functions/methods for PhanParamTooFew and PhanParamTooMany.
 + Show more accurate columns for PhanSyntaxError for unexpected tokens in more cases.
++ Ignore scalar and null type casting config settings when checking for redundant or impossible conditions. (#3105)
 
 Plugins:
 + Fix false positive in InvalidVariableIssetPlugin for expressions such as `isset(self::$prop['field'])` (#3089)
