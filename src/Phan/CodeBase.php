@@ -1506,6 +1506,7 @@ class CodeBase
 
     /**
      * @param string $file_path @phan-unused-param
+     * @suppress PhanPluginUseReturnValueNoopVoid
      */
     public function flushDependenciesForFile(string $file_path) : void
     {

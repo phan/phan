@@ -16,8 +16,10 @@ src/000_plugins.php:49 PhanPluginBothLiteralsBinaryOp Suspicious usage of a bina
 src/000_plugins.php:49 PhanPluginNumericalComparison numerical values compared by the operators '===' or '!=='
 src/000_plugins.php:50 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: 2.0 != 2 (result is false)
 src/000_plugins.php:55 UnusedSuppression Element \testUnusedSuppressionPlugin suppresses issue PhanParamTooFew but does not use it
+src/000_plugins.php:61 PhanPluginUseReturnValueNoopVoid The internal function/method \testUnreferencedFunction is declared to return void and it has no side effects
 src/000_plugins.php:61 PhanUnreferencedFunction Possibly zero references to function \testUnreferencedFunction()
 src/000_plugins.php:64 PhanCompatibleAutoload Declaring an autoloader with function __autoload() was deprecated in PHP 7.2 and will become a fatal error in PHP 8.0. Use spl_autoload_register() instead (supported since PHP 5.1).
+src/000_plugins.php:64 PhanPluginUseReturnValueNoopVoid The internal function/method \__autoload is declared to return void and it has no side effects
 src/000_plugins.php:64 PhanUnusedGlobalFunctionParameter Parameter $className is never used
 src/000_plugins.php:66 PhanUnreferencedClass Possibly zero references to class \__autoload
 src/000_plugins.php:67 PhanUnreferencedConstant Possibly zero references to global constant \__autoload

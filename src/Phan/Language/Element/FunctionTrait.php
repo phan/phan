@@ -1747,4 +1747,21 @@ trait FunctionTrait
             return $parameter->toStubString();
         }, $this->getRealParameterList()));
     }
+
+    /**
+     * Mark this function or method as read-only
+     */
+    public function setIsPure() : void {
+        $this->setPhanFlags(
+            $this->getPhanFlags() | Flags::IS_READ_ONLY
+        );
+    }
+
+    /**
+     * Check if this function or method is marked as pure (having no visible side effects)
+     * @suppress PhanUnreferencedPublicMethod phan has issues with dead code detection with traits and interfaces.
+     */
+    public function isPure() : bool {
+        return $this->getPhanFlagsHasState(Flags::IS_READ_ONLY);
+    }
 }

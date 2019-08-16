@@ -1,2 +1,3 @@
 src/084_read_only_property.php:4 PhanReadOnlyPrivateProperty Possibly zero write references to private property \X84->arr
 src/084_read_only_property.php:5 PhanReadOnlyProtectedProperty Possibly zero write references to protected property \X84->count
+src/084_read_only_property.php:10 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \X84::main
