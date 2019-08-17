@@ -317,7 +317,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
     public function visitVar(Node $node) : Context
     {
         $this->checkVariablesDefined($node);
-        return $this->removeTruthyFromVariable($node, $this->context, false);
+        return $this->removeTruthyFromVariable($node, $this->context, false, false);
     }
 
     /**
@@ -373,7 +373,8 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                 }
                 return $type;
             },
-            true
+            true,
+            false
         );
     }
 
@@ -533,6 +534,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                         }
                         return $new_type_builder->getPHPDocUnionType();
                     },
+                    false,
                     false
                 );
             };
@@ -570,6 +572,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                         }
                         return $new_type_builder->getPHPDocUnionType();
                     },
+                    false,
                     false
                 );
             };
@@ -614,47 +617,37 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                     // TODO: Could try to track real types here and elsewhere
                     return $new_type_builder->getPHPDocUnionType();
                 },
+                false,
                 false
             );
         };
         // The implementation of Traversable may change in the future (e.g. to support generics).
         // So use fromFullyQualifiedString()
-        $traversable_type = Type::traversableInstance();
-        $remove_array_callback = static function (NegatedConditionVisitor $cv, Node $var_node, Context $context) use ($traversable_type) : Context {
+        $remove_array_callback = static function (NegatedConditionVisitor $cv, Node $var_node, Context $context) : Context {
             return $cv->updateVariableWithConditionalFilter(
                 $var_node,
                 $context,
                 // if (!is_callable($x)) removes non-callable/closure types from $x.
                 // TODO: Could check for __invoke()
                 static function (UnionType $union_type) : bool {
-                    return $union_type->hasIterable();
-                },
-                static function (UnionType $union_type) use ($traversable_type) : UnionType {
-                    $new_type_builder = new UnionTypeBuilder();
-                    $has_null = false;
-                    $has_other_nullable_types = false;
-                    // Add types which are not callable
-                    foreach ($union_type->getTypeSet() as $type) {
-                        if ($type instanceof ArrayType) {
-                            $has_null = $has_null || $type->isNullable();
-                            continue;
-                        }
-
-                        $has_other_nullable_types = $has_other_nullable_types || $type->isNullable();
-
-                        if (\get_class($type) === IterableType::class) {
-                            // An iterable that is not an object must be an array
-                            $new_type_builder->addType($traversable_type->withIsNullable($type->isNullable()));
-                            continue;
-                        }
-                        $new_type_builder->addType($type);
+                    if ($union_type->hasIterable()) {
+                        return true;
                     }
-                    // Add Null if some of the rejected types were were nullable, and none of the accepted types were nullable
-                    if ($has_null && !$has_other_nullable_types) {
-                        $new_type_builder->addType(NullType::instance(false));
+                    // We also want to filter real types(if they are known) to avoid false positives in real condition detection
+                    foreach ($union_type->getRealTypeSet() as $type) {
+                        if ($type->isIterable()) {
+                            return true;
+                        }
                     }
-                    return $new_type_builder->getPHPDocUnionType();
+                    return false;
                 },
+                static function (UnionType $union_type) : UnionType {
+                    return UnionType::of(
+                        self::filterNonArrayTypes($union_type->getTypeSet()),
+                        self::filterNonArrayTypes($union_type->getRealTypeSet())
+                    );
+                },
+                false,
                 false
             );
         };
@@ -692,6 +685,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                     }
                     return $new_type_builder->getPHPDocUnionType();
                 },
+                false,
                 false
             );
         };
@@ -714,6 +708,38 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
             'is_scalar' => $remove_scalar_callback,
             'is_string' => $make_basic_negated_assertion_callback(StringType::class),
         ];
+    }
+
+    /**
+     * @param array<int,Type> $type_set
+     * @return array<int,Type> which may contain duplicates
+     */
+    private static function filterNonArrayTypes(array $type_set) : array
+    {
+        $new_types = [];
+        $has_null = false;
+        $has_other_nullable_types = false;
+        // Add types which are not callable
+        foreach ($type_set as $type) {
+            if ($type instanceof ArrayType) {
+                $has_null = $has_null || $type->isNullable();
+                continue;
+            }
+
+            $has_other_nullable_types = $has_other_nullable_types || $type->isNullable();
+
+            if (\get_class($type) === IterableType::class) {
+                // An iterable that is not an object must be an array
+                $new_types[] = Type::traversableInstance()->withIsNullable($type->isNullable());
+                continue;
+            }
+            $new_types[] = $type;
+        }
+        // Add Null if some of the rejected types were were nullable, and none of the accepted types were nullable
+        if ($has_null && !$has_other_nullable_types) {
+            $new_types[] = NullType::instance(false);
+        }
+        return $new_types;
     }
 
     /**

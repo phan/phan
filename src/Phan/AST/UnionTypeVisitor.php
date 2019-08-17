@@ -1203,7 +1203,8 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @param Node|string|int|float $expr
      * @suppress PhanThrowTypeAbsentForCall
      */
-    private function typeAfterCastToObject($expr) : UnionType {
+    private function typeAfterCastToObject($expr) : UnionType
+    {
         static $stdclass;
         if ($stdclass === null) {
             $stdclass = Type::fromFullyQualifiedString('\stdClass');
@@ -1223,7 +1224,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         if ($has_array) {
             $expr_type = $expr_type->withType($stdclass);
             if ($expr_type->hasRealTypeSet()) {
-                return $expr_type->withRealTypeSet(array_merge($expr_type->getRealTypeSet(), [$stdclass]));
+                return $expr_type->withRealTypeSet(\array_merge($expr_type->getRealTypeSet(), [$stdclass]));
             } else {
                 return $expr_type->withRealType(ObjectType::instance(false));
             }

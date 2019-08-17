@@ -16,6 +16,10 @@ New features(Analysis):
 + Show argument names and types in issue messages for functions/methods for PhanParamTooFew and PhanParamTooMany.
 + Show more accurate columns for PhanSyntaxError for unexpected tokens in more cases.
 + Ignore scalar and null type casting config settings when checking for redundant or impossible conditions. (#3105)
++ Infer that `empty($x)` implies that the value of $x is null, an empty scalar, or the empty array.
++ Avoid false positives with `if (empty($x['first']['second']))` - Do not infer any types for the offset 'first' if there weren't any already. (#3112)
++ Avoid some bad inferences when using the value of expressions of the form `A || B`.
++ Improve redundant condition detection for empty/falsey/truthy checks.
 
 Plugins:
 + Fix false positive in InvalidVariableIssetPlugin for expressions such as `isset(self::$prop['field'])` (#3089)
@@ -23,6 +27,7 @@ Plugins:
 Bug fixes:
 + Don't scan over folders that would be excluded by `'exclude_file_regex'` while parsing. (#3088)
   That adds additional time and may cause unnecessary permissions errors.
++ Properly parse literal float union types starting with `0.`
 
 Aug 12 2019, Phan 2.2.10
 ------------------------

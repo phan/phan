@@ -248,19 +248,19 @@ class Parser
             return 0;
         }
         $message = $native_parse_error->getMessage();
-        if (!preg_match("/ unexpected '(.+)' \((T_\w+)\)/", $message, $matches)) {
-            if (!preg_match("/ unexpected '(.+)', expecting/", $message, $matches)) {
-                if (!preg_match("/ unexpected '(.+)'$/", $message, $matches)) {
+        if (!\preg_match("/ unexpected '(.+)' \((T_\w+)\)/", $message, $matches)) {
+            if (!\preg_match("/ unexpected '(.+)', expecting/", $message, $matches)) {
+                if (!\preg_match("/ unexpected '(.+)'$/", $message, $matches)) {
                     return 0;
                 }
             }
         }
         $token_name = $matches[2] ?? null;
         if (\is_string($token_name)) {
-            if (!defined($token_name)) {
+            if (!\defined($token_name)) {
                 return 0;
             }
-            $token_kind = constant($token_name);
+            $token_kind = \constant($token_name);
         } else {
             $token_kind = null;
         }
@@ -269,7 +269,7 @@ class Parser
         $candidates = [];
         $desired_line = $native_parse_error->getLine();
         foreach ($tokens as $i => $token) {
-            if (!is_array($token)) {
+            if (!\is_array($token)) {
                 if ($token_str === $token) {
                     $candidates[] = $i;
                 }
@@ -289,7 +289,7 @@ class Parser
             }
             $candidates[] = $i;
         }
-        if (count($candidates) !== 1) {
+        if (\count($candidates) !== 1) {
             return 0;
         }
         return self::computeColumnForTokenAtIndex($tokens, $candidates[0], $desired_line);
@@ -299,25 +299,26 @@ class Parser
      * @param array<int,array{0:int,1:string,2:int}|string> $tokens
      * @return int the 1-based line number, or 0 on failure
      */
-    private static function computeColumnForTokenAtIndex(array $tokens, int $i, int $desired_line) : int {
+    private static function computeColumnForTokenAtIndex(array $tokens, int $i, int $desired_line) : int
+    {
         if ($i == 0) {
             return 1;
         }
         $column = 0;
         for ($j = $i - 1; $j >= 0; $j--) {
             $token = $tokens[$j];
-            if (!is_array($token)) {
-                $column += strlen($token);
+            if (!\is_array($token)) {
+                $column += \strlen($token);
                 continue;
             }
             $token_str = $token[1];
             if ($token[2] >= $desired_line) {
-                $column += strlen($token_str);
+                $column += \strlen($token_str);
                 continue;
             }
-            $last_newline = strrpos($token_str, "\n");
+            $last_newline = \strrpos($token_str, "\n");
             if ($last_newline !== false) {
-                $column += strlen($token_str) - $last_newline;
+                $column += \strlen($token_str) - $last_newline;
             }
             break;
         }
@@ -359,7 +360,7 @@ class Parser
             return 0;
         }
         // If the current character is whitespace, keep searching forward for the next non-whitespace character
-        $file_length = strlen($file_contents);
+        $file_length = \strlen($file_contents);
         while ($start + 1 < $file_length && \ctype_space($file_contents[$start])) {
             $start++;
         }

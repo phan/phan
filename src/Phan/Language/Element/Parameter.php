@@ -679,7 +679,7 @@ class Parameter extends Variable
 
         // TODO: hide template types, generic array or real array types
         $union_type_string = $union_type->__toString();
-        if ($union_type_string === 'mixed')  {
+        if ($union_type_string === 'mixed') {
             return '';
         }
         if (strlen($union_type_string) < 100) {

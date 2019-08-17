@@ -1,11 +1,19 @@
 <?php declare(strict_types=1);
 
+namespace Phan\AST;
+
+use ast;
 use ast\Node;
-use Phan\AST\AnalysisVisitor;
-use Phan\AST\UnionTypeVisitor;
+use Exception;
 use Phan\CodeBase;
 use Phan\Exception\NodeException;
+use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
+use UseReturnValuePlugin;
+use UseReturnValueVisitor;
+
+// TODO: Refactor
+require_once \dirname(__DIR__, 3) . '/.phan/plugins/UseReturnValuePlugin.php';
 
 /**
  * Used to check if a method is pure.
@@ -21,101 +29,135 @@ use Phan\Language\Element\FunctionInterface;
 class InferPureVisitor extends AnalysisVisitor
 {
     /** @var string  */
-    private $function_fqsen_key;
+    protected $function_fqsen_key;
 
-    public function __construct(CodeBase $code_base, FunctionInterface $func)
+    public function __construct(CodeBase $code_base, Context $context, string $function_fqsen_key)
     {
-        $this->function_fqsen_key = strtolower(ltrim($func->getFQSEN()->__toString(), '\\'));
         $this->code_base = $code_base;
-        $this->context = $func->getContext();
+        $this->context = $context;
+        $this->function_fqsen_key = $function_fqsen_key;
     }
+
+    /**
+     * Generate a visitor from a function or method.
+     * This will be used for checking if the method is pure.
+     */
+    public static function fromFunction(CodeBase $code_base, FunctionInterface $func) : InferPureVisitor
+    {
+        return new self(
+            $code_base,
+            $func->getContext(),
+            \strtolower(\ltrim($func->getFQSEN()->__toString(), '\\'))
+        );
+    }
+
     // visitAssignRef
     // visitThrow
     // visitEcho
     // visitPrint
     // visitIncludeOrExec
-    public function visit(Node $node) : void {
+    public function visit(Node $node) : void
+    {
         throw new NodeException($node);
     }
 
-    public function visitVar(Node $node) : void {
-        if (!is_scalar($node->children['name'])) {
+    public function visitVar(Node $node) : void
+    {
+        if (!\is_scalar($node->children['name'])) {
             throw new NodeException($node);
         }
     }
 
     /** @override */
-    public function visitClassName(Node $_) : void {
+    public function visitClassName(Node $_) : void
+    {
     }
 
     /** @override */
-    public function visitMagicConst(Node $_) : void {
+    public function visitMagicConst(Node $_) : void
+    {
     }
 
     /** @override */
-    public function visitConst(Node $_) : void {
+    public function visitConst(Node $_) : void
+    {
     }
 
     /** @override */
-    public function visitEmpty(Node $node) : void {
+    public function visitEmpty(Node $node) : void
+    {
         $this->maybeInvoke($node->children['expr']);
     }
 
     /** @override */
-    public function visitIsset(Node $node) : void {
+    public function visitIsset(Node $node) : void
+    {
         $this->maybeInvoke($node->children['var']);
     }
 
     /** @override */
-    public function visitContinue(Node $_) : void {
+    public function visitContinue(Node $_) : void
+    {
     }
 
     /** @override */
-    public function visitBreak(Node $_) : void {
+    public function visitBreak(Node $_) : void
+    {
     }
 
     /** @override */
-    public function visitClassConst(Node $node) : void {
+    public function visitClassConst(Node $node) : void
+    {
         $this->maybeInvokeAllChildNodes($node);
     }
 
-    public function visitStatic(Node $node) : void {
+    public function visitStatic(Node $node) : void
+    {
         $this->maybeInvokeAllChildNodes($node);
     }
 
-    public function visitArray(Node $node) : void {
+    public function visitArray(Node $node) : void
+    {
         $this->maybeInvokeAllChildNodes($node);
     }
 
-    public function visitArrayElem(Node $node) : void {
+    public function visitArrayElem(Node $node) : void
+    {
         $this->maybeInvokeAllChildNodes($node);
     }
 
-    public function visitEncapsList(Node $node) : void {
+    public function visitEncapsList(Node $node) : void
+    {
         $this->maybeInvokeAllChildNodes($node);
     }
 
-    public function visitInstanceof(Node $node) : void {
+    public function visitInstanceof(Node $node) : void
+    {
         $this->maybeInvokeAllChildNodes($node);
     }
 
-    public function visitPreInc(Node $node) : void {
+    public function visitPreInc(Node $node) : void
+    {
         $this->checkPureIncDec($node);
     }
 
-    public function visitPreDec(Node $node) : void {
+    public function visitPreDec(Node $node) : void
+    {
         $this->checkPureIncDec($node);
     }
 
-    public function visitPostInc(Node $node) : void {
+    public function visitPostInc(Node $node) : void
+    {
         $this->checkPureIncDec($node);
     }
 
-    public function visitPostDec(Node $node) : void {
+    public function visitPostDec(Node $node) : void
+    {
         $this->checkPureIncDec($node);
     }
 
-    private function checkPureIncDec(Node $node) : void {
+    private function checkPureIncDec(Node $node) : void
+    {
         $var = $node->children['var'];
         if (!$var instanceof Node) {
             throw new NodeException($node);
@@ -129,27 +171,32 @@ class InferPureVisitor extends AnalysisVisitor
     /**
      * @param Node|string|int|float|null $node
      */
-    private function maybeInvoke($node) : void {
+    final protected function maybeInvoke($node) : void
+    {
         if ($node instanceof Node) {
             $this->__invoke($node);
         }
     }
 
-    public function visitBinaryOp(Node $node) : void {
+    public function visitBinaryOp(Node $node) : void
+    {
         $this->maybeInvoke($node->children['left']);
         $this->maybeInvoke($node->children['right']);
     }
 
-    public function visitUnaryOp(Node $node) : void {
+    public function visitUnaryOp(Node $node) : void
+    {
         $this->maybeInvoke($node->children['expr']);
     }
 
-    public function visitDim(Node $node) : void {
+    public function visitDim(Node $node) : void
+    {
         $this->maybeInvoke($node->children['expr']);
         $this->maybeInvoke($node->children['dim']);
     }
 
-    public function visitProp(Node $node) : void {
+    public function visitProp(Node $node) : void
+    {
         ['expr' => $expr, 'prop' => $prop] = $node->children;
         if (!$expr instanceof Node) {
             throw new NodeException($node);
@@ -161,7 +208,8 @@ class InferPureVisitor extends AnalysisVisitor
     }
 
     /** @override */
-    public function visitStmtList(Node $node) : void {
+    public function visitStmtList(Node $node) : void
+    {
         foreach ($node->children as $stmt) {
             if ($stmt instanceof Node) {
                 $this->__invoke($stmt);
@@ -170,7 +218,8 @@ class InferPureVisitor extends AnalysisVisitor
     }
 
     /** @override */
-    public function visitStaticProp(Node $node) : void {
+    public function visitStaticProp(Node $node) : void
+    {
         ['class' => $class, 'prop' => $prop] = $node->children;
         if (!$class instanceof Node) {
             throw new NodeException($node);
@@ -181,7 +230,7 @@ class InferPureVisitor extends AnalysisVisitor
         }
     }
 
-    private function maybeInvokeAllChildNodes(Node $node) : void
+    final protected function maybeInvokeAllChildNodes(Node $node) : void
     {
         foreach ($node->children as $c) {
             if ($c instanceof Node) {
@@ -191,75 +240,90 @@ class InferPureVisitor extends AnalysisVisitor
     }
 
     /** @override */
-    public function visitCast(Node $node) : void {
+    public function visitCast(Node $node) : void
+    {
         $this->maybeInvoke($node->children['expr']);
     }
 
     /** @override */
-    public function visitConditional(Node $node) : void {
+    public function visitConditional(Node $node) : void
+    {
         $this->maybeInvokeAllChildNodes($node);
     }
 
     /** @override */
-    public function visitWhile(Node $node) : void {
+    public function visitWhile(Node $node) : void
+    {
         $this->maybeInvokeAllChildNodes($node);
     }
 
     /** @override */
-    public function visitDoWhile(Node $node) : void {
+    public function visitDoWhile(Node $node) : void
+    {
         $this->maybeInvokeAllChildNodes($node);
     }
 
     /** @override */
-    public function visitFor(Node $node) : void {
+    public function visitFor(Node $node) : void
+    {
         $this->maybeInvokeAllChildNodes($node);
     }
 
     /** @override */
-    public function visitForeach(Node $node) : void {
+    public function visitForeach(Node $node) : void
+    {
         $this->maybeInvokeAllChildNodes($node);
     }
 
     /** @override */
-    public function visitIf(Node $node) : void {
+    public function visitIf(Node $node) : void
+    {
         $this->maybeInvokeAllChildNodes($node);
     }
 
     /** @override */
-    public function visitIfElem(Node $node) : void {
+    public function visitIfElem(Node $node) : void
+    {
         $this->maybeInvokeAllChildNodes($node);
     }
 
     /** @override */
-    public function visitSwitch(Node $node) : void {
+    public function visitSwitch(Node $node) : void
+    {
         $this->maybeInvokeAllChildNodes($node);
     }
 
     /** @override */
-    public function visitSwitchList(Node $node) : void {
+    public function visitSwitchList(Node $node) : void
+    {
         $this->maybeInvokeAllChildNodes($node);
     }
 
     /** @override */
-    public function visitSwitchCase(Node $node) : void {
+    public function visitSwitchCase(Node $node) : void
+    {
         $this->maybeInvokeAllChildNodes($node);
     }
 
     /** @override */
-    public function visitGoto(Node $_) : void {
+    public function visitGoto(Node $_) : void
+    {
     }
 
     /** @override */
-    public function visitLabel(Node $_) : void {
+    public function visitLabel(Node $_) : void
+    {
     }
 
     /** @override */
-    public function visitAssignOp(Node $node) : void {
+    public function visitAssignOp(Node $node) : void
+    {
         $this->visitAssign($node);
     }
 
     /** @override */
-    public function visitAssign(Node $node) : void {
+    public function visitAssign(Node $node) : void
+    {
         ['var' => $var, 'expr' => $expr] = $node->children;
         if (!$var instanceof Node) {
             throw new NodeException($node);
@@ -274,7 +338,8 @@ class InferPureVisitor extends AnalysisVisitor
     }
 
     /** @override */
-    public function visitReturn(Node $node) : void {
+    public function visitReturn(Node $node) : void
+    {
         $expr_node = $node->children['expr'];
         if ($expr_node instanceof Node) {
             $this->__invoke($expr_node);
@@ -282,23 +347,27 @@ class InferPureVisitor extends AnalysisVisitor
     }
 
     /** @override */
-    public function visitYield(Node $node) : void {
+    public function visitYield(Node $node) : void
+    {
         $this->maybeInvoke($node->children['key']);
         $this->maybeInvoke($node->children['value']);
     }
 
     /** @override */
-    public function visitYieldFrom(Node $node) : void {
+    public function visitYieldFrom(Node $node) : void
+    {
         $this->maybeInvoke($node->children['expr']);
     }
 
     /** @override */
-    public function visitName(Node $_) : void {
+    public function visitName(Node $_) : void
+    {
         // do nothing
     }
 
     /** @override */
-    public function visitCall(Node $node) : void {
+    public function visitCall(Node $node) : void
+    {
         $expr = $node->children['expr'];
         if (!$expr instanceof Node) {
             throw new NodeException($node);
@@ -307,17 +376,18 @@ class InferPureVisitor extends AnalysisVisitor
             throw new NodeException($expr);
         }
         // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal AST_NAME always has strings
-        $key = strtolower($expr->children['name']);
+        $key = \strtolower($expr->children['name']);
         if (($key[0] ?? '') === '\\') {
-            $key = (string)substr($key, 1);
+            $key = (string)\substr($key, 1);
         }
         $this->checkCalledFunctionLikeKey($node, $key);
         $this->visitArgList($node->children['args']);
     }
 
-    public function visitStaticCall(Node $node) : void {
+    public function visitStaticCall(Node $node) : void
+    {
         $method = $node->children['method'];
-        if (!is_string($method)) {
+        if (!\is_string($method)) {
             throw new NodeException($node);
         }
         $class = $node->children['class'];
@@ -344,20 +414,21 @@ class InferPureVisitor extends AnalysisVisitor
             throw new NodeException($class);
         }
         $called_fqsen = $type->asFQSEN();
-        $key = strtolower(ltrim($called_fqsen->__toString(), '\\')) . '::' . strtolower($method);
+        $key = \strtolower(\ltrim($called_fqsen->__toString(), '\\')) . '::' . \strtolower($method);
 
         $this->checkCalledFunctionLikeKey($node, $key);
         $this->visitArgList($node->children['args']);
     }
 
-    public function visitMethodCall(Node $node) : void {
+    public function visitMethodCall(Node $node) : void
+    {
         if (!$this->context->isInClassScope()) {
             // We don't track variables in UseReturnValuePlugin
             throw new NodeException($node, 'method call seen outside class scope');
         }
 
         $method = $node->children['method'];
-        if (!is_string($method)) {
+        if (!\is_string($method)) {
             throw new NodeException($node);
         }
         $expr = $node->children['expr'];
@@ -370,7 +441,7 @@ class InferPureVisitor extends AnalysisVisitor
         if ($expr->children['name'] !== 'this') {
             throw new NodeException($expr, 'not $this');
         }
-        $key = strtolower(ltrim((string)$this->context->getClassFQSENOrNull(), '\\')) . '::' . strtolower($method);
+        $key = \strtolower(\ltrim((string)$this->context->getClassFQSENOrNull(), '\\')) . '::' . \strtolower($method);
         $this->checkCalledFunctionLikeKey($node, $key);
 
         $this->visitArgList($node->children['args']);
@@ -396,7 +467,8 @@ class InferPureVisitor extends AnalysisVisitor
         }
     }
 
-    public function visitArgList(Node $node) : void {
+    public function visitArgList(Node $node) : void
+    {
         foreach ($node->children as $x) {
             if ($x instanceof Node) {
                 $this->__invoke($x);

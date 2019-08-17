@@ -497,7 +497,7 @@ final class ArgumentType
                     $argument->is_reference = true;
                 }
             }
-            if ($argument_kind === \ast\AST_UNPACK) {
+            if ($argument_kind === \ast\AST_UNPACK && $argument instanceof Node) {
                 self::analyzeRemainingParametersForVariadic($code_base, $context, $method, $i + 1, $node, $argument, $argument_type);
             }
         }
@@ -861,7 +861,7 @@ final class ArgumentType
      * Used to check if a place expecting a reference is actually getting a reference from a node.
      * Obvious types which are always references (properties, variables) must be checked for before calling this.
      *
-     * @param Node|string|int|float $node
+     * @param Node|string|int|float|null $node
      *
      * @return bool - True if this node is a call to a function that may return a reference?
      */

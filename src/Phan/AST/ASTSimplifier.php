@@ -180,6 +180,7 @@ class ASTSimplifier
      *
      * @param Node|string|float|int $node
      * @internal the way this behaves may change
+     * @see ScopeImpactCheckingVisitor::hasPossibleImpact() for a more general check
      */
     public static function isExpressionWithoutSideEffects($node) : bool
     {

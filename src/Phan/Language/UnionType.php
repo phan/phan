@@ -125,6 +125,13 @@ class UnionType implements Serializable
     {
         $n = \count($type_list);
         if ($n === 0) {
+            if ($real_type_set) {
+                if (\count($real_type_set) === 1) {
+                    // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
+                    return \reset($real_type_set)->asRealUnionType();
+                }
+                return new self($real_type_set, false, $real_type_set);
+            }
             return self::$empty_instance;
         } elseif ($n === 1) {
             if (!$real_type_set) {
@@ -1319,24 +1326,34 @@ class UnionType implements Serializable
      */
     public function nonFalseyClone() : UnionType
     {
-        $builder = new UnionTypeBuilder();
-        $did_change = false;
-        foreach ($this->type_set as $type) {
+        return UnionType::of(
+            self::toNonFalseyTypeSet($this->type_set),
+            self::toNonFalseyTypeSet($this->real_type_set)
+        );
+    }
+
+    /**
+     * @param array<int,Type> $type_set
+     * @return array<int,Type> which may contain duplicates
+     */
+    private static function toNonFalseyTypeSet(array $type_set) : array
+    {
+        $result = [];
+        foreach ($type_set as $type) {
             if (!$type->isPossiblyFalsey()) {
-                $builder->addType($type);
+                $result[] = $type;
                 continue;
             }
-            $did_change = true;
             if ($type->isAlwaysFalsey()) {
                 // don't add null/false to the resulting type
                 continue;
             }
 
             // add non-nullable equivalents, and replace BoolType with non-nullable TrueType
-            $builder->addType($type->asNonFalseyType());
+            $result[] = $type->asNonFalseyType();
         }
         // TODO: Preserve real types
-        return $did_change ? $builder->getPHPDocUnionType() : $this;
+        return $result;
     }
 
     /**
@@ -1506,33 +1523,33 @@ class UnionType implements Serializable
      */
     public function nonTruthyClone() : UnionType
     {
-        $builder = new UnionTypeBuilder();
-        $did_change = false;
-        $has_null = false;
-        foreach ($this->type_set as $type) {
+        return UnionType::of(
+            self::toNonTruthyTypeSet($this->type_set),
+            self::toNonTruthyTypeSet($this->real_type_set)
+        );
+    }
+
+    /**
+     * @param array<int, Type> $type_set
+     * @return array<int, Type>
+     */
+    private static function toNonTruthyTypeSet(array $type_set) : array
+    {
+        $result = [];
+        foreach ($type_set as $type) {
             if (!$type->isPossiblyTruthy()) {
-                $builder->addType($type);
+                $result[] = $type;
                 continue;
             }
-            $did_change = true;
             if ($type->isAlwaysTruthy()) {
-                if ($type->isNullable()) {
-                    $has_null = true;
-                }
                 // don't add null/false to the resulting type
                 continue;
             }
 
             // add non-nullable equivalents, and replace BoolType with non-nullable TrueType
-            $builder->addType($type->asNonTruthyType());
+            $result[] = $type->asNonTruthyType();
         }
-        if (!$did_change) {
-            return $this;
-        }
-        if ($has_null) {
-            $builder->addType(NullType::instance(false));
-        }
-        return $builder->getPHPDocUnionType()->asNormalizedTypes();
+        return $result;
     }
 
     /**
@@ -3625,7 +3642,7 @@ class UnionType implements Serializable
     public function serialize() : string
     {
         if ($this->real_type_set) {
-            return (string)$this . "\x00" . implode('|', $this->real_type_set);
+            return (string)$this . "\x00" . \implode('|', $this->real_type_set);
         }
         return (string)$this;
     }
@@ -3640,7 +3657,7 @@ class UnionType implements Serializable
      */
     public function unserialize($serialized) : void
     {
-        $i = stripos($serialized, "\x00");
+        $i = \stripos($serialized, "\x00");
         if ($i !== false) {
             $result = UnionType::fromFullyQualifiedPHPDocAndRealString(
                 substr($serialized, 0, $i),
@@ -4429,13 +4446,15 @@ class UnionType implements Serializable
     }
 
     /** @return array<int,Type> */
-    private static function intOrFloatTypeSet() : array {
+    private static function intOrFloatTypeSet() : array
+    {
         static $types;
         return $types ?? ($types = [IntType::instance(false), FloatType::instance(false)]);
     }
 
     /** @return array<int,Type> */
-    private static function intOrStringTypeSet() : array {
+    private static function intOrStringTypeSet() : array
+    {
         static $types;
         return $types ?? ($types = [IntType::instance(false), StringType::instance(false)]);
     }

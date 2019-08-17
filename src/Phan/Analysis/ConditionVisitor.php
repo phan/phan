@@ -925,7 +925,8 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                 }
                 return $type;
             },
-            true
+            true,
+            false
         );
     }
 
@@ -946,7 +947,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         // Should always be a node for valid ASTs, tolerant-php-parser may produce invalid nodes
         if (\in_array($var_node->kind, [ast\AST_VAR, ast\AST_PROP, ast\AST_DIM], true)) {
             // Don't emit notices for if (empty($x)) {}, etc. We already do that in RedundantConditionPlugin.
-            return $this->removeTruthyFromVariable($var_node, $this->context, true);
+            return $this->removeTruthyFromVariable($var_node, $this->context, true, true);
         }
         $this->checkVariablesDefinedInIsset($var_node);
         return $this->context;

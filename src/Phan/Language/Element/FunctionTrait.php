@@ -91,7 +91,7 @@ trait FunctionTrait
             $parameter_list = $this->getParameterList();
             if ($parameter_list) {
                 $is_internal = $this->isPHPInternal();
-                $args_repr = implode(', ', array_map(static function (Parameter $parameter) use ($is_internal) : string {
+                $args_repr = \implode(', ', \array_map(static function (Parameter $parameter) use ($is_internal) : string {
                     return $parameter->getShortRepresentationForIssue($is_internal);
                 }, $this->getParameterList()));
             }
@@ -739,6 +739,7 @@ trait FunctionTrait
         if ($function->isPHPInternal()) {
             return;
         }
+        $real_type_set = $parameter->getNonVariadicUnionType()->getRealTypeSet();
         $parameter_name = $parameter->getName();
         if ($parameter->getUnionType()->isEmpty()) {
             // If there is no type specified in PHP, check
@@ -810,7 +811,7 @@ trait FunctionTrait
                 }
                 // The parameter constructor or above check for wasEmpty already took care of null default case
             } else {
-                $default_type = $default_type->withFlattenedArrayShapeOrLiteralTypeInstances();
+                $default_type = $default_type->withFlattenedArrayShapeOrLiteralTypeInstances()->withRealTypeSet($parameter->getNonVariadicUnionType()->getRealTypeSet());
                 if ($was_empty) {
                     $parameter->addUnionType(self::inferNormalizedTypesOfDefault($default_type));
                     if (!Config::getValue('guess_unknown_parameter_type_using_default')) {
@@ -827,6 +828,8 @@ trait FunctionTrait
                 }
             }
         }
+        // Keep the real type set of the parameter to make redundant condition detection more accurate.
+        $parameter->setUnionType($parameter->getNonVariadicUnionType()->withRealTypeSet($real_type_set));
     }
 
     private static function inferNormalizedTypesOfDefault(UnionType $default_type) : UnionType
@@ -1751,7 +1754,8 @@ trait FunctionTrait
     /**
      * Mark this function or method as read-only
      */
-    public function setIsPure() : void {
+    public function setIsPure() : void
+    {
         $this->setPhanFlags(
             $this->getPhanFlags() | Flags::IS_READ_ONLY
         );
@@ -1761,7 +1765,8 @@ trait FunctionTrait
      * Check if this function or method is marked as pure (having no visible side effects)
      * @suppress PhanUnreferencedPublicMethod phan has issues with dead code detection with traits and interfaces.
      */
-    public function isPure() : bool {
+    public function isPure() : bool
+    {
         return $this->getPhanFlagsHasState(Flags::IS_READ_ONLY);
     }
 }
