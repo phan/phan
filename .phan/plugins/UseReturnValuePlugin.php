@@ -2,6 +2,7 @@
 
 use ast\Node;
 use Phan\AST\ContextNode;
+use Phan\AST\InferPureVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
@@ -17,6 +18,7 @@ use Phan\PluginV3\FinalizeProcessCapability;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
 use Phan\PluginV3\PostAnalyzeNodeCapability;
 
+if (!class_exists(UseReturnValuePlugin::class, false)) {
 /**
  * A plugin that checks for invocations of functions/methods where the return value should be used.
  * Also, gathers statistics on how often those functions/methods are used.
@@ -38,221 +40,220 @@ use Phan\PluginV3\PostAnalyzeNodeCapability;
  *   For dynamic checks, use this value instead of the default of 98 (should be between 0.01 and 100)
  * - ['plugin_config']['infer_pure_methods'] to automatically infer which methods are pure.
  */
-class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability, FinalizeProcessCapability, BeforeAnalyzePhaseCapability
-{
-    // phpcs:disable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
-    // this is deliberate for issue names
-    const UseReturnValue = 'PhanPluginUseReturnValue';
-    const UseReturnValueKnown = 'PhanPluginUseReturnValueKnown';
-    const UseReturnValueInternal = 'PhanPluginUseReturnValueInternal';
-    const UseReturnValueInternalKnown = 'PhanPluginUseReturnValueInternalKnown';
-    const UseReturnValueNoopVoid = 'PhanPluginUseReturnValueNoopVoid';
-    // phpcs:enable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
-
-    const DEFAULT_THRESHOLD_PERCENTAGE = 98;
-
-    /**
-     * @var array<string,StatsForFQSEN> maps an FQSEN to information about the FQSEN and its uses.
-     * @internal
-     */
-    public static $stats = [];
-
-    /**
-     * @var bool should debug information about commonly used FQSENs be used in this project?
-     */
-    public static $debug = false;
-
-    /**
-     * @var bool - If true, this will track the calls in your program to warn if a return value
-     * of an internal or user-defined function/method is unused,
-     * when over self::$threshold_percentage (e.g. 98%) is used.
-     *
-     * This option is slow and won't work effectively in the language server mode.
-     */
-    public static $use_dynamic = false;
-
-    /**
-     * @return string - name of PluginAwarePostAnalysisVisitor subclass
-     */
-    public static function getPostAnalyzeNodeVisitorClassName() : string
+    class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability, FinalizeProcessCapability, BeforeAnalyzePhaseCapability
     {
-        self::$stats = [];
-        // NOTE: debug should be used together with dynamic checks.
-        self::$debug = Config::getValue('plugin_config')['use_return_value_verbose'] ?? (bool)getenv('PHAN_USE_RETURN_VALUE_DEBUG');
-        self::$use_dynamic = Config::getValue('plugin_config')['use_return_value_dynamic_checks'] ??
+        // phpcs:disable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
+        // this is deliberate for issue names
+        const UseReturnValue = 'PhanPluginUseReturnValue';
+        const UseReturnValueKnown = 'PhanPluginUseReturnValueKnown';
+        const UseReturnValueInternal = 'PhanPluginUseReturnValueInternal';
+        const UseReturnValueInternalKnown = 'PhanPluginUseReturnValueInternalKnown';
+        const UseReturnValueNoopVoid = 'PhanPluginUseReturnValueNoopVoid';
+        // phpcs:enable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
+
+        const DEFAULT_THRESHOLD_PERCENTAGE = 98;
+
+        /**
+         * @var array<string,StatsForFQSEN> maps an FQSEN to information about the FQSEN and its uses.
+         * @internal
+         */
+        public static $stats = [];
+
+        /**
+         * @var bool should debug information about commonly used FQSENs be used in this project?
+         */
+        public static $debug = false;
+
+        /**
+         * @var bool - If true, this will track the calls in your program to warn if a return value
+         * of an internal or user-defined function/method is unused,
+         * when over self::$threshold_percentage (e.g. 98%) is used.
+         *
+         * This option is slow and won't work effectively in the language server mode.
+         */
+        public static $use_dynamic = false;
+
+        /**
+         * @return string - name of PluginAwarePostAnalysisVisitor subclass
+         */
+        public static function getPostAnalyzeNodeVisitorClassName() : string
+        {
+            self::$stats = [];
+            // NOTE: debug should be used together with dynamic checks.
+            self::$debug = Config::getValue('plugin_config')['use_return_value_verbose'] ?? (bool)getenv('PHAN_USE_RETURN_VALUE_DEBUG');
+            self::$use_dynamic = Config::getValue('plugin_config')['use_return_value_dynamic_checks'] ??
             (bool)getenv('PHAN_USE_RETURN_VALUE_DYNAMIC_CHECKS');
-        return UseReturnValueVisitor::class;
-    }
+            return UseReturnValueVisitor::class;
+        }
 
-    /** @override */
-    public function beforeAnalyzePhase(CodeBase $code_base) : void
-    {
-        if (!(Config::getValue('plugin_config')['infer_pure_methods'] ?? false)) {
-            return;
-        }
-        // $start = microtime(true);
-        require_once __DIR__ . '/UseReturnValuePlugin/InferPureVisitor.php';
-        foreach ($code_base->getMethodSet() as $method) {
-            self::checkIsReadOnlyMethod($code_base, $method);
-        }
-        foreach ($code_base->getFunctionMap() as $func) {
-            self::checkIsReadOnlyFunction($code_base, $func);
-        }
-        // This takes around 0.12 seconds for Phan itself.
-        // $end = microtime(true);
-        // printf("Marking functions as pure took %.f seconds\n", $end - $start);
-    }
-
-    private static function checkIsReadOnlyMethod(CodeBase $code_base, Method $method) : void
-    {
-        if ($method->isPHPInternal() || $method->isAbstract()) {
-            return;
-        }
-        if ($method->isOverriddenByAnother() || $method->isOverride()) {
-            return;
-        }
-        if ($method->getDefiningFQSEN() !== $method->getFQSEN()) {
-            return;
-        }
-        if (Phan::isExcludedAnalysisFile($method->getContext()->getFile())) {
-            // For functions that aren't analyzed, we won't necessarily have enough information to know if they're overridden,
-            // because the files they're related to might not be parsed.
-            return;
-        }
-        self::checkIsReadOnlyFunctionCommon($code_base, $method);
-    }
-
-    private static function checkIsReadOnlyFunction(CodeBase $code_base, Func $func) : void
-    {
-        if ($func->isPHPInternal()) {
-            return;
-        }
-        self::checkIsReadOnlyFunctionCommon($code_base, $func);
-    }
-
-    /**
-     * @param Func|Method $method
-     */
-    private static function checkIsReadOnlyFunctionCommon(CodeBase $code_base, FunctionInterface $method) : void
-    {
-        $context = $method->getContext();
-        if ($method->getFlags() & ast\flags\FUNC_RETURNS_REF) {
-            return;
-        }
-        foreach ($method->getParameterList() as $param) {
-            if ($param->isPassByReference()) {
+        /** @override */
+        public function beforeAnalyzePhase(CodeBase $code_base) : void
+        {
+            if (!(Config::getValue('plugin_config')['infer_pure_methods'] ?? false)) {
                 return;
             }
+            // $start = microtime(true);
+            foreach ($code_base->getMethodSet() as $method) {
+                self::checkIsReadOnlyMethod($code_base, $method);
+            }
+            foreach ($code_base->getFunctionMap() as $func) {
+                self::checkIsReadOnlyFunction($code_base, $func);
+            }
+            // This takes around 0.12 seconds for Phan itself.
+            // $end = microtime(true);
+            // printf("Marking functions as pure took %.f seconds\n", $end - $start);
         }
-        $node = $method->getNode()->children['stmts'] ?? null;
-        if (!$node) {
-            return;
+
+        private static function checkIsReadOnlyMethod(CodeBase $code_base, Method $method) : void
+        {
+            if ($method->isPHPInternal() || $method->isAbstract()) {
+                return;
+            }
+            if ($method->isOverriddenByAnother() || $method->isOverride()) {
+                return;
+            }
+            if ($method->getDefiningFQSEN() !== $method->getFQSEN()) {
+                return;
+            }
+            if (Phan::isExcludedAnalysisFile($method->getContext()->getFile())) {
+                // For functions that aren't analyzed, we won't necessarily have enough information to know if they're overridden,
+                // because the files they're related to might not be parsed.
+                return;
+            }
+            self::checkIsReadOnlyFunctionCommon($code_base, $method);
         }
-        try {
-            (new InferPureVisitor($code_base, $method))($node);
-        } catch (NodeException $_) {
-            // echo "Skipping due to {$method->getFQSEN()} {$context->getFile()}:{$_->getNode()->lineno}: {$_->getFile()}:{$_->getLine()}: {$_->getMessage()}\n";
-            // \Phan\Debug::printNode($_->getNode());
-            return;
+
+        private static function checkIsReadOnlyFunction(CodeBase $code_base, Func $func) : void
+        {
+            if ($func->isPHPInternal()) {
+                return;
+            }
+            self::checkIsReadOnlyFunctionCommon($code_base, $func);
         }
-        if ($method->getUnionType()->isNull()) {
-            if ($method instanceof Func) {
-                if ($method->isClosure()) {
-                    // no-op closures are usually normal
+
+        /**
+         * @param Func|Method $method
+         */
+        private static function checkIsReadOnlyFunctionCommon(CodeBase $code_base, FunctionInterface $method) : void
+        {
+            $context = $method->getContext();
+            if ($method->getFlags() & ast\flags\FUNC_RETURNS_REF) {
+                return;
+            }
+            foreach ($method->getParameterList() as $param) {
+                if ($param->isPassByReference()) {
                     return;
                 }
             }
-            if ($method instanceof Method && $method->isMagic()) {
-                // Don't warn about __construct
+            $node = $method->getNode()->children['stmts'] ?? null;
+            if (!$node) {
                 return;
             }
-            // Don't warn about the **caller** of void methods that do nothing.
-            // Instead, warn about the implementation of void methods.
-            self::emitIssue(
-                $code_base,
-                $context,
-                self::UseReturnValueNoopVoid,
-                'The internal function/method {FUNCTION} is declared to return {TYPE} and it has no side effects',
-                [$method->getFQSEN(), $method->getUnionType()]
-            );
-            return;
+            try {
+                (InferPureVisitor::fromFunction($code_base, $method))($node);
+            } catch (NodeException $_) {
+                // echo "Skipping due to {$method->getFQSEN()} {$context->getFile()}:{$_->getNode()->lineno}: {$_->getFile()}:{$_->getLine()}: {$_->getMessage()}\n";
+                // \Phan\Debug::printNode($_->getNode());
+                return;
+            }
+            if ($method->getUnionType()->isNull()) {
+                if ($method instanceof Func) {
+                    if ($method->isClosure()) {
+                        // no-op closures are usually normal
+                        return;
+                    }
+                }
+                if ($method instanceof Method && $method->isMagic()) {
+                    // Don't warn about __construct
+                    return;
+                }
+                // Don't warn about the **caller** of void methods that do nothing.
+                // Instead, warn about the implementation of void methods.
+                self::emitIssue(
+                    $code_base,
+                    $context,
+                    self::UseReturnValueNoopVoid,
+                    'The internal function/method {FUNCTION} is declared to return {TYPE} and it has no side effects',
+                    [$method->getFQSEN(), $method->getUnionType()]
+                );
+                return;
+            }
+            $method->setIsPure();
         }
-        $method->setIsPure();
-    }
 
-    /**
-     * @override
-     */
-    public function finalizeProcess(CodeBase $code_base) : void
-    {
-        if (!self::$use_dynamic) {
-            return;
-        }
-        $threshold_percentage = Config::getValue('plugin_config')['use_return_value_warn_threshold_percentage'] ??
+        /**
+         * @override
+         */
+        public function finalizeProcess(CodeBase $code_base) : void
+        {
+            if (!self::$use_dynamic) {
+                return;
+            }
+            $threshold_percentage = Config::getValue('plugin_config')['use_return_value_warn_threshold_percentage'] ??
             (getenv('PHAN_USE_RETURN_VALUE_WARN_THRESHOLD_PERCENTAGE') ?: self::DEFAULT_THRESHOLD_PERCENTAGE);
 
-        foreach (self::$stats as $fqsen => $counter) {
-            $fqsen_key = ltrim(strtolower($fqsen), "\\");
-            $used_count = count($counter->used_locations);
-            $unused_count = count($counter->unused_locations);
-            $total_count = $used_count + $unused_count;
+            foreach (self::$stats as $fqsen => $counter) {
+                $fqsen_key = ltrim(strtolower($fqsen), "\\");
+                $used_count = count($counter->used_locations);
+                $unused_count = count($counter->unused_locations);
+                $total_count = $used_count + $unused_count;
 
-            $known_must_use_return_value = self::HARDCODED_FQSENS[$fqsen_key] ?? null;
-            $used_percentage = $used_count / $total_count * 100;
-            if ($total_count >= 5) {
-                if (self::$debug) {
-                    fprintf(STDERR, "%09.4f %% used: (%4d uses): %s (%s)\n", $used_percentage, $total_count, $fqsen, $counter->is_internal ? 'internal' : 'user-defined');
-                }
-            }
-
-            if ($known_must_use_return_value === false) {
-                continue;
-            }
-
-            if ($unused_count > 0 && $used_percentage >= $threshold_percentage) {
-                $percentage_string = number_format($used_percentage, 2);
-                foreach ($counter->unused_locations as $key => $context) {
-                    if (!preg_match('/:(\d+)$/', $key, $matches)) {
-                        fprintf(STDERR, "Failed to extract line number from %s\n", $key);
-                        continue;
+                $known_must_use_return_value = self::HARDCODED_FQSENS[$fqsen_key] ?? null;
+                $used_percentage = $used_count / $total_count * 100;
+                if ($total_count >= 5) {
+                    if (self::$debug) {
+                        fprintf(STDERR, "%09.4f %% used: (%4d uses): %s (%s)\n", $used_percentage, $total_count, $fqsen, $counter->is_internal ? 'internal' : 'user-defined');
                     }
-                    $line = (int)$matches[1];
-                    $context = $context->withLineNumberStart($line);
-                    if ($known_must_use_return_value) {
-                        self::emitIssue(
-                            $code_base,
-                            $context,
-                            self::UseReturnValueInternalKnown,
-                            'Expected to use the return value of the internal function/method {FUNCTION}',
-                            [$fqsen]
-                        );
-                    } elseif ($counter->is_internal) {
-                        self::emitIssue(
-                            $code_base,
-                            $context,
-                            self::UseReturnValueInternal,
-                            'Expected to use the return value of the internal function/method {FUNCTION} - {SCALAR}%% of calls use it in the rest of the codebase',
-                            [$fqsen, $percentage_string]
-                        );
-                    } else {
-                        self::emitIssue(
-                            $code_base,
-                            $context,
-                            self::UseReturnValue,
-                            'Expected to use the return value of the user-defined function/method {FUNCTION} - {SCALAR}%% of calls use it in the rest of the codebase',
-                            [$fqsen, $percentage_string]
-                        );
+                }
+
+                if ($known_must_use_return_value === false) {
+                    continue;
+                }
+
+                if ($unused_count > 0 && $used_percentage >= $threshold_percentage) {
+                    $percentage_string = number_format($used_percentage, 2);
+                    foreach ($counter->unused_locations as $key => $context) {
+                        if (!preg_match('/:(\d+)$/', $key, $matches)) {
+                            fprintf(STDERR, "Failed to extract line number from %s\n", $key);
+                            continue;
+                        }
+                        $line = (int)$matches[1];
+                        $context = $context->withLineNumberStart($line);
+                        if ($known_must_use_return_value) {
+                            self::emitIssue(
+                                $code_base,
+                                $context,
+                                self::UseReturnValueInternalKnown,
+                                'Expected to use the return value of the internal function/method {FUNCTION}',
+                                [$fqsen]
+                            );
+                        } elseif ($counter->is_internal) {
+                            self::emitIssue(
+                                $code_base,
+                                $context,
+                                self::UseReturnValueInternal,
+                                'Expected to use the return value of the internal function/method {FUNCTION} - {SCALAR}%% of calls use it in the rest of the codebase',
+                                [$fqsen, $percentage_string]
+                            );
+                        } else {
+                            self::emitIssue(
+                                $code_base,
+                                $context,
+                                self::UseReturnValue,
+                                'Expected to use the return value of the user-defined function/method {FUNCTION} - {SCALAR}%% of calls use it in the rest of the codebase',
+                                [$fqsen, $percentage_string]
+                            );
+                        }
                     }
                 }
             }
         }
-    }
 
-    /**
-     * Maps lowercase FQSENs to whether or not this plugin should warn about the return value of a method being unused.
-     * This should remain sorted.
-     */
-    const HARDCODED_FQSENS = [
+        /**
+         * Maps lowercase FQSENs to whether or not this plugin should warn about the return value of a method being unused.
+         * This should remain sorted.
+         */
+        const HARDCODED_FQSENS = [
         '_' => true,
         'abs' => true,
         'acosh' => true,
@@ -940,319 +941,320 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
         'strtok' => false,  // advances a cursor if called with 1 argument - Any argument position can be ignored.
         'trait_exists' => self::SPECIAL_CASE,  // triggers class autoloader to load the trait
         'var_export' => self::SPECIAL_CASE,  // returns a string if second arg is true
-    ];
+        ];
 
-    const SPECIAL_CASE = 'specialcase';
-    const MUST_USE_WITH_SIDE_EFFECTS = 'sideeffects';
-}
+        const SPECIAL_CASE = 'specialcase';
+        const MUST_USE_WITH_SIDE_EFFECTS = 'sideeffects';
+    }
 
 /**
  * Information about the function and the locations where the function was called for one FQSEN
  */
-class StatsForFQSEN
-{
-    /** @var array<string,Context> the locations where the return value was unused */
-    public $unused_locations = [];
-    /** @var array<string,Context> the locations where the return value was used */
-    public $used_locations = [];
-    /** @var bool is this function fqsen internal to PHP */
-    public $is_internal;
-
-    public function __construct(FunctionInterface $function)
+    class StatsForFQSEN
     {
-        $this->is_internal = $function->isPHPInternal();
+        /** @var array<string,Context> the locations where the return value was unused */
+        public $unused_locations = [];
+        /** @var array<string,Context> the locations where the return value was used */
+        public $used_locations = [];
+        /** @var bool is this function fqsen internal to PHP */
+        public $is_internal;
+
+        public function __construct(FunctionInterface $function)
+        {
+            $this->is_internal = $function->isPHPInternal();
+        }
     }
-}
 
 /**
  * Checks for invocations of functions/methods where the return value should be used.
  * Also, gathers statistics on how often those functions/methods are used.
  */
-class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
-{
-    /** @var array<int,Node> set by plugin framework */
-    protected $parent_node_list;
-
-    /**
-     * Skip unary ops when determining the parent node.
-     * E.g. for `@foo();`, the parent node is AST_STMT_LIST (which we infer means the result is unused)
-     * For `$x = +foo();` the parent node is AST_ASSIGN.
-     * @return array{0:?Node,1:bool} - [$parent, $used]
-     * $used is whether the expression is used - it should only be checked if the parent is known.
-     */
-    private function findNonUnaryParentNode(Node $node) : array
+    class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
     {
-        $parent = end($this->parent_node_list);
-        if (!$parent) {
-            return [null, true];
-        }
-        while ($parent->kind === ast\AST_UNARY_OP) {
-            $node = $parent;
-            $parent = \prev($this->parent_node_list);
+        /** @var array<int,Node> set by plugin framework */
+        protected $parent_node_list;
+
+        /**
+         * Skip unary ops when determining the parent node.
+         * E.g. for `@foo();`, the parent node is AST_STMT_LIST (which we infer means the result is unused)
+         * For `$x = +foo();` the parent node is AST_ASSIGN.
+         * @return array{0:?Node,1:bool} - [$parent, $used]
+         * $used is whether the expression is used - it should only be checked if the parent is known.
+         */
+        private function findNonUnaryParentNode(Node $node) : array
+        {
+            $parent = end($this->parent_node_list);
             if (!$parent) {
                 return [null, true];
             }
-        }
-        switch ($parent->kind) {
-            case ast\AST_STMT_LIST:
-                return [$parent, false];
-            case ast\AST_EXPR_LIST:
-                return [$parent, $this->isUsedExpressionInExprList($node, $parent)];
-        }
-        return [$parent, true];
-    }
-
-    private function isUsedExpressionInExprList(Node $node, Node $parent) : bool
-    {
-        return $node === end($parent->children) && $parent === (\prev($this->parent_node_list)->children['cond'] ?? null);
-    }
-
-    /**
-     * @param Node $node a node of type AST_CALL
-     * @override
-     */
-    public function visitCall(Node $node) : void
-    {
-        [$parent, $used] = $this->findNonUnaryParentNode($node);
-        if (!$parent) {
-            //fwrite(STDERR, "No parent in " . __METHOD__ . "\n");
-            return;
-        }
-        if ($used && !UseReturnValuePlugin::$use_dynamic) {
-            return;
-        }
-        $key = $this->context->getFile() . ':' . $this->context->getLineNumberStart();
-        //fwrite(STDERR, "Saw parent of type " . ast\get_kind_name($parent->kind)  . "\n");
-
-        $expression = $node->children['expr'];
-        try {
-            $function_list_generator = (new ContextNode(
-                $this->code_base,
-                $this->context,
-                $expression
-            ))->getFunctionFromNode();
-
-            foreach ($function_list_generator as $function) {
-                if ($function instanceof Func && $function->isClosure()) {
-                    continue;
-                }
-                $fqsen = $function->getFQSEN()->__toString();
-                if (!UseReturnValuePlugin::$use_dynamic) {
-                    $this->quickWarn($function, $fqsen, $node);
-                    continue;
-                }
-                $counter = UseReturnValuePlugin::$stats[$fqsen] ?? null;
-                if (!$counter) {
-                    UseReturnValuePlugin::$stats[$fqsen] = $counter = new StatsForFQSEN($function);
-                }
-                if ($used) {
-                    $counter->used_locations[$key] = $this->context;
-                } else {
-                    $counter->unused_locations[$key] = $this->context;
+            while ($parent->kind === ast\AST_UNARY_OP) {
+                $node = $parent;
+                $parent = \prev($this->parent_node_list);
+                if (!$parent) {
+                    return [null, true];
                 }
             }
-        } catch (CodeBaseException $_) {
-        }
-    }
-
-    /**
-     * @param Node $node a node of type AST_METHOD_CALL
-     * @override
-     */
-    public function visitMethodCall(Node $node) : void
-    {
-        [$parent, $used] = $this->findNonUnaryParentNode($node);
-        if (!$parent) {
-            //fwrite(STDERR, "No parent in " . __METHOD__ . "\n");
-            return;
-        }
-        if ($used && !UseReturnValuePlugin::$use_dynamic) {
-            return;
-        }
-        $key = $this->context->getFile() . ':' . $this->context->getLineNumberStart();
-        //fwrite(STDERR, "Saw parent of type " . ast\get_kind_name($parent->kind)  . "\n");
-
-        $method_name = $node->children['method'];
-
-        if (!\is_string($method_name)) {
-            return;
-        }
-        try {
-            $method = (new ContextNode(
-                $this->code_base,
-                $this->context,
-                $node
-            ))->getMethod($method_name, false);
-        } catch (Exception $_) {
-            return;
-        }
-        $fqsen = $method->getDefiningFQSEN()->__toString();
-        if (!UseReturnValuePlugin::$use_dynamic) {
-            $this->quickWarn($method, $fqsen, $node);
-            return;
-        }
-        $counter = UseReturnValuePlugin::$stats[$fqsen] ?? null;
-        if (!$counter) {
-            UseReturnValuePlugin::$stats[$fqsen] = $counter = new StatsForFQSEN($method);
-        }
-        if ($used) {
-            $counter->used_locations[$key] = $this->context;
-        } else {
-            $counter->unused_locations[$key] = $this->context;
-        }
-    }
-
-    /**
-     * @param Node $node a node of type AST_METHOD_CALL
-     * @override
-     */
-    public function visitStaticCall(Node $node) : void
-    {
-        [$parent, $used] = $this->findNonUnaryParentNode($node);
-        if (!$parent) {
-            //fwrite(STDERR, "No parent in " . __METHOD__ . "\n");
-            return;
-        }
-        if ($used && !UseReturnValuePlugin::$use_dynamic) {
-            return;
-        }
-        $key = $this->context->getFile() . ':' . $this->context->getLineNumberStart();
-        //fwrite(STDERR, "Saw parent of type " . ast\get_kind_name($parent->kind)  . "\n");
-
-        $method_name = $node->children['method'];
-
-        if (!\is_string($method_name)) {
-            return;
-        }
-        try {
-            $method = (new ContextNode(
-                $this->code_base,
-                $this->context,
-                $node
-            ))->getMethod($method_name, true, true);
-        } catch (Exception $_) {
-            return;
-        }
-        $fqsen = $method->getDefiningFQSEN()->__toString();
-        if (!UseReturnValuePlugin::$use_dynamic) {
-            $this->quickWarn($method, $fqsen, $node);
-            return;
-        }
-        $counter = UseReturnValuePlugin::$stats[$fqsen] ?? null;
-        if (!$counter) {
-            UseReturnValuePlugin::$stats[$fqsen] = $counter = new StatsForFQSEN($method);
-        }
-        if ($used) {
-            $counter->used_locations[$key] = $this->context;
-        } else {
-            $counter->unused_locations[$key] = $this->context;
-        }
-    }
-
-    private static function isSecondArgumentEqualToConst(Node $node, string $const_name) : bool
-    {
-        $args = $node->children['args']->children;
-        $bool_node = $args[1] ?? null;
-        if (!$bool_node) {
-            return false;
-        }
-        if ($bool_node->kind !== ast\AST_CONST) {
-            return false;
-        }
-        $name = $bool_node->children['name']->children['name'] ?? null;
-        return is_string($name) && strcasecmp($name, $const_name) === 0;
-    }
-
-    /**
-     * @return bool true if $fqsen_key should be treated as if it were read-only.
-     * Precondition: $fqsen_key is found as a special case in this plugin's set of functions.
-     */
-    public static function doesSpecialCaseHaveSideEffects(string $fqsen_key, Node $node) : bool
-    {
-        switch ($fqsen_key) {
-            case 'var_export':
-            case 'print_r':
-                // var_export and print_r take a second bool argument.
-                // Warn if that argument is true.
-                return !self::isSecondArgumentEqualToConst($node, 'true');
-            case 'class_exists':
-            case 'interface_exists':
-            case 'trait_exists':
-                // Triggers autoloader unless second argument is false
-                return !self::isSecondArgumentEqualToConst($node, 'false');
-            case 'preg_match':
-            case 'preg_match_all':
-                return count($node->children['args']->children) >= 3;
-        }
-        return true;
-    }
-
-    private function shouldNotWarnForSpecialCase(string $fqsen_key, Node $node) : bool
-    {
-        switch ($fqsen_key) {
-            case 'call_user_func':
-            case 'call_user_func_array':
-                return $this->shouldNotWarnForDynamicCall($node->children['args']->children[0] ?? null);
-            default:
-                return self::doesSpecialCaseHaveSideEffects($fqsen_key, $node);
-        }
-    }
-
-    /**
-     * @param ?(Node|string|int|float) $node_name
-     */
-    private function shouldNotWarnForDynamicCall($node_name) : bool
-    {
-        if ($node_name instanceof Node) {
-            foreach ((new ContextNode(
-                $this->code_base,
-                $this->context,
-                $node_name
-            ))->getFunctionFromNode() as $function) {
-                $node_name = $function->getFQSEN()->__toString();
-                break;
+            switch ($parent->kind) {
+                case ast\AST_STMT_LIST:
+                    return [$parent, false];
+                case ast\AST_EXPR_LIST:
+                    return [$parent, $this->isUsedExpressionInExprList($node, $parent)];
             }
+            return [$parent, true];
         }
-        if (!is_string($node_name)) {
-            return true;
-        }
-        $fqsen_key = strtolower(ltrim($node_name, "\\"));
-        return (UseReturnValuePlugin::HARDCODED_FQSENS[$fqsen_key] ?? null) !== true;
-    }
 
-    private function quickWarn(FunctionInterface $method, string $fqsen, Node $node) : void
-    {
-        if (!$method->isPure()) {
-            $fqsen_key = strtolower(ltrim($fqsen, "\\"));
-            $result = UseReturnValuePlugin::HARDCODED_FQSENS[$fqsen_key] ?? false;
-            if (!$result) {
+        private function isUsedExpressionInExprList(Node $node, Node $parent) : bool
+        {
+            return $node === end($parent->children) && $parent === (\prev($this->parent_node_list)->children['cond'] ?? null);
+        }
+
+        /**
+         * @param Node $node a node of type AST_CALL
+         * @override
+         */
+        public function visitCall(Node $node) : void
+        {
+            [$parent, $used] = $this->findNonUnaryParentNode($node);
+            if (!$parent) {
+                //fwrite(STDERR, "No parent in " . __METHOD__ . "\n");
                 return;
             }
-            if ($result === UseReturnValuePlugin::SPECIAL_CASE) {
-                if ($this->shouldNotWarnForSpecialCase($fqsen_key, $node)) {
-                    return;
+            if ($used && !UseReturnValuePlugin::$use_dynamic) {
+                return;
+            }
+            $key = $this->context->getFile() . ':' . $this->context->getLineNumberStart();
+            //fwrite(STDERR, "Saw parent of type " . ast\get_kind_name($parent->kind)  . "\n");
+
+            $expression = $node->children['expr'];
+            try {
+                $function_list_generator = (new ContextNode(
+                    $this->code_base,
+                    $this->context,
+                    $expression
+                ))->getFunctionFromNode();
+
+                foreach ($function_list_generator as $function) {
+                    if ($function instanceof Func && $function->isClosure()) {
+                        continue;
+                    }
+                    $fqsen = $function->getFQSEN()->__toString();
+                    if (!UseReturnValuePlugin::$use_dynamic) {
+                        $this->quickWarn($function, $fqsen, $node);
+                        continue;
+                    }
+                    $counter = UseReturnValuePlugin::$stats[$fqsen] ?? null;
+                    if (!$counter) {
+                        UseReturnValuePlugin::$stats[$fqsen] = $counter = new StatsForFQSEN($function);
+                    }
+                    if ($used) {
+                        $counter->used_locations[$key] = $this->context;
+                    } else {
+                        $counter->unused_locations[$key] = $this->context;
+                    }
                 }
+            } catch (CodeBaseException $_) {
             }
         }
-        if ($method->isPHPInternal()) {
+
+        /**
+         * @param Node $node a node of type AST_METHOD_CALL
+         * @override
+         */
+        public function visitMethodCall(Node $node) : void
+        {
+            [$parent, $used] = $this->findNonUnaryParentNode($node);
+            if (!$parent) {
+                //fwrite(STDERR, "No parent in " . __METHOD__ . "\n");
+                return;
+            }
+            if ($used && !UseReturnValuePlugin::$use_dynamic) {
+                return;
+            }
+            $key = $this->context->getFile() . ':' . $this->context->getLineNumberStart();
+            //fwrite(STDERR, "Saw parent of type " . ast\get_kind_name($parent->kind)  . "\n");
+
+            $method_name = $node->children['method'];
+
+            if (!\is_string($method_name)) {
+                return;
+            }
+            try {
+                $method = (new ContextNode(
+                    $this->code_base,
+                    $this->context,
+                    $node
+                ))->getMethod($method_name, false);
+            } catch (Exception $_) {
+                return;
+            }
+            $fqsen = $method->getDefiningFQSEN()->__toString();
+            if (!UseReturnValuePlugin::$use_dynamic) {
+                $this->quickWarn($method, $fqsen, $node);
+                return;
+            }
+            $counter = UseReturnValuePlugin::$stats[$fqsen] ?? null;
+            if (!$counter) {
+                UseReturnValuePlugin::$stats[$fqsen] = $counter = new StatsForFQSEN($method);
+            }
+            if ($used) {
+                $counter->used_locations[$key] = $this->context;
+            } else {
+                $counter->unused_locations[$key] = $this->context;
+            }
+        }
+
+        /**
+         * @param Node $node a node of type AST_METHOD_CALL
+         * @override
+         */
+        public function visitStaticCall(Node $node) : void
+        {
+            [$parent, $used] = $this->findNonUnaryParentNode($node);
+            if (!$parent) {
+                //fwrite(STDERR, "No parent in " . __METHOD__ . "\n");
+                return;
+            }
+            if ($used && !UseReturnValuePlugin::$use_dynamic) {
+                return;
+            }
+            $key = $this->context->getFile() . ':' . $this->context->getLineNumberStart();
+            //fwrite(STDERR, "Saw parent of type " . ast\get_kind_name($parent->kind)  . "\n");
+
+            $method_name = $node->children['method'];
+
+            if (!\is_string($method_name)) {
+                return;
+            }
+            try {
+                $method = (new ContextNode(
+                    $this->code_base,
+                    $this->context,
+                    $node
+                ))->getMethod($method_name, true, true);
+            } catch (Exception $_) {
+                return;
+            }
+            $fqsen = $method->getDefiningFQSEN()->__toString();
+            if (!UseReturnValuePlugin::$use_dynamic) {
+                $this->quickWarn($method, $fqsen, $node);
+                return;
+            }
+            $counter = UseReturnValuePlugin::$stats[$fqsen] ?? null;
+            if (!$counter) {
+                UseReturnValuePlugin::$stats[$fqsen] = $counter = new StatsForFQSEN($method);
+            }
+            if ($used) {
+                $counter->used_locations[$key] = $this->context;
+            } else {
+                $counter->unused_locations[$key] = $this->context;
+            }
+        }
+
+        private static function isSecondArgumentEqualToConst(Node $node, string $const_name) : bool
+        {
+            $args = $node->children['args']->children;
+            $bool_node = $args[1] ?? null;
+            if (!$bool_node) {
+                return false;
+            }
+            if ($bool_node->kind !== ast\AST_CONST) {
+                return false;
+            }
+            $name = $bool_node->children['name']->children['name'] ?? null;
+            return is_string($name) && strcasecmp($name, $const_name) === 0;
+        }
+
+        /**
+         * @return bool true if $fqsen_key should be treated as if it were read-only.
+         * Precondition: $fqsen_key is found as a special case in this plugin's set of functions.
+         */
+        public static function doesSpecialCaseHaveSideEffects(string $fqsen_key, Node $node) : bool
+        {
+            switch ($fqsen_key) {
+                case 'var_export':
+                case 'print_r':
+                    // var_export and print_r take a second bool argument.
+                    // Warn if that argument is true.
+                    return !self::isSecondArgumentEqualToConst($node, 'true');
+                case 'class_exists':
+                case 'interface_exists':
+                case 'trait_exists':
+                    // Triggers autoloader unless second argument is false
+                    return !self::isSecondArgumentEqualToConst($node, 'false');
+                case 'preg_match':
+                case 'preg_match_all':
+                    return count($node->children['args']->children) >= 3;
+            }
+            return true;
+        }
+
+        private function shouldNotWarnForSpecialCase(string $fqsen_key, Node $node) : bool
+        {
+            switch ($fqsen_key) {
+                case 'call_user_func':
+                case 'call_user_func_array':
+                    return $this->shouldNotWarnForDynamicCall($node->children['args']->children[0] ?? null);
+                default:
+                    return self::doesSpecialCaseHaveSideEffects($fqsen_key, $node);
+            }
+        }
+
+        /**
+         * @param ?(Node|string|int|float) $node_name
+         */
+        private function shouldNotWarnForDynamicCall($node_name) : bool
+        {
+            if ($node_name instanceof Node) {
+                foreach ((new ContextNode(
+                    $this->code_base,
+                    $this->context,
+                    $node_name
+                ))->getFunctionFromNode() as $function) {
+                    $node_name = $function->getFQSEN()->__toString();
+                    break;
+                }
+            }
+            if (!is_string($node_name)) {
+                return true;
+            }
+            $fqsen_key = strtolower(ltrim($node_name, "\\"));
+            return (UseReturnValuePlugin::HARDCODED_FQSENS[$fqsen_key] ?? null) !== true;
+        }
+
+        private function quickWarn(FunctionInterface $method, string $fqsen, Node $node) : void
+        {
+            if (!$method->isPure()) {
+                $fqsen_key = strtolower(ltrim($fqsen, "\\"));
+                $result = UseReturnValuePlugin::HARDCODED_FQSENS[$fqsen_key] ?? false;
+                if (!$result) {
+                    return;
+                }
+                if ($result === UseReturnValuePlugin::SPECIAL_CASE) {
+                    if ($this->shouldNotWarnForSpecialCase($fqsen_key, $node)) {
+                        return;
+                    }
+                }
+            }
+            if ($method->isPHPInternal()) {
+                $this->emitPluginIssue(
+                    $this->code_base,
+                    clone($this->context)->withLineNumberStart($node->lineno),
+                    UseReturnValuePlugin::UseReturnValueInternalKnown,
+                    'Expected to use the return value of the internal function/method {FUNCTION}',
+                    [$fqsen]
+                );
+                return;
+            }
             $this->emitPluginIssue(
                 $this->code_base,
                 clone($this->context)->withLineNumberStart($node->lineno),
-                UseReturnValuePlugin::UseReturnValueInternalKnown,
-                'Expected to use the return value of the internal function/method {FUNCTION}',
+                UseReturnValuePlugin::UseReturnValueKnown,
+                'Expected to use the return value of the user-defined function/method {FUNCTION}',
                 [$fqsen]
             );
-            return;
         }
-        $this->emitPluginIssue(
-            $this->code_base,
-            clone($this->context)->withLineNumberStart($node->lineno),
-            UseReturnValuePlugin::UseReturnValueKnown,
-            'Expected to use the return value of the user-defined function/method {FUNCTION}',
-            [$fqsen]
-        );
     }
-}
+} // end class_exists check
 
 // Every plugin needs to return an instance of itself at the
 // end of the file in which it's defined.

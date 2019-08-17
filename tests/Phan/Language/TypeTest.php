@@ -98,6 +98,9 @@ final class TypeTest extends BaseTest
         $this->assertParsesAsType(LiteralIntType::instanceForValue(190, false), '190');
         $this->assertParsesAsType(LiteralFloatType::instanceForValue(1111111111111111111111111111111111, false), '1111111111111111111111111111111111');
         $this->assertParsesAsType(LiteralFloatType::instanceForValue(-1.5, false), '-1.5');
+        $this->assertParsesAsType(LiteralFloatType::instanceForValue(0.0, false), '0.0');
+        $this->assertParsesAsType(LiteralFloatType::instanceForValue(0.25, false), '0.25');
+        $this->assertParsesAsType(LiteralFloatType::instanceForValue(0.25, true), '?0.25');
         $this->assertParsesAsType(LiteralIntType::instanceForValue(1, true), '?1');
         $this->assertParsesAsType(LiteralIntType::instanceForValue(-1, true), '?-1');
     }

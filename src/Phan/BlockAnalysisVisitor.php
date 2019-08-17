@@ -18,6 +18,7 @@ use Phan\Analysis\RedundantCondition;
 use Phan\AST\AnalysisVisitor;
 use Phan\AST\ASTReverter;
 use Phan\AST\ContextNode;
+use Phan\AST\ScopeImpactCheckingVisitor;
 use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\Element;
 use Phan\Exception\IssueException;
@@ -1866,11 +1867,11 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             if ($base_context_scope instanceof GlobalScope) {
                 $base_context = $context->withScope(new BranchScope($base_context_scope));
             }
-            $context_with_false_left_condition = (new NegatedConditionVisitor(
+            $context_with_true_left_condition = (new ConditionVisitor(
                 $this->code_base,
                 $base_context
             ))($left_node);
-            $context_with_true_left_condition = (new ConditionVisitor(
+            $context_with_false_left_condition = (new NegatedConditionVisitor(
                 $this->code_base,
                 $base_context
             ))($left_node);
@@ -1881,10 +1882,16 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
         if ($right_node instanceof Node) {
             $right_context = $this->analyzeAndGetUpdatedContext($context_with_false_left_condition, $node, $right_node);
-            $context = (new ContextMergeVisitor(
-                $context,
-                [$context, $context_with_true_left_condition, $right_context]
-            ))->combineChildContextList();
+            if (ScopeImpactCheckingVisitor::hasPossibleImpact($this->code_base, $context, $right_node)) {
+                // If the expression on the right side does have side effects (e.g. `$cond || $x = foo()`), then we need to merge all possibilities.
+                //
+                // However, if it doesn't have side effects (e.g. `$a || $b` in `var_export($a || $b)`, then adding the inferences is counterproductive)
+                $context = (new ContextMergeVisitor(
+                    $context,
+                    // XXX don't merge $context?
+                    [$context, $context_with_true_left_condition, $right_context]
+                ))->combineChildContextList();
+            }
         }
 
         return $this->postOrderAnalyze($context, $node);

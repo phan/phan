@@ -65,7 +65,7 @@ trait ConditionVisitorUtil
      * Note that Phan can't know some scalars are not an int/string/float, since 0/""/"0"/0.0/[] are empty.
      * (Remove arrays anyway)
      */
-    final protected function removeTruthyFromVariable(Node $var_node, Context $context, bool $suppress_issues) : Context
+    final protected function removeTruthyFromVariable(Node $var_node, Context $context, bool $suppress_issues, bool $check_empty) : Context
     {
         return $this->updateVariableWithConditionalFilter(
             $var_node,
@@ -121,10 +121,22 @@ trait ConditionVisitorUtil
                 }
                 return $contains_truthy;
             },
-            static function (UnionType $type) : UnionType {
-                return $type->nonTruthyClone();
+            static function (UnionType $union_type) : UnionType {
+                static $default_empty;
+                if ($default_empty === null) {
+                    $default_empty = UnionType::fromFullyQualifiedRealString("?0|?''|?'0'|?0.0|?array{}|?false");
+                }
+                $result = $union_type->nonTruthyClone();
+                if ($result->isEmpty()) {
+                    return $default_empty;
+                }
+                if (!$result->hasRealTypeSet()) {
+                    return $result->withRealTypeSet($default_empty->getRealTypeSet());
+                }
+                return $result;
             },
-            $suppress_issues
+            $suppress_issues,
+            $check_empty
         );
     }
 
@@ -143,7 +155,8 @@ trait ConditionVisitorUtil
             static function (UnionType $type) : UnionType {
                 return $type->nonFalseyClone();
             },
-            $suppress_issues
+            $suppress_issues,
+            false
         );
     }
 
@@ -238,7 +251,8 @@ trait ConditionVisitorUtil
             static function (UnionType $type) : UnionType {
                 return $type->nonNullableClone();
             },
-            $suppress_issues
+            $suppress_issues,
+            false
         );
     }
 
@@ -291,6 +305,7 @@ trait ConditionVisitorUtil
                 }
                 return $union_type;
             },
+            false,
             false
         );
     }
@@ -306,6 +321,7 @@ trait ConditionVisitorUtil
             static function (UnionType $type) : UnionType {
                 return $type->nonFalseClone();
             },
+            false,
             false
         );
     }
@@ -321,6 +337,7 @@ trait ConditionVisitorUtil
             static function (UnionType $type) : UnionType {
                 return $type->nonTrueClone();
             },
+            false,
             false
         );
     }
@@ -342,14 +359,15 @@ trait ConditionVisitorUtil
         Context $context,
         Closure $should_filter_cb,
         Closure $filter_union_type_cb,
-        bool $suppress_issues
+        bool $suppress_issues,
+        bool $check_empty
     ) : Context {
         try {
             // Get the variable we're operating on
             $variable = $this->getVariableFromScope($var_node, $context);
             if (\is_null($variable)) {
                 if ($var_node->kind === ast\AST_DIM) {
-                    return $this->updateDimExpressionWithConditionalFilter($var_node, $context, $should_filter_cb, $filter_union_type_cb, $suppress_issues);
+                    return $this->updateDimExpressionWithConditionalFilter($var_node, $context, $should_filter_cb, $filter_union_type_cb, $suppress_issues, $check_empty);
                 } elseif ($var_node->kind === ast\AST_PROP) {
                     return $this->updatePropertyExpressionWithConditionalFilter($var_node, $context, $should_filter_cb, $filter_union_type_cb, $suppress_issues);
                 }
@@ -391,11 +409,23 @@ trait ConditionVisitorUtil
         Context $context,
         Closure $should_filter_cb,
         Closure $filter_union_type_cb,
-        bool $suppress_issues
+        bool $suppress_issues,
+        bool $check_empty
     ) : Context {
-        $var_name = self::getVarNameOfDimNode($node->children['expr']);
-        if (!is_string($var_name)) {
+        $var_node = $node->children['expr'];
+        if (!($var_node instanceof Node)) {
             return $context;
+        }
+        $var_name = self::getVarNameOfDimNode($var_node);
+        if (!is_string($var_name)) {
+            // TODO: Allow acting on properties
+            return $context;
+        }
+        if ($check_empty && $var_node->kind !== ast\AST_VAR) {
+            $var_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $context, $var_node);
+            if (!($var_type->hasArrayShapeTypeInstances())) {
+                return $context;
+            }
         }
         try {
             // Get the type of the field we're operating on
@@ -1015,7 +1045,7 @@ trait ConditionVisitorUtil
     }
 
     /**
-     * @param array<mixed,Node|string|int|float|null> $args
+     * @param array<mixed,?(Node|string|int|float)> $args
      */
     final protected static function isArgumentListWithVarAsFirstArgument(array $args) : bool
     {

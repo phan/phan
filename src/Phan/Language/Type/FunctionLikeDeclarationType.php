@@ -929,11 +929,13 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return null;
     }
 
-    public function setIsPure() : void {
+    public function setIsPure() : void
+    {
         // no-op
     }
 
-    public function isPure() : bool {
+    public function isPure() : bool
+    {
         return false;
     }
 

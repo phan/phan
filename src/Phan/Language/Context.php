@@ -489,7 +489,7 @@ class Context extends FileRef
     {
         $result = (string)$this;
         foreach ($this->getScope()->getVariableMap() as $variable) {
-            $result .= "\n$variable";
+            $result .= "\n{$variable->getDebugRepresentation()}";
         }
         return $result;
     }

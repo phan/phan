@@ -3395,7 +3395,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $variable = clone($variable);
                     $variable->setUnionType($new_type);
                     $context->addScopeVariable($variable);
-                } elseif ($variable instanceof Property) {
+                } else {
                     // This is a Property. Add any compatible new types to the type of the property.
                     AssignmentVisitor::addTypesToPropertyStandalone($code_base, $context, $variable, $new_type);
                 }
@@ -3540,7 +3540,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
             foreach ($parameter_list as $i => $parameter_clone) {
                 if (!isset($argument_types[$i]) && $parameter_clone->hasDefaultValue()) {
-                    $parameter_type = $parameter_clone->getDefaultValueType();
+                    $parameter_type = $parameter_clone->getDefaultValueType()->withRealTypeSet($parameter_clone->getNonVariadicUnionType()->getRealTypeSet());
                     if ($parameter_type->isType(NullType::instance(false))) {
                         // Treat a parameter default of null the same way as passing null to that parameter
                         // (Add null to the list of possibilities)
@@ -3642,18 +3642,19 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 if ($argument === null
                     && $parameter_clone->hasDefaultValue()
                 ) {
-                    $parameter_type = $parameter_clone->getDefaultValueType();
+                    $parameter_type = $parameter_clone->getDefaultValueType()->withRealTypeSet($parameter_clone->getNonVariadicUnionType()->getRealTypeSet());
                     if ($parameter_type->isType(NullType::instance(false))) {
                         // Treat a parameter default of null the same way as passing null to that parameter
                         // (Add null to the list of possibilities)
-                        $parameter_clone->addUnionType($parameter_type->eraseRealTypeSet());
+                        $parameter_clone->addUnionType($parameter_type);
                     } else {
                         // For other types (E.g. string), just replace the union type.
-                        $parameter_clone->setUnionType($parameter_type->eraseRealTypeSet());
+                        $parameter_clone->setUnionType($parameter_type);
                     }
                 }
 
                 // Add the parameter to the scope
+                // TODO: asNonVariadic()?
                 $method->getInternalScope()->addVariable(
                     $parameter_clone
                 );
@@ -3766,7 +3767,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $argument_type = $argument_type->withUnionType($argument_types[$i]);
             }
         }
-        $argument_type = $argument_type->eraseRealTypeSet();
+        $argument_type = $argument_type->withRealTypeSet($parameter->getNonVariadicUnionType()->getRealTypeSet());
         // Then set the new type on that parameter based
         // on the argument's type. We'll use this to
         // retest the method with the passed in types

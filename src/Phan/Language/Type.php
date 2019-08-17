@@ -111,7 +111,7 @@ class Type
      * NOTE: The / is escaped
      */
     const noncapturing_literal_regex =
-        '\??(?:-?(?:0|[1-9][0-9]*(?:\.[0-9]+)?)|\'(?:[- ,.\/?:;"!#$%^&*_+=a-zA-Z0-9_\x80-\xff]|\\\\(?:[\'\\\\]|x[0-9a-fA-F]{2}))*\')';
+        '\??(?:-?(?:(?:0|[1-9][0-9]*)(?:\.[0-9]+)?)|\'(?:[- ,.\/?:;"!#$%^&*_+=a-zA-Z0-9_\x80-\xff]|\\\\(?:[\'\\\\]|x[0-9a-fA-F]{2}))*\')';
         // '\??(?:-?(?:0|[1-9][0-9]*)|\'(?:[a-zA-Z0-9_])*\')';
 
     /**
@@ -1657,7 +1657,7 @@ class Type
      */
     public function isAlwaysTruthy() : bool
     {
-        return true;
+        return !$this->is_nullable;
     }
 
     /**
@@ -1675,7 +1675,7 @@ class Type
      */
     public function isPossiblyFalse() : bool
     {
-        return false;
+        return $this->is_nullable;
     }
 
     /**
