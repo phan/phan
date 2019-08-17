@@ -1163,7 +1163,11 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         return is_string($name) && strcasecmp($name, $const_name) === 0;
     }
 
-    private function shouldNotWarnForSpecialCase(string $fqsen_key, Node $node) : bool
+    /**
+     * @return bool true if $fqsen_key should be treated as if it were read-only.
+     * Precondition: $fqsen_key is found as a special case in this plugin's set of functions.
+     */
+    public static function doesSpecialCaseHaveSideEffects(string $fqsen_key, Node $node) : bool
     {
         switch ($fqsen_key) {
             case 'var_export':
@@ -1179,11 +1183,19 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
             case 'preg_match':
             case 'preg_match_all':
                 return count($node->children['args']->children) >= 3;
+        }
+        return true;
+    }
+
+    private function shouldNotWarnForSpecialCase(string $fqsen_key, Node $node) : bool
+    {
+        switch ($fqsen_key) {
             case 'call_user_func':
             case 'call_user_func_array':
                 return $this->shouldNotWarnForDynamicCall($node->children['args']->children[0] ?? null);
+            default:
+                return self::doesSpecialCaseHaveSideEffects($fqsen_key, $node);
         }
-        return true;
     }
 
     /**

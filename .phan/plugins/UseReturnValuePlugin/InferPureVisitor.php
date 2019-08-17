@@ -376,12 +376,23 @@ class InferPureVisitor extends AnalysisVisitor
         $this->visitArgList($node->children['args']);
     }
 
+    /**
+     * @param Node $node the node of the call, with 'args'
+     */
     private function checkCalledFunctionLikeKey(Node $node, string $key) : void
     {
-        if ((UseReturnValuePlugin::HARDCODED_FQSENS[$key] ?? false) !== true) {
-            if ($key !== $this->function_fqsen_key) {
+        $value = (UseReturnValuePlugin::HARDCODED_FQSENS[$key] ?? false);
+        if ($value === true) {
+            return;
+        } elseif ($value === UseReturnValuePlugin::SPECIAL_CASE) {
+            if (UseReturnValueVisitor::doesSpecialCaseHaveSideEffects($key, $node)) {
+                // infer that var_export($x, true) is pure but not var_export($x)
                 throw new NodeException($node, $key);
             }
+            return;
+        }
+        if ($key !== $this->function_fqsen_key) {
+            throw new NodeException($node, $key);
         }
     }
 
