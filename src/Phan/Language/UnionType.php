@@ -962,15 +962,9 @@ class UnionType implements Serializable
         if (!$context->isInClassScope()) {
             return $this;
         }
-
-        $result = $this;
-        foreach ($this->type_set as $type) {
-            $new_type = $type->withStaticResolvedInContext($context);
-            if ($new_type !== $type) {
-                $result = $result->withoutType($type)->withType($new_type);
-            }
-        }
-        return $result;
+        return $this->asMappedUnionType(static function (Type $type) use ($context) : Type {
+            return $type->withStaticResolvedInContext($context);
+        });
     }
 
     /**
@@ -1026,22 +1020,12 @@ class UnionType implements Serializable
             return $this;
         }
 
-        $type_set = $this->type_set;
-        $is_nullable = false;
-        $result = $this;
-        foreach ($type_set as $type) {
+        return $this->asMappedUnionType(static function (Type $type) use ($context) : Type {
             if ($type instanceof SelfType) {
-                if ($type->isNullable()) {
-                    $is_nullable = true;
-                }
-                $result = $result->withoutType($type);
+                return $context->getClassFQSEN()->asType()->withIsNullable($type->isNullable());
             }
-        }
-        $resolved_type = $context->getClassFQSEN()->asType();
-        if ($is_nullable) {
-            return $result->withType($resolved_type->withIsNullable(true));
-        }
-        return $result->withType($resolved_type);
+            return $type;
+        });
     }
 
     /**
@@ -1058,21 +1042,12 @@ class UnionType implements Serializable
             return $this;
         }
 
-        $type_set = $this->type_set;
-        $is_nullable = false;
-        $result = $this;
-        foreach ($type_set as $type) {
-            if ($type instanceof SelfType) {
-                if ($type->isNullable()) {
-                    $is_nullable = true;
-                }
-            }
-        }
-        $resolved_type = $context->getClassFQSEN()->asType();
-        if ($is_nullable) {
-            return $result->withType($resolved_type->withIsNullable(true));
-        }
-        return $result->withType($resolved_type);
+        $is_nullable = $this->containsNullable();
+        $resolved_type = $context->getClassFQSEN()->asType()->withIsNullable($is_nullable);
+        return UnionType::of(
+            array_merge($this->type_set, [$resolved_type]),
+            $this->real_type_set
+        );
     }
 
     /**
@@ -1110,6 +1085,8 @@ class UnionType implements Serializable
      * @return bool
      * True iff this union contains the exact set of types
      * represented in the given union type.
+     *
+     * This does not check real types.
      */
     public function isEqualTo(UnionType $union_type) : bool
     {
@@ -1130,6 +1107,8 @@ class UnionType implements Serializable
      * @return bool
      * True iff this union contains a type that's also in
      * the other union type.
+     *
+     * This does not check real types.
      */
     public function hasCommonType(UnionType $union_type) : bool
     {
@@ -2571,27 +2550,10 @@ class UnionType implements Serializable
      */
     public function makeFromFilter(Closure $cb) : UnionType
     {
-        $new_type_list = [];
-        foreach ($this->type_set as $type) {
-            if ($cb($type)) {
-                $new_type_list[] = $type;
-            }
-        }
-        if (\count($new_type_list) === \count($this->type_set)) {
-            return $this;
-        }
-        // TODO: look into filtering real_type_set
-        return new UnionType($new_type_list, true, $this->real_type_set && $this->allTypesMatchRealTypeSet($cb) ? $this->real_type_set : []);
-    }
-
-    private function allTypesMatchRealTypeSet(Closure $cb) : bool
-    {
-        foreach ($this->real_type_set as $type) {
-            if (!$cb($type)) {
-                return false;
-            }
-        }
-        return true;
+        return UnionType::of(
+            \array_filter($this->type_set, $cb),
+            \array_filter($this->real_type_set, $cb)
+        );
     }
 
     /**
@@ -3416,11 +3378,15 @@ class UnionType implements Serializable
      */
     public function asMappedUnionType(Closure $closure) : UnionType
     {
-        $parts = \array_map($closure, $this->type_set);
-        if (\count($parts) <= 1) {
-            return \count($parts) === 1 ? \reset($parts)->asPHPDocUnionType() : self::$empty_instance;
+        $new_type_set = \array_map($closure, $this->type_set);
+        $new_real_type_set = \array_map($closure, $this->real_type_set);
+        if ($new_type_set === $this->type_set && $new_real_type_set === $this->real_type_set) {
+            return $this;
         }
-        return new UnionType($parts, false, []);
+        return UnionType::of(
+            $new_type_set,
+            $new_real_type_set
+        );
     }
 
     /**
@@ -3582,18 +3548,22 @@ class UnionType implements Serializable
      */
     public function replaceWithTemplateTypes(UnionType $template_union_type) : UnionType
     {
-        // TODO: Preserve nullable
-        $result = $this->eraseRealTypeSet();
         if ($template_union_type->isEmpty()) {
-            return $result;
+            return $this;
         }
-        foreach ($this->getTypeSet() as $type) {
+        $new_type_set = $this->type_set;
+        foreach ($this->type_set as $i => $type) {
             // TODO: Handle recursion
             if ($template_union_type->hasTypeWithFQSEN($type)) {
-                $result = $result->withoutType($type);
+                unset($new_type_set[$i]);
+                if ($type->isNullable()) {
+                    // Preserve nullable
+                    $template_union_type = $template_union_type->nullableClone();
+                }
             }
         }
-        return $result->withUnionType($template_union_type);
+        $new_type_set = array_merge($new_type_set, $template_union_type->getTypeSet());
+        return UnionType::of($new_type_set, $this->real_type_set);
     }
 
     /**
@@ -4249,16 +4219,12 @@ class UnionType implements Serializable
      */
     public function withoutArrayShapeField($field_key) : UnionType
     {
-        $types = $this->type_set;
-        foreach ($types as $i => $type) {
+        return $this->asMappedUnionType(static function (Type $type) use ($field_key) : Type {
             if ($type instanceof ArrayShapeType) {
-                $types[$i] = $type->withoutField($field_key);
+                return $type->withoutField($field_key);
             }
-        }
-        if ($types === $this->type_set) {
-            return $this;
-        }
-        return UnionType::of($types, []);
+            return $type;
+        });
     }
 
     /**
