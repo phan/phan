@@ -1,0 +1,4 @@
+src/145_fibonacci_use_return_value.php:10 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \fibonacci145
+src/145_fibonacci_use_return_value.php:27 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \X145::f
+src/145_fibonacci_use_return_value.php:28 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \X145::f
+src/145_fibonacci_use_return_value.php:29 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \X145::g
