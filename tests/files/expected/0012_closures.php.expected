@@ -1,4 +1,4 @@
-%s:13 PhanUndeclaredVariable Variable $c is undeclared
+%s:13 PhanUndeclaredVariable Variable $c is undeclared (Did you mean $b)
 %s:13 PhanUnusedClosureUseVariable Closure use variable $c is never used
 %s:15 PhanTypeInvalidRightOperandOfAdd Invalid operator: right operand of + is 'string' (expected array or number)
 %s:24 PhanUndeclaredThis Variable $this is undeclared

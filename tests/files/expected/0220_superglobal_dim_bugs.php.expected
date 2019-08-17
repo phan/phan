@@ -1,2 +1,2 @@
 %s:7 PhanUndeclaredGlobalVariable Global variable $b is undeclared
-%s:14 PhanUndeclaredVariable Variable $d is undeclared
+%s:14 PhanUndeclaredVariable Variable $d is undeclared (Did you mean $e)

@@ -10,8 +10,8 @@ function testSingleInt(int $x) {
     }
     return 5;
 }
-testSingle(1);
-testSingle(2);
+testSingleInt(1);
+testSingleInt(2);
 
 /**
  * @param 1|2 $x
