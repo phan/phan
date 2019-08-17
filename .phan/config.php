@@ -491,6 +491,9 @@ return [
         'PreferNamespaceUsePlugin',
         'EmptyStatementListPlugin',
 
+        // Report empty (not overridden or overriding) methods and functions
+        // 'EmptyMethodAndFunctionPlugin',
+
         // This should only be enabled if the code being analyzed contains Phan plugins.
         'PhanSelfCheckPlugin',
         // These are specific to Phan's coding style

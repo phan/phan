@@ -77,6 +77,11 @@ case "$TEST_SUITE" in
 		./test.sh
 		exit $?
 		;;
+	__FakeEmptyMethodsPluginTest)
+		cd tests/misc/empty_methods_plugin_test
+		./test.sh
+		exit $?
+		;;
 	__FakeFixerTest)
 		cd tests/fixer_test
 		./test.sh
