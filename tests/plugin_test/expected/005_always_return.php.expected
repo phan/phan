@@ -1,4 +1,10 @@
 src/005_always_return.php:3 PhanPluginAlwaysReturnFunction Function \test5 has a return type of ?string, but may fail to return a value
 src/005_always_return.php:23 PhanPluginAlwaysReturnFunction Function \soft_non_nullable_test5 has a return type of string, but may fail to return a value
+src/005_always_return.php:30 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \test5
+src/005_always_return.php:31 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \soft_nullable_test5
+src/005_always_return.php:32 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \soft_non_nullable_test5
 src/005_always_return.php:39 PhanPluginAlwaysReturnMethod Method \C5::test has a return type of ?string, but may fail to return a value
 src/005_always_return.php:59 PhanPluginAlwaysReturnMethod Method \C5::soft_non_nullable_test5 has a return type of string, but may fail to return a value
+src/005_always_return.php:66 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \C5::test
+src/005_always_return.php:68 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \C5::soft_nullable_test5
+src/005_always_return.php:69 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \C5::soft_non_nullable_test5

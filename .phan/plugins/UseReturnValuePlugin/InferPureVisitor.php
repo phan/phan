@@ -1,8 +1,11 @@
 <?php declare(strict_types=1);
 
-use Phan\AST\AnalysisVisitor;
-use Phan\Exception\NodeException;
 use ast\Node;
+use Phan\AST\AnalysisVisitor;
+use Phan\AST\UnionTypeVisitor;
+use Phan\CodeBase;
+use Phan\Exception\NodeException;
+use Phan\Language\Element\FunctionInterface;
 
 /**
  * Used to check if a method is pure.
@@ -17,6 +20,15 @@ use ast\Node;
  */
 class InferPureVisitor extends AnalysisVisitor
 {
+    /** @var string  */
+    private $function_fqsen_key;
+
+    public function __construct(CodeBase $code_base, FunctionInterface $func)
+    {
+        $this->function_fqsen_key = strtolower(ltrim($func->getFQSEN()->__toString(), '\\'));
+        $this->code_base = $code_base;
+        $this->context = $func->getContext();
+    }
     // visitAssignRef
     // visitThrow
     // visitEcho
@@ -288,20 +300,91 @@ class InferPureVisitor extends AnalysisVisitor
     /** @override */
     public function visitCall(Node $node) : void {
         $expr = $node->children['expr'];
-        if (!is_string($expr)) {
+        if (!$expr instanceof Node) {
             throw new NodeException($node);
         }
-        $key = strtolower($expr);
+        if ($expr->kind !== ast\AST_NAME) {
+            throw new NodeException($expr);
+        }
+        // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal AST_NAME always has strings
+        $key = strtolower($expr->children['name']);
         if (($key[0] ?? '') === '\\') {
-            $key = substr($key, 1);
+            $key = (string)substr($key, 1);
         }
-        if ((UseReturnValuePlugin::HARDCODED_FQSENS[$key] ?? false) !== true) {
-            throw new NodeException($node);
-        }
+        $this->checkCalledFunctionLikeKey($node, $key);
         $this->visitArgList($node->children['args']);
     }
 
-    // TODO: visitStaticCall
+    public function visitStaticCall(Node $node) : void {
+        $method = $node->children['method'];
+        if (!is_string($method)) {
+            throw new NodeException($node);
+        }
+        $class = $node->children['class'];
+        if (!($class instanceof Node)) {
+            throw new NodeException($node);
+        }
+        if ($class->kind !== ast\AST_NAME) {
+            throw new NodeException($class, 'not a name');
+        }
+        try {
+            $union_type = UnionTypeVisitor::unionTypeFromClassNode(
+                $this->code_base,
+                $this->context,
+                $class
+            );
+        } catch (Exception $_) {
+            throw new NodeException($class, 'could not get type');
+        }
+        if ($union_type->typeCount() !== 1) {
+            throw new NodeException($class);
+        }
+        $type = $union_type->getTypeSet()[0];
+        if (!$type->isObjectWithKnownFQSEN()) {
+            throw new NodeException($class);
+        }
+        $called_fqsen = $type->asFQSEN();
+        $key = strtolower(ltrim($called_fqsen->__toString(), '\\')) . '::' . strtolower($method);
+
+        $this->checkCalledFunctionLikeKey($node, $key);
+        $this->visitArgList($node->children['args']);
+    }
+
+    public function visitMethodCall(Node $node) : void {
+        if (!$this->context->isInClassScope()) {
+            // We don't track variables in UseReturnValuePlugin
+            throw new NodeException($node, 'method call seen outside class scope');
+        }
+
+        $method = $node->children['method'];
+        if (!is_string($method)) {
+            throw new NodeException($node);
+        }
+        $expr = $node->children['expr'];
+        if (!($expr instanceof Node)) {
+            throw new NodeException($node);
+        }
+        if ($expr->kind !== ast\AST_VAR) {
+            throw new NodeException($expr, 'not a var');
+        }
+        if ($expr->children['name'] !== 'this') {
+            throw new NodeException($expr, 'not $this');
+        }
+        $key = strtolower(ltrim((string)$this->context->getClassFQSENOrNull(), '\\')) . '::' . strtolower($method);
+        $this->checkCalledFunctionLikeKey($node, $key);
+
+        $this->visitArgList($node->children['args']);
+    }
+
+    private function checkCalledFunctionLikeKey(Node $node, string $key) : void
+    {
+        if ((UseReturnValuePlugin::HARDCODED_FQSENS[$key] ?? false) !== true) {
+            if ($key !== $this->function_fqsen_key) {
+                throw new NodeException($node, $key);
+            }
+        }
+    }
+
     public function visitArgList(Node $node) : void {
         foreach ($node->children as $x) {
             if ($x instanceof Node) {

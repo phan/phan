@@ -149,10 +149,10 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
             return;
         }
         try {
-            (new InferPureVisitor($code_base, $context))($node);
+            (new InferPureVisitor($code_base, $method))($node);
         } catch (NodeException $_) {
-            // echo "Skipping due to {$method->getFQSEN()} {$context->getFile()}:{$e->getNode()->lineno}\n";
-            // \Phan\Debug::printNode($e->getNode());
+            // echo "Skipping due to {$method->getFQSEN()} {$context->getFile()}:{$_->getNode()->lineno}: {$_->getFile()}:{$_->getLine()}: {$_->getMessage()}\n";
+            // \Phan\Debug::printNode($_->getNode());
             return;
         }
         if ($method->getUnionType()->isNull()) {
@@ -440,12 +440,12 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
         'floatval' => true,
         'floor' => true,
         'fmod' => true,
-        'fopen' => true,
-        'fread' => true,
-        'fsockopen' => true,
+        'fopen' => self::MUST_USE_WITH_SIDE_EFFECTS,
+        'fread' => self::MUST_USE_WITH_SIDE_EFFECTS,
+        'fsockopen' => self::MUST_USE_WITH_SIDE_EFFECTS,
         'fstat' => true,
         'ftell' => true,
-        'ftp_chdir' => true,
+        'ftp_chdir' => self::MUST_USE_WITH_SIDE_EFFECTS,
         'func_get_args' => true,
         'func_get_arg' => true,
         'func_num_args' => true,
@@ -476,7 +476,7 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
         'get_resource_type' => true,
         'gettext' => true,
         'gettype' => true,
-        'glob' => true,
+        'glob' => self::MUST_USE_WITH_SIDE_EFFECTS,
         'gmdate' => true,
         'gmmktime' => true,
         'gzcompress' => true,
@@ -484,11 +484,11 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
         'gzdeflate' => true,
         'gzencode' => true,
         'gzinflate' => true,
-        'gzopen' => true,
+        'gzopen' => self::MUST_USE_WITH_SIDE_EFFECTS,
         'gzuncompress' => true,
         'hash_algos' => true,
         'hash_equals' => true,
-        'hash_file' => true,
+        'hash_file' => self::MUST_USE_WITH_SIDE_EFFECTS,
         'hash_final' => true,
         'hash_hmac' => true,
         'hash_init' => true,
@@ -506,7 +506,7 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
         'hypot' => true,
         'iconv_strlen' => true,
         'iconv' => true,
-        'imagecreatetruecolor' => true,
+        'imagecreatetruecolor' => self::MUST_USE_WITH_SIDE_EFFECTS,
         'imagetypes' => true,
         'implode' => true,
         'in_array' => true,
@@ -701,7 +701,7 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
         'preg_replace_callback_array' => true,
         'preg_replace' => true,
         'preg_split' => true,
-        'proc_open' => true,
+        'proc_open' => self::MUST_USE_WITH_SIDE_EFFECTS,
         'property_exists' => true,
         'quoted_printable_decode' => true,
         'quoted_printable_encode' => true,
@@ -741,7 +741,7 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
         'reflectionclass::issubclassof' => true,
         'reflectionclass::istrait' => true,
         'reflectionclass::isuserdefined' => true,
-        'reflectionclass::newinstanceargs' => true,
+        'reflectionclass::newinstanceargs' => self::MUST_USE_WITH_SIDE_EFFECTS,
         'reflectionclass::newinstance' => true,
         'reflectionexception::getmessage' => true,
         'reflectionfunction::getclosurescopeclass' => true,
@@ -791,7 +791,7 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
         'rtrim' => true,
         'runtimeexception::getcode' => true,
         'runtimeexception::getmessage' => true,
-        'scandir' => true,
+        'scandir' => self::MUST_USE_WITH_SIDE_EFFECTS,
         'seekableiterator::current' => true,
         'seekableiterator::key' => true,
         'seekableiterator::valid' => true,
@@ -840,12 +840,12 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
         'strcoll' => true,
         'strcspn' => true,
         'stream_context_create' => true,
-        'stream_get_contents' => true,
+        'stream_get_contents' => self::MUST_USE_WITH_SIDE_EFFECTS,
         'stream_get_meta_data' => true,
         'stream_isatty' => true,
         'stream_is_local' => true,
         'stream_resolve_include_path' => true,
-        'stream_socket_client' => true,
+        'stream_socket_client' => self::MUST_USE_WITH_SIDE_EFFECTS,
         'strftime' => true,
         'stripcslashes' => true,
         'stripos' => true,
@@ -902,7 +902,7 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
         'unexpectedvalueexception::getmessage' => true,
         'uniqid' => true,
         'unpack' => true,
-        'unserialize' => true,
+        'unserialize' => self::MUST_USE_WITH_SIDE_EFFECTS,
         'urldecode' => true,
         'urlencode' => true,
         'utf8_decode' => true,
@@ -943,6 +943,7 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
     ];
 
     const SPECIAL_CASE = 'specialcase';
+    const MUST_USE_WITH_SIDE_EFFECTS = 'sideeffects';
 }
 
 /**
@@ -1215,7 +1216,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
             if (!$result) {
                 return;
             }
-            if ($result !== true) {
+            if ($result === UseReturnValuePlugin::SPECIAL_CASE) {
                 if ($this->shouldNotWarnForSpecialCase($fqsen_key, $node)) {
                     return;
                 }
