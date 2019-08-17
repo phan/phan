@@ -13,17 +13,24 @@ New features(Analysis):
 + Infer that `new $expr()` has a real type of object in all cases, not just common ones.
 + Improve real type inferred for `+(expr)`/`-(expr)`/`~(expr)` and warn about redundant conditions.
   This does not attempt to account for custom behavior for objects provided by PECL extensions.
-+ Show argument names and types in issue messages for functions/methods for PhanParamTooFew and PhanParamTooMany.
-+ Show more accurate columns for PhanSyntaxError for unexpected tokens in more cases.
++ Show argument names and types in issue messages for functions/methods for `PhanParamTooFew` and `PhanParamTooMany`.
++ Show more accurate columns for `PhanSyntaxError` for unexpected tokens in more cases.
 + Ignore scalar and null type casting config settings when checking for redundant or impossible conditions. (#3105)
 + Infer that `empty($x)` implies that the value of $x is null, an empty scalar, or the empty array.
 + Avoid false positives with `if (empty($x['first']['second']))` - Do not infer any types for the offset 'first' if there weren't any already. (#3112)
 + Avoid some bad inferences when using the value of expressions of the form `A || B`.
 + Improve redundant condition detection for empty/falsey/truthy checks, `self`, and functions building arrays.
 + Include strings that are suffixes of variable names, classes, methods, properties, etc. in issue suggestions for undeclared elements. (#2342)
++ Emit `PhanTypeNonVarReturnByRef` when an invalid expression is returned by a function declared to return a reference.
 
 Plugins:
 + Fix false positive in InvalidVariableIssetPlugin for expressions such as `isset(self::$prop['field'])` (#3089)
++ In `UseReturnValuePlugin`, support inferring whether closures, functions, and methods are pure
+  when `'plugin_config' => ['infer_pure_methods' => true]` is enabled.
+  (they're expected to not have side effects and should have their results used)
+
+  Note that functions such as `fopen()` are not pure due to side effects.
+  UseReturnValuePlugin also warns about those because their results should be used.
 
 Bug fixes:
 + Don't scan over folders that would be excluded by `'exclude_file_regex'` while parsing. (#3088)

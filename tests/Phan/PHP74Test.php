@@ -16,6 +16,8 @@ final class PHP74Test extends AbstractPhanFileTest
         'unused_variable_detection' => true,  // for use with tests of arrow functions
         'redundant_condition_detection' => true,  // for use with typed properties
         'target_php_version' => '7.4',
+        'plugins' => ['UseReturnValuePlugin'],
+        'plugin_config' => ['infer_pure_methods' => true],
     ];
 
     public static function setUpBeforeClass() : void

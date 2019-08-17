@@ -865,7 +865,7 @@ final class ArgumentType
      *
      * @return bool - True if this node is a call to a function that may return a reference?
      */
-    private static function isExpressionReturningReference(CodeBase $code_base, Context $context, $node) : bool
+    public static function isExpressionReturningReference(CodeBase $code_base, Context $context, $node) : bool
     {
         if (!($node instanceof Node)) {
             return false;

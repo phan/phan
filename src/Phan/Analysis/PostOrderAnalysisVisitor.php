@@ -1281,6 +1281,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // Get the method/function/closure we're in
         $method = $context->getFunctionLikeInScope($code_base);
 
+        if ($method->returnsRef()) {
+            $this->analyzeReturnsReference($method, $node);
+        }
         if ($method->hasYield()) {  // Function that is syntactically a Generator.
             $this->analyzeReturnInGenerator($method, $node);
             // TODO: Compare against TReturn of Generator<TKey,TValue,TSend,TReturn>
@@ -1341,6 +1344,27 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         return $context;
+    }
+
+    /**
+     * @param Node $node a node of kind ast\AST_RETURN
+     */
+    private function analyzeReturnsReference(FunctionInterface $method, Node $node) : void
+    {
+        $expr = $node->children['expr'];
+        if ((!$expr instanceof Node) || !\in_array($expr->kind, ArgumentType::REFERENCE_NODE_KINDS, true)) {
+            $is_possible_reference = ArgumentType::isExpressionReturningReference($this->code_base, $this->context, $expr);
+
+            if (!$is_possible_reference) {
+                Issue::maybeEmit(
+                    $this->code_base,
+                    $this->context,
+                    Issue::TypeNonVarReturnByRef,
+                    $expr->lineno ?? $node->lineno,
+                    $method->getRepresentationForIssue()
+                );
+            }
+        }
     }
 
     /**
