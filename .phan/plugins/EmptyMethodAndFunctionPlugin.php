@@ -22,7 +22,8 @@ final class EmptyMethodAndFunctionPlugin extends PluginV3 implements PostAnalyze
 /**
  * Visit method/function/closure
  */
-final class EmptyMethodAndFunctionVisitor extends PluginAwarePostAnalysisVisitor {
+final class EmptyMethodAndFunctionVisitor extends PluginAwarePostAnalysisVisitor
+{
 
     public function visitMethod(Node $node) : void
     {
@@ -59,11 +60,9 @@ final class EmptyMethodAndFunctionVisitor extends PluginAwarePostAnalysisVisitor
         $stmts_node = $node->children['stmts'] ?? null;
 
         if ($stmts_node && !$stmts_node->children) {
-
             $function = $this->context->getFunctionLikeInScope($this->code_base);
 
-            if ( ! $function->isDeprecated())
-            {
+            if (! $function->isDeprecated()) {
                 if (!$function->isClosure()) {
                     $this->emitIssue(
                         Issue::EmptyFunction,

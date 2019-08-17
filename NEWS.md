@@ -20,6 +20,7 @@ New features(Analysis):
 + Avoid false positives with `if (empty($x['first']['second']))` - Do not infer any types for the offset 'first' if there weren't any already. (#3112)
 + Avoid some bad inferences when using the value of expressions of the form `A || B`.
 + Improve redundant condition detection for empty/falsey/truthy checks.
++ Include strings that are suffixes of variable names, classes, methods, properties, etc. in issue suggestions for undeclared elements. (#2342)
 
 Plugins:
 + Fix false positive in InvalidVariableIssetPlugin for expressions such as `isset(self::$prop['field'])` (#3089)

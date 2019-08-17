@@ -1,2 +1,2 @@
 %s:9 PhanImpossibleCondition Impossible attempt to cast false of type false to truthy
-%s:12 PhanUndeclaredVariable Variable $c is undeclared
+%s:12 PhanUndeclaredVariable Variable $c is undeclared (Did you mean $s)

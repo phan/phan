@@ -31,11 +31,11 @@ use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Library\Map;
 use Phan\Library\Set;
+use Phan\Library\StringSuggester;
 use Phan\Plugin\ConfigPluginSet;
 use ReflectionClass;
 
 use function count;
-use function strlen;
 use function strtolower;
 
 use const STDERR;
@@ -1592,16 +1592,16 @@ class CodeBase
     private $function_names_in_namespace = null;
 
     /**
-     * @var array<string,array<int,array<string,string>>>|null
-     * Maps lowercase class name to (requested approximate length to (lowercase class => class))
+     * @var array<string,StringSuggester>
+     * Maps namespace to an object suggesting class names in that namespace
      */
-    private $class_names_near_strlen_in_namespace = null;
+    private $class_names_suggester_in_namespace = [];
 
     /**
-     * @var array<string,array<int,array<string,string>>>|null
-     * Maps lowercase function name to (requested approximate length to (lowercase function => function))
+     * @var array<string,StringSuggester>
+     * Maps namespace to an object suggesting function names in that namespace
      */
-    private $function_names_near_strlen_in_namespace = null;
+    private $function_names_suggester_in_namespace = [];
 
     private function invalidateDependentCacheEntries() : void
     {
@@ -1610,8 +1610,8 @@ class CodeBase
         $this->namespaces_for_function_names = null;
         $this->class_names_in_namespace = null;
         $this->function_names_in_namespace = null;
-        $this->class_names_near_strlen_in_namespace = null;
-        $this->function_names_near_strlen_in_namespace = null;
+        $this->class_names_suggester_in_namespace = [];
+        $this->function_names_suggester_in_namespace = [];
         $this->constant_lookup_map_for_name = null;
     }
 
@@ -1741,63 +1741,26 @@ class CodeBase
 
     /**
      * This limits the suggested class names from getClassNamesOfNamespace for $namespace_lower to
-     * the names which are similar enough in length to be a potential suggestion
-     * @return array<string,string>
+     * the names which are similar enough in length to be a potential suggestion,
+     * or those which have the requested name as a prefix
      */
-    private function getSimilarLengthClassNamesForNamespace(string $namespace, int $strlen) : array
+    private function getClassNameSuggesterForNamespace(string $namespace) : StringSuggester
     {
         $namespace = strtolower($namespace);
-        $class_names = $this->getClassNamesOfNamespace($namespace);
-        if (count($class_names) === 0) {
-            return [];
-        }
-        return $this->class_names_near_strlen_in_namespace[$namespace][$strlen]
-            ?? ($this->class_names_near_strlen_in_namespace[$namespace][$strlen] = self::computeSimilarLengthClassNamesForNamespace($class_names, $strlen));
+        return $this->class_names_suggester_in_namespace[$namespace]
+            ?? ($this->class_names_suggester_in_namespace[$namespace] = new StringSuggester($this->getClassNamesOfNamespace($namespace)));
     }
 
     /**
-     * This limits the suggested function names from getFunctionNamesOfNamespace for $namespace_lower to
-     * the names which are similar enough in length to be a potential suggestion
-     * @return array<string,string>
+     * This limits the suggested class names from getFunctionNamesOfNamespace for $namespace_lower to
+     * the names which are similar enough in length to be a potential suggestion,
+     * or those which have the requested name as a prefix
      */
-    private function getSimilarLengthFunctionNamesForNamespace(string $namespace, int $strlen) : array
+    private function getFunctionNameSuggesterForNamespace(string $namespace) : StringSuggester
     {
         $namespace = strtolower($namespace);
-        $function_names = $this->getFunctionNamesOfNamespace($namespace);
-        if (count($function_names) === 0) {
-            return [];
-        }
-        return $this->function_names_near_strlen_in_namespace[$namespace][$strlen]
-            ?? ($this->function_names_near_strlen_in_namespace[$namespace][$strlen] = self::computeSimilarLengthFunctionNamesForNamespace($function_names, $strlen));
-    }
-
-    /**
-     * For use with IssueFixSuggester::getSuggestionsForStringSet
-     * @param array<string,string> $class_names
-     * @return array<string,string> similar matches
-     */
-    private static function computeSimilarLengthClassNamesForNamespace(array $class_names, int $strlen) : array
-    {
-        $max_levenshtein_distance = (int)(1 + $strlen / 6);
-        $results = [];
-
-        foreach ($class_names as $name_lower => $name) {
-            if (\abs(strlen($name) - $strlen) <= $max_levenshtein_distance) {
-                $results[$name_lower] = $name;
-            }
-        }
-        return $results;
-    }
-
-    /**
-     * For use with IssueFixSuggester::getSuggestionsForStringSet
-     * @param array<string,string> $function_names
-     * @return array<string,string> similar matches
-     */
-    private function computeSimilarLengthFunctionNamesForNamespace(array $function_names, int $strlen) : array
-    {
-        // Currently behaves the same way
-        return $this->computeSimilarLengthClassNamesForNamespace($function_names, $strlen);
+        return $this->function_names_suggester_in_namespace[$namespace]
+            ?? ($this->function_names_suggester_in_namespace[$namespace] = new StringSuggester($this->getFunctionNamesOfNamespace($namespace)));
     }
 
     /**
@@ -1979,37 +1942,15 @@ class CodeBase
         string $name,
         Context $unused_context
     ) : array {
-        $function_name_lower = strtolower($name);
-
-        $function_names_in_namespace = $this->getSimilarLengthFunctionNamesForNamespace($namespace, strlen($function_name_lower));
-
-        if (count($function_names_in_namespace) > Config::getValue('suggestion_check_limit')) {
-            return [];
-        }
-
-        $suggestion_set = $function_names_in_namespace;
-        unset($suggestion_set[$function_name_lower]);
-        if (count($suggestion_set) === 0) {
-            return [];
-        }
-
-        // We're looking for similar names, not identical names
-        $suggested_function_names = \array_keys(
-            IssueFixSuggester::getSuggestionsForStringSet($function_name_lower, $suggestion_set)
-        );
-
-        if (\count($suggested_function_names) === 0) {
-            return [];
-        }
-        \usort($suggested_function_names, 'strcmp');
+        $suggester = $this->getFunctionNameSuggesterForNamespace($namespace);
+        $suggested_function_names = $suggester->getSuggestions($name);
 
         /**
          * @suppress PhanThrowTypeAbsentForCall
          */
-        return \array_map(static function (string $function_name_lower) use ($namespace, $function_names_in_namespace) : FullyQualifiedFunctionName {
-            $function_name = $function_names_in_namespace[$function_name_lower];
+        return \array_values(\array_map(static function (string $function_name) use ($namespace) : FullyQualifiedFunctionName {
             return FullyQualifiedFunctionName::make($namespace, $function_name);
-        }, $suggested_function_names);
+        }, $suggested_function_names));
     }
 
     /**
@@ -2026,9 +1967,11 @@ class CodeBase
         int $class_suggest_type = IssueFixSuggester::CLASS_SUGGEST_ONLY_CLASSES
     ) : array {
         $namespace = $missing_class->getNamespace();
-        $class_name_lower = strtolower($missing_class->getName());
+        $class_name = $missing_class->getName();
+        $class_name_lower = strtolower($class_name);
 
-        $class_names_in_namespace = $this->getSimilarLengthClassNamesForNamespace($namespace, strlen($class_name_lower));
+        $suggester = $this->getClassNameSuggesterForNamespace($namespace);
+        $class_names_in_namespace = $suggester->getSuggestions($class_name);
 
         if (count($class_names_in_namespace) > Config::getValue('suggestion_check_limit')) {
             return [];

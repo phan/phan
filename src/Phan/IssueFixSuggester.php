@@ -583,15 +583,13 @@ class IssueFixSuggester
     private static function getVariableNamesInScopeWithSimilarName(Context $context, string $variable_name) : array
     {
         $suggestions = [];
-        if (strlen($variable_name) > 1) {
-            $variable_candidates = $context->getScope()->getVariableMap();
-            if (count($variable_candidates) <= Config::getValue('suggestion_check_limit')) {
-                $variable_candidates = \array_merge($variable_candidates, Variable::_BUILTIN_SUPERGLOBAL_TYPES);
-                $variable_suggestions = self::getSuggestionsForStringSet($variable_name, $variable_candidates);
+        $variable_candidates = $context->getScope()->getVariableMap();
+        if (count($variable_candidates) <= Config::getValue('suggestion_check_limit')) {
+            $variable_candidates = \array_merge($variable_candidates, Variable::_BUILTIN_SUPERGLOBAL_TYPES);
+            $variable_suggestions = self::getSuggestionsForStringSet($variable_name, $variable_candidates);
 
-                foreach ($variable_suggestions as $suggested_variable_name => $_) {
-                    $suggestions[] = '$' . $suggested_variable_name;
-                }
+            foreach ($variable_suggestions as $suggested_variable_name => $_) {
+                $suggestions[] = '$' . $suggested_variable_name;
             }
         }
         return $suggestions;
@@ -615,11 +613,18 @@ class IssueFixSuggester
 
         foreach ($potential_candidates as $name => $_) {
             $name = (string)$name;
-
-            if (\abs(strlen($name) - $target_length) > $max_levenshtein_distance) {
+            if (\strncmp($name, $target, $target_length) === 0) {
+                // If this has $target as a case-sensitive prefix, then treat it as a fairly good match
+                // (included with single-character edits)
+                $distance = $target_length !== strlen($name) ? 1 : 0;
+            } elseif ($target_length >= 1) {
+                if (\abs(strlen($name) - $target_length) > $max_levenshtein_distance) {
+                    continue;
+                }
+                $distance = \levenshtein(strtolower($name), $search_name);
+            } else {
                 continue;
             }
-            $distance = \levenshtein(strtolower($name), $search_name);
             if ($distance <= $min_found_distance) {
                 if ($distance < $min_found_distance) {
                     $min_found_distance = $distance;
