@@ -1012,7 +1012,7 @@ class ContextNode
                             $context->getFile(),
                             $node->lineno,
                             [ "$function_fqsen()" ],
-                            IssueFixSuggester::suggestSimilarGlobalFunction($this->code_base, $context, $function_fqsen)
+                            IssueFixSuggester::suggestSimilarGlobalFunction($this->code_base, $context, $function_fqsen, false)
                         )
                     );
                 }
