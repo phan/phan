@@ -88,7 +88,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                 return $key_type->withType($null_type)->withRealTypeSet($int_or_string_or_null->getRealTypeSet());
             }
             $real_key_type = GenericArrayType::unionTypeForKeyType($key_type_enum);
-            return $key_type->withRealTypeSet(array_merge($real_key_type->getTypeSet(), [$null_type]));
+            return $key_type->withRealTypeSet(\array_merge($real_key_type->getTypeSet(), [$null_type]));
         };
         /**
          * @param array<int,Node|int|float|string> $args

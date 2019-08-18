@@ -32,12 +32,15 @@ Plugins:
   (they're expected to not have side effects and should have their results used)
 
   This is a best-effort heuristic.
-  This is done only for the functions and methods that are not excluded from analysis.
+  This is done only for the functions and methods that are not excluded from analysis,
+  and it isn't done for methods that override or are overridden by other methods.
 
   Note that functions such as `fopen()` are not pure due to side effects.
   UseReturnValuePlugin also warns about those because their results should be used.
 
   Automatic inference of function purity is done recursively.
++ Add `EmptyMethodAndFunctionPlugin` to warn about functions/methods/closures with empty statement lists. (#3110)
+  This does not warn about functions or methods that are deprecated, overrides, or overridden.
 + Fix false positive in InvalidVariableIssetPlugin for expressions such as `isset(self::$prop['field'])` (#3089)
 
 Maintenance:

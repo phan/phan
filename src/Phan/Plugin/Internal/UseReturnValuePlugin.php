@@ -37,6 +37,7 @@ use Phan\PluginV3\PostAnalyzeNodeCapability;
  *   For dynamic checks, use this value instead of the default of 98 (should be between 0.01 and 100)
  *
  * - ['plugin_config']['infer_pure_methods'] to automatically infer which methods are pure.
+ *   This is a best effort attempt, and it is not done for methods that override or are overridden by other methods.
  */
 class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability, FinalizeProcessCapability, BeforeAnalyzePhaseCapability
 {

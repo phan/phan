@@ -704,6 +704,40 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0
 
 Issues in this category are emitted when you have reasonable code but it isn't doing anything. They're all low severity.
 
+## PhanEmptyClosure
+
+These `PhanEmpty*` issues warn about empty statement lists of functions, and are emitted by `EmptyMethodAndFunctionPlugin`.
+
+Note that this is not emitted for empty statement lists in functions or methods that are overrides, are overridden, or are deprecated.
+
+```
+Empty closure
+```
+
+## PhanEmptyFunction
+
+```
+Empty function {FUNCTION}
+```
+
+## PhanEmptyPrivateMethod
+
+```
+Empty private method {METHOD}
+```
+
+## PhanEmptyProtectedMethod
+
+```
+Empty protected method {METHOD}
+```
+
+## PhanEmptyPublicMethod
+
+```
+Empty public method {METHOD}
+```
+
 ## PhanNoopArray
 
 Emitted when you have an array that is not used in any way.
@@ -3128,6 +3162,14 @@ This issue is emitted from the following code
 class F { static function f(&$v) {} } F::f('string');
 ```
 
+## PhanTypeNonVarReturnByRef
+
+```
+Only variables can be returned by reference in {FUNCTIONLIKE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php74_files/expected/017_arrow_func_use_retval.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php74_files/src/017_arrow_func_use_retval.php#L13).
+
 ## PhanTypeObjectUnsetDeclaredProperty
 
 ```
@@ -3151,6 +3193,14 @@ Saw type {TYPE} which is possibly not a callable
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/expected/062_strict_function_checking.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/src/062_strict_function_checking.php#L33).
+
+## PhanTypePossiblyInvalidCloneNotObject
+
+```
+Expected an object to be passed to clone() but got possible non-object {TYPE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/144_bad_clone.php.expected#L6) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/144_bad_clone.php#L14).
 
 ## PhanTypeSuspiciousEcho
 
