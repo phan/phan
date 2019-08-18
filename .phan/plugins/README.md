@@ -158,8 +158,19 @@ This plugin warns when code fails to use the return value of internal functions/
 
 - **PhanPluginUseReturnValueInternalKnown**: `Expected to use the return value of the internal function/method {FUNCTION}`,
 
+`'plugin_config' => ['infer_pure_method' => true]` will make this plugin automatically infer which methods are pure, recursively.
+  This is a best-effort heuristic.
+  This is done only for the functions and methods that are not excluded from analysis,
+  and it isn't done for methods that override or are overridden by other methods.
+
+  Note that functions such as `fopen()` are not pure due to side effects.
+  UseReturnValuePlugin also warns about those because their results should be used.
+
+  Automatic inference of function purity is done recursively.
+
 This plugin also has a dynamic mode(disabled by default and slow) where it will warn if a function or method's return value is unused.
 This checks if the function/method's return value is used 98% or more of the time, then warns about the remaining places where the return value was unused.
+Note that this prevents the hardcoded checks from working.
 
 - **PhanPluginUseReturnValue**: `Expected to use the return value of the user-defined function/method {FUNCTION} - {SCALAR}%% of calls use it in the rest of the codebase`,
 - **PhanPluginUseReturnValueInternal**: `Expected to use the return value of the internal function/method {FUNCTION} - {SCALAR}%% of calls use it in the rest of the codebase`,
@@ -405,6 +416,17 @@ This plugin warns about non-strict comparisons. It warns about the following iss
 - **PhanPluginComparisonNotStrictInCall**: `Expected {FUNCTION} to be called with a third argument for {PARAMETER} (either true or false)`
 - **PhanPluginComparisonObjectEqualityNotStrict**: `Saw a weak equality check on possible object types {TYPE} and {TYPE} in {CODE}`
 - **PhanPluginComparisonObjectOrdering**: `Saw a weak equality check on possible object types {TYPE} and {TYPE} in {CODE}`
+
+##### EmptyMethodAndFunctionPlugin.php
+
+This plugin looks for empty methods/functions.
+Note that this is not emitted for empty statement lists in functions or methods that are overrides, are overridden, or are deprecated.
+
+- **PhanEmptyClosure**: `Empty closure`
+- **PhanEmptyFunction**: `Empty function {FUNCTION}`
+- **PhanEmptyPrivateMethod**: `Empty private method {METHOD}`
+- **PhanEmptyProtectedMethod**: `Empty protected method {METHOD}`
+- **PhanEmptyPublicMethod**: `Empty public method {METHOD}`
 
 ### 4. Demo plugins:
 

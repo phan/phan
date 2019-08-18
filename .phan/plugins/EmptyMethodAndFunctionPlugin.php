@@ -10,6 +10,12 @@ use Phan\PluginV3\PostAnalyzeNodeCapability;
 
 /**
  * Plugin which looks for empty methods/functions
+ *
+ * This Plugin hooks into one event;
+ *
+ * - getPostAnalyzeNodeVisitorClassName
+ *   This method returns a class that is called on every AST node from every
+ *   file being analyzed
  */
 final class EmptyMethodAndFunctionPlugin extends PluginV3 implements PostAnalyzeNodeCapability
 {
@@ -55,6 +61,10 @@ final class EmptyMethodAndFunctionVisitor extends PluginAwarePostAnalysisVisitor
         $this->analyzeFunction($node);
     }
 
+    // No need for visitArrowFunc.
+    // By design, `fn($args) => expr` can't have an empty statement list because it must have an expression.
+    // It's always equivalent to `return expr;`
+
     private function analyzeFunction(Node $node): void
     {
         $stmts_node = $node->children['stmts'] ?? null;
@@ -97,4 +107,6 @@ final class EmptyMethodAndFunctionVisitor extends PluginAwarePostAnalysisVisitor
     }
 }
 
+// Every plugin needs to return an instance of itself at the
+// end of the file in which it's defined.
 return new EmptyMethodAndFunctionPlugin();
