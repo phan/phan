@@ -28,6 +28,7 @@ use Phan\Language\Type\FloatType;
 use Phan\Language\Type\GenericArrayInterface;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\IterableType;
 use Phan\Language\Type\LiteralFloatType;
 use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\LiteralStringType;
@@ -282,7 +283,7 @@ class UnionType implements Serializable
             $unique_types = self::getUniqueTypes(self::normalizeMultiTypes($types));
             if (\count($unique_types) === 1) {
                 // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
-                $union_type = \reset($unique_types)->asPHPDocUnionType();
+                $union_type = \reset($unique_types)->asRealUnionType();
             } else {
                 // TODO: Support template types within <> and test?
                 $union_type = new UnionType(
@@ -1738,6 +1739,56 @@ class UnionType implements Serializable
         return $this->hasTypeMatchingCallback(static function (Type $type) : bool {
             return $type->isIterable();
         });
+    }
+
+    /**
+     * Returns this union type after asserting is_iterable($x).
+     *
+     * @return UnionType
+     * A UnionType with known iterable types kept, other types filtered out.
+     *
+     * @see nonGenericArrayTypes
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public function iterableTypesStrictCast(CodeBase $code_base) : UnionType
+    {
+        return UnionType::of(
+            self::castToIterableTypesStrict($code_base, $this->type_set, false),
+            self::castToIterableTypesStrict($code_base, $this->real_type_set, false)
+        );
+    }
+
+    /**
+     * Similar to iterableTypesStrictCast, but also
+     * casts callable-object and object to Traversable.
+     * TODO: Could check if classes are final.
+     */
+    public function iterableTypesStrictCastAssumeTraversable(CodeBase $code_base) : UnionType
+    {
+        return UnionType::of(
+            self::castToIterableTypesStrict($code_base, $this->type_set, true),
+            self::castToIterableTypesStrict($code_base, $this->real_type_set, true)
+        );
+    }
+
+    /**
+     * Casts the type list to non-null iterables and sub-types of iterable.
+     * Preserve classes implementing Traversable.
+     * @param Type[] $type_list
+     * @return array<int,Type>
+     */
+    private static function castToIterableTypesStrict(CodeBase $code_base, array $type_list, bool $object_to_traversable) : array
+    {
+        $result = [];
+        foreach ($type_list as $type) {
+            $new_type = $type->asIterable($code_base);
+            if ($new_type) {
+                $result[] = $new_type;
+            } elseif ($object_to_traversable && $type->isPossiblyObject()) {
+                $result[] = Type::traversableInstance();
+            }
+        }
+        return $result ?: [IterableType::instance(false)];
     }
 
     /**

@@ -17,11 +17,6 @@ class ArrayType extends IterableType
     /** @phan-override */
     const NAME = 'array';
 
-    public function isAlwaysTruthy() : bool
-    {
-        return false;
-    }
-
     public function asNonTruthyType() : Type
     {
         // if (!$x) implies that $x is `[]` when $x is an array
@@ -31,16 +26,6 @@ class ArrayType extends IterableType
     public function isPossiblyObject() : bool
     {
         return false;  // Overrides IterableType returning true
-    }
-
-    public function isPossiblyTruthy() : bool
-    {
-        return true;
-    }
-
-    public function isPossiblyFalsey() : bool
-    {
-        return true;
     }
 
     public function isArrayLike() : bool

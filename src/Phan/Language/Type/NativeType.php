@@ -366,6 +366,11 @@ abstract class NativeType extends Type
     {
         return null;
     }
+
+    public function asIterable(CodeBase $_) : ?Type
+    {
+        return null;
+    }
 }
 \class_exists(ArrayType::class);
 \class_exists(ScalarType::class);

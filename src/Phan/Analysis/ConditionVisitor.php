@@ -656,30 +656,6 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
      */
     private static function initTypeModifyingClosuresForVisitCall() : array
     {
-        $make_basic_assertion_callback = static function (string $union_type_string) : Closure {
-            $asserted_union_type = UnionType::fromFullyQualifiedRealString(
-                $union_type_string
-            );
-            $asserted_union_type_set = $asserted_union_type->getTypeSet();
-            $empty_type = UnionType::empty();
-
-            /**
-             * @param array<int,Node|string|int|float> $args
-             */
-            return static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $args) use ($asserted_union_type, $asserted_union_type_set, $empty_type) : void {
-                $new_types = $empty_type;
-                foreach ($variable->getUnionType()->getTypeSet() as $type) {
-                    $type = $type->withIsNullable(false);
-                    if ($type->canCastToAnyTypeInSet($asserted_union_type_set)) {
-                        $new_types = $new_types->withType($type);
-                    }
-                }
-
-                // Otherwise, overwrite the type for any simple
-                // primitive types.
-                $variable->setUnionType($new_types->isEmpty() ? $asserted_union_type : $new_types);
-            };
-        };
         $make_direct_assertion_callback = static function (string $union_type_string) : Closure {
             $asserted_union_type = UnionType::fromFullyQualifiedRealString(
                 $union_type_string
@@ -700,7 +676,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         $array_callback = static function (CodeBase $code_base, Context $context, Variable $variable, array $args) : void {
             // Change the type to match the is_array relationship
             // If we already have generic array types, then keep those
-            // (E.g. T[]|false becomes T[], ?array|null becomes array, callable becomes callable_array)
+            // (E.g. T[]|false becomes T[], ?array|null becomes array, callable becomes callable-array)
             $variable->setUnionType($variable->getUnionType()->arrayTypesStrictCast());
         };
 
@@ -771,6 +747,17 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                 $variable->setUnionType($new_type);
             };
         };
+
+        /**
+         * @param array<int,Node|mixed> $args
+         * @phan-closure-scope UnionType
+         */
+        $iterable_callback = function (CodeBase $code_base, Context $context, Variable $variable, array $args) : void {
+            // Change the type to match the is_iterable relationship
+            // If we already have generic array types or Traversable, then keep those
+            // (E.g. T[]|false becomes T[], ?array|null becomes array, callable becomes iterable, object becomes \Traversable)
+            $variable->setUnionType($variable->getUnionType()->withStaticResolvedInContext($context)->iterableTypesStrictCast($code_base));
+        };
         /** @return void */
         $callable_callback = $make_callback('callableTypes', CallableType::instance(false)->asRealUnionType());
         $bool_callback = $make_callback('boolTypes', BoolType::instance(false)->asRealUnionType());
@@ -793,7 +780,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             'is_float' => $float_callback,
             'is_int' => $int_callback,
             'is_integer' => $int_callback,
-            'is_iterable' => $make_basic_assertion_callback('iterable'),  // TODO: Could keep basic array types and classes extending iterable
+            'is_iterable' => $iterable_callback,  // TODO: Could keep basic array types and classes extending iterable
             'is_long' => $int_callback,
             'is_null' => $null_callback,
             'is_numeric' => $numeric_callback,

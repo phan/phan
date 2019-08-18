@@ -2,6 +2,7 @@
 
 namespace Phan\Language\Type;
 
+use Phan\CodeBase;
 use Phan\Language\Type;
 
 /**
@@ -16,6 +17,11 @@ class IterableType extends NativeType
     public function isIterable() : bool
     {
         return true;
+    }
+
+    public function asIterable(CodeBase $_) : ?Type
+    {
+        return $this->withIsNullable(false);
     }
 
     public function isPrintableScalar() : bool
@@ -42,6 +48,27 @@ class IterableType extends NativeType
     {
         return ArrayType::instance(false);
     }
+
+    public function isAlwaysTruthy() : bool
+    {
+        return false;
+    }
+
+    public function isPossiblyTruthy() : bool
+    {
+        return true;
+    }
+
+    public function isPossiblyFalsey() : bool
+    {
+        return true;
+    }
+
+    public function isAlwaysFalsey() : bool
+    {
+        return false;
+    }
+
 }
 // Trigger autoloader for subclass before make() can get called.
 \class_exists(GenericIterableType::class);

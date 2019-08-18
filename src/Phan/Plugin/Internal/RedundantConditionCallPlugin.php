@@ -107,6 +107,24 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
                 }
             };
         };
+        /**
+         * @param Closure(UnionType, CodeBase):int $checker returns _IS_IMPOSSIBLE/_IS_REDUNDANT/_IS_REASONABLE_CONDITION
+         * @param string $expected_type
+         * @return Closure(CodeBase, Context, FunctionInterface, array<int,mixed>, ?Node):void
+         */
+        $make_codebase_aware_first_arg_checker = static function (Closure $checker, string $expected_type) use ($make_first_arg_checker) : Closure {
+            /**
+             * @param array<int,Node|int|float|string> $args
+             */
+            return static function (CodeBase $code_base, Context $context, FunctionInterface $function, array $args, ?Node $node) use ($checker, $expected_type, $make_first_arg_checker) : void {
+                $single_checker = static function (UnionType $type) use ($checker, $code_base) : int {
+                    return $checker($type, $code_base);
+                };
+                $arg_checker = $make_first_arg_checker($single_checker, $expected_type);
+                $arg_checker($code_base, $context, $function, $args, $node);
+            };
+        };
+
         $make_simple_first_arg_checker = static function (string $extract_types_method, string $expected_type) use ($make_first_arg_checker) : Closure {
             $method = new ReflectionMethod(UnionType::class, $extract_types_method);
             return $make_first_arg_checker(static function (UnionType $type) use ($method) : int {
@@ -224,6 +242,16 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
         $int_callback = $make_simple_first_arg_checker('intTypes', 'int');
         $bool_callback = $make_simple_first_arg_checker('getTypesInBoolFamily', 'bool');
         $float_callback = $make_simple_first_arg_checker('floatTypes', 'float');
+        $iterable_callback = $make_codebase_aware_first_arg_checker(static function (UnionType $union_type, CodeBase $code_base) : int {
+            $new_real_type = $union_type->iterableTypesStrictCastAssumeTraversable($code_base);
+            if ($new_real_type->isEmpty()) {
+                return self::_IS_IMPOSSIBLE;
+            }
+            if ($new_real_type->isEqualTo($union_type)) {
+                return self::_IS_REDUNDANT;
+            }
+            return self::_IS_REASONABLE_CONDITION;
+        }, 'iterable');
         $object_callback = $make_simple_first_arg_checker('objectTypesStrictAllowEmpty', 'object');
         $array_callback = $make_simple_first_arg_checker('arrayTypesStrictCastAllowEmpty', 'array');
         $string_callback = $make_simple_first_arg_checker('stringTypes', 'string');
@@ -239,7 +267,7 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
             'is_float' => $float_callback,
             'is_int' => $int_callback,
             'is_integer' => $int_callback,
-            // 'is_iterable' => $make_basic_assertion_callback('iterable'),  // TODO: Could keep basic array types and classes extending iterable
+            'is_iterable' => $iterable_callback,  // TODO: Could keep basic array types and classes extending iterable
             'is_long' => $int_callback,
             'is_null' => $null_callback,
             'is_numeric' => $numeric_callback,
