@@ -1,0 +1,5 @@
+%s:4 PhanUnusedVariable Unused definition of variable $initial
+%s:6 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \closure_fcbe0e9f1162
+%s:9 PhanTypeNonVarPassByRef Only variables can be passed by reference at argument 1 of Closure(int &$v)
+%s:13 PhanTypeNonVarReturnByRef Only variables can be returned by reference in Closure&(int &$v)
+%s:17 PhanTypeNonVarReturnByRef Only variables can be returned by reference in Closure&(int &$v)

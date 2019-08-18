@@ -93,9 +93,11 @@ if (!class_exists(UseReturnValuePlugin::class, false)) {
                 return;
             }
             // $start = microtime(true);
+            // Mark methods as pure.
             foreach ($code_base->getMethodSet() as $method) {
                 self::checkIsReadOnlyMethod($code_base, $method);
             }
+            // Mark functions and closures pure.
             foreach ($code_base->getFunctionMap() as $func) {
                 self::checkIsReadOnlyFunction($code_base, $func);
             }
@@ -127,6 +129,12 @@ if (!class_exists(UseReturnValuePlugin::class, false)) {
         {
             if ($func->isPHPInternal()) {
                 return;
+            }
+            foreach ($func->getNode()->children['uses']->children ?? [] as $use) {
+                if ($use->flags & ast\flags\CLOSURE_USE_REF) {
+                    // Assume that closures that have use by reference will have side effects.
+                    return;
+                }
             }
             self::checkIsReadOnlyFunctionCommon($code_base, $func);
         }
@@ -174,7 +182,7 @@ if (!class_exists(UseReturnValuePlugin::class, false)) {
                     $context,
                     self::UseReturnValueNoopVoid,
                     'The internal function/method {FUNCTION} is declared to return {TYPE} and it has no side effects',
-                    [$method->getFQSEN(), $method->getUnionType()]
+                    [$method->getRepresentationForIssue(), $method->getUnionType()]
                 );
                 return;
             }
@@ -1034,12 +1042,12 @@ if (!class_exists(UseReturnValuePlugin::class, false)) {
                 ))->getFunctionFromNode();
 
                 foreach ($function_list_generator as $function) {
-                    if ($function instanceof Func && $function->isClosure()) {
-                        continue;
-                    }
                     $fqsen = $function->getFQSEN()->__toString();
                     if (!UseReturnValuePlugin::$use_dynamic) {
                         $this->quickWarn($function, $fqsen, $node);
+                        continue;
+                    }
+                    if ($function instanceof Func && $function->isClosure()) {
                         continue;
                     }
                     $counter = UseReturnValuePlugin::$stats[$fqsen] ?? null;

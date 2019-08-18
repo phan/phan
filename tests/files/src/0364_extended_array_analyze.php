@@ -47,5 +47,6 @@ function p364(stdClass $x) : void {
 
 /** @return &float[] */
 function &get_array_by_ref364() {
-    return [42.1, 36.5];
+    return [42.1, 36.5];  // Causes "Notice: Only variable references should be returned by reference"
 }
+var_export(get_array_by_ref364());

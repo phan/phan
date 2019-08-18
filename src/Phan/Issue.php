@@ -170,6 +170,7 @@ class Issue
     const TypeMismatchDeclaredParamNullable = 'PhanTypeMismatchDeclaredParamNullable';
     const TypeMissingReturn         = 'PhanTypeMissingReturn';
     const TypeNonVarPassByRef       = 'PhanTypeNonVarPassByRef';
+    const TypeNonVarReturnByRef       = 'PhanTypeNonVarReturnByRef';
     const TypeParentConstructorCalled = 'PhanTypeParentConstructorCalled';
     const TypeSuspiciousEcho        = 'PhanTypeSuspiciousEcho';
     const TypeSuspiciousStringExpression = 'PhanTypeSuspiciousStringExpression';
@@ -1716,6 +1717,14 @@ class Issue
                 "Only variables can be passed by reference at argument {INDEX} of {FUNCTIONLIKE}",
                 self::REMEDIATION_B,
                 10018
+            ),
+            new Issue(
+                self::TypeNonVarReturnByRef,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Only variables can be returned by reference in {FUNCTIONLIKE}",
+                self::REMEDIATION_B,
+                10144
             ),
             new Issue(
                 self::NonClassMethodCall,

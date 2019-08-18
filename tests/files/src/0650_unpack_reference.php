@@ -12,7 +12,7 @@ function returns_array_value() : array {
     return [1, 2];
 }
 function &returns_array_reference() : array {
-    return [1, 2];
+    $x = [[1, 2]]; return $x[0];  // should not warn.
 }
 $elements = [1, 2];
 expects_reference(...$elements);
