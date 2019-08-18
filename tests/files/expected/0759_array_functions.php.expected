@@ -1,0 +1,4 @@
+%s:13 PhanImpossibleCondition Impossible attempt to cast key($keys) of type int|null to string
+%s:17 PhanUnusedVariable Unused definition of variable $key_t
+%s:19 PhanImpossibleCondition Impossible attempt to cast key($values) of type int|null to string
+%s:22 PhanImpossibleTypeComparison Impossible attempt to check if key($a) of type int|null|string is identical to false of type false

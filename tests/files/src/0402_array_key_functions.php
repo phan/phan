@@ -20,6 +20,6 @@ function test402(array $a, array $b, int $num, string $str) {
  * @param array<string, string> $b
  */
 function test402Key(array $a, array $b) {
-    echo strlen(key($a));  // should warn, key is int|false
-    echo intdiv(key($b), 2);  // should warn, key is int|false
+    echo strlen(key($a));  // should warn, key is int|null
+    echo intdiv(key($b), 2);  // should warn, key is string|null
 }

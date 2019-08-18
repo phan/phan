@@ -19,7 +19,7 @@ New features(Analysis):
 + Infer that `empty($x)` implies that the value of $x is null, an empty scalar, or the empty array.
 + Avoid false positives with `if (empty($x['first']['second']))` - Do not infer any types for the offset 'first' if there weren't any already. (#3112)
 + Avoid some bad inferences when using the value of expressions of the form `A || B`.
-+ Improve redundant condition detection for empty/falsey/truthy checks, `self`, and functions building arrays.
++ Improve redundant condition detection for empty/falsey/truthy checks, `self`, and internal functions building or processing arrays.
 + Include strings that are suffixes of variable names, classes, methods, properties, etc. in issue suggestions for undeclared elements. (#2342)
 + Emit `PhanTypeNonVarReturnByRef` when an invalid expression is returned by a function declared to return a reference.
 
