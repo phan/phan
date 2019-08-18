@@ -22,6 +22,9 @@ New features(Analysis):
 + Improve redundant condition detection for empty/falsey/truthy checks, `self`, and internal functions building or processing arrays.
 + Include strings that are suffixes of variable names, classes, methods, properties, etc. in issue suggestions for undeclared elements. (#2342)
 + Emit `PhanTypeNonVarReturnByRef` when an invalid expression is returned by a function declared to return a reference.
++ Support manually annotating that functions/methods/closures are pure with `/** @phan-pure */`.
+  This is automatically inherited by overriding methods.
+  Also see `UseReturnValuePlugin` and `'plugin_config' => ['infer_pure_methods' => true]`.
 
 Plugins:
 + In `UseReturnValuePlugin`, support inferring whether closures, functions, and methods are pure
@@ -36,6 +39,10 @@ Plugins:
 
   Automatic inference of function purity is done recursively.
 + Fix false positive in InvalidVariableIssetPlugin for expressions such as `isset(self::$prop['field'])` (#3089)
+
+Maintenance:
++ Add example vim syntax highlighting snippet for Phan's custom phpdoc annotations to `plugins/vim/syntax/phan.vim`
+  This makes it easier to tell if annotations were correctly typed.
 
 Bug fixes:
 + Don't scan over folders that would be excluded by `'exclude_file_regex'` while parsing. (#3088)

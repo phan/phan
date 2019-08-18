@@ -243,9 +243,14 @@ class Func extends AddressableElement implements FunctionInterface
         // function is deprecated
         $func->setIsDeprecated($comment->isDeprecated());
 
-        // Set whether or not the element is internal to
+        // Set whether or not the function is internal to
         // the namespace.
         $func->setIsNSInternal($comment->isNSInternal());
+
+        // Set whether this function is pure.
+        if ($comment->isPure()) {
+            $func->setIsPure();
+        }
 
         $func->setSuppressIssueSet(
             $comment->getSuppressIssueSet()

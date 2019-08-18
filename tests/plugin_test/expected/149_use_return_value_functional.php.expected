@@ -1,1 +1,1 @@
-src/149_use_return_value_functional.php:12 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \odds149
+src/149_use_return_value_functional.php:12 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \odds149()

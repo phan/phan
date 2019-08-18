@@ -426,6 +426,10 @@ class ParameterTypesAnalyzer
         if ($o_method->isPrivate()) {
             return;
         }
+        // Inherit (at)phan-pure annotations by default.
+        if ($o_method->isPure()) {
+            $method->setIsPure();
+        }
 
         // Get the class that the overridden method lives on
         $o_class = $o_method->getClass($code_base);
