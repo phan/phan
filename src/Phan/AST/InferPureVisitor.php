@@ -363,12 +363,53 @@ class InferPureVisitor extends AnalysisVisitor
         if (!$var instanceof Node) {
             throw new NodeException($node);
         }
-        if ($var->kind !== ast\AST_VAR) {
-            throw new NodeException($var);
-        }
-        $this->visitVar($var);
+        $this->checkVarKindOfAssign($var);
+        $this->__invoke($var);
         if ($expr instanceof Node) {
             $this->__invoke($expr);
+        }
+    }
+
+    private function checkVarKindOfAssign(Node $var) : void
+    {
+        if ($var->kind === ast\AST_VAR) {
+            return;
+        } elseif ($var->kind === ast\AST_PROP) {
+            // Functions that assign to properties aren't pure,
+            // unless assigning to $this->prop in a constructor.
+            if (\preg_match('/::__construct$/i', $this->function_fqsen_label)) {
+                $name = $var->children['expr'];
+                if ($name instanceof Node && $name->kind === ast\AST_VAR && $name->children['name'] === 'this') {
+                    return;
+                }
+            }
+        }
+        throw new NodeException($var);
+    }
+
+    public function visitNew(Node $node) : void
+    {
+        $name_node = $node->children['class'];
+        if (!($name_node instanceof Node && $name_node->kind === ast\AST_NAME)) {
+            throw new NodeException($node);
+        }
+        try {
+            $class_list = (new ContextNode($this->code_base, $this->context, $name_node))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME);
+        } catch (Exception $_) {
+            throw new NodeException($name_node);
+        }
+        if (!$class_list) {
+            throw new NodeException($name_node, 'no class found');
+        }
+        foreach ($class_list as $class) {
+            if ($class->isPHPInternal()) {
+                // TODO build a list of internal classes where result of new() is often unused.
+                continue;
+            }
+            if (!$class->hasMethodWithName($this->code_base, '__construct')) {
+                throw new NodeException($name_node, 'no __construct found');
+            }
+            $this->checkCalledFunction($node, $class->getMethodByName($this->code_base, '__construct'));
         }
     }
 

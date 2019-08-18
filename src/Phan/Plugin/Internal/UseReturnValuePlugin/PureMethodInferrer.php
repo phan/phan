@@ -101,36 +101,26 @@ class PureMethodInferrer
             return;
         }
         if ($method->getUnionType()->isNull()) {
-            if ($method instanceof Func) {
-                if ($method->isClosure()) {
-                    // no-op closures are usually normal
-                    return;
-                }
-            }
-            if ($method instanceof Method && $method->isMagic()) {
-                // Don't warn about __construct
-                return;
-            }
-            if ($visitor->getUnresolvedStatusDependencies()) {
-                $graph->recordPotentialPureFunction($visitor->getLabel(), $method, $visitor->getUnresolvedStatusDependencies());
-                return;
-            }
-            self::warnNoopVoid($code_base, $method);
-            if ($visitor->getUnresolvedStatusDependencies()) {
-                $graph->recordPotentialPureFunction($visitor->getLabel(), $method, $visitor->getUnresolvedStatusDependencies());
-            }
+            $graph->recordPotentialPureFunction($visitor->getLabel(), $method, $visitor->getUnresolvedStatusDependencies());
             return;
         }
-        // echo "Adding {$visitor->getLabel()} to graph\n";
         $graph->recordPotentialPureFunction($visitor->getLabel(), $method, $visitor->getUnresolvedStatusDependencies());
     }
 
     /**
-     * Emit PhanUseReturnValueNoopVoid
+     * Emit PhanUseReturnValueNoopVoid for regular function/methods
      * @internal
      */
     public static function warnNoopVoid(CodeBase $code_base, FunctionInterface $method) : void
     {
+        if ($method instanceof Method) {
+            if ($method->isMagic()) {
+                return;
+            }
+        } elseif ($method instanceof Func && $method->isClosure()) {
+            // no-op closures are usually normal
+            return;
+        }
         // Don't warn about the **caller** of void methods that do nothing.
         // Instead, warn about the implementation of void methods.
         self::emitPluginIssue(

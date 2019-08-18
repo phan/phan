@@ -293,6 +293,9 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
             );
             return;
         }
+        if ($method->getUnionType()->isNull() || !$method->hasReturn()) {
+            return;
+        }
         $this->emitPluginIssue(
             $this->code_base,
             clone($this->context)->withLineNumberStart($node->lineno),

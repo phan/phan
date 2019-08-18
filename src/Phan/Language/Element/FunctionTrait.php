@@ -1757,9 +1757,7 @@ trait FunctionTrait
      */
     public function setIsPure() : void
     {
-        $this->setPhanFlags(
-            $this->getPhanFlags() | Flags::IS_READ_ONLY
-        );
+        $this->setPhanFlags($this->getPhanFlags() | Flags::IS_READ_ONLY);
     }
 
     /**

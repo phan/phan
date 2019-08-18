@@ -65,7 +65,6 @@ class PureMethodGraph
     {
         if ($function->getUnionType()->isNull()) {
             PureMethodInferrer::warnNoopVoid($this->code_base, $function);
-            return;
         }
         $function->setIsPure();
     }
