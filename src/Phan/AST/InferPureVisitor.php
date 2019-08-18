@@ -6,14 +6,15 @@ use ast;
 use ast\Node;
 use Exception;
 use Phan\CodeBase;
+use Phan\Exception\CodeBaseException;
 use Phan\Exception\NodeException;
 use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
-use UseReturnValuePlugin;
-use UseReturnValueVisitor;
-
-// TODO: Refactor
-require_once \dirname(__DIR__, 3) . '/.phan/plugins/UseReturnValuePlugin.php';
+use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use Phan\Plugin\Internal\UseReturnValuePlugin;
+use Phan\Plugin\Internal\UseReturnValuePlugin\PureMethodGraph;
+use Phan\Plugin\Internal\UseReturnValuePlugin\UseReturnValueVisitor;
 
 /**
  * Used to check if a method is pure.
@@ -29,26 +30,60 @@ require_once \dirname(__DIR__, 3) . '/.phan/plugins/UseReturnValuePlugin.php';
 class InferPureVisitor extends AnalysisVisitor
 {
     /** @var string  */
-    protected $function_fqsen_key;
+    protected $function_fqsen_label;
 
-    public function __construct(CodeBase $code_base, Context $context, string $function_fqsen_key)
+    /**
+     * Map from labels to functions which this had called, but were not certain to have been pure.
+     *
+     * @var array<string, FunctionInterface>
+     */
+    protected $unresolved_status_dependencies = [];
+
+    /** @var ?PureMethodGraph */
+    protected $pure_method_graph;
+
+    public function __construct(CodeBase $code_base, Context $context, string $function_fqsen_label, ?PureMethodGraph $graph = null)
     {
         $this->code_base = $code_base;
         $this->context = $context;
-        $this->function_fqsen_key = $function_fqsen_key;
+        $this->function_fqsen_label = $function_fqsen_label;
+        $this->pure_method_graph = $graph;
     }
 
     /**
      * Generate a visitor from a function or method.
      * This will be used for checking if the method is pure.
      */
-    public static function fromFunction(CodeBase $code_base, FunctionInterface $func) : InferPureVisitor
+    public static function fromFunction(CodeBase $code_base, FunctionInterface $func, ?PureMethodGraph $graph) : InferPureVisitor
     {
         return new self(
             $code_base,
             $func->getContext(),
-            \strtolower(\ltrim($func->getFQSEN()->__toString(), '\\'))
+            self::getLabelForFunction($func),
+            $graph
         );
+    }
+
+    /**
+     * Returns the label UseReturnValuePlugin will use to look up whether this functions/methods is pure.
+     */
+    public function getLabel() : string
+    {
+        return $this->function_fqsen_label;
+    }
+
+    /** @return array<string, FunctionInterface> */
+    public function getUnresolvedStatusDependencies() : array
+    {
+        return $this->unresolved_status_dependencies;
+    }
+
+    /**
+     * Returns the label UseReturnValuePlugin will use to look up whether functions/methods are pure.
+     */
+    public static function getLabelForFunction(FunctionInterface $func) : string
+    {
+        return \strtolower(\ltrim($func->getFQSEN()->__toString(), '\\'));
     }
 
     // visitAssignRef
@@ -373,14 +408,28 @@ class InferPureVisitor extends AnalysisVisitor
             throw new NodeException($node);
         }
         if ($expr->kind !== ast\AST_NAME) {
+            // XXX this is deliberately a limited subset of what full analysis would do,
+            // so this can't infer locally set closures, etc.
             throw new NodeException($expr);
         }
-        // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal AST_NAME always has strings
-        $key = \strtolower($expr->children['name']);
-        if (($key[0] ?? '') === '\\') {
-            $key = (string)\substr($key, 1);
+        $found_function = false;
+        try {
+            $function_list_generator = (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $expr
+            ))->getFunctionFromNode();
+
+            foreach ($function_list_generator as $function) {
+                $this->checkCalledFunction($node, $function);
+                $found_function = true;
+            }
+        } catch (CodeBaseException $_) {
+            // ignore it.
         }
-        $this->checkCalledFunctionLikeKey($node, $key);
+        if (!$found_function) {
+            throw new NodeException($expr, 'not a function');
+        }
         $this->visitArgList($node->children['args']);
     }
 
@@ -413,10 +462,23 @@ class InferPureVisitor extends AnalysisVisitor
         if (!$type->isObjectWithKnownFQSEN()) {
             throw new NodeException($class);
         }
-        $called_fqsen = $type->asFQSEN();
-        $key = \strtolower(\ltrim($called_fqsen->__toString(), '\\')) . '::' . \strtolower($method);
+        $class_fqsen = $type->asFQSEN();
+        if (!($class_fqsen instanceof FullyQualifiedClassName)) {
+            throw new NodeException($class);
+        }
+        if (!$this->code_base->hasClassWithFQSEN($class_fqsen)) {
+            throw new NodeException($class);
+        }
+        try {
+            $class = $this->code_base->getClassByFQSEN($class_fqsen);
+        } catch (Exception $_) {
+            throw new NodeException($node);
+        }
+        if (!$class->hasMethodWithName($this->code_base, $method)) {
+            throw new NodeException($node, 'no method');
+        }
 
-        $this->checkCalledFunctionLikeKey($node, $key);
+        $this->checkCalledFunction($node, $class->getMethodByName($this->code_base, $method));
         $this->visitArgList($node->children['args']);
     }
 
@@ -427,8 +489,8 @@ class InferPureVisitor extends AnalysisVisitor
             throw new NodeException($node, 'method call seen outside class scope');
         }
 
-        $method = $node->children['method'];
-        if (!\is_string($method)) {
+        $method_name = $node->children['method'];
+        if (!\is_string($method_name)) {
             throw new NodeException($node);
         }
         $expr = $node->children['expr'];
@@ -441,8 +503,11 @@ class InferPureVisitor extends AnalysisVisitor
         if ($expr->children['name'] !== 'this') {
             throw new NodeException($expr, 'not $this');
         }
-        $key = \strtolower(\ltrim((string)$this->context->getClassFQSENOrNull(), '\\')) . '::' . \strtolower($method);
-        $this->checkCalledFunctionLikeKey($node, $key);
+        $class = $this->context->getClassInScope($this->code_base);
+        if (!$class->hasMethodWithName($this->code_base, $method_name)) {
+            throw new NodeException($expr, 'does not have method');
+        }
+        $this->checkCalledFunction($node, $class->getMethodByName($this->code_base, $method_name));
 
         $this->visitArgList($node->children['args']);
     }
@@ -450,21 +515,52 @@ class InferPureVisitor extends AnalysisVisitor
     /**
      * @param Node $node the node of the call, with 'args'
      */
-    private function checkCalledFunctionLikeKey(Node $node, string $key) : void
+    private function checkCalledFunction(Node $node, FunctionInterface $method) : void
     {
-        $value = (UseReturnValuePlugin::HARDCODED_FQSENS[$key] ?? false);
+        if ($method->isPure()) {
+            return;
+        }
+        $label = self::getLabelForFunction($method);
+
+        $value = (UseReturnValuePlugin::HARDCODED_FQSENS[$label] ?? false);
         if ($value === true) {
             return;
         } elseif ($value === UseReturnValuePlugin::SPECIAL_CASE) {
-            if (UseReturnValueVisitor::doesSpecialCaseHaveSideEffects($key, $node)) {
+            if (UseReturnValueVisitor::doesSpecialCaseHaveSideEffects($label, $node)) {
                 // infer that var_export($x, true) is pure but not var_export($x)
-                throw new NodeException($node, $key);
+                throw new NodeException($node, $label);
             }
             return;
         }
-        if ($key !== $this->function_fqsen_key) {
-            throw new NodeException($node, $key);
+        if ($method->isPHPInternal()) {
+            // Something such as printf that isn't pure. Or something that isn't in the HARDCODED_FQSENS.
+            throw new NodeException($node, 'internal method is not pure');
         }
+        if ($label === $this->function_fqsen_label) {
+            return;
+        }
+        if ($this->pure_method_graph) {
+            $this->unresolved_status_dependencies[$label] = $method;
+            return;
+        }
+        throw new NodeException($node, $label);
+    }
+
+    public function visitClosure(Node $node) : void
+    {
+        $closure_fqsen = FullyQualifiedFunctionName::fromClosureInContext(
+            $this->context->withLineNumberStart($node->lineno),
+            $node
+        );
+        if (!$this->code_base->hasFunctionWithFQSEN($closure_fqsen)) {
+            throw new NodeException($node, "Failed lookup of closure_fqsen");
+        }
+        $this->checkCalledFunction($node, $this->code_base->getFunctionByFQSEN($closure_fqsen));
+    }
+
+    public function visitArrowFunc(Node $node) : void
+    {
+        $this->visitClosure($node);
     }
 
     public function visitArgList(Node $node) : void

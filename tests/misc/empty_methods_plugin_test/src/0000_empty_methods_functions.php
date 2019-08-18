@@ -1,7 +1,7 @@
 <?php
 
 class ClassWithEmptyMethods756 {
-    public function one() {} // no warning, overriden
+    public function one() {} // no warning, overridden
 
     public function two() {}
 

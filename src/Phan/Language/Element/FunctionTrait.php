@@ -1753,6 +1753,7 @@ trait FunctionTrait
 
     /**
      * Mark this function or method as read-only
+     * @suppress PhanUnreferencedPublicMethod Phan has known issues with traits combined with interfaces
      */
     public function setIsPure() : void
     {

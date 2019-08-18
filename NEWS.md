@@ -24,13 +24,18 @@ New features(Analysis):
 + Emit `PhanTypeNonVarReturnByRef` when an invalid expression is returned by a function declared to return a reference.
 
 Plugins:
-+ Fix false positive in InvalidVariableIssetPlugin for expressions such as `isset(self::$prop['field'])` (#3089)
 + In `UseReturnValuePlugin`, support inferring whether closures, functions, and methods are pure
   when `'plugin_config' => ['infer_pure_methods' => true]` is enabled.
   (they're expected to not have side effects and should have their results used)
 
+  This is a best-effort heuristic.
+  This is done only for the functions and methods that are not excluded from analysis.
+
   Note that functions such as `fopen()` are not pure due to side effects.
   UseReturnValuePlugin also warns about those because their results should be used.
+
+  Automatic inference of function purity is done recursively.
++ Fix false positive in InvalidVariableIssetPlugin for expressions such as `isset(self::$prop['field'])` (#3089)
 
 Bug fixes:
 + Don't scan over folders that would be excluded by `'exclude_file_regex'` while parsing. (#3088)
