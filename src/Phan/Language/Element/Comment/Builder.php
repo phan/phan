@@ -668,6 +668,7 @@ final class Builder
                 $this->parsePhanProperty($i, $line);
                 return;
             case 'phan-pure':
+                $this->checkCompatible('@phan-pure', Comment::FUNCTION_LIKE, $i);
                 $this->phan_overrides['pure'] = true;
                 return;
             case 'phan-method':

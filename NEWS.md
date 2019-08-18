@@ -40,6 +40,10 @@ Plugins:
   Automatic inference of function purity is done recursively.
 + Fix false positive in InvalidVariableIssetPlugin for expressions such as `isset(self::$prop['field'])` (#3089)
 
+Maintenance:
++ Add example vim syntax highlighting snippet for Phan's custom phpdoc annotations to `plugins/vim/syntax/phan.vim`
+  This makes it easier to tell if annotations were correctly typed.
+
 Bug fixes:
 + Don't scan over folders that would be excluded by `'exclude_file_regex'` while parsing. (#3088)
   That adds additional time and may cause unnecessary permissions errors.

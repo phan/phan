@@ -33,3 +33,9 @@ $t->mul2(4);  // should not warn
 $t = new Tripler();
 $t->mul1(3);  // should warn about being unused
 $t->mul2(4);  // should not warn
+
+/**
+ * @phan-pure haven't decided what checks that would imply and haven't implemented anything for non-functions, so this warns.
+ */
+class PureNotSupported {}
+var_export(new PureNotSupported());
