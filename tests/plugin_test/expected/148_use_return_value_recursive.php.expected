@@ -1,0 +1,3 @@
+src/148_use_return_value_recursive.php:14 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \f148
+src/148_use_return_value_recursive.php:15 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \g148
+src/148_use_return_value_recursive.php:16 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \square148

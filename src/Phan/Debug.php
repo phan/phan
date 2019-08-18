@@ -8,6 +8,10 @@ use ast\Node;
 use LogicException;
 use Phan\Analysis\BlockExitStatusChecker;
 use Phan\AST\Parser;
+use Phan\AST\TolerantASTConverter\Shim;
+
+// Provides AST_ARROW_FUNC and other new node kinds that aren't in php-ast 1.0.1
+Shim::load();
 
 /**
  * Debug utilities

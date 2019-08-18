@@ -241,7 +241,11 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             Context $context,
             Func $function,
             array $args
-        ) use ($nullable_array_type_set, $probably_real_array, $real_nullable_array) : UnionType {
+        ) use (
+            $nullable_array_type_set,
+            $probably_real_array,
+            $real_nullable_array
+) : UnionType {
             if (\count($args) < 2) {
                 return $real_nullable_array;
             }

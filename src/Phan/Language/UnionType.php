@@ -1045,7 +1045,7 @@ class UnionType implements Serializable
         $is_nullable = $this->containsNullable();
         $resolved_type = $context->getClassFQSEN()->asType()->withIsNullable($is_nullable);
         return UnionType::of(
-            array_merge($this->type_set, [$resolved_type]),
+            \array_merge($this->type_set, [$resolved_type]),
             $this->real_type_set
         );
     }
@@ -3562,7 +3562,7 @@ class UnionType implements Serializable
                 }
             }
         }
-        $new_type_set = array_merge($new_type_set, $template_union_type->getTypeSet());
+        $new_type_set = \array_merge($new_type_set, $template_union_type->getTypeSet());
         return UnionType::of($new_type_set, $this->real_type_set);
     }
 
