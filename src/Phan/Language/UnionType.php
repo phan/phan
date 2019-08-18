@@ -110,6 +110,7 @@ class UnionType implements Serializable
      * @param bool $is_unique - Whether or not this is already unique. Only set to true within UnionType code.
      * @param array<int,Type> $real_type_set
      * @see UnionType::of() for a more memory efficient equivalent.
+     * @phan-pure
      */
     public function __construct(array $type_list, bool $is_unique = false, array $real_type_set = [])
     {
@@ -120,6 +121,7 @@ class UnionType implements Serializable
     /**
      * @param Type[] $type_list
      * @param array<int,Type> $real_type_set
+     * @phan-pure
      */
     public static function of(array $type_list, array $real_type_set = []) : UnionType
     {
@@ -173,6 +175,7 @@ class UnionType implements Serializable
 
     /**
      * @deprecated use self::fromFullyQualifiedPHPDocString() instead.
+     * @phan-pure
      */
     public static function fromFullyQualifiedString(
         string $fully_qualified_string
@@ -187,6 +190,7 @@ class UnionType implements Serializable
      * @throws InvalidArgumentException if any type name in the union type was invalid
      *
      * @see self::fromFullyQualifiedRealString() if you are absolutely sure this is the real type of the expression.
+     * @phan-pure
      */
     public static function fromFullyQualifiedPHPDocString(
         string $fully_qualified_string
@@ -228,6 +232,7 @@ class UnionType implements Serializable
      * Use this if they are both non-empty but different.
      * The caller should pass in phpdoc types that are subtypes of the real types
      * (e.g. phpdoc='int|float' real='int')
+     * @phan-pure
      */
     public static function fromFullyQualifiedPHPDocAndRealString(
         string $fully_qualified_phpdoc_string,
@@ -254,6 +259,7 @@ class UnionType implements Serializable
      * A '|' delimited string representing a type in the form
      * 'int|string|null|ClassName'.
      * @throws InvalidArgumentException if any type name in the union type was invalid
+     * @phan-pure
      */
     public static function fromFullyQualifiedRealString(
         string $fully_qualified_string
@@ -294,6 +300,7 @@ class UnionType implements Serializable
     /**
      * @param array<int,Type> $type_list
      * @return array<int,Type>
+     * @phan-pure
      */
     public static function getUniqueTypes(array $type_list) : array
     {
@@ -321,6 +328,7 @@ class UnionType implements Serializable
      * May be provided to resolve 'parent' in the context
      * (e.g. if parsing complex phpdoc).
      * Unnecessary in most use cases.
+     * @phan-pure
      */
     public static function fromStringInContext(
         string $type_string,
@@ -635,6 +643,7 @@ class UnionType implements Serializable
 
     /**
      * Add a type name to the list of types
+     * @phan-pure
      */
     public function withType(Type $type) : UnionType
     {
@@ -657,6 +666,7 @@ class UnionType implements Serializable
      * keeping the keys in a consecutive order.
      *
      * Each type in $this->type_set occurs exactly once.
+     * @phan-pure
      */
     public function withoutType(Type $type) : UnionType
     {
@@ -686,6 +696,7 @@ class UnionType implements Serializable
 
     /**
      * Returns a union type with an empty union type set
+     * @phan-pure
      */
     public function eraseRealTypeSet() : UnionType
     {
@@ -701,6 +712,7 @@ class UnionType implements Serializable
 
     /**
      * Returns a union type which add the given types to this type
+     * @phan-pure
      */
     public function withUnionType(UnionType $union_type) : UnionType
     {

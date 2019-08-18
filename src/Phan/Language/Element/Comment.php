@@ -344,6 +344,9 @@ class Comment
             case 'extends':
                 $this->inherited_type = $value;
                 return;
+            case 'pure':
+                $this->comment_flags |= Flags::IS_PURE;
+                return;
         }
     }
 
@@ -430,6 +433,16 @@ class Comment
     public function isNSInternal() : bool
     {
         return ($this->comment_flags & Flags::IS_NS_INTERNAL) != 0;
+    }
+
+    /**
+     * @return bool
+     * Set to true if the comment contains an 'phan-pure'
+     * directive.
+     */
+    public function isPure() : bool
+    {
+        return ($this->comment_flags & Flags::IS_PURE) != 0;
     }
 
     /**

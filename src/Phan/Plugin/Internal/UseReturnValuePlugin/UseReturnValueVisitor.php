@@ -301,7 +301,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
             (clone($this->context))->withLineNumberStart($node->lineno),
             UseReturnValuePlugin::UseReturnValueKnown,
             'Expected to use the return value of the user-defined function/method {FUNCTION}',
-            [$fqsen]
+            [$method->getRepresentationForIssue()]
         );
     }
 }

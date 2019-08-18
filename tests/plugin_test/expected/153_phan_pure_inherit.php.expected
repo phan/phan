@@ -1,0 +1,2 @@
+src/153_phan_pure_inherit.php:31 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \NS153\X::mul1()
+src/153_phan_pure_inherit.php:34 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \NS153\Tripler::mul1()

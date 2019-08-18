@@ -1,2 +1,2 @@
 src/074_unused_function_suppression.php:8 PhanPluginWhitespaceTab The first occurrence of a tab was seen here. Running "expand" can fix that.
-src/074_unused_function_suppression.php:13 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \function_suppression_test_fn
+src/074_unused_function_suppression.php:13 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \function_suppression_test_fn()

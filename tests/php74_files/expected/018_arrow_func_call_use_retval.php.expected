@@ -1,1 +1,1 @@
-%s:5 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \double18
+%s:5 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \double18()

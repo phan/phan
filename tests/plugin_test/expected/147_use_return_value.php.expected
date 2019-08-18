@@ -1,1 +1,1 @@
-src/147_use_return_value.php:12 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \closure_%s
+src/147_use_return_value.php:12 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method Closure(int $v)

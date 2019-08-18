@@ -523,9 +523,14 @@ class Method extends ClassElement implements FunctionInterface
         // method is deprecated
         $method->setIsDeprecated($comment->isDeprecated());
 
-        // Set whether or not the element is internal to
+        // Set whether or not the method is internal to
         // the namespace.
         $method->setIsNSInternal($comment->isNSInternal());
+
+        // Set whether this method is pure.
+        if ($comment->isPure()) {
+            $method->setIsPure();
+        }
 
         // Set whether or not the comment indicates that the method is intended
         // to override another method.

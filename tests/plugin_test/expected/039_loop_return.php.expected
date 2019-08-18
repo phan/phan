@@ -1,2 +1,2 @@
 src/039_loop_return.php:11 PhanUnusedVariable Unused definition of variable $myUnusedVariable
-src/039_loop_return.php:15 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \test_loop_var_return
+src/039_loop_return.php:15 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \test_loop_var_return()

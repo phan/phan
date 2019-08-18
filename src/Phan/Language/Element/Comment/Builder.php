@@ -667,6 +667,9 @@ final class Builder
             case 'phan-property-write':
                 $this->parsePhanProperty($i, $line);
                 return;
+            case 'phan-pure':
+                $this->phan_overrides['pure'] = true;
+                return;
             case 'phan-method':
                 $this->parsePhanMethod($i, $line);
                 return;
@@ -739,6 +742,7 @@ final class Builder
         '@phan-property' => '',
         '@phan-property-read' => '',
         '@phan-property-write' => '',
+        '@phan-pure' => '',
         '@phan-read-only' => '',
         '@phan-return' => '',
         '@phan-real-return' => '',

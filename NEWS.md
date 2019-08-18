@@ -22,6 +22,9 @@ New features(Analysis):
 + Improve redundant condition detection for empty/falsey/truthy checks, `self`, and internal functions building or processing arrays.
 + Include strings that are suffixes of variable names, classes, methods, properties, etc. in issue suggestions for undeclared elements. (#2342)
 + Emit `PhanTypeNonVarReturnByRef` when an invalid expression is returned by a function declared to return a reference.
++ Support manually annotating that functions/methods/closures are pure with `/** @phan-pure */`.
+  This is automatically inherited by overriding methods.
+  Also see `UseReturnValuePlugin` and `'plugin_config' => ['infer_pure_methods' => true]`.
 
 Plugins:
 + In `UseReturnValuePlugin`, support inferring whether closures, functions, and methods are pure
