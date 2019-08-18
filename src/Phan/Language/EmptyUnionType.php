@@ -12,6 +12,7 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
+use Phan\Language\Type\IterableType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\TemplateType;
 
@@ -436,6 +437,16 @@ final class EmptyUnionType extends UnionType
     public function hasIterable() : bool
     {
         return false;
+    }
+
+    public function iterableTypesStrictCast(CodeBase $code_base) : UnionType
+    {
+        return IterableType::instance(false)->asRealUnionType();
+    }
+
+    public function iterableTypesStrictCastAssumeTraversable(CodeBase $code_base) : UnionType
+    {
+        return IterableType::instance(false)->asRealUnionType();
     }
 
     /**

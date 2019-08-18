@@ -2,6 +2,7 @@
 
 namespace Phan\Language\Type;
 
+use Phan\CodeBase;
 use Phan\Language\Type;
 
 /**
@@ -78,6 +79,11 @@ class ObjectType extends NativeType
     public function asCallableType() : ?Type
     {
         return CallableObjectType::instance(false);
+    }
+
+    public function asIterable(CodeBase $_) : ?Type
+    {
+        return Type::traversableInstance();
     }
 }
 \class_exists(CallableObjectType::class);

@@ -1,5 +1,12 @@
 Phan NEWS
 
+Aug 18 2019, Phan 2.2.12 (dev)
+------------------------
+
+New features(Analysis):
++ Fix false positives for checking for redundant conditions with `iterable` and `is_iterable`.
++ Properly infer real types for `is_resource` checks and other cases where UnionType::fromFullyQualifiedRealString() was used.
+
 Aug 18 2019, Phan 2.2.11
 ------------------------
 

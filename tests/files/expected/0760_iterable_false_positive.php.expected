@@ -1,0 +1,6 @@
+%s:5 PhanRedundantCondition Redundant attempt to cast $x of type iterable to iterable
+%s:9 PhanRedundantCondition Redundant attempt to cast $y of type iterable to iterable
+%s:15 PhanRedundantCondition Redundant attempt to cast $z of type iterable to iterable
+%s:19 PhanRedundantCondition Redundant attempt to cast $w of type \Traversable to iterable
+%s:20 PhanRedundantCondition Redundant attempt to cast $w of type \Traversable to object
+%s:25 PhanRedundantCondition Redundant attempt to cast $x of type resource to resource

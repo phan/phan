@@ -2114,12 +2114,25 @@ class Type
 
     /**
      * @return bool
-     * True if this type is iterable.
+     * True if this type is iterable. Does not check ancestor types.
      * @phan-pure
      */
     public function isIterable() : bool
     {
         return false;  // Overridden in subclass IterableType (with subclass ArrayType)
+    }
+
+    /**
+     * Convert this to a subtype that satisfies is_iterable(), or returns null
+     * @see UnionType::iterableTypesStrictCast
+     * @phan-pure
+     */
+    public function asIterable(CodeBase $code_base) : ?Type
+    {
+        if ($this->asExpandedTypes($code_base)->hasIterable()) {
+            return $this->withIsNullable(false);
+        }
+        return null;
     }
 
     /**
