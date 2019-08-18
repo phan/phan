@@ -1,0 +1,1 @@
+src/151_unreferenced_method_line.php:5 PhanUnreferencedPublicMethod Possibly zero references to public method \HasUnusedMethod::foo()

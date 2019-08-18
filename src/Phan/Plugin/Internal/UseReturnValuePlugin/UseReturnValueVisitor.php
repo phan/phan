@@ -286,7 +286,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         if ($method->isPHPInternal()) {
             $this->emitPluginIssue(
                 $this->code_base,
-                clone($this->context)->withLineNumberStart($node->lineno),
+                (clone($this->context))->withLineNumberStart($node->lineno),
                 UseReturnValuePlugin::UseReturnValueInternalKnown,
                 'Expected to use the return value of the internal function/method {FUNCTION}',
                 [$fqsen]
@@ -298,7 +298,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         }
         $this->emitPluginIssue(
             $this->code_base,
-            clone($this->context)->withLineNumberStart($node->lineno),
+            (clone($this->context))->withLineNumberStart($node->lineno),
             UseReturnValuePlugin::UseReturnValueKnown,
             'Expected to use the return value of the user-defined function/method {FUNCTION}',
             [$fqsen]

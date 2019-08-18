@@ -1957,7 +1957,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             RedundantCondition::emitInstance(
                 $left_node,
                 $this->code_base,
-                clone($context)->withLineNumberStart($node->lineno),
+                (clone($context))->withLineNumberStart($node->lineno),
                 Issue::CoalescingNeverNull,
                 [
                     ASTReverter::toShortString($left_node),
@@ -1971,7 +1971,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             RedundantCondition::emitInstance(
                 $left_node,
                 $this->code_base,
-                clone($context)->withLineNumberStart($node->lineno),
+                (clone($context))->withLineNumberStart($node->lineno),
                 Issue::CoalescingAlwaysNull,
                 [
                     ASTReverter::toShortString($left_node),

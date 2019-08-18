@@ -435,7 +435,7 @@ class ParseVisitor extends ScopeVisitor
 
             $default_node = $child_node->children['default'];
 
-            $context_for_property = clone($this->context)->withLineNumberStart($child_node->lineno ?? 0);
+            $context_for_property = (clone($this->context))->withLineNumberStart($child_node->lineno ?? 0);
 
             $property_name = $child_node->children['name'];
 
