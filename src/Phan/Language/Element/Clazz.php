@@ -826,7 +826,7 @@ class Clazz extends AddressableElement
             $original_union_type = $comment_parameter->getUnionType();
             $union_type = $original_union_type->withStaticResolvedInContext($context);
             $property = new Property(
-                clone($context)->withLineNumberStart($comment_parameter->getLine()),
+                (clone($context))->withLineNumberStart($comment_parameter->getLine()),
                 $property_name,
                 $union_type,
                 0,
@@ -874,7 +874,7 @@ class Clazz extends AddressableElement
                 $class_fqsen,
                 $method_name
             );
-            $method_context = clone($context)->withLineNumberStart($comment_method->getLine());
+            $method_context = (clone($context))->withLineNumberStart($comment_method->getLine());
             $real_parameter_list = \array_map(static function (\Phan\Language\Element\Comment\Parameter $parameter) use ($method_context) : Parameter {
                 return $parameter->asRealParameter($method_context);
             }, $comment_method->getParameterList());

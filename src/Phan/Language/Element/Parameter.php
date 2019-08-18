@@ -330,7 +330,7 @@ class Parameter extends Variable
                 if (!$has_error) {
                     $parameter->setDefaultValueFutureType(new FutureUnionType(
                         $code_base,
-                        clone($context)->withLineNumberStart($default_node->lineno ?? 0),
+                        (clone($context))->withLineNumberStart($default_node->lineno ?? 0),
                         $default_node
                     ));
                 }

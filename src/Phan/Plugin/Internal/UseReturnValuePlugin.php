@@ -130,7 +130,7 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
                         continue;
                     }
                     $line = (int)$matches[1];
-                    $context = $context->withLineNumberStart($line);
+                    $context = (clone($context))->withLineNumberStart($line);
                     if ($known_must_use_return_value) {
                         self::emitIssue(
                             $code_base,
