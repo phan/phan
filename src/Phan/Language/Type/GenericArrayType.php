@@ -501,6 +501,33 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
     }
 
     /**
+     * Returns the key type for the keys of the real type set of this union type,
+     * strictly
+     * E.g. for `array<string,\stdClass>`, returns self::KEY_STRING
+     * for `array<string,\stdClass>|array`, returns self::KEY_MIXED
+     * @param array<int,Type> $type_set
+     */
+    public static function keyUnionTypeFromTypeSetStrict(array $type_set) : int
+    {
+        $key_types = self::KEY_EMPTY;
+        foreach ($type_set as $type) {
+            if ($type instanceof GenericArrayType) {
+                $key_types |= $type->key_type;
+            } elseif ($type instanceof ArrayShapeType) {
+                if ($type->isNotEmptyArrayShape()) {
+                    $key_types |= $type->getKeyType();
+                }
+            } else {
+                return self::KEY_MIXED;
+            }
+            // Treating ArrayType as mixed or excluding ArrayType would both cause false positives. Ignore ArrayType.
+        }
+        // int|string corresponds to KEY_MIXED (KEY_INT|KEY_STRING)
+        // And if we're unable to find any types, return KEY_MIXED.
+        return $key_types ?: self::KEY_MIXED;
+    }
+
+    /**
      * Returns the key type for the keys of this union type.
      * E.g. for `array<string,\stdClass>`, returns self::KEY_STRING
      */

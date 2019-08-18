@@ -811,7 +811,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
         $context = $context->withEnterLoop($node);
 
-        // Check for errors in the foreach expression
+        // Add types of the key and value expressions,
+        // and check for errors in the foreach expression
         $context = $this->analyzeForeachIteration($context, $expression_union_type, $node);
 
         // PreOrderAnalysisVisitor is not used, to avoid issues analyzing edge cases such as `foreach ($x->method() as $x)`

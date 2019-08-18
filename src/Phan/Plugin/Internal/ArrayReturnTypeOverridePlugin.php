@@ -44,6 +44,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
         $array_type  = ArrayType::instance(false);
         $null_type   = NullType::instance(false);
         $nullable_array_type_set = [ArrayType::instance(true)];
+        $nullable_int_key_array_type_set = [MixedType::instance(true)->asGenericArrayType(GenericArrayType::KEY_INT)];
         $int_or_string_or_false = UnionType::fromFullyQualifiedRealString('int|string|false');
         $int_or_string_or_null = UnionType::fromFullyQualifiedRealString('int|string|null');
         $int_or_string = UnionType::fromFullyQualifiedRealString('int|string');
@@ -66,17 +67,28 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
         };
         /**
          * @param array<int,Node|int|float|string> $args
+         * Note that key() is currently guaranteed to return int|string|null, and ignores implementations of ArrayAccess.
+         * See zend_hash_get_current_key_zval_ex in php-src/Zend/zend_hash.c
          */
-        $get_key_type_of_first_arg = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($int_or_string_or_false, $false_type) : UnionType {
-            if (\count($args) >= 1) {
-                $array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
-                $key_type_enum = GenericArrayType::keyTypeFromUnionTypeKeys($array_type);
-                if ($key_type_enum !== GenericArrayType::KEY_MIXED) {
-                    $key_type = GenericArrayType::unionTypeForKeyType($key_type_enum);
-                    return $key_type->withType($false_type);
-                }
+        $key_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($int_or_string_or_null, $null_type) : UnionType {
+            if (\count($args) !== 1) {
+                return $null_type->asRealUnionType();
             }
-            return $int_or_string_or_false;
+            $array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
+            $key_type_enum = GenericArrayType::keyTypeFromUnionTypeKeys($array_type);
+            if ($key_type_enum === GenericArrayType::KEY_MIXED) {
+                return UnionType::fromFullyQualifiedRealString('int|string|null');
+            }
+            $key_type = GenericArrayType::unionTypeForKeyType($key_type_enum)->withType($null_type);
+            if (!$array_type->hasRealTypeSet()) {
+                return $key_type->withRealTypeSet($int_or_string_or_null->getRealTypeSet());
+            }
+            $real_key_type_enum = GenericArrayType::keyUnionTypeFromTypeSetStrict($array_type->getRealTypeSet());
+            if ($real_key_type_enum === GenericArrayType::KEY_MIXED) {
+                return $key_type->withType($null_type)->withRealTypeSet($int_or_string_or_null->getRealTypeSet());
+            }
+            $real_key_type = GenericArrayType::unionTypeForKeyType($key_type_enum);
+            return $key_type->withRealTypeSet(array_merge($real_key_type->getTypeSet(), [$null_type]));
         };
         /**
          * @param array<int,Node|int|float|string> $args
@@ -87,7 +99,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                 $key_type_enum = GenericArrayType::keyTypeFromUnionTypeKeys($array_type);
                 if ($key_type_enum !== GenericArrayType::KEY_MIXED) {
                     $key_type = GenericArrayType::unionTypeForKeyType($key_type_enum);
-                    return $key_type->withType($null_type);
+                    return $key_type->withType($null_type)->withRealTypeSet($int_or_string_or_null->getRealTypeSet());
                 }
             }
             return $int_or_string_or_null;
@@ -101,7 +113,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                 $key_type_enum = GenericArrayType::keyTypeFromUnionTypeKeys($array_type);
                 if ($key_type_enum !== GenericArrayType::KEY_MIXED) {
                     $key_type = GenericArrayType::unionTypeForKeyType($key_type_enum);
-                    return $key_type->withType($false_type);
+                    return $key_type->withType($false_type)->withRealTypeSet($int_or_string_or_false->getTypeSet());
                 }
             }
             return $int_or_string_or_false;
@@ -154,8 +166,9 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
         $array_filter_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($probably_real_array, $nullable_array_type_set) : UnionType {
             if (\count($args) >= 1) {
                 $passed_array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
-                $generic_passed_array_type = $passed_array_type->genericArrayTypes()->withRealTypeSet($nullable_array_type_set);
+                $generic_passed_array_type = $passed_array_type->genericArrayTypes();
                 if (!$generic_passed_array_type->isEmpty()) {
+                    $generic_passed_array_type = $generic_passed_array_type->withRealTypeSet($nullable_array_type_set);
                     if (\count($args) >= 2) {
                         // As a side effect of getting the list of callables, this warns about invalid callables
                         $filter_function_list = UnionTypeVisitor::functionLikeListFromNodeAndContext($code_base, $context, $args[1], true);
@@ -342,26 +355,33 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
         /**
          * @param array<int,Node|int|string|float> $args
          */
-        $array_keys_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($real_nullable_array, $nullable_array_type_set) : UnionType {
-            if (\count($args) != 1) {
-                return $real_nullable_array;
+        $array_keys_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($probably_real_array, $nullable_int_key_array_type_set) : UnionType {
+            if (\count($args) < 1 || \count($args) > 3) {
+                return $probably_real_array;
             }
             $key_union_type = UnionTypeVisitor::unionTypeOfArrayKeyForNode($code_base, $context, $args[0]);
             if ($key_union_type === null) {
                 $key_union_type = UnionType::fromFullyQualifiedPHPDocString('int|string');
             }
-            return $key_union_type->asGenericArrayTypes(GenericArrayType::KEY_INT)->withRealTypeSet($nullable_array_type_set);
+            if ($key_union_type->isEmpty()) {
+                return UnionType::fromFullyQualifiedPHPDocAndRealString('array<int,mixed>', '?array<int,mixed>');
+            }
+            return $key_union_type->asGenericArrayTypes(GenericArrayType::KEY_INT)->withRealTypeSet($nullable_int_key_array_type_set);
         };
         /**
          * @param array<int,Node|int|string|float> $args
          */
-        $array_values_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($nullable_array_type_set, $real_nullable_array) : UnionType {
+        $array_values_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($nullable_int_key_array_type_set, $real_nullable_array) : UnionType {
             if (\count($args) != 1) {
                 return $real_nullable_array;
             }
             $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
             $element_type = $union_type->genericArrayElementTypes();
-            return $element_type->asGenericArrayTypes(GenericArrayType::KEY_INT)->withRealTypeSet($nullable_array_type_set);
+            $result = $element_type->asGenericArrayTypes(GenericArrayType::KEY_INT);
+            if ($result->isEmpty()) {
+                return UnionType::fromFullyQualifiedPHPDocAndRealString('array<int,mixed>', '?array<int,mixed>');
+            }
+            return $result->withRealTypeSet($nullable_int_key_array_type_set);
         };
         /**
          * @param array<int,Node|int|string|float> $args
@@ -385,7 +405,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
         /**
          * @param array<int,Node|int|float|string> $args
          */
-        $array_combine_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type, $nullable_array_type_set) : UnionType {
+        $array_combine_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type, $nullable_array_type_set, $probably_real_array) : UnionType {
             if (\count($args) < 2) {
                 return $array_type->asPHPDocUnionType();
             }
@@ -394,7 +414,11 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             $keys_element_type = $keys_type->genericArrayElementTypes();
             $values_element_type = $values_type->genericArrayElementTypes();
             $key_enum_type = GenericArrayType::keyTypeFromUnionTypeValues($keys_element_type);
-            return $values_element_type->asGenericArrayTypes($key_enum_type)->withRealTypeSet($nullable_array_type_set);
+            $result = $values_element_type->asGenericArrayTypes($key_enum_type);
+            if ($result->isEmpty()) {
+                return $probably_real_array;
+            }
+            return $result->withRealTypeSet($nullable_array_type_set);
         };
         return [
             // Gets the element types of the first
@@ -408,7 +432,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             'reset'       => $get_element_type_of_first_arg,
             'each'        => $each_callback,
 
-            'key'          => $get_key_type_of_first_arg,
+            'key'          => $key_callback,
             'array_key_first' => $get_key_type_of_first_arg_or_null,
             'array_key_last' => $get_key_type_of_first_arg_or_null,
 
