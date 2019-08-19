@@ -2523,6 +2523,27 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         try {
             $class = $method->getClass($this->code_base);
             $has_interface_class = $class->isInterface();
+
+            if ($class->getName() === $method->getName()) {
+                try {
+                    $constructor = $class->getMethodByName($this->code_base, "__construct");
+
+                    // Phan always makes up the __construct if it's not explicitly defined, so we need to check if there is
+                    // no __construct method *actually* defined before we emit the issue
+                    if ($constructor->getPhanFlagsHasState(\Phan\Language\Element\Flags::IS_FAKE_CONSTRUCTOR)) {
+                        Issue::maybeEmit(
+                            $this->code_base,
+                            $this->context,
+                            Issue::CompatiblePHP8PHP4Constructor,
+                            $this->context->getLineNumberStart(),
+                            $class->getFQSEN(),
+                            $method->getName()
+                        );
+                    }
+                } catch (CodeBaseException $_) {
+
+                }
+            }
         } catch (Exception $_) {
         }
 
@@ -2564,7 +2585,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $parameters_seen[$name] = $i;
             }
         }
-
 
         return $this->context;
     }
