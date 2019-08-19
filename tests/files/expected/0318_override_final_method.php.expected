@@ -1,5 +1,5 @@
-%s:22 PhanAccessOverridesFinalMethod Declaration of method \B317::bar overrides final method \A317::bar defined in %s:4
-%s:26 PhanAccessOverridesFinalMethod Declaration of method \B317::bar2 overrides final method \A317::bar2 defined in %s:4
+%s:22 PhanAccessOverridesFinalMethodInTrait Declaration of method \B317::bar overrides final method \A317::bar defined in trait in %s:4. This is actually allowed in case of traits, even for final methods, but may lead to unexpected behavior
+%s:26 PhanAccessOverridesFinalMethodInTrait Declaration of method \B317::bar2 overrides final method \A317::bar2 defined in trait in %s:4. This is actually allowed in case of traits, even for final methods, but may lead to unexpected behavior
 %s:42 PhanAccessOverridesFinalMethod Declaration of method \PlainOverride317::baz overrides final method \PlainBase317::baz defined in %s:34
 %s:43 PhanAccessOverridesFinalMethod Declaration of method \PlainOverride317::FinalMETHOD overrides final method \PlainBase317::finalMethod defined in %s:35
 %s:45 PhanAccessOverridesFinalMethod Declaration of method \PlainOverride317::myStaticMethod overrides final method \PlainBase317::myStaticMethod defined in %s:37
