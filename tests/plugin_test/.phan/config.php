@@ -57,7 +57,7 @@ return [
     // scope will be ignored. This is useful for projects
     // with complicated cross-file globals that you have no
     // hope of fixing.
-    'ignore_undeclared_variables_in_global_scope' => false,
+    'ignore_undeclared_variables_in_global_scope' => true,
 
     // Backwards Compatibility Checking
     // Check for $$var[] and $foo->$bar['baz'] and Foo::$bar['baz']() and $this->$bar['baz']
