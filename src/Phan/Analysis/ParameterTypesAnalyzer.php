@@ -1209,10 +1209,19 @@ class ParameterTypesAnalyzer
                 $o_method->getFQSEN()
             );
         } else {
+            $issue_type = Issue::AccessOverridesFinalMethod;
+
+            try {
+                $o_clazz = $o_method->getDefiningClass($code_base);
+                if ($o_clazz->isTrait()) {
+                    $issue_type = Issue::AccessOverridesFinalMethodInTrait;
+                }
+            } catch (CodeBaseException $_) {}
+
             Issue::maybeEmit(
                 $code_base,
                 $method->getContext(),
-                Issue::AccessOverridesFinalMethod,
+                $issue_type,
                 $method->getFileRef()->getLineNumberStart(),
                 $method->getFQSEN(),
                 $o_method->getFQSEN(),

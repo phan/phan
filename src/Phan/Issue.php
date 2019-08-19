@@ -449,6 +449,7 @@ class Issue
     const AccessExtendsFinalClass                = 'PhanAccessExtendsFinalClass';
     const AccessExtendsFinalClassInternal        = 'PhanAccessExtendsFinalClassInternal';
     const AccessOverridesFinalMethod             = 'PhanAccessOverridesFinalMethod';
+    const AccessOverridesFinalMethodInTrait      = 'PhanAccessOverridesFinalMethodInTrait';
     const AccessOverridesFinalMethodInternal     = 'PhanAccessOverridesFinalMethodInternal';
     const AccessOverridesFinalMethodPHPDoc       = 'PhanAccessOverridesFinalMethodPHPDoc';
 
@@ -3899,6 +3900,14 @@ class Issue
                 "Accessing non static property {PROPERTY} as static",
                 self::REMEDIATION_B,
                 1021
+            ),
+            new Issue(
+                self::AccessOverridesFinalMethodInTrait,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_NORMAL,
+                "Declaration of method {METHOD} overrides final method {METHOD} defined in trait in {FILE}:{LINE}. This is actually allowed in case of traits, even for final methods, but may lead to unexpected behavior",
+                self::REMEDIATION_B,
+                1033
             ),
 
             // Issue::CATEGORY_COMPATIBLE
