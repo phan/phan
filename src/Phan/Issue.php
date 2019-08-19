@@ -4084,7 +4084,7 @@ class Issue
                 self::CompatiblePHP8PHP4Constructor,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_NORMAL,
-                "PHP4 constructors will be removed in php 8, and should not be used. __construct() should be added/used instead to avoid accidentally calling {CLASS}::{METHOD}()",
+                "PHP4 constructors will be removed in php 8, and should not be used. __construct() should be added/used instead to avoid accidentally calling {METHOD}",
                 self::REMEDIATION_B,
                 3022
             ),

@@ -7,4 +7,3 @@
 %s:34 PhanParamTooMany Call with 1 arg(s) to \NS325\X325::__construct() which only takes 0 arg(s) defined at %s:24
 %s:35 PhanTypeMismatchArgumentReal Argument 1 ($arg) is int but \NS325\X325::X325() takes array defined at %s:26
 %s:39 PhanParamTooMany Call with 1 arg(s) to \NS325\X325::__construct() which only takes 0 arg(s) defined at %s:24
-

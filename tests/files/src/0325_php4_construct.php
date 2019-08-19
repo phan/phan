@@ -39,3 +39,12 @@ class Y325 extends X325 {
 $f325 = new X325(11);  // PhanParamTooMany
 $f325 = new Y325(11);
 }  // end of NS325
+
+// this should not emit PhanCompatiblePHP8PHP4Constructor because the class is in a non-global namespace
+namespace NotPHP4Class325 {
+    class NoWarning {
+        function NotPHP4Class325() {
+            return 42;
+        }
+    }
+}

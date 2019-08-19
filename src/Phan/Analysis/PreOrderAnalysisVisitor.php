@@ -173,7 +173,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         $comment = $method->getComment();
 
         $context = $this->context->withScope(
-            clone $method->getInternalScope()
+            clone($method->getInternalScope())
         );
 
         // For any @var references in the method declaration,
