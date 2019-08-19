@@ -43,8 +43,30 @@ $f325 = new Y325(11);
 // this should not emit PhanCompatiblePHP8PHP4Constructor because the class is in a non-global namespace
 namespace NotPHP4Class325 {
     class NoWarning {
-        function NotPHP4Class325() {
+        function NoWarning() {
             return 42;
+        }
+    }
+}
+
+namespace {
+    // no PhanCompatiblePHP8PHP4Constructor warning for interfaces
+    interface Interface325 {
+        public function Interface325() : int;
+    }
+
+    // no PhanCompatiblePHP8PHP4Constructor warning for traits
+    trait Trait325 {
+        public function Trait325(): int
+        {
+            return 42;
+        }
+    }
+
+    // PhanCompatiblePHP8PHP4Constructor warning test for different capitalization of class/method names
+    abstract class Abstract325 {
+        function AbStRaCt325() { // throws a warning
+            echo 42;
         }
     }
 }

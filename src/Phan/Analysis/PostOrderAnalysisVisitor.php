@@ -4107,7 +4107,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     private function checkForPHP4StyleConstructor(Clazz $class, Method $method) : void
     {
-        if ($class->getElementNamespace() !== ""
+        if ($class->isClass()
+            && ($class->getElementNamespace() ?: "\\") === "\\"
             && \strcasecmp($class->getName(), $method->getName()) === 0
             && $class->hasMethodWithName($this->code_base, "__construct")
         ) {
