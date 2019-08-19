@@ -17,3 +17,5 @@ class X143{
     }
 }
 var_export((new X143())->query('foo', 'bar'));
+
+$a = isset($this->a); // should not throw as the config is set to ignore vars in global scope

@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 
 use ast\Node;
+use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Element\Variable;
 use Phan\PluginV3;
@@ -89,8 +90,12 @@ class InvalidVariableIssetVisitor extends PluginAwarePostAnalysisVisitor
                 // e.g. ast\AST_NAME of an ast\AST_CONST
                 return $this->context;
             }
-            if (!Variable::isHardcodedVariableInScopeWithName($name, $this->context->isInGlobalScope()) &&
-                    !$this->context->getScope()->hasVariableWithName($name)) {
+            if (!Variable::isHardcodedVariableInScopeWithName($name, $this->context->isInGlobalScope())
+                && !$this->context->getScope()->hasVariableWithName($name)
+                && !(
+                    $this->context->isInGlobalScope() && Config::getValue('ignore_undeclared_variables_in_global_scope')
+                )
+            ) {
                 $this->emit(
                     'PhanPluginUndeclaredVariableIsset',
                     'undeclared variable ${VARIABLE} in isset()',
