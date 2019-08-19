@@ -1,2 +1,3 @@
+%s:7 PhanCompatiblePHP8PHP4Constructor PHP4 constructors will be removed in php 8, and should not be used. __construct() should be added/used instead to avoid accidentally calling \Test::test()
 %s:8 PhanUnusedVariable Unused definition of variable $x
 %s:8 PhanUnusedVariable Unused definition of variable $y
