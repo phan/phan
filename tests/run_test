@@ -64,7 +64,12 @@ case "$TEST_SUITE" in
 		exit $?
 		;;
 	__FakeAllPHPUnitTests)
-		PROCESSORS=$(nproc || echo 2)
+		if [[ "$OSTYPE" == "darwin"* ]]; then
+			PROCESSORS=$(sysctl -n hw.ncpu)
+		else
+			PROCESSORS=$(nproc || echo 2)
+		fi
+
 		if [[ "$PROCESSORS" > 1 ]]; then
 			vendor/bin/paratest --processes "$PROCESSORS" --runner WrapperRunner
 		else
