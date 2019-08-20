@@ -93,7 +93,7 @@ class OpcacheFuncInfoParser
         $lines = explode("\n", $contents);
         $result = [];
         foreach ($lines as $line) {
-            if (preg_match('@^\s*F[01NRXC]\(\s*"(\w+)",\s*(\w+(\s*\|\s*\w+)+)\s*\),@', $line, $matches)) {
+            if (preg_match('@^\s*F[01NRXC]\(\s*"(\w+)",\s*(\w+(\s*\|\s*\w+)*)\s*\),@', $line, $matches)) {
                 $function_name = $matches[1];
                 if (array_key_exists($function_name, self::OVERRIDES)) {
                     $union_type_string = self::OVERRIDES[$function_name];
@@ -151,7 +151,7 @@ class OpcacheFuncInfoParser
             return VoidType::instance(false)->asPHPDocUnionType();
         }
         foreach ($flags as $flag) {
-            if ($flag === 'UNKNOWN_INFO' || $flag === 'MAY_BE_ANY') {
+            if (in_array($flag, ['UNKNOWN_INFO', 'MAY_BE_ANY', 'zend_range_info'], true)) {
                 return UnionType::empty();
             }
             $type = $type_lookup[$flag] ?? null;
