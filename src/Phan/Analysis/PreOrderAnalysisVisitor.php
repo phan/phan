@@ -144,7 +144,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         $code_base = $this->code_base;
         $context = $this->context;
 
-        if (!($context->isInClassScope())) {
+        if (!$context->isInClassScope()) {
             throw new AssertionError("Must be in class context to see a method");
         }
 
@@ -188,7 +188,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
 
         // Add $this to the scope of non-static methods
         if (!($node->flags & ast\flags\MODIFIER_STATIC)) {
-            if (!($clazz->getInternalScope()->hasVariableWithName('this'))) {
+            if (!$clazz->getInternalScope()->hasVariableWithName('this')) {
                 throw new AssertionError("Classes must have a \$this variable.");
             }
 

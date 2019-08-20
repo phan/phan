@@ -3,6 +3,7 @@
 %s:10 PhanTypeMismatchProperty Assigning 'str' to property but \C->p is int
 %s:13 PhanTypeInstantiateAbstract Instantiation of abstract class \D
 %s:16 PhanTypeInstantiateInterface Instantiation of interface \E
+%s:19 PhanCompatiblePHP8PHP4Constructor PHP4 constructors will be removed in php 8, and should not be used. __construct() should be added/used instead to avoid accidentally calling \F::f()
 %s:19 PhanTypeNonVarPassByRef Only variables can be passed by reference at argument 1 of \F::f()
 %s:22 PhanTypeMismatchReturn Returning type 'string' but f() is declared to return int
 %s:25 PhanTypeMissingReturn Method \H::f is declared to return int but has no return value
