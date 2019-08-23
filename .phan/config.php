@@ -272,6 +272,13 @@ return [
     // See https://github.com/phan/phan/wiki/Different-Issue-Sets-On-Different-Numbers-of-CPUs
     'consistent_hashing_file_order' => false,
 
+    // If enabled, Phan will act as though it's certain of real return types of a subset of internal functions,
+    // even if those return types aren't available in reflection (real types were taken from php 7.3 or 8.0-dev, depending on target_php_version).
+    //
+    // Note that with php 7 and earlier, php would return null or false for many internal functions if the argument types or counts were incorrect.
+    // As a result, enabling this setting with target_php_version 8.0 may result in false positives for `--redundant-condition-detection` when codebases also support php 7.x.
+    'assume_real_types_for_internal_functions' => true,
+
     // Override to hardcode existence and types of (non-builtin) globals.
     // Class names should be prefixed with '\\'.
     // (E.g. ['_FOO' => '\\FooClass', 'page' => '\\PageClass', 'userId' => 'int'])
