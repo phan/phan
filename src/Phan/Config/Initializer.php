@@ -320,6 +320,7 @@ EOT;
             'dead_code_detection' => false,  // this is slow
             'unused_variable_detection' => !$is_average_level,
             'redundant_condition_detection' => !$is_average_level,
+            'assume_real_types_for_internal_functions' => !$is_average_level,
             'quick_mode' => $is_weakest_level,
             'simplify_ast' => true,
             'generic_types_enabled' => true,

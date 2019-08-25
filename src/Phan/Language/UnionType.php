@@ -3786,23 +3786,6 @@ class UnionType implements Serializable
     }
 
     /**
-     * Returns the *real* return types for commonly used functions.
-     *
-     * NOTE: This assumes that argument counts are valid.
-     *
-     * @internal - This may change or be removed.
-     * @return array<string,string> maps internal function names to union type strings
-     */
-    public static function internalFunctionSignatureReturnTypeReal() : array
-    {
-        static $map;
-        if ($map === null) {
-            $map = require(__DIR__ . '/Internal/FunctionSignatureMapReal.php');
-        }
-        return $map;
-    }
-
-    /**
      * @return array<string,string[]>
      */
     private static function computeLatestFunctionSignatureMap() : array
@@ -3819,19 +3802,27 @@ class UnionType implements Serializable
      * @return array<string,string> maps the lowercase function name to the return type
      * @internal the data format will change
      */
-    public static function getLatestRealFunctionSignatureMap() : array
+    public static function getLatestRealFunctionSignatureMap(int $target_php_version) : array
     {
-        static $map;
-        return $map ?? ($map = self::computeLatestRealFunctionSignatureMap());
+        if ($target_php_version >= 80000) {
+            static $map_80;
+            return $map_80 ?? ($map_80 = self::computeLatestRealFunctionSignatureMap(true));
+        }
+        static $map_73;
+        return $map_73 ?? ($map_73 = self::computeLatestRealFunctionSignatureMap(false));
     }
 
     /**
      * @return array<string,string>
      */
-    private static function computeLatestRealFunctionSignatureMap() : array
+    private static function computeLatestRealFunctionSignatureMap(bool $is_php8) : array
     {
         $map = [];
-        $map_raw = require(__DIR__ . '/Internal/FunctionSignatureMapReal.php');
+        if ($is_php8) {
+            $map_raw = require(__DIR__ . '/Internal/FunctionSignatureMapReal.php');
+        } else {
+            $map_raw = require(__DIR__ . '/Internal/FunctionSignatureMapReal_php73.php');
+        }
         foreach ($map_raw as $key => $value) {
             $map[\strtolower($key)] = $value;
         }

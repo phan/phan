@@ -86,11 +86,14 @@ final class FunctionSignatureMapTest extends BaseTest implements CodeBaseAwareTe
         ];
     }
 
-    public function testRealFunctionSignatureMap() : void
+    /**
+     * @dataProvider realFunctionSignatureMapVersionProvider
+     */
+    public function testRealFunctionSignatureMap(int $php_version_id) : void
     {
-        $map = UnionType::internalFunctionSignatureMap(70400);
+        $map = UnionType::internalFunctionSignatureMap($php_version_id);
         // @phan-suppress-next-line PhanAccessMethodInternal
-        $real_map = UnionType::internalFunctionSignatureReturnTypeReal();
+        $real_map = UnionType::getLatestRealFunctionSignatureMap($php_version_id);
         $context = new Context();
         $errors = '';
         foreach ($real_map as $function_name => $return_type_string) {
@@ -106,5 +109,13 @@ final class FunctionSignatureMapTest extends BaseTest implements CodeBaseAwareTe
             }
         }
         $this->assertSame('', $errors);
+    }
+
+    /**
+     * Provides values of PHP_VERSION_ID
+     * @return array<int,array<int,int>>
+     */
+    public function realFunctionSignatureMapVersionProvider() : array {
+        return [[70400], [80000]];
     }
 }
