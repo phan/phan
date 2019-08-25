@@ -6,6 +6,9 @@ Aug 18 2019, Phan 2.2.12 (dev)
 New features(Analysis):
 + Fix false positives for checking for redundant conditions with `iterable` and `is_iterable`.
 + Properly infer real types for `is_resource` checks and other cases where UnionType::fromFullyQualifiedRealString() was used.
++ Avoid false positives for the config setting `'assume_real_types_for_internal_functions'`.
+  Include all return types for many internal global functions for `--target-php-version` of `7.[0-4]`,
+  including those caused by invalid arguments or argument counts.
 
 Aug 18 2019, Phan 2.2.11
 ------------------------

@@ -15,7 +15,7 @@ echo "Running phan in '$PWD' ..."
 rm $ACTUAL_PATH -f || exit 1
 
 # We use the polyfill parser because it behaves consistently in all php versions.
-../../phan --force-polyfill-parser --memory-limit 1G --assume-real-types-for-internal-functions --redundant-condition-detection | tee $ACTUAL_PATH
+../../phan --force-polyfill-parser --memory-limit 1G --redundant-condition-detection | tee $ACTUAL_PATH
 
 # diff returns a non-zero exit code if files differ or are missing
 # This outputs the difference between actual and expected output.
@@ -24,8 +24,8 @@ echo "Comparing the output:"
 
 # Normalize PHP_VERSION_ID
 # and remove php 8.0 warnings
-sed -i -e 's/^\(src.020_bool.php.*of type\) [0-9]\+ \(evaluated\)/\1 int \2/g' \
-    -e '/__autoload() is no longer supported, use spl_autoload_register/d' \
+sed -i \
+    -e 's/\(to cast array_key_exists.* of type \)bool /\1?bool /' \
     $ACTUAL_PATH
 
 if type colordiff >/dev/null; then
