@@ -752,7 +752,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
          * @param array<int,Node|mixed> $args
          * @phan-closure-scope UnionType
          */
-        $iterable_callback = function (CodeBase $code_base, Context $context, Variable $variable, array $args) : void {
+        $iterable_callback = static function (CodeBase $code_base, Context $context, Variable $variable, array $args) : void {
             // Change the type to match the is_iterable relationship
             // If we already have generic array types or Traversable, then keep those
             // (E.g. T[]|false becomes T[], ?array|null becomes array, callable becomes iterable, object becomes \Traversable)

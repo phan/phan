@@ -10,6 +10,9 @@ New features(Analysis):
   Include all return types for many internal global functions for `--target-php-version` of `7.[0-4]`,
   including those caused by invalid arguments or argument counts.
 
+Plugins:
++ If possible, suggest the types that Phan observed during analysis with `UnknownElementTypePlugin`. (#3146)
+
 Aug 18 2019, Phan 2.2.11
 ------------------------
 

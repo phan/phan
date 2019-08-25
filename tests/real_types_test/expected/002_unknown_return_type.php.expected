@@ -1,0 +1,2 @@
+src/002_unknown_return_type.php:3 PhanPluginUnknownFunctionReturnType Function \test2() has no declared or inferred return type (Types inferred after analysis: array<int,\stdClass>)
+src/002_unknown_return_type.php:8 PhanPluginUnknownMethodReturnType Method \MyClass2::test() has no declared or inferred return type (Types inferred after analysis: array<int,array>)

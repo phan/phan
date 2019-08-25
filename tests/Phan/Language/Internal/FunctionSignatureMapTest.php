@@ -115,7 +115,8 @@ final class FunctionSignatureMapTest extends BaseTest implements CodeBaseAwareTe
      * Provides values of PHP_VERSION_ID
      * @return array<int,array<int,int>>
      */
-    public function realFunctionSignatureMapVersionProvider() : array {
+    public function realFunctionSignatureMapVersionProvider() : array
+    {
         return [[70400], [80000]];
     }
 }

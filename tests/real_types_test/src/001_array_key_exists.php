@@ -17,5 +17,6 @@ function test1($x) {
     if (is_array(key($x))) {
         echo "Impossible, key() only returns int|string|null\n";
     }
+    return $x;
 }
 test1([]);
