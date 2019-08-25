@@ -1152,7 +1152,7 @@ return [
 'tempnam' => 'false|string',
 'textdomain' => '?false|?string',
 'time' => 'int',
-'time_nanosleep' => 'array|bool',
+'time_nanosleep' => 'array{seconds:int,nanoseconds:int}|bool',
 'time_sleep_until' => 'bool',
 'timezone_abbreviations_list' => 'array',
 'timezone_identifiers_list' => 'array|false',
