@@ -68,7 +68,6 @@ class IterableType extends NativeType
     {
         return false;
     }
-
 }
 // Trigger autoloader for subclass before make() can get called.
 \class_exists(GenericIterableType::class);

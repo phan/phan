@@ -134,5 +134,6 @@ return [
         'UseReturnValuePlugin',
         'DuplicateExpressionPlugin',
         'WhitespacePlugin',
+        'UnknownElementTypePlugin',
     ],
 ];

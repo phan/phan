@@ -1216,7 +1216,8 @@ class ParameterTypesAnalyzer
                 if ($o_clazz->isTrait()) {
                     $issue_type = Issue::AccessOverridesFinalMethodInTrait;
                 }
-            } catch (CodeBaseException $_) {}
+            } catch (CodeBaseException $_) {
+            }
 
             Issue::maybeEmit(
                 $code_base,
