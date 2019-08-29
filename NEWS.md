@@ -3,6 +3,10 @@ Phan NEWS
 Aug 18 2019, Phan 2.2.12 (dev)
 ------------------------
 
+New features(CLI):
++ Improve error messages when the `--init-*` flags are provided without passing `--init`. (#3153)
+  Previously, Phan would fail with a confusing error message.
+
 New features(Analysis):
 + Fix false positives for checking for redundant conditions with `iterable` and `is_iterable`.
 + Properly infer real types for `is_resource` checks and other cases where UnionType::fromFullyQualifiedRealString() was used.
