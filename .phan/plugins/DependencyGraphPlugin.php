@@ -21,7 +21,7 @@ class DependencyGraphPlugin extends PluginV3 implements
     PostAnalyzeNodeCapability,
     FinalizeProcessCapability
 {
-    /** @var AddressableElement[] */
+    /** @var array <int, AddressableElement> */
     private $elements = [];
     /** @var string[] */
     private $class_to_file = [];
@@ -159,7 +159,7 @@ class DependencyGraphPlugin extends PluginV3 implements
      */
     public function finalizeProcess(CodeBase $unused_code_base): void {
         if (empty($this->elements)) {
-            \fwrite(STDERR, "Nothing to analyze - please run this tool from your top-level project directory" . \PHP_EOL);
+            \fwrite(STDERR, "Nothing to analyze - please run pdep from your top-level project directory" . \PHP_EOL);
             exit(\EXIT_FAILURE);
         }
         // Loop through all the elements and pull out the reference list for each

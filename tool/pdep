@@ -14,6 +14,7 @@ Usage: {$argv[0]} [options] [files or classes...]
       {$argv[0]} -f -d 1 MyClass
     would show only the files that directly depend on MyClass.
  -l <filelist.txt>
+ -q Uses Phan's --quick mode
  -p Show progress bar
  -h This help
 
@@ -36,7 +37,7 @@ EOT;
 $tool_dir = dirname($argv[0]);
 $depth = 0;
 $cmd = $filelist = $progress = '';
-$options = getopt("cfghpd:l:");
+$options = getopt("cfghpqd:l:");
 foreach (array_keys($options) as $opt) switch ($opt) {
     case 'c':
         array_shift($argv);
@@ -52,7 +53,11 @@ foreach (array_keys($options) as $opt) switch ($opt) {
         break;
     case 'p':
         array_shift($argv);
-        $progress= "-p";
+        $progress = "-p";
+        break;
+    case 'q':
+        array_shift($argv);
+        $quick = "--quick";
         break;
     case 'd':
         array_shift($argv);
@@ -71,4 +76,4 @@ foreach (array_keys($options) as $opt) switch ($opt) {
 array_shift($argv);
 $arg_string = implode(' ', $argv);
 
-system("PDEP_CMD=$cmd PDEP_MODE=$mode PDEP_DEPTH=$depth PDEP_ARGS='$arg_string' bash -c '{$tool_dir}/../phan --quick -j1 {$progress} {$filelist} -P {$tool_dir}/../.phan/plugins/DependencyGraphPlugin.php -k {$tool_dir}/pdep_config.php'");
+system("PDEP_CMD=$cmd PDEP_MODE=$mode PDEP_DEPTH=$depth PDEP_ARGS='$arg_string' bash -c '{$tool_dir}/../phan {$quick} --allow-polyfill-parser -j1 {$progress} {$filelist} -P {$tool_dir}/../.phan/plugins/DependencyGraphPlugin.php -k {$tool_dir}/../internal/pdep_config.php'");
