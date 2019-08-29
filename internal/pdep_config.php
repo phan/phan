@@ -1,8 +1,10 @@
 <?php
+declare(strict_types=1);
+
 use Phan\Issue;
 
-$local_config = getcwd()."/.phan/config.php";
-if(file_exists($local_config)) {
+$local_config = getcwd() . "/.phan/config.php";
+if (file_exists($local_config)) {
     $config = include $local_config;
 } else {
     $config = [];
