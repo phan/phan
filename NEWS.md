@@ -16,6 +16,7 @@ New features(Analysis):
 
 Plugins:
 + If possible, suggest the types that Phan observed during analysis with `UnknownElementTypePlugin`. (#3146)
++ New DependencyGraphPlugin and associated tool/pdep - see `tool/pdep -h`
 
 Aug 18 2019, Phan 2.2.11
 ------------------------
