@@ -231,6 +231,9 @@ class Issue
     const CoalescingAlwaysNullInGlobalScope = 'PhanCoalescingAlwaysNullInGlobalScope';
     const TypeMismatchArgumentPropertyReference = 'PhanTypeMismatchArgumentPropertyReference';
     const TypeMismatchArgumentPropertyReferenceReal = 'PhanTypeMismatchArgumentPropertyReferenceReal';
+    const DivisionByZero = 'PhanDivisionByZero';
+    const ModuloByZero = 'PhanModuloByZero';
+    const PowerOfZero = 'PhanPowerOfZero';
 
     // Issue::CATEGORY_ANALYSIS
     const Unanalyzable              = 'PhanUnanalyzable';
@@ -2400,6 +2403,30 @@ class Issue
                 "Using {CODE} of type {TYPE} as the left hand side of a null coalescing (??) operation. The left hand side may be unnecessary. (in the global scope - this is likely a false positive)",
                 self::REMEDIATION_B,
                 10127
+            ),
+            new Issue(
+                self::DivisionByZero,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'Attempting to divide a value by a divisor of {CODE} of type {TYPE}',
+                self::REMEDIATION_B,
+                10145
+            ),
+            new Issue(
+                self::ModuloByZero,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'Attempting to modulo a value with a modulus of {CODE} of type {TYPE}',
+                self::REMEDIATION_B,
+                10146
+            ),
+            new Issue(
+                self::PowerOfZero,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                'Attempting to exponentiate a value to a power of {CODE} of type {TYPE} (the result will always be 1)',
+                self::REMEDIATION_B,
+                10147
             ),
             // Issue::CATEGORY_VARIABLE
             new Issue(
