@@ -319,6 +319,7 @@ return [
         'phan',
         'phan_client',
         'plugins/codeclimate/engine',
+        '.phan/plugins/DependencyGraphPlugin.php',
         'tool/make_stubs',
         'internal/dump_fallback_ast.php',
         'internal/dump_html_styles.php',

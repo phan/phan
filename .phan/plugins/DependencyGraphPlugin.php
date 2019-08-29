@@ -21,7 +21,7 @@ class DependencyGraphPlugin extends PluginV3 implements
     PostAnalyzeNodeCapability,
     FinalizeProcessCapability
 {
-    /** @var array <int, AddressableElement> */
+    /** @var array<int, AddressableElement> */
     private $elements = [];
     /** @var string[] */
     private $class_to_file = [];
