@@ -6,35 +6,27 @@ function usage() {
     Usage: {$argv[0]} [options] [files or classes...]
 
      -c Find classes that depend on the passed files or classes
-
      -f Find files that depend on the passed files or classes
-
      -g Graphviz dot output
-
      -d <depth_level>
         When walking the dependency graph, limit it to this depth. For
         example,
-
           {$argv[0]} -f -d 1 MyClass
-
         would show only the files that directly depend on MyClass.
-
+     -l <filelist.txt>
+     -p Show progress bar
      -h This help
 
     If no filenames or classnames are provided, it will generate the
     full dependency tree.
 
     Note that this tool will read your local .phan/config and pick out
-    the list of files to scan/not scan from there. If you rely on an
-    externally-generated filelist, you will need to hack this {$argv[0]}
-    tool a bit to add that.
+    the list of files to scan/not scan from there. Or you can provide it
+    with a file list.
 
     Examples:
-
         {$argv[0]} -f src/Phan/PluginV3/PluginAwarePreAnalysisVisitor.php
-
         {$argv[0]} -c -g '\Phan\PluginV3\PluginAwarePreAnalysisVisitor' | dot -Tpng > graph.png
-
         {$argv[0]} -c -d 2 -g '\Phan\Language\Type\ClassStringType' | dot -Kfdp -Tpng > graph.png
 
     EOT;
@@ -43,7 +35,8 @@ function usage() {
 
 $tool_dir = dirname($argv[0]);
 $depth = 0;
-$options = getopt("cfghd:");
+$cmd = $filelist = $progress = '';
+$options = getopt("cfghpd:l:");
 foreach (array_keys($options) as $opt) switch ($opt) {
     case 'c':
         array_shift($argv);
@@ -57,10 +50,19 @@ foreach (array_keys($options) as $opt) switch ($opt) {
         array_shift($argv);
         $cmd = "graph";
         break;
+    case 'p':
+        array_shift($argv);
+        $progress= "-p";
+        break;
     case 'd':
         array_shift($argv);
         array_shift($argv);
         $depth = $options[$opt];;
+        break;
+    case 'l':
+        array_shift($argv);
+        array_shift($argv);
+        $filelist = "-f ".$options[$opt];
         break;
     case 'h':
         usage();
@@ -69,4 +71,4 @@ foreach (array_keys($options) as $opt) switch ($opt) {
 array_shift($argv);
 $arg_string = implode(' ', $argv);
 
-system("PDEP_CMD=$cmd PDEP_MODE=$mode PDEP_DEPTH=$depth PDEP_ARGS='$arg_string' bash -c 'phan --quick -j1 -P {$tool_dir}/../.phan/plugins/DependencyGraphPlugin.php -k {$tool_dir}/pdep_config.php'");
+system("PDEP_CMD=$cmd PDEP_MODE=$mode PDEP_DEPTH=$depth PDEP_ARGS='$arg_string' bash -c '{$tool_dir}/../phan --quick -j1 {$progress} {$filelist} -P {$tool_dir}/../.phan/plugins/DependencyGraphPlugin.php -k {$tool_dir}/pdep_config.php'");
