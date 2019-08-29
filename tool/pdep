@@ -2,34 +2,34 @@
 <?php
 function usage() {
     global $argv;
-	echo <<<EOT
-    Usage: {$argv[0]} [options] [files or classes...]
+    echo <<<EOT
+Usage: {$argv[0]} [options] [files or classes...]
 
-     -c Find classes that depend on the passed files or classes
-     -f Find files that depend on the passed files or classes
-     -g Graphviz dot output
-     -d <depth_level>
-        When walking the dependency graph, limit it to this depth. For
-        example,
-          {$argv[0]} -f -d 1 MyClass
-        would show only the files that directly depend on MyClass.
-     -l <filelist.txt>
-     -p Show progress bar
-     -h This help
+ -c Find classes that depend on the passed files or classes
+ -f Find files that depend on the passed files or classes
+ -g Graphviz dot output
+ -d <depth_level>
+    When walking the dependency graph, limit it to this depth. For
+    example,
+      {$argv[0]} -f -d 1 MyClass
+    would show only the files that directly depend on MyClass.
+ -l <filelist.txt>
+ -p Show progress bar
+ -h This help
 
-    If no filenames or classnames are provided, it will generate the
-    full dependency tree.
+If no filenames or classnames are provided, it will generate the
+full dependency tree.
 
-    Note that this tool will read your local .phan/config and pick out
-    the list of files to scan/not scan from there. Or you can provide it
-    with a file list.
+Note that this tool will read your local .phan/config and pick out
+the list of files to scan/not scan from there. Or you can provide it
+with a file list.
 
-    Examples:
-        {$argv[0]} -f src/Phan/PluginV3/PluginAwarePreAnalysisVisitor.php
-        {$argv[0]} -c -g '\Phan\PluginV3\PluginAwarePreAnalysisVisitor' | dot -Tpng > graph.png
-        {$argv[0]} -c -d 2 -g '\Phan\Language\Type\ClassStringType' | dot -Kfdp -Tpng > graph.png
+Examples:
+    {$argv[0]} -f src/Phan/PluginV3/PluginAwarePreAnalysisVisitor.php
+    {$argv[0]} -c -g '\Phan\PluginV3\PluginAwarePreAnalysisVisitor' | dot -Tpng > graph.png
+    {$argv[0]} -c -d 2 -g '\Phan\Language\Type\ClassStringType' | dot -Kfdp -Tpng > graph.png
 
-    EOT;
+EOT;
     exit;
 }
 
