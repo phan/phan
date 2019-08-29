@@ -5,6 +5,7 @@ namespace Phan\Analysis;
 use ast;
 use ast\Node;
 use Closure;
+use Phan\AST\ASTReverter;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\Element;
@@ -15,6 +16,7 @@ use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Context;
 use Phan\Language\Element\Variable;
+use Phan\Language\FQSEN;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FloatType;
@@ -73,11 +75,9 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
      */
     public function visit(Node $node) : Context
     {
-        Issue::maybeEmit(
-            $this->code_base,
-            $this->context,
+        $this->emitIssue(
             Issue::Unanalyzable,
-            $node->lineno ?? 0
+            $node->lineno
         );
         return $this->context;
     }
@@ -228,17 +228,13 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
                         ArrayType::instance(false)->asPHPDocUnionType()
                     )
                 ) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $context,
+                    $this->emitIssue(
                         Issue::TypeInvalidRightOperand,
                         $node->lineno ?? 0
                     );
                     return UnionType::empty();
                 } elseif ($right_is_array && !$left->canCastToUnionType($array_type->asPHPDocUnionType())) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $context,
+                    $this->emitIssue(
                         Issue::TypeInvalidLeftOperand,
                         $node->lineno ?? 0
                     );
@@ -285,6 +281,9 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
                 $context,
                 $node->children['expr']
             );
+            if (!$right->isEmpty() && !$right->containsTruthy()) {
+                $this->warnRightSideZero($node, $right);
+            }
 
             static $float_type = null;
             static $int_or_float_union_type = null;
@@ -331,6 +330,24 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
     }
 
     /**
+     * Warn about the right hand side always casting to zero when used in a numeric operation.
+     * @param UnionType $right_type a type that always casts to zero.
+     */
+    private function warnRightSideZero(Node $node, UnionType $right_type) : void
+    {
+        $issue_type = PostOrderAnalysisVisitor::ISSUE_TYPES_RIGHT_SIDE_ZERO[$node->flags] ?? null;
+        if (!is_string($issue_type)) {
+            return;
+        }
+        $this->emitIssue(
+            $issue_type,
+            $node->children['expr']->lineno ?? $node->lineno,
+            ASTReverter::toShortString($node->children['expr']),
+            $right_type
+        );
+    }
+
+    /**
      * @param Node $node with type AST_BINARY_OP
      * @param Closure(Type):bool $is_valid_type
      * @return void
@@ -347,9 +364,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
     ) : void {
         if (!$left->isEmpty()) {
             if (!$left->hasTypeMatchingCallback($is_valid_type)) {
-                Issue::maybeEmit(
-                    $this->code_base,
-                    $this->context,
+                $this->emitIssue(
                     $left_issue_type,
                     $node->children['var']->lineno ?? $node->lineno,
                     PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$node->flags] . '=',
@@ -359,9 +374,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         }
         if (!$right->isEmpty()) {
             if (!$right->hasTypeMatchingCallback($is_valid_type)) {
-                Issue::maybeEmit(
-                    $this->code_base,
-                    $this->context,
+                $this->emitIssue(
                     $right_issue_type,
                     $node->children['expr']->lineno ?? $node->lineno,
                     PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$node->flags] . '=',
@@ -419,12 +432,41 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
 
     public function visitBinaryMod(Node $node) : Context
     {
-        $this->warnForInvalidOperandsOfNumericOp($node);
+        $this->warnForInvalidOperandsOfModOp($node);
         return $this->updateTargetWithType($node, static function (UnionType $unused_left) : UnionType {
-            // TODO: Check if both sides can cast to string and warn if they can't.
+            // TODO: Check if both sides can cast to int and warn if they can't.
             return IntType::instance(false)->asRealUnionType();
         });
     }
+
+    private function warnForInvalidOperandsOfModOp(Node $node) : void
+    {
+        $left = UnionTypeVisitor::unionTypeFromNode(
+            $this->code_base,
+            $this->context,
+            $node->children['var']
+        );
+
+        $right = UnionTypeVisitor::unionTypeFromNode(
+            $this->code_base,
+            $this->context,
+            $node->children['expr']
+        );
+        if (!$right->isEmpty() && !$right->containsTruthy()) {
+            $this->warnRightSideZero($node, $right);
+        }
+        $this->warnAboutInvalidUnionType(
+            $node,
+            static function (Type $type) : bool {
+                return $type->isValidNumericOperand();
+            },
+            $left,
+            $right,
+            Issue::TypeInvalidLeftOperandOfNumericOp,
+            Issue::TypeInvalidRightOperandOfNumericOp
+        );
+    }
+
 
     public function visitBinaryMul(Node $node) : Context
     {
@@ -439,7 +481,8 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
 
     /**
      * @return Context
-     * TODO: There's an RFC to make binary shift left/right apply to strings.
+     * NOTE: There's a draft RFC to make binary shift left/right apply to strings. (https://wiki.php.net/rfc/string-bitwise-shifts)
+     * For now, it always casts to int.
      */
     public function visitBinaryShiftLeft(Node $node) : Context
     {
@@ -486,33 +529,32 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         );
     }
 
-    private function warnForInvalidOperandsOfNumericOp(Node $node) : void
-    {
-        $left = UnionTypeVisitor::unionTypeFromNode(
-            $this->code_base,
-            $this->context,
-            $node->children['var']
-        );
-
-        $right = UnionTypeVisitor::unionTypeFromNode(
-            $this->code_base,
-            $this->context,
-            $node->children['expr']
-        );
-        $this->warnAboutInvalidUnionType(
-            $node,
-            static function (Type $type) : bool {
-                return $type->isValidNumericOperand();
-            },
-            $left,
-            $right,
-            Issue::TypeInvalidLeftOperandOfNumericOp,
-            Issue::TypeInvalidRightOperandOfNumericOp
-        );
-    }
-
     public function visitBinarySub(Node $node) : Context
     {
         return $this->analyzeNumericArithmeticOp($node, true);
+    }
+
+    /**
+     * @param string $issue_type
+     * The type of issue to emit.
+     *
+     * @param int $lineno
+     * The line number where the issue was found
+     *
+     * @param int|string|FQSEN|UnionType|Type ...$parameters
+     * Template parameters for the issue's error message
+     */
+    protected function emitIssue(
+        string $issue_type,
+        int $lineno,
+        ...$parameters
+    ) : void {
+        Issue::maybeEmitWithParameters(
+            $this->code_base,
+            $this->context,
+            $issue_type,
+            $lineno,
+            $parameters
+        );
     }
 }

@@ -831,6 +831,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         );
     }
 
+    const ISSUE_TYPES_RIGHT_SIDE_ZERO = [
+        flags\BINARY_POW => Issue::PowerOfZero,
+        flags\BINARY_DIV => Issue::DivisionByZero,
+        flags\BINARY_MOD => Issue::ModuloByZero,
+    ];
+
     private function analyzeBinaryNumericOp(Node $node) : void
     {
         $left = UnionTypeVisitor::unionTypeFromNode(
@@ -844,6 +850,14 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $this->context,
             $node->children['right']
         );
+        if (!$right->isEmpty() && !$right->containsTruthy()) {
+            $this->emitIssue(
+                self::ISSUE_TYPES_RIGHT_SIDE_ZERO[$node->flags],
+                $node->children['right']->lineno ?? $node->lineno,
+                ASTReverter::toShortString($node->children['right']),
+                $right
+            );
+        }
         $this->warnAboutInvalidUnionType(
             $node,
             static function (Type $type) : bool {
