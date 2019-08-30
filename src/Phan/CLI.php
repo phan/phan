@@ -819,14 +819,14 @@ class CLI
         $bad_options = [];
         foreach ($opts as $other_key => $_) {
             // -3 is an option, and gets converted to `3` in an array key.
-            if (strncmp((string)$other_key, 'init-', 5) === 0) {
+            if (\strncmp((string)$other_key, 'init-', 5) === 0) {
                 $bad_options[] = "--$other_key";
             }
         }
         if (count($bad_options) > 0) {
             $option_pluralized = count($bad_options) > 1 ? "options" : "option";
             $make_pluralized = count($bad_options) > 1 ? "make" : "makes";
-            throw new UsageException("The $option_pluralized " . implode(' and ', $bad_options) . " only $make_pluralized sense when initializing a new Phan config with --init", EXIT_FAILURE, UsageException::PRINT_INIT_ONLY);
+            throw new UsageException("The $option_pluralized " . \implode(' and ', $bad_options) . " only $make_pluralized sense when initializing a new Phan config with --init", EXIT_FAILURE, UsageException::PRINT_INIT_ONLY);
         }
     }
 

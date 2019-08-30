@@ -14,6 +14,7 @@ New features(Analysis):
   Include all return types for many internal global functions for `--target-php-version` of `7.[0-4]`,
   including those caused by invalid arguments or argument counts.
 + Warn about division, modulo, and exponentiation by 0 (or by values that would cast to 0).
++ Fix a bug converting absolute paths to relative paths when the project directory is a substring of a subdirectory (#3158)
 
 Plugins:
 + If possible, suggest the types that Phan observed during analysis with `UnknownElementTypePlugin`. (#3146)
