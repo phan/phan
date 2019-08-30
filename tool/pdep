@@ -1,6 +1,9 @@
 #!/usr/bin/env php
 <?php
-function usage() {
+// pdep is a tool to help explore dependencies of classes.
+
+/** Prints a usage message and exits. */
+function usage() : void {
     global $argv;
     echo <<<EOT
 Usage: {$argv[0]} [options] [files or classes...]
