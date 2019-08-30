@@ -336,7 +336,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
     private function warnRightSideZero(Node $node, UnionType $right_type) : void
     {
         $issue_type = PostOrderAnalysisVisitor::ISSUE_TYPES_RIGHT_SIDE_ZERO[$node->flags] ?? null;
-        if (!is_string($issue_type)) {
+        if (!\is_string($issue_type)) {
             return;
         }
         $this->emitIssue(

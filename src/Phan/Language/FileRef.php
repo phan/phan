@@ -72,17 +72,18 @@ class FileRef implements \Serializable
     public static function getProjectRelativePathForPath(string $cwd_relative_path) : string
     {
         // Get a path relative to the project root
-        $path = \str_replace(
-            Config::getProjectRootDirectory(),
-            '',
-            \realpath($cwd_relative_path) ?: $cwd_relative_path
-        );
-
-        // Strip any beginning directory separators
-        if (0 === ($pos = \strpos($path, \DIRECTORY_SEPARATOR))) {
-            // Work around substr being pedantic
-            $path = (string)\substr($path, $pos + 1);
+        // e.g. if the path is /my-project, then strip the beginning of "/my-project/src/a.php" to "src/a.php" but should not change /my-project-unrelated-src/a.php
+        // And don't strip subdirectories of the same name, e.g. should convert "/my-project/subdir/my-project/file.php" to "subdir/my-project/file.php"
+        $path = \realpath($cwd_relative_path) ?: $cwd_relative_path;
+        $root_directory = Config::getProjectRootDirectory();
+        $n = \strlen($root_directory);
+        if (\strncmp($path, $root_directory, $n) === 0) {
+            if (\in_array($path[$n] ?? '', [\DIRECTORY_SEPARATOR, '/'], true)) {
+                $path = (string)\substr($path, $n + 1);
+            }
         }
+        // Strip any extra beginning directory separators
+        $path = \ltrim($path, '/' . \DIRECTORY_SEPARATOR);
 
         return $path;
     }

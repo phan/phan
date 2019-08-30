@@ -237,21 +237,21 @@ class Daemon
 
     /**
      * Debug (non-error) statement related to the daemon.
-     * Uncomment this when debugging issues (E.g. changes not being picked up)
+     * Set PHAN_DAEMON_ENABLE_DEBUG=1 when debugging.
      *
-     * @param string $format - printf style format string @phan-unused-param
-     * @param mixed ...$args - printf args @phan-unused-param
-     * @suppress PhanPluginUseReturnValueNoopVoid
+     * @param string $format - printf style format string
+     * @param mixed ...$args - printf args
+     * @suppress PhanPluginPrintfVariableFormatString
      */
     public static function debugf(string $format, ...$args) : void
     {
-        /*
-        if (count($args) > 0) {
-            $message = sprintf($format, ...$args);
-        } else {
-            $message = $format;
+        if (\getenv('PHAN_DAEMON_ENABLE_DEBUG')) {
+            if (\count($args) > 0) {
+                $message = \sprintf($format, ...$args);
+            } else {
+                $message = $format;
+            }
+            \fwrite(\STDERR, $message . "\n");
         }
-        error_log($message);
-        */
     }
 }
