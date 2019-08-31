@@ -42,3 +42,8 @@ interface Interface292 {
 class ClassExtendingInterface292 implements Interface292 {
     function myImplementedFunction() {}
 }
+
+abstract class F292 {
+    public abstract function &foo(array &$called, string $x = 'default') : string;
+}
+class G292 extends F292 {}

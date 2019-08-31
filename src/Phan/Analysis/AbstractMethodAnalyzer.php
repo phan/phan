@@ -5,6 +5,7 @@ namespace Phan\Analysis;
 use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Element\Clazz;
+use Phan\Language\Element\Method;
 
 /**
  * This verifies that the inherited abstract methods are all implemented on non-abstract classes.
@@ -37,7 +38,7 @@ class AbstractMethodAnalyzer
                         Issue::ClassContainsAbstractMethodInternal,
                         $class->getFileRef()->getLineNumberStart(),
                         (string)$class->getFQSEN(),
-                        (string)$method->getDefiningFQSEN()
+                        self::toRealSignature($method)
                     );
                 } else {
                     Issue::maybeEmit(
@@ -46,12 +47,33 @@ class AbstractMethodAnalyzer
                         Issue::ClassContainsAbstractMethod,
                         $class->getFileRef()->getLineNumberStart(),
                         (string)$class->getFQSEN(),
-                        (string)$method->getDefiningFQSEN(),
+                        self::toRealSignature($method),
                         $method->getFileRef()->getFile(),
                         $method->getFileRef()->getLineNumberStart()
                     );
                 }
             }
         }
+    }
+
+    /**
+     * @suppress PhanAccessMethodInternal
+     */
+    private static function toRealSignature(Method $method) : string
+    {
+        $fqsen = $method->getDefiningFQSEN();
+        $result = sprintf(
+            "%s::%s%s(%s)",
+            (string) $fqsen->getFullyQualifiedClassName(),
+            $method->returnsRef() ? '&' : '',
+            $fqsen->getName(),
+            $method->getRealParameterStubText()
+        );
+        $return_type = $method->getRealReturnType();
+        if (!$return_type->isEmpty()) {
+            $result .= ': ' . $return_type;
+        }
+
+        return $result;
     }
 }
