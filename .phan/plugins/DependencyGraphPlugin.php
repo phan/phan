@@ -318,9 +318,10 @@ class DependencyGraphPlugin extends PluginV3 implements
         if (!$graph || empty($graph)) {
             $graph = $this->fgraph;
         }
-        echo "strict digraph $title {\nrankdir=BT\nsplines=true\n";
+        $shapes = '';
+        echo "strict digraph $title {\nrankdir=RL\nsplines=ortho\n";
         foreach ($graph as $node => $depNode) {
-            echo "\"$node\" [shape=box]\n";
+            $shapes .= "\"$node\" [shape=box]\n";
             foreach ($depNode as $dnode => $val) {
                 [$type,$lineno] = explode(':', (string)$val);
                 $style = '';
@@ -333,6 +334,7 @@ class DependencyGraphPlugin extends PluginV3 implements
                 echo "\"$dnode\" -> \"$node\" [taillabel=$lineno,labelfontsize=10,labeldistance=1.4{$style}]\n";
             }
         }
+        echo $shapes;
         echo "}\n";
     }
 
@@ -346,7 +348,8 @@ class DependencyGraphPlugin extends PluginV3 implements
         if (!$graph) {
             $graph = $this->cgraph;
         }
-        echo "strict digraph $title {\nrankdir=BT\nsplines=true\n";
+        echo "strict digraph $title {\nrankdir=RL\nsplines=ortho\n";
+        $shapes = '';
         foreach ($graph as $node => $depNode) {
             $shape = "";
             switch ($this->ctype[$node]) {
@@ -361,7 +364,8 @@ class DependencyGraphPlugin extends PluginV3 implements
                     break;
             }
             if ($shape) {
-                echo '"',addslashes(trim($node, "\\")) . "\" [$shape]\n";
+                // Defer the shape definitions until after the edges. This tends to give a better node layout
+                $shapes .= '"' . addslashes(trim($node, "\\")) . "\" [$shape]\n";
             }
             foreach ($depNode as $dnode => $val) {
                 [$type] = explode(':', (string)$val);
@@ -375,6 +379,7 @@ class DependencyGraphPlugin extends PluginV3 implements
                 echo '"' . addslashes(trim($dnode, "\\")) . '" -> "' . addslashes(trim($node, "\\")) . "\"$style\n";
             }
         }
+        echo $shapes;
         echo "}\n";
     }
 
