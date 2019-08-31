@@ -35,8 +35,7 @@ interface FunctionInterface extends AddressableElementInterface
 
     /**
      * @return string
-     * The fully-qualified structural element name of this
-     * structural element, or a string for FunctionLikeDeclarationType which lacks a real FQSEN
+     * The fully-qualified structural element name and args of this function-like.
      */
     public function getRepresentationForIssue(bool $show_args = false) : string;
 
