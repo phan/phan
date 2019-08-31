@@ -289,4 +289,11 @@ final class CLITest extends BaseTest
             $this->assertLessThan(0, \version_compare($version, \str_replace('-dev', '', $versions[$i - 1])), "unexpected order of $version and {$versions[$i - 1]}");
         }
     }
+
+    // Should pass both on Windows and Unix
+    public function testUniqueFileList() : void
+    {
+        $this->assertSame([], CLI::uniqueFileList([]));
+        $this->assertSame(['src/a.php', 'src/b.php'], CLI::uniqueFileList(['src/a.php', 'src' . \DIRECTORY_SEPARATOR . 'a.php', 'src/b.php', 'src//b.php']));
+    }
 }

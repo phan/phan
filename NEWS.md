@@ -20,6 +20,9 @@ Plugins:
 + If possible, suggest the types that Phan observed during analysis with `UnknownElementTypePlugin`. (#3146)
 + New DependencyGraphPlugin and associated tool/pdep - see `tool/pdep -h`
 
+Bug fixes:
++ Don't parse `src/a.php` and `src\a.php` twice if both paths are generated from config or CLI options (#3166)
+
 Aug 18 2019, Phan 2.2.11
 ------------------------
 

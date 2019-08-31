@@ -997,7 +997,7 @@ class CLI
             }
 
             // Don't scan anything twice
-            $this->file_list = \array_unique($this->file_list);
+            $this->file_list = self::uniqueFileList($this->file_list);
         }
 
         // Exclude any files that should be excluded from
@@ -1018,6 +1018,23 @@ class CLI
                 }
             );
         }
+    }
+
+    /**
+     * @param string[] $file_list
+     * @return array<int,string> $file_list without duplicates
+     */
+    public static function uniqueFileList(array $file_list) : array
+    {
+        $result = [];
+        foreach ($file_list as $file) {
+            // treat src/a.php, src//a.php, and src\a.php (on Windows) as the same file
+            $file_key = \preg_replace('@/{2,}@', '/', \str_replace(\DIRECTORY_SEPARATOR, '/', $file));
+            if (!isset($result[$file_key])) {
+                $result[$file_key] = $file;
+            }
+        }
+        return \array_values($result);
     }
 
     /**
@@ -1563,7 +1580,7 @@ EOB
      * @param string $directory_name
      * The name of a directory to scan for files ending in `.php`.
      *
-     * @return array<string,string>
+     * @return array<int,string>
      * A list of PHP files in the given directory
      *
      * @throws InvalidArgumentException
@@ -1636,6 +1653,7 @@ EOB
         $normalized_file_list = [];
         foreach ($file_list as $file_path) {
             $file_path = \preg_replace('@^(\.[/\\\\]+)+@', '', $file_path);
+            // Treat src/file.php and src//file.php and src\file.php the same way
             $normalized_file_list[$file_path] = $file_path;
         }
         \usort($normalized_file_list, static function (string $a, string $b) : int {
@@ -1646,6 +1664,7 @@ EOB
             return \strcmp(\preg_replace("@[/\\\\]+@", "\0", $a), \preg_replace("@[/\\\\]+@", "\0", $b));
         });
 
+        // @phan-suppress-next-line PhanPartialTypeMismatchReturn TODO fix https://github.com/phan/phan/issues/3169
         return $normalized_file_list;
     }
 
