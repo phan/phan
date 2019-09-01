@@ -1,1 +1,1 @@
-%s:14 PhanImpossibleTypeComparison Impossible attempt to check if $y of type null is identical to 2 of type 2
+%s:14 PhanImpossibleTypeComparison Impossible attempt to check if $y of type false is identical to 2 of type 2
