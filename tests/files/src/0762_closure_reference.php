@@ -1,7 +1,7 @@
 <?php
 
 function f762() {
-    $x = null;
+    $x = false;
     call_user_func_array('f762clos1', [&$x]);
     if ($x===0.5) {
         return 'foo';
