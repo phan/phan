@@ -555,15 +555,9 @@ class IssueFixSuggester
             $class_in_scope = $context->getClassInScope($code_base);
             if ($class_in_scope->hasPropertyWithName($code_base, $variable_name)) {
                 $property = $class_in_scope->getPropertyByName($code_base, $variable_name);
-
-                if (!$property->isDynamicProperty()) {
-                    // Don't suggest inherited private properties that can't be accessed
-                    // - This doesn't need to be checking if the visibility is protected,
-                    //   because it's looking for properties of the current class
-                    if (!$property->isPrivate() || $property->getDefiningClassFQSEN() === $class_in_scope->getFQSEN()) {
-                        $suggestion_prefix = $property->isStatic() ? 'self::$' : '$this->';
-                        $suggestions[] = $suggestion_prefix . $variable_name;
-                    }
+                if (self::shouldSuggestProperty($context, $class_in_scope, $property)) {
+                    $suggestion_prefix = $property->isStatic() ? 'self::$' : '$this->';
+                    $suggestions[] = $suggestion_prefix . $variable_name;
                 }
             }
         }
@@ -575,6 +569,26 @@ class IssueFixSuggester
         return Suggestion::fromString(
             $prefix . ' ' . \implode(' or ', $suggestions)
         );
+    }
+
+    private static function shouldSuggestProperty(Context $context, Clazz $class_in_scope, Property $property) : bool {
+        if ($property->isDynamicProperty()) {
+            // Don't suggest properties that weren't declared.
+            return false;
+        }
+        if ($property->isPrivate() && $property->getDefiningClassFQSEN() !== $class_in_scope->getFQSEN()) {
+            // Don't suggest inherited private properties that can't be accessed
+            // - This doesn't need to be checking if the visibility is protected,
+            //   because it's looking for properties of the current class
+            return false;
+        }
+        if ($property->isStatic()) {
+            if (!$context->getScope()->hasVariableWithName('this')) {
+                // Don't suggest $this->prop from a static method or a static closure.
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
