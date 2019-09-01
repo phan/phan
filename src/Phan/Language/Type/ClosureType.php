@@ -57,6 +57,9 @@ final class ClosureType extends Type
         return $instance;
     }
 
+    /**
+     * @suppress PhanAccessReadOnlyProperty
+     */
     public function __clone()
     {
         if ($this->fqsen !== null) {

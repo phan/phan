@@ -9,6 +9,7 @@ use Microsoft\PhpParser\Diagnostic;
  * All details about the results of parsing.
  *
  * This can be serialized and used in a cache.
+ * @immutable
  */
 class ParseResult
 {

@@ -11,6 +11,7 @@ namespace Phan\Library;
  *
  * @inherits Option<T>
  * phpcs:disable PSR2.Classes.PropertyDeclaration.Underscore
+ * @immutable
  */
 class Some extends Option
 {

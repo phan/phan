@@ -11,17 +11,20 @@ use RuntimeException;
 class NamespaceMapEntry implements \Serializable
 {
     /**
-     * @var FullyQualifiedGlobalStructuralElement the FQSEN of the
+     * @var FullyQualifiedGlobalStructuralElement the FQSEN of the namespace map entry
+     * @phan-read-only
      */
     public $fqsen;
 
     /**
      * @var string the original case-sensitive name of the use statement
+     * @phan-read-only
      */
     public $original_name;
 
     /**
      * @var int the line number of the use statement
+     * @phan-read-only
      */
     public $lineno;
 
@@ -53,6 +56,7 @@ class NamespaceMapEntry implements \Serializable
 
     /**
      * @param string $representation
+     * @suppress PhanAccessReadOnlyProperty TODO fix #3179
      */
     public function unserialize($representation) : void
     {

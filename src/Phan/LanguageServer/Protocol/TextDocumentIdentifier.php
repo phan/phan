@@ -6,6 +6,7 @@ namespace Phan\LanguageServer\Protocol;
 /**
  * Source: https://github.com/felixfbecker/php-language-server/tree/master/src/Protocol/TextDocumentIdentifier.php
  * See ../../../../LICENSE.LANGUAGE_SERVER
+ * @immutable
  */
 class TextDocumentIdentifier
 {

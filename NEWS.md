@@ -1,6 +1,6 @@
 Phan NEWS
 
-Aug 18 2019, Phan 2.2.12 (dev)
+??? ?? 2019, Phan 2.2.12 (dev)
 ------------------------
 
 New features(CLI):
@@ -8,6 +8,13 @@ New features(CLI):
   Previously, Phan would fail with a confusing error message.
 
 New features(Analysis):
++ Support `@immutable` annotation on class doc comments, to indicate that all instance properties are read-only.
+
+  - Phan does not check if object fields of those immutable properties will change. (e.g. `$this->foo->prop = 'x';` is allowed)
+  - This annotation does not imply that methods have no side effects (e.g. I/O, modifying global state)
+  - This annotation does not imply that methods have deterministic return values or that methods' results should be used.
+
+  `@immutable` is an alias of `@phan-read-only`. `@phan-read-only` was previously supported on properties.
 + Fix false positives for checking for redundant conditions with `iterable` and `is_iterable`.
 + Properly infer real types for `is_resource` checks and other cases where UnionType::fromFullyQualifiedRealString() was used.
 + Avoid false positives for the config setting `'assume_real_types_for_internal_functions'`.

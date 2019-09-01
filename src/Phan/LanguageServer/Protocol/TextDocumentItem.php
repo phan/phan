@@ -8,6 +8,7 @@ namespace Phan\LanguageServer\Protocol;
  *
  * Source: https://github.com/felixfbecker/php-language-server/tree/master/src/Protocol/TextDocumentItem.php
  * See ../../../../LICENSE.LANGUAGE_SERVER
+ * @immutable
  */
 class TextDocumentItem
 {
@@ -15,7 +16,6 @@ class TextDocumentItem
      * The text document's URI.
      *
      * @var string
-     * @suppress PhanReadOnlyPublicProperty
      */
     public $uri;
 
@@ -40,7 +40,6 @@ class TextDocumentItem
      * The content of the opened text document.
      *
      * @var string
-     * @suppress PhanReadOnlyPublicProperty
      */
     public $text;
 }

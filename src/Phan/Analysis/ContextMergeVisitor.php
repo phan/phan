@@ -19,7 +19,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
     /**
      * @var Context
      * The context in which the node we're going to be looking
-     * at exits.
+     * at exists.
      */
     private $context;
 

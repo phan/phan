@@ -9,6 +9,7 @@ use Phan\Language\UnionType;
  * Represents an assertion on a parameter type.
  *
  * @internal
+ * @immutable
  */
 class Assertion
 {

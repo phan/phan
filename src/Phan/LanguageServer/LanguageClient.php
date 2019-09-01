@@ -6,6 +6,7 @@ namespace Phan\LanguageServer;
 /**
  * Source: https://github.com/felixfbecker/php-language-server/tree/master/src/LanguageClient.php
  * See ../../../LICENSE.LANGUAGE_SERVER
+ * @immutable
  */
 class LanguageClient
 {

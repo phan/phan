@@ -1,0 +1,3 @@
+%s:20 PhanAccessReadOnlyProperty Cannot modify read-only property \TestImmutable->y defined at %s:8
+%s:24 PhanAccessReadOnlyProperty Cannot modify read-only property \TestImmutable->x defined at %s:7
+%s:27 PhanAccessReadOnlyProperty Cannot modify read-only property \TestImmutable::$static2 defined at %s:12

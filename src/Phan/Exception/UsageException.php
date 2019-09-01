@@ -6,10 +6,11 @@ use Phan\Daemon\ExitException;
 
 /**
  * Thrown to indicate that retrieving the element for an FQSEN from the CodeBase failed.
+ * @immutable
  */
 class UsageException extends ExitException
 {
-    /** @var int  the type of usage to print */
+    /** @var int the type of usage to print */
     public $print_type;
 
     /** @var bool whether to forbid colorizing the exception message */

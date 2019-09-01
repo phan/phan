@@ -75,10 +75,10 @@ use function trim;
  * A plain Type represents a class instance.
  * Separate subclasses exist for NativeType, ArrayType, ScalarType, TemplateType, etc.
  *
- * Types are immutable.
  *
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
  * phpcs:disable Generic.NamingConventions.UpperCaseConstantName
+ * @immutable union types are immutable.
  */
 class Type
 {
@@ -1506,7 +1506,7 @@ class Type
      * A UnionType representing this and only this type (from phpdoc or real types)
      *
      * @deprecated use self::asPHPDocUnionType()
-     * @suppress PhanUnreferencedPublicMethod
+     * @suppress PhanUnreferencedPublicMethod, PhanAccessReadOnlyProperty
      * @phan-pure
      */
     public function asUnionType() : UnionType
@@ -1519,6 +1519,7 @@ class Type
      * A UnionType representing this and only this type (from phpdoc or real types)
      * @see asRealUnionType() if you are certain this is the real type of the expression.
      * @phan-pure
+     * @suppress PhanAccessReadOnlyProperty
      */
     public function asPHPDocUnionType() : UnionType
     {
@@ -1531,6 +1532,7 @@ class Type
      * @return UnionType
      * A UnionType representing this and only this type
      * @phan-pure
+     * @suppress PhanAccessReadOnlyProperty
      */
     public function asRealUnionType() : UnionType
     {
