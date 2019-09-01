@@ -3,6 +3,7 @@
 namespace Phan\Language;
 
 use Closure;
+use Exception;
 use Generator;
 use InvalidArgumentException;
 use Phan\CodeBase;
@@ -2990,6 +2991,86 @@ class UnionType implements Serializable
             $type = $type->asCallableType();
             if ($type) {
                 $result[] = $type;
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Returns the types for which is_countable($x) would be true.
+     * Takes `ArrayObject|false` and returns `ArrayObject`
+     * Takes `?(int[])` and returns `int[]`
+     * Takes `string` and returns an empty union type.
+     *
+     * @return UnionType
+     * A UnionType with known countable types kept, other types filtered out.
+     *
+     * @see nonGenericArrayTypes
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public function countableTypesStrictCast(CodeBase $code_base) : UnionType
+    {
+        static $default_types;
+        if (\is_null($default_types)) {
+            $default_types = [ArrayType::instance(false), Type::countableInstance()];
+        }
+        return UnionType::of(
+            self::castTypeListToCountable($code_base, $this->type_set, false) ?: $default_types,
+            self::castTypeListToCountable($code_base, $this->real_type_set, false) ?: $default_types
+        );
+    }
+
+    /**
+     * @param Type[] $type_list
+     * @return array<int,Type> possibly containing duplicates
+     * @internal
+     */
+    public static function castTypeListToCountable(CodeBase $code_base, array $type_list, bool $assume_subclass_implements_countable) : array
+    {
+        $result = [];
+        foreach ($type_list as $type) {
+            if ($type instanceof IterableType) {
+                $result[] = $type->asArrayType();
+                if ($assume_subclass_implements_countable && $type->isPossiblyObject()) {
+                    $result[] = Type::countableInstance();
+                }
+                continue;
+            } elseif ($type->isObjectWithKnownFQSEN()) {
+                $type = $type->withIsNullable(false);
+                $expanded_type = $type->asExpandedTypes($code_base);
+                foreach ($expanded_type->getTypeSet() as $part_type) {
+                    if ($part_type->getName() === 'Countable' && $part_type->getNamespace() === '\\') {
+                        $result[] = $type;
+                        continue 2;
+                    }
+                }
+                if ($assume_subclass_implements_countable) {
+                    try {
+                        $fqsen = $type->asFQSEN();
+                        if (!($fqsen instanceof FullyQualifiedClassName)) {
+                            // This is a closure
+                            continue;
+                        }
+                        if ($code_base->hasClassWithFQSEN($fqsen)) {
+                            if ($code_base->getClassByFQSEN($fqsen)->isFinal()) {
+                                // This is a final class and can't implement Countable
+                                continue;
+                            }
+                        }
+                    } catch (Exception $_) {
+                        // ignore it
+                    }
+                    $result[] = Type::countableInstance();
+                }
+                continue;
+            } else {
+                if ($type->isPossiblyObject()) {
+                    // e.g. object/mixed/callable-object can also be Countable
+                    $result[] = Type::countableInstance();
+                }
+                if ($type instanceof MixedType) {
+                    $result[] = ArrayType::instance(false);
+                }
             }
         }
         return $result;

@@ -444,6 +444,11 @@ final class EmptyUnionType extends UnionType
         return IterableType::instance(false)->asRealUnionType();
     }
 
+    public function countableTypesStrictCast(CodeBase $code_base) : UnionType
+    {
+        return UnionType::fromFullyQualifiedRealString('array|\Countable');
+    }
+
     public function iterableTypesStrictCastAssumeTraversable(CodeBase $code_base) : UnionType
     {
         return IterableType::instance(false)->asRealUnionType();

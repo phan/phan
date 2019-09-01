@@ -750,13 +750,21 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
 
         /**
          * @param array<int,Node|mixed> $args
-         * @phan-closure-scope UnionType
          */
         $iterable_callback = static function (CodeBase $code_base, Context $context, Variable $variable, array $args) : void {
             // Change the type to match the is_iterable relationship
             // If we already have generic array types or Traversable, then keep those
             // (E.g. T[]|false becomes T[], ?array|null becomes array, callable becomes iterable, object becomes \Traversable)
             $variable->setUnionType($variable->getUnionType()->withStaticResolvedInContext($context)->iterableTypesStrictCast($code_base));
+        };
+        /**
+         * @param array<int,Node|mixed> $args
+         */
+        $countable_callback = static function (CodeBase $code_base, Context $context, Variable $variable, array $args) : void {
+            // Change the type to match the is_countable relationship
+            // If we already have possible countable types, then keep those
+            // (E.g. ?ArrayObject|false becomes ArrayObject)
+            $variable->setUnionType($variable->getUnionType()->withStaticResolvedInContext($context)->countableTypesStrictCast($code_base));
         };
         /** @return void */
         $callable_callback = $make_callback('callableTypes', CallableType::instance(false)->asRealUnionType());
@@ -776,6 +784,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             'is_array' => $array_callback,
             'is_bool' => $bool_callback,
             'is_callable' => $callable_callback,
+            'is_countable' => $countable_callback,
             'is_double' => $float_callback,
             'is_float' => $float_callback,
             'is_int' => $int_callback,

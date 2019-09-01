@@ -614,15 +614,48 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                     if ($has_null && !$has_other_nullable_types) {
                         $new_type_builder->addType(NullType::instance(false));
                     }
-                    // TODO: Could try to track real types here and elsewhere
+                    // FIXME: Could try to track real types here and elsewhere
                     return $new_type_builder->getPHPDocUnionType();
                 },
                 false,
                 false
             );
         };
-        // The implementation of Traversable may change in the future (e.g. to support generics).
-        // So use fromFullyQualifiedString()
+        $remove_countable_callback = static function (NegatedConditionVisitor $cv, Node $var_node, Context $context) : Context {
+            $code_base = $cv->getCodeBase();
+            return $cv->updateVariableWithConditionalFilter(
+                $var_node,
+                $context,
+                // if (!is_countable($x)) removes non-array/Countable types from $x.
+                static function (UnionType $union_type) use ($code_base) : bool {
+                    return $union_type->hasTypeMatchingCallback(static function (Type $type) use ($code_base) : bool {
+                        return $type->isCountable($code_base);
+                    });
+                },
+                static function (UnionType $union_type) use ($code_base) : UnionType {
+                    $new_type_builder = new UnionTypeBuilder();
+                    $has_null = false;
+                    $has_other_nullable_types = false;
+                    // Add types which are not Countable
+                    foreach ($union_type->getTypeSet() as $type) {
+                        if ($type->isCountable($code_base)) {
+                            $has_null = $has_null || $type->isNullable();
+                            continue;
+                        }
+                        $has_other_nullable_types = $has_other_nullable_types || $type->isNullable();
+                        $new_type_builder->addType($type);
+                    }
+                    // Add Null if some of the rejected types were were nullable, and none of the accepted types were nullable
+                    if ($has_null && !$has_other_nullable_types) {
+                        $new_type_builder->addType(NullType::instance(false));
+                    }
+                    // FIXME: Could try to track real types here and elsewhere
+                    return $new_type_builder->getPHPDocUnionType();
+                },
+                false,
+                false
+            );
+        };
         $remove_array_callback = static function (NegatedConditionVisitor $cv, Node $var_node, Context $context) : Context {
             return $cv->updateVariableWithConditionalFilter(
                 $var_node,
@@ -695,6 +728,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
             'is_array' => $remove_array_callback,
             'is_bool' => $remove_bool_callback,
             'is_callable' => $remove_callable_callback,
+            'is_countable' => $remove_countable_callback,
             'is_double' => $remove_float_callback,
             'is_float' => $remove_float_callback,
             'is_int' => $remove_int_callback,

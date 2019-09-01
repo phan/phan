@@ -70,6 +70,11 @@ abstract class NativeType extends Type
         return false;
     }
 
+    public function isCountable(CodeBase $_) : bool
+    {
+        return false;
+    }
+
     public function isTraversable() : bool
     {
         return false;

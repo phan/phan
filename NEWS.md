@@ -16,6 +16,7 @@ New features(Analysis):
 + Warn about division, modulo, and exponentiation by 0 (or by values that would cast to 0).
 + Fix a bug converting absolute paths to relative paths when the project directory is a substring of a subdirectory (#3158)
 + Show the real signature of the abstract method in PhanClassContainsAbstractMethod issues. (#3152)
++ Support analyzing php 7.3's `is_countable()`, and warn when the check is redundant or impossible (#3172)
 
 Plugins:
 + If possible, suggest the types that Phan observed during analysis with `UnknownElementTypePlugin`. (#3146)
