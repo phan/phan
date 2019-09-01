@@ -2170,6 +2170,24 @@ class Type
     }
 
     /**
+     * Returns true if is_countable() is satisfied for the non-null version of this type.
+     * e.g. returns true for `?ArrayObject`, `int[]`, '\Countable', and `array`.
+     * Returns false for `iterable`, `mixed`, `\BaseClass`, etc.
+     */
+    public function isCountable(CodeBase $code_base) : bool
+    {
+        if (!$this->isObjectWithKnownFQSEN()) {
+            return false;
+        }
+        foreach ($this->asExpandedTypes($code_base)->getTypeSet() as $type) {
+            if ($type->name === 'Countable' && $type->namespace === '\\') {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Is this an array or ArrayAccess, or a subtype of those?
      * E.g. returns true for `\ArrayObject`, `array<int,string>`, etc.
      * @phan-pure
@@ -3557,6 +3575,18 @@ class Type
     {
         static $instance = null;
         return $instance ?? ($instance = Type::fromFullyQualifiedString('\Throwable'));
+    }
+
+    /**
+     * Returns the Type for \Countable
+     *
+     * @suppress PhanThrowTypeAbsentForCall
+     * @phan-pure
+     */
+    public static function countableInstance() : Type
+    {
+        static $instance = null;
+        return $instance ?? ($instance = Type::fromFullyQualifiedString('\Countable'));
     }
 
     /**

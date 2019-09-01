@@ -252,6 +252,20 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
             }
             return self::_IS_REASONABLE_CONDITION;
         }, 'iterable');
+        /** @suppress PhanAccessMethodInternal */
+        $countable_callback = $make_codebase_aware_first_arg_checker(static function (UnionType $union_type, CodeBase $code_base) : int {
+            $new_real_type = UnionType::of(
+                UnionType::castTypeListToCountable($code_base, $union_type->getTypeSet(), true),
+                []
+            );
+            if ($new_real_type->isEmpty()) {
+                return self::_IS_IMPOSSIBLE;
+            }
+            if ($new_real_type->isEqualTo($union_type)) {
+                return self::_IS_REDUNDANT;
+            }
+            return self::_IS_REASONABLE_CONDITION;
+        }, 'countable');
         $object_callback = $make_simple_first_arg_checker('objectTypesStrictAllowEmpty', 'object');
         $array_callback = $make_simple_first_arg_checker('arrayTypesStrictCastAllowEmpty', 'array');
         $string_callback = $make_simple_first_arg_checker('stringTypes', 'string');
@@ -263,6 +277,7 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
             'is_array' => $array_callback,
             'is_bool' => $bool_callback,
             'is_callable' => $callable_callback,
+            'is_countable' => $countable_callback,
             'is_double' => $float_callback,
             'is_float' => $float_callback,
             'is_int' => $int_callback,
