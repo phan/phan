@@ -5,8 +5,7 @@ function f762() {
     call_user_func_array('f762clos1', [&$x]);
     if ($x===0.5) {
         return 'foo';
-    }
-	if ($x instanceof \stdClass) {
+    } elseif ($x instanceof \stdClass) {
         return false;
     }
 
@@ -28,7 +27,7 @@ function f762clos1(&$arg) {
 }
 
 function f762clos2($arg) { // No reference
-    $arg = 2;
+    $arg = 2; // @phan-suppress-current-line PhanUnusedVariable
 }
 
 function f762clos3(&$arg) {
