@@ -3556,7 +3556,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     public function analyzeCallableWithArgumentTypes(
         array $argument_types,
         FunctionInterface $method,
-		array $arguments
+        array $arguments
     ) : void {
         if (!$method->needsRecursiveAnalysis()) {
             return;
