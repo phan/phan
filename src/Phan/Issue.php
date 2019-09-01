@@ -4710,7 +4710,7 @@ class Issue
      *
      * @param Context $context
      * The context in which the node we're going to be looking
-     * at exits.
+     * at exists.
      *
      * @param string $issue_type
      * The type of issue to emit such as Issue::ParentlessClass
@@ -4744,7 +4744,7 @@ class Issue
      *
      * @param Context $context
      * The context in which the node we're going to be looking
-     * at exits.
+     * at exists.
      *
      * @param string $issue_type
      * The type of issue to emit such as Issue::ParentlessClass

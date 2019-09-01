@@ -11,6 +11,7 @@ use Sabre\Event\Promise;
  *
  * Source: https://github.com/felixfbecker/php-language-server/tree/master/src/ClientHandler.php
  * See ../../../LICENSE.LANGUAGE_SERVER
+ * @immutable (NOTE: Phan's definition of immutable does not check if properties that are objects get modified)
  */
 class ClientHandler
 {

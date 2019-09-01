@@ -1797,6 +1797,7 @@ class Clazz extends AddressableElement
      * Set whether undeclared magic properties are forbidden
      * (properties accessed through __get or __set, with no (at)property annotation on parent class)
      * @param bool $forbid_undeclared_dynamic_properties - set to true to forbid.
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function setForbidUndeclaredMagicProperties(
         bool $forbid_undeclared_dynamic_properties
@@ -1828,6 +1829,7 @@ class Clazz extends AddressableElement
      * Set whether undeclared magic methods are forbidden
      * (methods accessed through __call or __callStatic, with no (at)method annotation on class)
      * @param bool $forbid_undeclared_magic_methods - set to true to forbid.
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function setForbidUndeclaredMagicMethods(
         bool $forbid_undeclared_magic_methods
@@ -1837,6 +1839,17 @@ class Clazz extends AddressableElement
             Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS,
             $forbid_undeclared_magic_methods
         ));
+    }
+
+    /**
+     * Returns whether this class is `(at)immutable`
+     *
+     * This will warn if instance properties of instances of the class will not change after the object is constructed.
+     * - Methods of (at)immutable classes may change external state (e.g. perform I/O, modify other objects)
+     */
+    public function isImmutable() : bool
+    {
+        return $this->getPhanFlagsHasState(Flags::IS_READ_ONLY);
     }
 
     /**

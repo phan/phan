@@ -6,8 +6,8 @@ use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
 
 /**
-* Information about the function and the locations where the function was called for one FQSEN
-*/
+ * Information about the function and the locations where the function was called for one FQSEN
+ */
 class StatsForFQSEN
 {
     /** @var array<string,Context> the locations where the return value was unused */

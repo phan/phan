@@ -7,6 +7,7 @@ use InvalidArgumentException;
 /**
  * Represents a change to be made to file contents.
  * The structure of this will change.
+ * @immutable
  */
 class FileEdit
 {
@@ -14,9 +15,8 @@ class FileEdit
     public $replace_start;
     /** @var int the byte offset where the replacement will end. this is >= $replace_start */
     public $replace_end;
-    // TODO: Implement insertion
     /** @var string the contents to replace the range with. Make this empty to delete. */
-    public $new_text = '';
+    public $new_text;
 
     /**
      * Create a new file edit (currently just supports deleting lines)

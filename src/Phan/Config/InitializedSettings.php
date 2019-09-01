@@ -3,8 +3,9 @@
 namespace Phan\Config;
 
 /**
- * This class is used by 'phan --init'
+ * This class is used by `phan --init`
  * as a representation of the data to use to create a phan config for a composer project.
+ * @immutable
  */
 class InitializedSettings
 {

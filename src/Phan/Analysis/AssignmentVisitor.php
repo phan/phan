@@ -46,6 +46,7 @@ class AssignmentVisitor extends AnalysisVisitor
     /**
      * @var Node
      * The AST node containing the assignment
+     * @phan-read-only
      */
     private $assignment_node;
 
@@ -62,6 +63,7 @@ class AssignmentVisitor extends AnalysisVisitor
      * We need to know this in order to decide
      * if we're replacing the union type
      * or if we're adding a type to the union type.
+     * @phan-read-only
      */
     private $dim_depth;
 
@@ -73,6 +75,7 @@ class AssignmentVisitor extends AnalysisVisitor
      * type to the union type.
      *
      * Null for `$foo[] = 42` or when dim_depth is 0
+     * @phan-read-only
      */
     private $dim_type;
 

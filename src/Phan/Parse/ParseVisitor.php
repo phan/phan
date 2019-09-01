@@ -130,7 +130,7 @@ class ParseVisitor extends ScopeVisitor
             $class_context,
             $class_name,
             $class_fqsen->asRealUnionType(),
-            $node->flags ?? 0,
+            $node->flags,
             $class_fqsen
         );
         $class->setDeclId($node->children['__declId']);
@@ -156,7 +156,7 @@ class ParseVisitor extends ScopeVisitor
                 $doc_comment,
                 $this->code_base,
                 $class_context,
-                $node->lineno ?? 0,
+                $node->lineno,
                 Comment::ON_CLASS
             );
 
@@ -165,8 +165,9 @@ class ParseVisitor extends ScopeVisitor
                 $class->getInternalScope()->addTemplateType($template_type);
             }
 
-            $class->setIsDeprecated($comment->isDeprecated());
-            $class->setIsNSInternal($comment->isNSInternal());
+            // Handle @immutable, @deprecated, @internal,
+            // @phan-forbid-undeclared-magic-properties, and @phan-forbid-undeclared-magic-methods
+            $class->setPhanFlags($comment->getPhanFlagsForClass());
 
             $class->setSuppressIssueSet(
                 $comment->getSuppressIssueSet()
@@ -187,12 +188,6 @@ class ParseVisitor extends ScopeVisitor
                 $comment->getMagicMethodMap(),
                 $this->code_base
             );
-
-            // usually used together with magic @property annotations
-            $class->setForbidUndeclaredMagicProperties($comment->getForbidUndeclaredMagicProperties());
-
-            // usually used together with magic @method annotations
-            $class->setForbidUndeclaredMagicMethods($comment->getForbidUndeclaredMagicMethods());
 
             // Look to see if we have a parent class
             $extends_node = $node->children['extends'] ?? null;
@@ -629,6 +624,11 @@ class ParseVisitor extends ScopeVisitor
             // future to be reified.
             if ($future_union_type instanceof FutureUnionType) {
                 $property->setFutureUnionType($future_union_type);
+            }
+            if ($class->isImmutable()) {
+                if (!$property->isStatic() && !$property->isWriteOnly()) {
+                    $property->setIsReadOnly(true);
+                }
             }
         }
 

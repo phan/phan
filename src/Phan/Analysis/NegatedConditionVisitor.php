@@ -40,7 +40,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
     /**
      * @var Context
      * The context in which the node we're going to be looking
-     * at exits.
+     * at exists.
      */
     protected $context;
 

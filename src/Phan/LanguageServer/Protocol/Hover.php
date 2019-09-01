@@ -6,6 +6,7 @@ namespace Phan\LanguageServer\Protocol;
 /**
  * The result of a hover request.
  * @phan-file-suppress PhanWriteOnlyPublicProperty
+ * @immutable
  */
 class Hover
 {

@@ -70,6 +70,7 @@ if (!\function_exists('spl_object_id')) {
  * > and many other types
  *
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod TODO: Document the public methods
+ * @immutable union types are immutable.
  */
 class UnionType implements Serializable
 {
@@ -3768,6 +3769,7 @@ class UnionType implements Serializable
      * A serialized UnionType
      *
      * @see \Serializable
+     * @suppress PhanAccessReadOnlyProperty this unserializes
      */
     public function unserialize($serialized) : void
     {
@@ -4920,6 +4922,7 @@ class UnionType implements Serializable
 
     /**
      * Shorter version of `UnionType::of($this->getTypeSet(), [$type])`
+     * @suppress PhanAccessReadOnlyProperty
      */
     public function withRealType(Type $type) : UnionType
     {
@@ -4938,6 +4941,7 @@ class UnionType implements Serializable
     /**
      * Shorter version of `UnionType::of($this->getTypeSet(), $real_type_set)`
      * @param ?array<int,Type> $real_type_set
+     * @suppress PhanAccessReadOnlyProperty
      */
     public function withRealTypeSet(?array $real_type_set) : UnionType
     {

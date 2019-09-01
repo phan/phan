@@ -22,13 +22,14 @@ abstract class AnalysisVisitor extends KindVisitorImplementation
     /**
      * @var CodeBase
      * The code base within which we're operating
+     * @phan-read-only
      */
     protected $code_base;
 
     /**
      * @var Context
      * The context in which the node we're going to be looking
-     * at exits.
+     * at exists.
      */
     protected $context;
 

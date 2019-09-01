@@ -4,6 +4,7 @@ namespace Phan\Library;
 
 /**
  * An object representing a conversion specifier of a format string, such as "%1$d".
+ * @immutable
  */
 class ConversionSpec
 {
@@ -83,6 +84,7 @@ class ConversionSpec
             }
             $directive = new self($match);
             if (!isset($directive->position)) {
+                // @phan-suppress-next-line PhanAccessReadOnlyProperty
                 $directive->position = ++$unnamed_count;
             }
             $directives[$directive->position][] = $directive;

@@ -8,6 +8,7 @@ use Exception;
  * This represents the absence of a value in an Option.
  *
  * @inherits Option<null>
+ * @immutable
  */
 class None extends Option
 {

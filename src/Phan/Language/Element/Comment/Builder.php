@@ -371,46 +371,69 @@ final class Builder
         // https://secure.php.net/manual/en/regexp.reference.internal-options.php
         // (?i) makes this case-sensitive, (?-1) makes it case-insensitive
         // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-        if (\preg_match('/@((?i)param|var|return|throws|throw|returns|inherits|extends|suppress|phan-[a-z0-9_-]*(?-i)|method|property|property-read|property-write|template|PhanClosureScope)(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/', $line, $matches)) {
+        if (\preg_match('/@((?i)param|var|return|throws|throw|returns|immutable|inherits|extends|suppress|phan-[a-z0-9_-]*(?-i)|method|property|property-read|property-write|template|PhanClosureScope)(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/', $line, $matches)) {
             $case_sensitive_type = $matches[1];
             $type = \strtolower($case_sensitive_type);
 
-            if ($type === 'param') {
-                $this->parseParamLine($i, $line);
-            } elseif ($type === 'var') {
-                $this->maybeParseVarLine($i, $line);
-            } elseif ($type === 'template') {
-                $this->maybeParseTemplateType($i, $line);
-            } elseif ($type === 'inherits' || $type === 'extends') {
-                $this->maybeParseInherits($i, $line, $type);
-            } elseif ($type === 'return') {
-                $this->maybeParseReturn($i, $line);
-            } elseif ($type === 'returns') {
-                $this->emitIssue(
-                    Issue::MisspelledAnnotation,
-                    $this->guessActualLineLocation($i),
-                    '@returns',
-                    'Did you mean @return?'
-                );
-            } elseif ($type === 'throws') {
-                $this->maybeParseThrows($i, $line);
-            } elseif ($type === 'throw') {
-                $this->emitIssue(
-                    Issue::MisspelledAnnotation,
-                    $this->guessActualLineLocation($i),
-                    '@throw',
-                    'Did you mean @throws?'
-                );
-            } elseif ($type === 'suppress') {
-                $this->maybeParseSuppress($i, $line);
-            } elseif ($type === 'property' || $type === 'property-read' || $type === 'property-write') {
-                $this->maybeParseProperty($i, $line);
-            } elseif ($type === 'method') {
-                $this->maybeParseMethod($i, $line);
-            } elseif ($type === 'phanclosurescope' || $type === 'phan-closure_scope') {
-                $this->maybeParsePhanClosureScope($i, $line);
-            } elseif (\strpos($type, 'phan-') === 0) {
-                $this->maybeParsePhanCustomAnnotation($i, $line, $type, $case_sensitive_type);
+            switch ($type) {
+                case 'param':
+                    $this->parseParamLine($i, $line);
+                    break;
+                case 'var':
+                    $this->maybeParseVarLine($i, $line);
+                    break;
+                case 'template':
+                    $this->maybeParseTemplateType($i, $line);
+                    break;
+                case 'immutable':
+                    $this->setPhanAccessFlag($i, false, 'immutable');
+                    break;
+                case 'inherits':
+                case 'extends':
+                    $this->maybeParseInherits($i, $line, $type);
+                    break;
+                case 'return':
+                    $this->maybeParseReturn($i, $line);
+                    break;
+                case 'returns':
+                    $this->emitIssue(
+                        Issue::MisspelledAnnotation,
+                        $this->guessActualLineLocation($i),
+                        '@returns',
+                        'Did you mean @return?'
+                    );
+                    break;
+                case 'throws':
+                    $this->maybeParseThrows($i, $line);
+                    break;
+                case 'throw':
+                    $this->emitIssue(
+                        Issue::MisspelledAnnotation,
+                        $this->guessActualLineLocation($i),
+                        '@throw',
+                        'Did you mean @throws?'
+                    );
+                    break;
+                case 'suppress':
+                    $this->maybeParseSuppress($i, $line);
+                    break;
+                case 'property':
+                case 'property-read':
+                case 'property-write':
+                    $this->maybeParseProperty($i, $line);
+                    break;
+                case 'method':
+                    $this->maybeParseMethod($i, $line);
+                    break;
+                case 'phanclosurescope':
+                case 'phan-closure-scope':
+                    $this->maybeParsePhanClosureScope($i, $line);
+                    break;
+                default:
+                    if (\strpos($type, 'phan-') === 0) {
+                        $this->maybeParsePhanCustomAnnotation($i, $line, $type, $case_sensitive_type);
+                    }
+                    break;
             }
         }
 
@@ -529,15 +552,19 @@ final class Builder
         }
     }
 
-    private function setPhanAccessFlag(int $i, bool $write_only) : void
+    private function setPhanAccessFlag(int $i, bool $write_only, string $name) : void
     {
         // Make sure support for generic types is enabled
         if ($this->comment_type === Comment::ON_PROPERTY) {
             $this->comment_flags |= ($write_only ? Flags::IS_WRITE_ONLY : Flags::IS_READ_ONLY);
-        } else {
-            // Emit warning message
-            $this->checkCompatible($write_only ? '@phan-write-only' : '@phan-read-only', [Comment::ON_PROPERTY], $i);
+            return;
         }
+        if ($write_only) {
+            $this->checkCompatible("@$name", [Comment::ON_PROPERTY], $i);
+            return;
+        }
+        $this->comment_flags |= Flags::IS_READ_ONLY;
+        $this->checkCompatible("@$name", [Comment::ON_PROPERTY, Comment::ON_CLASS], $i);
     }
 
     private function maybeParseReturn(int $i, string $line) : void
@@ -688,10 +715,10 @@ final class Builder
                 $this->maybeParsePhanInherits($i, $line, (string)\substr($type, 5));
                 return;
             case 'phan-read-only':
-                $this->setPhanAccessFlag($i, false);
+                $this->setPhanAccessFlag($i, false, 'phan-read-only');
                 return;
             case 'phan-write-only':
-                $this->setPhanAccessFlag($i, true);
+                $this->setPhanAccessFlag($i, true, 'phan-write-only');
                 return;
             case 'phan-transient':
                 // Do nothing, see SleepCheckerPlugin

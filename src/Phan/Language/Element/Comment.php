@@ -445,10 +445,7 @@ class Comment
         return ($this->comment_flags & Flags::IS_PURE) != 0;
     }
 
-    /**
-     * @internal
-     */
-    const FLAGS_FOR_PROPERTY = Flags::IS_NS_INTERNAL | Flags::IS_DEPRECATED | Flags::IS_READ_ONLY | Flags::IS_WRITE_ONLY;
+    private const FLAGS_FOR_PROPERTY = Flags::IS_NS_INTERNAL | Flags::IS_DEPRECATED | Flags::IS_READ_ONLY | Flags::IS_WRITE_ONLY;
 
     /**
      * Gets the subset of the bitmask that applies to properties.
@@ -458,10 +455,26 @@ class Comment
         return $this->comment_flags & self::FLAGS_FOR_PROPERTY;
     }
 
+    private const FLAGS_FOR_CLASS =
+        Flags::IS_NS_INTERNAL |
+        Flags::IS_DEPRECATED |
+        Flags::IS_READ_ONLY |
+        Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS |
+        Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES;
+
+    /**
+     * Gets the subset of the bitmask that applies to classes.
+     */
+    public function getPhanFlagsForClass() : int
+    {
+        return $this->comment_flags & self::FLAGS_FOR_CLASS;
+    }
+
     /**
      * @return bool
      * Set to true if the comment contains a 'phan-forbid-undeclared-magic-properties'
      * directive.
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function getForbidUndeclaredMagicProperties() : bool
     {
@@ -472,6 +485,7 @@ class Comment
      * @return bool
      * Set to true if the comment contains a 'phan-forbid-undeclared-magic-methods'
      * directive.
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function getForbidUndeclaredMagicMethods() : bool
     {

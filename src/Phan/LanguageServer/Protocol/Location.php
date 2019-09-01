@@ -12,6 +12,7 @@ use Phan\LanguageServer\Utils;
  *
  * Source: https://github.com/felixfbecker/php-language-server/tree/master/src/Protocol/Location.php
  * See ../../../../LICENSE.LANGUAGE_SERVER
+ * @immutable
  */
 class Location
 {

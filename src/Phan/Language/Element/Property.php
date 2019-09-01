@@ -31,13 +31,13 @@ class Property extends ClassElement
     private $real_defining_fqsen;
 
     /**
-     * @var UnionType The real union type (typed properties were added in PHP 7.4)
+     * @var UnionType The real union type of this property (typed properties were added in PHP 7.4)
      * This does not change.
      */
     private $real_union_type;
 
     /**
-     * @var ?UnionType the phpdoc union type
+     * @var ?UnionType the phpdoc union type of this property
      */
     private $phpdoc_union_type;
 
@@ -369,7 +369,7 @@ class Property extends ClassElement
     }
 
     /**
-     * Is this parameter declared in a way hinting that it should only be written to?
+     * Is this property declared in a way hinting that it should only be written to?
      * (E.g. magic properties declared as (at)property-read, regular properties with (at)phan-read-only)
      */
     public function isReadOnly() : bool
@@ -378,7 +378,22 @@ class Property extends ClassElement
     }
 
     /**
-     * Is this parameter declared in a way hinting that it should only be written to?
+     * Record whether this property is read-only.
+     * TODO: Warn about combining IS_READ_ONLY and IS_WRITE_ONLY
+     */
+    public function setIsReadOnly(bool $is_read_only) : void
+    {
+        $this->setPhanFlags(
+            Flags::bitVectorWithState(
+                $this->getPhanFlags(),
+                Flags::IS_READ_ONLY,
+                $is_read_only
+            )
+        );
+    }
+
+    /**
+     * Is this property declared in a way hinting that it should only be written to?
      * (E.g. magic properties declared as (at)property-write, regular properties with (at)phan-write-only)
      */
     public function isWriteOnly() : bool
