@@ -3549,9 +3549,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * @param FunctionInterface $method
      * The method or function being called
      * @see analyzeMethodWithArgumentTypes (Which takes AST nodes)
-	 *
-	 * @param array<int,Node|mixed> $arguments
-	 * An array of arguments to the callable, to analyze references.
+     *
+     * @param array<int,Node|mixed> $arguments
+     * An array of arguments to the callable, to analyze references.
      */
     public function analyzeCallableWithArgumentTypes(
         array $argument_types,
