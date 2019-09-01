@@ -3549,10 +3549,14 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * @param FunctionInterface $method
      * The method or function being called
      * @see analyzeMethodWithArgumentTypes (Which takes AST nodes)
+	 *
+	 * @param array<int,Node|mixed> $arguments
+	 * An array of arguments to the callable, to analyze references.
      */
     public function analyzeCallableWithArgumentTypes(
         array $argument_types,
-        FunctionInterface $method
+        FunctionInterface $method,
+		array $arguments
     ) : void {
         if (!$method->needsRecursiveAnalysis()) {
             return;
@@ -3606,7 +3610,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $this->updateParameterTypeByArgument(
                     $method,
                     $parameter_clone,
-                    null,  // TODO: Can array_map/array_filter accept closures with references? Consider warning?
+                    $arguments[$i] ?? null,
                     $argument_types,
                     $parameter_list,
                     $i
