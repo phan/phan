@@ -134,19 +134,23 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
             Method $unused_method,
             array $args
         ) : UnionType {
-            if (\count($args) < 1) {
-                // Emits warning and returns null if 0 args given
+            if (\count($args) !== 1) {
+                // Emits warning and returns null if 0 or 2+ args given
                 return NullType::instance(false)->asRealUnionType();
             }
+            // Not going to try to check varargs
+
+            // This throws a TypeError if the provided *single* argument is not a callable in the current scope,
+            // so the real type is Closure.
             $function_like_list = UnionTypeVisitor::functionLikeListFromNodeAndContext($code_base, $context, $args[0], true);
             if (\count($function_like_list) === 0) {
-                return ClosureType::instance(false)->asPHPDocUnionType();
+                return ClosureType::instance(false)->asRealUnionType();
             }
             $closure_types = UnionType::empty();
             foreach ($function_like_list as $function_like) {
                 $closure_types = $closure_types->withType(ClosureType::instanceWithClosureFQSEN($function_like->getFQSEN(), $function_like));
             }
-            return $closure_types;
+            return $closure_types->withRealType(ClosureType::instance(false));
         };
         /**
          * @param array<int,Node|int|float|string> $args
@@ -157,7 +161,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
             Method $unused_method,
             array $args
         ) : UnionType {
-            if (\count($args) < 1) {
+            if (\count($args) < 2 || count($args) > 3) {
                 return NullType::instance(false)->asRealUnionType();
             }
             $types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0], true);
@@ -168,10 +172,12 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
                 return false;
             });
 
+            // False is returned on failure to bind.
+            // Null is another possibility, for invalid arguments or invalid argument counts.
             if ($types->isEmpty()) {
-                return ClosureType::instance(false)->asPHPDocUnionType();
+                return UnionType::fromFullyQualifiedPHPDocAndRealString('\Closure', '\Closure|false|null');
             }
-            return $types;
+            return $types->withRealTypeSet(UnionType::typeSetFromString('\Closure|false|null'));
         };
         return [
             // call

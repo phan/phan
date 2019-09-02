@@ -25,6 +25,7 @@ New features(Analysis):
 + Show the real signature of the abstract method in PhanClassContainsAbstractMethod issues. (#3152)
 + Support analyzing php 7.3's `is_countable()`, and warn when the check is redundant or impossible (#3172)
 + Don't suggest `$this->prop` as an alternative to the undeclared variable `$prop` from a static method/closure. (#3174)
++ Make real return types of `Closure::bind()` and other closure helpers more accurate. (#3184)
 
 Plugins:
 + If possible, suggest the types that Phan observed during analysis with `UnknownElementTypePlugin`. (#3146)
