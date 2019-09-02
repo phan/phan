@@ -695,8 +695,11 @@ final class Builder
                 $this->parsePhanProperty($i, $line);
                 return;
             case 'phan-pure':
-                $this->checkCompatible('@phan-pure', Comment::FUNCTION_LIKE, $i);
-                $this->phan_overrides['pure'] = true;
+                // phan-pure = "immutable" + "phan-external-mutation-free".
+                // - Note that there is no way for Phan to use phan-external-mutation-free for analysis on its own right now,
+                // so that annotation doesn't exist.
+                $this->checkCompatible('@phan-pure', \array_merge(Comment::FUNCTION_LIKE, [Comment::ON_CLASS]), $i);
+                $this->comment_flags |= Flags::IS_PURE;
                 return;
             case 'phan-method':
                 $this->parsePhanMethod($i, $line);

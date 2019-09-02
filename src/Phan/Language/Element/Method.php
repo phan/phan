@@ -437,6 +437,9 @@ class Method extends ClassElement implements FunctionInterface
      * @param Node $node
      * An AST node representing a method
      *
+     * @param ?Clazz $class
+     * This will be mandatory in a future Phan release
+     *
      * @return Method
      * A Method representing the AST node in the
      * given context
@@ -445,7 +448,8 @@ class Method extends ClassElement implements FunctionInterface
         Context $context,
         CodeBase $code_base,
         Node $node,
-        FullyQualifiedMethodName $fqsen
+        FullyQualifiedMethodName $fqsen,
+        ?Clazz $class = null
     ) : Method {
 
         // Create the skeleton method object from what
@@ -454,7 +458,7 @@ class Method extends ClassElement implements FunctionInterface
             $context,
             (string)$node->children['name'],
             UnionType::empty(),
-            $node->flags ?? 0,
+            $node->flags,
             $fqsen,
             null
         );
@@ -467,13 +471,16 @@ class Method extends ClassElement implements FunctionInterface
             $doc_comment,
             $code_base,
             $context,
-            $node->lineno ?? 0,
+            $node->lineno,
             Comment::ON_METHOD
         );
 
         // Defer adding params to the local scope for user functions. (FunctionTrait::addParamsToScopeOfFunctionOrMethod)
         // See PostOrderAnalysisVisitor->analyzeCallToMethod
         $method->setComment($comment);
+
+        // Record @internal, @deprecated, and @phan-pure
+        $method->setPhanFlags($comment->getPhanFlagsForMethod());
 
         $element_context = new ElementContext($method);
         // @var array<int,Parameter>
@@ -527,22 +534,23 @@ class Method extends ClassElement implements FunctionInterface
         // the namespace.
         $method->setIsNSInternal($comment->isNSInternal());
 
-        // Set whether this method is pure.
-        if ($comment->isPure()) {
-            $method->setIsPure();
-        }
-
         // Set whether or not the comment indicates that the method is intended
         // to override another method.
         $method->setIsOverrideIntended($comment->isOverrideIntended());
         $method->setSuppressIssueSet($comment->getSuppressIssueSet());
 
+        $class = $class ?? $context->getClassInScope($code_base);
+
         if ($method->isMagicCall() || $method->isMagicCallStatic()) {
             $method->setNumberOfOptionalParameters(FunctionInterface::INFINITE_PARAMETERS);
             $method->setNumberOfRequiredParameters(0);
+        } else {
+            if ($class->isPure() && !$method->isMagic() && !$method->isStatic()) {
+                $method->setIsPure();
+            }
         }
 
-        $is_trait = $context->getScope()->isInTraitScope();
+        $is_trait = $class->isTrait();
         // Add the syntax-level return type to the method's union type
         // if it exists
         if ($node->children['returnType'] !== null) {

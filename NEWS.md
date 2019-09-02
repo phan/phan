@@ -15,6 +15,12 @@ New features(Analysis):
   - This annotation does not imply that methods have deterministic return values or that methods' results should be used.
 
   `@immutable` is an alias of `@phan-read-only`. `@phan-read-only` was previously supported on properties.
++ Support `@phan-pure` annotation on class doc comments,
+  to indicate that all instances of the class are `@immutable`
+  and that methods of the class are free of external side effects. (#3182)
+
+  - All instance properties are treated as read-only.
+  - All non-magic instance methods are treated as `@phan-pure` - their return values must be used.
 + Fix false positives for checking for redundant conditions with `iterable` and `is_iterable`.
 + Properly infer real types for `is_resource` checks and other cases where UnionType::fromFullyQualifiedRealString() was used.
 + Avoid false positives for the config setting `'assume_real_types_for_internal_functions'`.

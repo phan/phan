@@ -12,7 +12,7 @@ namespace Phan\Library;
  *
  * @template T
  * The type of the element
- * @immutable
+ * @phan-pure
  */
 abstract class Option
 {

@@ -1853,6 +1853,17 @@ class Clazz extends AddressableElement
     }
 
     /**
+     * Returns whether this class is `(at)pure`
+     *
+     * This will warn if instance properties of instances of the class will not change after the object is constructed.
+     * - Methods of (at)immutable classes may change external state (e.g. perform I/O, modify other objects)
+     */
+    public function isPure() : bool
+    {
+        return $this->getPhanFlagsHasState(Flags::IS_PURE);
+    }
+
+    /**
      * @return bool
      * True if this class has dynamic properties. (e.g. stdClass)
      */

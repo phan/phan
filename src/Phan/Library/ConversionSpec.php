@@ -4,7 +4,7 @@ namespace Phan\Library;
 
 /**
  * An object representing a conversion specifier of a format string, such as "%1$d".
- * @immutable
+ * @phan-pure
  */
 class ConversionSpec
 {

@@ -161,7 +161,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
             Method $unused_method,
             array $args
         ) : UnionType {
-            if (\count($args) < 2 || count($args) > 3) {
+            if (\count($args) < 2 || \count($args) > 3) {
                 return NullType::instance(false)->asRealUnionType();
             }
             $types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0], true);
