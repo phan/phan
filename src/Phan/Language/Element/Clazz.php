@@ -858,6 +858,7 @@ class Clazz extends AddressableElement
         }
         $class_fqsen = $this->getFQSEN();
         $context = $this->internal_context;
+        $is_pure = $this->isPure();
         foreach ($magic_method_map as $comment_method) {
             // $flags is the same as the flags for `public` and non-internal?
             // Or \ast\flags\MODIFIER_PUBLIC.
@@ -891,6 +892,9 @@ class Clazz extends AddressableElement
             $method->setNumberOfRequiredParameters($comment_method->getNumberOfRequiredParameters());
             $method->setNumberOfOptionalParameters($comment_method->getNumberOfOptionalParameters());
             $method->setIsFromPHPDoc(true);
+            if ($is_pure && !$comment_method->isStatic()) {
+                $method->setIsPure();
+            }
 
             $this->addMethod($code_base, $method, new None());
         }
@@ -1639,7 +1643,7 @@ class Clazz extends AddressableElement
 
     private static function makeCallMethodCloneForCaller(Method $method) : Method
     {
-        return new Method(
+        $clone = new Method(
             $method->getContext(),
             $method->getName(),
             $method->getUnionType(),
@@ -1649,6 +1653,8 @@ class Clazz extends AddressableElement
                 new VariadicParameter($method->getContext(), 'args', UnionType::empty(), 0)
             ]
         );
+        $clone->setPhanFlags($method->getPhanFlags());
+        return $clone;
     }
 
     /**

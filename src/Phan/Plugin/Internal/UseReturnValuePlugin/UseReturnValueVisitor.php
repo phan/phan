@@ -293,7 +293,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
             );
             return;
         }
-        if ($method->getUnionType()->isNull() || !$method->hasReturn()) {
+        if ($method->getUnionType()->isNull() || !($method->hasReturn() || $method->isFromPHPDoc())) {
             return;
         }
         $this->emitPluginIssue(
