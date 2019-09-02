@@ -60,7 +60,8 @@ class Flags
     // Currently for strict visibility checking, because fake constructors have public visibility by default, and Phan
     // fails thinking that child classes are violating the visibility if they have a private or protected __construct
     const IS_FAKE_CONSTRUCTOR = (1 << 27);
-    const IS_PURE = (1 << 28);
+    const IS_EXTERNAL_MUTATION_FREE = (1 << 28);
+    const IS_PURE = self::IS_READ_ONLY | self::IS_EXTERNAL_MUTATION_FREE;
 
     /**
      * Either enable or disable the given flag on

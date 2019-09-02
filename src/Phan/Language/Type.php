@@ -78,7 +78,8 @@ use function trim;
  *
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
  * phpcs:disable Generic.NamingConventions.UpperCaseConstantName
- * @immutable union types are immutable.
+ * @phan-pure types/union types are immutable, but technically not pure (some methods cause issues to be emitted with Issue::maybeEmit()).
+ *            However, it's useful to treat them as if they were pure, to warn about not using return types.
  */
 class Type
 {
@@ -488,8 +489,6 @@ class Type
                     $template_parameter_type_list,
                     $is_nullable
                 );
-                // FIXME Phan warns that array<string,static> can't be assigned to array<string,Type>
-                '@phan-var Type $value';
             }
             self::$canonical_object_map[$key] = $value;
         }
@@ -1507,7 +1506,6 @@ class Type
      *
      * @deprecated use self::asPHPDocUnionType()
      * @suppress PhanUnreferencedPublicMethod, PhanAccessReadOnlyProperty
-     * @phan-pure
      */
     public function asUnionType() : UnionType
     {
@@ -1518,7 +1516,6 @@ class Type
      * @return UnionType
      * A UnionType representing this and only this type (from phpdoc or real types)
      * @see asRealUnionType() if you are certain this is the real type of the expression.
-     * @phan-pure
      * @suppress PhanAccessReadOnlyProperty
      */
     public function asPHPDocUnionType() : UnionType
@@ -1531,7 +1528,6 @@ class Type
     /**
      * @return UnionType
      * A UnionType representing this and only this type
-     * @phan-pure
      * @suppress PhanAccessReadOnlyProperty
      */
     public function asRealUnionType() : UnionType
@@ -1553,7 +1549,6 @@ class Type
      * from this type
      *
      * @see FullyQualifiedClassName::fromType() for a method that always returns FullyQualifiedClassName
-     * @phan-pure
      */
     public function asFQSEN() : FQSEN
     {
@@ -1564,7 +1559,6 @@ class Type
     /**
      * @return string
      * The name associated with this type
-     * @phan-pure
      */
     public function getName() : string
     {
@@ -1574,7 +1568,6 @@ class Type
     /**
      * @return string
      * The namespace associated with this type
-     * @phan-pure
      */
     public function getNamespace() : string
     {
@@ -1585,7 +1578,6 @@ class Type
      * Is this nullable?
      *
      * E.g. returns true for `?array`, `null`, etc.
-     * @phan-pure
      */
     public function isNullable() : bool
     {
@@ -1604,7 +1596,6 @@ class Type
 
     /**
      * Returns true if this has some possibly falsey values
-     * @phan-pure
      */
     public function isPossiblyFalsey() : bool
     {
@@ -1615,7 +1606,6 @@ class Type
      * Returns true if this has some possibly falsey values
      * @deprecated
      * @suppress PhanUnreferencedPublicMethod
-     * @phan-pure
      */
     final public function getIsPossiblyFalsey() : bool
     {
@@ -1624,7 +1614,6 @@ class Type
 
     /**
      * Returns true if this is guaranteed to be falsey
-     * @phan-pure
      */
     public function isAlwaysFalsey() : bool
     {
@@ -1643,7 +1632,6 @@ class Type
 
     /**
      * Returns true if this is possibly truthy.
-     * @phan-pure
      */
     public function isPossiblyTruthy() : bool
     {
@@ -1667,7 +1655,6 @@ class Type
      *
      * This base class (Type) is type of an object with a known FQSEN,
      * which is always truthy.
-     * @phan-pure
      */
     public function isAlwaysTruthy() : bool
     {
@@ -1686,7 +1673,6 @@ class Type
 
     /**
      * Returns true for types such as `mixed`, `bool`, `false`
-     * @phan-pure
      */
     public function isPossiblyFalse() : bool
     {
@@ -1697,7 +1683,6 @@ class Type
      * Returns true for types such as `mixed`, `bool`, `false`
      * @deprecated use isPossiblyFalse
      * @suppress PhanUnreferencedPublicMethod
-     * @phan-pure
      */
     final public function getIsPossiblyFalse() : bool
     {
@@ -1725,7 +1710,6 @@ class Type
     /**
      * Returns true if this could include the type `true`
      * (e.g. for `mixed`, `bool`, etc.)
-     * @phan-pure
      */
     public function isPossiblyTrue() : bool
     {
@@ -1736,7 +1720,6 @@ class Type
      * Returns true if this could include the type `true`
      * @deprecated use isPossiblyTrue
      * @suppress PhanUnreferencedPublicMethod
-     * @phan-pure
      */
     final public function getIsPossiblyTrue() : bool
     {
@@ -1745,7 +1728,6 @@ class Type
 
     /**
      * Returns true for non-nullable `TrueType`
-     * @phan-pure
      */
     public function isAlwaysTrue() : bool
     {
@@ -1764,7 +1746,6 @@ class Type
 
     /**
      * Returns true for FalseType, TrueType, and BoolType
-     * @phan-pure
      */
     public function isInBoolFamily() : bool
     {
@@ -1783,7 +1764,6 @@ class Type
 
     /**
      * Returns true if this type may satisfy `is_numeric()`
-     * @phan-pure
      */
     public function isPossiblyNumeric() : bool
     {
@@ -1808,7 +1788,6 @@ class Type
      * @return Type
      * A new type that is a copy of this type but with the
      * given nullability value.
-     * @phan-pure
      */
     public function withIsNullable(bool $is_nullable) : Type
     {
@@ -1829,7 +1808,6 @@ class Type
      *
      * Overridden by BoolType, etc.
      * @see self::isAlwaysFalsey()
-     * @phan-pure
      */
     public function asNonFalseyType() : Type
     {
@@ -1842,7 +1820,6 @@ class Type
      *
      * Overridden by BoolType, etc.
      * @see self::isAlwaysTruthy()
-     * @phan-pure
      */
     public function asNonTruthyType() : Type
     {
@@ -1855,7 +1832,6 @@ class Type
      *
      * Overridden by BoolType, etc.
      * @see self::isAlwaysFalse()
-     * @phan-pure
      */
     public function asNonFalseType() : Type
     {
@@ -1867,7 +1843,6 @@ class Type
      *
      * Overridden by BoolType, etc.
      * @see self::isAlwaysTrue()
-     * @phan-pure
      */
     public function asNonTrueType() : Type
     {
@@ -1877,7 +1852,6 @@ class Type
     /**
      * @return bool
      * True if this is a native type (like int, string, etc.)
-     * @phan-pure
      */
     public function isNativeType() : bool
     {
@@ -1910,7 +1884,6 @@ class Type
      * True if this type is a type referencing the
      * class context in which it exists such as 'static'
      * or 'self'.
-     * @phan-pure
      */
     public function isSelfType() : bool
     {
@@ -1923,7 +1896,6 @@ class Type
      * True if this type is a type referencing the
      * class context 'static'.
      * Overridden in the subclass StaticType
-     * @phan-pure
      */
     public function isStaticType() : bool
     {
@@ -1933,7 +1905,6 @@ class Type
     /**
      * Returns true if this has any instance of `static` or `self`.
      * This is overridden in subclasses such as `SelfType`.
-     * @phan-pure
      */
     public function hasStaticOrSelfTypesRecursive(CodeBase $code_base) : bool
     {
@@ -1956,7 +1927,6 @@ class Type
      * @return bool
      * True if the given type references the class context
      * in which it exists such as 'self' or 'parent'
-     * @phan-pure
      */
     public static function isSelfTypeString(
         string $type_string
@@ -1973,7 +1943,6 @@ class Type
      * @return bool
      * True if the given type references the class context
      * in which it exists is '$this' or 'static'
-     * @phan-pure
      */
     public static function isStaticTypeString(
         string $type_string
@@ -1986,7 +1955,6 @@ class Type
     /**
      * @return bool
      * True if this type is scalar.
-     * @phan-pure
      */
     public function isScalar() : bool
     {
@@ -1997,7 +1965,6 @@ class Type
      * @return bool
      * True if this type is a printable scalar.
      * @internal
-     * @phan-pure
      */
     public function isPrintableScalar() : bool
     {
@@ -2008,7 +1975,6 @@ class Type
      * @return bool
      * True if this type is a valid operand for a bitwise operator ('|', '&', or '^').
      * @internal
-     * @phan-pure
      */
     public function isValidBitwiseOperand() : bool
     {
@@ -2018,7 +1984,6 @@ class Type
     /**
      * @return bool
      * True if this type is a callable or a Closure.
-     * @phan-pure
      */
     public function isCallable() : bool
     {
@@ -2028,7 +1993,6 @@ class Type
     /**
      * @return bool
      * True if this type is an object (or the phpdoc `object`)
-     * @phan-pure
      */
     public function isObject() : bool
     {
@@ -2038,7 +2002,6 @@ class Type
     /**
      * Returns this type (or a subtype) converted to a type of an expression satisfying is_object(expr)
      * Returns null if Phan cannot cast this type to an object type.
-     * @phan-pure
      */
     public function asObjectType() : ?Type
     {
@@ -2049,7 +2012,6 @@ class Type
     /**
      * @return bool
      * True if this type is an object (and not the phpdoc `object` or a template)
-     * @phan-pure
      */
     public function isObjectWithKnownFQSEN() : bool
     {
@@ -2060,7 +2022,6 @@ class Type
      * @return bool
      * True if this type is possibly an object (or the phpdoc `object`)
      * This is the same as isObject(), except that it returns true for the exact class of IterableType.
-     * @phan-pure
      */
     public function isPossiblyObject() : bool
     {
@@ -2070,7 +2031,6 @@ class Type
     /**
      * Check if there is any way this type or a subclass could cast to $other.
      * (does not check for mixed)
-     * @phan-pure
      */
     public function canPossiblyCastToClass(CodeBase $code_base, Type $other) : bool
     {
@@ -2117,7 +2077,6 @@ class Type
     /**
      * @return bool
      * True if this type is iterable. Does not check ancestor types.
-     * @phan-pure
      */
     public function isIterable() : bool
     {
@@ -2127,7 +2086,6 @@ class Type
     /**
      * Convert this to a subtype that satisfies is_iterable(), or returns null
      * @see UnionType::iterableTypesStrictCast
-     * @phan-pure
      */
     public function asIterable(CodeBase $code_base) : ?Type
     {
@@ -2141,7 +2099,6 @@ class Type
      * @return bool
      * True if this type is array-like (is of type array, is
      * a generic array, or implements ArrayAccess).
-     * @phan-pure
      */
     public function isArrayLike() : bool
     {
@@ -2155,7 +2112,6 @@ class Type
      * True if this is a generic type such as 'int[]' or 'string[]'.
      * Currently, this is the same as `$type instanceof GenericArrayInterface`
      * @suppress PhanUnreferencedPublicMethod
-     * @phan-pure
      */
     public function isGenericArray() : bool
     {
@@ -2192,7 +2148,6 @@ class Type
     /**
      * Is this an array or ArrayAccess, or a subtype of those?
      * E.g. returns true for `\ArrayObject`, `array<int,string>`, etc.
-     * @phan-pure
      */
     public function isArrayOrArrayAccessSubType(CodeBase $code_base) : bool
     {
@@ -2201,7 +2156,6 @@ class Type
 
     /**
      * @return bool - Returns true if this is \Traversable (nullable or not)
-     * @phan-pure
      */
     public function isTraversable() : bool
     {
@@ -2212,7 +2166,6 @@ class Type
     /**
      * @return bool - Returns true if this is \Generator (nullable or not)
      * @suppress PhanUnreferencedPublicMethod
-     * @phan-pure
      */
     public function isGenerator() : bool
     {
@@ -2227,7 +2180,6 @@ class Type
      * @return bool
      * True if this is a generic type such as 'int[]' or
      * 'string[]'.
-     * @phan-pure
      */
     private static function isGenericArrayString(string $type_name) : bool
     {
@@ -2239,7 +2191,6 @@ class Type
 
     /**
      * @return ?UnionType returns the iterable key's union type, if this is a subtype of iterable. null otherwise.
-     * @phan-pure
      */
     public function iterableKeyUnionType(CodeBase $unused_code_base) : ?UnionType
     {
@@ -2268,7 +2219,6 @@ class Type
      * @return ?UnionType returns the iterable value's union type if this is a subtype of iterable, null otherwise.
      *
      * This is overridden by the array subclasses
-     * @phan-pure
      */
     public function iterableValueUnionType(CodeBase $unused_code_base) : ?UnionType
     {
@@ -2336,7 +2286,6 @@ class Type
      * As a special case to reduce false positives, 'array' (with no known types) will produce 'array'
      *
      * Overridden in subclasses
-     * @phan-pure
      */
     public function asGenericArrayType(int $key_type) : Type
     {
@@ -2348,7 +2297,6 @@ class Type
      * True if this type has any template parameter types
      * @suppress PhanUnreferencedPublicMethod potentially used in the future
      *           TODO: Would need to override this in ArrayShapeType, GenericArrayType
-     * @phan-pure
      */
     public function hasTemplateParameterTypes() : bool
     {
@@ -2359,7 +2307,6 @@ class Type
      * @return array<int,UnionType>
      * The set of types filling in template parameter types defined
      * on the class specified by this type.
-     * @phan-pure
      */
     public function getTemplateParameterTypeList() : array
     {
@@ -2372,7 +2319,6 @@ class Type
      *
      * @return array<string,UnionType>
      * A map from template type identifier to a concrete type
-     * @phan-pure
      */
     public function getTemplateParameterTypeMap(CodeBase $code_base) : array
     {
@@ -2414,7 +2360,6 @@ class Type
      * a superset of this type.
      *
      * TODO: Add equivalent to preserve the real type
-     * @phan-pure
      */
     public function asExpandedTypes(
         CodeBase $code_base,
@@ -2496,7 +2441,6 @@ class Type
      * @return UnionType
      * Expands class types to all inherited classes returning
      * a superset of this type.
-     * @phan-pure
      */
     public function asExpandedTypesPreservingTemplate(
         CodeBase $code_base,
@@ -2584,7 +2528,6 @@ class Type
      * @return bool
      * True if this Type can be cast to the given Type cleanly.
      * This is overridden by ArrayShapeType to allow array{a:string,b:stdClass} to cast to string[]|stdClass[]
-     * @phan-pure
      */
     public function canCastToAnyTypeInSet(array $target_type_set) : bool
     {
@@ -2601,7 +2544,6 @@ class Type
      * @return bool
      * True if this Type can be cast to the given Type cleanly, ignoring permissive config settings.
      * This is overridden by ArrayShapeType to allow array{a:string,b:stdClass} to cast to string[]|stdClass[]
-     * @phan-pure
      */
     public function canCastToAnyTypeInSetWithoutConfig(array $target_type_set) : bool
     {
@@ -2618,7 +2560,6 @@ class Type
      * @return bool
      * True if this Type can be cast to the given Type cleanly.
      * This is overridden by ArrayShapeType to allow array{a:string,b:stdClass} to cast to string[]|stdClass[]
-     * @phan-pure
      */
     public function isSubtypeOfAnyTypeInSet(array $target_type_set) : bool
     {
@@ -2635,7 +2576,6 @@ class Type
      * @return bool
      * True if this Type can be cast to the given Type cleanly.
      * This is overridden by ArrayShapeType to allow array{a:string,b:stdClass} to cast to string[]|stdClass[]
-     * @phan-pure
      */
     public function canCastToAnyTypeInSetHandlingTemplates(array $target_type_set, CodeBase $code_base) : bool
     {
@@ -2651,7 +2591,6 @@ class Type
      * @return bool
      * True if this Type can be cast to the given Type
      * cleanly
-     * @phan-pure
      */
     public function canCastToType(Type $type) : bool
     {
@@ -2698,7 +2637,6 @@ class Type
      * @return bool
      * True if this Type can be cast to the given Type
      * cleanly (accounting for templates)
-     * @phan-pure
      */
     public function canCastToTypeHandlingTemplates(Type $type, CodeBase $code_base) : bool
     {
@@ -2745,7 +2683,6 @@ class Type
      * @return bool
      * True if this Type can be cast to the given Type
      * cleanly without config settings.
-     * @phan-pure
      */
     public function canCastToTypeWithoutConfig(Type $type) : bool
     {
@@ -2789,7 +2726,6 @@ class Type
      * @return bool
      * True if this Type can be cast to the given Type
      * cleanly
-     * @phan-pure
      */
     protected function canCastToNonNullableType(Type $type) : bool
     {
@@ -2830,7 +2766,6 @@ class Type
      * @return bool
      * True if this Type can be cast to the given Type
      * cleanly, ignoring permissive config casting rules
-     * @phan-pure
      */
     protected function canCastToNonNullableTypeWithoutConfig(Type $type) : bool
     {
@@ -2871,7 +2806,6 @@ class Type
      * @return bool
      * True if this Type can be cast to the given Type
      * cleanly
-     * @phan-pure
      */
     protected function canCastToNonNullableTypeHandlingTemplates(Type $type, CodeBase $code_base) : bool
     {
@@ -2889,7 +2823,6 @@ class Type
     /**
      * @return bool
      * True if this Type is a subtype of the other type.
-     * @phan-pure
      */
     public function isSubtypeOf(Type $type) : bool
     {
@@ -2930,7 +2863,6 @@ class Type
      * (All types are sub-types of mixed, but mixed isn't a subtype of those types)
      *
      * TODO: Override everywhere else
-     * @phan-pure
      */
     protected function isSubtypeOfNonNullableType(Type $type) : bool
     {
@@ -3022,7 +2954,6 @@ class Type
      * TODO: Refactor.
      *
      * @see UnionType::isExclusivelyNarrowedFormOrEquivalentTo() for a check on union types as a whole.
-     * @phan-pure
      */
     public function isExclusivelyNarrowedFormOrEquivalentTo(
         UnionType $union_type,
@@ -3059,7 +2990,6 @@ class Type
     /**
      * @return Type
      * Either this or 'static' resolved in the given context.
-     * @phan-pure
      */
     public function withStaticResolvedInContext(
         Context $_
@@ -3070,7 +3000,6 @@ class Type
     /**
      * @return string
      * A string representation of this type in FQSEN form.
-     * @phan-pure
      */
     public function asFQSENString() : string
     {
@@ -3090,7 +3019,6 @@ class Type
      * @return string
      * A human readable representation of this type
      * (This is frequently called, so prefer efficient operations)
-     * @phan-pure
      */
     public function __toString()
     {
@@ -3112,7 +3040,6 @@ class Type
     /**
      * Gets the part of the Type string for the template parameters.
      * Precondition: $this->template_parameter_string is not null.
-     * @phan-pure
      */
     final protected function templateParameterTypeListAsString() : string
     {
@@ -3136,7 +3063,6 @@ class Type
      *
      * @return string
      * A canonical name for the given type name
-     * @phan-pure
      */
     public static function canonicalNameFromName(
         string $name
@@ -3407,7 +3333,6 @@ class Type
     /**
      * Helper function for internal use by UnionType.
      * Overridden by subclasses.
-     * @phan-pure
      */
     public function getNormalizationFlags() : int
     {
@@ -3418,7 +3343,6 @@ class Type
      * Returns true if this contains any array shape type instances
      * or literal type instances that could be normalized to
      * regular generic array types or scalar types.
-     * @phan-pure
      */
     public function hasArrayShapeOrLiteralTypeInstances() : bool
     {
@@ -3428,7 +3352,6 @@ class Type
     /**
      * Returns true if this contains any array shape type instances
      * that could be normalized to regular generic array types.
-     * @phan-pure
      */
     public function hasArrayShapeTypeInstances() : bool
     {
@@ -3439,7 +3362,6 @@ class Type
      * Used to check if this type can be replaced by more specific types, for non-quick mode
      *
      * @internal
-     * @phan-pure
      */
     public function shouldBeReplacedBySpecificTypes() : bool
     {
@@ -3455,7 +3377,6 @@ class Type
      * This is overridden by subclasses.
      *
      * @return Type[]
-     * @phan-pure
      */
     public function withFlattenedArrayShapeOrLiteralTypeInstances() : array
     {
@@ -3464,7 +3385,6 @@ class Type
 
     /**
      * Overridden in subclasses such as LiteralIntType
-     * @phan-pure
      */
     public function asNonLiteralType() : Type
     {
@@ -3474,7 +3394,6 @@ class Type
     /**
      * Returns true if this is a potentially valid operand for a numeric operator.
      * Callers should also check if this is nullable.
-     * @phan-pure
      */
     public function isValidNumericOperand() : bool
     {
@@ -3485,7 +3404,6 @@ class Type
      * Returns true if this contains a type that is definitely nullable or a non-object.
      * e.g. returns true for false, array, int
      *      returns false for callable, object, iterable, T, etc.
-     *      @phan-pure
      */
     public function isDefiniteNonObjectType() : bool
     {
@@ -3496,7 +3414,6 @@ class Type
      * Returns true if this contains a type that is definitely non-callable
      * e.g. returns true for false, array, int
      *      returns false for callable, array, object, iterable, T, etc.
-     *      @phan-pure
      */
     public function isDefiniteNonCallableType() : bool
     {
@@ -3511,7 +3428,6 @@ class Type
      * @param int $flags (e.g. \ast\flags\BINARY_IS_SMALLER)
      * @internal
      * @suppress PhanUnusedPublicMethodParameter
-     * @phan-pure
      */
     public function canSatisfyComparison($scalar, int $flags) : bool
     {
@@ -3524,7 +3440,6 @@ class Type
      * @param int|string|float|bool|null $b
      * @param int $flags
      * @internal
-     * @phan-pure
      */
     public static function performComparison($a, $b, int $flags) : bool
     {
@@ -3543,7 +3458,6 @@ class Type
 
     /**
      * Returns the type after an expression such as `++$x`
-     * @phan-pure
      */
     public function getTypeAfterIncOrDec() : UnionType
     {
@@ -3559,7 +3473,6 @@ class Type
      * Returns the Type for \Traversable
      *
      * @suppress PhanThrowTypeAbsentForCall
-     * @phan-pure
      */
     public static function traversableInstance() : Type
     {
@@ -3571,7 +3484,6 @@ class Type
      * Returns the Type for \Throwable
      *
      * @suppress PhanThrowTypeAbsentForCall
-     * @phan-pure
      */
     public static function throwableInstance() : Type
     {
@@ -3583,7 +3495,6 @@ class Type
      * Returns the Type for \Countable
      *
      * @suppress PhanThrowTypeAbsentForCall
-     * @phan-pure
      */
     public static function countableInstance() : Type
     {
@@ -3593,7 +3504,6 @@ class Type
 
     /**
      * Returns true if this is `MyNs\MyClass<T..>` when $type is `MyNs\MyClass`
-     * @phan-pure
      */
     public function isTemplateSubtypeOf(Type $type) : bool
     {
@@ -3607,7 +3517,6 @@ class Type
      * Returns true for `T` and `T[]` and `\MyClass<T>`, but not `\MyClass<\OtherClass>`
      *
      * Overridden in subclasses.
-     * @phan-pure
      */
     public function hasTemplateTypeRecursive() : bool
     {
@@ -3628,7 +3537,6 @@ class Type
      * mapped to concrete types defined in the given map.
      *
      * Overridden in subclasses
-     * @phan-pure
      */
     public function withTemplateParameterTypeMap(
         array $template_parameter_type_map
@@ -3648,7 +3556,6 @@ class Type
 
     /**
      * Precondition: Callers should check isObjectWithKnownFQSEN
-     * @phan-pure
      */
     public function hasSameNamespaceAndName(Type $type) : bool
     {
@@ -3661,7 +3568,6 @@ class Type
      *
      * @return ?Closure(UnionType, Context):UnionType a closure to determine the union type(s) that are in the same position(s) as the template type.
      * This is overridden in subclasses.
-     * @phan-pure
      */
     public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type) : ?Closure
     {
@@ -3734,7 +3640,6 @@ class Type
      * @return Generator<mixed,Type>
      *
      * TODO: Also support template types
-     * @phan-pure
      */
     public function getReferencedClasses() : Generator
     {
@@ -3744,7 +3649,6 @@ class Type
     /**
      * Returns true if this type or a parent type can be used in a signature.
      * Returns false for template types, resources, object, etc.
-     * @phan-pure
      */
     public function canUseInRealSignature() : bool
     {
@@ -3753,7 +3657,6 @@ class Type
 
     /**
      * Returns the corresponding type that would be used in a signature
-     * @phan-pure
      */
     public function asSignatureType() : Type
     {
@@ -3765,7 +3668,6 @@ class Type
 
     /**
      * Convert this to a subtype that satisfies is_callable(), or return null
-     * @phan-pure
      */
     public function asCallableType() : ?Type
     {
@@ -3778,7 +3680,6 @@ class Type
     /**
      * Convert this to a subtype that satisfies is_array(), or returns null
      * @see UnionType::arrayTypesStrictCast
-     * @phan-pure
      */
     public function asArrayType() : ?Type
     {
@@ -3787,7 +3688,6 @@ class Type
 
     /**
      * Convert this to a subtype that satisfies is_scalar(), or returns null
-     * @phan-pure
      */
     public function asScalarType() : ?Type
     {
@@ -3798,7 +3698,6 @@ class Type
      * callers should use UnionType->hasAnyTypeOverlap() and UnionType->hasAnyWeakTypeOverlap() instead.
      * Overridden in subclasses
      * @internal
-     * @phan-pure
      */
     public function weaklyOverlaps(Type $other) : bool
     {

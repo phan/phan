@@ -17,6 +17,7 @@ use Phan\Plugin\ConfigPluginSet;
  * An issue emitted during analysis.
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  * @SuppressWarnings(PHPMD.ConstantNamingConventions) these constant names are deliberately used to match the values
+ * @phan-pure
  */
 class Issue
 {
@@ -4551,6 +4552,7 @@ class Issue
 
     /**
      * Returns the number of arguments expected for the format string $this->getTemplate()
+     * @suppress PhanAccessReadOnlyProperty lazily computed
      */
     public function getExpectedArgumentCount() : int
     {

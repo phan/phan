@@ -331,7 +331,8 @@ class ParseVisitor extends ScopeVisitor
             clone($context),
             $code_base,
             $node,
-            $method_fqsen
+            $method_fqsen,
+            $class
         );
 
         if ($context->isPHPInternal()) {

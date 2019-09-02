@@ -571,7 +571,8 @@ class IssueFixSuggester
         );
     }
 
-    private static function shouldSuggestProperty(Context $context, Clazz $class_in_scope, Property $property) : bool {
+    private static function shouldSuggestProperty(Context $context, Clazz $class_in_scope, Property $property) : bool
+    {
         if ($property->isDynamicProperty()) {
             // Don't suggest properties that weren't declared.
             return false;

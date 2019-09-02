@@ -26,6 +26,8 @@ use Phan\Library\Option;
  * Instances of Comment contain the extracted information.
  *
  * @see Builder for the logic to create an instance of this class.
+ * @phan-pure
+ * @phan-file-suppress PhanAccessReadOnlyProperty TODO: Add a way to whitelist private methods that are only accessible from initializers (__construct, __wakeup, etc.)
  */
 class Comment
 {
@@ -344,9 +346,6 @@ class Comment
             case 'extends':
                 $this->inherited_type = $value;
                 return;
-            case 'pure':
-                $this->comment_flags |= Flags::IS_PURE;
-                return;
         }
     }
 
@@ -439,10 +438,11 @@ class Comment
      * @return bool
      * Set to true if the comment contains an 'phan-pure'
      * directive.
+     * (or phan-read-only + phan-external-mutation-free, eventually)
      */
     public function isPure() : bool
     {
-        return ($this->comment_flags & Flags::IS_PURE) != 0;
+        return ($this->comment_flags & Flags::IS_PURE) === Flags::IS_PURE;
     }
 
     private const FLAGS_FOR_PROPERTY = Flags::IS_NS_INTERNAL | Flags::IS_DEPRECATED | Flags::IS_READ_ONLY | Flags::IS_WRITE_ONLY;
@@ -458,7 +458,7 @@ class Comment
     private const FLAGS_FOR_CLASS =
         Flags::IS_NS_INTERNAL |
         Flags::IS_DEPRECATED |
-        Flags::IS_READ_ONLY |
+        Flags::IS_PURE |
         Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS |
         Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES;
 
@@ -468,6 +468,19 @@ class Comment
     public function getPhanFlagsForClass() : int
     {
         return $this->comment_flags & self::FLAGS_FOR_CLASS;
+    }
+
+    private const FLAGS_FOR_METHOD =
+        Flags::IS_NS_INTERNAL |
+        Flags::IS_DEPRECATED |
+        Flags::IS_PURE;
+
+    /**
+     * Gets the subset of the bitmask that applies to methods.
+     */
+    public function getPhanFlagsForMethod() : int
+    {
+        return $this->comment_flags & self::FLAGS_FOR_METHOD;
     }
 
     /**

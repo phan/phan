@@ -70,7 +70,8 @@ if (!\function_exists('spl_object_id')) {
  * > and many other types
  *
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod TODO: Document the public methods
- * @immutable union types are immutable.
+ * @phan-pure types/union types are immutable, but technically not pure (some methods cause issues to be emitted with Issue::maybeEmit()).
+ *            However, it's useful to treat them as if they were pure, to warn about not using return values.
  */
 class UnionType implements Serializable
 {

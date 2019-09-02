@@ -62,7 +62,7 @@ class AbstractMethodAnalyzer
     private static function toRealSignature(Method $method) : string
     {
         $fqsen = $method->getDefiningFQSEN();
-        $result = sprintf(
+        $result = \sprintf(
             "%s::%s%s(%s)",
             (string) $fqsen->getFullyQualifiedClassName(),
             $method->returnsRef() ? '&' : '',

@@ -61,7 +61,7 @@ trait FunctionTrait
     /** @return int flags from \Phan\Language\Element\Flags */
     abstract public function getPhanFlags() : int;
 
-    /** @return bool true if all of the bits in $bits is true in $this->getPhanFlags() */
+    /** @return bool true if all of the bits in $bits are true in $this->getPhanFlags() */
     abstract public function getPhanFlagsHasState(int $bits) : bool;
 
     abstract public function setPhanFlags(int $phan_flags) : void;
