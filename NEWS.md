@@ -33,6 +33,7 @@ New features(Analysis):
 + Don't suggest `$this->prop` as an alternative to the undeclared variable `$prop` from a static method/closure. (#3174)
 + Make real return types of `Closure::bind()` and other closure helpers more accurate. (#3184)
 + Include `use($missingVar)` in suggestions for `PhanUndeclaredVariable` if it is defined outside the closure(s) scope.
+  Also, suggest *hardcoded* globals such as `$argv`.
 + Warn about `$this instanceof self` and `$this instanceof static` being redundant.
 
 Plugins:

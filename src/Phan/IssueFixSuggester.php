@@ -550,7 +550,9 @@ class IssueFixSuggester
             // Don't bother suggesting globals for now
             return null;
         }
+        // Suggest similar variable names in the current scope.
         $suggestions = self::getVariableNamesInScopeWithSimilarName($context, $variable_name);
+        // Suggest instance or static properties of the same name, if accessible
         if ($context->isInClassScope()) {
             // TODO: Does this need to check for static closures
             $class_in_scope = $context->getClassInScope($code_base);
@@ -562,7 +564,9 @@ class IssueFixSuggester
                 }
             }
         }
+        // Suggest using the variable if it is defined but not used by the current closure.
         $scope = $context->getScope();
+        $did_suggest_use_in_closure = false;
         while ($scope->isInFunctionLikeScope()) {
             $function = $context->withScope($scope)->getFunctionLikeInScope($code_base);
             if (!($function instanceof Func) || !$function->isClosure()) {
@@ -570,9 +574,13 @@ class IssueFixSuggester
             }
             $scope = $function->getContext()->getScope()->getParentScope();
             if ($scope->hasVariableWithName($variable_name)) {
+                $did_suggest_use_in_closure = true;
                 $suggestions[] = "(use(\$$variable_name) for {$function->getNameForIssue()} at line {$function->getContext()->getLineNumberStart()})";
                 break;
             }
+        }
+        if (!$did_suggest_use_in_closure && Variable::isHardcodedGlobalVariableWithName($variable_name)) {
+            $suggestions[] = "(global \$$variable_name)";
         }
         if (count($suggestions) === 0) {
             return null;
