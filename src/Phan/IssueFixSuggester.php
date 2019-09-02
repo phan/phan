@@ -6,6 +6,7 @@ use Closure;
 use Phan\Language\Context;
 use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\Clazz;
+use Phan\Language\Element\Func;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
 use Phan\Language\Element\Variable;
@@ -559,6 +560,18 @@ class IssueFixSuggester
                     $suggestion_prefix = $property->isStatic() ? 'self::$' : '$this->';
                     $suggestions[] = $suggestion_prefix . $variable_name;
                 }
+            }
+        }
+        $scope = $context->getScope();
+        while ($scope->isInFunctionLikeScope()) {
+            $function = $context->withScope($scope)->getFunctionLikeInScope($code_base);
+            if (!($function instanceof Func) || !$function->isClosure()) {
+                break;
+            }
+            $scope = $function->getContext()->getScope()->getParentScope();
+            if ($scope->hasVariableWithName($variable_name)) {
+                $suggestions[] = "(use(\$$variable_name) for {$function->getNameForIssue()} at line {$function->getContext()->getLineNumberStart()})";
+                break;
             }
         }
         if (count($suggestions) === 0) {

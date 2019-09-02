@@ -338,6 +338,7 @@ class Context extends FileRef
     /**
      * @return Context
      * A new context with the given scope
+     * @phan-pure
      */
     public function withScope(Scope $scope) : Context
     {
@@ -346,6 +347,9 @@ class Context extends FileRef
         return $context;
     }
 
+    /**
+     * @phan-pure
+     */
     public function withEnterLoop(Node $node) : Context
     {
         $context = clone($this);
@@ -432,6 +436,7 @@ class Context extends FileRef
      * @return Context
      * A new context based on this with a variable
      * as defined by the parameters in scope
+     * @phan-pure
      */
     public function withScopeVariable(
         Variable $variable

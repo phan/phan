@@ -32,6 +32,8 @@ New features(Analysis):
 + Support analyzing php 7.3's `is_countable()`, and warn when the check is redundant or impossible (#3172)
 + Don't suggest `$this->prop` as an alternative to the undeclared variable `$prop` from a static method/closure. (#3174)
 + Make real return types of `Closure::bind()` and other closure helpers more accurate. (#3184)
++ Include `use($missingVar)` in suggestions for `PhanUndeclaredVariable` if it is defined outside the closure(s) scope.
++ Warn about `$this instanceof self` and `$this instanceof static` being redundant.
 
 Plugins:
 + If possible, suggest the types that Phan observed during analysis with `UnknownElementTypePlugin`. (#3146)

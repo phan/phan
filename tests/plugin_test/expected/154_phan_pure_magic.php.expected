@@ -1,0 +1,7 @@
+src/154_phan_pure_magic.php:25 PhanUnusedPublicNoOverrideMethodParameter Parameter $name is never used
+src/154_phan_pure_magic.php:25 PhanUnusedPublicNoOverrideMethodParameter Parameter $value is never used
+src/154_phan_pure_magic.php:33 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \Magic154::__get() defined at src/154_phan_pure_magic.php:28
+src/154_phan_pure_magic.php:34 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \Magic154::__call() defined at src/154_phan_pure_magic.php:15
+src/154_phan_pure_magic.php:36 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \Magic154::instance_fn() defined at src/154_phan_pure_magic.php:5
+src/154_phan_pure_magic.php:38 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \Magic154::__call() defined at src/154_phan_pure_magic.php:15
+src/154_phan_pure_magic.php:39 PhanAccessReadOnlyProperty Cannot modify read-only property \Magic154->values defined at src/154_phan_pure_magic.php:9
