@@ -429,6 +429,19 @@ class Method extends ClassElement implements FunctionInterface
     }
 
     /**
+     * These magic **instance** methods don't inherit pureness from the class in question
+     */
+    private const NON_PURE_METHOD_NAME_SET = [
+        '__clone'       => true,
+        '__construct'   => true,
+        '__destruct'    => true,
+        '__set'         => true,  // This could exist in a pure class to throw exceptions or do nothing
+        '__unserialize' => true,
+        '__unset'       => true,  // This could exist in a pure class to throw exceptions or do nothing
+        '__wakeup'      => true,
+    ];
+
+    /**
      * @param Context $context
      * The context in which the node appears
      *
@@ -544,10 +557,11 @@ class Method extends ClassElement implements FunctionInterface
         if ($method->isMagicCall() || $method->isMagicCallStatic()) {
             $method->setNumberOfOptionalParameters(FunctionInterface::INFINITE_PARAMETERS);
             $method->setNumberOfRequiredParameters(0);
-        } else {
-            if ($class->isPure() && !$method->isMagic() && !$method->isStatic()) {
-                $method->setIsPure();
-            }
+        }
+
+        if ($class->isPure() && !$method->isStatic() &&
+                !\array_key_exists(\strtolower($method->getName()), self::NON_PURE_METHOD_NAME_SET)) {
+            $method->setIsPure();
         }
 
         $is_trait = $class->isTrait();
