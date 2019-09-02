@@ -231,6 +231,15 @@ class UnionType implements Serializable
     }
 
     /**
+     * @return array<int,Type> the corresponding set of types for this string.
+     * @throws InvalidArgumentException if any type name in the union type was invalid
+     */
+    public static function typeSetFromString(string $fully_qualified_string) : array
+    {
+        return self::fromFullyQualifiedPHPDocString($fully_qualified_string)->type_set;
+    }
+
+    /**
      * Returns a type with the following phpdoc types and real types.
      * Use this if they are both non-empty but different.
      * The caller should pass in phpdoc types that are subtypes of the real types
