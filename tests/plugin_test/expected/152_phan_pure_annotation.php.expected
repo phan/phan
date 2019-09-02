@@ -2,7 +2,7 @@ src/152_phan_pure_annotation.php:30 PhanPartialTypeMismatchReturn Returning type
 src/152_phan_pure_annotation.php:37 PhanPartialTypeMismatchReturn Returning type float|int but triple2() is declared to return int (float is incompatible)
 src/152_phan_pure_annotation.php:45 PhanPluginNonBoolBranch Non bool value of type false|string evaluated in if clause
 src/152_phan_pure_annotation.php:52 PhanPluginNonBoolBranch Non bool value of type false|string evaluated in if clause
-src/152_phan_pure_annotation.php:58 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \NS152\debug_trace()
-src/152_phan_pure_annotation.php:62 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \NS152\Debug::double1()
-src/152_phan_pure_annotation.php:64 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \NS152\Debug::triple1()
-src/152_phan_pure_annotation.php:77 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method Closure($o)
+src/152_phan_pure_annotation.php:58 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \NS152\debug_trace() defined at src/152_phan_pure_annotation.php:44
+src/152_phan_pure_annotation.php:62 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \NS152\Debug::double1() defined at src/152_phan_pure_annotation.php:12
+src/152_phan_pure_annotation.php:64 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \NS152\Debug::triple1() defined at src/152_phan_pure_annotation.php:29
+src/152_phan_pure_annotation.php:77 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method Closure($o) defined at src/152_phan_pure_annotation.php:72
