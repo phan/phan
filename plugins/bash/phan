@@ -60,6 +60,12 @@ _phan() {
 -y
 --parent-constructor-required
 -c
+--dead-code-detection
+-x
+--unused-variable-detection
+-u
+--redundant-condition-detection
+-t
 --processes
 -j
 --signature-compatibility
