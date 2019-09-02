@@ -1,3 +1,3 @@
 src/051_loop_unused_defs.php:33 PhanUnusedVariable Unused definition of variable $b
-src/051_loop_unused_defs.php:56 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \foo51()
-src/051_loop_unused_defs.php:57 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \foo51b()
+src/051_loop_unused_defs.php:56 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \foo51() defined at src/051_loop_unused_defs.php:3
+src/051_loop_unused_defs.php:57 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \foo51b() defined at src/051_loop_unused_defs.php:17

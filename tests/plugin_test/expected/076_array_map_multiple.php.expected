@@ -1,4 +1,4 @@
 src/076_array_map_multiple.php:10 PhanTypeMismatchReturn Returning type array<int,array> but array_map_multiple_test() is declared to return array<string,int>
 src/076_array_map_multiple.php:12 PhanTypeMismatchArgument Argument 1 ($x) is string but Closure(\stdClass $x, string $y) : array takes \stdClass defined at src/076_array_map_multiple.php:10
 src/076_array_map_multiple.php:12 PhanTypeMismatchArgument Argument 2 ($y) is \stdClass but Closure(\stdClass $x, string $y) : array takes string defined at src/076_array_map_multiple.php:10
-src/076_array_map_multiple.php:14 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \array_map_multiple_test()
+src/076_array_map_multiple.php:14 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \array_map_multiple_test() defined at src/076_array_map_multiple.php:8

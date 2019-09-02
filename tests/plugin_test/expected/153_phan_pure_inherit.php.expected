@@ -1,6 +1,6 @@
-src/153_phan_pure_inherit.php:31 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \NS153\X::mul1()
-src/153_phan_pure_inherit.php:34 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \NS153\Tripler::mul1()
+src/153_phan_pure_inherit.php:31 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \NS153\X::mul1() defined at src/153_phan_pure_inherit.php:7
+src/153_phan_pure_inherit.php:34 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \NS153\Tripler::mul1() defined at src/153_phan_pure_inherit.php:19
 src/153_phan_pure_inherit.php:38 PhanInvalidCommentForDeclarationType The phpdoc comment for @phan-pure cannot occur on a property
 src/153_phan_pure_inherit.php:39 PhanUnreferencedPublicProperty Possibly zero references to public property \NS153\Invalid->x
 src/153_phan_pure_inherit.php:64 PhanAccessReadOnlyProperty Cannot modify read-only property \NS153\PureClassExample->prop defined at src/153_phan_pure_inherit.php:47
-src/153_phan_pure_inherit.php:66 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \NS153\PureClassExample::getSortedProp()
+src/153_phan_pure_inherit.php:66 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \NS153\PureClassExample::getSortedProp() defined at src/153_phan_pure_inherit.php:53
