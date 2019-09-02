@@ -1,0 +1,1 @@
+%s:5 PhanUndeclaredVariable Variable $a is undeclared (Did you mean $b or (use($a) for Closure(int $b) at line 4))

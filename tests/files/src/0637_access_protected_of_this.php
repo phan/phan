@@ -5,7 +5,7 @@ namespace AccessProtectedTest;
 class Unrelated {
     public function main() {
         $closure = function () {
-            if ($this instanceof SomeClass) {
+            if ($this instanceof SomeClass) {  // NOTE: This is treated as impossible because @phan-closure-scope was not used. However, the rest of the block is analyzed like SomeClass
                 // Observed: Emits PhanAccessMethodProtected and PhanAccessPropertyProtected
                 // Expected: Should not emit, but only when the variable name is `$this`
                 $this->method();
@@ -33,6 +33,11 @@ class SomeClass {
     }
     protected static function staticMethod() {
         echo "in static method";
+    }
+
+    public function test() {
+        var_export($this instanceof self);
+        var_export($this instanceof static);
     }
 }
 (new Unrelated())->main();

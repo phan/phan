@@ -70,7 +70,7 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
                 if (!$union_type->hasRealTypeSet()) {
                     return;
                 }
-                $result = $checker($union_type->getRealUnionType());
+                $result = $checker($union_type->getRealUnionType()->withStaticResolvedInContext($context));
                 if ($result === null) {
                     return;
                 }
@@ -759,8 +759,12 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
 
         $class_type = $this->getClassTypeFromNode($class_node);
 
-        $real_type = $type->getRealUnionType();
-        if ($real_type->isExclusivelySubclassesOf($code_base, $class_type)) {
+        $real_type_unresolved = $type->getRealUnionType();
+        $real_type = $real_type_unresolved->withStaticResolvedInContext($this->context);
+        // The isEqualTo check was added to check for `$this instanceof static`
+        // The isExclusivelyStringTypes check warns about everything else, e.g. `$subclass instanceof BaseClass`
+        if ($real_type_unresolved->isEqualTo($class_type->asRealUnionType())
+            || $real_type->isExclusivelySubclassesOf($code_base, $class_type)) {
             RedundantCondition::emitInstance(
                 $expr_node,
                 $code_base,
@@ -768,7 +772,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
                 Issue::RedundantCondition,
                 [
                     ASTReverter::toShortString($expr_node),
-                    $real_type,
+                    $real_type_unresolved,
                     $class_type,
                 ],
                 static function (UnionType $type) use ($code_base, $class_type) : bool {

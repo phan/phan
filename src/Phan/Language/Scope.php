@@ -250,6 +250,7 @@ abstract class Scope
      * A variable to add to the local scope
      *
      * @return Scope a clone of this scope with $variable added
+     * @phan-pure
      */
     public function withVariable(Variable $variable) : Scope
     {
