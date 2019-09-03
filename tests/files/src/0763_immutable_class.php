@@ -1,14 +1,14 @@
 <?php
 
 /**
- * @immutable (phan-read-only is a supported alias)
+ * @phan-immutable (phan-read-only is a supported alias)
  */
 class TestImmutable {
     public $x;
     private $y;
     public $z;
     public static $static1 = 'value1';
-    /** @immutable (phan-read-only is a supported alias) */
+    /** @phan-immutable (phan-read-only is a supported alias) */
     public static $static2 = 'value2';
     public function __construct(int $x) {
         $this->x = $x;

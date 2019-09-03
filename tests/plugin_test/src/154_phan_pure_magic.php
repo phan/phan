@@ -3,7 +3,7 @@
 /**
  * @method static int static_fn()
  * @method int instance_fn()
- * @phan-pure
+ * @phan-side-effect-free
  */
 class Magic154 {
     public $values;

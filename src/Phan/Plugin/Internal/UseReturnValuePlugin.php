@@ -812,7 +812,6 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
     'trim' => true,
     'ucfirst' => true,
     'ucwords' => true,
-    'umask' => true,
     'unexpectedvalueexception::getmessage' => true,
     'uniqid' => true,
     'unpack' => true,

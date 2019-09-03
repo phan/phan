@@ -46,7 +46,7 @@ class Flags
     const IS_DYNAMIC_PROPERTY = (1 << 20);
     // A property can be read-only, write-only, or neither, but not both.
     // This is independent of being a magic property.
-    // IS_READ_ONLY can also be set on classes as @immutable
+    // IS_READ_ONLY can also be set on classes as @phan-immutable
     const IS_READ_ONLY = (1 << 21);
     const IS_WRITE_ONLY = (1 << 22);
     const HAS_STATIC_UNION_TYPE = (1 << 23);
@@ -61,7 +61,12 @@ class Flags
     // fails thinking that child classes are violating the visibility if they have a private or protected __construct
     const IS_FAKE_CONSTRUCTOR = (1 << 27);
     const IS_EXTERNAL_MUTATION_FREE = (1 << 28);
-    const IS_PURE = self::IS_READ_ONLY | self::IS_EXTERNAL_MUTATION_FREE;
+    const IS_SIDE_EFFECT_FREE = self::IS_READ_ONLY | self::IS_EXTERNAL_MUTATION_FREE;
+    /**
+     * @suppress PhanUnreferencedPublicClassConstant
+     * @deprecated alias of side effect free, will be removed in the future.
+     */
+    const IS_PURE = self::IS_SIDE_EFFECT_FREE;
 
     /**
      * Either enable or disable the given flag on

@@ -1757,7 +1757,7 @@ trait FunctionTrait
      */
     public function setIsPure() : void
     {
-        $this->setPhanFlags($this->getPhanFlags() | Flags::IS_PURE);
+        $this->setPhanFlags($this->getPhanFlags() | Flags::IS_SIDE_EFFECT_FREE);
     }
 
     /**
@@ -1766,6 +1766,6 @@ trait FunctionTrait
      */
     public function isPure() : bool
     {
-        return $this->getPhanFlagsHasState(Flags::IS_PURE);
+        return $this->getPhanFlagsHasState(Flags::IS_SIDE_EFFECT_FREE);
     }
 }

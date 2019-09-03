@@ -6,7 +6,7 @@ use Phan\Daemon\ExitException;
 
 /**
  * Thrown to indicate that retrieving the element for an FQSEN from the CodeBase failed.
- * @immutable
+ * @phan-immutable
  */
 class UsageException extends ExitException
 {
