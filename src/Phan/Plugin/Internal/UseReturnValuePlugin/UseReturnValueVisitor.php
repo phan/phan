@@ -8,6 +8,7 @@ use Exception;
 use Phan\AST\ContextNode;
 use Phan\Exception\CodeBaseException;
 use Phan\Language\Element\Func;
+use Phan\Language\Element\Method;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Plugin\Internal\UseReturnValuePlugin;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
@@ -82,7 +83,11 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
             ))->getFunctionFromNode();
 
             foreach ($function_list_generator as $function) {
-                $fqsen = $function->getFQSEN()->__toString();
+                if ($function instanceof Method) {
+                    $fqsen = $function->getDefiningFQSEN()->__toString();
+                } else {
+                    $fqsen = $function->getFQSEN()->__toString();
+                }
                 if (!UseReturnValuePlugin::$use_dynamic) {
                     $this->quickWarn($function, $fqsen, $node);
                     continue;

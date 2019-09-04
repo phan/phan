@@ -114,7 +114,6 @@ class FunctionFactory
             $reflection_method->getName()
         );
 
-
         $method = new Method(
             $context,
             $reflection_method->name,
@@ -123,6 +122,17 @@ class FunctionFactory
             $method_fqsen,
             null
         );
+        // Knowing the defining class of the method is useful for warning about unused calls to inherited methods such as Exception->getCode()
+        $defining_class_name = $reflection_method->getDeclaringClass()->getName();
+        if ($defining_class_name !== $class_name) {
+            $method->setDefiningFQSEN(
+                FullyQualifiedMethodName::make(
+                    // @phan-suppress-next-line PhanThrowTypeAbsentForCall
+                    FullyQualifiedClassName::fromFullyQualifiedString($defining_class_name),
+                    $reflection_method->getName()
+                )
+            );
+        }
 
         $method->setNumberOfRequiredParameters(
             $reflection_method->getNumberOfRequiredParameters()
