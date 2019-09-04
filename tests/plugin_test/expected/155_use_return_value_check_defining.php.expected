@@ -1,0 +1,2 @@
+src/155_use_return_value_check_defining.php:2 PhanUnreferencedFunction Possibly zero references to function \show_runtime_exception()
+src/155_use_return_value_check_defining.php:3 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \Exception::getCode
