@@ -3,7 +3,7 @@
 namespace NS153;
 
 class X {
-    /** @phan-pure */
+    /** @phan-side-effect-free */
     public function mul1(int $x) {
         echo "Checking $x\n";
         return $x * 2;
@@ -35,13 +35,13 @@ $t->mul1(3);  // should warn about being unused
 $t->mul2(4);  // should not warn
 
 class Invalid {
-    /** @phan-pure should not be set on a property */
+    /** @phan-side-effect-free should not be set on a property */
     public $x;
 }
 var_export(new Invalid());
 
 /**
- * @phan-pure this means that all instance properties are read-only and all instance methods are pure
+ * @phan-side-effect-free this means that all instance properties are read-only and all instance methods are free of side effects (but not deterministic).
  */
 class PureClassExample {
     public $prop;

@@ -27,7 +27,7 @@ namespace Phan\LanguageServer\Protocol;
  * *Please Note* that clients might sanitize the return markdown. A client could decide to
  * remove HTML from the markdown to avoid script execution.
  * @phan-file-suppress PhanUnreferencedPublicClassConstant, PhanWriteOnlyPublicProperty
- * @immutable
+ * @phan-immutable
  */
 class MarkupContent
 {

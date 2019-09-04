@@ -5,7 +5,7 @@ namespace Phan\Plugin\Internal\IssueFixingPlugin;
 /**
  * Represents a set of changes to be made to file contents.
  * The structure of this will change.
- * @immutable
+ * @phan-immutable
  */
 class FileEditSet
 {

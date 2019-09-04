@@ -1866,7 +1866,7 @@ class Clazz extends AddressableElement
      */
     public function isPure() : bool
     {
-        return $this->getPhanFlagsHasState(Flags::IS_PURE);
+        return $this->getPhanFlagsHasState(Flags::IS_SIDE_EFFECT_FREE);
     }
 
     /**

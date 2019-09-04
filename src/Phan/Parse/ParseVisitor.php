@@ -165,7 +165,7 @@ class ParseVisitor extends ScopeVisitor
                 $class->getInternalScope()->addTemplateType($template_type);
             }
 
-            // Handle @immutable, @deprecated, @internal,
+            // Handle @phan-immutable, @deprecated, @internal,
             // @phan-forbid-undeclared-magic-properties, and @phan-forbid-undeclared-magic-methods
             $class->setPhanFlags($comment->getPhanFlagsForClass());
 

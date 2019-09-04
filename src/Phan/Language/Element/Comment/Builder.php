@@ -371,7 +371,7 @@ final class Builder
         // https://secure.php.net/manual/en/regexp.reference.internal-options.php
         // (?i) makes this case-sensitive, (?-1) makes it case-insensitive
         // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-        if (\preg_match('/@((?i)param|var|return|throws|throw|returns|immutable|inherits|extends|suppress|phan-[a-z0-9_-]*(?-i)|method|property|property-read|property-write|template|PhanClosureScope)(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/', $line, $matches)) {
+        if (\preg_match('/@((?i)param|var|return|throws|throw|returns|inherits|extends|suppress|phan-[a-z0-9_-]*(?-i)|method|property|property-read|property-write|template|PhanClosureScope)(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/', $line, $matches)) {
             $case_sensitive_type = $matches[1];
             $type = \strtolower($case_sensitive_type);
 
@@ -384,9 +384,6 @@ final class Builder
                     break;
                 case 'template':
                     $this->maybeParseTemplateType($i, $line);
-                    break;
-                case 'immutable':
-                    $this->setPhanAccessFlag($i, false, 'immutable');
                     break;
                 case 'inherits':
                 case 'extends':
@@ -695,12 +692,19 @@ final class Builder
                 $this->parsePhanProperty($i, $line);
                 return;
             case 'phan-pure':
-                // phan-pure = "immutable" + "phan-external-mutation-free".
+            case 'phan-side-effect-free':
+                // phan-side-effect-free = "phan-immutable" + "phan-external-mutation-free".
                 // - Note that there is no way for Phan to use phan-external-mutation-free for analysis on its own right now,
                 // so that annotation doesn't exist.
-                $this->checkCompatible('@phan-pure', \array_merge(Comment::FUNCTION_LIKE, [Comment::ON_CLASS]), $i);
-                $this->comment_flags |= Flags::IS_PURE;
+                //
+                // Note that phan-side-effect-free is recommended over phan-pure to avoid confusion.
+                // Functions with this annotation are not
+                $this->checkCompatible('@' . $type, \array_merge(Comment::FUNCTION_LIKE, [Comment::ON_CLASS]), $i);
+                $this->comment_flags |= Flags::IS_SIDE_EFFECT_FREE;
                 return;
+            case 'phan-immutable':
+                $this->setPhanAccessFlag($i, false, 'phan-immutable');
+                break;
             case 'phan-method':
                 $this->parsePhanMethod($i, $line);
                 return;

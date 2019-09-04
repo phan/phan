@@ -8,19 +8,22 @@ New features(CLI):
   Previously, Phan would fail with a confusing error message.
 
 New features(Analysis):
-+ Support `@immutable` annotation on class doc comments, to indicate that all instance properties are read-only.
++ Support `@phan-immutable` annotation on class doc comments, to indicate that all instance properties are read-only.
 
   - Phan does not check if object fields of those immutable properties will change. (e.g. `$this->foo->prop = 'x';` is allowed)
   - This annotation does not imply that methods have no side effects (e.g. I/O, modifying global state)
   - This annotation does not imply that methods have deterministic return values or that methods' results should be used.
 
-  `@immutable` is an alias of `@phan-read-only`. `@phan-read-only` was previously supported on properties.
-+ Support `@phan-pure` annotation on class doc comments,
-  to indicate that all instances of the class are `@immutable`
+  `@phan-immutable` is an alias of `@phan-read-only`. `@phan-read-only` was previously supported on properties.
++ Support `@phan-side-effect-free` annotation on class doc comments,
+  to indicate that all instances of the class are `@phan-immutable`
   and that methods of the class are free of external side effects. (#3182)
 
   - All instance properties are treated as read-only.
-  - All non-magic instance methods are treated as `@phan-pure` - their return values must be used.
+  - Almost all instance methods are treated as `@phan-side-effect-free` - their return values must be used.
+    (excluding a few magic methods such as __wakeup, __set, etc.)
+    This does not imply that they are deterministic (e.g. `rand()`, `file_get_contents()`, and `microtime()` are allowed)
++ Add `@phan-side-effect-free` as a clearer name of what `@phan-pure` implied for methods.
 + Fix false positives for checking for redundant conditions with `iterable` and `is_iterable`.
 + Properly infer real types for `is_resource` checks and other cases where UnionType::fromFullyQualifiedRealString() was used.
 + Avoid false positives for the config setting `'assume_real_types_for_internal_functions'`.

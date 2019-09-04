@@ -442,7 +442,7 @@ class Comment
      */
     public function isPure() : bool
     {
-        return ($this->comment_flags & Flags::IS_PURE) === Flags::IS_PURE;
+        return ($this->comment_flags & Flags::IS_SIDE_EFFECT_FREE) === Flags::IS_SIDE_EFFECT_FREE;
     }
 
     private const FLAGS_FOR_PROPERTY = Flags::IS_NS_INTERNAL | Flags::IS_DEPRECATED | Flags::IS_READ_ONLY | Flags::IS_WRITE_ONLY;
@@ -458,7 +458,7 @@ class Comment
     private const FLAGS_FOR_CLASS =
         Flags::IS_NS_INTERNAL |
         Flags::IS_DEPRECATED |
-        Flags::IS_PURE |
+        Flags::IS_SIDE_EFFECT_FREE |
         Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS |
         Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES;
 
@@ -473,7 +473,7 @@ class Comment
     private const FLAGS_FOR_METHOD =
         Flags::IS_NS_INTERNAL |
         Flags::IS_DEPRECATED |
-        Flags::IS_PURE;
+        Flags::IS_SIDE_EFFECT_FREE;
 
     /**
      * Gets the subset of the bitmask that applies to methods.

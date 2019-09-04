@@ -10,7 +10,7 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
  * to class_alias() within the codebase (FQSEN and location of alias creation)
  *
  * The original class is mapped to a set of ClassAliasRecord
- * @immutable
+ * @phan-immutable
  */
 class ClassAliasRecord
 {

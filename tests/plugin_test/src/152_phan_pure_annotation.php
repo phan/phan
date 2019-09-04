@@ -1,12 +1,12 @@
 <?php
-// The @phan-pure annotation is used to indicate that the function does not have any side effects
+// The @phan-side-effect-free annotation is used to indicate that the function does not have any side effects
 // that matter to the end user of the application/library.
 // It may be manually added when Phan can't automatically infer the function is pure,
 // or when the side effects are unimportant (e.g. debug logging, performance logging)
 namespace NS152;
 class Debug {
     /**
-     * @phan-pure
+     * @phan-side-effect-free
      * @return int
      */
     public function double1(int $x) {
@@ -23,7 +23,7 @@ class Debug {
     }
 
     /**
-     * @phan-pure
+     * @phan-side-effect-free
      * @return int
      */
     public static function triple1(int $x) {
@@ -39,7 +39,7 @@ class Debug {
 }
 
 /**
- * @phan-pure
+ * @phan-side-effect-free
  */
 function debug_trace(string $value) {
     if (getenv('DEBUG')) {
@@ -68,7 +68,7 @@ $trace1 = function ($o) {
     fwrite(STDERR, "Saw $o\n");
     return $o;
 };
-/** @phan-pure */
+/** @phan-side-effect-free */
 $trace2 = function ($o) {
     fwrite(STDERR, "Saw $o\n");
     return $o;
