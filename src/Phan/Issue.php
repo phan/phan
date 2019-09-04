@@ -131,6 +131,7 @@ class Issue
     const TypeMismatchArgumentReal               = 'PhanTypeMismatchArgumentReal';
     const TypeMismatchArgumentNullable           = 'PhanTypeMismatchArgumentNullable';
     const TypeMismatchArgumentInternal           = 'PhanTypeMismatchArgumentInternal';
+    const TypeMismatchArgumentInternalProbablyReal = 'PhanTypeMismatchArgumentInternalProbablyReal';
     const TypeMismatchArgumentInternalReal       = 'PhanTypeMismatchArgumentInternalReal';
     const TypeMismatchArgumentNullableInternal   = 'PhanTypeMismatchArgumentNullableInternal';
     const PartialTypeMismatchArgument            = 'PhanPartialTypeMismatchArgument';
@@ -1339,6 +1340,14 @@ class Issue
                 'Argument {INDEX} (${PARAMETER}) is {TYPE}{DETAILS} but {FUNCTIONLIKE} takes {TYPE}{DETAILS}',
                 self::REMEDIATION_B,
                 10139
+            ),
+            new Issue(
+                self::TypeMismatchArgumentInternalProbablyReal,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'Argument {INDEX} (${PARAMETER}) is {TYPE}{DETAILS} but {FUNCTIONLIKE} takes {TYPE}{DETAILS}',
+                self::REMEDIATION_B,
+                10148
             ),
             new Issue(
                 self::TypeMismatchArgumentNullableInternal,

@@ -193,7 +193,7 @@ class MarkupDescription
         if ($element->isPHPInternal()) {
             if ($element instanceof FunctionInterface) {
                 // This is a function/method - Use Phan's FunctionDocumentationMap.php to try to load a markup description.
-                if ($element instanceof Method) {
+                if ($element instanceof Method && \strtolower($element->getName()) !== '__construct') {
                     $fqsen = $element->getDefiningFQSEN();
                 } else {
                     $fqsen = $element->getFQSEN();
