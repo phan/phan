@@ -38,6 +38,7 @@ New features(Analysis):
 + Include `use($missingVar)` in suggestions for `PhanUndeclaredVariable` if it is defined outside the closure(s) scope.
   Also, suggest *hardcoded* globals such as `$argv`.
 + Warn about `$this instanceof self` and `$this instanceof static` being redundant.
++ Fix false positive `PhanInvalidConstantExpression` for php 7.4 argument unpacking (e.g. `function f($x = [1, ...SOME_CONST]) {}`)
 
 Plugins:
 + If possible, suggest the types that Phan observed during analysis with `UnknownElementTypePlugin`. (#3146)

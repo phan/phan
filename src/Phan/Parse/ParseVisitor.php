@@ -1566,6 +1566,7 @@ class ParseVisitor extends ScopeVisitor
         ast\AST_MAGIC_CONST => true,
         ast\AST_NAME => true,
         ast\AST_UNARY_OP => true,
+        ast\AST_UNPACK => true,
     ];
 
     /**
