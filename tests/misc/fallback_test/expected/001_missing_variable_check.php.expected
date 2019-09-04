@@ -1,3 +1,3 @@
 src/001_missing_variable_check.php:3 PhanTypeMismatchArgumentInternal Argument 1 ($string) is int but \strlen() takes string
 src/001_missing_variable_check.php:4 PhanSyntaxError syntax error, unexpected ';' (at column 10)
-src/001_missing_variable_check.php:5 PhanTypeMismatchArgumentInternal Argument 1 ($var) is int but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+src/001_missing_variable_check.php:5 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($var) is int but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array

@@ -39,6 +39,9 @@ New features(Analysis):
   Also, suggest *hardcoded* globals such as `$argv`.
 + Warn about `$this instanceof self` and `$this instanceof static` being redundant.
 + Fix false positive `PhanInvalidConstantExpression` for php 7.4 argument unpacking (e.g. `function f($x = [1, ...SOME_CONST]) {}`)
++ Emit `PhanTypeMismatchArgumentInternalProbablyReal` when the real type of an argument doesn't match Phan's signature info for a function (#3199)
+  (but there is no Reflection type info for the parameter)
+  Continue emitting `PhanTypeMismatchArgumentInternal` when the real type info of the argument is unknown or is permitted to cast to the parameter.
 
 Plugins:
 + If possible, suggest the types that Phan observed during analysis with `UnknownElementTypePlugin`. (#3146)

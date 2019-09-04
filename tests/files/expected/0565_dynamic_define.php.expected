@@ -1,7 +1,7 @@
 %s:11 PhanUndeclaredConstant Reference to undeclared constant \MISSINGCONST565
-%s:13 PhanTypeMismatchArgumentInternal Argument 1 ($constant_name) is 2 but \define() takes string
-%s:14 PhanTypeMismatchArgumentInternal Argument 1 ($constant_name) is 2.3 but \define() takes string
-%s:15 PhanTypeMismatchArgumentInternal Argument 1 ($constant_name) is null but \define() takes string
+%s:13 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($constant_name) is 2 but \define() takes string
+%s:14 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($constant_name) is 2.3 but \define() takes string
+%s:15 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($constant_name) is null but \define() takes string
 %s:16 PhanInvalidConstantFQSEN '' is an invalid FQSEN for a constant
 %s:17 PhanInvalidConstantFQSEN '\\' is an invalid FQSEN for a constant
 %s:18 PhanUndeclaredClassConstant Reference to constant class from undeclared class \ns565\Missing565

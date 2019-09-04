@@ -5,5 +5,5 @@
 %s:11 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is bool but \intdiv() takes int
 %s:12 PhanImpossibleCondition Impossible attempt to cast $a of type array to scalar
 %s:16 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is callable-string but \intdiv() takes int
-%s:19 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is callable but \intdiv() takes int
+%s:19 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($numerator) is callable but \intdiv() takes int
 %s:22 PhanImpossibleCondition Impossible attempt to cast $nil of type null to scalar
