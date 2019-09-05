@@ -100,10 +100,6 @@ class PureMethodInferrer
             // \Phan\Debug::printNode($_->getNode());
             return;
         }
-        if ($method->getUnionType()->isNull()) {
-            $graph->recordPotentialPureFunction($visitor->getLabel(), $method, $visitor->getUnresolvedStatusDependencies());
-            return;
-        }
         $graph->recordPotentialPureFunction($visitor->getLabel(), $method, $visitor->getUnresolvedStatusDependencies());
     }
 
