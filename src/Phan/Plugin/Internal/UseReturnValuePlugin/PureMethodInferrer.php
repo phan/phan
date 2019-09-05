@@ -127,7 +127,7 @@ class PureMethodInferrer
             $code_base,
             $method->getContext(),
             UseReturnValuePlugin::UseReturnValueNoopVoid,
-            'The internal function/method {FUNCTION} is declared to return {TYPE} and it has no side effects',
+            'The function/method {FUNCTION} is declared to return {TYPE} and it has no side effects',
             [$method->getRepresentationForIssue(), $method->getUnionType()]
         );
     }
