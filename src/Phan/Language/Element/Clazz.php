@@ -2989,8 +2989,9 @@ class Clazz extends AddressableElement
     /**
      * This method must be called before analysis begins.
      * This is identical to hydrate(), but returns true only if this is the first time the element was hydrated.
+     * @internal
      */
-    private function hydrateIndicatingFirstTime(CodeBase $code_base) : bool
+    public function hydrateIndicatingFirstTime(CodeBase $code_base) : bool
     {
         if (!$this->did_finish_parsing) {
             return false;
