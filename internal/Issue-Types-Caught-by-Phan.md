@@ -134,6 +134,14 @@ Declaration of method {METHOD} overrides final method {METHOD} defined in {FILE}
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0319_override_parent_and_interface.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/files/src/0319_override_parent_and_interface.php#L20).
 
+## PhanAccessOverridesFinalMethodInTrait
+
+```
+Declaration of method {METHOD} overrides final method {METHOD} defined in trait in {FILE}:{LINE}. This is actually allowed in case of traits, even for final methods, but may lead to unexpected behavior
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0318_override_final_method.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0318_override_final_method.php#L22).
+
 ## PhanAccessOverridesFinalMethodInternal
 
 This issue is emitted when a class attempts to override an inherited final method of an internal class.
@@ -496,6 +504,14 @@ This will be emitted for the following code.
 ```php
 $c->$m[0]();
 ```
+
+## PhanCompatiblePHP8PHP4Constructor
+
+```
+PHP4 constructors will be removed in php 8, and should not be used. __construct() should be added/used instead to avoid accidentally calling {METHOD}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0198_list_property.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0198_list_property.php#L7).
 
 ## PhanCompatibleShortArrayAssignPHP70
 
@@ -2008,6 +2024,14 @@ Using non-null {CODE} of type {TYPE} as the left hand side of a null coalescing 
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.2.3/tests/files/expected/0708_loop_issue_examples.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.3/tests/files/src/0708_loop_issue_examples.php#L17).
 
+## PhanDivisionByZero
+
+```
+Attempting to divide a value by a divisor of {CODE} of type {TYPE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0761_division_by_zero.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0761_division_by_zero.php#L5).
+
 ## PhanImpossibleCondition
 
 ```
@@ -2088,6 +2112,14 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0258_variadic_comment_parsing.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/files/src/0258_variadic_comment_parsing.php#L6).
+
+## PhanModuloByZero
+
+```
+Attempting to modulo a value with a modulus of {CODE} of type {TYPE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0761_division_by_zero.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0761_division_by_zero.php#L6).
 
 ## PhanNonClassMethodCall
 
@@ -2229,6 +2261,14 @@ Returning type {TYPE} but {FUNCTIONLIKE} is declared to return {TYPE} ({TYPE} is
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/expected/026_strict_return_checks.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/src/026_strict_return_checks.php#L16).
+
+## PhanPowerOfZero
+
+```
+Attempting to exponentiate a value to a power of {CODE} of type {TYPE} (the result will always be 1)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0761_division_by_zero.php.expected#L12) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0761_division_by_zero.php#L14).
 
 ## PhanRedundantCondition
 
@@ -2856,6 +2896,14 @@ This will be emitted for the code
 ```php
 strlen(42);
 ```
+
+## PhanTypeMismatchArgumentInternalProbablyReal
+
+```
+Argument {INDEX} (${PARAMETER}) is {TYPE}{DETAILS} but {FUNCTIONLIKE} takes {TYPE}{DETAILS}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/expected/021_binary_op.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/src/021_binary_op.php#L2).
 
 ## PhanTypeMismatchArgumentInternalReal
 

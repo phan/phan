@@ -8,8 +8,8 @@ use Exception;
 use Phan\AST\ContextNode;
 use Phan\Exception\CodeBaseException;
 use Phan\Language\Element\Func;
-use Phan\Language\Element\Method;
 use Phan\Language\Element\FunctionInterface;
+use Phan\Language\Element\Method;
 use Phan\Plugin\Internal\UseReturnValuePlugin;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
 
