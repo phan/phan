@@ -121,6 +121,10 @@ class PureMethodInferrer
             // no-op closures are usually normal
             return;
         }
+        if ($method->isPHPInternal()) {
+            // Don't emit this for internal stubs
+            return;
+        }
         // Don't warn about the **caller** of void methods that do nothing.
         // Instead, warn about the implementation of void methods.
         self::emitPluginIssue(
