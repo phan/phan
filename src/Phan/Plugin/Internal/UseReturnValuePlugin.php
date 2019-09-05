@@ -2,6 +2,7 @@
 
 namespace Phan\Plugin\Internal;
 
+use Phan\CLI;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Plugin\Internal\UseReturnValuePlugin\PureMethodInferrer;
@@ -38,6 +39,9 @@ use Phan\PluginV3\PostAnalyzeNodeCapability;
  *
  * - ['plugin_config']['infer_pure_methods'] to automatically infer which methods are pure.
  *   This is a best effort attempt, and it is not done for methods that override or are overridden by other methods.
+ *
+ *   This setting is ignored in the language server or daemon mode,
+ *   due to being extremely slow and memory intensive.
  */
 class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability, FinalizeProcessCapability, BeforeAnalyzePhaseCapability
 {
@@ -89,6 +93,10 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
     public function beforeAnalyzePhase(CodeBase $code_base) : void
     {
         if (!(Config::getValue('plugin_config')['infer_pure_methods'] ?? false)) {
+            return;
+        }
+        if (CLI::isDaemonOrLanguageServer()) {
+            // This is horribly slow and causes out of memory errors in language server mode
             return;
         }
         PureMethodInferrer::identifyPureMethods($code_base);
