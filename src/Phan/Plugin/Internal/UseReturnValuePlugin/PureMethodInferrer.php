@@ -57,6 +57,17 @@ class PureMethodInferrer
             // because the files they're related to might not be parsed.
             return;
         }
+        $class_fqsen = $method->getFQSEN()->getFullyQualifiedClassName();
+        // Hydrate the class if it wasn't already hydrated, so that Phan can accurately tell if this method is an override.
+        if ($code_base->hasClassWithFQSEN($class_fqsen)) {
+            $class = $code_base->getClassByFQSEN($class_fqsen);
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            if ($class->hydrateIndicatingFirstTime($code_base)) {
+                if ($method->isOverriddenByAnother() || $method->isOverride()) {
+                    return;
+                }
+            }
+        }
         self::checkIsReadOnlyFunctionCommon($code_base, $method, $graph);
     }
 
