@@ -167,7 +167,7 @@ class ParseVisitor extends ScopeVisitor
 
             // Handle @phan-immutable, @deprecated, @internal,
             // @phan-forbid-undeclared-magic-properties, and @phan-forbid-undeclared-magic-methods
-            $class->setPhanFlags($comment->getPhanFlagsForClass());
+            $class->setPhanFlags($class->getPhanFlags() | $comment->getPhanFlagsForClass());
 
             $class->setSuppressIssueSet(
                 $comment->getSuppressIssueSet()

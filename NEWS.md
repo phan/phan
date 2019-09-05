@@ -49,7 +49,6 @@ Plugins:
 
 Bug fixes:
 + Don't parse `src/a.php` and `src\a.php` twice if both paths are generated from config or CLI options (#3166)
-+ Don't emit PhanPluginUseReturnValueNoopVoid for internal stubs. (#3216)
 
 Aug 18 2019, Phan 2.2.11
 ------------------------

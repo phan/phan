@@ -493,7 +493,7 @@ class Method extends ClassElement implements FunctionInterface
         $method->setComment($comment);
 
         // Record @internal, @deprecated, and @phan-pure
-        $method->setPhanFlags($comment->getPhanFlagsForMethod());
+        $method->setPhanFlags($method->getPhanFlags() | $comment->getPhanFlagsForMethod());
 
         $element_context = new ElementContext($method);
         // @var array<int,Parameter>
