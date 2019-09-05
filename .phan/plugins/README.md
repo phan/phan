@@ -159,14 +159,17 @@ This plugin warns when code fails to use the return value of internal functions/
 - **PhanPluginUseReturnValueInternalKnown**: `Expected to use the return value of the internal function/method {FUNCTION}`,
 
 `'plugin_config' => ['infer_pure_method' => true]` will make this plugin automatically infer which methods are pure, recursively.
-  This is a best-effort heuristic.
-  This is done only for the functions and methods that are not excluded from analysis,
-  and it isn't done for methods that override or are overridden by other methods.
+This is a best-effort heuristic.
+This is done only for the functions and methods that are not excluded from analysis,
+and it isn't done for methods that override or are overridden by other methods.
 
-  Note that functions such as `fopen()` are not pure due to side effects.
-  UseReturnValuePlugin also warns about those because their results should be used.
+Note that functions such as `fopen()` are not pure due to side effects.
+UseReturnValuePlugin also warns about those because their results should be used.
 
-  Automatic inference of function purity is done recursively.
+* This setting is ignored in the language server or daemon mode,
+  due to being extremely slow and memory intensive.
+
+Automatic inference of function purity is done recursively.
 
 This plugin also has a dynamic mode(disabled by default and slow) where it will warn if a function or method's return value is unused.
 This checks if the function/method's return value is used 98% or more of the time, then warns about the remaining places where the return value was unused.

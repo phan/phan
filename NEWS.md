@@ -43,6 +43,10 @@ New features(Analysis):
   (but there is no Reflection type info for the parameter)
   Continue emitting `PhanTypeMismatchArgumentInternal` when the real type info of the argument is unknown or is permitted to cast to the parameter.
 
+Language Server/Daemon mode:
++ Ignore `'plugin_config' => ['infer_pure_methods' => true]` in language server and daemon mode. (#3220)
+  That option is extremely slow and memory intensive.
+
 Plugins:
 + If possible, suggest the types that Phan observed during analysis with `UnknownElementTypePlugin`. (#3146)
 + New DependencyGraphPlugin and associated tool/pdep - see `tool/pdep -h`
