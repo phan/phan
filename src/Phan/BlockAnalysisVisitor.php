@@ -1229,7 +1229,17 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $cond_node = $child_node->children['cond'];
             // Step into each child node and get an
             // updated context for the node
-            $child_context = $context->withScope(new BranchScope($scope));
+
+            if ($previous_child_context) {
+                // The previous case statement fell through some of the time or all of the time.
+                $child_context = (new ContextMergeVisitor(
+                    $previous_child_context,
+                    [$previous_child_context, $context]
+                ))->combineScopeList([$previous_child_context->getScope(), $scope]);
+            } else {
+                // The previous case statement did not fall through, or does not exist.
+                $child_context = $context->withScope(new BranchScope($scope));
+            }
             $child_context->withLineNumberStart($child_node->lineno);
             if ($cond_node !== null) {
                 if ($switch_variable_condition) {

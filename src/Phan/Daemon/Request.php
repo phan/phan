@@ -509,12 +509,10 @@ class Request
                 // Analyze the default list of files. No expected params.
                 break;
             case 'analyze_file':
-                $method = 'analyze_files';
-                $request = [
-                    self::PARAM_METHOD => $method,
-                    self::PARAM_FILES => [$request['file']],
-                    self::PARAM_FORMAT => $request[self::PARAM_FORMAT] ?? 'json',
-                ];
+                // Override some parameters and keep other parameters such as temporary_file_mapping_contents
+                $request[self::PARAM_FILES] = [$request['file']];
+                $request[self::PARAM_METHOD] = 'analyze_files';
+                $request[self::PARAM_FORMAT] = $request[self::PARAM_FORMAT] ?? 'json';
                 // Fall through, this is an alias of analyze_files
             case 'analyze_files':
                 // Analyze the list of strings provided in "files"
@@ -534,6 +532,7 @@ class Request
                 if (\is_null($error_message)) {
                     $file_mapping_contents = $request[self::PARAM_TEMPORARY_FILE_MAPPING_CONTENTS] ?? [];
                     if (is_array($file_mapping_contents)) {
+                        // @phan-suppress-next-line PhanPartialTypeMismatchArgument false positive due to bad inference after unset field of array shape.
                         $new_file_mapping_contents = self::normalizeFileMappingContents($file_mapping_contents, $error_message);
                         $request[self::PARAM_TEMPORARY_FILE_MAPPING_CONTENTS] = $new_file_mapping_contents;
                     } else {

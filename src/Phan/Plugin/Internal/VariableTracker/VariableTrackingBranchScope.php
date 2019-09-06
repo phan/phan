@@ -64,6 +64,21 @@ class VariableTrackingBranchScope extends VariableTrackingScope
     }
 
     /**
+     * inherit definitions from outer scope.
+     * Used to analyze fallthrough in switch statements.
+     */
+    public function inheritDefsFromOuterScope(VariableTrackingScope $outer_scope) : void
+    {
+        foreach ($this->defs as $variable_name => $_) {
+            $outer_defs = $outer_scope->getDefinition((string)$variable_name);
+            if ($outer_defs) {
+                $this->defs[$variable_name] += $outer_defs;
+            }
+        }
+    }
+
+
+    /**
      * Record a statement that was unreachable due to break/continue statements.
      *
      * @param VariableTrackingBranchScope $inner_scope @phan-unused-param

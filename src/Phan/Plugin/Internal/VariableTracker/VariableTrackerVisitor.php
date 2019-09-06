@@ -736,6 +736,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         $inner_scope_list = [];
         $inner_exiting_scope_list = [];
         $merge_parent_scope = true;
+        $inner_scope = null;
         foreach ($node->children as $i => $case_node) {
             if (!($case_node instanceof Node)) {
                 throw new AssertionError("Expected case statements to be nodes");
@@ -754,16 +755,27 @@ final class VariableTrackerVisitor extends AnalysisVisitor
 
             // Skip over empty case statements (incomplete heuristic), TODO: test
             if (\count($stmts_node->children ?? []) !== 0 || $i === \count($node->children) - 1) {
-                $inner_scope = new VariableTrackingLoopScope($outer_scope);
+                if ($inner_scope) {
+                    $inner_scope = clone($inner_scope);
+                    $inner_scope->inheritDefsFromOuterScope($outer_scope);
+                } else {
+                    $inner_scope = new VariableTrackingLoopScope($outer_scope);
+                }
                 $inner_scope = $this->analyze($inner_scope, $stmts_node);
                 // Merge $inner_scope->skipped_loop_scopes
                 '@phan-var VariableTrackingLoopScope $inner_scope';
                 $inner_scope->flattenSwitchCaseScopes(self::$variable_graph);
 
-                if (BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_node)) {
+                // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this is never null
+                $block_exit_status = (new BlockExitStatusChecker())->__invoke($stmts_node);
+                if (($block_exit_status & BlockExitStatusChecker::STATUS_THROW_OR_RETURN_BITMASK) === $block_exit_status) {
                     $inner_exiting_scope_list[] = $inner_scope;
                 } else {
                     $inner_scope_list[] = $inner_scope;
+                }
+                if (!($block_exit_status & BlockExitStatusChecker::STATUS_PROCEED)) {
+                    // This won't fall through, so don't clone the inner scope for the next loop.
+                    $inner_scope = null;
                 }
             }
         }
