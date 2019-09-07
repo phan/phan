@@ -207,7 +207,12 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
     {
         $args = $node->children['args']->children;
         $bool_node = $args[1] ?? null;
-        if (!$bool_node) {
+        if (!$bool_node instanceof Node) {
+            if ($const_name === 'true') {
+                return (bool)$bool_node;
+            } elseif ($const_name === 'false') {
+                return (bool)$bool_node;
+            }
             return false;
         }
         if ($bool_node->kind !== ast\AST_CONST) {
