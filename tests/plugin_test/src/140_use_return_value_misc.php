@@ -29,3 +29,5 @@ call_user_func_array('var_dump', [1, 2]);
 preg_match_all('/x/', 'executable');
 // should not warn
 preg_match_all('/x/', 'executable', $matches);
+var_export($matches, 0);
+var_export($matches, 1);

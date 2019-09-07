@@ -595,10 +595,17 @@ final class ArgumentType
                     $real_argument_type = $argument_type->getRealUnionType();
                     $real_argument_type_expanded_resolved = $real_argument_type->withStaticResolvedInContext($context)->asExpandedTypes($code_base);
                     if (!$real_argument_type_expanded_resolved->canCastToDeclaredType($code_base, $context, $real_parameter_type)) {
-                        // We know that the inferred real types don't match with the strict_types setting of the caller
-                        // (e.g. null -> any non-null type)
-                        // Try checking any other alternates, and emit PhanTypeMismatchArgumentReal if that fails.
-                        continue;
+                        $real_argument_type_expanded_resolved_nonnull = $real_argument_type_expanded_resolved->nonNullableClone();
+                        if ($real_argument_type_expanded_resolved_nonnull->isEmpty() ||
+                            !$real_argument_type_expanded_resolved_nonnull->canCastToDeclaredType($code_base, $context, $real_parameter_type)) {
+                            // We know that the inferred real types don't match with the strict_types setting of the caller
+                            // (e.g. null -> any non-null type)
+                            // Try checking any other alternates, and emit PhanTypeMismatchArgumentReal if that fails.
+                            //
+                            // Don't emit PhanTypeMismatchArgumentReal if the only reason that they failed was due to nullability of individual types,
+                            // e.g. allow ?array -> iterable
+                            continue;
+                        }
                     }
                 }
                 if (Config::get_strict_param_checking() && $argument_type->typeCount() > 1) {

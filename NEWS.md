@@ -48,6 +48,7 @@ New features(Analysis):
 + Warn about redundant condition detection in more cases in loops.
 + Warn about PHP 4 constructors such as `Foo::Foo()` if the class has no namespace and `__construct()` does not exist. (#740)
   Infer that defining `Foo::Foo()` creates the method alias `Foo::__construct()`.
++ Don't emit `PhanTypeMismatchArgumentReal` if the only cause of the mismatch is nullability of real types (if phpdoc types were compatible) (#3231)
 
 Language Server/Daemon mode:
 + Ignore `'plugin_config' => ['infer_pure_methods' => true]` in language server and daemon mode. (#3220)
