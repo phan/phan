@@ -441,6 +441,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
      */
     private function checkUselessScalarComparison(Node $node, UnionType $left, UnionType $right) : void
     {
+        // Give up if any of the sides aren't constant
         $left_value = $left->asSingleScalarValueOrNullOrSelf();
         if ($left_value instanceof UnionType) {
             return;
@@ -464,13 +465,15 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
         $check_as_if_in_loop_scope = $this->shouldCheckScalarAsIfInLoopScope($node, $left_value, $right_value);
         if ($check_as_if_in_loop_scope) {
             ['left' => $left_node, 'right' => $right_node] = $node->children;
-            $left_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($left_node);
-            $right_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($right_node);
+            $left_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($code_base, $left_node);
+            $right_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($code_base, $right_node);
             if ($left_type_fetcher || $right_type_fetcher) {
-                if (!$left_type_fetcher || !$right_type_fetcher) {
-                    // Give up, we don't know how to fetch the new type
-                    return;
-                }
+                $left_type_fetcher = $left_type_fetcher ?? function (Context $_) use ($left) : UnionType {
+                    return $left;
+                };
+                $right_type_fetcher = $right_type_fetcher ?? function (Context $_) use ($right) : UnionType {
+                    return $right;
+                };
 
                 // @phan-suppress-next-line PhanAccessMethodInternal
                 $context->deferCheckToOutermostLoop(static function (Context $context_after_loop) use ($code_base, $node, $left_type_fetcher, $right_type_fetcher, $left, $right, $issue_name, $issue_args, $context) : void {
@@ -563,8 +566,8 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
 
         if ($this->context->isInLoop()) {
             ['left' => $left_node, 'right' => $right_node] = $node->children;
-            $left_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($left_node);
-            $right_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($right_node);
+            $left_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($code_base, $left_node);
+            $right_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($code_base, $right_node);
             if ($left_type_fetcher || $right_type_fetcher) {
                 // @phan-suppress-next-line PhanAccessMethodInternal
                 $context->deferCheckToOutermostLoop(static function (Context $context_after_loop) use ($code_base, $node, $left_type_fetcher, $right_type_fetcher, $left, $right, $is_still_issue, $issue_name, $issue_args, $context) : void {

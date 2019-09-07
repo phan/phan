@@ -9,7 +9,7 @@ function iterate() {
     $j = 0;
     var_export($j < 20);
     $total = 0;
-    for ($i = 100; $i < 20 && $j < 20; $i++) {$total += $i;}
+    for ($i = 100; $i < 20 && $j < 20; $i++) {$total += $i;}  // should warn about PhanSuspiciousValueComparisonInLoop for $j < 20. Nothing is implemented to check initially false $i < 20, though
     // These are wrong
     for ($i = 0; $i < 10; $i--) { $total += $i; }// this decreases but checks if value is less than something
     for ($i = 0; $i < 10; $i++) { $total += $i; }// should not warn

@@ -5,6 +5,9 @@ namespace Phan\Analysis;
 use ast;
 use ast\Node;
 use Closure;
+use Exception;
+use Phan\AST\PhanAnnotationAdder;
+use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Context;
@@ -68,7 +71,7 @@ class RedundantCondition
     public static function emitInstance($node, CodeBase $code_base, Context $context, string $issue_name, array $issue_args, Closure $is_still_issue) : void
     {
         if ($context->isInLoop() && $node instanceof Node) {
-            $type_fetcher = self::getLoopNodeTypeFetcher($node);
+            $type_fetcher = self::getLoopNodeTypeFetcher($code_base, $node);
             if ($type_fetcher) {
                 // @phan-suppress-next-line PhanAccessMethodInternal
                 $context->deferCheckToOutermostLoop(static function (Context $context_after_loop) use ($code_base, $node, $type_fetcher, $is_still_issue, $issue_name, $issue_args, $context) : void {
@@ -101,15 +104,18 @@ class RedundantCondition
      * Currently only supports regular variables
      *
      * @param Node|string|int|float|null $node
-     * @return ?Closure(Context):(?UnionType)
+     * @return ?Closure(Context):(?UnionType) A closure to fetch the type, or null if the inferred type isn't expected to vary.
      * @internal
      */
-    public static function getLoopNodeTypeFetcher($node) : ?Closure
+    public static function getLoopNodeTypeFetcher(CodeBase $code_base, $node) : ?Closure
     {
-        if ($node instanceof Node && $node->kind === ast\AST_VAR) {
+        if (!($node instanceof Node)) {
+            // This scalar won't change.
+            return null;
+        }
+        if ($node->kind === ast\AST_VAR) {
             $var_name = $node->children['name'];
             if (\is_string($var_name)) {
-                // @phan-suppress-next-line PhanAccessMethodInternal
                 return static function (Context $context_after_loop) use ($var_name) : ?UnionType {
                     $scope = $context_after_loop->getScope();
                     if ($scope->hasVariableWithName($var_name)) {
@@ -119,6 +125,51 @@ class RedundantCondition
                 };
             }
         }
-        return null;
+        $variable_set = self::getVariableSet($node);
+        if (!$variable_set) {
+            // We don't know any variables this uses
+            return null;
+        }
+        return static function (Context $context_after_loop) use ($code_base, $variable_set, $node) : ?UnionType {
+            $scope = $context_after_loop->getScope();
+            foreach ($variable_set as $var_name) {
+                if (!$scope->hasVariableWithName($var_name)) {
+                    return null;
+                }
+            }
+            try {
+                return UnionTypeVisitor::unionTypeFromNode($code_base, $context_after_loop, $node, false)->getRealUnionType();
+            } catch (Exception $_) {
+                return null;
+            }
+        };
+    }
+
+    /**
+     * @param Node|string|int|float $node
+     * @return array<int|string, string> the set of variable names.
+     */
+    private static function getVariableSet($node) : array
+    {
+        if (!$node instanceof Node) {
+            return [];
+        }
+        if ($node->kind === ast\AST_VAR) {
+            $var_name = $node->children['name'];
+            if (\is_string($var_name)) {
+                return [$var_name => $var_name];
+            }
+        }
+        // @phan-suppress-next-line PhanAccessClassConstantInternal
+        if (\in_array($node->kind, PhanAnnotationAdder::SCOPE_START_LIST, true)) {
+            return [];
+        }
+        $result = [];
+        foreach ($node->children as $c) {
+            if ($c instanceof Node) {
+                $result += self::getVariableSet($c);
+            }
+        }
+        return $result;
     }
 }

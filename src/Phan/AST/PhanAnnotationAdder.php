@@ -183,6 +183,14 @@ class PhanAnnotationAdder
         }
     }
 
+    /** @internal */
+    const SCOPE_START_LIST = [
+        ast\AST_CLASS,
+        ast\AST_FUNC_DECL,
+        ast\AST_CLOSURE,
+        ast\AST_ARROW_FUNC,
+    ];
+
     /**
      * @param Node|string|int|float|null $node
      */
@@ -190,7 +198,7 @@ class PhanAnnotationAdder
     {
         if ($node instanceof Node) {
             $kind = $node->kind;
-            if ($kind === ast\AST_CLASS || $kind === ast\AST_FUNC_DECL || $kind === ast\AST_CLOSURE) {
+            if (\in_array($kind, self::SCOPE_START_LIST, true)) {
                 return;
             }
 
