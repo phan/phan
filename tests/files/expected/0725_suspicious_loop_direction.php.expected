@@ -1,4 +1,5 @@
 %s:10 PhanSuspiciousValueComparison Suspicious attempt to compare $j of type 0 to 20 of type 20 with operator '<'
+%s:12 PhanSuspiciousValueComparisonInLoop Suspicious attempt to compare $j of type 0 to 20 of type 20 with operator '<' in a loop (likely a false positive)
 %s:14 PhanSuspiciousLoopDirection Suspicious loop appears to decrease after each iteration in $i--, but the loop condition is ($i < 10)
 %s:16 PhanSuspiciousLoopDirection Suspicious loop appears to increase after each iteration in $i++, but the loop condition is ($i > 0)
 %s:18 PhanSuspiciousLoopDirection Suspicious loop appears to decrease after each iteration in --$i, but the loop condition is !($i >= 100)

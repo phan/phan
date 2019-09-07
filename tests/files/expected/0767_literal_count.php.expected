@@ -1,0 +1,6 @@
+%s:4 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($obj) is 0 but \spl_object_hash() takes object
+%s:5 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($obj) is 2 but \spl_object_hash() takes object
+%s:6 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($obj) is 1 but \spl_object_hash() takes object
+%s:10 PhanSuspiciousValueComparison Suspicious attempt to compare count($my_value) of type 0 to 0 of type 0 with operator '>'
+%s:16 PhanSuspiciousValueComparisonInLoop Suspicious attempt to compare count($my_value) of type 0 to 0 of type 0 with operator '>' in a loop (likely a false positive)
+%s:19 PhanSuspiciousValueComparisonInLoop Suspicious attempt to compare count($my_value) of type 0 to 0 of type 0 with operator '>' in a loop (likely a false positive)

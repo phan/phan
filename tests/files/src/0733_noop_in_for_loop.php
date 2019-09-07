@@ -6,7 +6,7 @@ for ($i + 2;
     $i < 1,
     isset($i),
     $i,
-    $i < 10;  // this should not warn, but other expressions should.
+    $i < 10;  // this should not warn about no-op, but it is a PhanSuspiciousValueComparisonInGlobalScope
     $i + 3) {
 
     // This correctly emits PhanNoopBinaryOperator

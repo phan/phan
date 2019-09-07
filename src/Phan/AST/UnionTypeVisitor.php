@@ -913,9 +913,9 @@ class UnionTypeVisitor extends AnalysisVisitor
             $value_types_builder = new UnionTypeBuilder();
 
             $key_set = $this->getEquivalentArraySet($node);
-            if (\is_array($key_set) && \count($key_set) === \count($children)) {
+            if (\is_array($key_set)) {
                 // XXX decide how to deal with array components when the top level array is real
-                return $this->createArrayShapeType($children, $key_set)->asRealUnionType();
+                return $this->createArrayShapeType($key_set)->asRealUnionType();
             }
 
             foreach ($children as $child) {
@@ -984,7 +984,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
-     * @return ?array<int|string,true>
+     * @return ?array<int|string,Node>
      * Caller should check if the result size is too small and handle it (for duplicate keys)
      * Returns null if one or more keys could not be resolved
      *
@@ -1003,7 +1003,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 if ($this->getPackedArrayFieldTypes($child_node->children['expr']) !== null) {
                     // This is a placeholder of a deliberately - the caller checks that the count of elements matches the count of AST child nodes.
                     // TODO: Refactor to handle edge cases such as `[...[1], 0 => 2]`
-                    $elements[] = true;
+                    $elements[] = $child_node;
                     continue;
                 }
                 return null;
@@ -1012,16 +1012,16 @@ class UnionTypeVisitor extends AnalysisVisitor
             $key_node = $child_node->children['key'];
             // NOTE: this has some overlap with DuplicateKeyPlugin
             if ($key_node === null) {
-                $elements[] = true;
+                $elements[] = $child_node;
             } elseif (is_scalar($key_node)) {
-                $elements[$key_node] = true;  // Check for float?
+                $elements[$key_node] = $child_node;  // Check for float?
             } else {
                 if ($context_node === null) {
                     $context_node = new ContextNode($this->code_base, $this->context, null);
                 }
                 $key = $context_node->getEquivalentPHPValueForNode($key_node, ContextNode::RESOLVE_CONSTANTS);
                 if (is_scalar($key)) {
-                    $elements[$key] = true;
+                    $elements[$key] = $child_node;
                 } else {
                     return null;
                 }
@@ -1069,19 +1069,14 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param array<int,Node> $children
-     * @param array<int|string,true> $key_set
+     * @param array<int|string,Node> $key_set
      */
-    private function createArrayShapeType(array $children, array $key_set) : ArrayShapeType
+    private function createArrayShapeType(array $key_set) : ArrayShapeType
     {
-        \reset($key_set);
         $field_types = [];
 
-        foreach ($children as $child) {
+        foreach ($key_set as $key => $child) {
             // Keep iteration over $children and key_set in sync
-            $key = \key($key_set);
-            \next($key_set);
-
             if ($child->kind === ast\AST_UNPACK) {
                 // handle [other_expr, ...expr, other_exprs]
                 $element_value_type = $this->getPackedArrayFieldTypes($child->children['expr']);

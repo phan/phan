@@ -11,7 +11,11 @@ use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Type;
+use Phan\Language\Type\ArrayShapeType;
+use Phan\Language\Type\CallableArrayType;
 use Phan\Language\Type\FloatType;
+use Phan\Language\Type\LiteralIntType;
+use Phan\Language\Type\IntType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TrueType;
@@ -224,6 +228,41 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             }
             return $string_or_false;
         };
+        $real_int_type = IntType::instance(false)->asRealUnionType();
+        /**
+         * @param array<int,Node|int|float|string> $args
+         */
+        $count_handler = static function (
+            CodeBase $code_base,
+            Context $context,
+            Func $unused_function,
+            array $args
+        ) use ($real_int_type) : UnionType {
+            if (count($args) < 1 || count($args) >= 3) {
+                return NullType::instance(false)->asRealUnionType();
+            }
+            if (count($args) !== 1) {
+                return $real_int_type;
+            }
+            $arg_union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
+            $arg_types = $arg_union_type->getRealTypeSet();
+            if (count($arg_types) !== 1) {
+                return $real_int_type;
+            }
+            $arg = \reset($arg_types);
+            if ($arg instanceof ArrayShapeType) {
+                foreach ($arg->getFieldTypes() as $field_type) {
+                    if ($field_type->isPossiblyUndefined()) {
+                        return $real_int_type;
+                    }
+                }
+                return LiteralIntType::instanceForValue(count($arg->getFieldTypes()), false)->asRealUnionType();
+            } elseif ($arg instanceof CallableArrayType) {
+                return LiteralIntType::instanceForValue(2, false)->asRealUnionType();
+            }
+
+            return $real_int_type;
+        };
 
         $parse_url_handler = $make_arg_existence_dependent_type_method(
             1,
@@ -273,6 +312,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             'var_export'                  => $string_if_2_true,
             'print_r'                     => $string_if_2_true_else_true,
             'json_decode'                 => $json_decode_return_type_handler,
+            'count'                       => $count_handler,
             // Functions with dependent return types
             'str_replace'                 => $third_argument_string_or_array_handler,
             'preg_replace'                => $third_argument_string_or_array_handler,

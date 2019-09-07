@@ -43,6 +43,9 @@ New features(Analysis):
   (but there is no Reflection type info for the parameter)
   Continue emitting `PhanTypeMismatchArgumentInternal` when the real type info of the argument is unknown or is permitted to cast to the parameter.
 + Improve analysis of switch statements for unused variable detection and variable types (#3222, #1811)
++ Infer the value of count() for union types that have a real type with a single array shape.
++ Fix false positive `PhanSuspiciousValueComparisonInLoop` for value expressions that contain variables.
++ Warn about redundant condition detection in more cases in loops.
 
 Language Server/Daemon mode:
 + Ignore `'plugin_config' => ['infer_pure_methods' => true]` in language server and daemon mode. (#3220)
