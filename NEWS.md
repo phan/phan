@@ -46,6 +46,8 @@ New features(Analysis):
 + Infer the value of count() for union types that have a real type with a single array shape.
 + Fix false positive `PhanSuspiciousValueComparisonInLoop` for value expressions that contain variables.
 + Warn about redundant condition detection in more cases in loops.
++ Warn about PHP 4 constructors such as `Foo::Foo()` if the class has no namespace and `__construct()` does not exist. (#740)
+  Infer that defining `Foo::Foo()` creates the method alias `Foo::__construct()`.
 
 Language Server/Daemon mode:
 + Ignore `'plugin_config' => ['infer_pure_methods' => true]` in language server and daemon mode. (#3220)
@@ -54,6 +56,10 @@ Language Server/Daemon mode:
 Plugins:
 + If possible, suggest the types that Phan observed during analysis with `UnknownElementTypePlugin`. (#3146)
 + New DependencyGraphPlugin and associated tool/pdep - see `tool/pdep -h`
++ Make `InvalidVariableIssetPlugin` respect the `ignore_undeclared_variables_in_global_scope` option (#1403)
+
+Maintenance:
++ Correctly check for the number of cpus/cores on MacOS in Phan's unit tests (#3143)
 
 Bug fixes:
 + Don't parse `src/a.php` and `src\a.php` twice if both paths are generated from config or CLI options (#3166)
