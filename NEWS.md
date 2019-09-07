@@ -55,7 +55,7 @@ Language Server/Daemon mode:
 
 Plugins:
 + If possible, suggest the types that Phan observed during analysis with `UnknownElementTypePlugin`. (#3146)
-+ New DependencyGraphPlugin and associated tool/pdep - see `tool/pdep -h`
++ New `DependencyGraphPlugin` and associated `tool/pdep` to visualize project dependencies - see `tool/pdep -h`
 + Make `InvalidVariableIssetPlugin` respect the `ignore_undeclared_variables_in_global_scope` option (#1403)
 
 Maintenance:
