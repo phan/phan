@@ -341,10 +341,10 @@ class ParseVisitor extends ScopeVisitor
                 if (!($method_variant instanceof Method)) {
                     throw new AssertionError("Expected variants of Method to be Method");
                 }
-                $class->addMethod($code_base, $method_variant, new None());
+                $class->addMethod($code_base, $method_variant, None::instance());
             }
         } else {
-            $class->addMethod($code_base, $method, new None());
+            $class->addMethod($code_base, $method, None::instance());
         }
 
         if ('__construct' === $method_name) {
@@ -535,7 +535,7 @@ class ParseVisitor extends ScopeVisitor
             $property->setDocComment($doc_comment);
 
             // Add the property to the class
-            $class->addProperty($this->code_base, $property, new None());
+            $class->addProperty($this->code_base, $property, None::instance());
 
             $property->setSuppressIssueSet(
                 $comment->getSuppressIssueSet()

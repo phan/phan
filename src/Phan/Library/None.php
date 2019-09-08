@@ -10,13 +10,25 @@ use Exception;
  * @inherits Option<null>
  * @phan-pure
  */
-class None extends Option
+final class None extends Option
 {
     /**
      * Get a new instance of nothing
+     * @deprecated
      */
     public function __construct()
     {
+    }
+
+    /** @var None */
+    private static $instance;
+
+    /**
+     * Fetches the shared instance of None.
+     */
+    public static function instance() : None
+    {
+        return self::$instance;
     }
 
     public function isDefined() : bool
@@ -52,4 +64,15 @@ class None extends Option
     {
         return 'None()';
     }
+
+    /**
+     * Called automatically to instantiate shared instance
+     * @internal
+     * @suppress PhanDeprecatedFunction
+     */
+    public static function init() : void
+    {
+        self::$instance = new None();
+    }
 }
+None::init();

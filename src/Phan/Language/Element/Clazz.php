@@ -308,7 +308,7 @@ class Clazz extends AddressableElement
             // so that analysis of assignments to the property can account for it.
             $property->setPHPDocUnionType($property_type);
 
-            $clazz->addProperty($code_base, $property, new None());
+            $clazz->addProperty($code_base, $property, None::instance());
         }
 
         // n.b.: public properties on internal classes don't get
@@ -341,7 +341,7 @@ class Clazz extends AddressableElement
                 UnionType::empty()
             );
 
-            $clazz->addProperty($code_base, $property, new None());
+            $clazz->addProperty($code_base, $property, None::instance());
         }
 
         foreach ($class->getInterfaceNames() as $name) {
@@ -393,7 +393,7 @@ class Clazz extends AddressableElement
                 );
 
             foreach ($method_list as $method) {
-                $clazz->addMethod($code_base, $method, new None());
+                $clazz->addMethod($code_base, $method, None::instance());
             }
         }
 
@@ -468,7 +468,7 @@ class Clazz extends AddressableElement
             return new Some($this->parent_type);
         }
 
-        return new None();
+        return None::instance();
     }
 
     /**
@@ -839,7 +839,7 @@ class Clazz extends AddressableElement
             }
             $property->setPhanFlags($phan_flags | Flags::IS_FROM_PHPDOC);
 
-            $this->addProperty($code_base, $property, new None());
+            $this->addProperty($code_base, $property, None::instance());
         }
         return true;
     }
@@ -896,7 +896,7 @@ class Clazz extends AddressableElement
                 $method->setIsPure();
             }
 
-            $this->addMethod($code_base, $method, new None());
+            $this->addMethod($code_base, $method, None::instance());
         }
         return true;
     }
@@ -1050,7 +1050,7 @@ class Clazz extends AddressableElement
             );
             $property->setIsDynamicProperty(true);
 
-            $this->addProperty($code_base, $property, new None());
+            $this->addProperty($code_base, $property, None::instance());
 
             return $property;
         } elseif ($property) {
@@ -1095,7 +1095,7 @@ class Clazz extends AddressableElement
             );
             $property->setIsDynamicProperty(true);
 
-            $this->addProperty($code_base, $property, new None());
+            $this->addProperty($code_base, $property, None::instance());
 
             return $property;
         }
@@ -2103,7 +2103,7 @@ class Clazz extends AddressableElement
             $this->importAncestorClass(
                 $code_base,
                 $ancestor,
-                new None()
+                None::instance()
             );
         }
 
@@ -2120,7 +2120,7 @@ class Clazz extends AddressableElement
             $this->importAncestorClass(
                 $code_base,
                 $ancestor,
-                new None()
+                None::instance()
             );
         }
 
