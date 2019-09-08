@@ -45,7 +45,7 @@ class CompletionResolver
                 return;
             }
             // TODO: Better way to be absolutely sure this $node is in the same requested file path?
-            // I think it's possible that we'll have more than one Node to check against (with simplify_ast)
+            // I think it's possible that we'll have more than one Node to check against (if the config overrides simplify_ast)
 
 
             // $location = new Location($go_to_definition_request->getUri(), $node->lineno);

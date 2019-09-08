@@ -479,7 +479,10 @@ class Config
         //
         // E.g. rewrites `if ($a = value() && $a > 0) {...}`
         // into `$a = value(); if ($a) { if ($a > 0) {...}}`
-        'simplify_ast' => true,
+        //
+        // Defaults to false as of Phan 2.2.13-dev.
+        // Phan's analysis has improved enough that this should no longer be necessary.
+        'simplify_ast' => false,
 
         // Enable this to warn about harmless redundant use for classes and namespaces such as `use Foo\bar` in namespace Foo.
         //

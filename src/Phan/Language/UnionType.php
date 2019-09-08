@@ -119,7 +119,7 @@ class UnionType implements Serializable
     public function __construct(array $type_list, bool $is_unique = false, array $real_type_set = [])
     {
         $this->type_set = ($is_unique || \count($type_list) <= 1) ? $type_list : self::getUniqueTypes($type_list);
-        $this->real_type_set = $real_type_set;
+        $this->real_type_set = ($is_unique || \count($real_type_set) <= 1) ? $real_type_set : self::getUniqueTypes($real_type_set);
     }
 
     /**
@@ -139,7 +139,8 @@ class UnionType implements Serializable
                 return new self($real_type_set, false, $real_type_set);
             }
             return self::$empty_instance;
-        } elseif ($n === 1) {
+        }
+        if ($n === 1 && \count($real_type_set) <= 1) {
             if (!$real_type_set) {
                 // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
                 return \reset($type_list)->asPHPDocUnionType();

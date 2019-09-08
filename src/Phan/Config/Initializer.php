@@ -322,7 +322,6 @@ EOT;
             'redundant_condition_detection' => !$is_average_level,
             'assume_real_types_for_internal_functions' => !$is_average_level,
             'quick_mode' => $is_weakest_level,
-            'simplify_ast' => true,
             'generic_types_enabled' => true,
             'globals_type_map' => [],
             'minimum_severity' => $minimum_severity,

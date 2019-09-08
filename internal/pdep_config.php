@@ -15,7 +15,7 @@ return [
     'quick_mode' => true,
     'backward_compatibility_checks' => false,
     'disable_plugins' => true,
-    'simplify_ast' => false,
+    'simplify_ast' => false,  // override phan config overrides if they were set.
     'processes' => 1,
     'consistent_hashing_file_order' => false,
     'exclude_analysis_directory_list' => ['.'],

@@ -1,6 +1,7 @@
 %s:5 PhanRedundantCondition Redundant attempt to cast $x of type iterable to iterable
 %s:9 PhanRedundantCondition Redundant attempt to cast $y of type iterable to iterable
 %s:15 PhanRedundantCondition Redundant attempt to cast $z of type iterable to iterable
+%s:19 PhanDebugAnnotation @phan-debug-var requested for variable $w - it has union type \Traversable(real=\Traversable)
 %s:19 PhanRedundantCondition Redundant attempt to cast $w of type \Traversable to iterable
-%s:20 PhanRedundantCondition Redundant attempt to cast $w of type \Traversable to object
-%s:25 PhanRedundantCondition Redundant attempt to cast $x of type resource to resource
+%s:21 PhanRedundantCondition Redundant attempt to cast $w of type \Traversable to object
+%s:26 PhanRedundantCondition Redundant attempt to cast $x of type resource to resource

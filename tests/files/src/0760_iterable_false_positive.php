@@ -17,6 +17,7 @@ function iterable_possibly_false(iterable $x, iterable $y = [], ?iterable $z = n
         }
     }
     if ($w && is_iterable($w)) {
+        '@phan-debug-var $w';
         var_export(is_object($w));
     }
 }
