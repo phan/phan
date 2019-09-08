@@ -6,6 +6,10 @@ Phan NEWS
 New features(CLI):
 + Improve error messages when the `--init-*` flags are provided without passing `--init`. (#3153)
   Previously, Phan would fail with a confusing error message.
++ New tool `tool/pdep` to visualize project dependencies - see `tool/pdep -h`
+  (uses the internal plugin `DependencyGraphPlugin`)
++ Support running `tool/phoogle` (search for functions/methods by signatures) in Windows.
++ Add support for `--limit <count>` and `--progress-bar` to `tool/phoogle`.
 
 New features(Analysis):
 + Support `@phan-immutable` annotation on class doc comments, to indicate that all instance properties are read-only.
@@ -56,7 +60,6 @@ Language Server/Daemon mode:
 
 Plugins:
 + If possible, suggest the types that Phan observed during analysis with `UnknownElementTypePlugin`. (#3146)
-+ New `DependencyGraphPlugin` and associated `tool/pdep` to visualize project dependencies - see `tool/pdep -h`
 + Make `InvalidVariableIssetPlugin` respect the `ignore_undeclared_variables_in_global_scope` option (#1403)
 
 Maintenance:

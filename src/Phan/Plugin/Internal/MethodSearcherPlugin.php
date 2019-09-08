@@ -162,8 +162,8 @@ final class MethodSearcherPlugin extends PluginV3 implements
         $results = $this->results;
         \sort($results);
         $num_results = count($results);
-        // TODO: Make this configurable
-        $limit = 10;
+        // This can be configured through --limit in phoogle
+        $limit = ((int)$_ENV['PHOOGLE_LIMIT']) ?: 10;
         echo "Phoogle found $num_results result(s)\n";
         if ($limit < count($results)) {
             echo "(Showing $limit of $num_results results)\n";
