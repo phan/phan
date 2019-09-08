@@ -1,2 +1,1 @@
 src/137_negated_empty_if_statement.php:2 PhanPluginNonBoolBranch Non bool value of type int evaluated in if clause
-src/137_negated_empty_if_statement.php:3 PhanPluginEmptyStatementIf Empty statement list statement detected for the last if/elseif statement

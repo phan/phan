@@ -183,6 +183,8 @@ trait ConditionVisitorUtil
                 return;
             }
             $node->did_check_redundant_condition = true;
+        } elseif ($is_negated) {
+            return;
         }
         if (!$type) {
             try {

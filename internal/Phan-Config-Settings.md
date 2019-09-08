@@ -568,7 +568,10 @@ When this is true, this slows down analysis slightly.
 E.g. rewrites `if ($a = value() && $a > 0) {...}`
 into `$a = value(); if ($a) { if ($a > 0) {...}}`
 
-(Default: `true`)
+Defaults to false as of Phan 2.2.13-dev.
+Phan's analysis has improved enough that this should no longer be necessary.
+
+(Default: `false`)
 
 ## warn_about_relative_include_statement
 

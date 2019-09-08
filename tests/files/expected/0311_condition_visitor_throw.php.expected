@@ -1,8 +1,8 @@
 %s:8 PhanImpossibleCondition Impossible attempt to cast 0 of type 0 to truthy
-%s:9 PhanRedundantCondition Redundant attempt to cast STDERR of type resource to truthy
+%s:9 PhanImpossibleCondition Impossible attempt to cast STDERR of type resource to falsey
 %s:10 PhanImpossibleCondition Impossible attempt to cast 0 of type 0 to truthy
 %s:11 PhanRedundantCondition Redundant attempt to cast 1 of type 1 to truthy
-%s:12 PhanImpossibleCondition Impossible attempt to cast null of type null to truthy
+%s:12 PhanRedundantCondition Redundant attempt to cast null of type null to falsey
 %s:13 PhanRedundantCondition Redundant attempt to cast 1 of type 1 to truthy
 %s:14 PhanImpossibleCondition Impossible attempt to cast '' of type '' to truthy
 %s:15 PhanRedundantCondition Redundant attempt to cast 'aa' of type 'aa' to truthy

@@ -7,6 +7,13 @@ New features(CLI):
 + Always print 100% in `--progress-bar` after completing any phase of analysis.
   This is convenient for tools such as `tool/phoogle` that exit before starting the next phase.
 
+New features(Analysis):
++ Disable `simplify_ast` by default.
+  Phan's analysis of compound conditions and assignments/negations in conditions has improved enough that it should no longer be necessary.
+
+Bug fixes:
++ Consistently deduplicate the real type set of union types (fixes some false positives in redundant condition detection).
+
 Sep 08 2019, Phan 2.2.12
 ------------------------
 
