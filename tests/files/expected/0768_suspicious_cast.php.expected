@@ -1,0 +1,1 @@
+%s:16 PhanTypeMismatchArgumentNullable Argument 1 ($i) is ?array but \NS768\accepts_iterable() takes iterable defined at %s:5 (expected type to be non-nullable)
