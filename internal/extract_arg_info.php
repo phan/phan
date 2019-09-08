@@ -10,7 +10,9 @@ use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FloatType;
+use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\ResourceType;
@@ -150,6 +152,7 @@ class OpcacheFuncInfoParser
         if ($flags === ['MAY_BE_NULL']) {
             return VoidType::instance(false)->asPHPDocUnionType();
         }
+        $flags = array_combine($flags, $flags);
         foreach ($flags as $flag) {
             if (in_array($flag, ['UNKNOWN_INFO', 'MAY_BE_ANY', 'zend_range_info'], true)) {
                 return UnionType::empty();
@@ -161,7 +164,57 @@ class OpcacheFuncInfoParser
             }
             $result = $result->withType($type);
         }
+        if (isset($flags['MAY_BE_ARRAY'])) {
+            // @phan-suppress-next-line PhanPartialTypeMismatchArgument TODO implement https://github.com/phan/phan/issues/3242
+            $array_type = self::arrayTypeFromFlags(array_flip($flags));
+            $result = $result->withoutType(ArrayType::instance(false))->withUnionType($array_type);
+        }
         return $result->asNormalizedTypes();
+    }
+
+    /**
+     * @param array<string,string> $flag_set
+     * @return UnionType of 1 or more ArrayTypes to include
+     */
+    private static function arrayTypeFromFlags(array $flag_set) : UnionType {
+        // 1. Convert key types from opcache to Phan's representation
+        $key_type = GenericArrayType::KEY_EMPTY;
+        if (isset($flag_set['MAY_BE_ARRAY_KEY_LONG'])) {
+            $key_type |= GenericArrayType::KEY_INT;
+        }
+        if (isset($flag_set['MAY_BE_ARRAY_KEY_STRING'])) {
+            $key_type |= GenericArrayType::KEY_STRING;
+        }
+        // 2. Convert value types from opcache to Phan's representation and normalize
+        $key_type = $key_type ?: GenericArrayType::KEY_MIXED;
+        if (!isset($flag_set['MAY_BE_ARRAY_OF_ANY'])) {
+            static $element_type_map = null;
+            if ($element_type_map === null) {
+                $element_type_map = [
+                    'MAY_BE_ARRAY_OF_ARRAY' => ArrayType::instance(false),
+                    'MAY_BE_ARRAY_OF_DOUBLE' => FloatType::instance(false),
+                    'MAY_BE_ARRAY_OF_FALSE' => FalseType::instance(false),
+                    'MAY_BE_ARRAY_OF_OBJECT' => ObjectType::instance(false),
+                    'MAY_BE_ARRAY_OF_RESOURCE' => ResourceType::instance(false),
+                    'MAY_BE_ARRAY_OF_LONG' => IntType::instance(false),
+                    'MAY_BE_ARRAY_OF_NULL' => NullType::instance(false),
+                    'MAY_BE_ARRAY_OF_STRING' => StringType::instance(false),
+                    'MAY_BE_ARRAY_OF_TRUE' => TrueType::instance(false),
+                ];
+            }
+            $possible_types = array_values(array_intersect_key($element_type_map, $flag_set));
+            $element_type = UnionType::of($possible_types)->asNormalizedTypes()->asRealUnionType();
+        } else {
+            $element_type = UnionType::empty();
+        }
+        // 3. Combine key and value types, or just return a regular array if nothing is known.
+        if ($element_type->isEmpty()) {
+            if ($key_type === GenericArrayType::KEY_MIXED) {
+                return ArrayType::instance(false)->asPHPDocUnionType();
+            }
+            $element_type = MixedType::instance(false)->asPHPDocUnionType();
+        }
+        return $element_type->asGenericArrayTypes($key_type);
     }
 
     /**

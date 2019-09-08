@@ -86,6 +86,23 @@ final class FunctionSignatureMapTest extends BaseTest implements CodeBaseAwareTe
         ];
     }
 
+    private const IGNORED_ALIASES = [
+        'mbereg',
+        'mbereg_match',
+        'mbereg_replace',
+        'mbereg_search',
+        'mbereg_search_getpos',
+        'mbereg_search_getregs',
+        'mbereg_search_init',
+        'mbereg_search_pos',
+        'mbereg_search_regs',
+        'mbereg_search_setpos',
+        'mberegi',
+        'mberegi_replace',
+        'mbregex_encoding',
+        'mbsplit',
+    ];
+
     /**
      * @dataProvider realFunctionSignatureMapVersionProvider
      */
@@ -96,6 +113,9 @@ final class FunctionSignatureMapTest extends BaseTest implements CodeBaseAwareTe
         $real_map = UnionType::getLatestRealFunctionSignatureMap($php_version_id);
         $context = new Context();
         $errors = '';
+        foreach (self::IGNORED_ALIASES as $alias) {
+            unset($real_map[$alias]);
+        }
         foreach ($real_map as $function_name => $return_type_string) {
             $real_signature = $map[\strtolower($function_name)] ?? null;
             if ($real_signature === null) {
