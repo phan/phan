@@ -1759,9 +1759,10 @@ EOB
         // Making the update frequency based on time (instead of the number of files)
         // prevents the terminal from rapidly flickering while processing small files.
         if ($time - $previous_update_time < Config::getValue('progress_bar_sample_interval')) {
-            // Make sure to output 100% if this is one of the last phases, to avoid confusion.
+            // Make sure to output 100% for all phases, to avoid confusion.
             // https://github.com/phan/phan/issues/2694
-            if ($p < 1.0 || in_array($msg, ['parse', 'method', 'function'], true)) {
+            // e.g. `tool/phoogle --progress-bar` will stop partially through the 'method' phase otherwise.
+            if ($p < 1.0) {
                 return;
             }
         }

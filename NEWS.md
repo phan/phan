@@ -3,6 +3,10 @@ Phan NEWS
 ??? ?? 2019, Phan 2.2.13 (dev)
 ------------------------
 
+New features(CLI):
++ Always print 100% in `--progress-bar` after completing any phase of analysis.
+  This is convenient for tools such as `tool/phoogle` that exit before starting the next phase.
+
 Sep 08 2019, Phan 2.2.12
 ------------------------
 
