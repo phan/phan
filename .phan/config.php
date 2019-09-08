@@ -321,6 +321,7 @@ return [
         'plugins/codeclimate/engine',
         'tool/make_stubs',
         'tool/pdep',
+        'tool/phoogle',
         'internal/dump_fallback_ast.php',
         'internal/dump_html_styles.php',
         'internal/extract_arg_info.php',
