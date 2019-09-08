@@ -14,8 +14,8 @@ use Phan\Language\Type;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\CallableArrayType;
 use Phan\Language\Type\FloatType;
-use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TrueType;
@@ -23,7 +23,6 @@ use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 use Phan\PluginV3;
 use Phan\PluginV3\ReturnTypeOverrideCapability;
-
 use function count;
 use function is_int;
 use function is_string;

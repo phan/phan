@@ -2,30 +2,33 @@
 <?php
 // pdep is a tool to help explore dependencies of classes.
 
+use Phan\CLIBuilder;
+use Phan\Phan;
+
 /** Prints a usage message and exits. */
-function usage() : void {
+function usage(int $status) : void {
     global $argv;
     echo <<<EOT
 Usage: {$argv[0]} [options] [files or classes...]
 
- -c Find classes that depend on the passed files or classes
- -f Find files that depend on the passed files or classes
- -g Graphviz dot output
- -d <depth_level>
+ -c, --find-classes Find classes that depend on the passed files or classes
+ -f, --find-files   Find files that depend on the passed files or classes
+ -g, --graph        Graphviz dot output
+ -d, --depth <depth_level>
     When walking the dependency graph, limit it to this depth. For
     example,
       {$argv[0]} -f -d 1 MyClass
     would show only the files that directly depend on MyClass.
- -l <filelist.txt>
- -q Uses Phan's --quick mode
- -p Show progress bar
- -h This help
+ -l, --file-list <filelist.txt>
+ -q, --quick        Uses Phan's --quick mode
+ -p, --progress-bar Show progress bar
+ -h, --help         This help
 
 If no filenames or classnames are provided, it will generate the
 full dependency tree.
 
-Note that this tool will read your local .phan/config and pick out
-the list of files to scan/not scan from there. Or you can provide it
+Note that this tool will read your local .phan/config.php and pick out
+the list of files to scan/not scan from there. Or, you can provide it
 with a file list.
 
 Examples:
@@ -34,49 +37,101 @@ Examples:
     {$argv[0]} -c -d 2 -g '\Phan\Language\Type\ClassStringType' | dot -Kfdp -Tpng > graph.png
 
 EOT;
-    exit;
+    exit($status);
 }
 
-$tool_dir = dirname($argv[0]);
-$depth = 0;
-$cmd = $filelist = $progress = '';
-$options = getopt("cfghpqd:l:", [], $optind);
-foreach (array_keys($options) as $opt) switch ($opt) {
-    case 'c':
-        array_shift($argv);
-        $mode = "class";
-        break;
-    case 'f':
-        array_shift($argv);
-        $mode = "file";
-        break;
-    case 'g':
-        array_shift($argv);
-        $cmd = "graph";
-        break;
-    case 'p':
-        array_shift($argv);
-        $progress = "-p";
-        break;
-    case 'q':
-        array_shift($argv);
-        $quick = "--quick";
-        break;
-    case 'd':
-        array_shift($argv);
-        array_shift($argv);
-        $depth = $options[$opt];;
-        break;
-    case 'l':
-        array_shift($argv);
-        array_shift($argv);
-        $filelist = "-f ".$options[$opt];
-        break;
-    case 'h':
-        usage();
-        break;
-}
-array_shift($argv);
-$arg_string = implode(' ', array_map('escapeshellarg', $argv));
+call_user_func(static function () : void {
+    global $argv;
+    $tool_dir = dirname($argv[0]);
+    $depth = 0;
+    $cmd = '';
+    $options = getopt(
+        "cfghpqd:l:",
+        [
+            'graph',
+            'find-classes',
+            'find-files',
+            'file-list:',
+            'progress-bar',
+            'depth:',
+            'help',
+        ],
+        $optind
+    );
+    if (isset($options['find-classes'])) {
+        $options['c'] = false;
+    }
+    if (isset($options['find-files'])) {
+        $options['f'] = false;
+    }
+    if (isset($options['c'])) {
+        if (isset($options['f'])) {
+            echo "ERROR: Cannot pass both -c and -f\n";
+            usage(1);
+        }
+        $mode = 'class';
+    } elseif (isset($options['f'])) {
+        $mode = 'file';
+    } else {
+        echo "ERROR: Must specify either -c or -f\n";
+        usage(1);
+    }
 
-system("PDEP_CMD=$cmd PDEP_MODE=$mode PDEP_DEPTH=$depth PDEP_ARGS='$arg_string' bash -c '{$tool_dir}/../phan {$quick} --allow-polyfill-parser -j1 {$progress} {$filelist} -P {$tool_dir}/../.phan/plugins/DependencyGraphPlugin.php -k {$tool_dir}/../internal/pdep_config.php'");
+    if (isset($options['h']) || isset($options['help'])) {
+        usage(0);
+        return;
+    }
+
+    $code_base = require_once(__DIR__ . '/../src/codebase.php');
+    require_once(__DIR__ . '/../src/Phan/Bootstrap.php');
+
+    $cli_builder = new CLIBuilder();
+
+    foreach ($options as $opt => $value) {
+        switch ($opt) {
+            case 'g':
+            case 'graph':
+                $cmd = "graph";
+                break;
+            case 'p':
+            case 'progress-bar':
+                $cli_builder->setOption('progress-bar');
+                break;
+            case 'q':
+            case 'quick':
+                $cli_builder->setOption('quick');
+                break;
+            case 'd':
+            case 'depth':
+                $depth = $options[$opt];
+                break;
+            case 'l':
+            case 'file-list':
+                // @phan-suppress-next-line PhanPossiblyNullTypeArgument
+                $cli_builder->setOption('file-list', $value);
+                break;
+        }
+    }
+    // Args for PDEP
+    $arg_string = implode(' ', array_slice($argv, $optind));
+
+    // @phan-suppress-next-line PhanThrowTypeAbsentForCall
+    $cli_builder->setOption('allow-polyfill-parser');
+    $cli_builder->setOption('processes', '1');
+    $cli_builder->setOption('plugin', dirname($tool_dir) . '/src/Phan/Plugin/Internal/DependencyGraphPlugin.php');
+    $cli_builder->setOption('config-file', dirname($tool_dir) . '/internal/pdep_config.php');
+    // @phan-suppress-next-line PhanThrowTypeAbsentForCall
+    $cli = $cli_builder->build();
+    $putenv = function (string $key, string $value) : void {
+        putenv("$key=$value");
+        $_ENV[$key] = $value;
+    };
+    $putenv("PDEP_CMD", $cmd);
+    $putenv("PDEP_MODE", (string)$mode);
+    $putenv("PDEP_DEPTH", (string)$depth);
+    $putenv("PDEP_ARGS", $arg_string);
+    // @phan-suppress-next-line PhanThrowTypeAbsentForCall
+    Phan::analyzeFileList($code_base, /** @return string[] */ static function () use($cli) : array {
+        return $cli->getFileList();
+    });
+});

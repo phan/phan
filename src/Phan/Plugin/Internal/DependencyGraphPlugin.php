@@ -1,8 +1,12 @@
 <?php declare(strict_types=1);
 
+namespace Phan\Plugin\Internal;
+
 use ast\Node;
+use Exception;
 use Phan\CLI;
 use Phan\CodeBase;
+use Phan\Exception\FQSENException;
 use Phan\Language\Element\AddressableElement;
 use Phan\Language\Element\Clazz;
 use Phan\Language\FileRef;
@@ -12,6 +16,7 @@ use Phan\PluginV3\AnalyzeClassCapability;
 use Phan\PluginV3\FinalizeProcessCapability;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
 use Phan\PluginV3\PostAnalyzeNodeCapability;
+use Throwable;
 
 /**
  * This plugin only works correctly with Phan -j1
@@ -85,9 +90,9 @@ class DependencyGraphPlugin extends PluginV3 implements
         if (!empty($visited[$node])) {
             return $newgraph;
         }
-        CLI::progress('graph', (++$i) / count($this->cgraph), $node);
-        if (!array_key_exists($node, $this->cgraph)) {
-            if (!array_key_exists('\\' . $node, $this->cgraph)) {
+        CLI::progress('graph', (++$i) / \count($this->cgraph), $node);
+        if (!\array_key_exists($node, $this->cgraph)) {
+            if (!\array_key_exists('\\' . $node, $this->cgraph)) {
                 return $newgraph;
             } else {
                 $node = '\\' . $node;
@@ -119,8 +124,8 @@ class DependencyGraphPlugin extends PluginV3 implements
         if (!empty($visited[$node])) {
             return $newgraph;
         }
-        CLI::progress('graph', (++$i) / count($this->cgraph), $node);
-        if (!array_key_exists($node, $this->fgraph)) {
+        CLI::progress('graph', (++$i) / \count($this->cgraph), $node);
+        if (!\array_key_exists($node, $this->fgraph)) {
             return $newgraph;
         }
         $newgraph[$node] = $this->fgraph[$node];
@@ -142,7 +147,7 @@ class DependencyGraphPlugin extends PluginV3 implements
             echo "$k\n";
             foreach ($v as $kk => $vv) {
                 echo "\t$kk";
-                [$t,$lineno] = explode(':', $vv);
+                [$t,$lineno] = \explode(':', $vv);
                 switch ($t) {
                     case 'C':
                         $type = 'Inheritance';
@@ -163,13 +168,13 @@ class DependencyGraphPlugin extends PluginV3 implements
                         $type = "unknown ($t)";
                         break;
                 }
-                if (strstr((string)$kk, '.')) {
+                if (\strstr((string)$kk, '.')) {
                     echo ":$lineno $type\n";
                 } else {
-                    if (!array_key_exists($kk, $this->class_to_file)) {
+                    if (!\array_key_exists($kk, $this->class_to_file)) {
                         continue;
                     }
-                    [$file]  = explode(':', $this->class_to_file[$kk]);
+                    [$file]  = \explode(':', $this->class_to_file[$kk]);
                     echo " - $file:$lineno $type\n";
                 }
             }
@@ -182,7 +187,7 @@ class DependencyGraphPlugin extends PluginV3 implements
     public function finalizeProcess(CodeBase $unused_code_base): void
     {
         if (empty($this->elements)) {
-            \fwrite(STDERR, "Nothing to analyze - please run pdep from your top-level project directory" . \PHP_EOL);
+            \fwrite(\STDERR, "Nothing to analyze - please run pdep from your top-level project directory" . \PHP_EOL);
             exit(\EXIT_FAILURE);
         }
         // Loop through all the elements and pull out the reference list for each
@@ -216,26 +221,26 @@ class DependencyGraphPlugin extends PluginV3 implements
             }
         }
         foreach (self::$static_calls as $c) {
-            $cnode = key($c);
+            $cnode = \key($c);
             if (!$cnode) {
                 continue;
             }
-            if (!array_key_exists($cnode, $this->class_to_file)) {
+            if (!\array_key_exists($cnode, $this->class_to_file)) {
                 continue;
             }
-            [$fnode] = explode(':', $this->class_to_file[$cnode]);
+            [$fnode] = \explode(':', $this->class_to_file[$cnode]);
             $this->fgraph[$fnode][$c[$cnode]['file']]  = 's:' . $c[$cnode]['lineno'];
             $this->cgraph[$cnode][$c[$cnode]['class']] = 's:' . $c[$cnode]['lineno'];
         }
         foreach (self::$static_vars as $c) {
-            $cnode = key($c);
+            $cnode = \key($c);
             if (!$cnode) {
                 continue;
             }
-            if (!array_key_exists($cnode, $this->class_to_file)) {
+            if (!\array_key_exists($cnode, $this->class_to_file)) {
                 continue;
             }
-            [$fnode] = explode(':', $this->class_to_file["$cnode"]);
+            [$fnode] = \explode(':', $this->class_to_file["$cnode"]);
             $this->fgraph[$fnode][$c[$cnode]['file']]  = 'v:' . $c[$cnode]['lineno'];
             $this->cgraph[$cnode][$c[$cnode]['class']] = 'v:' . $c[$cnode]['lineno'];
         }
@@ -246,7 +251,7 @@ class DependencyGraphPlugin extends PluginV3 implements
         $cmd  = $_ENV['PDEP_CMD'];
         $mode = $_ENV['PDEP_MODE'];
         $this->depth = (int)$_ENV['PDEP_DEPTH'];
-        $args = empty($_ENV['PDEP_ARGS']) ? null : explode(' ', $_ENV['PDEP_ARGS']);
+        $args = empty($_ENV['PDEP_ARGS']) ? null : \explode(' ', $_ENV['PDEP_ARGS']);
         $json = false;
 
         if (\Phan\Phan::$printer instanceof \Phan\Output\Printer\JSONPrinter) {
@@ -267,17 +272,17 @@ class DependencyGraphPlugin extends PluginV3 implements
                     continue;
                 }
                 if ($mode == 'class') {
-                    if (strstr($v, '.')) {
-                        if (!array_key_exists($v, $this->file_to_class)) {
+                    if (\strstr($v, '.')) {
+                        if (!\array_key_exists($v, $this->file_to_class)) {
                             // Probably no lineno specified, do a linear search
                             foreach ($this->file_to_class as $fi => $cl) {
-                                [$file] = explode(':', (string)$fi);
+                                [$file] = \explode(':', (string)$fi);
                                 if ($file == $v) {
                                     $v = $cl;
                                     goto found;
                                 }
                             }
-                            \fwrite(STDERR, "Couldn't find file $v" . \PHP_EOL);
+                            \fwrite(\STDERR, "Couldn't find file $v" . \PHP_EOL);
                             exit(\EXIT_FAILURE);
                         }
                         $v = $this->file_to_class[$v];
@@ -285,22 +290,33 @@ class DependencyGraphPlugin extends PluginV3 implements
                     found:
                     $graph = $this->walkcGraph($graph, $v);
                 } elseif ($mode == 'file') {
-                    if (!strstr($v, '.')) {
-                        if (!array_key_exists($v, $this->class_to_file)) {
-                            \fwrite(STDERR, "Couldn't find class $v" . \PHP_EOL);
+                    if (!\strstr($v, '.')) {
+                        try {
+                            $fqsen = FullyQualifiedClassName::fromFullyQualifiedString($v);
+                        } catch (FQSENException $e) {
+                            \fwrite(\STDERR, "Invalid class fqsen $v: {$e->getMessage()}\n");
                             exit(\EXIT_FAILURE);
                         }
-                        [$v] = explode(':', $this->class_to_file[$v]);
+                        $cnode = (string)$fqsen;
+                        if (!\array_key_exists($cnode, $this->class_to_file)) {
+                            \fwrite(\STDERR, "Couldn't find class $cnode" . \PHP_EOL);
+                            exit(\EXIT_FAILURE);
+                        }
+                        [$v] = \explode(':', $this->class_to_file[$cnode]);
                     }
                     $graph = $this->walkfGraph($graph, $v);
                 }
             }
         }
+        if (CLI::shouldShowProgress()) {
+            // Don't overlap stdout with the progress bar on stderr.
+            \fwrite(\STDERR, "\n");
+        }
         if ($cmd == 'graph') {
-            ($mode == 'class') ? $this->dumpClassDot(basename((string)getcwd()), $graph) : $this->dumpFileDot(basename((string)getcwd()), $graph);
+            ($mode == 'class') ? $this->dumpClassDot(\basename((string)\getcwd()), $graph) : $this->dumpFileDot(\basename((string)\getcwd()), $graph);
         } else {
             if ($json) {
-                echo json_encode($graph);
+                echo \json_encode($graph);
             } else {
                 $this->printGraph($graph);
             }
@@ -323,7 +339,7 @@ class DependencyGraphPlugin extends PluginV3 implements
         foreach ($graph as $node => $depNode) {
             $shapes .= "\"$node\" [shape=box]\n";
             foreach ($depNode as $dnode => $val) {
-                [$type,$lineno] = explode(':', (string)$val);
+                [$type,$lineno] = \explode(':', (string)$val);
                 $style = '';
                 if ($type == 's') {
                     $style = ',color=seagreen';
@@ -365,10 +381,10 @@ class DependencyGraphPlugin extends PluginV3 implements
             }
             if ($shape) {
                 // Defer the shape definitions until after the edges. This tends to give a better node layout
-                $shapes .= '"' . addslashes(trim($node, "\\")) . "\" [$shape]\n";
+                $shapes .= '"' . \addslashes(\trim($node, "\\")) . "\" [$shape]\n";
             }
             foreach ($depNode as $dnode => $val) {
-                [$type] = explode(':', (string)$val);
+                [$type] = \explode(':', (string)$val);
                 $style = '';
                 if ($type == 's') {
                     $style = ' [color=seagreen]';
@@ -376,7 +392,7 @@ class DependencyGraphPlugin extends PluginV3 implements
                 if ($type == 'v') {
                     $style = ' [color=tomato]';
                 }
-                echo '"' . addslashes(trim($dnode, "\\")) . '" -> "' . addslashes(trim($node, "\\")) . "\"$style\n";
+                echo '"' . \addslashes(\trim($dnode, "\\")) . '" -> "' . \addslashes(\trim($node, "\\")) . "\"$style\n";
             }
         }
         echo $shapes;

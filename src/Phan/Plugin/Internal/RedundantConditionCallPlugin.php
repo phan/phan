@@ -468,10 +468,10 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
             $left_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($code_base, $left_node);
             $right_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($code_base, $right_node);
             if ($left_type_fetcher || $right_type_fetcher) {
-                $left_type_fetcher = $left_type_fetcher ?? function (Context $_) use ($left) : UnionType {
+                $left_type_fetcher = $left_type_fetcher ?? static function (Context $_) use ($left) : UnionType {
                     return $left;
                 };
-                $right_type_fetcher = $right_type_fetcher ?? function (Context $_) use ($right) : UnionType {
+                $right_type_fetcher = $right_type_fetcher ?? static function (Context $_) use ($right) : UnionType {
                     return $right;
                 };
 
