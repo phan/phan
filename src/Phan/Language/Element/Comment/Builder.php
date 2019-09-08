@@ -104,9 +104,9 @@ final class Builder
         $this->comment_type = $comment_type;
         $this->did_add_template_types = $did_add_template_types;
 
-        $this->inherited_type = new None();
+        $this->inherited_type = None::instance();
         $this->return_comment = null;
-        $this->closure_scope = new None();
+        $this->closure_scope = None::instance();
         $this->throw_union_type = UnionType::empty();
     }
 
@@ -951,7 +951,7 @@ final class Builder
             return $type;
         }
 
-        return new None();
+        return None::instance();
     }
 
     /**
@@ -1284,7 +1284,7 @@ final class Builder
             $this->guessActualLineLocation($comment_line_offset),
             \trim($line)
         );
-        return new None();
+        return None::instance();
     }
 
     /**

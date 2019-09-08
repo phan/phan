@@ -14,7 +14,7 @@ final class NullComment extends Comment
 {
     public function __construct()
     {
-        $none = new None();
+        $none = None::instance();
         $this->throw_union_type = UnionType::empty();
         $this->closure_scope = $none;
         $this->inherited_type = $none;

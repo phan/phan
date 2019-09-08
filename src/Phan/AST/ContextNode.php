@@ -1587,7 +1587,7 @@ class ContextNode
             UnionType::empty()
         );
 
-        $class->addProperty($this->code_base, $property, new None());
+        $class->addProperty($this->code_base, $property, None::instance());
 
         return $property;
     }

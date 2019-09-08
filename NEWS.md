@@ -11,6 +11,9 @@ New features(Analysis):
 + Disable `simplify_ast` by default.
   Phan's analysis of compound conditions and assignments/negations in conditions has improved enough that it should no longer be necessary.
 
+Maintenance:
++ Make `\Phan\Library\None` a singleton in internal uses.
+
 Bug fixes:
 + Consistently deduplicate the real type set of union types (fixes some false positives in redundant condition detection).
 
