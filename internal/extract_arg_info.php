@@ -178,15 +178,19 @@ class OpcacheFuncInfoParser
      */
     private static function arrayTypeFromFlags(array $flag_set) : UnionType {
         // 1. Convert key types from opcache to Phan's representation
-        $key_type = GenericArrayType::KEY_EMPTY;
-        if (isset($flag_set['MAY_BE_ARRAY_KEY_LONG'])) {
-            $key_type |= GenericArrayType::KEY_INT;
-        }
-        if (isset($flag_set['MAY_BE_ARRAY_KEY_STRING'])) {
-            $key_type |= GenericArrayType::KEY_STRING;
+        if (isset($flag_set['MAY_BE_ARRAY_KEY_ANY'])) {
+            $key_type = GenericArrayType::KEY_MIXED;
+        } else {
+            $key_type = GenericArrayType::KEY_EMPTY;
+            if (isset($flag_set['MAY_BE_ARRAY_KEY_LONG'])) {
+                $key_type |= GenericArrayType::KEY_INT;
+            }
+            if (isset($flag_set['MAY_BE_ARRAY_KEY_STRING'])) {
+                $key_type |= GenericArrayType::KEY_STRING;
+            }
+            $key_type = $key_type ?: GenericArrayType::KEY_MIXED;
         }
         // 2. Convert value types from opcache to Phan's representation and normalize
-        $key_type = $key_type ?: GenericArrayType::KEY_MIXED;
         if (!isset($flag_set['MAY_BE_ARRAY_OF_ANY'])) {
             static $element_type_map = null;
             if ($element_type_map === null) {
