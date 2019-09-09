@@ -1,0 +1,17 @@
+%s:2 PhanPluginUseReturnValueNoopVoid The function/method \accepts_one() is declared to return void and it has no side effects
+%s:2 PhanUnusedGlobalFunctionParameter Parameter $x is never used
+%s:7 PhanParamTooMany Call with 2 arg(s) to \accepts_one($x) which only takes 1 arg(s) defined at %s:2
+%s:7 PhanUndeclaredVariable Variable $a is undeclared
+%s:8 PhanParamTooManyInternal Call with 2 arg(s) to \strlen(string $string) which only takes 1 arg(s)
+%s:8 PhanUndeclaredVariable Variable $other is undeclared
+%s:10 PhanParamTooMany Call with 1 arg(s) to \anonymous_class_%s::__construct() which only takes 0 arg(s) defined at %s:10
+%s:10 PhanUndeclaredVariable Variable $invalid is undeclared
+%s:10 PhanUnusedVariable Unused definition of variable $x
+%s:13 PhanUndeclaredVariable Variable $z is undeclared
+%s:14 PhanParamTooMany Call with 2 arg(s) to \anonymous_class_%s::__construct($first) which only takes 1 arg(s) defined at %s:14
+%s:14 PhanUndeclaredVariable Variable $a is undeclared
+%s:14 PhanUndeclaredVariable Variable $b is undeclared
+%s:14 PhanUnusedPublicNoOverrideMethodParameter Parameter $first is never used
+%s:15 PhanParamTooMany Call with 2 arg(s) to \Test::no_args() which only takes 0 arg(s) defined at %s:4
+%s:16 PhanUndeclaredVariable Variable $c is undeclared
+%s:17 PhanUndeclaredVariable Variable $d is undeclared

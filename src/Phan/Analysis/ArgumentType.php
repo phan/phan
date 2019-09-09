@@ -439,6 +439,12 @@ final class ArgumentType
 
             // This issue should be caught elsewhere
             if (!$parameter) {
+                $argument_type = UnionTypeVisitor::unionTypeFromNode(
+                    $code_base,
+                    $context,
+                    $argument,
+                    true
+                );
                 continue;
             }
 
