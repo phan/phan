@@ -14,6 +14,7 @@ Usage: {$argv[0]} [options] [files or classes...]
  -c, --find-classes Find classes that depend on the passed files or classes
  -f, --find-files   Find files that depend on the passed files or classes
  -g, --graph        Graphviz dot output
+ -m, --graphml      GraphML output
  -d, --depth <depth_level>
     When walking the dependency graph, limit it to this depth. For
     example,
@@ -46,9 +47,10 @@ call_user_func(static function () : void {
     $depth = 0;
     $cmd = '';
     $options = getopt(
-        "cfghpqd:l:",
+        "cfgmhpqd:l:",
         [
             'graph',
+            'graphml',
             'find-classes',
             'find-files',
             'file-list:',
@@ -92,6 +94,10 @@ call_user_func(static function () : void {
             case 'g':
             case 'graph':
                 $cmd = "graph";
+                break;
+            case 'm':
+            case 'graphml':
+                $cmd = "graphml";
                 break;
             case 'p':
             case 'progress-bar':

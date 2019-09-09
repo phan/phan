@@ -176,7 +176,8 @@ class OpcacheFuncInfoParser
      * @param array<string,string> $flag_set
      * @return UnionType of 1 or more ArrayTypes to include
      */
-    private static function arrayTypeFromFlags(array $flag_set) : UnionType {
+    private static function arrayTypeFromFlags(array $flag_set) : UnionType
+    {
         // 1. Convert key types from opcache to Phan's representation
         if (isset($flag_set['MAY_BE_ARRAY_KEY_ANY'])) {
             $key_type = GenericArrayType::KEY_MIXED;

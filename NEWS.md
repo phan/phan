@@ -14,6 +14,9 @@ New features(Analysis):
 + Emit `PhanUndeclaredVariable` and other warnings about arguments when there are too many parameters for methods. (#3245)
 + Infer real types of array/iterable keys and values in more cases.
 
+Plugins:
++ Add GraphML output support to DependencyGraphPlugin so it can be used with Neo4j, Gephi and yEd
+
 Maintenance:
 + Make `\Phan\Library\None` a singleton in internal uses.
 

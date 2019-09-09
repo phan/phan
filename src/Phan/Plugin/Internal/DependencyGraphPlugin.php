@@ -314,6 +314,8 @@ class DependencyGraphPlugin extends PluginV3 implements
         }
         if ($cmd == 'graph') {
             ($mode == 'class') ? $this->dumpClassDot(\basename((string)\getcwd()), $graph) : $this->dumpFileDot(\basename((string)\getcwd()), $graph);
+        } elseif ($cmd == 'graphml') {
+            $this->dumpGraphML(basename((string)getcwd()), $graph, ($mode == 'class') ? true : false);
         } else {
             if ($json) {
                 echo \json_encode($graph);
@@ -397,6 +399,119 @@ class DependencyGraphPlugin extends PluginV3 implements
         }
         echo $shapes;
         echo "}\n";
+    }
+
+    /**
+     * Dump the class or file graph in GraphML format
+     * @param string $title
+     * @param array<string,array<string,string>> $graph
+     * @param bool $is_classgraph
+     */
+    private function dumpGraphML(string $title, array $graph, bool $is_classgraph):void
+    {
+        $node_id = 0;
+        $edge_id = 0;
+
+        echo '<?xml version="1.0" encoding="UTF-8"?>' . \PHP_EOL;
+        echo '<graphml xmlns="http://graphml.graphdrawing.org/xmlns"' . \PHP_EOL;
+        echo '         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' . \PHP_EOL;
+        echo '         xmlns:y="http://www.yworks.com/xml/graphml"' . \PHP_EOL;
+        echo '         xmlns:java="http://www.yworks.com/xml/yfiles-common/1.0/java"' . \PHP_EOL;
+        echo '         xmlns:sys="http://www.yworks.com/xml/yfiles-common/markup/primitives/2.0"' . \PHP_EOL;
+        echo '         xmlns:x="http://www.yworks.com/xml/yfiles-common/markup/2.0"' . \PHP_EOL;
+        echo '         xmlns:yed="http://www.yworks.com/xml/yed/3"' . \PHP_EOL;
+        echo '         xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns' . \PHP_EOL;
+        echo '         http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">' . \PHP_EOL;
+        echo '  <key attr.name="Title" attr.type="string" for="graph" id="d0"/>' . \PHP_EOL;
+        echo '  <key id="d1" for="node" attr.name="color" attr.type="string">' . \PHP_EOL;
+        echo '    <default>black</default>' . \PHP_EOL;
+        echo '  </key>' . \PHP_EOL;
+        echo '  <key id="d2" for="node" attr.name="ntype" attr.type="string">' . \PHP_EOL;
+        echo '    <default>class</default>' . \PHP_EOL;
+        echo '  </key>' . \PHP_EOL;
+        echo '  <key id="d3" for="edge" attr.name="color" attr.type="string">' . \PHP_EOL;
+        echo '    <default>black</default>' . \PHP_EOL;
+        echo '  </key>' . \PHP_EOL;
+        echo '  <key id="d4" for="edge" attr.name="lineno" attr.type="int"/>' . \PHP_EOL;
+        echo '  <key id="d5" for="node" yfiles.type="nodegraphics"/>' . \PHP_EOL;
+        echo '  <key id="d6" for="edge" yfiles.type="edgegraphics"/>' . \PHP_EOL;
+        echo '  <graph id="G" edgedefault="directed">' . \PHP_EOL;
+        echo '    <data key="d0" xml:space="preserve"><![CDATA[' . $title . ']]></data>' . \PHP_EOL;
+
+        // Build node_id map
+        $nodes = [];
+        foreach (array_keys($graph) as $node) {
+            $node_name = addslashes(trim($node, "\\"));
+            $nodes[$node_name] = $node_id++;
+        }
+        $node_id = 0;
+
+        // Nodes
+        foreach ($graph as $node => $depNode) {
+            $node_name = addslashes(trim($node, "\\"));
+            $col = '#FFFFFF';
+            $ntype = 'class';
+            $shape = 'rectangle';
+            echo '    <node id="n' . $node_id . '">' . \PHP_EOL;
+            if ($is_classgraph) {
+                switch ($this->ctype[$node]) {
+                    case 'I':
+                        $col = '#6699FF';
+                        $ntype = 'interface';
+                        $shape = 'ellipse';
+                        break;
+                    case 'T':
+                        $col = '#C483D1';
+                        $ntype = 'trait';
+                        $shape = 'hexagon';
+                        break;
+                }
+                echo '      <data key="d1">' . $col . '</data>' . \PHP_EOL;
+                echo '      <data key="d2">' . $ntype . '</data>' . \PHP_EOL;
+            }
+            echo '      <data key="d5">' . \PHP_EOL;
+            echo '        <y:ShapeNode>' . \PHP_EOL;
+            echo '          <y:Geometry height="30.0" width="80.0"/>' . \PHP_EOL;
+            echo '          <y:Fill color="' . $col . '" transparent="false"/>' . \PHP_EOL;
+            echo '          <y:NodeLabel alignment="center" visible="false">' . $node_name . '</y:NodeLabel>' . \PHP_EOL;
+            echo '          <y:Shape type="' . $shape . '"/>' . \PHP_EOL;
+            echo '        </y:ShapeNode>' . \PHP_EOL;
+            echo '      </data>' . \PHP_EOL;
+            echo '    </node>' . \PHP_EOL;
+
+            // Edges
+            foreach ($depNode as $dnode => $val) {
+                $ecol = '#000000';
+                [$type,$lineno] = explode(':', (string)$val);
+                if ($type == 's') {
+                    $ecol = '#2E8B57'; // Seagreen
+                } elseif ($type == 'v') {
+                    $ecol = '#FF6347';  // Tomato
+                }
+                $source = $nodes[addslashes(trim($dnode, "\\"))];
+                $target = $nodes[addslashes(trim($node, "\\"))];
+                echo '    <edge id="e' . $edge_id . '" source="n' . $source . '" target="n' . $target . '">' . \PHP_EOL;
+                echo '      <data key="d3">' . $ecol . '</data>' . \PHP_EOL;
+                if (!$is_classgraph) {
+                    echo '      <data key="d4">' . $lineno . '</data>' . \PHP_EOL;
+                }
+                echo '      <data key="d6">' . \PHP_EOL;
+                echo '        <y:PolyLineEdge>' . \PHP_EOL;
+                echo '          <y:LineStyle color="' . $ecol . '" type="line" width="1.0"/>' . \PHP_EOL;
+                echo '          <y:Arrows source="none" target="standard"/>' . \PHP_EOL;
+                if (!$is_classgraph) {
+                    echo '          <y:EdgeLabel alignment="center" textColor="#000000" visible="false">' . $lineno . '</y:EdgeLabel>' . \PHP_EOL;
+                }
+                echo '        </y:PolyLineEdge>' . \PHP_EOL;
+                echo '      </data>' . \PHP_EOL;
+
+                echo '    </edge>' . \PHP_EOL;
+                $edge_id++;
+            }
+            $node_id++;
+        }
+        echo '  </graph>' . \PHP_EOL;
+        echo '</graphml>' . \PHP_EOL;
     }
 
     /** Hook up our visitor class */
