@@ -23,7 +23,7 @@ function test_bad_nested_array_foreach(stdClass $o) {
         ],
     ];
     foreach ($badArray as $key => [[$_1, $_2], [$_3, $_4]]) {
-        echo count($key);  // this warns, $key is an int
+        echo count($key);  // this warns, $key is definitely an int
         echo $_1;
         echo $_2;  // this warns, this is an stdClass
         echo $_3;

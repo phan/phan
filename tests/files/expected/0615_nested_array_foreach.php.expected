@@ -1,2 +1,2 @@
-%s:26 PhanTypeMismatchArgumentInternal Argument 1 ($var) is int but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:26 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($var) is int but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
 %s:28 PhanTypeSuspiciousEcho Suspicious argument \stdClass for an echo/print statement
