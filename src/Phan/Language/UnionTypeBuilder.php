@@ -70,6 +70,11 @@ final class UnionTypeBuilder
         return $this->type_set;
     }
 
+    public function clearTypeSet() : void
+    {
+        $this->type_set = [];
+    }
+
     /**
      * Build and return the UnionType for the unique type set that this was building.
      */

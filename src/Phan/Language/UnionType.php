@@ -3390,18 +3390,42 @@ class UnionType implements Serializable
     public function iterableKeyUnionType(CodeBase $code_base) : UnionType
     {
         // This is frequently called, and has been optimized
-        $builder = new UnionTypeBuilder();
-        $type_set = $this->type_set;
-        foreach ($type_set as $type) {
+        $new_type_builder = new UnionTypeBuilder();
+        foreach ($this->type_set as $type) {
             $element_type = $type->iterableKeyUnionType($code_base);
             if ($element_type === null) {
                 // Does not have iterable values
                 continue;
             }
-            $builder->addUnionType($element_type);
+            $new_type_builder->addUnionType($element_type);
+        }
+        $new_real_type_builder = new UnionTypeBuilder();
+        foreach ($this->real_type_set as $type) {
+            if ($type instanceof ScalarType) {
+                // skip false, null, etc.
+                continue;
+            }
+            $element_type = $type->iterableKeyUnionType($code_base);
+            if ($element_type === null) {
+                // Not certain of the real type. It could be a subclass of Traversable with unknown keys.
+                $new_real_type_builder->clearTypeSet();
+                break;
+            }
+            // TODO: Instead of coercing string to int here, update the real type when the array is assigned to,
+            // if the string is a non-literal.
+            if ($type instanceof ArrayType) {
+                foreach ($element_type->getTypeSet() as $type) {
+                    if ($type instanceof StringType) {
+                        // Numeric literals such as `'0'` cast to 0 when inserted as array keys.
+                        $new_real_type_builder->addType(IntType::instance(false));
+                        break;
+                    }
+                }
+            }
+            $new_real_type_builder->addUnionType($element_type);
         }
 
-        return $builder->getPHPDocUnionType();
+        return UnionType::of($new_type_builder->getTypeSet(), $new_real_type_builder->getTypeSet());
     }
 
     /**
@@ -3423,11 +3447,21 @@ class UnionType implements Serializable
                 // Does not have iterable values
                 continue;
             }
-            if (\count($type_set) === 1) {
-                // This will also return the corresponding real type
-                return $element_type;
-            }
             $builder->addUnionType($element_type);
+        }
+        $real_builder = new UnionTypeBuilder();
+        foreach ($this->real_type_set as $type) {
+            if ($type instanceof ScalarType) {
+                // skip false, null, etc.
+                continue;
+            }
+            $element_type = $type->iterableValueUnionType($code_base);
+            if ($element_type === null) {
+                // Not certain of the real type. It could be a subclass of Traversable with unknown values.
+                $real_builder->clearTypeSet();
+                break;
+            }
+            $real_builder->addUnionType($element_type);
         }
 
         static $array_type_nonnull = null;
@@ -3452,7 +3486,7 @@ class UnionType implements Serializable
             $builder->addType($mixed_type);
         }
 
-        return $builder->getPHPDocUnionType();
+        return UnionType::of($builder->getTypeSet(), $real_builder->getTypeSet());
     }
 
     /**
