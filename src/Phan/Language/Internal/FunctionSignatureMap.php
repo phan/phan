@@ -9931,7 +9931,7 @@ return [
 'pg_execute\'1' => ['resource|false', 'stmtname'=>'string', 'params'=>'array'],
 'pg_fetch_all' => ['array<int,array>|false', 'result'=>'resource', 'result_type='=>'int'],
 'pg_fetch_all_columns' => ['array<int,?string>|false', 'result'=>'resource', 'column_number='=>'int'],
-'pg_fetch_array' => ['array<int,string|null>|false', 'result'=>'resource', 'row='=>'?int', 'result_type='=>'int'],
+'pg_fetch_array' => ['string[]|null[]|false', 'result'=>'resource', 'row='=>'?int', 'result_type='=>'int'],
 'pg_fetch_assoc' => ['array<string,string|null>|false', 'result'=>'resource', 'row='=>'?int'],
 'pg_fetch_object' => ['object', 'result'=>'resource', 'row='=>'?int', 'result_type='=>'int'],
 'pg_fetch_object\'1' => ['object', 'result'=>'resource', 'row='=>'?int', 'class_name='=>'string', 'ctor_params='=>'array'],
