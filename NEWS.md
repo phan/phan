@@ -11,6 +11,7 @@ New features(Analysis):
 + Disable `simplify_ast` by default.
   Phan's analysis of compound conditions and assignments/negations in conditions has improved enough that it should no longer be necessary.
 + Import more specific phpdoc/real array return types for internal global functions from opcache.
++ Emit `PhanUndeclaredVariable` and other warnings about arguments when there are too many parameters for methods. (#3245)
 
 Maintenance:
 + Make `\Phan\Library\None` a singleton in internal uses.

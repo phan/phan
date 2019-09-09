@@ -89,6 +89,13 @@ class ArrowFunc
                     }
                 }
                 return;
+            case ast\AST_CLASS:
+                foreach ($n->children['args']->children ?? [] as $child_node) {
+                    if ($child_node instanceof Node) {
+                        $this->buildUses($child_node);
+                    }
+                }
+                return;
         }
         foreach ($n->children as $child_node) {
             if ($child_node instanceof Node) {

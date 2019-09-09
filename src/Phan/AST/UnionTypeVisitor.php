@@ -1959,6 +1959,34 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
+     * @throws UnanalyzableException
+     */
+    public function visitClass(Node $node) : UnionType
+    {
+        if ($node->flags & ast\flags\CLASS_ANONYMOUS) {
+            $class_name =
+                (new ContextNode(
+                    $this->code_base,
+                    $this->context,
+                    $node
+                ))->getUnqualifiedNameForAnonymousClass();
+        } else {
+            $class_name = (string)$node->children['name'];
+        }
+
+        if (!$class_name) {
+            // Should only occur with --use-fallback-parser
+            throw new UnanalyzableException($node, "Class name cannot be empty");
+        }
+
+        // @phan-suppress-next-line PhanThrowTypeMismatchForCall
+        return FullyQualifiedClassName::fromStringInContext(
+            $class_name,
+            $this->context
+        )->asType()->asRealUnionType();
+    }
+
+    /**
      * Visit a node with kind `\ast\AST_CLASS_CONST`
      *
      * @param Node $node
@@ -2706,7 +2734,6 @@ class UnionTypeVisitor extends AnalysisVisitor
         Context $context,
         $node
     ) : UnionType {
-
         // If this is a list, build a union type by
         // recursively visiting the child nodes
         if ($node instanceof Node
