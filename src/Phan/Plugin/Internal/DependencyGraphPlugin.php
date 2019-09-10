@@ -315,7 +315,7 @@ class DependencyGraphPlugin extends PluginV3 implements
         if ($cmd == 'graph') {
             ($mode == 'class') ? $this->dumpClassDot(\basename((string)\getcwd()), $graph) : $this->dumpFileDot(\basename((string)\getcwd()), $graph);
         } elseif ($cmd == 'graphml') {
-            $this->dumpGraphML(basename((string)getcwd()), $graph, ($mode == 'class') ? true : false);
+            $this->dumpGraphML(basename((string)getcwd()), $graph, $mode == 'class');
         } else {
             if ($json) {
                 echo \json_encode($graph);
