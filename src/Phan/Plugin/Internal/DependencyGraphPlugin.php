@@ -483,6 +483,7 @@ class DependencyGraphPlugin extends PluginV3 implements
             foreach ($depNode as $dnode => $val) {
                 $ecol = '#000000';
                 [$type,$lineno] = explode(':', (string)$val);
+                [$dnode] = explode(',', $dnode);
                 if ($type == 's') {
                     $ecol = '#2E8B57'; // Seagreen
                 } elseif ($type == 'v') {
