@@ -985,7 +985,8 @@ class UnionTypeVisitor extends AnalysisVisitor
     /**
      * @return array<int,ArrayType>
      */
-    private static function arrayTypeFromRealTypeBuilder(?UnionTypeBuilder $builder) : array {
+    private static function arrayTypeFromRealTypeBuilder(?UnionTypeBuilder $builder) : array
+    {
         if (!$builder || $builder->isEmpty()) {
             static $array_type_set = null;
             if ($array_type_set === null) {
