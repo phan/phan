@@ -5,25 +5,30 @@
 use Phan\CLIBuilder;
 use Phan\Phan;
 
+define("PDEP_IGNORE_STATIC", 1 << 0);
+define("PDEP_HIDE_LABELS", 1 << 1);
+
 /** Prints a usage message and exits. */
 function usage(int $status) : void {
     global $argv;
     echo <<<EOT
 Usage: {$argv[0]} [options] [files or classes...]
 
- -c, --find-classes Find classes that depend on the passed files or classes
- -f, --find-files   Find files that depend on the passed files or classes
- -g, --graph        Graphviz dot output
- -m, --graphml      GraphML output
+ -c, --find-classes  Find classes that depend on the passed files or classes
+ -f, --find-files    Find files that depend on the passed files or classes
+ -g, --graph         Graphviz dot output
+ -m, --graphml       GraphML output
+     --hide-labels   Labels are hidden - hover in yEd to see them
+     --ignore-static Don't include static calls and static var dependencies
  -d, --depth <depth_level>
     When walking the dependency graph, limit it to this depth. For
     example,
       {$argv[0]} -f -d 1 MyClass
     would show only the files that directly depend on MyClass.
  -l, --file-list <filelist.txt>
- -q, --quick        Uses Phan's --quick mode
- -p, --progress-bar Show progress bar
- -h, --help         This help
+ -q, --quick         Uses Phan's --quick mode
+ -p, --progress-bar  Show progress bar
+ -h, --help          This help
 
 If no filenames or classnames are provided, it will generate the
 full dependency tree.
@@ -46,11 +51,14 @@ call_user_func(static function () : void {
     $tool_dir = dirname($argv[0]);
     $depth = 0;
     $cmd = '';
+    $graph_flags = 0;
     $options = getopt(
         "cfgmhpqd:l:",
         [
             'graph',
             'graphml',
+            'ignore-static',
+            'hide-labels',
             'find-classes',
             'find-files',
             'file-list:',
@@ -84,11 +92,10 @@ call_user_func(static function () : void {
         return;
     }
 
-    $code_base = require_once(__DIR__ . '/../src/codebase.php');
-    require_once(__DIR__ . '/../src/Phan/Bootstrap.php');
+    $code_base = require_once __DIR__ . '/../src/codebase.php';
+    require_once __DIR__ . '/../src/Phan/Bootstrap.php';
 
     $cli_builder = new CLIBuilder();
-
     foreach ($options as $opt => $value) {
         switch ($opt) {
             case 'g':
@@ -98,6 +105,12 @@ call_user_func(static function () : void {
             case 'm':
             case 'graphml':
                 $cmd = "graphml";
+                break;
+            case 'ignore-static':
+                $graph_flags |= \PDEP_IGNORE_STATIC;
+                break;
+            case 'hide-labels':
+                $graph_flags |= \PDEP_HIDE_LABELS;
                 break;
             case 'p':
             case 'progress-bar':
@@ -136,6 +149,8 @@ call_user_func(static function () : void {
     $putenv("PDEP_MODE", (string)$mode);
     $putenv("PDEP_DEPTH", (string)$depth);
     $putenv("PDEP_ARGS", $arg_string);
+    $putenv("PDEP_GRAPH_FLAGS", (string)$graph_flags);
+
     // @phan-suppress-next-line PhanThrowTypeAbsentForCall
     Phan::analyzeFileList($code_base, /** @return string[] */ static function () use($cli) : array {
         return $cli->getFileList();

@@ -198,10 +198,18 @@ class DependencyGraphPlugin extends PluginV3 implements
      */
     public function finalizeProcess(CodeBase $unused_code_base): void
     {
+        $cmd  = $_ENV['PDEP_CMD'];
+        $mode = $_ENV['PDEP_MODE'];
+        $this->depth = (int)$_ENV['PDEP_DEPTH'];
+        $args = empty($_ENV['PDEP_ARGS']) ? null : \explode(' ', $_ENV['PDEP_ARGS']);
+        $flags = $_ENV['PDEP_GRAPH_FLAGS'];
+        $json = false;
+
         if (empty($this->elements)) {
             \fwrite(\STDERR, "Nothing to analyze - please run pdep from your top-level project directory" . \PHP_EOL);
             exit(\EXIT_FAILURE);
         }
+
         // Loop through all the elements and pull out the reference list for each
         foreach ($this->elements as $element) {
             $fnode = $element->getFileRef()->getFile();
@@ -232,39 +240,32 @@ class DependencyGraphPlugin extends PluginV3 implements
                 $this->cgraph[$cnode][$cdepNode] = $ctype . ':' . $ref->getLineNumberStart();
             }
         }
-        foreach (self::$static_calls as $c) {
-            $cnode = \key($c);
-            if (!$cnode) {
-                continue;
+        if (!($flags & \PDEP_IGNORE_STATIC)) {
+            foreach (self::$static_calls as $c) {
+                $cnode = \key($c);
+                if (!$cnode) {
+                    continue;
+                }
+                if (!\array_key_exists($cnode, $this->class_to_file)) {
+                    continue;
+                }
+                $fnode = self::getFileLineno($this->class_to_file[$cnode])[0];
+                $this->fgraph[$fnode][$c[$cnode]['file']]  = 's:' . $c[$cnode]['lineno'];
+                $this->cgraph[$cnode][$c[$cnode]['class']] = 's:' . $c[$cnode]['lineno'];
             }
-            if (!\array_key_exists($cnode, $this->class_to_file)) {
-                continue;
+            foreach (self::$static_vars as $c) {
+                $cnode = \key($c);
+                if (!$cnode) {
+                    continue;
+                }
+                if (!\array_key_exists($cnode, $this->class_to_file)) {
+                    continue;
+                }
+                $fnode = self::getFileLineno($this->class_to_file["$cnode"])[0];
+                $this->fgraph[$fnode][$c[$cnode]['file']]  = 'v:' . $c[$cnode]['lineno'];
+                $this->cgraph[$cnode][$c[$cnode]['class']] = 'v:' . $c[$cnode]['lineno'];
             }
-            $fnode = self::getFileLineno($this->class_to_file[$cnode])[0];
-            $this->fgraph[$fnode][$c[$cnode]['file']]  = 's:' . $c[$cnode]['lineno'];
-            $this->cgraph[$cnode][$c[$cnode]['class']] = 's:' . $c[$cnode]['lineno'];
         }
-        foreach (self::$static_vars as $c) {
-            $cnode = \key($c);
-            if (!$cnode) {
-                continue;
-            }
-            if (!\array_key_exists($cnode, $this->class_to_file)) {
-                continue;
-            }
-            $fnode = self::getFileLineno($this->class_to_file["$cnode"])[0];
-            $this->fgraph[$fnode][$c[$cnode]['file']]  = 'v:' . $c[$cnode]['lineno'];
-            $this->cgraph[$cnode][$c[$cnode]['class']] = 'v:' . $c[$cnode]['lineno'];
-        }
-
-        // $this->printGraph($this->cgraph);
-        // $this->printGraph($this->fgraph);
-
-        $cmd  = $_ENV['PDEP_CMD'];
-        $mode = $_ENV['PDEP_MODE'];
-        $this->depth = (int)$_ENV['PDEP_DEPTH'];
-        $args = empty($_ENV['PDEP_ARGS']) ? null : \explode(' ', $_ENV['PDEP_ARGS']);
-        $json = false;
 
         if (\Phan\Phan::$printer instanceof \Phan\Output\Printer\JSONPrinter) {
             $json = true;
@@ -327,7 +328,7 @@ class DependencyGraphPlugin extends PluginV3 implements
         if ($cmd == 'graph') {
             ($mode == 'class') ? $this->dumpClassDot(\basename((string)\getcwd()), $graph) : $this->dumpFileDot(\basename((string)\getcwd()), $graph);
         } elseif ($cmd == 'graphml') {
-            $this->dumpGraphML(basename((string)getcwd()), $graph, $mode == 'class');
+            $this->dumpGraphML(basename((string)getcwd()), $graph, $mode == 'class', (bool)($flags & \PDEP_HIDE_LABELS));
         } else {
             if ($json) {
                 echo \json_encode($graph);
@@ -418,11 +419,18 @@ class DependencyGraphPlugin extends PluginV3 implements
      * @param string $title
      * @param array<string,array<string,string>> $graph
      * @param bool $is_classgraph
+     * @param bool $hide_labels
      */
-    private function dumpGraphML(string $title, array $graph, bool $is_classgraph):void
+    private function dumpGraphML(string $title, array $graph, bool $is_classgraph, bool $hide_labels):void
     {
         $node_id = 0;
         $edge_id = 0;
+
+        if ($hide_labels) {
+            $visible = 'false';
+        } else {
+            $visible = 'true';
+        }
 
         echo '<?xml version="1.0" encoding="UTF-8"?>' . \PHP_EOL;
         echo '<graphml xmlns="http://graphml.graphdrawing.org/xmlns"' . \PHP_EOL;
@@ -485,7 +493,7 @@ class DependencyGraphPlugin extends PluginV3 implements
             echo '        <y:ShapeNode>' . \PHP_EOL;
             echo '          <y:Geometry height="30.0" width="160.0"/>' . \PHP_EOL;
             echo '          <y:Fill color="' . $col . '" transparent="false"/>' . \PHP_EOL;
-            echo '          <y:NodeLabel alignment="center" visible="true">' . $node_name . '</y:NodeLabel>' . \PHP_EOL;
+            echo '          <y:NodeLabel alignment="center" visible="' . $visible . '">' . $node_name . '</y:NodeLabel>' . \PHP_EOL;
             echo '          <y:Shape type="' . $shape . '"/>' . \PHP_EOL;
             echo '        </y:ShapeNode>' . \PHP_EOL;
             echo '      </data>' . \PHP_EOL;
@@ -513,7 +521,7 @@ class DependencyGraphPlugin extends PluginV3 implements
                 echo '          <y:LineStyle color="' . $ecol . '" type="line" width="1.0"/>' . \PHP_EOL;
                 echo '          <y:Arrows source="none" target="standard"/>' . \PHP_EOL;
                 if (!$is_classgraph) {
-                    echo '          <y:EdgeLabel alignment="center" textColor="#000000" visible="true">' . $lineno . '</y:EdgeLabel>' . \PHP_EOL;
+                    echo '          <y:EdgeLabel alignment="center" textColor="#000000" visible="' . $visible . '">' . $lineno . '</y:EdgeLabel>' . \PHP_EOL;
                 }
                 echo '        </y:PolyLineEdge>' . \PHP_EOL;
                 echo '      </data>' . \PHP_EOL;
