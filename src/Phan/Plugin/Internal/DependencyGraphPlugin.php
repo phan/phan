@@ -55,6 +55,18 @@ class DependencyGraphPlugin extends PluginV3 implements
         return $file_ref->getFile() . ':' . $file_ref->getLineNumberStart();
     }
 
+    /**
+     * @return array{0:string,1:int}
+     */
+    private static function getFileLineno(string $file_string):array
+    {
+        $idx = strrpos($file_string, ':');
+        if ($idx === false) {
+            return [$file_string, 0];
+        }
+        return [substr($file_string, 0, $idx), (int)substr($file_string, $idx + 1)];
+    }
+
     /** Build file<->class mappings */
     public function analyzeClass(CodeBase $unused_code_base, Clazz $class): void
     {
@@ -147,7 +159,7 @@ class DependencyGraphPlugin extends PluginV3 implements
             echo "$k\n";
             foreach ($v as $kk => $vv) {
                 echo "\t$kk";
-                [$t,$lineno] = \explode(':', $vv);
+                [$t,$lineno] = self::getFileLineno($vv);
                 switch ($t) {
                     case 'C':
                         $type = 'Inheritance';
@@ -174,7 +186,7 @@ class DependencyGraphPlugin extends PluginV3 implements
                     if (!\array_key_exists($kk, $this->class_to_file)) {
                         continue;
                     }
-                    [$file]  = \explode(':', $this->class_to_file[$kk]);
+                    $file = self::getFileLineno($this->class_to_file[$kk])[0];
                     echo " - $file:$lineno $type\n";
                 }
             }
@@ -228,7 +240,7 @@ class DependencyGraphPlugin extends PluginV3 implements
             if (!\array_key_exists($cnode, $this->class_to_file)) {
                 continue;
             }
-            [$fnode] = \explode(':', $this->class_to_file[$cnode]);
+            $fnode = self::getFileLineno($this->class_to_file[$cnode])[0];
             $this->fgraph[$fnode][$c[$cnode]['file']]  = 's:' . $c[$cnode]['lineno'];
             $this->cgraph[$cnode][$c[$cnode]['class']] = 's:' . $c[$cnode]['lineno'];
         }
@@ -240,7 +252,7 @@ class DependencyGraphPlugin extends PluginV3 implements
             if (!\array_key_exists($cnode, $this->class_to_file)) {
                 continue;
             }
-            [$fnode] = \explode(':', $this->class_to_file["$cnode"]);
+            $fnode = self::getFileLineno($this->class_to_file["$cnode"])[0];
             $this->fgraph[$fnode][$c[$cnode]['file']]  = 'v:' . $c[$cnode]['lineno'];
             $this->cgraph[$cnode][$c[$cnode]['class']] = 'v:' . $c[$cnode]['lineno'];
         }
@@ -276,7 +288,7 @@ class DependencyGraphPlugin extends PluginV3 implements
                         if (!\array_key_exists($v, $this->file_to_class)) {
                             // Probably no lineno specified, do a linear search
                             foreach ($this->file_to_class as $fi => $cl) {
-                                [$file] = \explode(':', (string)$fi);
+                                $file = self::getFileLineno((string)$fi)[0];
                                 if ($file == $v) {
                                     $v = $cl;
                                     goto found;
@@ -302,7 +314,7 @@ class DependencyGraphPlugin extends PluginV3 implements
                             \fwrite(\STDERR, "Couldn't find class $cnode" . \PHP_EOL);
                             exit(\EXIT_FAILURE);
                         }
-                        [$v] = \explode(':', $this->class_to_file[$cnode]);
+                        $v = self::getFileLineno($this->class_to_file[$cnode])[0];
                     }
                     $graph = $this->walkfGraph($graph, $v);
                 }
@@ -341,7 +353,7 @@ class DependencyGraphPlugin extends PluginV3 implements
         foreach ($graph as $node => $depNode) {
             $shapes .= "\"$node\" [shape=box]\n";
             foreach ($depNode as $dnode => $val) {
-                [$type,$lineno] = \explode(':', (string)$val);
+                [$type,$lineno] = self::getFileLineno((string)$val);
                 $style = '';
                 if ($type == 's') {
                     $style = ',color=seagreen';
@@ -386,7 +398,7 @@ class DependencyGraphPlugin extends PluginV3 implements
                 $shapes .= '"' . \addslashes(\trim($node, "\\")) . "\" [$shape]\n";
             }
             foreach ($depNode as $dnode => $val) {
-                [$type] = \explode(':', (string)$val);
+                $type = self::getFileLineno((string)$val)[0];
                 $style = '';
                 if ($type == 's') {
                     $style = ' [color=seagreen]';
@@ -441,14 +453,14 @@ class DependencyGraphPlugin extends PluginV3 implements
         // Build node_id map
         $nodes = [];
         foreach (array_keys($graph) as $node) {
-            $node_name = addslashes(trim($node, "\\"));
+            $node_name = trim($node, "\\");
             $nodes[$node_name] = $node_id++;
         }
         $node_id = 0;
 
         // Nodes
         foreach ($graph as $node => $depNode) {
-            $node_name = addslashes(trim($node, "\\"));
+            $node_name = trim($node, "\\");
             $col = '#FFFFFF';
             $ntype = 'class';
             $shape = 'rectangle';
@@ -471,9 +483,9 @@ class DependencyGraphPlugin extends PluginV3 implements
             }
             echo '      <data key="d5">' . \PHP_EOL;
             echo '        <y:ShapeNode>' . \PHP_EOL;
-            echo '          <y:Geometry height="30.0" width="80.0"/>' . \PHP_EOL;
+            echo '          <y:Geometry height="30.0" width="160.0"/>' . \PHP_EOL;
             echo '          <y:Fill color="' . $col . '" transparent="false"/>' . \PHP_EOL;
-            echo '          <y:NodeLabel alignment="center" visible="false">' . $node_name . '</y:NodeLabel>' . \PHP_EOL;
+            echo '          <y:NodeLabel alignment="center" visible="true">' . $node_name . '</y:NodeLabel>' . \PHP_EOL;
             echo '          <y:Shape type="' . $shape . '"/>' . \PHP_EOL;
             echo '        </y:ShapeNode>' . \PHP_EOL;
             echo '      </data>' . \PHP_EOL;
@@ -482,15 +494,15 @@ class DependencyGraphPlugin extends PluginV3 implements
             // Edges
             foreach ($depNode as $dnode => $val) {
                 $ecol = '#000000';
-                [$type,$lineno] = explode(':', (string)$val);
+                [$type,$lineno] = self::getFileLineno((string)$val);
                 [$dnode] = explode(',', $dnode);
                 if ($type == 's') {
                     $ecol = '#2E8B57'; // Seagreen
                 } elseif ($type == 'v') {
                     $ecol = '#FF6347';  // Tomato
                 }
-                $source = $nodes[addslashes(trim($dnode, "\\"))];
-                $target = $nodes[addslashes(trim($node, "\\"))];
+                $source = $nodes[trim($dnode, "\\")];
+                $target = $nodes[trim($node, "\\")];
                 echo '    <edge id="e' . $edge_id . '" source="n' . $source . '" target="n' . $target . '">' . \PHP_EOL;
                 echo '      <data key="d3">' . $ecol . '</data>' . \PHP_EOL;
                 if (!$is_classgraph) {
@@ -501,7 +513,7 @@ class DependencyGraphPlugin extends PluginV3 implements
                 echo '          <y:LineStyle color="' . $ecol . '" type="line" width="1.0"/>' . \PHP_EOL;
                 echo '          <y:Arrows source="none" target="standard"/>' . \PHP_EOL;
                 if (!$is_classgraph) {
-                    echo '          <y:EdgeLabel alignment="center" textColor="#000000" visible="false">' . $lineno . '</y:EdgeLabel>' . \PHP_EOL;
+                    echo '          <y:EdgeLabel alignment="center" textColor="#000000" visible="true">' . $lineno . '</y:EdgeLabel>' . \PHP_EOL;
                 }
                 echo '        </y:PolyLineEdge>' . \PHP_EOL;
                 echo '      </data>' . \PHP_EOL;

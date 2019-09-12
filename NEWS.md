@@ -6,6 +6,8 @@ Phan NEWS
 New features(CLI):
 + Always print 100% in `--progress-bar` after completing any phase of analysis.
   This is convenient for tools such as `tool/phoogle` that exit before starting the next phase.
++ Add GraphML output support to DependencyGraphPlugin.
+  This allows tool/pdep output to be imported by Neo4j, Gephi and yEd
 
 New features(Analysis):
 + Disable `simplify_ast` by default.
@@ -13,9 +15,6 @@ New features(Analysis):
 + Import more specific phpdoc/real array return types for internal global functions from opcache.
 + Emit `PhanUndeclaredVariable` and other warnings about arguments when there are too many parameters for methods. (#3245)
 + Infer real types of array/iterable keys and values in more cases.
-
-Plugins:
-+ Add GraphML output support to DependencyGraphPlugin so it can be used with Neo4j, Gephi and yEd
 
 Maintenance:
 + Make `\Phan\Library\None` a singleton in internal uses.
