@@ -2761,7 +2761,7 @@ class Clazz extends AddressableElement
                 return false;
             }
             $reflection_method = $reflection_class->getMethod($method->getName());
-            if ($reflection_method->getDeclaringClass()->getName() !== $reflection_class->getName()) {
+            if ($reflection_method->class !== $reflection_class->name) {
                 return false;
             }
             return true;

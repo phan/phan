@@ -91,7 +91,7 @@ class ReflectionCompletenessCheck
     {
         foreach (self::getInternalClasses() as $class_name => $reflection_class) {
             foreach ($reflection_class->getMethods() as $reflection_method) {
-                if ($reflection_method->getDeclaringClass()->getName() !== $class_name) {
+                if ($reflection_method->class !== $class_name) {
                     continue;
                 }
                 $method_name = $reflection_method->getName();

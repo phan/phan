@@ -59,7 +59,7 @@ final class EmptyUnionTypeTest extends BaseTest
                 continue;
             }
             $failures .= $this->checkHasSameImplementationForEmpty($method);
-            $actual_class = $method->getDeclaringClass()->getName();
+            $actual_class = $method->class;
             if (EmptyUnionType::class !== $actual_class) {
                 $failures .= "unexpected declaring class $actual_class for $method_name\n";
             }
