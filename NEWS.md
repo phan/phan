@@ -9,7 +9,7 @@ New features(CLI):
 + Add GraphML output support to `DependencyGraphPlugin`.
   This allows `tool/pdep` output to be imported by Neo4j, Gephi and yEd
 + Add json output and import to `tool/pdep`
-  For caching large graphs in order to generate multiple sub-graphs with re-scanning
+  For caching large graphs in order to generate multiple sub-graphs without re-scanning
 
 New features(Analysis):
 + Disable `simplify_ast` by default.
