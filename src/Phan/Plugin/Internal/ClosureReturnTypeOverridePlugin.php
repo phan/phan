@@ -6,6 +6,7 @@ use ast\Node;
 use Closure;
 use Phan\Analysis\ArgumentType;
 use Phan\Analysis\PostOrderAnalysisVisitor;
+use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
@@ -232,6 +233,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
             // Currently, only analyze calls of the form call_user_func_array(callable expression, [$arg1, $arg2...])
             $function_like_list = UnionTypeVisitor::functionLikeListFromNodeAndContext($code_base, $context, $args[0], true);
             if (\count($function_like_list) === 0) {
+                self::resetReferenceArgumentsTypes($code_base, $context, $args[1] ?? null);
                 return;
             }
             $arguments = self::extractArrayArgs($args[1] ?? null);
@@ -307,6 +309,37 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
             $cache[$i] = $argument_type;
             return $argument_type;
         };
+    }
+
+    /**
+     * Given a node of arguments to the callback of call_user_func_array, find if there are
+     * pass-by-refs and empty their UnionType.
+     *
+     * @param CodeBase $code_base
+     * @param Context $context
+     * @param Node|int|string|float|null $arg_array_node
+     */
+    private static function resetReferenceArgumentsTypes($code_base, $context, $arg_array_node) : void
+    {
+        if (!($arg_array_node instanceof Node) || $arg_array_node->kind !== \ast\AST_ARRAY) {
+            return;
+        }
+        foreach ($arg_array_node->children as $child) {
+            if (!($child instanceof Node)) {
+                continue;
+            }
+            if ($child->flags & \ast\flags\ARRAY_ELEM_REF) {
+                $el = $child->children['value'];
+                if ($el instanceof Node && $el->kind === \ast\AST_VAR) {
+                    $cnode = new ContextNode(
+                        $code_base,
+                        $context,
+                        $el
+                    );
+                    $cnode->getVariable()->setUnionType(UnionType::empty());
+                }
+            }
+        }
     }
 
     /**
