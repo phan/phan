@@ -319,7 +319,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
      * @param Context $context
      * @param Node|int|string|float|null $arg_array_node
      */
-    private static function resetReferenceArgumentsTypes($code_base, $context, $arg_array_node) : void
+    private static function resetReferenceArgumentsTypes(CodeBase $code_base, Context $context, $arg_array_node) : void
     {
         if (!($arg_array_node instanceof Node) || $arg_array_node->kind !== \ast\AST_ARRAY) {
             return;
@@ -336,7 +336,10 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
                         $context,
                         $el
                     );
-                    $cnode->getVariable()->setUnionType(UnionType::empty());
+                    try {
+                        $cnode->getVariable()->setUnionType(UnionType::empty());
+                    } catch (Exception $_) {
+                    }
                 }
             }
         }
