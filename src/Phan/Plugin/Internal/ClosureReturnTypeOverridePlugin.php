@@ -337,9 +337,12 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
                         $el
                     );
                     try {
-                        $cnode->getVariable()->setUnionType(UnionType::empty());
+                        $variable_clone = clone $cnode->getVariable();
                     } catch (\Exception $_) {
+                        continue;
                     }
+                    $variable_clone->setUnionType(UnionType::empty());
+                    $context->addScopeVariable($variable_clone);
                 }
             }
         }
