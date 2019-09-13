@@ -123,7 +123,7 @@ class FunctionFactory
             null
         );
         // Knowing the defining class of the method is useful for warning about unused calls to inherited methods such as Exception->getCode()
-        $defining_class_name = $reflection_method->getDeclaringClass()->getName();
+        $defining_class_name = $reflection_method->class;
         if ($defining_class_name !== $class_name) {
             $method->setDefiningFQSEN(
                 FullyQualifiedMethodName::make(

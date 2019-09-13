@@ -220,6 +220,7 @@ final class LanguageServerIntegrationTest extends BaseTest
         try {
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);
+            $this->writeDidChangeConfigurationNotification($proc_in);
             $new_file_contents = <<<'EOT'
 <?php
 function example(int $x) : int {
@@ -1873,6 +1874,22 @@ EOT;
             'processId' => \getmypid(),
         ];
         $this->writeNotification($proc_in, 'initialized', $params);
+    }
+
+    /**
+     * @param resource $proc_in
+     * @throws InvalidArgumentException
+     */
+    private function writeDidChangeConfigurationNotification($proc_in) : void
+    {
+        $params = [
+            'phan' => [
+                'phpExecutablePath' => PHP_BINARY,
+                'quick' => false,
+                // the function is a no-op, so the params aren't important.
+            ],
+        ];
+        $this->writeNotification($proc_in, 'textDocument/didChangeConfiguration', $params);
     }
 
     /**
