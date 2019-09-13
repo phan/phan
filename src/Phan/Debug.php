@@ -305,7 +305,7 @@ class Debug
         static $exclusive, $combinable;
         // Write this in a way that lets Phan infer the value of $combinable at the end.
         if ($exclusive === null) {
-            $modifiers = [
+            $function_modifiers = [
                 flags\MODIFIER_PUBLIC => 'MODIFIER_PUBLIC',
                 flags\MODIFIER_PROTECTED => 'MODIFIER_PROTECTED',
                 flags\MODIFIER_PRIVATE => 'MODIFIER_PRIVATE',
@@ -314,6 +314,14 @@ class Debug
                 flags\MODIFIER_FINAL => 'MODIFIER_FINAL',
                 flags\FUNC_RETURNS_REF => 'FUNC_RETURNS_REF',
                 flags\FUNC_GENERATOR => 'FUNC_GENERATOR',
+            ];
+            $property_modifiers = [
+                flags\MODIFIER_PUBLIC => 'MODIFIER_PUBLIC',
+                flags\MODIFIER_PROTECTED => 'MODIFIER_PROTECTED',
+                flags\MODIFIER_PRIVATE => 'MODIFIER_PRIVATE',
+                flags\MODIFIER_STATIC => 'MODIFIER_STATIC',
+                flags\MODIFIER_ABSTRACT => 'MODIFIER_ABSTRACT',
+                flags\MODIFIER_FINAL => 'MODIFIER_FINAL',
             ];
             $types = [
                 flags\TYPE_NULL => 'TYPE_NULL',
@@ -345,6 +353,7 @@ class Debug
                 flags\BINARY_POW => 'BINARY_POW',
                 flags\BINARY_SHIFT_LEFT => 'BINARY_SHIFT_LEFT',
                 flags\BINARY_SHIFT_RIGHT => 'BINARY_SHIFT_RIGHT',
+                flags\BINARY_COALESCE => 'BINARY_COALESCE',
             ];
 
             $exclusive = [
@@ -359,10 +368,6 @@ class Debug
                     flags\CLASS_TRAIT => 'CLASS_TRAIT',
                     flags\CLASS_INTERFACE => 'CLASS_INTERFACE',
                     flags\CLASS_ANONYMOUS => 'CLASS_ANONYMOUS',
-                ],
-                ast\AST_PARAM => [
-                    flags\PARAM_REF => 'PARAM_REF',
-                    flags\PARAM_VARIADIC => 'PARAM_VARIADIC',
                 ],
                 ast\AST_TYPE => $types,
                 ast\AST_CAST => $types,
@@ -386,7 +391,6 @@ class Debug
                     flags\BINARY_IS_GREATER => 'BINARY_IS_GREATER',
                     flags\BINARY_IS_GREATER_OR_EQUAL => 'BINARY_IS_GREATER_OR_EQUAL',
                     flags\BINARY_SPACESHIP => 'BINARY_SPACESHIP',
-                    flags\BINARY_COALESCE => 'BINARY_COALESCE',
                 ],
                 ast\AST_ASSIGN_OP => $shared_binary_ops,
                 ast\AST_MAGIC_CONST => [
@@ -414,15 +418,37 @@ class Debug
                     flags\ARRAY_SYNTAX_LONG => 'ARRAY_SYNTAX_LONG',
                     flags\ARRAY_SYNTAX_SHORT => 'ARRAY_SYNTAX_SHORT',
                 ],
+                ast\AST_ARRAY_ELEM => [
+                    flags\ARRAY_ELEM_REF => 'ARRAY_ELEM_REF',
+                ],
                 ast\AST_CLOSURE_VAR => [
                     flags\CLOSURE_USE_REF => 'CLOSURE_USE_REF',
                 ],
             ];
 
-            $combinable = [];
-            $combinable[ast\AST_METHOD] = $combinable[ast\AST_FUNC_DECL] = $combinable[ast\AST_CLOSURE] = $combinable[ast\AST_ARROW_FUNC]
-                = $combinable[ast\AST_PROP_GROUP] = $combinable[ast\AST_PROP_DECL] = $combinable[ast\AST_CLASS_CONST_DECL]
-                = $combinable[ast\AST_TRAIT_ALIAS] = $modifiers;
+            $combinable = [
+                ast\AST_METHOD => $function_modifiers,
+                ast\AST_FUNC_DECL => $function_modifiers,
+                ast\AST_CLOSURE => $function_modifiers,
+                ast\AST_ARROW_FUNC => $function_modifiers,
+                ast\AST_CLASS_CONST_DECL => [
+                    flags\MODIFIER_PUBLIC => 'MODIFIER_PUBLIC',
+                    flags\MODIFIER_PROTECTED => 'MODIFIER_PROTECTED',
+                    flags\MODIFIER_PRIVATE => 'MODIFIER_PRIVATE',
+                ],
+                ast\AST_PROP_GROUP => $property_modifiers,
+                ast\AST_TRAIT_ALIAS => $property_modifiers,
+                ast\AST_DIM => [
+                    flags\DIM_ALTERNATIVE_SYNTAX => 'DIM_ALTERNATIVE_SYNTAX',
+                ],
+                ast\AST_CONDITIONAL => [
+                    flags\PARENTHESIZED_CONDITIONAL => 'PARENTHESIZED_CONDITIONAL',
+                ],
+                ast\AST_PARAM => [
+                    flags\PARAM_REF => 'PARAM_REF',
+                    flags\PARAM_VARIADIC => 'PARAM_VARIADIC',
+                ],
+            ];
         }
 
         return [$exclusive, $combinable];
