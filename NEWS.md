@@ -24,6 +24,10 @@ Maintenance:
 
 Bug fixes:
 + Consistently deduplicate the real type set of union types (fixes some false positives in redundant condition detection).
++ Fix `\Phan\Debug`'s dumping representation of flags for `ast\AST_DIM`, `ast\AST_ARRAY_ELEM`,
+  `ast\AST_PARAM`, `ast\AST_ASSIGN_OP` (`??=`), and `ast\AST_CONDITIONAL`.
+
+  This affects some crash reporting and tools such as `internal/dump_fallback_ast.php`
 
 Sep 08 2019, Phan 2.2.12
 ------------------------
