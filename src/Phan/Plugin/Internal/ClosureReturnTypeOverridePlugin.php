@@ -338,7 +338,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
                     );
                     try {
                         $cnode->getVariable()->setUnionType(UnionType::empty());
-                    } catch (Exception $_) {
+                    } catch (\Exception $_) {
                     }
                 }
             }
