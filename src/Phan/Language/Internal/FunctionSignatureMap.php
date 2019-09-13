@@ -3686,7 +3686,7 @@ return [
 'get_defined_functions' => ['array<string,array<string,callable-string>>', 'exclude_disabled='=>'bool'],
 'get_defined_vars' => ['array'],
 'get_extension_funcs' => ['array<int,callable-string>', 'extension_name'=>'string'],
-'get_headers' => ['array<int,array|string>|false', 'url'=>'string', 'format='=>'int', 'context='=>'resource'],
+'get_headers' => ['array<int|string,array|string>|false', 'url'=>'string', 'format='=>'int', 'context='=>'resource'],
 'get_html_translation_table' => ['array<string,string>', 'table='=>'int', 'flags='=>'int', 'encoding='=>'string'],
 'get_include_path' => ['string'],
 'get_included_files' => ['array<int,string>'],
