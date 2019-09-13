@@ -198,18 +198,10 @@ class DependencyGraphPlugin extends PluginV3 implements
      */
     public function finalizeProcess(CodeBase $unused_code_base): void
     {
-        $cmd  = $_ENV['PDEP_CMD'];
-        $mode = $_ENV['PDEP_MODE'];
-        $this->depth = (int)$_ENV['PDEP_DEPTH'];
-        $args = empty($_ENV['PDEP_ARGS']) ? null : \explode(' ', $_ENV['PDEP_ARGS']);
-        $flags = $_ENV['PDEP_GRAPH_FLAGS'];
-        $json = false;
-
         if (empty($this->elements)) {
             \fwrite(\STDERR, "Nothing to analyze - please run pdep from your top-level project directory" . \PHP_EOL);
             exit(\EXIT_FAILURE);
         }
-
         // Loop through all the elements and pull out the reference list for each
         foreach ($this->elements as $element) {
             $fnode = $element->getFileRef()->getFile();
@@ -240,6 +232,9 @@ class DependencyGraphPlugin extends PluginV3 implements
                 $this->cgraph[$cnode][$cdepNode] = $ctype . ':' . $ref->getLineNumberStart();
             }
         }
+
+        $flags = (int)$_ENV['PDEP_GRAPH_FLAGS'];
+
         if (!($flags & \PDEP_IGNORE_STATIC)) {
             foreach (self::$static_calls as $c) {
                 $cnode = \key($c);
@@ -266,12 +261,34 @@ class DependencyGraphPlugin extends PluginV3 implements
                 $this->cgraph[$cnode][$c[$cnode]['class']] = 'v:' . $c[$cnode]['lineno'];
             }
         }
+        $this->processGraph();
+    }
 
-        if (\Phan\Phan::$printer instanceof \Phan\Output\Printer\JSONPrinter) {
-            $json = true;
+    /**
+     * Process either the cached or generated graph
+     * @param ?array<string,mixed> $cached_graph
+     */
+    public function processGraph(array $cached_graph = null): void
+    {
+        $cmd  = $_ENV['PDEP_CMD'];
+        $mode = $_ENV['PDEP_MODE'];
+        $this->depth = (int)$_ENV['PDEP_DEPTH'];
+        $args = empty($_ENV['PDEP_ARGS']) ? null : \explode(' ', $_ENV['PDEP_ARGS']);
+        $flags = (int)$_ENV['PDEP_GRAPH_FLAGS'];
+        $graph = [];
+
+        if ($cached_graph) {
+            $mode = $cached_graph['pdep_metadata']['mode'];
+            $this->ctype = $cached_graph['pdep_metadata']['ctype'];
+            $this->class_to_file = $cached_graph['pdep_metadata']['class_to_file'];
+            $this->file_to_class = $cached_graph['pdep_metadata']['file_to_class'];
+            unset($cached_graph['pdep_metadata']);
+            if ($mode == 'file') {
+                $this->fgraph = $cached_graph;
+            } else {
+                $this->cgraph = $cached_graph;
+            }
         }
-
-        $graph = $this->cgraph;
         if (empty($args)) {
             if ($mode == 'class') {
                 $graph = $this->cgraph;
@@ -329,12 +346,16 @@ class DependencyGraphPlugin extends PluginV3 implements
             ($mode == 'class') ? $this->dumpClassDot(\basename((string)\getcwd()), $graph) : $this->dumpFileDot(\basename((string)\getcwd()), $graph);
         } elseif ($cmd == 'graphml') {
             $this->dumpGraphML(basename((string)getcwd()), $graph, $mode == 'class', (bool)($flags & \PDEP_HIDE_LABELS));
+        } elseif ($cmd == 'json') {
+            $graph['pdep_metadata'] = [
+                'mode' => $mode,
+                'ctype' => $this->ctype,
+                'file_to_class' => $this->file_to_class,
+                'class_to_file' => $this->class_to_file
+            ];
+            echo \json_encode($graph);
         } else {
-            if ($json) {
-                echo \json_encode($graph);
-            } else {
-                $this->printGraph($graph);
-            }
+            $this->printGraph($graph);
         }
         exit(\EXIT_SUCCESS);
     }
