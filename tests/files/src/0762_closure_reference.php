@@ -20,6 +20,13 @@ function f762() {
     if ($z === 2) {
         return 'foo';
     }
+
+    $w = null;
+    // Unknown callback and pass-by-ref, $w's type should be reset.
+    call_user_func_array($_GET['func'], [ &$w ]);
+    if ($w === 2) {
+        return 'foo';
+    }
 }
 
 function f762clos1(&$arg) {
