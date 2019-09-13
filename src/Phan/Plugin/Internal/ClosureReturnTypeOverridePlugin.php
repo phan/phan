@@ -337,7 +337,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
                         $el
                     );
                     try {
-                        $variable_clone = clone $cnode->getVariable();
+                        $variable_clone = clone($cnode->getVariable());
                     } catch (\Exception $_) {
                         continue;
                     }
