@@ -107,16 +107,20 @@ class IssueFixSuggester
         $name = $function_fqsen->getName();
         $suggested_fqsens = \array_merge(
             $code_base->suggestSimilarGlobalFunctionInOtherNamespace($namespace, $name, $context),
-            $code_base->suggestSimilarGlobalFunctionInSameNamespace($namespace, $name, $context, $suggest_in_global_namespace)
+            $code_base->suggestSimilarGlobalFunctionInSameNamespace($namespace, $name, $context, $suggest_in_global_namespace),
+            $code_base->suggestSimilarNewInAnyNamespace($namespace, $name, $context, $suggest_in_global_namespace)
         );
         if (count($suggested_fqsens) === 0) {
             return null;
         }
 
         /**
-         * @param string|FullyQualifiedFunctionName $fqsen
+         * @param string|FullyQualifiedFunctionName|FullyQualifiedClassName $fqsen
          */
         $generate_type_representation = static function ($fqsen) : string {
+            if ($fqsen instanceof FullyQualifiedClassName) {
+                return "new $fqsen()";
+            }
             return $fqsen . '()';
         };
         $suggestion_text = $prefix . ' ' . \implode(' or ', \array_map($generate_type_representation, $suggested_fqsens));
@@ -393,20 +397,38 @@ class IssueFixSuggester
         if (strlen($constant_name) <= 1) {
             return null;
         }
+        $namespace = $fqsen->getNamespace();
         $suggestions = \array_merge(
             self::suggestSimilarFunctionsToConstant($code_base, $context, $fqsen),
             self::suggestSimilarClassConstantsToGlobalConstant($code_base, $context, $fqsen),
             self::suggestSimilarClassPropertiesToGlobalConstant($code_base, $context, $fqsen),
             $code_base->suggestSimilarConstantsToConstant($constant_name),
+            $code_base->suggestSimilarGlobalConstantForNamespaceAndName($namespace, $constant_name),
+            $namespace !== '\\' ? $code_base->suggestSimilarGlobalConstantForNamespaceAndName('\\', $constant_name) : [],
             self::suggestSimilarVariablesToGlobalConstant($context, $fqsen)
         );
         if (count($suggestions) === 0) {
             return null;
         }
-        $suggestions = \array_map('strval', $suggestions);
+        $suggestions = self::deduplicateSuggestions(\array_map('strval', $suggestions));
+        sort($suggestions, \SORT_STRING);
         return Suggestion::fromString(
             'Did you mean ' . \implode(' or ', $suggestions)
         );
+    }
+
+    /**
+     * @template T
+     * @param T[] $suggestions
+     * @return array<int,T>
+     */
+    private static function deduplicateSuggestions(array $suggestions) : array
+    {
+        $result = [];
+        foreach ($suggestions as $suggestion) {
+            $result[(string)$suggestion] = $suggestion;
+        }
+        return array_values($result);
     }
 
     /**
