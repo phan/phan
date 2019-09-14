@@ -1884,7 +1884,7 @@ EOT;
     {
         $params = [
             'phan' => [
-                'phpExecutablePath' => PHP_BINARY,
+                'phpExecutablePath' => \PHP_BINARY,
                 'quick' => false,
                 // the function is a no-op, so the params aren't important.
             ],

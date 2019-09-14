@@ -297,6 +297,7 @@ return [
         'PhanPluginDescriptionlessCommentOnProtectedMethod',
         'PhanPluginNoCommentOnPrivateMethod',
         'PhanPluginDescriptionlessCommentOnPrivateMethod',
+        'PhanPluginDescriptionlessCommentOnPrivateProperty',
         // TODO: Fix edge cases in --automatic-fix for PhanPluginRedundantClosureComment
         'PhanPluginRedundantClosureComment',
     ],
@@ -459,6 +460,8 @@ return [
 
         // blacklist of methods to warn about for HasPHPDocPlugin
         'has_phpdoc_method_ignore_regex' => '@^Phan\\\\Tests\\\\.*::(test.*|.*Provider)$@',
+        // Warn about duplicate descriptions for methods and property groups within classes.
+        'has_phpdoc_check_duplicates' => true,
 
         // If true, then never allow empty statement lists, even if there is a TODO/FIXME/"deliberately empty" comment.
         'empty_statement_list_ignore_todos' => true,

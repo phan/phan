@@ -58,6 +58,8 @@ abstract class AnalysisVisitor extends KindVisitorImplementation
      *
      * @param int|string|FQSEN|UnionType|Type ...$parameters
      * Template parameters for the issue's error message
+     *
+     * @see PluginAwarePostAnalysisVisitor::emitPluginIssue if you are using this from a plugin.
      */
     protected function emitIssue(
         string $issue_type,

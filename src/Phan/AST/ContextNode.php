@@ -129,7 +129,7 @@ class ContextNode
     }
 
     /**
-     * Gets the FQSEN for a trait.
+     * Gets the list of possible FQSENs for a trait.
      * NOTE: does not validate that it is really used on a trait
      * @return array<int,FullyQualifiedClassName>
      * @throws FQSENException

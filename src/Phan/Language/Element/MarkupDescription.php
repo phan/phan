@@ -149,7 +149,7 @@ class MarkupDescription
     }
 
     /**
-     * @param array<string,true> $checked_class_fqsens
+     * @param array<string,true> $checked_class_fqsens used to guard against recursion
      */
     private static function extractDescriptionFromDocCommentOfAncestorOfClassElement(
         ClassElement $element,
@@ -343,7 +343,7 @@ class MarkupDescription
      * @return string markup string
      * @internal
      */
-    public static function extractDocComment(string $doc_comment, int $comment_category = null, UnionType $element_type = null) : string
+    public static function extractDocComment(string $doc_comment, int $comment_category = null, UnionType $element_type = null, bool $remove_type = false) : string
     {
         // Trim the start and the end of the doc comment.
         //
@@ -370,7 +370,7 @@ class MarkupDescription
                             if (isset($new_lines[0])) {
                                 $did_build_from_phpdoc_tag = true;
                                 // @phan-suppress-next-line PhanAccessClassConstantInternal
-                                $new_lines[0] = \preg_replace(Builder::PARAM_COMMENT_REGEX, '`\0`', $new_lines[0]);
+                                $new_lines[0] = \preg_replace(Builder::PARAM_COMMENT_REGEX, $remove_type ? '' : '`\0`', $new_lines[0]);
                             }
                             $results = \array_merge($results, $new_lines);
                         }
@@ -381,7 +381,7 @@ class MarkupDescription
                             $new_lines = self::extractTagSummary($lines, $i);
                             if (isset($new_lines[0])) {
                                 // @phan-suppress-next-line PhanAccessClassConstantInternal
-                                $new_lines[0] = \preg_replace(Builder::RETURN_COMMENT_REGEX, '`\0`', $new_lines[0]);
+                                $new_lines[0] = \preg_replace(Builder::RETURN_COMMENT_REGEX, $remove_type ? '' : '`\0`', $new_lines[0]);
                             }
                             $results = \array_merge($results, $new_lines);
                         }
@@ -404,7 +404,7 @@ class MarkupDescription
         }
         $results = self::trimLeadingWhitespace($results);
         $str = \implode("\n", $results);
-        if ($comment_category === Comment::ON_PROPERTY && !$did_build_from_phpdoc_tag) {
+        if ($comment_category === Comment::ON_PROPERTY && !$did_build_from_phpdoc_tag && !$remove_type) {
             if ($element_type && !$element_type->isEmpty()) {
                 $str = \trim("`@var $element_type` $str");
             }
