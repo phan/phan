@@ -142,7 +142,7 @@ class Property extends ClassElement
     }
 
     /**
-     * Used for generating issue messages
+     * Returns a representation of the visibility for issue messages.
      */
     public function asVisibilityAndFQSENString() : string
     {
@@ -150,7 +150,7 @@ class Property extends ClassElement
     }
 
     /**
-     * Used for generating issue messages
+     * Returns a representation of the property's FQSEN for issue messages.
      */
     public function asPropertyFQSENString() : string
     {

@@ -62,34 +62,34 @@ class Config
     private static $configuration = self::DEFAULT_CONFIGURATION;
 
     // The most commonly accessed configs:
-    /** @var bool mirror of configuration with the same name */
+    /** @var bool replicates Config::getValue('null_casts_as_any_type') */
     private static $null_casts_as_any_type = false;
 
-    /** @var bool replicates configuration with the same name */
+    /** @var bool replicates Config::getValue('null_casts_as_array') */
     private static $null_casts_as_array = false;
 
-    /** @var bool replicates configuration with the same name */
+    /** @var bool replicates Config::getValue('array_casts_as_null') */
     private static $array_casts_as_null = false;
 
-    /** @var bool replicates configuration with the same name */
+    /** @var bool replicates Config::getValue('strict_method_checking') */
     private static $strict_method_checking = false;
 
-    /** @var bool replicates configuration with the same name */
+    /** @var bool replicates Config::getValue('strict_param_checking') */
     private static $strict_param_checking = false;
 
-    /** @var bool replicates configuration with the same name */
+    /** @var bool replicates Config::getValue('strict_property_checking') */
     private static $strict_property_checking = false;
 
-    /** @var bool replicates configuration with the same name */
+    /** @var bool replicates Config::getValue('strict_return_checking') */
     private static $strict_return_checking = false;
 
-    /** @var bool replicates configuration with the same name */
+    /** @var bool replicates Config::getValue('track_references') */
     private static $track_references = false;
 
-    /** @var bool replicates configuration with the same name */
+    /** @var bool replicates Config::getValue('backward_compatibility_checks') */
     private static $backward_compatibility_checks = false;
 
-    /** @var bool replicates configuration with the same name */
+    /** @var bool replicates Config::getValue('quick_mode') */
     private static $quick_mode = false;
     // End of the most commonly accessed configs.
 

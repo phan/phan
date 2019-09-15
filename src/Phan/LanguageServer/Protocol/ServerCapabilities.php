@@ -24,14 +24,14 @@ class ServerCapabilities
     public $completionProvider;
 
     /**
-     * The server provides goto definition support.
+     * The server provides "go to definition" support.
      *
      * @var bool|null
      */
     public $definitionProvider;
 
     /**
-     * The server provides goto definition support.
+     * The server provides "go to type definition" support.
      *
      * @var bool|null
      */

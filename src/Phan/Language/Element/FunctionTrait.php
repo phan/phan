@@ -81,8 +81,8 @@ trait FunctionTrait
 
     /**
      * @return string
-     * The fully-qualified structural element name of this
-     * structural element
+     * A representation of this function, closure, or method,
+     * for issue messages.
      */
     public function getRepresentationForIssue(bool $show_args = false) : string
     {
@@ -216,12 +216,12 @@ trait FunctionTrait
     private $function_call_analyzer_callback = null;
 
     /**
-     * @var FunctionLikeDeclarationType|null (Lazily generated)
+     * @var FunctionLikeDeclarationType|null (Lazily generated representation of this as a closure type)
      */
     private $as_closure_declaration_type;
 
     /**
-     * @var Type|null (Lazily generated)
+     * @var Type|null (Lazily generated representation of this as a generator type)
      */
     private $as_generator_template_type;
 
@@ -474,7 +474,7 @@ trait FunctionTrait
     }
 
     /**
-     * Gets the $ith parameter for the **caller**.
+     * Gets the $ith parameter for the **caller** (with real types).
      * In the case of variadic arguments, an infinite number of parameters exist.
      * (The callee would see variadic arguments(T ...$args) as a single variable of type T[],
      * while the caller sees a place expecting an expression of type T.

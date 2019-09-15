@@ -1783,8 +1783,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * A node to parse (for `&&` or `and` operator)
      *
      * @return Context
-     * A new or an unchanged context resulting from
-     * parsing the node
+     * A new context resulting from analyzing this logical `&&` operator.
      */
     public function analyzeBinaryBoolAnd(Node $node) : Context
     {
@@ -1845,8 +1844,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * A node to parse (for `||` or `or` operator)
      *
      * @return Context
-     * A new or an unchanged context resulting from
-     * parsing the node
+     * A new context resulting from analyzing this `||` operator.
      */
     public function analyzeBinaryBoolOr(Node $node) : Context
     {

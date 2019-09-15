@@ -205,7 +205,6 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
     }
 
     /**
-     * Helper method
      * @param Node|string|int|float $left
      * a Node or non-node to parse (possibly an AST literal)
      *
@@ -214,7 +213,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
      *
      * @return Context
      * A new or an unchanged context resulting from
-     * parsing the node
+     * analyzing the short-circuiting logical and.
      */
     private function analyzeShortCircuitingAnd($left, $right) : Context
     {
@@ -231,7 +230,6 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
     }
 
     /**
-     * Helper method
      * @param Node|string|int|float $left
      * a Node or non-node to parse (possibly an AST literal)
      *
@@ -240,7 +238,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
      *
      * @return Context
      * A new or an unchanged context resulting from
-     * parsing the node
+     * analyzing the short-circuiting logical or.
      */
     private function analyzeShortCircuitingOr($left, $right) : Context
     {

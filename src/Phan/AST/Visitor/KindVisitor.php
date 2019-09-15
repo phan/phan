@@ -12,7 +12,7 @@ interface KindVisitor
 {
 
     /**
-     * Visit a node with kind `\ast\AST_ARRAY`
+     * Visit a node with kind `\ast\AST_ARG_LIST`
      */
     public function visitArgList(Node $node);
 
@@ -52,7 +52,7 @@ interface KindVisitor
     public function visitBinaryOp(Node $node);
 
     /**
-     * Visit a node with kind `\ast\AST_BINARY_OP`
+     * Visit a node with kind `\ast\AST_BREAK`
      */
     public function visitBreak(Node $node);
 

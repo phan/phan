@@ -1,17 +1,33 @@
 <?php declare(strict_types=1);
 
+namespace HasPHPDocPlugin;
+
+use AssertionError;
+use ast;
+use ast\Node;
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Language\Element\ClassElement;
 use Phan\Language\Element\Clazz;
+use Phan\Language\Element\Comment;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\MarkupDescription;
-use Phan\Language\Element\Method;
-use Phan\Language\Element\Property;
 use Phan\PluginV3;
 use Phan\PluginV3\AnalyzeClassCapability;
 use Phan\PluginV3\AnalyzeFunctionCapability;
-use Phan\PluginV3\AnalyzeMethodCapability;
-use Phan\PluginV3\AnalyzePropertyCapability;
+use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV3\PostAnalyzeNodeCapability;
+use function array_shift;
+use function count;
+use function gettype;
+use function json_encode;
+use function is_string;
+use function ltrim;
+use function preg_match;
+use function strpos;
+use function ucfirst;
+use const JSON_UNESCAPED_SLASHES;
+use const JSON_UNESCAPED_UNICODE;
 
 /**
  * This file checks if an element (class or property) has a PHPDoc comment,
@@ -26,8 +42,14 @@ use Phan\PluginV3\AnalyzePropertyCapability;
  *   on every method in the code base
  *
  * - analyzeProperty
- *   Once all functions have been parsed, this method will
+ *   Once all properties have been parsed, this method will
  *   be called on every property in the code base.
+ * - analyzeMethod
+ *   Once all methods have been parsed, this method will
+ *   be called on every method in the code base.
+ * - analyzeFunction
+ *   Once all functions have been parsed, this method will
+ *   be called on every function/closure in the code base.
  *
  * A plugin file must
  *
@@ -40,13 +62,22 @@ use Phan\PluginV3\AnalyzePropertyCapability;
  *
  * Note: When adding new plugins,
  * add them to the corresponding section of README.md
+ * @internal
  */
 final class HasPHPDocPlugin extends PluginV3 implements
     AnalyzeClassCapability,
     AnalyzeFunctionCapability,
-    AnalyzeMethodCapability,
-    AnalyzePropertyCapability
+    PostAnalyzeNodeCapability
 {
+    /** @var ?string a regex to use to exclude methods from phpdoc checks. */
+    public static $method_filter;
+
+    public function __construct()
+    {
+        $plugin_config = Config::getValue('plugin_config');
+        self::$method_filter = $plugin_config['has_phpdoc_method_ignore_regex'] ?? null;
+    }
+
     /**
      * @param CodeBase $code_base
      * The code base in which the class exists
@@ -85,121 +116,6 @@ final class HasPHPDocPlugin extends PluginV3 implements
                 'PhanPluginDescriptionlessCommentOnClass',
                 'Class {CLASS} has no readable description: {STRING_LITERAL}',
                 [$class->getFQSEN(), self::getDocCommentRepresentation($doc_comment)]
-            );
-            return;
-        }
-    }
-
-    /**
-     * @param CodeBase $code_base
-     * The code base in which the property exists
-     *
-     * @param Property $property
-     * A property being analyzed
-     * @override
-     */
-    public function analyzeProperty(
-        CodeBase $code_base,
-        Property $property
-    ) : void {
-        if ($property->isDynamicProperty()) {
-            // And dynamic properties don't have phpdoc.
-            return;
-        }
-        if ($property->isFromPHPDoc()) {
-            // Phan does not track descriptions of (at)property.
-            return;
-        }
-        if ($property->getFQSEN() !== $property->getRealDefiningFQSEN()) {
-            // Only warn once for the original definition of this property.
-            // Don't warn about subclasses inheriting this property.
-            return;
-        }
-        $doc_comment = $property->getDocComment();
-        if (!$doc_comment) {
-            $visibility_upper = ucfirst($property->getVisibilityName());
-            self::emitIssue(
-                $code_base,
-                $property->getContext(),
-                "PhanPluginNoCommentOn${visibility_upper}Property",
-                "$visibility_upper property {PROPERTY} has no doc comment",
-                [$property->getRepresentationForIssue()]
-            );
-            return;
-        }
-        $description = MarkupDescription::extractDescriptionFromDocComment($property);
-        if (!$description) {
-            $visibility_upper = ucfirst($property->getVisibilityName());
-            self::emitIssue(
-                $code_base,
-                $property->getContext(),
-                "PhanPluginDescriptionlessCommentOn${visibility_upper}Property",
-                "$visibility_upper property {PROPERTY} has no readable description: {STRING_LITERAL}",
-                [$property->getRepresentationForIssue(), self::getDocCommentRepresentation($doc_comment)]
-            );
-            return;
-        }
-    }
-
-    /**
-     * @param CodeBase $code_base
-     * The code base in which the method exists
-     *
-     * @param Method $method
-     * A method being analyzed
-     * @override
-     */
-    public function analyzeMethod(
-        CodeBase $code_base,
-        Method $method
-    ) : void {
-        if ($method->isFromPHPDoc()) {
-            // Phan does not track descriptions of (at)method.
-            return;
-        }
-        if ($method->isMagic()) {
-            // Don't require a description for `__construct()`, `__sleep()`, etc.
-            return;
-        }
-        if ($method->getFQSEN() !== $method->getRealDefiningFQSEN()) {
-            // Only warn once for the original definition of this method.
-            // Don't warn about subclasses inheriting this method.
-            return;
-        }
-        if ($method->isOverride()) {
-            // Note: This deliberately avoids requiring a summary for methods that are just overrides of other methods
-            // This reduces the number of false positives
-            return;
-        }
-        $method_filter = Config::getValue('plugin_config')['has_phpdoc_method_ignore_regex'] ?? null;
-        if (is_string($method_filter)) {
-            $fqsen_string = ltrim((string)$method->getFQSEN(), '\\');
-            if (preg_match($method_filter, $fqsen_string) > 0) {
-                return;
-            }
-        }
-
-        $doc_comment = $method->getDocComment();
-        if (!$doc_comment) {
-            $visibility_upper = ucfirst($method->getVisibilityName());
-            self::emitIssue(
-                $code_base,
-                $method->getContext(),
-                "PhanPluginNoCommentOn${visibility_upper}Method",
-                "$visibility_upper method {METHOD} has no doc comment",
-                [$method->getFQSEN()]
-            );
-            return;
-        }
-        $description = MarkupDescription::extractDescriptionFromDocComment($method);
-        if (!$description) {
-            $visibility_upper = ucfirst($method->getVisibilityName());
-            self::emitIssue(
-                $code_base,
-                $method->getContext(),
-                "PhanPluginDescriptionlessCommentOn${visibility_upper}Method",
-                "$visibility_upper method {METHOD} has no readable description: {STRING_LITERAL}",
-                [$method->getFQSEN(), self::getDocCommentRepresentation($doc_comment)]
             );
             return;
         }
@@ -253,12 +169,224 @@ final class HasPHPDocPlugin extends PluginV3 implements
         }
     }
 
-    private static function getDocCommentRepresentation(string $doc_comment) : string
+    /**
+     * Encode the doc comment in a one-line form that can be used in Phan's issue message.
+     * @internal
+     */
+    public static function getDocCommentRepresentation(string $doc_comment) : string
     {
         return (string)json_encode(MarkupDescription::getDocCommentWithoutWhitespace($doc_comment), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
+
+    public static function getPostAnalyzeNodeVisitorClassName() : string
+    {
+        return (bool)(Config::getValue('plugin_config')['has_phpdoc_check_duplicates'] ?? false)
+            ? DuplicatePHPDocCheckerPlugin::class
+            : BasePHPDocCheckerPlugin::class;
+    }
 }
 
+/** Infer property and class doc comments and warn */
+class BasePHPDocCheckerPlugin extends PluginAwarePostAnalysisVisitor
+{
+    /** @return array{0:array<int,ClassElementEntry>,1:array<int,ClassElementEntry>} */
+    public function visitClass(Node $node) : array
+    {
+        $class = $this->context->getClassInScope($this->code_base);
+        $property_descriptions = [];
+        $method_descriptions = [];
+        foreach ($node->children['stmts']->children as $element) {
+            if (!($element instanceof Node)) {
+                throw new AssertionError("All properties of ast\AST_CLASS's statement list must be nodes, saw " . gettype($element));
+            }
+            switch ($element->kind) {
+                case ast\AST_METHOD:
+                    $entry = $this->checkMethodDescription($class, $element);
+                    if ($entry) {
+                        $method_descriptions[] = $entry;
+                    }
+                    break;
+                case ast\AST_PROP_GROUP:
+                    $entry = $this->checkPropGroupDescription($class, $element);
+                    if ($entry) {
+                        $property_descriptions[] = $entry;
+                    }
+                    break;
+            }
+        }
+        return [$property_descriptions, $method_descriptions];
+    }
+
+    /**
+     * @param Node $node a node of kind ast\AST_METHOD
+     */
+    private function checkMethodDescription(Clazz $class, Node $node) : ?ClassElementEntry
+    {
+        $method_name = (string)$node->children['name'];
+        $method = $class->getMethodByName($this->code_base, $method_name);
+        if ($method->isMagic()) {
+            // Ignore construct
+            return null;
+        }
+        if ($method->isOverride()) {
+            return null;
+        }
+        $method_filter = HasPHPDocPlugin::$method_filter;
+        if (is_string($method_filter)) {
+            $fqsen_string = ltrim((string)$method->getFQSEN(), '\\');
+            if (preg_match($method_filter, $fqsen_string) > 0) {
+                return null;
+            }
+        }
+
+        $doc_comment = $method->getDocComment();
+        if (!$doc_comment) {
+            $visibility_upper = ucfirst($method->getVisibilityName());
+            self::emitPluginIssue(
+                $this->code_base,
+                $method->getContext(),
+                "PhanPluginNoCommentOn${visibility_upper}Method",
+                "$visibility_upper method {METHOD} has no doc comment",
+                [$method->getFQSEN()]
+            );
+            return null;
+        }
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        $description = MarkupDescription::extractDocComment($doc_comment, Comment::ON_METHOD, null, true);
+        if (!$description) {
+            $visibility_upper = ucfirst($method->getVisibilityName());
+            self::emitPluginIssue(
+                $this->code_base,
+                $method->getContext(),
+                "PhanPluginDescriptionlessCommentOn${visibility_upper}Method",
+                "$visibility_upper method {METHOD} has no readable description: {STRING_LITERAL}",
+                [$method->getFQSEN(), HasPHPDocPlugin::getDocCommentRepresentation($doc_comment)]
+            );
+            return null;
+        }
+        return new ClassElementEntry($method, trim(preg_replace('/\s+/', ' ', $description)));
+    }
+
+    /**
+     * @param Node $node a node of type ast\AST_PROP_GROUP
+     */
+    private function checkPropGroupDescription(Clazz $class, Node $node) : ?ClassElementEntry
+    {
+        $property_name = $node->children['props']->children[0]->children['name'] ?? null;
+        if (!is_string($property_name)) {
+            return null;
+        }
+        $property = $class->getPropertyByName($this->code_base, $property_name);
+        $doc_comment = $property->getDocComment();
+        if (!$doc_comment) {
+            $visibility_upper = ucfirst($property->getVisibilityName());
+            self::emitPluginIssue(
+                $this->code_base,
+                $property->getContext(),
+                "PhanPluginNoCommentOn${visibility_upper}Property",
+                "$visibility_upper property {PROPERTY} has no doc comment",
+                [$property->getRepresentationForIssue()]
+            );
+            return null;
+        }
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        $description = MarkupDescription::extractDocComment($doc_comment, Comment::ON_PROPERTY, null, true);
+        if (!$description) {
+            $visibility_upper = ucfirst($property->getVisibilityName());
+            self::emitPluginIssue(
+                $this->code_base,
+                $property->getContext(),
+                "PhanPluginDescriptionlessCommentOn${visibility_upper}Property",
+                "$visibility_upper property {PROPERTY} has no readable description: {STRING_LITERAL}",
+                [$property->getRepresentationForIssue(), HasPHPDocPlugin::getDocCommentRepresentation($doc_comment)]
+            );
+            return null;
+        }
+        return new ClassElementEntry($property, trim(preg_replace('/\s+/', ' ', $description)));
+    }
+}
+
+/**
+ * Describes a property group or a method node and the associated description
+ * @phan-immutable
+ * @internal
+ */
+final class ClassElementEntry
+{
+    /** @var ClassElement the element (or element group) */
+    public $element;
+    /** @var string the phpdoc description */
+    public $description;
+
+    public function __construct(ClassElement $element, string $description)
+    {
+        $this->element = $element;
+        $this->description = $description;
+    }
+}
+
+/**
+ * Check if phpdoc of property groups and methods are duplicated
+ * @internal
+ */
+final class DuplicatePHPDocCheckerPlugin extends BasePHPDocCheckerPlugin
+{
+    /** No-op */
+    public function visitClass(Node $node) : array
+    {
+        [$property_descriptions, $method_descriptions] = parent::visitClass($node);
+        foreach (self::findGroups($property_descriptions) as $entries) {
+            $first_entry = array_shift($entries);
+            $first_property = $first_entry->element;
+            foreach ($entries as $entry) {
+                $property = $entry->element;
+                self::emitPluginIssue(
+                    $this->code_base,
+                    $property->getContext(),
+                    "PhanPluginDuplicatePropertyDescription",
+                    "Property {PROPERTY} has the same description as the property \${PROPERTY} on line {LINE}: {COMMENT}",
+                    [$property->getRepresentationForIssue(), $first_property->getName(), $first_property->getContext()->getLineNumberStart(), $first_entry->description]
+                );
+            }
+        }
+        foreach (self::findGroups($method_descriptions) as $entries) {
+            $first_entry = array_shift($entries);
+            $first_method = $first_entry->element;
+            foreach ($entries as $entry) {
+                $method = $entry->element;
+                self::emitPluginIssue(
+                    $this->code_base,
+                    $method->getContext(),
+                    "PhanPluginDuplicateMethodDescription",
+                    "Method {METHOD} has the same description as the method {METHOD} on line {LINE}: {COMMENT}",
+                    [$method->getRepresentationForIssue(), $first_method->getName() . '()', $first_method->getContext()->getLineNumberStart(), $first_entry->description]
+                );
+            }
+        }
+        return [$property_descriptions, $method_descriptions];
+    }
+
+    /**
+     * @param array<int, ClassElementEntry> $values
+     * @return array<string, array<int,ClassElementEntry>>
+     */
+    private static function findGroups(array $values) : array
+    {
+        $result = [];
+        foreach ($values as $v) {
+            if ($v->element->isDeprecated()) {
+                continue;
+            }
+            $result[$v->description][] = $v;
+        }
+        foreach ($result as $description => $keys) {
+            if (count($keys) <= 1) {
+                unset($result[$description]);
+            }
+        }
+        return $result;
+    }
+}
 // Every plugin needs to return an instance of itself at the
 // end of the file in which it's defined.
 return new HasPHPDocPlugin();

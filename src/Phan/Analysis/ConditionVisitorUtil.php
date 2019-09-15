@@ -581,7 +581,7 @@ trait ConditionVisitorUtil
     /**
      * @param Node $var_node
      * @param Node|int|float|string $expr
-     * @return Context - Constant after inferring type from an expression such as `if ($x === 'literal')`
+     * @return Context - Context after inferring type from an expression such as `if ($x === 'literal')`
      * @suppress PhanUnreferencedPublicMethod referenced in ConditionVisitorInterface
      */
     final public function updateVariableToBeIdentical(
@@ -604,7 +604,7 @@ trait ConditionVisitorUtil
     /**
      * @param Node $var_node
      * @param Node|int|float|string $expr
-     * @return Context - Constant after inferring type from an expression such as `if ($x === 'literal')`
+     * @return Context - Context after inferring type from an expression such as `if ($x == true)`
      * @suppress PhanUnreferencedPublicMethod referenced in ConditionVisitorInterface
      */
     final public function updateVariableToBeEqual(
@@ -628,7 +628,7 @@ trait ConditionVisitorUtil
      * @param Node $var_node
      * @param Node|int|float|string $expr
      * @param int $flags (e.g. \ast\flags\BINARY_IS_SMALLER)
-     * @return Context - Constant after inferring type from an expression such as `if ($x === 'literal')`
+     * @return Context - Context after inferring type from a comparison expression involving a variable such as `if ($x > 0)`
      * @suppress PhanUnreferencedPublicMethod referenced in ConditionVisitorInterface
      */
     final public function updateVariableToBeCompared(
@@ -688,7 +688,7 @@ trait ConditionVisitorUtil
     /**
      * @param Node $var_node a node of type ast\AST_VAR, ast\AST_DIM (planned), or ast\AST_PROP
      * @param Node|int|float|string $expr
-     * @return Context - Constant after inferring type from an expression such as `if ($x !== 'literal')`
+     * @return Context - Context after inferring type from an expression such as `if ($x !== 'literal')`
      * @suppress PhanUnreferencedPublicMethod referenced in ConditionVisitorInterface
      */
     final public function updateVariableToBeNotIdentical(
@@ -725,7 +725,7 @@ trait ConditionVisitorUtil
     /**
      * @param Node $var_node
      * @param Node|int|float|string $expr
-     * @return Context - Constant after inferring type from an expression such as `if ($x != 'literal')`
+     * @return Context - Context after inferring type from an expression such as `if ($x != 'literal')`
      * @suppress PhanUnreferencedPublicMethod referenced in ConditionVisitorInterface
      */
     final public function updateVariableToBeNotEqual(
@@ -776,7 +776,7 @@ trait ConditionVisitorUtil
     /**
      * @param Node|int|float|string $left
      * @param Node|int|float|string $right
-     * @return Context - Constant after inferring type from an expression such as `if ($x !== false)`
+     * @return Context - Context after inferring type from the negation of a condition such as `if ($x !== false)`
      */
     protected function analyzeAndUpdateToBeIdentical($left, $right) : Context
     {
@@ -790,7 +790,7 @@ trait ConditionVisitorUtil
     /**
      * @param Node|int|float|string $left
      * @param Node|int|float|string $right
-     * @return Context - Constant after inferring type from an expression such as `if ($x !== false)`
+     * @return Context - Context after inferring type from the negation of a condition such as `if ($x != false)`
      */
     protected function analyzeAndUpdateToBeEqual($left, $right) : Context
     {
@@ -804,7 +804,7 @@ trait ConditionVisitorUtil
     /**
      * @param Node|int|float|string $left
      * @param Node|int|float|string $right
-     * @return Context - Constant after inferring type from an expression such as `if ($x !== false)`
+     * @return Context - Context after inferring type from an expression such as `if ($x !== false)`
      */
     protected function analyzeAndUpdateToBeNotIdentical($left, $right) : Context
     {
@@ -960,7 +960,7 @@ trait ConditionVisitorUtil
     /**
      * @param Node|int|float|string $left
      * @param Node|int|float|string $right
-     * @return Context - Constant after inferring type from an expression such as `if ($x == 'literal')`
+     * @return Context - Context after inferring type from an expression such as `if ($x == 'literal')`
      */
     protected function analyzeAndUpdateToBeNotEqual($left, $right) : Context
     {
@@ -974,7 +974,7 @@ trait ConditionVisitorUtil
     /**
      * @param Node|int|float|string $left
      * @param Node|int|float|string $right
-     * @return Context - Constant after inferring type from an expression such as `if ($x > 0)`
+     * @return Context - Context after inferring type from a comparison expression such as `if ($x['field'] > 0)`
      */
     protected function analyzeAndUpdateToBeCompared($left, $right, int $flags) : Context
     {
@@ -1226,7 +1226,8 @@ trait ConditionVisitorUtil
     }
 
     /**
-     * Return a context with overrides for the type of a property in the local scope.
+     * Return a context with overrides for the type of a property in the local scope,
+     * caused by a function accepting $args.
      *
      * @param Node $node a node of kind ast\AST_PROP (e.g. the argument of is_array($this->prop_name))
      * @param Closure(CodeBase,Context,Variable,array<int,mixed>):void $type_modification_callback
@@ -1255,7 +1256,7 @@ trait ConditionVisitorUtil
     }
 
     /**
-     * Return a context with overrides for the type of a property in the local scope.
+     * Return a context with overrides for the type of a property of $this in the local scope.
      *
      * @param Node $node a node of kind ast\AST_PROP (e.g. the argument of is_array($this->prop_name))
      * @param Closure(UnionType):UnionType $type_mapping_callback

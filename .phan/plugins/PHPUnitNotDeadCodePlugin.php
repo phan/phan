@@ -40,10 +40,10 @@ class PHPUnitNotDeadCodePlugin extends PluginV3 implements PostAnalyzeNodeCapabi
  */
 class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
 {
-    /** @var FullyQualifiedClassName for the base class of all PHPUnit tests */
+    /** @var FullyQualifiedClassName the class FQSEN for the base class of all PHPUnit tests */
     private static $phpunit_test_case_fqsen;
 
-    /** @var Type for the base class of all PHPUnit tests */
+    /** @var Type the type of the base class of all PHPUnit tests */
     private static $phpunit_test_case_type;
 
     /** @var bool did this plugin already warn that TestCase was missing? */

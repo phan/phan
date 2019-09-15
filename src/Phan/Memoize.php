@@ -65,6 +65,7 @@ trait Memoize
     /**
      * Memoize the result of $fn(), saving the result
      * with key $key.
+     * (cached statically)
      *
      * @template T
      *

@@ -15,7 +15,7 @@ class ASTHasher
 {
     /**
      * @param string|int|float|null $node
-     * @return string a 16-byte binary key
+     * @return string a 16-byte binary key for the array key
      */
     public static function hashKey($node) : string
     {
@@ -31,7 +31,7 @@ class ASTHasher
 
     /**
      * @param Node|string|int|float|null $node
-     * @return string a 16-byte binary key
+     * @return string a 16-byte binary key for the Node
      */
     public static function hash($node) : string
     {
@@ -51,7 +51,7 @@ class ASTHasher
 
     /**
      * @param Node $node
-     * @return string a 16-byte binary key
+     * @return string a newly computed 16-byte binary key
      */
     private static function computeHash(Node $node) : string
     {

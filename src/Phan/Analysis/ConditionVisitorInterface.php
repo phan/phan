@@ -30,7 +30,7 @@ interface ConditionVisitorInterface
     /**
      * @param Node $var_node
      * @param Node|int|float|string $expr
-     * @return Context - Constant after inferring type from an expression such as `if ($x === 'literal')`
+     * @return Context - Context after inferring type from an expression such as `if ($x == true)`
      */
     public function updateVariableToBeEqual(
         Node $var_node,
@@ -41,7 +41,7 @@ interface ConditionVisitorInterface
     /**
      * @param Node $var_node
      * @param Node|int|float|string $expr
-     * @return Context - Constant after inferring type from an expression such as `if ($x === 'literal')`
+     * @return Context - Context after inferring type from an expression such as `if ($x === 'literal')`
      */
     public function updateVariableToBeIdentical(
         Node $var_node,
@@ -52,7 +52,7 @@ interface ConditionVisitorInterface
     /**
      * @param Node $var_node
      * @param Node|int|float|string $expr
-     * @return Context - Constant after inferring type from an expression such as `if ($x == 'literal')`
+     * @return Context - Context after inferring type from an expression such as `if ($x == 'literal')`
      */
     public function updateVariableToBeNotIdentical(
         Node $var_node,
@@ -64,7 +64,7 @@ interface ConditionVisitorInterface
      * @param Node $var_node
      * @param Node|int|float|string $expr
      * @param int $flags (e.g. \ast\flags\BINARY_IS_SMALLER)
-     * @return Context - Constant after inferring type from an expression such as `if ($x === 'literal')`
+     * @return Context - Context after inferring type from an expression such as `if ($x > 0)`
      */
     public function updateVariableToBeCompared(
         Node $var_node,
@@ -75,7 +75,7 @@ interface ConditionVisitorInterface
     /**
      * @param Node $var_node
      * @param Node|int|float|string $expr
-     * @return Context - Constant after inferring type from an expression such as `if ($x != 'literal')`
+     * @return Context - Context after inferring type from an expression such as `if ($x != 'literal')`
      */
     public function updateVariableToBeNotEqual(
         Node $var_node,

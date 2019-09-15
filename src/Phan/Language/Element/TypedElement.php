@@ -148,7 +148,7 @@ abstract class TypedElement implements TypedElementInterface
      * The flag we'd like to get the state for
      *
      * @return bool
-     * True if all bits in the flag are enabled in the bit
+     * True if all bits in the ast\Node flags are enabled in the bit
      * vector, else false.
      */
     public function getFlagsHasState(int $flag) : bool
@@ -172,7 +172,7 @@ abstract class TypedElement implements TypedElementInterface
      * The flag we'd like to get the state for
      *
      * @return bool
-     * True if all bits in the flag are enabled in the bit
+     * True if all bits in the Phan flags are enabled in the bit
      * vector, else false.
      */
     public function getPhanFlagsHasState(int $flag) : bool

@@ -129,7 +129,7 @@ class ContextNode
     }
 
     /**
-     * Gets the FQSEN for a trait.
+     * Gets the list of possible FQSENs for a trait.
      * NOTE: does not validate that it is really used on a trait
      * @return array<int,FullyQualifiedClassName>
      * @throws FQSENException
@@ -1041,7 +1041,7 @@ class ContextNode
 
     /**
      * @return Variable
-     * A variable in scope or a new variable
+     * A variable in scope.
      *
      * @throws NodeException
      * An exception is thrown if we can't understand the node
@@ -1199,18 +1199,20 @@ class ContextNode
      * @param ?Parameter $real_parameter the real parameter type from the type signature
      *
      * @return Variable
-     * A variable in scope or a new variable
+     * A variable in scope for the argument to that reference parameter, or a new variable
      *
      * @throws NodeException
      * An exception is thrown if we can't understand the node
      */
     public function getOrCreateVariableForReferenceParameter(Parameter $parameter, ?Parameter $real_parameter) : Variable
     {
+        // Return the original variable if it existed
         try {
             return $this->getVariable();
         } catch (IssueException $_) {
             // Swallow it
         }
+        // Create a new variable, and set its union type to null if that wouldn't create false positives.
 
         $node = $this->node;
         if (!($node instanceof Node)) {
@@ -1224,12 +1226,13 @@ class ContextNode
             $this->code_base,
             false
         );
-        static $null_type = null;
-        if ($null_type === null) {
-            $null_type = NullType::instance(false)->asPHPDocUnionType();
-        }
         if ($parameter->getReferenceType() === Parameter::REFERENCE_READ_WRITE ||
             ($real_parameter && !$real_parameter->getNonVariadicUnionType()->containsNullableOrIsEmpty())) {
+
+            static $null_type = null;
+            if ($null_type === null) {
+                $null_type = NullType::instance(false)->asPHPDocUnionType();
+            }
             // If this is a variable that is both read and written,
             // then set the previously undefined variable type to null instead so we can type check it
             // (e.g. arguments to array_shift())
@@ -1253,7 +1256,7 @@ class ContextNode
      * false if we're looking for an instance property.
      *
      * @return Property
-     * A variable in scope or a new variable
+     * Phan's representation of a property declaration.
      *
      * @throws NodeException
      * An exception is thrown if we can't understand the node
@@ -1494,7 +1497,7 @@ class ContextNode
 
     /**
      * @return Property
-     * A variable in scope or a new variable
+     * A declared property or a newly created dynamic property.
      *
      * @throws NodeException
      * An exception is thrown if we can't understand the node
@@ -1713,7 +1716,7 @@ class ContextNode
 
     /**
      * @return ClassConstant
-     * Get the (non-class) constant associated with this node
+     * Get the class constant associated with this node
      * in this context
      *
      * @throws NodeException
@@ -2311,7 +2314,8 @@ class ContextNode
 
     /**
      * @return Node|string[]|int[]|float[]|string|float|int|bool|null -
-     *         If this could be resolved and we're certain of the value, this gets a raw PHP value for $node.
+     *         If this could be resolved and we're certain of the value,
+     *         this gets a raw PHP value for the binary operation represented by $node.
      *         Otherwise, this returns $node.
      */
     private function getValueForBinaryOp(Node $node, int $flags)
@@ -2344,7 +2348,8 @@ class ContextNode
 
     /**
      * @return Node|string[]|int[]|float[]|string|float|int|bool|null -
-     *         If this could be resolved and we're certain of the value, this gets a raw PHP value for $node.
+     *         If this could be resolved and we're certain of the value,
+     *         then this gets a raw PHP value for the unary operation represented by $node.
      *         Otherwise, this returns $node.
      */
     private function getValueForUnaryOp(Node $node, int $flags)
@@ -2382,7 +2387,8 @@ class ContextNode
     /**
      * @param Node $node a node of kind AST_ISSET
      * @return Node|bool
-     *         If this could be resolved and we're certain of the value, this gets a raw PHP boolean for $node.
+     *         If this could be resolved and we're certain of the result returned by isset,
+     *         this gets a raw PHP boolean for $node.
      *         Otherwise, this returns $node.
      */
     private function getValueForIssetCheck(Node $node, int $flags)
@@ -2418,7 +2424,8 @@ class ContextNode
     /**
      * @param Node $node a node of kind AST_CALL
      * @return Node|bool
-     *         If this could be resolved and we're certain of the value, this gets a raw PHP boolean for $node.
+     *         If this could be resolved and we're certain of the return value of the call,
+     *         this gets a raw result for $node (currently limited to booleans, e.g. is_string($var).
      *         Otherwise, this returns $node.
      */
     private function getValueForCall(Node $node, int $flags)
@@ -2461,7 +2468,7 @@ class ContextNode
     }
 
     /**
-     * @return array|string|int|float|bool|null|Node the value of the corresponding PHP constant,
+     * @return array|string|int|float|bool|null|Node the value of the corresponding PHP magic constant (e.g. __FILE__),
      * or the original node if that could not be determined
      */
     public function getValueForMagicConstByNode(Node $node)
@@ -2552,7 +2559,7 @@ class ContextNode
     }
 
     /**
-     * This converts an AST node in context to the value it represents.
+     * This converts an AST node (of any kind) in context to the value it represents.
      * This is useful for plugins, etc, and will gradually improve.
      *
      * This does not create new object instances.

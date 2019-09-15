@@ -1735,7 +1735,7 @@ EOT;
     /**
      * @param resource $proc_in
      * @param resource $proc_out
-     * @return array<string,mixed> the response
+     * @return array<string,mixed> the response of the server to the "go to definition" request.
      * @throws InvalidArgumentException
      */
     private function writeDefinitionRequestAndAwaitResponse($proc_in, $proc_out, Position $position, string $requested_uri = null) : array
@@ -1762,7 +1762,7 @@ EOT;
     /**
      * @param resource $proc_in
      * @param resource $proc_out
-     * @return array<string,mixed> the response
+     * @return array<string,mixed> the response of the server to the completion request.
      * @throws InvalidArgumentException
      */
     private function writeCompletionRequestAndAwaitResponse($proc_in, $proc_out, Position $position, string $requested_uri = null) : array
@@ -1793,7 +1793,7 @@ EOT;
     /**
      * @param resource $proc_in
      * @param resource $proc_out
-     * @return array<string,mixed> the response
+     * @return array<string,mixed> the response of the server to the type definition request
      * @throws InvalidArgumentException
      */
     private function writeTypeDefinitionRequestAndAwaitResponse($proc_in, $proc_out, Position $position, string $requested_uri = null) : array
@@ -1820,7 +1820,7 @@ EOT;
     /**
      * @param resource $proc_in
      * @param resource $proc_out
-     * @return array<string,mixed> the response
+     * @return array<string,mixed> the response of the server to the hover request
      * @throws InvalidArgumentException
      */
     private function writeHoverRequestAndAwaitResponse($proc_in, $proc_out, Position $position, string $requested_uri = null) : array
@@ -1884,7 +1884,7 @@ EOT;
     {
         $params = [
             'phan' => [
-                'phpExecutablePath' => PHP_BINARY,
+                'phpExecutablePath' => \PHP_BINARY,
                 'quick' => false,
                 // the function is a no-op, so the params aren't important.
             ],

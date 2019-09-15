@@ -34,7 +34,7 @@ class FileRef implements \Serializable
      * The path to the file in which this element is defined
      *
      * @return static
-     * This context with the given value is returned
+     * This context with the given file is returned
      */
     public function withFile(string $file)
     {
@@ -54,7 +54,7 @@ class FileRef implements \Serializable
 
     /**
      * @return string
-     * The path of the file relative to the project
+     * The path of this FileRef's file relative to the project
      * root directory
      */
     public function getProjectRelativePath() : string
@@ -65,8 +65,8 @@ class FileRef implements \Serializable
     /**
      * @param string $cwd_relative_path (relative or absolute path)
      * @return string
-     * The path of the file relative to the project
-     * root directory
+     * The path of the file relative to the project root directory for the provided path
+     *
      * @see Config::getProjectRootDirectory() for converting paths to absolute paths
      */
     public static function getProjectRelativePathForPath(string $cwd_relative_path) : string
@@ -145,7 +145,7 @@ class FileRef implements \Serializable
      * The ending line number of the element within the $file
      *
      * @return static
-     * This context with the given value is returned
+     * This context with the given end line number is returned
      */
     public function withLineNumberEnd(int $line_number)
     {

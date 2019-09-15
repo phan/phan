@@ -53,11 +53,17 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
 
     /**
      * @var ?Token
-     * TODO: If this is null, then just use TolerantASTConverter's node generation logic to be a bit faster
+     * This is the closest node or token from tolerant-php-parser
+     * (among the nodes being parsed **that will have a corresponding ast\Node be created**)
+     *
+     * (duplicated to be accessed by static methods, for performance)
      */
     private static $closest_node_or_token_symbol;
 
-    /** @var int the byte offset we are looking for, to mark the corresponding Node as within the selected location */
+    /**
+     * @var int the byte offset we are looking for, to mark the corresponding Node as within the selected location.
+     * (duplicated to be accessed by static methods, for performance)
+     */
     private static $desired_byte_offset;
 
     /** @var int the byte offset we are looking for, to mark the corresponding Node as within the selected location */
@@ -66,6 +72,8 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
     /**
      * @var ?Closure(ast\Node):void This is optional. If it is set, this is invoked on the Node we marked.
      * Currently, this is used to add plugin methods at runtime (limited to what is needed to handle that node's kind)
+     *
+     * (duplicated to be accessed by static methods, for performance)
      */
     private static $handle_selected_node;
 

@@ -166,6 +166,7 @@ abstract class Scope
     /**
      * @return FullyQualifiedClassName
      * Crawl the scope hierarchy to get a class FQSEN.
+     * Precondition: isInClassScope is true
      */
     public function getClassFQSEN() : FullyQualifiedClassName
     {
@@ -175,6 +176,7 @@ abstract class Scope
     /**
      * @return ?FullyQualifiedClassName
      * Crawl the scope hierarchy to get a class FQSEN.
+     * Returns null on failure.
      */
     public function getClassFQSENOrNull() : ?FullyQualifiedClassName
     {
@@ -192,7 +194,7 @@ abstract class Scope
 
     /**
      * @return FullyQualifiedPropertyName
-     * Crawl the scope hierarchy to get a class FQSEN.
+     * Crawl the scope hierarchy to get a property FQSEN.
      */
     public function getPropertyFQSEN() : FullyQualifiedPropertyName
     {

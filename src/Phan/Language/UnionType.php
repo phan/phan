@@ -1148,7 +1148,7 @@ class UnionType implements Serializable
     }
 
     /**
-     * @return UnionType without the subclasses/sub-types of $object_type
+     * @return UnionType this union type without the subclasses/sub-types of $object_type
      */
     public function withoutSubclassesOf(CodeBase $code_base, Type $object_type) : UnionType
     {
@@ -1160,7 +1160,7 @@ class UnionType implements Serializable
 
     /**
      * @param array<int,Type> $type_set
-     * @return array<int,Type> without the subclasses/sub-types of $object_type
+     * @return array<int,Type> the subset of types in $type_set excluding the subclasses/sub-types of $object_type
      */
     public static function typesWithoutSubclassesOf(CodeBase $code_base, array $type_set, Type $object_type) : array
     {
@@ -1251,7 +1251,7 @@ class UnionType implements Serializable
 
     /**
      * @param Type[] $type_list
-     * @return array<int,Type> a list that may contain duplicates.
+     * @return array<int,Type> a list of non-nullable types that may contain duplicates.
      */
     private static function toNonNullableTypeList(array $type_list) : array
     {
@@ -1285,7 +1285,7 @@ class UnionType implements Serializable
 
     /**
      * @param Type[] $type_list
-     * @return array<int,Type> a list that may contain duplicates.
+     * @return array<int,Type> a list of nullable types that may contain duplicates.
      */
     private static function toNullableTypeList(array $type_list) : array
     {
@@ -1362,9 +1362,7 @@ class UnionType implements Serializable
     }
 
     /**
-     * @return bool - True if type set is not empty and at least one type is NullType or nullable or FalseType or BoolType.
-     * (I.e. the type is always falsey, or both sometimes falsey with a non-falsey type it can be narrowed down to)
-     * This does not include values such as `IntType`, since there is currently no `NonZeroIntType`.
+     * @return bool - True if type set is not empty and at least one type is possibly truthy.
      */
     public function containsTruthy() : bool
     {
@@ -1451,7 +1449,7 @@ class UnionType implements Serializable
     }
 
     /**
-     * Returns true if this contains at least one non-null StringType or LiteralStringType
+     * Returns true if this contains at least one StringType or LiteralStringType
      */
     public function hasStringType() : bool
     {
@@ -2047,6 +2045,7 @@ class UnionType implements Serializable
      *
      * @return bool
      * True if this type is allowed to cast to the given type
+     * (intended to ignore any permissive config settings, such as null_casts_as_any_type)
      * i.e. int->float is allowed  while float->int is not.
      */
     public function canCastToUnionTypeWithoutConfig(
@@ -2261,8 +2260,8 @@ class UnionType implements Serializable
      * Every single type in this type must be able to cast to a type in $target (Empty types can cast to empty)
      *
      * @return bool
-     * True if this type is allowed to cast to the given type
-     * i.e. int->float is allowed  while float->int is not.
+     * True if every type in this union type is allowed to cast to the given union type.
+     * i.e. int->float is allowed while int|object->float is not.
      *
      * @suppress PhanUnreferencedPublicMethod may be used elsewhere in the future
      */
@@ -2333,7 +2332,7 @@ class UnionType implements Serializable
      * Every single type in this type must be a strict subtype of a type in $target (Empty types can cast to empty)
      *
      * @return bool
-     * True if this type is allowed to cast to the given type
+     * True if every single type in this type is a strict subtype of a type in $target (Empty types can cast to empty)
      * i.e. int->float is allowed  while float->int is not.
      *
      * @suppress PhanUnreferencedPublicMethod may be used elsewhere in the future
@@ -2352,7 +2351,7 @@ class UnionType implements Serializable
             return true;
         }
 
-        // every single type in T overlaps with T, a future call to Type->canCastToType will pass.
+        // every single type in this overlaps with the target, so the strict cast will succeed.
         $matches = true;
         foreach ($type_set as $type) {
             if (!\in_array($type, $target_type_set, true)) {
@@ -3034,7 +3033,7 @@ class UnionType implements Serializable
 
     /**
      * @param Type[] $type_list
-     * @return array<int,Type> possibly containing duplicates
+     * @return array<int,Type> a list of countable subclasses and array types, possibly containing duplicates
      * @internal
      */
     public static function castTypeListToCountable(CodeBase $code_base, array $type_list, bool $assume_subclass_implements_countable) : array
@@ -3291,11 +3290,11 @@ class UnionType implements Serializable
     }
 
     /**
-     * This is the union type Phan infers from assert(is_array($x))
-     * Converts iterable<key,value> to array<key, value>
+     * This is the union type Phan infers from `assert(is_array($x))`
+     * Converts `iterable<key,value>` to `array<key, value>`
      * Takes `A[]|ArrayAccess` and returns `A[]`
      * Takes `callable` and returns `callable-array`
-     * Takes `` and returns `array`
+     * Takes `` and returns ``
      * @suppress PhanUnreferencedPublicMethod called dynamically
      */
     public function arrayTypesStrictCastAllowEmpty() : UnionType
@@ -4738,8 +4737,8 @@ class UnionType implements Serializable
 
     /**
      * @return ?array|?string|?float|?int|bool|null|?UnionType
-     * If this union type can be represented by a single scalar value or null,
-     * then this returns that scalar value.
+     * If this union type can be represented by a PHP value or null,
+     * then this returns that PHP value.
      *
      * Otherwise, this returns $this.
      */

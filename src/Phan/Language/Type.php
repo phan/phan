@@ -1453,7 +1453,7 @@ class Type
      * @param array<int,string> $param_components Maps field keys (integers or strings) to the corresponding type representations
      * @param Context $context
      * @param int $source
-     * @return array<int,ClosureDeclarationParameter> The types for the representations of types, in the given $context
+     * @return array<int,ClosureDeclarationParameter> The representations of parameters of the closure, in the given $context
      *
      * @see Comment::magicParamFromMagicMethodParamString() - This is similar but has minor differences, such as references
      * @suppress PhanAccessClassConstantInternal
@@ -2580,7 +2580,7 @@ class Type
     /**
      * @param Type[] $target_type_set 1 or more types
      * @return bool
-     * True if this Type can be cast to the given Type cleanly.
+     * True if this Type can be cast to the given set of types cleanly.
      * This is overridden by ArrayShapeType to allow array{a:string,b:stdClass} to cast to string[]|stdClass[]
      */
     public function isSubtypeOfAnyTypeInSet(array $target_type_set) : bool
@@ -2596,8 +2596,8 @@ class Type
     /**
      * @param Type[] $target_type_set 1 or more types
      * @return bool
-     * True if this Type can be cast to the given Type cleanly.
-     * This is overridden by ArrayShapeType to allow array{a:string,b:stdClass} to cast to string[]|stdClass[]
+     * True if this Type can be cast to the given set of Types cleanly (accounting for templates)
+     * TODO: Override this in ArrayShapeType to allow array{a:string,b:stdClass} to cast to string[]|stdClass[]
      */
     public function canCastToAnyTypeInSetHandlingTemplates(array $target_type_set, CodeBase $code_base) : bool
     {
@@ -2746,7 +2746,7 @@ class Type
      * enforced, so be careful.
      *
      * @return bool
-     * True if this Type can be cast to the given Type
+     * True if this not nullable Type can be cast to the given Type
      * cleanly
      */
     protected function canCastToNonNullableType(Type $type) : bool
@@ -2827,7 +2827,7 @@ class Type
      *
      * @return bool
      * True if this Type can be cast to the given Type
-     * cleanly
+     * cleanly, accounting for template types.
      */
     protected function canCastToNonNullableTypeHandlingTemplates(Type $type, CodeBase $code_base) : bool
     {
@@ -3118,7 +3118,7 @@ class Type
 
     /**
      * @return Tuple5<string,string,array<int,string>,bool,?array<string|int,string>>
-     * A 5-tuple with the following types:
+     * A 5-tuple with the following types (for a type string that may contain array shape, closure, or template uses):
      * 0: the namespace
      * 1: the type name.
      * 2: The template parameters, if any
@@ -3203,7 +3203,7 @@ class Type
 
     /**
      * @return Tuple5<string,string,array<int,string>,bool,?array<string|int,string>>
-     * A 5-tuple with the following types:
+     * A 5-tuple with the following types (for a type string of a callable/closure):
      * 0: the namespace
      * 1: the type name.
      * 2: The template parameters, if any

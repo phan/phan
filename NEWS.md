@@ -21,6 +21,13 @@ New features(Analysis):
 Language Server/Daemon mode:
 + Fix logged Error when language server receives `didChangeConfiguration` events. (this is a no-op)
 
+Plugins:
++ Fix failure to emit `PhanPluginDescriptionlessComment*` when a description
+  would be automatically generated from the property or method's return type. (#3265)
++ Support checking for duplicate phpdoc descriptions of properties or methods within a class in `HasPHPDocPlugin`.
+  Set `'plugin_config' => ['has_phpdoc_check_duplicates' => true]` to enable these checks.
+  (this skips deprecated methods/properties)
+
 Maintenance:
 + Make `\Phan\Library\None` a singleton in internal uses.
 

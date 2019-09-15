@@ -56,10 +56,17 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
 
     // computed properties
 
-    /** @var int see FunctionTrait */
+    /**
+     * @var int
+     * The number of required parameters for this callable/closure
+     */
     private $required_param_count;
 
-    /** @var int see FunctionTrait */
+    /**
+     * @var int
+     * The number of optional parameters for this callable/closure.
+     * Note that this is set to a large number in methods using varargs.
+     */
     private $optional_param_count;
 
     /**

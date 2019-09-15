@@ -156,7 +156,7 @@ final class ConfigPluginSet extends PluginV3 implements
     /** @var array<int,ReturnTypeOverrideCapability>|null - plugins which generate return UnionTypes of functions based on arguments. */
     private $return_type_override_plugin_set;
 
-    /** @var array<int,SuppressionCapability>|null - plugins which generate return UnionTypes of functions based on arguments. */
+    /** @var array<int,SuppressionCapability>|null - plugins which can be used to suppress issues or inspect suppressions. */
     private $suppression_plugin_set;
 
     /** @var ?UnusedSuppressionPlugin - TODO: Refactor*/
@@ -958,7 +958,7 @@ final class ConfigPluginSet extends PluginV3 implements
     }
 
     /**
-     * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind.
+     * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind, in pre-order.
      *
      * @return Closure(CodeBase,Context,Node,array=)
      */
@@ -1063,7 +1063,7 @@ final class ConfigPluginSet extends PluginV3 implements
     }
 
     /**
-     * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind.
+     * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind, in post-order.
      *
      * @return Closure(CodeBase,Context,Node,array=)
      */

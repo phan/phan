@@ -29,7 +29,7 @@ use Phan\Plugin\Internal\UseReturnValuePlugin\UseReturnValueVisitor;
  */
 class InferPureVisitor extends AnalysisVisitor
 {
-    /** @var string  */
+    /** @var string the function fqsen being visited */
     protected $function_fqsen_label;
 
     /**
@@ -39,7 +39,11 @@ class InferPureVisitor extends AnalysisVisitor
      */
     protected $unresolved_status_dependencies = [];
 
-    /** @var ?PureMethodGraph */
+    /**
+     * A graph that tracks information about whether functions are pure, and how they depend on other functions.
+     *
+     * @var ?PureMethodGraph
+     */
     protected $pure_method_graph;
 
     public function __construct(CodeBase $code_base, Context $context, string $function_fqsen_label, ?PureMethodGraph $graph = null)
@@ -72,7 +76,12 @@ class InferPureVisitor extends AnalysisVisitor
         return $this->function_fqsen_label;
     }
 
-    /** @return array<string, FunctionInterface> */
+    /**
+     * Returns an array of functions/methods with unknown pure status.
+     * If any of those functions are impure, then this function is impure.
+     *
+     * @return array<string, FunctionInterface>
+     */
     public function getUnresolvedStatusDependencies() : array
     {
         return $this->unresolved_status_dependencies;

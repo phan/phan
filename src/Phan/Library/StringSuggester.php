@@ -121,7 +121,7 @@ class StringSuggester
     }
 
     /**
-     * @return array<string,string> mapping lowercase name to uppercase name for those strings near the requested length.
+     * @return array<string,string> a mapping from lowercase name to uppercase name for those strings near the requested length.
      */
     private function getSimilarLengthStrings(int $strlen) : array
     {
@@ -129,7 +129,7 @@ class StringSuggester
     }
 
     /**
-     * @return array<string,string> mapping lowercase name to uppercase name for those strings near the requested length.
+     * @return array<string,string> a newly computed mapping from lowercase name to uppercase name for those strings near the requested length.
      */
     private function computeSimilarLengthStrings(int $strlen) : array
     {

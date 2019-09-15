@@ -42,9 +42,15 @@ class DependencyGraphPlugin extends PluginV3 implements
     /** @var int */
     private $depth = 0;
 
-    /** @var array<int,array<string,array<string,string>>> */
+    /**
+     * A list of static calls observed by this plugin
+     * @var array<int,array<string,array<string,string>>>
+     */
     public static $static_calls = [];
-    /** @var array<int,array<string,array<string,string>>> */
+    /**
+     * A list of static variable accesses observed by this plugin
+     * @var array<int,array<string,array<string,string>>>
+     */
     public static $static_vars = [];
 
     /**
@@ -60,11 +66,11 @@ class DependencyGraphPlugin extends PluginV3 implements
      */
     private static function getFileLineno(string $file_string):array
     {
-        $idx = strrpos($file_string, ':');
+        $idx = \strrpos($file_string, ':');
         if ($idx === false) {
             return [$file_string, 0];
         }
-        return [substr($file_string, 0, $idx), (int)substr($file_string, $idx + 1)];
+        return [\substr($file_string, 0, $idx), (int)\substr($file_string, $idx + 1)];
     }
 
     /** Build file<->class mappings */
@@ -345,7 +351,7 @@ class DependencyGraphPlugin extends PluginV3 implements
         if ($cmd == 'graph') {
             ($mode == 'class') ? $this->dumpClassDot(\basename((string)\getcwd()), $graph) : $this->dumpFileDot(\basename((string)\getcwd()), $graph);
         } elseif ($cmd == 'graphml') {
-            $this->dumpGraphML(basename((string)getcwd()), $graph, $mode == 'class', (bool)($flags & \PDEP_HIDE_LABELS));
+            $this->dumpGraphML(\basename((string)\getcwd()), $graph, $mode == 'class', (bool)($flags & \PDEP_HIDE_LABELS));
         } elseif ($cmd == 'json') {
             $graph['pdep_metadata'] = [
                 'mode' => $mode,
@@ -481,15 +487,15 @@ class DependencyGraphPlugin extends PluginV3 implements
 
         // Build node_id map
         $nodes = [];
-        foreach (array_keys($graph) as $node) {
-            $node_name = trim($node, "\\");
+        foreach (\array_keys($graph) as $node) {
+            $node_name = \trim($node, "\\");
             $nodes[$node_name] = $node_id++;
         }
         $node_id = 0;
 
         // Nodes
         foreach ($graph as $node => $depNode) {
-            $node_name = trim($node, "\\");
+            $node_name = \trim($node, "\\");
             $col = '#FFFFFF';
             $ntype = 'class';
             $shape = 'rectangle';
@@ -524,14 +530,14 @@ class DependencyGraphPlugin extends PluginV3 implements
             foreach ($depNode as $dnode => $val) {
                 $ecol = '#000000';
                 [$type,$lineno] = self::getFileLineno((string)$val);
-                [$dnode] = explode(',', $dnode);
+                [$dnode] = \explode(',', $dnode);
                 if ($type == 's') {
                     $ecol = '#2E8B57'; // Seagreen
                 } elseif ($type == 'v') {
                     $ecol = '#FF6347';  // Tomato
                 }
-                $source = $nodes[trim($dnode, "\\")];
-                $target = $nodes[trim($node, "\\")];
+                $source = $nodes[\trim($dnode, "\\")];
+                $target = $nodes[\trim($node, "\\")];
                 echo '    <edge id="e' . $edge_id . '" source="n' . $source . '" target="n' . $target . '">' . \PHP_EOL;
                 echo '      <data key="d3">' . $ecol . '</data>' . \PHP_EOL;
                 if (!$is_classgraph) {

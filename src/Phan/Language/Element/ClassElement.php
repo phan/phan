@@ -65,8 +65,7 @@ abstract class ClassElement extends AddressableElement
 
     /**
      * @return FullyQualifiedClassElement
-     * The FQSEN of this class element from where it was
-     * originally defined
+     * The FQSEN of the original definition of this class element (before inheritance).
      */
     public function getDefiningFQSEN() : FullyQualifiedClassElement
     {
@@ -89,8 +88,7 @@ abstract class ClassElement extends AddressableElement
 
     /**
      * @return FullyQualifiedClassName
-     * The FQSEN of this class element from where it was
-     * originally defined
+     * The FQSEN of of the class originally defining this class element.
      *
      * @throws CodeBaseException if this was called without first checking
      * if hasDefiningFQSEN()
@@ -182,7 +180,7 @@ abstract class ClassElement extends AddressableElement
     }
 
     /**
-     * True if this element overrides another element
+     * True if this element overrides another element (deprecated)
      * @deprecated use isOverride
      * @suppress PhanUnreferencedPublicMethod
      */

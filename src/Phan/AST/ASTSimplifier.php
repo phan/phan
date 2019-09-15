@@ -333,11 +333,10 @@ class ASTSimplifier
     }
 
     /**
-     * Converts a while statement to one which is easier for phan to analyze
+     * Converts a for statement to one which is easier for phan to analyze
      * E.g. repeatedly makes these conversions
-     * while (A && B) {X} -> while (A) { if (!B) {break;} X}
-     * while (!!A) {X} -> while (A) { X }
-     * @return array{0:Node} - An array with a single while statement
+     * for (init; !!cond; loop) -> for (init; cond; loop)
+     * @return array{0:Node} - An array with a single for statement.
      *        Will return [$node] if no modifications were made.
      */
     private static function normalizeForStatement(Node $node) : array
