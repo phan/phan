@@ -9,7 +9,7 @@ namespace Phan\Plugin\Internal\IssueFixingPlugin;
  */
 class FileEditSet
 {
-    /** @var FileEdit[] */
+    /** @var FileEdit[] a list of non-conflicting file edits in this set */
     public $edits;
 
     /**

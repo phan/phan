@@ -1362,9 +1362,7 @@ class UnionType implements Serializable
     }
 
     /**
-     * @return bool - True if type set is not empty and at least one type is NullType or nullable or FalseType or BoolType.
-     * (I.e. the type is always falsey, or both sometimes falsey with a non-falsey type it can be narrowed down to)
-     * This does not include values such as `IntType`, since there is currently no `NonZeroIntType`.
+     * @return bool - True if type set is not empty and at least one type is possibly truthy.
      */
     public function containsTruthy() : bool
     {
@@ -1451,7 +1449,7 @@ class UnionType implements Serializable
     }
 
     /**
-     * Returns true if this contains at least one non-null StringType or LiteralStringType
+     * Returns true if this contains at least one StringType or LiteralStringType
      */
     public function hasStringType() : bool
     {

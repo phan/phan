@@ -2827,7 +2827,7 @@ class Type
      *
      * @return bool
      * True if this Type can be cast to the given Type
-     * cleanly
+     * cleanly, accounting for template types.
      */
     protected function canCastToNonNullableTypeHandlingTemplates(Type $type, CodeBase $code_base) : bool
     {

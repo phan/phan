@@ -34,7 +34,7 @@ class FileRef implements \Serializable
      * The path to the file in which this element is defined
      *
      * @return static
-     * This context with the given value is returned
+     * This context with the given file is returned
      */
     public function withFile(string $file)
     {
@@ -145,7 +145,7 @@ class FileRef implements \Serializable
      * The ending line number of the element within the $file
      *
      * @return static
-     * This context with the given value is returned
+     * This context with the given end line number is returned
      */
     public function withLineNumberEnd(int $line_number)
     {

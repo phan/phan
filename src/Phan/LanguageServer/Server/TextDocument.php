@@ -175,7 +175,7 @@ class TextDocument
     }
 
     /**
-     * The goto definition request is sent from the client to the server to resolve the definition location of a symbol
+     * The "go to definition" request is sent from the client to the server to resolve the definition location of a symbol
      * at a given text document position.
      *
      * @param TextDocumentIdentifier $textDocument The text document
@@ -196,7 +196,7 @@ class TextDocument
     }
 
     /**
-     * The goto definition request is sent from the client to the server to resolve the definition location of a symbol
+     * The "go to type definition" request is sent from the client to the server to resolve the definition location of a symbol
      * at a given text document position.
      *
      * @param TextDocumentIdentifier $textDocument The text document

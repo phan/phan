@@ -42,7 +42,11 @@ class NodeSelectionPlugin extends PluginV3 implements PostAnalyzeNodeCapability
  */
 class NodeSelectionVisitor extends PluginAwarePostAnalysisVisitor
 {
-    /** @var ?Closure(Context,Node,Node[]):void $closure */
+    /**
+     * A closure that this visitor dispatches to when the desired node (marked with isSelected) is found
+     *
+     * @var ?Closure(Context,Node,Node[]):void $closure
+     */
     public static $closure = null;
 
     // A plugin's visitors should not override visit() unless they need to.

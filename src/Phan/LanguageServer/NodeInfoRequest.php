@@ -24,7 +24,7 @@ abstract class NodeInfoRequest
     protected $promise;
 
     /**
-     * @var bool
+     * @var bool was a response sent back to the client already
      */
     protected $fulfilled = false;
 

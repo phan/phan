@@ -42,9 +42,15 @@ class DependencyGraphPlugin extends PluginV3 implements
     /** @var int */
     private $depth = 0;
 
-    /** @var array<int,array<string,array<string,string>>> */
+    /**
+     * A list of static calls observed by this plugin
+     * @var array<int,array<string,array<string,string>>>
+     */
     public static $static_calls = [];
-    /** @var array<int,array<string,array<string,string>>> */
+    /**
+     * A list of static variable accesses observed by this plugin
+     * @var array<int,array<string,array<string,string>>>
+     */
     public static $static_vars = [];
 
     /**
