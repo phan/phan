@@ -22,6 +22,8 @@ use Phan\Library\DiskCache;
 use Phan\Phan;
 use Phan\Plugin\ConfigPluginSet;
 use Throwable;
+use function error_clear_last;
+use function error_get_last;
 use function error_reporting;
 
 /**
@@ -141,11 +143,23 @@ class Parser
             return true;
         };
         try {
-            return \ast\parse_code(
+            error_clear_last();
+            $root_node = \ast\parse_code(
                 $file_contents,
                 Config::AST_VERSION,
                 $file_path
             );
+            $error = error_get_last();
+            if ($error && $error['type'] === \E_COMPILE_WARNING) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::SyntaxCompileWarning,
+                    $error['line'],
+                    $error['message']
+                );
+            }
+            return $root_node;
         } finally {
             $__no_echo_phan_errors = false;
             error_reporting($original_error_reporting);
@@ -389,11 +403,18 @@ class Parser
         $converter = self::createConverter($file_path, $file_contents, $request);
         $converter->setPHPVersionId(Config::get_closest_target_php_version_id());
         $errors = [];
+        error_clear_last();
         try {
             $node = $converter->parseCodeAsPHPAST($file_contents, Config::AST_VERSION, $errors, self::maybeGetCache($code_base));
         } catch (\Exception $e) {
             // Generic fallback. TODO: log.
             throw new ParseException('Unexpected Exception of type ' . \get_class($e) . ': ' . $e->getMessage(), 0);
+        }
+        if (!$suppress_parse_errors) {
+            $error = error_get_last();
+            if ($error) {
+                self::handleWarningFromPolyfill($code_base, $context, $error);
+            }
         }
         foreach ($errors as $diagnostic) {
             if ($diagnostic->kind === 0) {
@@ -430,6 +451,24 @@ class Parser
         }
         return $node;
     }
+
+    /**
+     * @param array<string,mixed> $error
+     */
+    private static function handleWarningFromPolyfill(CodeBase $code_base, Context $context, array $error) : void
+    {
+        if (\in_array($error['type'], [\E_DEPRECATED, \E_COMPILE_WARNING], true) &&
+            \basename($error['file']) === 'PhpTokenizer.php') {
+
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                $error['type'] === \E_COMPILE_WARNING ? Issue::SyntaxCompileWarning : Issue::CompatibleSyntaxNotice,
+                $error['line'],
+                $error['message']
+            );
+        }
+}
 
     /**
      * Remove the leading #!/path/to/interpreter/of/php from a CLI script, if any was found.

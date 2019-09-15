@@ -1,1 +1,1 @@
-%s:2 PhanCompatibleSyntaxNotice Saw a notice while parsing with the native parser: The (real) cast is deprecated, use (float) instead
+%s:2 PhanCompatibleSyntaxNotice Saw a parse notice: The (real) cast is deprecated, use (float) instead

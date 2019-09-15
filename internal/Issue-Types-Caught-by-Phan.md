@@ -527,7 +527,7 @@ This is used for notices that are emitted while Phan is parsing with the native 
 Currently, this only catches the notice about the `(real)` cast from the native parser in php 7.4.
 
 ```
-Saw a notice while parsing with the native parser: {DETAILS}
+Saw a parse notice: {DETAILS}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.2.9/tests/php74_files/expected/012_real_cast.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.9/tests/php74_files/src/012_real_cast.php#L2).
@@ -4016,6 +4016,8 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0
 @phan-debug-var requested for variable ${VARIABLE} - it has union type {TYPE}
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0760_iterable_false_positive.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0760_iterable_false_positive.php#L19).
+
 ## PhanInvalidCommentForDeclarationType
 
 ```
@@ -4180,6 +4182,14 @@ Cannot use temporary expression (of type {TYPE}) in write context
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/files/expected/0518_crash_assignment.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/files/src/0518_crash_assignment.php#L4).
+
+## PhanSyntaxCompileWarning
+
+```
+Saw a warning while parsing: {DETAILS}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/157_polyfill_compilation_warning.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/157_polyfill_compilation_warning.php#L77).
 
 ## PhanSyntaxError
 

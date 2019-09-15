@@ -17,6 +17,9 @@ New features(Analysis):
 + Import more specific phpdoc/real array return types for internal global functions from opcache.
 + Emit `PhanUndeclaredVariable` and other warnings about arguments when there are too many parameters for methods. (#3245)
 + Infer real types of array/iterable keys and values in more cases.
++ Expose the last compilation warning seen when tokenizing or parsing with the native parser, if possible (#3263)
+  New issue types: `PhanSyntaxCompileWarning`
+  Additionally, expose the last compilation warning or deprecation notice seen when tokenizing in the polyfill.
 
 Language Server/Daemon mode:
 + Fix logged Error when language server receives `didChangeConfiguration` events. (this is a no-op)
