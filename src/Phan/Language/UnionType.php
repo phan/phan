@@ -1401,6 +1401,19 @@ class UnionType implements Serializable
     }
 
     /**
+     * Returns true if this type's real type set is exclusively non-null float types and is non-empty
+     */
+    public function isExclusivelyRealFloatTypes() : bool
+    {
+        foreach ($this->real_type_set as $type) {
+            if (!($type instanceof FloatType) || $type->isNullable()) {
+                return false;
+            }
+        }
+        return \count($this->real_type_set) > 0;
+    }
+
+    /**
      * Returns true if this is exclusively non-null IntType or LiteralIntType
      */
     public function isNonNullIntType() : bool
@@ -2433,6 +2446,7 @@ class UnionType implements Serializable
         if ($this->isNull()) {
             return $other->containsNullable();
         }
+        // TODO forbid float or literal float->int with strict_types=1
         if ($this->hasAnyTypeOverlap($code_base, $other)) {
             return true;
         }
