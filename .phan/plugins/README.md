@@ -247,11 +247,15 @@ Warnings about method verbosity also exist, many categories may need to be compl
 - Warnings can be suppressed based on the method FQSEN with `plugin_config => [..., 'has_phpdoc_method_ignore_regex' => (a PCRE regex)]`
 
   (e.g. to suppress issues about tests, or about missing documentation about getters and setters, etc.)
+- This can be used to warn about duplicate method/property descriptions with `plugin_config => [..., 'has_phpdoc_check_duplicates' => true]`
+  (this skips checking method overrides, magic methods, and deprecated methods/properties)
 
 The warning types for methods are below:
 
 - **PhanPluginNoCommentOnPublicMethod**: `Public method {METHOD} has no doc comment` (Also exists for Private and Protected)
 - **PhanPluginDescriptionlessCommentOnPublicMethod**: `Public method {METHOD} has no readable description: {STRING_LITERAL}` (Also exists for Private and Protected)
+- **PhanPluginDuplicatePropertyDescription**: `Property {PROPERTY} has the same description as the property {PROPERTY} on line {LINE}: {COMMENT}`
+- **PhanPluginDuplicateMethodDescription**: `Method {METHOD} has the same description as the method {METHOD} on line {LINE}: {COMMENT}`
 
 #### InvalidVariableIssetPlugin.php
 

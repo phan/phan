@@ -461,6 +461,9 @@ return [
         // blacklist of methods to warn about for HasPHPDocPlugin
         'has_phpdoc_method_ignore_regex' => '@^Phan\\\\Tests\\\\.*::(test.*|.*Provider)$@',
         // Warn about duplicate descriptions for methods and property groups within classes.
+        // (This skips over deprecated methods)
+        // This may not apply to all code bases,
+        // but is useful in avoiding copied and pasted descriptions that may be inapplicable or too vague.
         'has_phpdoc_check_duplicates' => true,
 
         // If true, then never allow empty statement lists, even if there is a TODO/FIXME/"deliberately empty" comment.

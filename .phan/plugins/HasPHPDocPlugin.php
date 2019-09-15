@@ -62,6 +62,7 @@ use const JSON_UNESCAPED_UNICODE;
  *
  * Note: When adding new plugins,
  * add them to the corresponding section of README.md
+ * @internal
  */
 final class HasPHPDocPlugin extends PluginV3 implements
     AnalyzeClassCapability,
@@ -263,7 +264,7 @@ class BasePHPDocCheckerPlugin extends PluginAwarePostAnalysisVisitor
             );
             return null;
         }
-        return new ClassElementEntry($node, $method, trim(preg_replace('/\s+/', ' ', $description)));
+        return new ClassElementEntry($method, trim(preg_replace('/\s+/', ' ', $description)));
     }
 
     /**
@@ -301,33 +302,34 @@ class BasePHPDocCheckerPlugin extends PluginAwarePostAnalysisVisitor
             );
             return null;
         }
-        return new ClassElementEntry($node, $property, trim(preg_replace('/\s+/', ' ', $description)));
+        return new ClassElementEntry($property, trim(preg_replace('/\s+/', ' ', $description)));
     }
 }
 
 /**
  * Describes a property group or a method node and the associated description
  * @phan-immutable
+ * @internal
  */
-class ClassElementEntry
+final class ClassElementEntry
 {
-    /** @var Node the node declaring this class element or group of elements */
-    public $node;
     /** @var ClassElement the element (or element group) */
     public $element;
     /** @var string the phpdoc description */
     public $description;
 
-    public function __construct(Node $node, ClassElement $element, string $description)
+    public function __construct(ClassElement $element, string $description)
     {
-        $this->node = $node;
         $this->element = $element;
         $this->description = $description;
     }
 }
 
-/** Check if phpdoc of property groups and methods are duplicated */
-class DuplicatePHPDocCheckerPlugin extends BasePHPDocCheckerPlugin
+/**
+ * Check if phpdoc of property groups and methods are duplicated
+ * @internal
+ */
+final class DuplicatePHPDocCheckerPlugin extends BasePHPDocCheckerPlugin
 {
     /** No-op */
     public function visitClass(Node $node) : array
@@ -342,8 +344,8 @@ class DuplicatePHPDocCheckerPlugin extends BasePHPDocCheckerPlugin
                     $this->code_base,
                     $property->getContext(),
                     "PhanPluginDuplicatePropertyDescription",
-                    "Property {PROPERTY} has the same description as the property {PROPERTY} on line {LINE}: {COMMENT}",
-                    [$property->getRepresentationForIssue(), $first_property->getRepresentationForIssue(), $first_property->getContext()->getLineNumberStart(), $first_entry->description]
+                    "Property {PROPERTY} has the same description as the property \${PROPERTY} on line {LINE}: {COMMENT}",
+                    [$property->getRepresentationForIssue(), $first_property->getName(), $first_property->getContext()->getLineNumberStart(), $first_entry->description]
                 );
             }
         }
@@ -357,7 +359,7 @@ class DuplicatePHPDocCheckerPlugin extends BasePHPDocCheckerPlugin
                     $method->getContext(),
                     "PhanPluginDuplicateMethodDescription",
                     "Method {METHOD} has the same description as the method {METHOD} on line {LINE}: {COMMENT}",
-                    [$method->getRepresentationForIssue(), $first_method->getRepresentationForIssue(), $first_method->getContext()->getLineNumberStart(), $first_entry->description]
+                    [$method->getRepresentationForIssue(), $first_method->getName() . '()', $first_method->getContext()->getLineNumberStart(), $first_entry->description]
                 );
             }
         }
