@@ -368,6 +368,9 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         if ($is_binary_op) {
             return UnionType::fromFullyQualifiedPHPDocAndRealString('int', 'int|string');
         }
+        if ($left->isExclusivelyRealFloatTypes() || $right->isExclusivelyRealFloatTypes()) {
+            return FloatType::instance(false)->asRealUnionType();
+        }
         if ($node->flags === ast\flags\BINARY_DIV) {
             return UnionType::fromFullyQualifiedRealString('int|float');
         }
@@ -838,23 +841,12 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         static $float_type = null;
         static $int_or_float_union_type = null;
         if ($int_or_float_union_type === null) {
-            $float_type = FloatType::instance(false);
+            $float_type = FloatType::instance(false)->asRealUnionType();
             $int_or_float_union_type = UnionType::fromFullyQualifiedRealString('int|float');
         }
-        if ($node->flags === ast\flags\BINARY_DIV) {
-            return $int_or_float_union_type;
+        if ($left->isExclusivelyRealFloatTypes() || $right->isExclusivelyRealFloatTypes()) {
+            return $float_type;
         }
-
-        if ($left->isNonNullNumberType() && $right->isNonNullNumberType()) {
-            if (!$left->hasNonNullIntType() || !$right->hasNonNullIntType()) {
-                // Heuristic: If one or more of the sides is a float, the result is always a float.
-                return $float_type->asRealUnionType();
-            }
-            return $int_or_float_union_type;
-        }
-
-        // TODO: warn about subtracting to/from non-number
-
         return $int_or_float_union_type;
     }
 

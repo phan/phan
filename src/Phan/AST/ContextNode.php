@@ -1228,7 +1228,6 @@ class ContextNode
         );
         if ($parameter->getReferenceType() === Parameter::REFERENCE_READ_WRITE ||
             ($real_parameter && !$real_parameter->getNonVariadicUnionType()->containsNullableOrIsEmpty())) {
-
             static $null_type = null;
             if ($null_type === null) {
                 $null_type = NullType::instance(false)->asPHPDocUnionType();

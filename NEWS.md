@@ -20,6 +20,9 @@ New features(Analysis):
 + Expose the last compilation warning seen when tokenizing or parsing with the native parser, if possible (#3263)
   New issue types: `PhanSyntaxCompileWarning`
   Additionally, expose the last compilation warning or deprecation notice seen when tokenizing in the polyfill.
++ Improve inference of when the real result of a binary operation is a float. (#3256)
++ Emit stricter warnings for more real type mismatches (#3256)
+  (e.g. emit `PhanTypeMismatchArgumentReal` for `float->int` when `strict_types=1`, `'literal string'->int`, etc.)
 
 Language Server/Daemon mode:
 + Fix logged Error when language server receives `didChangeConfiguration` events. (this is a no-op)

@@ -2,6 +2,9 @@
 
 namespace Phan\Language\Type;
 
+use Phan\CodeBase;
+use Phan\Language\Context;
+use Phan\Language\Type;
 use Phan\Language\UnionType;
 
 /**
@@ -22,6 +25,21 @@ class IntType extends ScalarType
     public function getTypeAfterIncOrDec() : UnionType
     {
         return IntType::instance(false)->asPHPDocUnionType();
+    }
+
+    /**
+     * Check if this type can possibly cast to the declared type, ignoring nullability of this type
+     */
+    public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other) : bool
+    {
+        // always allow int -> float or int -> int
+        if ($other instanceof IntType || $other instanceof FloatType) {
+            return true;
+        }
+        if ($context->isStrictTypes()) {
+            return false;
+        }
+        return parent::canCastToDeclaredType($code_base, $context, $other);
     }
 
     public function isPossiblyTruthy() : bool

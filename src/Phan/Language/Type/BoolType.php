@@ -2,7 +2,9 @@
 
 namespace Phan\Language\Type;
 
+use Phan\CodeBase;
 use Phan\Config;
+use Phan\Language\Context;
 use Phan\Language\Type;
 
 /**
@@ -38,6 +40,11 @@ final class BoolType extends ScalarType
     public function asNonFalseType() : Type
     {
         return TrueType::instance($this->is_nullable);
+    }
+
+    public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other) : bool
+    {
+        return $other->isInBoolFamily() || (!$context->isStrictTypes() && parent::canCastToDeclaredType($code_base, $context, $other));
     }
 
     public function isPossiblyTrue() : bool

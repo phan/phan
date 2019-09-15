@@ -14,7 +14,7 @@
 %s:17 PhanRedundantCondition Redundant attempt to cast TRUE of type true to truthy
 %s:17 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is true but \intdiv() takes int
 %s:18 PhanRedundantCondition Redundant attempt to cast 'key' of type 'key' to truthy
-%s:18 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is 'key' but \intdiv() takes int
+%s:18 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($numerator) is 'key' but \intdiv() takes int
 %s:19 PhanRedundantCondition Redundant attempt to cast '1' of type '1' to truthy
 %s:19 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is '1' but \intdiv() takes int
 %s:20 PhanImpossibleCondition Impossible attempt to cast '' of type '' to truthy

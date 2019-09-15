@@ -459,7 +459,6 @@ class Parser
     {
         if (\in_array($error['type'], [\E_DEPRECATED, \E_COMPILE_WARNING], true) &&
             \basename($error['file']) === 'PhpTokenizer.php') {
-
             Issue::maybeEmit(
                 $code_base,
                 $context,
@@ -468,7 +467,7 @@ class Parser
                 $error['message']
             );
         }
-}
+    }
 
     /**
      * Remove the leading #!/path/to/interpreter/of/php from a CLI script, if any was found.

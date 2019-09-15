@@ -2,7 +2,10 @@
 
 namespace Phan\Language\Type;
 
+use Phan\CodeBase;
 use Phan\Config;
+use Phan\Language\Context;
+use Phan\Language\Type;
 use Phan\Language\UnionType;
 
 /**
@@ -47,5 +50,14 @@ class FloatType extends ScalarType
     public function getTypeAfterIncOrDec() : UnionType
     {
         return FloatType::instance(false)->asPHPDocUnionType();
+    }
+
+    public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other) : bool
+    {
+        // Allow casting scalars to other scalars, but not to null.
+        if ($other instanceof ScalarType) {
+            return $other instanceof FloatType || (!$context->isStrictTypes() && parent::canCastToDeclaredType($code_base, $context, $other));
+        }
+        return $other instanceof CallableType;
     }
 }

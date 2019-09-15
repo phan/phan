@@ -2,4 +2,4 @@
 %s:5 PhanRedundantCondition Redundant attempt to cast $x of type 2 to numeric
 %s:6 PhanTypeMismatchArgumentInternal Argument 1 ($string) is 2 but \strlen() takes string
 %s:9 PhanRedundantCondition Redundant attempt to cast $y of type 'a string' to string
-%s:10 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is 'a string' but \intdiv() takes int
+%s:10 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($numerator) is 'a string' but \intdiv() takes int

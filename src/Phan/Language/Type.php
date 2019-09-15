@@ -2029,6 +2029,18 @@ class Type
     }
 
     /**
+     * Check if this type can possibly cast to the declared type, ignoring nullability of this type
+     *
+     * Precondition: This is either non-nullable or the type NullType/VoidType
+     */
+    public function canCastToDeclaredType(CodeBase $code_base, Context $unused_context, Type $other) : bool
+    {
+        if ($other->isPossiblyObject() && $this->canPossiblyCastToClass($code_base, $other->withIsNullable(false))) {
+            return true;
+        }
+        return $this->canCastToType($other);
+    }
+    /**
      * Check if there is any way this type or a subclass could cast to $other.
      * (does not check for mixed)
      */

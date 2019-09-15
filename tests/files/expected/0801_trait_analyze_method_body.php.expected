@@ -1,2 +1,2 @@
-%s:4 PhanTypeMismatchReturn Returning type 'a' but f2() is declared to return int
+%s:4 PhanTypeMismatchReturnReal Returning type 'a' but f2() is declared to return int
 %s:10 PhanTypeMismatchReturnReal Returning type array{} but f() is declared to return \U301|self (real type self)

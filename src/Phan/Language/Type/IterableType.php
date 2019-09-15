@@ -3,6 +3,7 @@
 namespace Phan\Language\Type;
 
 use Phan\CodeBase;
+use Phan\Language\Context;
 use Phan\Language\Type;
 
 /**
@@ -18,6 +19,13 @@ class IterableType extends NativeType
     {
         return true;
     }
+
+    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $other) : bool
+    {
+        // TODO: Check if $other is final and non-iterable
+        return $other instanceof IterableType || $other instanceof CallableDeclarationType || $other->isPossiblyObject();
+    }
+
 
     public function asIterable(CodeBase $_) : ?Type
     {

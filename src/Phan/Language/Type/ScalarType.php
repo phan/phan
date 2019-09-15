@@ -126,6 +126,12 @@ abstract class ScalarType extends NativeType
         return true;
     }
 
+    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $other) : bool
+    {
+        // Allow casting scalars to other scalars, but not to null.
+        return $other instanceof ScalarType && !($other instanceof NullType);
+    }
+
     /**
      * Returns true if this contains a type that is definitely nullable or a non-object.
      * e.g. returns true false, array, int

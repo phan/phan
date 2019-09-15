@@ -3,7 +3,9 @@
 namespace Phan\Language\Type;
 
 use AssertionError;
+use Phan\CodeBase;
 use Phan\Config;
+use Phan\Language\Context;
 use Phan\Language\Type;
 
 /**
@@ -77,6 +79,11 @@ final class TrueType extends ScalarType
     public function canSatisfyComparison($scalar, int $flags) : bool
     {
         return self::performComparison(true, $scalar, $flags);
+    }
+
+    public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other) : bool
+    {
+        return $other->isInBoolFamily() || (!$context->isStrictTypes() && parent::canCastToDeclaredType($code_base, $context, $other));
     }
 
     // public function getTypeAfterIncOrDec() : UnionType - doesn't need to be changed

@@ -4,6 +4,7 @@ namespace Phan\Language\Type;
 
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Language\Context;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 
@@ -50,6 +51,11 @@ final class NullType extends ScalarType
         return Config::get_null_casts_as_any_type()
             || (Config::get_null_casts_as_array() && $type->isArrayLike())
             || parent::canCastToNonNullableType($type);
+    }
+
+    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $other) : bool
+    {
+        return $other->isNullable();
     }
 
     public function isSubtypeOf(Type $type) : bool

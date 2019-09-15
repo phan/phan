@@ -3,6 +3,7 @@
 namespace Phan\Language\Type;
 
 use Phan\CodeBase;
+use Phan\Language\Context;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Language\UnionTypeBuilder;
@@ -202,6 +203,17 @@ class ArrayType extends IterableType
     {
         // CallableDeclarationType is not a native type, we check separately here
         return parent::canCastToNonNullableTypeWithoutConfig($type) || $type instanceof ArrayType || $type instanceof CallableDeclarationType;
+    }
+
+    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $other) : bool
+    {
+        if ($other instanceof IterableType) {
+            return true;
+        }
+        if ($this->isDefiniteNonCallableType()) {
+            return false;
+        }
+        return $other instanceof CallableDeclarationType || $other instanceof CallableType;
     }
 
     /**
