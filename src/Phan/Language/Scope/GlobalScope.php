@@ -11,7 +11,7 @@ use Phan\Language\Scope;
 /**
  * Represents the global scope (and stores global variables)
  */
-class GlobalScope extends Scope
+final class GlobalScope extends Scope
 {
     /**
      * Deliberate no-op
@@ -82,11 +82,22 @@ class GlobalScope extends Scope
 
     /**
      * @return array<string|int,Variable> (keys are variable names, which are *almost* always strings)
-     * A map from name to Variable in this scope
+     * A map from name to Variable in the global scope.
      */
     public function getVariableMap() : array
     {
         return self::$global_variable_map;
+    }
+
+    /**
+     * @return array<string|int,Variable> (keys are variable names, which are *almost* always strings)
+     * A map from name to Variable in the global scope.
+     */
+    public function getVariableMapExcludingScope(?Scope $_) : array
+    {
+        // Phan always generates a branch scope in front of the branch scope.
+        // The global scope can have hundreds or thousands of variables in some projects, avoid merging variables from it.
+        return [];
     }
 
     /**

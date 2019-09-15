@@ -10,7 +10,10 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
+use Phan\Language\Scope\BranchScope;
 use Phan\Language\Type\TemplateType;
+use function count;
+use function spl_object_id;
 
 /**
  * Represents the scope of a Context.
@@ -248,6 +251,17 @@ abstract class Scope
     }
 
     /**
+     * @return array<string|int,Variable> (keys are variable names, which are *almost* always strings)
+     * A map from name to Variable in this scope, excluding the common scope.
+     *
+     * Note that because scopes gets cloned, $common_scope can be null.
+     */
+    public function getVariableMapExcludingScope(?Scope $common_scope) : array
+    {
+        return $this !== $common_scope ? $this->variable_map : [];
+    }
+
+    /**
      * @param Variable $variable
      * A variable to add to the local scope
      *
@@ -347,7 +361,7 @@ abstract class Scope
             return false;
         }
 
-        return \count($this->template_type_map) > 0
+        return count($this->template_type_map) > 0
             || $this->parent_scope->hasAnyTemplateType();
     }
 
@@ -420,5 +434,66 @@ abstract class Scope
     public function __toString() : string
     {
         return $this->getFQSEN() . "\t" . \implode(',', $this->getVariableMap());
+    }
+
+    /**
+     * @param array<int,Scope> $scope_list an array of 2 or more scopes
+     * @return array<string,Variable> the set of variables that may differ among these scopes.
+     */
+    public static function getDifferingVariables(array $scope_list) : array
+    {
+        if (count($scope_list) < 2) {
+            return [];
+        }
+        $common_scope = self::identifyLowestCommonAncestor($scope_list);
+        $variable_map = [];
+
+        // micro-optimization
+        if ($common_scope) {
+            foreach ($scope_list as $scope) {
+                $variable_map += $scope->getVariableMapExcludingScope($common_scope);
+            }
+        } else {
+            foreach ($scope_list as $scope) {
+                $variable_map += $scope->getVariableMap();
+            }
+        }
+        // printf("The lowest common ancestor was %s: %s\n", $common_scope ? get_class($common_scope) . ' #' . spl_object_id($common_scope) : 'null', implode(', ', array_keys($variable_map)));
+        return $variable_map;
+    }
+
+    /**
+     * Given a scope, return the lowest common ancestor of all of those scopes.
+     * e.g. for an if statement, that's the scope of the outer statement list.
+     *
+     * @param array<int,Scope> $scope_list
+     */
+    private static function identifyLowestCommonAncestor(array $scope_list) : ?Scope
+    {
+        $counts = [];
+        $N = count($scope_list);
+        foreach ($scope_list as $i => $scope) {
+            if (!$scope->hasParentScope()) {
+                return null;
+            }
+            $id = spl_object_id($scope);
+            $counts[$id] = ($counts[$id] ?? 0) + 1;
+            $scope_list[$i] = $scope->getParentScope();
+        }
+        while ($scope_list) {
+            foreach ($scope_list as $i => $scope) {
+                if (!$scope instanceof BranchScope) {
+                    unset($scope_list[$i]);
+                    continue;
+                }
+                $id = spl_object_id($scope);
+                $new_count = $counts[$id] = ($counts[$id] ?? 0) + 1;
+                if ($new_count >= $N) {
+                    return $scope;
+                }
+                $scope_list[$i] = $scope->getParentScope();
+            }
+        }
+        return null;
     }
 }
