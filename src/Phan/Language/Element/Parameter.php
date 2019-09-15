@@ -197,12 +197,12 @@ class Parameter extends Variable
         \ReflectionParameter $reflection_parameter
     ) : Parameter {
         $flags = 0;
-        // Check to see if its a pass-by-reference parameter
+        // Check to see if it's a pass-by-reference parameter
         if ($reflection_parameter->isPassedByReference()) {
             $flags |= \ast\flags\PARAM_REF;
         }
 
-        // Check to see if its variadic
+        // Check to see if it's variadic
         if ($reflection_parameter->isVariadic()) {
             $flags |= \ast\flags\PARAM_VARIADIC;
         }

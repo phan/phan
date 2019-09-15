@@ -314,7 +314,7 @@ class ParameterTypesAnalyzer
         }
 
         // Hydrate the class this method is coming from in
-        // order to understand if its an override or not
+        // order to understand if it's an override or not
         $class = $method->getClass($code_base);
         $class->hydrate($code_base);
 

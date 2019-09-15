@@ -18,7 +18,7 @@ class DuplicateClassAnalyzer
         CodeBase $code_base,
         Clazz $clazz
     ) : void {
-        // Determine if its a duplicate by looking to see if
+        // Determine if it's a duplicate by looking to see if
         // the FQSEN is suffixed with an alternate ID.
 
         if (!$clazz->getFQSEN()->isAlternate()) {

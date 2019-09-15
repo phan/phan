@@ -46,7 +46,7 @@ trait Memoize
 
     /**
      * @param string $key
-     * A unique key to test to see if its been seen before
+     * A unique key to test to see if it's been seen before
      *
      * @return bool
      * True if this is the first time this function has been
