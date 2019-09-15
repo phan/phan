@@ -9,4 +9,13 @@ use Phan\Language\Scope;
  */
 class ClosedScope extends Scope
 {
+    /**
+     * Returns empty because this is expected to be the excluded scope or a clone of it.
+     */
+    public function getVariableMapExcludingScope(?Scope $_) : array
+    {
+        // Phan always generates a branch scope in front of the branch scope.
+        // The global scope can have hundreds or thousands of variables in some projects, avoid merging variables from it.
+        return [];
+    }
 }

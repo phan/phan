@@ -165,6 +165,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
             return $this->context->withScope($try_scope);
         }
 
+        // TODO: Use getVariableMapExcludingScope
         foreach ($try_scope->getVariableMap() as $variable_name => $variable) {
             $variable_name = (string)$variable_name;  // e.g. ${42}
             foreach ($catch_scope_list as $catch_scope) {
@@ -298,11 +299,9 @@ class ContextMergeVisitor extends KindVisitorImplementation
             throw new AssertionError("Expected at least two child contexts in " . __METHOD__);
         }
         // Get a list of all variables in all scopes
-        $variable_map = [];
-        foreach ($scope_list as $scope) {
-            foreach ($scope->getVariableMap() as $name => $variable) {
-                $variable_map[$name] = $variable;
-            }
+        $variable_map = Scope::getDifferingVariables($scope_list);
+        if (!$variable_map) {
+            return $this->context->withClonedScope();
         }
 
         // A function that determines if a variable is defined on

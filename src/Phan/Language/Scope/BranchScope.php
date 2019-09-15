@@ -52,6 +52,18 @@ class BranchScope extends Scope
     }
 
     /**
+     * @return array<string|int,Variable> (keys are variable names, which are *almost* always strings)
+     * A map from name to Variable in this scope
+     */
+    public function getVariableMapExcludingScope(?Scope $common_scope) : array
+    {
+        if ($this === $common_scope) {
+            return [];
+        }
+        return $this->variable_map + $this->parent_scope->getVariableMapExcludingScope($common_scope);
+    }
+
+    /**
      * @return FullyQualifiedClassName
      * Crawl the scope hierarchy to get a class FQSEN.
      */
