@@ -32,6 +32,7 @@ class Issue
     const ContinueTargetingSwitch        = 'PhanContinueTargetingSwitch';
     const ContinueOrBreakNotInLoop       = 'PhanContinueOrBreakNotInLoop';
     const ContinueOrBreakTooManyLevels   = 'PhanContinueOrBreakTooManyLevels';
+    const SyntaxCompileWarning           = 'PhanSyntaxCompileWarning';
 
     // Issue::CATEGORY_UNDEFINED
     const AmbiguousTraitAliasSource = 'PhanAmbiguousTraitAliasSource';
@@ -813,6 +814,14 @@ class Issue
                 "Cannot use constant {CONST} as {CONST} because the name is already in use",
                 self::REMEDIATION_B,
                 17010
+            ),
+            new Issue(
+                self::SyntaxCompileWarning,
+                self::CATEGORY_SYNTAX,
+                self::SEVERITY_NORMAL,
+                'Saw a warning while parsing: {DETAILS}',
+                self::REMEDIATION_A,
+                17011
             ),
 
             // Issue::CATEGORY_UNDEFINED
@@ -4090,7 +4099,7 @@ class Issue
                 self::CompatibleSyntaxNotice,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_NORMAL,
-                "Saw a notice while parsing with the native parser: {DETAILS}",
+                "Saw a parse notice: {DETAILS}",
                 self::REMEDIATION_B,
                 3017
             ),
