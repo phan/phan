@@ -14,8 +14,9 @@ trait Memoize
     /**
      * @var array<string,mixed>
      * A map from key to memoized values
+     * @internal
      */
-    private $memoized_data = [];
+    protected $memoized_data = [];
 
     /**
      * Memoize the result of $fn(), saving the result

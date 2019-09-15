@@ -30,6 +30,7 @@ Bug fixes:
   `ast\AST_PARAM`, `ast\AST_ASSIGN_OP` (`??=`), and `ast\AST_CONDITIONAL`.
 
   This affects some crash reporting and tools such as `internal/dump_fallback_ast.php`
++ Fix some infinite recursion edge cases caused parsing invalid recursive class inheritance. (#3264)
 
 Sep 08 2019, Phan 2.2.12
 ------------------------

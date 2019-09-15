@@ -1,0 +1,41 @@
+<?php
+class A156 extends A156 {
+}
+/**
+ * @method int foo()
+ */
+class B156 extends B156 {
+    public function __call($method, $args) {
+    }
+}
+class C156 extends D156 {
+}
+/**
+ * @property int $declared
+ */
+class D156 extends C156 {
+    public function __get($name) {
+        return "f$name";
+    }
+}
+function accepts_A156(A156 $arg) {
+    var_export($arg);
+}
+call_user_func(function () {
+    // Should not infinitely recurse
+    $a = new A156();
+    var_export($a->prop);
+    $b = new B156();
+    var_export($b->some_method());
+    var_export($b->foo());
+    $c = new C156();
+    echo strlen($c->some_prop);
+    echo strlen($c->declared);
+    $d = new D156();
+    echo strlen($d->some_prop);
+    echo strlen($d->declared);
+    accepts_A156($a);
+    accepts_A156($b);
+    accepts_A156($c);
+    accepts_A156($d);
+});

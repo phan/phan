@@ -96,7 +96,7 @@ return [
 
     'directory_list' => ['src'],
 
-    'analyzed_file_extensions' => ['php'],
+    'analyzed_file_extensions' => ['php', 'php_crash'],
 
     // Set this to true to enable the plugins that Phan uses to infer more accurate literal return types of `implode`, `implode`, and many other functions.
     //
