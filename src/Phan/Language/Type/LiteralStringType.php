@@ -262,6 +262,30 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
         return parent::canCastToNonNullableType($type);
     }
 
+    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $context, Type $type) : bool
+    {
+        if ($type instanceof ScalarType) {
+            switch ($type::NAME) {
+                case 'string':
+                    return true;
+                case 'int':
+                    // Allow int or float strings to cast to int or floats
+                    if (filter_var($this->value, FILTER_VALIDATE_INT) === false) {
+                        return false;
+                    }
+                    break;
+                case 'float':
+                    // Allow int or float strings to cast to int or floats
+                    if (filter_var($this->value, FILTER_VALIDATE_FLOAT) === false) {
+                        return false;
+                    }
+                    break;
+            }
+            return !$context->isStrictTypes();
+        }
+        return $type instanceof CallableType;
+    }
+
     /**
      * @return bool
      * True if this Type can be cast to the given Type

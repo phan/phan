@@ -2,6 +2,10 @@
 
 namespace Phan\Language\Type;
 
+use Phan\CodeBase;
+use Phan\Language\Context;
+use Phan\Language\Type;
+
 /**
  * Represents the type `resource`
  */
@@ -23,5 +27,11 @@ final class ResourceType extends NativeType
     public function canUseInRealSignature() : bool
     {
         return false;
+    }
+
+    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $other) : bool
+    {
+        // Allow casting resources to other resources.
+        return $other instanceof ResourceType;
     }
 }

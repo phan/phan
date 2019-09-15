@@ -179,4 +179,10 @@ final class TemplateType extends Type
     {
         return false;
     }
+
+    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $unused_other) : bool
+    {
+        // Always possible until we support inferring `@template T as ConcreteType`
+        return true;
+    }
 }

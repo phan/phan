@@ -4,6 +4,7 @@ namespace Phan\Language\Type;
 
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Language\Context;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 
@@ -42,6 +43,11 @@ final class VoidType extends NativeType
             [],
             true
         );
+    }
+
+    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $other) : bool
+    {
+        return $other->isNullable();
     }
 
     public function isSubtypeOf(Type $type) : bool

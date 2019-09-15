@@ -633,7 +633,7 @@ class Clazz extends AddressableElement
             $visited[$fqsen->__toString()] = true;
 
             // Prevent infinite loops
-            if (array_key_exists($parent->getFQSEN()->__toString(), $visited)) {
+            if (\array_key_exists($parent->getFQSEN()->__toString(), $visited)) {
                 return $fqsen;
             }
         }
@@ -1873,7 +1873,7 @@ class Clazz extends AddressableElement
             }
             $checked[$current->getFQSEN()->__toString()] = true;
             $current = $this->getParentClass($code_base);
-            if (array_key_exists($current->getFQSEN()->__toString(), $checked)) {
+            if (\array_key_exists($current->getFQSEN()->__toString(), $checked)) {
                 // Prevent infinite recursion.
                 return false;
             }

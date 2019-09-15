@@ -2446,19 +2446,21 @@ class UnionType implements Serializable
         if ($this->isNull()) {
             return $other->containsNullable();
         }
-        // TODO forbid float or literal float->int with strict_types=1
-        if ($this->hasAnyTypeOverlap($code_base, $other)) {
+        $other_type_set = $other->getTypeSet();
+        if (!$other_type_set) {
             return true;
         }
-        foreach ($other->getTypeSet() as $other_type) {
-            // allow classes to cast to interfaces outside of the class hierarchy, etc.
-            if ($other_type->isPossiblyObject() && $this->canPossiblyCastToClass($code_base, $other_type)) {
-                return true;
-            }
+        $type_set = $this->getTypeSet();
+        if (!$type_set) {
+            return true;
         }
-        if (!$context->isStrictTypes()) {
-            // Allow scalar types (except null) to cast to other scalars
-            return !$other->scalarTypes()->isEmpty() && !$this->scalarTypes()->nonNullableClone()->isEmpty();
+        foreach ($this->getTypeSet() as $type) {
+            $type = $type->withIsNullable(false);
+            foreach ($other_type_set as $other) {
+                if ($type->canCastToDeclaredType($code_base, $context, $other)) {
+                    return true;
+                }
+            }
         }
         return false;
     }

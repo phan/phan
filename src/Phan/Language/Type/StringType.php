@@ -2,7 +2,9 @@
 
 namespace Phan\Language\Type;
 
+use Phan\CodeBase;
 use Phan\Config;
+use Phan\Language\Context;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 
@@ -36,6 +38,15 @@ class StringType extends ScalarType
     public function isPossiblyNumeric() : bool
     {
         return true;
+    }
+
+    public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other) : bool
+    {
+        // Allow casting scalars to other scalars, but not to null.
+        if ($other instanceof ScalarType) {
+            return $other instanceof StringType || (!$context->isStrictTypes() && parent::canCastToDeclaredType($code_base, $context, $other));
+        }
+        return $other instanceof CallableType;
     }
 
     /**

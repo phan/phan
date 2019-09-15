@@ -3,6 +3,7 @@
 namespace Phan\Language\Type;
 
 use Phan\CodeBase;
+use Phan\Language\Context;
 use Phan\Language\Type;
 
 /**
@@ -62,6 +63,14 @@ class ObjectType extends NativeType
     public function isPossiblyObject() : bool
     {
         return true;
+    }
+
+    /**
+     * Check if this type can possibly cast to the declared type, ignoring nullability of this type
+     */
+    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $other) : bool
+    {
+        return $other->isPossiblyObject();
     }
 
     public function canUseInRealSignature() : bool

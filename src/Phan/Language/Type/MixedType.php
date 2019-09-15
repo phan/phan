@@ -98,6 +98,11 @@ final class MixedType extends NativeType
         return true;  // It's possible.
     }
 
+    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $unused_other) : bool
+    {
+        return true;  // It's possible.
+    }
+
     public function isDefiniteNonObjectType() : bool
     {
         return false;

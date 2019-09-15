@@ -2,7 +2,7 @@
 
 function test745SoftCast(string $s, bool $b, int $i, iterable $iter, float $f) : bool {
     if ($b) {
-        // Should emit TypeMismatchReturn instead of TypeMismatchReturnReal because it won't throw an error at runtime.
+        // Should emit TypeMismatchReturnReal instead of TypeMismatchReturn because it will throw an error at runtime.
         return $s;
     } elseif (rand() % 2 == 1) {
         return $i;

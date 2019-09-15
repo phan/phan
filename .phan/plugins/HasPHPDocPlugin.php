@@ -20,8 +20,8 @@ use Phan\PluginV3\PostAnalyzeNodeCapability;
 use function array_shift;
 use function count;
 use function gettype;
-use function json_encode;
 use function is_string;
+use function json_encode;
 use function ltrim;
 use function preg_match;
 use function strpos;
@@ -264,7 +264,7 @@ class BasePHPDocCheckerPlugin extends PluginAwarePostAnalysisVisitor
             );
             return null;
         }
-        return new ClassElementEntry($method, trim(preg_replace('/\s+/', ' ', $description)));
+        return new ClassElementEntry($method, \trim(\preg_replace('/\s+/', ' ', $description)));
     }
 
     /**
@@ -302,7 +302,7 @@ class BasePHPDocCheckerPlugin extends PluginAwarePostAnalysisVisitor
             );
             return null;
         }
-        return new ClassElementEntry($property, trim(preg_replace('/\s+/', ' ', $description)));
+        return new ClassElementEntry($property, \trim(\preg_replace('/\s+/', ' ', $description)));
     }
 }
 
