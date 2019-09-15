@@ -372,6 +372,9 @@ class DuplicatePHPDocCheckerPlugin extends BasePHPDocCheckerPlugin
     {
         $result = [];
         foreach ($values as $v) {
+            if ($v->element->isDeprecated()) {
+                continue;
+            }
             $result[$v->description][] = $v;
         }
         foreach ($result as $description => $keys) {

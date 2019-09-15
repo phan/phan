@@ -101,6 +101,7 @@ abstract class UnaddressableTypedElement
     /**
      * @return UnionType
      * Get the type of this structural element
+     * If this is a parameter, get the variadic version seen inside the function.
      */
     public function getUnionType() : UnionType
     {
@@ -109,7 +110,8 @@ abstract class UnaddressableTypedElement
 
     /**
      * @return UnionType
-     * Get the type of this structural element
+     * Get the type of this structural element.
+     * If this is a parameter, get the non-variadic version seen by callers for checking arguments.
      *
      * @suppress PhanUnreferencedPublicMethod possibly used by PassByReferenceVariable
      */
@@ -150,7 +152,7 @@ abstract class UnaddressableTypedElement
      * The flag we'd like to get the state for
      *
      * @return bool
-     * True if all bits in the flag are enabled in the bit
+     * True if all bits in the ast\Node flags are enabled in the bit
      * vector, else false.
      */
     public function getFlagsHasState(int $flag) : bool
@@ -183,7 +185,7 @@ abstract class UnaddressableTypedElement
      * The flag we'd like to get the state for
      *
      * @return bool
-     * True if all bits in the flag are enabled in the bit
+     * True if all bits in the phan flag are enabled in the bit
      * vector, else false.
      */
     public function getPhanFlagsHasState(int $flag) : bool

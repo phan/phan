@@ -97,12 +97,12 @@ class NodeDumper
     }
 
     /**
-     * Converts the class name of $ast_node to a short string describing that class name.
+     * Converts the class name of $token to a short string describing that class name.
      * Removes the common `Microsoft\\PhpParser\\` prefix
      */
-    public static function dumpTokenClassName(Token $ast_node) : string
+    public static function dumpTokenClassName(Token $token) : string
     {
-        $name = get_class($ast_node);
+        $name = get_class($token);
         if (\stripos($name, 'Microsoft\\PhpParser\\') === 0) {
             // Remove the PhpParser namespace
             $name = (string)substr($name, 20);

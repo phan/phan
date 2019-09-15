@@ -618,7 +618,8 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
 
     /**
      * @return int
-     * Corresponds to the type of the array keys of $array. This is a GenericArrayType::KEY_* constant (KEY_INT, KEY_STRING, or KEY_MIXED).
+     * Corresponds to the type of the array keys of the array represented by $node.
+     * This is a GenericArrayType::KEY_* constant (KEY_INT, KEY_STRING, or KEY_MIXED).
      */
     public static function getKeyTypeOfArrayNode(CodeBase $code_base, Context $context, Node $node, bool $should_catch_issue_exception = true) : int
     {

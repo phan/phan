@@ -26,7 +26,7 @@ use Phan\Plugin\Internal\IssueFixingPlugin\FileEditSet;
 class Fixers
 {
     /**
-     * Add a missing return type to the real signature
+     * Remove a redundant phpdoc return type from the real signature
      */
     public static function fixRedundantFunctionLikeComment(
         CodeBase $unused_code_base,

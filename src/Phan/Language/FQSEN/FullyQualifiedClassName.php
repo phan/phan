@@ -86,7 +86,7 @@ class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement
 
     /**
      * @return UnionType
-     * The union type of just this class type
+     * The union type of just this class type, as a phpdoc union type
      * @suppress PhanUnreferencedPublicMethod
      */
     public function asPHPDocUnionType() : UnionType
@@ -96,7 +96,7 @@ class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement
 
     /**
      * @return UnionType
-     * The union type of just this class type
+     * The union type of just this class type, as a real union type
      */
     public function asRealUnionType() : UnionType
     {

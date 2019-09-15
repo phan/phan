@@ -899,7 +899,9 @@ class CodeBase
      * The FQSEN of a class to get
      *
      * @return Clazz
-     * A class with the given FQSEN
+     * A class with the given FQSEN.
+     *
+     * If the parse phase has been completed, this will hydrate the returned class.
      */
     public function getClassByFQSEN(
         FullyQualifiedClassName $fqsen
@@ -927,7 +929,7 @@ class CodeBase
      * The FQSEN of a class to get
      *
      * @return Clazz
-     * A class with the given FQSEN
+     * A class with the given FQSEN (without hydrating the class)
      */
     public function getClassByFQSENWithoutHydrating(
         FullyQualifiedClassName $fqsen
@@ -1149,7 +1151,7 @@ class CodeBase
 
     /**
      * @return bool
-     * True if an element with the given FQSEN exists
+     * True if a global function with the given FQSEN exists
      */
     public function hasFunctionWithFQSEN(
         FullyQualifiedFunctionName $fqsen
@@ -1201,7 +1203,7 @@ class CodeBase
 
     /**
      * @return bool
-     * True if an element with the given FQSEN exists
+     * True if an class constant with the given FQSEN exists
      */
     public function hasClassConstantWithFQSEN(
         FullyQualifiedClassConstantName $fqsen
@@ -1257,7 +1259,7 @@ class CodeBase
 
     /**
      * @return bool
-     * True if an element with the given FQSEN exists
+     * True if a a global constant with the given FQSEN exists
      */
     public function hasGlobalConstantWithFQSEN(
         FullyQualifiedGlobalConstantName $fqsen
@@ -1299,7 +1301,7 @@ class CodeBase
 
     /**
      * @return bool
-     * True if an element with the given FQSEN exists
+     * True if a property with the given FQSEN exists
      */
     public function hasPropertyWithFQSEN(
         FullyQualifiedPropertyName $fqsen
@@ -1341,8 +1343,7 @@ class CodeBase
      * The FQSEN of a class element
      *
      * @return ClassMap
-     * Get the class map for an FQSEN representing
-     * a class element
+     * Get the class map for the class of the given class element's fqsen.
      */
     private function getClassMapByFQSEN(
         FullyQualifiedClassElement $fqsen
@@ -1357,8 +1358,7 @@ class CodeBase
      * The FQSEN of a class
      *
      * @return ClassMap
-     * Get the class map for an FQSEN representing
-     * a class element
+     * Get the class map for an FQSEN of the class.
      */
     private function getClassMapByFullyQualifiedClassName(
         FullyQualifiedClassName $fqsen
@@ -1632,7 +1632,7 @@ class CodeBase
     }
 
     /**
-     * @return array<string,array<string,string>> a list of namespaces which have each class name
+     * @return array<string,array<string,string>> a newly computed list of namespaces which have each class name
      */
     private function computeNamespacesForClassNames() : array
     {
@@ -1660,7 +1660,7 @@ class CodeBase
     }
 
     /**
-     * @return array<string,array<string,string>> a list of namespaces which have each function name
+     * @return array<string,array<string,string>> a newly computed list of namespaces which have each function name
      */
     private function computeNamespacesForFunctionNames() : array
     {
@@ -1885,7 +1885,7 @@ class CodeBase
     ];
 
     /**
-     * @return array<int,FullyQualifiedFunctionName|string> 0 or more namespaced function names found in this code base
+     * @return array<int,FullyQualifiedFunctionName|string> 0 or more namespaced function names found in this code base in $namespace
      */
     public function suggestSimilarGlobalFunctionInSameNamespace(
         string $namespace,
@@ -1918,13 +1918,13 @@ class CodeBase
      */
     private $constant_lookup_map_for_name;
 
-    /** @return array<string,array<string,FullyQualifiedGlobalConstantName>> maps name to namespace to constant */
+    /** @return array<string,array<string,FullyQualifiedGlobalConstantName>> maps constant name to namespace to constant (cached) */
     private function getConstantLookupMapForName() : array
     {
         return $this->constant_lookup_map_for_name ?? ($this->constant_lookup_map_for_name = $this->computeConstantLookupMapForName());
     }
 
-    /** @return array<string,array<string,FullyQualifiedGlobalConstantName>> maps name to namespace to constant */
+    /** @return array<string,array<string,FullyQualifiedGlobalConstantName>> maps constant name to namespace to constant */
     private function computeConstantLookupMapForName() : array
     {
         $result = [];
@@ -1935,7 +1935,7 @@ class CodeBase
     }
 
     /**
-     * @return array<int,FullyQualifiedFunctionName> 0 or more namespaced function names found in this code base
+     * @return array<int,FullyQualifiedFunctionName> 0 or more namespaced function names found in this code base, from various namespaces
      */
     public function suggestSimilarGlobalFunctionForNamespaceAndName(
         string $namespace,
@@ -1958,8 +1958,8 @@ class CodeBase
      *
      * @return array<int,FullyQualifiedClassName|string> 0 or more namespaced class names found in this code base
      *
-     *  NOTE: Non-classes are always represented as strings (and will be suggested even if there is a namespace),
-     *  classes are always represented as FullyQualifiedClassName
+     * NOTE: Non-classes are always represented as strings (and will be suggested even if there is a namespace),
+     * classes are always represented as FullyQualifiedClassName
      */
     public function suggestSimilarClassInSameNamespace(
         FullyQualifiedClassName $missing_class,

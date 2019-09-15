@@ -459,7 +459,8 @@ class Parameter extends Variable
     }
 
     /**
-     * Records that this parameter is an output reference (it overwrites the value of the argument by reference
+     * Records that this parameter is an output reference
+     * (it overwrites the value of the argument by reference)
      */
     public function setIsOutputReference() : void
     {
@@ -468,7 +469,8 @@ class Parameter extends Variable
     }
 
     /**
-     * Records that this parameter is an output reference (it overwrites the value of the argument by reference
+     * Records that this parameter is an ignored reference
+     * (it should be assumed that the reference does not affect types in a meaningful way for the caller)
      */
     public function setIsIgnoredReference() : void
     {

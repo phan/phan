@@ -514,7 +514,7 @@ class Clazz extends AddressableElement
 
     /**
      * @return Clazz
-     * The parent class of this class if defined
+     * The parent class of this class if defined (does not trigger class hydration of the parent class, unlike getParentClass)
      *
      * @throws LogicException|RuntimeException
      * An exception is thrown if this class has no parent
@@ -802,7 +802,7 @@ class Clazz extends AddressableElement
     /**
      * @param array<string,CommentProperty> $magic_property_map mapping from property name to property
      * @param CodeBase $code_base
-     * @return bool whether or not we defined it.
+     * @return bool whether or not we defined the magic property map
      */
     public function setMagicPropertyMap(
         array $magic_property_map,
@@ -845,7 +845,7 @@ class Clazz extends AddressableElement
     /**
      * @param array<string,\Phan\Language\Element\Comment\Method> $magic_method_map mapping from method name to this.
      * @param CodeBase $code_base
-     * @return bool whether or not we defined it.
+     * @return bool whether or not we defined the magic method map
      */
     public function setMagicMethodMap(
         array $magic_method_map,
@@ -2028,8 +2028,8 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * Add properties, constants and methods from all
-     * ancestors (parents, traits, ...) to this class
+     * Add class constants from all ancestors (parents, traits, ...)
+     * to this class
      *
      * @param CodeBase $code_base
      * The entire code base from which we'll find ancestor

@@ -39,7 +39,7 @@ class IssueInstance
     /** @var ?Suggestion If this is non-null, this contains suggestions on how to resolve the error. */
     private $suggestion;
 
-    /** @var array<int,string|int|float> $template_parameters If this is non-null, this contains suggestions on how to resolve the error. */
+    /** @var array<int,string|int|float> $template_parameters If this is non-null, this contains the arguments emitted for this instance of the issue. */
     private $template_parameters;
 
     /**

@@ -175,13 +175,13 @@ class CLI
 
     /**
      * @var array<int,string>
-     * The set of file names to analyze
+     * The set of file names to analyze, from the config
      */
     private $file_list_in_config = [];
 
     /**
      * @var array<int,string>
-     * The set of file names to analyze
+     * The set of file names to analyze, from the combined config and CLI options
      */
     private $file_list = [];
 

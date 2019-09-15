@@ -233,8 +233,8 @@ class IssueFixSuggester
     }
 
     /**
-     * @param array<string,Method> $methods
-     * @return array<string,Method> a subset of those methods
+     * @param array<string,Method> $methods a list of methods
+     * @return array<string,Method> a subset of the methods in $methods that are accessible from the current scope.
      * @internal
      */
     public static function filterSimilarMethods(CodeBase $code_base, Context $context, array $methods, bool $is_static) : array
@@ -324,7 +324,7 @@ class IssueFixSuggester
 
     /**
      * @param array<string,Property> $property_map
-     * @return array<string,Property> a subset of those methods
+     * @return array<string,Property> a subset of $property_map that is accessible from the current scope.
      * @internal
      */
     public static function filterSimilarProperties(CodeBase $code_base, Context $context, array $property_map, bool $is_static) : array
@@ -514,7 +514,7 @@ class IssueFixSuggester
 
     /**
      * @param array<string,ClassConstant> $constant_map
-     * @return array<string,ClassConstant> a subset of those methods
+     * @return array<string,ClassConstant> a subset of those class constants that are accessible from the current scope.
      * @internal
      */
     public static function filterSimilarConstants(CodeBase $code_base, Context $context, array $constant_map) : array

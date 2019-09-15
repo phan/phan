@@ -161,7 +161,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      *
      * @return Context
      * A new or an unchanged context resulting from
-     * parsing the node
+     * analyzing the negation of the short-circuiting and.
      */
     private function analyzeShortCircuitingAnd($left, $right) : Context
     {
@@ -200,7 +200,6 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
     }
 
     /**
-     * Helper method
      * @param Node|string|int|float $left
      * a Node or non-node to parse (possibly an AST literal)
      *
@@ -209,7 +208,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      *
      * @return Context
      * A new or an unchanged context resulting from
-     * parsing the node
+     * analyzing the negation of the short-circuiting or.
      */
     private function analyzeShortCircuitingOr($left, $right) : Context
     {

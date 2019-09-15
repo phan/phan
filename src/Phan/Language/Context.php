@@ -70,6 +70,7 @@ class Context extends FileRef
 
     /**
      * @var array<int,Node>
+     * A list of nodes of loop statements that have been entered in the current functionlike scope.
      */
     protected $loop_nodes = [];
 
@@ -306,7 +307,7 @@ class Context extends FileRef
     }
 
     /**
-     * Returns true if strict_types is set to 1 in this context.
+     * Returns true if strict_types is set to 1 in this context. (deprecated)
      * @deprecated use isStrictTypes
      * @suppress PhanUnreferencedPublicMethod
      */

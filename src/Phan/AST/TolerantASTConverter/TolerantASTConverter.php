@@ -380,6 +380,7 @@ class TolerantASTConverter
     /**
      * @param PhpParser\Node|Token $n - The node from PHP-Parser
      * @return ast\Node|ast\Node[]|string|int|float|bool|null - whatever ast\parse_code would return as the equivalent.
+     *                                                          This does not convert names to ast\AST_CONST.
      * @throws InvalidArgumentException if Phan doesn't know what $n is
      */
     protected static function phpParserNonValueNodeToAstNode($n)
@@ -410,6 +411,7 @@ class TolerantASTConverter
     /**
      * @param PhpParser\Node|Token $n - The node from PHP-Parser
      * @return ast\Node|ast\Node[]|string|int|float|bool|null - whatever ast\parse_code would return as the equivalent.
+     *                                                          Generates a valid placeholder for invalid nodes if $should_add_placeholders is true.
      * @throws InvalidNodeException when self::$should_add_placeholders is false, like many of these methods.
      */
     protected static function phpParserNodeToAstNodeOrPlaceholderExpr($n)

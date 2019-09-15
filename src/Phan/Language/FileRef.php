@@ -54,7 +54,7 @@ class FileRef implements \Serializable
 
     /**
      * @return string
-     * The path of the file relative to the project
+     * The path of this FileRef's file relative to the project
      * root directory
      */
     public function getProjectRelativePath() : string
@@ -65,8 +65,8 @@ class FileRef implements \Serializable
     /**
      * @param string $cwd_relative_path (relative or absolute path)
      * @return string
-     * The path of the file relative to the project
-     * root directory
+     * The path of the file relative to the project root directory for the provided path
+     *
      * @see Config::getProjectRootDirectory() for converting paths to absolute paths
      */
     public static function getProjectRelativePathForPath(string $cwd_relative_path) : string

@@ -189,7 +189,7 @@ class Element
 
     /**
      * Accepts a visitor that differentiates on the flag value
-     * of the AST node.
+     * of the AST node of kind ast\AST_BINARY_OP.
      * @return mixed - The type depends on the subclass of FlagVisitor
      */
     public static function acceptBinaryFlagVisitor(Node $node, FlagVisitor $visitor)
@@ -205,7 +205,7 @@ class Element
 
     /**
      * Accepts a visitor that differentiates on the flag value
-     * of the AST node.
+     * of the AST node of kind ast\AST_CLASS.
      *
      * @return mixed - The type depends on the subclass of FlagVisitor
      * @suppress PhanUnreferencedPublicMethod
@@ -230,7 +230,7 @@ class Element
 
     /**
      * Accepts a visitor that differentiates on the flag value
-     * of the AST node.
+     * of the AST node of kind ast\AST_NAME.
      *
      * @return mixed - The type depends on the subclass of FlagVisitor
      * @suppress PhanUnreferencedPublicMethod
@@ -251,7 +251,7 @@ class Element
 
     /**
      * Accepts a visitor that differentiates on the flag value
-     * of the AST node.
+     * of the AST node of kind ast\AST_TYPE.
      *
      * @return mixed - The type depends on the subclass of FlagVisitor
      * @suppress PhanUnreferencedPublicMethod
@@ -282,7 +282,7 @@ class Element
 
     /**
      * Accepts a visitor that differentiates on the flag value
-     * of the AST node.
+     * of the AST node of type ast\AST_UNARY_OP.
      *
      * @return mixed - The type depends on the subclass of FlagVisitor
      * @suppress PhanUnreferencedPublicMethod
@@ -303,7 +303,7 @@ class Element
 
     /**
      * Accepts a visitor that differentiates on the flag value
-     * of the AST node.
+     * of the AST node of kind ast\AST_INCLUDE_OR_EVAL.
      *
      * @return mixed - The type depends on the subclass of FlagVisitor
      * @suppress PhanUnreferencedPublicMethod
@@ -328,7 +328,7 @@ class Element
 
     /**
      * Accepts a visitor that differentiates on the flag value
-     * of the AST node.
+     * of the AST node of kind ast\AST_MAGIC_CONST.
      *
      * @return mixed - The type depends on the subclass of FlagVisitor
      * @suppress PhanUnreferencedPublicMethod
@@ -359,7 +359,7 @@ class Element
 
     /**
      * Accepts a visitor that differentiates on the flag value
-     * of the AST node.
+     * of the AST node of kind ast\AST_USE.
      *
      * @return mixed - The type depends on the subclass of FlagVisitor
      * @suppress PhanUnreferencedPublicMethod

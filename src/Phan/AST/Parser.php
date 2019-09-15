@@ -77,7 +77,8 @@ class Parser
     }
 
     /**
-     * Parses the code. If $suppress_parse_errors is false, this also emits SyntaxError.
+     * Parses the code with the native parser or the polyfill.
+     * If $suppress_parse_errors is false, this also emits SyntaxError.
      *
      * @param CodeBase $code_base
      * @param Context $context
@@ -372,7 +373,7 @@ class Parser
     }
 
     /**
-     * Parses the code. If $suppress_parse_errors is false, this also emits SyntaxError.
+     * Parses the code with the polyfill. If $suppress_parse_errors is false, this also emits SyntaxError.
      *
      * @param CodeBase $code_base
      * @param Context $context
