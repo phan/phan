@@ -222,6 +222,7 @@ class Analysis
             ast\AST_CLASS,
             ast\AST_METHOD,
             ast\AST_FUNC_DECL,
+            ast\AST_ARROW_FUNC,
             ast\AST_CLOSURE,
         ], true)) {
             return $context;

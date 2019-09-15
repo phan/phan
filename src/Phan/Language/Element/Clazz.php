@@ -1168,7 +1168,7 @@ class Clazz extends AddressableElement
             return;
         }
 
-        // Update the FQSEN if its not associated with this
+        // Update the FQSEN if it's not associated with this
         // class yet (always true)
         if ($constant->getFQSEN() !== $constant_fqsen) {
             $constant = clone($constant);
@@ -1226,7 +1226,7 @@ class Clazz extends AddressableElement
             $constant->getName()
         );
 
-        // Update the FQSEN if its not associated with this
+        // Update the FQSEN if it's not associated with this
         // class yet
         if ($constant->getFQSEN() !== $constant_fqsen) {
             $constant = clone($constant);
@@ -1565,7 +1565,7 @@ class Clazz extends AddressableElement
 
         if (!$code_base->hasMethodWithFQSEN($method_fqsen)) {
             if ('__construct' === $name) {
-                // Create a default constructor if its requested
+                // Create a default constructor if it's requested
                 // but doesn't exist yet
                 $default_constructor =
                     Method::defaultConstructorForClass(

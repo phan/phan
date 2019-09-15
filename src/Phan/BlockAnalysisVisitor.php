@@ -241,6 +241,91 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
+     * Optimized visitor for arrays, skipping unnecessary steps.
+     * Equivalent to visit()
+     */
+    public function visitArray(Node $node) : Context
+    {
+        $context = $this->context;
+        $context->setLineNumberStart($node->lineno);
+
+        // Let any configured plugins do a pre-order
+        // analysis of the node.
+        ConfigPluginSet::instance()->preAnalyzeNode(
+            $this->code_base,
+            $context,
+            $node
+        );
+
+        // With a context that is inside of the node passed
+        // to this method, we analyze all children of the
+        // node.
+        $this->parent_node_list[] = $node;
+        try {
+            foreach ($node->children as $child_node) {
+                // Skip any non Node children.
+                if (!($child_node instanceof Node)) {
+                    continue;
+                }
+
+                // Step into each child node and get an
+                // updated context for the node
+                if ($child_node->kind === ast\AST_ARRAY_ELEM) {
+                    $context = $this->visitArrayElem($child_node);
+                } elseif ($child_node->kind === ast\AST_UNPACK) {
+                    $context = $this->visitUnpack($child_node);
+                } else {
+                    throw new AssertionError("Unexpected node in ast\AST_ARRAY: " . \Phan\Debug::nodeToString($child_node));
+                }
+            }
+        } finally {
+            \array_pop($this->parent_node_list);
+        }
+
+        return $this->postOrderAnalyze($context, $node);
+    }
+
+    /**
+     * Optimized visitor for array elements, skipping unnecessary steps.
+     * Equivalent to visitArrayElem
+     */
+    public function visitArrayElem(Node $node) : Context
+    {
+        $context = $this->context;
+        $context->setLineNumberStart($node->lineno);
+
+        // Let any configured plugins do a pre-order
+        // analysis of the node.
+        $plugin_set = ConfigPluginSet::instance();
+        $plugin_set->preAnalyzeNode(
+            $this->code_base,
+            $context,
+            $node
+        );
+
+        // With a context that is inside of the node passed
+        // to this method, we analyze all children of the
+        // node.
+        foreach ($node->children as $child_node) {
+            // Skip any non Node children.
+            if (!($child_node instanceof Node)) {
+                continue;
+            }
+
+            // Step into each child node and get an
+            // updated context for the node
+            $context = $this->analyzeAndGetUpdatedContext($context, $node, $child_node);
+        }
+
+        $plugin_set->postAnalyzeNode(
+            $this->code_base,
+            $context,
+            $node
+        );
+        return $context;
+    }
+
+    /**
      * @param Node $node
      * @param Context $context
      * @param int|float|string|null $child_node (probably not null)
@@ -1418,6 +1503,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             // scope for things like assigning variables.
             // $child_context = $fallthrough_context->withClonedScope();
 
+            '@phan-var Node $child_node';
             $fallthrough_context->setLineNumberStart($child_node->lineno);
 
             $old_context = $this->context;
@@ -1459,13 +1545,17 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     throw new AssertionError('Did not expect null/empty statements list node');
                 }
 
-                $child_context = $this->analyzeAndGetUpdatedContext(
-                    $child_context->withScope(
-                        new BranchScope($child_context->getScope())
-                    )->withLineNumberStart($stmts_node->lineno),
-                    $child_node,
-                    $stmts_node
-                );
+                $this->parent_node_list[] = $child_node;
+                $old_context = $this->context;
+                $this->context = $child_context->withScope(
+                    new BranchScope($child_context->getScope())
+                )->withLineNumberStart($stmts_node->lineno);
+                try {
+                    $child_context = $this->visitStmtList($stmts_node);
+                } finally {
+                    \array_pop($this->parent_node_list);
+                    $this->context = $old_context;
+                }
 
                 // Now that we know all about our context (like what
                 // 'self' means), we can analyze statements like

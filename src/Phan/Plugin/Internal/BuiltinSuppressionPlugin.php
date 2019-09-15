@@ -120,7 +120,7 @@ final class BuiltinSuppressionPlugin extends PluginV3 implements
         $suppress_issue_list = $cached_suppressions['suppressions'] ?? [];
 
         if (($cached_suppressions['contents'] ?? null) !== $file_contents) {
-            $suppress_issue_list = $this->computeIssueSuggestionList($code_base, $file_contents);
+            $suppress_issue_list = $this->computeIssueSuppressionList($code_base, $file_contents);
             $this->current_line_suppressions[$absolute_file_path] = [
                 'contents' => $file_contents,
                 'suppressions' => $suppress_issue_list,
@@ -133,7 +133,7 @@ final class BuiltinSuppressionPlugin extends PluginV3 implements
     /**
      * @return array<string,array<int,int>> Maps 0 or more issue types to a *list* of lines corresponding to issues that this plugin is going to suppress.
      */
-    private function computeIssueSuggestionList(
+    private function computeIssueSuppressionList(
         CodeBase $unused_code_base,
         string $file_contents
     ) : array {

@@ -212,7 +212,7 @@ class FunctionFactory
                 $phan_flags = 0;
                 $is_optional = false;
 
-                // Check to see if its a pass-by-reference parameter
+                // Check to see if it's a pass-by-reference parameter
                 if (($parameter_name[0] ?? '') === '&') {
                     $flags |= \ast\flags\PARAM_REF;
                     $parameter_name = \substr($parameter_name, 1);
@@ -225,13 +225,13 @@ class FunctionFactory
                     }
                 }
 
-                // Check to see if its variadic
+                // Check to see if it's variadic
                 if (\strpos($parameter_name, '...') !== false) {
                     $flags |= \ast\flags\PARAM_VARIADIC;
                     $parameter_name = \str_replace('...', '', $parameter_name);
                 }
 
-                // Check to see if its an optional parameter
+                // Check to see if it's an optional parameter
                 if (\strpos($parameter_name, '=') !== false) {
                     $is_optional = true;
                     $parameter_name = \str_replace('=', '', $parameter_name);
