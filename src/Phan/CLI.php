@@ -1602,9 +1602,12 @@ EOB
 
             $exclude_file_regex = Config::getValue('exclude_file_regex');
             $filter_folder_or_file = /** @param mixed $unused_key */ static function (\SplFileInfo $file_info, $unused_key, \RecursiveIterator $iterator) use ($file_extensions, $exclude_file_regex) : bool {
+                if (\in_array($file_info->getBaseName(), ['.', '..'], true)) {
+                    // Exclude '.' and '..'
+                    return false;
+                }
                 if ($file_info->isDir()) {
                     if (!$iterator->hasChildren()) {
-                        // Exclude '.' and '..'
                         return false;
                     }
                     // Compare exclude_file_regex against the relative path of the folder within the project
