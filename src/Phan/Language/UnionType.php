@@ -3647,15 +3647,22 @@ class UnionType implements Serializable
      */
     public function asNonEmptyGenericArrayTypes(int $key_type) : UnionType
     {
+        static $cache = [];
+        $type = ($cache[$key_type] ?? ($cache[$key_type] = MixedType::instance(false)->asGenericArrayType($key_type)));
         if (\count($this->type_set) === 0) {
-            return ArrayType::instance(false)->asPHPDocUnionType();
+            return $type->asRealUnionType();
         }
-        return $this->asMappedUnionType(
+        $result = $this->asMappedUnionType(
             static function (Type $type) use ($key_type) : Type {
                 return $type->asGenericArrayType($key_type);
             }
         );
+        if (!$result->hasRealTypeSet()) {
+            return $result->withRealType($type);
+        }
+        return $result;
     }
+
     /**
      * @param CodeBase $code_base
      * The code base to use in order to find super classes, etc.

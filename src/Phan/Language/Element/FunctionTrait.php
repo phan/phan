@@ -741,7 +741,7 @@ trait FunctionTrait
         }
         $real_type_set = $parameter->getNonVariadicUnionType()->getRealTypeSet();
         $parameter_name = $parameter->getName();
-        if ($parameter->getUnionType()->isEmpty()) {
+        if ($parameter->getNonVariadicUnionType()->isEmpty()) {
             // If there is no type specified in PHP, check
             // for a docComment with @param declarations. We
             // assume order in the docComment matches the

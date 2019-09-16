@@ -1,0 +1,8 @@
+%s:2 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type array<int,mixed>(real=array<int,mixed>)
+%s:7 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($obj) is int but \spl_object_id() takes object
+%s:9 PhanRedundantCondition Redundant attempt to cast $v of type array<int,mixed> to array
+%s:13 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type array<int,int>(real=array<int,int>)
+%s:18 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($obj) is int but \spl_object_id() takes object
+%s:19 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($obj) is int but \spl_object_id() takes object
+%s:21 PhanRedundantCondition Redundant attempt to cast $v of type array<int,int> to array
+%s:26 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type array<int,int>(real=array<int,mixed>)
