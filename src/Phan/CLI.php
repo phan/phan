@@ -431,9 +431,9 @@ class CLI
                             }
                             $this->file_list_in_config = \array_merge(
                                 $this->file_list_in_config,
-                                \array_values($this->directoryNameToFileList(
+                                $this->directoryNameToFileList(
                                     $directory_name
-                                ))
+                                )
                             );
                         }
                     }
@@ -992,7 +992,7 @@ class CLI
             foreach (Config::getValue('directory_list') as $directory_name) {
                 $this->file_list = \array_merge(
                     $this->file_list,
-                    \array_values(self::directoryNameToFileList($directory_name))
+                    self::directoryNameToFileList($directory_name)
                 );
             }
 
@@ -1654,18 +1654,10 @@ EOB
         foreach ($file_list as $file_path) {
             $file_path = \preg_replace('@^(\.[/\\\\]+)+@', '', $file_path);
             // Treat src/file.php and src//file.php and src\file.php the same way
-            $normalized_file_list[$file_path] = $file_path;
+            $normalized_file_list[\preg_replace("@[/\\\\]+@", "\0", $file_path)] = $file_path;
         }
-        \usort($normalized_file_list, static function (string $a, string $b) : int {
-            // Sort lexicographically by paths **within the results for a directory**,
-            // to work around some file systems not returning results lexicographically.
-            // Keep directories together by replacing directory separators with the null byte
-            // (E.g. "a.b" is lexicographically less than "a/b", but "aab" is greater than "a/b")
-            return \strcmp(\preg_replace("@[/\\\\]+@", "\0", $a), \preg_replace("@[/\\\\]+@", "\0", $b));
-        });
-
-        // @phan-suppress-next-line PhanPartialTypeMismatchReturn TODO fix https://github.com/phan/phan/issues/3169
-        return $normalized_file_list;
+        uksort($normalized_file_list, 'strcmp');
+        return array_values($normalized_file_list);
     }
 
     /**
