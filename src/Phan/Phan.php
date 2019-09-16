@@ -123,14 +123,13 @@ class Phan implements IgnoredFilesFilterInterface
         CodeBase $code_base,
         Closure $file_path_lister
     ) : bool {
-        Shim::load();
-        FileCache::setMaxCacheSize(FileCache::MINIMUM_CACHE_SIZE);
-        self::checkForSlowPHPOptions();
-        Config::warnIfInvalid();
-        self::loadConfiguredPHPExtensionStubs($code_base);
-        $is_daemon_request = Config::getValue('daemonize_socket') || Config::getValue('daemonize_tcp');
-        $language_server_config = Config::getValue('language_server_config');
-        $is_undoable_request = is_array($language_server_config) || $is_daemon_request;
+        if (Config::getValue('dump_parsed_file_list') === true) {
+            // If --dump-parsed-file-list is provided,
+            // print the files in the order they would be parsed.
+            $file_path_list = $file_path_lister();
+            echo \implode("\n", $file_path_list) . (count($file_path_list) > 0 ? "\n" : "");
+            exit(EXIT_SUCCESS);
+        }
         if (Config::getValue('language_server_use_pcntl_fallback')) {
             // The PCNTL fallback generates cyclic references (to the CodeBase instance which references many other things) in createRestorePoint,
             // so we need to garbage collect that.
@@ -147,6 +146,15 @@ class Phan implements IgnoredFilesFilterInterface
             // It might not work as well in earlier PHP versions on large codebases.
             gc_enable();
         }
+
+        Shim::load();
+        FileCache::setMaxCacheSize(FileCache::MINIMUM_CACHE_SIZE);
+        self::checkForSlowPHPOptions();
+        Config::warnIfInvalid();
+        self::loadConfiguredPHPExtensionStubs($code_base);
+        $is_daemon_request = Config::getValue('daemonize_socket') || Config::getValue('daemonize_tcp');
+        $language_server_config = Config::getValue('language_server_config');
+        $is_undoable_request = is_array($language_server_config) || $is_daemon_request;
         if ($is_daemon_request) {
             $code_base->eagerlyLoadAllSignatures();
         }
@@ -171,13 +179,6 @@ class Phan implements IgnoredFilesFilterInterface
             // If there are duplicate class/function definitions,
             // this ensures they are added to the maps in the same order.
             sort($file_path_list, SORT_STRING);
-        }
-
-        if (Config::getValue('dump_parsed_file_list') === true) {
-            // If --dump-parsed-file-list is provided,
-            // print the files in the order they would be parsed.
-            echo \implode("\n", $file_path_list) . (count($file_path_list) > 0 ? "\n" : "");
-            exit(EXIT_SUCCESS);
         }
 
         // This first pass parses code and populates the
