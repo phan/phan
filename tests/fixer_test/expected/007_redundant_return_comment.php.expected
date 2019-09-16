@@ -3,7 +3,6 @@ src_copy/007_redundant_return_comment.php:5 PhanUnreferencedFunction Possibly ze
 src_copy/007_redundant_return_comment.php:6 PhanPluginCanUseParamType Can use int as the type of parameter $x of test
 src_copy/007_redundant_return_comment.php:13 PhanPluginRedundantReturnComment Redundant @return int on function my_strlen(): @return int
 src_copy/007_redundant_return_comment.php:16 PhanPluginNotFullyQualifiedOptimizableFunctionCall Expected function call to strlen() to be fully qualified or have a use statement but none were found in namespace \NS7 (opcache can optimize fully qualified calls to this function in recent php versions)
-src_copy/007_redundant_return_comment.php:16 PhanTypeMismatchReturn Returning type string but my_strlen() is declared to return int
 src_copy/007_redundant_return_comment.php:24 PhanPluginRedundantReturnComment Redundant @return int on function countValues(): @return int
 src_copy/007_redundant_return_comment.php:28 PhanPluginNotFullyQualifiedOptimizableFunctionCall Expected function call to count() to be fully qualified or have a use statement but none were found in namespace \NS7 (opcache can optimize fully qualified calls to this function in recent php versions)
 src_copy/007_redundant_return_comment.php:32 PhanPluginNotFullyQualifiedFunctionCall Expected function call to my_strlen() to be fully qualified or have a use statement but none were found in namespace \NS7

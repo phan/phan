@@ -10,9 +10,6 @@ use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Type;
-use Phan\Language\Type\IntType;
-use Phan\Language\Type\MixedType;
-use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use Phan\PluginV3;
 use Phan\PluginV3\ReturnTypeOverrideCapability;
@@ -36,19 +33,15 @@ final class ExtendedDependentReturnTypeOverridePlugin extends PluginV3 implement
      */
     private static function getReturnTypeOverridesStatic(CodeBase $code_base) : array
     {
-        $string_union_type = StringType::instance(false)->asPHPDocUnionType();
-        $mixed_union_type = MixedType::instance(false)->asPHPDocUnionType();
         /**
-         * @param callable-string $function
+         * @param callable-string $function_name
          * @return Closure(CodeBase,Context,Func,array):UnionType
          */
         $wrap_n_argument_function = static function (
-            callable $function,
+            string $function_name,
             int $min_args,
-            int $max_args = null,
-            UnionType $default_type = null
-        ) use ($string_union_type) : Closure {
-            $default_type = $default_type ?? $string_union_type;
+            ?int $max_args = null
+        ) : Closure {
             $max_args = $max_args ?? $min_args;
             /**
              * @param array<int,Node|string|int|float> $args
@@ -56,28 +49,28 @@ final class ExtendedDependentReturnTypeOverridePlugin extends PluginV3 implement
             return static function (
                 CodeBase $code_base,
                 Context $context,
-                Func $unused_function,
+                Func $function,
                 array $args
             ) use (
-                $default_type,
-                $function,
+                $function_name,
                 $min_args,
                 $max_args
             ) : UnionType {
                 if (count($args) < $min_args || count($args) > $max_args) {
-                    return $default_type;
+                    // Phan should already warn about too many or too few
+                    return $function->getUnionType();
                 }
                 $values = [];
                 foreach ($args as $arg) {
                     $value = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $arg)->asValueOrNullOrSelf();
                     if (\is_object($value)) {
-                        return $default_type;
+                        return $function->getUnionType();
                     }
                     $values[] = $value;
                 }
                 try {
-                    $result = \with_disabled_phan_error_handler(/** @return mixed */ static function () use ($function, $values) {
-                        return @$function(...$values);
+                    $result = \with_disabled_phan_error_handler(/** @return mixed */ static function () use ($function_name, $values) {
+                        return @$function_name(...$values);
                     });
                 } catch (Throwable $e) {
                     Issue::maybeEmit(
@@ -85,21 +78,27 @@ final class ExtendedDependentReturnTypeOverridePlugin extends PluginV3 implement
                         $context,
                         Issue::TypeErrorInInternalCall,
                         $args[0]->lineno ?? $context->getLineNumberStart(),
-                        $function,
+                        $function_name,
                         $e->getMessage()
                     );
-                    return $default_type;
+                    return $function->getUnionType();
                 }
-                return Type::fromObjectExtended($result)->asPHPDocUnionType();
+                return Type::fromObjectExtended($result)->asRealUnionType();
             };
         };
         $basic_return_type_overrides = (new DependentReturnTypeOverridePlugin())->getReturnTypeOverrides($code_base);
         /**
          * @param callable-string $function
          */
-        $wrap_n_argument_function_with_fallback = static function (callable $function, int $min, int $max = null) use ($basic_return_type_overrides, $wrap_n_argument_function, $mixed_union_type) : Closure {
-            $cb = $wrap_n_argument_function($function, $min, $max, $mixed_union_type);
-            $cb_fallback = $basic_return_type_overrides[$function];
+        $wrap = static function (string $function, int $min, ?int $max = null) use ($basic_return_type_overrides, $wrap_n_argument_function) : ?Closure {
+            if (!\is_callable($function)) {
+                return null;
+            }
+            $cb = $wrap_n_argument_function($function, $min, $max);
+            $cb_fallback = $basic_return_type_overrides[$function] ?? null;
+            if (!$cb_fallback) {
+                return $cb;
+            }
             /**
              * @param array<int,Node|string|int|float> $args
              */
@@ -110,47 +109,45 @@ final class ExtendedDependentReturnTypeOverridePlugin extends PluginV3 implement
                 array $args
             ) use (
                 $cb,
-                $cb_fallback,
-                $mixed_union_type
+                $cb_fallback
 ) : UnionType {
                 $result = $cb($code_base, $context, $function_decl, $args);
-                if ($result !== $mixed_union_type) {
+                if ($result !== $function_decl->getUnionType()) {
                     return $result;
                 }
                 return $cb_fallback($code_base, $context, $function_decl, $args);
             };
         };
-        $int_union_type = IntType::instance(false)->asPHPDocUnionType();
 
-        return [
+        return array_filter([
             // commonly used functions where the return type depends only on the passed in arguments
             // TODO: Add remaining functions
-            'abs'          => $wrap_n_argument_function('abs', 1, 1, $int_union_type),
-            'addcslashes'  => $wrap_n_argument_function('addcslashes', 2),
-            'addslashes'   => $wrap_n_argument_function('addslashes', 1),
-            'explode'      => $wrap_n_argument_function('explode', 2, 3, UnionType::fromFullyQualifiedPHPDocString('array<int,string>')),
-            'implode'      => $wrap_n_argument_function('implode', 1, 2),
+            'abs'          => $wrap('abs', 1, 1),
+            'addcslashes'  => $wrap('addcslashes', 2),
+            'addslashes'   => $wrap('addslashes', 1),
+            'explode'      => $wrap('explode', 2, 3),
+            'implode'      => $wrap('implode', 1, 2),
             // TODO: Improve this to warn about invalid json with json_error_last()
-            'json_decode'  => $wrap_n_argument_function_with_fallback('json_decode', 1, 4),
-            'json_encode'  => $wrap_n_argument_function('json_encode', 1, 3, UnionType::fromFullyQualifiedRealString('string|false')),
-            'substr'       => $wrap_n_argument_function('substr', 1, 3),
-            'strlen'       => $wrap_n_argument_function('strlen', 1, 3),
-            'join'         => $wrap_n_argument_function('join', 1),
-            'ltrim'        => $wrap_n_argument_function('ltrim', 1, 2),
-            'rtrim'        => $wrap_n_argument_function('rtrim', 1, 2),
-            'str_ireplace' => $wrap_n_argument_function('str_ireplace', 3, 4),
-            'str_replace'  => $wrap_n_argument_function('str_replace', 3, 4),
-            'strpos'       => $wrap_n_argument_function('strpos', 1, 3),
-            'strrpos'      => $wrap_n_argument_function('strrpos', 1, 3),
-            'strripos'     => $wrap_n_argument_function('strripos', 1, 3),
-            'stripos'      => $wrap_n_argument_function('stripos', 1, 3),
-            'strrev'       => $wrap_n_argument_function('strrev', 1),
-            'strtolower'   => $wrap_n_argument_function('strtolower', 1),
-            'strtoupper'   => $wrap_n_argument_function('strtoupper', 1),
-            'trim'         => $wrap_n_argument_function('trim', 1, 2),
-            'chr'          => $wrap_n_argument_function('chr', 1, 1),
-            'ord'          => $wrap_n_argument_function('ord', 1, 1, $int_union_type),
-        ];
+            'json_decode'  => $wrap('json_decode', 1, 4),
+            'json_encode'  => $wrap('json_encode', 1, 3),
+            'substr'       => $wrap('substr', 1, 3),
+            'strlen'       => $wrap('strlen', 1, 3),
+            'join'         => $wrap('join', 1),
+            'ltrim'        => $wrap('ltrim', 1, 2),
+            'rtrim'        => $wrap('rtrim', 1, 2),
+            'str_ireplace' => $wrap('str_ireplace', 3, 4),
+            'str_replace'  => $wrap('str_replace', 3, 4),
+            'strpos'       => $wrap('strpos', 1, 3),
+            'strrpos'      => $wrap('strrpos', 1, 3),
+            'strripos'     => $wrap('strripos', 1, 3),
+            'stripos'      => $wrap('stripos', 1, 3),
+            'strrev'       => $wrap('strrev', 1),
+            'strtolower'   => $wrap('strtolower', 1),
+            'strtoupper'   => $wrap('strtoupper', 1),
+            'trim'         => $wrap('trim', 1, 2),
+            'chr'          => $wrap('chr', 1, 1),
+            'ord'          => $wrap('ord', 1, 1),
+        ]);
     }
 
     /**

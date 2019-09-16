@@ -1916,6 +1916,7 @@ EOB
      * @see https://github.com/phan/phan/issues/2572
      * @see https://en.wikipedia.org/wiki/Code_page#Windows_code_pages
      * @suppress PhanUndeclaredFunction, UnusedSuppression the function exists only in Windows.
+     * @suppress PhanImpossibleTypeComparison, PhanRedundantCondition, PhanImpossibleCondition, PhanSuspiciousValueComparison the value for strtoupper is inferred as a literal.
      */
     public static function doesTerminalSupportUtf8() : bool
     {
