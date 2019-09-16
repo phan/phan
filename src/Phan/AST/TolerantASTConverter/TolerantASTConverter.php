@@ -3006,6 +3006,7 @@ class TolerantASTConverter
 
     /**
      * For development PHP versions such as 8.0.0-dev, use the build date as part of the cache key to invalidate cached ASTs when this gets rebuilt.
+     * @suppress PhanImpossibleTypeComparison, PhanRedundantCondition, PhanImpossibleCondition
      */
     private static function getDevelopmentBuildDate() : ?string
     {

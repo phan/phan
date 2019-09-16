@@ -160,6 +160,11 @@ return [
     // Phan will not assume it knows specific types if the default value is false or null.
     'guess_unknown_parameter_type_using_default' => false,
 
+    // Set this to true to enable the plugins that Phan uses to infer more accurate return types of `implode`, `json_decode`, and many other functions.
+    //
+    // Phan is slightly faster when these are disabled.
+    'enable_extended_internal_return_type_plugins' => true,
+
     // This setting maps case insensitive strings to union types.
     // This is useful if a project uses phpdoc that differs from the phpdoc2 standard.
     // If the corresponding value is the empty string, Phan will ignore that union type (E.g. can ignore 'the' in `@return the value`)

@@ -24,6 +24,7 @@ New features(Analysis):
 + Emit stricter warnings for more real type mismatches (#3256)
   (e.g. emit `PhanTypeMismatchArgumentReal` for `float->int` when `strict_types=1`, `'literal string'->int`, etc.)
 + Consistently infer that variadic parameters are arrays with integer keys. (#3294)
++ Improve types inferred when the config setting `enable_extended_internal_return_type_plugins` is enabled.
 
 Language Server/Daemon mode:
 + Fix logged Error when language server receives `didChangeConfiguration` events. (this is a no-op)
