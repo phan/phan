@@ -12,6 +12,9 @@ class VariadicParameter extends Parameter
 {
     // __construct inherited from Parameter
 
+    /** @var ?bool */
+    private $has_empty_non_variadic_type;
+
     /**
      * @return static - non-variadic clone which can be modified.
      * @override
@@ -22,6 +25,7 @@ class VariadicParameter extends Parameter
         if (!$result->isCloneOfVariadic()) {
             $result->convertToNonVariadic();
             $result->enablePhanFlagBits(Flags::IS_CLONE_OF_VARIADIC);
+            $result->has_empty_non_variadic_type = $this->hasEmptyNonVariadicType();
         }
         return $result;
     }
@@ -139,8 +143,13 @@ class VariadicParameter extends Parameter
     {
         if (!$this->isCloneOfVariadic()) {
             // TODO: Figure out why asNonEmptyGenericArrayTypes() causes test failures
-            return parent::getUnionType()->asGenericArrayTypes(GenericArrayType::KEY_INT);
+            return parent::getUnionType()->asNonEmptyGenericArrayTypes(GenericArrayType::KEY_INT);
         }
         return $this->type;
+    }
+
+    public function hasEmptyNonVariadicType() : bool
+    {
+        return $this->has_empty_non_variadic_type ?? parent::getUnionType()->isEmpty();
     }
 }

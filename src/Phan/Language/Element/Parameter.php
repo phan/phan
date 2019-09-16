@@ -722,4 +722,13 @@ class Parameter extends Variable
     {
         return clone($function->getContext())->withLineNumberStart($this->getFileRef()->getLineNumberStart());
     }
+
+    /**
+     * Returns true if the non-variadic type of this declared parameter is empty.
+     * e.g. `$x`, `...$y`
+     */
+    public function hasEmptyNonVariadicType() : bool
+    {
+        return self::getUnionType()->isEmpty();
+    }
 }

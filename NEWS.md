@@ -23,6 +23,7 @@ New features(Analysis):
 + Improve inference of when the real result of a binary operation is a float. (#3256)
 + Emit stricter warnings for more real type mismatches (#3256)
   (e.g. emit `PhanTypeMismatchArgumentReal` for `float->int` when `strict_types=1`, `'literal string'->int`, etc.)
++ Consistently infer that variadic parameters are arrays with integer keys. (#3294)
 
 Language Server/Daemon mode:
 + Fix logged Error when language server receives `didChangeConfiguration` events. (this is a no-op)

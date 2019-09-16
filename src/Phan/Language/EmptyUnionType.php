@@ -13,6 +13,7 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\IterableType;
+use Phan\Language\Type\MixedType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\TemplateType;
 
@@ -1018,7 +1019,8 @@ final class EmptyUnionType extends UnionType
      */
     public function asNonEmptyGenericArrayTypes(int $key_type) : UnionType
     {
-        return ArrayType::instance(false)->asPHPDocUnionType();
+        static $cache = [];
+        return ($cache[$key_type] ?? ($cache[$key_type] = MixedType::instance(false)->asGenericArrayType($key_type)->asRealUnionType()));
     }
 
     /**

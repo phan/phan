@@ -3604,7 +3604,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 // If there's no parameter at that offset, we may be in
                 // a ParamTooMany situation. That is caught elsewhere.
                 if (!isset($argument_types[$i])
-                    || !$parameter_clone->getNonVariadicUnionType()->isEmpty()
+                    || !$parameter_clone->hasEmptyNonVariadicType()
                 ) {
                     continue;
                 }
@@ -3712,7 +3712,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
                 // If there's a declared type for the parameter,
                 // then don't bother overriding the type to analyze the function/method body (unless the parameter is pass-by-reference)
-                if (!$parameter_clone->getUnionType()->isEmpty() && !$parameter_clone->isPassByReference()) {
+                // Note that $parameter_clone was converted to a non-variadic clone, so the getNonVariadicUnionType returns an array.
+                if (!$parameter_clone->hasEmptyNonVariadicType() && !$parameter_clone->isPassByReference()) {
                     continue;
                 }
 
@@ -3818,14 +3819,20 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // retest the method with the passed in types
         // TODO: if $argument_type is non-empty and !isType(NullType), instead use setUnionType?
 
-        // For https://github.com/phan/phan/issues/1525 : Collapse array shapes into generic arrays before recursively analyzing a method.
-        if (!$parameter->isCloneOfVariadic()) {
-            $parameter->addUnionType(
-                $argument_type->withFlattenedArrayShapeOrLiteralTypeInstances()
-            );
+        if ($parameter->isCloneOfVariadic()) {
+            // For https://github.com/phan/phan/issues/1525 : Collapse array shapes into generic arrays before recursively analyzing a method.
+            if ($parameter->hasEmptyNonVariadicType()) {
+                $parameter->setUnionType(
+                    $argument_type->withFlattenedArrayShapeOrLiteralTypeInstances()->asGenericArrayTypes(GenericArrayType::KEY_INT)
+                );
+            } else {
+                $parameter->addUnionType(
+                    $argument_type->withFlattenedArrayShapeOrLiteralTypeInstances()->asGenericArrayTypes(GenericArrayType::KEY_INT)
+                );
+            }
         } else {
             $parameter->addUnionType(
-                $argument_type->withFlattenedArrayShapeOrLiteralTypeInstances()->asGenericArrayTypes(GenericArrayType::KEY_INT)
+                $argument_type->withFlattenedArrayShapeOrLiteralTypeInstances()
             );
         }
 
@@ -3919,7 +3926,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     private static function checkPassingPropertyByReference(CodeBase $code_base, Context $context, FunctionInterface $method, Parameter $parameter, Node $argument, Property $property, int $parameter_offset) : void
     {
-        $parameter_type = $parameter->getUnionType();
+        $parameter_type = $parameter->getNonVariadicUnionType();
         $expr_node = $argument->children['expr'] ?? null;
         if ($expr_node instanceof Node &&
                 $expr_node->kind === ast\AST_VAR &&
@@ -3961,7 +3968,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $property->getRepresentationForIssue(),
             $property_type,
             $method->getRepresentationForIssue(),
-            $parameter->getUnionType()
+            $parameter_type
         );
     }
     private function isInNoOpPosition(Node $node) : bool
