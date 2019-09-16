@@ -23,7 +23,7 @@ function test_arrow_func() {
     echo strlen($fn4('not a reference'));  // emits PhanTypeNonVarPassByRef
     $fn5($arg) = 2;  // should not warn, doesn't properly infer that $arg is set
 
-    echo strlen($fn6('arg'));  // TODO: should infer array<int,mixed> and warn
+    echo strlen($fn6('arg'));  // infers array<int,mixed> and warns
     echo intdiv($fn7(), 2);
     echo intdiv($fn('foooooooooooooooo'), 2);
 
