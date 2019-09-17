@@ -387,6 +387,7 @@ class Issue
     const UnusedClosureParameter                = 'PhanUnusedClosureParameter';
     const UnusedGlobalFunctionParameter         = 'PhanUnusedGlobalFunctionParameter';
     const UnusedVariableValueOfForeachWithKey   = 'PhanUnusedVariableValueOfForeachWithKey';  // has higher false positive rates than UnusedVariable
+    const EmptyForeach                          = 'PhanEmptyForeach';
     const UnusedVariableCaughtException         = 'PhanUnusedVariableCaughtException';  // has higher false positive rates than UnusedVariable
     const UnusedGotoLabel                       = 'PhanUnusedGotoLabel';
     const UnusedVariableReference               = 'PhanUnusedVariableReference';
@@ -3390,6 +3391,14 @@ class Issue
                 'Unused definition of variable ${VARIABLE} as the value of a foreach loop that included keys',
                 self::REMEDIATION_B,
                 6045
+            ),
+            new Issue(
+                self::EmptyForeach,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Saw a foreach statement with empty iterable type {TYPE}',
+                self::REMEDIATION_B,
+                6079
             ),
             new Issue(
                 self::UnusedVariableCaughtException,

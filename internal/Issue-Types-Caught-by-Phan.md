@@ -730,6 +730,14 @@ Note that this is not emitted for empty statement lists in functions or methods 
 Empty closure
 ```
 
+## PhanEmptyForeach
+
+```
+Saw a foreach statement with empty iterable type {TYPE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0112_foreach_with_skipped_list.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0112_foreach_with_skipped_list.php#L3).
+
 ## PhanEmptyFunction
 
 ```

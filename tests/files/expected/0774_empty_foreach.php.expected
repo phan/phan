@@ -1,0 +1,4 @@
+%s:6 PhanEmptyForeach Saw a foreach statement with empty iterable type array{}
+%s:7 PhanEmptyForeach Saw a foreach statement with empty iterable type array{}|null
+%s:8 PhanEmptyForeach Saw a foreach statement with empty iterable type array{}|resource
+%s:9 PhanEmptyForeach Saw a foreach statement with empty iterable type array{}
