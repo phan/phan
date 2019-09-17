@@ -451,6 +451,7 @@ class ParseVisitor extends ScopeVisitor
                 // (we don't assume the property is always null, to reduce false positives)
                 // We don't need to compare this to the real union type
                 $union_type = $real_union_type;
+                $default_type = NullType::instance(false)->asRealUnionType();
             } else {
                 if ($default_node instanceof Node) {
                     $this->checkNodeIsConstExpr($default_node);
@@ -472,6 +473,7 @@ class ParseVisitor extends ScopeVisitor
                         $union_type = Type::nonLiteralFromObject($default_node)->asPHPDocUnionType();
                     }
                 }
+                $default_type = $union_type;
                 if ($real_union_type->isEmpty()) {
                     if ($union_type->isType(NullType::instance(false))) {
                         $union_type = UnionType::empty();
@@ -530,6 +532,7 @@ class ParseVisitor extends ScopeVisitor
             } elseif ($real_union_type) {
                 $property->setPHPDocUnionType($real_union_type);
             }
+            $property->setDefaultType($default_type);
 
             $property->setPhanFlags($comment->getPhanFlagsForProperty());
             $property->setDocComment($doc_comment);

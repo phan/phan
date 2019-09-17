@@ -27,6 +27,9 @@ New features(Analysis):
 + Improve types inferred when the config setting `enable_extended_internal_return_type_plugins` is enabled.
 + Speed up sorting the list of parsed files, and avoid unnecessary work in `--dump-parsed-file-list`.
 + Emit `PhanEmptyForeach` and `PhanEmptyYieldFrom` when iterating over empty arrays.
++ Infer that properties of `$this` are initialized to their default values at the start of `__construct()`. (#3213)
+  (this is limited to instance properties which are declared in the current class (i.e. not inherited)).
+  To disable this, set `infer_default_properties_in_construct` to false.
 
 Language Server/Daemon mode:
 + Fix logged Error when language server receives `didChangeConfiguration` events. (this is a no-op)

@@ -25,6 +25,7 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\Scope\ClosureScope;
 use Phan\Language\Type;
+use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\VoidType;
 
@@ -210,6 +211,9 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 );
             }
         }
+        if ($method->getName() === '__construct' && Config::getValue('infer_default_properties_in_construct') && $clazz->isClass() && !$method->isAbstract()) {
+            $this->addDefaultPropertiesOfThisToContext($clazz, $context);
+        }
 
         // TODO: Why is the check for yield in PreOrderAnalysisVisitor?
         if ($method->hasYield()) {
@@ -218,6 +222,44 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
 
         return $context;
     }
+
+    /**
+     * Modifies the context of $class in place, adding types of default values for all declared properties
+     */
+    private function addDefaultPropertiesOfThisToContext(Clazz $class, Context $context) : void
+    {
+        $property_types = [];
+        foreach ($class->getPropertyMap($this->code_base) as $property) {
+            if ($property->isDynamicOrFromPHPDoc()) {
+                continue;
+            }
+            if ($property->isStatic()) {
+                continue;
+            }
+            $default_type = $property->getDefaultType();
+            if (!$default_type) {
+                continue;
+            }
+            if ($property->getDefiningFQSEN() !== $property->getRealDefiningFQSEN()) {
+                // Here, we don't analyze the properties of parent classes to avoid false positives.
+                // Phan doesn't infer that the scope is cleared by parent::__construct().
+                continue;
+            }
+            $property_types[$property->getName()] = $default_type;
+        }
+        if (!$property_types) {
+            return;
+        }
+        $override_type = ArrayShapeType::fromFieldTypes($property_types, false);
+        $variable = new Variable(
+            $context,
+            Context::VAR_NAME_THIS_PROPERTIES,
+            $override_type->asPHPDocUnionType(),
+            0
+        );
+        $context->addScopeVariable($variable);
+    }
+
 
     /**
      * Visit a node with kind `ast\AST_FUNC_DECL`

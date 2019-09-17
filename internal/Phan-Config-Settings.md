@@ -367,6 +367,16 @@ This is ignored if [`enable_include_path_checks`](#enable_include_path_checks) i
 
 (Default: `["."]`)
 
+## infer_default_properties_in_construct
+
+Infer that the types of the properties of `$this` are equal to their default values at the start of `__construct()`.
+This will have some false positives due to Phan not checking for setters and initializing helpers.
+This does not affect inherited properties.
+
+Set to false to disable.
+
+(Default: `true`)
+
 ## inherit_phpdoc_types
 
 If enabled, inherit any missing phpdoc for types from

@@ -7,7 +7,7 @@ class B {
     public $p;
 
     public function __construct() {
-        $this->p[] = new A;
+        $this->p[] = new A;  // Warns because this isn't an array yet.
     }
 
     public function f() {
