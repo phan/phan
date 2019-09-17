@@ -81,7 +81,7 @@ call_user_func(static function () : void {
     if ($has_any_option('p', 'progress-bar')) {
         $cli_builder->setOption('progress-bar');
     }
-    $limit_raw = $options['limit'] ?? $options['l'];
+    $limit_raw = $options['limit'] ?? $options['l'] ?? '10';
     if (is_string($limit_raw)) {
         $limit = filter_var($limit_raw, FILTER_VALIDATE_INT);
         if ($limit == -1) {
