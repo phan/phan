@@ -2,3 +2,7 @@
 %s:7 PhanEmptyForeach Saw a foreach statement with empty iterable type array{}|null
 %s:8 PhanEmptyForeach Saw a foreach statement with empty iterable type array{}|resource
 %s:9 PhanEmptyForeach Saw a foreach statement with empty iterable type array{}
+%s:15 PhanTypeInvalidYieldFrom Yield from statement was passed an invalid expression of type 0 (expected Traversable/array)
+%s:16 PhanEmptyYieldFrom Saw a yield from statement with empty iterable type array{}
+%s:17 PhanEmptyYieldFrom Saw a yield from statement with empty iterable type array{}|null
+%s:18 PhanEmptyYieldFrom Saw a yield from statement with empty iterable type array{}|resource

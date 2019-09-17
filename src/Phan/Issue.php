@@ -388,6 +388,7 @@ class Issue
     const UnusedGlobalFunctionParameter         = 'PhanUnusedGlobalFunctionParameter';
     const UnusedVariableValueOfForeachWithKey   = 'PhanUnusedVariableValueOfForeachWithKey';  // has higher false positive rates than UnusedVariable
     const EmptyForeach                          = 'PhanEmptyForeach';
+    const EmptyYieldFrom                        = 'PhanEmptyYieldFrom';
     const UnusedVariableCaughtException         = 'PhanUnusedVariableCaughtException';  // has higher false positive rates than UnusedVariable
     const UnusedGotoLabel                       = 'PhanUnusedGotoLabel';
     const UnusedVariableReference               = 'PhanUnusedVariableReference';
@@ -3399,6 +3400,14 @@ class Issue
                 'Saw a foreach statement with empty iterable type {TYPE}',
                 self::REMEDIATION_B,
                 6079
+            ),
+            new Issue(
+                self::EmptyYieldFrom,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Saw a yield from statement with empty iterable type {TYPE}',
+                self::REMEDIATION_B,
+                6080
             ),
             new Issue(
                 self::UnusedVariableCaughtException,

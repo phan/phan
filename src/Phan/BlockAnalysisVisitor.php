@@ -996,7 +996,11 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         }
     }
 
-    private static function isEmptyIterable(UnionType $union_type) : bool
+    /**
+     * Returns true if there is at least one iterable type,
+     * no object types, and that iterable type is the empty array shape.
+     */
+    public static function isEmptyIterable(UnionType $union_type) : bool
     {
         $has_iterable_types = false;
         foreach ($union_type->getRealTypeSet() as $type) {
