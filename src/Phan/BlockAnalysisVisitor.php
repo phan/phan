@@ -965,19 +965,55 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 $node->children['expr']->lineno ?? $node->lineno,
                 (string)$union_type
             );
+            return;
         }
+        $has_object = false;
         foreach ($union_type->getTypeSet() as $type) {
+            if (!$type->isObjectWithKnownFQSEN()) {
+                continue;
+            }
             try {
                 if ($type->asExpandedTypes($this->code_base)->hasTraversable()) {
                     continue;
                 }
             } catch (RecursionDepthException $_) {
             }
-            if (!$type->isObjectWithKnownFQSEN()) {
+            $this->warnAboutNonTraversableType($node, $type);
+            $has_object = true;
+        }
+        if ($has_object) {
+            return;
+        }
+        if (self::isEmptyIterable($union_type)) {
+            RedundantCondition::emitInstance(
+                $node->children['expr'],
+                $this->code_base,
+                (clone($this->context))->withLineNumberStart($node->children['expr']->lineno ?? $node->lineno),
+                Issue::EmptyForeach,
+                [(string)$union_type],
+                Closure::fromCallable([self::class, 'isEmptyIterable'])
+            );
+        }
+    }
+
+    private static function isEmptyIterable(UnionType $union_type) : bool
+    {
+        $has_iterable_types = false;
+        foreach ($union_type->getRealTypeSet() as $type) {
+            if ($type->isPossiblyObject()) {
+                return false;
+            }
+            if (!$type->isIterable()) {
                 continue;
             }
-            $this->warnAboutNonTraversableType($node, $type);
+            if ($type->isPossiblyTruthy()) {
+                // This has possibly non-empty iterable types.
+                // We only track emptiness of array shapes.
+                return false;
+            }
+            $has_iterable_types = true;
         }
+        return $has_iterable_types;
     }
 
     private function warnAboutNonTraversableType(Node $node, Type $type) : void
