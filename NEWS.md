@@ -26,7 +26,7 @@ New features(Analysis):
 + Consistently infer that variadic parameters are arrays with integer keys. (#3294)
 + Improve types inferred when the config setting `enable_extended_internal_return_type_plugins` is enabled.
 + Speed up sorting the list of parsed files, and avoid unnecessary work in `--dump-parsed-file-list`.
-+ Emit `PhanEmptyForeach` when iterating over empty arrays.
++ Emit `PhanEmptyForeach` and `PhanEmptyYieldFrom` when iterating over empty arrays.
 
 Language Server/Daemon mode:
 + Fix logged Error when language server receives `didChangeConfiguration` events. (this is a no-op)

@@ -697,6 +697,8 @@ final class EmptyUnionType extends UnionType
      * @throws IssueException
      * An exception is thrown if static is used as a type outside of an object
      * context
+     *
+     * @suppress PhanEmptyYieldFrom this is deliberate
      */
     public function asClassList(
         CodeBase $code_base,

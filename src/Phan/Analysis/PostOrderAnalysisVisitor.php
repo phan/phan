@@ -14,6 +14,7 @@ use Phan\AST\ASTSimplifier;
 use Phan\AST\ContextNode;
 use Phan\AST\PhanAnnotationAdder;
 use Phan\AST\UnionTypeVisitor;
+use Phan\BlockAnalysisVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
@@ -1586,6 +1587,16 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             return $context;
         }
 
+        if (BlockAnalysisVisitor::isEmptyIterable($yield_from_type)) {
+            RedundantCondition::emitInstance(
+                $node->children['expr'],
+                $this->code_base,
+                (clone($this->context))->withLineNumberStart($node->children['expr']->lineno ?? $node->lineno),
+                Issue::EmptyYieldFrom,
+                [(string)$yield_from_type],
+                Closure::fromCallable([BlockAnalysisVisitor::class, 'isEmptyIterable'])
+            );
+        }
 
         // Figure out what we intend to return
         $method_generator_type = $method->getReturnTypeAsGeneratorTemplateType();
