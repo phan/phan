@@ -516,6 +516,8 @@ return [
 
         // This should only be enabled if the code being analyzed contains Phan plugins.
         'PhanSelfCheckPlugin',
+        // Warn about using the same loop variable name as a loop variable of an outer loop.
+        'LoopVariableReusePlugin',
         // These are specific to Phan's coding style
         'StrictComparisonPlugin',
 

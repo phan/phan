@@ -143,7 +143,7 @@ final class BuiltinSuppressionPlugin extends PluginV3 implements
             // (Much faster than tokenizing and checking tokens in the most common case)
             return [];
         }
-        $suggestion_list = [];
+        $suppression_list = [];
         foreach (self::yieldSuppressionComments($file_contents) as [
             $comment_text,
             $comment_start_line,
@@ -158,7 +158,7 @@ final class BuiltinSuppressionPlugin extends PluginV3 implements
                     if (Config::getValue('disable_file_based_suppression')) {
                         continue;
                     }
-                    $suggestion_list[$issue_kind][0] = $comment_start_line + \substr_count($comment_text, "\n", 0, $comment_start_offset);
+                    $suppression_list[$issue_kind][0] = $comment_start_line + \substr_count($comment_text, "\n", 0, $comment_start_offset);
                     continue;
                 }
                 if (Config::getValue('disable_line_based_suppression')) {
@@ -178,14 +178,12 @@ final class BuiltinSuppressionPlugin extends PluginV3 implements
                         break;
                 }
                 $line += \substr_count($comment_text, "\n", 0, $comment_start_offset);  // How many lines until that comment?
-                foreach ($kind_list as $issue_kind) {
-                    // Store the suggestion for the issue kind.
-                    // Make this an array set for easier lookup.
-                    $suggestion_list[$issue_kind][$line] = $comment_start_line;
-                }
+                // Store the suppression for the issue kind.
+                // Make this an array set for easier lookup.
+                $suppression_list[$issue_kind][$line] = $comment_start_line;
             }
         }
-        return $suggestion_list;
+        return $suppression_list;
     }
 
     // @phan-suppress-next-line PhanAccessClassConstantInternal

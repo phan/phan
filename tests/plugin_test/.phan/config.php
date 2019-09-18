@@ -139,5 +139,6 @@ return [
         'PossiblyStaticMethodPlugin',
         'EmptyStatementListPlugin',
         'StrictComparisonPlugin',
+        'LoopVariableReusePlugin',
     ],
 ];

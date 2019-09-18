@@ -289,6 +289,7 @@ EOT;
         }
         if ($is_strongest_level) {
             $plugins[] = 'StrictComparisonPlugin';
+            $plugins[] = 'LoopVariableReusePlugin';
         }
 
         $comments = [];

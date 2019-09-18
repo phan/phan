@@ -40,6 +40,8 @@ Plugins:
 + Support checking for duplicate phpdoc descriptions of properties or methods within a class in `HasPHPDocPlugin`.
   Set `'plugin_config' => ['has_phpdoc_check_duplicates' => true]` to enable these checks.
   (this skips deprecated methods/properties)
++ Implement `LoopVariableReusePlugin`, to detect reusing loop variables in nested loops. (#3045)
+  (e.g. `for ($i = 0; $i < 10; $i++) { /* various code ... */ foreach ($array as $i => $value) { ... } }`)
 
 Maintenance:
 + Make `\Phan\Library\None` a singleton in internal uses.
