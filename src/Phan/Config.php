@@ -290,6 +290,13 @@ class Config
         // Phan will not assume it knows specific types if the default value is `false` or `null`.
         'guess_unknown_parameter_type_using_default' => false,
 
+        // Infer that the types of the properties of `$this` are equal to their default values at the start of `__construct()`.
+        // This will have some false positives due to Phan not checking for setters and initializing helpers.
+        // This does not affect inherited properties.
+        //
+        // Set to false to disable.
+        'infer_default_properties_in_construct' => true,
+
         // If enabled, inherit any missing phpdoc for types from
         // the parent method if none is provided.
         //
@@ -1294,6 +1301,7 @@ class Config
             'globals_type_map' => $is_associative_string_array,
             'guess_unknown_parameter_type_using_default' => $is_bool,
             'hide_issue_column' => $is_bool,
+            'infer_default_properties_in_construct' => $is_bool,
             'ignore_undeclared_functions_with_known_signatures' => $is_bool,
             'ignore_undeclared_variables_in_global_scope' => $is_bool,
             'include_analysis_file_list' => $is_string_list,

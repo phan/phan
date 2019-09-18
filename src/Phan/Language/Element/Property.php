@@ -42,6 +42,11 @@ class Property extends ClassElement
     private $phpdoc_union_type;
 
     /**
+     * @var ?UnionType the default type
+     */
+    private $default_type;
+
+    /**
      * @param Context $context
      * The context in which the structural element lives
      *
@@ -488,5 +493,23 @@ class Property extends ClassElement
     public function getPHPDocUnionType() : UnionType
     {
         return $this->phpdoc_union_type ?? UnionType::empty();
+    }
+
+    /**
+     * Record the union type of the default value (for declared properties)
+     */
+    public function setDefaultType(UnionType $type) : void
+    {
+        $this->default_type = $type;
+    }
+
+    /**
+     * Return the recorded union type of the default value (for declared properties).
+     * This is null if there is no declared type.
+     * (TODO: Consider ways to represent an "undefined" state for php 7.4 typed properties)
+     */
+    public function getDefaultType() : ?UnionType
+    {
+        return $this->default_type;
     }
 }
