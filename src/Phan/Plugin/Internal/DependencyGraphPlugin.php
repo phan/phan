@@ -284,24 +284,20 @@ class DependencyGraphPlugin extends PluginV3 implements
         $graph = [];
 
         if ($cached_graph) {
-            $mode = $cached_graph['pdep_metadata']['mode'];
-            $this->ctype = $cached_graph['pdep_metadata']['ctype'];
-            $this->class_to_file = $cached_graph['pdep_metadata']['class_to_file'];
-            $this->file_to_class = $cached_graph['pdep_metadata']['file_to_class'];
-            unset($cached_graph['pdep_metadata']);
-            if ($mode == 'file') {
-                $this->fgraph = $cached_graph;
-            } else {
-                $this->cgraph = $cached_graph;
-            }
+            $this->ctype = $cached_graph['ctype'];
+            $this->class_to_file = $cached_graph['class_to_file'];
+            $this->file_to_class = $cached_graph['file_to_class'];
+            $this->fgraph = $cached_graph['fgraph'];
+            $this->cgraph = $cached_graph['cgraph'];
         }
+
         if (empty($args)) {
             if ($mode == 'class') {
                 $graph = $this->cgraph;
             } elseif ($mode == 'file') {
                 $graph = $this->fgraph;
             }
-        } else {
+        } elseif ($cmd != 'json') {
             $graph = [];
             foreach ($args as $v) {
                 if (empty($v)) {
@@ -353,13 +349,13 @@ class DependencyGraphPlugin extends PluginV3 implements
         } elseif ($cmd == 'graphml') {
             $this->dumpGraphML(\basename((string)\getcwd()), $graph, $mode == 'class', (bool)($flags & \PDEP_HIDE_LABELS));
         } elseif ($cmd == 'json') {
-            $graph['pdep_metadata'] = [
-                'mode' => $mode,
+            echo \json_encode([
+                'cgraph' => $this->cgraph,
+                'fgraph' => $this->fgraph,
                 'ctype' => $this->ctype,
                 'file_to_class' => $this->file_to_class,
                 'class_to_file' => $this->class_to_file
-            ];
-            echo \json_encode($graph);
+            ]);
         } else {
             $this->printGraph($graph);
         }

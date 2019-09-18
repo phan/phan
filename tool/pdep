@@ -17,7 +17,7 @@ Usage: {$argv[0]} [options] [files or classes...]
  -c, --find-classes  Find classes that depend on the passed files or classes
  -f, --find-files    Find files that depend on the passed files or classes
  -i, --import        Import class graph from json file previously generated
- -j, --json          JSON output
+ -j, --json          JSON output of entire class and file graphs plus metadata
  -g, --graph         Graphviz dot output
  -m, --graphml       GraphML output
      --hide-labels   Labels are hidden - hover in yEd to see them
@@ -80,6 +80,9 @@ call_user_func(static function () : void {
     if (isset($options['find-files'])) {
         $options['f'] = false;
     }
+    if (isset($options['json'])) {
+        $options['j'] = false;
+    }
     if (isset($options['import'])) {
         $options['i'] = false;
     }
@@ -88,21 +91,19 @@ call_user_func(static function () : void {
             echo "ERROR: Cannot pass both -c and -f\n";
             usage(1);
         }
-        if (isset($options['i'])) {
-            echo "ERROR: Cannot pass both -c and -i\n";
+        if (isset($options['j'])) {
+            echo "ERROR: Cannot pass both -c and -j\n";
             usage(1);
         }
         $mode = 'class';
     } elseif (isset($options['f'])) {
-        if (isset($options['i'])) {
-            echo "ERROR: Cannot pass both -f and -i\n";
+        if (isset($options['j'])) {
+            echo "ERROR: Cannot pass both -f and -j\n";
             usage(1);
         }
         $mode = 'file';
-    } elseif (isset($options['i'])) {
-        $mode = 'import';
-    } else {
-        echo "ERROR: Must specify either -c, -f or -i\n";
+    } elseif (!isset($options['j'])) {
+        echo "ERROR: Must specify -c, -f or -j\n";
         usage(1);
     }
 
@@ -120,6 +121,7 @@ call_user_func(static function () : void {
             case 'j':
             case 'json':
                 $cmd = 'json';
+                $mode = '';
                 break;
             case 'g':
             case 'graph':
@@ -178,19 +180,19 @@ call_user_func(static function () : void {
     $putenv("PDEP_ARGS", $arg_string);
     $putenv("PDEP_GRAPH_FLAGS", (string)$graph_flags);
 
-    if ($mode == 'import') {
+    if (isset($options['i'])) {
         $data = file_get_contents($graph_file);
         if (!$data) {
             echo "Unable to read $graph_file\n";
             exit(1);
         }
-        $graph = json_decode($data, true);
-        if (!$graph) {
+        $cached_graph = json_decode($data, true);
+        if (!$cached_graph) {
             echo json_last_error_msg();
             exit(1);
         }
         require_once __DIR__ . '/../src/Phan/Plugin/Internal/DependencyGraphPlugin.php';
-        (new \Phan\Plugin\Internal\DependencyGraphPlugin)->processGraph((array)$graph);
+        (new \Phan\Plugin\Internal\DependencyGraphPlugin)->processGraph((array)$cached_graph);
     } else {
         // @phan-suppress-next-line PhanThrowTypeAbsentForCall
         Phan::analyzeFileList($code_base, /** @return string[] */ static function () use($cli) : array {
