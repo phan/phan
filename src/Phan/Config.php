@@ -290,12 +290,12 @@ class Config
         // Phan will not assume it knows specific types if the default value is `false` or `null`.
         'guess_unknown_parameter_type_using_default' => false,
 
-        // Infer that the types of the properties of `$this` are equal to their default values at the start of `__construct()`.
+        // When enabled, infer that the types of the properties of `$this` are equal to their default values at the start of `__construct()`.
         // This will have some false positives due to Phan not checking for setters and initializing helpers.
         // This does not affect inherited properties.
         //
-        // Set to false to disable.
-        'infer_default_properties_in_construct' => true,
+        // Set to true to enable.
+        'infer_default_properties_in_construct' => false,
 
         // If enabled, inherit any missing phpdoc for types from
         // the parent method if none is provided.
