@@ -149,7 +149,7 @@ class DependencyGraphPlugin extends PluginV3 implements
         $newgraph[$node] = $this->fgraph[$node];
         $visited[$node] = true;
         foreach ($this->fgraph[$node] as $n => $unused) {
-            $newgraph = $this->walkfGraph($newgraph, $n);
+            $newgraph = $this->walkfGraph($newgraph, $n, $depth + 1);
         }
         return $newgraph;
     }
