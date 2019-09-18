@@ -3407,12 +3407,12 @@ class UnionType implements Serializable
         // This is frequently called, and has been optimized
         $new_type_builder = new UnionTypeBuilder();
         foreach ($this->type_set as $type) {
-            $element_type = $type->iterableKeyUnionType($code_base);
-            if ($element_type === null) {
+            $key_union_type = $type->iterableKeyUnionType($code_base);
+            if ($key_union_type === null) {
                 // Does not have iterable values
                 continue;
             }
-            $new_type_builder->addUnionType($element_type);
+            $new_type_builder->addUnionType($key_union_type);
         }
         $new_real_type_builder = new UnionTypeBuilder();
         foreach ($this->real_type_set as $type) {
@@ -3420,8 +3420,8 @@ class UnionType implements Serializable
                 // skip false, null, etc.
                 continue;
             }
-            $element_type = $type->iterableKeyUnionType($code_base);
-            if ($element_type === null) {
+            $key_union_type = $type->iterableKeyUnionType($code_base);
+            if ($key_union_type === null) {
                 // Not certain of the real type. It could be a subclass of Traversable with unknown keys.
                 $new_real_type_builder->clearTypeSet();
                 break;
@@ -3429,15 +3429,15 @@ class UnionType implements Serializable
             // TODO: Instead of coercing string to int here, update the real type when the array is assigned to,
             // if the string is a non-literal.
             if ($type instanceof ArrayType) {
-                foreach ($element_type->getTypeSet() as $type) {
-                    if ($type instanceof StringType) {
+                foreach ($key_union_type->getTypeSet() as $key_type) {
+                    if ($key_type instanceof StringType) {
                         // Numeric literals such as `'0'` cast to 0 when inserted as array keys.
                         $new_real_type_builder->addType(IntType::instance(false));
                         break;
                     }
                 }
             }
-            $new_real_type_builder->addUnionType($element_type);
+            $new_real_type_builder->addUnionType($key_union_type);
         }
 
         return UnionType::of($new_type_builder->getTypeSet(), $new_real_type_builder->getTypeSet());
@@ -4150,8 +4150,8 @@ class UnionType implements Serializable
             return \reset($union_types) ?: UnionType::$empty_instance;
         }
         $new_type_set = [];
-        foreach ($union_types as $type) {
-            $type_set = $type->type_set;
+        foreach ($union_types as $union_type) {
+            $type_set = $union_type->type_set;
             if (\count($type_set) === 0) {
                 continue;
             }
@@ -4166,8 +4166,8 @@ class UnionType implements Serializable
             }
         }
         $new_real_type_set = [];
-        foreach ($union_types as $type) {
-            $type_set = $type->real_type_set;
+        foreach ($union_types as $union_type) {
+            $type_set = $union_type->real_type_set;
             if (\count($type_set) === 0) {
                 $new_real_type_set = [];
                 break;

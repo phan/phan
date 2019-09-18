@@ -1,0 +1,4 @@
+src/158_loop_variable_reuse.php:5 PhanPluginLoopVariableReuse Variable $elem used in loop was also used in an outer loop on line 3
+src/158_loop_variable_reuse.php:5 PhanPluginLoopVariableReuse Variable $i used in loop was also used in an outer loop on line 3
+src/158_loop_variable_reuse.php:12 PhanPluginLoopVariableReuse Variable $j used in loop was also used in an outer loop on line 10
+src/158_loop_variable_reuse.php:20 PhanPluginLoopVariableReuse Variable $j used in loop was also used in an outer loop on line 17
