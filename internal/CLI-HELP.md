@@ -51,7 +51,7 @@ Usage: ./phan [options] [files...]
   `.phan/config.php`).
 
  -m, --output-mode <mode>
-  Output mode from 'text', 'json', 'csv', 'codeclimate', 'checkstyle', or 'pylint'
+  Output mode from 'text', 'json', 'csv', 'codeclimate', 'checkstyle', 'pylint', or 'html'
 
  -o, --output <filename>
   Output filename
@@ -87,7 +87,7 @@ Usage: ./phan [options] [files...]
   Add colors to the outputted issues.
   This is recommended for only the default --output-mode ('text')
 
-  [--color-scheme={default,code,eclipse_dark,vim}]
+  [--color-scheme={default,code,light,eclipse_dark,vim}]
     This (or the environment variable PHAN_COLOR_SCHEME) can be used to set the color scheme for emitted issues.
 
  -p, --progress-bar
