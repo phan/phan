@@ -373,9 +373,13 @@ class DependencyGraphPlugin extends PluginV3 implements
             $graph = $this->fgraph;
         }
         $shapes = '';
+        $shape_defined = [];
         echo "strict digraph $title {\nrankdir=RL\nsplines=ortho\n";
         foreach ($graph as $node => $depNode) {
-            $shapes .= "\"$node\" [shape=box]\n";
+            if (empty($shape_defined[$node])) {
+                $shapes .= "\"$node\" [shape=box]\n";
+                $shape_defined[$node] = true;
+            }
             foreach ($depNode as $dnode => $val) {
                 [$type,$lineno] = self::getFileLineno((string)$val);
                 $style = '';
@@ -386,6 +390,10 @@ class DependencyGraphPlugin extends PluginV3 implements
                     $style = ',color=tomato';
                 }
                 echo "\"$dnode\" -> \"$node\" [taillabel=$lineno,labelfontsize=10,labeldistance=1.4{$style}]\n";
+                if (empty($shape_defined[$dnode])) {
+                    $shapes .= "\"$dnode\" [shape=box]\n";
+                    $shape_defined[$dnode] = true;
+                }
             }
         }
         echo $shapes;
@@ -404,22 +412,27 @@ class DependencyGraphPlugin extends PluginV3 implements
         }
         echo "strict digraph $title {\nrankdir=RL\nsplines=ortho\n";
         $shapes = '';
+        $shape_defined = [];
         foreach ($graph as $node => $depNode) {
-            $shape = "";
-            switch ($this->ctype[$node]) {
-                case 'C':
-                    $shape = "shape=box";
-                    break;
-                case 'I':
-                    $shape = "shape=note,color=blue,fontcolor=blue";
-                    break;
-                case 'T':
-                    $shape = "shape=component,color=purple,fontcolor=purple";
-                    break;
-            }
-            if ($shape) {
-                // Defer the shape definitions until after the edges. This tends to give a better node layout
-                $shapes .= '"' . \addslashes(\trim($node, "\\")) . "\" [$shape]\n";
+            if (empty($shape_defined[$node])) {
+                $shape = "";
+                switch ($this->ctype[$node]) {
+                    case 'C':
+                        $shape = "shape=box";
+                        break;
+                    case 'I':
+                        $shape = "shape=note,color=blue,fontcolor=blue";
+                        break;
+                    case 'T':
+                        $shape = "shape=component,color=purple,fontcolor=purple";
+                        break;
+                }
+
+                if ($shape) {
+                    // Defer the shape definitions until after the edges. This tends to give a better node layout
+                    $shapes .= '"' . \addslashes(\trim($node, "\\")) . "\" [$shape]\n";
+                    $shape_defined[$node] = true;
+                }
             }
             foreach ($depNode as $dnode => $val) {
                 $type = self::getFileLineno((string)$val)[0];
@@ -431,6 +444,26 @@ class DependencyGraphPlugin extends PluginV3 implements
                     $style = ' [color=tomato]';
                 }
                 echo '"' . \addslashes(\trim($dnode, "\\")) . '" -> "' . \addslashes(\trim($node, "\\")) . "\"$style\n";
+                if (empty($shape_defined[$dnode])) {
+                    $shape = "";
+                    switch ($this->ctype[$dnode]) {
+                        case 'C':
+                            $shape = "shape=box";
+                            break;
+                        case 'I':
+                            $shape = "shape=note,color=blue,fontcolor=blue";
+                            break;
+                        case 'T':
+                            $shape = "shape=component,color=purple,fontcolor=purple";
+                            break;
+                    }
+
+                    if ($shape) {
+                        // Defer the shape definitions until after the edges. This tends to give a better node layout
+                        $shapes .= '"' . \addslashes(\trim($dnode, "\\")) . "\" [$shape]\n";
+                        $shape_defined[$dnode] = true;
+                    }
+                }
             }
         }
         echo $shapes;
