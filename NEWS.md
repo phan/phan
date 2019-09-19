@@ -3,13 +3,17 @@ Phan NEWS
 ??? ?? 2019, Phan 2.2.13 (dev)
 ------------------------
 
-New features(CLI):
+New features(CLI, Configs):
 + Always print 100% in `--progress-bar` after completing any phase of analysis.
   This is convenient for tools such as `tool/phoogle` that exit before starting the next phase.
 + Add GraphML output support to `DependencyGraphPlugin`.
   This allows `tool/pdep` output to be imported by Neo4j, Gephi and yEd
 + Add json output and import to `tool/pdep`
   For caching large graphs in order to generate multiple sub-graphs without re-scanning
++ Add setting `infer_default_properties_in_construct`.
+  When this is enabled, infer that properties of `$this` are initialized to their default values at the start of `__construct()`. (#3213)
+  (this is limited to instance properties which are declared in the current class (i.e. not inherited)).
+  Off by default.
 
 New features(Analysis):
 + Disable `simplify_ast` by default.
@@ -27,9 +31,6 @@ New features(Analysis):
 + Improve types inferred when the config setting `enable_extended_internal_return_type_plugins` is enabled.
 + Speed up sorting the list of parsed files, and avoid unnecessary work in `--dump-parsed-file-list`.
 + Emit `PhanEmptyForeach` and `PhanEmptyYieldFrom` when iterating over empty arrays.
-+ Infer that properties of `$this` are initialized to their default values at the start of `__construct()`. (#3213)
-  (this is limited to instance properties which are declared in the current class (i.e. not inherited)).
-  To disable this, set `infer_default_properties_in_construct` to false.
 
 Language Server/Daemon mode:
 + Fix logged Error when language server receives `didChangeConfiguration` events. (this is a no-op)

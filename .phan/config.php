@@ -160,6 +160,11 @@ return [
     // Phan will not assume it knows specific types if the default value is false or null.
     'guess_unknown_parameter_type_using_default' => false,
 
+    // When enabled, infer that the types of the properties of `$this` are equal to their default values at the start of `__construct()`.
+    // This will have some false positives due to Phan not checking for setters and initializing helpers.
+    // This does not affect inherited properties.
+    'infer_default_properties_in_construct' => true,
+
     // Set this to true to enable the plugins that Phan uses to infer more accurate return types of `implode`, `json_decode`, and many other functions.
     //
     // Phan is slightly faster when these are disabled.
