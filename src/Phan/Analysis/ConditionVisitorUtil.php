@@ -1315,6 +1315,11 @@ trait ConditionVisitorUtil
                 }
                 continue;
             }
+            if ($node->kind === ast\AST_PROP) {
+                if (is_string($node->children['prop']) && self::isThisVarNode($node->children['expr'])) {
+                    return 'this';
+                }
+            }
 
             // TODO: Handle more than one level of nesting
             return null;

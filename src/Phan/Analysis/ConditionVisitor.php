@@ -327,7 +327,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             $this->checkVariablesDefinedInIsset($var_node);
             return $this->context;
         }
-        return $this->withSetVariable($var_name, $var_node);
+        return $this->withSetVariable($var_name, $var_node, $node);
     }
 
     /**
@@ -335,7 +335,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
      * From isset($obj->prop['field']), infer that $obj is non-null
      * Also infer that $obj is an object (don't do that for $obj['field']->prop)
      */
-    private function withSetVariable(string $var_name, Node $var_node) : Context
+    private function withSetVariable(string $var_name, Node $var_node, Node $ancestor_node) : Context
     {
         $context = $this->context;
         $is_object = $var_node->kind === ast\AST_PROP;
@@ -356,6 +356,21 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             $context = $this->modifyPropertySimple($var_node, static function (UnionType $type) : UnionType {
                 return $type->nonNullableClone();
             }, $context);
+            if ($ancestor_node !== $var_node && self::isThisVarNode($var_node->children['expr'])) {
+                $old_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $context, $ancestor_node);
+                if ($old_type->containsNullable()) {
+                    $context = (new AssignmentVisitor(
+                        $this->code_base,
+                        // We clone the original context to avoid affecting the original context for the elseif.
+                        // AssignmentVisitor modifies the provided context in place.
+                        //
+                        // There is a difference between `if (is_string($x['field']))` and `$x['field'] = (some string)` for the way the `elseif` should be analyzed.
+                        $context->withClonedScope(),
+                        $ancestor_node,
+                        $old_type->nonNullableClone()
+                    ))->__invoke($ancestor_node);
+                }
+            }
             return $context->withScopeVariable($variable);
         }
         return $this->removeNullFromVariable($var_node, $context, true);
@@ -384,6 +399,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                 }
                 continue;
             } elseif ($kind == ast\AST_PROP) {
+                // TODO modify this pseudo-variable for $this->prop
                 $has_prop_access = true;
                 $var_node = $var_node->children['expr'];
                 if (!$var_node instanceof Node) {
@@ -402,7 +418,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         if ($has_prop_access) {
             // For `$x->prop['field'][0]`, $parent_node would be `$x->prop`.
             // And for that expression, phan would infer that $var_name was non-null AND an object.
-            return $this->withSetVariable($var_name, $parent_node);
+            return $this->withSetVariable($var_name, $parent_node, $node);
         }
 
         // This is $x['field'] or $x[$i][something]
