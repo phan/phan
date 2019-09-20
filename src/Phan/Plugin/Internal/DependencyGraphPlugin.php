@@ -311,7 +311,7 @@ class DependencyGraphPlugin extends PluginV3 implements
                                 $file = self::getFileLineno((string)$fi)[0];
                                 if ($file == $v) {
                                     $v = $cl;
-                                    goto found;
+                                    goto cfound;
                                 }
                             }
                             \fwrite(\STDERR, "Couldn't find file $v" . \PHP_EOL);
@@ -319,7 +319,19 @@ class DependencyGraphPlugin extends PluginV3 implements
                         }
                         $v = $this->file_to_class[$v];
                     }
-                    found:
+
+                    try {
+                        $fqsen = FullyQualifiedClassName::fromFullyQualifiedString($v);
+                    } catch (FQSENException $e) {
+                        \fwrite(\STDERR, "Invalid class fqsen $v: {$e->getMessage()}\n");
+                        exit(\EXIT_FAILURE);
+                    }
+                    $cnode = (string)$fqsen;
+                    if (!\array_key_exists($cnode, $this->class_to_file)) {
+                        \fwrite(\STDERR, "Couldn't find class $cnode" . \PHP_EOL);
+                        exit(\EXIT_FAILURE);
+                    }
+                    cfound:
                     $graph = $this->walkcGraph($graph, $v);
                 } elseif ($mode == 'file') {
                     if (!\strstr($v, '.')) {
@@ -336,6 +348,19 @@ class DependencyGraphPlugin extends PluginV3 implements
                         }
                         $v = self::getFileLineno($this->class_to_file[$cnode])[0];
                     }
+                    if (!\array_key_exists($v, $this->file_to_class)) {
+                        // Probably no lineno specified, do a linear search
+                        foreach ($this->file_to_class as $fi => $cl) {
+                            $file = self::getFileLineno((string)$fi)[0];
+                            if ($file == $v) {
+                                $v = $cl;
+                                goto ffound;
+                            }
+                        }
+                        \fwrite(\STDERR, "Couldn't find file $v" . \PHP_EOL);
+                        exit(\EXIT_FAILURE);
+                    }
+                    ffound:
                     $graph = $this->walkfGraph($graph, $v);
                 }
             }
