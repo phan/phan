@@ -334,6 +334,7 @@ class DependencyGraphPlugin extends PluginV3 implements
                     cfound:
                     $graph = $this->walkcGraph($graph, $v);
                 } elseif ($mode == 'file') {
+echo "Here v is $v\n";
                     if (!\strstr($v, '.')) {
                         try {
                             $fqsen = FullyQualifiedClassName::fromFullyQualifiedString($v);
@@ -353,7 +354,7 @@ class DependencyGraphPlugin extends PluginV3 implements
                         foreach ($this->file_to_class as $fi => $cl) {
                             $file = self::getFileLineno((string)$fi)[0];
                             if ($file == $v) {
-                                $v = $cl;
+                                $v = $file;
                                 goto ffound;
                             }
                         }
