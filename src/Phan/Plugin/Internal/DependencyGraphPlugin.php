@@ -334,7 +334,6 @@ class DependencyGraphPlugin extends PluginV3 implements
                     cfound:
                     $graph = $this->walkcGraph($graph, $v);
                 } elseif ($mode == 'file') {
-echo "Here v is $v\n";
                     if (!\strstr($v, '.')) {
                         try {
                             $fqsen = FullyQualifiedClassName::fromFullyQualifiedString($v);
