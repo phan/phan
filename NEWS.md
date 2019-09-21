@@ -35,6 +35,11 @@ New features(Analysis):
   (this is limited to instance properties which are declared in the current class (i.e. not inherited)).
   To disable this, set `infer_default_properties_in_construct` to false.
 + Improve analysis of conditions on properties of `$this`, such as `if (isset($this->prop['field1']['field2']))` (#3295)
++ Improve suggestions for `PhanUndeclaredFunction`.
+  Properly suggest similar global functions for non-fully qualified calls in namespaces.
+  Suggest `new ClassName()` as a suggestion for `ClassName()`.
++ Improve suggestions for global constants (`PhanUndeclaredConstant`).
+  Suggest similar constant names case-insensitively within the same namespace or the global namespace.
 
 Language Server/Daemon mode:
 + Fix logged Error when language server receives `didChangeConfiguration` events. (this is a no-op)

@@ -1031,7 +1031,7 @@ class ContextNode
             $not_fully_qualified = (bool)($flags & ast\flags\NAME_NOT_FQ);
             $this->throwUndeclaredFunctionIssueException(
                 $function_fqsen,
-                !$not_fully_qualified,
+                $not_fully_qualified,
                 $not_fully_qualified ? FullyQualifiedFunctionName::make($namespace, $function_name) : $function_fqsen
             );
         }

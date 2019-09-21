@@ -3,6 +3,7 @@
 namespace Phan\Language\FQSEN;
 
 use AssertionError;
+use Exception;
 use Phan\Exception\EmptyFQSENException;
 use Phan\Exception\FQSENException;
 use Phan\Exception\InvalidFQSENException;
@@ -200,6 +201,77 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
                 );
             }
         );
+    }
+
+    /**
+     * Construct a fully-qualified global structural element from a namespace and name,
+     * if it was already constructed.
+     *
+     * @param string $namespace
+     * The namespace in this element's scope
+     *
+     * @param string $name
+     * The name of this structural element (additional namespace prefixes here are properly handled)
+     *
+     * @return ?static the FQSEN, if it was loaded
+     *
+     * @throws FQSENException on failure.
+     */
+    public static function makeIfLoaded(string $namespace, string $name)
+    {
+        $name_parts = \explode('\\', $name);
+        $name = (string)\array_pop($name_parts);
+        if ($name === '') {
+            throw new EmptyFQSENException(
+                "Empty name of fqsen",
+                \rtrim($namespace, "\\") . "\\" . \implode("\\", \array_merge($name_parts, [$name]))
+            );
+        }
+        foreach ($name_parts as $i => $part) {
+            if ($part === '') {
+                if ($i > 0) {
+                    throw new InvalidFQSENException(
+                        "Invalid part '' of fqsen",
+                        \rtrim($namespace, "\\") . "\\" . \implode('\\', \array_merge(array_slice($name_parts, $i), [$name]))
+                    );
+                }
+                continue;
+            }
+            if (!\preg_match(self::VALID_STRUCTURAL_ELEMENT_REGEX_PART, $part)) {
+                throw new InvalidFQSENException(
+                    "Invalid part '$part' of fqsen",
+                    \rtrim($namespace, "\\") . "\\$part\\" . \implode('\\', \array_merge(array_slice($name_parts, $i), [$name]))
+                );
+            }
+            if ($namespace === '\\') {
+                $namespace = '\\' . $part;
+            } else {
+                $namespace .= '\\' . $part;
+            }
+        }
+        $namespace = self::cleanNamespace($namespace);
+        if (!\preg_match(self::VALID_STRUCTURAL_ELEMENT_REGEX, \rtrim($namespace, '\\') . '\\' . $name)) {
+            throw new InvalidFQSENException("Invalid namespaced name", \rtrim($namespace, '\\') . '\\' . $name);
+        }
+        $key = static::class . '|' .
+            static::toString(\strtolower($namespace), static::canonicalLookupKey($name), 0);
+
+        try {
+            return self::memoizeStatic(
+                $key,
+                /**
+                 * @throws FQSENException
+                 */
+                static function () : self {
+                    // Reuse the exception to save time generating an unused stack trace.
+                    static $exception;
+                    $exception = ($exception ?? new Exception());
+                    throw $exception;
+                }
+            );
+        } catch (\Exception $_) {
+            return null;
+        }
     }
 
     /**

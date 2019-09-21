@@ -1592,6 +1592,12 @@ class CodeBase
     private $function_names_in_namespace = null;
 
     /**
+     * @var array<string,array<string,string>>|null
+     * Maps lowercase function name to (lowercase constant => constant)
+     */
+    private $constant_names_in_namespace = null;
+
+    /**
      * @var array<string,StringSuggester>
      * Maps namespace to an object suggesting class names in that namespace
      */
@@ -1603,6 +1609,12 @@ class CodeBase
      */
     private $function_names_suggester_in_namespace = [];
 
+    /**
+     * @var array<string,StringSuggester>
+     * Maps namespace to an object suggesting constant names in that namespace
+     */
+    private $constant_names_suggester_in_namespace = [];
+
     private function invalidateDependentCacheEntries() : void
     {
         // TODO: Should refactor suggestions logic into a separate class
@@ -1610,8 +1622,10 @@ class CodeBase
         $this->namespaces_for_function_names = null;
         $this->class_names_in_namespace = null;
         $this->function_names_in_namespace = null;
+        $this->constant_names_in_namespace = null;
         $this->class_names_suggester_in_namespace = [];
         $this->function_names_suggester_in_namespace = [];
+        $this->constant_names_suggester_in_namespace = [];
         $this->constant_lookup_map_for_name = null;
     }
 
@@ -1716,6 +1730,14 @@ class CodeBase
     }
 
     /**
+     * @return array<string,array<string,string>> a list of namespaces which have each constant name
+     */
+    private function getConstantNamesInNamespaceMap() : array
+    {
+        return $this->constant_names_in_namespace ?? ($this->constant_names_in_namespace = $this->computeConstantNamesInNamespace());
+    }
+
+    /**
      * @return array<string,string> a list of class names in $namespace
      */
     public function getClassNamesOfNamespace(string $namespace) : array
@@ -1740,6 +1762,18 @@ class CodeBase
     }
 
     /**
+     * @return array<string,string> a list of constant names in $namespace
+     */
+    public function getConstantNamesOfNamespace(string $namespace) : array
+    {
+        $namespace = strtolower($namespace);
+        if (\substr($namespace, 0, 1) !== '\\') {
+            $namespace = "\\$namespace";
+        }
+        return $this->getConstantNamesInNamespaceMap()[$namespace] ?? [];
+    }
+
+    /**
      * This limits the suggested class names from getClassNamesOfNamespace for $namespace_lower to
      * the names which are similar enough in length to be a potential suggestion,
      * or those which have the requested name as a prefix
@@ -1752,7 +1786,7 @@ class CodeBase
     }
 
     /**
-     * This limits the suggested class names from getFunctionNamesOfNamespace for $namespace_lower to
+     * This limits the suggested function names from getFunctionNamesOfNamespace for $namespace_lower to
      * the names which are similar enough in length to be a potential suggestion,
      * or those which have the requested name as a prefix
      */
@@ -1761,6 +1795,18 @@ class CodeBase
         $namespace = strtolower($namespace);
         return $this->function_names_suggester_in_namespace[$namespace]
             ?? ($this->function_names_suggester_in_namespace[$namespace] = new StringSuggester($this->getFunctionNamesOfNamespace($namespace)));
+    }
+
+    /**
+     * This limits the suggested constant names from getConstantNamesOfNamespace for $namespace_lower to
+     * the names which are similar enough in length to be a potential suggestion,
+     * or those which have the requested name as a prefix
+     */
+    private function getConstantNameSuggesterForNamespace(string $namespace) : StringSuggester
+    {
+        $namespace = strtolower($namespace);
+        return $this->constant_names_suggester_in_namespace[$namespace]
+            ?? ($this->constant_names_suggester_in_namespace[$namespace] = new StringSuggester($this->getConstantNamesOfNamespace($namespace)));
     }
 
     /**
@@ -1800,6 +1846,23 @@ class CodeBase
             $namespace = $function_fqsen->getNamespace();
             $name = $function_fqsen->getName();
             $suggestion_set[strtolower($namespace)][strtolower($name)] = $name;
+        }
+        return $suggestion_set;
+    }
+
+    /**
+     * @return array<string,array<string,string>> maps namespace name to unique constants in that namespace.
+     */
+    private function computeConstantNamesInNamespace() : array
+    {
+        $suggestion_set = [];
+        foreach (clone($this->fqsen_global_constant_map) as $fqsen => $_) {
+            $namespace = $fqsen->getNamespace();
+            $name = $fqsen->getName();
+            $suggestion_set[strtolower($namespace)][$name] = $name;
+        }
+        foreach (['TRUE', 'FALSE', 'NULL'] as $redundant) {
+            unset($suggestion_set['\\'][$redundant]);
         }
         return $suggestion_set;
     }
@@ -1904,6 +1967,57 @@ class CodeBase
     }
 
     /**
+     * @throws FQSENException
+     */
+    private function getClassIfConstructorAccessible(string $namespace, string $name, Context $context) : ?FullyQualifiedClassName
+    {
+        $fqsen = FullyQualifiedClassName::makeIfLoaded($namespace, $name);
+        if (!$fqsen || !$this->hasClassWithFQSEN($fqsen)) {
+            return null;
+        }
+        $class = $this->getClassByFQSEN($fqsen);
+        if (!$class->isClass()) {
+            return null;
+        }
+        if (!$class->hasMethodWithName($this, '__construct')) {
+            return null;
+        }
+        $class_fqsen_in_current_scope = IssueFixSuggester::maybeGetClassInCurrentScope($context);
+        if ($class->getMethodByName($this, '__construct')->isAccessibleFromClass($this, $class_fqsen_in_current_scope)) {
+            return $fqsen;
+        }
+        return null;
+
+    }
+
+    /**
+     * @return array<int,FullyQualifiedClassName> 0 or more namespaced class names found in this code base in $namespace
+     */
+    public function suggestSimilarNewInAnyNamespace(
+        string $namespace,
+        string $name,
+        Context $context,
+        bool $suggest_in_global_namespace
+    ) : array {
+        try {
+            $suggestions = [];
+            $fqsen = $this->getClassIfConstructorAccessible($namespace, $name, $context);
+            if ($fqsen && $this->hasClassWithFQSEN($fqsen)) {
+                $suggestions[] = $fqsen;
+            }
+            if ($namespace !== "\\" && $suggest_in_global_namespace) {
+                $fqsen = $this->getClassIfConstructorAccessible('\\', $name, $context);
+                if ($fqsen && $this->hasClassWithFQSEN($fqsen)) {
+                    $suggestions[] = $fqsen;
+                }
+            }
+        } catch (Exception $_) {
+            // ignore
+        }
+        return $suggestions;
+    }
+
+    /**
      * @return array<int,FullyQualifiedGlobalConstantName> an array of constants similar to the missing constant.
      */
     public function suggestSimilarConstantsToConstant(string $name) : array
@@ -1951,6 +2065,24 @@ class CodeBase
         return \array_values(\array_map(static function (string $function_name) use ($namespace) : FullyQualifiedFunctionName {
             return FullyQualifiedFunctionName::make($namespace, $function_name);
         }, $suggested_function_names));
+    }
+
+    /**
+     * @return array<int,FullyQualifiedGlobalConstantName> 0 or more namespaced constant names found in this code base, from various namespaces
+     */
+    public function suggestSimilarGlobalConstantForNamespaceAndName(
+        string $namespace,
+        string $name
+    ) : array {
+        $suggester = $this->getConstantNameSuggesterForNamespace($namespace);
+        $suggested_constant_names = $suggester->getSuggestions($name);
+
+        /**
+         * @suppress PhanThrowTypeAbsentForCall
+         */
+        return \array_values(\array_map(static function (string $constant_name) : FullyQualifiedGlobalConstantName {
+            return FullyQualifiedGlobalConstantName::fromFullyQualifiedString($constant_name);
+        }, $suggested_constant_names));
     }
 
     /**

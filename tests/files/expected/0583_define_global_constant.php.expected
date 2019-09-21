@@ -1,7 +1,7 @@
 %s:5 PhanUndeclaredConstant Reference to undeclared constant \test2207\TEST (Did you mean \TEST)
 %s:7 PhanUndeclaredConstant Reference to undeclared constant \test2207\TEST (Did you mean \TEST)
 %s:11 PhanTypeConversionFromArray array to string conversion
-%s:12 PhanUndeclaredConstant Reference to undeclared constant \test2207\TEST2
+%s:12 PhanUndeclaredConstant Reference to undeclared constant \test2207\TEST2 (Did you mean \TEST or \TEST5)
 %s:14 PhanInvalidConstantFQSEN '\' is an invalid FQSEN for a constant
 %s:15 PhanInvalidConstantFQSEN 'foo\\TEST3' is an invalid FQSEN for a constant
 %s:16 PhanInvalidConstantFQSEN '\\TEST4' is an invalid FQSEN for a constant
