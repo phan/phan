@@ -3824,7 +3824,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $argument_type = $argument_type->withUnionType($argument_types[$i]);
             }
         }
-        $argument_type = $argument_type->withRealTypeSet($parameter->getNonVariadicUnionType()->getRealTypeSet());
         // Then set the new type on that parameter based
         // on the argument's type. We'll use this to
         // retest the method with the passed in types
@@ -3834,16 +3833,16 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // For https://github.com/phan/phan/issues/1525 : Collapse array shapes into generic arrays before recursively analyzing a method.
             if ($parameter->hasEmptyNonVariadicType()) {
                 $parameter->setUnionType(
-                    $argument_type->withFlattenedArrayShapeOrLiteralTypeInstances()->asGenericArrayTypes(GenericArrayType::KEY_INT)
+                    $argument_type->withFlattenedArrayShapeOrLiteralTypeInstances()->asGenericArrayTypes(GenericArrayType::KEY_INT)->withRealTypeSet($parameter->getNonVariadicUnionType()->getRealTypeSet())
                 );
             } else {
                 $parameter->addUnionType(
-                    $argument_type->withFlattenedArrayShapeOrLiteralTypeInstances()->asGenericArrayTypes(GenericArrayType::KEY_INT)
+                    $argument_type->withFlattenedArrayShapeOrLiteralTypeInstances()->asGenericArrayTypes(GenericArrayType::KEY_INT)->withRealTypeSet($parameter->getNonVariadicUnionType()->getRealTypeSet())
                 );
             }
         } else {
             $parameter->addUnionType(
-                $argument_type->withFlattenedArrayShapeOrLiteralTypeInstances()
+                $argument_type->withFlattenedArrayShapeOrLiteralTypeInstances()->withRealTypeSet($parameter->getNonVariadicUnionType()->getRealTypeSet())
             );
         }
 
