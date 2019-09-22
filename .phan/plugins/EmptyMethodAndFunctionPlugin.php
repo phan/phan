@@ -2,8 +2,8 @@
 
 use ast\Node;
 use Phan\Issue;
-use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Func;
+use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\PluginV3;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;

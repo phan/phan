@@ -819,7 +819,7 @@ class ContextNode
                     Issue::PossiblyUndeclaredMethod,
                     $node->lineno,
                     $method_name,
-                    implode('|', array_map(static function (Clazz $class) : string {
+                    implode('|', \array_map(static function (Clazz $class) : string {
                         return $class->getFQSEN()->__toString();
                     }, $class_list)),
                     $class_without_method

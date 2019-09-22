@@ -4,8 +4,8 @@ namespace Phan\Language\Element;
 
 use ast\Node;
 use Phan\Language\FQSEN;
-use Phan\Language\UnionType;
 use Phan\Language\FutureUnionType;
+use Phan\Language\UnionType;
 
 /**
  * Represents APIs used when Phan is setting up/analyzing
