@@ -1,5 +1,6 @@
 %s:13 PhanNoopStringLiteral Unused result of a string literal "x" near this line
 %s:16 PhanNoopNumericLiteral Unused result of a numeric literal 0 near this line
 %s:16 PhanTypeMissingReturn Method \HasGetter780::badMethod2 is declared to return string but has no return value
-%s:22 PhanAccessPropertyPrivate Cannot access private property \HasGetter780->propName defined at %s:4 (Did you mean \HasGetter780::getPropName())
-%s:23 PhanAccessPropertyPrivate Cannot access private property \HasGetter780->propName defined at %s:4 (Did you mean \HasGetter780::setPropName())
+%s:20 PhanTypeExpectedObjectPropAccess Expected an object instance when accessing an instance property, but saw an expression with type string
+%s:25 PhanAccessPropertyPrivate Cannot access private property \HasGetter780->propName defined at %s:4 (Did you mean \HasGetter780::getPropName())
+%s:26 PhanAccessPropertyPrivate Cannot access private property \HasGetter780->propName defined at %s:4 (Did you mean \HasGetter780::setPropName())
