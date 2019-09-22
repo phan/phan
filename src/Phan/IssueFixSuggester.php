@@ -411,7 +411,7 @@ class IssueFixSuggester
             return null;
         }
         $suggestions = self::deduplicateSuggestions(\array_map('strval', $suggestions));
-        sort($suggestions, \SORT_STRING);
+        \sort($suggestions, \SORT_STRING);
         return Suggestion::fromString(
             'Did you mean ' . \implode(' or ', $suggestions)
         );
@@ -428,7 +428,7 @@ class IssueFixSuggester
         foreach ($suggestions as $suggestion) {
             $result[(string)$suggestion] = $suggestion;
         }
-        return array_values($result);
+        return \array_values($result);
     }
 
     /**
