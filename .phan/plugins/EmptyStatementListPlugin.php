@@ -86,6 +86,10 @@ final class EmptyStatementListVisitor extends PluginAwarePostAnalysisVisitor
             return;
         }
         $stmts_node = $last_if_elem->children['stmts'];
+        if (!$stmts_node instanceof Node) {
+            // probably impossible
+            return;
+        }
         if ($stmts_node->children) {
             // the last if element has statements
             return;
@@ -101,7 +105,7 @@ final class EmptyStatementListVisitor extends PluginAwarePostAnalysisVisitor
 
         $this->emitPluginIssue(
             $this->code_base,
-            clone($this->context)->withLineNumberStart($last_if_elem->children['stmts']->lineno),
+            (clone($this->context))->withLineNumberStart($last_if_elem->children['stmts']->lineno),
             'PhanPluginEmptyStatementIf',
             'Empty statement list statement detected for the last if/elseif statement',
             []

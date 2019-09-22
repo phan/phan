@@ -1165,7 +1165,7 @@ class Clazz extends AddressableElement
                         continue;
                     }
                     $node = $method->getNode()->children['stmts'] ?? null;
-                    if (!$node) {
+                    if (!$node instanceof Node) {
                         continue;
                     }
                     $param_name = $method->getParameterList()[0]->getName();
@@ -1220,7 +1220,7 @@ class Clazz extends AddressableElement
                         continue;
                     }
                     $node = $method->getNode()->children['stmts'] ?? null;
-                    if (!$node) {
+                    if (!$node instanceof Node) {
                         continue;
                     }
                     $fetched_property_name = self::computeFetchedPropertyName($node);
@@ -1239,7 +1239,7 @@ class Clazz extends AddressableElement
             return null;
         }
         $stmt = $node->children[0];
-        if ($stmt->kind !== ast\AST_RETURN) {
+        if (!$stmt instanceof Node || $stmt->kind !== ast\AST_RETURN) {
             return null;
         }
         return self::getPropName($stmt->children['expr']);
@@ -1254,7 +1254,7 @@ class Clazz extends AddressableElement
             return null;
         }
         $stmt = $node->children[0];
-        if ($stmt->kind !== ast\AST_ASSIGN) {
+        if (!$stmt instanceof Node || $stmt->kind !== ast\AST_ASSIGN) {
             return null;
         }
         $prop_name = self::getPropName($stmt->children['var']);
@@ -1262,7 +1262,7 @@ class Clazz extends AddressableElement
             return null;
         }
         $expr = $stmt->children['expr'];
-        if ($expr->kind !== ast\AST_VAR) {
+        if (!$expr instanceof Node || $expr->kind !== ast\AST_VAR) {
             return null;
         }
         if ($expr->children['name'] === $expected_parameter_name) {
@@ -1302,6 +1302,9 @@ class Clazz extends AddressableElement
             return false;
         }
         $node = $node->children['expr'] ?? $node->children['class'];
+        if (!($node instanceof Node)) {
+            return false;
+        }
         switch ($node->kind) {
             case ast\AST_VAR:
                 $name = $node->children['name'];

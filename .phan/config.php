@@ -88,7 +88,7 @@ return [
 
     // If enabled, Phan will warn if **any** type of the object expression for a property access
     // does not contain that property.
-    'strict_property_checking' => true,
+    'strict_object_checking' => true,
 
     // If enabled, scalars (int, float, bool, string, null)
     // are treated as if they can cast to each other.

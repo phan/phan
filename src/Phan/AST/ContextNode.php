@@ -1425,43 +1425,51 @@ class ContextNode
                 );
             }
         }
-        if (!$is_static && Config::get_strict_object_checking()) {
+        if (!$is_static && Config::get_strict_object_checking() &&
+                !($node->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF)) {
             $union_type = UnionTypeVisitor::unionTypeFromNode(
                 $this->code_base,
                 $this->context,
                 $node->children['expr']
             );
-            $invalid = [];
+            $invalid = UnionType::empty();
             foreach ($union_type->getTypeSet() as $type) {
-                if ($type->isNullable() || !$type->isPossiblyObject()) {
-                    $invalid[] = $type->__toString();
+                if (!$type->isPossiblyObject()) {
+                    $invalid = $invalid->withType($type);
+                } elseif ($type->isNullable()) {
+                    $invalid = $invalid->withType(NullType::instance(false));
                 }
             }
-            if ($invalid) {
-                \sort($invalid, \SORT_STRING);
-                $this->emitIssue(
-                    Issue::PossiblyUndeclaredProperty,
-                    $node->lineno,
-                    $property_name,
-                    implode('|', array_map(static function (Clazz $class) : string {
-                        return $class->getFQSEN()->__toString();
-                    }, $class_list)),
-                    implode('|', $invalid)
-                );
-                if ($property) {
-                    return $property;
+            if (!$invalid->isEmpty()) {
+                if ($node->flags & PhanAnnotationAdder::FLAG_IGNORE_NULLABLE) {
+                    $invalid = $invalid->nonNullableClone();
+                }
+                if (!$invalid->isEmpty()) {
+                    $this->emitIssue(
+                        Issue::PossiblyUndeclaredProperty,
+                        $node->lineno,
+                        $property_name,
+                        $union_type,
+                        $invalid
+                    );
+                    if ($property) {
+                        return $property;
+                    }
                 }
             }
         }
         if ($property) {
-            if ($class_without_property && Config::get_strict_object_checking()) {
+            if ($class_without_property && Config::get_strict_object_checking() &&
+                    !($node->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF)) {
                 $this->emitIssue(
                     Issue::PossiblyUndeclaredProperty,
                     $node->lineno,
                     $property_name,
-                    implode('|', array_map(static function (Clazz $class) : string {
-                        return $class->getFQSEN()->__toString();
-                    }, $class_list)),
+                    UnionTypeVisitor::unionTypeFromNode(
+                        $this->code_base,
+                        $this->context,
+                        $node->children['expr'] ?? $node->children['class']
+                    ),
                     $class_without_property->getFQSEN()
                 );
             }

@@ -1346,11 +1346,16 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // TODO: Improve inferences in switch statements?
         // TODO: Behave differently if switch lists don't cover every case (e.g. if there is no default)
         $has_default = false;
+        // parent_node_list should always end in AST_SWITCH
+        // @phan-suppress-next-next-line PhanPossiblyUndeclaredProperty
         [$switch_variable_node, $switch_variable_condition] = $this->createSwitchConditionAnalyzer(
             end($this->parent_node_list)->children['cond']
         );
         $previous_child_context = null;
         foreach ($node->children as $i => $child_node) {
+            if (!$child_node instanceof Node) {
+                throw new AssertionError("Switch case statement must be a node");
+            }
             $cond_node = $child_node->children['cond'];
             // Step into each child node and get an
             // updated context for the node

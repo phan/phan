@@ -234,16 +234,17 @@ class ParseVisitor extends ScopeVisitor
             }
 
             // Add any implemented interfaces
-            if (isset($node->children['implements'])) {
-                foreach ($node->children['implements']->children as $name_node) {
-                    $name = (string)UnionTypeVisitor::unionTypeFromClassNode($this->code_base, $this->context, $name_node);
-                    $class->addInterfaceClassFQSEN(
-                        FullyQualifiedClassName::fromFullyQualifiedString(
-                            $name
-                        ),
-                        $name_node->lineno
-                    );
+            foreach ($node->children['implements']->children ?? [] as $name_node) {
+                if (!$name_node instanceof Node) {
+                    throw new AssertionError('Expected list of AST_NAME nodes');
                 }
+                $name = (string)UnionTypeVisitor::unionTypeFromClassNode($this->code_base, $this->context, $name_node);
+                $class->addInterfaceClassFQSEN(
+                    FullyQualifiedClassName::fromFullyQualifiedString(
+                        $name
+                    ),
+                    $name_node->lineno
+                );
             }
         } finally {
             $class->setDidFinishParsing(true);
@@ -378,8 +379,10 @@ class ParseVisitor extends ScopeVisitor
     public function visitPropGroup(Node $node) : Context
     {
         // Bomb out if we're not in a class context
-        $props_node = $node->children['props'];
-        $type_node = $node->children['type'];
+        ['props' => $props_node, 'type' => $type_node] = $node->children;
+        if (!$props_node instanceof Node) {
+            throw new AssertionError('Expected list of properties to be a node');
+        }
         if ($type_node) {
             try {
                 $real_union_type = (new UnionTypeVisitor($this->code_base, $this->context))->fromTypeInSignature($type_node);
@@ -817,9 +820,10 @@ class ParseVisitor extends ScopeVisitor
             try {
                 self::checkIsAllowedInConstExpr($value_node);
             } catch (InvalidArgumentException $_) {
+                // InvalidArgumentException was caused by an invalid node kind in a constant expression (value_node should be a Node but Phan can't tell)
                 $this->emitIssue(
                     Issue::InvalidConstantExpression,
-                    $value_node->lineno
+                    $value_node->lineno ?? $child_node->lineno
                 );
                 // Note: Global constants with invalid value expressions aren't declared.
                 // However, class constants are declared with placeholders to make inheritance checks, etc. easier.

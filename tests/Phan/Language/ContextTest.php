@@ -2,6 +2,7 @@
 
 namespace Phan\Tests\Language;
 
+use ast\Node;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
@@ -80,6 +81,7 @@ final class ContextTest extends BaseTest
         );
 
         $class_node = $stmt_list_node->children[0];
+        $this->assertInstanceof(Node::class, $class_node);
 
         $context = new Context();
 
@@ -89,6 +91,7 @@ final class ContextTest extends BaseTest
         ))($class_node);
 
         $stmt_list_node = $class_node->children['stmts'];
+        $this->assertInstanceof(Node::class, $stmt_list_node);
         $method_node = $stmt_list_node->children[0];
 
         $context = (new ParseVisitor(

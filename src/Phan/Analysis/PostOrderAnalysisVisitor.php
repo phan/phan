@@ -1114,19 +1114,16 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     {
         $context = $this->context;
         try {
-            $name_node = $node->children['name'];
             // Based on UnionTypeVisitor::visitConst
-            if ($name_node->kind == ast\AST_NAME) {
-                $constant = (new ContextNode(
-                    $this->code_base,
-                    $context,
-                    $node
-                ))->getConst();
+            $constant = (new ContextNode(
+                $this->code_base,
+                $context,
+                $node
+            ))->getConst();
 
-                // Mark that this constant has been referenced from
-                // this context
-                $constant->addReference($context);
-            }
+            // Mark that this constant has been referenced from
+            // this context
+            $constant->addReference($context);
         } catch (IssueException $exception) {
             // We need to do this in order to check keys and (after the first 5) values in AST arrays.
             // Other parts of the AST may also not be covered.
@@ -2834,8 +2831,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 );
             }
         }
-        if (($node->children['cond']->kind ?? null) === ast\AST_CONDITIONAL) {
-            $this->checkDeprecatedUnparenthesizedConditional($node);
+        $cond = $node->children['cond'];
+        if ($cond instanceof Node && $cond->kind === ast\AST_CONDITIONAL) {
+            $this->checkDeprecatedUnparenthesizedConditional($node, $cond);
         }
         return $this->context;
     }
@@ -2843,9 +2841,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     /**
      * @param Node $node a node of kind AST_CONDITIONAL with a condition that is also of kind AST_CONDITIONAL
      */
-    private function checkDeprecatedUnparenthesizedConditional(Node $node) : void
+    private function checkDeprecatedUnparenthesizedConditional(Node $node, Node $cond) : void
     {
-        $cond = $node->children['cond'];
         if ($cond->flags & flags\PARENTHESIZED_CONDITIONAL) {
             // The condition is unambiguously parenthesized.
             return;
@@ -2900,6 +2897,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $cur_parent_node = \end($parent_node_list);
         for (;; $cur_parent_node = $prev_parent_node) {
             $prev_parent_node = \prev($parent_node_list);
+            if (!$prev_parent_node instanceof Node) {
+                throw new AssertionError('Unexpected end of parent nodes seen in ' . __METHOD__);
+            }
             switch ($prev_parent_node->kind) {
                 case ast\AST_DIM:
                     if ($prev_parent_node->children['expr'] !== $cur_parent_node) {
@@ -3105,6 +3105,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     {
         $parent_node_list = $this->parent_node_list;
         $parent_node = \end($parent_node_list);
+        if (!$parent_node instanceof Node) {
+            // impossible
+            return false;
+        }
         $parent_kind = $parent_node->kind;
         // E.g. analyzing [$x] in [$x] = expr()
         while ($parent_kind === ast\AST_ARRAY_ELEM) {
@@ -3115,6 +3119,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             \array_pop($parent_node_list);  // pop AST_ARRAY_ELEM
             $node = \array_pop($parent_node_list);  // AST_ARRAY
             $parent_node = \array_pop($parent_node_list);
+            if (!$parent_node instanceof Node) {
+                // impossible
+                return false;
+            }
             $parent_kind = $parent_node->kind;
         }
         if ($parent_kind === ast\AST_DIM) {
@@ -3147,6 +3155,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     {
         $parent_node_list = $this->parent_node_list;
         $parent_node = \end($parent_node_list);
+        if (!$parent_node instanceof Node) {
+            // impossible
+            return false;
+        }
         $parent_kind = $parent_node->kind;
         // E.g. analyzing [$x] in [$x] = expr()
         while ($parent_kind === ast\AST_ARRAY_ELEM) {
@@ -3157,6 +3169,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             \array_pop($parent_node_list);  // pop AST_ARRAY_ELEM
             $node = \array_pop($parent_node_list);  // AST_ARRAY
             $parent_node = \array_pop($parent_node_list);
+            if (!$parent_node instanceof Node) {
+                // impossible
+                return false;
+            }
             $parent_kind = $parent_node->kind;
         }
         if ($parent_kind === ast\AST_DIM) {
@@ -3766,7 +3782,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $argument_list_node = $node->children['args'];
         if ($node->kind === ast\AST_METHOD_CALL) {
             $expr = $node->children['expr'];
-            if (($expr->kind ?? null) !== ast\AST_VAR || $expr->children['name'] !== 'this') {
+            if (!$expr instanceof Node || $expr->kind !== ast\AST_VAR || $expr->children['name'] !== 'this') {
                 return;
             }
         }

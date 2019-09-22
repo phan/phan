@@ -2,6 +2,7 @@
 
 namespace Phan\Config;
 
+use ast\Node;
 use Closure;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\VersionParser;
@@ -569,6 +570,10 @@ EOT;
                 return true;
             }
             $node = $child_nodes[0];
+            if (!$node instanceof Node) {
+                // e.g. <?php 'literal';
+                return true;
+            }
             return $node->kind !== \ast\AST_ECHO || !is_string($node->children['expr']);
         } catch (\ParseError $_) {
             return false;

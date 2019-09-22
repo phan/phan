@@ -48,7 +48,7 @@ final class EmptyMethodAndFunctionVisitor extends PluginAwarePostAnalysisVisitor
             ) {
                 $this->emitIssue(
                     $this->getIssueTypeForEmptyMethod($method),
-                    $method->getNode()->lineno,
+                    $node->lineno,
                     $method->getName()
                 );
             }
@@ -83,13 +83,13 @@ final class EmptyMethodAndFunctionVisitor extends PluginAwarePostAnalysisVisitor
                 if (!$function->isClosure()) {
                     $this->emitIssue(
                         Issue::EmptyFunction,
-                        $function->getNode()->lineno,
+                        $node->lineno,
                         $function->getName()
                     );
                 } else {
                     $this->emitIssue(
                         Issue::EmptyClosure,
-                        $function->getNode()->lineno
+                        $node->lineno
                     );
                 }
             }

@@ -175,7 +175,10 @@ class CompletionResolver
             return;
         }
 
-        $class_node = $node->children['class'] ?? $node->children['expr'];
+        $class_node = $node->children['class'];
+        if (!$class_node instanceof Node) {
+            return;
+        }
         $is_static = $class_node->kind === ast\AST_NAME;
 
         // Find all of the classes on the left-hand side

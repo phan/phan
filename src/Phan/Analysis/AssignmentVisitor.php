@@ -741,8 +741,10 @@ class AssignmentVisitor extends AnalysisVisitor
         if (!\is_string($property_name)) {
             return $this->context;
         }
-        if (($node->children['expr']->kind ?? null) === \ast\AST_VAR &&
-                $node->children['expr']->children['name'] === 'this') {
+        $expr_node = $node->children['expr'];
+        if ($expr_node instanceof Node &&
+                $expr_node->kind === \ast\AST_VAR &&
+                $expr_node->children['name'] === 'this') {
             $this->handleThisPropertyAssignmentInLocalScopeByName($node, $property_name);
         }
 

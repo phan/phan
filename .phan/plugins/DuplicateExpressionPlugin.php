@@ -420,9 +420,13 @@ class RedundantNodePreAnalysisVisitor extends PluginAwarePreAnalysisVisitor
         }
         $last_child = \end($children);
         // Loop over the `} else {` blocks.
+        // @phan-suppress-next-line PhanPossiblyUndeclaredProperty
         while ($last_child->children['cond'] === null) {
             $first_stmt = $last_child->children['stmts']->children[0] ?? null;
-            if (($first_stmt->kind ?? null) !== ast\AST_IF) {
+            if (!($first_stmt instanceof Node)) {
+                break;
+            }
+            if ($first_stmt->kind !== ast\AST_IF) {
                 break;
             }
             // @phan-suppress-next-line PhanUndeclaredProperty

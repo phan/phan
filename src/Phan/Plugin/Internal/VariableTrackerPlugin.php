@@ -111,7 +111,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
     ) : array {
         $result = [];
         // AST_PARAM_LIST of AST_PARAM
-        foreach ($node->children['params']->children as $parameter) {
+        foreach ($node->children['params']->children ?? [] as $parameter) {
             if (!($parameter instanceof Node)) {
                 throw new AssertionError("Expected params to be Nodes");
             }

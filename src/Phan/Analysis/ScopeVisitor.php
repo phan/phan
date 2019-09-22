@@ -78,8 +78,10 @@ abstract class ScopeVisitor extends AnalysisVisitor
         $declares = $node->children['declares'];
         $context = $this->context;
         foreach ($declares->children as $elem) {
-            $name = $elem->children['name'];
-            $value = $elem->children['value'];
+            if (!$elem instanceof Node) {
+                throw new AssertionError('Expected an array of declaration elements');
+            }
+            ['name' => $name, 'value' => $value] = $elem->children;
             if ('strict_types' === $name && \is_int($value)) {
                 $context = $context->withStrictTypes($value);
             }
@@ -264,6 +266,9 @@ abstract class ScopeVisitor extends AnalysisVisitor
 
         $map = [];
         foreach ($node->children as $child_node) {
+            if (!$child_node instanceof Node) {
+                throw new AssertionError('Expected array of AST_USE_ELEM nodes');
+            }
             $target = $child_node->children['name'];
 
             if (isset($child_node->children['alias'])) {

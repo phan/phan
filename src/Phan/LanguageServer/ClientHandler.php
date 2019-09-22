@@ -67,9 +67,9 @@ class ClientHandler
                     // Received a response
                     $this->protocolReader->removeListener('message', $listener);
                     if (AdvancedJsonRpc\SuccessResponse::isSuccessResponse($body)) {
-                        $promise->fulfill($msg->body->result);
+                        $promise->fulfill($body->result);
                     } else {
-                        $promise->reject($msg->body->error);
+                        $promise->reject($body->error);
                     }
                 }
             };

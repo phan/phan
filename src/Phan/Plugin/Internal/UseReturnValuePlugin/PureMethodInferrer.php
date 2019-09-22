@@ -77,7 +77,7 @@ class PureMethodInferrer
             return;
         }
         foreach ($func->getNode()->children['uses']->children ?? [] as $use) {
-            if ($use->flags & ast\flags\CLOSURE_USE_REF) {
+            if (($use->flags ?? 0) & ast\flags\CLOSURE_USE_REF) {
                 // Assume that closures that have use by reference will have side effects.
                 return;
             }
