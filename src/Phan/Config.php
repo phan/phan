@@ -983,6 +983,15 @@ class Config
         return self::$strict_return_checking;
     }
 
+    /**
+     * If enabled, Phan will warn if **any** type in the object expression for a property
+     * does not contain that property.
+     */
+    public static function get_strict_object_checking() : bool
+    {
+        return self::$strict_object_checking;
+    }
+
     /** If enabled, allow null to cast to any array-like type. */
     public static function get_null_casts_as_array() : bool
     {
@@ -1071,6 +1080,9 @@ class Config
                 break;
             case 'strict_return_checking':
                 self::$strict_return_checking = $value;
+                break;
+            case 'strict_object_checking':
+                self::$strict_object_checking = $value;
                 break;
             case 'dead_code_detection':
             case 'force_tracking_references':
@@ -1357,6 +1369,7 @@ class Config
             'strict_param_checking' => $is_bool,
             'strict_property_checking' => $is_bool,
             'strict_return_checking' => $is_bool,
+            'strict_object_checking' => $is_bool,
             'suggestion_check_limit' => $is_int_strict,
             'suppress_issue_types' => $is_string_list,
             'target_php_version' => $is_scalar,

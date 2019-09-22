@@ -1359,6 +1359,8 @@ class ContextNode
             }
         }
 
+        $class_without_property = null;
+        $property = null;
         foreach ($class_list as $class) {
             $class_fqsen = $class->getFQSEN();
 
@@ -1379,6 +1381,10 @@ class ContextNode
                     );
                 }
 
+                $class_without_property = $class;
+                continue;
+            }
+            if ($property) {
                 continue;
             }
 
@@ -1418,7 +1424,47 @@ class ContextNode
                     $this->context->getNamespace() ?: '\\'
                 );
             }
-
+        }
+        if (!$is_static && Config::get_strict_object_checking()) {
+            $union_type = UnionTypeVisitor::unionTypeFromNode(
+                $this->code_base,
+                $this->context,
+                $node->children['expr']
+            );
+            $invalid = [];
+            foreach ($union_type->getTypeSet() as $type) {
+                if ($type->isNullable() || !$type->isPossiblyObject()) {
+                    $invalid[] = $type->__toString();
+                }
+            }
+            if ($invalid) {
+                \sort($invalid, \SORT_STRING);
+                $this->emitIssue(
+                    Issue::PossiblyUndeclaredProperty,
+                    $node->lineno,
+                    $property_name,
+                    implode('|', array_map(static function (Clazz $class) : string {
+                        return $class->getFQSEN()->__toString();
+                    }, $class_list)),
+                    implode('|', $invalid)
+                );
+                if ($property) {
+                    return $property;
+                }
+            }
+        }
+        if ($property) {
+            if ($class_without_property && Config::get_strict_object_checking()) {
+                $this->emitIssue(
+                    Issue::PossiblyUndeclaredProperty,
+                    $node->lineno,
+                    $property_name,
+                    implode('|', array_map(static function (Clazz $class) : string {
+                        return $class->getFQSEN()->__toString();
+                    }, $class_list)),
+                    $class_without_property->getFQSEN()
+                );
+            }
             return $property;
         }
 

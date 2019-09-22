@@ -86,6 +86,10 @@ return [
     // (For self-analysis, Phan has a large number of suppressions and file-level suppressions, due to \ast\Node being difficult to type check)
     'strict_return_checking' => true,
 
+    // If enabled, Phan will warn if **any** type of the object expression for a property access
+    // does not contain that property.
+    'strict_property_checking' => true,
+
     // If enabled, scalars (int, float, bool, string, null)
     // are treated as if they can cast to each other.
     // This does not affect checks of array keys. See scalar_array_key_cast.
