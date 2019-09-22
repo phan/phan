@@ -3,6 +3,7 @@
 use ast\Node;
 use Phan\Issue;
 use Phan\Language\Element\FunctionInterface;
+use Phan\Language\Element\Func;
 use Phan\Language\Element\Method;
 use Phan\PluginV3;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
@@ -37,6 +38,9 @@ final class EmptyMethodAndFunctionVisitor extends PluginAwarePostAnalysisVisitor
 
         if ($stmts_node && !$stmts_node->children) {
             $method = $this->context->getFunctionLikeInScope($this->code_base);
+            if (!($method instanceof Method)) {
+                throw new AssertionError("Expected $method to be a method");
+            }
 
             if (!$method->isOverriddenByAnother()
                 && !$method->isOverride()
@@ -71,6 +75,9 @@ final class EmptyMethodAndFunctionVisitor extends PluginAwarePostAnalysisVisitor
 
         if ($stmts_node && !$stmts_node->children) {
             $function = $this->context->getFunctionLikeInScope($this->code_base);
+            if (!($function instanceof Func)) {
+                throw new AssertionError("Expected $function to be Func\n");
+            }
 
             if (! $function->isDeprecated()) {
                 if (!$function->isClosure()) {

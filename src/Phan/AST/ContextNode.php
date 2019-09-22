@@ -773,11 +773,18 @@ class ContextNode
                 "Can't figure out method call for $method_name"
             );
         }
+        $class_without_method = null;
+        $method = null;
+        $call_method = null;
 
         // Hunt to see if any of them have the method we're
         // looking for
         foreach ($class_list as $class) {
             if ($class->hasMethodWithName($this->code_base, $method_name, $is_direct)) {
+                if ($method) {
+                    // TODO: Could favor the most generic subclass in a union type
+                    continue;
+                }
                 $method = $class->getMethodByName(
                     $this->code_base,
                     $method_name
@@ -791,12 +798,28 @@ class ContextNode
                     } catch (RecursionDepthException $_) {
                     }
                 }
-                return $method;
             } elseif (!$is_static && $class->allowsCallingUndeclaredInstanceMethod($this->code_base)) {
-                return $class->getCallMethod($this->code_base);
+                $call_method = $class->getCallMethod($this->code_base);
             } elseif ($is_static && $class->allowsCallingUndeclaredStaticMethod($this->code_base)) {
-                return $class->getCallStaticMethod($this->code_base);
+                $call_method = $class->getCallStaticMethod($this->code_base);
+            } else {
+                $class_without_method = $class->getFQSEN();
             }
+        }
+        $method = $method ?? $call_method;
+        if ($method) {
+            if ($class_without_method && Config::get_strict_method_checking()) {
+                $this->emitIssue(
+                    Issue::PossiblyUndeclaredMethod,
+                    $node->lineno,
+                    $method_name,
+                    implode('|', array_map(static function (Clazz $class) : string {
+                        return $class->getFQSEN()->__toString();
+                    }, $class_list)),
+                    $class_without_method
+                );
+            }
+            return $method;
         }
 
         $first_class = $class_list[0];

@@ -61,6 +61,7 @@ class Issue
     const UndeclaredFunction        = 'PhanUndeclaredFunction';
     const UndeclaredInterface       = 'PhanUndeclaredInterface';
     const UndeclaredMethod          = 'PhanUndeclaredMethod';
+    const PossiblyUndeclaredMethod  = 'PhanPossiblyUndeclaredMethod';
     const UndeclaredProperty        = 'PhanUndeclaredProperty';
     const UndeclaredStaticMethod    = 'PhanUndeclaredStaticMethod';
     const UndeclaredStaticProperty  = 'PhanUndeclaredStaticProperty';
@@ -970,6 +971,14 @@ class Issue
                 "Call to undeclared method {METHOD}",
                 self::REMEDIATION_B,
                 11013
+            ),
+            new Issue(
+                self::PossiblyUndeclaredMethod,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_CRITICAL,
+                "Call to possibly undeclared method {METHOD} on type {TYPE} ({TYPE} does not declare the method)",
+                self::REMEDIATION_B,
+                11049
             ),
             new Issue(
                 self::UndeclaredStaticMethod,

@@ -7,6 +7,7 @@ use Microsoft\PhpParser\FunctionLike;
 use Microsoft\PhpParser\Node\Expression\AnonymousFunctionCreationExpression;
 use Microsoft\PhpParser\Node\MethodDeclaration;
 use Microsoft\PhpParser\Node\Statement\FunctionDeclaration;
+use Microsoft\PhpParser\Token;
 use Phan\AST\TolerantASTConverter\NodeUtils;
 use Phan\CodeBase;
 use Phan\IssueInstance;
@@ -102,7 +103,8 @@ class Fixers
                 return null;
             }
             // @phan-suppress-next-line PhanThrowTypeAbsentForCall php-parser is not expected to throw here
-            $file_edit = new FileEdit($token->getStart(), $token->getEndPosition(), $shorter_param_type);
+            $start = $token instanceof Token ? $token->start : $token->getStart();
+            $file_edit = new FileEdit($start, $token->getEndPosition(), $shorter_param_type);
             return new FileEditSet([$file_edit]);
         }
         return null;

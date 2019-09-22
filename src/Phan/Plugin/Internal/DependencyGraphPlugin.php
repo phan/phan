@@ -7,7 +7,6 @@ use Exception;
 use Phan\CLI;
 use Phan\CodeBase;
 use Phan\Exception\FQSENException;
-use Phan\Language\Element\AddressableElement;
 use Phan\Language\Element\Clazz;
 use Phan\Language\FileRef;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -27,7 +26,7 @@ class DependencyGraphPlugin extends PluginV3 implements
     PostAnalyzeNodeCapability,
     FinalizeProcessCapability
 {
-    /** @var array<int, AddressableElement> */
+    /** @var array<int, Clazz> */
     private $elements = [];
     /** @var string[] */
     private $class_to_file = [];
