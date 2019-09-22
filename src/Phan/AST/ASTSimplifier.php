@@ -18,6 +18,7 @@ use function in_array;
  * The original \ast\Node objects are not modified.
  *
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
+ * @phan-file-suppress PhanPossiblyUndeclaredProperty
  */
 class ASTSimplifier
 {

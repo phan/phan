@@ -112,7 +112,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         //      try { $x = expr(); } catch (Exception $e) { echo "Caught"; return; } catch (OtherException $e) { continue; }
         // Phan should infer that $x is guaranteed to be defined.
         foreach ($node->children['catches']->children ?? [] as $catch_node) {
-            // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this is never null
+            // @phan-suppress-next-line PhanTypeMismatchArgumentNullable, PhanPossiblyUndeclaredProperty this is never null
             if (BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($catch_node->children['stmts'])) {
                 return false;
             }
@@ -138,7 +138,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         $catch_scope_list = [];
         $catch_nodes = $node->children['catches']->children;
         foreach ($catch_nodes as $i => $catch_node) {
-            // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this is never null
+            // @phan-suppress-next-line PhanTypeMismatchArgumentNullable, PhanPossiblyUndeclaredProperty this is never null
             if (!BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($catch_node->children['stmts'])) {
                 $catch_scope_list[] = $scope_list[$i + 1];
             }

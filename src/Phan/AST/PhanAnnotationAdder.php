@@ -57,6 +57,8 @@ class PhanAnnotationAdder
     const FLAGS_NODE_TYPE_SET = [
         ast\AST_VAR => true,
         ast\AST_DIM => true,
+        ast\AST_PROP => true,
+        ast\AST_STATIC_PROP => true,
         ast\AST_ASSIGN => true,
         ast\AST_ASSIGN_REF => true,
     ];
@@ -117,6 +119,8 @@ class PhanAnnotationAdder
                 }
             }
         };
+        // also marks $expr the same way
+        $prop_handler = $dim_handler;
 
         /**
          * @param Node $node
@@ -157,6 +161,7 @@ class PhanAnnotationAdder
         self::$closures_for_kind = [
             ast\AST_BINARY_OP => $binary_op_handler,
             ast\AST_DIM => $dim_handler,
+            ast\AST_PROP => $prop_handler,
             ast\AST_EMPTY => $ignore_nullable_and_undef_expr_handler,
             ast\AST_ISSET => $ignore_nullable_and_undef_handler,
             ast\AST_UNSET => $ignore_nullable_and_undef_handler,

@@ -5,6 +5,7 @@ namespace Phan\Language\Element;
 use ast\Node;
 use Phan\Language\FQSEN;
 use Phan\Language\FutureUnionType;
+use Phan\Language\UnionType;
 
 /**
  * Represents APIs used when Phan is setting up/analyzing
@@ -33,4 +34,9 @@ interface ConstantInterface
      * @return Node|string|float|int
      */
     public function getNodeForValue();
+
+    /**
+     * Gets the union type of this constant.
+     */
+    public function getUnionType() : UnionType;
 }

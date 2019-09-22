@@ -101,11 +101,8 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         if ($cond instanceof Node) {
             // TODO: Could look up values for remaining constants and inline expressions, but doing that has low value.
             if ($cond->kind === \ast\AST_CONST) {
-                $cond_name = $cond->children['name'];
-                if ($cond_name->kind === \ast\AST_NAME) {
-                    $cond_name_string = $cond_name->children['name'];
-                    return \is_string($cond_name_string) && \strcasecmp($cond_name_string, 'true') === 0;
-                }
+                $cond_name_string = $cond->children['name']->children['name'] ?? null;
+                return \is_string($cond_name_string) && \strcasecmp($cond_name_string, 'true') === 0;
             }
             return false;
         }
@@ -210,6 +207,9 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         $combined_status = 0;
         // Try to cover all possible cases, such as try { return throwsException(); } catch(Exception $e) { break; }
         foreach ($node->children as $catch_node) {
+            if (!$catch_node instanceof Node) {
+                throw new AssertionError('Expected catch statement to be a Node');
+            }
             // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this is never null for catch nodes
             $catch_node_status = $this->visitStmtList($catch_node->children['stmts']);
             $combined_status |= $catch_node_status;
@@ -244,13 +244,16 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
 
     private function computeStatusOfSwitch(Node $node) : int
     {
-        $switch_stmt_case_nodes = $node->children['stmts']->children;
+        $switch_stmt_case_nodes = $node->children['stmts']->children ?? [];
         if (\count($switch_stmt_case_nodes) === 0) {
             return self::STATUS_PROCEED;
         }
         $has_default = false;
         $combined_statuses = 0;
         foreach ($switch_stmt_case_nodes as $index => $case_node) {
+            if (!$case_node instanceof Node) {
+                throw new AssertionError('Expected switch case to be a Node');
+            }
             if ($case_node->children['cond'] === null) {
                 $has_default = true;
             }
@@ -532,6 +535,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         $has_if_elems_for_all_cases = false;
         $combined_statuses = 0;
         foreach ($node->children as $child_node) {
+            '@phan-var Node $child_node';
             // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this is never null
             $status = $this->visitStmtList($child_node->children['stmts']);
             $combined_statuses |= $status;

@@ -232,6 +232,9 @@ class ContextNode
     private function handleTraitAlias(array $adaptations_map, Node $adaptation_node) : void
     {
         $trait_method_node = $adaptation_node->children['method'];
+        if (!$trait_method_node instanceof Node) {
+            throw new AssertionError("Expected node for trait alias");
+        }
         $trait_original_class_name_node = $trait_method_node->children['class'];
         $trait_original_method_name = $trait_method_node->children['method'];
         $trait_new_method_name = $adaptation_node->children['alias'] ?? $trait_original_method_name;
@@ -330,6 +333,9 @@ class ContextNode
     {
         // TODO: Should also verify that the original method exists, in a future PR?
         $trait_method_node = $adaptation_node->children['method'];
+        if (!$trait_method_node instanceof Node) {
+            throw new AssertionError("Expected node for trait use");
+        }
         // $trait_chosen_class_name_node = $trait_method_node->children['class'];
         $trait_chosen_method_name = $trait_method_node->children['method'];
         $trait_chosen_class_name_node = $trait_method_node->children['class'];
@@ -773,11 +779,18 @@ class ContextNode
                 "Can't figure out method call for $method_name"
             );
         }
+        $class_without_method = null;
+        $method = null;
+        $call_method = null;
 
         // Hunt to see if any of them have the method we're
         // looking for
         foreach ($class_list as $class) {
             if ($class->hasMethodWithName($this->code_base, $method_name, $is_direct)) {
+                if ($method) {
+                    // TODO: Could favor the most generic subclass in a union type
+                    continue;
+                }
                 $method = $class->getMethodByName(
                     $this->code_base,
                     $method_name
@@ -791,12 +804,28 @@ class ContextNode
                     } catch (RecursionDepthException $_) {
                     }
                 }
-                return $method;
             } elseif (!$is_static && $class->allowsCallingUndeclaredInstanceMethod($this->code_base)) {
-                return $class->getCallMethod($this->code_base);
+                $call_method = $class->getCallMethod($this->code_base);
             } elseif ($is_static && $class->allowsCallingUndeclaredStaticMethod($this->code_base)) {
-                return $class->getCallStaticMethod($this->code_base);
+                $call_method = $class->getCallStaticMethod($this->code_base);
+            } else {
+                $class_without_method = $class->getFQSEN();
             }
+        }
+        $method = $method ?? $call_method;
+        if ($method) {
+            if ($class_without_method && Config::get_strict_method_checking()) {
+                $this->emitIssue(
+                    Issue::PossiblyUndeclaredMethod,
+                    $node->lineno,
+                    $method_name,
+                    implode('|', \array_map(static function (Clazz $class) : string {
+                        return $class->getFQSEN()->__toString();
+                    }, $class_list)),
+                    $class_without_method
+                );
+            }
+            return $method;
         }
 
         $first_class = $class_list[0];
@@ -905,7 +934,7 @@ class ContextNode
                     $code_base,
                     $context,
                     Issue::TypeInvalidCallable,
-                    $expression->lineno,
+                    $expression->lineno ?? $context->getLineNumberStart(),
                     $union_type
                 );
                 return;
@@ -916,7 +945,7 @@ class ContextNode
                 $code_base,
                 $context,
                 Issue::TypePossiblyInvalidCallable,
-                $expression->lineno,
+                $expression->lineno ?? $context->getLineNumberStart(),
                 $union_type
             );
         }
@@ -1336,6 +1365,8 @@ class ContextNode
             }
         }
 
+        $class_without_property = null;
+        $property = null;
         foreach ($class_list as $class) {
             $class_fqsen = $class->getFQSEN();
 
@@ -1356,6 +1387,10 @@ class ContextNode
                     );
                 }
 
+                $class_without_property = $class;
+                continue;
+            }
+            if ($property) {
                 continue;
             }
 
@@ -1395,7 +1430,55 @@ class ContextNode
                     $this->context->getNamespace() ?: '\\'
                 );
             }
-
+        }
+        if (!$is_static && Config::get_strict_object_checking() &&
+                !($node->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF)) {
+            $union_type = UnionTypeVisitor::unionTypeFromNode(
+                $this->code_base,
+                $this->context,
+                $node->children['expr']
+            );
+            $invalid = UnionType::empty();
+            foreach ($union_type->getTypeSet() as $type) {
+                if (!$type->isPossiblyObject()) {
+                    $invalid = $invalid->withType($type);
+                } elseif ($type->isNullable()) {
+                    $invalid = $invalid->withType(NullType::instance(false));
+                }
+            }
+            if (!$invalid->isEmpty()) {
+                if ($node->flags & PhanAnnotationAdder::FLAG_IGNORE_NULLABLE) {
+                    $invalid = $invalid->nonNullableClone();
+                }
+                if (!$invalid->isEmpty()) {
+                    $this->emitIssue(
+                        Issue::PossiblyUndeclaredProperty,
+                        $node->lineno,
+                        $property_name,
+                        $union_type,
+                        $invalid
+                    );
+                    if ($property) {
+                        return $property;
+                    }
+                }
+            }
+        }
+        if ($property) {
+            if ($class_without_property && Config::get_strict_object_checking() &&
+                    !($node->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF)) {
+                $this->emitIssue(
+                    Issue::PossiblyUndeclaredProperty,
+                    $node->lineno,
+                    $property_name,
+                    UnionTypeVisitor::unionTypeFromNode(
+                        $this->code_base,
+                        $this->context,
+                        $node->children['expr'] ?? $node->children['class']
+                    ),
+                    $class_without_property->getFQSEN()
+                );
+            }
             return $property;
         }
 
@@ -1634,7 +1717,7 @@ class ContextNode
         }
 
         $context = $this->context;
-        $flags = $node->children['name']->flags;
+        $flags = $node->children['name']->flags ?? 0;
         try {
             if (($flags & ast\flags\NAME_RELATIVE) !== 0) {
                 $fqsen = FullyQualifiedGlobalConstantName::make($context->getNamespace(), $constant_name);
@@ -1882,6 +1965,7 @@ class ContextNode
      * (It often should, because outside quick mode, it may be run multiple times per node)
      *
      * TODO: This is repetitive, move these checks into ParseVisitor?
+     * @suppress PhanPossiblyUndeclaredProperty
      */
     public function analyzeBackwardCompatibility() : void
     {

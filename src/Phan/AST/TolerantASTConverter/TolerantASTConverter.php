@@ -14,6 +14,7 @@ use Microsoft\PhpParser\Diagnostic;
 use Microsoft\PhpParser\DiagnosticsProvider;
 use Microsoft\PhpParser\FilePositionMap;
 use Microsoft\PhpParser\MissingToken;
+use Microsoft\PhpParser\Node\Expression\ScopedPropertyAccessExpression;
 use Microsoft\PhpParser\Node\Expression\TernaryExpression;
 use Microsoft\PhpParser\Parser;
 use Microsoft\PhpParser\Token;
@@ -689,7 +690,7 @@ class TolerantASTConverter
                     $n->staticModifier !== null,
                     static::phpParserParamsToAstParams($n->parameters, $start_line),
                     static::phpParserClosureUsesToAstClosureUses($n->anonymousFunctionUseClause->useVariableNameList ?? null, $start_line),
-                    // @phan-suppress-next-line PhanTypeMismatchArgumentNullable return_null_on_empty is false.
+                    // @phan-suppress-next-line PhanTypeMismatchArgumentNullable, PhanPossiblyUndeclaredProperty return_null_on_empty is false.
                     static::phpParserStmtlistToAstNode($n->compoundStatementOrSemicolon->statements, self::getStartLine($n->compoundStatementOrSemicolon), false),
                     $ast_return_type,
                     $start_line,
@@ -881,7 +882,8 @@ class TolerantASTConverter
                             'left' => $e,
                             'right' => $right,
                         ],
-                        $e->lineno
+                        // $e should always be set
+                        $e->lineno ?? 0
                     );
                 }
                 return $e;
@@ -897,10 +899,11 @@ class TolerantASTConverter
                 $class_type_designator = $n->classTypeDesignator;
                 if ($class_type_designator instanceof Token && $class_type_designator->kind === TokenKind::ClassKeyword) {
                     // Node of type AST_CLASS
+                    $base_class = $n->classBaseClause->baseClass ?? null;
                     $class_node = static::astStmtClass(
                         flags\CLASS_ANONYMOUS,
                         null,
-                        $n->classBaseClause !== null ? static::phpParserNonValueNodeToAstNode($n->classBaseClause->baseClass) : null,
+                        $base_class !== null ? static::phpParserNonValueNodeToAstNode($base_class) : null,
                         $n->classInterfaceClause,
                         static::phpParserStmtlistToAstNode($n->classMembers->classMemberDeclarations ?? [], $start_line, false),
                         $start_line,
@@ -1519,7 +1522,10 @@ class TolerantASTConverter
                 // FIXME targetName phpdoc is wrong.
                 $name = $n->name;
                 if ($n->asOrInsteadOfKeyword->kind === TokenKind::InsteadOfKeyword) {
-                    $member_name_list = $name->memberName ?? null;
+                    if (!$name instanceof ScopedPropertyAccessExpression) {
+                        return null;
+                    }
+                    $member_name_list = $name->memberName;
                     if ($member_name_list === null) {
                         return null;
                     }
@@ -1893,14 +1899,15 @@ class TolerantASTConverter
     }
 
     private static function phpParserClosureUsesToAstClosureUses(
-        ?\Microsoft\PhpParser\node\delimitedlist\usevariablenamelist $uses,
+        ?\Microsoft\PhpParser\Node\DelimitedList\UseVariableNameList $uses,
         int $line
     ) : ?\ast\Node {
-        if (count($uses->children ?? []) === 0) {
+        $children = $uses->children ?? [];
+        if (count($children) === 0) {
             return null;
         }
         $ast_uses = [];
-        foreach ($uses->children as $use) {
+        foreach ($children as $use) {
             if ($use instanceof Token) {
                 continue;
             }
@@ -1932,6 +1939,7 @@ class TolerantASTConverter
             if ($node instanceof PhpParser\Node\Expression\ArgumentExpression) {
                 // Skip ArgumentExpression and the PhpParser\Node\DelimitedList\ArgumentExpressionList
                 // to get to the CallExpression
+                // @phan-suppress-next-line PhanPossiblyUndeclaredProperty
                 $node = $node->parent->parent;
                 // fall through
             }
@@ -2079,7 +2087,11 @@ class TolerantASTConverter
             if ($implement instanceof Token && $implement->kind === TokenKind::CommaToken) {
                 continue;
             }
-            $interface_extends_name_list[] = static::phpParserNonValueNodeToAstNode($implement);
+            $interface_name_node = static::phpParserNonValueNodeToAstNode($implement);
+            if (!$interface_name_node instanceof ast\Node) {
+                throw new AssertionError("Expected valid node for interfaces inherited by class");
+            }
+            $interface_extends_name_list[] = $interface_name_node;
         }
         if (\count($interface_extends_name_list) === 0) {
             return null;
@@ -2119,7 +2131,11 @@ class TolerantASTConverter
                     if ($implement instanceof Token && $implement->kind === TokenKind::CommaToken) {
                         continue;
                     }
-                    $ast_implements_inner[] = static::phpParserNonValueNodeToAstNode($implement);
+                    $implement_node = static::phpParserNonValueNodeToAstNode($implement);
+                    if (!$implement_node instanceof ast\Node) {
+                        continue;
+                    }
+                    $ast_implements_inner[] = $implement_node;
                 }
                 if (\count($ast_implements_inner) > 0) {
                     $ast_implements = new ast\Node(ast\AST_NAME_LIST, 0, $ast_implements_inner, $ast_implements_inner[0]->lineno);
@@ -2228,6 +2244,7 @@ class TolerantASTConverter
      * @param ?int $type
      * @param ?string $prefix
      * @param array<int,ast\Node> $uses
+     * @suppress PhanPossiblyUndeclaredProperty $use should always be a node
      */
     private static function astStmtGroupUse(?int $type, ?string $prefix, array $uses, int $line) : ast\Node
     {

@@ -4,7 +4,6 @@ namespace Phan\Language\Element;
 
 use Phan\Analysis\AssignmentVisitor;
 use Phan\CodeBase;
-use Phan\Language\Context;
 use Phan\Language\FileRef;
 use Phan\Language\UnionType;
 
@@ -121,15 +120,6 @@ class PassByReferenceVariable extends Variable
         $this->element->setPhanFlags($phan_flags);
     }
 
-    /**
-     * Returns the context in which the element this is a reference to
-     * was declared.
-     */
-    public function getContext() : Context
-    {
-        return $this->element->getContext();
-    }
-
     public function getFileRef() : FileRef
     {
         return $this->element->getFileRef();
@@ -141,7 +131,7 @@ class PassByReferenceVariable extends Variable
      */
     public function isPHPInternal() : bool
     {
-        return $this->element->isPHPInternal();
+        return $this->element instanceof AddressableElement && $this->element->isPHPInternal();
     }
 
     /**

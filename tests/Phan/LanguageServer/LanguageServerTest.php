@@ -36,8 +36,9 @@ final class LanguageServerTest extends BaseTest
         $sync_options = new TextDocumentSyncOptions();
         $sync_options->openClose = true;
         $sync_options->change = TextDocumentSyncKind::FULL;
-        $sync_options->save = new SaveOptions();
-        $sync_options->save->includeText = true;
+        $save = new SaveOptions();
+        $save->includeText = true;
+        $sync_options->save = $save;
 
         $server_capabilities = new ServerCapabilities();
         $server_capabilities->textDocumentSync = $sync_options;
@@ -59,8 +60,9 @@ final class LanguageServerTest extends BaseTest
         $sync_options = new TextDocumentSyncOptions();
         $sync_options->openClose = true;
         $sync_options->change = TextDocumentSyncKind::FULL;
-        $sync_options->save = new SaveOptions();
-        $sync_options->save->includeText = true;
+        $save = new SaveOptions();
+        $save->includeText = true;
+        $sync_options->save = $save;
 
         $completion_options = new CompletionOptions();
         $completion_options->resolveProvider = false;

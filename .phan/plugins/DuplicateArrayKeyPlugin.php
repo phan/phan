@@ -57,6 +57,9 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
         $case_constant_set = [];
         $values_to_check = [];
         foreach ($children as $i => $case_node) {
+            if (!$case_node instanceof Node) {
+                throw new AssertionError("Switch list must contain nodes");
+            }
             $case_cond = $case_node->children['cond'];
             if ($case_cond === null) {
                 continue;  // This is `default:`. php --syntax-check already checks for duplicates.
@@ -189,7 +192,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
         $has_entry_without_key = false;
         $key_set = [];
         foreach ($children as $entry) {
-            if ($entry === null) {
+            if (!($entry instanceof Node)) {
                 continue;  // Triggered by code such as `list(, $a) = $expr`. In php 7.1, the array and list() syntax was unified.
             }
             $key = $entry->children['key'] ?? null;
@@ -201,6 +204,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
             if (!is_scalar($key)) {
                 $key = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $key)->asSingleScalarValueOrNullOrSelf();
                 if (is_object($key)) {
+                    // @phan-suppress-next-line PhanPossiblyUndeclaredProperty
                     $key = self::HASH_PREFIX . ASTHasher::hash($entry->children['key']);
                 }
             }

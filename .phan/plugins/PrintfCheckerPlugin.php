@@ -92,7 +92,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
             // TODO: Resolve class constant access when those are format strings. Same for PregRegexCheckerPlugin.
             case \ast\AST_CALL:
                 $name_node = $ast_node->children['expr'];
-                if ($name_node->kind === \ast\AST_NAME) {
+                if ($name_node instanceof Node && $name_node->kind === \ast\AST_NAME) {
                     // TODO: Use Phan's function resolution?
                     // TODO: ngettext?
                     $name = $name_node->children['name'];

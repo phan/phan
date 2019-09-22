@@ -44,7 +44,7 @@ class ArrowFunc
             $this->buildUses($stmts);
             // Iterate over the AST_PARAM nodes and remove their variables.
             // They are variables used within the function, but are not uses from the outer scope.
-            foreach ($n->children['params']->children as $param) {
+            foreach ($n->children['params']->children ?? [] as $param) {
                 $name = $param->children['name'] ?? null;
                 if (\is_string($name)) {
                     unset($this->uses[$name]);

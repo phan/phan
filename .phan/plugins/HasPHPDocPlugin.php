@@ -195,7 +195,7 @@ class BasePHPDocCheckerPlugin extends PluginAwarePostAnalysisVisitor
         $class = $this->context->getClassInScope($this->code_base);
         $property_descriptions = [];
         $method_descriptions = [];
-        foreach ($node->children['stmts']->children as $element) {
+        foreach ($node->children['stmts']->children ?? [] as $element) {
             if (!($element instanceof Node)) {
                 throw new AssertionError("All properties of ast\AST_CLASS's statement list must be nodes, saw " . gettype($element));
             }
@@ -337,6 +337,9 @@ final class DuplicatePHPDocCheckerPlugin extends BasePHPDocCheckerPlugin
         [$property_descriptions, $method_descriptions] = parent::visitClass($node);
         foreach (self::findGroups($property_descriptions) as $entries) {
             $first_entry = array_shift($entries);
+            if (!$first_entry instanceof ClassElementEntry) {
+                throw new AssertionError('Expected $entries of $property_descriptions to be a group of 1 or more entries');
+            }
             $first_property = $first_entry->element;
             foreach ($entries as $entry) {
                 $property = $entry->element;
@@ -351,6 +354,9 @@ final class DuplicatePHPDocCheckerPlugin extends BasePHPDocCheckerPlugin
         }
         foreach (self::findGroups($method_descriptions) as $entries) {
             $first_entry = array_shift($entries);
+            if (!$first_entry instanceof ClassElementEntry) {
+                throw new AssertionError('Expected $entries of $property_descriptions to be a group of 1 or more entries');
+            }
             $first_method = $first_entry->element;
             foreach ($entries as $entry) {
                 $method = $entry->element;

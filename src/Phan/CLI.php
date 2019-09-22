@@ -150,6 +150,7 @@ class CLI
         'require-config-exists',
         'signature-compatibility',
         'strict-method-checking',
+        'strict-object-checking',
         'strict-param-checking',
         'strict-property-checking',
         'strict-return-checking',
@@ -606,12 +607,16 @@ class CLI
                 case 'strict-property-checking':
                     Config::setValue('strict_property_checking', true);
                     break;
+                case 'strict-object-checking':
+                    Config::setValue('strict_object_checking', true);
+                    break;
                 case 'strict-return-checking':
                     Config::setValue('strict_return_checking', true);
                     break;
                 case 'S':
                 case 'strict-type-checking':
                     Config::setValue('strict_method_checking', true);
+                    Config::setValue('strict_object_checking', true);
                     Config::setValue('strict_param_checking', true);
                     Config::setValue('strict_property_checking', true);
                     Config::setValue('strict_return_checking', true);
@@ -1260,6 +1265,11 @@ $init_help
   cannot be cast to a type in the property's declared union type.
   (Enables the config option `strict_property_checking`)
 
+ --strict-object-checking
+  Warn if any type of the object expression for a property access
+  does not contain that property.
+  (Enables the config option `strict_object_checking`)
+
  --strict-return-checking
   Warn if any type in a returned value's union type
   cannot be cast to the declared return type.
@@ -1267,7 +1277,7 @@ $init_help
 
  -S, --strict-type-checking
   Equivalent to
-  `--strict-method-checking --strict-param-checking --strict-property-checking --strict-return-checking`.
+  `--strict-method-checking --strict-object-checking --strict-param-checking --strict-property-checking --strict-return-checking`.
 
  --use-fallback-parser
   If a file to be analyzed is syntactically invalid

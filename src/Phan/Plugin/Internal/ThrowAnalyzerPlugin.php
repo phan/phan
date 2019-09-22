@@ -2,6 +2,7 @@
 
 namespace Phan\Plugin\Internal;
 
+use AssertionError;
 use ast;
 use ast\Node;
 use Phan\AST\ContextNode;
@@ -124,6 +125,9 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
                 continue;
             }
             foreach ($parent->children['catches']->children as $catch_node) {
+                if (!$catch_node instanceof Node) {
+                    throw new AssertionError('Expected Node for catch statement');
+                }
                 // @phan-suppress-next-line PhanThrowTypeAbsentForCall hopefully impossible to see for this AST
                 $caught_union_type = UnionTypeVisitor::unionTypeFromClassNode($code_base, $context, $catch_node->children['class']);
                 foreach ($union_type->getTypeSet() as $type) {
@@ -160,6 +164,9 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
                 continue;
             }
             foreach ($parent->children['catches']->children as $catch_node) {
+                if (!$catch_node instanceof Node) {
+                    throw new AssertionError("Impossible, expected Node for catch statement");
+                }
                 // @phan-suppress-next-line PhanThrowTypeAbsentForCall hopefully impossible to see for this AST
                 $caught_union_type = UnionTypeVisitor::unionTypeFromClassNode($this->code_base, $this->context, $catch_node->children['class']);
                 foreach ($union_type->getTypeSet() as $type) {

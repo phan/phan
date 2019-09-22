@@ -623,47 +623,41 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      */
     public static function getKeyTypeOfArrayNode(CodeBase $code_base, Context $context, Node $node, bool $should_catch_issue_exception = true) : int
     {
-        $children = $node->children;
-        if (($children[0] ?? null) instanceof Node
-            && $children[0]->kind == \ast\AST_ARRAY_ELEM
-        ) {
-            $key_type_enum = GenericArrayType::KEY_EMPTY;
-            // Check the all elements for key types.
-            foreach ($children as $child) {
-                if (!($child instanceof Node)) {
-                    continue;
-                }
-                if ($child->kind === \ast\AST_UNPACK) {
-                    // PHP 7.4's array spread operator adds integer keys, e.g. `[...$array, 'other' => 'value']`
-                    $key_type_enum |= GenericArrayType::KEY_INT;
-                    continue;
-                }
-                // Don't bother recursing more than one level to iterate over possible types.
-                $key_node = $child->children['key'];
-                if ($key_node instanceof Node) {
-                    $key_type_enum |= self::keyTypeFromUnionTypeValues(UnionTypeVisitor::unionTypeFromNode(
-                        $code_base,
-                        $context,
-                        $key_node,
-                        $should_catch_issue_exception
-                    ));
-                } elseif ($key_node !== null) {
-                    if (\is_string($key_node)) {
-                        $key_type_enum |= GenericArrayType::KEY_STRING;
-                    } elseif (\is_scalar($key_node)) {
-                        $key_type_enum |= GenericArrayType::KEY_INT;
-                    }
-                } else {
-                    $key_type_enum |= GenericArrayType::KEY_INT;
-                }
-                // If we already think it's mixed, return immediately.
-                if ($key_type_enum === GenericArrayType::KEY_MIXED) {
-                    return GenericArrayType::KEY_MIXED;
-                }
+        $key_type_enum = GenericArrayType::KEY_EMPTY;
+        // Check the all elements for key types.
+        foreach ($node->children as $child) {
+            if (!($child instanceof Node)) {
+                continue;
             }
-            return $key_type_enum ?: GenericArrayType::KEY_MIXED;
+            if ($child->kind === \ast\AST_UNPACK) {
+                // PHP 7.4's array spread operator adds integer keys, e.g. `[...$array, 'other' => 'value']`
+                $key_type_enum |= GenericArrayType::KEY_INT;
+                continue;
+            }
+            // Don't bother recursing more than one level to iterate over possible types.
+            $key_node = $child->children['key'];
+            if ($key_node instanceof Node) {
+                $key_type_enum |= self::keyTypeFromUnionTypeValues(UnionTypeVisitor::unionTypeFromNode(
+                    $code_base,
+                    $context,
+                    $key_node,
+                    $should_catch_issue_exception
+                ));
+            } elseif ($key_node !== null) {
+                if (\is_string($key_node)) {
+                    $key_type_enum |= GenericArrayType::KEY_STRING;
+                } elseif (\is_scalar($key_node)) {
+                    $key_type_enum |= GenericArrayType::KEY_INT;
+                }
+            } else {
+                $key_type_enum |= GenericArrayType::KEY_INT;
+            }
+            // If we already think it's mixed, return immediately.
+            if ($key_type_enum === GenericArrayType::KEY_MIXED) {
+                return GenericArrayType::KEY_MIXED;
+            }
         }
-        return GenericArrayType::KEY_MIXED;
+        return $key_type_enum ?: GenericArrayType::KEY_MIXED;
     }
 
     public function hasArrayShapeOrLiteralTypeInstances() : bool

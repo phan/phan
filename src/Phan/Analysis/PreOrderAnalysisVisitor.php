@@ -453,8 +453,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         $code_base->addFunction($func);
 
         if (($node->children['uses']->kind ?? null) == ast\AST_CLOSURE_USES) {
-            $uses = $node->children['uses'];
-            foreach ($uses->children as $use) {
+            foreach ($node->children['uses']->children ?? [] as $use) {
                 if (!($use instanceof Node) || $use->kind != ast\AST_CLOSURE_VAR) {
                     $this->emitIssue(
                         Issue::VariableUseClause,

@@ -2,6 +2,7 @@
 
 use ast\Node;
 use Phan\Issue;
+use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\PluginV3;
@@ -37,6 +38,9 @@ final class EmptyMethodAndFunctionVisitor extends PluginAwarePostAnalysisVisitor
 
         if ($stmts_node && !$stmts_node->children) {
             $method = $this->context->getFunctionLikeInScope($this->code_base);
+            if (!($method instanceof Method)) {
+                throw new AssertionError("Expected $method to be a method");
+            }
 
             if (!$method->isOverriddenByAnother()
                 && !$method->isOverride()
@@ -44,7 +48,7 @@ final class EmptyMethodAndFunctionVisitor extends PluginAwarePostAnalysisVisitor
             ) {
                 $this->emitIssue(
                     $this->getIssueTypeForEmptyMethod($method),
-                    $method->getNode()->lineno,
+                    $node->lineno,
                     $method->getName()
                 );
             }
@@ -71,18 +75,21 @@ final class EmptyMethodAndFunctionVisitor extends PluginAwarePostAnalysisVisitor
 
         if ($stmts_node && !$stmts_node->children) {
             $function = $this->context->getFunctionLikeInScope($this->code_base);
+            if (!($function instanceof Func)) {
+                throw new AssertionError("Expected $function to be Func\n");
+            }
 
             if (! $function->isDeprecated()) {
                 if (!$function->isClosure()) {
                     $this->emitIssue(
                         Issue::EmptyFunction,
-                        $function->getNode()->lineno,
+                        $node->lineno,
                         $function->getName()
                     );
                 } else {
                     $this->emitIssue(
                         Issue::EmptyClosure,
-                        $function->getNode()->lineno
+                        $node->lineno
                     );
                 }
             }

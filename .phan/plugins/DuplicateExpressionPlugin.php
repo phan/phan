@@ -320,7 +320,9 @@ class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
         }
         if ($expr->kind === ast\AST_CALL) {
             $function = $expr->children['expr'];
-            if ($function->kind !== ast\AST_NAME || strcasecmp((string)($function->children['name'] ?? ''), 'is_null') !== 0) {
+            if (!$function instanceof Node ||
+                    $function->kind !== ast\AST_NAME ||
+                    strcasecmp((string)($function->children['name'] ?? ''), 'is_null') !== 0) {
                 return;
             }
             $args = $expr->children['args']->children;
@@ -420,9 +422,13 @@ class RedundantNodePreAnalysisVisitor extends PluginAwarePreAnalysisVisitor
         }
         $last_child = \end($children);
         // Loop over the `} else {` blocks.
+        // @phan-suppress-next-line PhanPossiblyUndeclaredProperty
         while ($last_child->children['cond'] === null) {
             $first_stmt = $last_child->children['stmts']->children[0] ?? null;
-            if (($first_stmt->kind ?? null) !== ast\AST_IF) {
+            if (!($first_stmt instanceof Node)) {
+                break;
+            }
+            if ($first_stmt->kind !== ast\AST_IF) {
                 break;
             }
             // @phan-suppress-next-line PhanUndeclaredProperty

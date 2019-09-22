@@ -5,7 +5,7 @@
 %s:6 PhanTypeMismatchUnpackValue Attempting to unpack a value of type 1 which does not contain any subtypes of iterable (such as array or Traversable)
 %s:6 PhanTypeMismatchUnpackValue Attempting to unpack a value of type null which does not contain any subtypes of iterable (such as array or Traversable)
 %s:7 PhanUndeclaredGlobalVariable Global variable $undef is undeclared
-%s:10 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($numerator) is 3[] but \intdiv() takes int
+%s:10 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($numerator) is array<int,3> (real type 3[]) but \intdiv() takes int
 %s:11 PhanTypeMismatchUnpackKeyArraySpread When unpacking a value of type array{dos:2}, the value's keys were of type string, but the keys should be integers
 %s:19 PhanTypeMismatchReturn Returning type array<int,array<string,object>> but expects_stringmap() is declared to return array<int,false>
 %s:20 PhanTypeMismatchReturn Returning type array<int,object> but expects_stringmap() is declared to return array<int,false>

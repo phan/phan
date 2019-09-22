@@ -42,6 +42,7 @@ class TextDocumentSyncOptions
     /**
      * @var SaveOptions|null
      * Save notifications are sent to the server.
+     * @suppress PhanWriteOnlyPublicProperty
      */
     public $save;
 }

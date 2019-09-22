@@ -724,21 +724,18 @@ class UnionTypeVisitor extends AnalysisVisitor
     {
         if ($cond instanceof Node) {
             if ($cond->kind === \ast\AST_CONST) {
-                $name = $cond->children['name'];
-                if ($name->kind === \ast\AST_NAME) {
-                    switch (\strtolower($name->children['name'])) {
-                        case 'true':
-                            return true;
-                        case 'false':
-                            return false;
-                        case 'null':
-                            return false;
-                        default:
-                            // Could add heuristics based on internal/user-defined constant values, but that is unreliable.
-                            // (E.g. feature flags for an extension may be true or false, depending on the environment)
-                            // (and Phan doesn't store constant values for user-defined constants, only the types)
-                            return null;
-                    }
+                switch (\strtolower($cond->children['name']->children['name'] ?? '')) {
+                    case 'true':
+                        return true;
+                    case 'false':
+                        return false;
+                    case 'null':
+                        return false;
+                    default:
+                        // Could add heuristics based on internal/user-defined constant values, but that is unreliable.
+                        // (E.g. feature flags for an extension may be true or false, depending on the environment)
+                        // (and Phan doesn't store constant values for user-defined constants, only the types)
+                        return null;
                 }
             }
             return null;
@@ -1970,38 +1967,32 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitConst(Node $node) : UnionType
     {
-        if ($node->children['name']->kind == \ast\AST_NAME) {
-            $name = $node->children['name']->children['name'];
+        // Figure out the name of the constant if it's
+        // a string.
+        $constant_name = $node->children['name']->children['name'] ?? '';
 
-            // Figure out the name of the constant if it's
-            // a string.
-            $constant_name = $name ?? '';
-
-            // If the constant is referring to the current
-            // class, return that as a type
-            if (Type::isSelfTypeString($constant_name) || Type::isStaticTypeString($constant_name)) {
-                return Type::fromStringInContext($constant_name, $this->context, Type::FROM_NODE)->asRealUnionType();
-            }
-
-            try {
-                $constant = (new ContextNode(
-                    $this->code_base,
-                    $this->context,
-                    $node
-                ))->getConst();
-            } catch (IssueException $exception) {
-                Issue::maybeEmitInstance(
-                    $this->code_base,
-                    $this->context,
-                    $exception->getIssueInstance()
-                );
-                return UnionType::empty();
-            }
-
-            return $constant->getUnionType();
+        // If the constant is referring to the current
+        // class, return that as a type
+        if (Type::isSelfTypeString($constant_name) || Type::isStaticTypeString($constant_name)) {
+            return Type::fromStringInContext($constant_name, $this->context, Type::FROM_NODE)->asRealUnionType();
         }
 
-        return UnionType::empty();
+        try {
+            $constant = (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $node
+            ))->getConst();
+        } catch (IssueException $exception) {
+            Issue::maybeEmitInstance(
+                $this->code_base,
+                $this->context,
+                $exception->getIssueInstance()
+            );
+            return UnionType::empty();
+        }
+
+        return $constant->getUnionType();
     }
 
     /**

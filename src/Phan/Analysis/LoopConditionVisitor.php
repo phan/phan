@@ -40,7 +40,7 @@ class LoopConditionVisitor extends ConditionVisitor
             if ($node instanceof Node) {
                 if ($node->kind === ast\AST_CONST) {
                     // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal
-                    $node_name = \strtolower($node->children['name']->children['name']);
+                    $node_name = \strtolower($node->children['name']->children['name'] ?? '');
                     if ($node_name === 'true' || ($this->allow_false && $node_name === 'false')) {
                         return;
                     }

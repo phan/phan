@@ -83,6 +83,9 @@ class Config
     /** @var bool replicates Config::getValue('strict_return_checking') */
     private static $strict_return_checking = false;
 
+    /** @var bool replicates Config::getValue('strict_object_checking') */
+    private static $strict_object_checking = false;
+
     /** @var bool replicates Config::getValue('track_references') */
     private static $track_references = false;
 
@@ -357,6 +360,10 @@ class Config
         // Setting this to true will introduce numerous false positives
         // (and reveal some bugs).
         'strict_return_checking' => false,
+
+        // If enabled, Phan will warn if **any** type of the object expression for a property access
+        // does not contain that property.
+        'strict_object_checking' => false,
 
         // If enabled, Phan will act as though it's certain of real return types of a subset of internal functions,
         // even if those return types aren't available in reflection (real types were taken from php 7.3 or 8.0-dev, depending on target_php_version).
@@ -976,6 +983,15 @@ class Config
         return self::$strict_return_checking;
     }
 
+    /**
+     * If enabled, Phan will warn if **any** type in the object expression for a property
+     * does not contain that property.
+     */
+    public static function get_strict_object_checking() : bool
+    {
+        return self::$strict_object_checking;
+    }
+
     /** If enabled, allow null to cast to any array-like type. */
     public static function get_null_casts_as_array() : bool
     {
@@ -1064,6 +1080,9 @@ class Config
                 break;
             case 'strict_return_checking':
                 self::$strict_return_checking = $value;
+                break;
+            case 'strict_object_checking':
+                self::$strict_object_checking = $value;
                 break;
             case 'dead_code_detection':
             case 'force_tracking_references':
@@ -1350,6 +1369,7 @@ class Config
             'strict_param_checking' => $is_bool,
             'strict_property_checking' => $is_bool,
             'strict_return_checking' => $is_bool,
+            'strict_object_checking' => $is_bool,
             'suggestion_check_limit' => $is_int_strict,
             'suppress_issue_types' => $is_string_list,
             'target_php_version' => $is_scalar,

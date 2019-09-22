@@ -86,6 +86,10 @@ final class EmptyStatementListVisitor extends PluginAwarePostAnalysisVisitor
             return;
         }
         $stmts_node = $last_if_elem->children['stmts'];
+        if (!$stmts_node instanceof Node) {
+            // probably impossible
+            return;
+        }
         if ($stmts_node->children) {
             // the last if element has statements
             return;
@@ -101,7 +105,7 @@ final class EmptyStatementListVisitor extends PluginAwarePostAnalysisVisitor
 
         $this->emitPluginIssue(
             $this->code_base,
-            clone($this->context)->withLineNumberStart($last_if_elem->children['stmts']->lineno),
+            (clone($this->context))->withLineNumberStart($last_if_elem->children['stmts']->lineno ?? $last_if_elem->lineno),
             'PhanPluginEmptyStatementIf',
             'Empty statement list statement detected for the last if/elseif statement',
             []
@@ -164,7 +168,11 @@ final class EmptyStatementListVisitor extends PluginAwarePostAnalysisVisitor
     public function visitFor(Node $node) : void
     {
         $stmts_node = $node->children['stmts'];
-        if (($stmts_node->children ?? null) || ($node->children['loop']->children ?? null)) {
+        if (!$stmts_node instanceof Node) {
+            // impossible
+            return;
+        }
+        if ($stmts_node->children || ($node->children['loop']->children ?? null)) {
             // the for loop has statements, in the body and/or in the loop condition.
             return;
         }
@@ -189,6 +197,9 @@ final class EmptyStatementListVisitor extends PluginAwarePostAnalysisVisitor
     public function visitWhile(Node $node) : void
     {
         $stmts_node = $node->children['stmts'];
+        if (!$stmts_node instanceof Node) {
+            return; // impossible
+        }
         if ($stmts_node->children) {
             // the while loop has statements
             return;
@@ -214,6 +225,9 @@ final class EmptyStatementListVisitor extends PluginAwarePostAnalysisVisitor
     public function visitDoWhile(Node $node) : void
     {
         $stmts_node = $node->children['stmts'];
+        if (!$stmts_node instanceof Node) {
+            return; // impossible
+        }
         if ($stmts_node->children ?? null) {
             // the while loop has statements
             return;
@@ -239,7 +253,11 @@ final class EmptyStatementListVisitor extends PluginAwarePostAnalysisVisitor
     public function visitForeach(Node $node) : void
     {
         $stmts_node = $node->children['stmts'];
-        if ($stmts_node->children ?? null) {
+        if (!$stmts_node instanceof Node) {
+            // impossible
+            return;
+        }
+        if ($stmts_node->children) {
             // the while loop has statements
             return;
         }
@@ -297,6 +315,11 @@ final class EmptyStatementListVisitor extends PluginAwarePostAnalysisVisitor
     {
         // Check all case statements and return if something that isn't a no-op is seen.
         foreach ($node->children['stmts']->children ?? [] as $c) {
+            if (!$c instanceof Node) {
+                // impossible
+                continue;
+            }
+
             $children = $c->children['stmts']->children ?? null;
             if ($children) {
                 if (count($children) > 1) {

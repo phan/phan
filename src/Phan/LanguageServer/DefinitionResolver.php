@@ -418,7 +418,6 @@ class DefinitionResolver
             // TODO: Support group use
             return;
         }
-        $use_elem = $node->children[0];
         foreach ($targets as $target_array) {
             $target_fqsen = $target_array[1];
             if ($target_fqsen instanceof FullyQualifiedClassName) {
@@ -441,7 +440,7 @@ class DefinitionResolver
             }
         }
         if ($node->flags === \ast\flags\USE_NORMAL) {
-            $name = $use_elem->children['name'];
+            $name = $node->children[0]->children['name'] ?? null;
             if (is_string($name)) {
                 try {
                     $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString('\\' . \ltrim($name, '\\'));
