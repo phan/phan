@@ -232,6 +232,9 @@ class ContextNode
     private function handleTraitAlias(array $adaptations_map, Node $adaptation_node) : void
     {
         $trait_method_node = $adaptation_node->children['method'];
+        if (!$trait_method_node instanceof Node) {
+            throw new AssertionError("Expected node for trait alias");
+        }
         $trait_original_class_name_node = $trait_method_node->children['class'];
         $trait_original_method_name = $trait_method_node->children['method'];
         $trait_new_method_name = $adaptation_node->children['alias'] ?? $trait_original_method_name;
@@ -330,6 +333,9 @@ class ContextNode
     {
         // TODO: Should also verify that the original method exists, in a future PR?
         $trait_method_node = $adaptation_node->children['method'];
+        if (!$trait_method_node instanceof Node) {
+            throw new AssertionError("Expected node for trait use");
+        }
         // $trait_chosen_class_name_node = $trait_method_node->children['class'];
         $trait_chosen_method_name = $trait_method_node->children['method'];
         $trait_chosen_class_name_node = $trait_method_node->children['class'];
@@ -928,7 +934,7 @@ class ContextNode
                     $code_base,
                     $context,
                     Issue::TypeInvalidCallable,
-                    $expression->lineno,
+                    $expression->lineno ?? $context->getLineNumberStart(),
                     $union_type
                 );
                 return;
@@ -939,7 +945,7 @@ class ContextNode
                 $code_base,
                 $context,
                 Issue::TypePossiblyInvalidCallable,
-                $expression->lineno,
+                $expression->lineno ?? $context->getLineNumberStart(),
                 $union_type
             );
         }
@@ -1711,7 +1717,7 @@ class ContextNode
         }
 
         $context = $this->context;
-        $flags = $node->children['name']->flags;
+        $flags = $node->children['name']->flags ?? 0;
         try {
             if (($flags & ast\flags\NAME_RELATIVE) !== 0) {
                 $fqsen = FullyQualifiedGlobalConstantName::make($context->getNamespace(), $constant_name);
@@ -1959,6 +1965,7 @@ class ContextNode
      * (It often should, because outside quick mode, it may be run multiple times per node)
      *
      * TODO: This is repetitive, move these checks into ParseVisitor?
+     * @suppress PhanPossiblyUndeclaredProperty
      */
     public function analyzeBackwardCompatibility() : void
     {

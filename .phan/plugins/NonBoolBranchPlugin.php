@@ -43,6 +43,9 @@ class NonBoolBranchVisitor extends PluginAwarePreAnalysisVisitor
         // Here, we visit the group of if/elseif/else instead of the individuals (visitIfElem)
         // so that we have the Union types of the variables **before** the PreOrderAnalysisVisitor makes inferences
         foreach ($node->children as $if_node) {
+            if (!$if_node instanceof Node) {
+                throw new AssertionError("Expected if statement to be a node");
+            }
             $condition = $if_node->children['cond'];
 
             // dig nodes to avoid the NOT('!') operation converting its value to a boolean type.

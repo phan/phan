@@ -185,7 +185,7 @@ class ASTReverter
             ast\AST_ARRAY => static function (Node $node) : string {
                 $parts = [];
                 foreach ($node->children as $elem) {
-                    if (!$elem) {
+                    if (!$elem instanceof Node) {
                         $parts[] = '';
                         continue;
                     }

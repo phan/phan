@@ -244,7 +244,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
 
     private function computeStatusOfSwitch(Node $node) : int
     {
-        $switch_stmt_case_nodes = $node->children['stmts']->children;
+        $switch_stmt_case_nodes = $node->children['stmts']->children ?? [];
         if (\count($switch_stmt_case_nodes) === 0) {
             return self::STATUS_PROCEED;
         }
