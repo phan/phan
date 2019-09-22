@@ -41,6 +41,7 @@ use Phan\Library\Option;
 use Phan\Library\Some;
 use Phan\Memoize;
 use Phan\Plugin\ConfigPluginSet;
+use Phan\Suggestion;
 use ReflectionClass;
 use ReflectionProperty;
 use RuntimeException;
@@ -953,7 +954,8 @@ class Clazz extends AddressableElement
         string $name,
         Context $context,
         bool $is_static,
-        Node $node = null
+        Node $node = null,
+        bool $is_known_assignment = false
     ) : Property {
 
         // Get the FQSEN of the property we're looking for
@@ -1059,7 +1061,8 @@ class Clazz extends AddressableElement
                     Issue::fromType(Issue::AccessPropertyPrivate)(
                         $context->getFile(),
                         $context->getLineNumberStart(),
-                        [$property->asPropertyFQSENString(), $property->getContext()->getFile(), $property->getContext()->getLineNumberStart() ]
+                        [$property->asPropertyFQSENString(), $property->getContext()->getFile(), $property->getContext()->getLineNumberStart() ],
+                        $this->suggestGettersOrSetters($code_base, $context, $property, $is_known_assignment)
                     )
                 );
             }
@@ -1071,7 +1074,8 @@ class Clazz extends AddressableElement
                     Issue::fromType(Issue::AccessPropertyProtected)(
                         $context->getFile(),
                         $context->getLineNumberStart(),
-                        [$property->asPropertyFQSENString(), $property->getContext()->getFile(), $property->getContext()->getLineNumberStart() ]
+                        [$property->asPropertyFQSENString(), $property->getContext()->getFile(), $property->getContext()->getLineNumberStart() ],
+                        $this->suggestGettersOrSetters($code_base, $context, $property, $is_known_assignment)
                     )
                 );
             }
@@ -1106,6 +1110,185 @@ class Clazz extends AddressableElement
                 IssueFixSuggester::suggestSimilarProperty($code_base, $context, $this, $name, $is_static)
             )
         );
+    }
+
+    private function suggestGettersOrSetters(CodeBase $code_base, Context $context, Property $property, bool $is_known_assignment) : ?Suggestion
+    {
+        if ($is_known_assignment) {
+            return $this->suggestSetters($code_base, $context, $property);
+        } else {
+            return $this->suggestGetters($code_base, $context, $property);
+        }
+    }
+
+    private function suggestSetters(CodeBase $code_base, Context $context, Property $property) : ?Suggestion
+    {
+        $getters = $this->getSettersMap($code_base)[$property->getName()] ?? [];
+        if (!$getters) {
+            return null;
+        }
+        $suggestions = [];
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        $class_fqsen_in_current_scope = IssueFixSuggester::maybeGetClassInCurrentScope($context);
+        foreach ($getters as $method) {
+            if ($method->isAccessibleFromClass($code_base, $class_fqsen_in_current_scope)) {
+                $suggestions[] = $method->getRepresentationForIssue();
+            }
+        }
+        if (!$suggestions) {
+            return null;
+        }
+        \sort($suggestions, \SORT_STRING);
+        return Suggestion::fromString('Did you mean ' . \implode(' or ', $suggestions));
+    }
+
+    /**
+     * @return array<string,array<int,Method>> maps property names to setters for that property
+     */
+    private function getSettersMap(CodeBase $code_base) : array
+    {
+        return $this->memoize(
+            __METHOD__,
+            /**
+             * @return array<string,array<int,Method>> maps property names to setters for that property (both instance and static properties)
+             */
+            function () use ($code_base) : array {
+                if ($this->isPHPInternal()) {
+                    return [];
+                }
+                $setters = [];
+                foreach ($this->getMethodMap($code_base) as $method) {
+                    if ($method->isStatic()) {
+                        continue;
+                    }
+                    if ($method->getNumberOfParameters() == 0) {
+                        continue;
+                    }
+                    $node = $method->getNode()->children['stmts'] ?? null;
+                    if (!$node) {
+                        continue;
+                    }
+                    $param_name = $method->getParameterList()[0]->getName();
+                    $fetched_property_name = self::computeSetPropertyName($node, $param_name);
+                    if (is_string($fetched_property_name)) {
+                        $setters[$fetched_property_name][] = $method;
+                    }
+                }
+                return $setters;
+            }
+        );
+    }
+
+    private function suggestGetters(CodeBase $code_base, Context $context, Property $property) : ?Suggestion
+    {
+        $getters = $this->getGettersMap($code_base)[$property->getName()] ?? [];
+        if (!$getters) {
+            return null;
+        }
+        $suggestions = [];
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        $class_fqsen_in_current_scope = IssueFixSuggester::maybeGetClassInCurrentScope($context);
+        foreach ($getters as $method) {
+            if ($method->isAccessibleFromClass($code_base, $class_fqsen_in_current_scope)) {
+                $suggestions[] = $method->getRepresentationForIssue();
+            }
+        }
+        if (!$suggestions) {
+            return null;
+        }
+        return Suggestion::fromString('Did you mean ' . \implode(' or ', $suggestions));
+    }
+
+    /**
+     * @return array<string,array<int,Method>> maps property names to getters for that property
+     */
+    private function getGettersMap(CodeBase $code_base) : array
+    {
+        return $this->memoize(
+            __METHOD__,
+            /**
+             * @return array<string,array<int,Method>> maps property names to getters for that property (for instance properties)
+             */
+            function () use ($code_base) : array {
+                if ($this->isPHPInternal()) {
+                    return [];
+                }
+                $getters = [];
+                foreach ($this->getMethodMap($code_base) as $method) {
+                    if ($method->isStatic()) {
+                        // TODO support static getters for static properties
+                        continue;
+                    }
+                    $node = $method->getNode()->children['stmts'] ?? null;
+                    if (!$node) {
+                        continue;
+                    }
+                    $fetched_property_name = self::computeFetchedPropertyName($node);
+                    if (is_string($fetched_property_name)) {
+                        $getters[$fetched_property_name][] = $method;
+                    }
+                }
+                return $getters;
+            }
+        );
+    }
+
+    private static function computeFetchedPropertyName(Node $node) : ?string
+    {
+        if (count($node->children) !== 1) {
+            return null;
+        }
+        $stmt = $node->children[0];
+        if ($stmt->kind !== ast\AST_RETURN) {
+            return null;
+        }
+        return self::getPropName($stmt->children['expr']);
+    }
+
+    /**
+     * Returns the name of the instance property set to the parameter with name $expected_parameter_name, if this is a setter
+     */
+    private static function computeSetPropertyName(Node $node, string $expected_parameter_name) : ?string
+    {
+        if (count($node->children) !== 1) {
+            return null;
+        }
+        $stmt = $node->children[0];
+        if ($stmt->kind !== ast\AST_ASSIGN) {
+            return null;
+        }
+        $prop_name = self::getPropName($stmt->children['var']);
+        if (!is_string($prop_name)) {
+            return null;
+        }
+        $expr = $stmt->children['expr'];
+        if ($expr->kind !== ast\AST_VAR) {
+            return null;
+        }
+        if ($expr->children['name'] === $expected_parameter_name) {
+            return $prop_name;
+        }
+        return null;
+    }
+
+    /**
+     * @param Node|string|int|float|null $node
+     */
+    private static function getPropName($node) : ?string
+    {
+        if (!$node instanceof Node) {
+            return null;
+        }
+        if ($node->kind !== ast\AST_PROP) {
+            return null;
+        }
+        $obj = $node->children['expr'];
+        if (!($obj instanceof Node && $obj->kind === ast\AST_VAR &&
+                $obj->children['name'] === 'this')) {
+            return null;
+        }
+        $prop = $node->children['prop'];
+        return is_string($prop) ? $prop : null;
     }
 
     /**

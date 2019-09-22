@@ -119,7 +119,7 @@ final class ExtendedDependentReturnTypeOverridePlugin extends PluginV3 implement
             };
         };
 
-        return array_filter([
+        return \array_filter([
             // commonly used functions where the return type depends only on the passed in arguments
             // TODO: Add remaining functions
             'abs'          => $wrap('abs', 1, 1),

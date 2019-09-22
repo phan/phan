@@ -1271,7 +1271,8 @@ class ContextNode
      * we can't determine if the property exists or not
      */
     public function getProperty(
-        bool $is_static
+        bool $is_static,
+        bool $is_known_assignment = false
     ) : Property {
         $node = $this->node;
 
@@ -1363,7 +1364,8 @@ class ContextNode
                 $property_name,
                 $this->context,
                 $is_static,
-                $node
+                $node,
+                $is_known_assignment
             );
 
             if ($property->isDeprecated()) {
@@ -1410,7 +1412,8 @@ class ContextNode
                         $property_name,
                         $this->context,
                         $is_static,
-                        $node
+                        $node,
+                        $is_known_assignment
                     );
                 }
             }

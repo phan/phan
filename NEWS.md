@@ -40,6 +40,7 @@ New features(Analysis):
   Suggest `new ClassName()` as a suggestion for `ClassName()`.
 + Improve suggestions for global constants (`PhanUndeclaredConstant`).
   Suggest similar constant names case-insensitively within the same namespace or the global namespace.
++ Suggest obvious getters and setters for instance properties in `PhanAccessPropertyProtected` and `PhanAccessPropertyPrivate` (#2540)
 
 Language Server/Daemon mode:
 + Fix logged Error when language server receives `didChangeConfiguration` events. (this is a no-op)

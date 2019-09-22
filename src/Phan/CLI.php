@@ -1659,8 +1659,8 @@ EOB
             // Treat src/file.php and src//file.php and src\file.php the same way
             $normalized_file_list[\preg_replace("@[/\\\\]+@", "\0", $file_path)] = $file_path;
         }
-        uksort($normalized_file_list, 'strcmp');
-        return array_values($normalized_file_list);
+        \uksort($normalized_file_list, 'strcmp');
+        return \array_values($normalized_file_list);
     }
 
     /**

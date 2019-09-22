@@ -1987,7 +1987,6 @@ class CodeBase
             return $fqsen;
         }
         return null;
-
     }
 
     /**

@@ -396,7 +396,7 @@ class AssignmentVisitor extends AnalysisVisitor
                     $this->code_base,
                     $this->context,
                     $value_node
-                ))->getProperty(false);
+                ))->getProperty(false, true);
 
                 // Set the element type on each element of
                 // the list
@@ -513,7 +513,7 @@ class AssignmentVisitor extends AnalysisVisitor
                         $this->code_base,
                         $this->context,
                         $value_node
-                    ))->getProperty(false);
+                    ))->getProperty(false, true);
 
                     // Set the element type on each element of
                     // the list
@@ -761,7 +761,8 @@ class AssignmentVisitor extends AnalysisVisitor
                     $property_name,
                     $this->context,
                     false,
-                    $node
+                    $node,
+                    true
                 );
             } catch (IssueException $exception) {
                 Issue::maybeEmitInstance(
@@ -1239,6 +1240,8 @@ class AssignmentVisitor extends AnalysisVisitor
                     $this->code_base,
                     $property_name,
                     $this->context,
+                    true,
+                    null,
                     true
                 );
             } catch (IssueException $exception) {
