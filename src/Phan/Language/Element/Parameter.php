@@ -52,8 +52,8 @@ class Parameter extends Variable
     private $default_value_future_type = null;
 
     /**
-     * @var mixed
-     * The value of the default, if one is set
+     * @var Node|string|int|float|null
+     * The value of the node of the default, if one is set
      */
     private $default_value = null;
 
@@ -299,7 +299,7 @@ class Parameter extends Variable
                     $code_base,
                     $context,
                     Issue::InvalidConstantExpression,
-                    $default_node->lineno ?? 0
+                    $default_node->lineno ?? $node->lineno
                 );
                 $has_error = true;
             }

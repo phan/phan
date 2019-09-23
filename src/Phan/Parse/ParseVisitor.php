@@ -1404,7 +1404,7 @@ class ParseVisitor extends ScopeVisitor
         $constant = new GlobalConstant(
             $context->withLineNumberStart($lineno),
             $name,
-            UnionType::empty(),
+            UnionType::fromFullyQualifiedRealString('array|bool|float|int|string|resource|null'),
             $flags,
             $fqsen
         );
@@ -1442,7 +1442,7 @@ class ParseVisitor extends ScopeVisitor
                     )
                 );
             } else {
-                $constant->setUnionType(Type::fromObject($value)->asPHPDocUnionType());
+                $constant->setUnionType(Type::fromObject($value)->asRealUnionType());
             }
         } else {
             $constant->setUnionType(UnionTypeVisitor::unionTypeFromNode($code_base, $context, $value));

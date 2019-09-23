@@ -4,7 +4,6 @@ namespace Phan\Language\Element;
 
 use Phan\Exception\IssueException;
 use Phan\Language\FutureUnionType;
-use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
 
 /**
@@ -74,17 +73,9 @@ trait ElementFutureUnionType
         $this->future_union_type = null;
 
         try {
-            $union_type = $future_union_type->get();
+            return $future_union_type->get();
         } catch (IssueException $_) {
-            $union_type = UnionType::empty();
+            return null;
         }
-
-        // Don't set 'null' as the type if that's the default
-        // given that its the default.
-        if ($union_type->isType(NullType::instance(false))) {
-            $union_type = UnionType::empty();
-        }
-
-        return $union_type;
     }
 }

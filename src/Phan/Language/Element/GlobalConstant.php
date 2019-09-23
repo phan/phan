@@ -24,10 +24,19 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
     public function getUnionType() : UnionType
     {
         if (null !== ($union_type = $this->getFutureUnionType())) {
-            $this->setUnionType(parent::getUnionType()->withUnionType($union_type));
+            $this->setUnionType($union_type);
         }
 
         return parent::getUnionType();
+    }
+
+    // TODO: Make callers check for object types. Those are impossible.
+    public function setUnionType(UnionType $type) : void
+    {
+        if (!$type->hasRealTypeSet()) {
+            $type = $type->withRealTypeSet(UnionType::typeSetFromString('array|bool|float|int|string|resource|null'));
+        }
+        parent::setUnionType($type);
     }
 
     /**

@@ -413,6 +413,14 @@ Declaring an autoloader with function __autoload() was deprecated in PHP 7.2 and
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/expected/000_plugins.php.expected#L20) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/src/000_plugins.php#L64).
 
+## PhanCompatibleDefaultEqualsNull
+
+```
+In PHP 8.0, using a default ({CODE}) that resolves to null will no longer cause the parameter ({PARAMETER}) to be nullable
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0782_nullable_compat.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0782_nullable_compat.php#L4).
+
 ## PhanCompatibleDimAlternativeSyntax
 
 This is emitted deliberately when using the polyfill and/or using php 7.4+.
@@ -761,6 +769,14 @@ Empty protected method {METHOD}
 ```
 Empty public method {METHOD}
 ```
+
+## PhanEmptyYieldFrom
+
+```
+Saw a yield from statement with empty iterable type {TYPE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0774_empty_foreach.php.expected#L6) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0774_empty_foreach.php#L16).
 
 ## PhanNoopArray
 
@@ -3414,6 +3430,18 @@ This issue will be emitted from the following code
 
 ```php
 class F { function f() { $v = parent::f(); } }
+```
+
+## PhanPossiblyUndeclaredMethod
+
+```
+Call to possibly undeclared method {METHOD} on type {TYPE} ({TYPE} does not declare the method)
+```
+
+## PhanPossiblyUndeclaredProperty
+
+```
+Reference to possibly undeclared property {PROPERTY} of expression of type {TYPE} ({TYPE} does not declare that property)
 ```
 
 ## PhanPossiblyUnsetPropertyOfThis
