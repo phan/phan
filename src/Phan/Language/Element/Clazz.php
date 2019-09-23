@@ -1168,8 +1168,12 @@ class Clazz extends AddressableElement
                     if (!$node instanceof Node) {
                         continue;
                     }
-                    $param_name = $method->getParameterList()[0]->getName();
-                    $fetched_property_name = self::computeSetPropertyName($node, $param_name);
+                    $first_parameter = $method->getParameterList()[0] ?? null;
+                    if (!$first_parameter) {
+                        // func_get
+                        continue;
+                    }
+                    $fetched_property_name = self::computeSetPropertyName($node, $first_parameter->getName());
                     if (is_string($fetched_property_name)) {
                         $setters[$fetched_property_name][] = $method;
                     }

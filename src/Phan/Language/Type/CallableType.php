@@ -2,6 +2,8 @@
 
 namespace Phan\Language\Type;
 
+use Phan\CodeBase;
+use Phan\Language\Context;
 use Phan\Language\Type;
 
 /**
@@ -67,5 +69,17 @@ final class CallableType extends NativeType implements CallableInterface
     public function asScalarType() : ?Type
     {
         return CallableStringType::instance(false);
+    }
+
+    public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other) : bool
+    {
+        if ($other instanceof IterableType) {
+            return !$other->isDefiniteNonCallableType();
+        }
+        // TODO: More specific.
+        return $other instanceof StringType
+            || $other instanceof ObjectType
+            || $other instanceof IterableType
+            || parent::canCastToDeclaredType($code_base, $context, $other);
     }
 }
