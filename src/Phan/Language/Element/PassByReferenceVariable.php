@@ -4,6 +4,7 @@ namespace Phan\Language\Element;
 
 use Phan\Analysis\AssignmentVisitor;
 use Phan\CodeBase;
+use Phan\Language\Context;
 use Phan\Language\FileRef;
 use Phan\Language\UnionType;
 
@@ -123,6 +124,17 @@ class PassByReferenceVariable extends Variable
     public function getFileRef() : FileRef
     {
         return $this->element->getFileRef();
+    }
+
+    /**
+     * Gets the context (only set if this is a reference to an AddressableElement such as a property)
+     * @deprecated - use getElement() instead and check if the result is an AddressableElement.
+     * @throws \Error if the element is an UnaddressableElement
+     * @suppress PhanPossiblyUndeclaredMethod
+     */
+    public function getContext() : Context
+    {
+        return $this->element->getContext();
     }
 
     /**
