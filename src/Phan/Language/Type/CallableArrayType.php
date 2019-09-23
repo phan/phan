@@ -3,6 +3,8 @@
 namespace Phan\Language\Type;
 
 use Phan\CodeBase;
+use Phan\Language\Context;
+use Phan\Language\Type;
 use Phan\Language\UnionType;
 
 /**
@@ -49,5 +51,15 @@ class CallableArrayType extends ArrayType
     public function iterableValueUnionType(CodeBase $unused_code_base) : UnionType
     {
         return UnionType::fromFullyQualifiedPHPDocString('string|object');
+    }
+
+    public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other) : bool
+    {
+        if ($other instanceof IterableType) {
+            return !$other->isDefiniteNonCallableType();
+        }
+        // TODO: More specific.
+        return $other instanceof CallableType
+            || parent::canCastToDeclaredType($code_base, $context, $other);
     }
 }

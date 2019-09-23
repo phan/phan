@@ -2,6 +2,8 @@
 
 namespace Phan\Language\Type;
 
+use Phan\CodeBase;
+use Phan\Language\Context;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 
@@ -123,5 +125,11 @@ final class CallableStringType extends StringType implements CallableInterface
             return $this;
         }
         return self::instance($is_nullable);
+    }
+
+    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $other) : bool
+    {
+        return $other instanceof StringType ||
+            $other instanceof CallableType;
     }
 }

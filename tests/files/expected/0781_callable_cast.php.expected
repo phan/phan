@@ -1,0 +1,21 @@
+%s:10 PhanCompatibleNullableTypePHP71 Type 'object' refers to any object starting in PHP 7.2. In PHP 7.1 and earlier, it refers to a class/interface with the name 'object'
+%s:18 PhanTypeMismatchArgument Argument 1 ($object) is callable but \NS781\accepts_object() takes object defined at %s:10
+%s:19 PhanTypeMismatchArgument Argument 2 ($i) is callable but \NS781\accepts_object() takes iterable defined at %s:10
+%s:20 PhanTypeMismatchArgument Argument 3 ($a) is callable but \NS781\accepts_object() takes array defined at %s:10
+%s:21 PhanTypeMismatchArgument Argument 4 ($c) is callable but \NS781\accepts_object() takes \NS781\SomeCallable defined at %s:10
+%s:22 PhanTypeMismatchArgument Argument 5 ($s) is callable but \NS781\accepts_object() takes string defined at %s:10
+%s:23 PhanTypeMismatchArgumentReal Argument 6 ($int) is callable but \NS781\accepts_object() takes int defined at %s:10
+%s:33 PhanTypeMismatchArgumentReal Argument 1 ($object) is callable-array but \NS781\accepts_object() takes object defined at %s:10
+%s:34 PhanTypeMismatchArgument Argument 2 ($i) is callable-array but \NS781\accepts_object() takes iterable defined at %s:10
+%s:36 PhanTypeMismatchArgumentReal Argument 4 ($c) is callable-array but \NS781\accepts_object() takes \NS781\SomeCallable defined at %s:10
+%s:37 PhanTypeMismatchArgumentReal Argument 5 ($s) is callable-array but \NS781\accepts_object() takes string defined at %s:10
+%s:38 PhanTypeMismatchArgumentReal Argument 6 ($int) is callable-array but \NS781\accepts_object() takes int defined at %s:10
+%s:49 PhanTypeMismatchArgumentReal Argument 1 ($object) is callable-string but \NS781\accepts_object() takes object defined at %s:10
+%s:50 PhanTypeMismatchArgumentReal Argument 2 ($i) is callable-string but \NS781\accepts_object() takes iterable defined at %s:10
+%s:51 PhanTypeMismatchArgumentReal Argument 3 ($a) is callable-string but \NS781\accepts_object() takes array defined at %s:10
+%s:52 PhanTypeMismatchArgumentReal Argument 4 ($c) is callable-string but \NS781\accepts_object() takes \NS781\SomeCallable defined at %s:10
+%s:54 PhanTypeMismatchArgumentReal Argument 6 ($int) is callable-string but \NS781\accepts_object() takes int defined at %s:10
+%s:66 PhanTypeMismatchArgument Argument 2 ($i) is callable-object but \NS781\accepts_object() takes iterable defined at %s:10
+%s:67 PhanTypeMismatchArgumentReal Argument 3 ($a) is callable-object but \NS781\accepts_object() takes array defined at %s:10
+%s:69 PhanTypeMismatchArgumentReal Argument 5 ($s) is callable-object but \NS781\accepts_object() takes string defined at %s:10
+%s:70 PhanTypeMismatchArgumentReal Argument 6 ($int) is callable-object but \NS781\accepts_object() takes int defined at %s:10

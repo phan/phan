@@ -2,6 +2,8 @@
 
 namespace Phan\Language\Type;
 
+use Phan\CodeBase;
+use Phan\Language\Context;
 use Phan\Language\Type;
 
 /**
@@ -91,5 +93,11 @@ final class CallableObjectType extends ObjectType
             return $this;
         }
         return self::instance($is_nullable);
+    }
+
+    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $other) : bool
+    {
+        // TODO: Filter out final classes, etc.
+        return $other->isPossiblyObject();
     }
 }
