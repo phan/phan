@@ -368,6 +368,15 @@ class DependencyGraphPlugin extends PluginV3 implements
             // Don't overlap stdout with the progress bar on stderr.
             \fwrite(\STDERR, "\n");
         }
+        if (($flags & \PDEP_IGNORE_STATIC) && $cached_graph) {
+            foreach ($graph as $node => $els) {
+                foreach ($els as $el => $val) {
+                    if (substr((string)$val, 0, 2) == 'v:' || substr((string)$val, 0, 2) == 's:') {
+                        unset($graph[$node][$el]);
+                    }
+                }
+            }
+        }
         if ($cmd == 'graph') {
             ($mode == 'class') ? $this->dumpClassDot(\basename((string)\getcwd()), $graph) : $this->dumpFileDot(\basename((string)\getcwd()), $graph);
         } elseif ($cmd == 'graphml') {
@@ -408,10 +417,10 @@ class DependencyGraphPlugin extends PluginV3 implements
                 [$type,$lineno] = self::getFileLineno((string)$val);
                 $style = '';
                 if ($type == 's') {
-                    $style = ',color=seagreen';
+                    $style = ',color="#E66100"';
                 }
                 if ($type == 'v') {
-                    $style = ',color=tomato';
+                    $style = ',color="#5D3A9B",style=dashed';
                 }
                 echo "\"$dnode\" -> \"$node\" [taillabel=$lineno,labelfontsize=10,labeldistance=1.4{$style}]\n";
                 if (empty($shape_defined[$dnode])) {
@@ -448,7 +457,7 @@ class DependencyGraphPlugin extends PluginV3 implements
                         $shape = "shape=note,color=blue,fontcolor=blue";
                         break;
                     case 'T':
-                        $shape = "shape=component,color=purple,fontcolor=purple";
+                        $shape = 'shape=component,color="#4B0092",fontcolor="#4B0092"';
                         break;
                 }
 
@@ -462,10 +471,10 @@ class DependencyGraphPlugin extends PluginV3 implements
                 $type = self::getFileLineno((string)$val)[0];
                 $style = '';
                 if ($type == 's') {
-                    $style = ' [color=seagreen]';
+                    $style = ' [color="#E66100"]';
                 }
                 if ($type == 'v') {
-                    $style = ' [color=tomato]';
+                    $style = ' [color="#5D3A9B",style=dashed]';
                 }
                 echo '"' . \addslashes(\trim($dnode, "\\")) . '" -> "' . \addslashes(\trim($node, "\\")) . "\"$style\n";
                 if (empty($shape_defined[$dnode])) {
@@ -478,7 +487,7 @@ class DependencyGraphPlugin extends PluginV3 implements
                             $shape = "shape=note,color=blue,fontcolor=blue";
                             break;
                         case 'T':
-                            $shape = "shape=component,color=purple,fontcolor=purple";
+                            $shape = 'shape=component,color="#4B0092",fontcolor="#4B0092"';
                             break;
                     }
 
@@ -585,9 +594,9 @@ class DependencyGraphPlugin extends PluginV3 implements
                 [$type,$lineno] = self::getFileLineno((string)$val);
                 [$dnode] = \explode(',', $dnode);
                 if ($type == 's') {
-                    $ecol = '#2E8B57'; // Seagreen
+                    $ecol = '#E66100'; // Orange
                 } elseif ($type == 'v') {
-                    $ecol = '#FF6347';  // Tomato
+                    $ecol = '#5D3A9B';  // Purple
                 }
                 $source = $nodes[\trim($dnode, "\\")];
                 $target = $nodes[\trim($node, "\\")];
