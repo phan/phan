@@ -1,0 +1,4 @@
+%s:3 PhanInfiniteRecursion test_infinite() is calling itself in a way that may cause infinite recursion.
+%s:9 PhanPossiblyInfiniteRecursionSameParams test_infinite2() is calling itself with the same parameters it was called with. This may cause infinite recursion (Phan does not check for changes to global or shared state).
+%s:17 PhanPossiblyInfiniteRecursionSameParams test_infinite3() is calling itself with the same parameters it was called with. This may cause infinite recursion (Phan does not check for changes to global or shared state).
+%s:30 PhanPossiblyInfiniteRecursionSameParams test_infinite5() is calling itself with the same parameters it was called with. This may cause infinite recursion (Phan does not check for changes to global or shared state).

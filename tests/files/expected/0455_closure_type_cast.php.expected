@@ -17,6 +17,7 @@
 %s:57 PhanUnusedVariable Unused definition of variable $result
 %s:58 PhanTypeMismatchArgument Argument 1 ($fn) is Closure():void but \expects_int_param() takes Closure(int):void defined at %s:6
 %s:59 PhanTypeMismatchArgument Argument 1 ($fn) is Closure():void but \expects_int_return() takes Closure():int defined at %s:40
+%s:61 PhanPossiblyInfiniteRecursionSameParams expects_void() is calling itself with the same parameters it was called with. This may cause infinite recursion (Phan does not check for changes to global or shared state).
 %s:67 PhanTypeMismatchArgument Argument 1 ($fn) is Closure(mixed):void but \expects_void() takes Closure():void defined at %s:56
 %s:68 PhanTypeMismatchArgument Argument 1 ($fn) is Closure():int but \expects_void() takes Closure():void defined at %s:56
 %s:69 PhanTypeMismatchArgument Argument 1 ($fn) is Closure(int):void but \expects_void() takes Closure():void defined at %s:56

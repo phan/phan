@@ -2240,6 +2240,16 @@ Returning type {TYPE} but {FUNCTIONLIKE} is declared to return {TYPE} ({TYPE} is
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/expected/026_strict_return_checks.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.0.0/tests/plugin_test/src/026_strict_return_checks.php#L31).
 
+## PhanPossiblyInfiniteRecursionSameParams
+
+Note that when there are 1 or more parameters, this is only emitted when unused variable detection is enabled (needed to check for reassignments)
+
+```
+{FUNCTIONLIKE} is calling itself with the same parameters it was called with. This may cause infinite recursion (Phan does not check for changes to global or shared state).
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0783_possibly_infinite_recursion.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0783_possibly_infinite_recursion.php#L9).
+
 ## PhanPossiblyNonClassMethodCall
 
 ```

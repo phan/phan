@@ -203,6 +203,7 @@ class Issue
     const TypeInvalidTraitReturn          = 'PhanTypeInvalidTraitReturn';
     const TypeInvalidTraitParam           = 'PhanTypeInvalidTraitParam';
     const InfiniteRecursion               = 'PhanInfiniteRecursion';
+    const PossibleInfiniteRecursionSameParams = 'PhanPossiblyInfiniteRecursionSameParams';
     const TypeComparisonToInvalidClass    = 'PhanTypeComparisonToInvalidClass';
     const TypeComparisonToInvalidClassType = 'PhanTypeComparisonToInvalidClassType';
     const TypeInvalidPropertyName = 'PhanTypeInvalidPropertyName';
@@ -2163,6 +2164,14 @@ class Issue
                 "{FUNCTIONLIKE} is calling itself in a way that may cause infinite recursion.",
                 self::REMEDIATION_B,
                 10093
+            ),
+            new Issue(
+                self::PossibleInfiniteRecursionSameParams,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "{FUNCTIONLIKE} is calling itself with the same parameters it was called with. This may cause infinite recursion (Phan does not check for changes to global or shared state).",
+                self::REMEDIATION_B,
+                10149
             ),
             new Issue(
                 self::PossiblyNonClassMethodCall,

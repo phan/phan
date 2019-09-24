@@ -3799,10 +3799,53 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if (ReachabilityChecker::willUnconditionallyBeReached($nearest_function_like->children['stmts'], $argument_list_node)) {
             $this->emitIssue(
                 Issue::InfiniteRecursion,
-                $argument_list_node->lineno,
+                $node->lineno,
                 $method->getNameForIssue()
             );
+            return;
         }
+        $this->checkForInfiniteRecursionWithSameArgs($node, $method);
+    }
+
+    private function checkForInfiniteRecursionWithSameArgs(Node $node, FunctionInterface $method) : void
+    {
+        $argument_list_node = $node->children['args'];
+        $parameter_list = $method->getParameterList();
+        if (\count($argument_list_node->children) !== \count($parameter_list)) {
+            return;
+        }
+        if (\count($argument_list_node->children) === 0) {
+            $this->emitIssue(
+                Issue::PossibleInfiniteRecursionSameParams,
+                $node->lineno,
+                $method->getNameForIssue()
+            );
+            return;
+        }
+        // TODO also check AST_UNPACK against variadic
+        $arg_names = [];
+        foreach ($argument_list_node->children as $i => $arg) {
+            if (!$arg instanceof Node || $arg->kind !== ast\AST_VAR) {
+                return;
+            }
+            $arg_name = $arg->children['name'];
+            if (!\is_string($arg_name)) {
+                return;
+            }
+            if ($parameter_list[$i]->getName() !== $arg_name) {
+                return;
+            }
+            $arg_names[] = $arg_name;
+        }
+        $outer_scope = $method->getInternalScope();
+        $current_scope = $this->context->getScope();
+        foreach ($arg_names as $arg_name) {
+            if (!$current_scope->hasVariableWithName($arg_name) || !$outer_scope->hasVariableWithName($arg_name)) {
+                return;
+            }
+        }
+        // @phan-suppress-next-line PhanUndeclaredProperty
+        $node->check_infinite_recursion = [$arg_names, $method->getNameForIssue()];
     }
 
     /**

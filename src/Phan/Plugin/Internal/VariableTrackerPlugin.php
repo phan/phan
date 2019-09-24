@@ -91,7 +91,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
 
         try {
             VariableTrackerVisitor::$variable_graph = $variable_graph;
-            $variable_tracker_visitor = new VariableTrackerVisitor($scope);
+            $variable_tracker_visitor = new VariableTrackerVisitor($this->code_base, $this->context, $scope);
             // TODO: Add params and use variables.
             $variable_tracker_visitor->__invoke($stmts_node);
         } finally {
