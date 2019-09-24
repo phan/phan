@@ -47,6 +47,9 @@ New features(Analysis):
 + Suggest obvious getters and setters for instance properties in `PhanAccessPropertyProtected` and `PhanAccessPropertyPrivate` (#2540)
 + When `strict_method_checking` is enabled,
   warn if some of the **object** types in the union type don't contain that method. (#3262)
++ Make stronger assumptions about real types of global constants.
++ Properly infer that parameter defaults and global constants will resolve to `null` in some edge cases.
++ Emit `PhanCompatibleDefaultEqualsNull` when using a different constant that resolves to null as the default of a non-nullable parameter. (#3307)
 
 Language Server/Daemon mode:
 + Fix logged Error when language server receives `didChangeConfiguration` events. (this is a no-op)

@@ -2,6 +2,9 @@
 
 namespace Phan\Analysis;
 
+use ast;
+use ast\Node;
+use Phan\AST\ASTReverter;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
@@ -133,7 +136,27 @@ class ParameterTypesAnalyzer
             }
         }
         foreach ($method->getRealParameterList() as $parameter) {
+            if ($parameter->hasDefaultValue()) {
+                $default_node = $parameter->getDefaultValue();
+                if ($default_node instanceof Node &&
+                        !$parameter->getUnionType()->containsNullableOrIsEmpty() &&
+                        $parameter->getDefaultValueType()->isNull()) {
+                    // @phan-suppress-next-next-line PhanPartialTypeMismatchArgumentInternal
+                    if (!($default_node->kind === ast\AST_CONST &&
+                            \strtolower($default_node->children['name']->children['name'] ?? '') === 'null')) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $method->getContext(),
+                            Issue::CompatibleDefaultEqualsNull,
+                            $default_node->lineno,
+                            ASTReverter::toShortString($default_node),
+                            $parameter->getUnionType() . ' $' . $parameter->getName()
+                        );
+                    }
+                }
+            }
             $union_type = $parameter->getUnionType();
+
             foreach ($union_type->getTypeSet() as $type) {
                 if (!$type->isObjectWithKnownFQSEN()) {
                     continue;

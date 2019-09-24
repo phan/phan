@@ -52,6 +52,7 @@ class FutureUnionType
      */
     public function get() : UnionType
     {
+        $this->context->clearCachedUnionTypes();
         return UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,

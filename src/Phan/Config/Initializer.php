@@ -474,7 +474,7 @@ EOT;
                     echo "Warning: could not find '$composer_lib_relative_path'\n";
                     continue;
                 }
-                $composer_lib_relative_path = \trim(str_replace(DIRECTORY_SEPARATOR, '/', $composer_lib_relative_path), '/');
+                $composer_lib_relative_path = \trim(\str_replace(\DIRECTORY_SEPARATOR, '/', $composer_lib_relative_path), '/');
 
                 $composer_lib_relative_path = \preg_replace('@(/+\.)+$@', '', $composer_lib_relative_path);
                 if (\is_dir($composer_lib_absolute_path)) {
