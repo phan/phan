@@ -67,6 +67,7 @@ class RegexKeyExtractor
 
     /**
      * @throws InvalidArgumentException if an invalid pattern was seen
+     * @suppress PhanPossiblyInfiniteRecursionSameParams this issue type does not attempt to check for changes to properties or global state.
      */
     private function extractGroup() : void
     {

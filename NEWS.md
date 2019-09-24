@@ -50,6 +50,8 @@ New features(Analysis):
 + Make stronger assumptions about real types of global constants.
 + Properly infer that parameter defaults and global constants will resolve to `null` in some edge cases.
 + Emit `PhanCompatibleDefaultEqualsNull` when using a different constant that resolves to null as the default of a non-nullable parameter. (#3307)
++ Emit `PhanPossiblyInfiniteRecursionSameParams` when a function or method calls itself with the same parameter values it was declared with (in a branch). (#2893)
+  (This requires unused variable detection to be enabled, when there are 1 or more parameters)
 
 Language Server/Daemon mode:
 + Fix logged Error when language server receives `didChangeConfiguration` events. (this is a no-op)

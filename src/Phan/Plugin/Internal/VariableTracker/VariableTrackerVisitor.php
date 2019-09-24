@@ -9,6 +9,9 @@ use Phan\Analysis\BlockExitStatusChecker;
 use Phan\AST\AnalysisVisitor;
 use Phan\AST\ArrowFunc;
 use Phan\AST\Visitor\Element;
+use Phan\CodeBase;
+use Phan\Issue;
+use Phan\Language\Context;
 use Phan\Parse\ParseVisitor;
 use function is_string;
 
@@ -53,8 +56,9 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      */
     private $top_level_statement;
 
-    public function __construct(VariableTrackingScope $scope)
+    public function __construct(CodeBase $code_base, Context $context, VariableTrackingScope $scope)
     {
+        parent::__construct($code_base, $context);
         $this->scope = $scope;
     }
 
@@ -98,6 +102,9 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         if (isset($node->dynamic_var_uses)) {
             $this->handleDynamicVarUses($node, $node->dynamic_var_uses);
         }
+        if (isset($node->check_infinite_recursion)) {
+            $this->handleInfiniteRecursion($node, $node->check_infinite_recursion);
+        }
         foreach ($node->children as $child_node) {
             if (!($child_node instanceof Node)) {
                 continue;
@@ -106,6 +113,16 @@ final class VariableTrackerVisitor extends AnalysisVisitor
             $this->scope = $this->{Element::VISIT_LOOKUP_TABLE[$child_node->kind] ?? 'handleMissingNodeKind'}($child_node);
         }
         return $this->scope;
+    }
+
+    public function visitMethodCall(Node $node) : VariableTrackingScope
+    {
+        return $this->visitCall($node);
+    }
+
+    public function visitStaticCall(Node $node) : VariableTrackingScope
+    {
+        return $this->visitCall($node);
     }
 
     /**
@@ -117,6 +134,24 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         foreach ($dynamic_var_uses as $name) {
             self::$variable_graph->recordVariableUsage($name, $node, $this->scope);
         }
+    }
+
+    /**
+     * @param array{0:array<int,string>,1:string} $check_infinite_recursion an array of 1 or more argument names to check for redefinition, and a name of the method
+     */
+    private function handleInfiniteRecursion(Node $node, array $check_infinite_recursion) : void
+    {
+        [$arg_names, $method_name] = $check_infinite_recursion;
+        foreach ($arg_names as $arg_name) {
+            if (\count(self::$variable_graph->def_lines[$arg_name] ?? []) !== 1) {
+                return;
+            }
+        }
+        $this->emitIssue(
+            Issue::PossibleInfiniteRecursionSameParams,
+            $node->lineno,
+            $method_name
+        );
     }
 
     /**

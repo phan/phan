@@ -21,7 +21,7 @@ final class VariableGraph
     /**
      * @var array<string,array<int,int>>
      *
-     * Maps variable id to line number of the node for a definition ids
+     * Maps variable id to line number of the node for a definition id
      */
     public $def_lines = [];
 

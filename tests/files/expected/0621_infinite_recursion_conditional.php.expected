@@ -1,2 +1,7 @@
 %s:5 PhanInfiniteRecursion main() is calling itself in a way that may cause infinite recursion.
+%s:9 PhanPossiblyInfiniteRecursionSameParams notInfinite() is calling itself with the same parameters it was called with. This may cause infinite recursion (Phan does not check for changes to global or shared state).
+%s:13 PhanPossiblyInfiniteRecursionSameParams notInfinite2() is calling itself with the same parameters it was called with. This may cause infinite recursion (Phan does not check for changes to global or shared state).
+%s:17 PhanPossiblyInfiniteRecursionSameParams infiniteRecursion() is calling itself with the same parameters it was called with. This may cause infinite recursion (Phan does not check for changes to global or shared state).
 %s:19 PhanInfiniteRecursion infiniteRecursion() is calling itself in a way that may cause infinite recursion.
+%s:22 PhanPossiblyInfiniteRecursionSameParams infiniteRecursion2() is calling itself with the same parameters it was called with. This may cause infinite recursion (Phan does not check for changes to global or shared state).
+%s:24 PhanInfiniteRecursion infiniteRecursion2() is calling itself in a way that may cause infinite recursion.
