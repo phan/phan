@@ -1408,6 +1408,10 @@ class ParseVisitor extends ScopeVisitor
             $flags,
             $fqsen
         );
+        // $is_fully_qualified is true for define('name', $value)
+        // define() is typically used to conditionally set constants or to set them to variable values.
+        // TODO: Could add 'configuration_constant_set' to add additional constants to treat as dynamic such as PHP_OS, PHP_VERSION_ID, etc. (convert literals to non-literal types?)
+        $constant->setIsDynamicConstant($is_fully_qualified);
 
         if ($code_base->hasGlobalConstantWithFQSEN($fqsen)) {
             $other_constant = $code_base->getGlobalConstantByFQSEN($fqsen);
