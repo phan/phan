@@ -53,6 +53,7 @@ return [
 'AMQPQueue' => 'stub class representing AMQPQueue from pecl-amqp',
 'AMQPQueueException' => 'stub class representing AMQPQueueException from pecl-amqp',
 'AMQPTimestamp' => 'stub class representing AMQPTimestamp from pecl-amqp',
+'AMQPValueException' => 'stub class representing AMQPExchangeValue from pecl-amqp',
 'APCIterator' => 'The `APCIterator` class makes it easier to iterate over large APC caches. This is helpful as it allows iterating over large caches in steps, while grabbing a defined number of entries per lock instance, so it frees the cache locks for other activities rather than hold up the entire cache to grab 100 (the default) entries. Also, using regular expression matching is more efficient as it\'s been moved to the C level.',
 'APCUIterator' => 'The `APCUIterator` class makes it easier to iterate over large APCu caches. This is helpful as it allows iterating over large caches in steps, while grabbing a defined number of entries per lock instance, so it frees the cache locks for other activities rather than hold up the entire cache to grab 100 (the default) entries. Also, using regular expression matching is more efficient as it\'s been moved to the C level.',
 'AppendIterator' => 'An Iterator that iterates over several iterators one after the other.',
@@ -124,6 +125,191 @@ Use `Cairo::statusToString` or `cairo_status_to_string` to get a human-readable 
 'CairoSurface' => 'This is the base-class for all other Surface types. CairoSurface is the abstract type representing all different drawing targets that cairo can render to. The actual drawings are performed using a CairoContext.',
 'CairoSvgSurface' => 'Svg specific surface class, uses the SVG (standard vector graphics) surface backend.',
 'CairoToyFontFace' => 'The `CairoToyFontFace` class can be used instead of `CairoContext::selectFontFace` to create a toy font independently of a context.',
+'Cassandra' => 'The main entry point to the PHP Driver for Apache Cassandra.
+
+Use Cassandra::cluster() to build a cluster instance.
+Use Cassandra::ssl() to build SSL options instance.',
+'Cassandra\Aggregate' => 'A PHP representation of an aggregate',
+'Cassandra\BatchStatement' => 'Batch statements are used to execute a series of simple or prepared
+statements.
+
+There are 3 types of batch statements:
+ * `Cassandra::BATCH_LOGGED`   - this is the default batch type. This batch
+   guarantees that either all or none of its statements will be executed.
+   This behavior is achieved by writing a batch log on the coordinator,
+   which slows down the execution somewhat.
+ * `Cassandra::BATCH_UNLOGGED` - this batch will not be verified when
+   executed, which makes it faster than a `LOGGED` batch, but means that
+   some of its statements might fail, while others - succeed.
+ * `Cassandra::BATCH_COUNTER`  - this batch is used for counter updates,
+   which are, unlike other writes, not idempotent.',
+'Cassandra\Bigint' => 'A PHP representation of the CQL `bigint` datatype',
+'Cassandra\Blob' => 'A PHP representation of the CQL `blob` datatype',
+'Cassandra\Cluster' => 'Cluster object is used to create Sessions.',
+'Cassandra\Cluster\Builder' => 'Cluster builder allows fluent configuration of the cluster instance.',
+'Cassandra\Collection' => 'A PHP representation of the CQL `list` datatype',
+'Cassandra\Column' => 'A PHP representation of a column',
+'Cassandra\Custom' => 'A class for representing custom values.',
+'Cassandra\Date' => 'A PHP representation of the CQL `date` type.',
+'Cassandra\Decimal' => 'A PHP representation of the CQL `decimal` datatype
+
+The actual value of a decimal is `$value * pow(10, $scale * -1)`',
+'Cassandra\DefaultAggregate' => 'A PHP representation of an aggregate',
+'Cassandra\DefaultCluster' => 'Default cluster implementation.',
+'Cassandra\DefaultColumn' => 'A PHP representation of a column',
+'Cassandra\DefaultFunction' => 'A PHP representation of a public function',
+'Cassandra\DefaultIndex' => 'A PHP representation of an index',
+'Cassandra\DefaultKeyspace' => 'A PHP representation of a keyspace',
+'Cassandra\DefaultMaterializedView' => 'A PHP representation of a materialized view',
+'Cassandra\DefaultSchema' => 'A PHP representation of a schema',
+'Cassandra\DefaultSession' => 'A session is used to prepare and execute statements.',
+'Cassandra\DefaultTable' => 'A PHP representation of a table',
+'Cassandra\Duration' => 'A PHP representation of the CQL `duration` datatype',
+'Cassandra\Exception' => 'An interface implemented by all exceptions thrown by the PHP Driver.
+Makes it easy to catch all driver-related exceptions using
+`catch (Exception $e)`.',
+'Cassandra\Exception\AlreadyExistsException' => 'AlreadyExistsException is raised when attempting to re-create existing keyspace.',
+'Cassandra\Exception\AuthenticationException' => 'AuthenticationException is raised when client was not configured with valid
+authentication credentials.',
+'Cassandra\Exception\ConfigurationException' => 'ConfigurationException is raised when query is syntactically correct but
+invalid because of some configuration issue.
+For example when attempting to drop a non-existent keyspace.',
+'Cassandra\Exception\DivideByZeroException' => 'Cassandra domain exception.',
+'Cassandra\Exception\DomainException' => 'Cassandra domain exception.',
+'Cassandra\Exception\ExecutionException' => 'ExecutionException is raised when something went wrong during request execution.',
+'Cassandra\Exception\InvalidArgumentException' => 'Cassandra invalid argument exception.',
+'Cassandra\Exception\InvalidQueryException' => 'InvalidQueryException is raised when query is syntactically correct but invalid.
+For example when attempting to create a table without specifying a keyspace.',
+'Cassandra\Exception\InvalidSyntaxException' => 'InvalidSyntaxException is raised when CQL in the request is syntactically incorrect.',
+'Cassandra\Exception\IsBootstrappingException' => 'IsBootstrappingException is raised when a node is bootstrapping.',
+'Cassandra\Exception\LogicException' => 'Cassandra logic exception.',
+'Cassandra\Exception\OverloadedException' => 'OverloadedException is raised when a node is overloaded.',
+'Cassandra\Exception\ProtocolException' => 'ProtocolException is raised when a client did not follow server\'s protocol,
+e.g. sending a QUERY message before STARTUP. Seeing this error can be
+considered a bug.',
+'Cassandra\Exception\RangeException' => 'Cassandra domain exception.',
+'Cassandra\Exception\ReadTimeoutException' => 'ReadTimeoutException is raised when a coordinator failed to receive acks
+from the required number of replica nodes in time during a read.',
+'Cassandra\Exception\RuntimeException' => 'Cassandra runtime exception.',
+'Cassandra\Exception\ServerException' => 'ServerException is raised when something unexpected happened on the server.
+This exception is most likely due to a server-side bug.
+**NOTE** This exception and all its children are generated on the server.',
+'Cassandra\Exception\TimeoutException' => 'TimeoutException is generally raised when a future did not resolve
+within a given time interval.',
+'Cassandra\Exception\TruncateException' => 'TruncateException is raised when something went wrong during table
+truncation.',
+'Cassandra\Exception\UnauthorizedException' => 'UnauthorizedException is raised when the current user doesn\'t have
+sufficient permissions to access data.',
+'Cassandra\Exception\UnavailableException' => 'UnavailableException is raised when a coordinator detected that there aren\'t
+enough replica nodes available to fulfill the request.
+
+NOTE: Request has not even been forwarded to the replica nodes in this case.',
+'Cassandra\Exception\UnpreparedException' => 'UnpreparedException is raised when a given prepared statement id does not
+exist on the server. The driver should be automatically re-preparing the
+statement in this case. Seeing this error could be considered a bug.',
+'Cassandra\Exception\ValidationException' => 'ValidationException is raised on invalid request, before even attempting to
+execute it.',
+'Cassandra\Exception\WriteTimeoutException' => 'WriteTimeoutException is raised when a coordinator failed to receive acks
+from the required number of replica nodes in time during a write.',
+'Cassandra\ExecutionOptions' => 'Request execution options.',
+'Cassandra\Float_' => 'A PHP representation of the CQL `float` datatype',
+'Cassandra\Function_' => 'A PHP representation of a function',
+'Cassandra\Future' => 'Futures are returns from asynchronous methods.',
+'Cassandra\FutureClose' => 'A future returned from Session::closeAsync().',
+'Cassandra\FuturePreparedStatement' => 'A future returned from `Session::prepareAsync()`
+This future will resolve with a PreparedStatement or an exception.',
+'Cassandra\FutureRows' => 'This future results is resolved with Rows.',
+'Cassandra\FutureSession' => 'A future that resolves with Session.',
+'Cassandra\FutureValue' => 'A future that always resolves in a value.',
+'Cassandra\Index' => 'A PHP representation of an index',
+'Cassandra\Inet' => 'A PHP representation of the CQL `inet` datatype',
+'Cassandra\Keyspace' => 'A PHP representation of a keyspace',
+'Cassandra\Map' => 'A PHP representation of the CQL `map` datatype',
+'Cassandra\MaterializedView' => 'A PHP representation of a materialized view',
+'Cassandra\Numeric' => 'Common interface implemented by all numeric types, providing basic
+arithmetic functions.',
+'Cassandra\PreparedStatement' => 'Prepared statements are faster to execute because the server doesn\'t need
+to process a statement\'s CQL during the execution.
+
+With token-awareness enabled in the driver, prepared statements are even
+faster, because they are sent directly to replica nodes and avoid the extra
+network hop.',
+'Cassandra\RetryPolicy' => 'Interface for retry policies.',
+'Cassandra\RetryPolicy\DefaultPolicy' => 'The default retry policy. This policy retries a query, using the
+request\'s original consistency level, in the following cases:
+
+* On a read timeout, if enough replicas replied but the data was not received.
+* On a write timeout, if a timeout occurs while writing a distributed batch log.
+* On unavailable, it will move to the next host.
+
+In all other cases the error will be returned.',
+'Cassandra\RetryPolicy\DowngradingConsistency' => 'A retry policy that will downgrade the consistency of a request in
+an attempt to save a request in cases where there is any chance of success. A
+write request will succeed if there is at least a single copy persisted and a
+read request will succeed if there is some data available even if it increases
+the risk of reading stale data. This policy will retry in the same scenarios as
+the default policy, and it will also retry in the following case:
+
+* On a read timeout, if some replicas responded but is lower than
+  required by the current consistency level then retry with a lower
+  consistency level
+* On a write timeout, Retry unlogged batches at a lower consistency level
+  if at least one replica responded. For single queries and batch if any
+  replicas responded then consider the request successful and swallow the
+  error.
+* On unavailable, retry at a lower consistency if at lease one replica
+  responded.
+
+Important: This policy may attempt to retry requests with a lower
+consistency level. Using this policy can break consistency guarantees.',
+'Cassandra\RetryPolicy\Fallthrough' => 'A retry policy that never retries and allows all errors to fallthrough.',
+'Cassandra\RetryPolicy\Logging' => 'A retry policy that logs the decisions of its child policy.',
+'Cassandra\Rows' => 'Rows represent a result of statement execution.',
+'Cassandra\Schema' => 'A PHP representation of a schema',
+'Cassandra\Session' => 'A session is used to prepare and execute statements.',
+'Cassandra\Set' => 'A PHP representation of the CQL `set` datatype',
+'Cassandra\SimpleStatement' => 'Simple statements can be executed using a Session instance.
+They are constructed with a CQL string that can contain positional
+argument markers `?`.
+
+NOTE: Positional argument are only valid for native protocol v2+.',
+'Cassandra\Smallint' => 'A PHP representation of the CQL `smallint` datatype.',
+'Cassandra\SSLOptions' => 'SSL options for Cluster.',
+'Cassandra\SSLOptions\Builder' => 'SSLOptions builder allows fluent configuration of ssl options.',
+'Cassandra\Statement' => 'All statements implement this common interface.',
+'Cassandra\Table' => 'A PHP representation of a table',
+'Cassandra\Time' => 'A PHP representation of the CQL `time` type.',
+'Cassandra\Timestamp' => 'A PHP representation of the CQL `timestamp` datatype',
+'Cassandra\TimestampGenerator' => 'Interface for timestamp generators.',
+'Cassandra\TimestampGenerator\Monotonic' => 'A timestamp generator that generates monotonically increasing timestamps
+client-side. The timestamps generated have a microsecond granularity with
+the sub-millisecond part generated using a counter. The implementation
+guarantees that no more than 1000 timestamps will be generated for a given
+clock tick even if shared by multiple session objects. If that rate is
+exceeded then a warning is logged and timestamps stop incrementing until
+the next clock tick.',
+'Cassandra\TimestampGenerator\ServerSide' => 'A timestamp generator that allows the server-side to assign timestamps.',
+'Cassandra\Timeuuid' => 'A PHP representation of the CQL `timeuuid` datatype',
+'Cassandra\Tinyint' => 'A PHP representation of the CQL `tinyint` datatype.',
+'Cassandra\Tuple' => 'A PHP representation of the CQL `tuple` datatype',
+'Cassandra\Type' => 'Cluster object is used to create Sessions.',
+'Cassandra\Type\Collection' => 'A class that represents the list type. The list type contains the type of the
+elements contain in the list.',
+'Cassandra\Type\Custom' => 'A class that represents a custom type.',
+'Cassandra\Type\Map' => 'A class that represents the map type. The map type contains two types that
+represents the types of the key and value contained in the map.',
+'Cassandra\Type\Scalar' => 'A class that represents a primitive type (e.g. `varchar` or `bigint`)',
+'Cassandra\Type\Set' => 'A class that represents the set type. The set type contains the type of the
+elements contain in the set.',
+'Cassandra\Type\Tuple' => 'A class that represents the tuple type. The tuple type is able to represent
+a composite type of one or more types accessed by index.',
+'Cassandra\Type\UserType' => 'A class that represents a user type. The user type is able to represent a
+composite type of one or more types accessed by name.',
+'Cassandra\UserTypeValue' => 'A PHP representation of the CQL UDT datatype',
+'Cassandra\Uuid' => 'A PHP representation of the CQL `uuid` datatype',
+'Cassandra\UuidInterface' => 'A PHP representation of the CQL `uuid` datatype',
+'Cassandra\Value' => 'Common interface implemented by all Cassandra value types.',
+'Cassandra\Varint' => 'A PHP representation of the CQL `varint` datatype',
 'chdb' => 'Represents a loaded chdb file.',
 'classObj' => 'Class Objects can be returned by the `layerObj`_ class, or can be
 created using:',
@@ -132,6 +318,7 @@ created using:',
 'Collectable' => 'Represents a garbage-collectable object.',
 'colorObj' => 'Instances of colorObj are always embedded inside other classes.',
 'COM' => 'The COM class allows you to instantiate an OLE compatible COM object and call its methods and access its properties.',
+'com_exception' => 'This extension will throw instances of the class com_exception whenever there is a potentially fatal error reported by COM. All COM exceptions have a well-defined code property that corresponds to the HRESULT return value from the various COM operations. You may use this code to make programmatic decisions on how to handle the exception.',
 'CommonMark\CQL' => 'CommonMark Query Language is a DSL for describing how to travel through a CommonMark Node tree implemented as a parser and compiler for a small set of instructions, and a virtual machine for executing those instructions.',
 'CommonMark\Node' => 'Represents an Abstract Node, this final abstract is not for direct use by the programmer.',
 'CommonMark\Parser' => 'Provides an incremental parser as an alternative to the simple Parsing API function',
@@ -226,6 +413,22 @@ inclusiveness of each bound can be configured.',
 'Couchbase\ViewQueryEncodable' => 'Common interface for all View queries',
 'Couchbase\WildcardSearchQuery' => 'A FTS query that allows for simple matching using wildcard characters (* and ?).',
 'Countable' => 'Classes implementing `Countable` can be used with the `count` function.',
+'Crypto\Base64' => 'Class for base64 encoding and docoding',
+'Crypto\Base64Exception' => 'Exception class for base64 errors',
+'Crypto\Cipher' => 'Class providing cipher algorithms',
+'Crypto\CipherException' => 'Exception class for cipher errors',
+'Crypto\CMAC' => 'Class providing CMAC functionality',
+'Crypto\Hash' => 'Class providing hash algorithms',
+'Crypto\HashException' => 'Exception class for hash errors',
+'Crypto\HMAC' => 'Class providing HMAC functionality',
+'Crypto\KDF' => 'Abstract class for KDF subclasses',
+'Crypto\KDFException' => 'Exception class for KDF errors',
+'Crypto\MAC' => 'Abstract class for MAC subclasses',
+'Crypto\MACException' => 'Exception class for MAC errors',
+'Crypto\PBKDF2' => 'Class providing PBKDF2 functionality',
+'Crypto\PBKDF2Exception' => 'Exception class for PBKDF2 errors',
+'Crypto\Rand' => 'Class for generating random numbers',
+'Crypto\RandException' => 'Exception class for rand errors',
 'CURLFile' => '`CURLFile` should be used to upload a file with `CURLOPT_POSTFIELDS`.',
 'DateInterval' => 'Represents a date interval.
 
@@ -395,6 +598,8 @@ access native variables and create/access data structures defined
 in C language.',
 'FFI\CData' => 'Proxy object that provides access to compiled structures.',
 'FFI\CType' => 'Class containing C type information.',
+'FFI\Exception' => 'Class Exception',
+'FFI\ParserException' => 'Class ParserException',
 'FilesystemIterator' => 'The Filesystem iterator',
 'FilterIterator' => 'This abstract iterator filters out unwanted values. This class should be extended to implement custom iterator filters. The `FilterIterator::accept` must be implemented in the subclass.',
 'finfo' => 'This class provides an object oriented interface into the fileinfo functions.',
@@ -403,6 +608,11 @@ in C language.',
 'GearmanJob' => 'Class: GearmanJob',
 'GearmanTask' => 'Class: GearmanTask',
 'GearmanWorker' => 'Class: GearmanWorker',
+'GEOSGeometry' => 'Class GEOSGeometry',
+'GEOSWKBReader' => 'Class GEOSWKBReader',
+'GEOSWKBWriter' => 'Class GEOSWKBWriter',
+'GEOSWKTReader' => 'Class GEOSWKTReader',
+'GEOSWKTWriter' => 'Class GEOSWKTWriter',
 'GlobIterator' => 'Iterates through a file system in a similar fashion to `glob`.',
 'GmagickException' => 'GmagickException class',
 'GMP' => 'A GMP number. These objects support overloaded arithmetic, bitwise and comparison operators.',
@@ -539,6 +749,21 @@ layer created.',
 'Locale' => 'Examples of identifiers include: en-US (English, United States) zh-Hant-TW (Chinese, Traditional Script, Taiwan) fr-CA, fr-FR (French for Canada and France respectively)',
 'LogicException' => 'Exception that represents error in the program logic. This kind of exception should lead directly to a fix in your code.',
 'LuaClosure' => 'LuaClosure is a wrapper class for LUA_TFUNCTION which could be return from calling to Lua function.',
+'LuaSandbox' => 'The LuaSandbox class creates a Lua environment and allows for execution of Lua code.',
+'LuaSandboxError' => 'Base class for LuaSandbox exceptions',
+'LuaSandboxErrorError' => 'Exception thrown when Lua encounters an error inside an error handler.',
+'LuaSandboxFatalError' => 'Uncatchable LuaSandbox exceptions.
+
+These may not be caught inside Lua using `pcall()` or `xpcall()`.',
+'LuaSandboxFunction' => 'Represents a Lua function, allowing it to be called from PHP.
+
+A LuaSandboxFunction may be obtained as a return value from Lua, as a parameter passed to a callback from Lua, or by using `LuaSandbox::wrapPhpFunction`, `LuaSandbox::loadString`, or `LuaSandbox::loadBinary`.',
+'LuaSandboxMemoryError' => 'Exception thrown when Lua cannot allocate memory.',
+'LuaSandboxRuntimeError' => 'Catchable LuaSandbox runtime exceptions.
+
+These may be caught inside Lua using `pcall()` or `xpcall()`.',
+'LuaSandboxSyntaxError' => 'Exception thrown when Lua code cannot be parsed.',
+'LuaSandboxTimeoutError' => 'Exception thrown when the configured CPU time limit is exceeded.',
 'Memcache' => 'Represents a connection to a set of memcache servers.',
 'Memcached' => 'Represents a connection to a set of memcached servers.',
 'Mongo' => 'A connection between PHP and MongoDB.
@@ -644,6 +869,7 @@ Write operations may either be ordered (default) or unordered. Ordered write ope
 To provide Command Helpers the `MongoDB\Driver\Command` object should be composed.',
 'MongoDB\Driver\Cursor' => 'The `MongoDB\Driver\Cursor` class encapsulates the results of a MongoDB command or query and may be returned by `MongoDB\Driver\Manager::executeCommand` or `MongoDB\Driver\Manager::executeQuery`, respectively.',
 'MongoDB\Driver\CursorId' => 'The `MongoDB\Driver\CursorID` class is a value object that represents a cursor ID. Instances of this class are returned by `MongoDB\Driver\Cursor::getId`.',
+'MongoDB\Driver\CursorInterface' => 'This interface is implemented by `MongoDB\Driver\Cursor` but may also be used for type-hinting and userland classes.',
 'MongoDB\Driver\Exception\AuthenticationException' => 'Thrown when the driver fails to authenticate with the server.',
 'MongoDB\Driver\Exception\BulkWriteException' => 'Thrown when a bulk write operation fails.',
 'MongoDB\Driver\Exception\CommandException' => 'Thrown when a command fails.',
@@ -749,6 +975,7 @@ Note: This class is only available when talking to MongoDB 2.6.0 (and later) ser
 Prior to MongoDB 2.6.0, the getLastError command would determine whether a write failed.',
 'MultipleIterator' => 'An Iterator that sequentially iterates over all attached iterators',
 'Mutex' => 'The static methods contained in the Mutex class provide direct access to Posix Mutex functionality.',
+'mysql_xdevapi\Client' => 'Provides access to the connection pool.',
 'mysql_xdevapi\Table' => 'Provides access to the table through INSERT/SELECT/UPDATE/DELETE statements.',
 'mysql_xdevapi\TableDelete' => 'A statement for delete operations on Table.',
 'mysql_xdevapi\TableInsert' => 'A statement for insert operations on Table.',
@@ -781,6 +1008,19 @@ See also an external in-depth tutorial titled Writing an OAuth Provider Service,
 It is uses a read only.
 No constructor available (coming soon, see ticket 979)',
 'OverflowException' => 'Exception thrown when adding an element to a full container.',
+'parallel\Channel' => 'An unbuffered channel will block on calls to `parallel\Channel::send` until there is a receiver, and block on calls to `parallel\Channel::recv` until there is a sender. This means an unbuffered channel is not only a way to share data among tasks but also a simple method of synchronization.
+
+An unbuffered channel is the fastest way to share data among tasks, requiring the least copying.',
+'parallel\Events' => 'The Event loop monitors the state of sets of futures and or channels (targets) in order to perform read (`parallel\Future::value`, `parallel\Channel::recv`) and write (`parallel\Channel::send`) operations as the targets become available and the operations may be performed without blocking the event loop.',
+'parallel\Events\Event' => 'When an Event is returned, Event::$object shall be removed from the loop that returned it, should the event be a write event the `Input` for Event::$source shall also be removed.',
+'parallel\Events\Input' => 'An Input object is a container for data that the `parallel\Events` object will write to `parallel\Channel` objects as they become available. Multiple event loops may share an Input container - parallel does not verify the contents of the container when it is set as the input for a `parallel\Events` object.',
+'parallel\Future' => 'A Future represents the return value or uncaught exception from a task, and exposes an API for cancellation.
+
+The behaviour of a future also allows it to be used as a simple synchronization point even where the task does not return a value explicitly.',
+'parallel\Runtime' => 'Each runtime represents a single PHP thread, the thread is created (and bootstrapped) upon construction. The thread then waits for tasks to be scheduled: Scheduled tasks will be executed FIFO and then the thread will resume waiting until more tasks are scheduled, or it\'s closed, killed, or destroyed by the normal scoping rules of PHP objects.',
+'parallel\Sync' => 'The `parallel\Sync` class provides access to low level synchronization primitives, mutex, condition variables, and allows the implementation of semaphores.
+
+Synchronization for most applications is much better implemented using channels, however, in some cases authors of low level code may find it useful to be able to access these lower level mechanisms.',
 'ParentIterator' => 'This extended `FilterIterator` allows a recursive iteration using `RecursiveIteratorIterator` that only shows those elements which have children.',
 'Parle\ErrorInfo' => 'The class represents detailed error information as supplied by `Parle\Parser::errorInfo`',
 'Parle\Lexer' => 'Single state lexer class. Lexemes can be defined on the fly. If the particular lexer instance is meant to be used with `Parle\Parser`, the token IDs need to be taken from there. Otherwise, arbitrary token IDs can be supplied. This lexer can give a certain performance advantage over `Parle\RLexer`, if no multiple states are required. Note, that `Parle\RParser` is not compatible with this lexer.',
