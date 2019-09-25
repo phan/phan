@@ -371,7 +371,7 @@ class DependencyGraphPlugin extends PluginV3 implements
         if (($flags & \PDEP_IGNORE_STATIC) && $cached_graph) {
             foreach ($graph as $node => $els) {
                 foreach ($els as $el => $val) {
-                    if (substr((string)$val, 0, 2) == 'v:' || substr((string)$val, 0, 2) == 's:') {
+                    if (\substr((string)$val, 0, 2) == 'v:' || \substr((string)$val, 0, 2) == 's:') {
                         unset($graph[$node][$el]);
                     }
                 }

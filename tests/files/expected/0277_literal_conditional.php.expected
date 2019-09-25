@@ -24,5 +24,3 @@
 %s:24 PhanImpossibleCondition Impossible attempt to cast 0.0 of type 0.0 to truthy
 %s:25 PhanRedundantCondition Redundant attempt to cast FEATURE_FLAG of type true to truthy
 %s:26 PhanRedundantCondition Redundant attempt to cast FEATURE_FLAG of type true to truthy
-%s:27 PhanRedundantCondition Redundant attempt to cast FEATURE_FLAG2 of type true to truthy
-%s:28 PhanRedundantCondition Redundant attempt to cast FEATURE_FLAG2 of type true to truthy

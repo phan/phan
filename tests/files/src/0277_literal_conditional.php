@@ -24,6 +24,6 @@ function check_literal_conditional() {
     intdiv(0.0 ?: $x, 2);  // should not warn about passing float (still not great code)
     intdiv(FEATURE_FLAG ? 'value' : $x, 2);  // In the **general** case, we're not sure about internal or external constants, so we assume both types are possible.
     intdiv(FEATURE_FLAG ? $x : 'value', 2);  // also test the other way around.
-    intdiv(FEATURE_FLAG2 ? 'value' : $x, 2);  // In the **general** case, we're not sure about internal or external constants, so we assume both types are possible.
-    intdiv(FEATURE_FLAG2 ? $x : 'value', 2);  // also test the other way around.
+    intdiv(FEATURE_FLAG2 ? 'value' : $x, 2);  // Same uncertainty in the general case. Also, PhanRedundantCondition isn't emitted because the real type of define() is less guaranteed.
+    intdiv(FEATURE_FLAG2 ? $x : 'value', 2);
 }

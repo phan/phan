@@ -48,6 +48,8 @@ New features(Analysis):
 + When `strict_method_checking` is enabled,
   warn if some of the **object** types in the union type don't contain that method. (#3262)
 + Make stronger assumptions about real types of global constants.
+  Assume that constants defined with `define(...)` can have any non-object as its real type,
+  to avoid false positives in redundant condition detection.
 + Properly infer that parameter defaults and global constants will resolve to `null` in some edge cases.
 + Emit `PhanCompatibleDefaultEqualsNull` when using a different constant that resolves to null as the default of a non-nullable parameter. (#3307)
 + Emit `PhanPossiblyInfiniteRecursionSameParams` when a function or method calls itself with the same parameter values it was declared with (in a branch). (#2893)

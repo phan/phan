@@ -21,7 +21,7 @@ function exampleConstantDefs() {
 }
 
 exampleConstantDefs();
-
+// Note that the warning about cons2128 is a PhanTypeMismatchArgumentInternal instead of PhanTypeMismatchArgumentInternalReal because define() was used.
 echo intdiv(cons2128, 2);  // should warn - cons2128 should have type 'string'
 var_dump(strpos(cons2128, 'b'));  // should not warn
 

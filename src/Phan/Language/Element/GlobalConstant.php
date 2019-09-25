@@ -18,6 +18,29 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
     use ConstantTrait;
 
     /**
+     * Sets whether this is a global constant that should be treated as if the real type is unknown.
+     */
+    public function setIsDynamicConstant(bool $dynamic_constant) : void
+    {
+        $this->setPhanFlags(
+            Flags::bitVectorWithState(
+                $this->getPhanFlags(),
+                Flags::IS_DYNAMIC_CONSTANT,
+                $dynamic_constant
+            )
+        );
+    }
+
+    /**
+     * @return bool
+     * True if this is a global constant that should be treated as if the real type is unknown.
+     */
+    public function isDynamicConstant() : bool
+    {
+        return $this->getPhanFlagsHasState(Flags::IS_DYNAMIC_CONSTANT);
+    }
+
+    /**
      * Override the default getter to fill in a future
      * union type if available.
      */
@@ -33,7 +56,7 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
     // TODO: Make callers check for object types. Those are impossible.
     public function setUnionType(UnionType $type) : void
     {
-        if (!$type->hasRealTypeSet()) {
+        if ($this->isDynamicConstant() || !$type->hasRealTypeSet()) {
             $type = $type->withRealTypeSet(UnionType::typeSetFromString('array|bool|float|int|string|resource|null'));
         }
         parent::setUnionType($type);
