@@ -894,7 +894,7 @@ return [
 'preg_filter' => 'false|string|string[]',
 'preg_grep' => '?array|?false',
 'preg_last_error' => '?int',
-'preg_match' => '?false|?int',
+'preg_match' => '?false|?0|?1',
 'preg_match_all' => '?false|?int',
 'preg_quote' => '?string',
 'preg_replace' => '?false|?string|?string[]',

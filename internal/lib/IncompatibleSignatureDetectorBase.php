@@ -31,7 +31,7 @@ abstract class IncompatibleSignatureDetectorBase
         '(^(ereg|expression|getsession|hrtime_|imageps|mssql_|mysql_|split|sql_regcase|sybase|xmldiff_))|' .
         '(^closure_)|' .  // Phan's representation of a closure
         '\.|,' .  // a literal `.` or `,`
-        '@';
+        '@i';
 
     /** @var array<string,string> maps aliases to originals - only set for xml parser */
     protected $aliases = [];
