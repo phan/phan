@@ -1335,7 +1335,7 @@ final class EmptyUnionType extends UnionType
         return [];
     }
 
-    public function asScalarValues() : array
+    public function asScalarValues(bool $strict = false) : ?array
     {
         return [];
     }
