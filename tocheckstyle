@@ -1,6 +1,13 @@
 #!/usr/bin/env php
 <?php
 
+$options = getopt('', ['output-format:']);
+
+$escape_html = false;
+if (array_key_exists('output-format', $options) && $options['output-format'] === 'checkstyle-escapedhtml') {
+    $escape_html = true;
+}
+
 $files = [];
 while($line = trim(fgets(STDIN))) {
     $elements = explode(' ', $line, 3);
@@ -41,8 +48,9 @@ foreach ($files as $file_name => $error_list) {
         // Write each element of the error as an attribute
         // of the error
         foreach ($error_map as $key => $value) {
+            $string_value = $escape_html ? htmlspecialchars((string)$value) : (string)$value;
             $error->appendChild(
-                new \DOMAttr($key, (string)$value)
+                new \DOMAttr($key, $string_value)
             );
         }
     }
