@@ -1,3 +1,7 @@
 %s:26 PhanUndeclaredMethod Call to undeclared method \NSConstantSwitch\T1::f2 (Did you mean expr->f1())
 %s:30 PhanUndeclaredMethod Call to undeclared method \NSConstantSwitch\T2::f1 (Did you mean expr->f2())
 %s:34 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($numerator) is \Traversable|\stdClass|iterable but \intdiv() takes int
+%s:46 PhanTypeMismatchArgumentInternal Argument 1 ($string) is true but \strlen() takes string
+%s:49 PhanTypeMismatchArgumentInternal Argument 1 ($string) is false but \strlen() takes string
+%s:57 PhanRedundantCondition Redundant attempt to cast $x of type string to string
+%s:60 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is object but \strlen() takes string

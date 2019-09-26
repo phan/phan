@@ -881,7 +881,11 @@ trait ConditionVisitorUtil
             }
             $tmp = $var;
         }
-        if ($tmp instanceof Node && ParseVisitor::isConstExpr($expr_node)) {
+        // analyze `if (($a = $b) == true)` (etc.) but not `if ((list($x) = expr) == true)`
+        // The latter is really a check on expr, not on an array.
+        if ($tmp instanceof Node &&
+                ($tmp === $var_node || $tmp->kind !== ast\AST_ARRAY) &&
+                ParseVisitor::isConstExpr($expr_node)) {
             return $condition->analyzeComplexCondition($this, $tmp, $expr_node);
         }
         return null;

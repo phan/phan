@@ -35,4 +35,33 @@ class Main {
                 break;
         }
     }
+
+    function testFalse(bool $arg, ?array $values) {
+        switch (false) {
+            // Check that Phan won't crash. It can't analyze this to infer that $x would be null
+            case [$x] = $values:
+                var_export(is_string($x));
+                break;
+            case !$arg:
+                echo strlen($arg);
+                break;
+            case $arg:
+                echo strlen($arg);
+                break;
+        }
+    }
+    function testZero(?string $x, $y) {
+        switch (0) {
+            // Check that Phan won't crash. It can't analyze this to infer that $x would be null
+            case !$x:
+                var_export(is_string($x));
+                break;
+            case !is_object($y):
+                echo strlen($y);  // should infer $y is an object (false == 0 in php)
+                break;
+            default:
+                echo strlen($y);
+                break;
+        }
+    }
 }
