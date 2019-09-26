@@ -182,11 +182,11 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                 return $this->analyzeShortCircuitingOr($node->children['left'], $node->children['right']);
             case flags\BINARY_IS_IDENTICAL:
                 $this->checkVariablesDefined($node);
-                return $this->analyzeAndUpdateToBeEqual($node->children['left'], $node->children['right']);
+                return $this->analyzeAndUpdateToBeIdentical($node->children['left'], $node->children['right']);
             case flags\BINARY_IS_EQUAL:
                 // TODO: Could be more precise, and preserve 0, [], etc. for `$x == null`
                 $this->checkVariablesDefined($node);
-                return $this->analyzeAndUpdateToBeIdentical($node->children['left'], $node->children['right']);
+                return $this->analyzeAndUpdateToBeEqual($node->children['left'], $node->children['right']);
             case flags\BINARY_IS_NOT_IDENTICAL:
                 $this->checkVariablesDefined($node);
                 return $this->analyzeAndUpdateToBeNotIdentical($node->children['left'], $node->children['right']);

@@ -1559,7 +1559,7 @@ class Issue
             new Issue(
                 self::TypeMissingReturn,
                 self::CATEGORY_TYPE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "Method {METHOD} is declared to return {TYPE} but has no return value",
                 self::REMEDIATION_B,
                 10006

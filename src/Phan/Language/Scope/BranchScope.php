@@ -42,6 +42,14 @@ class BranchScope extends Scope
         );
     }
 
+    public function getVariableByNameOrNull(string $name) : ?Variable
+    {
+        return (
+            $this->variable_map[$name]
+            ?? $this->parent_scope->getVariableByNameOrNull($name)
+        );
+    }
+
     /**
      * @return array<string|int,Variable> (keys are variable names, which are *almost* always strings)
      * A map from name to Variable in this scope

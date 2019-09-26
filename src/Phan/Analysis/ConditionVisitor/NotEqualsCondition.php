@@ -41,26 +41,37 @@ class NotEqualsCondition implements BinaryCondition
 
     public function analyzeCall(ConditionVisitorInterface $visitor, Node $call_node, $expr) : ?Context
     {
-        if (!$expr instanceof Node) {
-            return null;
-        }
         $code_base = $visitor->getCodeBase();
         $context = $visitor->getContext();
-        $value = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $expr)->asSingleScalarValueOrNullOrSelf();
-        if (\is_object($value)) {
+        $expr_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $expr);
+        if (!$expr_type->isExclusivelyBoolTypes() && !UnionTypeVisitor::unionTypeFromNode($code_base, $context, $call_node)->isExclusivelyBoolTypes()) {
             return null;
         }
-        $is_true = $value == true;
-        $is_false = $value == false;
-        if ($is_true === $is_false) {
-            return null;
-        }
-        if ($is_true) {
+        if (!$expr_type->containsFalsey()) {
             // e.g. `if (is_string($x) != true)`
             return (new NegatedConditionVisitor($code_base, $context))->visitCall($call_node);
-        } else {
+        } elseif (!$expr_type->containsTruthy()) {
             // e.g. `if (is_string($x) != false)`
             return (new ConditionVisitor($code_base, $context))->visitCall($call_node);
         }
+        return null;
+    }
+
+    public function analyzeComplexCondition(ConditionVisitorInterface $visitor, Node $complex_node, $expr) : ?Context
+    {
+        $code_base = $visitor->getCodeBase();
+        $context = $visitor->getContext();
+        $expr_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $expr);
+        if (!$expr_type->isExclusivelyBoolTypes() && !UnionTypeVisitor::unionTypeFromNode($code_base, $context, $complex_node)->isExclusivelyBoolTypes()) {
+            return null;
+        }
+        if (!$expr_type->containsFalsey()) {
+            // e.g. `if (($x instanceof Xyz) != true)`
+            return (new NegatedConditionVisitor($code_base, $context))->__invoke($complex_node);
+        } elseif (!$expr_type->containsTruthy()) {
+            // e.g. `if (($x instanceof Xyz) != false)`
+            return (new ConditionVisitor($code_base, $context))->__invoke($complex_node);
+        }
+        return null;
     }
 }

@@ -35,6 +35,7 @@ use Phan\Language\Type\NullType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\UnionType;
 use Phan\Library\StringUtil;
+use Phan\Parse\ParseVisitor;
 use function is_int;
 use function is_string;
 
@@ -792,7 +793,7 @@ trait ConditionVisitorUtil
      * @param Node|int|float|string $right
      * @return Context - Context after inferring type from the negation of a condition such as `if ($x != false)`
      */
-    protected function analyzeAndUpdateToBeEqual($left, $right) : Context
+    public function analyzeAndUpdateToBeEqual($left, $right) : Context
     {
         return $this->analyzeBinaryConditionPattern(
             $left,
@@ -879,6 +880,9 @@ trait ConditionVisitorUtil
                 return $condition->analyzeVar($this, $var, $expr_node);
             }
             $tmp = $var;
+        }
+        if ($tmp instanceof Node && ParseVisitor::isConstExpr($expr_node)) {
+            return $condition->analyzeComplexCondition($this, $tmp, $expr_node);
         }
         return null;
     }

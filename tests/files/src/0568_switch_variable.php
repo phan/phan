@@ -32,7 +32,7 @@ function test_switch($x, $y, $z) {
             echo "odd switch\n";
             break;
         case $z:
-            echo strlen($z);  // Phan doesn't support this yet, but shouldn't misbehave.
+            echo strlen($z);  // Phan should infer $z is true.
             break;
         default:
             echo "default\n";

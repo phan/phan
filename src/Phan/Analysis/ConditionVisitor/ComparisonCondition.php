@@ -50,4 +50,12 @@ class ComparisonCondition implements BinaryCondition
     {
         return null;
     }
+
+    /**
+     * @suppress PhanUnusedPublicMethodParameter
+     */
+    public function analyzeComplexCondition(ConditionVisitorInterface $visitor, Node $complex_node, $expr) : ?Context
+    {
+        return null;
+    }
 }

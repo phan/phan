@@ -242,6 +242,15 @@ abstract class Scope
     }
 
     /**
+     * Locates the variable with name $name.
+     * Returns null if none was found.
+     */
+    public function getVariableByNameOrNull(string $name) : ?Variable
+    {
+        return $this->variable_map[$name] ?? null;
+    }
+
+    /**
      * @return array<string|int,Variable> (keys are variable names, which are *almost* always strings)
      * A map from name to Variable in this scope
      */

@@ -73,4 +73,10 @@ class HasTypeCondition implements BinaryCondition
     {
         return null;
     }
+
+    public function analyzeComplexCondition(ConditionVisitorInterface $unused_visitor, Node $unused_call_node, $unused_expr) : ?Context
+    {
+        // TODO: Could analyze get_class($array['field']) === stdClass::class (e.g. with AssignmentVisitor)
+        return null;
+    }
 }
