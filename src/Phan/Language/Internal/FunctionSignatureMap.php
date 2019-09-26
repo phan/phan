@@ -1881,7 +1881,7 @@ return [
 'DateTimeZone::getLocation' => ['array|false'],
 'DateTimeZone::getName' => ['string'],
 'DateTimeZone::getOffset' => ['int', 'datetime'=>'DateTimeInterface'],
-'DateTimeZone::getTransitions' => ['array', 'timestamp_begin='=>'int', 'timestamp_end='=>'int'],
+'DateTimeZone::getTransitions' => ['array|false', 'timestamp_begin='=>'int', 'timestamp_end='=>'int'],
 'DateTimeZone::listAbbreviations' => ['array'],
 'DateTimeZone::listIdentifiers' => ['array', 'what='=>'int', 'country='=>'string'],
 'db2_autocommit' => ['mixed', 'connection'=>'resource', 'value='=>'int'],
