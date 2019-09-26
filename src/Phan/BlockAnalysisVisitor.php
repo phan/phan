@@ -36,6 +36,7 @@ use Phan\Language\Scope\PropertyScope;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Library\StringUtil;
+use Phan\Parse\ParseVisitor;
 use Phan\Plugin\ConfigPluginSet;
 use function array_map;
 use function count;
@@ -1330,6 +1331,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      *
      * @return Context
      * The updated context after visiting the node
+     * @suppress PhanAccessMethodInternal
      */
     public function visitSwitchList(Node $node) : Context
     {
@@ -1351,12 +1353,17 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         [$switch_variable_node, $switch_variable_condition] = $this->createSwitchConditionAnalyzer(
             end($this->parent_node_list)->children['cond']
         );
+        if ($switch_variable_condition && $switch_variable_node instanceof Node) {
+            $switch_variable_cond_variable_set = RedundantCondition::getVariableSet($switch_variable_node);
+        } else {
+            $switch_variable_cond_variable_set = [];
+        }
         $previous_child_context = null;
         foreach ($node->children as $i => $child_node) {
             if (!$child_node instanceof Node) {
                 throw new AssertionError("Switch case statement must be a node");
             }
-            $cond_node = $child_node->children['cond'];
+            ['cond' => $case_cond_node, 'stmts' => $case_stmts_node] = $child_node->children;
             // Step into each child node and get an
             // updated context for the node
 
@@ -1371,32 +1378,58 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 $child_context = $context->withScope(new BranchScope($scope));
             }
             $child_context->withLineNumberStart($child_node->lineno);
-            if ($cond_node !== null) {
-                if ($switch_variable_condition) {
-                    // Add the variable type from the above case statements, if it was possible for it to fall through
-                    // TODO: Also support switch(get_class($variable))
-                    $visitor = new ConditionVisitor($this->code_base, $child_context);
-                    $child_context = $switch_variable_condition($child_context, $cond_node);
-                    if ($previous_child_context !== null) {
-                        // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this being non-null is implied by switch_variable_condition
-                        $variable = $visitor->getVariableFromScope($switch_variable_node, $child_context);
-                        if ($variable) {
-                            // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this being non-null is implied by switch_variable_condition
-                            $old_variable = $visitor->getVariableFromScope($switch_variable_node, $previous_child_context);
+            try {
+                $this->parent_node_list[] = $node;
+                ConfigPluginSet::instance()->preAnalyzeNode(
+                    $this->code_base,
+                    $context,
+                    $child_node
+                );
+                if ($case_cond_node !== null) {
+                    if ($case_cond_node instanceof Node) {
+                        $child_context = $this->analyzeAndGetUpdatedContext($child_context, $child_node, $case_cond_node);
+                    }
+                    if ($switch_variable_condition) {
+                        // e.g. make sure to handle $x from `switch (true) { case $x instanceof stdClass: }` or `switch ($x)`
+                        // Note that this won't properly combine types from `case $x = expr: case $x = expr2:` (latter would override former),
+                        // but I don't expect to see that in reasonable code.
+                        $variables_to_check = $switch_variable_cond_variable_set + RedundantCondition::getVariableSet($case_cond_node);
+                        foreach ($variables_to_check as $var_name) {
+                            // Add the variable type from the above case statements, if it was possible for it to fall through
+                            // TODO: Also support switch(get_class($variable))
+                            $child_context = $switch_variable_condition($child_context, $case_cond_node);
+                            if ($previous_child_context !== null) {
+                                // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this being non-null is implied by switch_variable_condition
+                                $variable = $child_context->getScope()->getVariableByNameOrNull($var_name);
+                                if ($variable) {
+                                    // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this being non-null is implied by switch_variable_condition
+                                    $old_variable = $previous_child_context->getScope()->getVariableByNameOrNull($var_name);
 
-                            if ($old_variable) {
-                                $variable = clone($variable);
-                                $variable->setUnionType($variable->getUnionType()->withUnionType($old_variable->getUnionType()));
-                                $child_context->addScopeVariable($variable);
+                                    if ($old_variable) {
+                                        $variable = clone($variable);
+                                        $variable->setUnionType($variable->getUnionType()->withUnionType($old_variable->getUnionType()));
+                                        $child_context->addScopeVariable($variable);
+                                    }
+                                }
                             }
                         }
                     }
                 }
+
+                if ($case_stmts_node instanceof Node) {
+                    $child_context = $this->analyzeAndGetUpdatedContext($child_context, $child_node, $case_stmts_node);
+                }
+                ConfigPluginSet::instance()->postAnalyzeNode(
+                    $this->code_base,
+                    $context,
+                    $child_node
+                );
+            } finally {
+                \array_pop($this->parent_node_list);
             }
 
-            $child_context = $this->analyzeAndGetUpdatedContext($child_context, $node, $child_node);
 
-            if ($cond_node === null) {
+            if ($case_cond_node === null) {
                 $has_default = true;
             }
             // We can improve analysis of `case` blocks by using
@@ -1445,9 +1478,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      */
     private function createSwitchConditionAnalyzer($switch_case_node) : array
     {
-        if (!$switch_case_node instanceof Node) {
-            return [null, null];
-        }
         $switch_kind = ($switch_case_node->kind ?? null);
         try {
             if ($switch_kind === ast\AST_VAR) {
@@ -1493,6 +1523,18 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                         ];
                     }
                 }
+            } elseif (ParseVisitor::isConstExpr($switch_case_node)) {
+                // e.g. switch(true), switch(MY_CONST), switch(['x'])
+                return [
+                    $switch_case_node,
+                    /**
+                     * @param Node|string|int|float $cond_node
+                     */
+                    function (Context $child_context, $cond_node) use ($switch_case_node) : Context {
+                        $visitor = new ConditionVisitor($this->code_base, $child_context);
+                        return $visitor->analyzeAndUpdateToBeEqual($switch_case_node, $cond_node);
+                    },
+                ];
             }
         } catch (IssueException $_) {
             // do nothing, we warn elsewhere

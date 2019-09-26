@@ -148,8 +148,9 @@ class RedundantCondition
     /**
      * @param Node|string|int|float $node
      * @return array<int|string, string> the set of variable names.
+     * @internal
      */
-    private static function getVariableSet($node) : array
+    public static function getVariableSet($node) : array
     {
         if (!$node instanceof Node) {
             return [];

@@ -57,4 +57,24 @@ class NotIdenticalCondition implements BinaryCondition
             return (new ConditionVisitor($code_base, $context))->visitCall($call_node);
         }
     }
+
+    public function analyzeComplexCondition(ConditionVisitorInterface $visitor, Node $complex_node, $expr) : ?Context
+    {
+        if (!$expr instanceof Node) {
+            return null;
+        }
+        $code_base = $visitor->getCodeBase();
+        $context = $visitor->getContext();
+        $value = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $expr)->asSingleScalarValueOrNullOrSelf();
+        if (!\is_bool($value)) {
+            return null;
+        }
+        if ($value) {
+            // e.g. `if (($x instanceof Xyz) !== true)`
+            return (new NegatedConditionVisitor($code_base, $context))->__invoke($complex_node);
+        } else {
+            // e.g. `if (($x instanceof Xyz) !== false)`
+            return (new ConditionVisitor($code_base, $context))->__invoke($complex_node);
+        }
+    }
 }

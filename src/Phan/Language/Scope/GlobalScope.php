@@ -80,6 +80,11 @@ final class GlobalScope extends Scope
         return self::$global_variable_map[$name];
     }
 
+    public function getVariableByNameOrNull(string $name) : ?Variable
+    {
+        return self::$global_variable_map[$name] ?? null;
+    }
+
     /**
      * @return array<string|int,Variable> (keys are variable names, which are *almost* always strings)
      * A map from name to Variable in the global scope.
