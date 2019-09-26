@@ -10,7 +10,7 @@ platform: x86
 
 # Test with a given PHP version
 # 1. (PHP_VERSION is the only version tested of PHP_EXT_VERSION, and it can only be built with VC_VERSION)
-# 2. Also, run tests with a variety of supported php-ast versions. Phan should work properly with php-ast 0.1.5+ and 1.0.0+
+# 2. Also, run tests with a variety of supported php-ast versions. Phan should work properly with php-ast 1.0.1+
 environment:
   matrix:
     # This major release of Phan (2.0) requires php-ast 1.0.1+
