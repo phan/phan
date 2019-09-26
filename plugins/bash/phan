@@ -97,6 +97,7 @@ _phan() {
 --dump-signatures-file
 --automatic-fix
 --find-signature
+--memory-limit
 --print-memory-usage-summary
 --markdown-issue-messages
 --absolute-path-issue-messages
@@ -164,6 +165,7 @@ _phan() {
             COMPREPLY=( $(compgen -W "127.0.0.1 0.0.0.0 default" -- "${cur}" ) )
             return 0
             ;;
+        --memory-limit | \
         --daemonize-tcp-port | \
         --find-signature)
             # We don't know how to complete these options, but they have required arguments. Don't suggest files

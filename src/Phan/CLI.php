@@ -927,7 +927,8 @@ class CLI
                 }
                 \fprintf(
                     STDERR,
-                    "Phan could not find plugin %s%s\n",
+                    "Phan %s could not find plugin %s%s\n",
+                    CLI::PHAN_VERSION,
                     StringUtil::jsonEncode($plugin_file_name),
                     $details
                 );

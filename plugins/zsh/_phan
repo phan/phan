@@ -71,6 +71,7 @@ _arguments \
 	'(--dump-signatures-file)--dump-signatures-file=[emit JSON serialized signatures to the given file]:file:_files' \
 	'(--automatic-fix)--automatic-fix[automatically fix any issues that can be fixed]' \
 	'(--find-signature)--find-signature=[find a signature (see tool/_phoogle)]:expr:()' \
+	'(--memory-limit)--memory-limit=[set the memory limit for analysis (per process)]:expr:()' \
 	'(--print-memory-usage-summary)--print-memory-usage-summary[print a summary of memory usage and maximum memory usage]' \
 	'(--markdown-issue-messages)--markdown-issue-messages[emit issues with markdown formatting]' \
 	'(--absolute-path-issue-messages)--absolute-path-issue-messages[emit issues with absolute paths]' \
