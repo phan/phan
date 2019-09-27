@@ -883,6 +883,9 @@ class Method extends ClassElement implements FunctionInterface
     public function toStub(bool $class_is_interface = false) : string
     {
         $string = '    ';
+        if ($this->isFinal()) {
+            $string .= 'final ';
+        }
         // It's an error to have visibility or abstract in an interface's stub (e.g. JsonSerializable)
         if (!$class_is_interface) {
             $string .= $this->getVisibilityName() . ' ';
