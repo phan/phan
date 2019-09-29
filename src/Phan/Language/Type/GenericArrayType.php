@@ -53,13 +53,13 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      * @var Type
      * The type of every value in this array
      */
-    private $element_type;
+    protected $element_type;
 
     /**
      * @var int
      * Enum representing the type of every key in this array
      */
-    private $key_type;
+    protected $key_type;
 
     /**
      * @param Type $type
@@ -108,7 +108,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
             return $this;
         }
 
-        return GenericArrayType::fromElementType(
+        return static::fromElementType(
             $this->element_type,
             $is_nullable,
             $this->key_type
@@ -688,11 +688,6 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
         return $results;
     }
 
-    public function asGenericArrayType(int $key_type) : Type
-    {
-        return GenericArrayType::fromElementType($this, false, $key_type);
-    }
-
     /**
      * @override
      */
@@ -794,7 +789,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
         if ($this->element_type === $resolved_element_type) {
             return $this;
         }
-        return GenericArrayType::fromElementType(
+        return static::fromElementType(
             $resolved_element_type,
             $this->is_nullable,
             $this->key_type
@@ -807,5 +802,14 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
             return null;
         }
         return CallableArrayType::instance(false);
+    }
+
+    public function asNonFalseyType() : Type
+    {
+        return NonEmptyGenericArrayType::fromElementType(
+            $this->element_type,
+            false,
+            $this->key_type
+        );
     }
 }

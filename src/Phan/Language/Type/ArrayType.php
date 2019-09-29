@@ -24,6 +24,16 @@ class ArrayType extends IterableType
         return ArrayShapeType::empty($this->is_nullable);
     }
 
+    public function asNonFalseyType() : Type
+    {
+        // if (!$x) implies that $x is `[]` when $x is an array
+        return NonEmptyGenericArrayType::fromElementType(
+            MixedType::instance(false),
+            false,
+            GenericArrayType::KEY_MIXED
+        );
+    }
+
     public function isPossiblyObject() : bool
     {
         return false;  // Overrides IterableType returning true
@@ -174,23 +184,6 @@ class ArrayType extends IterableType
             ArrayShapeType::union($left_array_shape_types)
         ));
         return $result->getPHPDocUnionType();
-    }
-
-    /**
-     * Overridden in subclasses
-     *
-     * @param int $key_type
-     * Corresponds to the type of the array keys. Set this to a GenericArrayType::KEY_* constant.
-     *
-     * @return Type
-     * Get a new type which is the generic array version of
-     * this type. For instance, 'int[]' will produce 'int[][]'.
-     *
-     * As a special case to reduce false positives, 'array' (with no known types) will produce 'array'
-     */
-    public function asGenericArrayType(int $key_type) : Type
-    {
-        return GenericArrayType::fromElementType($this, false, $key_type);
     }
 
     protected function canCastToNonNullableType(Type $type) : bool

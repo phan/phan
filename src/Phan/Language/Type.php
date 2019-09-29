@@ -47,6 +47,7 @@ use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NativeType;
+use Phan\Language\Type\NonEmptyGenericArrayType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\ResourceType;
@@ -90,17 +91,17 @@ class Type
      * A legal type identifier (e.g. 'int' or 'DateTime')
      */
     const simple_type_regex =
-        '(\??)(?:callable-(?:string|object|array)|class-string|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
+        '(\??)(?:callable-(?:string|object|array)|class-string|non-empty-array|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
 
     const simple_noncapturing_type_regex =
-        '\\\\?(?:callable-(?:string|object|array)|class-string|[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
+        '\\\\?(?:callable-(?:string|object|array)|class-string|non-empty-array|[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
 
     /**
      * @var string
      * A legal type identifier (e.g. 'int' or 'DateTime')
      */
     const simple_type_regex_or_this =
-        '(\??)(callable-(?:string|object|array)|class-string|[a-zA-Z_\x7f-\xff\\\][a-zA-Z0-9_\x7f-\xff\\\]*|\$this)';
+        '(\??)(callable-(?:string|object|array)|class-string|non-empty-array|[a-zA-Z_\x7f-\xff\\\][a-zA-Z0-9_\x7f-\xff\\\]*|\$this)';
 
     const shape_key_regex =
         '(?:[-.\/^;$%*+_a-zA-Z0-9\x7f-\xff]|\\\\(?:[nrt\\\\]|x[0-9a-fA-F]{2}))+\??';
@@ -222,6 +223,7 @@ class Type
         'int'             => true,
         'iterable'        => true,
         'mixed'           => true,
+        'non-empty-array' => true,
         'null'            => true,
         'object'          => true,
         'resource'        => true,
@@ -440,7 +442,7 @@ class Type
                 switch (strtolower($type_name)) {
                     case 'closure':
                         $value = new ClosureType(
-                            $namespace,
+                            '\\',
                             'Closure',
                             $template_parameter_type_list,
                             $is_nullable
@@ -448,7 +450,7 @@ class Type
                         break;
                     case 'callable':
                         $value = new CallableType(
-                            $namespace,
+                            '\\',
                             'callable',
                             $template_parameter_type_list,
                             $is_nullable
@@ -466,7 +468,7 @@ class Type
                         break;
                     case 'callable-array':
                         $value = new CallableArrayType(
-                            $namespace,
+                            '\\',
                             'callable-array',
                             $template_parameter_type_list,
                             $is_nullable
@@ -474,11 +476,14 @@ class Type
                         break;
                     case 'class-string':
                         $value = new ClassStringType(
-                            $namespace,
+                            '\\',
                             'class-string',
                             $template_parameter_type_list,
                             $is_nullable
                         );
+                        break;
+                    case 'non-empty-array':
+                        $value = self::parseGenericArrayTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, true);
                         break;
                 }
             }
@@ -698,6 +703,8 @@ class Type
                 return IntType::instance($is_nullable);
             case 'mixed':
                 return MixedType::instance($is_nullable);
+            case 'non-empty-array':
+                return NonEmptyGenericArrayType::fromElementType(MixedType::instance(false), $is_nullable, GenericArrayType::KEY_MIXED);
             case 'null':
                 return NullType::instance($is_nullable);
             case 'object':
@@ -867,7 +874,7 @@ class Type
                 if (\strcasecmp($type_name, 'array') === 0) {
                     // template parameter type list
                     $template_parameter_type_list = self::createTemplateParameterTypeList($template_parameter_type_name_list);
-                    return self::parseGenericArrayTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable);
+                    return self::parseGenericArrayTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, false);
                 } elseif (\strcasecmp($type_name, 'iterable') === 0) {
                     // template parameter type list
                     $template_parameter_type_list = self::createTemplateParameterTypeList($template_parameter_type_name_list);
@@ -974,10 +981,18 @@ class Type
      */
     private static function parseGenericArrayTypeFromTemplateParameterList(
         array $template_parameter_type_list,
-        bool $is_nullable
+        bool $is_nullable,
+        bool $always_has_elements
     ) : ArrayType {
         $template_count = count($template_parameter_type_list);
         if ($template_count > 2) {
+            if ($always_has_elements) {
+                return NonEmptyGenericArrayType::fromElementType(
+                    MixedType::instance(false),
+                    $is_nullable,
+                    GenericArrayType::KEY_MIXED
+                );
+            }
             return ArrayType::instance($is_nullable);
         }
         // array<T> or array<key, T>
@@ -996,7 +1011,16 @@ class Type
             $key_type = GenericArrayType::KEY_MIXED;
         }
 
+        // TODO: Infer non-empty-array<int,Type> from conditions such as count($types) == 1
         if (count($types) === 1) {
+            if ($always_has_elements) {
+                return NonEmptyGenericArrayType::fromElementType(
+                    // @phan-suppress-next-line PhanPossiblyFalseTypeArgument
+                    \reset($types),
+                    $is_nullable,
+                    $key_type
+                );
+            }
             return GenericArrayType::fromElementType(
                 // @phan-suppress-next-line PhanPossiblyFalseTypeArgument
                 \reset($types),
@@ -1007,7 +1031,8 @@ class Type
             return new GenericMultiArrayType(
                 $types,
                 $is_nullable,
-                $key_type
+                $key_type,
+                $always_has_elements
             );
         }
         return ArrayType::instance($is_nullable);
@@ -1258,11 +1283,13 @@ class Type
             if (count($template_parameter_type_list) > 0) {
                 switch (\strtolower($type_name)) {
                     case 'array':
-                        return self::parseGenericArrayTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable);
+                        return self::parseGenericArrayTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, false);
                     case 'iterable':
                         return self::parseGenericIterableTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable);
                     case 'class-string':
                         return self::parseClassStringTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable);
+                    case 'non-empty-array':
+                        return self::parseGenericArrayTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, true);
                 }
                 // TODO: Warn about unrecognized types.
             }

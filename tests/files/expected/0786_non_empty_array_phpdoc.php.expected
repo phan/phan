@@ -1,0 +1,8 @@
+%s:9 PhanTypeMismatchReturn Returning type array{} but bad786() is declared to return non-empty-array<mixed,mixed>
+%s:17 PhanTypeMismatchReturn Returning type null but bad786() is declared to return non-empty-array<mixed,mixed>
+%s:24 PhanTypeMismatchDefault Default value for non-empty-array<string,string> $p2 can't be array{}
+%s:31 PhanTypeMismatchArgument Argument 1 ($values) is array{} but \accept_non_empty_array() takes non-empty-array<int,string> defined at %s:24
+%s:35 PhanTypeMismatchArgument Argument 1 ($values) is array{first:'x'} but \accept_non_empty_array() takes non-empty-array<int,string> defined at %s:24
+%s:42 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is \stdClass|string but \intdiv() takes int
+%s:43 PhanTypeMismatchArgumentInternal Argument 1 ($obj) is int|string but \spl_object_id() takes object
+%s:48 PhanTypeMismatchArgument Argument 1 ($values) is array{} but \accept_non_empty_array2() takes non-empty-array<mixed,\stdClass>|non-empty-array<mixed,string> defined at %s:39

@@ -117,4 +117,14 @@ final class MixedType extends NativeType
     {
         return false;
     }
+
+    public function isPossiblyFalsey() : bool
+    {
+        return true;
+    }
+
+    public function isAlwaysTruthy() : bool
+    {
+        return false;
+    }
 }

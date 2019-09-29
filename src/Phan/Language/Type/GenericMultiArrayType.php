@@ -35,6 +35,12 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
     private $key_type;
 
     /**
+     * @var bool
+     * True if the array will have one or more elements.
+     */
+    private $always_has_elements;
+
+    /**
      * @param array<int,Type> $types
      * The 2 or more possible types of every element in this array
      *
@@ -44,9 +50,12 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
      * @param int $key_type
      * Corresponds to the type of the array keys. Set this to a GenericArrayType::KEY_* constant.
      *
+     * @param bool $always_has_elements
+     * True if the array will have one or more elements.
+     *
      * @throws InvalidArgumentException if there are less than 2 types in $types
      */
-    protected function __construct(array $types, bool $is_nullable, int $key_type)
+    protected function __construct(array $types, bool $is_nullable, int $key_type, bool $always_has_elements = false)
     {
         if (\count($types) < 2) {
             throw new InvalidArgumentException('Expected $types to have at least 2 array elements');
@@ -57,6 +66,7 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
         $this->element_types = $types;
         $this->is_nullable = $is_nullable;
         $this->key_type = $key_type;
+        $this->always_has_elements = $always_has_elements;
     }
 
     /**
@@ -77,7 +87,8 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
         return GenericMultiArrayType::fromElementTypes(
             $this->element_types,
             $is_nullable,
-            $this->key_type
+            $this->key_type,
+            $this->always_has_elements
         );
     }
 
@@ -88,7 +99,11 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
     public function asIndividualTypeInstances() : array
     {
         return \array_map(function (Type $type) : GenericArrayType {
-            return GenericArrayType::fromElementType($type, $this->is_nullable, $this->key_type);
+            if ($this->always_has_elements) {
+                return NonEmptyGenericArrayType::fromElementType($type, $this->is_nullable, $this->key_type);
+            } else {
+                return GenericArrayType::fromElementType($type, $this->is_nullable, $this->key_type);
+            }
         }, UnionType::normalizeMultiTypes($this->element_types));
     }
 
@@ -98,13 +113,15 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
      * @param array<int,Type> $element_types
      * @param bool $is_nullable
      * @param int $key_type
+     * @param bool $always_has_elements
      */
     public static function fromElementTypes(
         array $element_types,
         bool $is_nullable,
-        int $key_type
+        int $key_type,
+        bool $always_has_elements = false
     ) : GenericMultiArrayType {
-        return new self($element_types, $is_nullable, $key_type);
+        return new self($element_types, $is_nullable, $key_type, $always_has_elements);
     }
 
     /**

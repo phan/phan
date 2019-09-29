@@ -67,6 +67,23 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
         };
         /**
          * @param array<int,Node|int|float|string> $args
+         */
+        $get_element_type_of_first_arg_check_nonempty = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($mixed_type, $false_type) : UnionType {
+            if (\count($args) >= 1) {
+                $array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
+                $element_types = $array_type->genericArrayElementTypes();
+                if (!$element_types->isEmpty()) {
+                    if ($array_type->containsFalsey()) {
+                        // This array can be empty, so these helpers can return false.
+                        return $element_types->withType($false_type);
+                    }
+                    return $element_types;
+                }
+            }
+            return $mixed_type->asPHPDocUnionType();
+        };
+        /**
+         * @param array<int,Node|int|float|string> $args
          * Note that key() is currently guaranteed to return int|string|null, and ignores implementations of ArrayAccess.
          * See zend_hash_get_current_key_zval_ex in php-src/Zend/zend_hash.c
          */
@@ -93,16 +110,23 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
         /**
          * @param array<int,Node|int|float|string> $args
          */
-        $get_key_type_of_first_arg_or_null = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($int_or_string_or_null, $null_type) : UnionType {
-            if (\count($args) >= 1) {
-                $array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
-                $key_type_enum = GenericArrayType::keyTypeFromUnionTypeKeys($array_type);
-                if ($key_type_enum !== GenericArrayType::KEY_MIXED) {
-                    $key_type = GenericArrayType::unionTypeForKeyType($key_type_enum);
-                    return $key_type->withType($null_type)->withRealTypeSet($int_or_string_or_null->getRealTypeSet());
-                }
+        $get_key_type_of_first_arg_or_null = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($int_or_string, $int_or_string_or_null, $null_type) : UnionType {
+            if (\count($args) == 0) {
+                return $null_type->asRealUnionType();
             }
-            return $int_or_string_or_null;
+            $array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
+            $key_type_enum = GenericArrayType::keyTypeFromUnionTypeKeys($array_type);
+            if ($key_type_enum !== GenericArrayType::KEY_MIXED) {
+                $key_type = GenericArrayType::unionTypeForKeyType($key_type_enum);
+                if ($array_type->containsFalsey()) {
+                    $key_type = $key_type->withType($null_type);
+                }
+                return $key_type->withRealTypeSet($int_or_string_or_null->getRealTypeSet());
+            }
+            if ($array_type->containsFalsey()) {
+                return $int_or_string_or_null;
+            }
+            return $int_or_string;
         };
         /**
          * @param array<int,Node|int|float|string> $args
@@ -259,6 +283,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             $probably_real_array,
             $real_nullable_array
 ) : UnionType {
+            // TODO: Handle non-empty-array in these methods and convert to non-empty-array.
             if (\count($args) < 2) {
                 return $real_nullable_array;
             }
@@ -422,14 +447,14 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
         };
         return [
             // Gets the element types of the first
-            'array_pop'   => $get_element_type_of_first_arg,
-            'array_shift' => $get_element_type_of_first_arg,
+            'array_pop'   => $get_element_type_of_first_arg_check_nonempty,
+            'array_shift' => $get_element_type_of_first_arg_check_nonempty,
             'current'     => $get_element_type_of_first_arg,
-            'end'         => $get_element_type_of_first_arg,
+            'end'         => $get_element_type_of_first_arg_check_nonempty,
             'next'        => $get_element_type_of_first_arg,
             'pos'         => $get_element_type_of_first_arg,  // alias of 'current'
             'prev'        => $get_element_type_of_first_arg,
-            'reset'       => $get_element_type_of_first_arg,
+            'reset'       => $get_element_type_of_first_arg_check_nonempty,
             'each'        => $each_callback,
 
             'key'          => $key_callback,

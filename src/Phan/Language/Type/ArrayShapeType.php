@@ -240,6 +240,9 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         $element_union_types = null;
         foreach ($target_type_set as $target_type) {
             if ($target_type instanceof GenericArrayType) {
+                if (!$this->field_types && $target_type instanceof NonEmptyGenericArrayType) {
+                    continue;
+                }
                 if (($this->getKeyType() & ($target_type->getKeyType() ?: GenericArrayType::KEY_MIXED)) === 0 && !Config::getValue('scalar_array_key_cast')) {
                     // Attempting to cast an int key to a string key (or vice versa) is normally invalid, so skip it.
                     // However, the scalar_array_key_cast config would make any cast of array keys a valid cast.
@@ -274,6 +277,9 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
                 if (($this->getKeyType() & ($type->getKeyType() ?: GenericArrayType::KEY_MIXED)) === 0 && !Config::getValue('scalar_array_key_cast')) {
                     // Attempting to cast an int key to a string key (or vice versa) is normally invalid.
                     // However, the scalar_array_key_cast config would make any cast of array keys a valid cast.
+                    return false;
+                }
+                if (!$this->field_types && $type instanceof NonEmptyGenericArrayType) {
                     return false;
                 }
                 return $this->canEachFieldTypeCastToExpectedUnionType($type->genericArrayElementUnionType());
@@ -330,6 +336,9 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
                 if (($this->getKeyType() & ($type->getKeyType() ?: GenericArrayType::KEY_MIXED)) === 0) {
                     // Attempting to cast an int key to a string key (or vice versa) is normally invalid.
                     // However, the scalar_array_key_cast config would make any cast of array keys a valid cast.
+                    return false;
+                }
+                if (!$this->field_types && $type instanceof NonEmptyGenericArrayType) {
                     return false;
                 }
                 // TODO: WithoutConfig here as well?
@@ -965,5 +974,18 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
             return null;
         }
         return $this->withIsNullable(false);
+    }
+
+    public function asNonFalseyType() : Type
+    {
+        if ($this->field_types) {
+            // No simple way to handle `array{a?:b}` - just make it non-nullable
+            return $this->withIsNullable(false);
+        }
+        return NonEmptyGenericArrayType::fromElementType(
+            MixedType::instance(false),
+            false,
+            GenericArrayType::KEY_MIXED
+        );
     }
 }
