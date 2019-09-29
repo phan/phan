@@ -402,7 +402,7 @@ class DependencyGraphPlugin extends PluginV3 implements
      */
     private function dumpFileDot(string $title, array $graph = null):void
     {
-        if (!$graph || empty($graph)) {
+        if (!$graph) {
             $graph = $this->fgraph;
         }
         $shapes = '';

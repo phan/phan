@@ -55,6 +55,9 @@ New features(Analysis):
 + Emit `PhanPossiblyInfiniteRecursionSameParams` when a function or method calls itself with the same parameter values it was declared with (in a branch). (#2893)
   (This requires unused variable detection to be enabled, when there are 1 or more parameters)
 + Analyze complex conditions such as `switch (true)`, `if (($x instanceof stdClass) == false)`, etc. (#3315)
++ Add a `non-empty-array` type, for arrays that have 1 or more elements.
+  This gets inferred for checks such as `if ($array)`, `if (!empty($array))` (checks on `count()` are not supported yet)
+  (`non-empty-array<ValueT>` and `non-empty-array<KeyT, ValueT>` can also be used in phpdoc)
 
 Language Server/Daemon mode:
 + Fix logged Error when language server receives `didChangeConfiguration` events. (this is a no-op)

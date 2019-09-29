@@ -1,6 +1,6 @@
 %s:3 PhanRedundantCondition Redundant attempt to cast true of type true to truthy
 %s:4 PhanRedundantCondition Redundant attempt to cast true of type true to truthy
-%s:5 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare $p of type array|array{} to 'string' of type 'string'
+%s:5 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare $p of type array{}|non-empty-array<mixed,mixed> to 'string' of type 'string'
 %s:5 PhanTypeComparisonFromArray array to string comparison
 %s:6 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare 'string' of type 'string' to $p2 of type array
 %s:6 PhanTypeComparisonToArray string to array comparison

@@ -1,4 +1,4 @@
-%s:10 PhanTypeInvalidDimOffset Invalid offset "listprice" of array type ?''|?'0'|?0|?0.0|?array{}|?false
+%s:10 PhanTypeArraySuspiciousNull Suspicious array access to null
 %s:10 PhanTypeSuspiciousStringExpression Suspicious type null of a variable or expression used to build a string. (Expected type to be able to cast to a string)
 %s:18 PhanImpossibleCondition Impossible attempt to cast $x of type ?''|?'0'|?0|?0.0|?array{}|?false to object
 %s:22 PhanImpossibleCondition Impossible attempt to cast $x of type ?''|?'0'|?0|?0.0|?false to resource
