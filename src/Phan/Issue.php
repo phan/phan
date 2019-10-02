@@ -4749,7 +4749,7 @@ class Issue
      */
     public static function setTraceIssues(?string $level) : void
     {
-        self::$trace_issues = $level ? strtolower($level) : null;
+        self::$trace_issues = $level ? \strtolower($level) : null;
     }
 
     /**
@@ -4761,11 +4761,11 @@ class Issue
     ) : void {
         if (self::$trace_issues) {
             if (self::$trace_issues === self::TRACE_VERBOSE) {
-                phan_print_backtrace();
+                \phan_print_backtrace();
             } else {
-                ob_start();
-                debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-                fwrite(STDERR, (ob_get_clean() ?: "failed to dump backtrace") . PHP_EOL);
+                \ob_start();
+                \debug_print_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS);
+                \fwrite(\STDERR, (\ob_get_clean() ?: "failed to dump backtrace") . \PHP_EOL);
             }
         }
         Phan::getIssueCollector()->collectIssue($issue_instance);

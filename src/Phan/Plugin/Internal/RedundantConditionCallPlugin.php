@@ -482,7 +482,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
         $context = $this->context;
         $code_base = $this->code_base;
         $issue_name = Issue::SuspiciousValueComparison;
-        $check_as_if_in_loop_scope = $this->shouldCheckScalarAsIfInLoopScope($node, reset($unique_results));
+        $check_as_if_in_loop_scope = $this->shouldCheckScalarAsIfInLoopScope($node, \reset($unique_results));
         if ($check_as_if_in_loop_scope) {
             ['left' => $left_node, 'right' => $right_node] = $node->children;
             $left_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($code_base, $left_node);
