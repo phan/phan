@@ -1317,14 +1317,26 @@ class AssignmentVisitor extends AnalysisVisitor
             return $this->context;
         }
 
-        // Check to see if the variable already exists
-        if ($this->context->getScope()->hasVariableWithName(
-            $variable_name
-        )) {
-            $variable =
-                $this->context->getScope()->getVariableByName(
-                    $variable_name
+        if ($this->context->getScope()->hasVariableWithName($variable_name)) {
+            $variable = $this->context->getScope()->getVariableByName($variable_name);
+        } else {
+            $variable_type = Variable::getUnionTypeOfHardcodedVariableInScopeWithName(
+                $variable_name,
+                $this->context->isInGlobalScope()
+            );
+            if ($variable_type) {
+                $variable = new Variable(
+                    $this->context,
+                    $variable_name,
+                    $variable_type,
+                    0
                 );
+            } else {
+                $variable = null;
+            }
+        }
+        // Check to see if the variable already exists
+        if ($variable) {
 
             // If the variable isn't a pass-by-reference parameter
             // we clone it so as to not disturb its previous types
@@ -1371,22 +1383,22 @@ class AssignmentVisitor extends AnalysisVisitor
             );
 
             return $this->context;
-        } else {
-            // no such variable exists, check for invalid array Dim access
-            if ($this->dim_depth > 0) {
-                $this->emitIssue(
-                    Issue::UndeclaredVariableDim,
-                    $node->lineno ?? 0,
-                    $variable_name
-                );
-            }
         }
 
-        $variable = Variable::fromNodeInContext(
-            $this->assignment_node,
+        // no such variable exists, check for invalid array Dim access
+        if ($this->dim_depth > 0) {
+            $this->emitIssue(
+                Issue::UndeclaredVariableDim,
+                $node->lineno ?? 0,
+                $variable_name
+            );
+        }
+
+        $variable = new Variable(
             $this->context,
-            $this->code_base,
-            false
+            $variable_name,
+            UnionType::empty(),
+            0
         );
         if ($this->dim_depth > 0) {
             // Reduce false positives: If $variable did not already exist, assume it may already have other array fields
