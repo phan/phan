@@ -1,0 +1,2 @@
+%s:3 PhanTypeArraySuspicious Suspicious array access to int
+%s:6 PhanUndeclaredVariableDim Variable $argc was undeclared, but array fields are being added to it.
