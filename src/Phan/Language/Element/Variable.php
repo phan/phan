@@ -215,6 +215,33 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
     }
 
     /**
+     * @return ?UnionType
+     * Returns UnionType (Possible with empty set) if and only
+     * if isHardcodedVariableInScopeWithName is true. Returns null
+     * otherwise.
+     */
+    public static function getUnionTypeOfHardcodedVariableInScopeWithName(
+        string $name,
+        bool $is_in_global_scope
+    ) : ?UnionType {
+        if (\array_key_exists($name, $is_in_global_scope ? self::_BUILTIN_GLOBAL_TYPES : self::_BUILTIN_SUPERGLOBAL_TYPES)) {
+            // More efficient than using context.
+            // Note that global constants can be modified by user code
+            return UnionType::fromFullyQualifiedPHPDocString(self::_BUILTIN_GLOBAL_TYPES[$name]);
+        }
+
+        if (($is_in_global_scope && \array_key_exists($name, Config::getValue('globals_type_map')))
+            || \in_array($name, Config::getValue('runkit_superglobals'), true)
+        ) {
+            $type_string = Config::getValue('globals_type_map')[$name] ?? '';
+            // Want to allow 'resource' or 'mixed' as a type here,
+            return UnionType::fromStringInContext($type_string, new Context(), Type::FROM_PHPDOC);
+        }
+
+        return null;
+    }
+
+    /**
      * Variables can't be variadic. This is the same as
      * getUnionType for variables, but not necessarily
      * for subclasses. Method will return the element

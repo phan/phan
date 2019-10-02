@@ -9,6 +9,7 @@ use const ENT_NOQUOTES;
 
 /**
  * This prints `IssueInstance`s in the checkstyle XML format to the configured OutputInterface
+ * @phan-file-suppress PhanTypeArraySuspiciousNullable TODO: fix false positive inferred for positive values of $this->files
  */
 final class CheckstylePrinter implements BufferedPrinterInterface
 {
@@ -16,7 +17,7 @@ final class CheckstylePrinter implements BufferedPrinterInterface
     /** @var OutputInterface an output that XML can be written to. */
     private $output;
 
-    /** @var array<string,array<int,array>> maps files with issues to the list of those issues */
+    /** @var array<string,array<int,array<string,mixed>>> maps files with issues to the list of those issues */
     private $files = [];
 
     public function print(IssueInstance $instance) : void

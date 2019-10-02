@@ -36,7 +36,7 @@ call_user_func(static function () use ($code_base) : void {
 
     // Parse the config
     if (isset($inner_config['minimum-severity'])) {
-        $minimum_severity = (int) $codeclimate_config['config']['minimum-severity'];
+        $minimum_severity = (int) $inner_config['minimum-severity'];
     } else {
         $minimum_severity = 0;
     }
@@ -90,8 +90,9 @@ call_user_func(static function () use ($code_base) : void {
             }
         }
     };
+    $include_paths = $codeclimate_config['include_paths'] ?? [];
 
-    foreach ($codeclimate_config['include_paths'] as $path) {
+    foreach (is_array($include_paths) ? $include_paths : [] as $path) {
         if (is_dir('/code/' . $path)) {
             $queue_with_include_paths('/code/' . $path);
         } else {

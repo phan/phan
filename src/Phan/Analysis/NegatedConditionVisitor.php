@@ -817,11 +817,22 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                 if (!\is_string($var_name)) {
                     return $context;
                 }
-                if (!$context->getScope()->hasVariableWithName($var_name)) {
-                    // e.g. assert(!isset($x['key'])) - $x may still be undefined.
-                    return $context;
+                if ($context->getScope()->hasVariableWithName($var_name)) {
+                    $variable = $context->getScope()->getVariableByName($var_name);
+                } else {
+                    $new_type = Variable::getUnionTypeOfHardcodedVariableInScopeWithName($var_name, $context->isInGlobalScope());
+                    if (!$new_type) {
+                        // e.g. assert(!isset($x['key'])) - $x may still be undefined.
+                        return $context;
+                    }
+                    $variable = new Variable(
+                        $context->withLineNumberStart($var_node->lineno),
+                        $var_name,
+                        $new_type,
+                        0
+                    );
+                    $context->getScope()->addVariable($variable);
                 }
-                $variable = $context->getScope()->getVariableByName($var_name);
                 $var_node_union_type = $variable->getUnionType();
 
                 if ($var_node_union_type->hasTopLevelArrayShapeTypeInstances()) {
@@ -894,12 +905,18 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
             $var_name = $var_node->children['name'];
             if (\is_string($var_name)) {
                 if (!$context->getScope()->hasVariableWithName($var_name)) {
+                    $new_type = Variable::getUnionTypeOfHardcodedVariableInScopeWithName($var_name, $context->isInGlobalScope());
+                    if ($new_type) {
+                        $new_type = $new_type->nonFalseyClone();
+                    } else {
+                        $new_type = UnionType::empty();
+                    }
                     // Support analyzing cases such as `if (!empty($x)) { use($x); }`, or `assert(!empty($x))`
                     // (In the PHP language, empty($x) is equivalent to (!isset($x) || !$x))
                     $context->setScope($context->getScope()->withVariable(new Variable(
                         $context->withLineNumberStart($var_node->lineno ?? 0),
                         $var_name,
-                        UnionType::empty(),
+                        $new_type,
                         0
                     )));
                 }
@@ -934,12 +951,17 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                     return $context;
                 }
                 if (!$context->getScope()->hasVariableWithName($var_name)) {
+                    $new_type = Variable::getUnionTypeOfHardcodedVariableInScopeWithName($var_name, $context->isInGlobalScope());
+                    if (!$new_type || !$new_type->hasArrayLike()) {
+                        $new_type = ArrayType::instance(false)->asPHPDocUnionType();
+                    }
+                    $new_type = $new_type->nonFalseyClone();
                     // Support analyzing cases such as `if (!empty($x['key'])) { use($x); }`, or `assert(!empty($x['key']))`
                     // (Assume that this is an array, not ArrayAccess or a string, as a heuristic)
                     $context->setScope($context->getScope()->withVariable(new Variable(
                         $context->withLineNumberStart($expr_node->lineno ?? 0),
                         $var_name,
-                        ArrayType::instance(false)->asPHPDocUnionType(),
+                        $new_type,
                         0
                     )));
                     return $context;

@@ -1000,8 +1000,6 @@ trait ConditionVisitorUtil
      *                     or if assertions won't be applied?
      * @throws IssueException if variable is undeclared and not ignored.
      * @see UnionTypeVisitor::visitVar()
-     *
-     * TODO: support assertions on superglobals, within the current file scope?
      */
     final public function getVariableFromScope(Node $var_node, Context $context) : ?Variable
     {
@@ -1028,10 +1026,20 @@ trait ConditionVisitorUtil
         $variable_name = (string)$var_name_node;
 
         if (!$context->getScope()->hasVariableWithName($variable_name)) {
-            if (Variable::isHardcodedVariableInScopeWithName($variable_name, $context->isInGlobalScope())) {
-                return null;
+            // FIXME other uses were not sound for $argv outside of global scope.
+            $is_in_global_scope = $context->isInGlobalScope();
+            $new_type = Variable::getUnionTypeOfHardcodedVariableInScopeWithName($variable_name, $is_in_global_scope);
+            if ($new_type) {
+                $variable = new Variable(
+                    $context->withLineNumberStart($var_node->lineno),
+                    $variable_name,
+                    $new_type,
+                    0
+                );
+                $context->addScopeVariable($variable);
+                return $variable;
             }
-            if (!($context->isInGlobalScope() && Config::getValue('ignore_undeclared_variables_in_global_scope'))) {
+            if (!($is_in_global_scope && Config::getValue('ignore_undeclared_variables_in_global_scope'))) {
                 throw new IssueException(
                     Issue::fromType(Variable::chooseIssueForUndeclaredVariable($context, $variable_name))(
                         $context->getFile(),

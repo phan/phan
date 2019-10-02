@@ -39,6 +39,7 @@ _arguments \
 	'(--color-scheme)--color-scheme[set the color scheme]:color_scheme:(default code eclipse-dark light vim)' \
 	'(--progress-bar -p)'{--progress-bar,-p}'[show progress bar]' \
 	'(--debug -D)'{-D,--debug}'[print debugging output to stderr]' \
+	'(--debug-emitted-issues)--debug-emitted-issues=[print stack trace to stderr when Phan emits issues]:verbosity:(basic verbose)' \
 	'(--quick -q)'{-q,--quick}'[quick mode]' \
 	'(--target-php-version)--target-php-version=[php version to check codebase for compatibility with]:version:(7.0 7.1 7.2 7.3 7.4 8.0 native)' \
 	'(--ignore-undeclared -i)'{--ignore-undeclared,-i}'[ignore undeclared functions and classes]' \

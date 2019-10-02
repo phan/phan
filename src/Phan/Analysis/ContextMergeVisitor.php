@@ -6,6 +6,7 @@ use AssertionError;
 use ast\Node;
 use Phan\AST\Visitor\KindVisitorImplementation;
 use Phan\Language\Context;
+use Phan\Language\Element\Variable;
 use Phan\Language\Scope;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
@@ -307,9 +308,21 @@ class ContextMergeVisitor extends KindVisitorImplementation
         // A function that determines if a variable is defined on
         // every branch
         $is_defined_on_all_branches =
-            static function (string $variable_name) use ($scope_list) : bool {
+            function (string $variable_name) use ($scope_list) : bool {
                 foreach ($scope_list as $scope) {
                     if (!$scope->hasVariableWithName($variable_name)) {
+                        // When there are conditions on superglobals or hardcoded globals,
+                        // then one scope will have a copy of the variable but not the other.
+                        if (Variable::isHardcodedVariableInScopeWithName($variable_name, $this->context->isInGlobalScope())) {
+                            $scope->addVariable(new Variable(
+                                $this->context,
+                                $variable_name,
+                                // @phan-suppress-next-line PhanTypeMismatchArgumentNullable
+                                Variable::getUnionTypeOfHardcodedGlobalVariableWithName($variable_name),
+                                0
+                            ));
+                            return true;
+                        }
                         return false;
                     }
                 }

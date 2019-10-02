@@ -18,6 +18,8 @@ New features(CLI, Configs):
   When enabled, Phan will warn if some of the object types in the union type don't contain a property.
   Additionally, warn about definite non-object types when accessing properties.
   Also add `--strict-object-checking` to enable this setting.
++ Add CLI option `--debug-emitted-issues={basic,verbose}` to print the stack trace of when Phan emitted the issue to stderr.
+  Useful for understanding why Phan emitted an issue.
 
 New features(Analysis):
 + Disable `simplify_ast` by default.
@@ -61,6 +63,8 @@ New features(Analysis):
 + Support checking if comparisons of types with more than one possible literal scalar are redundant/impossible.
   Previously, Phan would only warn if both sides had exactly one possible scalar value.
   (e.g. warn about `'string literal' >= $nullableBool`)
++ Fix edge cases analyzing conditions on superglobals.
++ Be more consistent about when PhanTypeArraySuspiciousNullable is emitted, e.g. for `?mixed`, `array|null`, etc.
 
 Language Server/Daemon mode:
 + Fix logged Error when language server receives `didChangeConfiguration` events. (this is a no-op)

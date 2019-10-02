@@ -90,6 +90,7 @@ class CLI
         'daemonize-tcp-port:',
         'dead-code-detection',
         'debug',
+        'debug-emitted-issues:',
         'directory:',
         'disable-cache',
         'disable-plugins',
@@ -477,6 +478,12 @@ class CLI
                 case 'D':
                 case 'debug':
                     Config::setValue('debug_output', true);
+                    break;
+                case 'debug-emitted-issues':
+                    if (!is_string($value)) {
+                        $value = Issue::TRACE_BASIC;
+                    }
+                    Issue::setTraceIssues($value);
                     break;
                 case 'a':
                 case 'dump-ast':
@@ -1189,6 +1196,9 @@ $init_help
 
  -D, --debug
   Print debugging output to stderr. Useful for looking into performance issues or crashes.
+
+ --debug-emitted-issues={basic,verbose}
+  Print backtraces of emitted issues which weren't suppressed to stderr.
 
  -q, --quick
   Quick mode - doesn't recurse into all function calls
