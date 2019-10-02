@@ -77,6 +77,7 @@ class PhanPHPLinter
         // TODO: Check that path gets defined
         foreach ($opts->file_list as $path) {
             if (isset($opts->temporary_file_map[$path])) {
+                // @phan-suppress-next-line PhanTypeArraySuspiciousNullable
                 $temporary_path = $opts->temporary_file_map[$path];
                 $temporary_contents = file_get_contents($temporary_path);
                 if ($temporary_contents === false) {
@@ -165,6 +166,7 @@ class PhanPHPLinter
             // Convert this to a relative path
             if (strncmp($dirname . '/', $real, strlen($dirname . '/')) === 0) {
                 $real = substr($real, strlen($dirname . '/'));
+                // @phan-suppress-next-line PhanTypeArraySuspiciousNullable not able to analyze. Not using coalescing because this supports php 5.
                 $mapped_path = isset($opts->temporary_file_map[$path]) ? $opts->temporary_file_map[$path] : $path;
                 // If we are analyzing a temporary file, but it's within a project, then output the path to a temporary file for consistency.
                 // (Tools which pass something a temporary path expect a temporary path in the output.)
@@ -271,6 +273,10 @@ class PhanPHPLinter
             return;
         }
         foreach ($issues as $issue) {
+            if (!is_array($issue)) {
+                self::debugError(sprintf("Invalid type for element of issues response from phan: %s\n", gettype($issues)));
+                return;
+            }
             if ($issue['type'] !== 'issue') {
                 continue;
             }

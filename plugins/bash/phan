@@ -51,6 +51,7 @@ _phan() {
 -p
 -D
 --debug
+--debug-emitted-issues
 -q
 --quick
 --target-php-version

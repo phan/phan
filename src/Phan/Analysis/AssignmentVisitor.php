@@ -601,7 +601,18 @@ class AssignmentVisitor extends AnalysisVisitor
             ))->getVariableName();
 
             if (Variable::isHardcodedVariableInScopeWithName($variable_name, $this->context->isInGlobalScope())) {
-                return $this->analyzeSuperglobalDim($node, $variable_name);
+                if ($variable_name === 'GLOBALS') {
+                    return $this->analyzeSuperglobalDim($node, $variable_name);
+                }
+                if (!$this->context->getScope()->hasVariableWithName($variable_name)) {
+                    $this->context->addScopeVariable(new Variable(
+                        $this->context->withLineNumberStart($expr_node->lineno),
+                        $variable_name,
+                        // @phan-suppress-next-line PhanTypeMismatchArgumentNullable
+                        Variable::getUnionTypeOfHardcodedGlobalVariableWithName($variable_name),
+                        0
+                    ));
+                }
             }
         }
 

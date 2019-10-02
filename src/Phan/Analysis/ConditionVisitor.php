@@ -342,11 +342,15 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
 
         $scope = $context->getScope();
         if (!$scope->hasVariableWithName($var_name)) {
+            $new_type = Variable::getUnionTypeOfHardcodedVariableInScopeWithName($var_name, $context->isInGlobalScope());
+            if (!$new_type || ($is_object && !$new_type->hasObjectTypes())) {
+                $new_type = $is_object ? ObjectType::instance(false)->asRealUnionType() : UnionType::empty();
+            }
             // Support analyzing cases such as `if (isset($x)) { use($x); }`, or `assert(isset($x))`
             return $context->withScopeVariable(new Variable(
                 $context->withLineNumberStart($var_node->lineno ?? 0),
                 $var_name,
-                $is_object ? ObjectType::instance(false)->asRealUnionType() : UnionType::empty(),
+                $new_type,
                 0
             ));
         }
@@ -424,11 +428,15 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         // This is $x['field'] or $x[$i][something]
 
         if (!$context->getScope()->hasVariableWithName($var_name)) {
+            $new_type = Variable::getUnionTypeOfHardcodedVariableInScopeWithName($var_name, $context->isInGlobalScope());
+            if (!$new_type || !$new_type->hasArrayLike()) {
+                $new_type = ArrayType::instance(false)->asPHPDocUnionType();
+            }
             // Support analyzing cases such as `if (isset($x['key'])) { use($x); }`, or `assert(isset($x['key']))`
             return $context->withScopeVariable(new Variable(
                 $context->withLineNumberStart($node->lineno ?? 0),
                 $var_name,
-                ArrayType::instance(false)->asPHPDocUnionType(),  // can be array or (unlikely) ArrayAccess
+                $new_type,  // can be array or (unlikely) ArrayAccess
                 0
             ));
         }

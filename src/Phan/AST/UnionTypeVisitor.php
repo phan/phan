@@ -1496,7 +1496,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         // If we have generics, we're all set
         if (!$generic_types->isEmpty()) {
-            if (!($node->flags & self::FLAG_IGNORE_NULLABLE) && self::isSuspiciousNullable($union_type)) {
+            if (!($node->flags & self::FLAG_IGNORE_NULLABLE) && $union_type->containsNullable()) {
                 $this->emitIssue(
                     Issue::TypeArraySuspiciousNullable,
                     $node->lineno,
@@ -1608,9 +1608,17 @@ class UnionTypeVisitor extends AnalysisVisitor
             } catch (RecursionDepthException $_) {
             }
 
-            if (!$union_type->hasArrayLike()) {
+            if (!$union_type->hasArrayLike() && !$union_type->hasMixedType()) {
                 $this->emitIssue(
                     Issue::TypeArraySuspicious,
+                    $node->lineno,
+                    (string)$union_type
+                );
+                return $element_types;
+            }
+            if (!($node->flags & self::FLAG_IGNORE_NULLABLE) && $union_type->containsNullable()) {
+                $this->emitIssue(
+                    Issue::TypeArraySuspiciousNullable,
                     $node->lineno,
                     (string)$union_type
                 );
@@ -1618,16 +1626,6 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
 
         return $element_types;
-    }
-
-    private static function isSuspiciousNullable(UnionType $union_type) : bool
-    {
-        foreach ($union_type->getTypeSet() as $type) {
-            if ($type->isNullable() && ($type instanceof ArrayType || $type instanceof StringType)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private function resolveArrayShapeElementTypes(Node $node, UnionType $union_type) : ?UnionType

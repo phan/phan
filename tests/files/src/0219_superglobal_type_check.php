@@ -38,8 +38,8 @@ function superglobal_sanity_check(bool $exec = false) {
     if ($exec) {
         file_get_contents('http://127.0.0.1:1234');
         var_export(strlen($http_response_header));  // invalid
-        var_export(strlen($http_response_header[0]));  // valid
-        var_export(count($http_response_header));  // Valid
+        var_export(strlen($http_response_header[0]));  // Could be null
+        var_export(count($http_response_header));  // Valid due to way phan treats T|null without strict-argument-checking
         $http_response_headers = null;  // Valid - Want to assert that http_response_headers being null is a valid state.
     }
 }
