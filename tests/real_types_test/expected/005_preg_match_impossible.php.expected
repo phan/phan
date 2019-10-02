@@ -1,0 +1,1 @@
+src/005_preg_match_impossible.php:3 PhanSuspiciousValueComparison Suspicious attempt to compare preg_match('/si/', $str) of type ?0|?1|?false to 1 of type 1 with operator '>'

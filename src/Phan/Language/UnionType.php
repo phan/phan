@@ -4830,12 +4830,14 @@ class UnionType implements Serializable
     }
 
     /**
-     * @return array<int,?int|?bool|?string>
+     * @return ?array<int,?int|?bool|?string|?float>
      * Returns a list of known scalars that this union type could be.
      * E.g. for `?11|?2|?false|?'str'|?T`, returns `[11, 2, false, 'str', null]`
+     *
+     * If $strict is true, this will return null if there are non-scalar types.
      * @suppress PhanUnreferencedPublicMethod provided for plugins
      */
-    public function asScalarValues() : array
+    public function asScalarValues(bool $strict = false) : ?array
     {
         $result = [];
         $has_null = false;
@@ -4847,6 +4849,7 @@ class UnionType implements Serializable
             }
             switch (\get_class($type)) {
                 case LiteralIntType::class:
+                case LiteralFloatType::class:
                 case LiteralStringType::class:
                     $result[] = $type->getValue();
                     break;
@@ -4861,7 +4864,13 @@ class UnionType implements Serializable
                     $has_false = true;
                     break;
                 case NullType::class:
-                    $has_null = true;
+                case VoidType::class:
+                    // already set $has_null = true;
+                    break;
+                default:
+                    if ($strict) {
+                        return null;
+                    }
                     break;
             }
         }

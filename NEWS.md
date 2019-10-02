@@ -58,6 +58,9 @@ New features(Analysis):
 + Add a `non-empty-array` type, for arrays that have 1 or more elements.
   This gets inferred for checks such as `if ($array)`, `if (!empty($array))` (checks on `count()` are not supported yet)
   (`non-empty-array<ValueT>` and `non-empty-array<KeyT, ValueT>` can also be used in phpdoc)
++ Support checking if comparisons of types with more than one possible literal scalar are redundant/impossible.
+  Previously, Phan would only warn if both sides had exactly one possible scalar value.
+  (e.g. warn about `'string literal' >= $nullableBool`)
 
 Language Server/Daemon mode:
 + Fix logged Error when language server receives `didChangeConfiguration` events. (this is a no-op)

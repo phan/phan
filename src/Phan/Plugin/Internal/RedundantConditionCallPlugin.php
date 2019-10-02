@@ -6,6 +6,7 @@ use ast;
 use ast\flags;
 use ast\Node;
 use Closure;
+use Error;
 use Exception;
 use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\Analysis\RedundantCondition;
@@ -442,12 +443,12 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
     private function checkUselessScalarComparison(Node $node, UnionType $left, UnionType $right) : void
     {
         // Give up if any of the sides aren't constant
-        $left_value = $left->asSingleScalarValueOrNullOrSelf();
-        if ($left_value instanceof UnionType) {
+        $left_values = $left->asScalarValues(true);
+        if (!$left_values) {
             return;
         }
-        $right_value = $right->asSingleScalarValueOrNullOrSelf();
-        if ($right_value instanceof UnionType) {
+        $right_values = $right->asScalarValues(true);
+        if (!$right_values) {
             return;
         }
         $issue_args = [
@@ -458,11 +459,30 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
             // @phan-suppress-next-line PhanAccessClassConstantInternal
             PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$node->flags],
         ];
+        $left_count = count($left_values);
+        $right_count = count($right_values);
+        if ($left_count * $right_count > 100) {
+            return;
+        }
+        $unique_results = [];
+        try {
+            foreach ($left_values as $left_value) {
+                foreach ($right_values as $right_value) {
+                    $value = InferValue::computeBinaryOpResult($left_value, $right_value, $node->flags);
+                    $unique_results[\serialize($value)] = $value;
+                    if (count($unique_results) > 1) {
+                        return;
+                    }
+                }
+            }
+        } catch (Error $_) {
+            return;
+        }
 
         $context = $this->context;
         $code_base = $this->code_base;
         $issue_name = Issue::SuspiciousValueComparison;
-        $check_as_if_in_loop_scope = $this->shouldCheckScalarAsIfInLoopScope($node, $left_value, $right_value);
+        $check_as_if_in_loop_scope = $this->shouldCheckScalarAsIfInLoopScope($node, reset($unique_results));
         if ($check_as_if_in_loop_scope) {
             ['left' => $left_node, 'right' => $right_node] = $node->children;
             $left_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($code_base, $left_node);
@@ -500,6 +520,8 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
                 return;
             }
         }
+        // Go on to warn if the values comparison result doesn't vary.
+
         /** A context for choosing the name of the issue to emit. */
         $issue_context = $context;
         if ($issue_context->isInLoop() && !$check_as_if_in_loop_scope) {
@@ -516,10 +538,10 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
-     * @param mixed $left_value
-     * @param mixed $right_value
+     * @param Node $node a node resolving to 1 or more known scalars
+     * @param int|string|float|null|Node|array|bool $evaluated_value
      */
-    private function shouldCheckScalarAsIfInLoopScope(Node $node, $left_value, $right_value) : bool
+    private function shouldCheckScalarAsIfInLoopScope(Node $node, $evaluated_value) : bool
     {
         if (!$this->context->isInLoop()) {
             // This isn't even in a loop.
@@ -533,14 +555,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
                 $inner_loop_node_cond = \end($inner_loop_node_cond->children);
             }
             if ($inner_loop_node_cond === $node) {
-                try {
-                    $result = InferValue::computeBinaryOpResult($left_value, $right_value, $node->flags);
-                    // It's suspicious if a loop condition is initially false.
-                    // This heuristic isn't perfect, but catches bugs such as `for ($i = 0; $i > 10; $i++)`
-                    return (bool)$result;
-                } catch (\Error $_) {
-                    return false;
-                }
+                return (bool) $evaluated_value;
             }
         }
         return true;

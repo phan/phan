@@ -1,0 +1,3 @@
+%s:4 PhanSuspiciousValueComparison Suspicious attempt to compare $value of type 3|4 to 4 of type 4 with operator '>'
+%s:5 PhanSuspiciousValueComparison Suspicious attempt to compare 'foo' of type 'foo' to $b of type bool with operator '>='
+%s:7 PhanSuspiciousValueComparison Suspicious attempt to compare $s of type 'FOO'|'bar' to $nullable of type ?bool with operator '>='
