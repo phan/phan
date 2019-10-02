@@ -44,13 +44,6 @@ use function strcasecmp;
 class AssignmentVisitor extends AnalysisVisitor
 {
     /**
-     * @var Node
-     * The AST node containing the assignment
-     * @phan-read-only
-     */
-    private $assignment_node;
-
-    /**
      * @var UnionType
      * The type of the element on the right side of the assignment
      */
@@ -87,7 +80,7 @@ class AssignmentVisitor extends AnalysisVisitor
      * The context of the parser at the node for which we'd
      * like to determine a type
      *
-     * @param Node $assignment_node
+     * @param Node $unused_assignment_node
      * The AST node containing the assignment
      *
      * @param UnionType $right_type
@@ -105,14 +98,13 @@ class AssignmentVisitor extends AnalysisVisitor
     public function __construct(
         CodeBase $code_base,
         Context $context,
-        Node $assignment_node,
+        Node $unused_assignment_node,
         UnionType $right_type,
         int $dim_depth = 0,
         UnionType $dim_type = null
     ) {
         parent::__construct($code_base, $context);
 
-        $this->assignment_node = $assignment_node;
         $this->right_type = $right_type->withSelfResolvedInContext($context);
         $this->dim_depth = $dim_depth;
         $this->dim_type = $dim_type;  // null for `$x[] =` or when dim_depth is 0.
