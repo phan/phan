@@ -713,6 +713,13 @@ Setting this to true will introduce numerous false positives
 
 (Default: `false`)
 
+## strict_object_checking
+
+If enabled, Phan will warn if **any** type of the object expression for a property access
+does not contain that property.
+
+(Default: `false`)
+
 ## strict_param_checking
 
 If enabled, Phan will warn if **any** type in the argument's union type

@@ -65,6 +65,7 @@ class ConfigEntry
         'array_casts_as_null' => self::CATEGORY_TYPE_CASTING,
         'null_casts_as_any_type' => self::CATEGORY_TYPE_CASTING,
         'strict_method_checking' => self::CATEGORY_TYPE_CASTING,
+        'strict_object_checking' => self::CATEGORY_TYPE_CASTING,
         'strict_param_checking' => self::CATEGORY_TYPE_CASTING,
         'strict_property_checking' => self::CATEGORY_TYPE_CASTING,
         'strict_return_checking' => self::CATEGORY_TYPE_CASTING,
