@@ -18,6 +18,8 @@ Usage: {$argv[0]} [options] [files or classes...]
  -f, --find-files    Find files that depend on the passed files or classes
  -i, --import        Import class graph from json file previously generated
  -j, --json          JSON output of entire class and file graphs plus metadata
+                     unless a depth and starting node is given, then you get
+                     a json file with just the dependency list for that node
  -g, --graph         Graphviz dot output
  -m, --graphml       GraphML output
      --hide-labels   Labels are hidden - hover in yEd to see them
@@ -80,6 +82,9 @@ call_user_func(static function () : void {
     if (isset($options['find-files'])) {
         $options['f'] = false;
     }
+    if (isset($options['depth'])) {
+        $options['d'] = false;
+    }
     if (isset($options['json'])) {
         $options['j'] = false;
     }
@@ -91,20 +96,15 @@ call_user_func(static function () : void {
             echo "ERROR: Cannot pass both -c and -f\n";
             usage(1);
         }
-        if (isset($options['j'])) {
-            echo "ERROR: Cannot pass both -c and -j\n";
-            usage(1);
-        }
         $mode = 'class';
     } elseif (isset($options['f'])) {
-        if (isset($options['j'])) {
-            echo "ERROR: Cannot pass both -f and -j\n";
+        $mode = 'file';
+    }
+    if (isset($options['d'])) {
+        if (empty($mode)) {
+            echo "ERROR: You must specify either -c or -f\n";
             usage(1);
         }
-        $mode = 'file';
-    } elseif (!isset($options['j'])) {
-        echo "ERROR: Must specify -c, -f or -j\n";
-        usage(1);
     }
 
     if (isset($options['h']) || isset($options['help'])) {
@@ -121,7 +121,6 @@ call_user_func(static function () : void {
             case 'j':
             case 'json':
                 $cmd = 'json';
-                $mode = '';
                 break;
             case 'g':
             case 'graph':
@@ -160,8 +159,18 @@ call_user_func(static function () : void {
                 break;
         }
     }
+
+    if ($cmd == 'json' && $depth == 0) {
+        $mode = '';
+    }
+
     // Args for PDEP
     $arg_string = implode(' ', array_slice($argv, $optind));
+
+    if (empty($arg_string) && $depth) {
+        echo "ERROR: You must specify a starting node when specifying a depth\n";
+        usage(1);
+    }
 
     // @phan-suppress-next-line PhanThrowTypeAbsentForCall
     $cli_builder->setOption('allow-polyfill-parser');

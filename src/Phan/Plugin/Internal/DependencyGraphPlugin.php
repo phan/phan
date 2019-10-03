@@ -296,7 +296,7 @@ class DependencyGraphPlugin extends PluginV3 implements
             } elseif ($mode == 'file') {
                 $graph = $this->fgraph;
             }
-        } elseif ($cmd != 'json') {
+        } elseif ($cmd != 'json' || ($cmd == 'json' && $this->depth != 0)) {
             $graph = [];
             foreach ($args as $v) {
                 if (empty($v)) {
@@ -381,7 +381,7 @@ class DependencyGraphPlugin extends PluginV3 implements
             ($mode == 'class') ? $this->dumpClassDot(\basename((string)\getcwd()), $graph) : $this->dumpFileDot(\basename((string)\getcwd()), $graph);
         } elseif ($cmd == 'graphml') {
             $this->dumpGraphML(\basename((string)\getcwd()), $graph, $mode == 'class', (bool)($flags & \PDEP_HIDE_LABELS));
-        } elseif ($cmd == 'json') {
+        } elseif ($cmd == 'json' && $this->depth == 0) {
             echo \json_encode([
                 'cgraph' => $this->cgraph,
                 'fgraph' => $this->fgraph,
@@ -389,6 +389,8 @@ class DependencyGraphPlugin extends PluginV3 implements
                 'file_to_class' => $this->file_to_class,
                 'class_to_file' => $this->class_to_file
             ]);
+        } elseif ($cmd == 'json' && $this->depth != 0) {
+            echo \json_encode($graph, JSON_PRETTY_PRINT);
         } else {
             $this->printGraph($graph);
         }
