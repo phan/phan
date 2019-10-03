@@ -1,6 +1,6 @@
 Phan NEWS
 
-??? ?? 2019, Phan 2.2.13 (dev)
+Oct 03 2019, Phan 2.2.13
 ------------------------
 
 New features(CLI, Configs):
