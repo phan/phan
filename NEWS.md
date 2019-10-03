@@ -23,6 +23,10 @@ New features(Analysis):
 + Emit `PhanEmptyForeachBody` when iterating over a type that isn't `Traversable` with an empty statement list.
 + Warn about computing `array_values` for an array that is already a list. (#3540)
 
+Plugins:
++ In `DuplicateExpressionPlugin`, emit `PhanPluginDuplicateIfStatements`
+  if the body for `else` is identical to the above body for the `if/elseif`.
+
 Maintenance:
 + Support native parsing of `AST_TYPE_UNION` (union type) nodes for PHP 8.0.0-dev.
 

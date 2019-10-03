@@ -120,3 +120,12 @@ function test_chain4(string $x) : ?array {
     }
 }
 var_export(test_chain4('true'));
+
+$f5 = /** @param mixed $arg */ static function ($arg) {
+    if ($arg) {
+        return $arg;
+    } else {
+        return $arg;
+    }
+};
+var_export($f5(23));

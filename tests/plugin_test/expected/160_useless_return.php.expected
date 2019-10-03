@@ -11,8 +11,11 @@ src/160_useless_return.php:45 PhanUnusedReturnBranchWithoutSideEffects Possibly 
 src/160_useless_return.php:62 PhanUnusedReturnBranchWithoutSideEffects Possibly useless branch in a function where the return value must be used - all branches return values equivalent to false (previous return is at line 60)
 src/160_useless_return.php:72 PhanUnusedReturnBranchWithoutSideEffects Possibly useless branch in a function where the return value must be used - all branches return values equivalent to (3 - 1) (previous return is at line 70)
 src/160_useless_return.php:89 PhanPluginPossiblyStaticClosure Closure($arg) : bool can be static
+src/160_useless_return.php:94 PhanPluginDuplicateIfStatements The statements of the else duplicate the statements of the previous if/elseif statement with condition is_int($arg)
 src/160_useless_return.php:95 PhanUnusedReturnBranchWithoutSideEffects Possibly useless branch in a function where the return value must be used - all branches return values equivalent to false (previous return is at line 93)
 src/160_useless_return.php:99 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method Closure($arg) : bool defined at src/160_useless_return.php:89
 src/160_useless_return.php:100 PhanPluginPossiblyStaticClosure Closure($arg) can be static
 src/160_useless_return.php:106 PhanUnusedReturnBranchWithoutSideEffects Possibly useless branch in a function where the return value must be used - all branches return values equivalent to Null (previous return is at line 104)
 src/160_useless_return.php:119 PhanUnusedReturnBranchWithoutSideEffects Possibly useless branch in a function where the return value must be used - all branches return values equivalent to [PHP_VERSION] (previous return is at line 115)
+src/160_useless_return.php:125 PhanPluginNonBoolBranch Non bool value of type mixed evaluated in if clause
+src/160_useless_return.php:127 PhanPluginDuplicateIfStatements The statements of the else duplicate the statements of the previous if/elseif statement with condition $arg
