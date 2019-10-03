@@ -65,6 +65,7 @@ New features(Analysis):
   (e.g. warn about `'string literal' >= $nullableBool`)
 + Fix edge cases analyzing conditions on superglobals.
 + Be more consistent about when PhanTypeArraySuspiciousNullable is emitted, e.g. for `?mixed`, `array|null`, etc.
++ Fix false positive impossible condition for casting mixed to an array.
 
 Language Server/Daemon mode:
 + Fix logged Error when language server receives `didChangeConfiguration` events. (this is a no-op)

@@ -127,4 +127,14 @@ final class MixedType extends NativeType
     {
         return false;
     }
+
+    public function asObjectType() : ?Type
+    {
+        return ObjectType::instance(false);
+    }
+
+    public function asArrayType() : ?Type
+    {
+        return ArrayType::instance(false);
+    }
 }

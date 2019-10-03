@@ -222,6 +222,9 @@ class FunctionFactory
                     } elseif (\strncmp($parameter_name, 'w_', 2) === 0) {
                         $phan_flags |= Flags::IS_WRITE_REFERENCE;
                         $parameter_name = \substr($parameter_name, 2);
+                    } elseif (\strncmp($parameter_name, 'r_', 2) === 0) {
+                        $phan_flags |= Flags::IS_READ_REFERENCE;
+                        $parameter_name = \substr($parameter_name, 2);
                     }
                 }
 
