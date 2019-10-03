@@ -418,7 +418,7 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
     'hash_init' => true,
     'hash_pbkdf2' => true,
     'hash' => true,
-    'headers_sent' => true,
+    'headers_sent' => true,  // TODO: handle output references
     'hex2bin' => true,
     'hexdec' => true,
     'hrtime' => true,
@@ -505,7 +505,7 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
     'is_array' => true,
     'is_a' => true,
     'is_bool' => true,
-    'is_callable' => true,
+    'is_callable' => true,  // todo: handle w_callable_name=
     'is_countable' => true,
     'is_dir' => true,
     'is_double' => true,
@@ -618,7 +618,7 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
     'preg_grep' => true,
     'preg_last_error' => true,
     'preg_quote' => true,
-    'preg_replace_callback' => true,
+    'preg_replace_callback' => true,  // TODO: Handle w_count for preg_replace*, preg_filter
     'preg_replace_callback_array' => true,
     'preg_replace' => true,
     'preg_split' => true,

@@ -3474,11 +3474,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             }
             switch ($parameter->getReferenceType()) {
                 case Parameter::REFERENCE_WRITE_ONLY:
-                    if ($variable instanceof Variable) {
-                        self::analyzeWriteOnlyReference($code_base, $context, $method, $set_variable_type, $argument_list, $parameter);
-                    } else {
-                        self::analyzeWriteOnlyReference($code_base, $context, $method, $set_variable_type, $argument_list, $parameter);
-                    }
+                    self::analyzeWriteOnlyReference($code_base, $context, $method, $set_variable_type, $argument_list, $parameter);
                     break;
                 case Parameter::REFERENCE_READ_WRITE:
                     $reference_parameter_type = $parameter->getNonVariadicUnionType();

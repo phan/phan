@@ -1,0 +1,1 @@
+%s:14 PhanTypeSuspiciousStringExpression Suspicious type iterable of a variable or expression used to build a string. (Expected type to be able to cast to a string)
