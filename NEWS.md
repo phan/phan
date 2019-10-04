@@ -3,6 +3,10 @@ Phan NEWS
 ??? ?? 2019, Phan 2.2.14 (dev)
 ------------------------
 
+New features(Analysis):
++ Allow omitting keys from array shapes for sequential array elements
+  (e.g. `array{stdClass, array}` is equivalent to `array{0:stdClass, 1:array}`).
+
 Oct 03 2019, Phan 2.2.13
 ------------------------
 
