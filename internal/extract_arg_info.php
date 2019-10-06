@@ -248,7 +248,7 @@ class OpcacheFuncInfoParser
         $code_base = require(dirname(__DIR__) . '/src/codebase.php');
         $opcache_data = self::extractInfoFromOpcache($contents);
         $reflection_data = self::extractInfoFromReflection();
-        self::checkOpcacheAndReflectionAreConsistent($code_base, $opcache_data, $reflection_data);
+        self::checkOpcacheAndReflectionAreConsistent($code_base, $reflection_data, $opcache_data);
 
         // NOTE: Reflection is often updated before zend_func_info.c gets updated,
         // so union types in reflection take priority.
@@ -297,8 +297,11 @@ EOT;
             }
             if (!$opcache_type->canStrictCastToUnionType($code_base, $reflection_type)) {
                 fwrite(STDERR, "Error for $function_name: Opcache infers the type is $opcache_type but reflection infers that the type is $reflection_type (check if the corresponding php versions are the same)\n");
-            //} else {
-            //    fwrite(STDERR, "$function_name: Opcache infers the type is $opcache_type and reflection infers that the type is $reflection_type\n");
+            } else {
+                if ($opcache_type->isEqualTo($reflection_type)) {
+                    fwrite(STDERR, "$function_name: Opcache duplicates the reflection type $opcache_type\n");
+                }
+                // fwrite(STDERR, "$function_name: Opcache infers the type is $opcache_type and reflection infers that the type is $reflection_type\n");
             }
         }
     }
