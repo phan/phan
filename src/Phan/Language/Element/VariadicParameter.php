@@ -2,7 +2,6 @@
 
 namespace Phan\Language\Element;
 
-use Phan\Language\Type\GenericArrayType;
 use Phan\Language\UnionType;
 
 /**
@@ -142,8 +141,7 @@ class VariadicParameter extends Parameter
     public function getUnionType() : UnionType
     {
         if (!$this->isCloneOfVariadic()) {
-            // TODO: Figure out why asNonEmptyGenericArrayTypes() causes test failures
-            return parent::getUnionType()->asNonEmptyGenericArrayTypes(GenericArrayType::KEY_INT);
+            return parent::getUnionType()->asNonEmptyListTypes();
         }
         return $this->type;
     }

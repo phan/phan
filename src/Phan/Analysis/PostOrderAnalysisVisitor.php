@@ -1804,6 +1804,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 return;
             }
 
+            // TODO: Infer list<>
             $key_type_enum = GenericArrayType::getKeyTypeOfArrayNode($this->code_base, $context, $node);
             foreach (self::deduplicateUnionTypes($this->getReturnTypesOfArray($context, $node)) as $lineno => $elem_type) {
                 yield $lineno => $elem_type->asGenericArrayTypes($key_type_enum);  // TODO: Infer corresponding key types
@@ -3888,11 +3889,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // For https://github.com/phan/phan/issues/1525 : Collapse array shapes into generic arrays before recursively analyzing a method.
             if ($parameter->hasEmptyNonVariadicType()) {
                 $parameter->setUnionType(
-                    $argument_type->withFlattenedArrayShapeOrLiteralTypeInstances()->asGenericArrayTypes(GenericArrayType::KEY_INT)->withRealTypeSet($parameter->getNonVariadicUnionType()->getRealTypeSet())
+                    $argument_type->withFlattenedArrayShapeOrLiteralTypeInstances()->asListTypes()->withRealTypeSet($parameter->getNonVariadicUnionType()->getRealTypeSet())
                 );
             } else {
                 $parameter->addUnionType(
-                    $argument_type->withFlattenedArrayShapeOrLiteralTypeInstances()->asGenericArrayTypes(GenericArrayType::KEY_INT)->withRealTypeSet($parameter->getNonVariadicUnionType()->getRealTypeSet())
+                    $argument_type->withFlattenedArrayShapeOrLiteralTypeInstances()->asListTypes()->withRealTypeSet($parameter->getNonVariadicUnionType()->getRealTypeSet())
                 );
             }
         } else {

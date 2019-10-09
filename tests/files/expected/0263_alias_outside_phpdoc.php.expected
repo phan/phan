@@ -2,7 +2,7 @@
 %s:4 PhanUndeclaredTypeParameter Parameter $b has undeclared type \integer
 %s:4 PhanUndeclaredTypeParameter Parameter $c has undeclared type \callback
 %s:4 PhanUndeclaredTypeParameter Parameter $d has undeclared type \double
-%s:4 PhanUndeclaredTypeParameter Parameter $e has undeclared type array<int,\double>
+%s:4 PhanUndeclaredTypeParameter Parameter $e has undeclared type list<\double>
 %s:4 PhanUndeclaredTypeReturnType Return type of foo263() is undeclared type \boolean
 %s:5 PhanTypeMismatchReturnReal Returning type false but foo263() is declared to return \boolean
 %s:7 PhanTypeMismatchArgumentReal Argument 1 ($a) is false but \foo263() takes \boolean defined at %s:4

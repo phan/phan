@@ -4,6 +4,9 @@ Phan NEWS
 ------------------------
 
 New features(Analysis):
+
++ Add support for `list<T>` and `non-empty-list<T>` in phpdoc and in inferred values.
+  These represent arrays with consecutive integer keys starting at 0 without any gaps (e.g. `function (string ...$args) {}`)
 + Allow omitting keys from array shapes for sequential array elements
   (e.g. `array{stdClass, array}` is equivalent to `array{0:stdClass, 1:array}`).
 

@@ -376,9 +376,10 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
                 $class_union_type = $class_union_type->withUnionType($additional_union_type);
             }
 
-            $union_type = $union_type->withUnionType(
-                $class_union_type->asGenericArrayTypes($this->key_type)
-            );
+            // TODO: Use helpers for list, non-empty-array, etc.
+            foreach ($class_union_type->getTypeSet() as $type) {
+                $union_type = $union_type->withType(static::fromElementType($type, $this->is_nullable, $this->key_type));
+            }
 
             // Recurse up the tree to include all types
             $recursive_union_type_builder = new UnionTypeBuilder();
@@ -683,7 +684,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
         }
         $results = [];
         foreach ($type_instances as $type) {
-            $results[] = GenericArrayType::fromElementType($type, $this->is_nullable, $this->key_type);
+            $results[] = static::fromElementType($type, $this->is_nullable, $this->key_type);
         }
         return $results;
     }
@@ -811,5 +812,22 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
             false,
             $this->key_type
         );
+    }
+
+    /**
+     * Do not use this. Use ArrayType::instance or static::fromElementType
+     * @internal
+     * @deprecated
+     */
+    public static function instance(bool $unused_is_nullable) {
+        throw new \AssertionError(static::class . '::' . __FUNCTION__ . ' should not be used');
+    }
+
+    /**
+     * Overridden in subclasses for non-empty-array and non-empty-list.
+     */
+    public function isDefinitelyNonEmptyArray() : bool
+    {
+        return false;
     }
 }

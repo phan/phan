@@ -30,6 +30,7 @@ use Phan\Language\Type\GenericArrayInterface;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
+use Phan\Language\Type\ListType;
 use Phan\Language\Type\LiteralFloatType;
 use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\LiteralStringType;
@@ -3638,6 +3639,22 @@ class UnionType implements Serializable
     }
 
     /**
+     * Get a new type for each type in this union which is
+     * the generic array version of this type. For instance,
+     * 'int|float' will produce 'list<int>|list<float>'.
+     *
+     * If $this is an empty UnionType, this method will produce an empty UnionType
+     */
+    public function asListTypes() : UnionType
+    {
+        return $this->asMappedUnionType(
+            static function (Type $type) : Type {
+                return ListType::fromElementType($type, false);
+            }
+        );
+    }
+
+    /**
      * @return UnionType
      * Get a new type for each type in this union which is
      * the generic array version of this type. For instance,
@@ -3655,6 +3672,34 @@ class UnionType implements Serializable
         $result = $this->asMappedUnionType(
             static function (Type $type) use ($key_type) : Type {
                 return $type->asGenericArrayType($key_type);
+            }
+        );
+        if (!$result->hasRealTypeSet()) {
+            return $result->withRealType($type);
+        }
+        return $result;
+    }
+
+    /**
+     * @return UnionType
+     * Get a new type for each type in this union which is
+     * the generic array version of this type. For instance,
+     * 'int|float' will produce 'list<int>|list<float>'.
+     *
+     * If $this is an empty UnionType, this method will produce 'list<mixed>'
+     */
+    public function asNonEmptyListTypes() : UnionType
+    {
+        static $type = null;
+        if ($type === null) {
+            $type = ListType::fromElementType(MixedType::instance(false), false);
+        }
+        if (\count($this->type_set) === 0) {
+            return $type->asRealUnionType();
+        }
+        $result = $this->asMappedUnionType(
+            static function (Type $type) : Type {
+                return ListType::fromElementType($type, false);
             }
         );
         if (!$result->hasRealTypeSet()) {
@@ -4136,7 +4181,7 @@ class UnionType implements Serializable
             }
         }
         // TODO: Convert array|array{} to array?
-        return UnionType::of($builder->getTypeSet(), $real_type_set);
+        return UnionType::of($builder->getTypeSet(), $real_type_set ?? []);
     }
 
     /**

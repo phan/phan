@@ -240,12 +240,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         $element_union_types = null;
         foreach ($target_type_set as $target_type) {
             if ($target_type instanceof GenericArrayType) {
-                if (!$this->field_types && $target_type instanceof NonEmptyGenericArrayType) {
-                    continue;
-                }
-                if (($this->getKeyType() & ($target_type->getKeyType() ?: GenericArrayType::KEY_MIXED)) === 0 && !Config::getValue('scalar_array_key_cast')) {
-                    // Attempting to cast an int key to a string key (or vice versa) is normally invalid, so skip it.
-                    // However, the scalar_array_key_cast config would make any cast of array keys a valid cast.
+                if (!$this->canCastToGenericArrayKeys($target_type)) {
                     continue;
                 }
                 if ($element_union_types) {
@@ -274,15 +269,8 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     {
         if ($type instanceof ArrayType) {
             if ($type instanceof GenericArrayType) {
-                if (($this->getKeyType() & ($type->getKeyType() ?: GenericArrayType::KEY_MIXED)) === 0 && !Config::getValue('scalar_array_key_cast')) {
-                    // Attempting to cast an int key to a string key (or vice versa) is normally invalid.
-                    // However, the scalar_array_key_cast config would make any cast of array keys a valid cast.
-                    return false;
-                }
-                if (!$this->field_types && $type instanceof NonEmptyGenericArrayType) {
-                    return false;
-                }
-                return $this->canEachFieldTypeCastToExpectedUnionType($type->genericArrayElementUnionType());
+                return $this->canCastToGenericArrayKeys($type) &&
+                    $this->canEachFieldTypeCastToExpectedUnionType($type->genericArrayElementUnionType());
             } elseif ($type instanceof ArrayShapeType) {
                 foreach ($type->field_types as $key => $field_type) {
                     $this_field_type = $this->field_types[$key] ?? null;
@@ -333,16 +321,9 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     {
         if ($type instanceof ArrayType) {
             if ($type instanceof GenericArrayType) {
-                if (($this->getKeyType() & ($type->getKeyType() ?: GenericArrayType::KEY_MIXED)) === 0) {
-                    // Attempting to cast an int key to a string key (or vice versa) is normally invalid.
-                    // However, the scalar_array_key_cast config would make any cast of array keys a valid cast.
-                    return false;
-                }
-                if (!$this->field_types && $type instanceof NonEmptyGenericArrayType) {
-                    return false;
-                }
                 // TODO: WithoutConfig here as well?
-                return $this->canEachFieldTypeCastToExpectedUnionType($type->genericArrayElementUnionType());
+                return $this->canCastToGenericArrayKeys($type) &&
+                    $this->canEachFieldTypeCastToExpectedUnionType($type->genericArrayElementUnionType());
             } elseif ($type instanceof ArrayShapeType) {
                 foreach ($type->field_types as $key => $field_type) {
                     $this_field_type = $this->field_types[$key] ?? null;
@@ -382,6 +363,31 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         }
 
         return parent::canCastToNonNullableTypeWithoutConfig($type);
+    }
+
+    /**
+     * Check if the keys of this array shape can cast to the keys of the generic array type $type
+     */
+    public function canCastToGenericArrayKeys(GenericArrayType $type, bool $ignore_config = false) : bool
+    {
+        if ($type instanceof ListType) {
+            $i = 0;
+            foreach ($this->field_types as $k => $v) {
+                if ($k !== $i++ || $v->isPossiblyUndefined()) {
+                    return false;
+                }
+            }
+        } else {
+            if (($this->getKeyType() & ($type->getKeyType() ?: GenericArrayType::KEY_MIXED)) === 0 && ($ignore_config || !Config::getValue('scalar_array_key_cast'))) {
+                // Attempting to cast an int key to a string key (or vice versa) is normally invalid.
+                // However, the scalar_array_key_cast config would make any cast of array keys a valid cast.
+                return false;
+            }
+        }
+        if (!$this->field_types && $type->isDefinitelyNonEmptyArray()) {
+            return false;
+        }
+        return true;
     }
 
     private function canCastToGenericIterableType(GenericIterableType $iterable_type) : bool
