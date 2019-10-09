@@ -10,37 +10,31 @@ use Phan\Language\Type;
  * @see ArrayShapeType for representations of `array{key:MyClass}`
  * @see ArrayType for the representation of `array`
  */
-final class NonEmptyGenericArrayType extends GenericArrayType
+final class NonEmptyListType extends ListType
 {
     /**
      * @override
-     * @return NonEmptyGenericArrayType
-     * @phan-real-return NonEmptyGenericArrayType
+     * @return NonEmptyListType
+     * @phan-real-return NonEmptyListType
      * (can't change signature type until minimum supported version is php 7.4)
      */
     public static function fromElementType(
         Type $type,
         bool $is_nullable,
-        int $key_type
+        int $unused_key_type = GenericArrayType::KEY_INT
     ) : GenericArrayType {
         // Make sure we only ever create exactly one
         // object for any unique type
-        static $canonical_object_maps = null;
+        static $map = null;
 
-        if ($canonical_object_maps === null) {
-            $canonical_object_maps = [];
-            for ($i = 0; $i < 8; $i++) {
-                $canonical_object_maps[] = new \SplObjectStorage();
-            }
+        if ($map === null) {
+            $map = new \SplObjectStorage();
         }
-        $map_index = $key_type * 2 + ($is_nullable ? 1 : 0);
-
-        $map = $canonical_object_maps[$map_index];
 
         if (!$map->contains($type)) {
             $map->attach(
                 $type,
-                new NonEmptyGenericArrayType($type, $is_nullable, $key_type)
+                new NonEmptyListType($type, $is_nullable)
             );
         }
 
@@ -75,14 +69,7 @@ final class NonEmptyGenericArrayType extends GenericArrayType
 
     public function __toString() : string
     {
-        $string = $this->element_type->__toString();
-        $string = 'non-empty-array<' . self::KEY_NAMES[$this->key_type] . ',' . $string . '>';
-
-        if ($this->is_nullable) {
-            $string = '?' . $string;
-        }
-
-        return $string;
+        return ($this->is_nullable ? '?' : '') . 'non-empty-list<' . $this->element_type->__toString() . '>';
     }
 
     /** @override */

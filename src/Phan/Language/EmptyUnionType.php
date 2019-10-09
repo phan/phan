@@ -13,6 +13,7 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\IterableType;
+use Phan\Language\Type\ListType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\TemplateType;
@@ -1011,6 +1012,11 @@ final class EmptyUnionType extends UnionType
         return $this;  // empty
     }
 
+    public function asListTypes() : UnionType
+    {
+        return $this;
+    }
+
     /**
      * @return UnionType
      * Get a new type for each type in this union which is
@@ -1023,6 +1029,12 @@ final class EmptyUnionType extends UnionType
     {
         static $cache = [];
         return ($cache[$key_type] ?? ($cache[$key_type] = MixedType::instance(false)->asGenericArrayType($key_type)->asRealUnionType()));
+    }
+
+    public function asNonEmptyListTypes() : UnionType
+    {
+        static $type = null;
+        return ($type ?? ($type = ListType::fromElementType(MixedType::instance(false), false)->asRealUnionType()));
     }
 
     /**

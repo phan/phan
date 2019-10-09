@@ -42,12 +42,14 @@ use Phan\Language\Type\GenericIterableType;
 use Phan\Language\Type\GenericMultiArrayType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
+use Phan\Language\Type\ListType;
 use Phan\Language\Type\LiteralFloatType;
 use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NativeType;
 use Phan\Language\Type\NonEmptyGenericArrayType;
+use Phan\Language\Type\NonEmptyListType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\ResourceType;
@@ -91,17 +93,17 @@ class Type
      * A legal type identifier (e.g. 'int' or 'DateTime')
      */
     const simple_type_regex =
-        '(\??)(?:callable-(?:string|object|array)|class-string|non-empty-array|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
+        '(\??)(?:callable-(?:string|object|array)|class-string|non-empty-(?:array|list)|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
 
     const simple_noncapturing_type_regex =
-        '\\\\?(?:callable-(?:string|object|array)|class-string|non-empty-array|[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
+        '\\\\?(?:callable-(?:string|object|array)|class-string|non-empty-(?:array|list)|[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
 
     /**
      * @var string
      * A legal type identifier (e.g. 'int' or 'DateTime')
      */
     const simple_type_regex_or_this =
-        '(\??)(callable-(?:string|object|array)|class-string|non-empty-array|[a-zA-Z_\x7f-\xff\\\][a-zA-Z0-9_\x7f-\xff\\\]*|\$this)';
+        '(\??)(callable-(?:string|object|array)|class-string|non-empty-(?:array|list)|[a-zA-Z_\x7f-\xff\\\][a-zA-Z0-9_\x7f-\xff\\\]*|\$this)';
 
     const shape_key_regex =
         '(?:[-.\/^;$%*+_a-zA-Z0-9\x7f-\xff]|\\\\(?:[nrt\\\\]|x[0-9a-fA-F]{2}))+\??';
@@ -222,8 +224,10 @@ class Type
         'float'           => true,
         'int'             => true,
         'iterable'        => true,
+        'list'            => true,
         'mixed'           => true,
         'non-empty-array' => true,
+        'non-empty-list'  => true,
         'null'            => true,
         'object'          => true,
         'resource'        => true,
@@ -482,8 +486,14 @@ class Type
                             $is_nullable
                         );
                         break;
+                    case 'list':
+                        $value = self::parseListTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, false);
+                        break;
                     case 'non-empty-array':
                         $value = self::parseGenericArrayTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, true);
+                        break;
+                    case 'non-empty-list':
+                        $value = self::parseListTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, true);
                         break;
                 }
             }
@@ -701,10 +711,14 @@ class Type
                 return FloatType::instance($is_nullable);
             case 'int':
                 return IntType::instance($is_nullable);
+            case 'list':
+                return ListType::fromElementType(MixedType::instance(false), $is_nullable);
             case 'mixed':
                 return MixedType::instance($is_nullable);
             case 'non-empty-array':
                 return NonEmptyGenericArrayType::fromElementType(MixedType::instance(false), $is_nullable, GenericArrayType::KEY_MIXED);
+            case 'non-empty-list':
+                return NonEmptyListType::fromElementType(MixedType::instance(false), $is_nullable);
             case 'null':
                 return NullType::instance($is_nullable);
             case 'object':
@@ -871,14 +885,18 @@ class Type
 
         if (!$namespace) {
             if (count($template_parameter_type_name_list) > 0) {
-                if (\strcasecmp($type_name, 'array') === 0) {
-                    // template parameter type list
-                    $template_parameter_type_list = self::createTemplateParameterTypeList($template_parameter_type_name_list);
-                    return self::parseGenericArrayTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, false);
-                } elseif (\strcasecmp($type_name, 'iterable') === 0) {
-                    // template parameter type list
-                    $template_parameter_type_list = self::createTemplateParameterTypeList($template_parameter_type_name_list);
-                    return self::parseGenericIterableTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable);
+                switch (\strtolower($type_name)) {
+                    case 'array':
+                        // template parameter type list
+                        $template_parameter_type_list = self::createTemplateParameterTypeList($template_parameter_type_name_list);
+                        return self::parseGenericArrayTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, false);
+                    case 'list':
+                        $template_parameter_type_list = self::createTemplateParameterTypeList($template_parameter_type_name_list);
+                        return self::parseListTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, false);
+                    case 'iterable':
+                        // template parameter type list
+                        $template_parameter_type_list = self::createTemplateParameterTypeList($template_parameter_type_name_list);
+                        return self::parseGenericIterableTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable);
                 }
             }
             return self::fromInternalTypeName(
@@ -1035,7 +1053,72 @@ class Type
                 $always_has_elements
             );
         }
+        if ($always_has_elements) {
+            return NonEmptyGenericArrayType::fromElementType(
+                MixedType::instance(false),
+                $is_nullable,
+                $key_type
+            );
+        }
         return ArrayType::instance($is_nullable);
+    }
+
+    /**
+     * @param array<int,UnionType> $template_parameter_type_list
+     * @param bool $is_nullable
+     */
+    private static function parseListTypeFromTemplateParameterList(
+        array $template_parameter_type_list,
+        bool $is_nullable,
+        bool $always_has_elements
+    ) : ArrayType {
+        $template_count = count($template_parameter_type_list);
+        if ($template_count !== 1) {
+            if ($always_has_elements) {
+                return NonEmptyListType::fromElementType(
+                    MixedType::instance(false),
+                    $is_nullable
+                );
+            }
+            return ListType::fromElementType(
+                MixedType::instance(false),
+                $is_nullable
+            );
+        }
+        // array<T> or array<key, T>
+        $types = $template_parameter_type_list[$template_count - 1]->getTypeSet();
+        if (count($types) === 1) {
+            if ($always_has_elements) {
+                return NonEmptyListType::fromElementType(
+                    // @phan-suppress-next-line PhanPossiblyFalseTypeArgument
+                    \reset($types),
+                    $is_nullable
+                );
+            }
+            return ListType::fromElementType(
+                // @phan-suppress-next-line PhanPossiblyFalseTypeArgument
+                \reset($types),
+                $is_nullable
+            );
+        } elseif (count($types) > 1) {
+            return new GenericMultiArrayType(
+                $types,
+                $is_nullable,
+                GenericArrayType::KEY_INT,
+                $always_has_elements,
+                true
+            );
+        }
+        if ($always_has_elements) {
+            return NonEmptyListType::fromElementType(
+                MixedType::instance(false),
+                $is_nullable
+            );
+        }
+        return ListType::fromElementType(
+            MixedType::instance(false),
+            $is_nullable
+        );
     }
 
     /**
@@ -1290,6 +1373,10 @@ class Type
                         return self::parseClassStringTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable);
                     case 'non-empty-array':
                         return self::parseGenericArrayTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, true);
+                    case 'list':
+                        return self::parseListTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, false);
+                    case 'non-empty-list':
+                        return self::parseListTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, true);
                 }
                 // TODO: Warn about unrecognized types.
             }

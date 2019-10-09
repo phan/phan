@@ -46,6 +46,7 @@ use Phan\Language\Type\FloatType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
+use Phan\Language\Type\ListType;
 use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
@@ -1476,7 +1477,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             $int_or_string_union_type = UnionType::fromFullyQualifiedPHPDocString('int|string');
         }
 
-        if ($union_type->hasTopLevelArrayShapeTypeInstances()) {
+        if (self::hasArrayShapeOrList($union_type)) {
             $element_type = $this->resolveArrayShapeElementTypes($node, $union_type);
             if ($element_type !== null) {
                 return $element_type->eraseRealTypeSet();
@@ -1628,6 +1629,16 @@ class UnionTypeVisitor extends AnalysisVisitor
         return $element_types;
     }
 
+    private static function hasArrayShapeOrList(UnionType $union_type) : bool
+    {
+        foreach ($union_type->getTypeSet() as $type) {
+            if ($type instanceof ArrayShapeType || $type instanceof ListType) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private function resolveArrayShapeElementTypes(Node $node, UnionType $union_type) : ?UnionType
     {
         $dim_node = $node->children['dim'];
@@ -1696,6 +1707,9 @@ class UnionTypeVisitor extends AnalysisVisitor
                         // TODO: Warn about string indices of strings?
                     }
                 } elseif ($type->isArrayLike() || $type->isObject() || $type instanceof MixedType) {
+                    if ($type instanceof ListType && (!is_numeric($dim_value) || $dim_value < 0)) {
+                        continue;
+                    }
                     // TODO: Could be more precise about check for ArrayAccess
                     $has_non_array_shape_type = true;
                     continue;

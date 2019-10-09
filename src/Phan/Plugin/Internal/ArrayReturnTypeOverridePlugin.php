@@ -14,6 +14,7 @@ use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\GenericArrayType;
+use Phan\Language\Type\ListType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
@@ -44,7 +45,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
         $array_type  = ArrayType::instance(false);
         $null_type   = NullType::instance(false);
         $nullable_array_type_set = [ArrayType::instance(true)];
-        $nullable_int_key_array_type_set = [MixedType::instance(true)->asGenericArrayType(GenericArrayType::KEY_INT)];
+        $nullable_int_key_array_type_set = [ListType::fromElementType(MixedType::instance(true), true)];
         $int_or_string_or_false = UnionType::fromFullyQualifiedRealString('int|string|false');
         $int_or_string_or_null = UnionType::fromFullyQualifiedRealString('int|string|null');
         $int_or_string = UnionType::fromFullyQualifiedRealString('int|string');
@@ -402,9 +403,9 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             }
             $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
             $element_type = $union_type->genericArrayElementTypes();
-            $result = $element_type->asGenericArrayTypes(GenericArrayType::KEY_INT);
+            $result = $element_type->asListTypes();
             if ($result->isEmpty()) {
-                return UnionType::fromFullyQualifiedPHPDocAndRealString('array<int,mixed>', '?array<int,mixed>');
+                return UnionType::fromFullyQualifiedPHPDocAndRealString('list<mixed>', '?list<mixed>');
             }
             return $result->withRealTypeSet($nullable_int_key_array_type_set);
         };

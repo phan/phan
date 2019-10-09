@@ -1,0 +1,7 @@
+%s:10 PhanCommentDuplicateParam Comment declares @param $c multiple times
+%s:10 PhanUndeclaredTypeParameter Parameter $b has undeclared type array<int,\NS781\stdClass> (Did you mean class \stdClass)
+%s:11 PhanUnusedVariable Unused definition of variable $val
+%s:12 PhanTypeMismatchArgumentInternal Argument 1 ($obj) is int but \spl_object_hash() takes object
+%s:13 PhanTypeMismatchArgumentInternal Argument 1 ($obj) is void but \spl_object_hash() takes object
+%s:14 PhanTypeMismatchArgumentInternal Argument 1 ($obj) is array{0:\NS781\stdClass} but \spl_object_hash() takes object
+%s:15 PhanTypeMismatchArgumentInternal Argument 1 ($obj) is array{0:'',1:array<int,string>,2:'1'} but \spl_object_hash() takes object
