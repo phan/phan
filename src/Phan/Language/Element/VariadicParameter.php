@@ -124,7 +124,7 @@ class VariadicParameter extends Parameter
     /**
      * If this parameter is variadic (e.g. `DateTime ...$args`),
      * then this returns the corresponding array type(s) of $args.
-     * (e.g. `array<int,DateTime>`)
+     * (e.g. `list<DateTime>`)
      *
      * NOTE: For analyzing the code within a function,
      * code should pass $param->cloneAsNonVariadic() instead.

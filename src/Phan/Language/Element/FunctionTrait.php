@@ -146,7 +146,7 @@ trait FunctionTrait
     private $needs_recursive_analysis = null;
 
     /**
-     * @var array<int,Parameter>
+     * @var list<Parameter>
      * The list of parameters for this method
      * This will change while the method is being analyzed when the config quick_mode is false.
      */
@@ -172,7 +172,7 @@ trait FunctionTrait
     private $checked_parameter_list_hashes = [];
 
     /**
-     * @var array<int,Parameter>
+     * @var list<Parameter>
      * The list of *real* (not from phpdoc) parameters for this method.
      * This does not change after initialization.
      */
@@ -186,7 +186,7 @@ trait FunctionTrait
     private $phpdoc_parameter_type_map = [];
 
     /**
-     * @var array<int,string>
+     * @var list<string>
      * A list of parameter names that are output-only references
      */
     private $phpdoc_output_references = [];
@@ -407,7 +407,7 @@ trait FunctionTrait
     }
 
     /**
-     * @return array<int,Parameter>
+     * @return list<Parameter>
      * A list of parameters on the method
      *
      * @suppress PhanPluginCanUseReturnType
@@ -501,7 +501,7 @@ trait FunctionTrait
     }
 
     /**
-     * @param array<int,Parameter> $parameter_list
+     * @param list<Parameter> $parameter_list
      * A list of parameters to set on this method
      * (When quick_mode is false, this is also called to temporarily
      * override parameter types, etc.)
@@ -535,7 +535,7 @@ trait FunctionTrait
     /**
      * Called to generate a hash of a given parameter list, to avoid calling this on the same parameter list twice.
      *
-     * @param array<int,Parameter> $parameter_list
+     * @param list<Parameter> $parameter_list
      *
      * @return int 32-bit or 64-bit hash. Not likely to collide unless there are around 2^16 possible union types on 32-bit, or around 2^32 on 64-bit.
      *    (Collisions aren't a concern; The memory/runtime would probably be a bigger issue than collisions in non-quick mode.)
@@ -558,7 +558,7 @@ trait FunctionTrait
     }
 
     /**
-     * @return array<int,Parameter> $parameter_list
+     * @return list<Parameter> $parameter_list
      * A list of parameters (not from phpdoc) that were set on this method. The parameters will be cloned.
      *
      * @suppress PhanPluginCanUseReturnType
@@ -573,7 +573,7 @@ trait FunctionTrait
     }
 
     /**
-     * @param array<int,Parameter> $parameter_list
+     * @param list<Parameter> $parameter_list
      * A list of parameters (not from phpdoc) to set on this method. The parameters will be cloned.
      */
     public function setRealParameterList(array $parameter_list) : void
@@ -589,7 +589,7 @@ trait FunctionTrait
     }
 
     /**
-     * @param array<int,Parameter> $parameter_list
+     * @param list<Parameter> $parameter_list
      */
     protected static function computeNumberOfRequiredParametersForList(array $parameter_list) : int
     {
@@ -875,7 +875,7 @@ trait FunctionTrait
     }
 
     /**
-     * @return array<int,string> list of output references. Usually empty.
+     * @return list<string> list of output references. Usually empty.
      * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
     public function getOutputReferenceParamNames() : array
@@ -912,7 +912,7 @@ trait FunctionTrait
     /**
      * Returns true if the param list has an instance of PassByReferenceVariable
      * If it does, the method has to be analyzed even if the same parameter types were analyzed already
-     * @param array<int,Variable> $parameter_list
+     * @param list<Variable> $parameter_list
      */
     private function hasPassByReferenceVariable(array $parameter_list) : bool
     {
@@ -934,7 +934,7 @@ trait FunctionTrait
      * As an optimization, this refrains from re-analyzing the method/function it has already been analyzed for those param types
      * (With an equal or larger remaining recursion depth)
      *
-     * @param array<int,Parameter> $parameter_list
+     * @param list<Parameter> $parameter_list
      * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
     public function analyzeWithNewParams(Context $context, CodeBase $code_base, array $parameter_list) : Context
@@ -999,7 +999,7 @@ trait FunctionTrait
      *
      * @param CodeBase $code_base
      * @param Context $context
-     * @param array<int,Node|int|string|float> $args
+     * @param list<Node|int|string|float> $args
      */
     public function getDependentReturnType(CodeBase $code_base, Context $context, array $args) : UnionType
     {
@@ -1026,7 +1026,7 @@ trait FunctionTrait
      *
      * @param CodeBase $code_base
      * @param Context $context
-     * @param array<int,Node|int|string|float> $args
+     * @param list<Node|int|string|float> $args
      * @param ?Node $node - the node causing the call. This may be dynamic, e.g. call_user_func_array. This will be required in Phan 3.
      * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
@@ -1475,7 +1475,7 @@ trait FunctionTrait
         }
         /**
          * Resolve the template types based on the parameters passed to the function
-         * @param array<int,Node|mixed> $args
+         * @param list<Node|mixed> $args
          */
         $analyzer = static function (CodeBase $code_base, Context $context, FunctionInterface $function, array $args) use ($parameter_extractor_map) : UnionType {
             $args_types = \array_map(
@@ -1499,7 +1499,7 @@ trait FunctionTrait
     /**
      * @param TemplateType $template_type the template type that this function is looking for references to in parameters
      *
-     * @return ?Closure(array<int,Node|string|int|float|UnionType>, Context):UnionType
+     * @return ?Closure(list<Node|string|int|float|UnionType>, Context):UnionType
      */
     public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type, int $skip_index = null) : ?Closure
     {
@@ -1515,7 +1515,7 @@ trait FunctionTrait
             $closure = TemplateType::combineParameterClosures(
                 $closure,
                 /**
-                 * @param array<int,Node|UnionType|mixed> $parameters
+                 * @param list<Node|UnionType|mixed> $parameters
                  */
                 static function (array $parameters, Context $context) use ($code_base, $i, $closure_for_type) : UnionType {
                     $param_value = $parameters[$i] ?? null;
@@ -1596,7 +1596,7 @@ trait FunctionTrait
             }
         } else {
             /**
-             * @param array<int,Node|mixed> $unused_args
+             * @param list<Node|mixed> $unused_args
              */
             $union_type_extractor = static function (CodeBase $unused_code_base, Context $unused_context, array $unused_args) use ($union_type) : UnionType {
                 return $union_type;
@@ -1616,7 +1616,7 @@ trait FunctionTrait
         switch ($assertion_type) {
             case Assertion::IS_OF_TYPE:
                 /**
-                 * @param array<int,Node|mixed> $args
+                 * @param list<Node|mixed> $args
                  */
                 return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args, ?Node $unused_node) use ($i, $union_type_extractor) : void {
                     $arg = $args[$i] ?? null;
@@ -1630,7 +1630,7 @@ trait FunctionTrait
                 };
             case Assertion::IS_NOT_OF_TYPE:
                 /**
-                 * @param array<int,Node|mixed> $args
+                 * @param list<Node|mixed> $args
                  */
                 return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args, ?Node $unused_node) use ($i, $union_type_extractor) : void {
                     $arg = $args[$i] ?? null;
@@ -1644,7 +1644,7 @@ trait FunctionTrait
                 };
             case Assertion::IS_TRUE:
                 /**
-                 * @param array<int,Node|mixed> $args
+                 * @param list<Node|mixed> $args
                  */
                 return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args, ?Node $unused_node) use ($i) : void {
                     $arg = $args[$i] ?? null;
@@ -1657,7 +1657,7 @@ trait FunctionTrait
                 };
             case Assertion::IS_FALSE:
                 /**
-                 * @param array<int,Node|mixed> $args
+                 * @param list<Node|mixed> $args
                  */
                 return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args, ?Node $unused_node) use ($i) : void {
                     $arg = $args[$i] ?? null;
@@ -1700,7 +1700,7 @@ trait FunctionTrait
             return null;
         }
         /**
-         * @param array<int,Node|mixed> $args
+         * @param list<Node|mixed> $args
          */
         return static function (CodeBase $unused_code_base, Context $context, array $args) use ($type, $parameter_extractor_map) : UnionType {
             $template_type_map = [];

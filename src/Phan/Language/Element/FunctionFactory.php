@@ -18,7 +18,7 @@ use Phan\Language\UnionType;
 class FunctionFactory
 {
     /**
-     * @return array<int,Func>
+     * @return list<Func>
      * One or more (alternate) functions begotten from
      * reflection info and internal functions data
      */
@@ -67,7 +67,7 @@ class FunctionFactory
 
     /**
      * @param string[] $signature
-     * @return array<int,Func>
+     * @return list<Func>
      * One or more (alternate) methods begotten from
      * reflection info and internal method data
      */
@@ -99,7 +99,7 @@ class FunctionFactory
     }
 
     /**
-     * @return array<int,Method> a list of 1 or more method signatures from a ReflectionMethod
+     * @return list<Method> a list of 1 or more method signatures from a ReflectionMethod
      * and Phan's alternate signatures for that method's FQSEN in FunctionSignatureMap.
      */
     public static function methodListFromReflectionClassAndMethod(
@@ -162,7 +162,7 @@ class FunctionFactory
      * Get a list of methods hydrated with type information
      * for the given partial method
      *
-     * @return array<int,FunctionInterface>
+     * @return list<FunctionInterface>
      * A list of typed functions/methods based on the given method
      */
     public static function functionListFromFunction(

@@ -37,7 +37,7 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
         '_FILES' => 'array<string,array<string,int|string|array<string,int|string>>>',  // Can have multiple files with the same name.
         '_SESSION' => 'array<string,mixed>',
         'GLOBALS' => 'array<string,mixed>',
-        'http_response_header' => 'array<int,string>|null', // Revisit when we implement sub-block type refining
+        'http_response_header' => 'list<string>|null', // Revisit when we implement sub-block type refining
     ];
 
     /**
@@ -54,11 +54,11 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
         '_REQUEST' => 'array<string,string|string[]>',
         '_SERVER' => 'array<string,mixed>',
         '_ENV' => 'array<string,string>',
-        '_FILES' => 'array<string,array<string,int>>|array<string,array<string,string>>|array<string,array<string,array<int,int>>>|array<string,array<string,array<int,string>>>',  // Can have multiple files with the same name.
+        '_FILES' => 'array<string,array<string,int>>|array<string,array<string,string>>|array<string,array<string,list<int>>>|array<string,array<string,list<string>>>',  // Can have multiple files with the same name.
         '_SESSION' => 'array<string,mixed>',
         'GLOBALS' => 'array<string,mixed>',
-        'http_response_header' => 'array<int,string>|null', // Revisit when we implement sub-block type refining
-        'argv' => 'array<int,string>',
+        'http_response_header' => 'list<string>|null', // Revisit when we implement sub-block type refining
+        'argv' => 'list<string>',
         'argc' => 'int',
     ];
 

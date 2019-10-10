@@ -25,7 +25,7 @@ $cli = CLI::fromArgv();
 $is_issue_found =
     Phan::analyzeFileList(
         $code_base,
-        /** @return array<int,string> */
+        /** @return list<string> */
         static function (bool $recompute_file_list = false) use ($cli) : array {
             if ($recompute_file_list) {
                 $cli->recomputeFileList();

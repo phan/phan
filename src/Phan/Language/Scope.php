@@ -446,7 +446,7 @@ abstract class Scope
     }
 
     /**
-     * @param array<int,Scope> $scope_list an array of 2 or more scopes
+     * @param list<Scope> $scope_list an array of 2 or more scopes
      * @return array<string,Variable> the set of variables that may differ among these scopes.
      */
     public static function getDifferingVariables(array $scope_list) : array
@@ -475,7 +475,7 @@ abstract class Scope
      * Given a scope, return the lowest common ancestor of all of those scopes.
      * e.g. for an if statement, that's the scope of the outer statement list.
      *
-     * @param array<int,Scope> $scope_list
+     * @param list<Scope> $scope_list
      */
     private static function identifyLowestCommonAncestor(array $scope_list) : ?Scope
     {

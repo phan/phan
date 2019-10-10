@@ -80,13 +80,13 @@ class Comment
     protected $comment_flags = 0;
 
     /**
-     * @var array<int,CommentParameter>
+     * @var list<CommentParameter>
      * A list of CommentParameters from var declarations
      */
     protected $variable_list = [];
 
     /**
-     * @var array<int,CommentParameter>
+     * @var list<CommentParameter>
      * A list of CommentParameters from param declarations
      */
     protected $parameter_list = [];
@@ -99,7 +99,7 @@ class Comment
     protected $parameter_map = [];
 
     /**
-     * @var array<int,TemplateType>
+     * @var list<TemplateType>
      * A list of template types parameterizing a generic class
      */
     protected $template_type_list = [];
@@ -164,11 +164,11 @@ class Comment
      * - Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES
      * - Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS
      *
-     * @param array<int,CommentParameter> $variable_list
+     * @param list<CommentParameter> $variable_list
      *
-     * @param array<int,CommentParameter> $parameter_list
+     * @param list<CommentParameter> $parameter_list
      *
-     * @param array<int,TemplateType> $template_type_list
+     * @param list<TemplateType> $template_type_list
      * A list of template types parameterizing a generic class
      *
      * @param Option<Type>|None $inherited_type (Note: some issues with templates and narrowing signature types to phpdoc type, added None as a workaround)
@@ -179,9 +179,9 @@ class Comment
      * @param array<string,int> $suppress_issue_set
      * A set of tags for error type to be suppressed
      *
-     * @param array<int,CommentProperty> $magic_property_list
+     * @param list<CommentProperty> $magic_property_list
      *
-     * @param array<int,CommentMethod> $magic_method_list
+     * @param list<CommentMethod> $magic_method_list
      *
      * @param array<string,mixed> $phan_overrides
      *
@@ -350,7 +350,7 @@ class Comment
     }
 
     /**
-     * @param array<int,CommentParameter> $override_comment_vars
+     * @param list<CommentParameter> $override_comment_vars
      * A list of CommentParameters from var declarations
      */
     private function mergeVariableList(array $override_comment_vars) : void
@@ -552,7 +552,7 @@ class Comment
     }
 
     /**
-     * @return array<int,CommentParameter> (The leftover parameters without a name)
+     * @return list<CommentParameter> (The leftover parameters without a name)
      *
      * @suppress PhanUnreferencedPublicMethod
      */
@@ -570,7 +570,7 @@ class Comment
     }
 
     /**
-     * @return array<int,TemplateType>
+     * @return list<TemplateType>
      * A list of template types parameterizing a generic class
      */
     public function getTemplateTypeList() : array
@@ -676,7 +676,7 @@ class Comment
     }
 
     /**
-     * @return array<int,CommentParameter> the list of (at)var annotations
+     * @return list<CommentParameter> the list of (at)var annotations
      */
     public function getVariableList() : array
     {

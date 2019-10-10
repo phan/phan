@@ -34,7 +34,7 @@ final class Builder
 {
     /** @var string the original raw comment */
     public $comment;
-    /** @var array<int,string> the list of lines of the doc comment */
+    /** @var list<string> the list of lines of the doc comment */
     public $lines;
     /** @var int count($this->lines) */
     public $comment_lines_count;
@@ -46,9 +46,9 @@ final class Builder
     public $lineno;
     /** @var int an enum value from Comment::ON_* */
     public $comment_type;
-    /** @var array<int,Parameter> the list of extracted (at)var annotations*/
+    /** @var list<Parameter> the list of extracted (at)var annotations*/
     public $variable_list = [];
-    /** @var array<int,Parameter> the list of extracted (at)param annotations */
+    /** @var list<Parameter> the list of extracted (at)param annotations */
     public $parameter_list = [];
     /** @var array<string,TemplateType> the list of extracted (at)template annotations */
     public $template_type_list = [];
@@ -61,9 +61,9 @@ final class Builder
      * @var array<string,int> the set of issue names from (at)suppress annotations
      */
     public $suppress_issue_set = [];
-    /** @var array<int,Property> the list of (at)property annotations (and property-read, property-write) */
+    /** @var list<Property> the list of (at)property annotations (and property-read, property-write) */
     public $magic_property_list = [];
-    /** @var array<int,Method> the list of (at)method annotations */
+    /** @var list<Method> the list of (at)method annotations */
     public $magic_method_list = [];
     /** @var Option<Type> the type a closure will be bound to */
     public $closure_scope;
@@ -83,7 +83,7 @@ final class Builder
      * A list of issues detected in the comment being built.
      * This is stored instead of immediately emitting the issue because later lines might suppress these issues.
      *
-     * @var array<int,array{0:string,1:int,2:array<int,mixed>,3:?Suggestion}>
+     * @var list<array{0:string,1:int,2:list<mixed>,3:?Suggestion}>
      */
     private $issues = [];
 
@@ -851,7 +851,7 @@ final class Builder
     /**
      * Find the line number of line $i of the doc comment with lines $lines
      *
-     * @param array<int,string> $lines
+     * @param list<string> $lines
      * @suppress PhanUnreferencedPublicMethod
      */
     public static function findLineNumberOfCommentForElement(AddressableElementInterface $element, array $lines, int $i) : int
@@ -883,7 +883,7 @@ final class Builder
     }
 
     /**
-     * @param array<int,int> $valid_types
+     * @param list<int> $valid_types
      */
     private function checkCompatible(string $param_name, array $valid_types, int $i) : void
     {
@@ -985,7 +985,7 @@ final class Builder
      * @param string $line
      * An individual line of a comment
      *
-     * @return array<int,string>
+     * @return list<string>
      * 0 or more issue names to suppress
      */
     private static function suppressIssuesFromCommentLine(
@@ -1131,7 +1131,7 @@ final class Builder
     }
 
     /**
-     * @return array<int,string>
+     * @return list<string>
      */
     private static function extractMethodParts(string $type_string) : array
     {
@@ -1317,7 +1317,7 @@ final class Builder
      * @param int $issue_lineno
      * The line number where the issue was found
      *
-     * @param array<int,int|string|FQSEN|UnionType|Type> $parameters
+     * @param list<int|string|FQSEN|UnionType|Type> $parameters
      * Template parameters for the issue's error message
      *
      * @param ?Suggestion $suggestion

@@ -100,20 +100,20 @@ class UnionType implements Serializable
         . '(\s*\|\s*' . Type::type_regex_or_this . ')*';
 
     /**
-     * @var array<int,Type> This is an immutable list of unique types.
+     * @var list<Type> This is an immutable list of unique types.
      */
     private $type_set;
 
     /**
-     * @var array<int,Type> * This is an immutable list of unique types.
+     * @var list<Type> * This is an immutable list of unique types.
      */
     private $real_type_set;
 
     /**
-     * @param array<int,Type> $type_list
+     * @param list<Type> $type_list
      * An optional list of types represented by this union
      * @param bool $is_unique - Whether or not this is already unique. Only set to true within UnionType code.
-     * @param array<int,Type> $real_type_set
+     * @param list<Type> $real_type_set
      * @see UnionType::of() for a more memory efficient equivalent.
      * @phan-pure
      */
@@ -125,7 +125,7 @@ class UnionType implements Serializable
 
     /**
      * @param Type[] $type_list
-     * @param array<int,Type> $real_type_set
+     * @param list<Type> $real_type_set
      * @phan-pure
      */
     public static function of(array $type_list, array $real_type_set = []) : UnionType
@@ -234,7 +234,7 @@ class UnionType implements Serializable
     }
 
     /**
-     * @return array<int,Type> the corresponding set of types for this string.
+     * @return list<Type> the corresponding set of types for this string.
      * @throws InvalidArgumentException if any type name in the union type was invalid
      */
     public static function typeSetFromString(string $fully_qualified_string) : array
@@ -313,8 +313,8 @@ class UnionType implements Serializable
     }
 
     /**
-     * @param array<int,Type> $type_list
-     * @return array<int,Type>
+     * @param list<Type> $type_list
+     * @return list<Type>
      * @phan-pure
      */
     public static function getUniqueTypes(array $type_list) : array
@@ -369,7 +369,7 @@ class UnionType implements Serializable
     }
 
     /**
-     * @return array<int,string>
+     * @return list<string>
      */
     private static function extractTypePartsForStringInContext(string $type_string) : array
     {
@@ -412,7 +412,7 @@ class UnionType implements Serializable
     }
 
     /**
-     * @return array<int,string>
+     * @return list<string>
      */
     private static function extractTypeParts(string $type_string) : array
     {
@@ -433,7 +433,7 @@ class UnionType implements Serializable
     /**
      * Expands any GenericMultiArrayType and ScalarRawType instances in $types if necessary.
      *
-     * @param array<int,Type> $types
+     * @param list<Type> $types
      * @return array<int,Type>
      */
     public static function normalizeMultiTypes(array $types) : array

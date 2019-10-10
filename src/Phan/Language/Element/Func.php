@@ -51,7 +51,7 @@ class Func extends AddressableElement implements FunctionInterface
      * ast\kind_uses_flags() can be used to determine whether
      * a certain kind has a meaningful flags value.
      *
-     * @param ?array<int,Parameter> $parameter_list
+     * @param ?list<Parameter> $parameter_list
      * A list of parameters to set on this method
      */
     public function __construct(
@@ -186,7 +186,7 @@ class Func extends AddressableElement implements FunctionInterface
 
         $element_context = new ElementContext($func);
 
-        // @var array<int,Parameter>
+        // @var list<Parameter>
         // The list of parameters specified on the
         // method
         $parameter_list = Parameter::listFromNode(

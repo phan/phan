@@ -293,7 +293,7 @@ class Type
     protected $name = '';
 
     /**
-     * @var array<int,UnionType>
+     * @var list<UnionType>
      * A possibly empty list of concrete types that
      * act as parameters to this type if it is a templated
      * type.
@@ -319,7 +319,7 @@ class Type
      * @param string $name
      * The name of the type such as 'int' or 'MyClass'
      *
-     * @param array<int,UnionType> $template_parameter_type_list
+     * @param list<UnionType> $template_parameter_type_list
      * A (possibly empty) list of template parameter types
      *
      * @param bool $is_nullable
@@ -363,7 +363,7 @@ class Type
      * @param string $type_name
      * The name of the type such as 'int' or 'MyClass'
      *
-     * @param array<int,UnionType> $template_parameter_type_list
+     * @param list<UnionType> $template_parameter_type_list
      * A (possibly empty) list of template parameter types
      *
      * @param bool $is_nullable
@@ -536,7 +536,7 @@ class Type
      * The base type of this generic type referencing a
      * generic class
      *
-     * @param array<int,UnionType> $template_parameter_type_list
+     * @param list<UnionType> $template_parameter_type_list
      * A map from a template type identifier to a
      * concrete union type
      */
@@ -952,8 +952,8 @@ class Type
     }
 
     /**
-     * @param array<int,string> $template_parameter_type_name_list
-     * @return array<int,UnionType>
+     * @param list<string> $template_parameter_type_name_list
+     * @return list<UnionType>
      */
     private static function createTemplateParameterTypeList(array $template_parameter_type_name_list) : array
     {
@@ -964,7 +964,7 @@ class Type
 
     /**
      * @param bool $is_closure_type
-     * @param array<int,string> $shape_components
+     * @param list<string> $shape_components
      * @param bool $is_nullable
      * @throws AssertionError if creating a closure/callable from the arguments failed
      * @suppress PhanPossiblyFalseTypeArgument, PhanPossiblyFalseTypeArgumentInternal
@@ -994,7 +994,7 @@ class Type
         }
     }
     /**
-     * @param array<int,UnionType> $template_parameter_type_list
+     * @param list<UnionType> $template_parameter_type_list
      * @param bool $is_nullable
      */
     private static function parseGenericArrayTypeFromTemplateParameterList(
@@ -1064,7 +1064,7 @@ class Type
     }
 
     /**
-     * @param array<int,UnionType> $template_parameter_type_list
+     * @param list<UnionType> $template_parameter_type_list
      * @param bool $is_nullable
      */
     private static function parseListTypeFromTemplateParameterList(
@@ -1122,7 +1122,7 @@ class Type
     }
 
     /**
-     * @param array<int,UnionType> $template_parameter_type_list
+     * @param list<UnionType> $template_parameter_type_list
      * @param bool $is_nullable
      */
     private static function parseGenericIterableTypeFromTemplateParameterList(
@@ -1142,7 +1142,7 @@ class Type
     }
 
     /**
-     * @param array<int,UnionType> $template_parameter_type_list
+     * @param list<UnionType> $template_parameter_type_list
      * @param bool $is_nullable
      */
     private static function parseClassStringTypeFromTemplateParameterList(
@@ -1503,7 +1503,7 @@ class Type
 
     /**
      * @param bool $is_closure_type
-     * @param array<int,string> $shape_components
+     * @param list<string> $shape_components
      * @param Context $context
      * @param int $source
      * @param bool $is_nullable
@@ -1564,10 +1564,10 @@ class Type
     }
 
     /**
-     * @param array<int,string> $param_components Maps field keys (integers or strings) to the corresponding type representations
+     * @param list<string> $param_components Maps field keys (integers or strings) to the corresponding type representations
      * @param Context $context
      * @param int $source
-     * @return array<int,ClosureDeclarationParameter> The representations of parameters of the closure, in the given $context
+     * @return list<ClosureDeclarationParameter> The representations of parameters of the closure, in the given $context
      *
      * @see Comment::magicParamFromMagicMethodParamString() - This is similar but has minor differences, such as references
      * @suppress PhanAccessClassConstantInternal
@@ -2430,7 +2430,7 @@ class Type
     }
 
     /**
-     * @return array<int,UnionType>
+     * @return list<UnionType>
      * The set of types filling in template parameter types defined
      * on the class specified by this type.
      */
@@ -3018,7 +3018,7 @@ class Type
     }
 
     /**
-     * @param array<int,UnionType> $other_template_parameter_type_list
+     * @param list<UnionType> $other_template_parameter_type_list
      */
     private function canTemplateTypesCast(array $other_template_parameter_type_list, CodeBase $code_base) : bool
     {
@@ -3222,7 +3222,7 @@ class Type
      * @param string $type_string
      * Any type string such as 'int' or 'Set<int>'
      *
-     * @return Tuple5<string,string,array<int,string>,bool,?array<string|int,string>>
+     * @return Tuple5<string,string,list<string>,bool,?array<string|int,string>>
      * A 5-tuple with the following types:
      * 0: the namespace
      * 1: the type name.
@@ -3243,7 +3243,7 @@ class Type
     }
 
     /**
-     * @return Tuple5<string,string,array<int,string>,bool,?array<string|int,string>>
+     * @return Tuple5<string,string,list<string>,bool,?array<string|int,string>>
      * A 5-tuple with the following types (for a type string that may contain array shape, closure, or template uses):
      * 0: the namespace
      * 1: the type name.
@@ -3328,7 +3328,7 @@ class Type
     }
 
     /**
-     * @return Tuple5<string,string,array<int,string>,bool,?array<string|int,string>>
+     * @return Tuple5<string,string,list<string>,bool,?array<string|int,string>>
      * A 5-tuple with the following types (for a type string of a callable/closure):
      * 0: the namespace
      * 1: the type name.
@@ -3364,7 +3364,7 @@ class Type
     }
 
     /**
-     * @return array<int,string>
+     * @return list<string>
      */
     private static function closureParams(string $arg_list) : array
     {
@@ -3405,7 +3405,7 @@ class Type
 
     /**
      * Extracts the inner parts of a template name list (i.e. within <>) or a shape component list (i.e. within {})
-     * @return array<int,string>
+     * @return list<string>
      */
     private static function extractNameList(string $list_string) : array
     {
@@ -3450,8 +3450,8 @@ class Type
     /**
      * Heuristic to handle literal commas in single quoted strings inside of templates/array shapes.
      *
-     * @param array<int,string> $results
-     * @return array<int,string>
+     * @param list<string> $results
+     * @return list<string>
      */
     private static function joinQuotedStrings(array $results) : array
     {

@@ -161,7 +161,7 @@ class Parameter extends Variable
     }
 
     /**
-     * @return array<int,Parameter>
+     * @return list<Parameter>
      * A list of parameters from an AST node.
      */
     public static function listFromNode(
@@ -181,8 +181,8 @@ class Parameter extends Variable
     }
 
     /**
-     * @param array<int,\ReflectionParameter> $reflection_parameters
-     * @return array<int,Parameter>
+     * @param list<\ReflectionParameter> $reflection_parameters
+     * @return list<Parameter>
      */
     public static function listFromReflectionParameterList(
         array $reflection_parameters
