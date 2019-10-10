@@ -428,9 +428,9 @@ class MarkupDescription
     }
 
     /**
-     * @param array<int,string> $lines
+     * @param list<string> $lines
      * @param int $i the offset of the tag in $lines
-     * @return array<int,string> the trimmed lines
+     * @return list<string> the trimmed lines
      * @internal
      */
     public static function extractTagSummary(array $lines, int $i): array
@@ -462,8 +462,8 @@ class MarkupDescription
     }
 
     /**
-     * @param array<int,string> $lines
-     * @return array<int,string>
+     * @param list<string> $lines
+     * @return list<string>
      */
     private static function trimLeadingWhitespace(array $lines) : array
     {

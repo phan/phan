@@ -66,7 +66,7 @@ class Method extends ClassElement implements FunctionInterface
      * @param FullyQualifiedMethodName $fqsen
      * A fully qualified name for the element
      *
-     * @param ?array<int,Parameter> $parameter_list
+     * @param ?list<Parameter> $parameter_list
      * A list of parameters to set on this method
      */
     public function __construct(
@@ -496,7 +496,7 @@ class Method extends ClassElement implements FunctionInterface
         $method->setPhanFlags($method->getPhanFlags() | $comment->getPhanFlagsForMethod());
 
         $element_context = new ElementContext($method);
-        // @var array<int,Parameter>
+        // @var list<Parameter>
         // The list of parameters specified on the
         // method
         $parameter_list = Parameter::listFromNode(

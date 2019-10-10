@@ -69,7 +69,7 @@ class Context extends FileRef
     protected $strict_types = 0;
 
     /**
-     * @var array<int,Node>
+     * @var list<Node>
      * A list of nodes of loop statements that have been entered in the current functionlike scope.
      */
     protected $loop_nodes = [];
@@ -832,7 +832,7 @@ class Context extends FileRef
      *
      * @internal
      *
-     * @return array<int,array<string,NamespaceMapEntry>>
+     * @return array<int,array<string,NamespaceMapEntry>> maps use kind flags to the entries.
      */
     public function getNamespaceMap() : array
     {
