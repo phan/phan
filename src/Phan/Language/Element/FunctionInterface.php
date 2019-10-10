@@ -147,7 +147,7 @@ interface FunctionInterface extends AddressableElementInterface
     public function setHasYield(bool $has_yield) : void;
 
     /**
-     * @return array<int,Parameter>
+     * @return list<Parameter>
      * A list of parameters on the method
      */
     public function getParameterList();
@@ -194,7 +194,7 @@ interface FunctionInterface extends AddressableElementInterface
     public function recordOutputReferenceParamName(string $parameter_name) : void;
 
     /**
-     * @return array<int,string> list of output references (annotated with (at)phan-output-reference. Usually empty.
+     * @return list<string> list of output references (annotated with (at)phan-output-reference. Usually empty.
      */
     public function getOutputReferenceParamNames() : array;
 
@@ -238,7 +238,7 @@ interface FunctionInterface extends AddressableElementInterface
      * Analyze the node associated with this object
      * in the given context.
      * This function's parameter list may or may not have been modified.
-     * @param array<int,Parameter> $parameter_list
+     * @param list<Parameter> $parameter_list
      */
     public function analyzeWithNewParams(Context $context, CodeBase $code_base, array $parameter_list) : Context;
 
@@ -256,7 +256,7 @@ interface FunctionInterface extends AddressableElementInterface
     public function getRealReturnType() : UnionType;
 
     /**
-     * @return array<int,Parameter>
+     * @return list<Parameter>
      * A list of parameters on the method, with types from the method signature.
      */
     public function getRealParameterList();
@@ -297,7 +297,7 @@ interface FunctionInterface extends AddressableElementInterface
      * Returns a union type based on $args_node and $context
      * @param CodeBase $code_base
      * @param Context $context
-     * @param array<int,Node|int|string|float> $args
+     * @param list<Node|int|string|float> $args
      */
     public function getDependentReturnType(CodeBase $code_base, Context $context, array $args) : UnionType;
 
@@ -317,7 +317,7 @@ interface FunctionInterface extends AddressableElementInterface
      *
      * @param CodeBase $code_base
      * @param Context $context
-     * @param array<int,Node|int|string> $args
+     * @param list<Node|int|string> $args
      * @param ?Node $node - the node causing the call. This may be dynamic, e.g. call_user_func_array. This will be required in Phan 3.
      */
     public function analyzeFunctionCall(CodeBase $code_base, Context $context, array $args, Node $node = null) : void;

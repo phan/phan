@@ -24,11 +24,17 @@ class ListType extends GenericArrayType
     ) : GenericArrayType {
         // Make sure we only ever create exactly one
         // object for any unique type
-        static $map = null;
+        static $canonical_object_maps = null;
 
-        if ($map === null) {
-            $map = new \SplObjectStorage();
+        if ($canonical_object_maps === null) {
+            $canonical_object_maps = [];
+            for ($i = 0; $i < 2; $i++) {
+                $canonical_object_maps[] = new \SplObjectStorage();
+            }
         }
+        $map_index = ($is_nullable ? 1 : 0);
+
+        $map = $canonical_object_maps[$map_index];
 
         if (!$map->contains($type)) {
             $map->attach(

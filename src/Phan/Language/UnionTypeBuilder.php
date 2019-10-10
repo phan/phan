@@ -13,10 +13,10 @@ namespace Phan\Language;
  */
 final class UnionTypeBuilder
 {
-    /** @var array<int,Type> the list of unique types in this builder instance. */
+    /** @var list<Type> the list of unique types in this builder instance. */
     private $type_set;
 
-    /** @param array<int,Type> $type_set (must be unique) */
+    /** @param list<Type> $type_set (must be unique) */
     public function __construct(array $type_set = [])
     {
         $this->type_set = $type_set;
@@ -63,7 +63,7 @@ final class UnionTypeBuilder
     }
 
     /**
-     * @return array<int,Type>
+     * @return list<Type>
      */
     public function getTypeSet() : array
     {

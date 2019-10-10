@@ -79,26 +79,26 @@ class Clazz extends AddressableElement
     private $parent_type_lineno = 0;
 
     /**
-     * @var array<int,FullyQualifiedClassName>
+     * @var list<FullyQualifiedClassName>
      * A possibly empty list of interfaces implemented
      * by this class
      */
     private $interface_fqsen_list = [];
 
     /**
-     * @var array<int,int>
+     * @var list<int>
      * Line numbers for indices of interface_fqsen_list.
      */
     private $interface_fqsen_lineno = [];
 
     /**
-     * @var array<int,FullyQualifiedClassName>
+     * @var list<FullyQualifiedClassName>
      * A possibly empty list of traits used by this class
      */
     private $trait_fqsen_list = [];
 
     /**
-     * @var array<int,int>
+     * @var list<int>
      * Line numbers for indices of trait_fqsen_list
      */
     private $trait_fqsen_lineno = [];
@@ -154,8 +154,8 @@ class Clazz extends AddressableElement
      * A fully qualified name for this class
      *
      * @param Type|null $parent_type
-     * @param array<int,FullyQualifiedClassName> $interface_fqsen_list
-     * @param array<int,FullyQualifiedClassName> $trait_fqsen_list
+     * @param list<FullyQualifiedClassName> $interface_fqsen_list
+     * @param list<FullyQualifiedClassName> $trait_fqsen_list
      */
     public function __construct(
         Context $context,
@@ -659,7 +659,7 @@ class Clazz extends AddressableElement
 
     /**
      * Get the list of interfaces implemented by this class
-     * @return array<int,FullyQualifiedClassName>
+     * @return list<FullyQualifiedClassName>
      */
     public function getInterfaceFQSENList() : array
     {
@@ -1143,14 +1143,14 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * @return array<string,array<int,Method>> maps property names to setters for that property
+     * @return array<string,list<Method>> maps property names to setters for that property
      */
     private function getSettersMap(CodeBase $code_base) : array
     {
         return $this->memoize(
             __METHOD__,
             /**
-             * @return array<string,array<int,Method>> maps property names to setters for that property (both instance and static properties)
+             * @return array<string,list<Method>> maps property names to setters for that property (both instance and static properties)
              */
             function () use ($code_base) : array {
                 if ($this->isPHPInternal()) {
@@ -1204,14 +1204,14 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * @return array<string,array<int,Method>> maps property names to getters for that property
+     * @return array<string,list<Method>> maps property names to getters for that property
      */
     private function getGettersMap(CodeBase $code_base) : array
     {
         return $this->memoize(
             __METHOD__,
             /**
-             * @return array<string,array<int,Method>> maps property names to getters for that property (for instance properties)
+             * @return array<string,list<Method>> maps property names to getters for that property (for instance properties)
              */
             function () use ($code_base) : array {
                 if ($this->isPHPInternal()) {
@@ -1945,7 +1945,7 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * @return array<int,FullyQualifiedClassName>
+     * @return list<FullyQualifiedClassName>
      * A list of FQSENs for included traits
      */
     public function getTraitFQSENList() : array
@@ -2154,7 +2154,7 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * @return array<int,FullyQualifiedClassName>
+     * @return list<FullyQualifiedClassName>
      */
     public function getNonParentAncestorFQSENList() : array
     {
@@ -2165,7 +2165,7 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * @return array<int,FullyQualifiedClassName>
+     * @return list<FullyQualifiedClassName>
      */
     public function getAncestorFQSENList() : array
     {
@@ -2183,11 +2183,11 @@ class Clazz extends AddressableElement
      * The entire code base from which we'll find ancestor
      * details
      *
-     * @param array<int,FullyQualifiedClassName> $fqsen_list
+     * @param list<FullyQualifiedClassName> $fqsen_list
      * A list of class FQSENs to turn into a list of
      * Clazz objects
      *
-     * @return array<int,Clazz>
+     * @return list<Clazz>
      */
     private static function getClassListFromFQSENList(
         CodeBase $code_base,
@@ -2207,7 +2207,7 @@ class Clazz extends AddressableElement
      * The entire code base from which we'll find ancestor
      * details
      *
-     * @return array<int,Clazz>
+     * @return list<Clazz>
      */
     public function getAncestorClassList(CodeBase $code_base) : array
     {
@@ -3298,14 +3298,14 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * @return array<int,Closure(array<int,mixed>, Context):UnionType>
+     * @return list<Closure(list<mixed>, Context):UnionType>
      */
     public function getGenericConstructorBuilder(CodeBase $code_base) : array
     {
         return $this->memoize(
             'template_type_resolvers',
             /**
-             * @return array<int,Closure(array<int,mixed>):UnionType>
+             * @return list<Closure(list<mixed>):UnionType>
              */
             function () use ($code_base) : array {
                 // Get the constructor so that we can figure out what
@@ -3331,7 +3331,7 @@ class Clazz extends AddressableElement
                                 $this->getFQSEN()
                             );
                         }
-                        /** @param array<int,\ast\Node|mixed> $unused_arg_list */
+                        /** @param list<\ast\Node|mixed> $unused_arg_list */
                         $template_type_resolver = static function (array $unused_arg_list) : UnionType {
                             return MixedType::instance(false)->asPHPDocUnionType();
                         };
