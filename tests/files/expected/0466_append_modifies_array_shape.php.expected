@@ -1,4 +1,6 @@
 %s:4 PhanUndeclaredThis Variable $this is undeclared
-%s:7 PhanTypeMismatchDimFetch When fetching an array index from a value of type array<int,mixed>|array{}, found an array index of type 'key', but expected the index to be of type int
-%s:8 PhanTypeMismatchDimFetch When fetching an array index from a value of type array<int,mixed>|array{}, found an array index of type 'key2', but expected the index to be of type int
-%s:9 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is array<int,mixed>|array{} but \strlen() takes string
+%s:7 PhanTypeInvalidDimOffset Invalid offset "key" of array type array{}|list<mixed>
+%s:7 PhanTypeSuspiciousEcho Suspicious argument null for an echo/print statement
+%s:8 PhanTypeInvalidDimOffset Invalid offset "key2" of array type array{}|list<mixed>
+%s:8 PhanTypeSuspiciousEcho Suspicious argument null for an echo/print statement
+%s:9 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is array{}|list<mixed> but \strlen() takes string

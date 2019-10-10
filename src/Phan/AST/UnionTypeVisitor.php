@@ -932,10 +932,12 @@ class UnionTypeVisitor extends AnalysisVisitor
 
             // XXX is this slow for extremely large arrays because of in_array check in UnionTypeBuilder?
             $is_definitely_non_empty = false;
+            $has_key = false;
             foreach ($children as $child) {
                 if (!($child instanceof Node)) {
                     // Skip this, we already emitted a syntax error.
                     $real_value_types_builder = null;
+                    $has_key = true;
                     continue;
                 }
                 if ($child->kind === ast\AST_UNPACK) {
@@ -947,6 +949,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 }
                 $is_definitely_non_empty = true;
                 $value = $child->children['value'];
+                $has_key = $has_key || isset($child->children['key']);
                 if ($value instanceof Node) {
                     $element_value_type = UnionTypeVisitor::unionTypeFromNode(
                         $this->code_base,
@@ -972,9 +975,13 @@ class UnionTypeVisitor extends AnalysisVisitor
             // TODO: Normalize value_types, e.g. false+true=bool, array<int,T>+array<string,T>=array<mixed,T>
 
             $key_type_enum = GenericArrayType::getKeyTypeOfArrayNode($this->code_base, $this->context, $node, $this->should_catch_issue_exception);
-            $result = $value_types_builder->getPHPDocUnionType()
-                                       ->asNonEmptyGenericArrayTypes($key_type_enum)
-                                       ->withRealTypeSet(self::arrayTypeFromRealTypeBuilder($real_value_types_builder));
+            $result = $value_types_builder->getPHPDocUnionType();
+            if ($has_key) {
+                $result = $result->asNonEmptyGenericArrayTypes($key_type_enum);
+            } else {
+                $result = $result->asNonEmptyListTypes();
+            }
+            $result = $result->withRealTypeSet(self::arrayTypeFromRealTypeBuilder($real_value_types_builder, $has_key));
             if ($is_definitely_non_empty) {
                 return $result->nonFalseyClone();
             }
@@ -989,7 +996,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     /**
      * @return array<int,ArrayType>
      */
-    private static function arrayTypeFromRealTypeBuilder(?UnionTypeBuilder $builder) : array
+    private static function arrayTypeFromRealTypeBuilder(?UnionTypeBuilder $builder, bool $has_key) : array
     {
         if (!$builder || $builder->isEmpty()) {
             static $array_type_set = null;
@@ -1000,7 +1007,11 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
         $real_types = [];
         foreach ($builder->getTypeSet() as $type) {
-            $real_types[] = GenericArrayType::fromElementType($type, false, GenericArrayType::KEY_MIXED);
+            if ($has_key) {
+                $real_types[] = ListType::fromElementType($type, false, GenericArrayType::KEY_MIXED);
+            } else {
+                $real_types[] = GenericArrayType::fromElementType($type, false, GenericArrayType::KEY_MIXED);
+            }
         }
         return $real_types;
     }

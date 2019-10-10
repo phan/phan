@@ -636,22 +636,24 @@ class AssignmentVisitor extends AnalysisVisitor
             ], false)->asRealUnionType();
         } else {
             // Make the right type a generic (i.e. int -> int[])
-            if ($dim_type !== null) {
-                $key_type_enum = GenericArrayType::keyTypeFromUnionTypeValues($dim_type);
-            } elseif ($dim_node !== null) {
-                $key_type_enum = GenericArrayType::KEY_MIXED;
-            } else {
-                $key_type_enum = GenericArrayType::KEY_INT;
-            }
-            $right_inner_type = $this->right_type;
-            if ($right_inner_type->isEmpty()) {
-                if ($key_type_enum === GenericArrayType::KEY_MIXED) {
-                    $right_type = ArrayType::instance(false)->asRealUnionType();
+            if ($dim_node !== null) {
+                if ($dim_type !== null) {
+                    $key_type_enum = GenericArrayType::keyTypeFromUnionTypeValues($dim_type);
                 } else {
-                    $right_type = GenericArrayType::fromElementType(MixedType::instance(false), false, $key_type_enum)->asRealUnionType();
+                    $key_type_enum = GenericArrayType::KEY_MIXED;
+                }
+                $right_inner_type = $this->right_type;
+                if ($right_inner_type->isEmpty()) {
+                    if ($key_type_enum === GenericArrayType::KEY_MIXED) {
+                        $right_type = ArrayType::instance(false)->asRealUnionType();
+                    } else {
+                        $right_type = GenericArrayType::fromElementType(MixedType::instance(false), false, $key_type_enum)->asRealUnionType();
+                    }
+                } else {
+                    $right_type = $right_inner_type->asGenericArrayTypes($key_type_enum);
                 }
             } else {
-                $right_type = $right_inner_type->asGenericArrayTypes($key_type_enum);
+                $right_type = $this->right_type->asNonEmptyListTypes();
             }
             if (!$right_type->hasRealTypeSet()) {
                 $right_type = $right_type->withRealTypeSet([ArrayType::instance(false)]);
