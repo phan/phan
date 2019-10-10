@@ -38,7 +38,7 @@ class StringUtil
 
     /**
      * Encode a list of values in a compact, unambiguous representation for emitted issues.
-     * @param array<int,string|int|float|bool> $values
+     * @param list<string|int|float|bool> $values
      */
     public static function encodeValueList(string $separator, array $values) : string
     {

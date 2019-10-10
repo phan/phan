@@ -506,7 +506,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      * strictly
      * E.g. for `array<string,\stdClass>`, returns self::KEY_STRING
      * for `array<string,\stdClass>|array`, returns self::KEY_MIXED
-     * @param array<int,Type> $type_set
+     * @param list<Type> $type_set
      */
     public static function keyUnionTypeFromTypeSetStrict(array $type_set) : int
     {
@@ -672,7 +672,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
     }
 
     /**
-     * @return array<int,Type>
+     * @return list<Type>
      * @override
      */
     public function withFlattenedArrayShapeOrLiteralTypeInstances() : array

@@ -42,7 +42,7 @@ abstract class PluginAwareBaseAnalysisVisitor extends AnalysisVisitor
      * The list of placeholders for between braces can be found
      * in \Phan\Issue::UNCOLORED_FORMAT_STRING_FOR_TEMPLATE.
      *
-     * @param array<int,string|Type|UnionType|FQSEN|TypedElement> $issue_message_args
+     * @param list<string|Type|UnionType|FQSEN|TypedElement> $issue_message_args
      * The arguments for this issue format.
      * If this array is empty, $issue_message_args is kept in place
      *
@@ -80,7 +80,7 @@ abstract class PluginAwareBaseAnalysisVisitor extends AnalysisVisitor
     // They aren't useful for plugins.
 
     /**
-     * @return array<int,int> The list of $node->kind values this plugin is capable of analyzing.
+     * @return list<int> The list of $node->kind values this plugin is capable of analyzing.
      */
     final public static function getHandledNodeKinds() : array
     {

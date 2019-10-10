@@ -14,7 +14,7 @@ class CLIBuilder
 {
     /** @var array<int|string,string|string[]|false> */
     private $opts = [];
-    /** @var array<int,string> */
+    /** @var list<string> */
     private $argv = [];
 
     public function __construct()
@@ -24,7 +24,7 @@ class CLIBuilder
     /**
      * Set an option and return $this.
      *
-     * @param string|array<int,string>|false $value
+     * @param string|list<string>|false $value
      */
     public function setOption(string $opt, $value = false) : self
     {
@@ -66,7 +66,7 @@ class CLIBuilder
 
     /**
      * Return an array of arguments that correspond to what would cause getopt() to return $this->getOpts().
-     * @return array<int,string>
+     * @return list<string>
      */
     public function getArgv() : array
     {

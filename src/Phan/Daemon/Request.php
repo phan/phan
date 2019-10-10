@@ -63,7 +63,7 @@ class Request
     private $responder;
 
     /**
-     * @var array{method:string,files:array<int,string>,format:string,temporary_file_mapping_contents:array<string,string>}
+     * @var array{method:string,files:list<string>,format:string,temporary_file_mapping_contents:array<string,string>}
      *
      * The configuration passed in with the request to the daemon.
      */
@@ -75,7 +75,7 @@ class Request
     /** @var string the method of the daemon being invoked */
     private $method;
 
-    /** @var array<int,string>|null the list of files the client has requested to be analyzed */
+    /** @var list<string>|null the list of files the client has requested to be analyzed */
     private $files = null;
 
     /**
@@ -109,7 +109,7 @@ class Request
     private $should_exit;
 
     /**
-     * @param array{method:string,files:array<int,string>,format:string,temporary_file_mapping_contents:array<string,string>} $config
+     * @param array{method:string,files:list<string>,format:string,temporary_file_mapping_contents:array<string,string>} $config
      * @param ?NodeInfoRequest $most_recent_node_info_request
      */
     private function __construct(Responder $responder, array $config, $most_recent_node_info_request, bool $should_exit)
@@ -174,7 +174,7 @@ class Request
 
     /**
      * @param Responder $responder (e.g. a socket to write a response on)
-     * @param array<int,string> $file_names absolute path of file(s) to analyze
+     * @param list<string> $file_names absolute path of file(s) to analyze
      * @param CodeBase $code_base (for refreshing parse state)
      * @param Closure $file_path_lister (for refreshing parse state)
      * @param FileMapping $file_mapping object tracking the overrides made by a client.
@@ -335,8 +335,8 @@ class Request
     }
 
     /**
-     * @param array<int,string> $analyze_file_path_list
-     * @return array<int,string>
+     * @param list<string> $analyze_file_path_list
+     * @return list<string>
      */
     public function filterFilesToAnalyze(array $analyze_file_path_list) : array
     {
@@ -633,7 +633,7 @@ class Request
     /**
      * Reloads the file path list.
      * @param array<string,string> $file_mapping_contents maps relative paths to file contents
-     * @param ?array<int,string> $file_names
+     * @param ?list<string> $file_names
      */
     public static function reloadFilePathListForDaemon(CodeBase $code_base, Closure $file_path_lister, array $file_mapping_contents, array $file_names = null) : void
     {

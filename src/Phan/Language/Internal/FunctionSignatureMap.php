@@ -9300,7 +9300,7 @@ return [
 'openssl_free_key' => ['void', 'key_identifier'=>'resource'],
 'openssl_get_cert_locations' => ['array'],
 'openssl_get_cipher_methods' => ['array', 'aliases='=>'bool'],
-'openssl_get_curve_names' => ['array<int,string>'],
+'openssl_get_curve_names' => ['list<string>'],
 'openssl_get_md_methods' => ['array', 'aliases='=>'bool'],
 'openssl_get_privatekey' => ['resource|false', 'key'=>'string', 'passphrase='=>'string'],
 'openssl_get_publickey' => ['resource|false', 'cert'=>'resource|string'],

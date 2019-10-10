@@ -20,7 +20,7 @@ use Phan\Suggestion;
 interface SuppressionCapability
 {
     /**
-     * @param array<int,string|int|float|bool|Type|UnionType|FQSEN|TypedElement|UnaddressableTypedElement> $parameters
+     * @param list<string|int|float|bool|Type|UnionType|FQSEN|TypedElement|UnaddressableTypedElement> $parameters
      *
      * @param ?Suggestion $suggestion Phan's suggestion for how to fix the issue, if any.
      *

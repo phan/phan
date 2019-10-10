@@ -14,21 +14,21 @@ final class VariableGraph
     /**
      * @var array<string,array<int,array<int,true>>>
      *
-     * Maps variable name to (definition id to (list of uses of that given definition))
+     * Maps variable name to (definition id to (set of use ids of that given definition))
      */
     public $def_uses = [];
 
     /**
      * @var array<string,array<int,int>>
      *
-     * Maps variable id to line number of the node for a definition id
+     * Maps variable name to a map from definition id to line number of the node.
      */
     public $def_lines = [];
 
     /**
      * @var array<string,array<int,Node|int|float|string>>
      *
-     * Maps variable id to a set of definition ids and their corresponding constant AST nodes
+     * Maps variable name to a set of definition ids and their corresponding constant AST nodes
      */
     public $const_expr_declarations = [];
 

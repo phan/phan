@@ -692,7 +692,7 @@ class Issue
     public static function templateToFormatString(
         string $template
     ) : string {
-        /** @param array<int,string> $matches */
+        /** @param list<string> $matches */
         return \preg_replace_callback('/{([A-Z_]+)}/', static function (array $matches) use ($template): string {
             $key = $matches[1];
             $replacement_exists = \array_key_exists($key, self::UNCOLORED_FORMAT_STRING_FOR_TEMPLATE);
@@ -725,7 +725,7 @@ class Issue
     {
         // phpcs:disable Generic.Files.LineLength
         /**
-         * @var array<int,Issue>
+         * @var list<Issue>
          * Note: All type ids should be unique, and be grouped by the category.
          * (E.g. If the category is (1 << x), then the type_id should be x*1000 + y
          * If new type ids are added, existing ones should not be changed.
@@ -4484,7 +4484,7 @@ class Issue
     }
 
     /**
-     * @param array<int,Issue> $issue_list the declared Issue types
+     * @param list<Issue> $issue_list the declared Issue types
      */
     private static function getNextTypeId(array $issue_list, int $invalid_type_id) : int
     {
@@ -4499,7 +4499,7 @@ class Issue
     }
 
     /**
-     * @param array<int,Issue> $error_list
+     * @param list<Issue> $error_list
      */
     private static function sanityCheckErrorList(array $error_list) : void
     {
@@ -4640,7 +4640,7 @@ class Issue
     }
 
     /**
-     * @param array<int,mixed> $template_parameters
+     * @param list<mixed> $template_parameters
      * @return IssueInstance
      */
     public function __invoke(
@@ -4714,7 +4714,7 @@ class Issue
      * @param int $line
      * The line number (start) where the issue was found
      *
-     * @param array<int,string|int|float|bool|Type|UnionType|FQSEN|TypedElement|UnaddressableTypedElement> $template_parameters
+     * @param list<string|int|float|bool|Type|UnionType|FQSEN|TypedElement|UnaddressableTypedElement> $template_parameters
      * Any template parameters required for the issue
      * message
      *
@@ -4852,7 +4852,7 @@ class Issue
      * @param int $lineno
      * The line number where the issue was found
      *
-     * @param array<int,string|int|float|bool|Type|UnionType|FQSEN|TypedElement|UnaddressableTypedElement> $parameters
+     * @param list<string|int|float|bool|Type|UnionType|FQSEN|TypedElement|UnaddressableTypedElement> $parameters
      * @param ?Suggestion $suggestion (optional)
      *
      * Template parameters for the issue's error message
@@ -4888,7 +4888,7 @@ class Issue
     }
 
     /**
-     * @param array<int,mixed> $parameters
+     * @param list<mixed> $parameters
      */
     public static function shouldSuppressIssue(
         CodeBase $code_base,

@@ -247,7 +247,7 @@ final class ArgumentType
      * @param FunctionInterface $method
      * The function/method we're analyzing arguments for
      *
-     * @param array<int,Node|string|int|float> $arg_nodes $node
+     * @param list<Node|string|int|float> $arg_nodes $node
      * The node holding the arguments of the call we're looking at
      *
      * @param Context $context
@@ -341,7 +341,7 @@ final class ArgumentType
      * @param FunctionInterface $method
      * The method we're analyzing arguments for
      *
-     * @param array<int,Node|string|int|float> $arg_nodes $node
+     * @param list<Node|string|int|float> $arg_nodes $node
      * The node holding the arguments of the call we're looking at
      *
      * @param Context $context

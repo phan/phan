@@ -25,7 +25,7 @@ use function is_string;
 class CompletionResolver
 {
     /**
-     * @return Closure(Context,Node, array<int,Node>):void
+     * @return Closure(Context,Node, list<Node>):void
      * NOTE: The helper methods distinguish between "Go to definition"
      * and "go to type definition" in their implementations,
      * based on $request->isTypeDefinitionRequest()
@@ -35,7 +35,7 @@ class CompletionResolver
         // TODO: Could use the parent node list
         // (e.g. don't use a method with a void return as an argument to another function)
         /**
-         * @param array<int,Node> $unused_parent_node_list
+         * @param list<Node> $unused_parent_node_list
          */
         return static function (Context $context, Node $node, array $unused_parent_node_list) use ($request, $code_base) : void {
             // @phan-suppress-next-line PhanUndeclaredProperty this is overridden

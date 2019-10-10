@@ -35,7 +35,7 @@ class PureMethodGraph
 
     /**
      * Contains function nodes to depend on nodes that weren't pure.
-     * @var array<int,String>
+     * @var list<String>
      */
     private $to_process = [];
 

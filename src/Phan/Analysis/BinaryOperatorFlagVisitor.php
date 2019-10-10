@@ -296,7 +296,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                  * This will aggressively infer the real type for expressions where both values have known real literal types (e.g. 2+2*3),
                  * but fall back if the real type was less specific.
                  *
-                 * @param array<int,Type> $default_types
+                 * @param list<Type> $default_types
                  */
                 $make_literal_union_type = static function (Type $result, array $default_types) use ($left, $right) : UnionType {
                     if ($left->isExclusivelyRealTypes() && $right->isExclusivelyRealTypes()) {

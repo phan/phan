@@ -176,13 +176,13 @@ class CLI
     }
 
     /**
-     * @var array<int,string>
+     * @var list<string>
      * The set of file names to analyze, from the config
      */
     private $file_list_in_config = [];
 
     /**
-     * @var array<int,string>
+     * @var list<string>
      * The set of file names to analyze, from the combined config and CLI options
      */
     private $file_list = [];
@@ -202,7 +202,7 @@ class CLI
 
     /**
      * @param string|string[] $value
-     * @return array<int,string>
+     * @return list<string>
      */
     public static function readCommaSeparatedListOrLists($value) : array
     {
@@ -214,14 +214,14 @@ class CLI
             if ($file === '') {
                 continue;
             }
-            $value_set[$file] = true;
+            $value_set[$file] = $file;
         }
-        return array_map('strval', \array_keys($value_set));
+        return array_values($value_set);
     }
 
     /**
      * @param array<string,mixed> $opts
-     * @param array<int,string> $argv
+     * @param list<string> $argv
      * @throws UsageException
      */
     private static function checkAllArgsUsed(array $opts, array &$argv) : void
@@ -281,8 +281,8 @@ class CLI
      * Create and read command line arguments, configuring
      * \Phan\Config as a side effect.
      *
-     * @param array<string,string|array<int,mixed>|false> $opts
-     * @param array<int,string> $argv
+     * @param array<string,string|list<mixed>|false> $opts
+     * @param list<string> $argv
      * @throws ExitException
      * @throws UsageException
      * @internal - used for unit tests only
@@ -296,8 +296,8 @@ class CLI
      * Create and read command line arguments, configuring
      * \Phan\Config as a side effect.
      *
-     * @param array<string,string|array<int,mixed>|false> $opts
-     * @param array<int,string> $argv
+     * @param array<string,string|list<mixed>|false> $opts
+     * @param list<string> $argv
      * @return void
      * @throws ExitException
      * @throws UsageException
@@ -995,7 +995,7 @@ class CLI
 
         if (!$this->file_list_only) {
             // Merge in any files given in the config
-            /** @var array<int,string> */
+            /** @var list<string> */
             $this->file_list = \array_merge(
                 $this->file_list,
                 Config::getValue('file_list')
@@ -1035,7 +1035,7 @@ class CLI
 
     /**
      * @param string[] $file_list
-     * @return array<int,string> $file_list without duplicates
+     * @return list<string> $file_list without duplicates
      */
     public static function uniqueFileList(array $file_list) : array
     {
@@ -1071,7 +1071,7 @@ class CLI
     }
 
     /**
-     * @return array<int,string>
+     * @return list<string>
      * Get the set of files to analyze
      */
     public function getFileList() : array
@@ -1482,7 +1482,7 @@ EOB
      */
     public static function colorizeHelpSection(string $section) : string
     {
-        $colorize_flag_cb = /** @param array<int,string> $match */ static function (array $match) : string {
+        $colorize_flag_cb = /** @param list<string> $match */ static function (array $match) : string {
             [$_, $prefix, $cli_flag, $suffix] = $match;
             $colorized_cli_flag = Colorizing::colorizeTextWithColorCode(Colorizing::STYLES['green'], $cli_flag);
             return $prefix . $colorized_cli_flag . $suffix;
@@ -1495,7 +1495,7 @@ EOB
 
         $section = \preg_replace_callback($short_flag_regex, $colorize_flag_cb, $section);
 
-        $colorize_opt_cb = /** @param array<int,string> $match */ static function (array $match) : string {
+        $colorize_opt_cb = /** @param list<string> $match */ static function (array $match) : string {
             $cli_flag = $match[0];
             return Colorizing::colorizeTextWithColorCode(Colorizing::STYLES['yellow'], $cli_flag);
         };
@@ -1601,7 +1601,7 @@ EOB
      * @param string $directory_name
      * The name of a directory to scan for files ending in `.php`.
      *
-     * @return array<int,string>
+     * @return list<string>
      * A list of PHP files in the given directory
      *
      * @throws InvalidArgumentException

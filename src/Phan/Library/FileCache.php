@@ -106,7 +106,7 @@ final class FileCache
     }
 
     /**
-     * @return array<int,string> list of file paths with most recently used entries at the end.
+     * @return list<string> list of file paths with most recently used entries at the end.
      */
     public static function getCachedFileList() : array
     {

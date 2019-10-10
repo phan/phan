@@ -30,7 +30,7 @@ abstract class PluginAwareBaseAnalysisVisitor extends AnalysisVisitor
 
     /**
      * See documentation for PluginV3
-     * @param array<int,string> $issue_message_args
+     * @param list<string> $issue_message_args
      * @return void
      * @suppress PhanPluginCanUsePHP71Void
      * @suppress PhanUnreferencedPublicMethod
@@ -59,7 +59,7 @@ abstract class PluginAwareBaseAnalysisVisitor extends AnalysisVisitor
     // They aren't useful for plugins.
 
     /**
-     * @return array<int,int> The list of $node->kind values this plugin is capable of analyzing.
+     * @return list<int> The list of $node->kind values this plugin is capable of analyzing.
      */
     final public static function getHandledNodeKinds() : array
     {

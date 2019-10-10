@@ -37,7 +37,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     /**
      * Describes information that was parsed about the parameters of this function-like Type.
      * (Name and UnionType)
-     * @var array<int,ClosureDeclarationParameter>
+     * @var list<ClosureDeclarationParameter>
      */
     private $params;
 
@@ -77,7 +77,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     // end computed properties
 
     /**
-     * @param array<int,ClosureDeclarationParameter> $params
+     * @param list<ClosureDeclarationParameter> $params
      * @param UnionType $return_type
      */
     public function __construct(FileRef $file_ref, array $params, UnionType $return_type, bool $returns_reference, bool $is_nullable)
@@ -566,7 +566,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     }
 
     /**
-     * @return array<int,Parameter>
+     * @return list<Parameter>
      */
     public function getParameterList() : array
     {
@@ -760,7 +760,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     }
 
     /**
-     * @param array<int,string> $suppress_issue_list
+     * @param list<string> $suppress_issue_list
      */
     public function setSuppressIssueSet(array $suppress_issue_list) : void
     {

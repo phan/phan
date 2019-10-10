@@ -24,7 +24,7 @@ class StringSuggester
      */
     private $strings_near_length = [];
 
-    /** @var array<int,string> the sorted keys, for binary searching */
+    /** @var list<string> the sorted keys, for binary searching */
     private $key_set;
 
     /** @param array<string, string> $strings map of lowercase element names to uppercase element names */

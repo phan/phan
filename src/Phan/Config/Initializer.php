@@ -130,7 +130,7 @@ class Initializer
     /**
      * @param string $setting_name
      * @param string|int|float|bool|array|null $setting_value
-     * @param array<int,string> $additional_comment_lines
+     * @param list<string> $additional_comment_lines
      */
     public static function generateEntrySnippetForSetting(string $setting_name, $setting_value, array $additional_comment_lines) : string
     {
@@ -411,7 +411,7 @@ EOT;
 
     /**
      * @param array<string,mixed> $composer_settings parsed from composer.json
-     * @return array{0:?string,1:array<int,string>}
+     * @return array{0:?string,1:list<string>}
      */
     public static function determineTargetPHPVersion(array $composer_settings) : array
     {
@@ -446,7 +446,7 @@ EOT;
 
     /**
      * @param array<string,mixed> $composer_settings settings parsed from composer.json
-     * @return array<int,array<int,string>> [$directory_list, $file_list]
+     * @return list<list<string>> [$directory_list, $file_list]
      */
     private static function extractAutoloadFilesAndDirectories(string $relative_dir, array $composer_settings) : array
     {
@@ -491,9 +491,9 @@ EOT;
      * Sort and return the unique directories and files to be added to the Phan config.
      * (don't return directories/files within other directories)
      *
-     * @param array<int,string> $directory_list
-     * @param array<int,string> $file_list
-     * @return array<int,array<int,string>> [$directory_list, $file_list]
+     * @param list<string> $directory_list
+     * @param list<string> $file_list
+     * @return list<list<string>> [$directory_list, $file_list]
      */
     public static function filterDirectoryAndFileList(array $directory_list, array $file_list) : array
     {
@@ -527,7 +527,7 @@ EOT;
 
     /**
      * @param array<string,mixed> $opts
-     * @return array<int,string>
+     * @return list<string>
      */
     private static function getArrayOption(array $opts, string $key) : array
     {

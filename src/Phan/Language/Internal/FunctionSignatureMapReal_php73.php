@@ -1044,7 +1044,7 @@ return [
 'srand' => 'void',
 'sscanf' => '?list<mixed>|?int',
 'stat' => '?bool[]|?false|?int[]|?string[]',
-'str_getcsv' => '?array<int,?string>',
+'str_getcsv' => '?list<?string>',
 'str_ireplace' => '?array[]|?object[]|?string|?string[]',
 'str_pad' => '?string',
 'str_repeat' => '?string',

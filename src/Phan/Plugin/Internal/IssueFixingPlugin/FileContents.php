@@ -19,7 +19,7 @@ class FileContents
     private $contents;
     /** @var ?PhpParser\Node the raw node for the contents */
     private $ast;
-    /** @var ?array<int,array<int,PhpParser\Node>> the nodes at each line - computed lazily*/
+    /** @var ?array<int,list<PhpParser\Node>> the nodes at each line - computed lazily*/
     private $nodes_at_lines;
 
     /** @var ?FilePositionMap - computed lazily and shared by all fixers */
@@ -60,7 +60,7 @@ class FileContents
 
     /**
      * Get the nodes which start at a specific line number
-     * @return array<int,PhpParser\Node>
+     * @return list<PhpParser\Node>
      */
     public function getNodesAtLine(int $line) : array
     {
@@ -72,7 +72,7 @@ class FileContents
      * Compute a map from lines to the nodes at the line.
      *
      * This is efficient if called multiple times, but less efficient(e.g. uses more memory) if only called once.
-     * @return array<int,array<int,PhpParser\Node>>
+     * @return array<int,list<PhpParser\Node>>
      */
     public function computeNodesAtLineMap() : array
     {
@@ -109,25 +109,23 @@ class FileContents
     /**
      * Returns a mapping from the 1-based line number to the byte offset of the start of each line
      * @internal
-     * @return array<int,int>
+     * @return non-empty-list<int>
      */
     public static function computeLineOffsetMap(string $contents) : array
     {
         // start of line 1 is the 0th byte
         $offsets = [0, 0];
-        $line = 2;
         $offset = 0;
         while (($next = \strpos($contents, "\n", $offset)) !== false) {
             $offset = $next + 1;
-            $offsets[$line] = $offset;
-            $line++;
+            $offsets[] = $offset;
         }
-        $offsets[$line] = \strlen($contents);
+        $offsets[] = \strlen($contents);
         return $offsets;
     }
 
     /**
-     * @return array<int,string> a 1-based array of lines
+     * @return list<string> a 1-based array of lines
      */
     public function getLines() : array
     {

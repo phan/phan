@@ -98,7 +98,7 @@ class VariableTrackingScope
      *
      * This is overridden by subclasses, some of which will modify $this->defs
      *
-     * @return ?array<int,true> the Nodes which defined $variable_name
+     * @return ?array<int,true> the ids of Nodes which defined $variable_name
      */
     public function getDefinition(string $variable_name) : ?array
     {
@@ -110,7 +110,7 @@ class VariableTrackingScope
      *
      * This is overridden by subclasses
      *
-     * @return ?array<int,true> the Nodes which defined $variable_name
+     * @return ?array<int,true> the ids of Nodes which defined $variable_name
      */
     public function getDefinitionUpToScope(string $variable_name, VariableTrackingScope $forbidden_scope) : ?array
     {

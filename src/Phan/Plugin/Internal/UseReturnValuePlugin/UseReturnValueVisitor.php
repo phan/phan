@@ -20,7 +20,7 @@ use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
 */
 class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
 {
-    /** @var array<int,Node> set by plugin framework */
+    /** @var list<Node> set by plugin framework */
     protected $parent_node_list;
 
     /**

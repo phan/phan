@@ -25,7 +25,7 @@ class Restarter extends XdebugHandler
     private $required = false;
 
     /**
-     * @var array<int,string>
+     * @var list<string>
      */
     private $disabledExtensions = [];
 

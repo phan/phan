@@ -325,7 +325,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
     }
 
     /**
-     * @param Location|array<string,mixed>|array<int,Location|array> $locations
+     * @param Location|array<string,mixed>|list<Location|array> $locations
      */
     public function recordDefinitionLocationList($locations) : void
     {
@@ -342,7 +342,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
     }
 
     /**
-     * @return array<int,Location>
+     * @return list<Location>
      */
     public function getDefinitionLocations() : array
     {

@@ -17,7 +17,7 @@ return [
 'new' => [
 'FFI::addr' => ['FFI\CData', '&ptr'=>'FFI\CData'],
 'FFI::alignof' => ['int', '&ptr'=>'mixed'],
-'FFI::arrayType' => ['FFI\CType', 'type'=>'string|FFI\CType', 'dims'=>'array<int,int>'],
+'FFI::arrayType' => ['FFI\CType', 'type'=>'string|FFI\CType', 'dims'=>'list<int>'],
 'FFI::cast' => ['FFI\CData', 'type'=>'string|FFI\CType', '&ptr'=>''],
 'FFI::cdef' => ['FFI', 'code='=>'string', 'lib='=>'?string'],
 'FFI::free' => ['void', '&ptr'=>'FFI\CData'],
@@ -35,7 +35,7 @@ return [
 'get_mangled_object_vars' => ['array', 'obj'=>'object'],
 'imagecreatefromtga' => ['resource|false', 'filename'=>'string'],
 'openssl_x509_verify' => ['resource|false', 'cert'=>'string|resource', 'key'=>'string|resource'],
-'password_algos' => ['array<int,string>'],
+'password_algos' => ['list<string>'],
 'pcntl_unshare' => ['bool', 'flags'=>'int'],
 'proc_open' => ['resource|false', 'command'=>'string|string[]', 'descriptorspec'=>'array', '&w_pipes'=>'resource[]', 'cwd='=>'?string', 'env='=>'?array', 'other_options='=>'array'],
 'ReflectionReference::fromArrayElement' => ['?ReflectionReference', 'array'=>'array', 'key'=>'int|string'],

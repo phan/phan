@@ -19,10 +19,10 @@ use Phan\Output\IgnoredFilesFilterInterface;
 use Phan\Output\IssueCollectorInterface;
 use Phan\Output\IssuePrinterInterface;
 use Phan\Plugin\ConfigPluginSet;
+use function array_combine;
 use function array_filter;
 use function array_flip;
 use function array_merge;
-use function array_unique;
 use function array_values;
 use function count;
 use function file_exists;
@@ -89,7 +89,7 @@ class Phan implements IgnoredFilesFilterInterface
      * Take an array of serialized issues, unserialize them and then add
      * them to the issue collector.
      *
-     * @param array<int,IssueInstance> $issues
+     * @param list<IssueInstance> $issues
      */
     private static function collectSerializedResults(array $issues) : void
     {
@@ -309,7 +309,7 @@ class Phan implements IgnoredFilesFilterInterface
      * loaded.
      *
      * @param ?Request $request
-     * @param array<int,string> $analyze_file_path_list
+     * @param list<string> $analyze_file_path_list
      * @param array<string,string> $temporary_file_mapping
      *
      * @throws Exception if analysis failed catastrophically
@@ -432,7 +432,7 @@ class Phan implements IgnoredFilesFilterInterface
                     },
                     $analysis_worker,
                     /**
-                     * @return array<int,IssueInstance> the list of collected issues from calls to collectIssue()
+                     * @return list<IssueInstance> the list of collected issues from calls to collectIssue()
                      */
                     static function () use ($code_base) : array {
                         // This closure is run once, after running analysis_worker on each input.
@@ -516,7 +516,7 @@ class Phan implements IgnoredFilesFilterInterface
      * A set of files to expand with the set of dependencies
      * on those files.
      *
-     * @return array<int,string>
+     * @return list<string>
      * Get an expanded list of files and dependencies for
      * the given file list
      *
@@ -549,7 +549,7 @@ class Phan implements IgnoredFilesFilterInterface
             );
         }
 
-        return array_unique($dependency_file_path_list);
+        return array_values(array_combine($dependency_file_path_list, $dependency_file_path_list));
     }
 
     /**

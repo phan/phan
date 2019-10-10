@@ -43,7 +43,7 @@ class Writer
 
     /**
      * Report the filtered issues seen by this analysis worker.
-     * @param array<int,IssueInstance> $issues
+     * @param list<IssueInstance> $issues
      */
     public static function emitIssues(array $issues) : void
     {

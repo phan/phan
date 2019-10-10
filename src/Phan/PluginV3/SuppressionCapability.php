@@ -39,7 +39,7 @@ interface SuppressionCapability
      * @param int $lineno
      * The line number where the issue was found
      *
-     * @param array<int,string|int|float|bool|Type|UnionType|FQSEN|TypedElement|UnaddressableTypedElement> $parameters
+     * @param list<string|int|float|bool|Type|UnionType|FQSEN|TypedElement|UnaddressableTypedElement> $parameters
      *
      * @param ?Suggestion $suggestion Phan's suggestion for how to fix the issue, if any.
      *
@@ -65,7 +65,7 @@ interface SuppressionCapability
      *
      * @param string $file_path the file to check for suppressions of
      *
-     * @return array<string,array<int,int>> Maps 0 or more issue types to a *map* of lines that this plugin is going to suppress.
+     * @return array<string,list<int>> Maps 0 or more issue types to a *map* of lines that this plugin is going to suppress.
      * The keys of the map are the lines being suppressed, and the values are the lines *causing* the suppressions (if extracted from comments or nodes)
      *
      * An empty array can be returned if this is unknown.
