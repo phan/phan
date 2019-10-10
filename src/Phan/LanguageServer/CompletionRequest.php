@@ -56,7 +56,7 @@ final class CompletionRequest extends NodeInfoRequest
     }
 
     /**
-     * @param ?CompletionItem|?array<int,CompletionItem>|array<string,mixed> $completions
+     * @param ?CompletionItem|?list<CompletionItem>|array<string,mixed> $completions
      * @suppress PhanPartialTypeMismatchArgument this accepts multiple types of arrays
      */
     public function recordCompletionList($completions) : void
@@ -162,7 +162,7 @@ final class CompletionRequest extends NodeInfoRequest
     }
 
     /**
-     * @return array<int,CompletionItem>
+     * @return list<CompletionItem>
      */
     public function getCompletions() : array
     {

@@ -34,7 +34,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
 
     /**
      * @param Node|int|string|float|null $arg_array_node
-     * @return ?array<int,Node|int|string|float>
+     * @return ?list<Node|int|string|float>
      */
     private static function extractArrayArgs($arg_array_node)
     {
@@ -58,7 +58,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
     private static function getReturnTypeOverridesStatic() : array
     {
         /**
-         * @param array<int,Node|int|string|float> $args
+         * @param list<Node|int|string|float> $args
          */
         $call_user_func_callback = static function (
             CodeBase $code_base,
@@ -89,7 +89,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
             return $element_types;
         };
         /**
-         * @param array<int,Node|int|string|float> $args
+         * @param list<Node|int|string|float> $args
          */
         $call_user_func_array_callback = static function (
             CodeBase $code_base,
@@ -127,7 +127,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
             return $element_types;
         };
         /**
-         * @param array<int,Node|int|string|float> $args
+         * @param list<Node|int|string|float> $args
          */
         $from_callable_callback = static function (
             CodeBase $code_base,
@@ -154,7 +154,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
             return $closure_types->withRealType(ClosureType::instance(false));
         };
         /**
-         * @param array<int,Node|int|float|string> $args
+         * @param list<Node|int|float|string> $args
          */
         $from_closure_callback = static function (
             CodeBase $code_base,
@@ -197,7 +197,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
     private static function getAnalyzeFunctionCallClosuresStatic() : array
     {
         /**
-         * @param array<int,Node|int|string|float> $args
+         * @param list<Node|int|string|float> $args
          */
         $call_user_func_callback = static function (
             CodeBase $code_base,
@@ -218,7 +218,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
         };
 
         /**
-         * @param array<int,Node|int|string|float> $args
+         * @param list<Node|int|string|float> $args
          */
         $call_user_func_array_callback = static function (
             CodeBase $code_base,
@@ -353,8 +353,8 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
      *
      * @param CodeBase $code_base
      * @param Context $context
-     * @param array<int,FunctionInterface> $function_like_list
-     * @param array<int,Node|string|int|float> $arguments
+     * @param list<FunctionInterface> $function_like_list
+     * @param list<Node|string|int|float> $arguments
      */
     private static function analyzeFunctionAndNormalArgumentList(CodeBase $code_base, Context $context, array $function_like_list, array $arguments) : void
     {

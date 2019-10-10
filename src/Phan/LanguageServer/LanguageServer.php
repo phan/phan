@@ -536,7 +536,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      * Gets URIs (and corresponding paths) which the language server client needs Phan to re-analyze.
      * This excludes any files that aren't in files and directories of .phan/config.php
      *
-     * @return array{0:array<string,string>,1:array<int,string>}
+     * @return array{0:array<string,string>,1:list<string>}
      * First element maps relative path to the file URI.
      * Second element is the result of file_path_lister (unless there's nothing to analyze)
      */
@@ -650,7 +650,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             new StreamResponder($child_stream, false),
             $paths_to_analyze,
             $this->code_base,
-            /** @return array<int,string> */
+            /** @return list<string> */
             static function (bool $unused_recompute_file_list = false) use ($file_path_list) : array {
                 return $file_path_list;
             },
@@ -784,7 +784,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     }
 
     /**
-     * @param array<string,array<int,Diagnostic>> $diagnostics
+     * @param array<string,list<Diagnostic>> $diagnostics
      */
     private function publishDiagnosticsListsForURIs(array $diagnostics) : void
     {

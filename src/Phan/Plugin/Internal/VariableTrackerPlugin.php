@@ -102,7 +102,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
-     * @return array<int,string> maps unique definition ids to issue types
+     * @return list<string> maps unique definition ids to issue types
      */
     private function addParametersAndUseVariablesToGraph(
         Node $node,
@@ -223,7 +223,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
-     * @param array<int,string> $issue_overrides_for_definition_ids maps definition ids to issue types
+     * @param list<string> $issue_overrides_for_definition_ids maps definition ids to issue types
      */
     private function warnAboutVariableGraph(
         Node $method_node,
@@ -310,7 +310,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
-     * @param array<int,string> $issue_overrides_for_definition_ids maps definition ids to issue types
+     * @param list<string> $issue_overrides_for_definition_ids maps definition ids to issue types
      */
     private function checkSingleDefinitionReferenceOrGlobalOrStatic(
         VariableGraph $graph,

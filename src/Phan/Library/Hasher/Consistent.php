@@ -15,9 +15,9 @@ class Consistent implements Hasher
     const VIRTUAL_COPY_COUNT = 16;
     /** i.e. (1 << 30) */
     const MAX = 0x40000000;
-    /** @var array<int,int> - Sorted list of hash values, for binary search. */
+    /** @var list<int> - Sorted list of hash values, for binary search. */
     protected $hash_ring_ids;
-    /** @var array<int,int> - Groups corresponding to hash values in hash_ring_ids */
+    /** @var list<int> - Groups corresponding to hash values in hash_ring_ids */
     protected $hash_ring_groups;
 
     public function __construct(int $group_count)
@@ -83,7 +83,7 @@ class Consistent implements Hasher
     }
 
     /**
-     * @return array<int,int> A list of VIRTUAL_COPY_COUNT hashes for group $i in the consistent hash ring.
+     * @return list<int> A list of VIRTUAL_COPY_COUNT hashes for group $i in the consistent hash ring.
      */
     public static function getHashesForGroup(int $group) : array
     {

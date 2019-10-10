@@ -85,7 +85,7 @@ class ThrowAnalyzerPlugin extends PluginV3 implements PostAnalyzeNodeCapability,
 class ThrowVisitor extends PluginAwarePostAnalysisVisitor
 {
     /**
-     * @var array<int,Node> Dynamic
+     * @var list<Node> Dynamic
      * @suppress PhanReadOnlyProtectedProperty set by the framework
      */
     protected $parent_node_list;

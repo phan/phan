@@ -97,66 +97,66 @@ final class ConfigPluginSet extends PluginV3 implements
     SuppressionCapability
 {
 
-    /** @var array<int,PluginV3>|null - Cached plugin set for this instance. Lazily generated. */
+    /** @var list<PluginV3>|null - Cached plugin set for this instance. Lazily generated. */
     private $plugin_set;
 
     /**
-     * @var array<int,Closure>|null - plugins to analyze nodes in pre order.
-     * @phan-var array<int,Closure(CodeBase,Context,Node):void>|null
+     * @var list<Closure>|null - plugins to analyze nodes in pre order.
+     * @phan-var list<Closure(CodeBase,Context,Node):void>|null
      */
     private $pre_analyze_node_plugin_set;
 
     /**
-     * @var array<int,Closure> - plugins to analyze files
-     * @phan-var array<int,Closure(CodeBase,Context,Node|int|string|float,array<int,Node>):void>|null
+     * @var list<Closure> - plugins to analyze files
+     * @phan-var list<Closure(CodeBase,Context,Node|int|string|float,list<Node>):void>|null
      */
     private $post_analyze_node_plugin_set;
 
     /**
-     * @var array<int,BeforeAnalyzeFileCapability> - plugins to analyze files before Phan's analysis of that file is completed.
+     * @var list<BeforeAnalyzeFileCapability> - plugins to analyze files before Phan's analysis of that file is completed.
      */
     private $before_analyze_file_plugin_set;
 
     /**
-     * @var array<int,BeforeAnalyzeCapability> - plugins to analyze the project before Phan starts the analyze phase and before methods are analyzed.
+     * @var list<BeforeAnalyzeCapability> - plugins to analyze the project before Phan starts the analyze phase and before methods are analyzed.
      */
     private $before_analyze_plugin_set;
 
     /**
-     * @var array<int,BeforeAnalyzePhaseCapability> - plugins to analyze the project before Phan starts the analyze phase and after methods are analyzed.
+     * @var list<BeforeAnalyzePhaseCapability> - plugins to analyze the project before Phan starts the analyze phase and after methods are analyzed.
      */
     private $before_analyze_phase_plugin_set;
 
     /**
-     * @var array<int,AfterAnalyzeFileCapability> - plugins to analyze files after Phan's analysis of that file is completed.
+     * @var list<AfterAnalyzeFileCapability> - plugins to analyze files after Phan's analysis of that file is completed.
      */
     private $after_analyze_file_plugin_set;
 
-    /** @var array<int,AnalyzeClassCapability>|null - plugins to analyze class declarations. */
+    /** @var list<AnalyzeClassCapability>|null - plugins to analyze class declarations. */
     private $analyze_class_plugin_set;
 
-    /** @var array<int,AnalyzeFunctionCallCapability>|null - plugins to analyze invocations of subsets of functions and methods. */
+    /** @var list<AnalyzeFunctionCallCapability>|null - plugins to analyze invocations of subsets of functions and methods. */
     private $analyze_function_call_plugin_set;
 
-    /** @var array<int,AnalyzeFunctionCapability>|null - plugins to analyze function declarations. */
+    /** @var list<AnalyzeFunctionCapability>|null - plugins to analyze function declarations. */
     private $analyze_function_plugin_set;
 
-    /** @var array<int,AnalyzePropertyCapability>|null - plugins to analyze property declarations. */
+    /** @var list<AnalyzePropertyCapability>|null - plugins to analyze property declarations. */
     private $analyze_property_plugin_set;
 
-    /** @var array<int,AnalyzeMethodCapability>|null - plugins to analyze method declarations.*/
+    /** @var list<AnalyzeMethodCapability>|null - plugins to analyze method declarations.*/
     private $analyze_method_plugin_set;
 
-    /** @var array<int,HandleLazyLoadInternalFunctionCapability>|null - plugins to modify Phan's information about internal Funcs when loaded for the first time */
+    /** @var list<HandleLazyLoadInternalFunctionCapability>|null - plugins to modify Phan's information about internal Funcs when loaded for the first time */
     private $handle_lazy_load_internal_function_plugin_set;
 
-    /** @var array<int,FinalizeProcessCapability>|null - plugins to call finalize() on after analysis is finished. */
+    /** @var list<FinalizeProcessCapability>|null - plugins to call finalize() on after analysis is finished. */
     private $finalize_process_plugin_set;
 
-    /** @var array<int,ReturnTypeOverrideCapability>|null - plugins which generate return UnionTypes of functions based on arguments. */
+    /** @var list<ReturnTypeOverrideCapability>|null - plugins which generate return UnionTypes of functions based on arguments. */
     private $return_type_override_plugin_set;
 
-    /** @var array<int,SuppressionCapability>|null - plugins which can be used to suppress issues or inspect suppressions. */
+    /** @var list<SuppressionCapability>|null - plugins which can be used to suppress issues or inspect suppressions. */
     private $suppression_plugin_set;
 
     /** @var ?UnusedSuppressionPlugin - TODO: Refactor*/
@@ -270,7 +270,7 @@ final class ConfigPluginSet extends PluginV3 implements
      * @param Node $node
      * The php-ast Node being analyzed.
      *
-     * @param array<int,Node> $parent_node_list
+     * @param list<Node> $parent_node_list
      * The parent node of the given node (if one exists).
      */
     public function postAnalyzeNode(
@@ -434,7 +434,7 @@ final class ConfigPluginSet extends PluginV3 implements
      * @param int $lineno
      * The line number where the issue was found
      *
-     * @param array<int,string|int|float|bool|Type|UnionType|FQSEN|TypedElement|UnaddressableTypedElement> $parameters
+     * @param list<string|int|float|bool|Type|UnionType|FQSEN|TypedElement|UnaddressableTypedElement> $parameters
      *
      * @param ?Suggestion $suggestion Phan's suggestion for how to fix the issue, if any.
      *
@@ -470,7 +470,7 @@ final class ConfigPluginSet extends PluginV3 implements
     /**
      * @param CodeBase $code_base
      * @param string $file_path
-     * @return array<string,array<int,int>> Maps 0 or more issue types to a *list* of lines that this plugin set is going to suppress.
+     * @return array<string,list<int>> Maps 0 or more issue types to a *list* of lines that this plugin set is going to suppress.
      */
     public function getIssueSuppressionList(
         CodeBase $code_base,
@@ -487,7 +487,7 @@ final class ConfigPluginSet extends PluginV3 implements
     }
 
     /**
-     * @return array<int,SuppressionCapability>
+     * @return list<SuppressionCapability>
      * @suppress PhanPossiblyNullTypeReturn should always be initialized before any issues get emitted.
      */
     public function getSuppressionPluginSet() : array
@@ -585,9 +585,9 @@ final class ConfigPluginSet extends PluginV3 implements
     }
 
     /**
-     * @param Closure(CodeBase, Context, FunctionInterface, array<int,Node|mixed>, ?Node):void $a
-     * @param ?Closure(CodeBase, Context, FunctionInterface, array<int,Node|mixed>, ?Node):void $b
-     * @return Closure(CodeBase, Context, FunctionInterface, array<int,Node|mixed>, ?Node):void $b
+     * @param Closure(CodeBase, Context, FunctionInterface, list<Node|mixed>, ?Node):void $a
+     * @param ?Closure(CodeBase, Context, FunctionInterface, list<Node|mixed>, ?Node):void $b
+     * @return Closure(CodeBase, Context, FunctionInterface, list<Node|mixed>, ?Node):void $b
      */
     public static function mergeAnalyzeFunctionCallClosures(Closure $a, Closure $b = null) : Closure
     {
@@ -595,7 +595,7 @@ final class ConfigPluginSet extends PluginV3 implements
             return $a;
         }
         /**
-         * @param array<int,Node|mixed> $args
+         * @param list<Node|mixed> $args
          */
         return static function (CodeBase $code_base, Context $context, FunctionInterface $func, array $args, ?Node $node) use ($a, $b) : void {
             $a($code_base, $context, $func, $args, $node);
@@ -661,7 +661,7 @@ final class ConfigPluginSet extends PluginV3 implements
         }
 
         /**
-         * @param array<int,Node|mixed> $parent_node_list
+         * @param list<Node|mixed> $parent_node_list
          */
         $closure = static function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list = []) : void {
             $visitor = new NodeSelectionVisitor($code_base, $context);
@@ -722,7 +722,7 @@ final class ConfigPluginSet extends PluginV3 implements
         $old_plugin_for_kind = $this->post_analyze_node_plugin_set[$kind] ?? null;
         if ($old_plugin_for_kind) {
             /**
-             * @param array<int,Node> $parent_node_list
+             * @param list<Node> $parent_node_list
              * @suppress PhanInfiniteRecursion the old plugin is referring to a different closure
              */
             $this->post_analyze_node_plugin_set[$kind] = static function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list = []) use ($old_plugin_for_kind, $new_plugin) : void {
@@ -874,7 +874,7 @@ final class ConfigPluginSet extends PluginV3 implements
     }
 
     /**
-     * @param array<int,PluginV3> $plugin_set
+     * @param list<PluginV3> $plugin_set
      */
     private static function registerIssueFixerClosures(array $plugin_set) : void
     {
@@ -903,9 +903,9 @@ final class ConfigPluginSet extends PluginV3 implements
     }
 
     /**
-     * @param array<int,PluginV3> $plugin_set
-     * @return array<int,Closure(CodeBase,Context,Node,array<int,Node>=):void>
-     *         Returned value maps ast\Node->kind to [function(CodeBase $code_base, Context $context, Node $node, array<int,Node> $parent_node_list = []): void]
+     * @param list<PluginV3> $plugin_set
+     * @return list<Closure(CodeBase,Context,Node,list<Node>=):void>
+     *         Returned value maps ast\Node->kind to [function(CodeBase $code_base, Context $context, Node $node, list<Node> $parent_node_list = []): void]
      */
     private static function filterPreAnalysisPlugins(array $plugin_set) : array
     {
@@ -916,7 +916,7 @@ final class ConfigPluginSet extends PluginV3 implements
             }
         }
         /**
-         * @param array<int,Closure> $closure_list
+         * @param list<Closure> $closure_list
          */
         return $closures_for_kind->getFlattenedClosures(static function (array $closure_list) : Closure {
             return static function (CodeBase $code_base, Context $context, Node $node) use ($closure_list) : void {
@@ -975,7 +975,7 @@ final class ConfigPluginSet extends PluginV3 implements
             /**
              * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind.
              *
-             * @param array<int,Node> $parent_node_list
+             * @param list<Node> $parent_node_list
              * @phan-closure-scope PluginAwarePreAnalysisVisitor
              */
             return (static function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list = []) : void {
@@ -990,7 +990,7 @@ final class ConfigPluginSet extends PluginV3 implements
              * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind.
              *
              * @phan-closure-scope PluginAwarePreAnalysisVisitor
-             * @param array<int,Node> $unused_parent_node_list
+             * @param list<Node> $unused_parent_node_list
              */
             return (static function (CodeBase $code_base, Context $context, Node $node, array $unused_parent_node_list = []) : void {
                 $visitor = new static($code_base, $context);
@@ -1001,8 +1001,8 @@ final class ConfigPluginSet extends PluginV3 implements
     }
 
     /**
-     * @param array<int,PluginV3> $plugin_set
-     * @return array<int,\Closure> - [function(CodeBase $code_base, Context $context, Node $node, array<int,Node> $parent_node_list = []): void]
+     * @param list<PluginV3> $plugin_set
+     * @return list<\Closure> - [function(CodeBase $code_base, Context $context, Node $node, list<Node> $parent_node_list = []): void]
      */
     private static function filterPostAnalysisPlugins(array $plugin_set) : array
     {
@@ -1013,11 +1013,11 @@ final class ConfigPluginSet extends PluginV3 implements
             }
         }
         /**
-         * @param array<int,Closure> $closure_list
+         * @param list<Closure> $closure_list
          */
         return $closures_for_kind->getFlattenedClosures(static function (array $closure_list) : Closure {
             /**
-             * @param array<int,Node> $parent_node_list
+             * @param list<Node> $parent_node_list
              */
             return static function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list = []) use ($closure_list) : void {
                 foreach ($closure_list as $closure) {
@@ -1081,7 +1081,7 @@ final class ConfigPluginSet extends PluginV3 implements
              * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind.
              *
              * @phan-closure-scope PluginAwarePostAnalysisVisitor
-             * @param array<int,Node> $parent_node_list
+             * @param list<Node> $parent_node_list
              */
             return (static function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list = []) : void {
                 $visitor = new static($code_base, $context);
@@ -1095,7 +1095,7 @@ final class ConfigPluginSet extends PluginV3 implements
              * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind.
              *
              * @phan-closure-scope PluginAwarePostAnalysisVisitor
-             * @param array<int,Node> $unused_parent_node_list
+             * @param list<Node> $unused_parent_node_list
              */
             return (static function (CodeBase $code_base, Context $context, Node $node, array $unused_parent_node_list = []) : void {
                 $visitor = new static($code_base, $context);
@@ -1107,10 +1107,10 @@ final class ConfigPluginSet extends PluginV3 implements
 
     /**
      * @template T
-     * @param array<int,PluginV3> $plugin_set
+     * @param list<PluginV3> $plugin_set
      * @param class-string<T> $interface_name
      * @param ?class-string $alternate_interface_name a legacy inferface from PluginV2 accepting the same arguments
-     * @return array<int,T>
+     * @return list<T>
      * @suppress PhanPartialTypeMismatchReturn unable to infer this
      */
     private static function filterByClass(array $plugin_set, string $interface_name, ?string $alternate_interface_name = null) : array

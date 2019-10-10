@@ -105,7 +105,7 @@ class ArrayType extends IterableType
     /**
      * @param array<int,Type> $left_types
      * @param array<int,Type> $right_types
-     * @return array<int,Type>
+     * @return list<Type>
      */
     private static function combineArrayTypeListsOverriding(array $left_types, array $right_types) : array
     {

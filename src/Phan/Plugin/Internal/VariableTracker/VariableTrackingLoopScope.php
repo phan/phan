@@ -8,7 +8,7 @@ namespace Phan\Plugin\Internal\VariableTracker;
 final class VariableTrackingLoopScope extends VariableTrackingBranchScope
 {
     /**
-     * @var array<int,VariableTrackingBranchScope>
+     * @var list<VariableTrackingBranchScope>
      * The scopes that broke out early within the inner body of this loop.
      *
      * Both the variable definitions and uses of these scopes must be accounted for.
@@ -16,7 +16,7 @@ final class VariableTrackingLoopScope extends VariableTrackingBranchScope
     public $skipped_loop_scopes = [];
 
     /**
-     * @var array<int,VariableTrackingBranchScope>
+     * @var list<VariableTrackingBranchScope>
      * The scopes that exited early within the inner body of this loop
      *
      * Only the variable uses of these scopes must be accounted for.

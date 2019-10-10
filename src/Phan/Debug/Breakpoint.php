@@ -3,7 +3,7 @@
 namespace Phan\Debug;
 
 /**
- * @return array<int,string>
+ * @return list<string>
  */
 \readline_completion_function(static function (string $input) : array {
     $matches = [];

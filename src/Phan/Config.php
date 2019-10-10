@@ -1183,7 +1183,7 @@ class Config
 
     /**
      * @param array<string,mixed> $configuration
-     * @return array<int,string> a list of 0 or more error messages for invalid config settings
+     * @return list<string> a list of 0 or more error messages for invalid config settings
      */
     public static function getConfigErrors(array $configuration) : array
     {

@@ -23,10 +23,10 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
     const NAME = 'array';
 
     /**
-     * @var array<int,Type>
+     * @var non-empty-list<Type>
      * The list of possible types of every element in this array (2 or more)
      */
-    private $element_types = [];
+    private $element_types;
 
     /**
      * @var int
@@ -47,7 +47,7 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
     private $is_list;
 
     /**
-     * @param array<int,Type> $types
+     * @param non-empty-list<Type> $types
      * The 2 or more possible types of every element in this array
      *
      * @param bool $is_nullable
@@ -104,7 +104,7 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
     }
 
     /**
-     * @return array<int,GenericArrayType>
+     * @return non-empty-list<GenericArrayType>
      * @override
      */
     public function asIndividualTypeInstances() : array
@@ -127,7 +127,7 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
     /**
      * Public creator of GenericMultiArrayType instances
      *
-     * @param array<int,Type> $element_types
+     * @param non-empty-list<Type> $element_types
      * @param bool $is_nullable
      * @param int $key_type
      * @param bool $always_has_elements

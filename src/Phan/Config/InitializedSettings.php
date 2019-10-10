@@ -12,7 +12,7 @@ class InitializedSettings
     /** @var array<string,mixed> the values for setting names*/
     public $settings;
 
-    /** @var array<string,array<int,string>> comments for settings */
+    /** @var array<string,list<string>> comments for settings */
     public $comment_lines;
 
     /** @var int the init-level CLI option used to generate the settings. Smaller numbers mean a stricter config. */
@@ -20,7 +20,7 @@ class InitializedSettings
 
     /**
      * @param array<string,mixed> $data
-     * @param array<string,array<int,string>> $comment_lines
+     * @param array<string,list<string>> $comment_lines
      */
     public function __construct(
         array $data,

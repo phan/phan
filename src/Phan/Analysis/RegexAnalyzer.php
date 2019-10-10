@@ -24,7 +24,7 @@ class RegexAnalyzer
      * Returns the union type of the matches output parameter in a call to `preg_match()`
      * with the nodes in $argument_list.
      *
-     * @param array<int,Node|string|float|int> $argument_list
+     * @param list<Node|string|float|int> $argument_list
      */
     public static function getPregMatchUnionType(
         CodeBase $code_base,
@@ -79,7 +79,7 @@ class RegexAnalyzer
      * Returns the union type of the matches output parameter in a call to `preg_match_all()`
      * with the nodes in $argument_list.
      *
-     * @param array<int,Node|string|float|int> $argument_list
+     * @param list<Node|string|float|int> $argument_list
      */
     public static function getPregMatchAllUnionType(
         CodeBase $code_base,

@@ -15,7 +15,7 @@ use Phan\PluginV3\PostAnalyzeNodeCapability;
 class NodeSelectionPlugin extends PluginV3 implements PostAnalyzeNodeCapability
 {
     /**
-     * @param ?Closure(Context,Node,array<int,Node>):void $closure
+     * @param ?Closure(Context,Node,list<Node>):void $closure
      * @return void
      * TODO: Fix false positive TypeMismatchDeclaredParam with Closure $closure = null in this method
      */
@@ -56,7 +56,7 @@ class NodeSelectionVisitor extends PluginAwarePostAnalysisVisitor
      * @param Node $node
      * A node to check
      *
-     * @param array<int,Node> $parent_node_list
+     * @param list<Node> $parent_node_list
      * @see ConfigPluginSet::prepareNodeSelectionPlugin() for how this is called
      */
     public function visitCommonImplementation(Node $node, array $parent_node_list) : void

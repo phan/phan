@@ -52,7 +52,7 @@ final class BuiltinSuppressionPlugin extends PluginV3 implements
      * @param int $lineno
      * The line number where the issue was found
      *
-     * @param array<int,string|int|float|bool|Type|UnionType|FQSEN|TypedElement|UnaddressableTypedElement> $parameters @phan-unused-param
+     * @param list<string|int|float|bool|Type|UnionType|FQSEN|TypedElement|UnaddressableTypedElement> $parameters @phan-unused-param
      *
      * @param ?Suggestion $suggestion @phan-unused-param
      *
@@ -79,7 +79,7 @@ final class BuiltinSuppressionPlugin extends PluginV3 implements
     }
 
     /**
-     * @return array<string,array<int,int>> Maps 0 or more issue types to a *list* of lines corresponding to issues that this plugin is going to suppress.
+     * @return array<string,list<int>> Maps 0 or more issue types to a *list* of lines corresponding to issues that this plugin is going to suppress.
      *
      * This list is externally used only by UnusedSuppressionPlugin
      *
@@ -98,7 +98,7 @@ final class BuiltinSuppressionPlugin extends PluginV3 implements
     }
 
     /**
-     * @return array<string,array<int,int>> Maps 0 or more issue types to a *list* of lines corresponding to issues that this plugin is going to suppress.
+     * @return array<string,list<int>> Maps 0 or more issue types to a *list* of lines corresponding to issues that this plugin is going to suppress.
      *
      * This list is externally used only by UnusedSuppressionPlugin
      *
@@ -131,7 +131,7 @@ final class BuiltinSuppressionPlugin extends PluginV3 implements
     }
 
     /**
-     * @return array<string,array<int,int>> Maps 0 or more issue types to a *list* of lines corresponding to issues that this plugin is going to suppress.
+     * @return array<string,list<int>> Maps 0 or more issue types to a *list* of lines corresponding to issues that this plugin is going to suppress.
      */
     private function computeIssueSuppressionList(
         CodeBase $unused_code_base,

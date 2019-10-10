@@ -43,7 +43,7 @@ final class CompactPlugin extends PluginV3 implements
     private static function getAnalyzeFunctionCallClosuresStatic() : array
     {
         /**
-         * @param array<int,Node|int|float|string> $args
+         * @param list<Node|int|float|string> $args
          */
         $compact_callback = static function (
             CodeBase $code_base,

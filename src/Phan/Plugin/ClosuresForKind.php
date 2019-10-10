@@ -20,7 +20,7 @@ use Phan\AST\Visitor\Element;
 class ClosuresForKind
 {
     /**
-     * @var array<int,array<int,Closure>> Maps a node kind to a list of 1 or more (unflattened) closures to execute on nodes of that kind.
+     * @var array<int,non-empty-list<Closure>> Maps a node kind to a list of 1 or more (unflattened) closures to execute on nodes of that kind.
      */
     private $closures = [];
 
@@ -41,9 +41,10 @@ class ClosuresForKind
             throw new InvalidArgumentException("Invalid node kind $kind");
         }
         if (!isset($this->closures[$kind])) {
-            $this->closures[$kind] = [];
+            $this->closures[$kind] = [$c];
+        } else {
+            $this->closures[$kind][] = $c;
         }
-        $this->closures[$kind][] = $c;
     }
 
     /**

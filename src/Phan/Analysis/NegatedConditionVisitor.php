@@ -349,7 +349,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
     }
 
     /**
-     * @param array<int,Node|string|int|float> $args
+     * @param list<Node|string|int|float> $args
      */
     private function analyzeArrayKeyExistsNegation(array $args) : Context
     {
@@ -405,7 +405,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
             return $this->modifyComplexExpression(
                 $expr_node,
                 /**
-                 * @param array<int,mixed> $args
+                 * @param list<mixed> $args
                  * @suppress PhanUnusedClosureParameter
                  */
                 function (CodeBase $code_base, Context $context, Variable $variable, array $args) use ($class_node) : void {
@@ -744,8 +744,8 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
     }
 
     /**
-     * @param array<int,Type> $type_set
-     * @return array<int,Type> which may contain duplicates
+     * @param list<Type> $type_set
+     * @return list<Type> which may contain duplicates
      */
     private static function filterNonArrayTypes(array $type_set) : array
     {

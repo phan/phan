@@ -16,4 +16,4 @@ src/101_extended_return_inferences.php:24 PhanTypeMismatchArgument Argument 1 ($
 src/101_extended_return_inferences.php:25 PhanTypeMismatchArgument Argument 1 ($x) is 'TEST' but \expect_zero() takes 0 defined at src/101_extended_return_inferences.php:8
 src/101_extended_return_inferences.php:26 PhanTypeMismatchArgument Argument 1 ($x) is 'test' but \expect_zero() takes 0 defined at src/101_extended_return_inferences.php:8
 src/101_extended_return_inferences.php:29 PhanTypeMismatchArgumentInternal Argument 1 ($fp) is array|bool|float|int|null|string but \fwrite() takes resource
-src/101_extended_return_inferences.php:30 PhanTypeMismatchArgumentInternal Argument 1 ($fp) is \stdClass|array<int,mixed>|bool|float|int|null|string but \fwrite() takes resource
+src/101_extended_return_inferences.php:30 PhanTypeMismatchArgumentInternal Argument 1 ($fp) is \stdClass|bool|float|int|list<mixed>|null|string but \fwrite() takes resource

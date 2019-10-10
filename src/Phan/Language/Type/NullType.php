@@ -24,7 +24,7 @@ final class NullType extends ScalarType
      * @param string $name
      * The name of the type such as 'int' or 'MyClass'
      *
-     * @param array<int,UnionType> $template_parameter_type_list @phan-unused-param
+     * @param list<UnionType> $template_parameter_type_list @phan-unused-param
      * A (possibly empty) list of template parameter types
      *
      * @param bool $is_nullable (@phan-unused-param)

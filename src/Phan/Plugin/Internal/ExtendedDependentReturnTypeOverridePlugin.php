@@ -44,7 +44,7 @@ final class ExtendedDependentReturnTypeOverridePlugin extends PluginV3 implement
         ) : Closure {
             $max_args = $max_args ?? $min_args;
             /**
-             * @param array<int,Node|string|int|float> $args
+             * @param list<Node|string|int|float> $args
              */
             return static function (
                 CodeBase $code_base,
@@ -100,7 +100,7 @@ final class ExtendedDependentReturnTypeOverridePlugin extends PluginV3 implement
                 return $cb;
             }
             /**
-             * @param array<int,Node|string|int|float> $args
+             * @param list<Node|string|int|float> $args
              */
             return static function (
                 CodeBase $code_base,

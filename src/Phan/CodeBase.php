@@ -287,7 +287,7 @@ class CodeBase
     }
 
     /**
-     * @return array<int,string> - The list of files which are successfully parsed.
+     * @return list<string> - The list of files which are successfully parsed.
      * This changes whenever the file list is reloaded from disk.
      * This also includes files which don't declare classes or functions or globals,
      * because those files use classes/functions/constants.
@@ -426,10 +426,10 @@ class CodeBase
     }
 
     /**
-     * @param array<int,string> $new_file_list
+     * @param list<string> $new_file_list
      * @param array<string,string> $file_mapping_contents maps relative path to absolute paths
      * @param ?(string[]) $reanalyze_files files to re-analyze
-     * @return array<int,string> - Subset of $new_file_list which changed on disk and has to be parsed again. Automatically unparses the old versions of files which were modified.
+     * @return list<string> - Subset of $new_file_list which changed on disk and has to be parsed again. Automatically unparses the old versions of files which were modified.
      */
     public function updateFileList(array $new_file_list, array $file_mapping_contents = [], array $reanalyze_files = null) : array
     {
@@ -595,7 +595,7 @@ class CodeBase
         $clone = clone($this);
         // make a deep copy of the NamespaceMapEntry objects within parsed_namespace_maps
         $clone->parsed_namespace_maps = \unserialize(\serialize($clone->parsed_namespace_maps));
-        /** @var array<int,?Closure()> */
+        /** @var list<?Closure()> */
         $callbacks = [];
         // Create callbacks to restore classes
         foreach ($this->fqsen_class_map as $class) {
@@ -1526,7 +1526,7 @@ class CodeBase
     }
 
     /**
-     * @return array<int,string> every constant name except user-defined constants.
+     * @return non-empty-list<string> every constant name except user-defined constants.
      */
     public static function getPHPInternalConstantNameList() : array
     {
@@ -1697,7 +1697,7 @@ class CodeBase
     }
 
     /**
-     * @return array<int,FullyQualifiedClassName> (Don't rely on unique names)
+     * @return list<FullyQualifiedClassName> (Don't rely on unique names)
      */
     private function getClassFQSENList() : array
     {
@@ -1868,7 +1868,7 @@ class CodeBase
     }
 
     /**
-     * @return array<int,FullyQualifiedClassName> 0 or more namespaced class names found in this code base
+     * @return list<FullyQualifiedClassName> 0 or more namespaced class names found in this code base
      */
     public function suggestSimilarClassInOtherNamespace(
         FullyQualifiedClassName $missing_class,
@@ -1895,7 +1895,7 @@ class CodeBase
     }
 
     /**
-     * @return array<int,FullyQualifiedFunctionName> 0 or more namespaced function names found in this code base with the same name but different namespaces
+     * @return list<FullyQualifiedFunctionName> 0 or more namespaced function names found in this code base with the same name but different namespaces
      */
     public function suggestSimilarGlobalFunctionInOtherNamespace(
         string $namespace,
@@ -1948,7 +1948,7 @@ class CodeBase
     ];
 
     /**
-     * @return array<int,FullyQualifiedFunctionName|string> 0 or more namespaced function names found in this code base in $namespace
+     * @return list<FullyQualifiedFunctionName|string> 0 or more namespaced function names found in this code base in $namespace
      */
     public function suggestSimilarGlobalFunctionInSameNamespace(
         string $namespace,
@@ -1990,7 +1990,7 @@ class CodeBase
     }
 
     /**
-     * @return array<int,FullyQualifiedClassName> 0 or more namespaced class names found in this code base in $namespace
+     * @return list<FullyQualifiedClassName> 0 or more namespaced class names found in this code base in $namespace
      */
     public function suggestSimilarNewInAnyNamespace(
         string $namespace,
@@ -2017,7 +2017,7 @@ class CodeBase
     }
 
     /**
-     * @return array<int,FullyQualifiedGlobalConstantName> an array of constants similar to the missing constant.
+     * @return list<FullyQualifiedGlobalConstantName> an array of constants similar to the missing constant.
      */
     public function suggestSimilarConstantsToConstant(string $name) : array
     {
@@ -2048,7 +2048,7 @@ class CodeBase
     }
 
     /**
-     * @return array<int,FullyQualifiedFunctionName> 0 or more namespaced function names found in this code base, from various namespaces
+     * @return list<FullyQualifiedFunctionName> 0 or more namespaced function names found in this code base, from various namespaces
      */
     public function suggestSimilarGlobalFunctionForNamespaceAndName(
         string $namespace,
@@ -2067,7 +2067,7 @@ class CodeBase
     }
 
     /**
-     * @return array<int,FullyQualifiedGlobalConstantName> 0 or more namespaced constant names found in this code base, from various namespaces
+     * @return list<FullyQualifiedGlobalConstantName> 0 or more namespaced constant names found in this code base, from various namespaces
      */
     public function suggestSimilarGlobalConstantForNamespaceAndName(
         string $namespace,
@@ -2087,7 +2087,7 @@ class CodeBase
     /**
      * @param int $class_suggest_type value from IssueFixSuggester::CLASS_SUGGEST_*
      *
-     * @return array<int,FullyQualifiedClassName|string> 0 or more namespaced class names found in this code base
+     * @return list<FullyQualifiedClassName|string> 0 or more namespaced class names found in this code base
      *
      * NOTE: Non-classes are always represented as strings (and will be suggested even if there is a namespace),
      * classes are always represented as FullyQualifiedClassName

@@ -52,11 +52,11 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
         /**
          * @param Closure(UnionType):int $checker returns _IS_IMPOSSIBLE/_IS_REDUNDANT/_IS_REASONABLE_CONDITION
          * @param string $expected_type
-         * @return Closure(CodeBase, Context, FunctionInterface, array<int,mixed>, ?Node):void
+         * @return Closure(CodeBase, Context, FunctionInterface, list<mixed>, ?Node):void
          */
         $make_first_arg_checker = static function (Closure $checker, string $expected_type) : Closure {
             /**
-             * @param array<int,Node|int|float|string> $args
+             * @param list<Node|int|float|string> $args
              */
             return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args, ?Node $_) use ($checker, $expected_type) : void {
                 if (count($args) < 1) {
@@ -111,11 +111,11 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
         /**
          * @param Closure(UnionType, CodeBase):int $checker returns _IS_IMPOSSIBLE/_IS_REDUNDANT/_IS_REASONABLE_CONDITION
          * @param string $expected_type
-         * @return Closure(CodeBase, Context, FunctionInterface, array<int,mixed>, ?Node):void
+         * @return Closure(CodeBase, Context, FunctionInterface, list<mixed>, ?Node):void
          */
         $make_codebase_aware_first_arg_checker = static function (Closure $checker, string $expected_type) use ($make_first_arg_checker) : Closure {
             /**
-             * @param array<int,Node|int|float|string> $args
+             * @param list<Node|int|float|string> $args
              */
             return static function (CodeBase $code_base, Context $context, FunctionInterface $function, array $args, ?Node $node) use ($checker, $expected_type, $make_first_arg_checker) : void {
                 $single_checker = static function (UnionType $type) use ($checker, $code_base) : int {
@@ -186,7 +186,7 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
 
         /**
          * @param Closure(UnionType):bool $condition
-         * @return Closure(CodeBase, Context, FunctionInterface, array<int,mixed>, ?Node):void
+         * @return Closure(CodeBase, Context, FunctionInterface, list<mixed>, ?Node):void
          */
         $make_cast_callback = static function (Closure $condition, string $expected_type) use ($make_first_arg_checker) : Closure {
             return $make_first_arg_checker(static function (UnionType $union_type) use ($condition) : int {

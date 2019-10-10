@@ -26,7 +26,7 @@ class DependencyGraphPlugin extends PluginV3 implements
     PostAnalyzeNodeCapability,
     FinalizeProcessCapability
 {
-    /** @var array<int, Clazz> */
+    /** @var list<Clazz> */
     private $elements = [];
     /** @var string[] */
     private $class_to_file = [];
@@ -43,12 +43,12 @@ class DependencyGraphPlugin extends PluginV3 implements
 
     /**
      * A list of static calls observed by this plugin
-     * @var array<int,array<string,array<string,string>>>
+     * @var list<array<string,array<string,string>>>
      */
     public static $static_calls = [];
     /**
      * A list of static variable accesses observed by this plugin
-     * @var array<int,array<string,array<string,string>>>
+     * @var list<array<string,array<string,string>>>
      */
     public static $static_vars = [];
 

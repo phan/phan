@@ -12,7 +12,7 @@ class GotoAnalyzer
 {
     /**
      * Finds the label set for the scope of a node with parent node list $parent_node_list
-     * @param array<int,Node> $parent_node_list
+     * @param list<Node> $parent_node_list
      * @return array<string,true>
      */
     public static function getLabelSet(array $parent_node_list) : array

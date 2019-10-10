@@ -19,7 +19,7 @@ return [
     'ftp_append' => ['bool', 'ftp'=>'resource', 'remote_file'=>'string', 'local_file'=>'string', 'mode='=>'int'],
     'hash_copy' => ['HashContext', 'context'=>'HashContext'],
     'hash_final' => ['string', 'context'=>'HashContext', 'raw_output='=>'bool'],
-    'hash_hmac_algos' => ['array<int,string>'],
+    'hash_hmac_algos' => ['list<string>'],
     'hash_init' => ['HashContext', 'algo'=>'string', 'options='=>'int', 'key='=>'string'],
     'hash_update' => ['bool', 'context'=>'HashContext', 'data'=>'string'],
     'hash_update_file' => ['bool', 'context='=>'HashContext', 'filename'=>'string', 'scontext='=>'?HashContext'],

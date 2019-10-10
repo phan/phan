@@ -1428,7 +1428,7 @@ final class EmptyUnionType extends UnionType
     }
 
     /**
-     * @param ?array<int,Type> $real_type_set
+     * @param ?list<Type> $real_type_set
      */
     public function withRealTypeSet(?array $real_type_set) : UnionType
     {

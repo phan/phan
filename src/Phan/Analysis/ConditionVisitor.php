@@ -560,7 +560,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             return $this->modifyComplexExpression(
                 $expr_node,
                 /**
-                 * @param array<int,mixed> $args
+                 * @param list<mixed> $args
                  */
                 function (CodeBase $code_base, Context $context, Variable $variable, array $args) use ($class_node) : void {
                     $this->setInstanceofVariableType($variable, $class_node);
@@ -683,7 +683,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                 $union_type_string
             );
             /**
-             * @param array<int,Node|string|int|float> $args
+             * @param list<Node|string|int|float> $args
              */
             return static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $args) use ($asserted_union_type) : void {
                 // Otherwise, overwrite the type for any simple
@@ -693,7 +693,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         };
 
         /**
-         * @param array<int,Node|mixed> $args
+         * @param list<Node|mixed> $args
          */
         $array_callback = static function (CodeBase $code_base, Context $context, Variable $variable, array $args) : void {
             // Change the type to match the is_array relationship
@@ -703,13 +703,13 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         };
 
         /**
-         * @param array<int,Node|mixed> $args
+         * @param list<Node|mixed> $args
          */
         $object_callback = static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $args) : void {
             self::analyzeIsObjectAssertion($variable);
         };
         /**
-         * @param array<int,Node|mixed> $args
+         * @param list<Node|mixed> $args
          */
         $is_a_callback = static function (CodeBase $code_base, Context $context, Variable $variable, array $args) use ($object_callback) : void {
             $real_class_name = $args[1] ?? null;
@@ -745,7 +745,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         $make_callback = static function (string $extract_types, UnionType $default_if_empty) : Closure {
             $method = new ReflectionMethod(UnionType::class, $extract_types);
             /**
-             * @param array<int,Node|mixed> $args
+             * @param list<Node|mixed> $args
              */
             return static function (CodeBase $code_base, Context $context, Variable $variable, array $args) use ($method, $default_if_empty) : void {
                 // Change the type to match the is_a relationship
@@ -771,7 +771,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         };
 
         /**
-         * @param array<int,Node|mixed> $args
+         * @param list<Node|mixed> $args
          */
         $iterable_callback = static function (CodeBase $code_base, Context $context, Variable $variable, array $args) : void {
             // Change the type to match the is_iterable relationship
@@ -780,7 +780,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             $variable->setUnionType($variable->getUnionType()->withStaticResolvedInContext($context)->iterableTypesStrictCast($code_base));
         };
         /**
-         * @param array<int,Node|mixed> $args
+         * @param list<Node|mixed> $args
          */
         $countable_callback = static function (CodeBase $code_base, Context $context, Variable $variable, array $args) : void {
             // Change the type to match the is_countable relationship
@@ -919,7 +919,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
     }
 
     /**
-     * @param array<int,Node|string|int|float> $args
+     * @param list<Node|string|int|float> $args
      */
     private function analyzeArrayKeyExists(array $args) : Context
     {

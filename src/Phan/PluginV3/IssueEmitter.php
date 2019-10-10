@@ -37,7 +37,7 @@ trait IssueEmitter
      * The list of placeholders for between braces can be found
      * in \Phan\Issue::UNCOLORED_FORMAT_STRING_FOR_TEMPLATE.
      *
-     * @param array<int,string|int|float|Type|UnionType|FQSEN|TypedElement|UnaddressableTypedElement> $issue_message_args
+     * @param list<string|int|float|Type|UnionType|FQSEN|TypedElement|UnaddressableTypedElement> $issue_message_args
      * The arguments for this issue format.
      * If this array is empty, $issue_message_args is kept in place
      *

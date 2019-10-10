@@ -15,7 +15,7 @@ final class ScalarRawType extends ScalarType implements MultiType
     const NAME = 'scalar';
 
     /**
-     * @return array<int,ScalarType>
+     * @return list<ScalarType>
      */
     public function asIndividualTypeInstances() : array
     {

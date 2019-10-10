@@ -28,13 +28,13 @@ use function count;
 final class MethodSearcherPlugin extends PluginV3 implements
     BeforeAnalyzeCapability
 {
-    /** @var array<int,UnionType> the param type we're looking for. */
+    /** @var list<UnionType> the param type we're looking for. */
     public static $param_types;
 
     /** @var UnionType the return type we're looking for. */
     public static $return_type;
 
-    /** @var array<int,array{0:int, 1:string, 2:FunctionInterface}> */
+    /** @var list<array{0:int, 1:string, 2:FunctionInterface}> */
     private $results;
 
     public function __construct()
@@ -329,8 +329,8 @@ final class MethodSearcherPlugin extends PluginV3 implements
 
     /**
      * Check if param_types contains unique types that can cast to search_param_types
-     * @param array<int,UnionType> $search_param_types
-     * @param array<int,UnionType> $signature_param_types
+     * @param list<UnionType> $search_param_types
+     * @param list<UnionType> $signature_param_types
      */
     public static function matchesParamTypes(CodeBase $code_base, array $search_param_types, array $signature_param_types) : float
     {

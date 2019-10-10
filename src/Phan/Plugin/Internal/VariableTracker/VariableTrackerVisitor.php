@@ -137,7 +137,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param array{0:array<int,string>,1:string} $check_infinite_recursion an array of 1 or more argument names to check for redefinition, and a name of the method
+     * @param array{0:non-empty-list<string>,1:string} $check_infinite_recursion an array of 1 or more argument names to check for redefinition, and a name of the method
      */
     private function handleInfiniteRecursion(Node $node, array $check_infinite_recursion) : void
     {

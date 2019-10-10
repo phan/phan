@@ -31,8 +31,8 @@ final class CallableParamPlugin extends PluginV3 implements
 {
 
     /**
-     * @param array<int,int> $callable_params
-     * @param array<int,int> $class_params
+     * @param list<int> $callable_params
+     * @param list<int> $class_params
      * @phan-return Closure(CodeBase,Context,FunctionInterface,array,?Node):void
      */
     private static function generateClosure(array $callable_params, array $class_params) : Closure
@@ -44,7 +44,7 @@ final class CallableParamPlugin extends PluginV3 implements
             return $closure;
         }
         /**
-         * @param array<int,Node|int|float|string> $args
+         * @param list<Node|int|float|string> $args
          */
         $closure = static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args, ?Node $_) use ($callable_params, $class_params) : void {
             // TODO: Implement support for variadic callable arguments.
