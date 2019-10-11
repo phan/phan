@@ -722,12 +722,12 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         }
 
         // If both left and right union types are arrays, then this is array
-        // concatenation.
+        // concatenation. (`$left + $right`)
         if ($left->isGenericArray() && $right->isGenericArray()) {
             if ($left->isEqualTo($right)) {
                 return $left;
             }
-            return ArrayType::combineArrayTypesOverriding($left, $right);
+            return ArrayType::combineArrayTypesOverriding($left, $right, false);
         }
 
         $this->warnAboutInvalidUnionType(
@@ -761,11 +761,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
 
         if ($left_is_array || $right_is_array) {
             if ($left_is_array && $right_is_array) {
-                // TODO: Make the right types for array offsets completely override the left types?
-                return UnionType::of(
-                    ArrayType::combineArrayTypesOverriding($left, $right)->getTypeSet(),
-                    $probably_unknown_type->getRealTypeSet()
-                );
+                return ArrayType::combineArrayTypesOverriding($left, $right, false);
             }
 
             if ($left_is_array

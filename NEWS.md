@@ -9,6 +9,7 @@ New features(Analysis):
   These represent arrays with consecutive integer keys starting at 0 without any gaps (e.g. `function (string ...$args) {}`)
 + Allow omitting keys from array shapes for sequential array elements
   (e.g. `array{stdClass, array}` is equivalent to `array{0:stdClass, 1:array}`).
++ Add array key of array shapes in the same field order that php would for assignments such as `$x = [10]; $x[1] = 11;`. (#3359)
 
 Oct 03 2019, Phan 2.2.13
 ------------------------

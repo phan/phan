@@ -35,6 +35,7 @@ function foo3(array $options)
         echo intdiv($options['hooks'], 2);  // should infer string and warn
     } else {
         echo strlen($options['hooks']);  // should infer array and warn
+        '@phan-debug-var $options';
     }
     echo strlen($options);  // should still infer array{hooks:string|array}
 }

@@ -964,14 +964,9 @@ class AssignmentVisitor extends AnalysisVisitor
                 $old_type = ArrayType::instance(false)->asPHPDocUnionType();
             }
             if ($this->dim_depth > 1 || ($old_type->hasTopLevelNonArrayShapeTypeInstances() || $right_type->hasTopLevelNonArrayShapeTypeInstances() || $right_type->isEmpty())) {
-                $new_type = $old_type->withUnionType(
-                    $right_type
-                );
+                $new_type = $old_type->withUnionType($right_type);
             } else {
-                $new_type = ArrayType::combineArrayTypesOverriding(
-                    $right_type,
-                    $old_type
-                );
+                $new_type = ArrayType::combineArrayTypesOverriding($right_type, $old_type, true);
             }
         }
         $this->context = $this->context->withThisPropertySetToTypeByName($prop_name, $new_type);
@@ -1365,7 +1360,8 @@ class AssignmentVisitor extends AnalysisVisitor
                 } else {
                     $variable->setUnionType(ArrayType::combineArrayTypesOverriding(
                         $right_type,
-                        $old_variable_union_type
+                        $old_variable_union_type,
+                        true
                     ));
                 }
             } else {

@@ -94,11 +94,11 @@ class ArrayType extends IterableType
      * @param UnionType $right the right-hand side (e.g. of a `+` operator).
      * @return UnionType with ArrayType subclass(es)
      */
-    public static function combineArrayTypesOverriding(UnionType $left, UnionType $right) : UnionType
+    public static function combineArrayTypesOverriding(UnionType $left, UnionType $right, bool $is_assignment = false) : UnionType
     {
         return UnionType::of(
-            ArrayType::combineArrayTypeListsOverriding($left->getTypeSet(), $right->getTypeSet()),
-            ArrayType::combineArrayTypeListsOverriding($left->getRealTypeSet(), $right->getRealTypeSet())
+            ArrayType::combineArrayTypeListsOverriding($left->getTypeSet(), $right->getTypeSet(), $is_assignment),
+            ArrayType::combineArrayTypeListsOverriding($left->getRealTypeSet(), $right->getRealTypeSet(), $is_assignment)
         );
     }
 
@@ -107,7 +107,7 @@ class ArrayType extends IterableType
      * @param list<Type> $right_types
      * @return list<Type>
      */
-    private static function combineArrayTypeListsOverriding(array $left_types, array $right_types) : array
+    private static function combineArrayTypeListsOverriding(array $left_types, array $right_types, bool $is_assignment) : array
     {
         $result = new UnionTypeBuilder();
         $left_array_shape_types = [];
@@ -143,11 +143,10 @@ class ArrayType extends IterableType
             if (\count($right_array_shape_types) === 0) {
                 return $left_array_shape_types;
             }
-            // fields from the left take precedence (e.g. [0, false] + ['string'] becomes [0, false])
-            return [ArrayShapeType::combineWithPrecedence(
-                ArrayShapeType::union($left_array_shape_types),
-                ArrayShapeType::union($right_array_shape_types)
-            )];
+            // Fields from the left take precedence (e.g. [0, false] + ['string'] becomes [0, false])
+            $left_union_type = ArrayShapeType::union($left_array_shape_types);
+            $right_union_type = ArrayShapeType::union($right_array_shape_types);
+            return [ArrayShapeType::combineWithPrecedence($left_union_type, $right_union_type, $is_assignment)];
         }
         foreach (\array_merge($left_array_shape_types, $right_array_shape_types) as $type) {
             foreach ($type->withFlattenedArrayShapeOrLiteralTypeInstances() as $type_part) {
