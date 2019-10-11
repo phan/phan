@@ -273,7 +273,7 @@ if (!\class_exists('ast\Metadata')) {
         public $name;
 
         /**
-         * @var array<int,string> Array of supported flags. The flags are given as names of constants, such as
+         * @var list<string> Array of supported flags. The flags are given as names of constants, such as
          *                        "ast\flags\TYPE_STRING".
          * @suppress PhanUnreferencedPublicProperty
          */

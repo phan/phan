@@ -48,7 +48,7 @@ final class ForkPoolTest extends BaseTest
                 $worker_data[] = $data;
             },
             /**
-             * @return array<int,array>
+             * @return list<array>
              */
             static function () use (&$worker_data) : array {
                 return $worker_data;

@@ -116,7 +116,7 @@ class OpcacheFuncInfoParser
     }
 
     /**
-     * @param array<int,string> $flags
+     * @param list<string> $flags
      */
     private static function extractUnionType(array $flags) : UnionType
     {

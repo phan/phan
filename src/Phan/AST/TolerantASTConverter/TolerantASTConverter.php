@@ -1696,7 +1696,7 @@ class TolerantASTConverter
     }
 
     /**
-     * @param array<int,Token|PhpParser\Node> $types
+     * @param list<Token|PhpParser\Node> $types
      */
     private static function phpParserNameListToAstNameList(array $types, int $line) : ast\Node
     {
@@ -2243,7 +2243,7 @@ class TolerantASTConverter
     /**
      * @param ?int $type
      * @param ?string $prefix
-     * @param array<int,ast\Node> $uses
+     * @param list<ast\Node> $uses
      * @suppress PhanPossiblyUndeclaredProperty $use should always be a node
      */
     private static function astStmtGroupUse(?int $type, ?string $prefix, array $uses, int $line) : ast\Node

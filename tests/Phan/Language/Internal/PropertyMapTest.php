@@ -50,7 +50,7 @@ final class PropertyMapTest extends BaseTest
     /**
      * @param string $class_name
      * @param array<string,string> $signature
-     * @param array<int,string> &$failures
+     * @param list<string> &$failures
      */
     private function checkPropertySignaturesOfClassName(string $class_name, array $signature, array &$failures) : void
     {

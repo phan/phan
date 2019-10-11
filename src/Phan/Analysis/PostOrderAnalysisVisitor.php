@@ -61,7 +61,7 @@ use function implode;
 class PostOrderAnalysisVisitor extends AnalysisVisitor
 {
     /**
-     * @var array<int,Node> a list of parent nodes of the currently analyzed node,
+     * @var list<Node> a list of parent nodes of the currently analyzed node,
      * within the current global or function-like scope
      */
     private $parent_node_list;
@@ -76,7 +76,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * The context of the parser at the node for which we'd
      * like to determine a type
      *
-     * @param array<int,Node> $parent_node_list
+     * @param list<Node> $parent_node_list
      * The parent node list of the node being analyzed
      */
     public function __construct(
@@ -1498,7 +1498,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param array<int,UnionType> $template_type_list
+     * @param list<UnionType> $template_type_list
      */
     private function compareYieldAgainstDeclaredType(Node $node, FunctionInterface $method, Context $context, array $template_type_list) : Context
     {
@@ -1605,7 +1605,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param array<int,UnionType> $template_type_list
+     * @param list<UnionType> $template_type_list
      */
     private function compareYieldFromAgainstDeclaredType(Node $node, FunctionInterface $method, Context $context, array $template_type_list, UnionType $yield_from_type) : Context
     {
@@ -2886,7 +2886,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param array<int,Node> $parent_node_list
+     * @param list<Node> $parent_node_list
      * @return bool true if the union type should skip analysis due to being the left-hand side expression of an assignment
      * We skip checks for $x['key'] being valid in expressions such as `$x['key']['key2']['key3'] = 'value';`
      * because those expressions will create $x['key'] as a side effect.
@@ -3397,7 +3397,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param array<int,Node|string|int|float> $argument_list the arguments of the invocation, containing the pass by reference argument
+     * @param list<Node|string|int|float> $argument_list the arguments of the invocation, containing the pass by reference argument
      *
      * @param Parameter $parameter the parameter types inferred from combination of real and union type
      *
@@ -3515,7 +3515,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     /**
      * @param Closure(UnionType):void $set_variable_type
-     * @param array<int,Node|string|int|float> $argument_list
+     * @param list<Node|string|int|float> $argument_list
      */
     private static function analyzeWriteOnlyReference(
         CodeBase $code_base,
@@ -3569,14 +3569,14 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      *
      * This is used when analyzing callbacks and closures, e.g. in array_map.
      *
-     * @param array<int,UnionType> $argument_types
+     * @param list<UnionType> $argument_types
      * An AST node listing the arguments
      *
      * @param FunctionInterface $method
      * The method or function being called
      * @see analyzeMethodWithArgumentTypes (Which takes AST nodes)
      *
-     * @param array<int,Node|mixed> $arguments
+     * @param list<Node|mixed> $arguments
      * An array of arguments to the callable, to analyze references.
      */
     public function analyzeCallableWithArgumentTypes(
@@ -3856,10 +3856,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * The argument whose type we'd like to replace the
      * parameter type with.
      *
-     * @param array<int,UnionType> $argument_types
+     * @param list<UnionType> $argument_types
      * The type of arguments
      *
-     * @param array<int,Parameter> &$parameter_list
+     * @param list<Parameter> &$parameter_list
      * The parameter list - types are modified by reference
      *
      * @param int $parameter_offset

@@ -65,7 +65,7 @@ class RedundantCondition
      * Emit an issue. If this is in a loop, defer the check until more is known about possible types of the variable in the loop.
      *
      * @param Node|int|string|float $node
-     * @param array<int,mixed> $issue_args
+     * @param list<mixed> $issue_args
      * @param Closure(UnionType):bool $is_still_issue
      */
     public static function emitInstance($node, CodeBase $code_base, Context $context, string $issue_name, array $issue_args, Closure $is_still_issue) : void

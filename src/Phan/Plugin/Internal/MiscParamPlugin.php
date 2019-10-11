@@ -48,7 +48,7 @@ final class MiscParamPlugin extends PluginV3 implements
         $stop_exception = new StopParamAnalysisException();
 
         /**
-         * @param array<int,Node|int|float|string> $args
+         * @param list<Node|int|float|string> $args
          */
         $min_max_callback = static function (
             CodeBase $code_base,
@@ -82,7 +82,7 @@ final class MiscParamPlugin extends PluginV3 implements
             );
         };
         /**
-         * @param array<int,Node|int|float|string> $args
+         * @param list<Node|int|float|string> $args
          */
         $array_udiff_callback = static function (
             CodeBase $code_base,
@@ -137,7 +137,7 @@ final class MiscParamPlugin extends PluginV3 implements
         };
 
         /**
-         * @param array<int,Node|int|float|string> $args
+         * @param list<Node|int|float|string> $args
          * @return void
          * @throws StopParamAnalysisException
          * to prevent Phan's default incorrect analysis of a call to join()
@@ -269,7 +269,7 @@ final class MiscParamPlugin extends PluginV3 implements
             }
         };
         /**
-         * @param array<int,Node|int|float|string> $args
+         * @param list<Node|int|float|string> $args
          */
         $array_uintersect_uassoc_callback = static function (
             CodeBase $code_base,
@@ -375,7 +375,7 @@ final class MiscParamPlugin extends PluginV3 implements
         };
 
         /**
-         * @param array<int,Node|int|float|string> $args
+         * @param list<Node|int|float|string> $args
          */
         $array_add_callback = static function (
             CodeBase $code_base,
@@ -421,7 +421,7 @@ final class MiscParamPlugin extends PluginV3 implements
         };
 
         /**
-         * @param array<int,Node|int|float|string> $args
+         * @param list<Node|int|float|string> $args
          */
         $array_remove_single_callback = static function (
             CodeBase $code_base,
@@ -443,7 +443,7 @@ final class MiscParamPlugin extends PluginV3 implements
         };
 
         /**
-         * @param array<int,Node|int|float|string> $args
+         * @param list<Node|int|float|string> $args
          */
         $array_splice_callback = static function (
             CodeBase $code_base,
@@ -473,7 +473,7 @@ final class MiscParamPlugin extends PluginV3 implements
         };
 
         /**
-         * @param array<int,Node|int|float|string> $args
+         * @param list<Node|int|float|string> $args
          * TODO: Could make unused variable detection more precise for https://github.com/phan/phan/issues/1812 , but low priority.
          */
         $extract_callback = static function (
@@ -585,7 +585,7 @@ final class MiscParamPlugin extends PluginV3 implements
 
         /**
          * Most of the work was already done in ParseVisitor
-         * @param array<int,Node|int|float|string> $args
+         * @param list<Node|int|float|string> $args
          * @see \Phan\Parse\ParseVisitor::analyzeDefine()
          */
         $define_callback = static function (
@@ -642,7 +642,7 @@ final class MiscParamPlugin extends PluginV3 implements
         };
 
         /**
-         * @param array<int,Node|int|float|string> $args
+         * @param list<Node|int|float|string> $args
          */
         $class_alias_callback = static function (
             CodeBase $code_base,

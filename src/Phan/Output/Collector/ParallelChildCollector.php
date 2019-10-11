@@ -106,7 +106,7 @@ class ParallelChildCollector implements IssueCollectorInterface
     }
 
     /**
-     * @return array<int,IssueInstance>
+     * @return list<IssueInstance>
      */
     public function getCollectedIssues():array
     {

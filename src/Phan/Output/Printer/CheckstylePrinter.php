@@ -17,7 +17,7 @@ final class CheckstylePrinter implements BufferedPrinterInterface
     /** @var OutputInterface an output that XML can be written to. */
     private $output;
 
-    /** @var array<string,array<int,array<string,mixed>>> maps files with issues to the list of those issues */
+    /** @var array<string,list<array<string,mixed>>> maps files with issues to the list of those issues */
     private $files = [];
 
     public function print(IssueInstance $instance) : void

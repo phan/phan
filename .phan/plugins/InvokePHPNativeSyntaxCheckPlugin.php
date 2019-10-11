@@ -38,7 +38,7 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV3 implements
     const STDIN_FILENAME_REGEX = "@ in (Standard input code|-)@";
 
     /**
-     * @var array<int,InvokeExecutionPromise>
+     * @var list<InvokeExecutionPromise>
      * A list of invoked processes that this plugin created.
      * This plugin creates 0 or more processes(up to a maximum number can run at a time)
      * and then waits for the execution of those processes to finish.

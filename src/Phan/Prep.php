@@ -16,7 +16,7 @@ class Prep
      * Scan a list of files, applying the given closure to every
      * AST node
      *
-     * @param array<int,string> $file_list
+     * @param list<string> $file_list
      * A list of files to scan
      *
      * @param \Closure $visit_node

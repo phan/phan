@@ -26,7 +26,7 @@ use function is_string;
  */
 class ASTReverter
 {
-    /** @var array<int,Closure(Node):string> this contains closures to convert node kinds to strings */
+    /** @var array<int,Closure(Node):string> this contains maps from node kinds to closures to convert node kinds to strings */
     private static $closure_map;
     /** @var Closure(Node):string this maps unknown node types to strings */
     private static $noop;
@@ -92,7 +92,7 @@ class ASTReverter
         }
 
         // Escape other control characters
-        return \preg_replace_callback('/([\0-\10\16-\37])(?=([0-7]?))/', /** @param array<int,string> $matches */ static function (array $matches) : string {
+        return \preg_replace_callback('/([\0-\10\16-\37])(?=([0-7]?))/', /** @param list<string> $matches */ static function (array $matches) : string {
             $oct = \decoct(\ord($matches[1]));
             if ($matches[2] !== '') {
                 // If there is a trailing digit, use the full three character form

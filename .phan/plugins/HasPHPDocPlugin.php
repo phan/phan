@@ -189,7 +189,7 @@ final class HasPHPDocPlugin extends PluginV3 implements
 /** Infer property and class doc comments and warn */
 class BasePHPDocCheckerPlugin extends PluginAwarePostAnalysisVisitor
 {
-    /** @return array{0:array<int,ClassElementEntry>,1:array<int,ClassElementEntry>} */
+    /** @return array{0:list<ClassElementEntry>,1:list<ClassElementEntry>} */
     public function visitClass(Node $node) : array
     {
         $class = $this->context->getClassInScope($this->code_base);
@@ -373,8 +373,8 @@ final class DuplicatePHPDocCheckerPlugin extends BasePHPDocCheckerPlugin
     }
 
     /**
-     * @param array<int, ClassElementEntry> $values
-     * @return array<string, array<int,ClassElementEntry>>
+     * @param list<ClassElementEntry> $values
+     * @return array<string, list<ClassElementEntry>>
      */
     private static function findGroups(array $values) : array
     {

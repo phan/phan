@@ -110,14 +110,14 @@ class Colorizing
      * and color control codes are inserted before/after those conversion specifiers.
      *
      * @param string $template
-     * @param array<int,int|string|float|FQSEN|Type|UnionType|TypedElementInterface|UnaddressableTypedElement> $template_parameters
+     * @param list<int|string|float|FQSEN|Type|UnionType|TypedElementInterface|UnaddressableTypedElement> $template_parameters
      */
     public static function colorizeTemplate(
         string $template,
         array $template_parameters
     ) : string {
         $i = 0;
-        /** @param array<int,string> $matches */
+        /** @param list<string> $matches */
         return \preg_replace_callback('/(\$?){([A-Z_]+)}|%[sdf]/', static function (array $matches) use ($template, $template_parameters, &$i) : string {
             $j = $i++;
             if ($j >= \count($template_parameters)) {

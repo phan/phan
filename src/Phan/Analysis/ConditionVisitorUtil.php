@@ -1144,10 +1144,10 @@ trait ConditionVisitorUtil
 
     /**
      * @param Node|string|int|float $node
-     * @param Closure(CodeBase,Context,Variable,array<int,mixed>):void $type_modification_callback
+     * @param Closure(CodeBase,Context,Variable,list<mixed>):void $type_modification_callback
      *        A closure acting on a Variable instance (usually not really a variable) to modify its type
      * @param Context $context
-     * @param array<int,mixed> $args
+     * @param list<mixed> $args
      */
     protected function modifyComplexExpression($node, Closure $type_modification_callback, Context $context, array $args) : Context
     {
@@ -1207,12 +1207,12 @@ trait ConditionVisitorUtil
 
     /**
      * @param Node $node a node of kind ast\AST_DIM (e.g. the argument of is_array($x['field']))
-     * @param Closure(CodeBase,Context,Variable,array<int,mixed>):void $type_modification_callback
+     * @param Closure(CodeBase,Context,Variable,list<mixed>):void $type_modification_callback
      *        A closure acting on a Variable instance (not really a variable) to modify its type
      *
      *        This is a function such as is_array, is_null (questionable), etc.
      * @param Context $context
-     * @param array<int,mixed> $args
+     * @param list<mixed> $args
      */
     protected function modifyComplexDimExpression(Node $node, Closure $type_modification_callback, Context $context, array $args) : Context
     {
@@ -1247,12 +1247,12 @@ trait ConditionVisitorUtil
      * caused by a function accepting $args.
      *
      * @param Node $node a node of kind ast\AST_PROP (e.g. the argument of is_array($this->prop_name))
-     * @param Closure(CodeBase,Context,Variable,array<int,mixed>):void $type_modification_callback
+     * @param Closure(CodeBase,Context,Variable,list<mixed>):void $type_modification_callback
      *        A closure acting on a Variable instance (not really a variable) to modify its type
      *
      *        This is a function such as is_array, is_null, etc.
      * @param Context $context
-     * @param array<int,mixed> $args
+     * @param list<mixed> $args
      */
     protected function modifyPropertyOfThis(Node $node, Closure $type_modification_callback, Context $context, array $args) : Context
     {

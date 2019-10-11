@@ -102,7 +102,7 @@ class PregRegexCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
     }
 
     /**
-     * @param array<int,string> $patterns 1 or more regex patterns
+     * @param non-empty-list<string> $patterns 1 or more regex patterns
      * @return array<string|int,true> the set of keys in the pattern
      * @throws InvalidArgumentException if any regex could not be parsed by the heuristics
      */
@@ -179,7 +179,7 @@ class PregRegexCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
     public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array
     {
         /**
-         * @param array<int,Node|string|int|float> $args the nodes for the arguments to the invocation
+         * @param list<Node|string|int|float> $args the nodes for the arguments to the invocation
          */
         $preg_pattern_callback = static function (
             CodeBase $code_base,
@@ -200,7 +200,7 @@ class PregRegexCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
         };
 
         /**
-         * @param array<int,Node|int|string|float> $args
+         * @param list<Node|int|string|float> $args
          */
         $preg_pattern_or_array_callback = static function (
             CodeBase $code_base,
@@ -218,7 +218,7 @@ class PregRegexCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
         };
 
         /**
-         * @param array<int,Node|int|string|float> $args
+         * @param list<Node|int|string|float> $args
          */
         $preg_pattern_and_replacement_callback = static function (
             CodeBase $code_base,
@@ -244,7 +244,7 @@ class PregRegexCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
         };
 
         /**
-         * @param array<int,Node|string|int|float> $args the nodes for the arguments to the invocation
+         * @param list<Node|string|int|float> $args the nodes for the arguments to the invocation
          */
         $preg_replace_callback_array_callback = static function (
             CodeBase $code_base,

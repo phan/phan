@@ -42,11 +42,11 @@ class PhanSelfCheckPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
     public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array
     {
         /**
-         * @return Closure(CodeBase, Context, FunctionInterface, array<int,mixed>):void
+         * @return Closure(CodeBase, Context, FunctionInterface, list<mixed>):void
          */
         $make_array_issue_callback = static function (int $fmt_index, int $arg_index) : Closure {
             /**
-             * @param array<int,Node|string|int|float> $args the nodes for the arguments to the invocation
+             * @param list<Node|string|int|float> $args the nodes for the arguments to the invocation
              */
             return static function (
                 CodeBase $code_base,
@@ -78,11 +78,11 @@ class PhanSelfCheckPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
         /**
          * @param int $type_index the index of a parameter expecting an issue type (e.g. PhanParamTooMany)
          * @param int $arg_index the index of an array parameter expecting sequential arguments. This is >= $type_index.
-         * @return Closure(CodeBase, Context, FunctionInterface, array<int,mixed>):void
+         * @return Closure(CodeBase, Context, FunctionInterface, list<mixed>):void
          */
         $make_type_and_parameters_callback = static function (int $type_index, int $arg_index) : Closure {
             /**
-             * @param array<int,Node|string|int|float> $args the nodes for the arguments to the invocation
+             * @param list<Node|string|int|float> $args the nodes for the arguments to the invocation
              */
             return static function (
                 CodeBase $code_base,
@@ -118,11 +118,11 @@ class PhanSelfCheckPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
         /**
          * @param int $type_index the index of a parameter expecting an issue type (e.g. PhanParamTooMany)
          * @param int $arg_index the index of an array parameter expecting variable arguments. This is >= $type_index.
-         * @return Closure(CodeBase, Context, FunctionInterface, array<int,mixed>):void
+         * @return Closure(CodeBase, Context, FunctionInterface, list<mixed>):void
          */
         $make_type_and_varargs_callback = static function (int $type_index, int $arg_index) : Closure {
             /**
-             * @param array<int,Node|string|int|float> $args the nodes for the arguments to the invocation
+             * @param list<Node|string|int|float> $args the nodes for the arguments to the invocation
              */
             return static function (
                 CodeBase $code_base,

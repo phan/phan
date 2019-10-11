@@ -28,7 +28,7 @@ class ASTSimplifier
 
     /**
      * @param Node $node
-     * @return array<int,Node> (Equivalent list of nodes to [$node], possibly a clone with modifications)
+     * @return non-empty-list<Node> (Equivalent list of nodes to [$node], possibly a clone with modifications)
      */
     private static function apply(Node $node) : array
     {
@@ -123,8 +123,8 @@ class ASTSimplifier
     }
 
     /**
-     * @param array<int,?Node|?float|?int|?string|?float|?bool> $statements
-     * @return array{0:array<int,Node>,1:bool} - [New/old list, bool $modified] An equivalent list after simplifying (or the original list)
+     * @param list<?Node|?float|?int|?string|?float|?bool> $statements
+     * @return array{0:list<Node>,1:bool} - [New/old list, bool $modified] An equivalent list after simplifying (or the original list)
      */
     private static function normalizeStatementList(array $statements) : array
     {
@@ -149,7 +149,7 @@ class ASTSimplifier
 
     /**
      * Replaces the last node in a list with a list of 0 or more nodes
-     * @param array<int,Node> $nodes
+     * @param list<Node> $nodes
      * @param Node ...$new_statements
      */
     private static function replaceLastNodeWithNodeList(array &$nodes, Node... $new_statements) : void
@@ -211,7 +211,7 @@ class ASTSimplifier
      * E.g. repeatedly makes these conversions
      * if (A && B) {X} -> if (A) { if (B) {X}}
      * if ($var = A) {X} -> $var = A; if ($var) {X}
-     * @return array<int,Node> - One or more nodes created from $original_node.
+     * @return non-empty-list<Node> - One or more nodes created from $original_node.
      *        Will return [$original_node] if no modifications were made.
      */
     private static function normalizeIfStatement(Node $original_node) : array

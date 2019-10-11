@@ -965,7 +965,7 @@ class Context extends FileRef
     }
 
     /**
-     * @param array<int,Type> $type_set
+     * @param list<Type> $type_set
      */
     private static function addArrayShapeTypes(ArrayShapeType $override_type, array $type_set) : ArrayShapeType
     {

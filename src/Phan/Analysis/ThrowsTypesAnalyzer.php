@@ -49,7 +49,7 @@ class ThrowsTypesAnalyzer
         Type $type
     ) : bool {
         /**
-         * @param array<int,int|string|Type> $args
+         * @param list<int|string|Type> $args
          */
         $maybe_emit_for_method = static function (string $issue_type, array $args, Suggestion $suggestion = null) use ($code_base, $method) : void {
             Issue::maybeEmitWithParameters(

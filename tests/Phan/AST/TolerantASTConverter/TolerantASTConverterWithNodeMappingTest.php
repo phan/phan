@@ -53,7 +53,7 @@ final class TolerantASTConverterWithNodeMappingTest extends BaseTest
 
     /**
      * @param Node|int|string|float|null $node
-     * @param array<int,Node> &$candidates
+     * @param list<Node> &$candidates
      */
     private function findSelectedNodeInner($node, array &$candidates) : void
     {
@@ -102,7 +102,7 @@ final class TolerantASTConverterWithNodeMappingTest extends BaseTest
     }
 
     /**
-     * @return array<int,array{0:int,1:int,2:string,3:Node}>
+     * @return list<array{0:int,1:int,2:string,3:Node}>
      */
     public function byteOffsetLookupProvider() : array
     {

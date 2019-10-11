@@ -18,7 +18,7 @@ final class JSONPrinter implements BufferedPrinterInterface
     /** @var OutputInterface an output that JSON encoded can be written to. */
     private $output;
 
-    /** @var array<int,array<string,mixed>> the issue data to be JSON encoded. */
+    /** @var list<array<string,mixed>> the issue data to be JSON encoded. */
     private $messages = [];
 
     public function print(IssueInstance $instance) : void

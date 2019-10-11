@@ -411,7 +411,7 @@ class RedundantNodePreAnalysisVisitor extends PluginAwarePreAnalysisVisitor
 
     /**
      * @param Node $node a node of kind ast\AST_IF
-     * @return array<int,Node> the list of AST_IF_ELEM nodes making up the chain of if/elseif/else if conditions.
+     * @return list<Node> the list of AST_IF_ELEM nodes making up the chain of if/elseif/else if conditions.
      * @suppress PhanPartialTypeMismatchReturn
      */
     private static function extractIfElseifChain(Node $node) : array

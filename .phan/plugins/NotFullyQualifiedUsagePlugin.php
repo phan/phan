@@ -39,7 +39,7 @@ class NotFullyQualifiedUsageVisitor extends PluginAwarePostAnalysisVisitor
 {
     // Subclasses should declare protected $parent_node_list as an instance property if they need to know the list.
 
-    // @var array<int,Node> - Set after the constructor is called if an instance property with this name is declared
+    // @var list<Node> - Set after the constructor is called if an instance property with this name is declared
     // protected $parent_node_list;
 
     // A plugin's visitors should NOT implement visit(), unless they need to.

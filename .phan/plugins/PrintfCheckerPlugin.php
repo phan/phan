@@ -188,7 +188,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
     {
         $string_union_type = StringType::instance(false)->asPHPDocUnionType();
         /**
-         * @param array<int,Node|string|int|float> $args the nodes for the arguments to the invocation
+         * @param list<Node|string|int|float> $args the nodes for the arguments to the invocation
          */
         $sprintf_handler = static function (
             CodeBase $code_base,
@@ -253,7 +253,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
     {
         /**
          * Analyzes a printf-like function with a format directive in the first position.
-         * @param array<int,Node|string|int|float> $args the nodes for the arguments to the invocation
+         * @param list<Node|string|int|float> $args the nodes for the arguments to the invocation
          */
         $printf_callback = function (
             CodeBase $code_base,
@@ -275,7 +275,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
         };
         /**
          * Analyzes a printf-like function with a format directive in the first position.
-         * @param array<int,Node|string|int|float> $args the nodes for the arguments to the invocation
+         * @param list<Node|string|int|float> $args the nodes for the arguments to the invocation
          */
         $fprintf_callback = function (
             CodeBase $code_base,
@@ -297,7 +297,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
         };
         /**
          * Analyzes a printf-like function with a format directive in the first position.
-         * @param array<int,Node|int|string|float> $args
+         * @param list<Node|int|string|float> $args
          */
         $vprintf_callback = function (
             CodeBase $code_base,
@@ -320,7 +320,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
         };
         /**
          * Analyzes a printf-like function with a format directive in the first position.
-         * @param array<int,Node|string|int|float> $args the nodes for the arguments to the invocation
+         * @param list<Node|string|int|float> $args the nodes for the arguments to the invocation
          */
         $vfprintf_callback = function (
             CodeBase $code_base,
@@ -406,7 +406,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
          * The list of placeholders for between braces can be found
          * in \Phan\Issue::uncolored_format_string_for_template.
          *
-         * @param array<int,string|float|int> $issue_message_args
+         * @param list<string|float|int> $issue_message_args
          * The arguments for this issue format.
          * If this array is empty, $issue_message_args is kept in place
          *

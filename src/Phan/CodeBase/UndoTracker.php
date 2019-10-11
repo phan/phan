@@ -33,8 +33,7 @@ class UndoTracker
     private $current_parsed_file;
 
     /**
-     * @var array<string,array<int,Closure>> operations to undo for a current path
-     * @phan-var array<string,array<int,Closure(CodeBase):void>>
+     * @var array<string,list<Closure(CodeBase):void>>
      */
     private $undo_operations_for_path = [];
 
@@ -48,7 +47,7 @@ class UndoTracker
     }
 
     /**
-     * @return array<int,string> - The list of files which are successfully parsed.
+     * @return list<string> - The list of files which are successfully parsed.
      * This changes whenever the file list is reloaded from disk.
      * This also includes files which don't declare classes or functions or globals,
      * because those files use classes/functions/constants.
@@ -146,11 +145,11 @@ class UndoTracker
 
     /**
      * @param CodeBase $code_base - code base owning this tracker
-     * @param array<int,string> $new_file_list
+     * @param list<string> $new_file_list
      * @param array<string,string> $file_mapping_contents
      * @param ?(string[]) $reanalyze_files files to re-parse before re-running analysis.
      *                    This fixes #1921
-     * @return array<int,string> - Subset of $new_file_list which changed on disk and has to be parsed again. Automatically unparses the old versions of files which were modified.
+     * @return list<string> - Subset of $new_file_list which changed on disk and has to be parsed again. Automatically unparses the old versions of files which were modified.
      */
     public function updateFileList(CodeBase $code_base, array $new_file_list, array $file_mapping_contents, array $reanalyze_files = null) : array
     {

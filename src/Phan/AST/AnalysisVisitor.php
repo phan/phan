@@ -82,7 +82,7 @@ abstract class AnalysisVisitor extends KindVisitorImplementation
      * @param int $lineno
      * The line number where the issue was found
      *
-     * @param array<int,int|string|FQSEN|UnionType|Type> $parameters
+     * @param list<int|string|FQSEN|UnionType|Type> $parameters
      * Template parameters for the issue's error message
      *
      * @param ?Suggestion $suggestion

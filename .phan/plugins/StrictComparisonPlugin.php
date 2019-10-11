@@ -45,7 +45,7 @@ class StrictComparisonPlugin extends PluginV3 implements
          */
         $make_callback = static function (int $index, string $index_name, int $min_args) : Closure {
             /**
-             * @param array<int,Node|string|int|float> $args the nodes for the arguments to the invocation
+             * @param list<Node|string|int|float> $args the nodes for the arguments to the invocation
              */
             return static function (
                 CodeBase $code_base,

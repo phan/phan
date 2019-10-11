@@ -152,7 +152,7 @@ final class LanguageServerIntegrationTest extends BaseTest
     }
 
     /**
-     * @return array<int,array{0:bool,1:bool}>
+     * @return list<array{0:bool,1:bool}>
      */
     public function initializeProvider() : array
     {
@@ -340,7 +340,7 @@ EOT;
 
     /**
      * Tests the completion provider for the given $position with pcntl enabled or disabled
-     * @param array<int,array> $expected_completions
+     * @param list<array> $expected_completions
      */
     public function runTestCompletionWithPcntlSetting(
         Position $position,
@@ -388,7 +388,7 @@ EOT;
     }
 
     /**
-     * @param array<int,array> $expected_completions
+     * @param list<array> $expected_completions
      */
     private function runTestCompletionWithAndWithoutPcntl(Position $position, array $expected_completions, bool $for_vscode, string $file_contents) : void
     {
@@ -399,7 +399,7 @@ EOT;
     }
 
     /**
-     * @param array<int,array> $expected_completions
+     * @param list<array> $expected_completions
      * @dataProvider completionBasicProvider
      */
     public function testCompletionBasic(Position $position, array $expected_completions, bool $for_vscode = false) : void
@@ -465,7 +465,7 @@ EOT;
      * @param ?string $property_insert_text
      * @param ?string $insert_text_for_substr
      * @param bool $for_vscode
-     * @return array<int,array{0:Position,1:array,2:bool}>
+     * @return list<array{0:Position,1:array,2:bool}>
      */
     private function createCompletionBasicTestCases(string $property_label, ?string $property_insert_text, ?string $insert_text_for_substr, bool $for_vscode) : array
     {
@@ -585,7 +585,7 @@ EOT;
         ];
     }
     /**
-     * @return array<int,array{0:Position,1:array,2:bool}>
+     * @return list<array{0:Position,1:array,2:bool}>
      */
     public function completionBasicProvider() : array
     {
@@ -596,7 +596,7 @@ EOT;
     }
 
     /**
-     * @param array<int,array> $expected_completions
+     * @param list<array> $expected_completions
      * @dataProvider completionVariableProvider
      */
     public function testCompletionVariable(Position $position, array $expected_completions, bool $for_vscode = false) : void
@@ -661,7 +661,7 @@ EOT;
 
     /**
      * @param string $variablePrefix expected prefix for labels of variables
-     * @return array<int,array{0:Position,1:array,2:bool}>
+     * @return list<array{0:Position,1:array,2:bool}>
      */
     private function createCompletionVariableTestCases(string $variablePrefix, bool $for_vscode) : array
     {
@@ -794,7 +794,7 @@ EOT;
     }
 
     /**
-     * @return array<int,array{0:Position,1:array,2:bool}>
+     * @return list<array{0:Position,1:array,2:bool}>
      */
     public function completionVariableProvider() : array
     {
@@ -849,7 +849,7 @@ EOT;
     }
 
     /**
-     * @return array<int,array{0:string,1:Position,2:?string,3?:?string}>
+     * @return list<array{0:string,1:Position,2:?string,3?:?string}>
      */
     public function hoverInOtherFileProvider() : array
     {
@@ -1399,7 +1399,7 @@ EOT
     }
 
     /**
-     * @return array<int,array{0:string,1:Position,2:string,3:?int,4?:string}>
+     * @return list<array{0:string,1:Position,2:string,3:?int,4?:string}>
      */
     public function definitionInOtherFileProvider() : array
     {
@@ -1577,7 +1577,7 @@ EOT;
     }
 
     /**
-     * @return array<int,array{0:string,1:Position,2:string,3:?int,4?:string}>
+     * @return list<array{0:string,1:Position,2:string,3:?int,4?:string}>
      */
     public function typeDefinitionInOtherFileProvider() : array
     {
@@ -1650,7 +1650,7 @@ EOT;
         $this->assertNotSame([], $diagnostics);
     }
 
-    /** @return array<int,array> */
+    /** @return list<list> */
     public function pcntlEnabledProvider() : array
     {
         return [

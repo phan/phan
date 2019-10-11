@@ -197,7 +197,7 @@ EOT;
 
         if ($issue instanceof Issue) {
             self::debugLog("Found $issue_name\n");
-            /** @param array<int,string> $unused_match */
+            /** @param list<string> $unused_match */
             $text = preg_replace_callback('@\n```\n[^\n]*\n```@', static function (array $unused_match) use ($issue) : string {
                 return "\n```\n{$issue->getTemplateRaw()}\n```";
             }, $text);
@@ -314,7 +314,7 @@ class UnitTestRecord
     }
 
     /**
-     * @return array<int,array{0:string,1:string,2:string}> the issues parsed from this file.
+     * @return list<array{0:string,1:string,2:string}> the issues parsed from this file.
      * Contains the file name, issue type, and issue description.
      */
     public function getIssues() : array

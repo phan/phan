@@ -14,7 +14,7 @@ final class RegexKeyExtractorTest extends BaseTest
      * Test that $expected_keys are extracted from $regex
      *
      * @param string $regex a regular expression for preg_match
-     * @param array<int,int|string> $expected_keys
+     * @param list<int|string> $expected_keys
      * @dataProvider getKeysProvider
      */
     public function testGetKeys(string $regex, array $expected_keys) : void
@@ -25,7 +25,7 @@ final class RegexKeyExtractorTest extends BaseTest
     }
 
     /**
-     * @return array<int,array{0:string,1:array<int,int|string>}>
+     * @return list<array{0:string,1:list<int|string>}>
      */
     public function getKeysProvider()  : array
     {
@@ -40,7 +40,7 @@ final class RegexKeyExtractorTest extends BaseTest
     }
 
     /**
-     * @param array<int,int|string> $list
+     * @param list<int|string> $list
      * @return array<int|string,true>
      */
     private static function toArraySet(array $list) : array
