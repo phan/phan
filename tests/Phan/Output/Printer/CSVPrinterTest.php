@@ -56,7 +56,7 @@ final class CSVPrinterTest extends BaseTest
         $this->assertSame($expected, $actual);
     }
 
-    /** @return array<int,array> */
+    /** @return list<list> */
     public function specialCharacterCasesProvider() : array
     {
         return [

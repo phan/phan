@@ -34,7 +34,7 @@ final class MethodSearcherPluginTest extends BaseTest implements CodeBaseAwareTe
     }
 
     /**
-     * @return array<int,array>
+     * @return list<list>
      */
     public function getTypeMatchingBonusProvider() : array
     {
@@ -50,8 +50,8 @@ final class MethodSearcherPluginTest extends BaseTest implements CodeBaseAwareTe
     }
 
     /**
-     * @param array<int,string> $actual
-     * @param array<int,string> $desired
+     * @param list<string> $actual
+     * @param list<string> $desired
      * @dataProvider matchesParamTypesProvider
      */
     public function testMatchesParamTypes(float $expected_score, array $actual, array $desired) : void
@@ -63,7 +63,7 @@ final class MethodSearcherPluginTest extends BaseTest implements CodeBaseAwareTe
     }
 
     /**
-     * @return array<int,array>
+     * @return list<list>
      */
     public function matchesParamTypesProvider() : array
     {

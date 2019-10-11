@@ -39,7 +39,7 @@ final class ConfigInitializerTest extends BaseTest
 
     /**
      * Phan determines the minimum version based on https://getcomposer.org/doc/articles/versions.md
-     * @return array<int,array>
+     * @return list<list>
      */
     public function determineTargetPHPVersionProvider() : array
     {
@@ -56,10 +56,10 @@ final class ConfigInitializerTest extends BaseTest
     }
 
     /**
-     * @param array<int,string> $expected_dirs
-     * @param array<int,string> $expected_files
-     * @param array<int,string> $dirs
-     * @param array<int,string> $files
+     * @param list<string> $expected_dirs
+     * @param list<string> $expected_files
+     * @param list<string> $dirs
+     * @param list<string> $files
      * @dataProvider filterDirectoryAndFileListProvider
      */
     public function testFilterDirectoryAndFileList(array $expected_dirs, array $expected_files, array $dirs, array $files) : void
@@ -68,7 +68,7 @@ final class ConfigInitializerTest extends BaseTest
     }
 
     /**
-     * @return array<int,array<int,array<int,string>>>
+     * @return list<list<list<string>>>
      */
     public function filterDirectoryAndFileListProvider() : array
     {

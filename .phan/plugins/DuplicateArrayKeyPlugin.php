@@ -108,7 +108,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
-     * @param array<int,mixed> $values_to_check scalar constant values of case statements
+     * @param array<mixed,mixed> $values_to_check scalar constant values of case statements
      */
     private static function areAllSwitchCasesTheSameType(array $values_to_check) : bool
     {
@@ -141,8 +141,8 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
      * This is intended to perform well for large arrays.
      *
      * TODO: Do a better job for small arrays.
-     * @param array<int,mixed> $values_to_check
-     * @param array<int,mixed> $children an array of scalars
+     * @param array<mixed, mixed> $values_to_check
+     * @param list<mixed> $children an array of scalars
      */
     private function extendedLooseEqualityCheck(array $values_to_check, array $children) : void
     {

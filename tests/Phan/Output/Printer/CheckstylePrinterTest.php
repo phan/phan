@@ -38,7 +38,7 @@ final class CheckstylePrinterTest extends BaseTest
     }
 
     /**
-     * @return array<int,array{0:string}>
+     * @return list<array{0:string}>
      */
     public function invalidUTF8StringsProvider() : array
     {

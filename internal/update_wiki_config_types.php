@@ -155,14 +155,14 @@ class ConfigEntry
 
     /** @var string the configuration setting name (e.g. 'null_casts_as_any_type') */
     private $config_name;
-    /** @var array<int,string> the raw comment lines */
+    /** @var list<string> the raw comment lines */
     private $lines;
     /** @var string the category of configuration settings */
     private $category;
 
     /**
      * @param string $config_name the name of the config setting
-     * @param array<int,string> $lines
+     * @param list<string> $lines
      */
     public function __construct(string $config_name, array $lines)
     {
@@ -205,7 +205,7 @@ class ConfigEntry
     }
 
     /**
-     * @return array<int,string> the raw lines
+     * @return list<string> the raw lines
      * @suppress PhanUnreferencedPublicMethod
      */
     public function getLines() : array

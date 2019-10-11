@@ -31,8 +31,8 @@ class FuzzTest
     }
 
     /**
-     * @param array<int,array|string> $tokens
-     * @return ?array<int,array|string>
+     * @param list<array|string> $tokens
+     * @return ?list<array|string>
      */
     private static function mutateTokens(string $path, array $tokens, int $i)
     {

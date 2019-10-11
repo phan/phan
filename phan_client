@@ -314,7 +314,7 @@ class PhanPHPLinterOpts
     /** @var string tcp:// or unix:// socket URL of the daemon. */
     public $url;
 
-    /** @var array<int,string> - file list */
+    /** @var list<string> - file list */
     public $file_list = [];
 
     /** @var string[]|null - optional, maps original files to temporary file path to use as a substitute. */

@@ -45,7 +45,7 @@ final class ConfigTest extends BaseTest
 
 
     /**
-     * @return array<int,array>
+     * @return list<list>
      */
     public function warnsEnableCompletionProvider() : array
     {

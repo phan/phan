@@ -28,7 +28,7 @@ Shim::load();
 final class ConversionTest extends BaseTest
 {
     /**
-     * @return array<int,string>
+     * @return list<string>
      */
     protected function scanSourceDirForPHP(string $source_dir) : array
     {

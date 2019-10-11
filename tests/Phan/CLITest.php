@@ -45,7 +45,7 @@ final class CLITest extends BaseTest
     }
 
     /**
-     * @return array<int,array{0:string,1:string}>
+     * @return list<array{0:string,1:string}>
      */
     public function getFlagSuggestionStringProvider() : array
     {
@@ -115,7 +115,7 @@ final class CLITest extends BaseTest
     }
 
     /**
-     * @return array<int,array{0:array,1:array,2?:array}>
+     * @return list<array{0:array,1:array,2?:array}>
      */
     public function setsConfigOptionsProvider() : array
     {
@@ -239,7 +239,7 @@ final class CLITest extends BaseTest
         $this->assertSame(\sprintf("Phan %s\n", CLI::PHAN_VERSION), $stdout);
     }
 
-    /** @return array<int,array> */
+    /** @return list<list> */
     public function versionOptProvider() : array
     {
         return [

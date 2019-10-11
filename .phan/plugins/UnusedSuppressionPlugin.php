@@ -203,7 +203,7 @@ class UnusedSuppressionPlugin extends PluginV3 implements
     }
 
     /**
-     * @return array<int,string>
+     * @return list<string>
      */
     private static function getUnusedSuppressionIgnoreList() : array
     {

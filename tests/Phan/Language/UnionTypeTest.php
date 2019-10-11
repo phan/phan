@@ -464,7 +464,7 @@ final class UnionTypeTest extends BaseTest
         $this->assertNotRegExp(self::VALID_UNION_TYPE_REGEX, $type, "'$type' should be unparseable");
     }
 
-    /** @return array<int,array{0:string}> */
+    /** @return list<array{0:string}> */
     public function unparseableUnionTypeProvider() : array
     {
         return [

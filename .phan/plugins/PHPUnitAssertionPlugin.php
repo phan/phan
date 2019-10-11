@@ -110,7 +110,7 @@ class PHPUnitAssertionPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
                 // (at)phan-assert T $actual
                 return $method->createClosureForUnionTypeExtractorAndAssertionType(
                     /**
-                     * @param array<int,Node|string|int|float> $args
+                     * @param list<Node|string|int|float> $args
                      */
                     static function (CodeBase $code_base, Context $context, array $args) : UnionType {
                         if (\count($args) < 2) {
@@ -124,7 +124,7 @@ class PHPUnitAssertionPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
             case 'assertinternaltype':
                 return $method->createClosureForUnionTypeExtractorAndAssertionType(
                     /**
-                     * @param array<int,Node|string|int|float> $args
+                     * @param list<Node|string|int|float> $args
                      */
                     function (CodeBase $code_base, Context $context, array $args) : UnionType {
                         if (\count($args) < 2) {
@@ -214,7 +214,7 @@ class PHPUnitAssertionPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
                 // (at)phan-assert T $actual
                 return $method->createClosureForUnionTypeExtractorAndAssertionType(
                     /**
-                     * @param array<int,Node|string|int|float> $args
+                     * @param list<Node|string|int|float> $args
                      */
                     static function (CodeBase $code_base, Context $context, array $args) : UnionType {
                         if (\count($args) < 2) {

@@ -462,7 +462,7 @@ final class TypeTest extends BaseTest
         $this->assertTrue($from_type->canCastToType($to_type), "expected $from_type_string to be able to cast to $to_type_string");
     }
 
-    /** @return array<int,array> */
+    /** @return list<list> */
     public function canCastToTypeProvider() : array
     {
         return [
@@ -500,7 +500,7 @@ final class TypeTest extends BaseTest
         $this->assertFalse($from_type->canCastToType($to_type), "expected $from_type_string to be unable to cast to $to_type_string");
     }
 
-    /** @return array<int,array> */
+    /** @return list<list> */
     public function cannotCastToTypeProvider() : array
     {
         return [

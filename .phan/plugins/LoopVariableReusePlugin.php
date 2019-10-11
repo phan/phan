@@ -32,7 +32,7 @@ class LoopVariableReuseVisitor extends PluginAwarePostAnalysisVisitor
     // A plugin's visitors should not override visit() unless they need to.
 
     /**
-     * @var array<int,Node> set by plugin framework
+     * @var list<Node> set by plugin framework
      * @suppress PhanReadOnlyProtectedProperty
      */
     protected $parent_node_list;

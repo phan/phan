@@ -63,7 +63,7 @@ final class EmptyStatementListPlugin extends PluginV3 implements PostAnalyzeNode
 final class EmptyStatementListVisitor extends PluginAwarePostAnalysisVisitor
 {
     /**
-     * @var array<int,Node> set by plugin framework
+     * @var list<Node> set by plugin framework
      * @suppress PhanReadOnlyProtectedProperty
      */
     protected $parent_node_list;

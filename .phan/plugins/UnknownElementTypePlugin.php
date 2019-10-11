@@ -111,7 +111,7 @@ class UnknownElementTypePlugin extends PluginV3 implements
         };
         $method->addFunctionCallAnalyzer(
             /**
-             * @param array<int,mixed> $args
+             * @param list<mixed> $args
              */
             static function (CodeBase $code_base, Context $context, Method $unused_method, array $args, Node $unused_node) use ($warning_closures, &$inferred_types) : void {
                 foreach ($warning_closures as $i => $_) {
@@ -192,7 +192,7 @@ class UnknownElementTypePlugin extends PluginV3 implements
     }
 
     /**
-     * @param array<int,string|FQSEN> $args
+     * @param list<string|FQSEN> $args
      */
     private static function emitIssueAndSuggestion(
         CodeBase $code_base,
@@ -329,7 +329,7 @@ class UnknownElementTypePlugin extends PluginV3 implements
         };
         $function->addFunctionCallAnalyzer(
             /**
-             * @param array<int,mixed> $args
+             * @param list<mixed> $args
              */
             static function (CodeBase $code_base, Context $context, Func $unused_function, array $args, Node $unused_node) use ($warning_closures, &$inferred_types) : void {
                 foreach ($warning_closures as $i => $_) {

@@ -32,7 +32,7 @@ final class ASTReverterTest extends BaseTest
     }
 
     /**
-     * @return array<int,array{0:string}>
+     * @return list<array{0:string}>
      */
     public function revertShorthandProvider() : array
     {

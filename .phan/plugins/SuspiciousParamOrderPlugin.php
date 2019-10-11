@@ -111,7 +111,7 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
-     * @param array<int,Node|string|int|float|null> $args
+     * @param list<Node|string|int|float|null> $args
      */
     private function checkCall(FunctionInterface $function, array $args, Node $node) : void
     {
@@ -214,8 +214,8 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
-     * @param array<int,int> $values
-     * @return array<int,int>
+     * @param list<int> $values
+     * @return list<int> the same values of the cycle, rearranged to start with the smallest value.
      */
     private static function normalizeCycle(array $values, int $next) : array
     {

@@ -118,7 +118,7 @@ final class EmptyUnionTypeTest extends BaseTest
      * Generate one or more argument lists to test a method
      * implementation in a subclass of UnionType
      *
-     * @return array<int,array>
+     * @return list<list>
      */
     public function generateArgLists(ReflectionMethod $method) : array
     {
@@ -149,7 +149,7 @@ final class EmptyUnionTypeTest extends BaseTest
     /**
      * Helper method to determine what arguments to use
      * to brute force test this parameter of EmptyUnionType
-     * @return array<int,mixed>
+     * @return list<mixed>
      */
     public function getPossibleArgValues(ReflectionParameter $param) : array
     {

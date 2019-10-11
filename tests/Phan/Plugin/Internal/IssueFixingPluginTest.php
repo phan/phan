@@ -43,7 +43,7 @@ final class IssueFixingPluginTest extends BaseTest implements CodeBaseAwareTestI
     }
 
     /**
-     * @return array<int,array{0:string,1:string,2:array<int,IssueInstance>}>
+     * @return list<array{0:string,1:string,2:list<IssueInstance>}>
      */
     public function computeAndApplyFixesProvider() : array
     {
@@ -95,7 +95,7 @@ EOT
     }
 
     /**
-     * @return array<int,array{0:?string,1:string,2:FileEdit[]}>
+     * @return list<array{0:?string,1:string,2:FileEdit[]}>
      */
     public function computeNewContentsProvider() : array
     {
