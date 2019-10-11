@@ -93,7 +93,7 @@ class ContextNode
     /**
      * Get a list of fully qualified names from a node
      *
-     * @return array<int,string>
+     * @return list<string>
      * @throws FQSENException if the node has invalid names
      * @suppress PhanUnreferencedPublicMethod this used to be used
      */
@@ -131,7 +131,7 @@ class ContextNode
     /**
      * Gets the list of possible FQSENs for a trait.
      * NOTE: does not validate that it is really used on a trait
-     * @return array<int,FullyQualifiedClassName>
+     * @return list<FullyQualifiedClassName>
      * @throws FQSENException
      */
     public function getTraitFQSENList() : array
@@ -189,7 +189,7 @@ class ContextNode
      * Get a list of traits adaptations from a node of kind ast\AST_TRAIT_ADAPTATIONS
      * (with fully qualified names and `as`/`instead` info)
      *
-     * @param array<int,FullyQualifiedClassName> $trait_fqsen_list TODO: use this for sanity check
+     * @param list<FullyQualifiedClassName> $trait_fqsen_list TODO: use this for sanity check
      *
      * @return array<string,TraitAdaptations> maps the lowercase trait fqsen to the corresponding adaptations.
      *
@@ -580,7 +580,7 @@ class ContextNode
      * If this exists, emit the given issue type (passing in the class's union type as format arg) instead of the default issue type.
      * The issue type passed in must have exactly one template string parameter (e.g. {CLASS}, {TYPE})
      *
-     * @return array<int,Clazz>
+     * @return list<Clazz>
      * A list of classes representing the non-native types
      * associated with the given node
      *

@@ -25,7 +25,7 @@ class FileContents
     /** @var ?FilePositionMap - computed lazily and shared by all fixers */
     private $file_position_map;
 
-    /** @var ?array<int,int> positions of each line (1-based) (computed lazily) */
+    /** @var ?non-empty-list<int> positions of each line (1-based) (computed lazily) */
     private $line_offset_map = null;
 
     /** @var ?array<int,string> a 1-based array of lines */

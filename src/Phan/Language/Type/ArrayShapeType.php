@@ -36,7 +36,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     /**
      * This array shape converted to a list of 0 or more ArrayTypes.
      * This is lazily set.
-     * @var ?array<int,ArrayType>
+     * @var ?list<ArrayType>
      */
     private $as_generic_array_type_instances = null;
 
@@ -57,7 +57,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      * E.g. `array{a:int,b:int,c:int|string}` will have two unique union types of values: `int`, and `int|string`
      * Lazily set.
      *
-     * @var ?array<int,UnionType>
+     * @var ?list<UnionType>
      */
     private $unique_value_union_types;
 
@@ -153,7 +153,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     }
 
     /**
-     * @return array<int,ArrayType> the array shape transformed to remove literal keys and values.
+     * @return list<ArrayType> the array shape transformed to remove literal keys and values.
      */
     private function computeGenericArrayTypeInstances() : array
     {
@@ -399,13 +399,13 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         return $this->canEachFieldTypeCastToExpectedUnionType($iterable_type->getElementUnionType());
     }
 
-    /** @return array<int,UnionType> */
+    /** @return list<UnionType> */
     private function getUniqueValueUnionTypes() : array
     {
         return $this->unique_value_union_types ?? ($this->unique_value_union_types = $this->calculateUniqueValueUnionTypes());
     }
 
-    /** @return array<int,UnionType> */
+    /** @return list<UnionType> */
     private function calculateUniqueValueUnionTypes() : array
     {
         $field_types = $this->field_types;
@@ -638,7 +638,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     }
 
     /**
-     * @return array<int,ArrayType>
+     * @return list<ArrayType>
      * @override
      */
     public function withFlattenedArrayShapeOrLiteralTypeInstances() : array
@@ -659,7 +659,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      * Computes the non-nullable union of two or more array shape types.
      *
      * E.g. array{0: string} + array{0:int,1:int} === array{0:int|string,1:int}
-     * @param array<int,ArrayShapeType> $array_shape_types
+     * @param list<ArrayShapeType> $array_shape_types
      */
     public static function union(array $array_shape_types) : ArrayShapeType
     {

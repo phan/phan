@@ -20,7 +20,7 @@ class HTML
      * are replaced with `<span class="phan_file">path/to/file.php</span>`
      *
      * @param string $template
-     * @param array<int,int|string|float|FQSEN|Type|UnionType|TypedElementInterface|UnaddressableTypedElement> $template_parameters
+     * @param list<int|string|float|FQSEN|Type|UnionType|TypedElementInterface|UnaddressableTypedElement> $template_parameters
      */
     public static function htmlTemplate(
         string $template,
@@ -29,7 +29,7 @@ class HTML
         $template = \htmlentities($template);
 
         $i = 0;
-        /** @param array<int,string> $matches */
+        /** @param list<string> $matches */
         return \preg_replace_callback('/(\$?){([A-Z_]+)}|%[sdf]/', static function (array $matches) use ($template, $template_parameters, &$i) : string {
             $j = $i++;
             if ($j >= \count($template_parameters)) {

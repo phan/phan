@@ -311,7 +311,7 @@ class Parser
     }
 
     /**
-     * @param array<int,array{0:int,1:string,2:int}|string> $tokens
+     * @param list<array{0:int,1:string,2:int}|string> $tokens
      * @return int the 1-based line number, or 0 on failure
      */
     private static function computeColumnForTokenAtIndex(array $tokens, int $i, int $desired_line) : int
@@ -395,7 +395,7 @@ class Parser
      * @param string $file_contents file contents to pass to parser. May be overridden to ignore what is currently on disk.
      * @param bool $suppress_parse_errors (If true, don't emit SyntaxError)
      * @param ?Request $request - May affect the parser used for $file_path
-     * @param array<int,Diagnostic> &$errors @phan-output-reference
+     * @param list<Diagnostic> &$errors @phan-output-reference
      * @throws ParseException
      */
     public static function parseCodePolyfill(CodeBase $code_base, Context $context, string $file_path, string $file_contents, bool $suppress_parse_errors, ?Request $request, array &$errors = []) : Node

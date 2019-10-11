@@ -39,14 +39,14 @@ class IssueInstance
     /** @var ?Suggestion If this is non-null, this contains suggestions on how to resolve the error. */
     private $suggestion;
 
-    /** @var array<int,string|int|float> $template_parameters If this is non-null, this contains the arguments emitted for this instance of the issue. */
+    /** @var list<string|int|float> $template_parameters If this is non-null, this contains the arguments emitted for this instance of the issue. */
     private $template_parameters;
 
     /**
      * @param Issue $issue
      * @param string $file
      * @param int $line
-     * @param array<int,string|int|float|FQSEN|Type|UnionType|TypedElementInterface|UnaddressableTypedElement> $template_parameters
+     * @param list<string|int|float|FQSEN|Type|UnionType|TypedElementInterface|UnaddressableTypedElement> $template_parameters
      * @param ?Suggestion $suggestion
      * @param int $column
      */
@@ -91,7 +91,7 @@ class IssueInstance
     }
 
     /**
-     * @param array<int,string|int|float|bool|object> $template_parameters
+     * @param list<string|int|float|bool|object> $template_parameters
      */
     private static function generatePlainMessage(
         Issue $issue,
@@ -116,7 +116,7 @@ class IssueInstance
     }
 
     /**
-     * @param array<int,string|int|float|FQSEN|Type|UnionType|TypedElementInterface|UnaddressableTypedElement> $template_parameters
+     * @param list<string|int|float|FQSEN|Type|UnionType|TypedElementInterface|UnaddressableTypedElement> $template_parameters
      */
     private static function generateColorizedMessage(
         Issue $issue,
@@ -136,7 +136,7 @@ class IssueInstance
         return $this->suggestion;
     }
 
-    /** @return array<int,string|int|float|FQSEN|Type|UnionType> $template_parameters */
+    /** @return list<string|int|float|FQSEN|Type|UnionType> $template_parameters */
     public function getTemplateParameters() : array
     {
         return $this->template_parameters;

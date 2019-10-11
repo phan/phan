@@ -21,7 +21,7 @@ final class CodeClimatePrinter implements BufferedPrinterInterface
     /** @var OutputInterface an output that zero byte separated JSON can be written to.  */
     private $output;
 
-    /** @var array<int,array> a list of associative arrays with codeclimate issue fields. */
+    /** @var list<array> a list of associative arrays with codeclimate issue fields. */
     private $messages = [];
 
     public function print(IssueInstance $instance) : void

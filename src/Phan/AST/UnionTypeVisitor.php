@@ -994,7 +994,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
-     * @return array<int,ArrayType>
+     * @return list<ArrayType>
      */
     private static function arrayTypeFromRealTypeBuilder(?UnionTypeBuilder $builder, bool $has_key) : array
     {
@@ -1093,7 +1093,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
     /**
      * @param Node|mixed $expr
-     * @return ?array<int,UnionType> the type of $x in ...$x, provided that it's a packed array (with keys 0, 1, ...)
+     * @return ?list<UnionType> the type of $x in ...$x, provided that it's a packed array (with keys 0, 1, ...)
      */
     private function getPackedArrayFieldTypes($expr) : ?array
     {
@@ -2987,7 +2987,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @param Context $context
      * @param int|string|float|Node $node the node to fetch CallableType instances for.
      * @param bool $log_error whether or not to log errors while searching @phan-unused-param
-     * @return array<int,FunctionInterface>
+     * @return list<FunctionInterface>
      * TODO: use log_error
      */
     public static function functionLikeListFromNodeAndContext(CodeBase $code_base, Context $context, $node, bool $log_error) : array
@@ -3039,7 +3039,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * Fetch known classes for a place where a class name was provided as a string or string expression.
      * Warn if this is an invalid class name.
      * @param \ast\Node|string|int|float $node
-     * @return array<int,Clazz>
+     * @return list<Clazz>
      */
     public static function classListFromClassNameNode(CodeBase $code_base, Context $context, $node) : array
     {
@@ -3087,7 +3087,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @param CodeBase $code_base
      * @param Context $context
      * @param string|Node $node the node to fetch CallableType instances for.
-     * @return array<int,FullyQualifiedFunctionLikeName>
+     * @return list<FullyQualifiedFunctionLikeName>
      * @suppress PhanUnreferencedPublicMethod may be used in the future.
      */
     public static function functionLikeFQSENListFromNodeAndContext(CodeBase $code_base, Context $context, $node) : array
@@ -3099,7 +3099,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @param string|Node $class_or_expr
      * @param string $method_name
      *
-     * @return array<int,FullyQualifiedMethodName>
+     * @return list<FullyQualifiedMethodName>
      * A list of CallableTypes associated with the given node
      */
     private function methodFQSENListFromObjectAndMethodName($class_or_expr, string $method_name) : array
@@ -3242,7 +3242,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @param string|Node $class_or_expr
      * @param string|Node $method_name
      *
-     * @return array<int,FullyQualifiedMethodName>
+     * @return list<FullyQualifiedMethodName>
      * A list of `FullyQualifiedMethodName`s associated with the given node
      */
     private function methodFQSENListFromParts($class_or_expr, $method_name) : array
@@ -3338,7 +3338,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
     /**
      * @see ContextNode::getFunction() for a similar function
-     * @return array<int,FullyQualifiedFunctionName>
+     * @return list<FullyQualifiedFunctionName>
      */
     private function functionFQSENListFromFunctionName(string $function_name) : array
     {
@@ -3367,7 +3367,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     /**
      * @param string|Node $node
      *
-     * @return array<int,FullyQualifiedFunctionLikeName>
+     * @return list<FullyQualifiedFunctionLikeName>
      * A list of `FullyQualifiedFunctionLikeName`s associated with the given node
      *
      * @throws IssueException

@@ -17,7 +17,7 @@ class VariableTrackingScope
 {
     /**
      * @var array<string,array<int,bool>>
-     * Maps a variable id to a list of definitions in that scope.
+     * Maps a variable id to a set of definitions ids in that scope.
      *
      * This is true if 100% of the definitions are made within the scope,
      * false if a fraction of the definitions could be from preceding scopes.
@@ -28,7 +28,7 @@ class VariableTrackingScope
 
     /**
      * @var array<string,array<int,true>>
-     * Maps a variable id to a list of uses which occurred within that scope.
+     * Maps a variable id to a list of use ids which occurred within that scope.
      * (of definitions that might have occurred before this scope)
      */
     protected $uses = [];
@@ -248,8 +248,8 @@ class VariableTrackingScope
     }
 
     /**
-     * @param array<int,VariableTrackingBranchScope> $branch_scopes
-     * @param array<int,VariableTrackingBranchScope> $inner_exiting_scope_list
+     * @param list<VariableTrackingBranchScope> $branch_scopes
+     * @param list<VariableTrackingBranchScope> $inner_exiting_scope_list
      */
     public function mergeBranchScopeList(
         array $branch_scopes,
@@ -293,7 +293,7 @@ class VariableTrackingScope
     }
 
     /**
-     * @param array<int,VariableTrackingScope> $branch_scopes
+     * @param list<VariableTrackingScope> $branch_scopes
      * @return array<string,true>
      */
     private static function computeCommonDefsShadowingSet(array $branch_scopes) : array

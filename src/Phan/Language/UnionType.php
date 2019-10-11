@@ -1160,7 +1160,7 @@ class UnionType implements Serializable
     }
 
     /**
-     * @param array<int,Type> $type_set
+     * @param list<Type> $type_set
      * @return list<Type> the subset of types in $type_set excluding the subclasses/sub-types of $object_type
      */
     public static function typesWithoutSubclassesOf(CodeBase $code_base, array $type_set, Type $object_type) : array

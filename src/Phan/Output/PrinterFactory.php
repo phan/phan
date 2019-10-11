@@ -19,7 +19,7 @@ class PrinterFactory
 {
 
     /**
-     * @return array<int,string> the supported types of Printers
+     * @return list<string> the supported types of Printers
      */
     public function getTypes():array
     {

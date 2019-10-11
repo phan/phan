@@ -420,7 +420,7 @@ class IssueFixSuggester
     /**
      * @template T
      * @param T[] $suggestions
-     * @return array<int,T>
+     * @return list<T>
      */
     private static function deduplicateSuggestions(array $suggestions) : array
     {
@@ -432,7 +432,7 @@ class IssueFixSuggester
     }
 
     /**
-     * @return array<int,string>
+     * @return list<string>
      */
     private static function suggestSimilarFunctionsToConstant(CodeBase $code_base, Context $context, FullyQualifiedGlobalConstantName $fqsen) : array
     {
@@ -449,7 +449,7 @@ class IssueFixSuggester
 
     /**
      * Suggests accessible class constants of the current class that are similar to the passed in global constant FQSEN
-     * @return array<int,string>
+     * @return list<string>
      */
     private static function suggestSimilarClassConstantsToGlobalConstant(CodeBase $code_base, Context $context, FullyQualifiedGlobalConstantName $fqsen) : array
     {
@@ -473,7 +473,7 @@ class IssueFixSuggester
 
     /**
      * Suggests accessible class properties of the current class that are similar to the passed in global constant FQSEN
-     * @return array<int,string>
+     * @return list<string>
      */
     private static function suggestSimilarClassPropertiesToGlobalConstant(CodeBase $code_base, Context $context, FullyQualifiedGlobalConstantName $fqsen) : array
     {
@@ -505,7 +505,7 @@ class IssueFixSuggester
     }
 
     /**
-     * @return array<int,string> returns array variable names prefixed with '$' with a similar name, or an empty array if that wouldn't make sense or there would be too many suggestions
+     * @return list<string> returns array variable names prefixed with '$' with a similar name, or an empty array if that wouldn't make sense or there would be too many suggestions
      */
     private static function suggestSimilarVariablesToGlobalConstant(Context $context, FullyQualifiedGlobalConstantName $fqsen) : array
     {
@@ -636,7 +636,7 @@ class IssueFixSuggester
     }
 
     /**
-     * @return array<int,string> Suggestions for variable names, prefixed with "$"
+     * @return list<string> Suggestions for variable names, prefixed with "$"
      */
     private static function getVariableNamesInScopeWithSimilarName(Context $context, string $variable_name) : array
     {

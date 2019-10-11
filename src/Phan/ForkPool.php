@@ -25,19 +25,19 @@ use const EXIT_SUCCESS;
 class ForkPool
 {
 
-    /** @var array<int,int> a list of process ids that have been forked*/
+    /** @var list<int> a list of process ids that have been forked*/
     private $child_pid_list = [];
 
-    /** @var array<int,resource> a list of read strings for $this->child_pid_list */
+    /** @var list<resource> a list of read strings for $this->child_pid_list */
     private $read_streams = [];
 
-    /** @var array<int,Reader> a list of Readers for $this->child_pid_list */
+    /** @var list<Reader> a list of Readers for $this->child_pid_list */
     private $readers = [];
 
-    /** @var array<int,Progress> a map from workers to their progress */
+    /** @var list<Progress> a map from workers to their progress */
     private $progress = [];
 
-    /** @var array<int,IssueInstance> the combination of issues emitted by all workers */
+    /** @var list<IssueInstance> the combination of issues emitted by all workers */
     private $issues = [];
 
     /** @var bool did any of the child processes fail (e.g. crash or send data that couldn't be unserialized) */
@@ -84,7 +84,7 @@ class ForkPool
     }
 
     /**
-     * @param array<int,array> $process_task_data_iterator
+     * @param list<array> $process_task_data_iterator
      * An array of task data items to be divided up among the
      * workers. The size of this is the number of forked processes.
      *
@@ -210,7 +210,7 @@ class ForkPool
      * Prepare the socket pair to be used in a parent process and
      * return the stream the parent will use to read results.
      *
-     * @param array<int,resource> $sockets the socket pair for IPC
+     * @param array{0:resource, 1:resource} $sockets the socket pair for IPC
      * @return resource
      */
     private static function streamForParent(array $sockets)
@@ -235,7 +235,7 @@ class ForkPool
      * Prepare the socket pair to be used in a child process and return
      * the stream the child will use to write results.
      *
-     * @param array<int,resource> $sockets the socket pair for IPC.
+     * @param array{0:resource, 1:resource} $sockets the socket pair for IPC
      * @return resource
      */
     private static function streamForChild(array $sockets)
@@ -253,7 +253,7 @@ class ForkPool
      * The results are returned in an array, one for each worker. The order of the results
      * is not maintained.
      *
-     * @return array<int,IssueInstance>
+     * @return list<IssueInstance>
      * @suppress PhanAccessMethodInternal
      */
     private function readResultsFromChildren() : array
@@ -317,7 +317,7 @@ class ForkPool
 
     /**
      * Wait for all child processes to complete
-     * @return array<int,IssueInstance>
+     * @return list<IssueInstance>
      */
     public function wait() : array
     {

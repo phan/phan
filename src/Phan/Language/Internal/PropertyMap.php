@@ -91,7 +91,7 @@ return [
     'arrayiterator' => ['name' => 'string'],
     'arrayobject' => ['name' => 'string'],
     'ast\metadata' => [
-        'flags' => 'array<int,string>',
+        'flags' => 'list<string>',
         'flagsCombinable' => 'bool',
         'kind' => 'int',
         'name' => 'string',

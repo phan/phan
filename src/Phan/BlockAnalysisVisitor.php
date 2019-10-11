@@ -1886,7 +1886,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param array<int,Node> $catch_nodes
+     * @param list<Node> $catch_nodes
      * @param Context $context
      */
     private function checkUnreachableCatch(array $catch_nodes, Context $context) : void

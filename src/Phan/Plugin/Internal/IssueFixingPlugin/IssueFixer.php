@@ -189,7 +189,7 @@ class IssueFixer
      * return arrays of Closures to fix fixable instances in their corresponding files.
      *
      * @param IssueInstance[] $instances
-     * @return array<string,array<int,Closure(CodeBase,FileCacheEntry):(?FileEditSet)>>
+     * @return array<string,list<Closure(CodeBase,FileCacheEntry):(?FileEditSet)>>
      */
     public static function computeFixersForInstances(array $instances) : array
     {
@@ -221,7 +221,7 @@ class IssueFixer
 
     /**
      * @param string $file the file name, for debugging
-     * @param array<int,Closure(CodeBase,FileCacheEntry):(?FileEditSet)> $fixers one or more fixers. These return 0 edits if nothing works.
+     * @param list<Closure(CodeBase,FileCacheEntry):(?FileEditSet)> $fixers one or more fixers. These return 0 edits if nothing works.
      * @return ?string the new contents, if fixes could be applied
      */
     public static function computeNewContentForFixers(
@@ -253,7 +253,7 @@ class IssueFixer
     }
 
     /**
-     * @param array<int,Closure(CodeBase,string,PhpParser\Node):(?FileEditSet)> $fixers one or more fixers. These return 0 edits if nothing works.
+     * @param list<Closure(CodeBase,string,PhpParser\Node):(?FileEditSet)> $fixers one or more fixers. These return 0 edits if nothing works.
      */
     private static function attemptFixForIssues(
         CodeBase $code_base,

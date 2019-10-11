@@ -28,7 +28,7 @@ final class FilteringPrinter implements BufferedPrinterInterface
         return \str_replace(\DIRECTORY_SEPARATOR, "//", $file);
     }
 
-    /** @param array<int, string> $files a non-empty list of relative file paths. */
+    /** @param non-empty-list<string> $files a non-empty list of relative file paths. */
     public function __construct(
         array $files,
         IssuePrinterInterface $printer
