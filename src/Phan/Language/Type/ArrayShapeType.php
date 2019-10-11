@@ -689,10 +689,21 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      * Computes the union of two array shape types.
      *
      * E.g. array{0: string} + array{0:stdClass,1:int} === array{0:string,1:int}
+     *
+     * @param bool $is_assignment - If true, this is computing the effect of assigning each field in $left to an array with previous type $right, keeping array key order.
      */
-    public static function combineWithPrecedence(ArrayShapeType $left, ArrayShapeType $right) : ArrayShapeType
+    public static function combineWithPrecedence(ArrayShapeType $left, ArrayShapeType $right, bool $is_assignment = false) : ArrayShapeType
     {
-        return self::fromFieldTypes($left->field_types + $right->field_types, false);
+        if ($is_assignment) {
+            // Not using $left->field_types + $right->field_types because that would put the array keys from $added before the array keys from $existing when iterating/displaying types.
+            $combination = $right->field_types;
+            foreach ($left->field_types as $i => $type) {
+                $combination[$i] = $type;
+            }
+        } else {
+            $combination = $left->field_types + $right->field_types;
+        }
+        return self::fromFieldTypes($combination, false);
     }
 
     /**

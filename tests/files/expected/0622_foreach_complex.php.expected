@@ -1,2 +1,2 @@
-%s:15 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is array{field2:'value',field:string} but \strlen() takes string
+%s:15 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is array{field:string,field2:'value'} but \strlen() takes string
 %s:16 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is \stdClass but \strlen() takes string
