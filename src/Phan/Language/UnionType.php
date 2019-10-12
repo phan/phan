@@ -4820,7 +4820,7 @@ class UnionType implements Serializable
             return null;
         }
         $type = \reset($type_set);
-        // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
+        // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal TODO: Infer non-empty-array from count
         switch (\get_class($type)) {
             case LiteralIntType::class:
                 return $type->isNullable() ? null : $type->getValue();

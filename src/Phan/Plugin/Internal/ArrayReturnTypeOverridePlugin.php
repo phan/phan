@@ -154,7 +154,8 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             if (\count($args) >= 1) {
                 $element_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0])->genericArrayTypes();
                 if (!$element_types->isEmpty()) {
-                    return $element_types->withFlattenedArrayShapeOrLiteralTypeInstances();
+                    return $element_types->withFlattenedArrayShapeOrLiteralTypeInstances()
+                                         ->withRealTypeSet($probably_real_array->getRealTypeSet());
                 }
             }
             return $probably_real_array;
@@ -165,7 +166,8 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                     $element_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0])->genericArrayTypes();
                     if (!$element_types->isEmpty()) {
                         return $element_types->withFlattenedArrayShapeOrLiteralTypeInstances()
-                                             ->withAssociativeArrays($can_reduce_size);
+                                             ->withAssociativeArrays($can_reduce_size)
+                                             ->withRealTypeSet($probably_real_assoc_array->getRealTypeSet());
                     }
                 }
                 return $probably_real_assoc_array;
@@ -377,7 +379,14 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             }
             if (count($arguments) >= 2) {
                 // There were two or more arrays passed to the closure
-                return $possible_return_types->asNonEmptyListTypes()->withRealTypeSet($nullable_array_type_set);
+                $result = $possible_return_types->asNonEmptyListTypes()->withRealTypeSet($nullable_array_type_set);
+                foreach ($arguments as $i => $arg) {
+                    $input_array_type = $get_argument_type($arg, $i);
+                    if ($input_array_type->isEmpty() || $input_array_type->containsFalsey()) {
+                        return $result;
+                    }
+                }
+                return $result->nonFalseyClone();
             }
             $input_array_type = $get_argument_type($arguments[0], 0);
             $key_type_enum = GenericArrayType::keyTypeFromUnionTypeKeys($input_array_type);
