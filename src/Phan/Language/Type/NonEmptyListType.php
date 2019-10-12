@@ -83,4 +83,20 @@ final class NonEmptyListType extends ListType
     {
         return true;
     }
+
+    public function asAssociativeArrayType(bool $can_reduce_size) : ArrayType
+    {
+        if ($can_reduce_size) {
+            return AssociativeArrayType::fromElementType(
+                $this->element_type,
+                $this->is_nullable,
+                $this->key_type
+            );
+        }
+        return NonEmptyAssociativeArrayType::fromElementType(
+            $this->element_type,
+            $this->is_nullable,
+            $this->key_type
+        );
+    }
 }

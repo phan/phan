@@ -1023,13 +1023,13 @@ class CLI
                 $exclude_file_set["./$normalized_file"] = true;
             }
 
-            $this->file_list = \array_filter(
+            $this->file_list = \array_values(\array_filter(
                 $this->file_list,
                 static function (string $file) use ($exclude_file_set) : bool {
                     // Handle edge cases such as 'mydir/subdir\subsubdir' on Windows, if mydir/subdir was in the Phan config.
                     return !isset($exclude_file_set[\str_replace('\\', '/', $file)]);
                 }
-            );
+            ));
         }
     }
 

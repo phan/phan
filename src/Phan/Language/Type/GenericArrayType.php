@@ -830,4 +830,16 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
     {
         return false;
     }
+
+    /**
+     * Returns the equivalent (possibly nullable) associative array type for this type.
+     */
+    public function asAssociativeArrayType(bool $unused_can_reduce_size) : ArrayType
+    {
+        return AssociativeArrayType::fromElementType(
+            $this->element_type,
+            $this->is_nullable,
+            $this->key_type
+        );
+    }
 }

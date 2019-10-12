@@ -368,12 +368,12 @@ class Phan implements IgnoredFilesFilterInterface
 
             // Filter out any files that are to be excluded from
             // analysis
-            $analyze_file_path_list = array_filter(
+            $analyze_file_path_list = array_values(array_filter(
                 $analyze_file_path_list,
                 static function (string $file_path) : bool {
                     return !self::isExcludedAnalysisFile($file_path);
                 }
-            );
+            ));
             if ($request instanceof Request && count($analyze_file_path_list) === 0) {
                 $request->respondWithNoFilesToAnalyze();
                 exit(0);

@@ -3,6 +3,7 @@
 namespace Phan\Plugin\Internal;
 
 use ast\Node;
+use Closure;
 use Phan\Analysis\ArgumentType;
 use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\AST\UnionTypeVisitor;
@@ -11,6 +12,7 @@ use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Type\ArrayShapeType;
+use Phan\Language\Type\AssociativeArrayType;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\GenericArrayType;
@@ -52,6 +54,8 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
         // TODO: This might be replaced by non-null array if php 8.0 would throw for these cases.
         $real_nullable_array = UnionType::fromFullyQualifiedRealString('?array');
         $probably_real_array = UnionType::fromFullyQualifiedPHPDocAndRealString('array', '?array');
+        $probably_real_assoc_array = UnionType::fromFullyQualifiedPHPDocAndRealString('associative-array', '?associative-array');
+        $probably_real_assoc_array_falsey = UnionType::fromFullyQualifiedPHPDocAndRealString('associative-array', '?associative-array|?false');
 
         /**
          * @param list<Node|int|float|string> $args
@@ -155,6 +159,21 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             }
             return $probably_real_array;
         };
+        $make_get_first_array_arg = static function (bool $can_reduce_size) use ($probably_real_assoc_array) : Closure {
+             return /** @param list<Node|int|float|string> $args */ static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($probably_real_assoc_array, $can_reduce_size) : UnionType {
+                if (\count($args) >= 1) {
+                    $element_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0])->genericArrayTypes();
+                    if (!$element_types->isEmpty()) {
+                        return $element_types->withFlattenedArrayShapeOrLiteralTypeInstances()
+                                             ->withAssociativeArrays($can_reduce_size);
+                    }
+                }
+                return $probably_real_assoc_array;
+             };
+        };
+        $get_first_array_arg_assoc = $make_get_first_array_arg(true);
+        // Same as $get_first_array_arg_assoc, but will convert types such as non-empty-array to non-empty-assocative-array instead of just associative-array
+        $get_first_array_arg_assoc_same_size = $make_get_first_array_arg(false);
         /**
          * @param list<Node|int|float|string> $args
          */
@@ -188,7 +207,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
         /**
          * @param list<Node|int|string|float> $args
          */
-        $array_filter_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($probably_real_array, $nullable_array_type_set) : UnionType {
+        $array_filter_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($nullable_array_type_set, $probably_real_assoc_array) : UnionType {
             if (\count($args) >= 1) {
                 $passed_array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
                 $generic_passed_array_type = $passed_array_type->genericArrayTypes();
@@ -223,14 +242,16 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                         return $generic_passed_array_type->withFlattenedArrayShapeOrLiteralTypeInstances()
                                                          ->withMappedElementTypes(static function (UnionType $union_type) : UnionType {
                                                             return $union_type->nonFalseyClone();
-                                                         });
+                                                         })
+                                                         ->withAssociativeArrays(true);
                     }
                     // TODO: Analyze if it and the flags are compatible with the arguments to the closure provided.
                     // TODO: withFlattenedArrayShapeOrLiteralTypeInstances() for other values
-                    return $generic_passed_array_type->withFlattenedArrayShapeOrLiteralTypeInstances();
+                    return $generic_passed_array_type->withFlattenedArrayShapeOrLiteralTypeInstances()
+                                                     ->withAssociativeArrays(true);
                 }
             }
-            return $probably_real_array;
+            return $probably_real_assoc_array;
         };
 
         /**
@@ -356,12 +377,41 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             }
             if (count($arguments) >= 2) {
                 // There were two or more arrays passed to the closure
-                $key_type_enum = GenericArrayType::KEY_INT;
+                return $possible_return_types->asNonEmptyListTypes()->withRealTypeSet($nullable_array_type_set);
+            }
+            $input_array_type = $get_argument_type($arguments[0], 0);
+            $key_type_enum = GenericArrayType::keyTypeFromUnionTypeKeys($input_array_type);
+
+            $is_associative = false;
+            $is_list = false;
+
+            foreach ($input_array_type->getTypeSet() as $type) {
+                if ($type->isArrayLike()) {
+                    if ($type instanceof ListType) {
+                        $is_list = true;
+                    } elseif ($type instanceof AssociativeArrayType) {
+                        $is_associative = true;
+                    } else {
+                        $is_list = false;
+                        $is_associative = false;
+                        break;
+                    }
+                }
+            }
+            if ($is_list xor $is_associative) {
+                if ($is_list) {
+                    $return = $possible_return_types->asNonEmptyListTypes();
+                } else {
+                    $return = $possible_return_types->asNonEmptyAssociativeArrayTypes($key_type_enum);
+                }
             } else {
-                $key_type_enum = GenericArrayType::keyTypeFromUnionTypeKeys($get_argument_type($arguments[0], 0));
+                $return = $possible_return_types->elementTypesToGenericArray($key_type_enum);
+            }
+            if (!$input_array_type->isEmpty() && !$input_array_type->containsFalsey()) {
+                $return = $return->nonFalseyClone();
             }
 
-            return $possible_return_types->elementTypesToGenericArray($key_type_enum)->withRealTypeSet($nullable_array_type_set);
+            return $return->withRealTypeSet($nullable_array_type_set);
         };
         /**
          * @param list<Node|int|float|string> $args
@@ -392,7 +442,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             if ($key_union_type->isEmpty()) {
                 return UnionType::fromFullyQualifiedPHPDocAndRealString('list<mixed>', '?list<mixed>');
             }
-            return $key_union_type->asGenericArrayTypes(GenericArrayType::KEY_INT)->withRealTypeSet($nullable_int_key_array_type_set);
+            return $key_union_type->asListTypes()->withRealTypeSet($nullable_int_key_array_type_set);
         };
         /**
          * @param list<Node|int|string|float> $args
@@ -431,9 +481,9 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
         /**
          * @param list<Node|int|float|string> $args
          */
-        $array_combine_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type, $nullable_array_type_set, $probably_real_array) : UnionType {
+        $array_combine_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($probably_real_assoc_array_falsey, $false_type) : UnionType {
             if (\count($args) < 2) {
-                return $array_type->asPHPDocUnionType();
+                return $false_type->asPHPDocUnionType();
             }
             $keys_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
             $values_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[1]);
@@ -441,10 +491,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             $values_element_type = $values_type->genericArrayElementTypes();
             $key_enum_type = GenericArrayType::keyTypeFromUnionTypeValues($keys_element_type);
             $result = $values_element_type->asGenericArrayTypes($key_enum_type);
-            if ($result->isEmpty()) {
-                return $probably_real_array;
-            }
-            return $result->withRealTypeSet($nullable_array_type_set);
+            return $result->withRealTypeSet($probably_real_assoc_array_falsey->getRealTypeSet());
         };
         return [
             // Gets the element types of the first
@@ -470,19 +517,19 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             'array_reduce' => $array_reduce_callback,
 
             // misc
-            'array_change_key_case'     => $get_first_array_arg,
+            'array_change_key_case'     => $get_first_array_arg_assoc_same_size,
             'array_combine'             => $array_combine_callback,  // combines keys with values
-            'array_diff'                => $get_first_array_arg,
-            'array_diff_assoc'          => $get_first_array_arg,
-            'array_diff_uassoc'         => $get_first_array_arg,
-            'array_diff_ukey'           => $get_first_array_arg,
+            'array_diff'                => $get_first_array_arg_assoc,
+            'array_diff_assoc'          => $get_first_array_arg_assoc,
+            'array_diff_uassoc'         => $get_first_array_arg_assoc,
+            'array_diff_ukey'           => $get_first_array_arg_assoc,
             'array_fill_keys'           => $array_fill_keys_callback,
             'array_fill'                => $array_fill_callback,
-            'array_intersect'           => $get_first_array_arg,
-            'array_intersect_assoc'     => $get_first_array_arg,
-            'array_intersect_key'       => $get_first_array_arg,
-            'array_intersect_uassoc'    => $get_first_array_arg,
-            'array_intersect_ukey'      => $get_first_array_arg,
+            'array_intersect'           => $get_first_array_arg_assoc,
+            'array_intersect_assoc'     => $get_first_array_arg_assoc,
+            'array_intersect_key'       => $get_first_array_arg_assoc,
+            'array_intersect_uassoc'    => $get_first_array_arg_assoc,
+            'array_intersect_ukey'      => $get_first_array_arg_assoc,
             'array_keys'                => $array_keys_callback,
             'array_merge'               => $merge_array_types_callback,
             'array_merge_recursive'     => $merge_array_types_callback,
@@ -492,13 +539,13 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             'array_reverse'             => $get_first_array_arg,
             'array_slice'               => $get_first_array_arg,
             // 'array_splice' probably used more often by reference
-            'array_udiff'               => $get_first_array_arg,
-            'array_udiff_assoc'         => $get_first_array_arg,
-            'array_udiff_uassoc'        => $get_first_array_arg,
-            'array_uintersect'          => $get_first_array_arg,
-            'array_uintersect_assoc'    => $get_first_array_arg,
-            'array_uintersect_uassoc'   => $get_first_array_arg,
-            'array_unique'              => $get_first_array_arg,
+            'array_udiff'               => $get_first_array_arg_assoc,
+            'array_udiff_assoc'         => $get_first_array_arg_assoc,
+            'array_udiff_uassoc'        => $get_first_array_arg_assoc,
+            'array_uintersect'          => $get_first_array_arg_assoc,
+            'array_uintersect_assoc'    => $get_first_array_arg_assoc,
+            'array_uintersect_uassoc'   => $get_first_array_arg_assoc,
+            'array_unique'              => $get_first_array_arg_assoc_same_size,
             'array_values'              => $array_values_callback,
             // TODO: iterator_to_array
         ];
