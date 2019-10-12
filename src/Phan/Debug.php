@@ -296,7 +296,7 @@ class Debug
      *
      * Returns the information necessary to map the node id to the flag id to the name.
      *
-     * @return array{0:array<int,array<int,string>>,1:array<int,array<int,string>>}
+     * @return array{0:associative-array<int,array<int,string>>,1:associative-array<int,array<int,string>>}
      * Returns [string[][] $exclusive, string[][] $combinable].
      */
     private static function getFlagInfo() : array

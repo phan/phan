@@ -1,0 +1,9 @@
+%s:19 PhanUndeclaredFunction Call to undeclared function \test_assoc()
+%s:22 PhanTypeMismatchArgument Argument 1 ($list) is associative-array<mixed,\stdClass> but \NS794\accepts_list() takes list<mixed> defined at %s:9
+%s:23 PhanTypeMismatchArgument Argument 1 ($list) is associative-array<int,string> but \NS794\accepts_list() takes list<mixed> defined at %s:9
+%s:24 PhanTypeMismatchArgumentInternal Argument 2 ($parameters) is associative-array<mixed,\stdClass> but \call_user_func_array() takes list<mixed>
+%s:25 PhanTypeMismatchArgumentInternal Argument 2 ($parameters) is associative-array<int,string> but \call_user_func_array() takes list<mixed>
+%s:27 PhanTypeMismatchUnpackKey When unpacking a value of type associative-array<int,string>, the value's keys were of type int, but the keys should be consecutive integers starting from 0
+%s:37 PhanTypeMismatchArgument Argument 1 ($a) is list<string> but \NS794\test_cannot_pass_associative_to_list() takes associative-array<int,string> defined at %s:17
+%s:37 PhanTypeMismatchArgument Argument 2 ($b) is list<\stdClass> but \NS794\test_cannot_pass_associative_to_list() takes associative-array<mixed,\stdClass> defined at %s:17
+%s:38 PhanTypeMismatchArgument Argument 1 ($a) is list<\stdClass> but \NS794\test_cannot_pass_associative_to_list() takes associative-array<int,string> defined at %s:17

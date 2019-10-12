@@ -65,7 +65,7 @@ use Phan\PluginV3\IssueEmitter;
  *
  *     Called in every phase when Phan is emitting an issue(parse, method, analysis, etc)
  *
- *     public function getIssueSuppressionList(CodeBase $code_base, string $file_path) : array<string,array<int,int>>
+ *     public function getIssueSuppressionList(CodeBase $code_base, string $file_path) : array<string,associative-array<int,int>>
  *
  *     Called by UnusedSuppressionPlugin to check if the plugin's suppressions are no longer needed.
  *

@@ -12,7 +12,7 @@ use function is_string;
  */
 class ArrowFunc
 {
-    /** @var array<int|string, Node> maps variable names to the first Node where the variable was used.*/
+    /** @var associative-array<int|string, Node> maps variable names to the first Node where the variable was used.*/
     private $uses = [];
 
     private function __construct()
@@ -23,7 +23,7 @@ class ArrowFunc
      * Returns the set of variables used by the arrow func $n
      *
      * @param Node $n a Node with kind ast\AST_ARROW_FUNC
-     * @return array<int|string, Node>
+     * @return associative-array<int|string, Node>
      */
     public static function getUses(Node $n) : array
     {

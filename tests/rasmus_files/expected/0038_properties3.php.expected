@@ -1,3 +1,3 @@
-%s:9 PhanTypeMismatchProperty Assigning list<string> to property but \A->prop is int[]
+%s:9 PhanTypeMismatchProperty Assigning non-empty-array<int,string> to property but \A->prop is int[]
 %s:10 PhanTypeMismatchProperty Assigning 1 to property but \A->prop is int[]
 %s:11 PhanTypeArraySuspicious Suspicious array access to 1

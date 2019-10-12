@@ -24,7 +24,7 @@ class RegexKeyExtractor
     private $offset = 0;
 
     /**
-     * @var array<string|int,true> the offsets or names of patterns
+     * @var associative-array<string|int,true> the offsets or names of patterns
      */
     private $matches = [];
 
@@ -179,7 +179,7 @@ class RegexKeyExtractor
         }
     }
 
-    /** @return array<int|string,true> */
+    /** @return associative-array<int|string,true> */
     private function getMatchKeys() : array
     {
         return $this->matches;

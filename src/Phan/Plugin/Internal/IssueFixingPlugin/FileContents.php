@@ -19,7 +19,7 @@ class FileContents
     private $contents;
     /** @var ?PhpParser\Node the raw node for the contents */
     private $ast;
-    /** @var ?array<int,list<PhpParser\Node>> the nodes at each line - computed lazily*/
+    /** @var ?associative-array<int,list<PhpParser\Node>> the nodes at each line - computed lazily*/
     private $nodes_at_lines;
 
     /** @var ?FilePositionMap - computed lazily and shared by all fixers */
@@ -28,7 +28,7 @@ class FileContents
     /** @var ?non-empty-list<int> positions of each line (1-based) (computed lazily) */
     private $line_offset_map = null;
 
-    /** @var ?array<int,string> a 1-based array of lines */
+    /** @var ?associative-array<int,string> a 1-based array of lines */
     private $lines;
 
     /**
@@ -72,7 +72,7 @@ class FileContents
      * Compute a map from lines to the nodes at the line.
      *
      * This is efficient if called multiple times, but less efficient(e.g. uses more memory) if only called once.
-     * @return array<int,list<PhpParser\Node>>
+     * @return associative-array<int,list<PhpParser\Node>>
      */
     public function computeNodesAtLineMap() : array
     {
@@ -125,7 +125,7 @@ class FileContents
     }
 
     /**
-     * @return list<string> a 1-based array of lines
+     * @return associative-array<int,string> a 1-based array of lines
      */
     public function getLines() : array
     {

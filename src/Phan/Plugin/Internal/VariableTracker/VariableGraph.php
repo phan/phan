@@ -12,28 +12,28 @@ use function spl_object_id;
 final class VariableGraph
 {
     /**
-     * @var array<string,array<int,array<int,true>>>
+     * @var array<string,associative-array<int,associative-array<int,true>>>
      *
      * Maps variable name to (definition id to (set of use ids of that given definition))
      */
     public $def_uses = [];
 
     /**
-     * @var array<string,array<int,int>>
+     * @var array<string,associative-array<int,int>>
      *
      * Maps variable name to a map from definition id to line number of the node.
      */
     public $def_lines = [];
 
     /**
-     * @var array<string,array<int,Node|int|float|string>>
+     * @var array<string,associative-array<int,Node|int|float|string>>
      *
      * Maps variable name to a set of definition ids and their corresponding constant AST nodes
      */
     public $const_expr_declarations = [];
 
     /**
-     * @var array<int,int>
+     * @var associative-array<int,int>
      *
      * Maps definition ids to information about them (e.g. IS_GLOBAL|IS_STATIC|IS_LOOP_DEF|IS_CAUGHT_EXCEPTION)
      */
@@ -116,7 +116,7 @@ final class VariableGraph
     }
 
     /**
-     * @param array<int,mixed> $loop_uses_of_own_variable any array that has node ids for uses of $def_id as keys
+     * @param associative-array<int,mixed> $loop_uses_of_own_variable any array that has node ids for uses of $def_id as keys
      */
     public function recordLoopSelfUsage(string $name, int $def_id, array $loop_uses_of_own_variable) : void
     {

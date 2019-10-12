@@ -101,14 +101,12 @@ final class ConfigPluginSet extends PluginV3 implements
     private $plugin_set;
 
     /**
-     * @var list<Closure>|null - plugins to analyze nodes in pre order.
-     * @phan-var list<Closure(CodeBase,Context,Node):void>|null
+     * @var associative-array<int, Closure(CodeBase,Context,Node|int|string|float):void> - plugins to analyze nodes in pre-order
      */
     private $pre_analyze_node_plugin_set;
 
     /**
-     * @var list<Closure> - plugins to analyze files
-     * @phan-var list<Closure(CodeBase,Context,Node|int|string|float,list<Node>):void>|null
+     * @var associative-array<int, Closure(CodeBase,Context,Node|int|string|float,list<Node>):void> - plugins to analyze nodes in post-order
      */
     private $post_analyze_node_plugin_set;
 
@@ -904,7 +902,7 @@ final class ConfigPluginSet extends PluginV3 implements
 
     /**
      * @param list<PluginV3> $plugin_set
-     * @return list<Closure(CodeBase,Context,Node,list<Node>=):void>
+     * @return associative-array<int, Closure(CodeBase,Context,Node,list<Node>=):void>
      *         Returned value maps ast\Node->kind to [function(CodeBase $code_base, Context $context, Node $node, list<Node> $parent_node_list = []): void]
      */
     private static function filterPreAnalysisPlugins(array $plugin_set) : array
@@ -1002,7 +1000,7 @@ final class ConfigPluginSet extends PluginV3 implements
 
     /**
      * @param list<PluginV3> $plugin_set
-     * @return list<\Closure> - [function(CodeBase $code_base, Context $context, Node $node, list<Node> $parent_node_list = []): void]
+     * @return associative-array<int, \Closure> - [Node kind => function(CodeBase $code_base, Context $context, Node $node, list<Node> $parent_node_list = []): void]
      */
     private static function filterPostAnalysisPlugins(array $plugin_set) : array
     {

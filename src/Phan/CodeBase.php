@@ -153,7 +153,7 @@ class CodeBase
     private $name_method_map = [];
 
     /**
-     * @var array<string,array<string,array<int,array<string,NamespaceMapEntry>>>>
+     * @var array<string,array<string,associative-array<int,array<string,NamespaceMapEntry>>>>
      * Maps the file and namespace identifier to the use statements found in that namespace
      */
     private $parsed_namespace_maps = [];
@@ -693,7 +693,7 @@ class CodeBase
     /**
      * This should be called in the parse phase
      *
-     * @param array<int,array<string,NamespaceMapEntry>> $namespace_map
+     * @param associative-array<int,array<string,NamespaceMapEntry>> $namespace_map
      * @internal
      */
     public function addParsedNamespaceMap(string $file, string $namespace, int $id, array $namespace_map) : void
@@ -720,7 +720,7 @@ class CodeBase
      * @param string $file the value of $context->getFile()
      * @param string $namespace the namespace value. Probably redundant.
      * @param int $id (An incrementing counter for namespaces. 0 or 1 in single namespace/absent namespace files)
-     * @return array<int,array<string,NamespaceMapEntry>> $namespace_map
+     * @return associative-array<int,array<string,NamespaceMapEntry>> $namespace_map
      * @internal
      */
     public function getNamespaceMapFromParsePhase(string $file, string $namespace, int $id) : array

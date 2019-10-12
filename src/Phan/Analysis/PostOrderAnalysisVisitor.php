@@ -40,6 +40,7 @@ use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\ListType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
@@ -271,11 +272,25 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     (string)$union_type
                 );
             }
+            $dim_node = $node->children['dim'];
+            $dim_value = $dim_node instanceof Node ? (new ContextNode($this->code_base, $this->context, $dim_node))->getEquivalentPHPScalarValue() : $dim_node;
+            // unset($x[$i]) should convert a list<T> or non-empty-list<T> to an array<Y>
+            if (!is_scalar($dim_value) || (!is_numeric($dim_value) || $dim_value >= 0)) {
+                foreach ($union_type->getTypeSet() as $type) {
+                    if ($type instanceof ListType) {
+                        $union_type = $union_type->withoutType($type)->withType(
+                            GenericArrayType::fromElementType($type->genericArrayElementType(), false, $type->getKeyType())
+                        );
+                        $variable = clone($variable);
+                        $context->addScopeVariable($variable);
+                        $variable->setUnionType($union_type);
+                    }
+                }
+            }
+
             if (!$union_type->hasTopLevelArrayShapeTypeInstances()) {
                 return;
             }
-            $dim_node = $node->children['dim'];
-            $dim_value = $dim_node instanceof Node ? (new ContextNode($this->code_base, $this->context, $dim_node))->getEquivalentPHPScalarValue() : $dim_node;
             // TODO: detect and warn about null
             if (!\is_scalar($dim_value)) {
                 return;

@@ -16,7 +16,7 @@ use function spl_object_id;
 class VariableTrackingScope
 {
     /**
-     * @var array<string,array<int,bool>>
+     * @var array<string,associative-array<int,bool>>
      * Maps a variable id to a set of definitions ids in that scope.
      *
      * This is true if 100% of the definitions are made within the scope,
@@ -27,7 +27,7 @@ class VariableTrackingScope
     protected $defs = [];
 
     /**
-     * @var array<string,array<int,true>>
+     * @var array<string,associative-array<int,true>>
      * Maps a variable id to a list of use ids which occurred within that scope.
      * (of definitions that might have occurred before this scope)
      */
@@ -98,7 +98,7 @@ class VariableTrackingScope
      *
      * This is overridden by subclasses, some of which will modify $this->defs
      *
-     * @return ?array<int,true> the ids of Nodes which defined $variable_name
+     * @return ?associative-array<int,true> the ids of Nodes which defined $variable_name
      */
     public function getDefinition(string $variable_name) : ?array
     {
@@ -110,7 +110,7 @@ class VariableTrackingScope
      *
      * This is overridden by subclasses
      *
-     * @return ?array<int,true> the ids of Nodes which defined $variable_name
+     * @return ?associative-array<int,true> the ids of Nodes which defined $variable_name
      */
     public function getDefinitionUpToScope(string $variable_name, VariableTrackingScope $forbidden_scope) : ?array
     {
@@ -123,7 +123,7 @@ class VariableTrackingScope
     /**
      * Recursively finds the accessible definitions of various variable names
      *
-     * @return array<string,array<int,true>>
+     * @return array<string,associative-array<int,true>>
      */
     public function getDefinitionsRecursively() : array
     {
@@ -209,7 +209,7 @@ class VariableTrackingScope
     }
 
     /**
-     * @param array<string,array<int,bool>> $uses
+     * @param array<string,associative-array<int,bool>> $uses
      */
     private function mergeUses(array $uses) : void
     {

@@ -22,7 +22,7 @@ class VariableTrackingBranchScope extends VariableTrackingScope
     }
 
     /**
-     * @return ?array<int,true>
+     * @return ?associative-array<int,true>
      * @override
      */
     public function getDefinition(string $variable_name) : ?array
@@ -39,7 +39,7 @@ class VariableTrackingBranchScope extends VariableTrackingScope
     }
 
     /**
-     * @return ?array<int,true>
+     * @return ?associative-array<int,true>
      * @override
      */
     public function getDefinitionUpToScope(string $variable_name, VariableTrackingScope $forbidden_scope) : ?array
@@ -51,7 +51,7 @@ class VariableTrackingBranchScope extends VariableTrackingScope
     }
 
     /**
-     * @return array<string,array<int,true>>
+     * @return array<string,associative-array<int,true>>
      */
     public function getDefinitionsRecursively() : array
     {

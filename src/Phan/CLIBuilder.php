@@ -12,7 +12,7 @@ use Phan\Exception\UsageException;
  */
 class CLIBuilder
 {
-    /** @var array<int|string,string|string[]|false> */
+    /** @var associative-array<int|string,string|string[]|false> */
     private $opts = [];
     /** @var list<string> */
     private $argv = [];
@@ -57,7 +57,7 @@ class CLIBuilder
 
     /**
      * Return options in the same format as the getopt() call returns.
-     * @return array<int|string,string|string[]|false>
+     * @return associative-array<int|string,string|string[]|false>
      */
     public function getOpts() : array
     {

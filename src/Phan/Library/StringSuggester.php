@@ -19,7 +19,7 @@ class StringSuggester
     private $strings;
 
     /**
-     * @var array<int,array<string,string>>
+     * @var associative-array<int,array<string,string>>
      * Maps (requested approximate length to (lowercase element name => real element name))
      */
     private $strings_near_length = [];

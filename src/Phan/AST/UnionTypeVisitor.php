@@ -38,6 +38,7 @@ use Phan\Language\Scope\GlobalScope;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
+use Phan\Language\Type\AssociativeArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\ClassStringType;
@@ -977,7 +978,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             $key_type_enum = GenericArrayType::getKeyTypeOfArrayNode($this->code_base, $this->context, $node, $this->should_catch_issue_exception);
             $result = $value_types_builder->getPHPDocUnionType();
             if ($has_key) {
-                $result = $result->asNonEmptyGenericArrayTypes($key_type_enum);
+                $result = $result->asNonEmptyAssociativeArrayTypes($key_type_enum);
             } else {
                 $result = $result->asNonEmptyListTypes();
             }
@@ -1818,25 +1819,43 @@ class UnionTypeVisitor extends AnalysisVisitor
                 }
                 return $generic_types;
             }
-            $key_type = $union_type->iterableKeyUnionType($this->code_base);
-            // Check that this is possibly valid, e.g. array<int, mixed>, Generator<int, mixed>, or iterable<int, mixed>
-            // TODO: Warn if key_type contains nullable types (excluding VoidType)
-            // TODO: Warn about union types that are partially invalid.
-            if (!$key_type->isEmpty() && !$key_type->hasTypeMatchingCallback(static function (Type $type) : bool {
-                return $type instanceof IntType || $type instanceof MixedType;
-            })) {
-                throw new IssueException(
-                    Issue::fromType($is_array_spread ? Issue::TypeMismatchUnpackKeyArraySpread : Issue::TypeMismatchUnpackKey)(
-                        $this->context->getFile(),
-                        $node->lineno,
-                        [(string)$union_type, $key_type]
-                    )
-                );
-            }
+            $this->checkInvalidUnpackKeyType($node, $union_type, $is_array_spread);
         } catch (IssueException $exception) {
             Issue::maybeEmitInstance($this->code_base, $this->context, $exception->getIssueInstance());
         }
         return $generic_types;
+    }
+
+    private function checkInvalidUnpackKeyType(Node $node, UnionType $union_type, bool $is_array_spread) : void
+    {
+        $is_invalid_because_associative = false;
+        if (!$is_array_spread) {
+            foreach ($union_type->getTypeSet() as $type) {
+                if ($type->isIterable()) {
+                    if ($type instanceof AssociativeArrayType) {
+                        $is_invalid_because_associative = true;
+                    } else {
+                        $is_invalid_because_associative = false;
+                        break;
+                    }
+                }
+            }
+        }
+        $key_type = $union_type->iterableKeyUnionType($this->code_base);
+        // Check that this is possibly valid, e.g. array<int, mixed>, Generator<int, mixed>, or iterable<int, mixed>
+        // TODO: Warn if key_type contains nullable types (excluding VoidType)
+        // TODO: Warn about union types that are partially invalid.
+        if ($is_invalid_because_associative || !$key_type->isEmpty() && !$key_type->hasTypeMatchingCallback(static function (Type $type) : bool {
+            return $type instanceof IntType || $type instanceof MixedType;
+        })) {
+            throw new IssueException(
+                Issue::fromType($is_array_spread ? Issue::TypeMismatchUnpackKeyArraySpread : Issue::TypeMismatchUnpackKey)(
+                    $this->context->getFile(),
+                    $node->lineno,
+                    [(string)$union_type, $key_type]
+                )
+            );
+        }
     }
 
     /**

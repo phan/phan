@@ -377,6 +377,10 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
                     return false;
                 }
             }
+        } elseif ($type instanceof AssociativeArrayType) {
+            if (!$this->canCastToAssociativeArray()) {
+                return false;
+            }
         } else {
             if (($this->getKeyType() & ($type->getKeyType() ?: GenericArrayType::KEY_MIXED)) === 0 && ($ignore_config || !Config::getValue('scalar_array_key_cast'))) {
                 // Attempting to cast an int key to a string key (or vice versa) is normally invalid.
@@ -388,6 +392,32 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
             return false;
         }
         return true;
+    }
+
+    /**
+     * True if this can cast to a list type, based on the keys
+     * @internal
+     */
+    public function canCastToList() : bool
+    {
+        $i = 0;
+        foreach ($this->field_types as $k => $v) {
+            if ($k !== $i++ || $v->isPossiblyUndefined()) {
+                return true;
+            }
+        }
+        return true;
+    }
+
+    private function canCastToAssociativeArray() : bool
+    {
+        $i = 0;
+        foreach ($this->field_types as $k => $v) {
+            if ($k !== $i++ || $v->isPossiblyUndefined()) {
+                return true;
+            }
+        }
+        return \count($this->field_types) === 0;
     }
 
     private function canCastToGenericIterableType(GenericIterableType $iterable_type) : bool
