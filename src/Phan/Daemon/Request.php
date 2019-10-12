@@ -80,13 +80,13 @@ class Request
 
     /**
      * A set of process ids of child processes
-     * @var array<int,true>
+     * @var associative-array<int,true>
      */
     private static $child_pids = [];
 
     /**
      * A map from process ids of exited child processes to their exit status.
-     * @var array<int,int|array>
+     * @var associative-array<int,int|array>
      */
     private static $exited_pid_status = [];
 

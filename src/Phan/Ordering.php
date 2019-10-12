@@ -38,7 +38,7 @@ class Ordering
      * used to ignore any files outside of the list and to
      * draw from for any missing files.
      *
-     * @return array<int,list<string>>
+     * @return associative-array<int,list<string>>
      * A map from process_id to a list of files to be analyzed
      * on that process in stable ordering.
      * @throws InvalidArgumentException if $process_count isn't positive.
@@ -144,7 +144,7 @@ class Ordering
 
             // Append each file to this process list
             foreach ($list as $item) {
-                $processor_file_list_map[$process_id][] = $item['file'];
+                $processor_file_list_map[$process_id][] = (string)$item['file'];
             }
         }
 
@@ -154,7 +154,8 @@ class Ordering
         foreach (\array_keys($analysis_file_map) as $file) {
             // Choose which process this file list will be
             // run on
-            $process_id = $hasher->getGroup((string)$file);
+            $file = (string)$file;
+            $process_id = $hasher->getGroup($file);
 
             $processor_file_list_map[$process_id][] = $file;
         }

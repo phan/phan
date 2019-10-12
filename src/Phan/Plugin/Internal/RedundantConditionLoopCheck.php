@@ -18,7 +18,7 @@ class RedundantConditionLoopCheck
 {
     /**
      * @param Node|int|float|string|null $cond_node
-     * @return array<int|string,bool>
+     * @return associative-array<int|string,bool>
      *
      * Maps varName to a boolean
      * True if this is asserting a value is less than something, false if it's asserting the value is greater than something
@@ -39,7 +39,7 @@ class RedundantConditionLoopCheck
     }
 
     /**
-     * @return array<int|string,bool>
+     * @return associative-array<int|string,bool>
      */
     private static function extractComparisonDirectionsFromUnaryOp(Node $cond_node, bool $negate) : array
     {
@@ -55,7 +55,7 @@ class RedundantConditionLoopCheck
     }
 
     /**
-     * @return array<int|string,bool>
+     * @return associative-array<int|string,bool>
      */
     private static function extractComparisonDirectionsFromBinaryOp(Node $cond_node, bool $negate) : array
     {
@@ -101,7 +101,7 @@ class RedundantConditionLoopCheck
     /**
      * Extract the directions in which this for loop increments variables
      * @param Node|int|string|float|null $cond_node
-     * @return array<int|string,bool>
+     * @return associative-array<int|string,bool>
      */
     public static function extractIncrementDirections(CodeBase $code_base, Context $context, $cond_node) : array
     {
@@ -186,7 +186,7 @@ class RedundantConditionLoopCheck
 
     /**
      * @param Node|string|int|float|null $expr
-     * @return array<int|string,bool>
+     * @return associative-array<int|string,bool>
      */
     private static function extractIncrementDirectionForAssignOp(CodeBase $code_base, Context $context, string $var_name, $expr, bool $is_subtraction) : array
     {

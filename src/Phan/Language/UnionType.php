@@ -21,6 +21,7 @@ use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
+use Phan\Language\Type\AssociativeArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableStringType;
 use Phan\Language\Type\CallableType;
@@ -3683,6 +3684,32 @@ class UnionType implements Serializable
     /**
      * @return UnionType
      * Get a new type for each type in this union which is
+     * the associative array version of this type. For instance,
+     * 'int|float' will produce 'associative-array<int>|associative-array<float>'.
+     *
+     * If $this is an empty UnionType, this method will produce 'associative-array<mixed>'
+     */
+    public function asNonEmptyAssociativeArrayTypes(int $key_type) : UnionType
+    {
+        static $cache = [];
+        $type = ($cache[$key_type] ?? ($cache[$key_type] = AssociativeArrayType::fromElementType(MixedType::instance(false), false, $key_type)));
+        if (\count($this->type_set) === 0) {
+            return $type->asRealUnionType();
+        }
+        $result = $this->asMappedUnionType(
+            static function (Type $type) use ($key_type) : Type {
+                return AssociativeArrayType::fromElementType($type, false, $key_type);
+            }
+        );
+        if (!$result->hasRealTypeSet()) {
+            return $result->withRealType($type);
+        }
+        return $result;
+    }
+
+    /**
+     * @return UnionType
+     * Get a new type for each type in this union which is
      * the generic array version of this type. For instance,
      * 'int|float' will produce 'list<int>|list<float>'.
      *
@@ -4025,8 +4052,8 @@ class UnionType implements Serializable
     }
 
     /**
-     * @param array<string,array<int|string,string>> $php74_map
-     * @return array<string,array<int|string,string>>
+     * @param array<string,associative-array<int|string,string>> $php74_map
+     * @return array<string,associative-array<int|string,string>>
      */
     private static function computePHP80FunctionSignatureMap(array $php74_map) : array
     {
@@ -4035,8 +4062,8 @@ class UnionType implements Serializable
     }
 
     /**
-     * @param array<string,array<int|string,string>> $php73_map
-     * @return array<string,array<int|string,string>>
+     * @param array<string,associative-array<int|string,string>> $php73_map
+     * @return array<string,associative-array<int|string,string>>
      */
     private static function computePHP74FunctionSignatureMap(array $php73_map) : array
     {
@@ -4045,8 +4072,8 @@ class UnionType implements Serializable
     }
 
     /**
-     * @param array<string,array<int|string,string>> $php73_map
-     * @return array<string,array<int|string,string>>
+     * @param array<string,associative-array<int|string,string>> $php73_map
+     * @return array<string,associative-array<int|string,string>>
      */
     private static function computePHP72FunctionSignatureMap(array $php73_map) : array
     {
@@ -4065,8 +4092,8 @@ class UnionType implements Serializable
     }
 
     /**
-     * @param array<string,array<int|string,string>> $php71_map
-     * @return array<string,array<int|string,string>>
+     * @param array<string,associative-array<int|string,string>> $php71_map
+     * @return array<string,associative-array<int|string,string>>
      */
     private static function computePHP70FunctionSignatureMap(array $php71_map) : array
     {
@@ -4075,8 +4102,8 @@ class UnionType implements Serializable
     }
 
     /**
-     * @param array<string,array<int|string,string>> $php70_map
-     * @return array<string,array<int|string,string>>
+     * @param array<string,associative-array<int|string,string>> $php70_map
+     * @return array<string,associative-array<int|string,string>>
      */
     private static function computePHP56FunctionSignatureMap(array $php70_map) : array
     {
@@ -4085,9 +4112,9 @@ class UnionType implements Serializable
     }
 
     /**
-     * @param array<string,array<int|string,string>> $older_map
-     * @param array{new:array<string,array<int|string,string>>,old:array<string,array<int|string,string>>} $delta
-     * @return array<string,array<int|string,string>>
+     * @param array<string,associative-array<int|string,string>> $older_map
+     * @param array{new:array<string,associative-array<int|string,string>>,old:array<string,associative-array<int|string,string>>} $delta
+     * @return array<string,associative-array<int|string,string>>
      *
      * @see applyDeltaToGetOlderSignatures - This is doing the exact same thing in reverse.
      * @suppress PhanUnreferencedPrivateMethod this will be used again when Phan supports the next PHP minor release
@@ -4101,9 +4128,9 @@ class UnionType implements Serializable
     }
 
     /**
-     * @param array<string,array<int|string,string>> $newer_map
-     * @param array{new:array<string,array<int|string,string>>,old:array<string,array<int|string,string>>} $delta
-     * @return array<string,array<int|string,string>>
+     * @param array<string,associative-array<int|string,string>> $newer_map
+     * @param array{new:array<string,associative-array<int|string,string>>,old:array<string,associative-array<int|string,string>>} $delta
+     * @return array<string,associative-array<int|string,string>>
      */
     private static function applyDeltaToGetOlderSignatures(array $newer_map, array $delta) : array
     {

@@ -166,6 +166,7 @@ trait FunctionTrait
 
     /**
      * @var array<int,int>
+     * @phan-var associative-array<int,int>
      * If the types for a parameter list were checked,
      * this contains the recursion depth for a given integer hash (smaller is earlier in recursion)
      */

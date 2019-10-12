@@ -47,6 +47,7 @@ class Context extends FileRef
 
     /**
      * @var array<int,array<string,NamespaceMapEntry>>
+     * @phan-var associative-array<int,array<string,NamespaceMapEntry>>
      * Maps [int flags => [string name/namespace => NamespaceMapEntry(fqsen, is_used)]]
      * Note that for \ast\USE_CONST (global constants), this is case-sensitive,
      * but the remaining types are case-insensitive (stored with lowercase name).
@@ -55,6 +56,7 @@ class Context extends FileRef
 
     /**
      * @var array<int,array<string,NamespaceMapEntry>>
+     * @phan-var associative-array<int,array<string,NamespaceMapEntry>>
      * Maps [int flags => [string name/namespace => NamespaceMapEntry(fqsen, is_used)]]
      *
      * (This is used in the analysis phase after the parse phase)
@@ -833,6 +835,7 @@ class Context extends FileRef
      * @internal
      *
      * @return array<int,array<string,NamespaceMapEntry>> maps use kind flags to the entries.
+     * @phan-return associative-array<int,array<string,NamespaceMapEntry>> maps use kind flags to the entries.
      */
     public function getNamespaceMap() : array
     {

@@ -47,6 +47,12 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
     private $is_list;
 
     /**
+     * @var bool
+     * True if the array will not have consecutive keys starting from 0
+     */
+    private $is_associative;
+
+    /**
      * @param non-empty-list<Type> $types
      * The 2 or more possible types of every element in this array
      *
@@ -64,8 +70,14 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
      *
      * @throws InvalidArgumentException if there are less than 2 types in $types
      */
-    protected function __construct(array $types, bool $is_nullable, int $key_type, bool $always_has_elements = false, bool $is_list = false)
-    {
+    protected function __construct(
+        array $types,
+        bool $is_nullable,
+        int $key_type,
+        bool $always_has_elements = false,
+        bool $is_list = false,
+        bool $is_associative = false
+    ) {
         if (\count($types) < 2) {
             throw new InvalidArgumentException('Expected $types to have at least 2 array elements');
         }
@@ -77,6 +89,7 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
         $this->key_type = $key_type;
         $this->always_has_elements = $always_has_elements;
         $this->is_list = $is_list;
+        $this->is_associative = $is_associative;
     }
 
     /**
@@ -99,7 +112,8 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
             $is_nullable,
             $this->key_type,
             $this->always_has_elements,
-            $this->is_list
+            $this->is_list,
+            $this->is_associative
         );
     }
 
@@ -113,11 +127,15 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
             if ($this->always_has_elements) {
                 if ($this->is_list) {
                     return NonEmptyListType::fromElementType($type, $this->is_nullable);
+                } elseif ($this->is_associative) {
+                    return NonEmptyAssociativeArrayType::fromElementType($type, $this->is_nullable, $this->key_type);
                 }
                 return NonEmptyGenericArrayType::fromElementType($type, $this->is_nullable, $this->key_type);
             } else {
                 if ($this->is_list) {
                     return ListType::fromElementType($type, $this->is_nullable, $this->key_type);
+                } elseif ($this->is_associative) {
+                    return AssociativeArrayType::fromElementType($type, $this->is_nullable, $this->key_type);
                 }
                 return GenericArrayType::fromElementType($type, $this->is_nullable, $this->key_type);
             }
@@ -138,9 +156,10 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
         bool $is_nullable,
         int $key_type,
         bool $always_has_elements = false,
-        bool $is_list = false
+        bool $is_list = false,
+        bool $is_associative = false
     ) : GenericMultiArrayType {
-        return new self($element_types, $is_nullable, $key_type, $always_has_elements, $is_list);
+        return new self($element_types, $is_nullable, $key_type, $always_has_elements, $is_list, $is_associative);
     }
 
     /**

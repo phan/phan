@@ -22,6 +22,7 @@ use Phan\Language\Element\Comment\Builder;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\ArrayShapeType;
+use Phan\Language\Type\AssociativeArrayType;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableArrayType;
@@ -48,6 +49,7 @@ use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NativeType;
+use Phan\Language\Type\NonEmptyAssociativeArrayType;
 use Phan\Language\Type\NonEmptyGenericArrayType;
 use Phan\Language\Type\NonEmptyListType;
 use Phan\Language\Type\NullType;
@@ -93,17 +95,17 @@ class Type
      * A legal type identifier (e.g. 'int' or 'DateTime')
      */
     const simple_type_regex =
-        '(\??)(?:callable-(?:string|object|array)|class-string|non-empty-(?:array|list)|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
+        '(\??)(?:callable-(?:string|object|array)|associative-array|class-string|non-empty-(?:associative-array|array|list)|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
 
     const simple_noncapturing_type_regex =
-        '\\\\?(?:callable-(?:string|object|array)|class-string|non-empty-(?:array|list)|[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
+        '\\\\?(?:callable-(?:string|object|array)|associative-array|class-string|non-empty-(?:associative-array|array|list)|[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
 
     /**
      * @var string
      * A legal type identifier (e.g. 'int' or 'DateTime')
      */
     const simple_type_regex_or_this =
-        '(\??)(callable-(?:string|object|array)|class-string|non-empty-(?:array|list)|[a-zA-Z_\x7f-\xff\\\][a-zA-Z0-9_\x7f-\xff\\\]*|\$this)';
+        '(\??)(callable-(?:string|object|array)|associative-array|class-string|non-empty-(?:associative-array|array|list)|[a-zA-Z_\x7f-\xff\\\][a-zA-Z0-9_\x7f-\xff\\\]*|\$this)';
 
     const shape_key_regex =
         '(?:[-.\/^;$%*+_a-zA-Z0-9\x7f-\xff]|\\\\(?:[nrt\\\\]|x[0-9a-fA-F]{2}))+\??';
@@ -213,6 +215,7 @@ class Type
      * @var array<string,bool> - For checking if a string is an internal type. This is used for case-insensitive lookup.
      */
     const _internal_type_set = [
+        'associative-array' => true,
         'array'           => true,
         'bool'            => true,
         'callable'        => true,
@@ -227,6 +230,7 @@ class Type
         'list'            => true,
         'mixed'           => true,
         'non-empty-array' => true,
+        'non-empty-associative-array' => true,
         'non-empty-list'  => true,
         'null'            => true,
         'object'          => true,
@@ -489,8 +493,14 @@ class Type
                     case 'list':
                         $value = self::parseListTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, false);
                         break;
+                    case 'associative-array':
+                        $value = self::parseGenericArrayTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, false, true);
+                        break;
+                    case 'non-empty-associative-array':
+                        $value = self::parseGenericArrayTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, true, true);
+                        break;
                     case 'non-empty-array':
-                        $value = self::parseGenericArrayTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, true);
+                        $value = self::parseGenericArrayTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, true, false);
                         break;
                     case 'non-empty-list':
                         $value = self::parseListTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, true);
@@ -691,6 +701,8 @@ class Type
         switch (strtolower($type_name)) {
             case 'array':
                 return ArrayType::instance($is_nullable);
+            case 'associative-array':
+                return AssociativeArrayType::fromElementType(MixedType::instance(false), $is_nullable, GenericArrayType::KEY_MIXED);
             case 'bool':
                 return BoolType::instance($is_nullable);
             case 'callable':
@@ -717,6 +729,8 @@ class Type
                 return MixedType::instance($is_nullable);
             case 'non-empty-array':
                 return NonEmptyGenericArrayType::fromElementType(MixedType::instance(false), $is_nullable, GenericArrayType::KEY_MIXED);
+            case 'non-empty-associative-array':
+                return NonEmptyAssociativeArrayType::fromElementType(MixedType::instance(false), $is_nullable, GenericArrayType::KEY_MIXED);
             case 'non-empty-list':
                 return NonEmptyListType::fromElementType(MixedType::instance(false), $is_nullable);
             case 'null':
@@ -889,7 +903,7 @@ class Type
                     case 'array':
                         // template parameter type list
                         $template_parameter_type_list = self::createTemplateParameterTypeList($template_parameter_type_name_list);
-                        return self::parseGenericArrayTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, false);
+                        return self::parseGenericArrayTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, false, false);
                     case 'list':
                         $template_parameter_type_list = self::createTemplateParameterTypeList($template_parameter_type_name_list);
                         return self::parseListTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, false);
@@ -1000,20 +1014,30 @@ class Type
     private static function parseGenericArrayTypeFromTemplateParameterList(
         array $template_parameter_type_list,
         bool $is_nullable,
-        bool $always_has_elements
+        bool $always_has_elements,
+        bool $is_associative
     ) : ArrayType {
+        $make = function (Type $element_type, int $key_type) use ($is_nullable, $always_has_elements, $is_associative) : ArrayType {
+            if ($always_has_elements) {
+                if ($is_associative) {
+                    return NonEmptyAssociativeArrayType::fromElementType($element_type, $is_nullable, $key_type);
+                }
+                return NonEmptyGenericArrayType::fromElementType($element_type, $is_nullable, $key_type);
+            }
+            if ($is_associative) {
+                return AssociativeArrayType::fromElementType($element_type, $is_nullable, $key_type);
+            }
+            return GenericArrayType::fromElementType($element_type, $is_nullable, $key_type);
+        };
         $template_count = count($template_parameter_type_list);
         if ($template_count > 2) {
-            if ($always_has_elements) {
-                return NonEmptyGenericArrayType::fromElementType(
-                    MixedType::instance(false),
-                    $is_nullable,
-                    GenericArrayType::KEY_MIXED
-                );
+            if ($always_has_elements|| $is_associative) {
+                return $make(MixedType::instance(false), GenericArrayType::KEY_MIXED);
             }
             return ArrayType::instance($is_nullable);
         }
         // array<T> or array<key, T>
+        // TODO support associative-array?
         $types = $template_parameter_type_list[$template_count - 1]->getTypeSet();
         if ($template_count === 2) {
             if (count($types) === 1 && $template_parameter_type_list[0]->hasTemplateType()) {
@@ -1031,34 +1055,20 @@ class Type
 
         // TODO: Infer non-empty-array<int,Type> from conditions such as count($types) == 1
         if (count($types) === 1) {
-            if ($always_has_elements) {
-                return NonEmptyGenericArrayType::fromElementType(
-                    // @phan-suppress-next-line PhanPossiblyFalseTypeArgument
-                    \reset($types),
-                    $is_nullable,
-                    $key_type
-                );
-            }
-            return GenericArrayType::fromElementType(
-                // @phan-suppress-next-line PhanPossiblyFalseTypeArgument
-                \reset($types),
-                $is_nullable,
-                $key_type
-            );
+            // @phan-suppress-next-line PhanPossiblyFalseTypeArgument
+            return $make(\reset($types), $key_type);
         } elseif (count($types) > 1) {
             return new GenericMultiArrayType(
                 $types,
                 $is_nullable,
                 $key_type,
-                $always_has_elements
+                $always_has_elements,
+                false,
+                $is_associative
             );
         }
-        if ($always_has_elements) {
-            return NonEmptyGenericArrayType::fromElementType(
-                MixedType::instance(false),
-                $is_nullable,
-                $key_type
-            );
+        if ($always_has_elements || $is_associative) {
+            return $make(MixedType::instance(false), $key_type);
         }
         return ArrayType::instance($is_nullable);
     }
@@ -1366,13 +1376,17 @@ class Type
             if (count($template_parameter_type_list) > 0) {
                 switch (\strtolower($type_name)) {
                     case 'array':
-                        return self::parseGenericArrayTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, false);
+                        return self::parseGenericArrayTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, false, false);
+                    case 'associative-array':
+                        return self::parseGenericArrayTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, false, true);
+                    case 'non-empty-array':
+                        return self::parseGenericArrayTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, true, false);
+                    case 'non-empty-associative-array':
+                        return self::parseGenericArrayTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, true, true);
                     case 'iterable':
                         return self::parseGenericIterableTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable);
                     case 'class-string':
                         return self::parseClassStringTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable);
-                    case 'non-empty-array':
-                        return self::parseGenericArrayTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, true);
                     case 'list':
                         return self::parseListTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, false);
                     case 'non-empty-list':

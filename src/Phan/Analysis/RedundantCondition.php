@@ -147,7 +147,7 @@ class RedundantCondition
 
     /**
      * @param Node|string|int|float $node
-     * @return array<int|string, string> the set of variable names.
+     * @return associative-array<int|string, string> the set of variable names.
      * @internal
      */
     public static function getVariableSet($node) : array

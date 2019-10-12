@@ -31,7 +31,9 @@ use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\GenericArrayType;
+use Phan\Language\Type\ListType;
 use Phan\Language\Type\MixedType;
+use Phan\Language\Type\NonEmptyGenericArrayType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
@@ -1354,16 +1356,19 @@ class AssignmentVisitor extends AnalysisVisitor
                 }
                 // TODO: Make the behavior more precise for $x['a']['b'] = ...; when $x is an array shape.
                 if ($this->dim_depth > 1 || ($old_variable_union_type->hasTopLevelNonArrayShapeTypeInstances() || $right_type->hasTopLevelNonArrayShapeTypeInstances() || $right_type->isEmpty())) {
-                    $variable->setUnionType($old_variable_union_type->withUnionType(
+                    $new_union_type = $old_variable_union_type->withUnionType(
                         $right_type
-                    ));
+                    );
                 } else {
-                    $variable->setUnionType(ArrayType::combineArrayTypesOverriding(
+                    $new_union_type = ArrayType::combineArrayTypesOverriding(
                         $right_type,
                         $old_variable_union_type,
                         true
-                    ));
+                    );
                 }
+                // Note that after $x[anything] = anything, $x is guaranteed not to be the empty array.
+                // TODO: Handle `$x = 'x'; $s[0] = '0';`
+                $variable->setUnionType($new_union_type->nonFalseyClone());
             } else {
                 $variable->setUnionType($this->right_type);
             }
@@ -1393,6 +1398,7 @@ class AssignmentVisitor extends AnalysisVisitor
         if ($this->dim_depth > 0) {
             // Reduce false positives: If $variable did not already exist, assume it may already have other array fields
             // (e.g. in a loop, or in the global scope)
+            // TODO: Don't if this isn't in a loop or the global scope.
             $variable->setUnionType($this->right_type->withType(ArrayType::instance(false)));
         } else {
             // Set that type on the variable
@@ -1428,6 +1434,11 @@ class AssignmentVisitor extends AnalysisVisitor
         }
         $dim_type = $this->dim_type;
         $right_type = $this->right_type;
+
+        // Sanity check: Don't add list<T> to a property that isn't list<T>
+        // unless it has 1 or more array types and all are list<T>
+        $right_type = self::normalizeListTypesInDimAssignment($assign_type, $right_type);
+
         if ($assign_type->isEmpty() || ($assign_type->hasGenericArray() && !$assign_type->asExpandedTypes($this->code_base)->hasArrayAccess())) {
             // For empty union types or 'array', expect the provided dimension to be able to cast to int|string
             if ($dim_type && !$dim_type->isEmpty() && !$dim_type->canCastToUnionType($int_or_string_type)) {
@@ -1484,6 +1495,47 @@ class AssignmentVisitor extends AnalysisVisitor
             }
         }
         return $right_type;
+    }
+
+    private static function normalizeListTypesInDimAssignment(UnionType $assign_type, UnionType $right_type) : UnionType
+    {
+        $checked = false;
+        /**
+         * @param list<Type> $type_set
+         * @return list<Type> with top level list converted to non-empty-array. May contain duplicates.
+         */
+        $map_type_set = static function (array $type_set) use ($assign_type, &$checked) : array {
+            foreach ($type_set as $i => $type) {
+                if ($type instanceof ListType) {
+                    if (!$checked) {
+                        if ($assign_type->hasTypeMatchingCallback(static function (Type $other_type) : bool {
+                            if (!$other_type instanceof ArrayType) {
+                                return false;
+                            }
+                            if ($other_type instanceof ListType) {
+                                return true;
+                            }
+                            // @phan-suppress-next-line PhanAccessMethodInternal
+                            if ($other_type instanceof ArrayShapeType && $other_type->canCastToList()) {
+                                return true;
+                            }
+                            return false;
+                        })) {
+                            break;
+                        }
+                        $checked = true;
+                    }
+                    $type_set[$i] = NonEmptyGenericArrayType::fromElementType($type->genericArrayElementType(), $type->isNullable(), $type->getKeyType());
+                }
+            }
+            return $type_set;
+        };
+        $new_type_set = $map_type_set($right_type->getTypeSet());
+        $new_real_type_set = $map_type_set($right_type->getRealTypeSet());
+        if (!$checked) {
+            return $right_type;
+        }
+        return UnionType::of($new_type_set, $new_real_type_set);
     }
 
     /**

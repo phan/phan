@@ -84,7 +84,7 @@ class ForkPool
     }
 
     /**
-     * @param list<array> $process_task_data_iterator
+     * @param array<list> $process_task_data_iterator
      * An array of task data items to be divided up among the
      * workers. The size of this is the number of forked processes.
      *

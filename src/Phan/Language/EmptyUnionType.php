@@ -11,6 +11,7 @@ use Phan\Language\Element\Clazz;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\ArrayType;
+use Phan\Language\Type\AssociativeArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\ListType;
@@ -1019,16 +1020,22 @@ final class EmptyUnionType extends UnionType
 
     /**
      * @return UnionType
-     * Get a new type for each type in this union which is
+     * Get a non-empty union type with a new type for each type in this union which is
      * the generic array version of this type. For instance,
      * 'int|float' will produce 'int[]|float[]'.
      *
-     * If $this is an empty UnionType, this method will produce 'array'
+     * If $this is an empty UnionType, this method will produce 'array<KeyT,mixed>'
      */
     public function asNonEmptyGenericArrayTypes(int $key_type) : UnionType
     {
         static $cache = [];
         return ($cache[$key_type] ?? ($cache[$key_type] = MixedType::instance(false)->asGenericArrayType($key_type)->asRealUnionType()));
+    }
+
+    public function asNonEmptyAssociativeArrayTypes(int $key_type) : UnionType
+    {
+        static $cache = [];
+        return ($cache[$key_type] ?? ($cache[$key_type] = AssociativeArrayType::fromElementType(MixedType::instance(false), false, $key_type)->asRealUnionType()));
     }
 
     public function asNonEmptyListTypes() : UnionType

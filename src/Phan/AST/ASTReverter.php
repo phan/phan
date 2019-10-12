@@ -26,7 +26,7 @@ use function is_string;
  */
 class ASTReverter
 {
-    /** @var array<int,Closure(Node):string> this contains maps from node kinds to closures to convert node kinds to strings */
+    /** @var associative-array<int,Closure(Node):string> this contains maps from node kinds to closures to convert node kinds to strings */
     private static $closure_map;
     /** @var Closure(Node):string this maps unknown node types to strings */
     private static $noop;

@@ -7,9 +7,17 @@ New features(Analysis):
 
 + Add support for `list<T>` and `non-empty-list<T>` in phpdoc and in inferred values.
   These represent arrays with consecutive integer keys starting at 0 without any gaps (e.g. `function (string ...$args) {}`)
++ Add support for `associative-array<T>` and `non-empty-associative-array<T>` in phpdoc and in inferred values. (#3357)
+
+  These are the opposite of `list<T>` and `non-empty-associative-list<T>`. `list` cannot cast to `associative-array` and vice-versa.
+  These represent arrays that are unlikely to end up with consecutive integer keys starting at 0 without any gaps
+
+  - `associative-array` types are inferred from expressions such as `[$uid1 => $value, $uid2 => $value2]` with unknown keys
+  - It is also inferred after unsetting a non-negative array key.
 + Allow omitting keys from array shapes for sequential array elements
   (e.g. `array{stdClass, array}` is equivalent to `array{0:stdClass, 1:array}`).
 + Add array key of array shapes in the same field order that php would for assignments such as `$x = [10]; $x[1] = 11;`. (#3359)
++ Infer that arrays are non-empty after analyzing code such as `$x[expr] = expr` or `$x[] = expr`.
 
 Oct 03 2019, Phan 2.2.13
 ------------------------

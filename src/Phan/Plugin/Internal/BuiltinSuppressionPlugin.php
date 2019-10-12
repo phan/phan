@@ -26,7 +26,7 @@ final class BuiltinSuppressionPlugin extends PluginV3 implements
     SuppressionCapability
 {
     /**
-     * @var array<string,array{contents:string,suppressions:array<string,array<int,int>>}>
+     * @var array<string,array{contents:string,suppressions:array<string,associative-array<int,int>>}>
      * Maps absolute file paths to the most recently known contents and the corresponding suppression lines for issues.
      * (Starts at 1. The index 0 is used for file-based suppressions)
      */
@@ -98,11 +98,14 @@ final class BuiltinSuppressionPlugin extends PluginV3 implements
     }
 
     /**
-     * @return array<string,list<int>> Maps 0 or more issue types to a *list* of lines corresponding to issues that this plugin is going to suppress.
+     * @return array<string,array<int, int>> Maps 0 or more issue types to a *list* of lines corresponding to issues that this plugin is going to suppress.
      *
      * This list is externally used only by UnusedSuppressionPlugin
      *
      * An empty array can be returned if this is unknown.
+     *
+     * The line number is mapped to the line causing issues to be suppressed on that line.
+     * The line number of 0 represents suppressing issues in the entire file.
      */
     public function getRawIssueSuppressionList(
         CodeBase $code_base,
@@ -131,7 +134,10 @@ final class BuiltinSuppressionPlugin extends PluginV3 implements
     }
 
     /**
-     * @return array<string,list<int>> Maps 0 or more issue types to a *list* of lines corresponding to issues that this plugin is going to suppress.
+     * @return array<string,array<int, int>> Maps 0 or more issue types to a set of lines corresponding to issues that this plugin is going to suppress.
+     *
+     * The line number is mapped to the line causing issues to be suppressed on that line.
+     * The line number of 0 represents suppressing issues in the entire file.
      */
     private function computeIssueSuppressionList(
         CodeBase $unused_code_base,

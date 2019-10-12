@@ -107,7 +107,7 @@ class RegexAnalyzer
     }
 
     /**
-     * @param array<int|string,true> $regex_group_keys
+     * @param associative-array<int|string,true> $regex_group_keys
      */
     private static function makeArrayShape(
         array $regex_group_keys,
