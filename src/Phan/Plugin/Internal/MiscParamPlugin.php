@@ -6,6 +6,7 @@ use ast;
 use ast\Node;
 use Closure;
 use Phan\Analysis\AssignmentVisitor;
+use Phan\Analysis\ConditionVisitor;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
@@ -379,7 +380,7 @@ final class MiscParamPlugin extends PluginV3 implements
         $array_add_callback = static function (
             CodeBase $code_base,
             Context $context,
-            FunctionInterface $unused_function,
+            FunctionInterface $function,
             array $args,
             ?Node $_
         ) : void {
@@ -416,6 +417,15 @@ final class MiscParamPlugin extends PluginV3 implements
                     $right_type,
                     1
                 ))->__invoke($modified_array_node);
+            }
+            if ($function->getName() === 'array_unshift'
+                    && $modified_array_node instanceof Node &&
+                    $modified_array_node->kind === ast\AST_VAR) {
+                $variable = (new ConditionVisitor($code_base, $new_context))->getVariableFromScope($modified_array_node, $new_context);
+                if ($variable) {
+                    $variable->setUnionType($variable->getUnionType()->withIntegerKeyArraysAsLists());
+                    $new_context->addScopeVariable($variable);
+                }
             }
             // Hackish: copy properties from this
             $context->setScope($new_context->getScope());

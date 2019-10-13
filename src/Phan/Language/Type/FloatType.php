@@ -58,6 +58,6 @@ class FloatType extends ScalarType
         if ($other instanceof ScalarType) {
             return $other instanceof FloatType || (!$context->isStrictTypes() && parent::canCastToDeclaredType($code_base, $context, $other));
         }
-        return $other instanceof CallableType;
+        return $other instanceof CallableType || $other instanceof MixedType;
     }
 }

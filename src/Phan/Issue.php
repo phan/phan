@@ -4739,35 +4739,12 @@ class Issue
     const TRACE_VERBOSE = 'verbose';
 
     /**
-     * @var ?string - This is null unless debugging.
-     */
-    private static $trace_issues = null;
-
-    /**
-     * Ensure that backtraces with the cause of the emitted issue are printed to stderr.
-     * If null, stop emitting backtraces.
-     */
-    public static function setTraceIssues(?string $level) : void
-    {
-        self::$trace_issues = $level ? \strtolower($level) : null;
-    }
-
-    /**
      * @param IssueInstance $issue_instance
      * An issue instance to emit
      */
     public static function emitInstance(
         IssueInstance $issue_instance
     ) : void {
-        if (self::$trace_issues) {
-            if (self::$trace_issues === self::TRACE_VERBOSE) {
-                \phan_print_backtrace();
-            } else {
-                \ob_start();
-                \debug_print_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS);
-                \fwrite(\STDERR, (\ob_get_clean() ?: "failed to dump backtrace") . \PHP_EOL);
-            }
-        }
         Phan::getIssueCollector()->collectIssue($issue_instance);
     }
 

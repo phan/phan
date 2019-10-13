@@ -329,8 +329,8 @@ final class MethodSearcherPlugin extends PluginV3 implements
 
     /**
      * Check if param_types contains unique types that can cast to search_param_types
-     * @param list<UnionType> $search_param_types
-     * @param list<UnionType> $signature_param_types
+     * @param array<int, UnionType> $search_param_types (array keys are removed from both params when this recursively calls itself)
+     * @param array<int, UnionType> $signature_param_types
      */
     public static function matchesParamTypes(CodeBase $code_base, array $search_param_types, array $signature_param_types) : float
     {

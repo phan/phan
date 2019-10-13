@@ -2,6 +2,7 @@
 
 namespace Phan\Output\Collector;
 
+use Phan\Issue;
 use Phan\IssueInstance;
 use Phan\Output\Filter\AnyFilter;
 use Phan\Output\IssueCollectorInterface;
@@ -29,6 +30,21 @@ final class BufferingCollector implements IssueCollectorInterface
     }
 
     /**
+     * @var ?string - This is null unless debugging.
+     */
+    private static $trace_issues = null;
+
+    /**
+     * Ensure that backtraces with the cause of the emitted issue are printed to stderr.
+     * If null, stop emitting backtraces.
+     */
+    public static function setTraceIssues(?string $level) : void
+    {
+        self::$trace_issues = $level ? \strtolower($level) : null;
+    }
+
+
+    /**
      * Collect issue
      * @param IssueInstance $issue
      */
@@ -36,6 +52,15 @@ final class BufferingCollector implements IssueCollectorInterface
     {
         if (!$this->filter->supports($issue)) {
             return;
+        }
+        if (self::$trace_issues) {
+            if (self::$trace_issues === Issue::TRACE_VERBOSE) {
+                \phan_print_backtrace();
+            } else {
+                \ob_start();
+                \debug_print_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS);
+                \fwrite(\STDERR, (\ob_get_clean() ?: "failed to dump backtrace") . \PHP_EOL);
+            }
         }
 
         $this->issues[$this->formatSortableKey($issue)] = $issue;

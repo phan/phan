@@ -10,4 +10,3 @@
 %s:19 PhanTypeMismatchReturn Returning type array<int,array<string,object>> but expects_stringmap() is declared to return array<int,false>
 %s:20 PhanTypeMismatchReturn Returning type array<int,object> but expects_stringmap() is declared to return array<int,false>
 %s:20 PhanTypeMismatchUnpackKeyArraySpread When unpacking a value of type array<string,object>, the value's keys were of type string, but the keys should be integers
-%s:20 PhanTypeMismatchUnpackKey When unpacking a value of type array<string,object>, the value's keys were of type string, but the keys should be consecutive integers starting from 0

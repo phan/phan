@@ -40,7 +40,6 @@ use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
-use Phan\Language\Type\ListType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
@@ -264,17 +263,22 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if ($union_type->isEmpty()) {
                 return;
             }
-            $union_type = $union_type->withStaticResolvedInContext($this->context);
-            if (!$union_type->asExpandedTypes($this->code_base)->hasArrayLike() && !$union_type->hasMixedType()) {
+            $resolved_union_type = $union_type->withStaticResolvedInContext($this->context);
+            if (!$resolved_union_type->asExpandedTypes($this->code_base)->hasArrayLike() && !$resolved_union_type->hasMixedType()) {
                 $this->emitIssue(
                     Issue::TypeArrayUnsetSuspicious,
                     $node->lineno,
-                    (string)$union_type
+                    (string)$resolved_union_type
                 );
             }
             $dim_node = $node->children['dim'];
             $dim_value = $dim_node instanceof Node ? (new ContextNode($this->code_base, $this->context, $dim_node))->getEquivalentPHPScalarValue() : $dim_node;
             // unset($x[$i]) should convert a list<T> or non-empty-list<T> to an array<Y>
+            $union_type = $union_type->withAssociativeArrays(true);
+            $variable = clone($variable);
+            $context->addScopeVariable($variable);
+            $variable->setUnionType($union_type);
+            /*
             if (!is_scalar($dim_value) || (!is_numeric($dim_value) || $dim_value >= 0)) {
                 foreach ($union_type->getTypeSet() as $type) {
                     if ($type instanceof ListType) {
@@ -287,6 +291,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     }
                 }
             }
+             */
 
             if (!$union_type->hasTopLevelArrayShapeTypeInstances()) {
                 return;
@@ -295,9 +300,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if (!\is_scalar($dim_value)) {
                 return;
             }
-            $variable = clone($variable);
-            $context->addScopeVariable($variable);
-            $variable->setUnionType($variable->getUnionType()->withoutArrayShapeField($dim_value));
+            $variable->setUnionType($union_type->withoutArrayShapeField($dim_value));
         }
     }
 

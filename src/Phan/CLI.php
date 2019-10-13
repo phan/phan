@@ -483,7 +483,7 @@ class CLI
                     if (!is_string($value)) {
                         $value = Issue::TRACE_BASIC;
                     }
-                    Issue::setTraceIssues($value);
+                    BufferingCollector::setTraceIssues($value);
                     break;
                 case 'a':
                 case 'dump-ast':

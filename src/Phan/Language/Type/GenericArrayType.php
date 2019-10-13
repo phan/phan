@@ -842,4 +842,18 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
             $this->key_type
         );
     }
+
+    /**
+     * Convert ArrayTypes with integer-only keys to ListType.
+     */
+    public function convertIntegerKeyArrayToList() : ArrayType
+    {
+        if ($this->key_type !== GenericArrayType::KEY_INT) {
+            return $this;
+        }
+        if ($this->isDefinitelyNonEmptyArray()) {
+            return NonEmptyListType::fromElementType($this->element_type, $this->is_nullable, $this->key_type);
+        }
+        return ListType::fromElementType($this->element_type, $this->is_nullable, $this->key_type);
+    }
 }
