@@ -409,7 +409,11 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         return true;
     }
 
-    private function canCastToAssociativeArray() : bool
+    /**
+     * Returns true if this is empty or can't cast to a list
+     * @internal
+     */
+    public function canCastToAssociativeArray() : bool
     {
         $i = 0;
         foreach ($this->field_types as $k => $v) {

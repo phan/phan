@@ -22,7 +22,6 @@ use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\FalseType;
-use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use Phan\Parse\ParseVisitor;
@@ -406,7 +405,9 @@ final class MiscParamPlugin extends PluginV3 implements
                 // E.g. unfold_args(args)
                 $expr_node = $args[$i];
                 $right_inner_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $expr_node);
-                $right_type = $right_inner_type->asGenericArrayTypes(GenericArrayType::KEY_INT);
+                // TODO add a way to append vs prepend values when `$x[] = expr;` is treated
+                // as assigning to a specific offset instead of adding list<ExprT> to the union type.
+                $right_type = $right_inner_type->asNonEmptyListTypes();
 
                 $new_context = (new AssignmentVisitor(
                     $code_base,

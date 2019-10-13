@@ -102,7 +102,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
-     * @return list<string> maps unique definition ids to issue types
+     * @return array<int, string> maps unique definition ids to issue types
      */
     private function addParametersAndUseVariablesToGraph(
         Node $node,

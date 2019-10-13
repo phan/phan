@@ -3711,8 +3711,8 @@ class Type
             return $this->asPHPDocUnionType();
         }
         $new_type_list = [];
-        foreach ($this->template_parameter_type_list as $i => $type) {
-            $new_type_list[$i] = $type->withTemplateParameterTypeMap($template_parameter_type_map);
+        foreach ($this->template_parameter_type_list as $type) {
+            $new_type_list[] = $type->withTemplateParameterTypeMap($template_parameter_type_map);
         }
         if ($new_type_list === $this->template_parameter_type_list) {
             return $this->asPHPDocUnionType();

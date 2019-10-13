@@ -313,8 +313,9 @@ class UnitTestRecord
     }
 
     /**
-     * @return list<array{0:string,1:string,2:string}> the issues parsed from this file.
+     * @return array<int, array{0:string,1:string,2:string}> the issues parsed from this file.
      * Contains the file name, issue type, and issue description.
+     * The array keys start with 1 (the line number of the expected file)
      */
     public function getIssues() : array
     {
