@@ -3,8 +3,10 @@ Phan NEWS
 ??? ?? 2019, Phan 2.2.14 (dev)
 ------------------------
 
-New features(Analysis):
+New features(CLI, Configs):
++ Limit --debug-emitted-issues to the files that weren't excluded from analysis.
 
+New features(Analysis):
 + Add support for `list<T>` and `non-empty-list<T>` in phpdoc and in inferred values.
   These represent arrays with consecutive integer keys starting at 0 without any gaps (e.g. `function (string ...$args) {}`)
 + Add support for `associative-array<T>` and `non-empty-associative-array<T>` in phpdoc and in inferred values. (#3357)
@@ -18,6 +20,8 @@ New features(Analysis):
   (e.g. `array{stdClass, array}` is equivalent to `array{0:stdClass, 1:array}`).
 + Add array key of array shapes in the same field order that php would for assignments such as `$x = [10]; $x[1] = 11;`. (#3359)
 + Infer that arrays are non-empty after analyzing code such as `$x[expr] = expr` or `$x[] = expr`.
++ Infer that arrays are possibly empty after analyzing code such as `unset($x[expr]);`.
++ Fix false positives in redundant condition detection when the source union type contains the `mixed` type.
 
 Oct 03 2019, Phan 2.2.13
 ------------------------

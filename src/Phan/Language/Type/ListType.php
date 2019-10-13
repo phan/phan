@@ -90,4 +90,10 @@ class ListType extends GenericArrayType
     {
         return ($this->is_nullable ? '?' : '') . 'list<' . $this->element_type->__toString() . '>';
     }
+
+    // This is already a list.
+    public function convertIntegerKeyArrayToList() : ArrayType
+    {
+        return $this;
+    }
 }

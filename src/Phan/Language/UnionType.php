@@ -3495,7 +3495,6 @@ class UnionType implements Serializable
         // If array is in there, then it can be any type
         if (\in_array($array_type_nonnull, $type_set, true)) {
             $builder->addType($mixed_type);
-            $builder->addType($null_type);
         } elseif (\in_array($mixed_type, $type_set, true)
             || \in_array($array_type_nullable, $type_set, true)
         ) {
@@ -4510,6 +4509,33 @@ class UnionType implements Serializable
                 continue;
             }
             $type_set[$i] = $type->asAssociativeArrayType($can_reduce_size);
+        }
+        return $type_set;
+    }
+
+    /**
+     * Returns this union type after an operation that converts arrays with integer keys to lists is applied.
+     * (e.g. array_unshift, array_merge)
+     */
+    public function withIntegerKeyArraysAsLists() : UnionType
+    {
+        return UnionType::of(
+            self::withIntegerKeyArraysAsListsForSet($this->type_set),
+            self::withIntegerKeyArraysAsListsForSet($this->real_type_set)
+        );
+    }
+
+    /**
+     * @param list<Type> $type_set
+     * @return list<Type> with all array types as lists, or as arrays with mixed or string keys
+     */
+    private static function withIntegerKeyArraysAsListsForSet(array $type_set) : array
+    {
+        foreach ($type_set as $i => $type) {
+            if (!$type instanceof ArrayType) {
+                continue;
+            }
+            $type_set[$i] = $type->convertIntegerKeyArrayToList();
         }
         return $type_set;
     }

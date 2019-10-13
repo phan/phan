@@ -1043,6 +1043,11 @@ final class EmptyUnionType extends UnionType
         return $this;
     }
 
+    public function withIntegerKeyArraysAsLists() : UnionType
+    {
+        return $this;
+    }
+
     public function asNonEmptyListTypes() : UnionType
     {
         static $type = null;

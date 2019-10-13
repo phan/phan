@@ -274,6 +274,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 if ($child_node->kind === ast\AST_ARRAY_ELEM) {
                     $context = $this->visitArrayElem($child_node);
                 } elseif ($child_node->kind === ast\AST_UNPACK) {
+                    // @phan-suppress-next-line PhanUndeclaredProperty set to distinguish this from unpack in calls, which does require array keys to be consecutive
+                    $child_node->is_in_array = true;
                     $context = $this->visitUnpack($child_node);
                 } else {
                     throw new AssertionError("Unexpected node in ast\AST_ARRAY: " . \Phan\Debug::nodeToString($child_node));
@@ -1057,24 +1059,23 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
     private function analyzeForeachIteration(Context $context, UnionType $expression_union_type, Node $node) : Context
     {
-        $value_node = $node->children['value'];
-        if (!($value_node instanceof Node)) {
-            // should be a parse error?
-            return $context;
-        }
         $code_base = $this->code_base;
-        if ($value_node->kind == ast\AST_ARRAY) {
-            if (Config::get_closest_target_php_version_id() < 70100) {
-                self::analyzeArrayAssignBackwardsCompatibility($code_base, $context, $value_node);
+        $value_node = $node->children['value'];
+        if ($value_node instanceof Node) {
+            // should be a parse error when not a Node
+            if ($value_node->kind == ast\AST_ARRAY) {
+                if (Config::get_closest_target_php_version_id() < 70100) {
+                    self::analyzeArrayAssignBackwardsCompatibility($code_base, $context, $value_node);
+                }
             }
-        }
 
-        $context = (new AssignmentVisitor(
-            $code_base,
-            $context,
-            $value_node,
-            $expression_union_type->iterableValueUnionType($code_base)
-        ))->__invoke($value_node);
+            $context = (new AssignmentVisitor(
+                $code_base,
+                $context,
+                $value_node,
+                $expression_union_type->iterableValueUnionType($code_base)
+            ))->__invoke($value_node);
+        }
 
         // If there's a key, make a variable out of that too
         $key_node = $node->children['key'];

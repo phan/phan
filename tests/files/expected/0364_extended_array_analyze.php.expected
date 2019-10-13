@@ -19,11 +19,11 @@
 %s:27 PhanTypeMismatchArgumentReal Argument 1 ($x) is associative-array<int,float> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45
 %s:28 PhanTypeMismatchArgumentReal Argument 1 ($x) is associative-array<int,float> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45
 %s:29 PhanTypeMismatchArgumentReal Argument 1 ($x) is associative-array<int,float> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45
-%s:30 PhanTypeMismatchArgument Argument 1 ($x) is array<int,int>|array<int,string> but \p364() takes \stdClass defined at %s:45
-%s:31 PhanTypeMismatchArgument Argument 1 ($x) is array<int,int>|array<int,string> but \p364() takes \stdClass defined at %s:45
+%s:30 PhanTypeMismatchArgument Argument 1 ($x) is list<int>|list<string> but \p364() takes \stdClass defined at %s:45
+%s:31 PhanTypeMismatchArgument Argument 1 ($x) is list<int>|list<string> but \p364() takes \stdClass defined at %s:45
 %s:32 PhanTypeMismatchArgumentReal Argument 1 ($x) is array<int,'val'>|array{0:2,1:4} (real type ?array) but \p364() takes \stdClass defined at %s:45
-%s:33 PhanTypeMismatchArgument Argument 1 ($x) is array<int,int>|array<int,string> but \p364() takes \stdClass defined at %s:45
-%s:34 PhanTypeMismatchArgument Argument 1 ($x) is array<int,int>|array<int,string> but \p364() takes \stdClass defined at %s:45
+%s:33 PhanTypeMismatchArgument Argument 1 ($x) is list<int>|list<string> but \p364() takes \stdClass defined at %s:45
+%s:34 PhanTypeMismatchArgument Argument 1 ($x) is list<int>|list<string> but \p364() takes \stdClass defined at %s:45
 %s:35 PhanTypeMismatchArgumentReal Argument 1 ($x) is array<int,\stdClass> (real type ?array) but \p364() takes \stdClass defined at %s:45
 %s:36 PhanTypeMismatchArgumentReal Argument 1 ($x) is associative-array<int,\stdClass> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45
 %s:37 PhanTypeMismatchArgumentReal Argument 1 ($x) is associative-array<int,\stdClass> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45

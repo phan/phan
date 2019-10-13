@@ -287,7 +287,8 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                 $passed_array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $arg);
                 $types = $types->withUnionType($passed_array_type->genericArrayTypes());
             }
-            $types = $types->withFlattenedArrayShapeOrLiteralTypeInstances();
+            $types = $types->withFlattenedArrayShapeOrLiteralTypeInstances()
+                           ->withIntegerKeyArraysAsLists();
             if ($types->isEmpty()) {
                 $types = $types->withType($array_type);
             }

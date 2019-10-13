@@ -71,7 +71,11 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
                 if (!$union_type->hasRealTypeSet()) {
                     return;
                 }
-                $result = $checker($union_type->getRealUnionType()->withStaticResolvedInContext($context));
+                $real_union_type = $union_type->getRealUnionType()->withStaticResolvedInContext($context);
+                if ($real_union_type->hasMixedType()) {
+                    return;
+                }
+                $result = $checker($real_union_type);
                 if ($result === null) {
                     return;
                 }

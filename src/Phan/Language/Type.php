@@ -3493,6 +3493,7 @@ class Type
         if ($N !== count($results)) {
             return \array_values($results);
         }
+        // @phan-suppress-next-line PhanPartialTypeMismatchReturn this is already a list (ensured by above check).
         return $results;
     }
 

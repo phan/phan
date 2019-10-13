@@ -281,6 +281,16 @@ class ArrayType extends IterableType
             GenericArrayType::KEY_MIXED
         );
     }
+
+    /**
+     * Convert ArrayTypes with integer-only keys to ListType.
+     * Calling withFlattenedArrayShapeTypeInstances first is recommended.
+     */
+    public function convertIntegerKeyArrayToList() : ArrayType
+    {
+        // The base type has unknown keys. Do nothing.
+        return $this;
+    }
 }
 // Trigger the autoloader for GenericArrayType so that it won't be called
 // before ArrayType.
