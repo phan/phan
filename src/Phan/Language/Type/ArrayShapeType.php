@@ -1035,4 +1035,9 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
             GenericArrayType::KEY_MIXED
         );
     }
+
+    public function asAssociativeArrayType(bool $unused_can_reduce_size) : ArrayType
+    {
+        return $this;
+    }
 }

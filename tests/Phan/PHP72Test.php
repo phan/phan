@@ -27,7 +27,7 @@ class PHP72Test extends AbstractPhanFileTest
      * the analyzer on each and compares the output
      * to the files' counterpart in `tests/files/expected`
      *
-     * @param string[] $test_file_list
+     * @param non-empty-list<string> $test_file_list
      * @param string $expected_file_path
      * @param ?string $config_file_path
      * @dataProvider getTestFiles
@@ -36,7 +36,6 @@ class PHP72Test extends AbstractPhanFileTest
     public function testFiles(array $test_file_list, string $expected_file_path, ?string $config_file_path = null) : void
     {
         $skip_reason = null;
-        // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
         $main_path = \basename(\reset($test_file_list));
         if (\PHP_VERSION_ID < 70200) {
             switch ($main_path) {

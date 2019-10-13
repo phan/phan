@@ -95,4 +95,9 @@ class AssociativeArrayType extends GenericArrayType
         return ($this->is_nullable ? '?' : '') .
             'associative-array<' . self::KEY_NAMES[$this->key_type] . ',' . $this->element_type->__toString() . '>';
     }
+
+    public function asAssociativeArrayType(bool $unused_can_reduce_size) : ArrayType
+    {
+        return $this;
+    }
 }

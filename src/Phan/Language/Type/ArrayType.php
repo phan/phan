@@ -267,6 +267,20 @@ class ArrayType extends IterableType
         // arrays can't cast to object.
         return false;
     }
+
+    /**
+     * Returns the equivalent (possibly nullable) associative array type (or array shape type) for this type.
+     *
+     * TODO: Implement for ArrayShapeType (not currently calling it) with $can_reduce_size
+     */
+    public function asAssociativeArrayType(bool $unused_can_reduce_size) : ArrayType
+    {
+        return AssociativeArrayType::fromElementType(
+            MixedType::instance(false),
+            $this->is_nullable,
+            GenericArrayType::KEY_MIXED
+        );
+    }
 }
 // Trigger the autoloader for GenericArrayType so that it won't be called
 // before ArrayType.

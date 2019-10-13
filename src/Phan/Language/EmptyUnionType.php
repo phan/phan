@@ -1038,6 +1038,11 @@ final class EmptyUnionType extends UnionType
         return ($cache[$key_type] ?? ($cache[$key_type] = AssociativeArrayType::fromElementType(MixedType::instance(false), false, $key_type)->asRealUnionType()));
     }
 
+    public function withAssociativeArrays(bool $_) : UnionType
+    {
+        return $this;
+    }
+
     public function asNonEmptyListTypes() : UnionType
     {
         static $type = null;

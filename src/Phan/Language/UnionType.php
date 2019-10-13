@@ -126,7 +126,7 @@ class UnionType implements Serializable
 
     /**
      * @param Type[] $type_list
-     * @param list<Type> $real_type_set
+     * @param Type[] $real_type_set
      * @phan-pure
      */
     public static function of(array $type_list, array $real_type_set = []) : UnionType
@@ -4446,10 +4446,22 @@ class UnionType implements Serializable
             return $this;
         }
 
-        $builder = new UnionTypeBuilder();
+        return UnionType::of(
+            self::withFlattenedArrayShapeOrLiteralTypeInstancesForSet($this->type_set),
+            self::withFlattenedArrayShapeOrLiteralTypeInstancesForSet($this->real_type_set)
+        );
+    }
+
+    /**
+     * @param list<Type> $type_set
+     * @return list<Type>
+     */
+    private static function withFlattenedArrayShapeOrLiteralTypeInstancesForSet(array $type_set) : array
+    {
+        $result = [];
         $has_other_array_type = false;
         $empty_array_shape_type = null;
-        foreach ($this->type_set as $type) {
+        foreach ($type_set as $type) {
             if ($type->hasArrayShapeOrLiteralTypeInstances()) {
                 if ($type instanceof ArrayShapeType) {
                     if (\count($type->getFieldTypes()) === 0) {
@@ -4458,19 +4470,48 @@ class UnionType implements Serializable
                     }
                 }
                 foreach ($type->withFlattenedArrayShapeOrLiteralTypeInstances() as $type_part) {
-                    $builder->addType($type_part);
+                    $result[] = $type_part;
                 }
             } else {
-                $builder->addType($type);
+                $result[] = $type;
             }
             if ($type instanceof ArrayType) {
                 $has_other_array_type = true;
             }
         }
         if ($empty_array_shape_type && !$has_other_array_type) {
-            $builder->addType(ArrayType::instance($empty_array_shape_type->isNullable()));
+            $result[] = ArrayType::instance($empty_array_shape_type->isNullable());
         }
-        return $builder->getPHPDocUnionType();
+        return $result;
+    }
+
+    /**
+     * Returns this union type after an operation that converts arrays to associative arrays is applied.
+     */
+    public function withAssociativeArrays(bool $can_reduce_size) : UnionType
+    {
+        return UnionType::of(
+            self::withAssociativeArraysForSet($this->type_set, $can_reduce_size),
+            self::withAssociativeArraysForSet($this->real_type_set, $can_reduce_size)
+        );
+    }
+
+    /**
+     * @param list<Type> $type_set
+     * @return list<Type> with all array types as associative arrays or array shapes
+     */
+    private static function withAssociativeArraysForSet(array $type_set, bool $can_reduce_size) : array
+    {
+        foreach ($type_set as $i => $type) {
+            if (!$type instanceof ArrayType) {
+                continue;
+            }
+            if ($type instanceof ArrayShapeType) {
+                continue;
+            }
+            $type_set[$i] = $type->asAssociativeArrayType($can_reduce_size);
+        }
+        return $type_set;
     }
 
     /**
@@ -4779,7 +4820,7 @@ class UnionType implements Serializable
             return null;
         }
         $type = \reset($type_set);
-        // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
+        // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal TODO: Infer non-empty-array from count
         switch (\get_class($type)) {
             case LiteralIntType::class:
                 return $type->isNullable() ? null : $type->getValue();
