@@ -1,5 +1,5 @@
 %s:3 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is 1000000 but \strlen() takes string
-%s:4 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is 3405705229 but \strlen() takes string
+%s:4 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is 3405705229%S but \strlen() takes string
 %s:5 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is 95 but \strlen() takes string
 %s:6 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is 6.674083E-11 but \strlen() takes string
 %s:7 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is 12.34 but \strlen() takes string
