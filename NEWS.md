@@ -1,7 +1,7 @@
 Phan NEWS
 
-??? ?? 2019, Phan 2.2.14 (dev)
-------------------------
+Oct 13 2019, Phan 2.3.0
+-----------------------
 
 New features(CLI, Configs):
 + Limit --debug-emitted-issues to the files that weren't excluded from analysis.
@@ -12,10 +12,19 @@ New features(Analysis):
 + Add support for `associative-array<T>` and `non-empty-associative-array<T>` in phpdoc and in inferred values. (#3357)
 
   These are the opposite of `list<T>` and `non-empty-associative-list<T>`. `list` cannot cast to `associative-array` and vice-versa.
-  These represent arrays that are unlikely to end up with consecutive integer keys starting at 0 without any gaps
+  These represent arrays that are unlikely to end up with consecutive integer keys starting at 0 without any gaps.
+  `associative-array` is inferred after analyzing code such as the following:
 
-  - `associative-array` types are inferred from expressions such as `[$uid1 => $value, $uid2 => $value2]` with unknown keys
-  - It is also inferred after unsetting a non-negative array key.
+  - Expressions such as `[$uid1 => $value, $uid2 => $value2]` with unknown keys
+  - Unsetting an array key of a variable.
+  - Adding an unknown array key to an empty array.
+  - Certain built-in functions, such as `array_filter` or `array_unique`,
+    which don't preserve all keys and don't renumber array keys.
+
+  Note that `array<string, T>` is always treated like an associative array.
+
+  However, `T[]` (i.e. `array<mixed, T>`) is not treated like `associative-array<mixed, T>` (i.e. `associative-array<T>`).
+  Phan will warn about using the latter (`associative-array`) where a list is expected, but not the former (`array`).
 + Allow omitting keys from array shapes for sequential array elements
   (e.g. `array{stdClass, array}` is equivalent to `array{0:stdClass, 1:array}`).
 + Add array key of array shapes in the same field order that php would for assignments such as `$x = [10]; $x[1] = 11;`. (#3359)
