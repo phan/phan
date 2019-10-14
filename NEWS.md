@@ -1,7 +1,7 @@
 Phan NEWS
 
-??? ?? 2019, Phan 2.2.14 (dev)
-------------------------
+Oct 13 2019, Phan 2.3.0
+-----------------------
 
 New features(CLI, Configs):
 + Limit --debug-emitted-issues to the files that weren't excluded from analysis.
