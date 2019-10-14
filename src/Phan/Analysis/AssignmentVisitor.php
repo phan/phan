@@ -24,6 +24,7 @@ use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
 use Phan\Language\Element\PassByReferenceVariable;
 use Phan\Language\Element\Property;
+use Phan\Language\Element\TypedElementInterface;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
@@ -77,6 +78,11 @@ class AssignmentVisitor extends AnalysisVisitor
     private $dim_type;
 
     /**
+     * @var Node
+     */
+    private $assignment_node;
+
+    /**
      * @param CodeBase $code_base
      * The global code base we're operating within
      *
@@ -84,7 +90,7 @@ class AssignmentVisitor extends AnalysisVisitor
      * The context of the parser at the node for which we'd
      * like to determine a type
      *
-     * @param Node $unused_assignment_node
+     * @param Node $assignment_node
      * The AST node containing the assignment
      *
      * @param UnionType $right_type
@@ -102,7 +108,7 @@ class AssignmentVisitor extends AnalysisVisitor
     public function __construct(
         CodeBase $code_base,
         Context $context,
-        Node $unused_assignment_node,
+        Node $assignment_node,
         UnionType $right_type,
         int $dim_depth = 0,
         UnionType $dim_type = null
@@ -112,6 +118,7 @@ class AssignmentVisitor extends AnalysisVisitor
         $this->right_type = $right_type->withSelfResolvedInContext($context);
         $this->dim_depth = $dim_depth;
         $this->dim_type = $dim_type;  // null for `$x[] =` or when dim_depth is 0.
+        $this->assignment_node = $assignment_node;
     }
 
     /**
@@ -370,6 +377,7 @@ class AssignmentVisitor extends AnalysisVisitor
             if (!$value_node instanceof Node) {
                 return;
             }
+            // TODO: Infer that this is creating or copying a reference [&$a] = [&$b]
         }
         if ($kind === \ast\AST_VAR) {
             $variable = Variable::fromNodeInContext(
@@ -381,7 +389,7 @@ class AssignmentVisitor extends AnalysisVisitor
 
             // Set the element type on each element of
             // the list
-            $variable->setUnionType($element_type);
+            $this->analyzeSetUnionType($variable, $element_type, $value_node);
 
             // Note that we're not creating a new scope, just
             // adding variables to the existing scope
@@ -396,7 +404,7 @@ class AssignmentVisitor extends AnalysisVisitor
 
                 // Set the element type on each element of
                 // the list
-                $property->setUnionType($element_type);
+                $this->analyzeSetUnionType($property, $element_type, $value_node);
             } catch (UnanalyzableException $_) {
                 // Ignore it. There's nothing we can do.
             } catch (NodeException $_) {
@@ -419,6 +427,105 @@ class AssignmentVisitor extends AnalysisVisitor
             ))->__invoke($value_node);
         }
     }  // TODO: Warn if $value_node is not a node. NativeSyntaxCheckPlugin already does this.
+
+    /**
+     * Set the element's union type.
+     * This should be used for warning about assignments such as `$leftHandSide = $str`, but not `is_string($var)`,
+     * when typed properties could be used.
+     *
+     * @param Node|string|int|float $node
+     */
+    private function analyzeSetUnionType(
+        TypedElementInterface $element,
+        UnionType $element_type,
+        $node
+    ) : void {
+        $element->setUnionType($element_type);
+        if ($element instanceof PassByReferenceVariable) {
+            self::analyzeSetUnionTypePassByRef($this->code_base, $this->context, $element, $element_type, $node);
+        }
+    }
+
+    /**
+     * Set the element's union type.
+     * This should be used for warning about assignments such as `$leftHandSide = $str`, but not `is_string($var)`,
+     * when typed properties could be used.
+     *
+     * Static version of analyzeSetUnionType
+     *
+     * @param Node|string|int|float $node
+     */
+    public static function analyzeSetUnionTypeInContext(
+        CodeBase $code_base,
+        Context $context,
+        TypedElementInterface $element,
+        UnionType $element_type,
+        $node
+    ) : void {
+        $element->setUnionType($element_type);
+        if ($element instanceof PassByReferenceVariable) {
+            self::analyzeSetUnionTypePassByRef($code_base, $context, $element, $element_type, $node);
+        }
+    }
+
+    /**
+     * Set the reference element's union type.
+     * This should be used for warning about assignments such as `$leftHandSideRef = $str`, but not `is_string($varRef)`,
+     * when typed properties could be used.
+     *
+     * @param Node|string|int|float $node
+     */
+    private static function analyzeSetUnionTypePassByRef(
+        CodeBase $code_base,
+        Context $context,
+        PassByReferenceVariable $reference_element,
+        UnionType $new_type,
+        $node
+    ) : void {
+        $element = $reference_element->getElement();
+        while ($element instanceof PassByReferenceVariable) {
+            $reference_element = $element;
+            $element = $element->getElement();
+        }
+        if ($element instanceof Property) {
+            $real_union_type = $element->getRealUnionType();
+            if (!$real_union_type->isEmpty() && !$new_type->getRealUnionType()->canCastToDeclaredType($code_base, $context, $real_union_type)) {
+                $reference_context = $reference_element->getContextOfCreatedReference();
+                if ($reference_context) {
+                    // Here, we emit the issue at the place where the reference was created,
+                    // since that's the code that can be changed or where issues should be suppressed.
+                    Issue::maybeEmit(
+                        $code_base,
+                        $reference_context,
+                        Issue::TypeMismatchPropertyRealByRef,
+                        $reference_context->getLineNumberStart(),
+                        $new_type,
+                        $element->getRepresentationForIssue(),
+                        $real_union_type,
+                        $context->getFile(),
+                        $node->lineno ?? $context->getLineNumberStart()
+                    );
+                }
+                return;
+            }
+            if (!$new_type->asExpandedTypes($code_base)->canCastToUnionType($element->getPHPDocUnionType())) {
+                $reference_context = $reference_element->getContextOfCreatedReference();
+                if ($reference_context) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $reference_context,
+                        Issue::TypeMismatchPropertyByRef,
+                        $reference_context->getLineNumberStart(),
+                        $new_type,
+                        $element->getRepresentationForIssue(),
+                        $element->getPHPDocUnionType(),
+                        $context->getFile(),
+                        $node->lineno ?? $context->getLineNumberStart()
+                    );
+                }
+            }
+        }
+    }
 
     /**
      * Analyzes code such as list($a) = function_returning_array();
@@ -498,7 +605,7 @@ class AssignmentVisitor extends AnalysisVisitor
 
                 // Set the element type on each element of
                 // the list
-                $variable->setUnionType($element_type);
+                $this->analyzeSetUnionType($variable, $element_type, $value_node);
 
                 // Note that we're not creating a new scope, just
                 // adding variables to the existing scope
@@ -513,7 +620,7 @@ class AssignmentVisitor extends AnalysisVisitor
 
                     // Set the element type on each element of
                     // the list
-                    $property->setUnionType($element_type);
+                    $this->analyzeSetUnionType($property, $element_type, $value_node);
                 } catch (UnanalyzableException $_) {
                     // Ignore it. There's nothing we can do.
                 } catch (NodeException $_) {
@@ -1370,9 +1477,9 @@ class AssignmentVisitor extends AnalysisVisitor
                 }
                 // Note that after $x[anything] = anything, $x is guaranteed not to be the empty array.
                 // TODO: Handle `$x = 'x'; $s[0] = '0';`
-                $variable->setUnionType($new_union_type->nonFalseyClone());
+                $this->analyzeSetUnionType($variable, $new_union_type->nonFalseyClone(), $node);
             } else {
-                $variable->setUnionType($this->right_type);
+                $this->analyzeSetUnionType($variable, $this->right_type, $node);
             }
 
             $this->context->addScopeVariable(
@@ -1407,6 +1514,29 @@ class AssignmentVisitor extends AnalysisVisitor
             $variable->setUnionType(
                 $this->right_type
             );
+            if ($this->assignment_node->kind === ast\AST_ASSIGN_REF) {
+                $expr = $this->assignment_node->children['expr'];
+                if ($expr instanceof Node && \in_array($expr->kind, [ast\AST_STATIC_PROP, ast\AST_PROP], true)) {
+                    try {
+                        $property = (new ContextNode(
+                            $this->code_base,
+                            $this->context,
+                            $expr
+                        ))->getProperty($expr->kind === ast\AST_STATIC_PROP);
+                        $variable = new PassByReferenceVariable(
+                            $variable,
+                            $property,
+                            $this->code_base,
+                            $this->context
+                        );
+                    } catch (IssueException $_) {
+                        // Hopefully caught elsewhere
+                    } catch (NodeException $_) {
+                        // Hopefully caught elsewhere
+                    }
+                }
+
+            }
         }
 
         // Note that we're not creating a new scope, just

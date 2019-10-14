@@ -1,0 +1,11 @@
+%s:13 PhanTypeMismatchPropertyReal Assigning 2 to property but \NS21\HasTypedProperties->obj is \stdClass
+%s:14 PhanTypeMismatchPropertyRealByRef 'invalid value' may end up assigned to property \NS21\HasTypedProperties::$static_int of type int by reference at %s:29
+%s:15 PhanTypeMismatchPropertyRealByRef 'invalid value' may end up assigned to property \NS21\HasTypedProperties->obj of type \stdClass by reference at %s:29
+%s:17 PhanTypeMismatchPropertyRealByRef 'invalid instance value' may end up assigned to property \NS21\HasTypedProperties->obj of type \stdClass by reference at %s:26
+%s:18 PhanTypeMismatchPropertyRealByRef 'invalid instance value' may end up assigned to property \NS21\HasTypedProperties::$static_int of type int by reference at %s:26
+%s:21 PhanTypeMismatchPropertyRealByRef 'invalid value' may end up assigned to property \NS21\HasTypedProperties->obj of type \stdClass by reference at %s:29
+%s:23 PhanTypeMismatchPropertyRealByRef null may end up assigned to property \NS21\HasTypedProperties::$static_int of type int by reference at %s:23
+%s:33 PhanTypeMismatchArgumentPropertyReferenceReal Argument 2 is property \NS21\HasTypedProperties->obj with type \stdClass but \preg_match() takes a reference of type string[] (no real type)
+%s:34 PhanTypeMismatchArgumentPropertyReferenceReal Argument 2 is property \NS21\HasTypedProperties::$static_int with type int but \preg_match() takes a reference of type string[] (no real type)
+%s:36 PhanTypeMismatchPropertyByRef array may end up assigned to property \NS21\HasTypedProperties->obj of type \stdClass by reference at %s:41
+%s:37 PhanTypeMismatchPropertyByRef array may end up assigned to property \NS21\HasTypedProperties::$static_int of type int by reference at %s:41

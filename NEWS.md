@@ -3,6 +3,11 @@ Phan NEWS
 ??? ?? 2019, Phan 2.3.1 (dev)
 -----------------------
 
+New features(Analysis):
++ Emit `PhanTypeMismatchPropertyRealByRef` or `PhanTypeMismatchPropertyByRef`
+  when potentially assigning an incompatible type to a php 7.4 typed property
+  (or a property with a phpdoc type).
+
 Oct 13 2019, Phan 2.3.0
 -----------------------
 
