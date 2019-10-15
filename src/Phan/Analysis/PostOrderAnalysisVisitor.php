@@ -3477,10 +3477,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         if ($variable) {
-            $set_variable_type = static function (UnionType $new_type) use ($code_base, $context, $variable) : void {
+            $set_variable_type = function (UnionType $new_type) use ($code_base, $context, $variable, $argument) : void {
                 if ($variable instanceof Variable) {
                     $variable = clone($variable);
-                    $variable->setUnionType($new_type);
+                    AssignmentVisitor::analyzeSetUnionTypeInContext($code_base, $context, $variable, $new_type, $argument);
                     $context->addScopeVariable($variable);
                 } else {
                     // This is a Property. Add any compatible new types to the type of the property.
@@ -3964,15 +3964,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 // Could not figure out the node name
                 return;
             }
-        } elseif ($argument->kind == ast\AST_STATIC_PROP) {
+        } elseif (\in_array($argument->kind, [ast\AST_STATIC_PROP, ast\AST_PROP], true)) {
             try {
                 $variable = (new ContextNode(
                     $this->code_base,
                     $this->context,
                     $argument
-                ))->getProperty(
-                    true
-                );
+                ))->getProperty($argument->kind === ast\AST_STATIC_PROP);
             } catch (IssueException $_) {
                 // Hopefully caught elsewhere
             } catch (NodeException $_) {
@@ -3993,7 +3991,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             new PassByReferenceVariable(
                 $parameter,
                 $variable,
-                $this->code_base
+                $this->code_base,
+                $this->context
             );
         // Add it to the (cloned) scope of the function wrapped
         // in a way that makes it addressable as the

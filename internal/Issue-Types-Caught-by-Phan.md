@@ -3128,6 +3128,14 @@ This issue is emitted from the following code
 function f(int $p = false) {}
 ```
 
+## PhanTypeMismatchPropertyByRef
+
+```
+{TYPE} may end up assigned to property {PROPERTY} of type {TYPE} by reference at {FILE}:{LINE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php74_files/expected/016_typed_property_by_reference.php.expected#L9) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php74_files/src/016_typed_property_by_reference.php#L33).
+
 ## PhanTypeMismatchPropertyReal
 
 ```
@@ -3135,6 +3143,14 @@ Assigning {TYPE} to property but {PROPERTY} is {TYPE}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.2.13/tests/php70_files/expected/012_typed_properties_errors.php.expected#L11) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.13/tests/php70_files/src/012_typed_properties_errors.php#L20).
+
+## PhanTypeMismatchPropertyRealByRef
+
+```
+{TYPE} may end up assigned to property {PROPERTY} of type {TYPE} by reference at {FILE}:{LINE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php74_files/expected/016_typed_property_by_reference.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php74_files/src/016_typed_property_by_reference.php#L25).
 
 ## PhanTypeMismatchReturn
 

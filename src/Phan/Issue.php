@@ -212,6 +212,8 @@ class Issue
     const TypeErrorInOperation = 'PhanTypeErrorInOperation';
     const TypeInvalidPropertyDefaultReal    = 'PhanTypeInvalidPropertyDefaultReal';
     const TypeMismatchPropertyReal          = 'PhanTypeMismatchPropertyReal';
+    const TypeMismatchPropertyRealByRef     = 'PhanTypeMismatchPropertyRealByRef';
+    const TypeMismatchPropertyByRef         = 'PhanTypeMismatchPropertyByRef';
     const ImpossibleCondition               = 'PhanImpossibleCondition';
     const ImpossibleConditionInLoop         = 'PhanImpossibleConditionInLoop';
     const ImpossibleConditionInGlobalScope  = 'PhanImpossibleConditionInGlobalScope';
@@ -2268,6 +2270,22 @@ class Issue
                 "Assigning {TYPE} to property but {PROPERTY} is {TYPE}",
                 self::REMEDIATION_B,
                 10137
+            ),
+            new Issue(
+                self::TypeMismatchPropertyRealByRef,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "{TYPE} may end up assigned to property {PROPERTY} of type {TYPE} by reference at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                10150
+            ),
+            new Issue(
+                self::TypeMismatchPropertyByRef,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "{TYPE} may end up assigned to property {PROPERTY} of type {TYPE} by reference at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                10151
             ),
             new Issue(
                 self::ImpossibleCondition,
@@ -4669,6 +4687,11 @@ class Issue
         $error_map = self::issueMap();
 
         if (!isset($error_map[$type])) {
+            // Print a verbose error so that this isn't silently caught.
+            fwrite(STDERR, "Saw undefined error type $type\n");
+            ob_start();
+            debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+            fwrite(STDERR, rtrim(ob_get_clean() ?: "failed to dump backtrace") . PHP_EOL);
             throw new InvalidArgumentException("Undefined error type $type");
         }
 

@@ -31,24 +31,32 @@ class PassByReferenceVariable extends Variable
     private $element;
 
     /**
-     * @var ?CodeBase set if $element is a Property, for type checking
+     * @var ?CodeBase set to a CodeBase if $element is a Property, for type checking
      */
     private $code_base;
 
     /**
+     * @var ?Context set to a Context if $element is a Property, for emitting issues
+     */
+    private $context_of_created_reference;
+
+    /**
      * @param TypedElement|UnaddressableTypedElement $element
      * NOTE: Non-null $code_base will be mandatory for $element Property in a future Phan release
+     * NOTE: Non-null $context will be mandatory for $element Property in a future Phan release
      */
     public function __construct(
         Variable $parameter,
         $element,
-        CodeBase $code_base = null
+        CodeBase $code_base = null,
+        Context $context_of_created_reference = null
     ) {
         $this->parameter = $parameter;
         $this->element = $element;
         $this->type = $element->getNonVariadicUnionType();
         if ($element instanceof Property) {
             $this->code_base = $code_base;
+            $this->context_of_created_reference = $context_of_created_reference;
         }
     }
 
@@ -138,6 +146,15 @@ class PassByReferenceVariable extends Variable
     }
 
     /**
+     * Returns the context where this reference was created.
+     * This is currently only available for references to properties.
+     */
+    public function getContextOfCreatedReference() : ?Context
+    {
+        return $this->context_of_created_reference;
+    }
+
+    /**
      * Is the variable/property this is referring to part of a PHP module?
      * (only possible for properties)
      */
@@ -149,7 +166,6 @@ class PassByReferenceVariable extends Variable
     /**
      * Get the argument passed in to this object.
      * @return TypedElement|UnaddressableTypedElement
-     * @suppress PhanUnreferencedPublicMethod
      */
     public function getElement()
     {
