@@ -1,3 +1,6 @@
+%s:3 PhanUselessBinaryAddRight Addition of array{0:1,1:2} + array{0:2,1:3} ([1,2] + [2,3]) is probably unnecessary. Array fields from the left hand side will be used instead of each of the fields from the right hand side
 %s:6 PhanTypeMismatchArgumentReal Argument 1 ($p) is array{0:1,1:2} but \g() takes int defined at %s:5
+%s:6 PhanUselessBinaryAddRight Addition of array{0:1,1:2} + array{0:'foo',1:'bar'} ([1,2] + ['foo','bar']) is probably unnecessary. Array fields from the left hand side will be used instead of each of the fields from the right hand side
 %s:7 PhanTypeMismatchArgumentReal Argument 1 ($p) is array{0:1,1:2} but \g() takes int defined at %s:5
+%s:7 PhanUselessBinaryAddRight Addition of array{0:1,1:2} + array{0:3} ([1,2] + [3]) is probably unnecessary. Array fields from the left hand side will be used instead of each of the fields from the right hand side
 %s:12 PhanTypeInvalidLeftOperand Invalid operator: right operand is array and left is not

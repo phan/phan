@@ -6,6 +6,7 @@ use AssertionError;
 use ast;
 use ast\Node;
 use Closure;
+use Phan\AST\ASTReverter;
 use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\Element;
 use Phan\AST\Visitor\FlagVisitorImplementation;
@@ -15,10 +16,12 @@ use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\FQSEN;
 use Phan\Language\Type;
+use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\ListType;
 use Phan\Language\Type\LiteralFloatType;
 use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\LiteralStringType;
@@ -724,6 +727,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         // If both left and right union types are arrays, then this is array
         // concatenation. (`$left + $right`)
         if ($left->isGenericArray() && $right->isGenericArray()) {
+            self::checkInvalidArrayShapeCombination($this->code_base, $this->context, $node, $left, $right);
             if ($left->isEqualTo($right)) {
                 return $left;
             }
@@ -788,6 +792,87 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
 
         return $probably_int_or_float_type;
     }
+
+    /**
+     * Check for suspicious combination of two arrays with
+     * `+` or `+=` operators.
+     */
+    public static function checkInvalidArrayShapeCombination(
+        CodeBase $code_base,
+        Context $context,
+        Node $node,
+        UnionType $left,
+        UnionType $right
+    ) : void {
+        if (!$left->hasRealTypeSet() || !$right->hasRealTypeSet()) {
+            return;
+        }
+        $possible_right_fields = [];
+        foreach ($right->getRealTypeSet() as $type) {
+            if (!$type instanceof ArrayShapeType) {
+                if ($type instanceof ListType) {
+                    continue;
+                }
+                return;
+            }
+            $possible_right_fields += $type->getFieldTypes();
+        }
+        $common_left_fields = null;
+        foreach ($left->getRealTypeSet() as $type) {
+            // if ($type->isNullable()) { return; }
+
+            if (!$type instanceof ArrayShapeType) {
+                if ($type instanceof ListType) {
+                    continue;
+                }
+                return;
+            }
+            $left_fields = [];
+            foreach ($type->getFieldTypes() as $key => $inner_type) {
+                if (!$inner_type->isPossiblyUndefined()) {
+                    $left_fields[$key] = true;
+                }
+            }
+            if (\is_array($common_left_fields)) {
+                $common_left_fields = \array_intersect($common_left_fields, $left_fields);
+            } else {
+                $common_left_fields = $left_fields;
+            }
+        }
+        if ($common_left_fields && !\array_diff_key($possible_right_fields, $common_left_fields)) {
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::UselessBinaryAddRight,
+                $node->lineno,
+                $left,
+                $right,
+                ASTReverter::toShortString($node)
+            );
+            return;
+        }
+        $common_left_fields = $common_left_fields ?? [];
+        if ($common_left_fields === \array_values($common_left_fields) && $possible_right_fields === \array_values($possible_right_fields)) {
+            foreach (\array_merge($left->getRealTypeSet(), $right->getRealTypeSet()) as $type) {
+                if ($type instanceof ArrayShapeType) {
+                    // @phan-suppress-next-line PhanAccessMethodInternal
+                    if (!$type->canCastToList()) {
+                        return;
+                    }
+                }
+            }
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::SuspiciousBinaryAddLists,
+                $node->lineno,
+                $left,
+                $right,
+                ASTReverter::toShortString($node)
+            );
+        }
+    }
+
 
     /**
      * Analyzes the result of a floating-point or integer arithmetic operation.

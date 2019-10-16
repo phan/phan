@@ -1719,7 +1719,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                         // TODO: Warn about string indices of strings?
                     }
                 } elseif ($type->isArrayLike() || $type->isObject() || $type instanceof MixedType) {
-                    if ($type instanceof ListType && (!is_numeric($dim_value) || $dim_value < 0)) {
+                    if ($type instanceof ListType && (!\is_numeric($dim_value) || $dim_value < 0)) {
                         continue;
                     }
                     // TODO: Could be more precise about check for ArrayAccess

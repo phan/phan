@@ -7,6 +7,10 @@ New features(Analysis):
 + Emit `PhanTypeMismatchPropertyRealByRef` or `PhanTypeMismatchPropertyByRef`
   when potentially assigning an incompatible type to a php 7.4 typed property
   (or a property with a phpdoc type).
++ Warn about suspicious uses of `+` or `+=` on array shapes or lists. (#3364)
+  These operator will prefer the fields from the left hand side,
+  and will merge lists instead of concatenate them.
+  New issue types: `PhanSuspiciousBinaryAddLists`, `PhanUselessBinaryAddRight`
 
 Oct 13 2019, Phan 2.3.0
 -----------------------

@@ -22,8 +22,8 @@ use Phan\Language\Element\Comment\Builder;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\ArrayShapeType;
-use Phan\Language\Type\AssociativeArrayType;
 use Phan\Language\Type\ArrayType;
+use Phan\Language\Type\AssociativeArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableArrayType;
 use Phan\Language\Type\CallableDeclarationType;
@@ -1017,7 +1017,7 @@ class Type
         bool $always_has_elements,
         bool $is_associative
     ) : ArrayType {
-        $make = function (Type $element_type, int $key_type) use ($is_nullable, $always_has_elements, $is_associative) : ArrayType {
+        $make = static function (Type $element_type, int $key_type) use ($is_nullable, $always_has_elements, $is_associative) : ArrayType {
             if ($always_has_elements) {
                 if ($is_associative) {
                     return NonEmptyAssociativeArrayType::fromElementType($element_type, $is_nullable, $key_type);
@@ -1031,7 +1031,7 @@ class Type
         };
         $template_count = count($template_parameter_type_list);
         if ($template_count > 2) {
-            if ($always_has_elements|| $is_associative) {
+            if ($always_has_elements || $is_associative) {
                 return $make(MixedType::instance(false), GenericArrayType::KEY_MIXED);
             }
             return ArrayType::instance($is_nullable);

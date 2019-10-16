@@ -29,8 +29,8 @@ use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayShapeType;
-use Phan\Language\Type\AssociativeArrayType;
 use Phan\Language\Type\ArrayType;
+use Phan\Language\Type\AssociativeArrayType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\ListType;
@@ -1437,7 +1437,6 @@ class AssignmentVisitor extends AnalysisVisitor
         }
         // Check to see if the variable already exists
         if ($variable) {
-
             // If the variable isn't a pass-by-reference parameter
             // we clone it so as to not disturb its previous types
             // as we replace it.
@@ -1535,7 +1534,6 @@ class AssignmentVisitor extends AnalysisVisitor
                         // Hopefully caught elsewhere
                     }
                 }
-
             }
         }
 
@@ -1683,7 +1681,7 @@ class AssignmentVisitor extends AnalysisVisitor
         };
         $new_type_set = $map_type_set($right_type->getTypeSet());
         $new_real_type_set = $map_type_set($right_type->getRealTypeSet());
-        if (count($can_cast) === 0) {
+        if (\count($can_cast) === 0) {
             return $right_type;
         }
         return UnionType::of($new_type_set, $new_real_type_set);

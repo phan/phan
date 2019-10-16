@@ -216,7 +216,7 @@ class CLI
             }
             $value_set[$file] = $file;
         }
-        return array_values($value_set);
+        return \array_values($value_set);
     }
 
     /**
