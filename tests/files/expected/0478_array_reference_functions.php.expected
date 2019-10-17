@@ -2,4 +2,4 @@
 %s:19 PhanTypeMismatchArgumentInternal Argument 1 ($string) is non-empty-array<string,string>|non-empty-list<2>|non-empty-list<\stdClass> but \strlen() takes string
 %s:26 PhanTypeMismatchArgumentInternal Argument 1 ($string) is array<int,int> but \strlen() takes string
 %s:32 PhanTypeMismatchArgumentInternal Argument 1 ($string) is array<int,int> but \strlen() takes string
-%s:39 PhanTypeMismatchArgumentInternal Argument 1 ($string) is array<int,\stdClass>|array<int,int>|array<string,string> but \strlen() takes string
+%s:39 PhanTypeMismatchArgumentInternal Argument 1 ($string) is array<string,string>|list<\stdClass>|list<int> but \strlen() takes string

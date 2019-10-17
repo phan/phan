@@ -19,10 +19,16 @@ use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\Type;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
+use Phan\Language\Type\AssociativeArrayType;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\FalseType;
+use Phan\Language\Type\GenericArrayType;
+use Phan\Language\Type\ListType;
+use Phan\Language\Type\NonEmptyListType;
+use Phan\Language\Type\NonEmptyAssociativeArrayType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use Phan\Parse\ParseVisitor;
@@ -450,7 +456,7 @@ final class MiscParamPlugin extends PluginV3 implements
             if (!$variable) {
                 return;
             }
-            $variable->setUnionType($variable->getUnionType()->withFlattenedArrayShapeOrLiteralTypeInstances());
+            $variable->setUnionType($variable->getUnionType()->withFlattenedTopLevelArrayShapeTypeInstances());
         };
 
         /**
@@ -476,11 +482,89 @@ final class MiscParamPlugin extends PluginV3 implements
             // TODO: Support array_splice('x', $offset, $length, $notAnArray)
             // TODO: handle empty array
             $added_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[3])->genericArrayTypes();
-            $added_types = $added_types->withFlattenedArrayShapeOrLiteralTypeInstances();
+            $added_types = $added_types->withFlattenedTopLevelArrayShapeTypeInstances();
 
-            $old_types = $variable->getUnionType()->withFlattenedArrayShapeOrLiteralTypeInstances();
+            $old_types = $variable->getUnionType()->withFlattenedTopLevelArrayShapeTypeInstances();
 
-            $variable->setUnionType($old_types->withUnionType($added_types));
+            $variable->setUnionType($old_types->withUnionType($added_types->withIntegerKeyArraysAsLists()));
+        };
+
+        /**
+         * @param list<Node|int|float|string> $args
+         */
+        $sort_callback = static function (
+            CodeBase $code_base,
+            Context $context,
+            FunctionInterface $unused_function,
+            array $args,
+            ?Node $_
+        ) use ($get_variable) : void {
+            // TODO: support nested adds, like AssignmentVisitor
+            // TODO: Could be more specific for arrays with known length and order
+            if (count($args) < 1) {
+                return;
+            }
+            $variable = $get_variable($code_base, $context, $args[0]);
+            if (!$variable) {
+                return;
+            }
+
+            // TODO: handle empty array
+            $new_types = $variable->getUnionType()
+                ->withFlattenedTopLevelArrayShapeTypeInstances()
+                ->asMappedUnionType(static function (Type $type) : Type {
+                    if ($type instanceof ListType) {
+                        return $type;
+                    }
+                    if ($type instanceof GenericArrayType) {
+                        if ($type->isDefinitelyNonEmptyArray()) {
+                            return NonEmptyListType::fromElementType($type->genericArrayElementType(), $type->isNullable(), $type->getKeyType());
+                        }
+                        return ListType::fromElementType($type->genericArrayElementType(), $type->isNullable(), $type->getKeyType());
+                    }
+                    return $type;
+                });
+
+            $variable->setUnionType($new_types);
+        };
+
+        /**
+         * @param list<Node|int|float|string> $args
+         */
+        $associative_sort_callback = static function (
+            CodeBase $code_base,
+            Context $context,
+            FunctionInterface $unused_function,
+            array $args,
+            ?Node $_
+        ) use ($get_variable) : void {
+            // TODO: support nested adds, like AssignmentVisitor
+            // TODO: Could be more specific for arrays with known length and order
+            if (count($args) < 1) {
+                return;
+            }
+            $variable = $get_variable($code_base, $context, $args[0]);
+            if (!$variable) {
+                return;
+            }
+
+            // TODO: handle empty array
+            $new_types = $variable->getUnionType()
+                ->withFlattenedTopLevelArrayShapeTypeInstances()
+                ->asMappedUnionType(static function (Type $type) : Type {
+                    if ($type instanceof AssociativeArrayType) {
+                        return $type;
+                    }
+                    if ($type instanceof GenericArrayType) {
+                        if ($type->isDefinitelyNonEmptyArray()) {
+                            return NonEmptyAssociativeArrayType::fromElementType($type->genericArrayElementType(), $type->isNullable(), $type->getKeyType());
+                        }
+                        return AssociativeArrayType::fromElementType($type->genericArrayElementType(), $type->isNullable(), $type->getKeyType());
+                    }
+                    return $type;
+                });
+
+            $variable->setUnionType($new_types);
         };
 
         /**
@@ -718,7 +802,15 @@ final class MiscParamPlugin extends PluginV3 implements
             'array_shift' => $array_remove_single_callback,
             'array_unshift' => $array_add_callback,
 
-            'array_splice' => $array_splice_callback,  // TODO: If this callback ever does anything other than flatten, then create a different callback
+            'array_splice' => $array_splice_callback,
+            // Convert arrays to lists
+            'sort' => $sort_callback,
+            'usort' => $sort_callback,
+
+            'asort' => $associative_sort_callback,
+            'uasort' => $associative_sort_callback,
+            'ksort' => $associative_sort_callback,
+            'uksort' => $associative_sort_callback,
 
             'extract' => $extract_callback,
 
