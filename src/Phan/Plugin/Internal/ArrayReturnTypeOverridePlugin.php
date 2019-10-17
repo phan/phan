@@ -12,8 +12,8 @@ use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Type\ArrayShapeType;
-use Phan\Language\Type\AssociativeArrayType;
 use Phan\Language\Type\ArrayType;
+use Phan\Language\Type\AssociativeArrayType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\ListType;
@@ -282,15 +282,29 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
          * @param list<Node|int|string|float> $args
          */
         $merge_array_types_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type) : UnionType {
-            $types = UnionType::empty();
+            if (!$args) {
+                return NullType::instance(false)->asRealUnionType();
+            }
+            // TODO: Clean up once target_php_version >= 80000
+            $has_non_array = false;
+            $types = null;
             foreach ($args as $arg) {
                 $passed_array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $arg);
-                $types = $types->withUnionType($passed_array_type->genericArrayTypes());
+                $new_types = $passed_array_type->genericArrayTypes();
+                $types = $types ? $types->withUnionType($new_types) : $new_types;
+                $has_non_array = $has_non_array || (!$passed_array_type->hasRealTypeSet() || !$passed_array_type->asRealUnionType()->nonArrayTypes()->isEmpty());
             }
-            $types = $types->withFlattenedArrayShapeOrLiteralTypeInstances()
-                           ->withIntegerKeyArraysAsLists();
+            if ($types) {
+                $types = $types->withFlattenedArrayShapeOrLiteralTypeInstances()
+                               ->withIntegerKeyArraysAsLists();
+            } else {
+                $types = UnionType::empty();
+            }
             if ($types->isEmpty()) {
                 $types = $types->withType($array_type);
+            }
+            if ($has_non_array || !$types->hasRealTypeSet()) {
+                $types = $types->withRealTypeSet([ArrayType::instance(true)]);
             }
             return $types;
         };

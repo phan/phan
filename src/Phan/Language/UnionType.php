@@ -3276,7 +3276,7 @@ class UnionType implements Serializable
     }
 
     /**
-     * Takes `a|b[]|c|d[]|e|f[]|ArrayAccess` and returns `f[]`
+     * Takes `a|b[]|c|d[]|e|f[]|ArrayAccess` and returns `b[]|f[]`
      *
      * @return UnionType
      * A UnionType with non-array types filtered out

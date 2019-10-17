@@ -819,7 +819,8 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      * @internal
      * @deprecated
      */
-    public static function instance(bool $unused_is_nullable) {
+    public static function instance(bool $unused_is_nullable)
+    {
         throw new \AssertionError(static::class . '::' . __FUNCTION__ . ' should not be used');
     }
 

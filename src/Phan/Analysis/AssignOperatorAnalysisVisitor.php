@@ -172,6 +172,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
             // If both left and right are arrays, then this is array
             // concatenation.
             if ($left->isGenericArray() && $right->isGenericArray()) {
+                BinaryOperatorFlagVisitor::checkInvalidArrayShapeCombination($this->code_base, $this->context, $node, $left, $right);
                 if ($left->isEqualTo($right)) {
                     return $left;
                 }

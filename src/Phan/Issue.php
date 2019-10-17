@@ -394,6 +394,8 @@ class Issue
     const UnusedVariableValueOfForeachWithKey   = 'PhanUnusedVariableValueOfForeachWithKey';  // has higher false positive rates than UnusedVariable
     const EmptyForeach                          = 'PhanEmptyForeach';
     const EmptyYieldFrom                        = 'PhanEmptyYieldFrom';
+    const UselessBinaryAddRight                 = 'PhanUselessBinaryAddRight';
+    const SuspiciousBinaryAddLists              = 'PhanSuspiciousBinaryAddLists';
     const UnusedVariableCaughtException         = 'PhanUnusedVariableCaughtException';  // has higher false positive rates than UnusedVariable
     const UnusedGotoLabel                       = 'PhanUnusedGotoLabel';
     const UnusedVariableReference               = 'PhanUnusedVariableReference';
@@ -3456,6 +3458,22 @@ class Issue
                 6080
             ),
             new Issue(
+                self::UselessBinaryAddRight,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                "Addition of {TYPE} + {TYPE} {CODE} is probably unnecessary. Array fields from the left hand side will be used instead of each of the fields from the right hand side",
+                self::REMEDIATION_B,
+                6081
+            ),
+            new Issue(
+                self::SuspiciousBinaryAddLists,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                "Addition of {TYPE} + {TYPE} {CODE} is a suspicious way to add two lists. Some of the array fields from the left hand side will be part of the result, replacing the fields with the same key from the right hand side (this operator does not concatenate the lists)",
+                self::REMEDIATION_B,
+                6082
+            ),
+            new Issue(
                 self::UnusedVariableCaughtException,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_LOW,
@@ -4688,10 +4706,10 @@ class Issue
 
         if (!isset($error_map[$type])) {
             // Print a verbose error so that this isn't silently caught.
-            fwrite(STDERR, "Saw undefined error type $type\n");
-            ob_start();
-            debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-            fwrite(STDERR, rtrim(ob_get_clean() ?: "failed to dump backtrace") . PHP_EOL);
+            \fwrite(\STDERR, "Saw undefined error type $type\n");
+            \ob_start();
+            \debug_print_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS);
+            \fwrite(\STDERR, \rtrim(\ob_get_clean() ?: "failed to dump backtrace") . \PHP_EOL);
             throw new InvalidArgumentException("Undefined error type $type");
         }
 

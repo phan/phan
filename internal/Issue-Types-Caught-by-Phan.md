@@ -980,6 +980,14 @@ Short arrow function shadows variable ${VARIABLE} from the outer scope
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.2.13/tests/php74_files/expected/004_arrow_func_shadow.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.13/tests/php74_files/src/004_arrow_func_shadow.php#L7).
 
+## PhanSuspiciousBinaryAddLists
+
+```
+Addition of {TYPE} + {TYPE} {CODE} is a suspicious way to add two lists. Some of the array fields from the left hand side will be part of the result, replacing the fields with the same key from the right hand side (this operator does not concatenate the lists)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0797_useless_array_addition.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0797_useless_array_addition.php#L14).
+
 ## PhanUnreachableCatch
 
 ```
@@ -1338,6 +1346,14 @@ The use statement for class/namespace {CLASS} in the global namespace has no eff
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.2.13/tests/files/expected/0564_global_namespace_functions_constants.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.13/tests/files/src/0564_global_namespace_functions_constants.php#L4).
+
+## PhanUselessBinaryAddRight
+
+```
+Addition of {TYPE} + {TYPE} {CODE} is probably unnecessary. Array fields from the left hand side will be used instead of each of the fields from the right hand side
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0146_array_concat.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0146_array_concat.php#L5).
 
 ## PhanVariableDefinitionCouldBeConstant
 
