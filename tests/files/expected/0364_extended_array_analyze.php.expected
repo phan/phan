@@ -24,7 +24,7 @@
 %s:32 PhanTypeMismatchArgumentReal Argument 1 ($x) is array<int,'val'>|array{0:2,1:4} (real type ?array) but \p364() takes \stdClass defined at %s:45
 %s:33 PhanTypeMismatchArgumentReal Argument 1 ($x) is list<int>|list<string> but \p364() takes \stdClass defined at %s:45
 %s:34 PhanTypeMismatchArgumentReal Argument 1 ($x) is list<int>|list<string> but \p364() takes \stdClass defined at %s:45
-%s:35 PhanTypeMismatchArgumentReal Argument 1 ($x) is array<int,\stdClass> (real type ?array) but \p364() takes \stdClass defined at %s:45
+%s:35 PhanTypeMismatchArgumentReal Argument 1 ($x) is list<\stdClass> but \p364() takes \stdClass defined at %s:45
 %s:36 PhanTypeMismatchArgumentReal Argument 1 ($x) is associative-array<int,\stdClass> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45
 %s:37 PhanTypeMismatchArgumentReal Argument 1 ($x) is associative-array<int,\stdClass> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45
 %s:38 PhanTypeMismatchArgumentReal Argument 1 ($x) is associative-array<int,\stdClass> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45

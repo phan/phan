@@ -684,6 +684,31 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         return $this->as_generic_array_type_instances = $this->computeGenericArrayTypeInstances();
     }
 
+    /**
+     * @return list<ArrayType>
+     * @override
+     */
+    public function withFlattenedTopLevelArrayShapeTypeInstances() : array
+    {
+        if (\count($this->field_types) === 0) {
+            // there are 0 fields, so we know nothing about the field types (and there's no way to indicate an empty array yet)
+            return [ArrayType::instance($this->is_nullable)];
+        }
+
+        $union_type_builder = new UnionTypeBuilder();
+        foreach ($this->field_types as $key => $field_union_type) {
+            foreach ($field_union_type->getTypeSet() as $type) {
+                $union_type_builder->addUnionType(
+                    $type->asPHPDocUnionType()
+                         ->withFlattenedArrayShapeOrLiteralTypeInstances()
+                         ->asGenericArrayTypes(\is_string($key) ? GenericArrayType::KEY_STRING : GenericArrayType::KEY_INT)
+                         ->withIsNullable($this->is_nullable)
+                );
+            }
+        }
+        return $union_type_builder->getTypeSet();
+    }
+
     public function asGenericArrayType(int $key_type) : Type
     {
         return GenericArrayType::fromElementType($this, false, $key_type);

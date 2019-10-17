@@ -4398,6 +4398,52 @@ class UnionType implements Serializable
     }
 
     /**
+     * Flatten literals in keys and values of top-level array shapes into non-literal types (but not standalone literals)
+     * E.g. convert array{2:array{key:'value'}} to array<int,array{key:'value'}>
+     */
+    public function withFlattenedTopLevelArrayShapeTypeInstances() : UnionType
+    {
+        if (!$this->hasArrayShapeTypeInstances()) {
+            return $this;
+        }
+        return UnionType::of(
+            self::withFlattenedTopLevelArrayShapeTypeInstancesForSet($this->type_set),
+            self::withFlattenedTopLevelArrayShapeTypeInstancesForSet($this->real_type_set)
+        );
+    }
+
+    /**
+     * @param list<Type> $type_set
+     * @return list<Type>
+     */
+    private static function withFlattenedTopLevelArrayShapeTypeInstancesForSet(array $type_set) : array {
+        $result = [];
+        $has_other_array_type = false;
+        $empty_array_shape_type = null;
+        foreach ($type_set as $type) {
+            if ($type instanceof ArrayShapeType) {
+                if (\count($type->getFieldTypes()) === 0) {
+                    $empty_array_shape_type = $type;
+                    continue;
+                }
+                $has_other_array_type = true;
+                foreach ($type->withFlattenedTopLevelArrayShapeTypeInstances() as $type_part) {
+                    $result[] = $type_part;
+                }
+            } else {
+                $result[] = $type;
+                if ($type instanceof ArrayType) {
+                    $has_other_array_type = true;
+                }
+            }
+        }
+        if ($empty_array_shape_type && !$has_other_array_type) {
+            $result[] = ArrayType::instance($empty_array_shape_type->isNullable());
+        }
+        return $result;
+    }
+
+    /**
      * Flatten literals in keys and values into non-literal types (but not standalone literals)
      * E.g. convert array{2:3} to array<int,string>
      */
@@ -4406,11 +4452,21 @@ class UnionType implements Serializable
         if (!$this->hasArrayShapeTypeInstances()) {
             return $this;
         }
+        return UnionType::of(
+            self::withFlattenedArrayShapeTypeInstancesForSet($this->type_set),
+            self::withFlattenedArrayShapeTypeInstancesForSet($this->real_type_set)
+        );
+    }
 
-        $builder = new UnionTypeBuilder();
+    /**
+     * @param list<Type> $type_set
+     * @return list<Type>
+     */
+    private static function withFlattenedArrayShapeTypeInstancesForSet(array $type_set) : array {
+        $result = [];
         $has_other_array_type = false;
         $empty_array_shape_type = null;
-        foreach ($this->type_set as $type) {
+        foreach ($type_set as $type) {
             if ($type->hasArrayShapeTypeInstances()) {
                 if ($type instanceof ArrayShapeType) {
                     if (\count($type->getFieldTypes()) === 0) {
@@ -4420,19 +4476,19 @@ class UnionType implements Serializable
                 }
                 $has_other_array_type = true;
                 foreach ($type->withFlattenedArrayShapeOrLiteralTypeInstances() as $type_part) {
-                    $builder->addType($type_part);
+                    $result[] = $type_part;
                 }
             } else {
-                $builder->addType($type);
+                $result[] = $type;
                 if ($type instanceof ArrayType) {
                     $has_other_array_type = true;
                 }
             }
         }
         if ($empty_array_shape_type && !$has_other_array_type) {
-            $builder->addType(ArrayType::instance($empty_array_shape_type->isNullable()));
+            $result[] = ArrayType::instance($empty_array_shape_type->isNullable());
         }
-        return $builder->getPHPDocUnionType();
+        return $result;
     }
 
     /**

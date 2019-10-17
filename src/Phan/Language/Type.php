@@ -3551,6 +3551,21 @@ class Type
     }
 
     /**
+     * Converts this type to one where array shapes are flattened to generic arrays, and literal scalars are converted to the general type for that scalar.
+     *
+     * E.g. converts the type `array{0:array{key:float}>}` to `array<int,array{key:float}>`
+     *
+     * This is overridden by subclasses.
+     *
+     * @return Type[]
+     * @suppress PhanUnreferencedPublicMethod added for convenience (the only override is ArrayShapeType)
+     */
+    public function withFlattenedTopLevelArrayShapeTypeInstances() : array
+    {
+        return [$this];
+    }
+
+    /**
      * Overridden in subclasses such as LiteralIntType
      */
     public function asNonLiteralType() : Type

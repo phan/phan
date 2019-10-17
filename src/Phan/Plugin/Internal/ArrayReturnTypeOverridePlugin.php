@@ -150,22 +150,28 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
         /**
          * @param list<Node|int|float|string> $args
          */
-        $get_first_array_arg = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($probably_real_array) : UnionType {
-            if (\count($args) >= 1) {
-                $element_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0])->genericArrayTypes();
-                if (!$element_types->isEmpty()) {
-                    return $element_types->withFlattenedArrayShapeOrLiteralTypeInstances()
-                                         ->withRealTypeSet($probably_real_array->getRealTypeSet());
-                }
+        $get_first_array_arg = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($probably_real_array, $null_type) : UnionType {
+            if (\count($args) === 0) {
+                return $null_type->asRealUnionType();
             }
-            return $probably_real_array;
+            $arg_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
+            $element_types = $arg_type->genericArrayTypes();
+            if ($element_types->isEmpty()) {
+                return $probably_real_array;
+            }
+            $result = $element_types->withFlattenedTopLevelArrayShapeTypeInstances()
+                                    ->withIntegerKeyArraysAsLists();
+            if (!$result->hasRealTypeSet() || !$arg_type->getRealUnionType()->nonArrayTypes()->isEmpty()) {
+                $result = $result->withRealTypeSet($probably_real_array->getRealTypeSet());
+            }
+            return $result;
         };
         $make_get_first_array_arg = static function (bool $can_reduce_size) use ($probably_real_assoc_array) : Closure {
              return /** @param list<Node|int|float|string> $args */ static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($probably_real_assoc_array, $can_reduce_size) : UnionType {
                 if (\count($args) >= 1) {
                     $element_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0])->genericArrayTypes();
                     if (!$element_types->isEmpty()) {
-                        return $element_types->withFlattenedArrayShapeOrLiteralTypeInstances()
+                        return $element_types->withFlattenedTopLevelArrayShapeTypeInstances()
                                              ->withAssociativeArrays($can_reduce_size)
                                              ->withRealTypeSet($probably_real_assoc_array->getRealTypeSet());
                     }
@@ -241,7 +247,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                         // ARRAY_FILTER_USE_BOTH - pass both value and key as arguments to callback instead of the value
                     } elseif (\count($args) === 1) {
                         // array_filter with count($args) === 1 implies elements of the resulting array aren't falsey
-                        return $generic_passed_array_type->withFlattenedArrayShapeOrLiteralTypeInstances()
+                        return $generic_passed_array_type->withFlattenedTopLevelArrayShapeTypeInstances()
                                                          ->withMappedElementTypes(static function (UnionType $union_type) : UnionType {
                                                             return $union_type->nonFalseyClone();
                                                          })
@@ -249,7 +255,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                     }
                     // TODO: Analyze if it and the flags are compatible with the arguments to the closure provided.
                     // TODO: withFlattenedArrayShapeOrLiteralTypeInstances() for other values
-                    return $generic_passed_array_type->withFlattenedArrayShapeOrLiteralTypeInstances()
+                    return $generic_passed_array_type->withFlattenedTopLevelArrayShapeTypeInstances()
                                                      ->withAssociativeArrays(true);
                 }
             }
@@ -295,7 +301,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                 $has_non_array = $has_non_array || (!$passed_array_type->hasRealTypeSet() || !$passed_array_type->asRealUnionType()->nonArrayTypes()->isEmpty());
             }
             if ($types) {
-                $types = $types->withFlattenedArrayShapeOrLiteralTypeInstances()
+                $types = $types->withFlattenedTopLevelArrayShapeTypeInstances()
                                ->withIntegerKeyArraysAsLists();
             } else {
                 $types = UnionType::empty();

@@ -11,6 +11,7 @@ New features(Analysis):
   These operator will prefer the fields from the left hand side,
   and will merge lists instead of concatenate them.
   New issue types: `PhanSuspiciousBinaryAddLists`, `PhanUselessBinaryAddRight`
++ Improvements to inferred types of `sort`, `array_merge`, etc. (#3354)
 
 Oct 13 2019, Phan 2.3.0
 -----------------------
