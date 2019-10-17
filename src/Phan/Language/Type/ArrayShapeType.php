@@ -401,9 +401,15 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     public function canCastToList() : bool
     {
         $i = 0;
+        $has_possibly_undefined = false;
         foreach ($this->field_types as $k => $v) {
-            if ($k !== $i++ || $v->isPossiblyUndefined()) {
-                return true;
+            if ($k !== $i++) {
+                return false;
+            }
+            if ($v->isPossiblyUndefined()) {
+                $has_possibly_undefined = true;
+            } elseif ($has_possibly_undefined) {
+                return false;
             }
         }
         return true;
