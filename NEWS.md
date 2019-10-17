@@ -12,6 +12,7 @@ New features(Analysis):
   and will merge lists instead of concatenate them.
   New issue types: `PhanSuspiciousBinaryAddLists`, `PhanUselessBinaryAddRight`
 + Improvements to inferred types of `sort`, `array_merge`, etc. (#3354)
++ Fix bug allowing any array shape type to cast to a list.
 
 Oct 13 2019, Phan 2.3.0
 -----------------------
