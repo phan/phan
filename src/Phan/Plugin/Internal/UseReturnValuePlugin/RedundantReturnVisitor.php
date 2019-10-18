@@ -133,7 +133,7 @@ class RedundantReturnVisitor
         // There are 2 or more possible returned statements. Check if all returned expressions are the same.
 
         // @phan-suppress-next-line PhanPartialTypeMismatchArgument can't understand count() assertions
-        if (count($groups) > 2) {
+        if (count($groups) > 2 && $kind !== ast\AST_SWITCH_LIST) {
             // e.g. warn about the last two groups of returns being the same, for examples such as the following:
             //
             // - if (c1) { return true; }
@@ -142,6 +142,9 @@ class RedundantReturnVisitor
             // - if (c1) { return true; }
             //   if (c2) { return false; }
             //   return false;
+            //
+            // but don't warn about switches unless every single one of the cases returns the same thing,
+            // as a style choice.
             $this->checkMultipleReturns(array_merge(...array_slice($groups, -2)));
         } else {
             $this->checkMultipleReturns($possible_return_nodes);

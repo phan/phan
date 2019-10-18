@@ -77,7 +77,7 @@ var_export(test_chain2('true'));
 function test_chain3(string $x) : ?array {
     switch ($x) {
     case 'zero':
-        return null;
+        return [];
     case 'one':
         return [PHP_VERSION];
     default:
@@ -107,3 +107,16 @@ $f3 = function ($arg) {
     }
 };
 var_export($f3(2));
+
+function test_chain4(string $x) : ?array {
+    switch ($x) {
+    case 'x':
+    case 'zero':
+        return [PHP_VERSION];
+    case 'one':
+        return [PHP_VERSION];
+    default:
+        return [PHP_VERSION];
+    }
+}
+var_export(test_chain4('true'));
