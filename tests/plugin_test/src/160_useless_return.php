@@ -85,3 +85,25 @@ function test_chain3(string $x) : ?array {
     }
 }
 var_export(test_chain3('true'));
+
+$f2 = function ($arg) : bool {
+    if (is_string($arg)) {
+        return true;
+    } elseif (is_int($arg)) {
+        return false;
+    } else {
+        return false;
+    }
+};
+
+$f2('testing');
+$f3 = function ($arg) {
+    if (is_string($arg)) {
+        return true;
+    } elseif (is_int($arg)) {
+        return;
+    } else {
+        return Null;
+    }
+};
+var_export($f3(2));
