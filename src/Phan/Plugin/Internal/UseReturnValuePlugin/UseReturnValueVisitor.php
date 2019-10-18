@@ -110,6 +110,50 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
+     * @param Node $node a node of type AST_METHOD
+     * @override
+     */
+    public function visitMethod(Node $node) : void
+    {
+        $this->analyzeFunctionLike($node);
+    }
+
+    /**
+     * @param Node $node a node of type AST_FUNC_DECL
+     * @override
+     */
+    public function visitFuncDecl(Node $node) : void
+    {
+        $this->analyzeFunctionLike($node);
+    }
+
+    // TODO: public function visitClosure(Node $node) : void
+    // (Requires that purity of closures be analyzed)
+
+    private function analyzeFunctionLike(Node $node) : void
+    {
+        if (!$this->context->isInFunctionLikeScope()) {
+            return;
+        }
+        $method = $this->context->getFunctionLikeInScope($this->code_base);
+        if (!$method->isPure()) {
+            return;
+        }
+        if ($method instanceof Method) {
+            if ($method->isAbstract()) {
+                return;
+            }
+        }
+        if (!$method->hasReturn() || $method->hasYield()) {
+            return;
+        }
+        $stmts = $node->children['stmts'];
+        if ($stmts instanceof Node) {
+            (new RedundantReturnVisitor($this->code_base, $this->context, $stmts))->analyze();
+        }
+    }
+
+    /**
      * @param Node $node a node of type AST_METHOD_CALL
      * @override
      */

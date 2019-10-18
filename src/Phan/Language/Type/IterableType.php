@@ -9,6 +9,7 @@ use Phan\Language\Type;
 /**
  * Phan's representation of `iterable`
  * @see GenericIterableType for the representation of `iterable<KeyType,ValueType>`
+ * @phan-pure
  */
 class IterableType extends NativeType
 {

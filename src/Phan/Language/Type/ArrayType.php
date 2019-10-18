@@ -12,6 +12,7 @@ use Phan\Language\UnionTypeBuilder;
  * Phan's representation of the type for `array`.
  * @see ArrayShapeType for the representation of `array{key:string}`
  * @see GenericArrayType for the representation of `MyClass[]`, `array<string,MyClass>`, etc.
+ * @phan-pure
  */
 class ArrayType extends IterableType
 {

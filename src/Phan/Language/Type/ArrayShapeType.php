@@ -21,6 +21,8 @@ use RuntimeException;
 
 /**
  * This is generated from phpdoc such as array{field:int}
+ * @phan-pure
+ * @phan-file-suppress PhanAccessReadOnlyProperty this is lazily initializing properties
  */
 final class ArrayShapeType extends ArrayType implements GenericArrayInterface
 {
