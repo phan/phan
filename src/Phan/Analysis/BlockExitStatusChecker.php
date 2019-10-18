@@ -230,21 +230,30 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
 
     /**
      * @return int the corresponding status code
+     * @suppress PhanTypeMismatchArgumentNullable
      */
     public function visitSwitch(Node $node) : int
     {
+        return $this->visitSwitchList($node->children['stmts']);
+    }
+
+    /**
+     * @return int the corresponding status code
+     * @suppress PhanTypeMismatchArgumentNullable
+     */
+    public function visitSwitchList(Node $node) : int {
         $status = $node->flags & self::STATUS_BITMASK;
         if ($status) {
             return $status;
         }
-        $status = $this->computeStatusOfSwitch($node);
+        $status = $this->computeStatusOfSwitchList($node);
         $node->flags = $status;
         return $status;
     }
 
-    private function computeStatusOfSwitch(Node $node) : int
+    private function computeStatusOfSwitchList(Node $node) : int
     {
-        $switch_stmt_case_nodes = $node->children['stmts']->children ?? [];
+        $switch_stmt_case_nodes = $node->children ?? [];
         if (\count($switch_stmt_case_nodes) === 0) {
             return self::STATUS_PROCEED;
         }

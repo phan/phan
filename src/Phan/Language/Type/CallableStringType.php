@@ -11,6 +11,7 @@ use Phan\Language\UnionType;
  * Phan's representation for `callable-string`
  *
  * @see CallableDeclarationType for Phan's representation of `callable(MyClass):MyOtherClass`
+ * @phan-pure
  */
 final class CallableStringType extends StringType implements CallableInterface
 {

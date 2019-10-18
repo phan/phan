@@ -9,6 +9,7 @@ use Phan\Language\Type;
  * Represents the PHPDoc type `self` or `static`.
  * This is converted to a real class when necessary.
  * @see self::withStaticResolvedInContext()
+ * @phan-pure
  */
 class StaticOrSelfType extends Type
 {

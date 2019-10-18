@@ -8,6 +8,7 @@ use Phan\Language\Type;
 
 /**
  * Represents the type `object` (an instance of an unspecified class)
+ * @phan-pure
  */
 class ObjectType extends NativeType
 {

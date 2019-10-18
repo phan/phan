@@ -12,6 +12,7 @@ use Phan\Language\UnionType;
  * Represents the PHPDoc type `static`.
  * This is converted to a real class when necessary.
  * @see self::withStaticResolvedInContext()
+ * @phan-pure
  */
 final class StaticType extends StaticOrSelfType
 {

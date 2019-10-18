@@ -10,6 +10,7 @@ use Phan\Language\Type;
  * Represents the type `callable-object` (an instance of an unspecified callable class)
  *
  * This includes Closures and classes with __invoke.
+ * @phan-pure
  */
 final class CallableObjectType extends ObjectType
 {

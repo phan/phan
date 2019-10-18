@@ -11,6 +11,7 @@ use Phan\Language\UnionType;
  * Represents the PHPDoc `mixed` type, which can cast to/from any type
  *
  * For purposes of analysis, there's usually no difference between mixed and nullable mixed.
+ * @phan-pure
  */
 final class MixedType extends NativeType
 {

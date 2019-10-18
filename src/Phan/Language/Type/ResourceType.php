@@ -8,6 +8,7 @@ use Phan\Language\Type;
 
 /**
  * Represents the type `resource`
+ * @phan-pure
  */
 final class ResourceType extends NativeType
 {

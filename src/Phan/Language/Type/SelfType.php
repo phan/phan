@@ -11,6 +11,7 @@ use Phan\Language\UnionType;
  * Represents the PHPDoc type `self`.
  * This is converted to a real class when necessary.
  * @see self::withStaticResolvedInContext()
+ * @phan-pure
  */
 final class SelfType extends StaticOrSelfType
 {

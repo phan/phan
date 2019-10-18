@@ -12,6 +12,7 @@ use Phan\Language\UnionType;
  * A type representing a string with an unknown value that is a fully qualified class name.
  *
  * Phan's representation for `class-string` and `class-string<T>`.
+ * @phan-pure
  */
 final class ClassStringType extends StringType
 {

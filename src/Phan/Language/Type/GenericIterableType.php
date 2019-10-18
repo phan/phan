@@ -12,6 +12,7 @@ use function json_encode;
 
 /**
  * Phan's representation of the type `iterable<KeyType,ValueType>`
+ * @phan-pure
  */
 final class GenericIterableType extends IterableType
 {

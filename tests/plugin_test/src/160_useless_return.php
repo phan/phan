@@ -51,3 +51,37 @@ class Group {
         return false;
     }
 }
+
+function test_chain(string $x) : bool {
+    if (strtolower($x) === 'true') {
+        return true;
+    }
+    if (strtolower($x) === 'false') {
+        return false;
+    }
+    return false;
+}
+var_export(test_chain('true'));
+
+function test_chain2(string $x) : int {
+    if (strtolower($x) === 'zero') {
+        return 0;
+    } elseif (strtolower($x) === '1') {
+        return 1+1;
+    } else {
+        return 3-1;
+    }
+}
+var_export(test_chain2('true'));
+
+function test_chain3(string $x) : ?array {
+    switch ($x) {
+    case 'zero':
+        return null;
+    case 'one':
+        return [PHP_VERSION];
+    default:
+        return [PHP_VERSION];
+    }
+}
+var_export(test_chain3('true'));

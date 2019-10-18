@@ -16,6 +16,7 @@ use Phan\Language\UnionTypeBuilder;
  * Callers should split this up into multiple GenericArrayType instances.
  *
  * This is generated from phpdoc `array<int, T1|T2>` where callers expect a subclass of Type.
+ * @phan-pure
  */
 final class GenericMultiArrayType extends ArrayType implements MultiType, GenericArrayInterface
 {
@@ -231,6 +232,8 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
      * @return UnionType
      * A variation of this type that is not generic.
      * i.e. '(int|string)[]' becomes 'int|string'.
+     *
+     * @suppress PhanAccessReadOnlyProperty this is lazily instantiating a property.
      */
     public function genericArrayElementUnionType() : UnionType
     {

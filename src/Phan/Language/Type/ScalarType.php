@@ -11,6 +11,7 @@ use Phan\Language\UnionType;
 /**
  * The base class for various scalar types (BoolType, StringType, ScalarRawType,
  * NullType (null is technically not a scalar, but included), etc.
+ * @phan-pure
  */
 abstract class ScalarType extends NativeType
 {

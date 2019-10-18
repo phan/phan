@@ -12,6 +12,7 @@ use Phan\Language\Type;
  *
  * @see TrueType
  * @see FalseType
+ * @phan-pure
  */
 final class BoolType extends ScalarType
 {

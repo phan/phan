@@ -12,6 +12,7 @@ use Phan\Language\Type;
  * Phan's representation of PHPDoc `false`
  * @see TrueType
  * @see BoolType
+ * @phan-pure
  */
 final class FalseType extends ScalarType
 {

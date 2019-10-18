@@ -6,6 +6,7 @@ use Phan\Language\Type;
 
 /**
  * Phan's representation for types such as `callable(MyClass):MyOtherClass`
+ * @phan-pure
  */
 final class CallableDeclarationType extends FunctionLikeDeclarationType implements CallableInterface
 {

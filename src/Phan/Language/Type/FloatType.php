@@ -10,6 +10,7 @@ use Phan\Language\UnionType;
 
 /**
  * Phan's representation of the type for `float`
+ * @phan-pure
  */
 class FloatType extends ScalarType
 {

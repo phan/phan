@@ -6,6 +6,7 @@ use Phan\Language\Type;
 
 /**
  * Callers should split this up into multiple Type instances.
+ * @phan-pure
  */
 interface MultiType
 {

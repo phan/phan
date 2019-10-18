@@ -8,6 +8,7 @@ use RuntimeException;
 
 /**
  * Phan's representation of the type for a specific float, e.g. `-1.2`
+ * @phan-pure
  */
 final class LiteralFloatType extends FloatType implements LiteralTypeInterface
 {

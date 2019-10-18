@@ -10,6 +10,7 @@ use Phan\Language\Type;
  * Phan's representation for `callable`
  *
  * @see CallableDeclarationType for Phan's representation of `callable(MyClass):MyOtherClass`
+ * @phan-pure
  */
 final class CallableType extends NativeType implements CallableInterface
 {

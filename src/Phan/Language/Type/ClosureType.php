@@ -12,6 +12,7 @@ use Phan\Language\Type;
 /**
  * Phan's representation of `Closure` and of closures associated with a given function-like's FQSEN
  * @see ClosureDeclarationType for representations created from PHPDoc `Closure(MyClass):MyOtherClass`.
+ * @phan-pure
  */
 final class ClosureType extends Type
 {
@@ -41,6 +42,7 @@ final class ClosureType extends Type
 
     /**
      * Create an instance of Closure for the FQSEN of the passed in function/closure/method $func with FQSEN $fqsen
+     * @suppress PhanAccessReadOnlyProperty this is acting on a clone
      */
     public static function instanceWithClosureFQSEN(FQSEN $fqsen, FunctionInterface $func = null) : ClosureType
     {

@@ -9,6 +9,7 @@ use Phan\Language\Type;
  * @see GenericArrayType for representations of `string[]` and `array<int,bool>`
  * @see ArrayShapeType for representations of `array{key:MyClass}`
  * @see ArrayType for the representation of `array`
+ * @phan-pure
  */
 final class NonEmptyListType extends ListType
 {
