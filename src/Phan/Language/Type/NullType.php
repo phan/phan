@@ -10,6 +10,7 @@ use Phan\Language\UnionType;
 
 /**
  * Singleton representing the type `null`
+ * @phan-pure
  */
 final class NullType extends ScalarType
 {

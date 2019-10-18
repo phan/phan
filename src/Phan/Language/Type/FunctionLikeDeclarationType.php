@@ -21,6 +21,7 @@ use Phan\Language\UnionType;
 /**
  * Phan's base class for representations of `callable(MyClass):MyOtherClass` and `Closure(MyClass):MyOtherClass`
  * @phan-file-suppress PhanUnusedPublicMethodParameter
+ * @phan-pure
  */
 abstract class FunctionLikeDeclarationType extends Type implements FunctionInterface
 {

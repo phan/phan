@@ -8,6 +8,7 @@ namespace Phan\Language\Type;
  *
  * This is used in the middle of parsing PHPDoc types,
  * but is quickly converted to bool|int|float|string once parsing is finished.
+ * @phan-pure
  */
 final class ScalarRawType extends ScalarType implements MultiType
 {

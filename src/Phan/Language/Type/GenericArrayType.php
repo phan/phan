@@ -21,6 +21,7 @@ use Phan\Language\UnionTypeBuilder;
  * Phan's representation for the types `array<string,MyClass>` and `MyClass[]`
  * @see ArrayShapeType for representations of `array{key:MyClass}`
  * @see ArrayType for the representation of `array`
+ * @phan-pure
  */
 class GenericArrayType extends ArrayType implements GenericArrayInterface
 {

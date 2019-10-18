@@ -9,6 +9,7 @@ use Phan\Language\UnionType;
 
 /**
  * Phan's representation of the type for `callable-array`.
+ * @phan-pure
  */
 class CallableArrayType extends ArrayType
 {

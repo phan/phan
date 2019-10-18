@@ -9,6 +9,7 @@ use Phan\Language\UnionType;
 
 /**
  * Not a type, but used by ClosureDeclarationType
+ * @phan-pure
  */
 final class ClosureDeclarationParameter
 {

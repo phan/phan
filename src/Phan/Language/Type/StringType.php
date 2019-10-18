@@ -11,6 +11,7 @@ use Phan\Language\UnionType;
 /**
  * Represents the type `string`.
  * @see LiteralStringType for the representation of types for specific string literals
+ * @phan-pure
  */
 class StringType extends ScalarType
 {

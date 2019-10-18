@@ -11,6 +11,7 @@ use Phan\Language\UnionType;
 /**
  * Represents a template type that has not yet been resolved.
  * @see https://github.com/phan/phan/wiki/Generic-Types
+ * @phan-pure
  */
 final class TemplateType extends Type
 {

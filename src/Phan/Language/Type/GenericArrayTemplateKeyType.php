@@ -10,6 +10,7 @@ use Phan\Language\UnionType;
 
 /**
  * A generic array type with a template as the key
+ * @phan-pure
  */
 class GenericArrayTemplateKeyType extends GenericArrayType
 {

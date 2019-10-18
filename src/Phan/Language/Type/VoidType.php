@@ -10,6 +10,7 @@ use Phan\Language\UnionType;
 
 /**
  * Represents the return type `void`
+ * @phan-pure
  */
 final class VoidType extends NativeType
 {

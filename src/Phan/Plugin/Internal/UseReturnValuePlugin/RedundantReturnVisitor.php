@@ -79,16 +79,32 @@ class RedundantReturnVisitor
             case ast\AST_RETURN:
                 return [$stmts];
         }
-        $possible_return_nodes = [];
-        foreach ($stmts->children as $child) {
+        $children = $stmts->children;
+        if (!$children) {
+            return [];
+        }
+        $groups = [];
+        foreach ($children as $child) {
             if (!$child instanceof Node) {
                 continue;
             }
-            foreach ($this->analyzeNode($child) as $return_instance) {
-                $possible_return_nodes[] = $return_instance;
+            $return_group = $this->analyzeNode($child);
+            if ($return_group) {
+                $groups[] = $return_group;
             }
         }
-        if ($stmts->kind !== ast\AST_STMT_LIST) {
+        if ($groups) {
+            if (count($groups) > 1) {
+                $possible_return_nodes = array_merge(...$groups);
+            } else {
+                return $groups[0];
+            }
+        } else {
+            return [];
+        }
+
+        // Handle node kinds that are statement lists or cause branches containing multiple statement lists.
+        if (!in_array($kind, [ast\AST_STMT_LIST, ast\AST_IF, ast\AST_SWITCH_LIST], true)) {
             return $possible_return_nodes;
         }
         if (count($possible_return_nodes) === 0) {
@@ -114,7 +130,19 @@ class RedundantReturnVisitor
         // There are 2 or more possible returned statements. Check if all returned expressions are the same.
 
         // @phan-suppress-next-line PhanPartialTypeMismatchArgument can't understand count() assertions
-        $this->checkMultipleReturns($possible_return_nodes);
+        if (count($groups) > 2) {
+            // e.g. warn about the last two groups of returns being the same, for examples such as the following:
+            //
+            // - if (c1) { return true; }
+            //   elseif (c2) { return false; }
+            //   else { return false; }
+            // - if (c1) { return true; }
+            //   if (c2) { return false; }
+            //   return false;
+            $this->checkMultipleReturns(array_merge(...array_slice($groups, -2)));
+        } else {
+            $this->checkMultipleReturns($possible_return_nodes);
+        }
         return $possible_return_nodes;
     }
 

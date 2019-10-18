@@ -10,6 +10,7 @@ use Phan\Language\UnionType;
 /**
  * Phan's representation of `int`
  * @see LiteralIntType for Phan's representation of specific integers
+ * @phan-pure
  */
 class IntType extends ScalarType
 {

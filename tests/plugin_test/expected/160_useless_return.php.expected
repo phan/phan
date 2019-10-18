@@ -8,3 +8,6 @@ src/160_useless_return.php:37 PhanUnreferencedPublicMethod Possibly zero referen
 src/160_useless_return.php:41 PhanPluginNonBoolInLogicalArith Non bool value of type  in logical arithmetic
 src/160_useless_return.php:41 PhanPluginNumericalComparison numerical values compared by the operators '===' or '!=='
 src/160_useless_return.php:45 PhanUnusedReturnBranchWithoutSideEffects Possibly useless branch in a function where the return value must be used - all branches return values equivalent to true (previous return is at line 42)
+src/160_useless_return.php:62 PhanUnusedReturnBranchWithoutSideEffects Possibly useless branch in a function where the return value must be used - all branches return values equivalent to false (previous return is at line 60)
+src/160_useless_return.php:72 PhanUnusedReturnBranchWithoutSideEffects Possibly useless branch in a function where the return value must be used - all branches return values equivalent to (3 - 1) (previous return is at line 70)
+src/160_useless_return.php:84 PhanUnusedReturnBranchWithoutSideEffects Possibly useless branch in a function where the return value must be used - all branches return values equivalent to [PHP_VERSION] (previous return is at line 82)

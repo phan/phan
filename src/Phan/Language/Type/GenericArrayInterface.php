@@ -6,6 +6,7 @@ use Phan\Language\UnionType;
 
 /**
  * This is generated from phpdoc such as array<string,mixed>, array{field:int}, etc.
+ * @phan-pure
  */
 interface GenericArrayInterface
 {
