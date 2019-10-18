@@ -401,6 +401,7 @@ class Issue
     const UnusedVariableReference               = 'PhanUnusedVariableReference';
     const UnusedVariableStatic                  = 'PhanUnusedVariableStatic';
     const UnusedVariableGlobal                  = 'PhanUnusedVariableGlobal';
+    const UnusedReturnBranchWithoutSideEffects  = 'PhanUnusedReturnBranchWithoutSideEffects';
     const VariableDefinitionCouldBeConstant     = 'PhanVariableDefinitionCouldBeConstant';
     const VariableDefinitionCouldBeConstantEmptyArray = 'PhanVariableDefinitionCouldBeConstantEmptyArray';
     const VariableDefinitionCouldBeConstantString = 'PhanVariableDefinitionCouldBeConstantString';
@@ -3504,6 +3505,14 @@ class Issue
                 'Unreferenced definition of variable ${VARIABLE} as a global variable',
                 self::REMEDIATION_B,
                 6071
+            ),
+            new Issue(
+                self::UnusedReturnBranchWithoutSideEffects,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Possibly useless branch in a function where the return value must be used - all branches return values equivalent to {CODE} (previous return is at line {LINE})',
+                self::REMEDIATION_B,
+                6083
             ),
             new Issue(
                 self::UseNormalNamespacedNoEffect,

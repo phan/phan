@@ -1,0 +1,10 @@
+src/160_useless_return.php:7 PhanPluginNumericalComparison numerical values compared by the operators '===' or '!=='
+src/160_useless_return.php:12 PhanUnusedReturnBranchWithoutSideEffects Possibly useless branch in a function where the return value must be used - all branches return values equivalent to true (previous return is at line 8)
+src/160_useless_return.php:18 PhanPluginNumericalComparison numerical values compared by the operators '===' or '!=='
+src/160_useless_return.php:23 PhanUnusedReturnBranchWithoutSideEffects Possibly useless branch in a function where the return value must be used - all branches return values equivalent to true (previous return is at line 19)
+src/160_useless_return.php:26 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \NS160\Test::is_even() defined at src/160_useless_return.php:16
+src/160_useless_return.php:28 PhanUnreferencedClass Possibly zero references to class \NS160\TestItem
+src/160_useless_return.php:37 PhanUnreferencedPublicMethod Possibly zero references to public method \NS160\TestItem::fn()
+src/160_useless_return.php:41 PhanPluginNonBoolInLogicalArith Non bool value of type  in logical arithmetic
+src/160_useless_return.php:41 PhanPluginNumericalComparison numerical values compared by the operators '===' or '!=='
+src/160_useless_return.php:45 PhanUnusedReturnBranchWithoutSideEffects Possibly useless branch in a function where the return value must be used - all branches return values equivalent to true (previous return is at line 42)

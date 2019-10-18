@@ -14,6 +14,7 @@ use function in_array;
  * Phan's base class for native types such as IntType, ObjectType, etc.
  *
  * (i.e. not class instances, Closures, etc)
+ * @phan-pure
  */
 abstract class NativeType extends Type
 {

@@ -4631,6 +4631,7 @@ class UnionType implements Serializable
      * This is used for union types of variables and for values of array shapes.
      *
      * Base implementation. Overridden by AnnotatedUnionType.
+     * @suppress PhanAccessReadOnlyProperty this is the only way to set is_possibly_undefined
      */
     public function withIsPossiblyUndefined(bool $is_possibly_undefined) : UnionType
     {
@@ -4647,6 +4648,7 @@ class UnionType implements Serializable
      * This is used for properties (of $this) and is planned for local variables.
      *
      * Base implementation. Overridden by AnnotatedUnionType.
+     * @suppress PhanAccessReadOnlyProperty this is the only way to set is_possibly_undefined
      */
     public function withIsDefinitelyUndefined() : UnionType
     {

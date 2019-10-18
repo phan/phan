@@ -11,6 +11,7 @@ namespace Phan\Language;
  * They are not unique for combination of types and options.
  *
  * The internal representation may change in the future.
+ * @phan-pure
  */
 class AnnotatedUnionType extends UnionType
 {
@@ -24,6 +25,7 @@ class AnnotatedUnionType extends UnionType
 
     /**
      * @override
+     * @suppress PhanAccessReadOnlyProperty this is the only way to set is_possibly_undefined
      */
     public function withIsPossiblyUndefined(bool $is_possibly_undefined) : UnionType
     {
@@ -40,6 +42,7 @@ class AnnotatedUnionType extends UnionType
 
     /**
      * @override
+     * @suppress PhanAccessReadOnlyProperty this is the only way to set is_possibly_undefined
      */
     public function withIsDefinitelyUndefined() : UnionType
     {
