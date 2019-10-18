@@ -374,8 +374,14 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     {
         if ($type instanceof ListType) {
             $i = 0;
+            $has_possibly_undefined = false;
             foreach ($this->field_types as $k => $v) {
-                if ($k !== $i++ || $v->isPossiblyUndefined()) {
+                if ($k !== $i++) {
+                    return false;
+                }
+                if ($v->isPossiblyUndefined()) {
+                    $has_possibly_undefined = true;
+                } elseif ($has_possibly_undefined) {
                     return false;
                 }
             }
@@ -418,7 +424,10 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     }
 
     /**
-     * Returns true if this is empty or can't cast to a list
+     * Returns true if this is empty or can't cast to a list.
+     *
+     * Phan allows array{0:string, 1?:string, 2?:string} to cast to associative arrays as well as lists.
+     *
      * @internal
      */
     public function canCastToAssociativeArray() : bool

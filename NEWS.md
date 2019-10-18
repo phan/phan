@@ -17,6 +17,7 @@ New features(Analysis):
   This check is only run on pure methods.
 
   This requires that `UseReturnValuePlugin` be enabled and works best when `'plugin_config' => ['infer_pure_methods' => true]` is set.
++ Allow `list<X>` to cast to `array{0:X, 1?:X}` (#3390)
 
 Oct 13 2019, Phan 2.3.0
 -----------------------
