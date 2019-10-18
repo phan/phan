@@ -15,8 +15,10 @@ use Phan\Language\Context;
 use Phan\Parse\ParseVisitor;
 
 /**
-* Checks for invocations of functions/methods where the return value should be used.
-* Also, gathers statistics on how often those functions/methods are used.
+* Checks for function-likes that have unnecessary branches to equivalent return statements.
+*
+* This does not handle returning variables, and is only run for functions inferred to be pure.
+*
 * @phan-file-suppress PhanAccessPropertyInternal
 */
 class RedundantReturnVisitor
@@ -75,6 +77,7 @@ class RedundantReturnVisitor
             case ast\AST_ASSIGN:
             case ast\AST_ASSIGN_OP:
             case ast\AST_ECHO:
+            case ast\AST_ARROW_FUNC:
                 return [];
             case ast\AST_RETURN:
                 return [$stmts];
@@ -173,13 +176,23 @@ class RedundantReturnVisitor
                 continue;
             }
             if (!$resolved_last_value) {
-                $last_value = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $last_expr)->asSingleScalarValueOrNullOrSelf();
+                if ($last_expr instanceof Node) {
+                    $last_value = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $last_expr)->asSingleScalarValueOrNullOrSelf();
+                } else {
+                    // null/string/int/float
+                    $last_value = $last_expr;
+                }
                 if (is_object($last_value)) {
                     return;
                 }
                 $resolved_last_value = true;
             }
-            $value = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $expr)->asSingleScalarValueOrNullOrSelf();
+            if ($expr instanceof Node) {
+                $value = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $expr)->asSingleScalarValueOrNullOrSelf();
+            } else {
+                // null/string/int/float
+                $value = $expr;
+            }
             if ($value !== $last_value) {
                 return;
             }

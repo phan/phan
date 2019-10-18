@@ -13,7 +13,8 @@ New features(Analysis):
   New issue types: `PhanSuspiciousBinaryAddLists`, `PhanUselessBinaryAddRight`
 + Improvements to inferred types of `sort`, `array_merge`, etc. (#3354)
 + Fix bug allowing any array shape type to cast to a list.
-+ Warn about multiple identical return statements in pure methods where the return value must be used (#3383)
++ Warn about unnecessary branches leading to identical return statements in pure functions, methods, and closures (#3383)
+  This check is only run on pure methods.
 
   This requires that `UseReturnValuePlugin` be enabled and works best when `'plugin_config' => ['infer_pure_methods' => true]` is set.
 
