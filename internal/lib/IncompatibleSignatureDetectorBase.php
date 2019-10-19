@@ -3,11 +3,11 @@ declare(strict_types=1);
 
 use Phan\Memoize;
 
-define('ORIGINAL_SIGNATURE_PATH', dirname(dirname(__DIR__)) . '/src/Phan/Language/Internal/FunctionSignatureMap.php');
-define('ORIGINAL_FUNCTION_DOCUMENTATION_PATH', dirname(dirname(__DIR__)) . '/src/Phan/Language/Internal/FunctionDocumentationMap.php');
-define('ORIGINAL_CONSTANT_DOCUMENTATION_PATH', dirname(dirname(__DIR__)) . '/src/Phan/Language/Internal/ConstantDocumentationMap.php');
-define('ORIGINAL_CLASS_DOCUMENTATION_PATH', dirname(dirname(__DIR__)) . '/src/Phan/Language/Internal/ClassDocumentationMap.php');
-define('ORIGINAL_PROPERTY_DOCUMENTATION_PATH', dirname(dirname(__DIR__)) . '/src/Phan/Language/Internal/PropertyDocumentationMap.php');
+define('ORIGINAL_SIGNATURE_PATH', dirname(__DIR__, 2) . '/src/Phan/Language/Internal/FunctionSignatureMap.php');
+define('ORIGINAL_FUNCTION_DOCUMENTATION_PATH', dirname(__DIR__, 2) . '/src/Phan/Language/Internal/FunctionDocumentationMap.php');
+define('ORIGINAL_CONSTANT_DOCUMENTATION_PATH', dirname(__DIR__, 2) . '/src/Phan/Language/Internal/ConstantDocumentationMap.php');
+define('ORIGINAL_CLASS_DOCUMENTATION_PATH', dirname(__DIR__, 2) . '/src/Phan/Language/Internal/ClassDocumentationMap.php');
+define('ORIGINAL_PROPERTY_DOCUMENTATION_PATH', dirname(__DIR__, 2) . '/src/Phan/Language/Internal/PropertyDocumentationMap.php');
 
 /**
  * Implementations of this can be used to check Phan's function signature map.
