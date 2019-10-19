@@ -6,6 +6,7 @@ use ast\Node;
 use CompileError;
 use Error;
 use Microsoft\PhpParser\Diagnostic;
+use Microsoft\PhpParser\FilePositionMap;
 use ParseError;
 use Phan\AST\TolerantASTConverter\ParseException;
 use Phan\AST\TolerantASTConverter\ParseResult;
@@ -19,6 +20,7 @@ use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Library\Cache;
 use Phan\Library\DiskCache;
+use Phan\Library\FileCacheEntry;
 use Phan\Phan;
 use Phan\Plugin\ConfigPluginSet;
 use Throwable;
@@ -187,7 +189,7 @@ class Parser
         Error $native_parse_error
     ) : Node {
         if (!$suppress_parse_errors) {
-            self::emitSyntaxErrorForNativeParseError($code_base, $context, $file_path, $file_contents, $native_parse_error);
+            self::emitSyntaxErrorForNativeParseError($code_base, $context, $file_path, new FileCacheEntry($file_contents), $native_parse_error);
         }
         if (!Config::getValue('use_fallback_parser')) {
             // By default, don't try to re-parse files with syntax errors.
@@ -222,22 +224,22 @@ class Parser
      * @param CodeBase $code_base
      * @param Context $context
      * @param string $file_path file path for error reporting
-     * @param string $file_contents file contents to pass to polyfill parser. May be overridden to ignore what is currently on disk.
+     * @param FileCacheEntry $file_cache_entry for file contents that were passed to the polyfill parser. May be overridden to ignore what is currently on disk.
      * @param ParseError|CompileError $native_parse_error (can be CompileError in 7.3+, will be ParseError in most cases)
      */
     public static function emitSyntaxErrorForNativeParseError(
         CodeBase $code_base,
         Context $context,
         string $file_path,
-        string $file_contents,
+        FileCacheEntry $file_cache_entry,
         Error $native_parse_error
     ) : void {
         // Try to get the raw diagnostics by reference.
         // For efficiency, reuse the last result if this was called multiple times in a row.
         $line = $native_parse_error->getLine();
         $message = $native_parse_error->getMessage();
-        $diagnostic_error_column = self::guessErrorColumnUsingTokens($file_contents, $native_parse_error) ?:
-            self::guessErrorColumnUsingPolyfill($code_base, $context, $file_path, $file_contents, $native_parse_error);
+        $diagnostic_error_column = self::guessErrorColumnUsingTokens($file_cache_entry, $native_parse_error) ?:
+            self::guessErrorColumnUsingPolyfill($code_base, $context, $file_path, $file_cache_entry, $native_parse_error);
 
         Issue::maybeEmitWithParameters(
             $code_base,
@@ -256,7 +258,7 @@ class Parser
      * This will return the corresponding unexpected token only when there's exactly one token with that value on the line with the error.
      */
     private static function guessErrorColumnUsingTokens(
-        string $file_contents,
+        FileCacheEntry $file_cache_entry,
         Error $native_parse_error
     ) : int {
         if (!\function_exists('token_get_all')) {
@@ -280,7 +282,7 @@ class Parser
             $token_kind = null;
         }
         $token_str = $matches[1];
-        $tokens = \token_get_all($file_contents);
+        $tokens = \token_get_all($file_cache_entry->getContents());
         $candidates = [];
         $desired_line = $native_parse_error->getLine();
         foreach ($tokens as $i => $token) {
@@ -347,9 +349,10 @@ class Parser
         CodeBase $code_base,
         Context $context,
         string $file_path,
-        string $file_contents,
+        FileCacheEntry $file_cache_entry,
         Error $native_parse_error
     ) : int {
+        $file_contents = $file_cache_entry->getContents();
         static $last_file_contents = null;
         static $errors = [];
 
@@ -369,8 +372,10 @@ class Parser
         if (!$diagnostic) {
             return 0;
         }
+        // Using FilePositionMap is much faster than substr_count to count lines if you have more than one diagnostic to report (e.g. a string has an unmatched quote).
+        $file_position_map = $file_cache_entry->getFilePositionMap();
         $start = (int) $diagnostic->start;
-        $diagnostic_error_start_line = 1 + \substr_count($file_contents, "\n", 0, $start);
+        $diagnostic_error_start_line = $file_position_map->getLineNumberForOffset($start);
         if ($diagnostic_error_start_line > $native_parse_error->getLine()) {
             return 0;
         }
@@ -379,12 +384,15 @@ class Parser
         while ($start + 1 < $file_length && \ctype_space($file_contents[$start])) {
             $start++;
         }
-        $diagnostic_error_start_line = 1 + \substr_count($file_contents, "\n", 0, $start);
+        $diagnostic_error_start_line = $file_position_map->getLineNumberForOffset($start);
         if ($diagnostic_error_start_line !== $native_parse_error->getLine()) {
             return 0;
         }
         return $start - (\strrpos($file_contents, "\n", $start - \strlen($file_contents) - 1) ?: 0);
     }
+
+    /** Set an arbitrary limit on the number of warnings for the polyfill diagnostics to prevent excessively large errors for unmatched string quotes, etc. */
+    private const MAX_POLYFILL_WARNINGS = 1000;
 
     /**
      * Parses the code with the polyfill. If $suppress_parse_errors is false, this also emits SyntaxError.
@@ -416,24 +424,32 @@ class Parser
                 self::handleWarningFromPolyfill($code_base, $context, $error);
             }
         }
+        if (!$errors) {
+            return $node;
+        }
+        $file_position_map = new FilePositionMap($file_contents);
+        $emitted_warning_count = 0;
         foreach ($errors as $diagnostic) {
             if ($diagnostic->kind === 0) {
                 $start = (int)$diagnostic->start;
                 $diagnostic_error_message = 'Fallback parser diagnostic error: ' . $diagnostic->message;
                 $len = \strlen($file_contents);
-                $diagnostic_error_start_line = 1 + \substr_count($file_contents, "\n", 0, $start);
+                $diagnostic_error_start_line = $file_position_map->getLineNumberForOffset($start);
                 $diagnostic_error_column = $start - (\strrpos($file_contents, "\n", $start - $len - 1) ?: 0);
 
                 if (!$suppress_parse_errors) {
-                    Issue::maybeEmitWithParameters(
-                        $code_base,
-                        $context,
-                        Issue::SyntaxError,
-                        $diagnostic_error_start_line,
-                        [$diagnostic_error_message],
-                        null,
-                        $diagnostic_error_column
-                    );
+                    $emitted_warning_count++;
+                    if ($emitted_warning_count <= self::MAX_POLYFILL_WARNINGS) {
+                        Issue::maybeEmitWithParameters(
+                            $code_base,
+                            $context,
+                            Issue::SyntaxError,
+                            $diagnostic_error_start_line,
+                            [$diagnostic_error_message],
+                            null,
+                            $diagnostic_error_column
+                        );
+                    }
                 }
                 if (!Config::getValue('use_fallback_parser')) {
                     // By default, don't try to re-parse files with syntax errors.

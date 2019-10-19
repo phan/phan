@@ -28,6 +28,7 @@ New features(Analysis):
 
   This requires that `UseReturnValuePlugin` be enabled and works best when `'plugin_config' => ['infer_pure_methods' => true]` is set.
 + Allow `list<X>` to cast to `array{0:X, 1?:X}` (#3390)
++ Speed up computing line numbers of diagnostics in the polyfill/fallback parser when there are multiple diagnostics.
 
 Oct 13 2019, Phan 2.3.0
 -----------------------

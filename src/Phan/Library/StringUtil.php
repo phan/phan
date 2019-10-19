@@ -61,6 +61,10 @@ class StringUtil
      */
     public static function asSingleLineUtf8(string $str) : string
     {
+        if (!\preg_match("@[\\n\\r\x80-\xff]@", $str)) {
+            // Around 5x faster for the common case of being ASCII without newlines.
+            return $str;
+        }
         return \str_replace(["\n", "\r"], "�", self::asUtf8($str));
     }
 }
