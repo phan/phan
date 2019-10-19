@@ -115,6 +115,9 @@ class Frame
             }
             $result = $invocation . '()';
             $args = $frame['args'] ?? null;
+            if (isset($frame['file'])) {
+                $result .= ' called at [' . $frame['file'] . ':' . ($frame['line'] ?? 0) . ']';
+            }
             if ($args) {
                 $result .= ' Args: ' . self::encodeValue($args);
             }

@@ -91,7 +91,7 @@ final class ConversionTest extends BaseTest
     {
         $tests = [];
         // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
-        $source_dir = dirname(\realpath(__DIR__), 3) . '/misc/fallback_ast_src';
+        $source_dir = \dirname(\realpath(__DIR__), 3) . '/misc/fallback_ast_src';
         $paths = $this->scanSourceDirForPHP($source_dir);
 
         self::sortByTokenCount($paths);
