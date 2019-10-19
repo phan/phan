@@ -908,12 +908,22 @@ class CLI
                 if (\file_exists($absolute_path)) {
                     $valid_files++;
                 } else {
-                    \fprintf(STDERR, "Warning: Could not find file '%s' passed in %s" . \PHP_EOL, $absolute_path, self::colorizeHelpSectionIfSupported('--include-analysis-file-list'));
+                    \fprintf(
+                        STDERR,
+                        "%sCould not find file '%s' passed in %s" . \PHP_EOL,
+                        self::colorizeHelpSectionIfSupported('WARNING: '),
+                        $absolute_path,
+                        self::colorizeHelpSectionIfSupported('--include-analysis-file-list')
+                    );
                 }
             }
             if ($valid_files === 0) {
                 // TODO convert this to an error in Phan 3.
-                \fprintf(STDERR, "Warning: None of the files in %s exist - This will be an error in future Phan releases." . \PHP_EOL, self::colorizeHelpSectionIfSupported('--include-analysis-file-list'));
+                self::printHelpSection(
+                    "WARNING: None of the files in %s exist - This will be an error in future Phan releases." . \PHP_EOL,
+                    false,
+                    true
+                );
             }
         }
     }
@@ -1497,8 +1507,9 @@ EOB
 
     /**
      * Prints a section of the help or usage message to stdout.
+     * @internal
      */
-    private static function printHelpSection(string $section, bool $forbid_color = false, bool $toStderr = false) : void
+    public static function printHelpSection(string $section, bool $forbid_color = false, bool $toStderr = false) : void
     {
         if (!$forbid_color) {
             $section = self::colorizeHelpSectionIfSupported($section);

@@ -4416,7 +4416,8 @@ class UnionType implements Serializable
      * @param list<Type> $type_set
      * @return list<Type>
      */
-    private static function withFlattenedTopLevelArrayShapeTypeInstancesForSet(array $type_set) : array {
+    private static function withFlattenedTopLevelArrayShapeTypeInstancesForSet(array $type_set) : array
+    {
         $result = [];
         $has_other_array_type = false;
         $empty_array_shape_type = null;
@@ -4462,7 +4463,8 @@ class UnionType implements Serializable
      * @param list<Type> $type_set
      * @return list<Type>
      */
-    private static function withFlattenedArrayShapeTypeInstancesForSet(array $type_set) : array {
+    private static function withFlattenedArrayShapeTypeInstancesForSet(array $type_set) : array
+    {
         $result = [];
         $has_other_array_type = false;
         $empty_array_shape_type = null;

@@ -36,7 +36,7 @@ final class LanguageServerIntegrationTest extends BaseTest
      */
     public static function getLSPFolder() : string
     {
-        return \dirname(\dirname(__DIR__)) . '/misc/lsp';
+        return \dirname(__DIR__, 2) . '/misc/lsp';
     }
 
     /**

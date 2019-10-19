@@ -20,6 +20,8 @@ if (extension_loaded('ast')) {
     if (version_compare($ast_version, '1.0.0') <= 0) {
         // TODO: Change this to a warning for 0.1.5 - 1.0.0. (https://github.com/phan/phan/issues/2954)
         // 0.1.5 introduced the ast\Node constructor, which is required by the polyfill
+        //
+        // NOTE: We haven't loaded the autoloader yet, so these issue messages can't be colorized.
         fprintf(
             STDERR,
             "ERROR: Phan 2.x requires php-ast 1.0.1+ because it depends on AST version 70. php-ast %s is installed." . PHP_EOL,
@@ -33,7 +35,7 @@ if (extension_loaded('ast')) {
     } elseif (PHP_VERSION_ID >= 70400 && version_compare($ast_version, '1.0.2') < 0) {
         fprintf(
             STDERR,
-            "Warning: Phan 2.x requires php-ast 1.0.2+ to properly analyze ASTs for php 7.4+. php-ast %s and php %s is installed." . PHP_EOL,
+            "WARNING: Phan 2.x requires php-ast 1.0.2+ to properly analyze ASTs for php 7.4+. php-ast %s and php %s is installed." . PHP_EOL,
             $ast_version,
             PHP_VERSION
         );

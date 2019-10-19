@@ -241,7 +241,8 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      * @return int the corresponding status code
      * @suppress PhanTypeMismatchArgumentNullable
      */
-    public function visitSwitchList(Node $node) : int {
+    public function visitSwitchList(Node $node) : int
+    {
         $status = $node->flags & self::STATUS_BITMASK;
         if ($status) {
             return $status;
