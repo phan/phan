@@ -7,6 +7,7 @@ use Closure;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\VersionParser;
 use Phan\AST\Parser;
+use Phan\CLI;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\UsageException;
@@ -357,19 +358,19 @@ EOT;
                 $requirement = \strtolower($requirement);
                 $path_to_require = "$vendor_path/$requirement";
                 if (!\is_dir($path_to_require)) {
-                    echo "Warning: $path_to_require does not exist, continuing\n";
+                    echo CLI::colorizeHelpSectionIfSupported("WARNING: ") . "Directory $path_to_require does not exist, continuing\n";
                     continue;
                 }
             }
             $path_to_composer_json = "$path_to_require/composer.json";
             if (!\file_exists($path_to_composer_json)) {
-                echo "Warning: $path_to_composer_json does not exist, continuing\n";
+                echo CLI::colorizeHelpSectionIfSupported("WARNING: ") . "$path_to_composer_json does not exist, continuing\n";
                 continue;
             }
             // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
             $library_composer_settings = \json_decode(\file_get_contents($path_to_composer_json), true);
             if (!is_array($library_composer_settings)) {
-                echo "Warning: $path_to_composer_json is invalid JSON, continuing\n";
+                echo CLI::colorizeHelpSectionIfSupported("WARNING: ") . "$path_to_composer_json contains invalid JSON, continuing\n";
                 continue;
             }
 
@@ -465,13 +466,13 @@ EOT;
             }
             foreach ($lib_list as $lib) {
                 if (!is_string($lib)) {
-                    echo "Warning: unexpected autoload field in '$relative_dir/composer.json'\n";
+                    echo CLI::colorizeHelpSectionIfSupported("WARNING: ") . "unexpected autoload field in '$relative_dir/composer.json'\n";
                     continue;
                 }
                 $composer_lib_relative_path = "$relative_dir/$lib";
                 $composer_lib_absolute_path = \getcwd() . "/$composer_lib_relative_path";
                 if (!\file_exists($composer_lib_absolute_path)) {
-                    echo "Warning: could not find '$composer_lib_relative_path'\n";
+                    echo CLI::colorizeHelpSectionIfSupported("WARNING: ") . "could not find '$composer_lib_relative_path'\n";
                     continue;
                 }
                 $composer_lib_relative_path = \trim(\str_replace(\DIRECTORY_SEPARATOR, '/', $composer_lib_relative_path), '/');
