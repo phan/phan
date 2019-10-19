@@ -97,8 +97,8 @@ class RedundantReturnVisitor
             }
         }
         if ($groups) {
-            if (count($groups) > 1) {
-                $possible_return_nodes = array_merge(...$groups);
+            if (\count($groups) > 1) {
+                $possible_return_nodes = \array_merge(...$groups);
             } else {
                 return $groups[0];
             }
@@ -107,14 +107,14 @@ class RedundantReturnVisitor
         }
 
         // Handle node kinds that are statement lists or cause branches containing multiple statement lists.
-        if (!in_array($kind, [ast\AST_STMT_LIST, ast\AST_IF, ast\AST_SWITCH_LIST], true)) {
+        if (!\in_array($kind, [ast\AST_STMT_LIST, ast\AST_IF, ast\AST_SWITCH_LIST], true)) {
             return $possible_return_nodes;
         }
-        if (count($possible_return_nodes) === 0) {
+        if (\count($possible_return_nodes) === 0) {
             return $possible_return_nodes;
         }
 
-        if (count($possible_return_nodes) <= 1 && ($stmts !== $this->stmts || count($possible_return_nodes) === 0)) {
+        if (\count($possible_return_nodes) <= 1 && ($stmts !== $this->stmts || \count($possible_return_nodes) === 0)) {
             return $possible_return_nodes;
         }
         $exit_status = (new BlockExitStatusChecker())->__invoke($stmts);
@@ -133,7 +133,7 @@ class RedundantReturnVisitor
         // There are 2 or more possible returned statements. Check if all returned expressions are the same.
 
         // @phan-suppress-next-line PhanPartialTypeMismatchArgument can't understand count() assertions
-        if (count($groups) > 2 && $kind !== ast\AST_SWITCH_LIST) {
+        if (\count($groups) > 2 && $kind !== ast\AST_SWITCH_LIST) {
             // e.g. warn about the last two groups of returns being the same, for examples such as the following:
             //
             // - if (c1) { return true; }
@@ -145,7 +145,7 @@ class RedundantReturnVisitor
             //
             // but don't warn about switches unless every single one of the cases returns the same thing,
             // as a style choice.
-            $this->checkMultipleReturns(array_merge(...array_slice($groups, -2)));
+            $this->checkMultipleReturns(\array_merge(...\array_slice($groups, -2)));
         } else {
             $this->checkMultipleReturns($possible_return_nodes);
         }
@@ -158,11 +158,11 @@ class RedundantReturnVisitor
      */
     private function checkMultipleReturns(array $possible_return_nodes) : void
     {
-        if (count($possible_return_nodes) <= 1) {
+        if (\count($possible_return_nodes) <= 1) {
             return;
         }
         $remaining_returns = $possible_return_nodes;
-        $last_return = array_pop($remaining_returns);
+        $last_return = \array_pop($remaining_returns);
         $last_expr = $last_return->children['expr'];
         if (!ParseVisitor::isConstExpr($last_expr)) {
             return;
@@ -185,7 +185,7 @@ class RedundantReturnVisitor
                     // null/string/int/float
                     $last_value = $last_expr;
                 }
-                if (is_object($last_value)) {
+                if (\is_object($last_value)) {
                     return;
                 }
                 $resolved_last_value = true;
@@ -205,7 +205,7 @@ class RedundantReturnVisitor
             Issue::fromType(Issue::UnusedReturnBranchWithoutSideEffects)(
                 $this->context->getFile(),
                 $last_return->lineno,
-                [ASTReverter::toShortString($last_expr), reset($remaining_returns)->lineno]
+                [ASTReverter::toShortString($last_expr), \reset($remaining_returns)->lineno]
             )
         );
     }

@@ -3,6 +3,12 @@ Phan NEWS
 ??? ?? 2019, Phan 2.3.1 (dev)
 -----------------------
 
+New features(CLI, Configs):
++ Instead of printing the full help when Phan CLI args or configuration is invalid,
+  print just the errors/warnings and instructions and `Type ./phan --help (or --extended-help) for usage.`
++ Emit a warning suggesting using `--long-option` instead when `-long-option[=value]` is passed in.
++ Change colorization of some error messages. Print some warnings to stderr instead of using `error_log()`.
+
 New features(Analysis):
 + Emit `PhanTypeMismatchPropertyRealByRef` or `PhanTypeMismatchPropertyByRef`
   when potentially assigning an incompatible type to a php 7.4 typed property

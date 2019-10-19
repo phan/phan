@@ -311,7 +311,7 @@ class CLI
         }
 
         if (\array_key_exists('h', $opts) || \array_key_exists('help', $opts)) {
-            throw new UsageException('', EXIT_SUCCESS);  // --help prints help and calls exit(0)
+            throw new UsageException('', EXIT_SUCCESS, UsageException::PRINT_NORMAL);  // --help prints help and calls exit(0)
         }
         if (\array_key_exists('help-annotations', $opts)) {
             $result = "See https://github.com/phan/phan/wiki/Annotating-Your-Source-Code for more details." . \PHP_EOL . \PHP_EOL;
@@ -327,6 +327,7 @@ class CLI
             \printf("Phan %s\n", self::PHAN_VERSION);
             throw new ExitException('', EXIT_SUCCESS);
         }
+        $this->warnSuspiciousShortOptions($argv);
 
         // Determine the root directory of the project from which
         // we route all relative paths passed in as args
@@ -405,8 +406,13 @@ class CLI
                     $file_list = \is_array($value) ? $value : [$value];
                     foreach ($file_list as $file_name) {
                         if (!is_string($file_name)) {
-                            \error_log("invalid argument for --file-list");
-                            continue;
+                            // Should be impossible?
+                            throw new UsageException(
+                                "invalid argument for --file-list",
+                                EXIT_FAILURE,
+                                null,
+                                true
+                            );
                         }
                         $file_path = Config::projectPath($file_name);
                         if (\is_file($file_path) && \is_readable($file_path)) {
@@ -419,7 +425,12 @@ class CLI
                                 continue;
                             }
                         }
-                        \error_log("Unable to read file $file_path");
+                        throw new UsageException(
+                            "Unable to read file $file_path",
+                            EXIT_FAILURE,
+                            null,
+                            true
+                        );
                     }
                     break;
                 case 'l':
@@ -428,8 +439,12 @@ class CLI
                         $directory_list = \is_array($value) ? $value : [$value];
                         foreach ($directory_list as $directory_name) {
                             if (!is_string($directory_name)) {
-                                \error_log("Invalid --directory setting");
-                                return;
+                                throw new UsageException(
+                                    'Invalid --directory setting (expected a single argument)',
+                                    EXIT_FAILURE,
+                                    null,
+                                    false
+                                );
                             }
                             $this->file_list_in_config = \array_merge(
                                 $this->file_list_in_config,
@@ -820,6 +835,27 @@ class CLI
     }
 
     /**
+     * @param list<string> $argv
+     */
+    private static function warnSuspiciousShortOptions(array $argv) : void
+    {
+        $opt_set = [];
+        foreach (self::GETOPT_LONG_OPTIONS as $opt) {
+            $opt_set['-' . \rtrim($opt, ':')] = true;
+        }
+        foreach (array_slice($argv, 1) as $arg) {
+            $arg = \preg_replace('/=.*$/', '', $arg);
+            if (\array_key_exists($arg, $opt_set)) {
+                self::printHelpSection(
+                    "WARNING: Saw suspicious CLI arg '$arg' (did you mean '-$arg')\n",
+                    false,
+                    true
+                );
+            }
+        }
+    }
+
+    /**
      * @param array<string|int,mixed> $opts
      * @throws UsageException if using a flag such as --init-level without --init
      */
@@ -1117,11 +1153,16 @@ EOT;
         global $argv;
 
         if ($msg !== '') {
-            self::printHelpSection("ERROR: $msg\n", $forbid_color_in_error);
+            self::printHelpSection("ERROR:");
+            self::printHelpSection(" $msg\n", $forbid_color_in_error);
         }
 
         $init_help = self::INIT_HELP;
         echo "Usage: {$argv[0]} [options] [files...]\n";
+        if ($usage_type === UsageException::PRINT_INVALID_ARGS) {
+            self::printHelpSection("Type {$argv[0]} --help (or --extended-help) for usage.\n");
+            exit($exit_code);
+        }
         if ($usage_type === UsageException::PRINT_INIT_ONLY) {
             self::printHelpSection($init_help . "\n");
             exit($exit_code);
@@ -1457,12 +1498,16 @@ EOB
     /**
      * Prints a section of the help or usage message to stdout.
      */
-    private static function printHelpSection(string $section, bool $forbid_color = false) : void
+    private static function printHelpSection(string $section, bool $forbid_color = false, bool $toStderr = false) : void
     {
         if (!$forbid_color) {
             $section = self::colorizeHelpSectionIfSupported($section);
         }
-        echo $section;
+        if ($toStderr) {
+            \fwrite(STDERR, $section);
+        } else {
+            echo $section;
+        }
     }
 
     /**
@@ -1501,6 +1546,7 @@ EOB
         };
         $section = \preg_replace_callback('@<\S+>|\{\S+\}@', $colorize_opt_cb, $section);
         $section = \preg_replace('@^ERROR:@', Colorizing::colorizeTextWithColorCode(Colorizing::STYLES['light_red'], '\0'), $section);
+        $section = \preg_replace('@^WARNING:@', Colorizing::colorizeTextWithColorCode(Colorizing::STYLES['yellow'], '\0'), $section);
         return $section;
     }
 
@@ -1646,7 +1692,10 @@ EOB
                 }
                 if (!$file_info->isFile() || !$file_info->isReadable()) {
                     $file_path = $file_info->getRealPath();
-                    \error_log("Unable to read file {$file_path}");
+                    \fwrite(
+                        STDERR,
+                        self::colorizeHelpSectionIfSupported('ERROR: ') . "Unable to read file {$file_path}\n"
+                    );
                     return false;
                 }
 
@@ -1670,7 +1719,7 @@ EOB
 
             $file_list = \array_keys(\iterator_to_array($iterator));
         } catch (\Exception $exception) {
-            \error_log($exception->getMessage());
+            \fwrite(STDERR, $exception->getMessage() . "\n");
         }
 
         // Normalize leading './' in paths.
