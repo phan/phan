@@ -133,9 +133,12 @@ function with_disabled_phan_error_handler(Closure $closure)
  */
 function phan_print_backtrace(bool $is_crash = false) : void
 {
+    // Uncomment this if even trying to print the details would crash
+    /*
     ob_start();
     debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
     fwrite(STDERR, rtrim(ob_get_clean() ?: "failed to dump backtrace") . PHP_EOL);
+     */
 
     $frames = debug_backtrace();
     if (isset($frames[1])) {

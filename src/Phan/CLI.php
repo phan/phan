@@ -6,6 +6,7 @@ use AssertionError;
 use InvalidArgumentException;
 use Phan\Config\Initializer;
 use Phan\Daemon\ExitException;
+use Phan\Debug\SignalHandler;
 use Phan\Exception\UsageException;
 use Phan\ForkPool\Writer;
 use Phan\Language\Element\AddressableElement;
@@ -91,6 +92,7 @@ class CLI
         'dead-code-detection',
         'debug',
         'debug-emitted-issues:',
+        'debug-signal-handler',
         'directory:',
         'disable-cache',
         'disable-plugins',
@@ -499,6 +501,9 @@ class CLI
                         $value = Issue::TRACE_BASIC;
                     }
                     BufferingCollector::setTraceIssues($value);
+                    break;
+                case 'debug-signal-handler':
+                    SignalHandler::init();
                     break;
                 case 'a':
                 case 'dump-ast':
@@ -1248,9 +1253,6 @@ $init_help
  -D, --debug
   Print debugging output to stderr. Useful for looking into performance issues or crashes.
 
- --debug-emitted-issues={basic,verbose}
-  Print backtraces of emitted issues which weren't suppressed to stderr.
-
  -q, --quick
   Quick mode - doesn't recurse into all function calls
 
@@ -1431,6 +1433,18 @@ Extended help:
   (i.e. they are declared once (as a constant expression) and never modified).
   This is almost entirely false positives for most coding styles.
   Implies --unused-variable-detection
+
+ --debug-emitted-issues={basic,verbose}
+  Print backtraces of emitted issues which weren't suppressed to stderr.
+
+ --debug-signal-handler
+  Set up a signal handler that can handle interrupts, SIGUSR1, and SIGUSR2.
+  This requires pcntl, and slows down Phan. When this option is enabled,
+
+  Ctrl-C (kill -INT <pid>) can be used to make Phan stop and print a crash report.
+  (This is useful for diagnosing why Phan or a plugin is slow or not responding)
+  kill -USR1 <pid> can be used to print a backtrace and continue running.
+  kill -USR2 <pid> can be used to print a backtrace, plus values of parameters, and continue running.
 
  --language-server-on-stdin
   Start the language server (For the Language Server protocol).

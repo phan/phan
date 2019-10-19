@@ -6,6 +6,10 @@ Phan NEWS
 New features(CLI, Configs):
 + Instead of printing the full help when Phan CLI args or configuration is invalid,
   print just the errors/warnings and instructions and `Type ./phan --help (or --extended-help) for usage.`
++ Add an option `--debug-signal-handler` that can be used to diagnose
+  why Phan or a plugin is slow or hanging. (Requires the `pcntl` module)
+  This installs a signal handler that response to SIGINT (aka Ctrl-C), SIGUSR1, and SIGUSR2.
++ Print a single backtrace in the crash reporter with the file, line, and arguments instead of multiple backtraces.
 + Emit a warning suggesting using `--long-option` instead when `-long-option[=value]` is passed in.
 + Change colorization of some error messages. Print some warnings to stderr instead of using `error_log()`.
 
