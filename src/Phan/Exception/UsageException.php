@@ -19,6 +19,7 @@ class UsageException extends ExitException
     const PRINT_NORMAL = 10;
     const PRINT_EXTENDED = 11;
     const PRINT_INIT_ONLY = 12;
+    const PRINT_INVALID_ARGS = 13;
 
     /**
      * @param string $message
@@ -33,11 +34,11 @@ class UsageException extends ExitException
     public function __construct(
         string $message,
         int $code,
-        int $print_type = null,
+        ?int $print_type = null,
         bool $forbid_color = false
     ) {
         parent::__construct($message, $code);
-        $this->print_type = $print_type ?? self::PRINT_NORMAL;
+        $this->print_type = $print_type ?? self::PRINT_INVALID_ARGS;
         $this->forbid_color = $forbid_color;
     }
 }
