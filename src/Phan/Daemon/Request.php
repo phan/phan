@@ -19,6 +19,7 @@ use Phan\Library\FileCache;
 use Phan\Library\StringUtil;
 use Phan\Output\IssuePrinterInterface;
 use Phan\Output\Printer\FilteringPrinter;
+use Phan\Output\Printer\CapturingJSONPrinter;
 use Phan\Output\PrinterFactory;
 use Symfony\Component\Console\Output\BufferedOutput;
 
@@ -77,6 +78,9 @@ class Request
 
     /** @var list<string>|null the list of files the client has requested to be analyzed */
     private $files = null;
+
+    /** @var IssuePrinterInterface possibly a CapturingJSONPrinter, to avoid json_encode+json_decode overhead when there's a lot of issues in language server mode. */
+    private $raw_printer;
 
     /**
      * A set of process ids of child processes
@@ -271,7 +275,12 @@ class Request
         // this deliberately sends only analysis results of the files that are currently open.
         //
         // Otherwise, there might be an overwhelming number of issues to solve in some projects before using this in the IDE (e.g. PhanUnreferencedUseNormal)
-        $printer = $factory->getPrinter($format, $this->buffered_output);
+        if (($this->request_config[self::PARAM_FORMAT] ?? null) === 'json') {
+            $printer = new CapturingJSONPrinter();
+        } else {
+            $printer = $factory->getPrinter($format, $this->buffered_output);
+        }
+        $this->raw_printer = $printer;
         $files = $this->request_config[self::PARAM_FILES] ?? null;
         if (is_array($files) && count($files) > 0 && !Config::getValue('language_server_disable_output_filter')) {
             return new FilteringPrinter($files, $printer);
@@ -299,14 +308,12 @@ class Request
      */
     public function respondWithIssues(int $issue_count) : void
     {
-        $raw_issues = $this->buffered_output->fetch();
-        if (($this->request_config[self::PARAM_FORMAT] ?? null) === 'json') {
-            $issues = \json_decode($raw_issues, true);
-            if (!\is_array($issues)) {
-                $issues = "(Failed to decode) " . \json_last_error_msg() . ': ' . $raw_issues;
-            }
+        if ($this->raw_printer instanceof CapturingJSONPrinter) {
+            // Optimization: Avoid json_encode+json_decode overhead and just take the raw array that was built.
+            // This slightly speeds up responses with a lot of issues (e.g. due to unmatched quotes in strings).
+            $issues = $this->raw_printer->getIssues();
         } else {
-            $issues = $raw_issues;
+            $issues = $this->buffered_output->fetch();
         }
         $response = [
             "status" => self::STATUS_OK,

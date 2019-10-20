@@ -32,6 +32,7 @@ New features(Analysis):
 
 Language Server/Daemon mode:
 + Reduce the CPU usage of the language server's main process when the `pcntl` module is used to fork analysis processes (Unix/Linux).
++ Speed up serializing large responses in language server mode (e.g. when a string has an unmatched quote).
 
 Oct 13 2019, Phan 2.3.0
 -----------------------
