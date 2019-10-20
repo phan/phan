@@ -90,7 +90,7 @@ final class EmptyUnionType extends UnionType
     }
 
     /**
-     * Returns a union type which add the given types to this type
+     * Returns a union type which adds the given phpdoc/real types to this type
      * @override
      */
     public function withUnionType(UnionType $union_type) : UnionType

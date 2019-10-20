@@ -727,7 +727,7 @@ class UnionType implements Serializable
     }
 
     /**
-     * Returns a union type which add the given types to this type
+     * Returns a union type which adds the given types to this type
      * @phan-pure
      */
     public function withUnionType(UnionType $union_type) : UnionType
