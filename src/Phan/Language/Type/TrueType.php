@@ -24,9 +24,14 @@ final class TrueType extends ScalarType
         return true;
     }
 
+    public function isPossiblyFalsey() : bool
+    {
+        return $this->is_nullable;
+    }
+
     public function isAlwaysTruthy() : bool
     {
-        return true;
+        return !$this->is_nullable;
     }
 
     public function isPossiblyTrue() : bool

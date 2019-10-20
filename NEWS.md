@@ -3,6 +3,10 @@ Phan NEWS
 ??? ?? 2019, Phan 2.3.2 (dev)
 -----------------------
 
+New features(Analysis):
++ Fix edge cases in checking if some nullable types were possibly falsey
+  (`?true` and literal floats (e.g. `?1.1`))
+
 Oct 20 2019, Phan 2.3.1
 -----------------------
 

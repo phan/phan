@@ -195,7 +195,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
     /** @override */
     public function isPossiblyFalsey() : bool
     {
-        return !$this->value;
+        return !$this->value || $this->is_nullable;
     }
 
     /** @override */
@@ -213,7 +213,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
     /** @override */
     public function isAlwaysTruthy() : bool
     {
-        return (bool)$this->value;
+        return (bool)$this->value && !$this->is_nullable;
     }
 
     /**
