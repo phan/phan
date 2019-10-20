@@ -9,8 +9,8 @@ function test_in_loop() {
         $value = $x ?? $y;
         echo "Found $value\n";
         $x = null;
+        var_export(function () { return 'never called'; } ?? 'default');  // This is definitely non-null whether it's in a loop or not.
     }
-
     $varInLoop = 2.3;
     echo $varInLoop ?? 'blah';
     foreach ([2, 3] as $y) {
@@ -29,3 +29,4 @@ echo $nullVarInGlobalScope ?? "default";  // PhanCoalescingAlwaysNullInGlobalSco
 echo null ?? rand(0,2);  // PhanCoalescingAlwaysNull
 echo $zeroInGlobalScope ?? rand(0,2);  // PhanCoalescingNeverNullInGlobalScope
 var_export($zeroInGlobalScope === $nullVarInGlobalScope);  // PhanImpossibleTypeComparisonInGlobalScope
+var_export(__LINE__ ?? 'default');  // This is definitely non-null whether it's in the global scope or not.
