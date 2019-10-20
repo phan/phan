@@ -6,6 +6,8 @@ Phan NEWS
 New features(Analysis):
 + Fix edge cases in checking if some nullable types were possibly falsey
   (`?true` and literal floats (e.g. `?1.1`))
++ Emit `PhanCoalescingNeverNull` instead of `PhanCoalescingNeverNullIn*`
+  if it's impossible for the node kind to be null. (#3386)
 
 Oct 20 2019, Phan 2.3.1
 -----------------------

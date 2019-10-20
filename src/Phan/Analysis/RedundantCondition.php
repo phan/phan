@@ -68,8 +68,15 @@ class RedundantCondition
      * @param list<mixed> $issue_args
      * @param Closure(UnionType):bool $is_still_issue
      */
-    public static function emitInstance($node, CodeBase $code_base, Context $context, string $issue_name, array $issue_args, Closure $is_still_issue) : void
-    {
+    public static function emitInstance(
+        $node,
+        CodeBase $code_base,
+        Context $context,
+        string $issue_name,
+        array $issue_args,
+        Closure $is_still_issue,
+        bool $dont_specialize_issue = false
+    ) : void {
         if ($context->isInLoop() && $node instanceof Node) {
             $type_fetcher = self::getLoopNodeTypeFetcher($code_base, $node);
             if ($type_fetcher) {
@@ -90,10 +97,13 @@ class RedundantCondition
                 return;
             }
         }
+        if (!$dont_specialize_issue) {
+            $issue_name = RedundantCondition::chooseSpecificImpossibleOrRedundantIssueKind($node, $context, $issue_name);
+        }
         Issue::maybeEmit(
             $code_base,
             $context,
-            RedundantCondition::chooseSpecificImpossibleOrRedundantIssueKind($node, $context, $issue_name),
+            $issue_name,
             $node->lineno ?? $context->getLineNumberStart(),
             ...$issue_args
         );

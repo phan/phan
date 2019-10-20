@@ -2151,7 +2151,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 ],
                 static function (UnionType $type) : bool {
                     return !$type->containsNullableOrUndefined();
-                }
+                },
+                self::canNodeKindBeNull($left_node)
             );
         } elseif ($left->isNull()) {
             RedundantCondition::emitInstance(
@@ -2170,6 +2171,54 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         }
     }
 
+    /**
+     * @param Node|string|int|float $node
+     */
+    private static function canNodeKindBeNull($node) : bool
+    {
+        if (!$node instanceof Node) {
+            return false;
+        }
+        // Look at the nodes that can be null
+        switch ($node->kind)
+        {
+            case ast\AST_CAST:
+                return $node->flags === ast\flags\TYPE_NULL;
+            case ast\AST_UNARY_OP:
+                return $node->flags === ast\flags\UNARY_SILENCE &&
+                    self::canNodeKindBeNull($node->children['expr']);
+            case ast\AST_BINARY_OP:
+                return $node->flags === ast\flags\BINARY_COALESCE &&
+                    self::canNodeKindBeNull($node->children['left']) &&
+                    self::canNodeKindBeNull($node->children['right']);
+            case ast\AST_CONST:
+            case ast\AST_VAR:
+            case ast\AST_SHELL_EXEC:  // SHELL_EXEC will return null instead of an empty string for no output.
+            case ast\AST_INCLUDE_OR_EVAL:
+                // $x++, $x--, and --$x return null when $x is null. ++$x doesn't.
+            case ast\AST_PRE_INC:
+            case ast\AST_PRE_DEC:
+            case ast\AST_POST_DEC:
+
+            case ast\AST_YIELD_FROM:
+            case ast\AST_YIELD:
+            case ast\AST_DIM:
+            case ast\AST_PROP:
+            case ast\AST_STATIC_PROP:
+            case ast\AST_CALL:
+            case ast\AST_CLASS_CONST:
+            case ast\AST_ASSIGN:
+            case ast\AST_ASSIGN_REF:
+            case ast\AST_ASSIGN_OP:  // XXX could figure out what kinds of assign ops are guaranteed to be non-null
+            case ast\AST_METHOD_CALL:
+            case ast\AST_STATIC_CALL:
+                return true;
+            case ast\AST_CONDITIONAL:
+                return self::canNodeKindBeNull($node->children['right']);
+            default:
+                return false;
+        }
+    }
 
     public function visitConditional(Node $node) : Context
     {
