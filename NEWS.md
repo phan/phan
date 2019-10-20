@@ -30,6 +30,9 @@ New features(Analysis):
 + Allow `list<X>` to cast to `array{0:X, 1?:X}` (#3390)
 + Speed up computing line numbers of diagnostics in the polyfill/fallback parser when there are multiple diagnostics.
 
+Language Server/Daemon mode:
++ Reduce the CPU usage of the language server's main process when the `pcntl` module is used to fork analysis processes (Unix/Linux).
+
 Oct 13 2019, Phan 2.3.0
 -----------------------
 
