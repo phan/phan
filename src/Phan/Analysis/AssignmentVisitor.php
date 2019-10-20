@@ -232,6 +232,7 @@ class AssignmentVisitor extends AnalysisVisitor
      */
     public function visitArray(Node $node) : Context
     {
+        $this->checkValidArrayDestructuring($node);
         if ($this->right_type->hasTopLevelArrayShapeTypeInstances()) {
             $this->analyzeShapedArrayAssignment($node);
         } else {
@@ -239,6 +240,29 @@ class AssignmentVisitor extends AnalysisVisitor
             $this->analyzeGenericArrayAssignment($node);
         }
         return $this->context;
+    }
+
+    private function checkValidArrayDestructuring(Node $node) : void
+    {
+        if (!$node->children) {
+            $this->emitIssue(
+                Issue::SyntaxEmptyListArrayDestructuring,
+                $node->lineno
+            );
+            return;
+        }
+        $bitmask = 0;
+        foreach ($node->children as $c) {
+            // When $c is null, it's the same as an array entry without a key for purposes of warning.
+            $bitmask |= (isset($c->children['key']) ? 1 : 2);
+            if ($bitmask === 3) {
+                $this->emitIssue(
+                    Issue::SyntaxMixedKeyNoKeyArrayDestructuring,
+                    $c->lineno ?? $node->lineno
+                );
+                return;
+            }
+        }
     }
 
     /**

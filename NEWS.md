@@ -8,6 +8,7 @@ New features(Analysis):
   (`?true` and literal floats (e.g. `?1.1`))
 + Emit `PhanCoalescingNeverNull` instead of `PhanCoalescingNeverNullIn*`
   if it's impossible for the node kind to be null. (#3386)
++ Warn about array destructuring syntax errors (`[] = $arr`, `[$withoutKey, 1 => $withKey] = $arr`)
 
 Oct 20 2019, Phan 2.3.1
 -----------------------

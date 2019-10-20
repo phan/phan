@@ -1,0 +1,11 @@
+%s:3 PhanSyntaxEmptyListArrayDestructuring Cannot use an empty list in the left hand side of an array destructuring operation
+%s:4 PhanSyntaxMixedKeyNoKeyArrayDestructuring Cannot mix keyed and unkeyed array entries in array destructuring assignments
+%s:4 PhanUnusedVariable Unused definition of variable $arg
+%s:4 PhanUnusedVariable Unused definition of variable $prog
+%s:5 PhanSyntaxMixedKeyNoKeyArrayDestructuring Cannot mix keyed and unkeyed array entries in array destructuring assignments
+%s:5 PhanUnusedVariable Unused definition of variable $arg
+%s:6 PhanSyntaxEmptyListArrayDestructuring Cannot use an empty list in the left hand side of an array destructuring operation
+%s:8 PhanSyntaxEmptyListArrayDestructuring Cannot use an empty list in the left hand side of an array destructuring operation
+%s:10 PhanSyntaxMixedKeyNoKeyArrayDestructuring Cannot mix keyed and unkeyed array entries in array destructuring assignments
+%s:10 PhanUnusedVariable Unused definition of variable $a
+%s:10 PhanUnusedVariable Unused definition of variable $b
