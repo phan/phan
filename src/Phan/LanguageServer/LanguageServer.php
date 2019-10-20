@@ -624,13 +624,15 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             $read_stream = self::streamForParent($sockets);
             $concatenated = '';
             while (!\feof($read_stream)) {
-                $buffer = \fread($read_stream, 1024);
+                $buffer = \fread($read_stream, 8096);
                 if ($buffer === false) {
                     Logger::logError("fread from language client failed");
                     break;
                 }
                 if (strlen($buffer) > 0) {
                     $concatenated .= $buffer;
+                } else {
+                    self::waitForDataOnReadSocket($read_stream);
                 }
             }
             $json_contents = \json_decode($concatenated, true);
@@ -665,6 +667,21 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         $this->protocolReader->stopAcceptingNewRequests();
         $this->is_accepting_new_requests = false;
         Loop\stop();  // abort the loop (without closing streams?)
+    }
+
+    /**
+     * Calls stream_select to avoid a busy loop to read from the worker when pcntl is used to fork a worker analysis process.
+     *
+     * @param resource $read_stream
+     */
+    private static function waitForDataOnReadSocket($read_stream) : void
+    {
+        $read = [$read_stream];
+        $write = [];
+        $except = [];
+        // > Remember that the timeout value is the maximum time that will elapse;
+        // > stream_select() will return as soon as the requested streams are ready for use.
+        stream_select($read, $write, $except, 1);
     }
 
     /**

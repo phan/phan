@@ -286,9 +286,10 @@ class InvokeExecutionPromise
                     $read_streams = [];
                     $write_streams = [$stream];
                     $except_streams = [];
-                    stream_select($read_streams, $write_streams, $except_streams, 0);
+                    // Wait for the stream to be available for write with a timeout of 1 second.
+                    stream_select($read_streams, $write_streams, $except_streams, 1);
                     if (!$write_streams) {
-                        usleep(1000);
+                        usleep(1000);  // Probably unnecessary, but leaving it in anyway
                         // This is blocked?
                         continue;
                     }
