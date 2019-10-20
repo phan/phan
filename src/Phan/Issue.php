@@ -33,6 +33,8 @@ class Issue
     const ContinueOrBreakNotInLoop       = 'PhanContinueOrBreakNotInLoop';
     const ContinueOrBreakTooManyLevels   = 'PhanContinueOrBreakTooManyLevels';
     const SyntaxCompileWarning           = 'PhanSyntaxCompileWarning';
+    const SyntaxEmptyListArrayDestructuring = 'PhanSyntaxEmptyListArrayDestructuring';
+    const SyntaxMixedKeyNoKeyArrayDestructuring = 'PhanSyntaxMixedKeyNoKeyArrayDestructuring';
 
     // Issue::CATEGORY_UNDEFINED
     const AmbiguousTraitAliasSource = 'PhanAmbiguousTraitAliasSource';
@@ -833,6 +835,22 @@ class Issue
                 'Saw a warning while parsing: {DETAILS}',
                 self::REMEDIATION_A,
                 17011
+            ),
+            new Issue(
+                self::SyntaxEmptyListArrayDestructuring,
+                self::CATEGORY_SYNTAX,
+                self::SEVERITY_CRITICAL,
+                'Cannot use an empty list in the left hand side of an array destructuring operation',
+                self::REMEDIATION_A,
+                17012
+            ),
+            new Issue(
+                self::SyntaxMixedKeyNoKeyArrayDestructuring,
+                self::CATEGORY_SYNTAX,
+                self::SEVERITY_CRITICAL,
+                'Cannot mix keyed and unkeyed array entries in array destructuring assignments',
+                self::REMEDIATION_A,
+                17013
             ),
 
             // Issue::CATEGORY_UNDEFINED

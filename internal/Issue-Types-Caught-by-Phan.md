@@ -1254,6 +1254,14 @@ Parameter ${PARAMETER} is never used
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.2.13/tests/plugin_test/expected/047_crash.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.13/tests/plugin_test/src/047_crash.php#L6).
 
+## PhanUnusedReturnBranchWithoutSideEffects
+
+```
+Possibly useless branch in a function where the return value must be used - all branches return values equivalent to {CODE} (previous return is at line {LINE})
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/160_useless_return.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/160_useless_return.php#L12).
+
 ## PhanUnusedVariable
 
 Phan has various checks (See the `unused_variable_detection` config)
@@ -4268,6 +4276,14 @@ Saw a warning while parsing: {DETAILS}
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.2.13/tests/plugin_test/expected/157_polyfill_compilation_warning.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.13/tests/plugin_test/src/157_polyfill_compilation_warning.php#L77).
 
+## PhanSyntaxEmptyListArrayDestructuring
+
+```
+Cannot use an empty list in the left hand side of an array destructuring operation
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0799_array_destructuring_failures.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0799_array_destructuring_failures.php#L3).
+
 ## PhanSyntaxError
 
 This emits warnings for unparsable PHP files (detected by `php-ast`).
@@ -4276,3 +4292,11 @@ Note: This is not the same thing as running `php -l` on a file - PhanSyntaxError
 Note: If the native parser is used, the reported column is a guess. Phan will use the column of the error reported by the **polyfill** if the errors are on the same line.
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.2.13/tests/plugin_test/expected/136_unexpected_bracket.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.13/tests/plugin_test/src/136_unexpected_bracket.php#L2).
+
+## PhanSyntaxMixedKeyNoKeyArrayDestructuring
+
+```
+Cannot mix keyed and unkeyed array entries in array destructuring assignments
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0799_array_destructuring_failures.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0799_array_destructuring_failures.php#L4).
