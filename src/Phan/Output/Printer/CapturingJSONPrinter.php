@@ -2,22 +2,16 @@
 
 namespace Phan\Output\Printer;
 
-use AssertionError;
 use Phan\Issue;
 use Phan\IssueInstance;
-use Phan\Output\BufferedPrinterInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * This prints issues as raw JSON to the configured OutputInterface.
  * The output is intended for use by other programs (or processes)
  */
-class JSONPrinter implements BufferedPrinterInterface
+class CapturingJSONPrinter extends JSONPrinter
 {
-
-    /** @var OutputInterface an output that JSON encoded can be written to. */
-    protected $output;
-
     /** @var list<array<string,mixed>> the issue data to be JSON encoded. */
     protected $messages = [];
 
@@ -54,18 +48,17 @@ class JSONPrinter implements BufferedPrinterInterface
     /** flush printer buffer */
     public function flush() : void
     {
-        // NOTE: Need to use OUTPUT_RAW for JSON.
-        // Otherwise, error messages such as "...Unexpected << (T_SL)" don't get formatted properly (They get escaped into unparsable JSON)
-        $encoded_message = \json_encode($this->messages, \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE | \JSON_PARTIAL_OUTPUT_ON_ERROR);
-        if (!\is_string($encoded_message)) {
-            throw new AssertionError("Failed to encode anything for what should be an array");
-        }
-        $this->output->write($encoded_message . "\n", false, OutputInterface::OUTPUT_RAW);
-        $this->messages = [];
+        // Deliberately a no-op
     }
 
-    public function configureOutput(OutputInterface $output) : void
+    public function configureOutput(OutputInterface $_) : void
     {
-        $this->output = $output;
+        // Deliberately a no-op.
+    }
+
+    /** @return list<array<string,mixed>> the issue data to be JSON encoded. */
+    public function getIssues() : array
+    {
+        return $this->messages;
     }
 }
