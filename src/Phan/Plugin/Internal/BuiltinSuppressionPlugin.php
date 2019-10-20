@@ -13,6 +13,7 @@ use Phan\Language\FQSEN;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Library\FileCache;
+use Phan\Phan;
 use Phan\PluginV3;
 use Phan\PluginV3\SuppressionCapability;
 use Phan\Suggestion;
@@ -114,22 +115,27 @@ final class BuiltinSuppressionPlugin extends PluginV3 implements
         if ($file_path === 'internal') {
             return [];
         }
+        if (Phan::isExcludedAnalysisFile($file_path)) {
+            // Phan might call Issue::maybeEmit on code in vendor.
+            // Don't bother loading or tokenizing the code in that case.
+            return [];
+        }
         $absolute_file_path = Config::projectPath($file_path);
         $file_contents = FileCache::getOrReadEntry($absolute_file_path)->getContents();  // This is the recommended way to fetch the file contents
 
         // This is expensive to compute, so we cache it and recalculate if the file contents for $absolute_file_path change.
         // It will change when Phan is running in language server mode, updating FileCache.
         $cached_suppressions = $this->current_line_suppressions[$absolute_file_path] ?? null;
-        $suppress_issue_list = $cached_suppressions['suppressions'] ?? [];
 
-        if (($cached_suppressions['contents'] ?? null) !== $file_contents) {
-            $suppress_issue_list = $this->computeIssueSuppressionList($code_base, $file_contents);
-            $this->current_line_suppressions[$absolute_file_path] = [
-                'contents' => $file_contents,
-                'suppressions' => $suppress_issue_list,
-            ];
-            unset($this->used_file_based_suppressions[$absolute_file_path]);
+        if (($cached_suppressions['contents'] ?? null) === $file_contents) {
+            return $cached_suppressions['suppressions'] ?? [];
         }
+        $suppress_issue_list = $this->computeIssueSuppressionList($code_base, $file_contents);
+        $this->current_line_suppressions[$absolute_file_path] = [
+            'contents' => $file_contents,
+            'suppressions' => $suppress_issue_list,
+        ];
+        unset($this->used_file_based_suppressions[$absolute_file_path]);
         return $suppress_issue_list;
     }
 
