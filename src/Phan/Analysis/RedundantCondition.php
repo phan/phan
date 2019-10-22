@@ -75,29 +75,29 @@ class RedundantCondition
         string $issue_name,
         array $issue_args,
         Closure $is_still_issue,
-        bool $dont_specialize_issue = false
+        bool $specialize_issue = true
     ) : void {
-        if ($context->isInLoop() && $node instanceof Node) {
-            $type_fetcher = self::getLoopNodeTypeFetcher($code_base, $node);
-            if ($type_fetcher) {
-                // @phan-suppress-next-line PhanAccessMethodInternal
-                $context->deferCheckToOutermostLoop(static function (Context $context_after_loop) use ($code_base, $node, $type_fetcher, $is_still_issue, $issue_name, $issue_args, $context) : void {
-                    $var_type = $type_fetcher($context_after_loop);
-                    if ($var_type !== null && ($var_type->isEmpty() || !$is_still_issue($var_type))) {
-                        return;
-                    }
-                    Issue::maybeEmit(
-                        $code_base,
-                        $context,
-                        RedundantCondition::chooseSpecificImpossibleOrRedundantIssueKind($node, $context, $issue_name),
-                        $node->lineno,
-                        ...$issue_args
-                    );
-                });
-                return;
+        if ($specialize_issue) {
+            if ($context->isInLoop() && $node instanceof Node) {
+                $type_fetcher = self::getLoopNodeTypeFetcher($code_base, $node);
+                if ($type_fetcher) {
+                    // @phan-suppress-next-line PhanAccessMethodInternal
+                    $context->deferCheckToOutermostLoop(static function (Context $context_after_loop) use ($code_base, $node, $type_fetcher, $is_still_issue, $issue_name, $issue_args, $context) : void {
+                        $var_type = $type_fetcher($context_after_loop);
+                        if ($var_type !== null && ($var_type->isEmpty() || !$is_still_issue($var_type))) {
+                            return;
+                        }
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            RedundantCondition::chooseSpecificImpossibleOrRedundantIssueKind($node, $context, $issue_name),
+                            $node->lineno,
+                            ...$issue_args
+                        );
+                    });
+                    return;
+                }
             }
-        }
-        if (!$dont_specialize_issue) {
             $issue_name = RedundantCondition::chooseSpecificImpossibleOrRedundantIssueKind($node, $context, $issue_name);
         }
         Issue::maybeEmit(
