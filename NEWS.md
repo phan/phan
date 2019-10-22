@@ -9,6 +9,8 @@ New features(Analysis):
 + Emit `PhanCoalescingNeverNull` instead of `PhanCoalescingNeverNullIn*`
   if it's impossible for the node kind to be null. (#3386)
 + Warn about array destructuring syntax errors (`[] = $arr`, `[$withoutKey, 1 => $withKey] = $arr`)
++ Return a clone of an existing variable if one already exists in Variable::fromNodeInContext. (#3406)
+  This helps analyze `PassByReferenceVariable`s.
 
 Oct 20 2019, Phan 2.3.1
 -----------------------
