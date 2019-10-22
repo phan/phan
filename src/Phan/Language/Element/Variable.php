@@ -125,6 +125,11 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
             $node
         ))->getVariableName();
 
+        $scope = $context->getScope();
+        $variable = $scope->getVariableByNameOrNull($variable_name);
+        if ($variable) {
+            return clone($variable);
+        }
 
         // Get the type of the assignment
         $union_type = $should_check_type
@@ -132,8 +137,7 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
             : UnionType::empty();
 
         $variable = new Variable(
-            $context
-                ->withLineNumberStart($node->lineno ?? 0),
+            $context->withLineNumberStart($node->lineno),
             $variable_name,
             $union_type,
             0
