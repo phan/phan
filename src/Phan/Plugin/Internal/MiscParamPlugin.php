@@ -66,6 +66,10 @@ final class MiscParamPlugin extends PluginV3 implements
             if (\count($args) !== 1) {
                 return;
             }
+            if (($args[0]->kind ?? null) === ast\AST_UNPACK) {
+                // min(...$var)
+                return;
+            }
             self::analyzeNodeUnionTypeCast(
                 $args[0],
                 $context,
@@ -160,6 +164,10 @@ final class MiscParamPlugin extends PluginV3 implements
             // (string[] pieces, string glue) or
             // (string[] pieces)
             if ($argcount == 1) {
+                if (($args[0]->kind ?? null) === ast\AST_UNPACK) {
+                    // implode(...$var)
+                    return;
+                }
                 self::analyzeNodeUnionTypeCastStringArrayLike(
                     $args[0],
                     $context,

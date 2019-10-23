@@ -1,0 +1,1 @@
+%s:8 PhanPossiblyInfiniteRecursionSameParams recurs() is calling itself with the same parameters it was called with. This may cause infinite recursion (Phan does not check for changes to global or shared state).

@@ -3840,14 +3840,26 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // TODO also check AST_UNPACK against variadic
         $arg_names = [];
         foreach ($argument_list_node->children as $i => $arg) {
-            if (!$arg instanceof Node || $arg->kind !== ast\AST_VAR) {
+            if (!$arg instanceof Node) {
+                return;
+            }
+            $is_unpack = false;
+            if ($arg->kind === ast\AST_UNPACK) {
+                $arg = $arg->children['expr'];
+                if (!$arg instanceof Node) {
+                    return;
+                }
+                $is_unpack = true;
+            }
+            if ($arg->kind !== ast\AST_VAR) {
                 return;
             }
             $arg_name = $arg->children['name'];
             if (!\is_string($arg_name)) {
                 return;
             }
-            if ($parameter_list[$i]->getName() !== $arg_name) {
+            $param = $parameter_list[$i];
+            if ($param->getName() !== $arg_name || $param->isVariadic() !== $is_unpack) {
                 return;
             }
             $arg_names[] = $arg_name;
