@@ -11,6 +11,9 @@ New features(Analysis):
 + Warn about array destructuring syntax errors (`[] = $arr`, `[$withoutKey, 1 => $withKey] = $arr`)
 + Return a clone of an existing variable if one already exists in Variable::fromNodeInContext. (#3406)
   This helps analyze `PassByReferenceVariable`s.
++ Don't emit PhanParamSpecial2 for min/max/implode/join with a single vararg. (#3396)
++ Properly emit PhanPossiblyInfiniteRecursionSameParams for functions with varargs.
++ Emit `PhanNoopNew` or `PhanNoopNewNoSideEffects` when an object is created with `new expr(...)` but the result is not used (#3410)
 
 Oct 20 2019, Phan 2.3.1
 -----------------------

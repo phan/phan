@@ -1,0 +1,1 @@
+%s:18 PhanNoopNew Unused result of new object creation expression in new A410() (this may be called for the side effects of the non-empty constructor or destructor)

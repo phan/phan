@@ -62,13 +62,12 @@ use Phan\PluginV3\PreAnalyzeNodeCapability;
 use Phan\PluginV3\ReturnTypeOverrideCapability;
 use Phan\PluginV3\SuppressionCapability;
 use Phan\Suggestion;
-use ReflectionException;
-use ReflectionProperty;
 use Throwable;
 use UnusedSuppressionPlugin;
 use function get_class;
 use function is_null;
 use function is_object;
+use function property_exists;
 use const EXIT_FAILURE;
 use const PHP_EOL;
 use const STDERR;
@@ -962,14 +961,7 @@ final class ConfigPluginSet extends PluginV3 implements
      */
     private static function getGenericClosureForPluginAwarePreAnalysisVisitor(string $plugin_analysis_class) : Closure
     {
-        try {
-            new ReflectionProperty($plugin_analysis_class, 'parent_node_list');
-            $has_parent_node_list = true;
-        } catch (ReflectionException $_) {
-            $has_parent_node_list = false;
-        }
-
-        if ($has_parent_node_list) {
+        if (property_exists($plugin_analysis_class, 'parent_node_list')) {
             /**
              * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind.
              *
@@ -1067,14 +1059,7 @@ final class ConfigPluginSet extends PluginV3 implements
      */
     private static function getGenericClosureForPluginAwarePostAnalysisVisitor(string $plugin_analysis_class) : Closure
     {
-        try {
-            new ReflectionProperty($plugin_analysis_class, 'parent_node_list');
-            $has_parent_node_list = true;
-        } catch (ReflectionException $_) {
-            $has_parent_node_list = false;
-        }
-
-        if ($has_parent_node_list) {
+        if (property_exists($plugin_analysis_class, 'parent_node_list')) {
             /**
              * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind.
              *

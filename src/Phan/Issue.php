@@ -341,6 +341,8 @@ class Issue
     const NoopIsset                     = 'PhanNoopIsset';
     const NoopCast                      = 'PhanNoopCast';
     const NoopTernary                   = 'PhanNoopTernary';
+    const NoopNew                       = 'PhanNoopNew';
+    const NoopNewNoSideEffects          = 'PhanNoopNewNoSideEffects';
     const UnreachableCatch              = 'PhanUnreachableCatch';
     const UnreferencedClass             = 'PhanUnreferencedClass';
     const UnreferencedFunction          = 'PhanUnreferencedFunction';
@@ -3651,6 +3653,22 @@ class Issue
                 "Unused result of a ternary expression where the true/false results don't seen to have side effects",
                 self::REMEDIATION_B,
                 6073
+            ),
+            new Issue(
+                self::NoopNew,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                "Unused result of new object creation expression in {CODE} (this may be called for the side effects of the non-empty constructor or destructor)",
+                self::REMEDIATION_B,
+                6084
+            ),
+            new Issue(
+                self::NoopNewNoSideEffects,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Unused result of new object creation expression in {CODE} (this is likely free of side effects - there is no known non-empty constructor or destructor)",
+                self::REMEDIATION_B,
+                6085
             ),
             new Issue(
                 self::EmptyPublicMethod,

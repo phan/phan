@@ -1,0 +1,1 @@
+%s:12 PhanNoopNewNoSideEffects Unused result of new object creation expression in new C() (this is likely free of side effects - there is no known non-empty constructor or destructor)

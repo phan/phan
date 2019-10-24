@@ -15,3 +15,5 @@ src/031_sleep.php:37 PhanTypeMismatchReturn Returning type void but __sleep() is
 src/031_sleep.php:37 SleepCheckerInvalidReturnStatement __sleep must return an array of strings. This is definitely not an array.
 src/031_sleep.php:39 SleepCheckerInvalidPropName __sleep is returning an array that includes _myprop, which cannot be found
 src/031_sleep.php:39 SleepCheckerInvalidPropName __sleep is returning an array that includes x, which cannot be found
+src/031_sleep.php:44 PhanNoopNewNoSideEffects Unused result of new object creation expression in new A31() (this is likely free of side effects - there is no known non-empty constructor or destructor)
+src/031_sleep.php:45 PhanNoopNewNoSideEffects Unused result of new object creation expression in new B31() (this is likely free of side effects - there is no known non-empty constructor or destructor)

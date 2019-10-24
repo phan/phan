@@ -1,8 +1,11 @@
 %s:2 PhanContextNotObject Cannot access parent when not in object context
 %s:2 PhanContextNotObject Cannot access static when not in object context
 %s:3 PhanContextNotObject Cannot access parent when not in object context
+%s:3 PhanNoopNew Unused result of new object creation expression in new parent() (this may be called for the side effects of the non-empty constructor or destructor)
 %s:4 PhanContextNotObject Cannot access self when not in object context
+%s:4 PhanNoopNew Unused result of new object creation expression in new self() (this may be called for the side effects of the non-empty constructor or destructor)
 %s:5 PhanContextNotObject Cannot access static when not in object context
+%s:5 PhanNoopNew Unused result of new object creation expression in new static(2) (this may be called for the side effects of the non-empty constructor or destructor)
 %s:6 PhanContextNotObject Cannot access parent when not in object context
 %s:7 PhanContextNotObject Cannot access self when not in object context
 %s:8 PhanContextNotObject Cannot access static when not in object context

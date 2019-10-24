@@ -869,6 +869,22 @@ Unused result of an isset(expr) check
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.2.13/tests/misc/fallback_test/expected/011_isset_intrinsic_expression5.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.13/tests/misc/fallback_test/src/011_isset_intrinsic_expression5.php#L2).
 
+## PhanNoopNew
+
+```
+Unused result of new object creation expression in {CODE} (this may be called for the side effects of the non-empty constructor or destructor)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0803_noop_new.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0803_noop_new.php#L4).
+
+## PhanNoopNewNoSideEffects
+
+```
+Unused result of new object creation expression in {CODE} (this is likely free of side effects - there is no known non-empty constructor or destructor)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0270_deprecated_trait.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0270_deprecated_trait.php#L7).
+
 ## PhanNoopNumericLiteral
 
 ```
