@@ -1,3 +1,4 @@
 src/150_use_constructor.php:17 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \MyClass150::makeInstance() defined at src/150_use_constructor.php:10
 src/150_use_constructor.php:18 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \make_myclass() defined at src/150_use_constructor.php:14
 src/150_use_constructor.php:21 PhanPluginUseReturnValueNoopVoid The function/method \my_void150() is declared to return void and it has no side effects
+src/150_use_constructor.php:22 PhanNoopNew Unused result of new object creation expression in new MyClass150($x) (this may be called for the side effects of the non-empty constructor or destructor)
