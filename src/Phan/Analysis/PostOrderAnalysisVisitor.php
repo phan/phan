@@ -2048,6 +2048,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitNew(Node $node) : Context
     {
+        $class_list = [];
         try {
             $context_node = new ContextNode(
                 $this->code_base,
@@ -2106,7 +2107,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         } catch (Exception $_) {
             // If we can't figure out what kind of a call
             // this is, don't worry about it
-            return $this->context;
+        }
+        if ($this->isInNoOpPosition($node)) {
+            $this->warnNoopNew($node, $class_list);
         }
 
         return $this->context;
@@ -4096,6 +4099,56 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $node->lineno
             );
         }
+    }
+
+    private static function hasEmptyImplementation(Method $method) : bool
+    {
+        if ($method->isAbstract() || $method->isPHPInternal()) {
+            return false;
+        }
+        $stmts = $method->getNode()->children['stmts'] ?? null;
+        if (!$stmts instanceof Node) {
+            // This is abstract or a stub or a magic method
+            return false;
+        }
+        return empty($stmts->children);
+    }
+
+    /**
+     * @param list<Clazz> $class_list
+     */
+    private function warnNoopNew(
+        Node $node,
+        array $class_list
+    ) : void {
+        $has_constructor_or_destructor = count($class_list) === 0;
+        foreach ($class_list as $class) {
+            if ($class->hasMethodWithName($this->code_base, '__construct', true)) {
+                $constructor = $class->getMethodByName($this->code_base, '__construct');
+                if (!$constructor->getPhanFlagsHasState(\Phan\Language\Element\Flags::IS_FAKE_CONSTRUCTOR)) {
+                    if (!self::hasEmptyImplementation($constructor)) {
+                        $has_constructor_or_destructor = true;
+                        break;
+                    }
+                }
+            }
+            if ($class->hasMethodWithName($this->code_base, '__destruct', true)) {
+                $destructor = $class->getMethodByName($this->code_base, '__destruct');
+                if (!self::hasEmptyImplementation($destructor)) {
+                    $has_constructor_or_destructor = true;
+                    break;
+                }
+            }
+            if (!$class->isClass() || $class->isAbstract()) {
+                $has_constructor_or_destructor = true;
+                break;
+            }
+        }
+        $this->emitIssue(
+            $has_constructor_or_destructor ? Issue::NoopNew : Issue::NoopNewNoSideEffects,
+            $node->lineno,
+            ASTReverter::toShortString($node)
+        );
     }
 
     const LOOP_SCOPE_KINDS = [

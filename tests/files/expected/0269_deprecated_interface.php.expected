@@ -1,1 +1,2 @@
 %s:5 PhanDeprecatedInterface Using a deprecated interface \I defined at %s:3
+%s:7 PhanNoopNewNoSideEffects Unused result of new object creation expression in new C1() (this is likely free of side effects - there is no known non-empty constructor or destructor)

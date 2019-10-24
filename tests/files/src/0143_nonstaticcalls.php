@@ -54,5 +54,5 @@ namespace
     new NS1\A();
     new NS2\B();
     $c = new NS2\C();
-	$c->callStatics();
+    $c->callStatics();
 }

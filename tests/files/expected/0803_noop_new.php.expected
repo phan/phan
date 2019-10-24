@@ -1,0 +1,4 @@
+%s:4 PhanInfiniteLoop The loop condition true of type true is always truthy and nothing seems to exit the loop
+%s:4 PhanNoopNewNoSideEffects Unused result of new object creation expression in new stdClass() (this is likely free of side effects - there is no known non-empty constructor or destructor)
+%s:4 PhanNoopNew Unused result of new object creation expression in new ArrayObject([3]) (this may be called for the side effects of the non-empty constructor or destructor)
+%s:6 PhanNoopNewNoSideEffects Unused result of new object creation expression in new C803() (this is likely free of side effects - there is no known non-empty constructor or destructor)

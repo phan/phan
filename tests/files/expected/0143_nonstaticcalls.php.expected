@@ -1,0 +1,2 @@
+%s:54 PhanNoopNew Unused result of new object creation expression in new NS1\A() (this may be called for the side effects of the non-empty constructor or destructor)
+%s:55 PhanNoopNew Unused result of new object creation expression in new NS2\B() (this may be called for the side effects of the non-empty constructor or destructor)

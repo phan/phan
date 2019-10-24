@@ -4,6 +4,7 @@
 %s:14 PhanUndeclaredGlobalVariable Global variable $v1 is undeclared
 %s:14 PhanUndeclaredGlobalVariable Global variable $v2 is undeclared
 %s:17 PhanContextNotObject Cannot access parent when not in object context
+%s:17 PhanNoopNew Unused result of new object creation expression in new parent() (this may be called for the side effects of the non-empty constructor or destructor)
 %s:22 PhanDeprecatedFunction Call to deprecated function \f1() defined at %s:21
 %s:25 PhanNoopArray Unused array
 %s:28 PhanNoopClosure Unused closure
@@ -32,7 +33,9 @@
 %s:107 PhanTypeComparisonFromArray array to string comparison
 %s:110 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare 42 of type 42 to [1,2] of type array{0:1,1:2}
 %s:110 PhanTypeComparisonToArray int to array comparison
+%s:116 PhanNoopNew Unused result of new object creation expression in new C6() (this may be called for the side effects of the non-empty constructor or destructor)
 %s:116 PhanTypeInstantiateAbstract Instantiation of abstract class \C6
+%s:119 PhanNoopNew Unused result of new object creation expression in new C7() (this may be called for the side effects of the non-empty constructor or destructor)
 %s:119 PhanTypeInstantiateInterface Instantiation of interface \C7
 %s:129 PhanTypeMismatchArgumentReal Argument 1 ($i) is 'string' but \f8() takes int defined at %s:128
 %s:132 PhanTypeMismatchArgumentInternal Argument 1 ($string) is 42 but \strlen() takes string
