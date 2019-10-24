@@ -1,0 +1,10 @@
+src/161_top_level_noop.php:7 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \json_encode
+src/161_top_level_noop.php:7 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \strlen
+src/161_top_level_noop.php:8 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \json_encode
+src/161_top_level_noop.php:10 PhanPluginNonBoolInLogicalArith Non bool value of type false|string in logical arithmetic
+src/161_top_level_noop.php:10 PhanPluginNonBoolInLogicalArith Non bool value of type int in logical arithmetic
+src/161_top_level_noop.php:10 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \strlen
+src/161_top_level_noop.php:11 PhanPluginNonBoolInLogicalArith Non bool value of type false|string in logical arithmetic
+src/161_top_level_noop.php:11 PhanPluginNonBoolInLogicalArith Non bool value of type string in logical arithmetic
+src/161_top_level_noop.php:11 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \var_export
+src/161_top_level_noop.php:13 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \strlen

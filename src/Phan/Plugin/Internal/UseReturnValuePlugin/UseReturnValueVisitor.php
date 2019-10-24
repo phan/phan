@@ -36,13 +36,31 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         if (!$parent) {
             return [null, true];
         }
-        while ($parent->kind === ast\AST_UNARY_OP) {
+        while (true) {
+            switch ($parent->kind) {
+                case ast\AST_UNARY_OP:
+                    break;
+                case ast\AST_CONDITIONAL:
+                    if ($node === $parent->children['cond']) {
+                        return [null, true];
+                    }
+                    break;
+                case ast\AST_BINARY_OP:
+                    if (!\in_array($parent->flags, [ast\flags\BINARY_COALESCE, ast\flags\BINARY_BOOL_OR, ast\flags\BINARY_BOOL_AND], true) || $node !== $parent->children['right']) {
+                        return [null, true];
+                    }
+                    break;
+                default:
+                    break 2;
+            }
+
             $node = $parent;
             $parent = \prev($this->parent_node_list);
             if (!$parent) {
                 return [null, true];
             }
         }
+        // @phan-suppress-next-line PhanPluginUnreachableCode Phan can't analyze `break 2;`
         switch ($parent->kind) {
             case ast\AST_STMT_LIST:
                 return [$parent, false];
