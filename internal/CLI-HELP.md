@@ -172,6 +172,11 @@ Usage: ./phan [options] [files...]
   cannot be cast to a type in the property's declared union type.
   (Enables the config option `strict_property_checking`)
 
+ --strict-object-checking
+  Warn if any type of the object expression for a property access
+  does not contain that property.
+  (Enables the config option `strict_object_checking`)
+
  --strict-return-checking
   Warn if any type in a returned value's union type
   cannot be cast to the declared return type.
@@ -179,7 +184,7 @@ Usage: ./phan [options] [files...]
 
  -S, --strict-type-checking
   Equivalent to
-  `--strict-method-checking --strict-param-checking --strict-property-checking --strict-return-checking`.
+  `--strict-method-checking --strict-object-checking --strict-param-checking --strict-property-checking --strict-return-checking`.
 
  --use-fallback-parser
   If a file to be analyzed is syntactically invalid
@@ -212,6 +217,21 @@ Usage: ./phan [options] [files...]
   TCP port for Phan to listen for JSON requests on, in daemon mode.
   (e.g. `default`, which is an alias for port 4846.)
   `phan_client` can be used to communicate with the Phan Daemon.
+
+ --save-baseline <path/to/baseline.php>
+  Generates a baseline of pre-existing issues that can be used to suppress
+  pre-existing issues in subsequent runs (with --load-baseline)
+
+  This baseline depends on the environment, CLI and config settings used to run Phan
+  (e.g. --dead-code-detection, plugins, etc.)
+
+  Paths such as .phan/baseline.php, .phan/baseline_deadcode.php, etc. are recommended.
+
+ --load-baseline <path/to/baseline.php>
+  Loads a baseline of pre-existing issues to suppress.
+
+  (For best results, the baseline should be generated with the same/similar
+  environment and settings as those used to run Phan)
 
  -v, --version
   Print Phan's version number
@@ -266,6 +286,18 @@ Extended help:
   (i.e. they are declared once (as a constant expression) and never modified).
   This is almost entirely false positives for most coding styles.
   Implies --unused-variable-detection
+
+ --debug-emitted-issues={basic,verbose}
+  Print backtraces of emitted issues which weren't suppressed to stderr.
+
+ --debug-signal-handler
+  Set up a signal handler that can handle interrupts, SIGUSR1, and SIGUSR2.
+  This requires pcntl, and slows down Phan. When this option is enabled,
+
+  Ctrl-C (kill -INT <pid>) can be used to make Phan stop and print a crash report.
+  (This is useful for diagnosing why Phan or a plugin is slow or not responding)
+  kill -USR1 <pid> can be used to print a backtrace and continue running.
+  kill -USR2 <pid> can be used to print a backtrace, plus values of parameters, and continue running.
 
  --language-server-on-stdin
   Start the language server (For the Language Server protocol).

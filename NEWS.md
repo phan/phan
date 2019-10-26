@@ -1,7 +1,19 @@
 Phan NEWS
 
-??? ?? 2019, Phan 2.3.2 (dev)
+??? ?? 2019, Phan 2.4.0 (dev)
 -----------------------
+
+New features(CLI, Configs):
++ Support saving and loading baselines with `--save-baseline=.phan/baseline.php` and `--load-baseline=.phan/baseline.php`. (#2000)
+  `--save-baseline` will save all pre-existing issues for the provided analysis settings to a file.
+  When Phan is invoked later with `--load-baseline`, it will ignore any
+  issue kinds in the files from `file_suppressions` in the baseline.
+
+  This is useful for setting up analysis with Phan on a new project,
+  or when enabling stricter analysis settings.
+
+  Different baseline files can be used for different Phan configurations.
+  (e.g. `.phan/baseline_deadcode.php` for runs with `--dead-code-detection`)
 
 New features(Analysis):
 + Fix edge cases in checking if some nullable types were possibly falsey

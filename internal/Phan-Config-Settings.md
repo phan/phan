@@ -113,6 +113,13 @@ in static analysis, to the exclusion of others.
 
 These settings can be used to control what issues show up in Phan's output.
 
+## baseline_path
+
+This is the path to a file containing a list of pre-existing issues to ignore, on a per-file basis.
+It's recommended to set this with --load-baseline=path/to/baseline.php
+
+(Default: `null`)
+
 ## disable_file_based_suppression
 
 Set to true in order to ignore file-based issue suppressions.

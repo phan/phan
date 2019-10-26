@@ -6,6 +6,7 @@ use AssertionError;
 use ast\Node;
 use Closure;
 use Phan\AST\Visitor\Element;
+use Phan\CLI;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\IssueException;
@@ -27,6 +28,8 @@ use Phan\LanguageServer\DefinitionResolver;
 use Phan\LanguageServer\GoToDefinitionRequest;
 use Phan\Library\RAII;
 use Phan\Plugin\Internal\ArrayReturnTypeOverridePlugin;
+use Phan\Plugin\Internal\BaselineLoadingPlugin;
+use Phan\Plugin\Internal\BaselineSavingPlugin;
 use Phan\Plugin\Internal\BuiltinSuppressionPlugin;
 use Phan\Plugin\Internal\CallableParamPlugin;
 use Phan\Plugin\Internal\ClosureReturnTypeOverridePlugin;
@@ -846,6 +849,23 @@ final class ConfigPluginSet extends PluginV3 implements
         }
         if (Config::getValue('dead_code_detection') && \count(self::filterByClass($plugin_set, \UnreachableCodePlugin::class)) === 0) {
             $plugin_set[] = $load_plugin('UnreachableCodePlugin');
+        }
+
+        // The baseline saving plugin will save all issues that weren't suppressed by line suppressions, file suppressions, and global Phan suppressions.
+        $save_baseline_path = Config::getValue('__save_baseline_path');
+        if ($save_baseline_path) {
+            // TODO: Phan isn't currently capable of saving a baseline when there are multiple processes.
+            $plugin_set[] = new BaselineSavingPlugin($save_baseline_path);
+        }
+        // NOTE: The baseline loading plugin is deliberately loaded after the saving plugin,
+        // so that BaselineSavingPlugin will read the issues before they get filtered out by the baseline.
+        $load_baseline_path = Config::getValue('baseline_path');
+        if ($load_baseline_path) {
+            if (\is_readable($load_baseline_path)) {
+                $plugin_set[] = new BaselineLoadingPlugin($load_baseline_path);
+            } else {
+                \fwrite(STDERR, CLI::colorizeHelpSectionIfSupported("WARNING: ") . "Could not load baseline from file '$load_baseline_path'" . PHP_EOL);
+            }
         }
 
         // Register the entire set.
