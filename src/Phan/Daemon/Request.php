@@ -18,18 +18,16 @@ use Phan\LanguageServer\NodeInfoRequest;
 use Phan\Library\FileCache;
 use Phan\Library\StringUtil;
 use Phan\Output\IssuePrinterInterface;
-use Phan\Output\Printer\FilteringPrinter;
 use Phan\Output\Printer\CapturingJSONPrinter;
+use Phan\Output\Printer\FilteringPrinter;
 use Phan\Output\PrinterFactory;
 use Symfony\Component\Console\Output\BufferedOutput;
-
 use function count;
 use function get_class;
 use function in_array;
 use function is_array;
 use function is_string;
 use function strlen;
-
 use const DEBUG_BACKTRACE_IGNORE_ARGS;
 use const SIGCHLD;
 use const SORT_STRING;

@@ -681,7 +681,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         $except = [];
         // > Remember that the timeout value is the maximum time that will elapse;
         // > stream_select() will return as soon as the requested streams are ready for use.
-        stream_select($read, $write, $except, 1);
+        \stream_select($read, $write, $except, 1);
     }
 
     /**

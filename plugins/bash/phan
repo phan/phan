@@ -52,6 +52,7 @@ _phan() {
 -D
 --debug
 --debug-emitted-issues
+--debug-signal-handler
 -q
 --quick
 --target-php-version
@@ -76,6 +77,7 @@ _phan() {
 -P
 --plugin
 --strict-method-checking
+--strict-object-checking
 --strict-param-checking
 --strict-property-checking
 --strict-return-checking
@@ -87,6 +89,9 @@ _phan() {
 -s
 --daemonize-tcp-host
 --daemonize-tcp-port
+--save-baseline
+-B
+--load-baseline
 -h
 --help
 -v
@@ -112,6 +117,9 @@ _phan() {
         --exclude-file | \
         --include-analysis-file-list | \
         -I | \
+        --save-baseline | \
+        -B | \
+        --load-baseline | \
         --file-list-only | \
         -r | \
         --config-file | \

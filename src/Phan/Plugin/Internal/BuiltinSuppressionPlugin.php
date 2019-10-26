@@ -101,8 +101,6 @@ final class BuiltinSuppressionPlugin extends PluginV3 implements
     /**
      * @return array<string,array<int, int>> Maps 0 or more issue types to a *list* of lines corresponding to issues that this plugin is going to suppress.
      *
-     * This list is externally used only by UnusedSuppressionPlugin
-     *
      * An empty array can be returned if this is unknown.
      *
      * The line number is mapped to the line causing issues to be suppressed on that line.

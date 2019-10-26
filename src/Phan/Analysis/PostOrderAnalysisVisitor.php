@@ -4121,7 +4121,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         Node $node,
         array $class_list
     ) : void {
-        $has_constructor_or_destructor = count($class_list) === 0;
+        $has_constructor_or_destructor = \count($class_list) === 0;
         foreach ($class_list as $class) {
             if ($class->hasMethodWithName($this->code_base, '__construct', true)) {
                 $constructor = $class->getMethodByName($this->code_base, '__construct');

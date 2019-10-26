@@ -33,6 +33,8 @@ _arguments \
 	'(--init-level)--init-level=[a number from 1(strictest) to 5(least strict)]:level:(1 2 3 4 5)' \
 	'(1)*--init-analyze-dir=[a relative path to a directory to analyze]:dir:_directories' \
 	'(1)*--init-analyze-file=[a relative path to a file to analyze]:file:_files' \
+	'(--save-baseline)--save-baseline=[a path to save a baseline with pre-existing issues to]:file:_files' \
+	'(--load-baseline -B)'{--load-baseline=,-B+}'[a path to a baseline with pre-existing issues to read from]:file:_files' \
 	'(--init-no-composer)--init-no-composer[don'\''t require a composer installation when initializing]:file:_files' \
 	'(--init-overwrite)--init-overwrite[allow phan --init to override the existing .phan/config.php file]:file:_files' \
 	'(--color --no-color -C)'{--color,-C}'[add colors to phan'\''s output]' \
@@ -40,6 +42,7 @@ _arguments \
 	'(--progress-bar -p)'{--progress-bar,-p}'[show progress bar]' \
 	'(--debug -D)'{-D,--debug}'[print debugging output to stderr]' \
 	'(--debug-emitted-issues)--debug-emitted-issues=[print stack trace to stderr when Phan emits issues]:verbosity:(basic verbose)' \
+	'(--debug-signal-handler)--debug-signal-handler=[Enable a signal handler to debug slowness]' \
 	'(--quick -q)'{-q,--quick}'[quick mode]' \
 	'(--target-php-version)--target-php-version=[php version to check codebase for compatibility with]:version:(7.0 7.1 7.2 7.3 7.4 8.0 native)' \
 	'(--ignore-undeclared -i)'{--ignore-undeclared,-i}'[ignore undeclared functions and classes]' \
@@ -54,6 +57,7 @@ _arguments \
 	'(--disable-plugins)--disable-plugins[don'\''t run any plugins]' \
 	'(1)*'{-P,--plugin}'[a name or path to a plugin to use]:file:->plugins' \
 	'(--strict-method-checking)--strict-method-checking[warn if function or method calls are possibly invalid]' \
+	'(--strict-object-checking)--strict-object-checking[warn if any type of the object expression for a property access does not contain that property]' \
 	'(--strict-param-checking)--strict-param-checking[warn if arguments are possibly invalid]' \
 	'(--strict-property-checking)--strict-property-checking[warn if property assignments are possibly invalid]' \
 	'(--strict-return-checking)--strict-return-checking[warn if return statements are possibly invalid]' \

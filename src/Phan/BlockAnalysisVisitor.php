@@ -2180,8 +2180,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             return false;
         }
         // Look at the nodes that can be null
-        switch ($node->kind)
-        {
+        switch ($node->kind) {
             case ast\AST_CAST:
                 return $node->flags === ast\flags\TYPE_NULL;
             case ast\AST_UNARY_OP:
@@ -2199,7 +2198,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             case ast\AST_PRE_INC:
             case ast\AST_PRE_DEC:
             case ast\AST_POST_DEC:
-
             case ast\AST_YIELD_FROM:
             case ast\AST_YIELD:
             case ast\AST_DIM:

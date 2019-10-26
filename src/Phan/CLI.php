@@ -63,14 +63,14 @@ class CLI
     /**
      * This should be updated to x.y.z-dev after every release, and x.y.z before a release.
      */
-    const PHAN_VERSION = '2.3.2-dev';
+    const PHAN_VERSION = '2.4.0-dev';
 
     /**
      * List of short flags passed to getopt
      * still available: g,n,w
      * @internal
      */
-    const GETOPT_SHORT_OPTIONS = 'f:m:o:c:k:aeqbr:pid:3:y:l:tuxj:zhvs:SCP:I:D';
+    const GETOPT_SHORT_OPTIONS = 'f:m:o:c:k:aeqbr:pid:3:y:l:tuxj:zhvs:SCP:I:DB:';
 
     /**
      * List of long flags passed to getopt
@@ -135,6 +135,7 @@ class CLI
         'language-server-tcp-connect:',
         'language-server-tcp-server:',
         'language-server-verbose',
+        'load-baseline:',
         'markdown-issue-messages',
         'memory-limit:',
         'minimum-severity:',
@@ -151,6 +152,7 @@ class CLI
         'quick',
         'redundant-condition-detection',
         'require-config-exists',
+        'save-baseline:',
         'signature-compatibility',
         'strict-method-checking',
         'strict-object-checking',
@@ -784,6 +786,28 @@ class CLI
                 case 'no-color':
                     // Handled before processing the CLI flag `--help`
                     break;
+                case 'save-baseline':
+                    if (!is_string($value)) {
+                        throw new UsageException("--save-baseline expects a single writeable file", 1);
+                    }
+                    if (!is_dir(dirname($value))) {
+                        throw new UsageException("--save-baseline expects a file in a folder that already exists, got path '$value' in folder '" . dirname($value) . "'", 1);
+                    }
+                    Config::setValue('__save_baseline_path', $value);
+                    break;
+                case 'B':
+                case 'load-baseline':
+                    if (!is_string($value)) {
+                        throw new UsageException("--load-baseline expects a single readable file", 1);
+                    }
+                    if (!is_file($value)) {
+                        throw new UsageException("--load-baseline expects a path to a file, got '$value'", 1);
+                    }
+                    if (!is_readable($value)) {
+                        throw new UsageException("--load-baseline passed file '$value' which could not be read", 1);
+                    }
+                    Config::setValue('baseline_path', $value);
+                    break;
                 default:
                     // All of phan's long options are currently at least 2 characters long.
                     $key_repr = strlen($key) >= 2 ? "--$key" : "-$key";
@@ -835,7 +859,7 @@ class CLI
             && Config::getValue('dead_code_detection')) {
             throw new AssertionError("We cannot run dead code detection on more than one core.");
         }
-
+        self::checkSaveBaselineOptionsAreValid();
         self::ensureServerRunsSingleAnalysisProcess();
     }
 
@@ -996,6 +1020,23 @@ class CLI
         if (!$all_plugins_exist) {
             \fwrite(STDERR, "Exiting due to invalid plugin config.\n");
             exit(1);
+        }
+    }
+
+    /**
+     * @throws UsageException if the combination of options is invalid
+     */
+    private static function checkSaveBaselineOptionsAreValid() : void
+    {
+        if (Config::getValue('__save_baseline_path')) {
+            if (Config::getValue('processes') !== 1) {
+                // This limitation may be fixed in a subsequent release.
+                throw new UsageException("--save-baseline is not supported in combination with --processes", 1);
+            }
+            if (self::isDaemonOrLanguageServer()) {
+                // This will never be supported
+                throw new UsageException("--save-baseline does not make sense to use in Daemon mode or as a language server.", 1);
+            }
         }
     }
 
@@ -1375,6 +1416,21 @@ $init_help
   (e.g. `default`, which is an alias for port 4846.)
   `phan_client` can be used to communicate with the Phan Daemon.
 
+ --save-baseline <path/to/baseline.php>
+  Generates a baseline of pre-existing issues that can be used to suppress
+  pre-existing issues in subsequent runs (with --load-baseline)
+
+  This baseline depends on the environment, CLI and config settings used to run Phan
+  (e.g. --dead-code-detection, plugins, etc.)
+
+  Paths such as .phan/baseline.php, .phan/baseline_deadcode.php, etc. are recommended.
+
+ --B, -load-baseline <path/to/baseline.php>
+  Loads a baseline of pre-existing issues to suppress.
+
+  (For best results, the baseline should be generated with the same/similar
+  environment and settings as those used to run Phan)
+
  -v, --version
   Print Phan's version number
 
@@ -1517,6 +1573,14 @@ EOB
             );
         }
         exit($exit_code);
+    }
+
+    /**
+     * Prints a warning to stderr (except for the label, nothing else is colorized
+     */
+    public static function printWarningToStderr(string $message) : void
+    {
+        fwrite(STDERR, self::colorizeHelpSectionIfSupported('WARNING: ') . $message);
     }
 
     /**

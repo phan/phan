@@ -111,6 +111,7 @@ class ConfigEntry
         'disable_suggestions' => self::CATEGORY_OUTPUT,
         'suppress_issue_types' => self::CATEGORY_ISSUE_FILTERING,
         'whitelist_issue_types' => self::CATEGORY_ISSUE_FILTERING,
+        'baseline_path' => self::CATEGORY_ISSUE_FILTERING,
         'runkit_superglobals' => self::CATEGORY_ANALYSIS,
         'globals_type_map' => self::CATEGORY_ANALYSIS,
         'markdown_issue_messages' => self::CATEGORY_HIDDEN_CLI_ONLY, // self::CATEGORY_OUTPUT,
