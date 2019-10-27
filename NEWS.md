@@ -1,5 +1,11 @@
 Phan NEWS
 
+??? ?? 2019, Phan 2.4.1 (dev)
+-----------------------
+
+Maintenance:
++ Clarify a warning message about "None of the files to analyze in /path/to/project exist"
+
 Oct 26 2019, Phan 2.4.0
 -----------------------
 

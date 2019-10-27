@@ -63,7 +63,7 @@ class CLI
     /**
      * This should be updated to x.y.z-dev after every release, and x.y.z before a release.
      */
-    const PHAN_VERSION = '2.4.0';
+    const PHAN_VERSION = '2.4.1-dev';
 
     /**
      * List of short flags passed to getopt
@@ -948,11 +948,11 @@ class CLI
             }
             if ($valid_files === 0) {
                 // TODO convert this to an error in Phan 3.
-                self::printHelpSection(
-                    "WARNING: None of the files in %s exist - This will be an error in future Phan releases." . \PHP_EOL,
-                    false,
-                    true
+                $error_message = sprintf(
+                    "None of the files to analyze in %s exist - This will be an error in future Phan releases." . \PHP_EOL,
+                    Config::getProjectRootDirectory()
                 );
+                CLI::printWarningToStderr($error_message);
             }
         }
     }
