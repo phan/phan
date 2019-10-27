@@ -18,6 +18,7 @@ use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use function count;
 use function strlen;
 use function strtolower;
+use function uksort;
 
 /**
  * Utilities to suggest fixes for emitted Issues
@@ -200,7 +201,7 @@ class IssueFixSuggester
         if (count($method_set) === 0) {
             return null;
         }
-        \uksort($method_set, 'strcmp');
+        uksort($method_set, 'strcmp');
         $suggestions = [];
         foreach ($method_set as $method) {
             // We lose the original casing of the method name in the array keys, so use $method->getName()
@@ -307,7 +308,7 @@ class IssueFixSuggester
         if (count($suggestions) === 0) {
             return null;
         }
-        \uksort($suggestions, 'strcmp');
+        uksort($suggestions, 'strcmp');
         return Suggestion::fromString(
             'Did you mean ' . \implode(' or ', $suggestions)
         );
@@ -372,13 +373,23 @@ class IssueFixSuggester
         }
         $class = $code_base->getClassByFQSEN($class_fqsen);
         $class_constant_map = self::suggestSimilarClassConstantMap($code_base, $context, $class, $constant_name);
-        if (count($class_constant_map) === 0) {
+        $property_map = self::suggestSimilarPropertyMap($code_base, $context, $class, $constant_name, true);
+        $method_map = self::suggestSimilarMethodMap($code_base, $context, $class, $constant_name, true);
+        if (count($class_constant_map) + count($property_map) + count($method_map) === 0) {
             return null;
         }
-        \uksort($class_constant_map, 'strcmp');
+        uksort($class_constant_map, 'strcmp');
+        uksort($property_map, 'strcmp');
+        uksort($method_map, 'strcmp');
         $suggestions = [];
         foreach ($class_constant_map as $constant_name => $_) {
             $suggestions[] = $class_fqsen . '::' . $constant_name;
+        }
+        foreach ($property_map as $property_name => $_) {
+            $suggestions[] = $class_fqsen . '::$' . $property_name;
+        }
+        foreach ($method_map as $method) {
+            $suggestions[] = $class_fqsen . '::' . $method->getName() . '()';
         }
         return Suggestion::fromString(
             'Did you mean ' . \implode(' or ', $suggestions)

@@ -6,6 +6,9 @@ Phan NEWS
 Maintenance:
 + Clarify a warning message about "None of the files to analyze in /path/to/project exist"
 
+New features(Analysis):
++ Suggest similarly named static methods and static properties for `PhanUndeclaredConstant` issues on class constants. (#3393)
+
 Oct 26 2019, Phan 2.4.0
 -----------------------
 
