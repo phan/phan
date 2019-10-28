@@ -376,8 +376,8 @@ return [
     // Relative paths are harder to reason about, and opcache may have issues with relative paths in edge cases.
     'warn_about_relative_include_statement' => true,
 
-    // A file list that defines files that will be excluded
-    // from parsing and analysis and will not be read at all.
+    // A list of files that will be excluded from parsing and analysis
+    // and will not be read at all.
     //
     // This is useful for excluding hopelessly unanalyzable
     // files that can't be removed for whatever reason.

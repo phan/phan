@@ -74,8 +74,8 @@ n.b.: If you'd like to parse but not analyze 3rd
 
 ## exclude_file_list
 
-A file list that defines files that will be excluded
-from parsing and analysis and will not be read at all.
+A list of files that will be excluded from parsing and analysis
+and will not be read at all.
 
 This is useful for excluding hopelessly unanalyzable
 files that can't be removed for whatever reason.
@@ -104,8 +104,8 @@ project.
 
 ## include_analysis_file_list
 
-A file list that defines files that will be included
-in static analysis, **to the exclusion of others.**
+A list of files that will be included in static analysis,
+**to the exclusion of others.**
 
 This typically should not get put in your Phan config file.
 It gets set by `--include-analysis-file-list`.
