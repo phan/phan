@@ -105,7 +105,14 @@ project.
 ## include_analysis_file_list
 
 A file list that defines files that will be included
-in static analysis, to the exclusion of others.
+in static analysis, **to the exclusion of others.**
+
+This typically should not get put in your Phan config file.
+It gets set by `--include-analysis-file-list`.
+
+Use [`directory_list`](#directory_list) and [`file_list`](#file_list) instead to add files
+to be parsed and analyzed, and `exclude_*` to exclude files
+and folders from analysis.
 
 (Default: `[]`)
 

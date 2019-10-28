@@ -208,7 +208,14 @@ class Config
         '__exclude_analysis_regex' => null,
 
         // A file list that defines files that will be included
-        // in static analysis, to the exclusion of others.
+        // in static analysis, **to the exclusion of others.**
+        //
+        // This typically should not get put in your Phan config file.
+        // It gets set by `--include-analysis-file-list`.
+        //
+        // Use `directory_list` and `file_list` instead to add files
+        // to be parsed and analyzed, and `exclude_*` to exclude files
+        // and folders from analysis.
         'include_analysis_file_list' => [],
 
         // Backwards Compatibility Checking. This is slow
