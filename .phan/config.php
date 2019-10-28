@@ -527,6 +527,8 @@ return [
         'PhanSelfCheckPlugin',
         // Warn about using the same loop variable name as a loop variable of an outer loop.
         'LoopVariableReusePlugin',
+        // Warn about assigning the value the variable already had to that variable.
+        'RedundantAssignmentPlugin',
         // These are specific to Phan's coding style
         'StrictComparisonPlugin',
 

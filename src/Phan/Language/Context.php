@@ -380,7 +380,6 @@ class Context extends FileRef
 
     /**
      * @suppress PhanUndeclaredProperty
-     * @internal
      */
     public function deferCheckToOutermostLoop(Closure $closure) : void
     {
@@ -723,6 +722,10 @@ class Context extends FileRef
      * @param CodeBase $code_base
      * The code base from which to retrieve a possible TypedElement
      * that contains an issue suppression list
+     *
+     * @param string $issue_name
+     * The name of the issue which is being checked for membership
+     * in an issue suppression list.
      *
      * @return bool
      * True if issues with the given name are suppressed within

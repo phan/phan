@@ -11,6 +11,7 @@ src/096_suspicious_name_order.php:32 PhanPluginSuspiciousParamOrder Suspicious o
 src/096_suspicious_name_order.php:32 PhanTypeMismatchArgumentReal Argument 1 ($first) is false but \some_check_chain() takes \stdClass defined at src/096_suspicious_name_order.php:22
 src/096_suspicious_name_order.php:32 PhanTypeMismatchArgumentReal Argument 3 ($third) is \stdClass but \some_check_chain() takes int defined at src/096_suspicious_name_order.php:22
 src/096_suspicious_name_order.php:32 PhanTypeMismatchArgument Argument 2 ($second) is 1 but \some_check_chain() takes bool defined at src/096_suspicious_name_order.php:22
+src/096_suspicious_name_order.php:36 PhanPluginRedundantAssignment Assigning 1 to variable $third which already has that value
 src/096_suspicious_name_order.php:39 PhanTypeMismatchArgument Argument 2 ($second) is 1 but \some_check_chain() takes bool defined at src/096_suspicious_name_order.php:22
 src/096_suspicious_name_order.php:39 PhanTypeMismatchArgument Argument 3 ($third) is false but \some_check_chain() takes int defined at src/096_suspicious_name_order.php:22
 src/096_suspicious_name_order.php:44 PhanPluginSuspiciousParamOrderInternal Suspicious order for arguments named needle and haystack - These are being passed to parameters #1 (string $haystack) and #2 (int|string $needle) of \strpos(string $haystack, int|string $needle, int $offset = default)
