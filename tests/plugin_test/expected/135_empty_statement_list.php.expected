@@ -1,5 +1,6 @@
 src/135_empty_statement_list.php:3 PhanPluginEmptyStatementForLoop Empty statement list statement detected for the for loop
 src/135_empty_statement_list.php:5 PhanPluginEmptyStatementForLoop Empty statement list statement detected for the for loop
+src/135_empty_statement_list.php:5 PhanPluginRedundantAssignmentInGlobalScope Assigning 0 to variable $i which already has that value
 src/135_empty_statement_list.php:8 PhanPluginEmptyStatementWhileLoop Empty statement list statement detected for the while loop
 src/135_empty_statement_list.php:9 PhanPluginEmptyStatementDoWhileLoop Empty statement list statement detected for the do-while loop
 src/135_empty_statement_list.php:13 PhanPluginEmptyStatementIf Empty statement list statement detected for the last if/elseif statement

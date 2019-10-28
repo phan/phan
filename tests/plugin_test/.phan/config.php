@@ -140,5 +140,6 @@ return [
         'EmptyStatementListPlugin',
         'StrictComparisonPlugin',
         'LoopVariableReusePlugin',
+        'RedundantAssignmentPlugin',
     ],
 ];

@@ -314,7 +314,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         Analyzable::ensureDidAnnotate($node);
 
         $context = $original_context->withScope(
-            $function->getInternalScope()
+            clone($function->getInternalScope())
         )->withoutLoops();
 
         // Parse the comment above the function to get
@@ -528,7 +528,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         }
 
         // Add parameters to the context.
-        $context = $context->withScope($func->getInternalScope());
+        $context = $context->withScope(clone($func->getInternalScope()));
 
         $comment = $func->getComment();
 
@@ -615,7 +615,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         }
 
         // Add parameters to the context.
-        $context = $context->withScope($func->getInternalScope());
+        $context = $context->withScope(clone($func->getInternalScope()));
 
         $comment = $func->getComment();
 

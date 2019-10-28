@@ -9,6 +9,14 @@ Maintenance:
 New features(Analysis):
 + Suggest similarly named static methods and static properties for `PhanUndeclaredConstant` issues on class constants. (#3393)
 
+Bug fixes:
++ Fix a bug where global functions, closures, and arrow functions may have inferred values from previous analysis unintentionally
+  left over in the original scope when analyzing that function again. (methods were unaffected)
+
+Plugins:
++ Add a new plugin `RedundantAssignmentPlugin` to warn about assigning the same value a variable already has to that variable. (#3424)
+  New issue types: `PhanPluginRedundantAssignment`, `PhanPluginRedundantAssignmentInLoop`, `PhanPluginRedundantAssignmentInGlobalScope`
+
 Oct 26 2019, Phan 2.4.0
 -----------------------
 

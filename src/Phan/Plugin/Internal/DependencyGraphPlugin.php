@@ -297,7 +297,6 @@ class DependencyGraphPlugin extends PluginV3 implements
                 $graph = $this->fgraph;
             }
         } elseif ($cmd != 'json' || ($cmd == 'json' && $this->depth != 0)) {
-            $graph = [];
             foreach ($args as $v) {
                 if (empty($v)) {
                     continue;
