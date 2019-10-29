@@ -4,6 +4,7 @@ declare(strict_types=1);
 use ast\Node;
 use Phan\AST\UnionTypeVisitor;
 use Phan\Language\Context;
+use Phan\Language\Element\PassByReferenceVariable;
 use Phan\Parse\ParseVisitor;
 use Phan\PluginV3;
 use Phan\PluginV3\PluginAwarePreAnalysisVisitor;
@@ -68,7 +69,7 @@ class RedundantAssignmentPreAnalysisVisitor extends PluginAwarePreAnalysisVisito
             return;
         }
         $variable = $this->context->getScope()->getVariableByNameOrNull($var_name);
-        if (!$variable) {
+        if (!$variable || $variable instanceof PassByReferenceVariable) {
             return;
         }
         $variable_type = $variable->getUnionType();
