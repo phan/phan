@@ -25,7 +25,7 @@ class LoopVariableReusePlugin extends PluginV3 implements PostAnalyzeNodeCapabil
 }
 
 /**
- * This plugin checks for reuse of loop variables.
+ * This visitor implements the checks for reuse of loop variables.
  */
 class LoopVariableReuseVisitor extends PluginAwarePostAnalysisVisitor
 {

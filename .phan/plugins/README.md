@@ -209,6 +209,22 @@ The setting `'plugin_config' => ['empty_statement_list_ignore_todos' => true]` c
 - **PhanPluginEmptyStatementTryFinally** `Empty statement list statement detected for the try's finally body`
 - **PhanPluginEmptyStatementWhileLoop** `Empty statement list statement detected for the while loop`
 
+### LoopVariableReusePlugin.php
+
+This plugin detects reuse of loop variables.
+
+- **PhanPluginLoopVariableReuse** `Variable ${VARIABLE} used in loop was also used in an outer loop on line {LINE}`
+
+### RedundantAssignmentPlugin.php
+
+This plugin checks for assignments where the variable already
+has the given value.
+(E.g. `$result = false; if (cond()) { $result = false; }`)
+
+- **PhanPluginRedundantAssignment** `Assigning {TYPE} to variable ${VARIABLE} which already has that value`
+- **PhanPluginRedundantAssignmentInLoop** `Assigning {TYPE} to variable ${VARIABLE} which already has that value`
+- **PhanPluginRedundantAssignmentInGlobalScope** `Assigning {TYPE} to variable ${VARIABLE} which already has that value`
+
 ### 3. Plugins Specific to Code Styles
 
 These plugins may be useful to enforce certain code styles,
