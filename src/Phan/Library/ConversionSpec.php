@@ -17,7 +17,9 @@ class ConversionSpec
     /** @var string indicates which side is used for alignment */
     public $alignment;
     /** @var string minimum width of output */
-    public $width;         // Minimum width of output.
+    public $width;
+    /** @var string precision of output */
+    public $precision;
     /** @var string Type to print (s,d,f,etc.) */
     public $arg_type;
 
@@ -27,7 +29,7 @@ class ConversionSpec
      */
     protected function __construct(array $match)
     {
-        [$this->directive, $position_str, $this->padding_char, $this->alignment, $this->width, $unused_precision, $this->arg_type] = $match;
+        [$this->directive, $position_str, $this->padding_char, $this->alignment, $this->width, $this->precision, $this->arg_type] = $match;
         if ($position_str !== "") {
             $this->position = \intval(\substr($position_str, 0, -1));
         }
@@ -98,7 +100,14 @@ class ConversionSpec
      */
     public function toCanonicalString() : string
     {
-        return '%' . $this->position . '$' . $this->padding_char . $this->alignment . $this->width . $this->arg_type;
+        if ($this->width !== '') {
+            $padding_char = $this->padding_char;
+            $alignment = $this->alignment;
+        } else {
+            $padding_char = '';
+            $alignment = '';
+        }
+        return '%' . $this->position . '$' . $padding_char . $alignment . $this->width . $this->precision . $this->arg_type;
     }
 
     /**
@@ -106,7 +115,7 @@ class ConversionSpec
      */
     public function toCanonicalStringWithWidthAsPosition() : string
     {
-        return '%' . $this->width . '$' . $this->padding_char . $this->alignment . $this->arg_type;
+        return '%' . $this->width . '$' . $this->padding_char . $this->alignment . $this->precision . $this->arg_type;
     }
     const ARG_TYPE_LOOKUP = [
         'b' => 'int',

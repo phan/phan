@@ -95,7 +95,7 @@ trait Profile
                 print $label
                     . "\t"
                     . \implode("\t", \array_map(static function (float $v) : string {
-                        return \sprintf("%0.6f", $v);
+                        return \sprintf("%.6f", $v);
                     }, $metrics))
                     . "\n";
             }
