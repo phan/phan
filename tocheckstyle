@@ -1,7 +1,19 @@
 #!/usr/bin/env php
 <?php
 
-$options = getopt('', ['output-format:']);
+$options = getopt('h', ['help', 'output-format:']);
+
+if (isset($options['h']) || isset($options['help'])) {
+    fwrite(STDERR, <<<EOT
+Usage: {$argv[0]} [--output-format=checkstyle-escapedhtml]
+
+Reads Phan's regular output format on stdin and outputs a checkstyle file on stdout.
+By default, errors in the XML are the plaintext of the issue, but those can be html escaped again by passing --output-format=checkstyle-escapedhtml.
+
+EOT
+    );
+    exit(0);
+}
 
 $escape_html = false;
 if (array_key_exists('output-format', $options) && $options['output-format'] === 'checkstyle-escapedhtml') {
@@ -48,7 +60,7 @@ foreach ($files as $file_name => $error_list) {
         // Write each element of the error as an attribute
         // of the error
         foreach ($error_map as $key => $value) {
-            $string_value = $escape_html ? htmlspecialchars((string)$value) : (string)$value;
+            $string_value = $escape_html ? htmlspecialchars((string)$value, ENT_NOQUOTES, 'UTF-8') : (string)$value;
             $error->appendChild(
                 new \DOMAttr($key, $string_value)
             );
