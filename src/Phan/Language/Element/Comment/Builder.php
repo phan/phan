@@ -770,6 +770,7 @@ final class Builder
         '@phan-assert-true-condition' => '',
         '@phan-assert-false-condition' => '',
         '@phan-closure-scope' => '',
+        '@phan-constructor-used-for-side-effects' => '',
         '@phan-extends' => '',
         '@phan-file-suppress' => '',
         '@phan-forbid-undeclared-magic-methods' => '',
