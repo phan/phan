@@ -460,7 +460,8 @@ class Comment
         Flags::IS_DEPRECATED |
         Flags::IS_SIDE_EFFECT_FREE |
         Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS |
-        Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES;
+        Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES |
+        Flags::IS_CONSTRUCTOR_USED_FOR_SIDE_EFFECTS;
 
     /**
      * Gets the subset of the bitmask that applies to classes.

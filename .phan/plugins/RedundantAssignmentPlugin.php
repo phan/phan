@@ -101,6 +101,10 @@ class RedundantAssignmentPreAnalysisVisitor extends PluginAwarePreAnalysisVisito
             return;
         }
         if ($this->context->isInGlobalScope()) {
+            if ($variable->getFileRef()->getFile() !== $this->context->getFile()) {
+                // Don't warn if this variable was set by a different file
+                return;
+            }
             $issue_name = 'PhanPluginRedundantAssignmentInGlobalScope';
         } elseif ($this->context->isInLoop()) {
             $issue_name = 'PhanPluginRedundantAssignmentInLoop';

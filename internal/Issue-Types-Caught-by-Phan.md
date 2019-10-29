@@ -871,6 +871,8 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.2.13/tests/misc/fallback_t
 
 ## PhanNoopNew
 
+NOTE: by adding `@phan-constructor-used-for-side-effects` to the doc comment of the class-like being used, `PhanNoopNew` can be suppressed on uses of that class.
+
 ```
 Unused result of new object creation expression in {CODE} (this may be called for the side effects of the non-empty constructor or destructor)
 ```

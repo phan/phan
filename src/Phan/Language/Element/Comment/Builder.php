@@ -735,6 +735,10 @@ final class Builder
             case 'phan-assert-false-condition':
                 $this->maybeParsePhanAssert($i, $line);
                 return;
+            case 'phan-constructor-used-for-side-effects':
+                $this->checkCompatible('@' . $type, [Comment::ON_CLASS], $i);
+                $this->comment_flags |= Flags::IS_CONSTRUCTOR_USED_FOR_SIDE_EFFECTS;
+                return;
             default:
                 $this->emitIssueWithSuggestion(
                     Issue::MisspelledAnnotation,
@@ -766,6 +770,7 @@ final class Builder
         '@phan-assert-true-condition' => '',
         '@phan-assert-false-condition' => '',
         '@phan-closure-scope' => '',
+        '@phan-constructor-used-for-side-effects' => '',
         '@phan-extends' => '',
         '@phan-file-suppress' => '',
         '@phan-forbid-undeclared-magic-methods' => '',

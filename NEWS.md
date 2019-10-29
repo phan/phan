@@ -47,6 +47,7 @@ New features(Analysis):
 + Don't emit PhanParamSpecial2 for min/max/implode/join with a single vararg. (#3396)
 + Properly emit PhanPossiblyInfiniteRecursionSameParams for functions with varargs.
 + Emit `PhanNoopNew` or `PhanNoopNewNoSideEffects` when an object is created with `new expr(...)` but the result is not used (#3410)
+  This can be suppressed for all instances of a class-like by adding the `@phan-constructor-used-for-side-effects` annotation to the class's doc comment.
 + Emit `PhanPluginUseReturnValueInternalKnown` for about unused results of function calls on the right hand side of control flow operators (`??`/`?:`/`&&`/`||`) (#3408)
 
 Oct 20 2019, Phan 2.3.1
