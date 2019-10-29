@@ -140,6 +140,7 @@ class CLI
         'memory-limit:',
         'minimum-severity:',
         'no-color',
+        'no-progress-bar',
         'output:',
         'output-mode:',
         'parent-constructor-required:',
@@ -388,6 +389,7 @@ class CLI
         $printer_type = 'text';
         $minimum_severity = Config::getValue('minimum_severity');
         $mask = -1;
+        $progress_bar = null;
 
         self::throwIfUsingInitModifiersWithoutInit($opts);
 
@@ -492,7 +494,10 @@ class CLI
                     break;
                 case 'p':
                 case 'progress-bar':
-                    Config::setValue('progress_bar', true);
+                    $progress_bar = true;
+                    break;
+                case 'no-progress-bar':
+                    $progress_bar = false;
                     break;
                 case 'D':
                 case 'debug':
@@ -826,6 +831,7 @@ class CLI
         self::restartWithoutProblematicExtensions();
         self::checkPluginsExist();
         self::checkValidFileConfig();
+        Config::setValue('progress_bar', $progress_bar ?? self::shouldUseProgressBarByDefault(\STDERR));
 
         $output = $this->output;
         $printer = $factory->getPrinter($printer_type, $output);
@@ -967,7 +973,7 @@ class CLI
      * https://github.com/composer/xdebug-handler
      * (This is internal, so it was duplicated in case their API changed)
      *
-     * @param mixed $output A valid CLI output stream
+     * @param resource $output A valid CLI output stream
      * @suppress PhanUndeclaredFunction
      */
     public static function supportsColor($output) : bool
@@ -981,6 +987,35 @@ class CLI
                 || false !== \getenv('ANSICON')
                 || 'ON' === \getenv('ConEmuANSI')
                 || 'xterm' === \getenv('TERM');
+        }
+
+        if (\function_exists('stream_isatty')) {
+            return \stream_isatty($output);
+        } elseif (\function_exists('posix_isatty')) {
+            return \posix_isatty($output);
+        }
+
+        $stat = \fstat($output);
+        // Check if formatted mode is S_IFCHR
+        return $stat ? 0020000 === ($stat['mode'] & 0170000) : false;
+    }
+
+    /**
+     * Returns true if the output stream is a TTY.
+     *
+     * @param resource $output A valid CLI output stream
+     * @suppress PhanUndeclaredFunction
+     */
+    private static function shouldUseProgressBarByDefault($output) : bool
+    {
+        if (self::isDaemonOrLanguageServer()) {
+            return false;
+        }
+        if (\defined('PHP_WINDOWS_VERSION_BUILD')) {
+            // https://www.php.net/sapi_windows_vt100_support
+            // >  By the way, if a stream is redirected, the VT100 feature will not be enabled:
+            return (\function_exists('sapi_windows_vt100_support')
+                && \sapi_windows_vt100_support($output));
         }
 
         if (\function_exists('stream_isatty')) {
@@ -1288,8 +1323,8 @@ $init_help
   [--color-scheme={default,code,light,eclipse_dark,vim}]
     This (or the environment variable PHAN_COLOR_SCHEME) can be used to set the color scheme for emitted issues.
 
- -p, --progress-bar
-  Show progress bar
+ -p, --progress-bar, --no-progress-bar
+  Show progress bar. --no-progress-bar disables the progress bar.
 
  -D, --debug
   Print debugging output to stderr. Useful for looking into performance issues or crashes.
