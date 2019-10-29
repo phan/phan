@@ -1975,7 +1975,7 @@ EOB
         $left_side = \str_pad($msg, 10, ' ', STR_PAD_LEFT) .  ' ';
         $right_side =
                " " . \sprintf("%1$ 3d", (int)(100 * $p)) . "%" .
-               \sprintf(' %0.2dMB/%0.2dMB', (int)$memory, (int)$peak);
+               \sprintf(' %.2dMB/%.2dMB', (int)$memory, (int)$peak);
 
         static $columns = null;
         if ($columns === null) {

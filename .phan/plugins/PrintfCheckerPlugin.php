@@ -503,13 +503,13 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
             foreach ($spec_group as $spec) {
                 $canonical = $spec->toCanonicalString();
                 $types[$canonical] = true;
-                if ($spec->padding_char === ' ' && ($spec->width === '' || !$spec->position)) {
+                if ((strlen($spec->padding_char) > 0 || strlen($spec->alignment)) && ($spec->width === '' || !$spec->position)) {
                     // Warn about "100% dollars" but not about "100%1$ 2dollars" (If both position and width were parsed, assume the padding was intentional)
                     $emit_issue(
                         'PhanPluginPrintfNotPercent',
                         // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-                        "Format string {STRING_LITERAL} contains something that is not a percent sign, it will be treated as a format string '{STRING_LITERAL}' with padding. Use {DETAILS} for a literal percent sign, or '{STRING_LITERAL}' to be less ambiguous",
-                        [self::encodeString($fmt_str), $spec->directive, '%%', $canonical],
+                        "Format string {STRING_LITERAL} contains something that is not a percent sign, it will be treated as a format string '{STRING_LITERAL}' with padding of \"{STRING_LITERAL}\" and alignment of '{STRING_LITERAL}' but no width. Use {DETAILS} for a literal percent sign, or '{STRING_LITERAL}' to be less ambiguous",
+                        [self::encodeString($fmt_str), $spec->directive, $spec->padding_char, $spec->alignment, '%%', $canonical],
                         Issue::SEVERITY_NORMAL,
                         self::ERR_UNTRANSLATED_NOT_PERCENT
                     );

@@ -2,7 +2,7 @@ src/007_printf.php:3 PhanPluginPrintfNoArguments No format string arguments are 
 src/007_printf.php:3 PhanPluginPrintfNonexistentArgument Format string "%s" refers to nonexistent argument #1 in "%s"
 src/007_printf.php:4 PhanPluginPrintfNoArguments No format string arguments are given for "some literal", consider using echo instead
 src/007_printf.php:6 PhanPluginPrintfNonexistentArgument Format string "%d dollars 100% down\n" refers to nonexistent argument #2 in "% d"
-src/007_printf.php:6 PhanPluginPrintfNotPercent Format string "%d dollars 100% down\n" contains something that is not a percent sign, it will be treated as a format string '% d' with padding. Use %% for a literal percent sign, or '%2$ d' to be less ambiguous
+src/007_printf.php:6 PhanPluginPrintfNotPercent Format string "%d dollars 100% down\n" contains something that is not a percent sign, it will be treated as a format string '% d' with padding of " " and alignment of '' but no width. Use %% for a literal percent sign, or '%2$d' to be less ambiguous
 src/007_printf.php:7 PhanPluginPrintfNoSpecifiers None of the formatting arguments passed alongside format string "Not using args" are used
 src/007_printf.php:8 PhanPluginPrintfNoSpecifiers None of the formatting arguments passed alongside format string "Not using args\n" are used
 src/007_printf.php:9 PhanPluginPrintfNoSpecifiers None of the formatting arguments passed alongside format string "Not using args\n" are used
@@ -40,3 +40,10 @@ src/007_printf.php:38 PhanPluginPrintfNoArguments No format string arguments are
 src/007_printf.php:38 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($format) is null but \printf() takes string
 src/007_printf.php:39 PhanPluginPrintfNoArguments No format string arguments are given for "1", consider using echo instead
 src/007_printf.php:39 PhanTypeMismatchArgumentInternal Argument 1 ($format) is 1 but \printf() takes string
+src/007_printf.php:41 PhanPluginPrintfNonexistentArgument Format string "%d dollars 100%-down\n" refers to nonexistent argument #2 in "%-d"
+src/007_printf.php:41 PhanPluginPrintfNotPercent Format string "%d dollars 100%-down\n" contains something that is not a percent sign, it will be treated as a format string '%-d' with padding of "" and alignment of '-' but no width. Use %% for a literal percent sign, or '%2$d' to be less ambiguous
+src/007_printf.php:42 PhanPluginPrintfNonexistentArgument Format string "%d dollars 100%'xdown\n" refers to nonexistent argument #2 in "%'xd"
+src/007_printf.php:42 PhanPluginPrintfNotPercent Format string "%d dollars 100%'xdown\n" contains something that is not a percent sign, it will be treated as a format string '%'xd' with padding of "'x" and alignment of '' but no width. Use %% for a literal percent sign, or '%2$d' to be less ambiguous
+src/007_printf.php:43 PhanPluginPrintfNonexistentArgument Format string "%d dollars 100%'x10down\n" refers to nonexistent argument #2 in "%'x10d"
+src/007_printf.php:44 PhanPluginPrintfNotPercent Format string "%0.2f\n" contains something that is not a percent sign, it will be treated as a format string '%0.2f' with padding of "0" and alignment of '' but no width. Use %% for a literal percent sign, or '%1$.2f' to be less ambiguous
+src/007_printf.php:45 PhanPluginPrintfNotPercent Format string "%'_.2f\n" contains something that is not a percent sign, it will be treated as a format string '%'_.2f' with padding of "'_" and alignment of '' but no width. Use %% for a literal percent sign, or '%1$.2f' to be less ambiguous
