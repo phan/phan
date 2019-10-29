@@ -38,8 +38,10 @@ _arguments \
 	'(--init-no-composer)--init-no-composer[don'\''t require a composer installation when initializing]:file:_files' \
 	'(--init-overwrite)--init-overwrite[allow phan --init to override the existing .phan/config.php file]:file:_files' \
 	'(--color --no-color -C)'{--color,-C}'[add colors to phan'\''s output]' \
+	'(--color --no-color -C)--no-color[disable colors in phan'\''s output]' \
 	'(--color-scheme)--color-scheme[set the color scheme]:color_scheme:(default code eclipse-dark light vim)' \
-	'(--progress-bar -p)'{--progress-bar,-p}'[show progress bar]' \
+	'(--no-progress-bar --progress-bar -p)'{--progress-bar,-p}'[show progress bar]' \
+	'(--no-progress-bar --progress-bar -p)--no-progress-bar[disable progress bar]' \
 	'(--debug -D)'{-D,--debug}'[print debugging output to stderr]' \
 	'(--debug-emitted-issues)--debug-emitted-issues=[print stack trace to stderr when Phan emits issues]:verbosity:(basic verbose)' \
 	'(--debug-signal-handler)--debug-signal-handler=[Enable a signal handler to debug slowness]' \

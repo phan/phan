@@ -3,8 +3,9 @@ Phan NEWS
 ??? ?? 2019, Phan 2.4.1 (dev)
 -----------------------
 
-Maintenance:
-+ Clarify a warning message about "None of the files to analyze in /path/to/project exist"
+New features(CLI, Configs):
++ Enable the progress bar by default, if `STDERR` is being rendered directly to a terminal.
+  Add a new option `--no-progress-bar`.
 
 New features(Analysis):
 + Suggest similarly named static methods and static properties for `PhanUndeclaredConstant` issues on class constants. (#3393)
@@ -12,6 +13,9 @@ New features(Analysis):
 Bug fixes:
 + Fix a bug where global functions, closures, and arrow functions may have inferred values from previous analysis unintentionally
   left over in the original scope when analyzing that function again. (methods were unaffected)
+
+Maintenance:
++ Clarify a warning message about "None of the files to analyze in /path/to/project exist"
 
 Plugins:
 + Add a new plugin `RedundantAssignmentPlugin` to warn about assigning the same value a variable already has to that variable. (#3424)

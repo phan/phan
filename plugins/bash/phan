@@ -46,9 +46,11 @@ _phan() {
 --init-overwrite
 --color
 -C
+--no-color
 --color-scheme
 --progress-bar
 -p
+--no-progress-bar
 -D
 --debug
 --debug-emitted-issues
