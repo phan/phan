@@ -22,3 +22,14 @@ function my_void150(string $x) : void {
     new MyClass150($x);
 }
 my_void150("xyz");  // should not warn because Phan warned about the implementation.
+
+/**
+ * @phan-constructor-used-for-side-effects
+ */
+class HasSideEffects {
+    public function __construct() {
+        echo "Does something\n";
+    }
+}
+// Should not warn
+new HasSideEffects();

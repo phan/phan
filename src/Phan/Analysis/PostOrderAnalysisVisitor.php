@@ -4123,6 +4123,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     ) : void {
         $has_constructor_or_destructor = \count($class_list) === 0;
         foreach ($class_list as $class) {
+            if ($class->getPhanFlagsHasState(\Phan\Language\Element\Flags::IS_CONSTRUCTOR_USED_FOR_SIDE_EFFECTS)) {
+                return;
+            }
+        }
+        foreach ($class_list as $class) {
             if ($class->hasMethodWithName($this->code_base, '__construct', true)) {
                 $constructor = $class->getMethodByName($this->code_base, '__construct');
                 if (!$constructor->getPhanFlagsHasState(\Phan\Language\Element\Flags::IS_FAKE_CONSTRUCTOR)) {

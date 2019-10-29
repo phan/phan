@@ -46,6 +46,7 @@ class Flags
     const IS_DYNAMIC_PROPERTY = (1 << 20);
     // Is this a dynamic global constant?
     const IS_DYNAMIC_CONSTANT = (1 << 20);
+    const IS_CONSTRUCTOR_USED_FOR_SIDE_EFFECTS = (1 << 20);
     // A property can be read-only, write-only, or neither, but not both.
     // This is independent of being a magic property.
     // IS_READ_ONLY can also be set on classes as @phan-immutable
