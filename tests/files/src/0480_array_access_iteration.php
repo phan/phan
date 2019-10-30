@@ -13,8 +13,10 @@ class MyExample {
         $this->prop[$o] = 42;
         echo strlen($this->prop);
         foreach ($this->prop as $k => $v) {
-            // Should not emit false positive warnings for invoking spl_object_id
+            // NOTE: This is actually an int with the position. See https://www.php.net/manual/en/splobjectstorage.key.php#refsect1-splobjectstorage.key-examples
             echo spl_object_id($k);
+            // The value will actually be the object inserted into SplObjectStorage
+            echo intdiv($v, 2);
         }
     }
 }

@@ -1,0 +1,1 @@
+%s:5 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($var) is string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array

@@ -1136,6 +1136,7 @@ trait ConditionVisitorUtil
     /**
      * Returns this ConditionVisitorUtil's Context.
      * This is needed by subclasses of BinaryCondition.
+     * @suppress PhanUnreferencedPublicMethod phan has issues with dead code detection with traits and interfaces
      */
     public function getContext() : Context
     {

@@ -107,7 +107,7 @@ class CodeBase
     private $fqsen_class_map_reflection;
 
     /**
-     * @var Map<FullyQualifiedClassName,ClassAliasRecord>
+     * @var Map<FullyQualifiedClassName,Set<ClassAliasRecord>>
      * A map from FQSEN to set of ClassAliasRecord objects
      */
     private $fqsen_alias_map;
@@ -588,6 +588,7 @@ class CodeBase
      * Returns a serialized representation of everything in this CodeBase.
      * @internal
      * @return array{clone:CodeBase,callbacks:(?Closure():void)[]}
+     * @suppress PhanAccessMethodInternal
      */
     public function createRestorePoint() : array
     {
@@ -1081,6 +1082,7 @@ class CodeBase
     {
         $set = clone($this->method_set);
         foreach ($this->fqsen_func_map as $value) {
+            // @phan-suppress-next-line PhanTypeMismatchArgument deliberately adding different class instances to an existing set
             $set->attach($value);
         }
         return $set;

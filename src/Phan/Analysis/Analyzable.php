@@ -88,6 +88,7 @@ trait Analyzable
      * @return Context
      * Analyze the node associated with this object
      * in the given context
+     * @suppress PhanUnreferencedPublicMethod phan has issues with dead code detection with traits and interfaces
      */
     public function analyze(Context $context, CodeBase $code_base) : Context
     {

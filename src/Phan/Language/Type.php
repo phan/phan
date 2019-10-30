@@ -2332,7 +2332,7 @@ class Type
     /**
      * @return ?UnionType returns the iterable key's union type, if this is a subtype of iterable. null otherwise.
      */
-    public function iterableKeyUnionType(CodeBase $unused_code_base) : ?UnionType
+    public function iterableKeyUnionType(CodeBase $code_base) : ?UnionType
     {
         if ($this->namespace === '\\') {
             $name = strtolower($this->name);
@@ -2346,13 +2346,63 @@ class Type
             // TODO: If this is a subclass of iterator, look up the signature of MyClass->key()
         }
 
-        /*
-        if ($this->namespace !== '\\') {
+        $fqsen = FullyQualifiedClassName::fromType($this);
+        if (!$code_base->hasClassWithFQSEN($fqsen)) {
             return null;
         }
-        // TODO: check for Traversable and Generator and other subclasses of Traversable
-        */
-        return null;
+        static $iterator_fqsen;
+        static $iterator_aggregate_fqsen;
+        if ($iterator_fqsen === null) {
+            // @phan-suppress-next-line PhanThrowTypeAbsentForCall
+            $iterator_fqsen = Type::fromFullyQualifiedString('\Iterator');
+            // @phan-suppress-next-line PhanThrowTypeAbsentForCall
+            $iterator_aggregate_fqsen = Type::fromFullyQualifiedString('\IteratorAggregate');
+        }
+        $expanded_types = $this->asExpandedTypes($code_base);
+        $iterator_type = $this;
+        // Given an IteratorAggregate implementation with getIterator, determine the class of the Iterator if possible.
+        if ($expanded_types->hasTypeWithFQSEN($iterator_aggregate_fqsen)) {
+            $class = $code_base->getClassByFQSEN($fqsen);
+            if (!$class->hasMethodWithName($code_base, 'getIterator')) {
+                // Should be impossible
+                return null;
+            }
+            // Find the class of the iterator
+            $method = $class->getMethodByName($code_base, 'getIterator');
+            $new_expanded_types = null;
+            foreach ($method->getUnionType()->getTypeSet() as $iterator_type) {
+                if ($iterator_type->isObjectWithKnownFQSEN()) {
+                    $new_fqsen = FullyQualifiedClassName::fromType($iterator_type);
+                    if (!$code_base->hasClassWithFQSEN($new_fqsen)) {
+                        continue;
+                    }
+                    $new_expanded_types = $iterator_type->asExpandedTypes($code_base);
+                    $fqsen = $new_fqsen;
+                    break;
+                }
+            }
+            if (!$new_expanded_types) {
+                return null;
+            }
+            $expanded_types = $new_expanded_types;
+        }
+        // Given an Iterator, return the type of the key
+        if ($expanded_types->hasTypeWithFQSEN($iterator_fqsen)) {
+            $class = $code_base->getClassByFQSEN($fqsen);
+            if (!$class->hasMethodWithName($code_base, 'key')) {
+                // Should be impossible
+                return null;
+            }
+            $method = $class->getMethodByName($code_base, 'key');
+            $result = $method->getUnionType();
+            if ($result->hasTemplateTypeRecursive()) {
+                $result = $result->withTemplateParameterTypeMap(
+                    $iterator_type->getTemplateParameterTypeMap($code_base)
+                )->withoutTemplateTypeRecursive();
+            }
+            return $result;
+        }
+        return StringType::instance(false)->asPHPDocUnionType();
     }
 
     /**
@@ -2360,7 +2410,7 @@ class Type
      *
      * This is overridden by the array subclasses
      */
-    public function iterableValueUnionType(CodeBase $unused_code_base) : ?UnionType
+    public function iterableValueUnionType(CodeBase $code_base) : ?UnionType
     {
         if ($this->namespace === '\\') {
             $name = strtolower($this->name);
@@ -2372,6 +2422,62 @@ class Type
                 return $this->valueTypeOfGenerator();
             }
             // TODO: If this is a subclass of iterator, look up the signature of MyClass->current()
+        }
+        $fqsen = FullyQualifiedClassName::fromType($this);
+        if (!$code_base->hasClassWithFQSEN($fqsen)) {
+            return null;
+        }
+        static $iterator_fqsen;
+        static $iterator_aggregate_fqsen;
+        if ($iterator_fqsen === null) {
+            // @phan-suppress-next-line PhanThrowTypeAbsentForCall
+            $iterator_fqsen = Type::fromFullyQualifiedString('\Iterator');
+            // @phan-suppress-next-line PhanThrowTypeAbsentForCall
+            $iterator_aggregate_fqsen = Type::fromFullyQualifiedString('\IteratorAggregate');
+        }
+        $expanded_types = $this->asExpandedTypes($code_base);
+        $iterator_type = $this;
+        // Given an IteratorAggregate implementation with getIterator, determine the class of the Iterator if possible.
+        if ($expanded_types->hasTypeWithFQSEN($iterator_aggregate_fqsen)) {
+            $class = $code_base->getClassByFQSEN($fqsen);
+            if (!$class->hasMethodWithName($code_base, 'getIterator')) {
+                // Should be impossible
+                return null;
+            }
+            // Find the class of the iterator
+            $method = $class->getMethodByName($code_base, 'getIterator');
+            $new_expanded_types = null;
+            foreach ($method->getUnionType()->getTypeSet() as $iterator_type) {
+                if ($iterator_type->isObjectWithKnownFQSEN()) {
+                    $new_fqsen = FullyQualifiedClassName::fromType($iterator_type);
+                    if (!$code_base->hasClassWithFQSEN($new_fqsen)) {
+                        continue;
+                    }
+                    $new_expanded_types = $iterator_type->asExpandedTypes($code_base);
+                    $fqsen = $new_fqsen;
+                    break;
+                }
+            }
+            if (!$new_expanded_types) {
+                return null;
+            }
+            $expanded_types = $new_expanded_types;
+        }
+        // Given an Iterator, return the type of the value (from ->current())
+        if ($expanded_types->hasTypeWithFQSEN($iterator_fqsen)) {
+            $class = $code_base->getClassByFQSEN($fqsen);
+            if (!$class->hasMethodWithName($code_base, 'current')) {
+                // Should be impossible
+                return null;
+            }
+            $method = $class->getMethodByName($code_base, 'current');
+            $result = $method->getUnionType();
+            if ($result->hasTemplateTypeRecursive()) {
+                $result = $result->withTemplateParameterTypeMap(
+                    $iterator_type->getTemplateParameterTypeMap($code_base)
+                )->withoutTemplateTypeRecursive();
+            }
+            return $result;
         }
         return null;
     }
