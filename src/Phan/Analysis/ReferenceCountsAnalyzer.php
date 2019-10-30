@@ -22,7 +22,6 @@ use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
-use Phan\Library\Map;
 use TypeError;
 
 /**
@@ -145,14 +144,14 @@ class ReferenceCountsAnalyzer
 
     /**
      * @param CodeBase $code_base
-     * @param Map|AddressableElement[] $element_list
+     * @param iterable<AddressableElement> $element_list
      * @param string $issue_type
      * @param int $total_count
      * @param int $i
      */
     private static function analyzeGlobalElementListReferenceCounts(
         CodeBase $code_base,
-        $element_list,
+        iterable $element_list,
         string $issue_type,
         int $total_count,
         int &$i
@@ -171,7 +170,7 @@ class ReferenceCountsAnalyzer
 
     /**
      * @param CodeBase $code_base
-     * @param Map|ClassElement[] $element_list
+     * @param iterable<ClassElement> $element_list
      * @param int $total_count
      * @param int $i
      *
@@ -180,7 +179,7 @@ class ReferenceCountsAnalyzer
      */
     private static function getElementsFromElementListForDeferredAnalysis(
         CodeBase $code_base,
-        $element_list,
+        iterable $element_list,
         int $total_count,
         int &$i
     ) : \Generator {

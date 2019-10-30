@@ -139,6 +139,7 @@ class PassByReferenceVariable extends Variable
      * @deprecated - use getElement() instead and check if the result is an AddressableElement.
      * @throws \Error if the element is an UnaddressableElement
      * @suppress PhanPossiblyUndeclaredMethod
+     * @suppress PhanUnreferencedPublicMethod not sure why
      */
     public function getContext() : Context
     {

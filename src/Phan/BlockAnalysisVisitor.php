@@ -854,8 +854,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * For "foreach loop" nodes, we analyze the loop variables in PreOrderAnalysisVisitor, then analyze the statements.
-     * (right now, the statements are just analyzed without creating a BranchScope)
+     * For "foreach loop" nodes, we analyze the loop variables,
+     * then analyze the statements in a different scope (e.g. BranchScope when there may be 0 iterations)
      *
      * @param Node $node a node of type ast\AST_FOREACH
      * @throws NodeException

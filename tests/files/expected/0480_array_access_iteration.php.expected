@@ -1,3 +1,4 @@
 %s:12 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is \ArrayAccess|\Countable|\Iterator|\Serializable|\SplObjectStorage|\Traversable|iterable but \strlen() takes string
 %s:14 PhanTypeMismatchArgumentInternal Argument 1 ($string) is \ArrayAccess|\Countable|\Iterator|\Serializable|\SplObjectStorage|\Traversable|iterable but \strlen() takes string
-%s:15 PhanUnusedVariableValueOfForeachWithKey Unused definition of variable $v as the value of a foreach loop that included keys
+%s:17 PhanTypeMismatchArgumentInternal Argument 1 ($obj) is int but \spl_object_id() takes object
+%s:19 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is object but \intdiv() takes int
