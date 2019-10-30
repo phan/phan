@@ -43,3 +43,5 @@ printf("%d dollars 100%'xdown\n", 44);  // should warn
 printf("%d dollars 100%'x10down\n", 44);  // should warn about too few arguments but not about "%'x10d"
 printf("%0.2f\n", rand(0, 1000) / 7);  // should warn about 0 being unnecessary padding
 printf("%'_.2f\n", rand(0, 1000) / 7);  // should warn about 0 being unnecessary padding
+
+printf($argv[0]);  // Should emit PhanPluginPrintfNoArguments

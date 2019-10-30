@@ -21,6 +21,7 @@ Plugins:
 + Add a new plugin `RedundantAssignmentPlugin` to warn about assigning the same value a variable already has to that variable. (#3424)
   New issue types: `PhanPluginRedundantAssignment`, `PhanPluginRedundantAssignmentInLoop`, `PhanPluginRedundantAssignmentInGlobalScope`
 + Warn about alignment directives and more padding directives (`'x`) without width directive in `PrintfCheckerPlugin` (#3317)
++ Also emit `PhanPluginPrintfNoArguments` in cases when the format string could not be determined. (#3198)
 
 Oct 26 2019, Phan 2.4.0
 -----------------------
