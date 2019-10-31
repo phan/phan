@@ -2159,10 +2159,21 @@ class UnionType implements Serializable
      *
      * E.g. allows ?T|Other -> T, null|Other -> ?T, ?T -> ?Other
      * Does not allow ?T -> Other, etc.
+     *
+     * @param bool $allow_casting
+     * If true, allow non-identical types to cast to other types if that would be permitted by casting rules for param/return types
+     * (e.g. int -> float)
      */
-    public function canAnyTypeStrictCastToUnionType(CodeBase $code_base, UnionType $target) : bool
+    public function canAnyTypeStrictCastToUnionType(CodeBase $code_base, UnionType $target, bool $allow_casting = true) : bool
     {
         foreach ($this->type_set as $type) {
+            if ($type instanceof IntType && !$allow_casting) {
+                if (!$target->hasTypeMatchingCallback(static function (Type $type) : bool {
+                    return $type instanceof IntType || $type instanceof MixedType;
+                })) {
+                    return false;
+                }
+            }
             if ($type->asPHPDocUnionType()->canStrictCastToUnionType($code_base, $target)) {
                 return true;
             }
@@ -2421,7 +2432,8 @@ class UnionType implements Serializable
      */
     public function hasAnyTypeOverlap(CodeBase $code_base, UnionType $other) : bool
     {
-        return $this->canAnyTypeStrictCastToUnionType($code_base, $other) || $other->canAnyTypeStrictCastToUnionType($code_base, $this);
+        return $this->canAnyTypeStrictCastToUnionType($code_base, $other, false) ||
+            $other->canAnyTypeStrictCastToUnionType($code_base, $this, false);
     }
 
     /**
