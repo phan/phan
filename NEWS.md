@@ -9,6 +9,7 @@ New features(CLI, Configs):
 
 New features(Analysis):
 + Suggest similarly named static methods and static properties for `PhanUndeclaredConstant` issues on class constants. (#3393)
++ Support `@readonly` as an alias of the `@phan-read-only` annotation.
 
 Bug fixes:
 + Fix a bug where global functions, closures, and arrow functions may have inferred values from previous analysis unintentionally

@@ -18,7 +18,7 @@ class PropertyChecks {
 
     /**
      * @var int
-     * @phan-read-only
+     * @readonly
      */
     public static $real_static_read_only = 2;
     /**
