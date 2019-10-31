@@ -134,6 +134,11 @@ class Clazz extends AddressableElement
     private $internal_context;
 
     /**
+     * @var list<Type>
+     */
+    private $mixin_types = [];
+
+    /**
      * @param Context $context
      * The context in which the structural element lives
      *
@@ -536,6 +541,14 @@ class Clazz extends AddressableElement
         return $code_base->getClassByFQSENWithoutHydrating(
             $parent_fqsen
         );
+    }
+
+    /**
+     * @param list<Type> $mixin_types
+     */
+    public function setMixinTypes(array $mixin_types) : void
+    {
+        $this->mixin_types = $mixin_types;
     }
 
     /**
@@ -2311,6 +2324,57 @@ class Clazz extends AddressableElement
 
         // Copy information from the parent(s)
         $this->importParentClass($code_base);
+
+        foreach ($this->mixin_types as $type) {
+            $this->importMixin($code_base, $type);
+        }
+    }
+
+    /**
+     * Import all methods of the other type as magic methods.
+     */
+    private function importMixin(CodeBase $code_base, Type $type) : void {
+        $fqsen = FullyQualifiedClassName::fromType($type);
+        if (!$code_base->hasClassWithFQSEN($fqsen) || $fqsen === $this->fqsen) {
+            Issue::maybeEmit(
+                $code_base,
+                $this->internal_context,
+                Issue::InvalidMixin,
+                $this->internal_context->getLineNumberStart(),
+                $type
+            );
+            return;
+        }
+        $class = $code_base->getClassByFQSEN($fqsen);
+        foreach ($class->getMethodMap($code_base) as $name => $method) {
+            if ($method->isMagic() || !$method->isPublic()) {
+                // Skip __invoke, and private/protected methods
+                continue;
+            }
+            if ($this->hasMethodWithName($code_base, $name)) {
+                continue;
+            }
+            // Treat it as if all of the methods were added, with their real and phpdoc union types.
+            $this->addMethod($code_base, $method->asPHPDocMethod($this), None::instance());
+        }
+        foreach ($class->getPropertyMap($code_base) as $name => $property) {
+            if (!$property->isPublic() || $property->isStatic()) {
+                // Skip private/protected/static properties. There's no __getStatic().
+                continue;
+            }
+            if ($property->isDynamicProperty()) {
+                continue;
+            }
+            if ($this->hasPropertyWithName($code_base, $name)) {
+                continue;
+            }
+            // Treat it as if all of the properties were added, with their real and phpdoc union types.
+            // TODO: Finalize behavior for edge cases such as `static` and templates in union types
+            $new_property = clone($property);
+            $new_property->setFQSEN(FullyQualifiedPropertyName::make($this->getFQSEN(), $name));
+            $new_property->setPhanFlags($new_property->getPhanFlags() | Flags::IS_FROM_PHPDOC);
+            $this->addProperty($code_base, $new_property, None::instance());
+        }
     }
 
     /*

@@ -244,6 +244,7 @@ class Issue
     const DivisionByZero = 'PhanDivisionByZero';
     const ModuloByZero = 'PhanModuloByZero';
     const PowerOfZero = 'PhanPowerOfZero';
+    const InvalidMixin = 'PhanInvalidMixin';
 
     // Issue::CATEGORY_ANALYSIS
     const Unanalyzable              = 'PhanUnanalyzable';
@@ -2517,6 +2518,14 @@ class Issue
                 'Attempting to exponentiate a value to a power of {CODE} of type {TYPE} (the result will always be 1)',
                 self::REMEDIATION_B,
                 10147
+            ),
+            new Issue(
+                self::InvalidMixin,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                'Attempting to use a mixin of invalid or missing type {TYPE}',
+                self::REMEDIATION_B,
+                10152
             ),
             // Issue::CATEGORY_VARIABLE
             new Issue(

@@ -232,6 +232,7 @@ class ParseVisitor extends ScopeVisitor
             if ($inherited_type_option->isDefined()) {
                 $class->setParentType($inherited_type_option->get());
             }
+            $class->setMixinTypes($comment->getMixinTypes());
 
             // Add any implemented interfaces
             foreach ($node->children['implements']->children ?? [] as $name_node) {

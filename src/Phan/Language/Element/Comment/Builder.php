@@ -371,7 +371,7 @@ final class Builder
         // https://secure.php.net/manual/en/regexp.reference.internal-options.php
         // (?i) makes this case-sensitive, (?-1) makes it case-insensitive
         // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-        if (\preg_match('/@((?i)param|var|return|throws|throw|returns|inherits|extends|suppress|phan-[a-z0-9_-]*(?-i)|method|property|property-read|property-write|template|PhanClosureScope|readonly)(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/', $line, $matches)) {
+        if (\preg_match('/@((?i)param|var|return|throws|throw|returns|inherits|extends|suppress|phan-[a-z0-9_-]*(?-i)|method|property|property-read|property-write|template|PhanClosureScope|readonly|mixin)(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/', $line, $matches)) {
             $case_sensitive_type = $matches[1];
             $type = \strtolower($case_sensitive_type);
 
@@ -429,6 +429,9 @@ final class Builder
                 case 'readonly':
                     $this->setPhanAccessFlag($i, false, 'readonly');
                     break;
+                case 'mixin':
+                    $this->parseMixin($i, $line, 'mixin');
+                    break;
                 default:
                     if (\strpos($type, 'phan-') === 0) {
                         $this->maybeParsePhanCustomAnnotation($i, $line, $type, $case_sensitive_type);
@@ -452,22 +455,58 @@ final class Builder
         if (\stripos($line, 'override') !== false) {
             if (\preg_match('/@([Oo]verride)\b/', $line, $match)) {
                 // TODO: split class const and global const.
-                $this->checkCompatible('@override', [Comment::ON_METHOD, Comment::ON_CONST], $i);
-                $this->comment_flags |= Flags::IS_OVERRIDE_INTENDED;
+                if ($this->checkCompatible('@override', [Comment::ON_METHOD, Comment::ON_CONST], $i)) {
+                    $this->comment_flags |= Flags::IS_OVERRIDE_INTENDED;
+                }
+            }
+        }
+    }
+
+    private function parseMixin(int $i, string $line, string $annotation_name) : void
+    {
+        if (!Config::getValue('read_mixin_annotations')) {
+            return;
+        }
+        if (!$this->checkCompatible('@' . $annotation_name, [Comment::ON_CLASS], $i)) {
+            return;
+        }
+        if (preg_match('/@(phan-)?mixin\s+(\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)\b/', $line, $matches)) {
+            $type_string = $matches[2];
+            $type = Type::fromStringInContext(
+                $type_string,
+                $this->context,
+                Type::FROM_PHPDOC,
+                $this->code_base
+            );
+            // TODO: Warn about invalid mixins
+            if ($type->isObjectWithKnownFQSEN()) {
+                $this->phan_overrides['mixin'][] = $type;
+            } else {
+                Issue::maybeEmit(
+                    $this->code_base,
+                    $this->context,
+                    Issue::InvalidMixin,
+                    $this->guessActualLineLocation($i),
+                    $type
+                );
             }
         }
     }
 
     private function parseParamLine(int $i, string $line) : void
     {
-        $this->checkCompatible('@param', Comment::FUNCTION_LIKE, $i);
+        if (!$this->checkCompatible('@param', Comment::FUNCTION_LIKE, $i)) {
+            return;
+        }
         $this->parameter_list[] =
             self::parameterFromCommentLine($line, false, $i);
     }
 
     private function maybeParseVarLine(int $i, string $line) : void
     {
-        $this->checkCompatible('@var', Comment::HAS_VAR_ANNOTATION, $i);
+        if (!$this->checkCompatible('@var', Comment::HAS_VAR_ANNOTATION, $i)) {
+            return;
+        }
         $comment_var = self::parameterFromCommentLine($line, true, $i);
         if (\in_array($this->comment_type, Comment::FUNCTION_LIKE, true)) {
             if ($comment_var->getName() !== '') {
@@ -488,17 +527,20 @@ final class Builder
     {
         // Make sure support for generic types is enabled
         if (Config::getValue('generic_types_enabled')) {
-            $this->checkCompatible('@template', Comment::HAS_TEMPLATE_ANNOTATION, $i);
-            $template_type = $this->templateTypeFromCommentLine($line);
-            if ($template_type) {
-                $this->template_type_list[$template_type->getName()] = $template_type;
+            if ($this->checkCompatible('@template', Comment::HAS_TEMPLATE_ANNOTATION, $i)) {
+                $template_type = $this->templateTypeFromCommentLine($line);
+                if ($template_type) {
+                    $this->template_type_list[$template_type->getName()] = $template_type;
+                }
             }
         }
     }
 
     private function maybeParseInherits(int $i, string $line, string $type) : void
     {
-        $this->checkCompatible('@' . $type, [Comment::ON_CLASS], $i);
+        if (!$this->checkCompatible('@' . $type, [Comment::ON_CLASS], $i)) {
+            return;
+        }
         // Make sure support for generic types is enabled
         if (Config::getValue('generic_types_enabled')) {
             $this->inherited_type = $this->inheritsFromCommentLine($line);
@@ -507,7 +549,9 @@ final class Builder
 
     private function maybeParsePhanInherits(int $i, string $line, string $type) : void
     {
-        $this->checkCompatible('@' . $type, [Comment::ON_CLASS], $i);
+        if (!$this->checkCompatible('@' . $type, [Comment::ON_CLASS], $i)) {
+            return;
+        }
         // Make sure support for generic types is enabled
         if (Config::getValue('generic_types_enabled')) {
             $this->phan_overrides['inherits'] = $this->inheritsFromCommentLine($line);
@@ -544,7 +588,9 @@ final class Builder
 
     private function maybeParsePhanAssert(int $i, string $line) : void
     {
-        $this->checkCompatible('@phan-assert', Comment::FUNCTION_LIKE, $i);
+        if (!$this->checkCompatible('@phan-assert', Comment::FUNCTION_LIKE, $i)) {
+            return;
+        }
         // Make sure support for generic types is enabled
         $assert = $this->assertFromCommentLine($line);
         if ($assert) {
@@ -563,13 +609,16 @@ final class Builder
             $this->checkCompatible("@$name", [Comment::ON_PROPERTY], $i);
             return;
         }
-        $this->comment_flags |= Flags::IS_READ_ONLY;
-        $this->checkCompatible("@$name", [Comment::ON_PROPERTY, Comment::ON_CLASS], $i);
+        if ($this->checkCompatible("@$name", [Comment::ON_PROPERTY, Comment::ON_CLASS], $i)) {
+            $this->comment_flags |= Flags::IS_READ_ONLY;
+        }
     }
 
     private function maybeParseReturn(int $i, string $line) : void
     {
-        $this->checkCompatible('@return', Comment::FUNCTION_LIKE, $i);
+        if (!$this->checkCompatible('@return', Comment::FUNCTION_LIKE, $i)) {
+            return;
+        }
         $return_comment = $this->return_comment;
         $new_type = $this->returnTypeFromCommentLine($line, $i);
         if ($return_comment) {
@@ -581,7 +630,9 @@ final class Builder
 
     private function maybeParseThrows(int $i, string $line) : void
     {
-        $this->checkCompatible('@throws', Comment::FUNCTION_LIKE, $i);
+        if (!$this->checkCompatible('@throws', Comment::FUNCTION_LIKE, $i)) {
+            return;
+        }
         $this->throw_union_type = $this->throw_union_type->withUnionType(
             $this->returnTypeFromCommentLine($line, $i)
         );
@@ -605,7 +656,9 @@ final class Builder
 
     private function maybeParseProperty(int $i, string $line) : void
     {
-        $this->checkCompatible('@property', [Comment::ON_CLASS], $i);
+        if (!$this->checkCompatible('@property', [Comment::ON_CLASS], $i)) {
+            return;
+        }
         // Make sure support for magic properties is enabled.
         if (Config::getValue('read_magic_property_annotations')) {
             $magic_property = $this->magicPropertyFromCommentLine($line, $i);
@@ -619,7 +672,9 @@ final class Builder
     {
         // Make sure support for magic methods is enabled.
         if (Config::getValue('read_magic_method_annotations')) {
-            $this->checkCompatible('@method', [Comment::ON_CLASS], $i);
+            if (!$this->checkCompatible('@method', [Comment::ON_CLASS], $i)) {
+                return;
+            }
             $magic_method = $this->magicMethodFromCommentLine($line, $i);
             if ($magic_method !== null) {
                 $this->magic_method_list[] = $magic_method;
@@ -630,44 +685,54 @@ final class Builder
     private function maybeParsePhanClosureScope(int $i, string $line) : void
     {
         // TODO: different type for closures
-        $this->checkCompatible('@phan-closure-scope', Comment::FUNCTION_LIKE, $i);
-        $this->closure_scope = $this->getPhanClosureScopeFromCommentLine($line, $i);
+        if ($this->checkCompatible('@phan-closure-scope', Comment::FUNCTION_LIKE, $i)) {
+            $this->closure_scope = $this->getPhanClosureScopeFromCommentLine($line, $i);
+        }
     }
 
     private function maybeParsePhanCustomAnnotation(int $i, string $line, string $type, string $case_sensitive_type) : void
     {
         switch ($type) {
             case 'phan-forbid-undeclared-magic-properties':
-                $this->checkCompatible('@phan-forbid-undeclared-magic-properties', [Comment::ON_CLASS], $i);
-                $this->comment_flags |= Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES;
+                if ($this->checkCompatible('@phan-forbid-undeclared-magic-properties', [Comment::ON_CLASS], $i)) {
+                    $this->comment_flags |= Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES;
+                }
                 return;
             case 'phan-forbid-undeclared-magic-methods':
-                $this->checkCompatible('@phan-forbid-undeclared-magic-methods', [Comment::ON_CLASS], $i);
-                $this->comment_flags |= Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS;
+                if ($this->checkCompatible('@phan-forbid-undeclared-magic-methods', [Comment::ON_CLASS], $i)) {
+                    $this->comment_flags |= Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS;
+                }
                 return;
             case 'phan-closure-scope':
-                $this->checkCompatible('@phan-closure-scope', Comment::FUNCTION_LIKE, $i);
-                $this->closure_scope = $this->getPhanClosureScopeFromCommentLine($line, $i);
+                if ($this->checkCompatible('@phan-closure-scope', Comment::FUNCTION_LIKE, $i)) {
+                    $this->closure_scope = $this->getPhanClosureScopeFromCommentLine($line, $i);
+                }
                 return;
             case 'phan-param':
-                $this->checkCompatible('@phan-param', Comment::FUNCTION_LIKE, $i);
-                $this->phan_overrides['param'][] =
-                    $this->parameterFromCommentLine($line, false, $i);
+                if ($this->checkCompatible('@phan-param', Comment::FUNCTION_LIKE, $i)) {
+                    $this->phan_overrides['param'][] =
+                        $this->parameterFromCommentLine($line, false, $i);
+                }
                 return;
             case 'phan-real-return':
-                $this->checkCompatible('@phan-real-return', Comment::FUNCTION_LIKE, $i);
-                $this->phan_overrides['real-return'] = new ReturnComment($this->returnTypeFromCommentLine($line, $i)->asRealUnionType(), $this->guessActualLineLocation($i));
+                if ($this->checkCompatible('@phan-real-return', Comment::FUNCTION_LIKE, $i)) {
+                    $this->phan_overrides['real-return'] = new ReturnComment($this->returnTypeFromCommentLine($line, $i)->asRealUnionType(), $this->guessActualLineLocation($i));
+                }
                 return;
             case 'phan-return':
-                $this->checkCompatible('@phan-return', Comment::FUNCTION_LIKE, $i);
-                $this->phan_overrides['return'] = new ReturnComment($this->returnTypeFromCommentLine($line, $i), $this->guessActualLineLocation($i));
+                if ($this->checkCompatible('@phan-return', Comment::FUNCTION_LIKE, $i)) {
+                    $this->phan_overrides['return'] = new ReturnComment($this->returnTypeFromCommentLine($line, $i), $this->guessActualLineLocation($i));
+                }
                 return;
             case 'phan-override':
-                $this->checkCompatible('@override', [Comment::ON_METHOD, Comment::ON_CONST], $i);
-                $this->comment_flags |= Flags::IS_OVERRIDE_INTENDED;
+                if ($this->checkCompatible('@override', [Comment::ON_METHOD, Comment::ON_CONST], $i)) {
+                    $this->comment_flags |= Flags::IS_OVERRIDE_INTENDED;
+                }
                 return;
             case 'phan-var':
-                $this->checkCompatible('@phan-var', Comment::HAS_VAR_ANNOTATION, $i);
+                if (!$this->checkCompatible('@phan-var', Comment::HAS_VAR_ANNOTATION, $i)) {
+                    return;
+                }
                 $comment_var = $this->parameterFromCommentLine($line, true, $i);
                 if (\in_array($this->comment_type, Comment::FUNCTION_LIKE, true)) {
                     if ($comment_var->getName() !== '') {
@@ -702,8 +767,9 @@ final class Builder
                 //
                 // Note that phan-side-effect-free is recommended over phan-pure to avoid confusion.
                 // Functions with this annotation are not
-                $this->checkCompatible('@' . $type, \array_merge(Comment::FUNCTION_LIKE, [Comment::ON_CLASS]), $i);
-                $this->comment_flags |= Flags::IS_SIDE_EFFECT_FREE;
+                if ($this->checkCompatible('@' . $type, \array_merge(Comment::FUNCTION_LIKE, [Comment::ON_CLASS]), $i)) {
+                    $this->comment_flags |= Flags::IS_SIDE_EFFECT_FREE;
+                }
                 return;
             case 'phan-immutable':
                 $this->setPhanAccessFlag($i, false, 'phan-immutable');
@@ -739,8 +805,12 @@ final class Builder
                 $this->maybeParsePhanAssert($i, $line);
                 return;
             case 'phan-constructor-used-for-side-effects':
-                $this->checkCompatible('@' . $type, [Comment::ON_CLASS], $i);
-                $this->comment_flags |= Flags::IS_CONSTRUCTOR_USED_FOR_SIDE_EFFECTS;
+                if ($this->checkCompatible('@' . $type, [Comment::ON_CLASS], $i)) {
+                    $this->comment_flags |= Flags::IS_CONSTRUCTOR_USED_FOR_SIDE_EFFECTS;
+                }
+                return;
+            case 'phan-mixin':
+                $this->parseMixin($i, $line, 'phan-mixin');
                 return;
             default:
                 $this->emitIssueWithSuggestion(
@@ -780,6 +850,7 @@ final class Builder
         '@phan-forbid-undeclared-magic-properties' => '',
         '@phan-inherits' => '',
         '@phan-method' => '',
+        '@phan-mixin' => '',
         '@phan-override' => '',
         '@phan-param' => '',
         '@phan-property' => '',
@@ -801,25 +872,31 @@ final class Builder
 
     private function parsePhanProperty(int $i, string $line) : void
     {
-        $this->checkCompatible('@phan-property', [Comment::ON_CLASS], $i);
+        if (!$this->checkCompatible('@phan-property', [Comment::ON_CLASS], $i)) {
+            return;
+        }
         // Make sure support for magic properties is enabled.
-        if (Config::getValue('read_magic_property_annotations')) {
-            $magic_property = $this->magicPropertyFromCommentLine($line, $i);
-            if ($magic_property !== null) {
-                $this->phan_overrides['property'][] = $magic_property;
-            }
+        if (!Config::getValue('read_magic_property_annotations')) {
+            return;
+        }
+        $magic_property = $this->magicPropertyFromCommentLine($line, $i);
+        if ($magic_property !== null) {
+            $this->phan_overrides['property'][] = $magic_property;
         }
     }
 
     private function parsePhanMethod(int $i, string $line) : void
     {
+        if (!$this->checkCompatible('@phan-method', [Comment::ON_CLASS], $i)) {
+            return;
+        }
         // Make sure support for magic methods is enabled.
-        if (Config::getValue('read_magic_method_annotations')) {
-            $this->checkCompatible('@phan-method', [Comment::ON_CLASS], $i);
-            $magic_method = $this->magicMethodFromCommentLine($line, $i);
-            if ($magic_method !== null) {
-                $this->phan_overrides['method'][] = $magic_method;
-            }
+        if (!Config::getValue('read_magic_method_annotations')) {
+            return;
+        }
+        $magic_method = $this->magicMethodFromCommentLine($line, $i);
+        if ($magic_method !== null) {
+            $this->phan_overrides['method'][] = $magic_method;
         }
     }
 
@@ -893,14 +970,16 @@ final class Builder
     /**
      * @param list<int> $valid_types
      */
-    private function checkCompatible(string $param_name, array $valid_types, int $i) : void
+    private function checkCompatible(string $param_name, array $valid_types, int $i) : bool
     {
-        if (!\in_array($this->comment_type, $valid_types, true)) {
-            $this->emitInvalidCommentForDeclarationType(
-                $param_name,
-                $this->guessActualLineLocation($i)
-            );
+        if (\in_array($this->comment_type, $valid_types, true)) {
+            return true;
         }
+        $this->emitInvalidCommentForDeclarationType(
+            $param_name,
+            $this->guessActualLineLocation($i)
+        );
+        return false;
     }
 
     private function emitInvalidCommentForDeclarationType(

@@ -363,6 +363,30 @@ class Method extends ClassElement implements FunctionInterface
     }
 
     /**
+     * Convert this method to a method from phpdoc.
+     * Used when importing methods with mixins.
+     *
+     * Precondition: This is not a magic method
+     */
+    public function asPHPDocMethod(Clazz $class) : Method
+    {
+        $method = clone($this);
+        $method->setFlags($method->getFlags() & (
+            ast\flags\MODIFIER_PUBLIC |
+            ast\flags\MODIFIER_PROTECTED |
+            ast\flags\MODIFIER_PRIVATE |
+            ast\flags\MODIFIER_STATIC
+        ));  // clear MODIFIER_ABSTRACT and other flags
+
+        // TODO: Handle template. Possibly support @mixin Foo<stdClass, bool> and resolve methods.
+        // $method->setPhanFlags(Flags::IS_FROM_PHPDOC);
+        $method->clearNode();
+        // Set the new FQSEN but keep the defining FQSEN
+        $method->setFQSEN(FullyQualifiedMethodName::make($class->getFQSEN(), $method->getName()));
+        return $method;
+    }
+
+    /**
      * @param Clazz $clazz - The class to treat as the defining class of the alias. (i.e. the inheriting class)
      * @param string $alias_method_name - The alias method name.
      * @param int $new_visibility_flags (0 if unchanged)

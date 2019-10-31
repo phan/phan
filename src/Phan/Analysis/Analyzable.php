@@ -69,6 +69,15 @@ trait Analyzable
     }
 
     /**
+     * Clears the node so that it won't be used for analysis.
+     * @suppress PhanTypeMismatchProperty
+     */
+    protected function clearNode() : void
+    {
+        $this->node = null;
+    }
+
+    /**
      * Ensure that annotations about what flags a function declaration has have been added
      * @suppress PhanUndeclaredProperty deliberately using dynamic properties
      */
