@@ -9,6 +9,10 @@ New features(CLI, Configs):
 
 New features(Analysis):
 + Suggest similarly named static methods and static properties for `PhanUndeclaredConstant` issues on class constants. (#3393)
++ Support `@mixin` (and an alias `@phan-mixin`) as a way to load public methods and public instance properties
+  as magic methods and magic properties from another classlike. (#3237)
+
+  Attempts to parse or analyze mixins can be disabled by setting `read_mixin_annotations` to `false` in your Phan config.
 + Support `@readonly` as an alias of the `@phan-read-only` annotation.
 
 Bug fixes:

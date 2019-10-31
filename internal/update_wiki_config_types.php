@@ -90,6 +90,7 @@ class ConfigEntry
         'enable_class_alias_support' => self::CATEGORY_ANALYSIS,
         'read_magic_property_annotations' => self::CATEGORY_ANALYSIS,
         'read_magic_method_annotations' => self::CATEGORY_ANALYSIS,
+        'read_mixin_annotations' => self::CATEGORY_ANALYSIS,
         'read_type_annotations' => self::CATEGORY_ANALYSIS,
         'warn_about_undocumented_throw_statements' => self::CATEGORY_ANALYSIS,
         'warn_about_undocumented_exceptions_thrown_by_invoked_functions' => self::CATEGORY_ANALYSIS,

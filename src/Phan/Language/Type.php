@@ -549,6 +549,7 @@ class Type
      * @param list<UnionType> $template_parameter_type_list
      * A map from a template type identifier to a
      * concrete union type
+     * @phan-side-effect-free
      */
     public static function fromType(
         Type $type,
@@ -567,6 +568,7 @@ class Type
      * @param mixed $object
      * @return Type
      * Get a type for the given object. Equivalent to Type::fromObject($object)->asNonLiteralType()
+     * @phan-side-effect-free
      */
     public static function nonLiteralFromObject($object) : Type
     {
@@ -591,6 +593,7 @@ class Type
      * Get a type for the given object
      * @param mixed $object
      * @throws AssertionError if the type was unexpected
+     * @phan-side-effect-free
      */
     public static function fromObject($object) : Type
     {
@@ -624,6 +627,7 @@ class Type
      * If $object is an array, return an ArrayShapeType (with nested fields) instead of an ArrayType
      * @param mixed $object
      * @throws AssertionError if the type was unexpected
+     * @phan-side-effect-free
      */
     public static function fromObjectExtended($object) : Type
     {
@@ -637,6 +641,7 @@ class Type
      * Get a type for the given array as an array shape, recursively.
      * @param array<mixed,mixed> $array
      * @throws AssertionError if the type was unexpected
+     * @phan-side-effect-free
      */
     public static function fromArray(array $array) : ArrayShapeType
     {
@@ -669,6 +674,7 @@ class Type
      * Get a type for the given type name
      *
      * @throws AssertionError if the type was unexpected
+     * @phan-side-effect-free
      */
     public static function fromInternalTypeName(
         string $type_name,
@@ -776,6 +782,7 @@ class Type
      * @param bool $is_nullable
      * True if this type can be null, false if it cannot
      * be null.
+     * @phan-side-effect-free
      */
     public static function fromNamespaceAndName(
         string $namespace,
@@ -787,6 +794,7 @@ class Type
 
     /**
      * Converts the reflection type to a string that Phan can understand
+     * @phan-side-effect-free
      */
     public static function stringFromReflectionType(
         ?\ReflectionType $reflection_type
@@ -807,6 +815,7 @@ class Type
 
     /**
      * Creates a type for the ReflectionType of a parameter, return value, etc.
+     * @phan-side-effect-free
      */
     public static function fromReflectionType(
         \ReflectionType $reflection_type
@@ -830,6 +839,7 @@ class Type
      * @throws InvalidArgumentException if type name was invalid
      *
      * @throws FQSENException
+     * @phan-side-effect-free
      */
     public static function fromFullyQualifiedString(
         string $fully_qualified_string
@@ -1191,6 +1201,7 @@ class Type
      * Parse a type from the given string
      *
      * @suppress PhanPossiblyFalseTypeArgument, PhanPossiblyFalseTypeArgumentInternal
+     * @phan-side-effect-free
      */
     public static function fromStringInContext(
         string $string,
@@ -2055,6 +2066,8 @@ class Type
      * @return bool
      * True if the given type references the class context
      * in which it exists such as 'self' or 'parent'
+     *
+     * @phan-side-effect-free
      */
     public static function isSelfTypeString(
         string $type_string
@@ -2071,6 +2084,8 @@ class Type
      * @return bool
      * True if the given type references the class context
      * in which it exists is '$this' or 'static'
+     *
+     * @phan-side-effect-free
      */
     public static function isStaticTypeString(
         string $type_string
@@ -3331,6 +3346,8 @@ class Type
      *
      * @return string
      * A canonical name for the given type name
+     *
+     * @phan-side-effect-free
      */
     public static function canonicalNameFromName(
         string $name
@@ -3728,6 +3745,7 @@ class Type
      * @param int|string|float|bool|null $b
      * @param int $flags
      * @internal
+     * @phan-side-effect-free
      */
     public static function performComparison($a, $b, int $flags) : bool
     {
@@ -3761,6 +3779,7 @@ class Type
      * Returns the Type for \Traversable
      *
      * @suppress PhanThrowTypeAbsentForCall
+     * @phan-side-effect-free
      */
     public static function traversableInstance() : Type
     {
@@ -3772,6 +3791,7 @@ class Type
      * Returns the Type for \Throwable
      *
      * @suppress PhanThrowTypeAbsentForCall
+     * @phan-side-effect-free
      */
     public static function throwableInstance() : Type
     {
@@ -3783,6 +3803,7 @@ class Type
      * Returns the Type for \Countable
      *
      * @suppress PhanThrowTypeAbsentForCall
+     * @phan-side-effect-free
      */
     public static function countableInstance() : Type
     {

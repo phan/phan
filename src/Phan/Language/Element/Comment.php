@@ -154,6 +154,12 @@ class Comment
     protected $param_assertion_map = [];
 
     /**
+     * @var list<Type>
+     * A list of mixins used by this class
+     */
+    protected $mixin_types = [];
+
+    /**
      * A private constructor meant to ingest a parsed comment
      * docblock.
      *
@@ -345,6 +351,9 @@ class Comment
             case 'inherits':
             case 'extends':
                 $this->inherited_type = $value;
+                return;
+            case 'mixin':
+                $this->mixin_types = $value;
                 return;
         }
     }
@@ -587,6 +596,15 @@ class Comment
     public function getInheritedTypeOption() : Option
     {
         return $this->inherited_type;
+    }
+
+    /**
+     * @return list<Type>
+     * An optional type declaring the mixins used by a class.
+     */
+    public function getMixinTypes() : array
+    {
+        return $this->mixin_types;
     }
 
     /**

@@ -561,6 +561,15 @@ Note: [`read_type_annotations`](#read_type_annotations) must also be enabled.
 
 (Default: `true`)
 
+## read_mixin_annotations
+
+If disabled, Phan will not read docblock type
+annotation comments for `@mixin`.
+
+Note: [`read_type_annotations`](#read_type_annotations) must also be enabled.
+
+(Default: `true`)
+
 ## read_type_annotations
 
 If disabled, Phan will not read docblock type

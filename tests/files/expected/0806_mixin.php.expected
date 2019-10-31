@@ -1,0 +1,14 @@
+%s:17 PhanTypeMismatchReturn Returning type string but getPrivate() is declared to return int
+%s:39 PhanInvalidMixin Attempting to use a mixin of invalid or missing type \Missing
+%s:39 PhanInvalidMixin Attempting to use a mixin of invalid or missing type \NSMixin\Missing2
+%s:43 PhanUndeclaredMethod Call to undeclared method \NSMixin\MyClass::getMissing
+%s:44 PhanUndeclaredMethod Call to undeclared method \NSMixin\MyClass::getPrivate
+%s:46 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($obj) is int but \spl_object_hash() takes object
+%s:46 PhanTypeMismatchArgumentReal Argument 1 ($path) is null but \NSMixin\MyClass::getAttr() takes string defined at %s:8
+%s:48 PhanParamTooMany Call with 1 arg(s) to \NSMixin\MyClass::setAbc() which only takes 0 arg(s) defined at %s:11
+%s:49 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is string but \intdiv() takes int
+%s:51 PhanUndeclaredProperty Reference to undeclared property \NSMixin\MyClass->privateInstanceProp
+%s:53 PhanUndeclaredStaticProperty Static property 'staticProp' on \NSMixin\MyClass is undeclared
+%s:54 PhanUndeclaredInvokeInCallable Possible attempt to access missing magic method __invoke of '\NSMixin\MyClass'
+%s:55 PhanParamTooFew Call with 0 arg(s) to \NSMixin\MyClass::static_method(int $i) which requires 1 arg(s) defined at %s:19
+%s:56 PhanUndeclaredStaticMethod Static call to undeclared method \NSMixin\MyClass::static_mathod (Did you mean expr::static_method())
