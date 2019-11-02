@@ -32,6 +32,7 @@ use Symfony\Component\Console\Terminal;
 use function array_map;
 use function array_slice;
 use function count;
+use function fwrite;
 use function getenv;
 use function in_array;
 use function is_array;
@@ -276,7 +277,7 @@ class CLI
         } catch (ExitException $e) {
             $message = $e->getMessage();
             if ($message) {
-                \fwrite(STDERR, $message);
+                fwrite(STDERR, $message);
             }
             exit($e->getCode());
         }
@@ -347,7 +348,7 @@ class CLI
         }
         $cwd = \getcwd();
         if (!is_string($cwd)) {
-            \fwrite(STDERR, "Failed to find current working directory\n");
+            fwrite(STDERR, "Failed to find current working directory\n");
             exit(1);
         }
         Config::setProjectRootDirectory($cwd);
@@ -592,7 +593,7 @@ class CLI
                     break;
                 case 'polyfill-parse-all-element-doc-comments':
                     // TODO: Drop in Phan 3
-                    \fwrite(STDERR, "--polyfill-parse-all-element-doc-comments is a no-op and will be removed in a future Phan release (no longer needed since PHP 7.0 support was dropped)\n");
+                    fwrite(STDERR, "--polyfill-parse-all-element-doc-comments is a no-op and will be removed in a future Phan release (no longer needed since PHP 7.0 support was dropped)\n");
                     break;
                 case 'd':
                 case 'project-root-directory':
@@ -773,7 +774,7 @@ class CLI
                     if (\preg_match('@^([1-9][0-9]*)([KMG])?$@', $value, $match)) {
                         \ini_set('memory_limit', $value);
                     } else {
-                        \fwrite(STDERR, "Invalid --memory-limit '$value', ignoring\n");
+                        fwrite(STDERR, "Invalid --memory-limit '$value', ignoring\n");
                     }
                     break;
                 case 'print-memory-usage-summary':
@@ -1053,7 +1054,7 @@ class CLI
             }
         }
         if (!$all_plugins_exist) {
-            \fwrite(STDERR, "Exiting due to invalid plugin config.\n");
+            fwrite(STDERR, "Exiting due to invalid plugin config.\n");
             exit(1);
         }
     }
@@ -1611,11 +1612,58 @@ EOB
     }
 
     /**
-     * Prints a warning to stderr (except for the label, nothing else is colorized
+     * Prints a warning to stderr (except for the label, nothing else is colorized).
+     * This clears the progress bar if needed.
+     *
+     * NOTE: Callers should usually add a trailing newline.
      */
     public static function printWarningToStderr(string $message) : void
     {
-        \fwrite(STDERR, self::colorizeHelpSectionIfSupported('WARNING: ') . $message);
+        self::printToStderr(self::colorizeHelpSectionIfSupported('WARNING: ') . $message);
+    }
+
+    /**
+     * Prints an error to stderr (except for the label, nothing else is colorized).
+     * This clears the progress bar if needed.
+     *
+     * NOTE: Callers should usually add a trailing newline.
+     */
+    public static function printErrorToStderr(string $message) : void
+    {
+        self::printToStderr(self::colorizeHelpSectionIfSupported('ERROR: ') . $message);
+    }
+
+    /**
+     * Prints to stderr, clearing the progress bar if needed.
+     * NOTE: Callers should usually add a trailing newline.
+     */
+    public static function printToStderr(string $message) : void
+    {
+        if (self::shouldClearStderrBeforePrinting()) {
+            // http://ascii-table.com/ansi-escape-sequences.php
+            // > Clears all characters from the cursor position to the end of the line (including the character at the cursor position).
+            $message = "\033[2K" . $message;
+        }
+        fwrite(STDERR, $message);
+    }
+
+    /**
+     * Check if the progress bar should be cleared.
+     */
+    private static function shouldClearStderrBeforePrinting() : bool
+    {
+        // Don't clear if a regular progress bar isn't being rendered.
+        if (!CLI::shouldShowProgress()) {
+            return false;
+        }
+        if (CLI::shouldShowDebugOutput()) {
+            return false;
+        }
+        // @phan-suppress-next-line PhanUndeclaredFunction
+        if (function_exists('sapi_windows_vt100_support') && !\sapi_windows_vt100_support(STDERR)) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -1628,7 +1676,7 @@ EOB
             $section = self::colorizeHelpSectionIfSupported($section);
         }
         if ($toStderr) {
-            \fwrite(STDERR, $section);
+            fwrite(STDERR, $section);
         } else {
             echo $section;
         }
@@ -1816,10 +1864,7 @@ EOB
                 }
                 if (!$file_info->isFile() || !$file_info->isReadable()) {
                     $file_path = $file_info->getRealPath();
-                    \fwrite(
-                        STDERR,
-                        self::colorizeHelpSectionIfSupported('ERROR: ') . "Unable to read file {$file_path}\n"
-                    );
+                    CLI::printErrorToStderr("Unable to read file $file_path\n");
                     return false;
                 }
 
@@ -1843,7 +1888,7 @@ EOB
 
             $file_list = \array_keys(\iterator_to_array($iterator));
         } catch (\Exception $exception) {
-            \fwrite(STDERR, $exception->getMessage() . "\n");
+            CLI::printWarningToStderr("Caught exception while listing files in '$directory_name': {$exception->getMessage()}\n");
         }
 
         // Normalize leading './' in paths.
@@ -1998,7 +2043,7 @@ EOB
                $progress_bar .
                $right_side .
                "\r";
-        \fwrite(STDERR, $msg);
+        fwrite(STDERR, $msg);
     }
 
     /**
@@ -2013,12 +2058,12 @@ EOB
         }
         $did_end = true;
         if (self::shouldShowDebugOutput()) {
-            \fwrite(STDERR, "Phan's analysis is complete\n");
+            fwrite(STDERR, "Phan's analysis is complete\n");
             return;
         }
         if (self::shouldShowProgress()) {
             // Print a newline to stderr to visuall separate stderr from stdout
-            \fwrite(STDERR, \PHP_EOL);
+            fwrite(STDERR, \PHP_EOL);
             \fflush(\STDOUT);
         }
     }
@@ -2058,7 +2103,7 @@ EOB
     public static function debugOutput(string $line) : void
     {
         if (self::shouldShowDebugOutput()) {
-            \fwrite(STDERR, $line . \PHP_EOL);
+            fwrite(STDERR, $line . \PHP_EOL);
         }
     }
 
@@ -2174,7 +2219,7 @@ EOB
             return;
         }
         if (!\extension_loaded('ast')) {
-            \fwrite(
+            fwrite(
                 STDERR,
                 // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                 "The php-ast extension must be loaded in order for Phan to work. See https://github.com/phan/phan#getting-started for more details. Alternately, invoke Phan with the CLI option --allow-polyfill-parser (which is noticeably slower)\n"
@@ -2189,7 +2234,7 @@ EOB
                 Config::AST_VERSION
             );
         } catch (\LogicException $_) {
-            \fwrite(
+            fwrite(
                 STDERR,
                 'Unknown AST version ('
                 . Config::AST_VERSION
@@ -2206,7 +2251,7 @@ EOB
                 '<' . '?php syntaxerror',
                 Config::AST_VERSION
             );
-            \fwrite(
+            fwrite(
                 STDERR,
                 'Expected ast\\parse_code to throw ParseError on invalid inputs. Configured AST version: '
                 . Config::AST_VERSION
@@ -2245,7 +2290,7 @@ EOB
             $extensions_to_disable[] = 'xdebug';
             // Restart if xdebug is loaded, unless the environment variable PHAN_ALLOW_XDEBUG is set.
             if (!getenv('PHAN_DISABLE_XDEBUG_WARN')) {
-                \fwrite(STDERR, <<<EOT
+                fwrite(STDERR, <<<EOT
 [info] Disabling xdebug: Phan is around five times as slow when xdebug is enabled (xdebug only makes sense when debugging Phan itself)
 [info] To run Phan with xdebug, set the environment variable PHAN_ALLOW_XDEBUG to 1.
 [info] To disable this warning, set the environment variable PHAN_DISABLE_XDEBUG_WARN to 1.
@@ -2257,7 +2302,7 @@ EOT
         }
         if (self::shouldRestartToExclude('uopz')) {
             $extensions_to_disable[] = 'uopz';
-            \fwrite(
+            fwrite(
                 STDERR,
                 "[info] Restarting with uopz disabled, it can cause unpredictable behavior." . \PHP_EOL .
                 "[info] Set the environment variable PHAN_ALLOW_UOPZ to 1 to disable this message and to allow uopz." . \PHP_EOL
@@ -2266,7 +2311,7 @@ EOT
         if (self::shouldRestartToExclude('grpc') && self::willUseMultipleProcesses()) {
             // This still hangs when phan runs with --processes 2, even in 1.22.0
             $extensions_to_disable[] = 'grpc';
-            \fwrite(
+            fwrite(
                 STDERR,
                 "[info] grpc can cause php to hang when Phan is run with options that require forking." . \PHP_EOL .
                 "[info] Restarting with grpc disabled." . \PHP_EOL .

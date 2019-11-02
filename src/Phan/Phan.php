@@ -199,6 +199,7 @@ class Phan implements IgnoredFilesFilterInterface
             // If the file is gone, no need to continue
             $real = realpath($file_path);
             if ($real === false || !file_exists($real)) {
+                CLI::printWarningToStderr("Could not find file '$file_path'\n");
                 continue;
             }
             try {
@@ -208,12 +209,12 @@ class Phan implements IgnoredFilesFilterInterface
                 // Save this to the set of files to analyze
                 $analyze_file_path_list[] = $file_path;
             } catch (\AssertionError $assertion_error) {
-                fwrite(STDERR, "While parsing $file_path...\n");
+                CLI::printErrorToStderr("While parsing $file_path...\n");
                 fwrite(STDERR, "$assertion_error\n");
                 exit(EXIT_FAILURE);
             } catch (\Throwable $throwable) {
                 // Catch miscellaneous errors such as $throwable and print their stack traces.
-                fwrite(STDERR, "While parsing $file_path, caught: " . $throwable . "\n");
+                CLI::printWarningToStderr("While parsing $file_path, caught: " . $throwable . "\n");
                 $code_base->recordUnparsableFile($file_path);
             }
         }
