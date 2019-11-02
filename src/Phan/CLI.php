@@ -1660,7 +1660,7 @@ EOB
             return false;
         }
         // @phan-suppress-next-line PhanUndeclaredFunction
-        if (function_exists('sapi_windows_vt100_support') && !\sapi_windows_vt100_support(STDERR)) {
+        if (\function_exists('sapi_windows_vt100_support') && !\sapi_windows_vt100_support(STDERR)) {
             return false;
         }
         return true;
