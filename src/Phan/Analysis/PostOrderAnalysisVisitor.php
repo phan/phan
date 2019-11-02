@@ -2000,11 +2000,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     {
         $expression = $node->children['expr'];
         try {
+            // Get the function.
+            // If the function is undefined, always try to create a placeholder from Phan's type signatures for internal functions so they can still be type checked.
             $function_list_generator = (new ContextNode(
                 $this->code_base,
                 $this->context,
                 $expression
-            ))->getFunctionFromNode();
+            ))->getFunctionFromNode(true);
 
             foreach ($function_list_generator as $function) {
                 // Check the call for parameter and argument types
