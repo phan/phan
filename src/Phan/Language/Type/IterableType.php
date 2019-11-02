@@ -77,6 +77,20 @@ class IterableType extends NativeType
     {
         return false;
     }
+
+    public function hasStaticOrSelfTypesRecursive(CodeBase $code_base) : bool
+    {
+        $union_type = $this->iterableValueUnionType($code_base);
+        if (!$union_type) {
+            return false;
+        }
+        foreach ($union_type->getTypeSet() as $type) {
+            if ($type !== $this && $type->hasStaticOrSelfTypesRecursive($code_base)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 // Trigger autoloader for subclass before make() can get called.
 \class_exists(GenericIterableType::class);

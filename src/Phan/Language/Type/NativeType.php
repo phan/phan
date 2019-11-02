@@ -377,6 +377,11 @@ abstract class NativeType extends Type
     {
         return null;
     }
+
+    public function hasStaticOrSelfTypesRecursive(CodeBase $_) : bool
+    {
+        return false;
+    }
 }
 \class_exists(ArrayType::class);
 \class_exists(ScalarType::class);
