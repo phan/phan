@@ -18,6 +18,10 @@ New features(Analysis):
 + Support `@readonly` as an alias of the `@phan-read-only` annotation.
 + Also emit `PhanImpossibleTypeComparison` for `int === float` checks. (#3106)
 + Emit `PhanSuspiciousMagicConstant` when using `__METHOD__` in a function instead of a method.
++ Check return types and parameter types of global functions which Phan has signatures for,
+  when `ignore_undeclared_functions_with_known_signatures` is `false` and `PhanUndeclaredFunction` is emitted. (#3441)
+
+  Previously, Phan would emit `PhanUndeclaredFunction` without checking param or return types.
 
 Bug fixes:
 + Fix a bug where global functions, closures, and arrow functions may have inferred values from previous analysis unintentionally

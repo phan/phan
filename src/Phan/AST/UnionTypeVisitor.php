@@ -2373,7 +2373,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             $this->code_base,
             $this->context,
             $expression
-        ))->getFunctionFromNode();
+        ))->getFunctionFromNode(true);
 
         $possible_types = null;
         foreach ($function_list_generator as $function) {

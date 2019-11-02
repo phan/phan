@@ -468,7 +468,7 @@ class InferPureVisitor extends AnalysisVisitor
                 $this->code_base,
                 $this->context,
                 $expr
-            ))->getFunctionFromNode();
+            ))->getFunctionFromNode(true);
 
             foreach ($function_list_generator as $function) {
                 $this->checkCalledFunction($node, $function);

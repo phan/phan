@@ -1167,7 +1167,7 @@ class CodeBase
         // Make the following checks:
         //
         // 1. this is an internal function that hasn't been loaded yet.
-        // 2. Unless 'ignore_undeclared_functions_with_known_signatures' is true, require that the current php binary or it's extensions define this function before that.
+        // 2. Unless 'ignore_undeclared_functions_with_known_signatures' is true, require that the current php binary or its extensions define this function before that.
         return $this->hasInternalFunctionWithFQSEN($fqsen);
     }
 
@@ -1473,6 +1473,51 @@ class CodeBase
             return true;
         }
         return false;
+    }
+
+    /**
+     * Returns 0 or more stub functions for a FQSEN that wasn't found in stub files (from .phan/config.php) or Reflection.
+     *
+     * This is used to warn about invalid argument counts and types when invoking a method,
+     * to return the type that would exist if the function existed, etc.
+     *
+     * NOTE: These placeholders do not get added to the CodeBase instance,
+     * and are currently different objects every time they get used.
+     *
+     * @return list<Func>
+     */
+    public function getPlaceholdersForUndeclaredFunction(FullyQualifiedFunctionName $fqsen) : array
+    {
+        $canonical_fqsen = $fqsen->withAlternateId(0);
+        if ($this->fqsen_func_map->offsetExists($canonical_fqsen)) {
+            // Should not be needed
+            return [$this->fqsen_func_map->offsetGet($canonical_fqsen)];
+        }
+
+        $name = $canonical_fqsen->getName();
+        if ($canonical_fqsen->getNamespace() !== '\\') {
+            $name = \ltrim($canonical_fqsen->getNamespace(), '\\') . '\\' . $name;
+        }
+
+        // For elements in the root namespace, check to see if
+        // there's a static method signature for something that
+        // hasn't been loaded into memory yet and create a
+        // method out of it as it's requested
+
+        $function_signature_map =
+            UnionType::internalFunctionSignatureMap(Config::get_closest_target_php_version_id());
+
+        // Don't need to track this any more
+        unset($this->internal_function_fqsen_set[$canonical_fqsen]);
+
+        if (!isset($function_signature_map[$name])) {
+            return [];
+        }
+        $signature = $function_signature_map[$name];
+        return FunctionFactory::functionListFromSignature(
+            $canonical_fqsen,
+            $signature
+        );
     }
 
     private function updatePluginsOnLazyLoadInternalFunction(Func $function) : void
