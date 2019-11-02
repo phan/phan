@@ -967,6 +967,7 @@ final class MiscParamPlugin extends PluginV3 implements
             'class_alias' => $class_alias_callback,
 
             'in_array' => $in_array_callback,
+            'array_search' => $in_array_callback,
         ];
     }
 

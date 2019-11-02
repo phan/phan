@@ -23,7 +23,7 @@ New features(Analysis):
 
   Previously, Phan would emit `PhanUndeclaredFunction` without checking param or return types.
 + Emit `PhanImpossibleTypeComparison*` and `PhanSuspiciousWeakTypeComparison*`
-  when `in_array` is used in a way that will always return false.
+  when `in_array` or `array_search` is used in a way that will always return false.
 
 Bug fixes:
 + Fix a bug where global functions, closures, and arrow functions may have inferred values from previous analysis unintentionally
