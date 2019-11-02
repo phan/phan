@@ -5,7 +5,7 @@ namespace NS163;
 use stdClass;
 
 $contents = file(__FILE__);
-$dump = function (bool $result) use ($contents) : void {
+$dump = function ($result) use ($contents) : void {
     $lineno = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS)[0]['line'];
     $line = trim($contents[$lineno - 1]);
     $expr = preg_replace('/.*\$dump\(|\);.*/', '', $line);
@@ -27,6 +27,11 @@ $test = function (stdClass $o1, stdClass $o2, int $i, int ...$other) use ($dump)
     $dump(in_array($o2, [$i]));
     $dump(in_array($o1, [null]));
     $dump(in_array(false, [$i, $o1, $o2]));
+    $dump(array_search(false, [$i, $o1, $o2]));
+    $dump(array_search(false, [$i, $o1, $o2], true));
+    $dump(array_search(1, [$i, $o1, $o2], true));
+    $dump(array_search($o1, ['a' => $i, 'b' => $o2], true));
+    $dump(array_search($o2, [], true));
 };
 $test(new stdClass(), new stdClass(), 2);
 
