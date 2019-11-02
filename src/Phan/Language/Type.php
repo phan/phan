@@ -2043,19 +2043,11 @@ class Type
 
     /**
      * Returns true if this has any instance of `static` or `self`.
-     * This is overridden in subclasses such as `SelfType`.
+     * This is overridden in subclasses such as `SelfType` and `IterableType`
      */
-    public function hasStaticOrSelfTypesRecursive(CodeBase $code_base) : bool
+    public function hasStaticOrSelfTypesRecursive(CodeBase $_) : bool
     {
-        $union_type = $this->iterableValueUnionType($code_base);
-        if (!$union_type) {
-            return false;
-        }
-        foreach ($union_type->getTypeSet() as $type) {
-            if ($type->hasStaticOrSelfTypesRecursive($code_base)) {
-                return true;
-            }
-        }
+        // TODO: Check template types?
         return false;
     }
 
