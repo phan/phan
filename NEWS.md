@@ -22,6 +22,8 @@ New features(Analysis):
   when `ignore_undeclared_functions_with_known_signatures` is `false` and `PhanUndeclaredFunction` is emitted. (#3441)
 
   Previously, Phan would emit `PhanUndeclaredFunction` without checking param or return types.
++ Emit `PhanImpossibleTypeComparison*` and `PhanSuspiciousWeakTypeComparison*`
+  when `in_array` is used in a way that will always return false.
 
 Bug fixes:
 + Fix a bug where global functions, closures, and arrow functions may have inferred values from previous analysis unintentionally

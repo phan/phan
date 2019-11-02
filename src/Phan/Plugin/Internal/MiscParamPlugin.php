@@ -7,6 +7,8 @@ use ast\Node;
 use Closure;
 use Phan\Analysis\AssignmentVisitor;
 use Phan\Analysis\ConditionVisitor;
+use Phan\Analysis\RedundantCondition;
+use Phan\AST\ASTReverter;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
@@ -26,9 +28,11 @@ use Phan\Language\Type\AssociativeArrayType;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\GenericArrayType;
+use Phan\Language\Type\IterableType;
 use Phan\Language\Type\ListType;
 use Phan\Language\Type\NonEmptyAssociativeArrayType;
 use Phan\Language\Type\NonEmptyListType;
+use Phan\Language\Type\ScalarType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use Phan\Parse\ParseVisitor;
@@ -46,6 +50,118 @@ use function count;
 final class MiscParamPlugin extends PluginV3 implements
     AnalyzeFunctionCallCapability
 {
+    /**
+     * @param list<Node|string|int|float> $args
+     */
+    private static function isInArrayCheckStrict(CodeBase $code_base, Context $context, array $args) : bool
+    {
+        if (!isset($args[2])) {
+            return false;
+        }
+        $type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[2] ?? null);
+        return !$type->isEmpty() && !$type->containsFalsey();
+    }
+
+    /**
+     * @param list<Node|string|int|float> $args
+     */
+    private static function shouldWarnAboutImpossibleInArray(CodeBase $code_base, Context $context, array $args) : bool
+    {
+        $haystack_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[1]);
+        if (!$haystack_type->hasRealTypeSet()) {
+            return false;
+        }
+        if (!$haystack_type->containsTruthy()) {
+            return true;
+        }
+        $needle_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
+        if (!$needle_type->hasRealTypeSet()) {
+            return false;
+        }
+        $is_strict = self::isInArrayCheckStrict($code_base, $context, $args);
+        $has_iterable_type = false;
+        foreach ($haystack_type->getRealTypeSet() as $type) {
+            if (!($type instanceof IterableType)) {
+                if ($type instanceof ScalarType) {
+                    // ignore null, false, etc.
+                    continue;
+                }
+                return false;
+            }
+            $element_type = $type->iterableValueUnionType($code_base);
+            if (!$element_type || $element_type->isEmpty()) {
+                return false;
+            }
+            $has_iterable_type = true;
+            if ($needle_type->hasAnyTypeOverlap($code_base, $element_type)) {
+                return false;
+            }
+            if (!$is_strict && $needle_type->hasAnyWeakTypeOverlap($element_type)) {
+                return false;
+            }
+        }
+        return $has_iterable_type;
+    }
+
+    /**
+     * Chooses an issue kind for an impossible check in in_array, depending on whether the in_array call was strict,
+     * whether the arguments were constant, and whether this was in a loop or global scope.
+     * @param non-empty-list<Node|string|int|float> $args
+     */
+    private static function issueKindForInArray(CodeBase $code_base, Context $context, array $args) : string
+    {
+        $is_strict = self::isInArrayCheckStrict($code_base, $context, $args);
+        $issue_type = $is_strict ? Issue::ImpossibleTypeComparison : Issue::SuspiciousWeakTypeComparison;
+        $placeholder = new Node(ast\AST_ARRAY, 0, [
+            new Node(ast\AST_ARRAY_ELEM, 0, ['key' => null, 'value' => $args[0]], 0),
+            new Node(ast\AST_ARRAY_ELEM, 0, ['key' => null, 'value' => $args[1]], 0),
+        ], 0);
+        return RedundantCondition::chooseSpecificImpossibleOrRedundantIssueKind($placeholder, $context, $issue_type);
+    }
+
+    /**
+     * Based on RedundantConditionCallVisitor->emitIssueForBinaryOp
+     * @param non-empty-list<Node|string|float> $args
+     * @suppress PhanAccessMethodInternal
+     */
+    private static function emitIssueForInArray(CodeBase $code_base, Context $context, array $args, ?Node $node) : void {
+        [$needle_node, $haystack_node] = $args;
+        $needle = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $needle_node);
+        $haystack = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $haystack_node);
+        $haystack_string = $haystack->iterableValueUnionType($code_base)->__toString();
+        $issue_args = [
+            ASTReverter::toShortString($needle_node),
+            $needle,
+            'elements of ' . ASTReverter::toShortString($haystack_node),
+            $haystack_string !== '' ? $haystack_string : '(no types)'
+        ];
+
+        if ($context->isInLoop()) {
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            $context->deferCheckToOutermostLoop(static function (Context $context_after_loop) use ($code_base, $context, $args, $issue_args, $node) : void {
+                // XXX this will have false positives if variables are unset in the loop.
+                if (!self::shouldWarnAboutImpossibleInArray($code_base, $context_after_loop, $args)) {
+                    return;
+                }
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    self::issueKindForInArray($code_base, $context, $args),
+                    $node->lineno ?? $context->getLineNumberStart(),
+                    ...$issue_args
+                );
+            });
+            return;
+        }
+        Issue::maybeEmit(
+            $code_base,
+            $context,
+            self::issueKindForInArray($code_base, $context, $args),
+            $node->lineno ?? $context->getLineNumberStart(),
+            ...$issue_args
+        );
+    }
+
     /**
      * @return array<string,Closure(CodeBase,Context,FunctionInterface,array,?Node):void>
      */
@@ -796,6 +912,24 @@ final class MiscParamPlugin extends PluginV3 implements
                 }
             }
         };
+        /**
+         * @param list<Node|int|float|string> $args
+         */
+        $in_array_callback = static function (
+            CodeBase $code_base,
+            Context $context,
+            FunctionInterface $unused_function,
+            array $args,
+            ?Node $node
+        ) : void {
+            if (count($args) < 2) {
+                return;
+            }
+            if (!self::shouldWarnAboutImpossibleInArray($code_base, $context, $args)) {
+                return;
+            }
+            self::emitIssueForInArray($code_base, $context, $args, $node);
+        };
 
         return [
             'array_udiff' => $array_udiff_callback,
@@ -830,8 +964,9 @@ final class MiscParamPlugin extends PluginV3 implements
 
             'define' => $define_callback,
 
-            'class_alias' => $class_alias_callback
-            // TODO: sort and usort should convert array<string,T> to array<int,T> (same for array shapes)
+            'class_alias' => $class_alias_callback,
+
+            'in_array' => $in_array_callback,
         ];
     }
 

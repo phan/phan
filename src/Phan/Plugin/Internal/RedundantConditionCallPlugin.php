@@ -572,7 +572,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
      * @param Closure(UnionType,UnionType):bool $is_still_issue
      * @suppress PhanAccessMethodInternal
      */
-    private function emitIssueForBinaryOp(Node $node, UnionType $left, UnionType $right, string $issue_name, Closure $is_still_issue) : void
+    public function emitIssueForBinaryOp(Node $node, UnionType $left, UnionType $right, string $issue_name, Closure $is_still_issue) : void
     {
         $issue_args = [
             ASTReverter::toShortString($node->children['left']),
