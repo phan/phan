@@ -470,7 +470,7 @@ final class Builder
         if (!$this->checkCompatible('@' . $annotation_name, [Comment::ON_CLASS], $i)) {
             return;
         }
-        if (preg_match('/@(phan-)?mixin\s+(\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)\b/', $line, $matches)) {
+        if (\preg_match('/@(phan-)?mixin\s+(\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)\b/', $line, $matches)) {
             $type_string = $matches[2];
             $type = Type::fromStringInContext(
                 $type_string,

@@ -399,6 +399,16 @@ class UnionTypeVisitor extends AnalysisVisitor
         ast\flags\MAGIC_TRAIT => '__TRAIT__',
     ];
 
+    private function warnAboutUndeclaredMagicConstant(Node $node, string $details) : void
+    {
+        $this->emitIssue(
+            Issue::UndeclaredMagicConstant,
+            $node->lineno,
+            self::MAGIC_CONST_NAME_MAP[$node->flags],
+            $details
+        );
+    }
+
     /**
      * Visit a node with kind `\ast\AST_MAGIC_CONST`
      *
@@ -419,19 +429,30 @@ class UnionTypeVisitor extends AnalysisVisitor
                     // Works in classes, traits, and interfaces
                     return self::literalStringUnionType(\ltrim($this->context->getClassFQSEN()->__toString(), '\\'));
                 }
+                $this->warnAboutUndeclaredMagicConstant($node, 'used outside of classlike');
                 break;
             case ast\flags\MAGIC_FUNCTION:
                 if ($this->context->isInFunctionLikeScope()) {
                     $fqsen = $this->context->getFunctionLikeFQSEN();
                     return self::literalStringUnionType($fqsen->isClosure() ? '{closure}' : $fqsen->getName());
                 }
+                $this->warnAboutUndeclaredMagicConstant($node, 'used outside of functionlike');
                 break;
             case ast\flags\MAGIC_METHOD:
                 if ($this->context->isInFunctionLikeScope()) {
                     // Emits method or function FQSEN.
                     $fqsen = $this->context->getFunctionLikeFQSEN();
+                    if (!$fqsen instanceof FullyQualifiedMethodName) {
+                        $this->emitIssue(
+                            Issue::SuspiciousMagicConstant,
+                            $node->lineno,
+                            '__METHOD__',
+                            'used inside of a function/closure instead of a method'
+                        );
+                    }
                     return self::literalStringUnionType($fqsen->isClosure() ? '{closure}' : \ltrim($fqsen->__toString(), '\\'));
                 }
+                $this->warnAboutUndeclaredMagicConstant($node, 'used outside of a functionlike');
                 break;
             case ast\flags\MAGIC_DIR:
                 return self::literalStringUnionType(\dirname(Config::projectPath($this->context->getFile())));
@@ -444,11 +465,13 @@ class UnionTypeVisitor extends AnalysisVisitor
             case ast\flags\MAGIC_TRAIT:
                 // TODO: Could check if in trait, low importance.
                 if (!$this->context->isInClassScope()) {
+                    $this->warnAboutUndeclaredMagicConstant($node, 'used outside of a trait');
                     break;
                 }
                 $fqsen = $this->context->getClassFQSEN();
                 if ($this->code_base->hasClassWithFQSEN($fqsen)) {
                     if (!$this->code_base->getClassByFQSEN($fqsen)->isTrait()) {
+                        $this->warnAboutUndeclaredMagicConstant($node, 'used in a classlike that wasn\'t a trait');
                         break;
                     }
                 }
@@ -456,11 +479,6 @@ class UnionTypeVisitor extends AnalysisVisitor
             default:
                 return StringType::instance(false)->asPHPDocUnionType();
         }
-        $this->emitIssue(
-            Issue::UndeclaredMagicConstant,
-            $node->lineno,
-            self::MAGIC_CONST_NAME_MAP[$flags]
-        );
 
         return self::literalStringUnionType('');
     }

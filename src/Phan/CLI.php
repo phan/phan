@@ -795,8 +795,8 @@ class CLI
                     if (!is_string($value)) {
                         throw new UsageException("--save-baseline expects a single writeable file", 1);
                     }
-                    if (!is_dir(dirname($value))) {
-                        throw new UsageException("--save-baseline expects a file in a folder that already exists, got path '$value' in folder '" . dirname($value) . "'", 1);
+                    if (!\is_dir(\dirname($value))) {
+                        throw new UsageException("--save-baseline expects a file in a folder that already exists, got path '$value' in folder '" . \dirname($value) . "'", 1);
                     }
                     Config::setValue('__save_baseline_path', $value);
                     break;
@@ -805,10 +805,10 @@ class CLI
                     if (!is_string($value)) {
                         throw new UsageException("--load-baseline expects a single readable file", 1);
                     }
-                    if (!is_file($value)) {
+                    if (!\is_file($value)) {
                         throw new UsageException("--load-baseline expects a path to a file, got '$value'", 1);
                     }
-                    if (!is_readable($value)) {
+                    if (!\is_readable($value)) {
                         throw new UsageException("--load-baseline passed file '$value' which could not be read", 1);
                     }
                     Config::setValue('baseline_path', $value);
@@ -954,7 +954,7 @@ class CLI
             }
             if ($valid_files === 0) {
                 // TODO convert this to an error in Phan 3.
-                $error_message = sprintf(
+                $error_message = \sprintf(
                     "None of the files to analyze in %s exist - This will be an error in future Phan releases." . \PHP_EOL,
                     Config::getProjectRootDirectory()
                 );
@@ -1615,7 +1615,7 @@ EOB
      */
     public static function printWarningToStderr(string $message) : void
     {
-        fwrite(STDERR, self::colorizeHelpSectionIfSupported('WARNING: ') . $message);
+        \fwrite(STDERR, self::colorizeHelpSectionIfSupported('WARNING: ') . $message);
     }
 
     /**
