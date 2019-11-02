@@ -12,4 +12,10 @@ interface GenericArrayInterface
 {
     /** Returns the union type of this generic array type's elements. */
     public function genericArrayElementUnionType() : UnionType;
+
+    /**
+     * Returns the key type of this generic or shaped array.
+     * e.g. for `int[]`, returns self::KEY_MIXED, for `array<string,mixed>`, returns self::KEY_STRING.
+     */
+    public function getKeyType() : int;
 }
