@@ -114,7 +114,7 @@ class RedundantAssignmentPreAnalysisVisitor extends PluginAwarePreAnalysisVisito
         if ($this->context->isInLoop()) {
             $this->context->deferCheckToOutermostLoop(function (Context $context_after_loop) use ($issue_name, $var_name, $variable_type) : void {
                 $new_variable = $context_after_loop->getScope()->getVariableByNameOrNull($var_name);
-                if (!$new_variable)  {
+                if (!$new_variable) {
                     return;
                 }
                 $new_variable_type = $new_variable->getUnionType();

@@ -2333,7 +2333,8 @@ class Clazz extends AddressableElement
     /**
      * Import all methods of the other type as magic methods.
      */
-    private function importMixin(CodeBase $code_base, Type $type) : void {
+    private function importMixin(CodeBase $code_base, Type $type) : void
+    {
         $fqsen = FullyQualifiedClassName::fromType($type);
         if (!$code_base->hasClassWithFQSEN($fqsen) || $fqsen === $this->fqsen) {
             Issue::maybeEmit(

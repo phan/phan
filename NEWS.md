@@ -6,6 +6,8 @@ Phan NEWS
 New features(CLI, Configs):
 + Enable the progress bar by default, if `STDERR` is being rendered directly to a terminal.
   Add a new option `--no-progress-bar`.
++ Emit warnings about missing files in `file_list`, CLI args, etc. to `STDERR`. (#3434)
++ Clear the progress bar when emitting many types of warnings to STDERR.
 
 New features(Analysis):
 + Suggest similarly named static methods and static properties for `PhanUndeclaredConstant` issues on class constants. (#3393)
