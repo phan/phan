@@ -15,6 +15,7 @@ New features(Analysis):
   Attempts to parse or analyze mixins can be disabled by setting `read_mixin_annotations` to `false` in your Phan config.
 + Support `@readonly` as an alias of the `@phan-read-only` annotation.
 + Also emit `PhanImpossibleTypeComparison` for `int === float` checks. (#3106)
++ Emit `PhanSuspiciousMagicConstant` when using `__METHOD__` in a function instead of a method.
 
 Bug fixes:
 + Fix a bug where global functions, closures, and arrow functions may have inferred values from previous analysis unintentionally

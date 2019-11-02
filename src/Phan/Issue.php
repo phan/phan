@@ -260,9 +260,10 @@ class Issue
     const StaticPropIsStaticType    = 'PhanStaticPropIsStaticType';
 
     // Issue::CATEGORY_CONTEXT
-    const ContextNotObject          = 'PhanContextNotObject';
+    const ContextNotObject           = 'PhanContextNotObject';
     const ContextNotObjectInCallable = 'PhanContextNotObjectInCallable';
-    const ContextNotObjectUsingSelf = 'PhanContextNotObjectUsingSelf';
+    const ContextNotObjectUsingSelf  = 'PhanContextNotObjectUsingSelf';
+    const SuspiciousMagicConstant    = 'PhanSuspiciousMagicConstant';
 
     // Issue::CATEGORY_DEPRECATED
     const DeprecatedClass           = 'PhanDeprecatedClass';
@@ -1245,7 +1246,7 @@ class Issue
                 self::UndeclaredMagicConstant,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_LOW,
-                "Reference to magic constant {CONST} that is undeclared in the current scope",
+                "Reference to magic constant {CONST} that is undeclared in the current scope: {DETAILS}",
                 self::REMEDIATION_B,
                 11044
             ),
@@ -2579,6 +2580,14 @@ class Issue
                 'Cannot use {CLASS} as type when not in object context in {FUNCTION}',
                 self::REMEDIATION_B,
                 4002
+            ),
+            new Issue(
+                self::SuspiciousMagicConstant,
+                self::CATEGORY_CONTEXT,
+                self::SEVERITY_NORMAL,
+                'Suspicious reference to magic constant {CODE}: {DETAILS}',
+                self::REMEDIATION_B,
+                4003
             ),
 
             // Issue::CATEGORY_DEPRECATED

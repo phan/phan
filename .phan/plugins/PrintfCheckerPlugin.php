@@ -415,7 +415,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
                 Issue::SEVERITY_LOW,
                 self::ERR_UNTRANSLATED_UNKNOWN_FORMAT_STRING
             );
-            if (is_array($arg_nodes) && count($arg_nodes) === 0) {
+            if (\is_array($arg_nodes) && count($arg_nodes) === 0) {
                 $replacement_function_name = \in_array($function->getName(), ['vprintf', 'fprintf', 'vfprintf'], true) ? 'fwrite' : 'echo';
                 $emit_issue(
                     "PhanPluginPrintfNoArguments",
@@ -511,7 +511,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
             foreach ($spec_group as $spec) {
                 $canonical = $spec->toCanonicalString();
                 $types[$canonical] = true;
-                if ((strlen($spec->padding_char) > 0 || strlen($spec->alignment)) && ($spec->width === '' || !$spec->position)) {
+                if ((\strlen($spec->padding_char) > 0 || \strlen($spec->alignment)) && ($spec->width === '' || !$spec->position)) {
                     // Warn about "100% dollars" but not about "100%1$ 2dollars" (If both position and width were parsed, assume the padding was intentional)
                     $emit_issue(
                         'PhanPluginPrintfNotPercent',
