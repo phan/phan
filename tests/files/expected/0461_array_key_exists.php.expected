@@ -1,1 +1,2 @@
+%s:10 PhanImpossibleTypeComparison Impossible attempt to check if 'class' of type 'class' is identical to keys of $parameters of type (no types)
 %s:16 PhanUnusedVariable Unused definition of variable $object

@@ -2,6 +2,7 @@ src/001_array_key_exists.php:2 PhanImpossibleCondition Impossible attempt to cas
 src/001_array_key_exists.php:5 PhanImpossibleCondition Impossible attempt to cast true of type true to array
 src/001_array_key_exists.php:8 PhanImpossibleCondition Impossible attempt to cast [] of type array{} to object
 src/001_array_key_exists.php:13 PhanImpossibleCondition Impossible attempt to cast array_key_exists('foo', []) of type ?bool to array
+src/001_array_key_exists.php:13 PhanImpossibleTypeComparison Impossible attempt to check if 'foo' of type 'foo' is identical to keys of [] of type (no types)
 src/001_array_key_exists.php:16 PhanPluginUnknownFunctionParamType Function test1() has no declared or inferred return type for $x (Types inferred after analysis: array)
 src/001_array_key_exists.php:16 PhanPluginUnknownFunctionReturnType Function \test1() has no declared or inferred return type (Types inferred after analysis: array)
 src/001_array_key_exists.php:17 PhanImpossibleCondition Impossible attempt to cast key($x) of type int|null|string to array

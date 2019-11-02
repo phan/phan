@@ -27,6 +27,7 @@ use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\AssociativeArrayType;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\FalseType;
+use Phan\Language\Type\GenericArrayInterface;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\ListType;
@@ -65,16 +66,16 @@ final class MiscParamPlugin extends PluginV3 implements
     /**
      * @param list<Node|string|int|float> $args
      */
-    private static function shouldWarnAboutImpossibleInArray(CodeBase $code_base, Context $context, array $args) : bool
+    private static function shouldWarnAboutImpossibleInArray(CodeBase $code_base, Context $context, array $args, ?UnionType $needle_type = null, ?UnionType $haystack_type = null) : bool
     {
-        $haystack_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[1]);
+        $haystack_type = $haystack_type ?? UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[1]);
         if (!$haystack_type->hasRealTypeSet()) {
             return false;
         }
         if (!$haystack_type->containsTruthy()) {
             return true;
         }
-        $needle_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
+        $needle_type = $needle_type ?? UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
         if (!$needle_type->hasRealTypeSet()) {
             return false;
         }
@@ -104,11 +105,99 @@ final class MiscParamPlugin extends PluginV3 implements
     }
 
     /**
+     * @param list<Node|string|int|float> $args
+     */
+    private static function shouldWarnAboutImpossibleArrayKeyExists(CodeBase $code_base, Context $context, array $args, ?UnionType $key_type = null, ?UnionType $array_type = null) : bool
+    {
+        $array_type = $array_type ?? UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[1]);
+        if (!$array_type->hasRealTypeSet()) {
+            return false;
+        }
+        if (!$array_type->containsTruthy()) {
+            return true;
+        }
+        $key_type = $key_type ?? UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
+        if (!$key_type->hasRealTypeSet()) {
+            return false;
+        }
+        $key_type = $key_type->asRealUnionType();
+        if ($key_type->hasMixedType()) {
+            return false;
+        }
+        $key_can_be_int = $key_type->hasIntType();
+        $key_can_be_string = $key_type->hasStringType();
+        if (!$key_can_be_string && !$key_can_be_int) {
+            // array_key_exists always returns false for anything except int or string.
+            return true;
+        }
+        if ($key_can_be_string && $key_can_be_int) {
+            // The key can be a string or an int - give up on checking.
+            // TODO: Support checking unions of literal values,
+            // e.g. array_key_exists(cond() ? 0 : 'string', ['other' => true])
+            return false;
+        }
+        $key_value = $key_type->asSingleScalarValueOrNull();
+        $key_value_as_int = \is_int($key_value) ? $key_value : (\is_string($key_value) ? \filter_var($key_value, \FILTER_VALIDATE_INT) : null);
+        '@phan-var ?int|?string $key_value';  // inferred from $key_can_be_int||$key_can_be_string
+        $has_array_type = false;
+        foreach ($array_type->getRealTypeSet() as $type) {
+            if (!($type instanceof ArrayType)) {
+                if ($type instanceof ScalarType) {
+                    // ignore null, false, etc.
+                    continue;
+                }
+                return false;
+            }
+            $has_array_type = true;
+            if (!$type instanceof GenericArrayInterface) {
+                return false;
+            }
+            if ($type instanceof ArrayShapeType) {
+                if ($type->isEmptyArrayShape()) {
+                    continue;
+                }
+                if ($key_value !== null) {
+                    // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal
+                    if (\array_key_exists($key_value, $type->getFieldTypes())) {
+                        return false;
+                    }
+                    continue;
+                }
+                if (!$key_can_be_string && $type->getKeyType() === GenericArrayType::KEY_STRING) {
+                    // Looking for int in an array shape with non-integer keys.
+                    continue;
+                }
+            } elseif ($type instanceof ListType) {
+                if ($key_value !== null) {
+                    if (\is_int($key_value_as_int) && $key_value_as_int >= 0) {
+                        return false;
+                    }
+                    continue;
+                }
+            }
+
+            if ($type->getKeyType() === GenericArrayType::KEY_INT) {
+                if (!$key_can_be_int) {
+                    break;
+                }
+                if ($key_value_as_int === false) {
+                    break;
+                }
+                if ($type instanceof ListType && $key_value_as_int < 0) {
+                    break;
+                }
+            }
+            return false;
+        }
+        return $has_array_type;
+    }
+
+    /**
      * Chooses an issue kind for an impossible check in in_array, depending on whether the in_array call was strict,
      * whether the arguments were constant, and whether this was in a loop or global scope.
      * @param non-empty-list<Node|string|int|float> $args
      */
-    private static function issueKindForInArray(CodeBase $code_base, Context $context, array $args) : string
+    private static function issueKindForInArrayCheck(CodeBase $code_base, Context $context, array $args) : string
     {
         $is_strict = self::isInArrayCheckStrict($code_base, $context, $args);
         $issue_type = $is_strict ? Issue::ImpossibleTypeComparison : Issue::SuspiciousWeakTypeComparison;
@@ -120,7 +209,23 @@ final class MiscParamPlugin extends PluginV3 implements
     }
 
     /**
-     * Based on RedundantConditionCallVisitor->emitIssueForBinaryOp
+     * Chooses an issue kind for an impossible check in array_key_exists,
+     * depending on whether the arguments were constant, and whether this was in a loop or global scope.
+     * @param non-empty-list<Node|string|int|float> $args
+     */
+    private static function issueKindForArrayKeyExistsCheck(Context $context, array $args) : string
+    {
+        $placeholder = new Node(ast\AST_ARRAY, 0, [
+            new Node(ast\AST_ARRAY_ELEM, 0, ['key' => null, 'value' => $args[0]], 0),
+            new Node(ast\AST_ARRAY_ELEM, 0, ['key' => null, 'value' => $args[1]], 0),
+        ], 0);
+        return RedundantCondition::chooseSpecificImpossibleOrRedundantIssueKind($placeholder, $context, Issue::ImpossibleTypeComparison);
+    }
+
+    /**
+     * Based on RedundantConditionCallVisitor->emitIssueForBinaryOp.
+     *
+     * Emits warning about in_array checks that always return false.
      * @param non-empty-list<Node|string|float> $args
      * @suppress PhanAccessMethodInternal
      */
@@ -137,26 +242,91 @@ final class MiscParamPlugin extends PluginV3 implements
         ];
 
         if ($context->isInLoop()) {
-            // @phan-suppress-next-line PhanAccessMethodInternal
-            $context->deferCheckToOutermostLoop(static function (Context $context_after_loop) use ($code_base, $context, $args, $issue_args, $node) : void {
-                // XXX this will have false positives if variables are unset in the loop.
-                if (!self::shouldWarnAboutImpossibleInArray($code_base, $context_after_loop, $args)) {
-                    return;
-                }
-                Issue::maybeEmit(
-                    $code_base,
-                    $context,
-                    self::issueKindForInArray($code_base, $context, $args),
-                    $node->lineno ?? $context->getLineNumberStart(),
-                    ...$issue_args
-                );
-            });
-            return;
+            $needle_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($code_base, $needle_node);
+            $haystack_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($code_base, $haystack_node);
+            if ($needle_type_fetcher || $haystack_type_fetcher) {
+                // @phan-suppress-next-line PhanAccessMethodInternal
+                $context->deferCheckToOutermostLoop(static function (Context $context_after_loop) use ($code_base, $context, $args, $issue_args, $node, $haystack, $needle, $needle_type_fetcher, $haystack_type_fetcher) : void {
+                    if ($needle_type_fetcher) {
+                        $needle = ($needle_type_fetcher($context_after_loop) ?? $needle);
+                    }
+                    if ($haystack_type_fetcher) {
+                        $haystack = ($haystack_type_fetcher($context_after_loop) ?? $haystack);
+                    }
+                    // XXX this will have false positives if variables are unset in the loop.
+                    if (!self::shouldWarnAboutImpossibleInArray($code_base, $context_after_loop, $args, $needle, $haystack)) {
+                        return;
+                    }
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        self::issueKindForInArrayCheck($code_base, $context, $args),
+                        $node->lineno ?? $context->getLineNumberStart(),
+                        ...$issue_args
+                    );
+                });
+                return;
+            }
         }
         Issue::maybeEmit(
             $code_base,
             $context,
-            self::issueKindForInArray($code_base, $context, $args),
+            self::issueKindForInArrayCheck($code_base, $context, $args),
+            $node->lineno ?? $context->getLineNumberStart(),
+            ...$issue_args
+        );
+    }
+
+    /**
+     * Based on RedundantConditionCallVisitor->emitIssueForBinaryOp.
+     *
+     * Emits warning about array_key_exists checks that always return false.
+     * @param non-empty-list<Node|string|float> $args
+     * @suppress PhanAccessMethodInternal
+     */
+    private static function emitIssueForArrayKeyExists(CodeBase $code_base, Context $context, array $args, ?Node $node) : void {
+        [$key_node, $array_node] = $args;
+        $key_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $key_node);
+        $array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $array_node);
+        $array_string = $array_type->iterableKeyUnionType($code_base)->__toString();
+        $issue_args = [
+            ASTReverter::toShortString($key_node),
+            $key_type,
+            'keys of ' . ASTReverter::toShortString($array_node),
+            $array_string !== '' ? $array_string : '(no types)'
+        ];
+
+        if ($context->isInLoop()) {
+            $key_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($code_base, $key_node);
+            $array_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($code_base, $array_node);
+            if ($key_type_fetcher || $array_type_fetcher) {
+                // @phan-suppress-next-line PhanAccessMethodInternal
+                $context->deferCheckToOutermostLoop(static function (Context $context_after_loop) use ($code_base, $context, $args, $issue_args, $node, $key_type, $array_type, $key_type_fetcher, $array_type_fetcher) : void {
+                    // XXX this will have false positives if variables are unset in the loop.
+                    if ($key_type_fetcher) {
+                        $key_type = $key_type_fetcher($context_after_loop) ?? $key_type;
+                    }
+                    if ($array_type_fetcher) {
+                        $array_type = $array_type_fetcher($context_after_loop) ?? $array_type;
+                    }
+                    if (!self::shouldWarnAboutImpossibleArrayKeyExists($code_base, $context_after_loop, $args, $key_type, $array_type)) {
+                        return;
+                    }
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        self::issueKindForArrayKeyExistsCheck($context, $args),
+                        $node->lineno ?? $context->getLineNumberStart(),
+                        ...$issue_args
+                    );
+                });
+                return;
+            }
+        }
+        Issue::maybeEmit(
+            $code_base,
+            $context,
+            self::issueKindForArrayKeyExistsCheck($context, $args),
             $node->lineno ?? $context->getLineNumberStart(),
             ...$issue_args
         );
@@ -930,6 +1100,24 @@ final class MiscParamPlugin extends PluginV3 implements
             }
             self::emitIssueForInArray($code_base, $context, $args, $node);
         };
+        /**
+         * @param list<Node|int|float|string> $args
+         */
+        $array_key_exists_callback = static function (
+            CodeBase $code_base,
+            Context $context,
+            FunctionInterface $unused_function,
+            array $args,
+            ?Node $node
+        ) : void {
+            if (count($args) < 2) {
+                return;
+            }
+            if (!self::shouldWarnAboutImpossibleArrayKeyExists($code_base, $context, $args)) {
+                return;
+            }
+            self::emitIssueForArrayKeyExists($code_base, $context, $args, $node);
+        };
 
         return [
             'array_udiff' => $array_udiff_callback,
@@ -968,6 +1156,7 @@ final class MiscParamPlugin extends PluginV3 implements
 
             'in_array' => $in_array_callback,
             'array_search' => $in_array_callback,
+            'array_key_exists' => $array_key_exists_callback,
         ];
     }
 

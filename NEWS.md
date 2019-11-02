@@ -24,6 +24,8 @@ New features(Analysis):
   Previously, Phan would emit `PhanUndeclaredFunction` without checking param or return types.
 + Emit `PhanImpossibleTypeComparison*` and `PhanSuspiciousWeakTypeComparison*`
   when `in_array` or `array_search` is used in a way that will always return false.
++ Emit `PhanImpossibleTypeComparison*` when `array_key_exists` is used in a way that will always return false.
+  (e.g. checking for a string literal or negative key in a list, an integer in an array with known string keys, or anything in an empty array)
 
 Bug fixes:
 + Fix a bug where global functions, closures, and arrow functions may have inferred values from previous analysis unintentionally
