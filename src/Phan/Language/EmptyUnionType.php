@@ -988,6 +988,11 @@ final class EmptyUnionType extends UnionType
         return $this;  // empty
     }
 
+    public function asMappedListUnionType(Closure $closure) : UnionType
+    {
+        return $this;  // empty
+    }
+
     /**
      * @param Closure(UnionType):UnionType $closure
      * @override

@@ -343,4 +343,9 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
     {
         return $this->key_type;
     }
+
+    public function isDefinitelyNonEmptyArray() : bool
+    {
+        return $this->always_has_elements;
+    }
 }

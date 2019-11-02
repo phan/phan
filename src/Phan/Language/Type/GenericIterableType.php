@@ -46,9 +46,25 @@ final class GenericIterableType extends IterableType
     }
 
     /**
+     * Returns `GenericArrayType::KEY_*` for the union type of this iterable's keys.
+     * e.g. for `iterable<string, stdClass>`, returns KEY_STRING
+     */
+    public function getKeyType() : int
+    {
+        return $this->memoize(__METHOD__, function () : int{
+            return GenericArrayType::keyTypeFromUnionTypeValues($this->key_union_type);
+        });
+    }
+
+    /**
      * @return UnionType returns the union type of possible element types.
      */
     public function getElementUnionType() : UnionType
+    {
+        return $this->element_union_type;
+    }
+
+    public function genericArrayElementUnionType() : UnionType
     {
         return $this->element_union_type;
     }

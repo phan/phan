@@ -97,6 +97,19 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     }
 
     /**
+     * @override
+     */
+    public function isDefinitelyNonEmptyArray() : bool
+    {
+        foreach ($this->field_types as $field) {
+            if (!$field->isPossiblyUndefined()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Is this the union type `array{}` or `?array{}`?
      * @suppress PhanUnreferencedPublicMethod
      */
