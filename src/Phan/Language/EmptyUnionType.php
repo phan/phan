@@ -1181,6 +1181,12 @@ final class EmptyUnionType extends UnionType
     }
 
     /** @override */
+    public function withPossiblyEmptyArrays() : UnionType
+    {
+        return $this;
+    }
+
+    /** @override */
     public function withFlattenedTopLevelArrayShapeTypeInstances() : UnionType
     {
         return $this;

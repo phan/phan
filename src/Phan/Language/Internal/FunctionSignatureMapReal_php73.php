@@ -229,7 +229,7 @@ return [
 'exif_tagname' => '?false|?string',
 'exif_thumbnail' => '?false|?string',
 'exp' => '?float',
-'explode' => '?list<string>|?false',
+'explode' => '?non-empty-list<string>|?false',
 'expm1' => '?float',
 'extract' => '?int',
 'ezmlm_hash' => '?int',
