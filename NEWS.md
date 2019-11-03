@@ -26,6 +26,11 @@ New features(Analysis):
   when `in_array` or `array_search` is used in a way that will always return false.
 + Emit `PhanImpossibleTypeComparison*` when `array_key_exists` is used in a way that will always return false.
   (e.g. checking for a string literal or negative key in a list, an integer in an array with known string keys, or anything in an empty array)
++ Add some missing function analyzers: Infer that `shuffle`, `rsort`, `natsort`, etc. convert arrays to lists.
+  Same for `arsort`, `krsort`, etc.
++ Convert to `list` or `associative-array` in `sort`/`asort` in more edge cases.
++ Infer that `sort`/`asort` on an array (and other internal functions using references) returns a real `list` or `associative-array`.
+  Infer that `sort`/`asort` on a non-empty array (and other internal functions using references) returns a real `non-empty-list` or `non-empty-associative-array`.
 
 Bug fixes:
 + Fix a bug where global functions, closures, and arrow functions may have inferred values from previous analysis unintentionally

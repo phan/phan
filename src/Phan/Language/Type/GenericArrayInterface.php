@@ -18,4 +18,14 @@ interface GenericArrayInterface
      * e.g. for `int[]`, returns self::KEY_MIXED, for `array<string,mixed>`, returns self::KEY_STRING.
      */
     public function getKeyType() : int;
+
+    /**
+     * True for classes such as non-empty-array and non-empty-list.
+     */
+    public function isDefinitelyNonEmptyArray() : bool;
+
+    /**
+     * Is this type nullable
+     */
+    public function isNullable() : bool;
 }

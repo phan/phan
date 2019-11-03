@@ -31,6 +31,7 @@ use Phan\Language\Type\GenericArrayInterface;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\ListType;
+use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NonEmptyAssociativeArrayType;
 use Phan\Language\Type\NonEmptyListType;
 use Phan\Language\Type\ScalarType;
@@ -806,17 +807,25 @@ final class MiscParamPlugin extends PluginV3 implements
             // TODO: handle empty array
             $new_types = $variable->getUnionType()
                 ->withFlattenedTopLevelArrayShapeTypeInstances()
-                ->asMappedUnionType(static function (Type $type) : Type {
+                ->asMappedListUnionType(/** @return list<Type> */ static function (Type $type) : array {
                     if ($type instanceof ListType) {
-                        return $type;
+                        return [$type];
                     }
                     if ($type instanceof GenericArrayType) {
                         if ($type->isDefinitelyNonEmptyArray()) {
-                            return NonEmptyListType::fromElementType($type->genericArrayElementType(), $type->isNullable(), $type->getKeyType());
+                            return [NonEmptyListType::fromElementType($type->genericArrayElementType(), $type->isNullable(), $type->getKeyType())];
                         }
-                        return ListType::fromElementType($type->genericArrayElementType(), $type->isNullable(), $type->getKeyType());
+                        return [ListType::fromElementType($type->genericArrayElementType(), $type->isNullable(), $type->getKeyType())];
                     }
-                    return $type;
+                    if ($type instanceof IterableType) {
+                        $result = [];
+                        $class = $type instanceof GenericArrayInterface && $type->isDefinitelyNonEmptyArray() ? NonEmptyListType::class : ListType::class;
+                        foreach ($type->genericArrayElementUnionType()->getTypeSet() as $element_type) {
+                            $result[] = $class::fromElementType($element_type, $type->isNullable(), $type->getKeyType());
+                        }
+                        return $result ?: [$class::fromElementType(MixedType::instance(false), $type->isNullable(), $type->getKeyType())];
+                    }
+                    return [$type];
                 });
 
             $variable->setUnionType($new_types);
@@ -845,17 +854,24 @@ final class MiscParamPlugin extends PluginV3 implements
             // TODO: handle empty array
             $new_types = $variable->getUnionType()
                 ->withFlattenedTopLevelArrayShapeTypeInstances()
-                ->asMappedUnionType(static function (Type $type) : Type {
+                ->asMappedListUnionType(/** @return list<Type> */ static function (Type $type) : array {
                     if ($type instanceof AssociativeArrayType) {
-                        return $type;
+                        return [$type];
                     }
                     if ($type instanceof GenericArrayType) {
                         if ($type->isDefinitelyNonEmptyArray()) {
-                            return NonEmptyAssociativeArrayType::fromElementType($type->genericArrayElementType(), $type->isNullable(), $type->getKeyType());
+                            return [NonEmptyAssociativeArrayType::fromElementType($type->genericArrayElementType(), $type->isNullable(), $type->getKeyType())];
                         }
-                        return AssociativeArrayType::fromElementType($type->genericArrayElementType(), $type->isNullable(), $type->getKeyType());
+                        return [AssociativeArrayType::fromElementType($type->genericArrayElementType(), $type->isNullable(), $type->getKeyType())];
                     }
-                    return $type;
+                    if ($type instanceof IterableType) {
+                        $result = [];
+                        foreach ($type->genericArrayElementUnionType()->getTypeSet() as $element_type) {
+                            $result[] = AssociativeArrayType::fromElementType($element_type, $type->isNullable(), $type->getKeyType());
+                        }
+                        return $result ?: [AssociativeArrayType::fromElementType(MixedType::instance(false), $type->isNullable(), $type->getKeyType())];
+                    }
+                    return [$type];
                 });
 
             $variable->setUnionType($new_types);
@@ -1135,11 +1151,17 @@ final class MiscParamPlugin extends PluginV3 implements
             'array_splice' => $array_splice_callback,
             // Convert arrays to lists
             'sort' => $sort_callback,
+            'rsort' => $sort_callback,
             'usort' => $sort_callback,
+            'natcasesort' => $sort_callback,
+            'natsort' => $sort_callback,
+            'shuffle' => $sort_callback,
 
             'asort' => $associative_sort_callback,
+            'arsort' => $associative_sort_callback,
             'uasort' => $associative_sort_callback,
             'ksort' => $associative_sort_callback,
+            'krsort' => $associative_sort_callback,
             'uksort' => $associative_sort_callback,
 
             'extract' => $extract_callback,

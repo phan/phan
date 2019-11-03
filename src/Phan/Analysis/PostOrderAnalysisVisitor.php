@@ -2401,11 +2401,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         } else {
             $calling_class_type = $this->context->getScope()->getVariableByName('this')->getUnionType()->asExpandedTypes($this->code_base);
         }
-        if ($calling_class_type->hasType($method->getClassFQSEN()->asType())) {
-            // Allow calling its own methods and class's methods.
-            return true;
-        }
-        return false;
+        // Allow calling its own methods and class's methods.
+        return $calling_class_type->hasType($method->getClassFQSEN()->asType());
     }
 
     /**
@@ -3288,7 +3285,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // If pass-by-reference, make sure the variable exists
             // or create it if it doesn't.
             if ($parameter->isPassByReference()) {
-                $this->createPassByReferenceArgumentInCall($argument, $parameter, $method->getRealParameterForCaller($i));
+                $this->createPassByReferenceArgumentInCall($method, $argument, $parameter, $method->getRealParameterForCaller($i));
             }
         }
 
@@ -3368,7 +3365,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      *
      * @param ?Parameter $real_parameter the real parameter type from the type signature
      */
-    private function createPassByReferenceArgumentInCall(Node $argument, Parameter $parameter, ?Parameter $real_parameter) : void
+    private function createPassByReferenceArgumentInCall(FunctionInterface $method, Node $argument, Parameter $parameter, ?Parameter $real_parameter) : void
     {
         if ($argument->kind == ast\AST_VAR) {
             // We don't do anything with the new variable; just create it
@@ -3381,6 +3378,14 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 ))->getOrCreateVariableForReferenceParameter($parameter, $real_parameter);
                 $variable_union_type = $variable->getUnionType();
                 if ($variable_union_type->hasRealTypeSet()) {
+                    // TODO: Do a better job handling the large number of edge cases
+                    // - e.g. infer that stream_select will convert non-empty arrays to possibly empty arrays, while the result continues to have a real type of array.
+                    if ($method->getContext()->isPHPInternal() && in_array($parameter->getReferenceType(), [Parameter::REFERENCE_IGNORED, Parameter::REFERENCE_READ_WRITE], true)) {
+                        if (preg_match('/shuffle|sort|array_(unshift|shift|push|pop|splice)/i', $method->getName())) {
+                            // This use case is probably handled by MiscParamPlugin
+                            return;
+                        }
+                    }
                     $variable->setUnionType($variable->getUnionType()->eraseRealTypeSet());
                 }
             } catch (NodeException $_) {

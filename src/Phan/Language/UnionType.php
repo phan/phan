@@ -3608,6 +3608,38 @@ class UnionType implements Serializable
     }
 
     /**
+     * @param Closure(Type):(list<Type>) $closure
+     * A closure mapping `Type` to a list of types for that type
+     *
+     * @return UnionType
+     * A new UnionType with each type mapped to a list of types
+     * through the given closure.
+     */
+    public function asMappedListUnionType(Closure $closure) : UnionType
+    {
+        // In php 7.3, this could be replaced with https://www.php.net/array_push
+        $new_type_set = [];
+        foreach ($this->type_set as $type) {
+            foreach ($closure($type) as $new_type) {
+                $new_type_set[] = $new_type;
+            }
+        }
+        $new_real_type_set = [];
+        foreach ($this->real_type_set as $type) {
+            foreach ($closure($type) as $new_type) {
+                $new_real_type_set[] = $new_type;
+            }
+        }
+        if ($new_type_set === $this->type_set && $new_real_type_set === $this->real_type_set) {
+            return $this;
+        }
+        return UnionType::of(
+            $new_type_set,
+            $new_real_type_set
+        );
+    }
+
+    /**
      * @param Closure(UnionType):UnionType $closure
      */
     public function withMappedElementTypes(Closure $closure) : UnionType
