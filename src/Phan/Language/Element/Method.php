@@ -377,6 +377,9 @@ class Method extends ClassElement implements FunctionInterface
             ast\flags\MODIFIER_PRIVATE |
             ast\flags\MODIFIER_STATIC
         ));  // clear MODIFIER_ABSTRACT and other flags
+        $method->setPhanFlags(
+            ($method->getPhanFlags() | Flags::IS_FROM_PHPDOC) & ~(Flags::IS_OVERRIDDEN_BY_ANOTHER | Flags::IS_OVERRIDE)
+        );
 
         // TODO: Handle template. Possibly support @mixin Foo<stdClass, bool> and resolve methods.
         // $method->setPhanFlags(Flags::IS_FROM_PHPDOC);

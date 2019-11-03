@@ -747,11 +747,26 @@ final class MiscParamPlugin extends PluginV3 implements
             if (count($args) < 1) {
                 return;
             }
-            $variable = $get_variable($code_base, $context, $args[0]);
+            $arg_node = $args[0];
+            if (!$arg_node instanceof Node) {
+                return;
+            }
+            $variable = $get_variable($code_base, $context, $arg_node);
             if (!$variable) {
                 return;
             }
-            $variable->setUnionType($variable->getUnionType()->withFlattenedTopLevelArrayShapeTypeInstances());
+            $variable = clone($variable);
+            $context->addScopeVariable($variable);
+            $old_type = $variable->getUnionType();
+            if (!$old_type->containsFalsey()) {
+                // @phan-suppress-next-line PhanUndeclaredProperty
+                $arg_node->__phan_is_nonempty = true;
+            }
+
+            $variable->setUnionType(
+                $old_type->withFlattenedTopLevelArrayShapeTypeInstances()
+                         ->withPossiblyEmptyArrays()
+            );
         };
 
         /**
@@ -773,6 +788,8 @@ final class MiscParamPlugin extends PluginV3 implements
             if (!$variable) {
                 return;
             }
+            $variable = clone($variable);
+            $context->addScopeVariable($variable);
 
             // TODO: Support array_splice('x', $offset, $length, $notAnArray)
             // TODO: handle empty array

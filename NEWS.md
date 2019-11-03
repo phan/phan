@@ -31,6 +31,7 @@ New features(Analysis):
 + Convert to `list` or `associative-array` in `sort`/`asort` in more edge cases.
 + Infer that `sort`/`asort` on an array (and other internal functions using references) returns a real `list` or `associative-array`.
   Infer that `sort`/`asort` on a non-empty array (and other internal functions using references) returns a real `non-empty-list` or `non-empty-associative-array`.
++ Infer that some array operations (`array_reduce`, `array_filter`, etc.) result in `array` instead of `non-empty-array` (etc.)
 
 Bug fixes:
 + Fix a bug where global functions, closures, and arrow functions may have inferred values from previous analysis unintentionally

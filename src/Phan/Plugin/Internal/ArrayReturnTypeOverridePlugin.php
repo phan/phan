@@ -75,10 +75,13 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
          */
         $get_element_type_of_first_arg_check_nonempty = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($mixed_type, $false_type) : UnionType {
             if (\count($args) >= 1) {
+                $arg_node = $args[0];
                 $array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
                 $element_types = $array_type->genericArrayElementTypes();
                 if (!$element_types->isEmpty()) {
-                    if ($array_type->containsFalsey()) {
+                    // We set __phan_is_nonempty because the return type is computed after the original variable type is changed.
+                    // @phan-suppress-next-line PhanUndeclaredProperty
+                    if ($array_type->containsFalsey() && !isset($arg_node->__phan_is_nonempty)) {
                         // This array can be empty, so these helpers can return false.
                         return $element_types->withType($false_type);
                     }
@@ -173,7 +176,8 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                     if (!$element_types->isEmpty()) {
                         return $element_types->withFlattenedTopLevelArrayShapeTypeInstances()
                                              ->withAssociativeArrays($can_reduce_size)
-                                             ->withRealTypeSet($probably_real_assoc_array->getRealTypeSet());
+                                             ->withRealTypeSet($probably_real_assoc_array->getRealTypeSet())
+                                             ->withPossiblyEmptyArrays();
                     }
                 }
                 return $probably_real_assoc_array;
@@ -251,12 +255,14 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                                                          ->withMappedElementTypes(static function (UnionType $union_type) : UnionType {
                                                             return $union_type->nonFalseyClone();
                                                          })
-                                                         ->withAssociativeArrays(true);
+                                                         ->withAssociativeArrays(true)
+                                                         ->withPossiblyEmptyArrays();
                     }
                     // TODO: Analyze if it and the flags are compatible with the arguments to the closure provided.
                     // TODO: withFlattenedArrayShapeOrLiteralTypeInstances() for other values
                     return $generic_passed_array_type->withFlattenedTopLevelArrayShapeTypeInstances()
-                                                     ->withAssociativeArrays(true);
+                                                     ->withAssociativeArrays(true)
+                                                     ->withPossiblyEmptyArrays();
                 }
             }
             return $probably_real_assoc_array;

@@ -39,6 +39,7 @@ use Phan\Language\Type\LiteralTypeInterface;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\MultiType;
 use Phan\Language\Type\NullType;
+use Phan\Language\Type\NonEmptyArrayInterface;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\ScalarType;
 use Phan\Language\Type\SelfType;
@@ -1316,7 +1317,6 @@ class UnionType implements Serializable
     /**
      * @return bool - True if type set is not empty and at least one type is NullType or nullable or FalseType or BoolType.
      * (I.e. the type is always falsey, or both sometimes falsey with a non-falsey type it can be narrowed down to)
-     * This does not include values such as `IntType`, since there is currently no `NonZeroIntType`.
      */
     public function containsFalsey() : bool
     {
@@ -4454,6 +4454,22 @@ class UnionType implements Serializable
             self::withFlattenedTopLevelArrayShapeTypeInstancesForSet($this->type_set),
             self::withFlattenedTopLevelArrayShapeTypeInstancesForSet($this->real_type_set)
         );
+    }
+
+    /**
+     * Convert non-empty-array, etc. to array.
+     *
+     * This reflects a change that removes elements from an array.
+     * @see withFlattenedTopLevelArrayShapeTypeInstances
+     */
+    public function withPossiblyEmptyArrays() : UnionType
+    {
+         return $this->asMappedUnionType(static function (Type $type) : Type {
+             if ($type instanceof NonEmptyArrayInterface) {
+                 return $type->asPossiblyEmptyArrayType();
+             }
+             return $type;
+         });
     }
 
     /**

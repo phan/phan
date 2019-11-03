@@ -12,6 +12,7 @@ use Phan\Language\Type;
  * @phan-pure
  */
 final class NonEmptyAssociativeArrayType extends AssociativeArrayType
+    implements NonEmptyArrayInterface
 {
     /**
      * @override
@@ -101,5 +102,18 @@ final class NonEmptyAssociativeArrayType extends AssociativeArrayType
             );
         }
         return $this;
+    }
+
+    /**
+     * @return ListType
+     * @phan-real-return AssociativeArrayType
+     */
+    public function asPossiblyEmptyArrayType() : ArrayType
+    {
+        return AssociativeArrayType::fromElementType(
+            $this->element_type,
+            $this->is_nullable,
+            $this->key_type
+        );
     }
 }

@@ -205,7 +205,7 @@ class RedundantReturnVisitor
             Issue::fromType(Issue::UnusedReturnBranchWithoutSideEffects)(
                 $this->context->getFile(),
                 $last_return->lineno,
-                [ASTReverter::toShortString($last_expr), \reset($remaining_returns)->lineno]
+                [ASTReverter::toShortString($last_expr), \reset($remaining_returns)->lineno ?? 0]
             )
         );
     }
