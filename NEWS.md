@@ -6,6 +6,8 @@ Phan NEWS
 New features(Analysis):
 + Emit `PhanTypeInvalidCallExpressionAssignment` when improperly assigning to a function/method's result (or a dimension of that result) (#3455)
 + Fix an edge case parsing `(0)::class` with the polyfill. (#3454)
++ Emit `PhanTypeInvalidDimOffset` for accessing any dimension on an empty string or an empty array. (#3385)
++ Warn about invalid string literal offsets such as `'str'[3]`, `'str'[-4]`, etc. (#3385)
 
 Nov 03 2019, Phan 2.4.1
 -----------------------
