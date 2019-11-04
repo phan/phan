@@ -5,6 +5,7 @@ Phan NEWS
 
 New features(Analysis):
 + Emit `PhanTypeInvalidCallExpressionAssignment` when improperly assigning to a function/method's result (or a dimension of that result) (#3455)
++ Fix an edge case parsing `(0)::class` with the polyfill. (#3454)
 
 Nov 03 2019, Phan 2.4.1
 -----------------------
