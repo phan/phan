@@ -1608,6 +1608,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             if (Config::get_closest_target_php_version_id() < 70100 && $union_type->isNonNullStringType()) {
                 $this->analyzeNegativeStringOffsetCompatibility($node, $dim_type);
             }
+            $this->checkIsValidStringOffset($union_type, $node, $dim_type);
 
             if (!$dim_type->isEmpty() && !$dim_type->canCastToUnionType($int_union_type)) {
                 // TODO: Efficient implementation of asExpandedTypes()->hasArrayAccess()?
@@ -1659,6 +1660,61 @@ class UnionTypeVisitor extends AnalysisVisitor
         return $element_types;
     }
 
+    /**
+     * Check for invalid string offsets, e.g. `'val'[3]`, `''[$i]`, etc.
+     *
+     * @param UnionType $union_type the union type of the expression
+     * @param UnionType $dim_type the union type of the dimension being accessed on the expression
+     */
+    private function checkIsValidStringOffset(UnionType $union_type, Node $node, UnionType $dim_type) : void
+    {
+        $max_len = -1;
+        foreach ($union_type->getRealTypeSet() as $type) {
+            if ($type instanceof StringType) {
+                if ($type instanceof LiteralStringType) {
+                    $max_len = \max($max_len, \strlen($type->getValue()));
+                    continue;
+                }
+                return;
+            } elseif ($type instanceof IterableType) {
+                return;
+            }
+        }
+        if ($max_len < 0) {
+            return;
+        }
+        if ($max_len > 0) {
+            $dim_value = $dim_type->asSingleScalarValueOrNullOrSelf();
+            if (\is_object($dim_value)) {
+                return;
+            }
+            $dim_value_as_int = (int)$dim_value;
+            if ($dim_value_as_int < 0) {
+                // Convert -1 to 0, etc.
+                $dim_value_as_int = ~$dim_value_as_int;
+            }
+            if ($dim_value_as_int < $max_len) {
+                return;
+            }
+        }
+        $exception = new IssueException(
+            Issue::fromType(Issue::TypeInvalidDimOffset)(
+                $this->context->getFile(),
+                $node->children['dim']->lineno ?? $node->lineno,
+                [
+                    $dim_type,
+                    (string)$union_type
+                ]
+            )
+        );
+        if ($this->should_catch_issue_exception) {
+            Issue::maybeEmitInstance($this->code_base, $this->context, $exception->getIssueInstance());
+            return;
+        } else {
+            throw $exception;
+        }
+    }
+
     private static function hasArrayShapeOrList(UnionType $union_type) : bool
     {
         foreach ($union_type->getTypeSet() as $type) {
@@ -1669,11 +1725,51 @@ class UnionTypeVisitor extends AnalysisVisitor
         return false;
     }
 
+    /**
+     * Return the union type that's the result of accessing the node's dimension on the node's expression $union_type.
+     *
+     * Precondition: $union_type has array shape types or list types.
+     */
     private function resolveArrayShapeElementTypes(Node $node, UnionType $union_type) : ?UnionType
     {
         $dim_node = $node->children['dim'];
         $dim_value = $dim_node instanceof Node ? (new ContextNode($this->code_base, $this->context, $dim_node))->getEquivalentPHPScalarValue() : $dim_node;
         // TODO: detect and warn about null
+        $has_non_empty_array = false;
+        $check_invalid_dim = !($node->flags & self::FLAG_IGNORE_NULLABLE);
+        if ($check_invalid_dim && $union_type->hasRealTypeSet()) {
+            foreach ($union_type->getRealTypeSet() as $type) {
+                if (!$type->isPossiblyTruthy()) {
+                    if ($type instanceof LiteralStringType && \strlen($type->getValue()) > 0) {
+                        $has_non_empty_array = true;
+                        break;
+                    }
+                    continue;
+                }
+                if ($type instanceof IterableType || $type instanceof MixedType) {
+                    $has_non_empty_array = true;
+                    break;
+                }
+            }
+            if (!$has_non_empty_array) {
+                $exception = new IssueException(
+                    Issue::fromType(Issue::TypeInvalidDimOffset)(
+                        $this->context->getFile(),
+                        $dim_node->lineno ?? $node->lineno,
+                        [
+                            is_scalar($dim_value) ? StringUtil::jsonEncode($dim_value) : ASTReverter::toShortString($dim_value),
+                            (string)$union_type
+                        ]
+                    )
+                );
+                if ($this->should_catch_issue_exception) {
+                    Issue::maybeEmitInstance($this->code_base, $this->context, $exception->getIssueInstance());
+                    return null;
+                } else {
+                    throw $exception;
+                }
+            }
+        }
         if (!is_scalar($dim_value)) {
             return null;
         }
@@ -1685,7 +1781,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
         if ($resulting_element_type === false) {
             // XXX not sure what to do here. For now, just return null and only warn in cases where requested to.
-            if (!($node->flags & self::FLAG_IGNORE_NULLABLE)) {
+            if ($check_invalid_dim) {
                 $exception = new IssueException(
                     Issue::fromType(Issue::TypeInvalidDimOffset)(
                         $this->context->getFile(),
