@@ -126,6 +126,7 @@ class Issue
     const TypeInvalidInstanceof     = 'PhanTypeInvalidInstanceof';
     const TypeInvalidDimOffset      = 'PhanTypeInvalidDimOffset';
     const TypeInvalidDimOffsetArrayDestructuring = 'PhanTypeInvalidDimOffsetArrayDestructuring';
+    const TypeInvalidCallExpressionAssignment    = 'PhanTypeInvalidCallExpressionAssignment';
     const TypeInvalidExpressionArrayDestructuring = 'PhanTypeInvalidExpressionArrayDestructuring';
     const TypeInvalidThrowsNonObject             = 'PhanTypeInvalidThrowsNonObject';
     const TypeInvalidThrowsNonThrowable          = 'PhanTypeInvalidThrowsNonThrowable';
@@ -1998,6 +1999,14 @@ class Issue
                 "Invalid offset {SCALAR} of array type {TYPE} in an array destructuring assignment",
                 self::REMEDIATION_B,
                 10047
+            ),
+            new Issue(
+                self::TypeInvalidCallExpressionAssignment,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Probably unused assignment to function result {CODE} for function returning {TYPE}",
+                self::REMEDIATION_B,
+                10153
             ),
             new Issue(
                 self::TypeInvalidExpressionArrayDestructuring,

@@ -6,7 +6,9 @@ use AssertionError;
 use ast;
 use ast\Node;
 use Closure;
+use Exception;
 use Phan\AST\AnalysisVisitor;
+use Phan\AST\ASTReverter;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
@@ -20,6 +22,7 @@ use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Context;
 use Phan\Language\Element\Clazz;
+use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
 use Phan\Language\Element\PassByReferenceVariable;
@@ -158,21 +161,48 @@ class AssignmentVisitor extends AnalysisVisitor
      * (new C)->f()[1] = 42;
      * ```
      *
-     * @param Node $unused_node
+     * @param Node $node
      * A node to analyze as the target of an assignment
      *
      * @return Context
      * A new or an unchanged context resulting from
      * analyzing the node
      */
-    public function visitMethodCall(Node $unused_node) : Context
+    public function visitMethodCall(Node $node) : Context
     {
+        if ($this->dim_depth >= 2) {
+            return $this->context;
+        }
+        $method_name = $node->children['method'];
+
+        if (!\is_string($method_name)) {
+            if ($method_name instanceof Node) {
+                $method_name = UnionTypeVisitor::anyStringLiteralForNode($this->code_base, $this->context, $method_name);
+            }
+            if (!\is_string($method_name)) {
+                return $this->context;
+            }
+        }
+
+        try {
+            $method = (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $node
+            ))->getMethod($method_name, false);
+            $this->checkAssignmentToFunctionResult($node, [$method]);
+        } catch (Exception $_) {
+            // ignore it
+        }
         return $this->context;
     }
 
     /**
      * The following is an example of how this would happen.
-     * TODO: Check that the left-hand side is a reference or defines offsetSet()?
+     *
+     * This checks if the left-hand side is a reference.
+     *
+     * PhanTypeArraySuspicious covers checking for offsetSet.
      *
      * ```php
      * function &f() {
@@ -181,16 +211,60 @@ class AssignmentVisitor extends AnalysisVisitor
      * f()[1] = 42;
      * ```
      *
-     * @param Node $unused_node
+     * @param Node $node
      * A node to analyze as the target of an assignment
      *
      * @return Context
      * A new or an unchanged context resulting from
      * analyzing the node
      */
-    public function visitCall(Node $unused_node) : Context
+    public function visitCall(Node $node) : Context
     {
+        $expression = $node->children['expr'];
+        if ($this->dim_depth < 2) {
+            // Get the function.
+            // If the function is undefined, always try to create a placeholder from Phan's type signatures for internal functions so they can still be type checked.
+            $this->checkAssignmentToFunctionResult($node, (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $expression
+            ))->getFunctionFromNode(true));
+        }
         return $this->context;
+    }
+
+    /**
+     * @param iterable<FunctionInterface> $function_list_generator
+     */
+    private function checkAssignmentToFunctionResult(Node $node, iterable $function_list_generator) : void
+    {
+        try {
+            foreach ($function_list_generator as $function) {
+                if ($function->returnsRef()) {
+                    return;
+                }
+                if ($this->dim_depth > 0) {
+                    $return_type = $function->getUnionType();
+                    if ($return_type->isEmpty()) {
+                        return;
+                    }
+                    if ($return_type->hasPossiblyObjectTypes()) {
+                        // PhanTypeArraySuspicious covers that, though
+                        return;
+                    }
+                }
+            }
+            if (isset($function)) {
+                $this->emitIssue(
+                    Issue::TypeInvalidCallExpressionAssignment,
+                    $node->lineno,
+                    ASTReverter::toShortString($this->assignment_node->children['var'] ?? $node),
+                    $function->getUnionType()
+                );
+            }
+        } catch (CodeBaseException $_) {
+            // ignore it.
+        }
     }
 
     /**
@@ -205,16 +279,16 @@ class AssignmentVisitor extends AnalysisVisitor
      * A::f()[1] = 42;
      * ```
      *
-     * @param Node $unused_node
+     * @param Node $node
      * A node to analyze as the target of an assignment
      *
      * @return Context
      * A new or an unchanged context resulting from
      * analyzing the node
      */
-    public function visitStaticCall(Node $unused_node) : Context
+    public function visitStaticCall(Node $node) : Context
     {
-        return $this->context;
+        return $this->visitMethodCall($node);
     }
 
     /**
@@ -799,7 +873,7 @@ class AssignmentVisitor extends AnalysisVisitor
         $context = (new AssignmentVisitor(
             $this->code_base,
             $this->context,
-            $node,
+            $this->assignment_node,
             $right_type,
             $this->dim_depth + 1,
             $dim_type

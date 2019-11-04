@@ -230,7 +230,8 @@ final class MiscParamPlugin extends PluginV3 implements
      * @param non-empty-list<Node|string|float> $args
      * @suppress PhanAccessMethodInternal
      */
-    private static function emitIssueForInArray(CodeBase $code_base, Context $context, array $args, ?Node $node) : void {
+    private static function emitIssueForInArray(CodeBase $code_base, Context $context, array $args, ?Node $node) : void
+    {
         [$needle_node, $haystack_node] = $args;
         $needle = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $needle_node);
         $haystack = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $haystack_node);
@@ -285,7 +286,8 @@ final class MiscParamPlugin extends PluginV3 implements
      * @param non-empty-list<Node|string|float> $args
      * @suppress PhanAccessMethodInternal
      */
-    private static function emitIssueForArrayKeyExists(CodeBase $code_base, Context $context, array $args, ?Node $node) : void {
+    private static function emitIssueForArrayKeyExists(CodeBase $code_base, Context $context, array $args, ?Node $node) : void
+    {
         [$key_node, $array_node] = $args;
         $key_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $key_node);
         $array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $array_node);

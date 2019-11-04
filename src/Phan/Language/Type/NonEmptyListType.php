@@ -11,8 +11,7 @@ use Phan\Language\Type;
  * @see ArrayType for the representation of `array`
  * @phan-pure
  */
-final class NonEmptyListType extends ListType
-    implements NonEmptyArrayInterface
+final class NonEmptyListType extends ListType implements NonEmptyArrayInterface
 {
     /**
      * @override

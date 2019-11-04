@@ -3380,8 +3380,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 if ($variable_union_type->hasRealTypeSet()) {
                     // TODO: Do a better job handling the large number of edge cases
                     // - e.g. infer that stream_select will convert non-empty arrays to possibly empty arrays, while the result continues to have a real type of array.
-                    if ($method->getContext()->isPHPInternal() && in_array($parameter->getReferenceType(), [Parameter::REFERENCE_IGNORED, Parameter::REFERENCE_READ_WRITE], true)) {
-                        if (preg_match('/shuffle|sort|array_(unshift|shift|push|pop|splice)/i', $method->getName())) {
+                    if ($method->getContext()->isPHPInternal() && \in_array($parameter->getReferenceType(), [Parameter::REFERENCE_IGNORED, Parameter::REFERENCE_READ_WRITE], true)) {
+                        if (\preg_match('/shuffle|sort|array_(unshift|shift|push|pop|splice)/i', $method->getName())) {
                             // This use case is probably handled by MiscParamPlugin
                             return;
                         }
