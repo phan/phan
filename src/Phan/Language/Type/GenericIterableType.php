@@ -51,7 +51,7 @@ final class GenericIterableType extends IterableType
      */
     public function getKeyType() : int
     {
-        return $this->memoize(__METHOD__, function () : int{
+        return $this->memoize(__METHOD__, function () : int {
             return GenericArrayType::keyTypeFromUnionTypeValues($this->key_union_type);
         });
     }

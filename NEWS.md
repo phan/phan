@@ -3,6 +3,9 @@ Phan NEWS
 ??? ?? 2019, Phan 2.4.2 (dev)
 -----------------------
 
+New features(Analysis):
++ Emit `PhanTypeInvalidCallExpressionAssignment` when improperly assigning to a function/method's result (or a dimension of that result) (#3455)
+
 Nov 03 2019, Phan 2.4.1
 -----------------------
 

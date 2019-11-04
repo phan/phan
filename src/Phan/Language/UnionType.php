@@ -38,8 +38,8 @@ use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\LiteralTypeInterface;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\MultiType;
-use Phan\Language\Type\NullType;
 use Phan\Language\Type\NonEmptyArrayInterface;
+use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\ScalarType;
 use Phan\Language\Type\SelfType;
@@ -4465,9 +4465,9 @@ class UnionType implements Serializable
     public function withPossiblyEmptyArrays() : UnionType
     {
          return $this->asMappedUnionType(static function (Type $type) : Type {
-             if ($type instanceof NonEmptyArrayInterface) {
-                 return $type->asPossiblyEmptyArrayType();
-             }
+            if ($type instanceof NonEmptyArrayInterface) {
+                return $type->asPossiblyEmptyArrayType();
+            }
              return $type;
          });
     }
