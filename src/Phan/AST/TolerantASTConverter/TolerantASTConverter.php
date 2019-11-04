@@ -769,7 +769,7 @@ class TolerantASTConverter
                         // E.g. Node\Expression\BracedExpression
                         throw new InvalidNodeException();
                     }
-                    return static::phpParserClassconstfetchToAstClassconstfetch($n->scopeResolutionQualifier, $member_name, $start_line);
+                    return static::phpParserClassConstFetchToAstClassConstFetch($n->scopeResolutionQualifier, $member_name, $start_line);
                 }
             },
             'Microsoft\PhpParser\Node\Expression\CloneExpression' => static function (PhpParser\Node\Expression\CloneExpression $n, int $start_line) : ast\Node {
@@ -2845,11 +2845,16 @@ class TolerantASTConverter
     /**
      * @param PhpParser\Node\Expression|PhpParser\Node\QualifiedName|Token $scope_resolution_qualifier
      */
-    private static function phpParserClassconstfetchToAstClassconstfetch($scope_resolution_qualifier, string $name, int $start_line) : ast\Node
+    private static function phpParserClassConstFetchToAstClassConstFetch($scope_resolution_qualifier, string $name, int $start_line) : ast\Node
     {
         if (\strcasecmp($name, 'class') === 0) {
+            $class_node = static::phpParserNonValueNodeToAstNode($scope_resolution_qualifier);
+            if (!$class_node instanceof ast\Node) {
+                // e.g. (0)::class
+                $class_node = new ast\Node(ast\AST_NAME, ast\flags\NAME_FQ, ['name' => $class_node], $start_line);
+            }
             return new ast\Node(ast\AST_CLASS_NAME, 0, [
-                'class' => static::phpParserNonValueNodeToAstNode($scope_resolution_qualifier),
+                'class' => $class_node,
             ], $start_line);
         }
         return new ast\Node(ast\AST_CLASS_CONST, 0, [
