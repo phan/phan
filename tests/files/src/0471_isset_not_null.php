@@ -7,7 +7,7 @@
  */
 function example471Isset($a, array $a2, string $offset) {
     if (isset($a[$offset])) {
-        echo intdiv($a, 2);  // Expect array (not null)
+        echo intdiv($a, 2);  // Expect non-empty-array (and not null)
     }
     if (isset($a2['key'])) {
         echo intdiv($a2, -2);  // Expect array{key:string} (not null)

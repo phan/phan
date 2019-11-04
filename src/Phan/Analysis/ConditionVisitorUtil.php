@@ -32,6 +32,9 @@ use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\LiteralTypeInterface;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
+use Phan\Language\Type\ResourceType;
+use Phan\Language\Type\ScalarType;
+use Phan\Language\Type\StringType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\UnionType;
 use Phan\Library\StringUtil;
@@ -255,6 +258,63 @@ trait ConditionVisitorUtil
                 return $type->nonNullableClone();
             },
             $suppress_issues,
+            false
+        );
+    }
+
+    /**
+     * Remove empty types not supporting 0 or more levels array/property access from the variable.
+     */
+    final protected function removeTypesNotSupportingAccessFromVariable(Node $var_node, Context $context) : Context
+    {
+        return $this->updateVariableWithConditionalFilter(
+            $var_node,
+            $context,
+            static function (UnionType $type) : bool {
+                return $type->hasTypeMatchingCallback(static function (Type $type) : bool {
+                    if ($type->isPossiblyFalsey()) {
+                        return true;
+                    }
+                    if ($type instanceof ResourceType) {
+                        return true;
+                    }
+                    // TODO: Remove arrays if this is an access to a property
+                    if ($type instanceof ScalarType) {
+                        return !($type instanceof StringType);
+                    }
+                    return false;
+                });
+            },
+            static function (UnionType $type) : UnionType {
+                return $type->asMappedListUnionType(/** @return list<Type> */ static function (Type $type) : array {
+                    if (!$type->isPossiblyTruthy()) {
+                        /* causes false positives when combining types
+                        if ($type instanceof ArrayShapeType) {
+                            // Convert array{} -> non-empty-array, null -> no types
+                            // (useful guess with loops or references)
+                            // phan-suppress-next-line PhanThrowTypeAbsentForCall
+                            return [Type::fromFullyQualifiedString('non-empty-array')];
+                        }
+                         */
+                        return [];
+                    }
+                    if ($type instanceof ScalarType) {
+                        if ($type instanceof StringType) {
+                            if ($type instanceof LiteralStringType && $type->getValue() === '') {
+                                // Can't access an offset of ''
+                                return [];
+                            }
+                            return [$type->withIsNullable(false)];
+                        }
+                        return [];
+                    }
+                    if ($type instanceof ResourceType) {
+                        return [];
+                    }
+                    return [$type->asNonFalseyType()];
+                });
+            },
+            true,
             false
         );
     }

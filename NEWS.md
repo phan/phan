@@ -8,6 +8,7 @@ New features(Analysis):
 + Fix an edge case parsing `(0)::class` with the polyfill. (#3454)
 + Emit `PhanTypeInvalidDimOffset` for accessing any dimension on an empty string or an empty array. (#3385)
 + Warn about invalid string literal offsets such as `'str'[3]`, `'str'[-4]`, etc. (#3385)
++ Infer that arrays are non-empty and support array access from `isset($x[$offset])` (#3463)
 
 Nov 03 2019, Phan 2.4.1
 -----------------------

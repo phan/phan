@@ -3388,7 +3388,7 @@ class UnionType implements Serializable
      */
     public function hasRealTypeMatchingCallback(Closure $matcher_callback) : bool
     {
-        foreach ($this->type_set as $type) {
+        foreach ($this->real_type_set as $type) {
             if ($matcher_callback($type)) {
                 return true;
             }
