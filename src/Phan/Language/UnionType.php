@@ -3382,6 +3382,22 @@ class UnionType implements Serializable
 
     /**
      * @return bool
+     * True if any of the types in the real type set of this UnionType made $matcher_callback return true.
+     *
+     * Callers should check hasRealTypeSet. This returns false if there are no real types.
+     */
+    public function hasRealTypeMatchingCallback(Closure $matcher_callback) : bool
+    {
+        foreach ($this->type_set as $type) {
+            if ($matcher_callback($type)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @return bool
      * True if each of the types in this UnionType made $matcher_callback return true
      */
     public function allTypesMatchCallback(Closure $matcher_callback) : bool

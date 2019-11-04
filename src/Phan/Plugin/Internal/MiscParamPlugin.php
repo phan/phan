@@ -73,9 +73,12 @@ final class MiscParamPlugin extends PluginV3 implements
         if (!$haystack_type->hasRealTypeSet()) {
             return false;
         }
-        if (!$haystack_type->containsTruthy()) {
+        if (!$haystack_type->hasRealTypeMatchingCallback(static function (Type $type) : bool {
+            return $type->isPossiblyTruthy();
+        })) {
             return true;
         }
+
         $needle_type = $needle_type ?? UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
         if (!$needle_type->hasRealTypeSet()) {
             return false;
@@ -114,7 +117,9 @@ final class MiscParamPlugin extends PluginV3 implements
         if (!$array_type->hasRealTypeSet()) {
             return false;
         }
-        if (!$array_type->containsTruthy()) {
+        if (!$array_type->hasRealTypeMatchingCallback(static function (Type $type) : bool {
+            return $type->isPossiblyTruthy();
+        })) {
             return true;
         }
         $key_type = $key_type ?? UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);

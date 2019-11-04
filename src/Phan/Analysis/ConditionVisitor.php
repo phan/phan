@@ -20,12 +20,15 @@ use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\ResourceType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\ObjectType;
+use Phan\Language\Type\ScalarType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use Phan\Library\StringUtil;
@@ -402,7 +405,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                     return $context;
                 }
                 continue;
-            } elseif ($kind == ast\AST_PROP) {
+            } elseif ($kind === ast\AST_PROP) {
                 // TODO modify this pseudo-variable for $this->prop
                 $has_prop_access = true;
                 $var_node = $var_node->children['expr'];
@@ -440,7 +443,44 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                 0
             ));
         }
-        $context = $this->removeNullFromVariable($var_node, $context, true);
+        $context = $this->updateVariableWithConditionalFilter(
+            $var_node,
+            $context,
+            static function (UnionType $type) : bool {
+                return $type->hasTypeMatchingCallback(static function (Type $type) : bool {
+                    if ($type->isPossiblyFalsey()) {
+                        return true;
+                    }
+                    if ($type instanceof ResourceType) {
+                        return true;
+                    }
+                    // TODO: Remove arrays if this is an access to a property
+                    if ($type instanceof ScalarType) {
+                        return !($type instanceof StringType);
+                    }
+                    return false;
+                });
+            },
+            static function (UnionType $type) : UnionType {
+                return $type->asMappedListUnionType(/** @return list<Type> */ static function (Type $type) : array {
+                    if (!$type->isPossiblyTruthy()) {
+                        return [];
+                    }
+                    if ($type instanceof ScalarType) {
+                        if (!$type instanceof StringType) {
+                            return [$type->withIsNullable(false)];
+                        }
+                        return [];
+                    }
+                    if ($type instanceof ResourceType) {
+                        return [];
+                    }
+                    return [$type->asNonFalseyType()];
+                });
+            },
+            true,
+            false
+        );
 
         $variable = $context->getScope()->getVariableByName($var_name);
         $var_node_union_type = $variable->getUnionType();
