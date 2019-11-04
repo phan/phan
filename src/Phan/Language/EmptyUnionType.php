@@ -931,6 +931,11 @@ final class EmptyUnionType extends UnionType
         return false;
     }
 
+    public function hasRealTypeMatchingCallback(Closure $matcher_callback) : bool
+    {
+        return false;
+    }
+
     /**
      * @return bool
      * True if all of the types in this UnionType made $matcher_callback return true

@@ -50,9 +50,6 @@ class DumpHTMLStyles
         ksort($scheme);
 
         foreach ($scheme as $name => $value) {
-            if (!isset($groups[$value])) {
-                $groups[$value] = [];
-            }
             $groups[$value][] = $name;
         }
         $entries = [];

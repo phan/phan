@@ -327,7 +327,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             $this->checkVariablesDefinedInIsset($var_node);
             return $this->context;
         }
-        return $this->withSetVariable($var_name, $var_node, $node);
+        return $this->withSetVariable($var_name, $var_node, $var_node);
     }
 
     /**
@@ -377,6 +377,9 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             }
             return $context->withScopeVariable($variable);
         }
+        if ($var_node !== $ancestor_node) {
+            return $this->removeTypesNotSupportingAccessFromVariable($var_node, $context);
+        }
         return $this->removeNullFromVariable($var_node, $context, true);
     }
 
@@ -402,7 +405,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                     return $context;
                 }
                 continue;
-            } elseif ($kind == ast\AST_PROP) {
+            } elseif ($kind === ast\AST_PROP) {
                 // TODO modify this pseudo-variable for $this->prop
                 $has_prop_access = true;
                 $var_node = $var_node->children['expr'];
@@ -440,7 +443,11 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                 0
             ));
         }
-        $context = $this->removeNullFromVariable($var_node, $context, true);
+        if ($var_node === $node) {
+            $context = $this->removeNullFromVariable($var_node, $context, true);
+        } else {
+            $context = $this->removeTypesNotSupportingAccessFromVariable($var_node, $context);
+        }
 
         $variable = $context->getScope()->getVariableByName($var_name);
         $var_node_union_type = $variable->getUnionType();
