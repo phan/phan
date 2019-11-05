@@ -859,13 +859,13 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         }
         // TODO: Check if the return value of the function is void/always truthy (e.g. object)
 
+        if (\strcasecmp($raw_function_name, 'array_key_exists') === 0 && \count($args) === 2) {
+            // @phan-suppress-next-line PhanPartialTypeMismatchArgument
+            return $this->analyzeArrayKeyExists($args);
+        }
         // Only look at things of the form
         // `\is_string($variable)`
         if (!($first_arg instanceof Node && $first_arg->kind === ast\AST_VAR)) {
-            if (\strcasecmp($raw_function_name, 'array_key_exists') === 0 && \count($args) === 2) {
-                // @phan-suppress-next-line PhanPartialTypeMismatchArgument
-                return $this->analyzeArrayKeyExists($args);
-            }
             $type_modification_callback = $map[\strtolower($raw_function_name)] ?? null;
             if (!$type_modification_callback) {
                 if (Config::getValue('redundant_condition_detection')) {
@@ -944,11 +944,10 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                 return true;
             },
             function (UnionType $type) use ($args) : UnionType {
-                $type = $type->nonNullableClone();
                 if ($type->hasTopLevelArrayShapeTypeInstances()) {
-                    return $this->withSetArrayShapeTypes($type, $args[0], $this->context, false);
+                    $type = $this->withSetArrayShapeTypes($type, $args[0], $this->context, false);
                 }
-                return $type;
+                return $this->asTypeSupportingAccess($type);
             },
             true,
             false
