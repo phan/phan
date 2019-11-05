@@ -10,9 +10,12 @@ call_user_func(
         } else {
             echo strlen($data);
         }
-        // This is still a string.
+        // It's possible that the phpdoc types were wrong. Don't warn (this isn't strict mode).
         if (isset($str[5])) {
-            echo count($str);
+            echo count($str);  '@phan-debug-var $str';
+        }
+        if (isset($str['field'])) {
+            echo strlen($str);  // $str is definitely not a string
         }
     },
     [],

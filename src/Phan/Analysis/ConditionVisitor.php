@@ -330,6 +330,19 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         return $this->withSetVariable($var_name, $var_node, $var_node);
     }
 
+    public const ACCESS_IS_OBJECT = 1;
+    public const ACCESS_ARRAY_KEY_EXISTS = 2;
+    public const ACCESS_IS_SET = 3;
+    public const ACCESS_DIM_SET = 4;
+
+    /** @internal */
+    public const DEFAULTS_FOR_ACCESS_TYPE = [
+        self::ACCESS_IS_OBJECT => 'object',
+        self::ACCESS_ARRAY_KEY_EXISTS => 'non-empty-array|object',
+        self::ACCESS_IS_SET => 'int|string|float|bool|non-empty-array|object|resource',
+        self::ACCESS_DIM_SET => 'string|non-empty-array|object',
+    ];
+
     /**
      * From isset($var), infer that $var is non-null
      * From isset($obj->prop['field']), infer that $obj is non-null
@@ -362,23 +375,25 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             }, $context);
             if ($ancestor_node !== $var_node && self::isThisVarNode($var_node->children['expr'])) {
                 $old_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $context, $ancestor_node);
-                if ($old_type->containsNullable()) {
-                    $context = (new AssignmentVisitor(
-                        $this->code_base,
-                        // We clone the original context to avoid affecting the original context for the elseif.
-                        // AssignmentVisitor modifies the provided context in place.
-                        //
-                        // There is a difference between `if (is_string($x['field']))` and `$x['field'] = (some string)` for the way the `elseif` should be analyzed.
-                        $context->withClonedScope(),
-                        $ancestor_node,
-                        $old_type->nonNullableClone()
-                    ))->__invoke($ancestor_node);
-                }
+                $context = (new AssignmentVisitor(
+                    $this->code_base,
+                    // We clone the original context to avoid affecting the original context for the elseif.
+                    // AssignmentVisitor modifies the provided context in place.
+                    //
+                    // There is a difference between `if (is_string($x['field']))` and `$x['field'] = (some string)` for the way the `elseif` should be analyzed.
+                    $context->withClonedScope(),
+                    $ancestor_node,
+                    $old_type->nonNullableClone()
+                ))->__invoke($ancestor_node);
             }
             return $context->withScopeVariable($variable);
         }
         if ($var_node !== $ancestor_node) {
-            return $this->removeTypesNotSupportingAccessFromVariable($var_node, $context);
+            return $this->removeTypesNotSupportingAccessFromVariable(
+                $var_node,
+                $context,
+                $ancestor_node->kind === ast\AST_PROP ? self::ACCESS_IS_OBJECT : self::ACCESS_DIM_SET
+            );
         }
         return $this->removeNullFromVariable($var_node, $context, true);
     }
@@ -446,7 +461,23 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         if ($var_node === $node) {
             $context = $this->removeNullFromVariable($var_node, $context, true);
         } else {
-            $context = $this->removeTypesNotSupportingAccessFromVariable($var_node, $context);
+            if ($parent_node->kind === ast\AST_PROP) {
+                // `isset($x->prop)` implies $x is an object
+                $access_kind = self::ACCESS_IS_OBJECT;
+            } else {
+                // Allow `isset($x[0])` to imply $x can be a string, but not `isset($x['field'])`
+                $dim = $node->children['dim'] ?? null;
+                if (is_string($dim) && \filter_var($dim, \FILTER_VALIDATE_INT) === false) {
+                    $access_kind = self::ACCESS_ARRAY_KEY_EXISTS;
+                } else {
+                    $access_kind = self::ACCESS_DIM_SET;
+                }
+            }
+            $context = $this->removeTypesNotSupportingAccessFromVariable(
+                $var_node,
+                $context,
+                $access_kind
+            );
         }
 
         $variable = $context->getScope()->getVariableByName($var_name);
@@ -947,7 +978,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                 if ($type->hasTopLevelArrayShapeTypeInstances()) {
                     $type = $this->withSetArrayShapeTypes($type, $args[0], $this->context, false);
                 }
-                return $this->asTypeSupportingAccess($type);
+                return $this->asTypeSupportingAccess($type, self::ACCESS_ARRAY_KEY_EXISTS);
             },
             true,
             false
