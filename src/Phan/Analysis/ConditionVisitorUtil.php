@@ -263,7 +263,41 @@ trait ConditionVisitorUtil
     }
 
     /**
-     * Remove empty types not supporting 0 or more levels array/property access from the variable.
+     * Returns the type after removing all types that are empty or don't support property or array access
+     */
+    public static function asTypeSupportingAccess(UnionType $type) : UnionType
+    {
+        return $type->asMappedListUnionType(/** @return list<Type> */ static function (Type $type) : array {
+            if (!$type->isPossiblyTruthy()) {
+                /* causes false positives when combining types
+                if ($type instanceof ArrayShapeType) {
+                    // Convert array{} -> non-empty-array, null -> no types
+                    // (useful guess with loops or references)
+                    // phan-suppress-next-line PhanThrowTypeAbsentForCall
+                    return [Type::fromFullyQualifiedString('non-empty-array')];
+                }
+                 */
+                return [];
+            }
+            if ($type instanceof ScalarType) {
+                if ($type instanceof StringType) {
+                    if ($type instanceof LiteralStringType && $type->getValue() === '') {
+                        // Can't access an offset of ''
+                        return [];
+                    }
+                    return [$type->withIsNullable(false)];
+                }
+                return [];
+            }
+            if ($type instanceof ResourceType) {
+                return [];
+            }
+            return [$type->asNonFalseyType()];
+        });
+    }
+
+    /**
+     * Remove empty types not supporting 0 or more levels of array/property access from the variable.
      */
     final protected function removeTypesNotSupportingAccessFromVariable(Node $var_node, Context $context) : Context
     {
@@ -286,33 +320,7 @@ trait ConditionVisitorUtil
                 });
             },
             static function (UnionType $type) : UnionType {
-                return $type->asMappedListUnionType(/** @return list<Type> */ static function (Type $type) : array {
-                    if (!$type->isPossiblyTruthy()) {
-                        /* causes false positives when combining types
-                        if ($type instanceof ArrayShapeType) {
-                            // Convert array{} -> non-empty-array, null -> no types
-                            // (useful guess with loops or references)
-                            // phan-suppress-next-line PhanThrowTypeAbsentForCall
-                            return [Type::fromFullyQualifiedString('non-empty-array')];
-                        }
-                         */
-                        return [];
-                    }
-                    if ($type instanceof ScalarType) {
-                        if ($type instanceof StringType) {
-                            if ($type instanceof LiteralStringType && $type->getValue() === '') {
-                                // Can't access an offset of ''
-                                return [];
-                            }
-                            return [$type->withIsNullable(false)];
-                        }
-                        return [];
-                    }
-                    if ($type instanceof ResourceType) {
-                        return [];
-                    }
-                    return [$type->asNonFalseyType()];
-                });
+                return self::asTypeSupportingAccess($type);
             },
             true,
             false

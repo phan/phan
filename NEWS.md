@@ -9,6 +9,7 @@ New features(Analysis):
 + Emit `PhanTypeInvalidDimOffset` for accessing any dimension on an empty string or an empty array. (#3385)
 + Warn about invalid string literal offsets such as `'str'[3]`, `'str'[-4]`, etc. (#3385)
 + Infer that arrays are non-empty and support array access from `isset($x[$offset])` (#3463)
++ Make `array_key_exists` imply array is non-empty. (#3465)
 
 Nov 03 2019, Phan 2.4.1
 -----------------------
