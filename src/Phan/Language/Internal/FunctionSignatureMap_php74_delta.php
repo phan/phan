@@ -15,6 +15,7 @@
  */
 return [
 'new' => [
+'DatePeriod::getRecurrences' => ['int'],
 'FFI::addr' => ['FFI\CData', '&ptr'=>'FFI\CData'],
 'FFI::alignof' => ['int', '&ptr'=>'mixed'],
 'FFI::arrayType' => ['FFI\CType', 'type'=>'string|FFI\CType', 'dims'=>'list<int>'],
