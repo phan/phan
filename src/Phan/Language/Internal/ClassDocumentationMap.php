@@ -1302,6 +1302,9 @@ See `V8Js::__construct` for more information.',
 'Vtiful\Kernel\Excel' => 'Create xlsx files and set cells and output xlsx files',
 'Vtiful\Kernel\Format' => 'Create a cell format object',
 'WeakRef' => 'The WeakRef class provides a gateway to objects without preventing the garbage collector from freeing those objects. It also provides a way to turn a weak reference into a strong one.',
+'WeakReference' => 'Weak references allow the programmer to retain a reference to an
+object which does not prevent the object from being destroyed.
+They are useful for implementing cache like structures.',
 'webObj' => 'Instances of webObj are always are always embedded inside the `mapObj`_.',
 'wkhtmltox\Image\Converter' => 'Converts an HTML input into various image formats',
 'wkhtmltox\PDF\Converter' => 'Converts an HTML input, or set of HTML inputs, into PDF output',

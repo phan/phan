@@ -10113,6 +10113,7 @@ as individual tokens.',
 'mysql_xdevapi\expression::__construct' => 'Expression constructor',
 'mysql_xdevapi\fieldmetadata::__construct' => 'FieldMetadata constructor',
 'mysql_xdevapi\result::__construct' => 'Result constructor',
+'mysql_xdevapi\result::getAffectedItemsCount' => 'Get affected row count',
 'mysql_xdevapi\result::getAutoIncrementValue' => 'Get autoincremented value',
 'mysql_xdevapi\result::getGeneratedIds' => 'Get generated ids',
 'mysql_xdevapi\result::getWarnings' => 'Get warnings from last operation',
@@ -11787,6 +11788,9 @@ Tries to clone the Exception, which results in Fatal error.',
 'PharData::seek' => 'Seek to a DirectoryIterator item',
 'PharData::setAlias' => 'Dummy function (Phar::setAlias is not valid for PharData)',
 'PharData::setDefaultStub' => 'Dummy function (Phar::setDefaultStub is not valid for PharData)',
+'PharData::setFileClass' => 'Sets the class used with SplFileInfo::openFile',
+'PharData::setFlags' => 'Sets handling flags',
+'PharData::setInfoClass' => 'Sets the class used with SplFileInfo::getFileInfo and SplFileInfo::getPathInfo',
 'PharData::setMetadata' => 'Sets phar archive meta-data',
 'PharData::setSignatureAlgorithm' => 'Set the signature algorithm for a phar and apply it',
 'PharData::setStub' => 'Dummy function (Phar::setStub is not valid for PharData)',
@@ -12762,6 +12766,8 @@ The third optional argument defines weights to apply to the sorted sets in input
 In this case, the weights will be multiplied by the score of each element in the sorted set
 before applying the aggregation. The forth argument defines the AGGREGATE option which
 specify how the results of the union are aggregated.',
+'Redis::zPopMax' => 'Can pop the highest scoring members from one ZSET.',
+'Redis::zPopMin' => 'Can pop the lowest scoring members from one ZSET.',
 'Redis::zRange' => 'Returns a range of elements from the ordered set stored at the specified key,
 with values in the range [start, end]. start and stop are interpreted as zero-based indices:
 0 the first element,
@@ -12806,8 +12812,126 @@ specify how the results of the union are aggregated.',
 'RedisArray::__construct' => 'Constructor',
 'RedisArray::_function' => '`@return  string`  the name of the function used to extract key parts during consistent hashing',
 'RedisArray::_hosts' => '`@return  array`   list of hosts for the selected array',
+'RedisArray::_prefix' => 'A utility method to prefix the value with the prefix setting for phpredis.',
 'RedisArray::_rehash' => 'Use this function when a new node is added and keys need to be rehashed.',
+'RedisArray::_serialize' => 'A utility method to serialize values manually. This method allows you to serialize a value with whatever
+serializer is configured, manually. This can be useful for serialization/unserialization of data going in
+and out of EVAL commands as phpredis can\'t automatically do this itself.  Note that if no serializer is
+set, phpredis will change Array values to \'Array\', and Objects to \'Object\'.',
 'RedisArray::_target' => '`@return  string`  the host to be used for a certain key',
+'RedisArray::_unserialize' => 'A utility method to unserialize data with whatever serializer is set up.  If there is no serializer set, the
+value will be returned unchanged.  If there is a serializer set up, and the data passed in is malformed, an
+exception will be thrown. This can be useful if phpredis is serializing values, and you return something from
+redis in a LUA script that is serialized.',
+'RedisArray::append' => 'Append specified string to the string stored in specified key.',
+'RedisArray::auth' => 'Authenticate the connection using a password.
+Warning: The password is sent in plain-text over the network.',
+'RedisArray::bgrewriteaof' => 'Starts the background rewrite of AOF (Append-Only File)',
+'RedisArray::bgsave' => 'Performs a background save.',
+'RedisArray::bitCount' => 'Count bits in a string',
+'RedisArray::bitOp' => 'Bitwise operation on multiple keys.',
+'RedisArray::bitpos' => 'Return the position of the first bit set to 1 or 0 in a string. The position is returned, thinking of the
+string as an array of bits from left to right, where the first byte\'s most significant bit is at position 0,
+the second byte\'s most significant bit is at position 8, and so forth.',
+'RedisArray::blPop' => 'Is a blocking lPop primitive. If at least one of the lists contains at least one element,
+the element will be popped from the head of the list and returned to the caller.
+Il all the list identified by the keys passed in arguments are empty, blPop will block
+during the specified timeout until an element is pushed to one of those lists. This element will be popped.',
+'RedisArray::brPop' => 'Is a blocking rPop primitive. If at least one of the lists contains at least one element,
+the element will be popped from the head of the list and returned to the caller.
+Il all the list identified by the keys passed in arguments are empty, brPop will
+block during the specified timeout until an element is pushed to one of those lists. T
+his element will be popped.',
+'RedisArray::brpoplpush' => 'A blocking version of rpoplpush, with an integral timeout in the third parameter.',
+'RedisArray::bzPopMax' => 'Block until Redis can pop the highest or lowest scoring members from one or more ZSETs.
+There are two commands (BZPOPMIN and BZPOPMAX for popping the lowest and highest scoring elements respectively.)',
+'RedisArray::bzPopMin' => '`@return array` Either an array with the key member and score of the higest or lowest element or an empty array
+if the timeout was reached without an element to pop.',
+'RedisArray::clearLastError' => 'Clear the last error message',
+'RedisArray::client' => 'Issue the CLIENT command with various arguments.
+The Redis CLIENT command can be used in four ways:
+- CLIENT LIST
+- CLIENT GETNAME
+- CLIENT SETNAME [name]
+- CLIENT KILL [ip:port]',
+'RedisArray::close' => 'Disconnects from the Redis instance.
+
+Note: Closing a persistent connection requires PhpRedis >= 4.2.0',
+'RedisArray::config' => 'Get or Set the redis config keys.',
+'RedisArray::connect' => 'Connects to a Redis instance.',
+'RedisArray::dbSize' => 'Returns the current database\'s size',
+'RedisArray::decr' => 'Decrement the number stored at key by one.',
+'RedisArray::decrBy' => 'Decrement the number stored at key by one.
+If the second argument is filled, it will be used as the integer value of the decrement.',
+'RedisArray::del' => 'Remove specified keys.',
+'RedisArray::delete' => '`@return int` Number of keys deleted',
+'RedisArray::dump' => 'Dump a key out of a redis database, the value of which can later be passed into redis using the RESTORE command.
+The data that comes out of DUMP is a binary representation of the key as Redis stores it.',
+'RedisArray::echo' => 'Echo the given string',
+'RedisArray::eval' => 'Evaluate a LUA script serverside',
+'RedisArray::evalSha' => 'Evaluate a LUA script serverside, from the SHA1 hash of the script instead of the script itself.
+In order to run this command Redis will have to have already loaded the script, either by running it or via
+the SCRIPT LOAD command.',
+'RedisArray::evaluate' => '`@return  mixed`   @see eval()',
+'RedisArray::exists' => 'Verify if the specified key/keys exists
+
+This function took a single argument and returned TRUE or FALSE in phpredis versions < 4.0.0.',
+'RedisArray::expire' => 'Sets an expiration date (a timeout) on an item',
+'RedisArray::expireAt' => 'Sets an expiration date (a timestamp) on an item.',
+'RedisArray::flushAll' => 'Removes all entries from all databases.',
+'RedisArray::flushDB' => 'Removes all entries from the current database.',
+'RedisArray::geoadd' => 'Add one or more geospatial items to the specified key.
+This function must be called with at least one longitude, latitude, member triplet.',
+'RedisArray::geodist' => 'Return the distance between two members in a geospatial set.
+
+If units are passed it must be one of the following values:
+- \'m\' => Meters
+- \'km\' => Kilometers
+- \'mi\' => Miles
+- \'ft\' => Feet',
+'RedisArray::geohash' => 'Retrieve Geohash strings for one or more elements of a geospatial index.',
+'RedisArray::geopos' => 'Return longitude, latitude positions for each requested member.',
+'RedisArray::georadius' => 'Return members of a set with geospatial information that are within the radius specified by the caller.',
+'RedisArray::georadiusbymember' => 'This method is identical to geoRadius except that instead of passing a longitude and latitude as the "source"
+you pass an existing member in the geospatial set',
+'RedisArray::get' => 'Get the value related to the specified key',
+'RedisArray::getAuth' => 'Get the password used to authenticate the phpredis connection',
+'RedisArray::getBit' => 'Return a single bit out of a larger string',
+'RedisArray::getDbNum' => 'Get the database number phpredis is pointed to',
+'RedisArray::getHost' => 'Retrieve our host or unix socket that we\'re connected to',
+'RedisArray::getLastError' => 'The last error message (if any)',
+'RedisArray::getMode' => 'Detect whether we\'re in ATOMIC/MULTI/PIPELINE mode.',
+'RedisArray::getMultiple' => 'Get the values of all the specified keys.
+If one or more keys dont exist, the array will contain FALSE at the position of the key.',
+'RedisArray::getOption' => 'Get client option',
+'RedisArray::getPersistentID' => 'Gets the persistent ID that phpredis is using',
+'RedisArray::getPort' => 'Get the port we\'re connected to',
+'RedisArray::getRange' => 'Return a substring of a larger string',
+'RedisArray::getReadTimeout' => 'Get the read timeout specified to phpredis or FALSE if we\'re not connected',
+'RedisArray::getSet' => 'Sets a value and returns the previous entry at that key.',
+'RedisArray::getTimeout' => 'Get the (write) timeout in use for phpredis',
+'RedisArray::hDel' => 'Removes a values from the hash stored at key.
+If the hash table doesn\'t exist, or the key doesn\'t exist, FALSE is returned.',
+'RedisArray::hExists' => 'Verify if the specified member exists in a key.',
+'RedisArray::hGet' => 'Gets a value from the hash stored at key.
+If the hash table doesn\'t exist, or the key doesn\'t exist, FALSE is returned.',
+'RedisArray::hGetAll' => 'Returns the whole hash, as an array of strings indexed by strings.',
+'RedisArray::hIncrBy' => 'Increments the value of a member from a hash by a given amount.',
+'RedisArray::hIncrByFloat' => 'Increment the float value of a hash field by the given amount',
+'RedisArray::hKeys' => 'Returns the keys in a hash, as an array of strings.',
+'RedisArray::hLen' => 'Returns the length of a hash, in number of items',
+'RedisArray::hMGet' => 'Retirieve the values associated to the specified fields in the hash.',
+'RedisArray::hMSet' => 'Fills in a whole hash. Non-string values are converted to string, using the standard (string) cast.
+NULL values are stored as empty strings',
+'RedisArray::hScan' => 'Scan a HASH value for members, with an optional pattern and count.',
+'RedisArray::hSet' => 'Adds a value to the hash stored at key. If this value is already in the hash, FALSE is returned.',
+'RedisArray::hSetNx' => 'Adds a value to the hash stored at key only if this field isn\'t already in the hash.',
+'RedisArray::hStrLen' => 'Get the string length of the value associated with field in the hash stored at key',
+'RedisArray::hVals' => 'Returns the values in a hash, as an array of strings.',
+'RedisArray::incr' => 'Increment the number stored at key by one.',
+'RedisArray::incrBy' => 'Increment the number stored at key by one.
+If the second argument is filled, it will be used as the integer value of the increment.',
+'RedisArray::incrByFloat' => 'Increment the float value of a key by the given amount',
 'RedisArray::info' => 'Returns an associative array of strings and integers, with the following keys:
 - redis_version
 - redis_git_sha1
@@ -12939,6 +13063,217 @@ specify how the results of the union are aggregated.',
 - used_cpu_sys_children
 - used_cpu_user_children
 - cluster_enabled',
+'RedisArray::isConnected' => 'A method to determine if a phpredis object thinks it\'s connected to a server',
+'RedisArray::keys' => 'Returns the keys that match a certain pattern.',
+'RedisArray::lastSave' => 'Returns the timestamp of the last disk save.',
+'RedisArray::lGet' => '`@return mixed|bool` the element at this index',
+'RedisArray::lIndex' => 'Return the specified element of the list stored at the specified key.
+0 the first element, 1 the second ... -1 the last element, -2 the penultimate ...
+Return FALSE in case of a bad index or a key that doesn\'t point to a list.',
+'RedisArray::lInsert' => 'Insert value in the list before or after the pivot value. the parameter options
+specify the position of the insert (before or after). If the list didn\'t exists,
+or the pivot didn\'t exists, the value is not inserted.',
+'RedisArray::lLen' => 'Returns the size of a list identified by Key. If the list didn\'t exist or is empty,
+the command returns 0. If the data type identified by Key is not a list, the command return FALSE.',
+'RedisArray::lPop' => 'Returns and removes the first element of the list.',
+'RedisArray::lPush' => 'Adds the string values to the head (left) of the list.
+Creates the list if the key didn\'t exist.
+If the key exists and is not a list, FALSE is returned.',
+'RedisArray::lPushx' => 'Adds the string value to the head (left) of the list if the list exists.',
+'RedisArray::lRange' => 'Returns the specified elements of the list stored at the specified key in
+the range [start, end]. start and stop are interpretated as indices: 0 the first element,
+1 the second ... -1 the last element, -2 the penultimate ...',
+'RedisArray::lRem' => 'Removes the first count occurences of the value element from the list.
+If count is zero, all the matching elements are removed. If count is negative,
+elements are removed from tail to head.',
+'RedisArray::lSet' => 'Set the list at index with the new value.',
+'RedisArray::lSize' => '`@return int` The size of the list identified by Key exists',
+'RedisArray::lTrim' => 'Trims an existing list so that it will contain only a specified range of elements.',
+'RedisArray::mget' => 'Returns the values of all specified keys.
+
+For every key that does not hold a string value or does not exist,
+the special value false is returned. Because of this, the operation never fails.',
+'RedisArray::migrate' => 'Migrates a key to a different Redis instance.',
+'RedisArray::move' => 'Moves a key to a different database.',
+'RedisArray::mset' => 'Sets multiple key-value pairs in one atomic command.
+MSETNX only returns TRUE if all the keys were set (see SETNX).',
+'RedisArray::msetnx' => '`@return int` 1 (if the keys were set) or 0 (no key was set)',
+'RedisArray::multi' => 'Enter and exit transactional mode.',
+'RedisArray::object' => 'Describes the object pointed to by a key.
+The information to retrieve (string) and the key (string).
+Info can be one of the following:
+- "encoding"
+- "refcount"
+- "idletime"',
+'RedisArray::open' => 'Connects to a Redis instance.',
+'RedisArray::pconnect' => 'Connects to a Redis instance or reuse a connection already established with pconnect/popen.
+
+The connection will not be closed on close or end of request until the php process ends.
+So be patient on to many open FD\'s (specially on redis server side) when using persistent connections on
+many servers connecting to one redis server.
+
+Also more than one persistent connection can be made identified by either host + port + timeout
+or host + persistentId or unix socket + timeout.
+
+This feature is not available in threaded versions. pconnect and popen then working like their non persistent
+equivalents.',
+'RedisArray::persist' => 'Remove the expiration timer from a key.',
+'RedisArray::pExpire' => 'Sets an expiration date (a timeout in milliseconds) on an item',
+'RedisArray::pExpireAt' => 'Sets an expiration date (a timestamp) on an item. Requires a timestamp in milliseconds',
+'RedisArray::pfAdd' => 'Adds all the element arguments to the HyperLogLog data structure stored at the key.',
+'RedisArray::pfCount' => 'When called with a single key, returns the approximated cardinality computed by the HyperLogLog data
+structure stored at the specified variable, which is 0 if the variable does not exist.',
+'RedisArray::pfMerge' => 'Merge multiple HyperLogLog values into an unique value that will approximate the cardinality
+of the union of the observed Sets of the source HyperLogLog structures.',
+'RedisArray::ping' => 'Check the current connection status',
+'RedisArray::psetex' => 'Set the value and expiration in milliseconds of a key.',
+'RedisArray::psubscribe' => 'Subscribe to channels by pattern',
+'RedisArray::pttl' => 'Returns a time to live left for a given key, in milliseconds.
+
+If the key doesn\'t exist, FALSE is returned.',
+'RedisArray::publish' => 'Publish messages to channels.
+
+Warning: this function will probably change in the future.',
+'RedisArray::pubsub' => 'A command allowing you to get information on the Redis pub/sub system',
+'RedisArray::punsubscribe' => 'Stop listening for messages posted to the given channels.',
+'RedisArray::randomKey' => 'Returns a random key',
+'RedisArray::rawCommand' => 'Send arbitrary things to the redis server.',
+'RedisArray::rename' => 'Renames a key',
+'RedisArray::renameNx' => 'Renames a key
+
+Same as rename, but will not replace a key if the destination already exists.
+This is the same behaviour as setNx.',
+'RedisArray::resetStat' => 'Resets the statistics reported by Redis using the INFO command (`info()` function).
+These are the counters that are reset:
+     - Keyspace hits
+     - Keyspace misses
+     - Number of commands processed
+     - Number of connections received
+     - Number of expired keys',
+'RedisArray::restore' => 'Restore a key from the result of a DUMP operation.',
+'RedisArray::rPop' => 'Returns and removes the last element of the list.',
+'RedisArray::rpoplpush' => 'Pops a value from the tail of a list, and pushes it to the front of another list.
+Also return this value.',
+'RedisArray::rPush' => 'Adds the string values to the tail (right) of the list.
+Creates the list if the key didn\'t exist.
+If the key exists and is not a list, FALSE is returned.',
+'RedisArray::rPushx' => 'Adds the string value to the tail (right) of the list if the ist exists. FALSE in case of Failure.',
+'RedisArray::sAdd' => 'Adds a values to the set value stored at key.',
+'RedisArray::sAddArray' => 'Adds a values to the set value stored at key.',
+'RedisArray::save' => 'Performs a synchronous save.',
+'RedisArray::scan' => 'Scan the keyspace for keys',
+'RedisArray::sCard' => 'Returns the cardinality of the set identified by key.',
+'RedisArray::script' => 'Execute the Redis SCRIPT command to perform various operations on the scripting subsystem.',
+'RedisArray::sDiff' => 'Performs the difference between N sets and returns it.',
+'RedisArray::sDiffStore' => 'Performs the same action as sDiff, but stores the result in the first key',
+'RedisArray::select' => 'Switches to a given database',
+'RedisArray::set' => 'Set the string value in argument as value of the key.',
+'RedisArray::setBit' => 'Changes a single bit of a string.',
+'RedisArray::setex' => 'Set the string value in argument as value of the key, with a time to live.',
+'RedisArray::setnx' => 'Set the string value in argument as value of the key if the key doesn\'t already exist in the database.',
+'RedisArray::setOption' => 'Set client option',
+'RedisArray::setRange' => 'Changes a substring of a larger string.',
+'RedisArray::sGetMembers' => '`@return array`   An array of elements, the contents of the set',
+'RedisArray::sInter' => 'Returns the members of a set resulting from the intersection of all the sets
+held at the specified keys. If just a single key is specified, then this command
+produces the members of this set. If one of the keys is missing, FALSE is returned.',
+'RedisArray::sInterStore' => 'Performs a sInter command and stores the result in a new set.',
+'RedisArray::sIsMember' => 'Checks if value is a member of the set stored at the key key.',
+'RedisArray::slaveof' => 'Changes the slave status
+Either host and port, or no parameter to stop being a slave.',
+'RedisArray::slowLog' => 'Access the Redis slowLog',
+'RedisArray::sMembers' => 'Returns the contents of a set.',
+'RedisArray::sMove' => 'Moves the specified member from the set at srcKey to the set at dstKey.',
+'RedisArray::sort' => 'Sort',
+'RedisArray::sPop' => 'Removes and returns a random element from the set value at Key.',
+'RedisArray::sRandMember' => 'Returns a random element(s) from the set value at Key, without removing it.',
+'RedisArray::sRem' => 'Removes the specified members from the set value stored at key.',
+'RedisArray::sScan' => 'Scan a set for members',
+'RedisArray::strlen' => 'Get the length of a string value.',
+'RedisArray::subscribe' => 'Subscribe to channels.
+
+Warning: this function will probably change in the future.',
+'RedisArray::substr' => 'Return a substring of a larger string',
+'RedisArray::sUnion' => 'Performs the union between N sets and returns it.',
+'RedisArray::sUnionStore' => 'Performs the same action as sUnion, but stores the result in the first key',
+'RedisArray::swapdb' => 'Swap one Redis database with another atomically
+
+Note: Requires Redis >= 4.0.0',
+'RedisArray::time' => 'Return the current Redis server time.',
+'RedisArray::ttl' => 'Returns the time to live left for a given key, in seconds. If the key doesn\'t exist, FALSE is returned.',
+'RedisArray::type' => 'Returns the type of data pointed by a given key.',
+'RedisArray::unlink' => 'Delete a key asynchronously in another thread. Otherwise it is just as DEL, but non blocking.',
+'RedisArray::unsubscribe' => 'Stop listening for messages posted to the given channels.',
+'RedisArray::wait' => 'Blocks the current client until all the previous write commands are successfully transferred and
+acknowledged by at least the specified number of slaves.',
+'RedisArray::watch' => 'Watches a key for modifications by another client. If the key is modified between WATCH and EXEC,
+the MULTI/EXEC transaction will fail (return FALSE). unwatch cancels all the watching of all keys by this client.',
+'RedisArray::xAck' => 'Acknowledge one or more messages on behalf of a consumer group.',
+'RedisArray::xAdd' => 'Add a message to a stream',
+'RedisArray::xClaim' => 'Claim ownership of one or more pending messages',
+'RedisArray::xDel' => 'Delete one or more messages from a stream',
+'RedisArray::xGroup' => '`@return mixed` This command returns different types depending on the specific XGROUP command executed.',
+'RedisArray::xInfo' => 'Get information about a stream or consumer groups',
+'RedisArray::xLen' => 'Get the length of a given stream.',
+'RedisArray::xPending' => 'Get information about pending messages in a given stream',
+'RedisArray::xRange' => 'Get a range of messages from a given stream',
+'RedisArray::xRead' => 'Read data from one or more streams and only return IDs greater than sent in the command.',
+'RedisArray::xReadGroup' => 'This method is similar to xRead except that it supports reading messages for a specific consumer group.',
+'RedisArray::xRevRange' => 'This is identical to xRange except the results come back in reverse order.
+Also note that Redis reverses the order of "start" and "end".',
+'RedisArray::xTrim' => 'Trim the stream length to a given maximum.
+If the "approximate" flag is pasesed, Redis will use your size as a hint but only trim trees in whole nodes
+(this is more efficient)',
+'RedisArray::zAdd' => 'Adds the specified member with a given score to the sorted set stored at key',
+'RedisArray::zCard' => 'Returns the cardinality of an ordered set.',
+'RedisArray::zCount' => 'Returns the number of elements of the sorted set stored at the specified key which have
+scores in the range [start,end]. Adding a parenthesis before start or end excludes it
+from the range. +inf and -inf are also valid limits.',
+'RedisArray::zDelete' => '`@return int` Number of deleted values',
+'RedisArray::zIncrBy' => 'Increments the score of a member from a sorted set by a given amount.',
+'RedisArray::zInterStore' => 'Creates an intersection of sorted sets given in second argument.
+The result of the union will be stored in the sorted set defined by the first argument.
+The third optional argument defines weights to apply to the sorted sets in input.
+In this case, the weights will be multiplied by the score of each element in the sorted set
+before applying the aggregation. The forth argument defines the AGGREGATE option which
+specify how the results of the union are aggregated.',
+'RedisArray::zPopMax' => 'Can pop the highest scoring members from one ZSET.',
+'RedisArray::zPopMin' => 'Can pop the lowest scoring members from one ZSET.',
+'RedisArray::zRange' => 'Returns a range of elements from the ordered set stored at the specified key,
+with values in the range [start, end]. start and stop are interpreted as zero-based indices:
+0 the first element,
+1 the second ...
+-1 the last element,
+-2 the penultimate ...',
+'RedisArray::zRangeByLex' => 'Returns a lexigraphical range of members in a sorted set, assuming the members have the same score. The
+min and max values are required to start with \'(\' (exclusive), \'[\' (inclusive), or be exactly the values
+\'-\' (negative inf) or \'+\' (positive inf).  The command must be called with either three *or* five
+arguments or will return FALSE.',
+'RedisArray::zRangeByScore' => 'Returns the elements of the sorted set stored at the specified key which have scores in the
+range [start,end]. Adding a parenthesis before start or end excludes it from the range.
++inf and -inf are also valid limits.
+
+zRevRangeByScore returns the same items in reverse order, when the start and end parameters are swapped.',
+'RedisArray::zRank' => 'Returns the rank of a given member in the specified sorted set, starting at 0 for the item
+with the smallest score. zRevRank starts at 0 for the item with the largest score.',
+'RedisArray::zRem' => 'Deletes a specified member from the ordered set.',
+'RedisArray::zRemRangeByRank' => 'Deletes the elements of the sorted set stored at the specified key which have rank in the range [start,end].',
+'RedisArray::zRemRangeByScore' => 'Deletes the elements of the sorted set stored at the specified key which have scores in the range [start,end].',
+'RedisArray::zRevRange' => 'Returns the elements of the sorted set stored at the specified key in the range [start, end]
+in reverse order. start and stop are interpretated as zero-based indices:
+0 the first element,
+1 the second ...
+-1 the last element,
+-2 the penultimate ...',
+'RedisArray::zRevRank' => '`@return int|bool` the item\'s score, false - if key or member is not exists',
+'RedisArray::zScan' => 'Scan a sorted set for members, with optional pattern and count',
+'RedisArray::zScore' => 'Returns the score of a given member in the specified sorted set.',
+'RedisArray::zUnionStore' => 'Creates an union of sorted sets given in second argument.
+The result of the union will be stored in the sorted set defined by the first argument.
+The third optionnel argument defines weights to apply to the sorted sets in input.
+In this case, the weights will be multiplied by the score of each element in the sorted set
+before applying the aggregation. The forth argument defines the AGGREGATE option which
+specify how the results of the union are aggregated.',
 'RedisCluster::__construct' => 'Creates a Redis Cluster client',
 'RedisCluster::_masters' => 'Return all redis master nodes',
 'RedisCluster::_prefix' => 'A utility method to prefix the value with the prefix setting for phpredis.',
@@ -17251,6 +17586,563 @@ Tries to clone the Exception, which results in Fatal error.',
 'vtiful\kernel\format::bold' => 'Vtiful\Kernel\Format bold',
 'vtiful\kernel\format::italic' => 'Vtiful\Kernel\Format italic',
 'vtiful\kernel\format::underline' => 'Vtiful\Kernel\Format underline',
+'wb_call_function' => 'Calls the DLL function pointed by address.
+args is an optional array of parameters that must match those of the function being called.
+Returns an integer that may be a valid value or a pointer to one object, according to the library function called.
+
+NOTE: Function arguments are limited to a maximum of 20.',
+'wb_create_font' => 'Creates a new font. name is the font name, height is its height in points (not pixels), and color is a RGB color value. flags can be a combination of the following values:.
+
+FTA_NORMAL
+FTA_REGULAR
+FTA_BOLD
+FTA_ITALIC
+FTA_UNDERLINE
+FTA_STRIKEOUT
+
+Constants of FTA_NORMAL and FTA_REGULAR mean the same thing and are defined as zero.
+
+The function returns an integer value that is the font identifier.
+
+After use, the font must be destroyed by a call to wb_destroy_font() to prevent resource leaks.
+
+NOTE: The color parameter is not implemented yet.',
+'wb_create_image' => 'Creates a true-color image measuring width by height pixels.
+
+NOTE: The resulting image must be destroyed by a call to wb_destroy_image().',
+'wb_create_mask' => 'Creates a transparency mask of a true-color bitmap.
+The mask returned is also a bitmap. The transparent color is set by transparent_color.
+
+NOTE: The resulting image must be destroyed by a call to wb_destroy_image().',
+'wb_create_timer' => 'Creates a timer in the specified window.
+The timer must be given an integer id that must be unique to all timers and controls.
+interval specifies the time-out value in milliseconds.
+Timer events are passed to and processed by the window callback function.
+A call to wb_destroy_timer() destroys the timer.
+
+Low resolution and high resolution timers
+
+This function supports both conventional (low-resolution) and multimedia (high-resolution) timers.
+Use a non-negative id to specify a low-resolution timer or a negative id to specify a high-resolution timer.
+Hi-res timers have a 10:1 increase in speed (resolution can go down to 1 ms opposed to 10 ms of a conventional timer) and much higher precision.
+
+NOTE: Only one high-resolution timer is allowed per application and it must be on the main window.',
+'wb_create_window' => 'Creates a window of class wclass. Click here for a list of the available window classes.
+Windows created with this function must be destroyed with a call to wb_destroy_window().
+Optional style flags may be passed through parameter style.
+To enable additional messages in a particular window, include the WBC_NOTIFY style in the style parameter and use param to indicate
+which additional notification messages you want to process.
+
+This function may set the text and/or the tooltip (small hint window) of the window when it is created.
+To create a tooltip, text must be an array with two elements.
+The first one is the new caption (or NULL if one is not required) and the second one is the new tooltip (or NULL if one is not required).
+All classes support tooltips.
+
+Returns the handle of the newly created window or NULL or zero if an error occurs.',
+'wb_delete_items' => 'Deletes an item, a range of items, or all items from a control. Returns TRUE on success or FALSE if an error occurs.
+Control classes.
+
+This function applies to the following control classes: ListBox, ComboBox, ListView and TreeView.
+
+$items can be:
+integer    Deletes the specified item.
+array of integers    Deletes the specified items.
+zero    Deletes item zero.
+null    Deletes all items.',
+'wb_destroy_control' => 'Destroys a control created by wb_create_control().
+
+Returns TRUE on success or FALSE if an error occurs.
+
+Tip
+It is often preferable to hide a control instead of destroying it. To hide a window, use wb_set_visible() with parameter visible set to FALSE.',
+'wb_destroy_font' => 'Destroys a font.',
+'wb_destroy_image' => 'Destroys an image created by wb_create_image(), wb_create_mask() or wb_load_image().',
+'wb_destroy_timer' => 'Destroys a timer created with wb_create_timer().
+The window and the id parameters must be the same that were passed to wb_create_timer() when the timer was created.',
+'wb_destroy_window' => 'Destroys a window created by wb_create_window().
+
+Returns TRUE on success or FALSE if an error occurs.',
+'wb_draw_ellipse' => 'Draws a filled or hollow rectangle.
+The first parameter, target, may be a WinBinder object, a window handle, a drawing surface or a bitmap.
+
+xpos and ypos are the coordinates of the upper-left corner of the rectangle, in pixels.
+width and height are the dimensions of the rectangle. color is a RGB color value.
+Set filled to FALSE to draw a border. In this case, linewidth sets the width of the border, in pixels.
+A linewidth of zero sets the width to 1 pixel.
+
+Returns TRUE on success or FALSE if an error occurs.',
+'wb_draw_image' => 'Draws a bitmap. The first parameter, target, may be a WinBinder object, a window handle, a drawing surface or another bitmap.
+
+xpos and ypos are the coordinates of the upper-left corner, in pixels.
+These parameters default to zero. width and height are the dimensions of the rectangle.
+These parameters also default to zero. In this case the bitmap is drawn with its original size.
+The parameter transparentcolor may be used to indicate which color is to be made transparent.
+If is set to NOCOLOR (the default), no transparency is used and the image is opaque.
+Parameters xoffset and yoffset are optionally used to specify where the image will be drawn.
+
+Returns TRUE on success or FALSE if an error occurs.',
+'wb_draw_line' => 'Draws a straight line. The first parameter, target, may be a WinBinder object, a window handle, a drawing surface or a bitmap.
+
+The start and end points of the line are (x0, y0) and (x1, y1) respectively, in pixels.
+color is a RGB color value and linewidth is the width of the line, in pixels.
+A linewidth of zero sets the width to 1 pixel. Parameter linestyle accepts the values specified in the table below.
+
+0    Solid line (the default style)
+1    Dotted line
+2-7    Dashed lines with increasing lengths
+8    Line with alternating dashes and dots
+9    Line with alternating dashes and double dots
+
+Returns TRUE on success or FALSE if an error occurs.',
+'wb_draw_point' => 'Draws a point of color, setting the RGB color value of the pixel that exists at the given coordinates.
+The first parameter, source, may be a WinBinder object, a window handle, a drawing surface or a bitmap.
+
+Returns TRUE on success or FALSE if an error occurs.',
+'wb_draw_rect' => 'Draws a filled or hollow rectangle.
+The first parameter, target, may be a WinBinder object, a window handle, a drawing surface or a bitmap.
+
+xpos and ypos are the coordinates of the upper-left corner of the rectangle, in pixels.
+width and height are the dimensions of the rectangle. color is a RGB color value.
+Set filled to FALSE to draw a border.
+A linewidth of zero sets the width to 1 pixel.
+
+Returns TRUE on success or FALSE if an error occurs.',
+'wb_draw_text' => 'Draws a string. The first parameter, target, may be a WinBinder object, a window handle, a drawing surface or a bitmap.
+
+The text parameter is the string to be drawn.
+xpos and ypos are the coordinates of the upper-left corner, in pixels.
+width and height optionally provide a limit to the drawing area.
+If they are not provided or zero, there is no limit to the drawing area.
+To use a specific font, an identifier created with wb_create_font() must be used as the font argument.
+If font is NULL, negative or not given, the most recently created font is used.
+
+NOTE: To use the simplified call syntax (no width, no height) you must supply 4 or 5 parameters.',
+'wb_exec' => 'Opens or executes a command. The string passed to this function can be one of the following:.
+
+A WinBinder script.
+An executable file.
+A non-executable file associated with an application.
+A folder name. Passing a null or empty string opens the current folder.
+A help file or help file topic.
+An URL, e-mail, newsgroup, or another Internet client application.
+
+Optional parameters can be passed to the command or application through the variable param.',
+'wb_find_file' => 'Looks for a file in the Windows and System directories, in this order.
+If the file exists, return the complete path to it.
+If not, return filename.',
+'wb_get_address' => 'Returns the address (as an integer pointer) of the variable var.
+var can be a string, integer, boolean, or double.
+This function is specially suited to use with wb_peek() and wb_poke().',
+'wb_get_class' => 'Returns an integer that corresponds to the class of the object (control, window or menu) passed as the parameter.
+The class is passed as a parameter to functions wb_create_control() and wb_create_window().',
+'wb_get_control' => 'Returns an integer handle that corresponds to the WinBinder object (control, toolbar item or menu item) wbobject that has the supplied identifier id.
+This function is typically used to retrieve the handle of a child control in a dialog box or in a menu item.',
+'wb_get_enabled' => 'Returns TRUE if wbobject is enabled or FALSE otherwise.',
+'wb_get_enum_callback' => 'Enumerate windows, i think: https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-enumwindows',
+'wb_get_focus' => 'Returns a handle to the window or control that has the keyboard focus.',
+'wb_get_function_address' => 'Returns the address of a library function. fname is the function name and idlib identifies a library already loaded.
+The idlib identifier must have been obtained with a call to wb_load_library().
+If idlib is not set or is set to NULL, the last library sent to the function will be used.
+
+Name expansion:
+The function prepends and appends some special characters to the function name until it finds the function name,
+then it returns the function address or NULL if the function was not found.
+These special characters are the most common ones encountered in various types of libraries.
+
+For example, if fname is set to "MyFunction", wb_get_function_address() looks for the following function names, in order:
+
+MyFunction
+MyFunctionA
+MyFunctionW
+_MyFunction
+_MyFunctionA
+_MyFunctionW
+MyFunction@0, MyFunction@4, MyFunction@8... until MyFunction@80
+_MyFunction@0, _MyFunction@4, _MyFunction@8... until MyFunction@80
+
+The last two expansion options include a \'@\' character followed by the number of parameters times 4,
+which is a standard way to store function names inside DLLs. The loop starts from zero ("@0") and ends when it reaches 20 parameters ("@80").
+
+NOTE: Function names, including the expansion characters, are limited to 255 characters.',
+'wb_get_hook_callback' => 'Unused, i think its https://docs.microsoft.com/en-us/windows/win32/api/winuser/nc-winuser-hookproc',
+'wb_get_id' => 'Returns the integer identifier of the wbobject control.',
+'wb_get_image_data' => 'Returns a string of data containing a copy of the internal true-color representation of the given image.
+If compress4to3 is TRUE, every fourth byte of the original 32-bit data is skipped, yielding a RGB (24-bit) data string.
+This is required for image libraries such as FreeImage.',
+'wb_get_instance' => 'Detects a running instance of a WinBinder application.
+
+Detecting running instances
+
+Each main window of all WinBinder applications stores a 32-bit identifier that is calculated according to the initial window caption
+and is unique to that caption. wb_get_instance() will try to find, among all current top-level windows, a WinBinder window that was
+created with the same caption. The function returns TRUE if it finds the existing window or FALSE if it is does not.
+
+The function is effective even of the caption of the first instance of the application is changed at runtime because the 32-bit identifier
+does not change throughout the life of the application.
+
+If bringtofront is set to TRUE, the function optionally restores the window (if minimized)
+and brings the corresponding window to the front of other windows.',
+'wb_get_item_count' => 'Returns the number of items of wbobject.
+
+ComboBox    The number of items
+ListBox    The number of items
+ListView    The number of rows',
+'wb_get_item_list' => 'Returns an array with a list of the child controls in window or control wbobject. Each element is an integer identifier that represents a WinBinder object.',
+'wb_get_level' => 'Retrieves an integer representing the level of a control item.
+
+Retrieving states:
+This function currently returns the insertion level of the treeview node specified in item.',
+'wb_get_midi_callback' => 'returns a pointer to MidiOutProc (can also be used for MidiInProc, WaveInProc, WaveOutProc
+or any similar callback) for use with functions like midiOutOpen.',
+'wb_get_parent' => 'Returns the handle of the control parent if item specifies a control, or the node parent if item specifies a treeview node.',
+'wb_get_pixel' => 'Returns the RGB color value of the pixel at the given coordinates. The first parameter, source, may be a WinBinder object, a window handle, a drawing surface or a bitmap.
+
+Returns NOCOLOR if an error occurs.',
+'wb_get_position' => 'Returns an array with the position of the control or window related to its parent, in pixels.
+The first element is the horizontal position and the second is the vertical position.
+If clientarea is TRUE, the area returned will not include the title bar and borders.
+
+The default is FALSE.',
+'wb_get_registry_key' => 'Reads a string or integer value from the Windows registry item referenced by key, subkey and entry.
+The subkey may contain forward or reverse slashes.
+If entry is an empty string, a NULL value or is not supplied, the function retrieves the default value for the subkey.
+
+Values are always returned as strings.
+If the requested entry is an empty string, an empty string is returned.
+If the key does not exist in the registry, the function returns NULL.',
+'wb_get_selected' => 'Returns a value or array with the indices or identifiers of the selected elements or items in wbobject.
+
+Retrives:
+
+ComboBox    The index of the currently selected item.
+ListBox    The index of the currently selected item. If multiselected only the last on will be returned (use getText for all items text)
+ListView    An array with the indices of the selected items. ¹
+TabControl    The index of the selected tab page.
+TreeView    The handle of the currently selected node.
+Window    0 (zero).
+Other controls    0 (zero).',
+'wb_get_size' => 'Gets the dimensions of a control, window, image or string.
+The image handle must have been obtained with wb_create_image(), wb_create_mask() or wb_load_image().
+
+This function generally returns an array where the first element is the width and the second is the height.
+Measurements are in pixels. If param is TRUE, the area returned will not include the title bar and borders.
+Default is FALSE.
+
+The function will return the integer WBC_MINIMIZED instead of an array if the requested window is minimized, or NULL on error.
+
+If object is a ListView handle and param is TRUE, the function returns an array with the widths of the column headers.
+If param is omitted or FALSE, the function behaves normally like described above
+
+If object is a text string, param is optionally used to pass the handle to a font created with wb_create_font().
+If param is null or not used, the default font is used. Object types accepted
+
+object may be one of the following:
+
+A control handle
+A window handle
+An icon handle
+A bitmap handle
+The name of a bitmap file
+The name of an icon file
+A text string',
+'wb_get_state' => 'Retrieves an integer representing the current state of a control item.
+Retrieving states.
+
+This function currently returns the expanded or collapsed state of a treeview node indicated by item.
+It returns TRUE if the node is expanded and FALSE if it is collapsed.',
+'wb_get_system_info' => 'Returns information about the current system and application, according to the string info.
+
+The parameter info is not case-sensitive.
+
+"appmemory"    The total memory used by the application¹
+"backgroundcolor"    The main face color for Windows dialog boxes and controls
+"colordepth"    The current color depth in bits per pixel
+"commandline"    The original Windows command line including the executable file
+"computername"    The name of the computer inside the network
+"consolemode"    1 indicates that console mode (DOS box) is active, 0 otherwise
+"diskdrives"    The list of all available disk drives
+"exepath"    The path to the main executable (PHP.EXE)
+"fontpath"    The current font path
+"freememory"    The available physical memory
+"gdiobjects"    The number of currently allocated GDI handles
+"instance"    The instance identifier of the current application
+"osnumber"    The numeric OS version number
+"ospath"    The current OS path
+"osversion"    The complete OS version name
+"pgmpath"    The default OS application path
+"screenarea"    The total area (x, y, width, height) of the screen, in pixels
+"systemfont"    The common (default) system font for dialog boxes
+"systempath"    The OS system path
+"temppath"    The path used by the OS to hold temporary files
+"totalmemory"    The total physical memory installed
+"username"    The name of the currently logged user
+"userobjects"    The number of currently allocated USER handles
+"workarea"    The valid area (x, y, width, height) of the screen, in pixels',
+'wb_get_value' => 'Retrieves the value of a control or control item. The item and subitem parameters are set to -1 if absent.',
+'wb_get_visible' => 'Tells whether an object is visible. Returns TRUE if wbobject is visible and FALSE otherwise.',
+'wb_load_image' => 'Loads the image, icon or cursor file filename from disk and returns a handle to it.
+If filename is an icon library, index specifies the index of the image inside the file. Default index is 0.
+
+If source is an icon or a cursor, if param is 0 (the default), the function returns a large icon or cursor
+if param is 1, it returns a small icon or cursor; if param is -1, the function returns the default icon or cursor.
+
+NOTE: The resulting image must be destroyed by a call to wb_destroy_image().',
+'wb_load_library' => 'Loads a DLL into memory. Returns an integer identifying libname. If libname is NULL then returns the identifier of the last library returned. The function accepts fully qualified and raw names. Returns NULL if no library was found.
+
+Name expansion
+
+The function appends some characters to the library name until it finds the library, then it returns an identifier for that library,
+or NULL if the library was not found. If libname is "LIB", for example, the function looks for the following files, in order:
+
+LIB
+LIB.DLL
+LIB32
+LIB32.DLL
+LIB.EXE
+LIB32.EXE
+
+For each name, the function looks in the following locations:
+
+The application directory;
+The current directory;
+The 32-bit System directory (Usually C:\WINDOWS\SYSTEM32 or C:\WINNT\SYSTEM32);
+The 16-bit System directory (Usually C:\WINDOWS\SYSTEM or C:\WINNT\SYSTEM);
+The Windows directory (Usually C:\WINDOWS or C:\WINNT);
+The directory list contained in the PATH environment variable.',
+'wb_main_loop' => 'Enters the Windows main loop.
+This function must be called if the application has a window.
+The call to wb_main_loop() must be the last executable statement of the PHP script:
+All statements after it will be ignored.
+The return value is used for debugging purposes only and may be ignored.',
+'wb_message_box' => 'Creates and displays a message box under the style supplied and returns a value according to the button pressed.
+
+Value for style & What is displayed
+
+WBC_OK (the default) - An OK button.
+
+WBC_INFO - An information icon and an OK button.
+
+WBC_WARNING - An exclamation point icon and an OK button.
+
+WBC_STOP - A stop icon and an OK button.
+
+WBC_QUESTION - A question mark icon and an OK button.
+
+WBC_OKCANCEL - A question mark icon, an OK button and a Cancel button.
+
+WBC_YESNO - A question mark icon, a Yes button and a No button.
+
+WBC_YESNOCANCEL - A question mark icon, a Yes button, a No button and a Cancel button.',
+'wb_peek' => 'Gets the contents of a memory area pointed by address.
+If length is empty or zero, returns bytes up to the first NUL character (zero-character) or up to 32767 bytes, whichever comes first.
+If length is greater than zero, returns length bytes.',
+'wb_play_sound' => 'Loads and plays a sound file or system sound.
+Parameter source may be a sound file name or a system sound constant.
+Parameter command may be used used to play a WAV sound synchronously or in a loop.
+A synchronous sound stops the currently playing sound and suspends the application control until it finishes.
+A MIDI soundtrack always stops any currenly playing MIDI soundtrack.
+To stop one or more sounds, use function wb_stop_sound().
+
+Value of $source:
+MIDI file name - Load and play the specified MIDI file.
+
+WBC_OK - Default system sound
+
+WBC_INFO - System information sound
+
+WBC_WARNING - Warning sound
+
+WBC_STOP - Error sound
+
+WBC_QUESTION - Question sound
+
+WBC_BEEP - Default beep (via the computer speaker)
+
+Value of $command:
+null or empty - Load and play the specified WAV sound file.
+
+\'sync\' - Load and play the specified WAV sound file synchronously.
+
+\'loop\' - Load and loop the specified WAV sound file.
+
+Returns TRUE on success or FALSE otherwise.',
+'wb_poke' => 'Sets the contents of a memory area pointed by address.',
+'wb_refresh' => 'Refreshes or redraws the WinBinder object wbobject, forcing an immediate redraw if the parameter now is TRUE (the default).
+If now is FALSE, the redraw command is posted to the Windows message queue.
+
+Optional parameters xpos, ypos, width and height will make the function invalidate and redraw only the specified part of the screen or control.
+
+Returns TRUE on success or FALSE if an error occurs.',
+'wb_release_library' => 'Releases the DLL identified by idlib from memory. The idlib identifier must have been obtained with a call to wb_load_library().
+
+NOTE: calling this function is usually not necessary.',
+'wb_save_image' => 'Saves the bitmap image to file filename.
+The image handle must have been obtained with wb_create_image(), wb_create_mask() or wb_load_image().
+
+Returns TRUE on success or FALSE if an error occurs.',
+'wb_send_message' => 'Sends a Windows message to the HWND handle of the WinBinder object wbobject.
+The parameters wparam and lparam, as well as the return value, depend on message.
+See SendMessage() in the Windows API documentation for more information.
+
+The following constant may be used as the wbobject parameter:
+
+0xFFFF
+
+This constant is the value of HWND_BROADCAST in the Windows API. For more information consult the Windows API documentation.',
+'wb_set_area' => 'Sets a specific area in a window. Possible values for type are:.
+
+WBC_TITLE        Sets the area used to drag a borderless window with the mouse.
+
+WBC_MINSIZE      Sets the minimum window size in a resizable window.
+                 Parameters x and y are ignored.
+                 If width is zero, no minimum horizontal dimension is set.
+                 if height is zero, no minimum vertical dimension is set.
+
+WBC_MAXSIZE      Sets the maximum window size in a resizable window.
+                 Parameters x and y are ignored.
+                 If width is zero, no maximum horizontal dimension is set.
+                 if height is zero, no maximum vertical dimension is set.',
+'wb_set_cursor' => 'Set or change the mouse cursor shape of a window, control, a whole class or application-wide. *
+The cursor can be set for any window class and for control classes ImageButton, InvisibleArea (deprecated), HyperLink and EditBox.
+
+The source parameter can be a cursor handle from function wb_load_image() or one of the preset system cursors:
+arrow, cross, finger, forbidden, help, ibeam, null (no cursor), sizeall, sizenesw, sizens, sizenwse, sizewe, uparrow, wait and waitarrow.',
+'wb_set_enabled' => 'Enables or disables control according to the value of enabled.
+
+Returns TRUE on success or FALSE if an error occurs.',
+'wb_set_focus' => 'Assigns the keyboard focus to wbobject. Returns TRUE on success or FALSE if an error occurs.',
+'wb_set_font' => 'Sets the font of control. font is a unique integer value returned by wb_create_font().
+If font is zero or not given, the most recently created font is used.
+If font is a negative number, it means the system default font.
+
+Returns TRUE on success or FALSE if an error occurs.
+
+Tip:
+To check the system font name and size, call wb_get_system_info() using ("systemfont") as the info parameter.',
+'wb_set_handler' => 'Assigns the callback function fn_handler to window.
+The handler function may be a regular PHP function or class method that is used to process events for this particular window.
+wb_set_handler() must be called whenever the window needs to process messages and events from its controls.
+
+To specify a function as the handler, pass the function name in fn_handler.
+If the handler is a class method, fn_handler must be an array which first element is the name of the object and the second one is the method name.
+
+For additional information, see callback functions and window handlers.',
+'wb_set_image' => 'Assigns the image source to the WinBinder object wbobject.
+Parameter source can be either an image, icon or cursor handle or a path to an image file name.
+If a handle, it must have been obtained with wb_create_image(), wb_create_mask() or wb_load_image().
+The optional parameter transparentcolor tells the function which color is to be considered transparent.
+The default is NOCOLOR (no transparency).
+index is used to select a specific image from a multi-image file (such as a DLL or executable).
+
+If source is an icon or a cursor, if param is 0 (the default), the function sets a large icon or cursor.
+if param is 1, it sets a small icon or cursor; if param is -1, the function sets the default icon or cursor.
+For minimized windows, this function will also change the icon that is displayed on the task bar.
+
+Returns TRUE on success or FALSE if an error occurs.',
+'wb_set_item_image' => 'Retrieves a portion of the image already assigned to a control and assigns it to a item (and optional subitem).
+The image must be previously assigned with wb_set_image(). The portion which is assigned is specified by index.
+
+Returns TRUE on success or FALSE if an error occurs.',
+'wb_set_location' => 'Sets the location of an HTMLControl or sends a special command to it.
+
+Returns TRUE on success or FALSE if an error occurs (except when using "cmd:busy" as explained below).
+
+"cmd:back"    Go to previously visited page.
+"cmd:forward"    Go to a page previously viewed before issuing the back command.
+"cmd:refresh"    Redraw the current page.
+"cmd:stop"    Stop the current action, like loading a page.
+"cmd:busy"    Return TRUE if the browser is busy or FALSE if idle.
+"cmd:blank"    Clear the page.',
+'wb_set_position' => 'Moves the object wbobject to the coordinates xpos, ypos in relation to its parent window.
+If both xpos and ypos have the value WBC_CENTER or are not given, the window is centered on its parent window.
+
+Returns TRUE on success or FALSE if an error occurs.',
+'wb_set_range' => 'Sets the valid range of values (vmin and vmax) of a control. Valid classes are Gauge, ScrollBar, Slider and Spinner.
+
+Returns TRUE on success or FALSE if an error occurs.',
+'wb_set_registry_key' => 'Reads a string or integer value from the Windows registry item referenced by key, subkey and entry.
+The subkey may contain forward or reverse slashes.
+If entry is an empty string, a NULL value or is not supplied, the function retrieves the default value for the subkey.
+
+Values are always returned as strings.
+If the requested entry is an empty string, an empty string is returned.
+If the key does not exist in the registry, the function returns NULL.',
+'wb_set_size' => 'Sizes the object wbobject to width and height pixels.
+
+Parameters width and height may be used as follows:
+
+Positive integer     window or control   Sets the window or control size to width and height pixels.
+WBC_NORMAL           window              Restores the window, if it is not already.
+WBC_MINIMIZED        window              Minimizes the window, if it is not already.
+WBC_MAXIMIZED        window              Maximizes the window, if it is not already.
+Array of integers    ListView            Changes the column widths of the control.',
+'wb_set_state' => 'Sets the state of a control item (a treeview node). Returns TRUE on success or FALSE if an error occurs.
+
+Setting states:
+This function can currently set the expanded or collapsed state of the treeview node indicated by item.
+Set state to TRUE to expand the node or FALSE to collapse it.',
+'wb_set_style' => 'Sets or resets one or more styles of the WinBinder object wbobject.
+Only a limited set of styles is supported due to Windows limitations.
+
+AppWindow
+ResizableWindow
+PopupWindow
+NakedWindow     WBC_TOP    Make the window a topmost window.
+
+ListView    WBC_LINES    Display grid lines around items
+ListView WBC_CHECKBOXES    Display check boxes in the first column of all items
+Slider    WBC_LINES    Show tick marks. The control must be created with the WBC_LINES style
+TreeView    WBC_LINES    Draw dotted lines linking children objects to their parents',
+'wb_set_visible' => 'Shows or hides the WinBinder object wbobject according to the value of visible.
+
+Returns TRUE on success or FALSE if an error occurs.',
+'wb_sort' => 'Sorts the contents of a control, a control item, a ListView column or a sub-item.
+If the ascending parameter is TRUE (the default), the control or column is ordered starting with the lowest value or string, and vice-versa.
+
+The sorting criteria between two given items, item1 and item2, are as follows:
+
+String or number    String    Alphabetical order according to system locale
+String or number    Empty    The non-empty item is always greater than the empty one
+Number    Number    Numeric comparison
+
+In a ListView, wb_sort() sorts the column indexed by subitem. The index of the first column is zero.
+
+Returns TRUE on success or FALSE if an error occurs.',
+'wb_stop_sound' => 'Stops one or more sounds that were started with wb_play_sound().
+
+null, empty or \'all\' - Stop all sounds.
+
+\'wav\' or \'wave\' - Stop all WAV sounds.
+
+\'mid\' or \'midi\' - Stop all MIDI sounds.
+
+Returns TRUE on success or FALSE otherwise.',
+'wb_sys_dlg_color' => 'Displays the standard Select Color dialog box. Returns a RGB value which is the selected color value or NOCOLOR if the dialog box was canceled. Returns NULL if not successful.
+
+Parameters:
+
+parent is a handle to the WinBinder object that will serve as the parent for the dialog box.
+title is currently ignored.
+color is an optional RGB value used to initialize the dialog box.',
+'wb_sys_dlg_path' => 'Displays the standard Select Path dialog box. Returns the name of the selected path, if any, or a blank string if the dialog box was canceled. Returns NULL if not successful.
+
+Parameters:
+
+parent is a handle to the WinBinder object that will serve as the parent for the dialog box.
+title is an optional string to be displayed in the dialog box.
+path is an optional folder used to initialize the dialog box.',
+'wb_wait' => 'This function creates a delay and verifies if mouse buttons are pressed and/or the keyboard state.
+This function is useful for lengthy operations.
+In this case, wb_wait guarantees that the message control is sent back to the main loop, avoiding an unpleasant "freezing" effect.
+Using this function also provides an way to easily exit lengthy operations by constantly monitoring the keyboard and mouse.
+
+Parameters:
+WBC_MOUSEDOWN
+WBC_MOUSEUP
+WBC_KEYDOWN
+WBC_KEYUP',
+'wbtemp_get_listview_columns' => 'Get the number of columns in the pwbo control,',
+'wbtemp_get_listview_item_checked' => 'Return TRUE if the item\'s checkbox is checked',
 'wddx_add_vars' => 'Add variables to a WDDX packet with the specified ID',
 'wddx_deserialize' => 'Unserializes a WDDX packet',
 'wddx_packet_end' => 'Ends a WDDX packet with the specified ID',
@@ -17273,6 +18165,12 @@ Tries to clone the Exception, which results in Fatal error.',
 'weakref::get' => 'Returns the object pointed to by the weak reference',
 'weakref::release' => 'Releases a previously acquired reference',
 'weakref::valid' => 'Checks whether the object referenced still exists',
+'WeakReference::__construct' => 'This method exists only to disallow instantiation of the WeakReference
+class. Weak references are to be instantiated with the factory method
+<b>WeakReference::create()</b>.',
+'WeakReference::create' => 'Create a new weak reference.',
+'WeakReference::get' => 'Gets a weakly referenced object. If the object has already been
+destroyed, NULL is returned.',
 'webObj::convertToString' => 'Saves the object to a string.  Provides the inverse option for
 updateFromString.',
 'webObj::free' => 'Free the object properties and break the internal references.
