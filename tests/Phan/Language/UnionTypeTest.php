@@ -689,4 +689,75 @@ final class UnionTypeTest extends BaseTest
     {
         return GenericArrayType::fromElementType($type, $is_nullable, GenericArrayType::KEY_MIXED);
     }
+
+    public function testFunctionSignatureMapConsistency() : void
+    {
+        $signatures_dir = dirname(__DIR__, 3) . '/src/Phan/Language/Internal';
+        $php80_map = UnionType::internalFunctionSignatureMap(80000);
+        $php74_map = UnionType::internalFunctionSignatureMap(70400);
+        $php73_map = UnionType::internalFunctionSignatureMap(70300);
+        $php72_map = UnionType::internalFunctionSignatureMap(70200);
+        $php71_map = UnionType::internalFunctionSignatureMap(70100);
+        $php70_map = UnionType::internalFunctionSignatureMap(70000);
+        $php56_map = UnionType::internalFunctionSignatureMap(50600);
+
+        $php80_delta = require("$signatures_dir/FunctionSignatureMap_php80_delta.php");
+        $php74_delta = require("$signatures_dir/FunctionSignatureMap_php74_delta.php");
+        $php73_delta = require("$signatures_dir/FunctionSignatureMap_php73_delta.php");
+        $php72_delta = require("$signatures_dir/FunctionSignatureMap_php72_delta.php");
+        $php71_delta = require("$signatures_dir/FunctionSignatureMap_php71_delta.php");
+        $php70_delta = require("$signatures_dir/FunctionSignatureMap_php70_delta.php");
+        $this->assertDeltasApply($php80_map, $php74_map, $php80_delta, 'php80_delta');
+        $this->assertDeltasApply($php74_map, $php73_map, $php74_delta, 'php74_delta');
+        $this->assertDeltasApply($php73_map, $php72_map, $php73_delta, 'php73_delta');
+        $this->assertDeltasApply($php72_map, $php71_map, $php72_delta, 'php72_delta');
+        $this->assertDeltasApply($php71_map, $php70_map, $php71_delta, 'php71_delta');
+        $this->assertDeltasApply($php70_map, $php56_map, $php70_delta, 'php70_delta');
+    }
+
+    /**
+     * @param array<string, array<mixed,string>> $new_map
+     * @param array<string, array<mixed,string>> $old_map
+     * @param array<string, array<string, array<mixed,string>>> $deltas
+     */
+    private function assertDeltasApply(array $new_map, array $old_map, array $deltas, string $name) : void
+    {
+        $errors = '';
+        $new_deltas = $deltas['new'];
+        $old_deltas = $deltas['old'];
+        $new_deltas = array_change_key_case($new_deltas, \CASE_LOWER);
+        $old_deltas = array_change_key_case($old_deltas, \CASE_LOWER);
+        foreach ($new_deltas as $function_key => $new_signature) {
+            if (($old_deltas[$function_key] ?? null) === $new_deltas) {
+                $errors .= "For $function_key: Old deltas in $name were the same as new deltas\n";
+            }
+            $actual_new_signature = $new_map[$function_key] ?? null;
+            if (!isset($old_deltas[$function_key]) && isset($old_map[$function_key])) {
+                $errors .= "Expected to remove $function_key from older signature map for $name\n";
+            }
+            if (!$actual_new_signature) {
+                $errors .= "Missing $function_key for $name in new deltas\n";
+                continue;
+            }
+            if ($actual_new_signature !== $new_signature) {
+                $errors .= "Different $function_key for $name from new deltas :\n " . json_encode($actual_new_signature) . " !=\n " . json_encode($new_signature) . "\n";
+                continue;
+            }
+        }
+        foreach ($old_deltas as $function_key => $old_signature) {
+            $actual_old_signature = $old_map[$function_key] ?? null;
+            if (!isset($new_deltas[$function_key]) && isset($new_map[$function_key])) {
+                $errors .= "Expected to remove $function_key from newer signature map for $name\n";
+            }
+            if (!$actual_old_signature) {
+                $errors .= "Missing $function_key for $name in old deltas\n";
+                continue;
+            }
+            if ($actual_old_signature !== $old_signature) {
+                $errors .= "Different $function_key for $name from old deltas :\n " . json_encode($actual_old_signature) . " !=\n " . json_encode($old_signature) . "\n";
+                continue;
+            }
+        }
+        $this->assertSame('', $errors);
+    }
 }

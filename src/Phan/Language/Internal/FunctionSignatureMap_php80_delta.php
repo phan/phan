@@ -81,7 +81,7 @@ return [
 'old' => [
 'com_load_typelib' => ['bool', 'typelib_name'=>'string', 'case_insensitive='=>'bool'],
 'create_function' => ['string', 'args'=>'string', 'code'=>'string'],
-'each' => ['array', '&rw_arr'=>'array'],
+'each' => ['array', '&r_arr'=>'array'],
 'gmmktime' => ['int|false', 'hour='=>'int', 'min='=>'int', 'sec='=>'int', 'mon='=>'int', 'day='=>'int', 'year='=>'int'],
 'gmp_random' => ['GMP', 'limiter='=>'int'],
 'image2wbmp' => ['bool', 'im'=>'resource', 'filename='=>'?string', 'threshold='=>'int'],

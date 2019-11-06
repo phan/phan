@@ -15,6 +15,9 @@ New features(Analysis):
 + Make `isset($x->prop)` imply `$x` is an `object`.
 + Make `isset($this->prop[$x])` imply `$this->prop` is not the empty array shape. (#3467)
 
+Maintenance:
++ Update function signature maps for internal signatures.
+
 Nov 03 2019, Phan 2.4.1
 -----------------------
 
