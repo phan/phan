@@ -10,8 +10,8 @@ call_user_func(
         } else {
             echo strlen($data);
         }
-        // This is still a string.
-        if (array_key_exists(5, $str)) {  // The call should warn
+        // this has an unknown type
+        if (array_key_exists(5, $str)) {
             echo count($str);
         }
     },
@@ -25,7 +25,7 @@ call_user_func(
      */
     function($data, $str) {
         if (array_key_exists('otherKey', $data)) {
-            echo strlen($data);
+            echo strlen($data);  // should warn, $data cannot be a string.
         } else {
             echo strlen($data);
             var_export($data['otherKey']);

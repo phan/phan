@@ -923,7 +923,14 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                 return $this->removeFalseyFromVariable($var_node, $context, true);
             }
         } elseif ($var_node->kind === ast\AST_PROP) {
-            return $this->removeFalseyFromVariable($var_node, $context, true);
+            // e.g. $var_node is the representation of $this->prop or $x->prop.
+            $context = $this->removeFalseyFromVariable($var_node, $context, true);
+            $expr = $var_node->children['expr'];
+            if ($expr instanceof Node) {
+                // Also imply $x is an object after !empty($x->prop)
+                return $this->removeTypesNotSupportingAccessFromVariable($expr, $context, ConditionVisitor::ACCESS_IS_OBJECT);
+            }
+            return $context;
         } else {
             $context = $this->checkComplexNegatedEmpty($var_node);
         }

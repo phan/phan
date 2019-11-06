@@ -26,6 +26,7 @@ use Phan\Language\Context;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
+use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\LiteralStringType;
@@ -264,23 +265,30 @@ trait ConditionVisitorUtil
 
     /**
      * Returns the type after removing all types that are empty or don't support property or array access
+     * @param 1|2|3|4 $access_type ConditionVisitor::ACCESS_IS_*
      */
-    public static function asTypeSupportingAccess(UnionType $type) : UnionType
+    public static function asTypeSupportingAccess(UnionType $type, int $access_type) : UnionType
     {
-        return $type->asMappedListUnionType(/** @return list<Type> */ static function (Type $type) : array {
+        $type = $type->asMappedListUnionType(/** @return list<Type> */ static function (Type $type) use ($access_type) : array {
+            if ($access_type === ConditionVisitor::ACCESS_IS_OBJECT) {
+                if (!$type->isPossiblyObject()) {
+                    return [];
+                }
+            }
             if (!$type->isPossiblyTruthy()) {
-                /* causes false positives when combining types
+                // causes false positives when combining types
                 if ($type instanceof ArrayShapeType) {
                     // Convert array{} -> non-empty-array, null -> no types
                     // (useful guess with loops or references)
-                    // phan-suppress-next-line PhanThrowTypeAbsentForCall
-                    return [Type::fromFullyQualifiedString('non-empty-array')];
+                    return UnionType::typeSetFromString('non-empty-array');
                 }
-                 */
                 return [];
             }
             if ($type instanceof ScalarType) {
                 if ($type instanceof StringType) {
+                    if ($access_type !== ConditionVisitor::ACCESS_IS_SET) {
+                        return [];
+                    }
                     if ($type instanceof LiteralStringType && $type->getValue() === '') {
                         // Can't access an offset of ''
                         return [];
@@ -294,20 +302,29 @@ trait ConditionVisitorUtil
             }
             return [$type->asNonFalseyType()];
         });
+        if (!$type->hasRealTypeSet()) {
+            return $type->withRealTypeSet(UnionType::typeSetFromString(ConditionVisitor::DEFAULTS_FOR_ACCESS_TYPE[$access_type]));
+        }
+        return $type;
     }
 
     /**
      * Remove empty types not supporting 0 or more levels of array/property access from the variable.
      */
-    final protected function removeTypesNotSupportingAccessFromVariable(Node $var_node, Context $context) : Context
+    final protected function removeTypesNotSupportingAccessFromVariable(Node $var_node, Context $context, int $access_type) : Context
     {
         return $this->updateVariableWithConditionalFilter(
             $var_node,
             $context,
-            static function (UnionType $type) : bool {
-                return $type->hasTypeMatchingCallback(static function (Type $type) : bool {
+            static function (UnionType $type) use ($access_type) : bool {
+                return $type->hasTypeMatchingCallback(static function (Type $type) use ($access_type) : bool {
                     if ($type->isPossiblyFalsey()) {
                         return true;
+                    }
+                    if ($access_type === ConditionVisitor::ACCESS_IS_OBJECT) {
+                        if (!$type->isPossiblyObject()) {
+                            return true;
+                        }
                     }
                     if ($type instanceof ResourceType) {
                         return true;
@@ -319,8 +336,8 @@ trait ConditionVisitorUtil
                     return false;
                 });
             },
-            static function (UnionType $type) : UnionType {
-                return self::asTypeSupportingAccess($type);
+            static function (UnionType $type) use ($access_type) : UnionType {
+                return self::asTypeSupportingAccess($type, $access_type);
             },
             true,
             false
