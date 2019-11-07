@@ -315,6 +315,8 @@ class UnionType implements Serializable
     }
 
     /**
+     * Returns a list of unique types in the provided type list.
+     *
      * @param list<Type> $type_list
      * @return list<Type>
      * @phan-pure
@@ -322,6 +324,14 @@ class UnionType implements Serializable
     public static function getUniqueTypes(array $type_list) : array
     {
         $new_type_list = [];
+        if (\count($type_list) >= 8) {
+            // This approach is faster, but only when there are 8 or more types (tested in php 7.3)
+            // See https://github.com/phan/phan/pull/3475#issuecomment-550570579
+            foreach ($type_list as $type) {
+                $new_type_list[\spl_object_id($type)] = $type;
+            }
+            return \array_values($new_type_list);
+        }
         foreach ($type_list as $type) {
             if (!\in_array($type, $new_type_list, true)) {
                 $new_type_list[] = $type;
@@ -3540,14 +3550,16 @@ class UnionType implements Serializable
     public function genericArrayElementTypes() : UnionType
     {
         // This is frequently called, and has been optimized
-        $builder = new UnionTypeBuilder();
+        $result = [];
         $type_set = $this->type_set;
         foreach ($type_set as $type) {
             if ($type instanceof GenericArrayInterface) {
                 if ($type instanceof GenericArrayType) {
-                    $builder->addType($type->genericArrayElementType());
+                    $result[] = $type->genericArrayElementType();
                 } else {
-                    $builder->addUnionType($type->genericArrayElementUnionType());
+                    foreach ($type->genericArrayElementUnionType()->getTypeSet() as $inner_type) {
+                        $result[] = $inner_type;
+                    }
                 }
             }
         }
@@ -3565,15 +3577,15 @@ class UnionType implements Serializable
 
         if (\in_array($array_type_nullable, $type_set, true)) {
             // TODO: More consistency in what causes this check to infer null
-            $builder->addType($mixed_type);
-            $builder->addType($null_type);
+            $result[] = $mixed_type;
+            $result[] = $null_type;
         } elseif (\in_array($array_type_nonnull, $type_set, true) ||
             // If array is in there, then it can be any type
             \in_array($mixed_type, $type_set, true)) {
-            $builder->addType($mixed_type);
+            $result[] = $mixed_type;
         }
 
-        return $builder->getPHPDocUnionType();
+        return UnionType::of($result);
     }
 
     /**

@@ -6,7 +6,6 @@ use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
-use Phan\Language\UnionTypeBuilder;
 
 /**
  * Phan's representation of the type for `array`.
@@ -61,29 +60,29 @@ class ArrayType extends IterableType
      */
     public static function combineArrayTypesMerging(UnionType $union_type) : UnionType
     {
-        $result = new UnionTypeBuilder();
+        $result = [];
         $array_shape_types = [];
         foreach ($union_type->getTypeSet() as $type) {
             if ($type instanceof GenericArrayInterface) {
                 if ($type instanceof ArrayShapeType) {
                     $array_shape_types[] = $type;
                 } else {
-                    // @phan-suppress-next-line PhanTypeMismatchArgument TODO support intersection types
-                    $result->addType($type);
+                    $result[] = $type;
                 }
             } elseif ($type instanceof ArrayType) {
                 return UnionType::of([$type], $union_type->getRealTypeSet());
             }
         }
-        if ($result->isEmpty()) {
+        if (!$result) {
             return UnionType::of([ArrayShapeType::union($array_shape_types)], $union_type->getRealTypeSet());
         }
         foreach ($array_shape_types as $type) {
             foreach ($type->withFlattenedArrayShapeOrLiteralTypeInstances() as $type_part) {
-                $result->addType($type_part);
+                $result[] = $type_part;
             }
         }
-        return UnionType::of($result->getTypeSet(), $union_type->getRealTypeSet());
+        // @phan-suppress-next-line PhanPartialTypeMismatchArgument
+        return UnionType::of($result, $union_type->getRealTypeSet());
     }
 
     /**
@@ -110,15 +109,14 @@ class ArrayType extends IterableType
      */
     private static function combineArrayTypeListsOverriding(array $left_types, array $right_types, bool $is_assignment) : array
     {
-        $result = new UnionTypeBuilder();
+        $result = [];
         $left_array_shape_types = [];
         foreach ($left_types as $type) {
             if ($type instanceof GenericArrayInterface) {
                 if ($type instanceof ArrayShapeType) {
                     $left_array_shape_types[] = $type;
                 } else {
-                    // @phan-suppress-next-line PhanTypeMismatchArgument TODO support intersection types
-                    $result->addType($type);
+                    $result[] = $type;
                 }
             } elseif ($type instanceof ArrayType) {
                 return [ArrayType::instance(false)];
@@ -130,14 +128,13 @@ class ArrayType extends IterableType
                 if ($type instanceof ArrayShapeType) {
                     $right_array_shape_types[] = $type;
                 } else {
-                    // @phan-suppress-next-line PhanTypeMismatchArgument TODO support intersection types
-                    $result->addType($type);
+                    $result[] = $type;
                 }
             } elseif ($type instanceof ArrayType) {
                 return [$type];
             }
         }
-        if ($result->isEmpty()) {
+        if (!$result) {
             if (\count($left_array_shape_types) === 0) {
                 return $right_array_shape_types;
             }
@@ -151,10 +148,11 @@ class ArrayType extends IterableType
         }
         foreach (\array_merge($left_array_shape_types, $right_array_shape_types) as $type) {
             foreach ($type->withFlattenedArrayShapeOrLiteralTypeInstances() as $type_part) {
-                $result->addType($type_part);
+                $result[] = $type_part;
             }
         }
-        return $result->getTypeSet();
+        // @phan-suppress-next-line PhanPartialTypeMismatchArgument
+        return UnionType::getUniqueTypes($result);
     }
 
     /**
@@ -169,21 +167,21 @@ class ArrayType extends IterableType
      */
     public static function combineArrayShapeTypesWithField(UnionType $left, $field_dim_value, UnionType $field_type) : UnionType
     {
-        $result = new UnionTypeBuilder();
+        $result = [];
         $left_array_shape_types = [];
         foreach ($left->getTypeSet() as $type) {
             if ($type instanceof ArrayShapeType) {
                 $left_array_shape_types[] = $type;
             } else {
-                $result->addType($type);
+                $result[] = $type;
             }
         }
-        $result->addType(ArrayShapeType::combineWithPrecedence(
+        $result[] = ArrayShapeType::combineWithPrecedence(
             ArrayShapeType::fromFieldTypes([$field_dim_value => $field_type], false),
             // TODO: Add possibly_undefined annotations in union
             ArrayShapeType::union($left_array_shape_types)
-        ));
-        return $result->getPHPDocUnionType();
+        );
+        return UnionType::of($result);
     }
 
     protected function canCastToNonNullableType(Type $type) : bool
