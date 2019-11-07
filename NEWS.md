@@ -14,7 +14,7 @@ New features(Analysis):
   Make `isset($x['literal string'])` imply argument is a `non-empty-array` or `object`, and not a `string`.
 + Make `isset($x->prop)` imply `$x` is an `object`.
 + Make `isset($this->prop[$x])` imply `$this->prop` is not the empty array shape. (#3467)
-+ Improve worst-case time of deduplicating unique types in a union type (suggested in #3475)
++ Improve worst-case time of deduplicating unique types in a union type (#3477, suggested in #3475)
 
 Maintenance:
 + Update function signature maps for internal signatures.
