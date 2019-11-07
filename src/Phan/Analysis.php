@@ -341,7 +341,29 @@ class Analysis
     public static function loadMethodPlugins(CodeBase $code_base) : void
     {
         $plugin_set = ConfigPluginSet::instance();
-        foreach ($plugin_set->getReturnTypeOverrides($code_base) as $fqsen_string => $closure) {
+        $return_type_overrides = $plugin_set->getReturnTypeOverrides($code_base);
+        $return_type_override_fqsen_strings = [];
+        foreach ($return_type_overrides as $fqsen_string => $unused_closure) {
+            if (\stripos($fqsen_string, '::') !== false) {
+                $fqsen = null;
+                try {
+                    $fqsen = FullyQualifiedMethodName::fromFullyQualifiedString($fqsen_string);
+                } catch (FQSENException $e) {
+                    \fprintf(STDERR, "getReturnTypeOverrides returned an invalid FQSEN %s: %s\n", $fqsen_string, $e->getMessage());
+                } catch (InvalidArgumentException $e) {
+                    \fprintf(STDERR, "getReturnTypeOverrides returned an invalid FQSEN %s: %s\n", $fqsen_string, $e->getMessage());
+                }
+
+                if ($fqsen !== null) {
+                    // The FQSEN that's actually in the code base is allowed to differ from what the plugin used as an array key.
+                    // Thus, we use $fqsen->__toString() rather than $fqsen_string.
+                    $return_type_override_fqsen_strings[$fqsen->__toString()] = true;
+                }
+            }
+        }
+
+        $methods_by_defining_fqsen = null;
+        foreach ($return_type_overrides as $fqsen_string => $closure) {
             try {
                 if (\stripos($fqsen_string, '::') !== false) {
                     $fqsen = FullyQualifiedMethodName::fromFullyQualifiedString($fqsen_string);
@@ -351,8 +373,22 @@ class Analysis
                     if ($code_base->hasClassWithFQSEN($class_fqsen)) {
                         // This is an override of a method.
                         if ($code_base->hasMethodWithFQSEN($fqsen)) {
-                            $method = $code_base->getMethodByFQSEN($fqsen);
-                            $method->setDependentReturnTypeClosure($closure);
+                            $methods_by_defining_fqsen = $methods_by_defining_fqsen ?? $code_base->getMethodsGroupedByDefiningFQSEN();
+
+                            // 1) The FQSEN that's actually in the code base is allowed to differ from what the plugin used as an array key.
+                            //      Thus, we use $fqsen->__toString() rather than $fqsen_string.
+                            // 2) The parent method is included in this list, i.e. the parent method is it's own defining method.
+                            foreach ($methods_by_defining_fqsen[$fqsen->__toString()] as $child_method) {
+                                if (
+                                    $child_method->getFQSEN()->__toString() !== $fqsen->__toString() &&
+                                    isset($return_type_override_fqsen_strings[$child_method->getFQSEN()->__toString()])
+                                ) {
+                                    // An override closure targeting SubClass::foo should take precedence over BaseClass::foo
+                                    // even if the definition was BaseClass::foo
+                                    continue;
+                                }
+                                $child_method->setDependentReturnTypeClosure($closure);
+                            }
                         }
                     }
                 } else {
