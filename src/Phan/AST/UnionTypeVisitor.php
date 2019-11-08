@@ -1835,7 +1835,14 @@ class UnionTypeVisitor extends AnalysisVisitor
                 } elseif ($type->isArrayLike() || $type->isObject() || $type instanceof MixedType) {
                     if ($type instanceof ListType && (!\is_numeric($dim_value) || $dim_value < 0)) {
                         continue;
+                    } elseif ($type instanceof ListType) {
+                        if ($resulting_element_type === null) {
+                            $resulting_element_type = $type->genericArrayElementType()->asPHPDocUnionType();
+                        } else {
+                            $resulting_element_type = $resulting_element_type->withType($type->genericArrayElementType());
+                        }
                     }
+
                     // TODO: Could be more precise about check for ArrayAccess
                     $has_non_array_shape_type = true;
                     continue;
