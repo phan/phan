@@ -1,6 +1,6 @@
 Phan NEWS
 
-??? ?? 2019, Phan 2.4.2 (dev)
+Nov 08 2019, Phan 2.4.2
 -----------------------
 
 New features(Analysis):
@@ -18,6 +18,9 @@ New features(Analysis):
 
 Maintenance:
 + Update function signature maps for internal signatures.
+
+Bug fixes:
++ Fix false positive `PhanSuspiciousWeakTypeComparison` for `in_array`/`array_search`/`array_key_exists` with function arguments defaulting to `[]`
 
 Nov 03 2019, Phan 2.4.1
 -----------------------
