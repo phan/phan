@@ -268,7 +268,7 @@ final class UnionTypeTest extends BaseTest
     ) : void {
         $this->assertSame(
             $type_name,
-            $this->typeStringFromCode('<' . '?php ' . $code_stub . ';')
+            self::typeStringFromCode('<' . '?php ' . $code_stub . ';')
         );
     }
 
@@ -278,7 +278,7 @@ final class UnionTypeTest extends BaseTest
      * the first statement in the statement list in the given
      * code.
      */
-    private function typeStringFromCode(string $code) : string
+    private static function typeStringFromCode(string $code) : string
     {
         $stmt_list = \ast\parse_code(
             $code,
@@ -302,7 +302,7 @@ final class UnionTypeTest extends BaseTest
         return UnionType::fromStringInContext($union_type_string, new Context(), Type::FROM_PHPDOC);
     }
 
-    private function makePHPDocType(string $type) : Type
+    private static function makePHPDocType(string $type) : Type
     {
         return Type::fromStringInContext($type, new Context(), Type::FROM_PHPDOC);
     }

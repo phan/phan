@@ -42,7 +42,7 @@ final class PropertyMapTest extends BaseTest
                 $failures[] = "Expected array for property signatures of  $class_name";
                 continue;
             }
-            $this->checkPropertySignaturesOfClassName($class_name, $signature, $failures);
+            self::checkPropertySignaturesOfClassName($class_name, $signature, $failures);
         }
         $this->assertSame('', \implode("\n", $failures), "Saw one or more issues for the property map signature");
     }
@@ -52,7 +52,7 @@ final class PropertyMapTest extends BaseTest
      * @param array<string,string> $signature
      * @param list<string> &$failures
      */
-    private function checkPropertySignaturesOfClassName(string $class_name, array $signature, array &$failures) : void
+    private static function checkPropertySignaturesOfClassName(string $class_name, array $signature, array &$failures) : void
     {
         $prev_prop_name = '';
         foreach ($signature as $prop_name => $value) {

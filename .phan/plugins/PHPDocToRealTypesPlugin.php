@@ -57,7 +57,7 @@ class PHPDocToRealTypesPlugin extends PluginV3 implements
 
     public function analyzeFunction(CodeBase $code_base, Func $function) : void
     {
-        $this->analyzeFunctionLike($code_base, $function);
+        self::analyzeFunctionLike($code_base, $function);
     }
 
     public function analyzeMethod(CodeBase $unused_code_base, Method $method) : void
@@ -80,18 +80,18 @@ class PHPDocToRealTypesPlugin extends PluginV3 implements
                     continue;
                 }
             }
-            $this->analyzeFunctionLike($code_base, $method);
+            self::analyzeFunctionLike($code_base, $method);
         }
     }
 
-    private function analyzeFunctionLike(CodeBase $code_base, FunctionInterface $method) : void
+    private static function analyzeFunctionLike(CodeBase $code_base, FunctionInterface $method) : void
     {
         if (Phan::isExcludedAnalysisFile($method->getContext()->getFile())) {
             // This has no side effects, so we can skip files that don't need to be analyzed
             return;
         }
         if ($method->getRealReturnType()->isEmpty()) {
-            $this->analyzeReturnTypeOfFunctionLike($code_base, $method);
+            self::analyzeReturnTypeOfFunctionLike($code_base, $method);
         }
         $phpdoc_param_list = $method->getParameterList();
         foreach ($method->getRealParameterList() as $i => $parameter) {
@@ -120,8 +120,7 @@ class PHPDocToRealTypesPlugin extends PluginV3 implements
         }
     }
 
-
-    private function analyzeReturnTypeOfFunctionLike(CodeBase $code_base, FunctionInterface $method) : void
+    private static function analyzeReturnTypeOfFunctionLike(CodeBase $code_base, FunctionInterface $method) : void
     {
         $union_type = $method->getUnionType();
         if ($union_type->isVoidType()) {

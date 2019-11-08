@@ -87,7 +87,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
         }
         $variable_graph = new VariableGraph();
         $scope = new VariableTrackingScope();
-        $issue_categories = $this->addParametersAndUseVariablesToGraph($node, $variable_graph, $scope);
+        $issue_categories = self::addParametersAndUseVariablesToGraph($node, $variable_graph, $scope);
 
         try {
             VariableTrackerVisitor::$variable_graph = $variable_graph;
@@ -104,7 +104,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @return array<int, string> maps unique definition ids to issue types
      */
-    private function addParametersAndUseVariablesToGraph(
+    private static function addParametersAndUseVariablesToGraph(
         Node $node,
         VariableGraph $graph,
         VariableTrackingScope $scope

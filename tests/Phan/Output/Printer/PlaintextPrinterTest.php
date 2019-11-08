@@ -70,7 +70,7 @@ final class PlainTextPrinterTest extends BaseTest
         $this->assertSame($expected_output, $actual_output);
     }
 
-    private function generatePhanOutput(IssueInstance ...$instances) : string
+    private static function generatePhanOutput(IssueInstance ...$instances) : string
     {
         $output = new BufferedOutput();
 

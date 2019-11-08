@@ -38,7 +38,7 @@ class PHPDocRedundantPlugin extends PluginV3 implements
 
     public function analyzeFunction(CodeBase $code_base, Func $function) : void
     {
-        $this->analyzeFunctionLike($code_base, $function);
+        self::analyzeFunctionLike($code_base, $function);
     }
 
     public function analyzeMethod(CodeBase $code_base, Method $method) : void
@@ -49,7 +49,7 @@ class PHPDocRedundantPlugin extends PluginV3 implements
         if ($method->getFQSEN() !== $method->getDefiningFQSEN()) {
             return;
         }
-        $this->analyzeFunctionLike($code_base, $method);
+        self::analyzeFunctionLike($code_base, $method);
     }
 
     /**
@@ -118,7 +118,7 @@ class PHPDocRedundantPlugin extends PluginV3 implements
         return true;
     }
 
-    private function analyzeFunctionLike(CodeBase $code_base, FunctionInterface $method) : void
+    private static function analyzeFunctionLike(CodeBase $code_base, FunctionInterface $method) : void
     {
         if (Phan::isExcludedAnalysisFile($method->getContext()->getFile())) {
             // This has no side effects, so we can skip files that don't need to be analyzed
@@ -129,7 +129,7 @@ class PHPDocRedundantPlugin extends PluginV3 implements
             return;
         }
         if (!self::isRedundantFunctionComment($method, $comment)) {
-            $this->checkIsRedundantReturn($code_base, $method, $comment);
+            self::checkIsRedundantReturn($code_base, $method, $comment);
             return;
         }
         $encoded_comment = StringUtil::encodeValue($comment);
@@ -160,7 +160,7 @@ class PHPDocRedundantPlugin extends PluginV3 implements
         }
     }
 
-    private function checkIsRedundantReturn(CodeBase $code_base, FunctionInterface $method, string $doc_comment) : void
+    private static function checkIsRedundantReturn(CodeBase $code_base, FunctionInterface $method, string $doc_comment) : void
     {
         if (strpos($doc_comment, '@return') === false) {
             return;

@@ -421,7 +421,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         if ($xml === null) {
             return null;
         }
-        return $this->parseFunctionLikeSignatureForXML($function_name, $xml);
+        return self::parseFunctionLikeSignatureForXML($function_name, $xml);
     }
 
     /**
@@ -493,7 +493,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         if ($xml === null) {
             return null;
         }
-        return $this->parseFunctionLikeSignatureForXML("{$class_name}::{$method_name}", $xml);
+        return self::parseFunctionLikeSignatureForXML("{$class_name}::{$method_name}", $xml);
     }
 
     /** @var array<string,?SimpleXMLElement> maps file paths to cached parsed XML elements */
@@ -585,7 +585,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
      * @param ?SimpleXMLElement $xml
      * @return ?array<mixed,string>
      */
-    private function parseFunctionLikeSignatureForXML(string $function_name, ?SimpleXMLElement $xml) : ?array
+    private static function parseFunctionLikeSignatureForXML(string $function_name, ?SimpleXMLElement $xml) : ?array
     {
         if (!$xml) {
             return null;
@@ -1031,7 +1031,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
             $method_name_map = [];
             foreach ($this->getFoldersForClassNameList() as $class_name => $unused_folder) {
                 foreach ($this->getMethodsForClassName($class_name) ?? [] as $method_name => $xml) {
-                    $signature_from_doc = $this->parseFunctionLikeSignatureForXML($method_name, $xml);
+                    $signature_from_doc = self::parseFunctionLikeSignatureForXML($method_name, $xml);
                     if ($signature_from_doc === null) {
                         continue;
                     }

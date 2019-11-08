@@ -83,7 +83,7 @@ final class CompletionRequest extends NodeInfoRequest
         TypedElementInterface $element,
         string $prefix = null
     ) : void {
-        $item = $this->createCompletionItem($code_base, $element, $prefix);
+        $item = self::createCompletionItem($code_base, $element, $prefix);
         $this->recordCompletionItem($item);
     }
 
@@ -92,14 +92,14 @@ final class CompletionRequest extends NodeInfoRequest
         $this->completions[$item->label . ':' . $item->kind] = $item;
     }
 
-    private function createCompletionItem(
+    private static function createCompletionItem(
         CodeBase $unused_code_base,
         TypedElementInterface $element,
         string $prefix = null
     ) : CompletionItem {
         $item = new CompletionItem();
-        $item->label = $this->labelForElement($element);
-        $item->kind = $this->kindForElement($element);
+        $item->label = self::labelForElement($element);
+        $item->kind = self::kindForElement($element);
         $item->detail = (string)$element->getUnionType() ?: 'mixed';  // TODO: Better summary
         $item->documentation = null;  // TODO: Better summary, use phpdoc summary
 
@@ -125,7 +125,7 @@ final class CompletionRequest extends NodeInfoRequest
         return Config::COMPLETION_VSCODE === Config::getValue('language_server_enable_completion');
     }
 
-    private function labelForElement(TypedElementInterface $element) : string
+    private static function labelForElement(TypedElementInterface $element) : string
     {
         if (self::useVSCodeCompletion()) {
             $name = $element->getName();
@@ -140,7 +140,7 @@ final class CompletionRequest extends NodeInfoRequest
         return $element->getName();
     }
 
-    private function kindForElement(TypedElementInterface $element) : ?int
+    private static function kindForElement(TypedElementInterface $element) : ?int
     {
         if ($element instanceof ClassConstant) {
             return CompletionItemKind::VARIABLE;
