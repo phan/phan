@@ -63,10 +63,10 @@ final class BufferingCollector implements IssueCollectorInterface
             }
         }
 
-        $this->issues[$this->formatSortableKey($issue)] = $issue;
+        $this->issues[self::formatSortableKey($issue)] = $issue;
     }
 
-    private function formatSortableKey(IssueInstance $issue) : string
+    private static function formatSortableKey(IssueInstance $issue) : string
     {
         // This needs to be a sortable key so that output
         // is in the expected order

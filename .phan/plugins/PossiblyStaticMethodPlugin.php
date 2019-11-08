@@ -133,6 +133,7 @@ final class PossiblyStaticMethodPlugin extends PluginV3 implements
                 // Check code such as `static::someMethod($this->prop)`
                 break;
             case ast\AST_CLOSURE:
+            case ast\AST_ARROW_FUNC:
                 if ($node->flags & \ast\flags\MODIFIER_STATIC) {
                     return true;
                 }

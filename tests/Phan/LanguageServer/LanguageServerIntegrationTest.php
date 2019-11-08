@@ -24,6 +24,7 @@ use function strlen;
  *
  * Note: This test file is not enabled in CI because they may hang indefinitely.
  * (integration test timeouts weren't implemented or tested yet).
+ * @phan-file-suppress PhanPluginPossiblyStaticPrivateMethod there are a lot of methods
  */
 final class LanguageServerIntegrationTest extends BaseTest
 {
@@ -143,7 +144,7 @@ final class LanguageServerIntegrationTest extends BaseTest
             $proc_in = $socket;
             $proc_out = $socket;
         }
-        $this->debugLog("Created a process\n");
+        self::debugLog("Created a process\n");
         return [
             $proc,
             $proc_in,
@@ -220,18 +221,18 @@ final class LanguageServerIntegrationTest extends BaseTest
         try {
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);
-            $this->writeDidChangeConfigurationNotification($proc_in);
+            self::writeDidChangeConfigurationNotification($proc_in);
             $new_file_contents = <<<'EOT'
 <?php
 function example(int $x) : int {
     echo strlen($x);
 }
 EOT;
-            $this->writeDidChangeNotificationToDefaultFile($proc_in, $new_file_contents);
-            $diagnostics_response = $this->awaitResponse($proc_out);
+            self::writeDidChangeNotificationToDefaultFile($proc_in, $new_file_contents);
+            $diagnostics_response = self::awaitResponse($proc_out);
             $this->assertSame('textDocument/publishDiagnostics', $diagnostics_response['method']);
             $uri = $diagnostics_response['params']['uri'];
-            $this->assertSame($uri, $this->getDefaultFileURI());
+            $this->assertSame($uri, self::getDefaultFileURI());
             $diagnostics = $diagnostics_response['params']['diagnostics'];
             $this->assertCount(2, $diagnostics);
             // TODO: Pass IssueInstance to the helper instead?
@@ -244,7 +245,7 @@ function example(int $x) : int {
     return $x * 2;
 }
 EOT;
-            $this->writeDidChangeNotificationToDefaultFile($proc_in, $good_file_contents);
+            self::writeDidChangeNotificationToDefaultFile($proc_in, $good_file_contents);
             $this->assertHasEmptyPublishDiagnosticsNotification($proc_out);
 
             $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
@@ -288,7 +289,7 @@ $z = MY_GLOBAL_CONSTANT;
 namespace Ns {
 }
 EOT;
-            $this->writeDidChangeNotificationToDefaultFile($proc_in, $new_file_contents);
+            self::writeDidChangeNotificationToDefaultFile($proc_in, $new_file_contents);
             $this->assertHasEmptyPublishDiagnosticsNotification($proc_out);
 
             $id = 2;
@@ -299,7 +300,7 @@ EOT;
                 $this->assertSame([
                     'result' => [
                         [
-                            'uri' => $this->getDefaultFileURI(),
+                            'uri' => self::getDefaultFileURI(),
                             'range' => [
                                 'start' => ['line' => $line,     'character' => 0],
                                 'end'   => ['line' => $line + 1, 'character' => 0],
@@ -361,7 +362,7 @@ EOT;
 
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);
-            $this->writeDidChangeNotificationToDefaultFile($proc_in, $file_contents);
+            self::writeDidChangeNotificationToDefaultFile($proc_in, $file_contents);
             $this->assertHasNonEmptyPublishDiagnosticsNotification($proc_out);
 
             // Request the definition of the class "MyExample" with the cursor in the middle of that word
@@ -467,7 +468,7 @@ EOT;
      * @param bool $for_vscode
      * @return list<array{0:Position,1:array,2:bool}>
      */
-    private function createCompletionBasicTestCases(string $property_label, ?string $property_insert_text, ?string $insert_text_for_substr, bool $for_vscode) : array
+    private static function createCompletionBasicTestCases(string $property_label, ?string $property_insert_text, ?string $insert_text_for_substr, bool $for_vscode) : array
     {
         // A static property
         $property_completion_item = [
@@ -590,8 +591,8 @@ EOT;
     public function completionBasicProvider() : array
     {
         return \array_merge(
-            $this->createCompletionBasicTestCases('myVar', 'myVar', 'Var', false),
-            $this->createCompletionBasicTestCases('$myVar', null, null, true)
+            self::createCompletionBasicTestCases('myVar', 'myVar', 'Var', false),
+            self::createCompletionBasicTestCases('$myVar', null, null, true)
         );
     }
 
@@ -663,7 +664,7 @@ EOT;
      * @param string $variablePrefix expected prefix for labels of variables
      * @return list<array{0:Position,1:array,2:bool}>
      */
-    private function createCompletionVariableTestCases(string $variablePrefix, bool $for_vscode) : array
+    private static function createCompletionVariableTestCases(string $variablePrefix, bool $for_vscode) : array
     {
         $otherPublicVarPropertyItem = [
             'label' => 'otherPublicVar',
@@ -799,8 +800,8 @@ EOT;
     public function completionVariableProvider() : array
     {
         return \array_merge(
-            $this->createCompletionVariableTestCases('', false),
-            $this->createCompletionVariableTestCases('$', true)
+            self::createCompletionVariableTestCases('', false),
+            self::createCompletionVariableTestCases('$', true)
         );
     }
 
@@ -1171,7 +1172,7 @@ EOT
         ?string $requested_uri,
         bool $pcntl_enabled
     ) : void {
-        $requested_uri = $requested_uri ?? $this->getDefaultFileURI();
+        $requested_uri = $requested_uri ?? self::getDefaultFileURI();
 
         $this->messageId = 0;
         // TODO: Move this into an OOP abstraction, add time limits, etc.
@@ -1179,7 +1180,7 @@ EOT
         try {
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);
-            $this->writeDidChangeNotificationToFile($proc_in, $requested_uri, $new_file_contents);
+            self::writeDidChangeNotificationToFile($proc_in, $requested_uri, $new_file_contents);
             if (self::shouldExpectDiagnosticNotificationForURI($requested_uri)) {
                 $this->assertHasEmptyPublishDiagnosticsNotification($proc_out, $requested_uri);
             }
@@ -1248,7 +1249,7 @@ EOT
         ?string $requested_uri,
         bool $pcntl_enabled
     ) : void {
-        $requested_uri = $requested_uri ?? $this->getDefaultFileURI();
+        $requested_uri = $requested_uri ?? self::getDefaultFileURI();
 
         $this->messageId = 0;
         // TODO: Move this into an OOP abstraction, add time limits, etc.
@@ -1256,7 +1257,7 @@ EOT
         try {
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);
-            $this->writeDidChangeNotificationToFile($proc_in, $requested_uri, $new_file_contents);
+            self::writeDidChangeNotificationToFile($proc_in, $requested_uri, $new_file_contents);
             if (self::shouldExpectDiagnosticNotificationForURI($requested_uri)) {
                 $this->assertHasEmptyPublishDiagnosticsNotification($proc_out, $requested_uri);
             }
@@ -1330,7 +1331,7 @@ EOT
         ?string $requested_uri,
         bool $pcntl_enabled
     ) : void {
-        $requested_uri = $requested_uri ?? $this->getDefaultFileURI();
+        $requested_uri = $requested_uri ?? self::getDefaultFileURI();
 
         $this->messageId = 0;
         // TODO: Move this into an OOP abstraction, add time limits, etc.
@@ -1338,7 +1339,7 @@ EOT
         try {
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);
-            $this->writeDidChangeNotificationToFile($proc_in, $requested_uri, $new_file_contents);
+            self::writeDidChangeNotificationToFile($proc_in, $requested_uri, $new_file_contents);
             if (self::shouldExpectDiagnosticNotificationForURI($requested_uri)) {
                 $this->assertHasEmptyPublishDiagnosticsNotification($proc_out, $requested_uri);
             }
@@ -1626,8 +1627,8 @@ EOT;
      */
     private function assertHasEmptyPublishDiagnosticsNotification($proc_out, string $requested_uri = null) : void
     {
-        $requested_uri = $requested_uri ?? $this->getDefaultFileURI();
-        $diagnostics_response = $this->awaitResponse($proc_out);
+        $requested_uri = $requested_uri ?? self::getDefaultFileURI();
+        $diagnostics_response = self::awaitResponse($proc_out);
         $error_message = "Unexpected response: " . \json_encode($diagnostics_response);
         $this->assertSame('textDocument/publishDiagnostics', $diagnostics_response['method'] ?? null, $error_message);
         $uri = $diagnostics_response['params']['uri'];
@@ -1641,8 +1642,8 @@ EOT;
      */
     private function assertHasNonEmptyPublishDiagnosticsNotification($proc_out, string $requested_uri = null) : void
     {
-        $requested_uri = $requested_uri ?? $this->getDefaultFileURI();
-        $diagnostics_response = $this->awaitResponse($proc_out);
+        $requested_uri = $requested_uri ?? self::getDefaultFileURI();
+        $diagnostics_response = self::awaitResponse($proc_out);
         $this->assertSame('textDocument/publishDiagnostics', $diagnostics_response['method'] ?? null, "Unexpected response: " . \json_encode($diagnostics_response));
         $uri = $diagnostics_response['params']['uri'];
         $this->assertSame($uri, $requested_uri);
@@ -1706,7 +1707,7 @@ EOT;
             'processId' => \getmypid(),
         ];
         $this->writeMessage($proc_in, 'initialize', $params);
-        $response = $this->awaitResponse($proc_out);
+        $response = self::awaitResponse($proc_out);
         $expected_response = [
             'result' => [
                 'capabilities' => [
@@ -1740,7 +1741,7 @@ EOT;
      */
     private function writeDefinitionRequestAndAwaitResponse($proc_in, $proc_out, Position $position, string $requested_uri = null) : array
     {
-        $requested_uri = $requested_uri ?? $this->getDefaultFileURI();
+        $requested_uri = $requested_uri ?? self::getDefaultFileURI();
         // Implementation detail: We simultaneously emit a notification with new diagnostics
         // and the response for the definition request at the same time, even if files didn't change.
 
@@ -1754,7 +1755,7 @@ EOT;
             $this->assertHasEmptyPublishDiagnosticsNotification($proc_out, $requested_uri);
         }
 
-        $response = $this->awaitResponse($proc_out);
+        $response = self::awaitResponse($proc_out);
 
         return $response;
     }
@@ -1767,7 +1768,7 @@ EOT;
      */
     private function writeCompletionRequestAndAwaitResponse($proc_in, $proc_out, Position $position, string $requested_uri = null) : array
     {
-        $requested_uri = $requested_uri ?? $this->getDefaultFileURI();
+        $requested_uri = $requested_uri ?? self::getDefaultFileURI();
         // Implementation detail: We simultaneously emit a notification with new diagnostics
         // and the response for the definition request at the same time, even if files didn't change.
 
@@ -1785,7 +1786,7 @@ EOT;
             $this->assertHasNonEmptyPublishDiagnosticsNotification($proc_out, $requested_uri);
         }
 
-        $response = $this->awaitResponse($proc_out);
+        $response = self::awaitResponse($proc_out);
 
         return $response;
     }
@@ -1798,7 +1799,7 @@ EOT;
      */
     private function writeTypeDefinitionRequestAndAwaitResponse($proc_in, $proc_out, Position $position, string $requested_uri = null) : array
     {
-        $requested_uri = $requested_uri ?? $this->getDefaultFileURI();
+        $requested_uri = $requested_uri ?? self::getDefaultFileURI();
         // Implementation detail: We simultaneously emit a notification with new diagnostics
         // and the response for the definition request at the same time, even if files didn't change.
 
@@ -1812,7 +1813,7 @@ EOT;
             $this->assertHasEmptyPublishDiagnosticsNotification($proc_out, $requested_uri);
         }
 
-        $response = $this->awaitResponse($proc_out);
+        $response = self::awaitResponse($proc_out);
 
         return $response;
     }
@@ -1825,7 +1826,7 @@ EOT;
      */
     private function writeHoverRequestAndAwaitResponse($proc_in, $proc_out, Position $position, string $requested_uri = null) : array
     {
-        $requested_uri = $requested_uri ?? $this->getDefaultFileURI();
+        $requested_uri = $requested_uri ?? self::getDefaultFileURI();
         // Implementation detail: We simultaneously emit a notification with new diagnostics
         // and the response for the definition request at the same time, even if files didn't change.
 
@@ -1839,7 +1840,7 @@ EOT;
             $this->assertHasEmptyPublishDiagnosticsNotification($proc_out, $requested_uri);
         }
 
-        $response = $this->awaitResponse($proc_out);
+        $response = self::awaitResponse($proc_out);
 
         return $response;
     }
@@ -1853,7 +1854,7 @@ EOT;
     {
         $params = new stdClass();
         $this->writeMessage($proc_in, 'shutdown', $params);
-        $response = $this->awaitResponse($proc_out);
+        $response = self::awaitResponse($proc_out);
         $expected_response = [
             'result' => null,
             'id' => $this->messageId,
@@ -1873,7 +1874,7 @@ EOT;
             'rootPath' => '/ignored',
             'processId' => \getmypid(),
         ];
-        $this->writeNotification($proc_in, 'initialized', $params);
+        self::writeNotification($proc_in, 'initialized', $params);
     }
 
     /**
@@ -1889,7 +1890,7 @@ EOT;
                 // the function is a no-op, so the params aren't important.
             ],
         ];
-        $this->writeNotification($proc_in, 'textDocument/didChangeConfiguration', $params);
+        self::writeNotification($proc_in, 'textDocument/didChangeConfiguration', $params);
     }
 
     /**
@@ -1898,7 +1899,7 @@ EOT;
      */
     private function writeExitNotification($proc_in) : void
     {
-        $this->writeNotification($proc_in, 'exit', null);
+        self::writeNotification($proc_in, 'exit', null);
     }
 
     /**
@@ -1907,14 +1908,14 @@ EOT;
      */
     private function writeDidChangeNotificationToDefaultFile($proc_in, string $new_contents) : void
     {
-        $this->writeDidChangeNotificationToFile($proc_in, $this->getDefaultFileURI(), $new_contents);
+        self::writeDidChangeNotificationToFile($proc_in, self::getDefaultFileURI(), $new_contents);
     }
 
     /**
      * @param resource $proc_in
      * @throws InvalidArgumentException
      */
-    private function writeDidChangeNotificationToFile($proc_in, string $requested_uri, string $new_contents) : void
+    private static function writeDidChangeNotificationToFile($proc_in, string $requested_uri, string $new_contents) : void
     {
         $params = [
             'textDocument' => ['uri' => $requested_uri],
@@ -1924,10 +1925,10 @@ EOT;
                 ]
             ],
         ];
-        $this->writeNotification($proc_in, 'textDocument/didChange', $params);
+        self::writeNotification($proc_in, 'textDocument/didChange', $params);
     }
 
-    private function getDefaultFileURI() : string
+    private static function getDefaultFileURI() : string
     {
         return Utils::pathToUri(self::getLSPPath());
     }
@@ -1938,7 +1939,7 @@ EOT;
      * TODO: Add timeout logic, etc.
      * @return array<string,mixed>
      */
-    private function awaitResponse($proc_out) : array
+    private static function awaitResponse($proc_out) : array
     {
         $buffer = '';
         $content_length = 0;
@@ -1991,8 +1992,8 @@ EOT;
             'method' => $method,
             'params' => $params,
         ];
-        $this->writeEncodedBody($proc_in, $body);
-        $this->debugLog("Wrote a message method=$method\n");
+        self::writeEncodedBody($proc_in, $body);
+        self::debugLog("Wrote a message method=$method\n");
     }
 
 
@@ -2001,17 +2002,17 @@ EOT;
      * @param string $method
      * @param ?array|?\stdClass $params
      */
-    private function writeNotification($proc_in, string $method, $params) : void
+    private static function writeNotification($proc_in, string $method, $params) : void
     {
         $body = [
             'method' => $method,
             'params' => $params,
         ];
-        $this->writeEncodedBody($proc_in, $body);
-        $this->debugLog("Wrote a $method notification\n");
+        self::writeEncodedBody($proc_in, $body);
+        self::debugLog("Wrote a $method notification\n");
     }
 
-    private function debugLog(string $message) : void
+    private static function debugLog(string $message) : void
     {
         if (self::DEBUG_ENABLED) {
             echo $message;
@@ -2025,7 +2026,7 @@ EOT;
      * @param resource $proc_in
      * @param array<string,mixed> $body
      */
-    private function writeEncodedBody($proc_in, array $body) : void
+    private static function writeEncodedBody($proc_in, array $body) : void
     {
         $body_raw = \json_encode($body, \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE) . "\r\n";
         $raw = \sprintf(

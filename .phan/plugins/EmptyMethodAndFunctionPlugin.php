@@ -47,7 +47,7 @@ final class EmptyMethodAndFunctionVisitor extends PluginAwarePostAnalysisVisitor
                 && !$method->isDeprecated()
             ) {
                 $this->emitIssue(
-                    $this->getIssueTypeForEmptyMethod($method),
+                    self::getIssueTypeForEmptyMethod($method),
                     $node->lineno,
                     $method->getName()
                 );
@@ -96,7 +96,7 @@ final class EmptyMethodAndFunctionVisitor extends PluginAwarePostAnalysisVisitor
         }
     }
 
-    private function getIssueTypeForEmptyMethod(FunctionInterface $method) : string
+    private static function getIssueTypeForEmptyMethod(FunctionInterface $method) : string
     {
         if (!$method instanceof Method) {
             throw new \InvalidArgumentException("\$method is not an instance of Method");

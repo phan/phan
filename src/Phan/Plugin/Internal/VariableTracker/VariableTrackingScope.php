@@ -149,7 +149,7 @@ class VariableTrackingScope
         foreach ($inner_loop_scope->skipped_exiting_loop_scopes as $alternate_scope) {
             $this->flattenUsesFromScopeToMergedLoopResult($inner_loop_scope, $alternate_scope, $graph);
         }
-        $this->addScopeToMergedLoopResult($result, $inner_loop_scope, $graph);
+        self::addScopeToMergedLoopResult($result, $inner_loop_scope, $graph);
         return $result;
     }
 
@@ -166,7 +166,7 @@ class VariableTrackingScope
             '@phan-var VariableTrackingBranchScope $parent_scope';
             $this->flattenScopeToMergedLoopResult($inner_loop_scope, $parent_scope, $graph);
         }
-        $this->addScopeToMergedLoopResult($inner_loop_scope, $alternate_scope, $graph);
+        self::addScopeToMergedLoopResult($inner_loop_scope, $alternate_scope, $graph);
         $inner_loop_scope->mergeUses($alternate_scope->uses);
     }
 
@@ -186,7 +186,7 @@ class VariableTrackingScope
         $inner_loop_scope->mergeUses($alternate_scope->uses);
     }
 
-    private function addScopeToMergedLoopResult(
+    private static function addScopeToMergedLoopResult(
         VariableTrackingScope $result,
         VariableTrackingBranchScope $scope,
         VariableGraph $graph

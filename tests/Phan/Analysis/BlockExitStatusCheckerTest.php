@@ -18,7 +18,7 @@ final class BlockExitStatusCheckerTest extends BaseTest
      *
      * This shouldn't be used outside of tests.
      */
-    private function representStatus(int $status) : string
+    private static function representStatus(int $status) : string
     {
         if ($status === 0) {
             return "invalid(0)";
@@ -64,7 +64,7 @@ final class BlockExitStatusCheckerTest extends BaseTest
     {
         $ast = \ast\parse_code("<" . "?php " . $code_snippet, Config::AST_VERSION);
         $status_code = (new BlockExitStatusChecker())($ast);
-        $this->assertSame($expected_status_representation, $this->representStatus($status_code), \sprintf("Unexpected status 0x%x\nCode:\n%s\n", $status_code, $code_snippet));
+        $this->assertSame($expected_status_representation, self::representStatus($status_code), \sprintf("Unexpected status 0x%x\nCode:\n%s\n", $status_code, $code_snippet));
     }
 
     /**

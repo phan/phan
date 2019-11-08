@@ -314,6 +314,8 @@ return [
         'PhanPluginDescriptionlessCommentOnPrivateProperty',
         // TODO: Fix edge cases in --automatic-fix for PhanPluginRedundantClosureComment
         'PhanPluginRedundantClosureComment',
+        'PhanPluginPossiblyStaticPublicMethod',
+        'PhanPluginPossiblyStaticProtectedMethod',
     ],
 
     // If empty, no filter against issues types will be applied.
@@ -517,6 +519,7 @@ return [
 
         // Warns about the usage of assert() for Phan's self-analysis. See https://github.com/phan/phan/issues/288
         'NoAssertPlugin',
+        'PossiblyStaticMethodPlugin',
 
         'HasPHPDocPlugin',
         'PHPDocToRealTypesPlugin',  // suggests replacing (at)return void with `: void` in the declaration, etc.

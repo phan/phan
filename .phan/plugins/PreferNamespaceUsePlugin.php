@@ -35,7 +35,7 @@ class PreferNamespaceUsePlugin extends PluginV3 implements
 
     public function analyzeFunction(CodeBase $code_base, Func $function) : void
     {
-        $this->analyzeFunctionLike($code_base, $function);
+        self::analyzeFunctionLike($code_base, $function);
     }
 
     public function analyzeMethod(CodeBase $code_base, Method $method) : void
@@ -46,10 +46,10 @@ class PreferNamespaceUsePlugin extends PluginV3 implements
         if ($method->getFQSEN() !== $method->getDefiningFQSEN()) {
             return;
         }
-        $this->analyzeFunctionLike($code_base, $method);
+        self::analyzeFunctionLike($code_base, $method);
     }
 
-    private function analyzeFunctionLike(CodeBase $code_base, FunctionInterface $method) : void
+    private static function analyzeFunctionLike(CodeBase $code_base, FunctionInterface $method) : void
     {
         $node = $method->getNode();
         if (!$node) {
@@ -57,18 +57,18 @@ class PreferNamespaceUsePlugin extends PluginV3 implements
         }
         $return_type = $node->children['returnType'];
         if ($return_type instanceof Node) {
-            $this->analyzeFunctionLikeReturn($code_base, $method, $return_type);
+            self::analyzeFunctionLikeReturn($code_base, $method, $return_type);
         }
         foreach ($node->children['params']->children ?? [] as $param_node) {
             if (!($param_node instanceof Node)) {
                 // impossible?
                 continue;
             }
-            $this->analyzeFunctionLikeParam($code_base, $method, $param_node);
+            self::analyzeFunctionLikeParam($code_base, $method, $param_node);
         }
     }
 
-    private function analyzeFunctionLikeReturn(CodeBase $code_base, FunctionInterface $method, Node $return_type) : void
+    private static function analyzeFunctionLikeReturn(CodeBase $code_base, FunctionInterface $method, Node $return_type) : void
     {
         $is_nullable = false;
         if ($return_type->kind === ast\AST_NULLABLE_TYPE) {
@@ -92,7 +92,7 @@ class PreferNamespaceUsePlugin extends PluginV3 implements
         }
     }
 
-    private function analyzeFunctionLikeParam(CodeBase $code_base, FunctionInterface $method, Node $param_node) : void
+    private static function analyzeFunctionLikeParam(CodeBase $code_base, FunctionInterface $method, Node $param_node) : void
     {
         $param_type = $param_node->children['type'];
         if (!$param_type instanceof Node) {

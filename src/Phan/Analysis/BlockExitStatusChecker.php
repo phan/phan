@@ -443,12 +443,12 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         if ($status) {
             return $status;
         }
-        $status = $this->computeStatusOfCall($node);
+        $status = self::computeStatusOfCall($node);
         $node->flags = $status;
         return $status;
     }
 
-    private function computeStatusOfCall(Node $node) : int
+    private static function computeStatusOfCall(Node $node) : int
     {
         $expression = $node->children['expr'];
         if ($expression instanceof Node) {

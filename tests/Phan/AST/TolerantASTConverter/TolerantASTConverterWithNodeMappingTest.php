@@ -33,7 +33,7 @@ final class TolerantASTConverterWithNodeMappingTest extends BaseTest
         $expected_node->isSelected = true;
 
         $byte_offset = self::computeOffset($line, $column, $file_contents);
-        $ast = $this->parseASTWithDefaultOptions($file_contents, $byte_offset);
+        $ast = self::parseASTWithDefaultOptions($file_contents, $byte_offset);
         // TODO: Create a reusable abstraction in Util to walk / filter nodes from the AST
         $selected_node = $this->findSelectedNode($ast);
         $this->assertSame(\Phan\Debug::nodeToString($expected_node), \Phan\Debug::nodeToString($selected_node));
@@ -73,7 +73,7 @@ final class TolerantASTConverterWithNodeMappingTest extends BaseTest
         }
     }
 
-    private function parseASTWithDefaultOptions(string $file_contents, int $byte_offset) : Node
+    private static function parseASTWithDefaultOptions(string $file_contents, int $byte_offset) : Node
     {
         $converter = new TolerantASTConverterWithNodeMapping($byte_offset);
         $errors = [];

@@ -55,7 +55,7 @@ class DependencyGraphPlugin extends PluginV3 implements
     /**
      * Build <filename>:<lineno> string
      */
-    private function getFileString(FileRef $file_ref):string
+    private static function getFileString(FileRef $file_ref):string
     {
         return $file_ref->getFile() . ':' . $file_ref->getLineNumberStart();
     }
@@ -85,8 +85,8 @@ class DependencyGraphPlugin extends PluginV3 implements
             $ctype = "C";
         }
         $this->ctype[$cnode] = $ctype;
-        $this->class_to_file[$cnode] = $this->getFileString($class->getContext());
-        $this->file_to_class[$this->getFileString($class->getContext())] = $cnode;
+        $this->class_to_file[$cnode] = self::getFileString($class->getContext());
+        $this->file_to_class[self::getFileString($class->getContext())] = $cnode;
     }
 
     /**
@@ -229,10 +229,10 @@ class DependencyGraphPlugin extends PluginV3 implements
             $refs = $element->getReferenceList();
             foreach ($refs as $ref) {
                 $depNode = $ref->getFile();
-                if (empty($this->file_to_class[$this->getFileString($ref)])) {
+                if (empty($this->file_to_class[self::getFileString($ref)])) {
                     continue;
                 }
-                $cdepNode = $this->file_to_class[$this->getFileString($ref)];
+                $cdepNode = $this->file_to_class[self::getFileString($ref)];
                 $this->fgraph[$fnode][$depNode] = $ctype . ':' . $ref->getLineNumberStart();
                 $this->cgraph[$cnode][$cdepNode] = $ctype . ':' . $ref->getLineNumberStart();
             }
