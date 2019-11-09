@@ -18,6 +18,9 @@ Plugins:
 Maintenance:
 + Bump minimum version of netresearch/jsonmapper to avoid php notices in the language server in php 7.4
 
+Bug fixes:
++ Fix false positive inference that `$x[0]` was `string` for `$x` of types such as `list<int,\MyClass>|string` (reported in #3483)
+
 Nov 08 2019, Phan 2.4.2
 -----------------------
 

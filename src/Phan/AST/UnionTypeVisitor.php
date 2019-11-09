@@ -1815,12 +1815,14 @@ class UnionTypeVisitor extends AnalysisVisitor
          * @var bool $has_non_array_shape_type this will be true if there are types that support array access
          *           but have unknown array shapes in $union_type
          */
-        $has_non_array_shape_type = false;
+        $has_generic_array = false;
+        $has_string = false;
         $resulting_element_type = null;
         foreach ($union_type->getTypeSet() as $type) {
             if (!($type instanceof ArrayShapeType)) {
                 if ($type instanceof StringType) {
-                    if (\is_int($dim_value)) {
+                    $has_string = true;
+                    if (\is_int($dim_value) || \filter_var($dim_value, \FILTER_VALIDATE_INT) !== false) {
                         // If we request a string offset from a string, that's not valid. Only accept integer dimensions as valid.
                         // in php, indices of strings can be negative
                         if ($resulting_element_type !== null) {
@@ -1828,7 +1830,6 @@ class UnionTypeVisitor extends AnalysisVisitor
                         } else {
                             $resulting_element_type = StringType::instance(false)->asPHPDocUnionType();
                         }
-                        $has_non_array_shape_type = true;
                     } else {
                         // TODO: Warn about string indices of strings?
                     }
@@ -1837,7 +1838,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                         continue;
                     }
                     // TODO: Could be more precise about check for ArrayAccess
-                    $has_non_array_shape_type = true;
+                    $has_generic_array = true;
                     continue;
                 }
                 continue;
@@ -1854,11 +1855,14 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
         }
         if ($resulting_element_type === null) {
-            if (!$has_non_array_shape_type) {
+            if (!$has_string && !$has_generic_array) {
                 // This is exclusively array shape types.
                 // Return false to indicate that the offset doesn't exist in any of those array shape types.
                 return false;
             }
+            return null;
+        }
+        if ($has_string && $has_generic_array) {
             return null;
         }
         return $resulting_element_type;
