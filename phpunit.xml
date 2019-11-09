@@ -42,6 +42,7 @@
         <!-- Affects tests of CLI, etc. -->
         <env name="PHAN_ENABLE_COLOR_OUTPUT" value="" force="true" />
         <env name="PHAN_DISABLE_COLOR_OUTPUT" value="" force="true" />
+        <env name="PHAN_DISABLE_PROGRESS_BAR" value="1" force="true" />
         <env name="PHAN_COLOR_SCHEME" value="" force="true" />
     </php>
 

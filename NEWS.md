@@ -7,6 +7,7 @@ New features(CLI, Configs):
 + Support `NO_COLOR` environment variable. (https://no-color.org/)
   When this variable is set, Phan's error message and issue text will not be colorized unless the CLI arg `--color` or `-c` is used.
   This overrides the `PHAN_ENABLE_COLOR_OUTPUT` setting.
++ Add `PHAN_DISABLE_PROGRESS_BAR` environment variable to disable progress bar by default unless the CLI arg `--progress-bar` is used.
 
 New features(Analysis):
 + Make issue suggestions (and CLI suggestions) for completions of prefixes case-insensitive.
@@ -24,6 +25,8 @@ Maintenance:
 
 Bug fixes:
 + Fix false positive inference that `$x[0]` was `string` for `$x` of types such as `list<\MyClass>|string` (reported in #3483)
++ Consistently inherit analysis settings from parent classes recursively, instead of only inheriting them from the direct parent class. (#3472)
+  (settings include presence of dynamic properties, whether undeclared magic methods are forbidden, etc.)
 
 Nov 08 2019, Phan 2.4.2
 -----------------------

@@ -2075,7 +2075,7 @@ class Clazz extends AddressableElement
                 return false;
             }
             $checked[$current->getFQSEN()->__toString()] = true;
-            $current = $this->getParentClass($code_base);
+            $current = $current->getParentClass($code_base);
             if (\array_key_exists($current->getFQSEN()->__toString(), $checked)) {
                 // Prevent infinite recursion.
                 return false;
