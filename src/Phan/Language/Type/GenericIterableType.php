@@ -225,6 +225,21 @@ final class GenericIterableType extends IterableType
         }
         return GenericArrayType::fromElementType($element_type, false, $key_type);
     }
+
+    /**
+     * Returns a type where all referenced union types (e.g. in generic arrays) have real type sets removed.
+     */
+    public function withErasedUnionTypes() : Type
+    {
+        return $this->memoize(__METHOD__, function () : Type {
+            $erased_element_union_type = $this->element_union_type->eraseRealTypeSetRecursively();
+            $erased_key_union_type = $this->key_union_type->eraseRealTypeSetRecursively();
+            if ($erased_key_union_type === $this->key_union_type && $erased_element_union_type === $this->element_union_type) {
+                return $this;
+            }
+            return self::fromKeyAndValueTypes($this->key_union_type, $erased_element_union_type, $this->is_nullable);
+        });
+    }
 }
 // Trigger autoloader for subclass before make() can get called.
 \class_exists(ArrayType::class);

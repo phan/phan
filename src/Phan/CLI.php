@@ -934,7 +934,8 @@ class CLI
         }
     }
 
-    private static function hasNoColorEnv() : bool {
+    private static function hasNoColorEnv() : bool
+    {
         return getenv('PHAN_DISABLE_COLOR_OUTPUT') || getenv('NO_COLOR');
     }
 

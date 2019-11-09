@@ -11,6 +11,10 @@ New features(CLI, Configs):
 New features(Analysis):
 + Make issue suggestions (and CLI suggestions) for completions of prefixes case-insensitive.
 + Support `@seal-properties` and `@seal-methods` as aliases of `@phan-forbid-undeclared-magic-properties` and `@phan-forbid-undeclared-magic-methods`
++ More aggressively infer real types of array destructuring(e.g. `[$x] = expr`) and accesses of array dimensions (e.g. `$x = expr[dim]`) (#3481)
+
+  This will result in a few more false positives about potentially real redundant/impossible conditions and real type mismatches.
++ Fix false positives caused by assuming that the default values of properties are the real types of properties.
 
 Plugins:
 + Also start checking if closures (and arrow functions) can be static in `PossiblyStaticMethodPlugin`

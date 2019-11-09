@@ -286,7 +286,7 @@ trait ConditionVisitorUtil
             }
             if ($type instanceof ScalarType) {
                 if ($type instanceof StringType) {
-                    if ($access_type !== ConditionVisitor::ACCESS_IS_SET) {
+                    if (\in_array($access_type, [ConditionVisitor::ACCESS_IS_OBJECT, ConditionVisitor::ACCESS_ARRAY_KEY_EXISTS, ConditionVisitor::ACCESS_STRING_DIM_SET], true)) {
                         return [];
                     }
                     if ($type instanceof LiteralStringType && $type->getValue() === '') {

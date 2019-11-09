@@ -4005,4 +4005,14 @@ class Type
     {
         return $this->isPossiblyFalsey() && $other->isPossiblyFalsey();
     }
+
+    /**
+     * Returns a type where all referenced union types (e.g. in generic arrays) have real type sets removed.
+     * Overridden in subclasses
+     * @phan-pure
+     */
+    public function withErasedUnionTypes() : Type
+    {
+        return $this;
+    }
 }

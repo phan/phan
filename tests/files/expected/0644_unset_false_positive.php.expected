@@ -1,0 +1,1 @@
+%s:5 PhanImpossibleTypeComparison Impossible attempt to check if $arr['x'] of type true is identical to null of type null

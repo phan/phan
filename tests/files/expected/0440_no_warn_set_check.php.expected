@@ -1,1 +1,1 @@
-%s:7 PhanTypeMismatchReturn Returning type array{} but test() is declared to return string
+%s:7 PhanTypeMismatchReturnReal Returning type array{} (real type ?array{}) but test() is declared to return string

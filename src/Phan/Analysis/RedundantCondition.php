@@ -11,6 +11,7 @@ use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Context;
+use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use Phan\Parse\ParseVisitor;
 
@@ -182,5 +183,23 @@ class RedundantCondition
             }
         }
         return $result;
+    }
+
+    /**
+     * Returns true for if $node is an expression that wouldn't be null, but for which isset($var_node) can return false.
+     *
+     * e.g. `isset($str[5])`
+     * @param Node|string|int|float $node
+     */
+    public static function shouldNotWarnAboutIssetCheckForNonNullExpression(CodeBase $code_base, Context $context, $node) : bool
+    {
+        if (!$node instanceof Node) {
+            return false;
+        }
+        if ($node->kind === ast\AST_DIM) {
+            // Surprisingly, $str[$invalidOffset] is the empty string instead of null, and isset($str[$invalid]) is false.
+            return UnionTypeVisitor::unionTypeFromNode($code_base, $context, $node->children['expr'], false)->canCastToUnionType(StringType::instance(true)->asPHPDocUnionType());
+        }
+        return false;
     }
 }

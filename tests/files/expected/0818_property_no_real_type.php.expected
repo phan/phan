@@ -1,0 +1,3 @@
+%s:7 PhanDebugAnnotation @phan-debug-var requested for variable $opt - it has union type array{files:array{}}
+%s:9 PhanDebugAnnotation @phan-debug-var requested for variable $files - it has union type array{}
+%s:9 PhanUnusedVariable Unused definition of variable $files

@@ -347,8 +347,11 @@ class AssignmentVisitor extends AnalysisVisitor
     {
         // Figure out the type of elements in the list
         $fallback_element_type = null;
+        /** @suppress PhanAccessMethodInternal */
         $get_fallback_element_type = function () use (&$fallback_element_type) : UnionType {
-            return $fallback_element_type ?? ($fallback_element_type = $this->right_type->genericArrayElementTypes());
+            return $fallback_element_type ?? ($fallback_element_type = (
+                $this->right_type->genericArrayElementTypes()
+                                 ->withRealTypeSet(UnionType::computeRealElementTypesForDestructuringAccess($this->right_type->getRealTypeSet()))));
         };
 
         $expect_string_keys_lineno = false;
@@ -646,7 +649,9 @@ class AssignmentVisitor extends AnalysisVisitor
                 );
             }
             $element_type =
-                $array_access_types->genericArrayElementTypes();
+                $array_access_types->genericArrayElementTypes()
+                                   ->withRealTypeSet(UnionType::computeRealElementTypesForDestructuringAccess($right_type->getRealTypeSet()));
+            // @phan-suppress-previous-line PhanAccessMethodInternal
         }
 
         $expect_string_keys_lineno = false;

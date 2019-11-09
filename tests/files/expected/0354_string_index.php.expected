@@ -17,4 +17,4 @@
 %s:40 PhanTypeMismatchArgumentInternal Argument 1 ($string) is 2 but \strlen() takes string
 %s:41 PhanTypeInvalidDimOffset Invalid offset 2 of array type array{0:1,1:2,3:'x'}
 %s:41 PhanTypeMismatchArgumentInternal Argument 1 ($string) is null but \strlen() takes string
-%s:43 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is 'x' but \intdiv() takes int
+%s:43 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($numerator) is 'x' but \intdiv() takes int

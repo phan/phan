@@ -145,4 +145,24 @@ class AnnotatedUnionType extends UnionType
         }
         return $id;
     }
+
+    /**
+     * Returns a union type with an empty real type set (including in elements of generic arrays, etc.)
+     */
+    public function eraseRealTypeSetRecursively() : UnionType
+    {
+        $type_set = $this->getTypeSet();
+        $new_type_set = [];
+        foreach ($type_set as $type) {
+            $new_type_set[] = $type->withErasedUnionTypes();
+        }
+        $real_type_set = $this->getRealTypeSet();
+        if (!$real_type_set && $new_type_set === $type_set) {
+            return $this;
+        }
+        $result = new AnnotatedUnionType($new_type_set, false, $real_type_set);
+        // @phan-suppress-next-line PhanAccessReadOnlyProperty
+        $result->is_possibly_undefined = $this->is_possibly_undefined;
+        return $result;
+    }
 }

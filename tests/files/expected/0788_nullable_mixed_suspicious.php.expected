@@ -1,2 +1,2 @@
-%s:6 PhanTypeMismatchArgumentInternal Argument 1 ($string) is string[] but \strlen() takes string
+%s:6 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is string[] (real type ?array) but \strlen() takes string
 %s:9 PhanTypeArraySuspiciousNullable Suspicious array access to nullable ?mixed

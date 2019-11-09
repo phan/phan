@@ -1,1 +1,1 @@
-%s:6 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is \stdClass but \intdiv() takes int
+%s:6 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($numerator) is \stdClass (real type ?\stdClass) but \intdiv() takes int

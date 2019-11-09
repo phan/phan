@@ -10,12 +10,12 @@ call_user_func(
         } else {
             echo strlen($data);
         }
-        // It's possible that the phpdoc types were wrong. Don't warn (this isn't strict mode).
+        // It's possible that the phpdoc types were wrong. Emit a less severe warning.
         if (isset($str[5])) {
             echo count($str);  '@phan-debug-var $str';
         }
         if (isset($str['field'])) {
-            echo strlen($str);  // $str is definitely not a string
+            echo strlen($str);  // $str is definitely not a string TODO: Make this warn again
         }
     },
     [],

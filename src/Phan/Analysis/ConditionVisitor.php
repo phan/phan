@@ -334,6 +334,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
     public const ACCESS_ARRAY_KEY_EXISTS = 2;
     public const ACCESS_IS_SET = 3;
     public const ACCESS_DIM_SET = 4;
+    public const ACCESS_STRING_DIM_SET = 5;
 
     /** @internal */
     public const DEFAULTS_FOR_ACCESS_TYPE = [
@@ -341,6 +342,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         self::ACCESS_ARRAY_KEY_EXISTS => 'non-empty-array|object',
         self::ACCESS_IS_SET => 'int|string|float|bool|non-empty-array|object|resource',
         self::ACCESS_DIM_SET => 'string|non-empty-array|object',
+        self::ACCESS_STRING_DIM_SET => 'non-empty-array|object',
     ];
 
     /**
@@ -468,7 +470,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                 // Allow `isset($x[0])` to imply $x can be a string, but not `isset($x['field'])`
                 $dim = $node->children['dim'] ?? null;
                 if (\is_string($dim) && \filter_var($dim, \FILTER_VALIDATE_INT) === false) {
-                    $access_kind = self::ACCESS_ARRAY_KEY_EXISTS;
+                    $access_kind = self::ACCESS_STRING_DIM_SET;
                 } else {
                     $access_kind = self::ACCESS_DIM_SET;
                 }

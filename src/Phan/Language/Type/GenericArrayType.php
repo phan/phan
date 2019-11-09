@@ -798,6 +798,25 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
         );
     }
 
+    /**
+     * Returns a type where all referenced union types (e.g. in generic arrays) have real type sets removed.
+     * @phan-real-return static
+     */
+    public function withErasedUnionTypes() : Type
+    {
+        return $this->memoize(__METHOD__, function () : GenericArrayType {
+            $erased_element_type = $this->element_type->withErasedUnionTypes();
+            if ($erased_element_type === $this->element_type) {
+                return $this;
+            }
+            return static::fromElementType(
+                $erased_element_type,
+                $this->is_nullable,
+                $this->key_type
+            );
+        });
+    }
+
     public function asCallableType() : ?Type
     {
         if ($this->key_type === self::KEY_INT) {
