@@ -10,6 +10,7 @@ New features(CLI, Configs):
 
 New features(Analysis):
 + Make issue suggestions (and CLI suggestions) for completions of prefixes case-insensitive.
++ Support `@seal-properties` and `@seal-methods` as aliases of `@phan-forbid-undeclared-magic-properties` and `@phan-forbid-undeclared-magic-methods`
 
 Plugins:
 + Also start checking if closures (and arrow functions) can be static in `PossiblyStaticMethodPlugin`

@@ -4,7 +4,7 @@
  * @method string magicMethod()
  * @method static string magicStaticMethod()
  *
- * @phan-forbid-undeclared-magic-methods
+ * @seal-methods
  */
 class BaseClass483 {
     private function baseMethod() {

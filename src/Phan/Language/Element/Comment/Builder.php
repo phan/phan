@@ -371,7 +371,7 @@ final class Builder
         // https://secure.php.net/manual/en/regexp.reference.internal-options.php
         // (?i) makes this case-sensitive, (?-1) makes it case-insensitive
         // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-        if (\preg_match('/@((?i)param|var|return|throws|throw|returns|inherits|extends|suppress|phan-[a-z0-9_-]*(?-i)|method|property|property-read|property-write|template|PhanClosureScope|readonly|mixin)(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/', $line, $matches)) {
+        if (\preg_match('/@((?i)param|var|return|throws|throw|returns|inherits|extends|suppress|phan-[a-z0-9_-]*(?-i)|method|property|property-read|property-write|template|PhanClosureScope|readonly|mixin|seal-(?:methods|properties))(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/', $line, $matches)) {
             $case_sensitive_type = $matches[1];
             $type = \strtolower($case_sensitive_type);
 
@@ -432,6 +432,16 @@ final class Builder
                 case 'mixin':
                     $this->parseMixin($i, $line, 'mixin');
                     break;
+                case 'seal-properties':
+                    if ($this->checkCompatible('@seal-properties', [Comment::ON_CLASS], $i)) {
+                        $this->comment_flags |= Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES;
+                    }
+                    return;
+                case 'seal-methods':
+                    if ($this->checkCompatible('@seal-methods', [Comment::ON_CLASS], $i)) {
+                        $this->comment_flags |= Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS;
+                    }
+                    return;
                 default:
                     if (\strpos($type, 'phan-') === 0) {
                         $this->maybeParsePhanCustomAnnotation($i, $line, $type, $case_sensitive_type);
