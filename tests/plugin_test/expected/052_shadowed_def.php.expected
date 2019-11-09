@@ -1,5 +1,8 @@
+src/052_shadowed_def.php:3 PhanPluginPossiblyStaticClosure Closure() can be static
 src/052_shadowed_def.php:4 PhanUnusedVariable Unused definition of variable $a
 src/052_shadowed_def.php:6 PhanPluginRedundantAssignment Assigning true to variable $a which already has that value
+src/052_shadowed_def.php:11 PhanPluginPossiblyStaticClosure Closure() can be static
 src/052_shadowed_def.php:15 PhanPluginRedundantAssignment Assigning true to variable $a which already has that value
+src/052_shadowed_def.php:21 PhanPluginPossiblyStaticClosure Closure() can be static
 src/052_shadowed_def.php:22 PhanUnusedVariable Unused definition of variable $a
 src/052_shadowed_def.php:25 PhanPluginRedundantAssignment Assigning true to variable $a which already has that value

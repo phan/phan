@@ -1,5 +1,5 @@
 <?php
-call_user_func(function () {
+call_user_func(static function () {
     $i = 0;  // Phan correctly does not warn about this being unused
     for (;;$i = rand(0,10)) {
         if ($i === 2) {

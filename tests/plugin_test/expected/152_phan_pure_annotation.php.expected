@@ -5,4 +5,5 @@ src/152_phan_pure_annotation.php:52 PhanPluginNonBoolBranch Non bool value of ty
 src/152_phan_pure_annotation.php:58 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \NS152\debug_trace() defined at src/152_phan_pure_annotation.php:44
 src/152_phan_pure_annotation.php:62 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \NS152\Debug::double1() defined at src/152_phan_pure_annotation.php:12
 src/152_phan_pure_annotation.php:64 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \NS152\Debug::triple1() defined at src/152_phan_pure_annotation.php:29
+src/152_phan_pure_annotation.php:67 PhanPluginPossiblyStaticClosure Closure($o) can be static
 src/152_phan_pure_annotation.php:77 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method Closure($o) defined at src/152_phan_pure_annotation.php:72

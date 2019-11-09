@@ -109,7 +109,7 @@ return [
     'plugin_config' => [
         'php_native_syntax_check_max_processes' => 4,
         'unused_suppression_ignore_list' => ['Unused-Issue-In-Config'],
-        'possibly_static_method_ignore_regex' => '/^(?!PSM)/',
+        'possibly_static_method_ignore_regex' => '/^(?!(PSM|function_))/',
         'infer_pure_methods' => true,
     ],
 

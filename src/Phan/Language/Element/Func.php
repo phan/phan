@@ -358,6 +358,15 @@ class Func extends AddressableElement implements FunctionInterface
     }
 
     /**
+     * @return bool
+     * True if this is a static closure or arrow func, such as `static fn() => $x`
+     */
+    public function isStatic() : bool
+    {
+        return $this->getFlagsHasState(flags\MODIFIER_STATIC);
+    }
+
+    /**
      * @return bool Always false for global functions.
      */
     public function isFromPHPDoc() : bool

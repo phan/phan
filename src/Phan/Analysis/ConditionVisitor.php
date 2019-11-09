@@ -467,7 +467,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             } else {
                 // Allow `isset($x[0])` to imply $x can be a string, but not `isset($x['field'])`
                 $dim = $node->children['dim'] ?? null;
-                if (is_string($dim) && \filter_var($dim, \FILTER_VALIDATE_INT) === false) {
+                if (\is_string($dim) && \filter_var($dim, \FILTER_VALIDATE_INT) === false) {
                     $access_kind = self::ACCESS_ARRAY_KEY_EXISTS;
                 } else {
                     $access_kind = self::ACCESS_DIM_SET;

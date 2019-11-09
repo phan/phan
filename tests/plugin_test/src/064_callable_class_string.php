@@ -16,7 +16,7 @@ function test_callable_string($x) {
 test_callable_string('strlen');
 test_callable_string('stdClass');  // Phan should warn about this
 test_callable_string('');  // Phan should warn about this
-test_callable_string(function () {});  // Phan should warn about this
+test_callable_string(static function () {});  // Phan should warn about this
 var_export(new ReflectionClass('invalid class name'));
 var_export(new ReflectionClass('Some\MissingClass'));
 var_export(new ReflectionClass('stdClass'));

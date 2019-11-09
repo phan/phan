@@ -6,8 +6,8 @@
  */
 function test17() {
     [
-        (function(string $x) { echo "$x\n"; })('test'),
-        [function(string $x) { echo "$x\n"; }],
+        (static function(string $x) { echo "$x\n"; })('test'),
+        [static function(string $x) { echo "$x\n"; }],
     ];
 }
 test17();

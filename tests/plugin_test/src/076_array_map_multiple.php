@@ -6,7 +6,7 @@
  * @return array<string,int>
  */
 function array_map_multiple_test(array $a, array $b) {
-    // Should warn about wrong params and return type
+    // Should warn about wrong params and return type. TODO: Could optionally use less severe warning here if static vs non-static is guaranteed not to have performance impact.
     return array_map(function(stdClass $x, string $y) : array {
         return [$x, $y];
     }, $a, $b);

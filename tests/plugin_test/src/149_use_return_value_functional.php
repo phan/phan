@@ -4,7 +4,7 @@
  * @return int[]
  */
 function odds149(array $values) : array {
-    return array_filter($values, function (int $x) {
+    return array_filter($values, static function (int $x) {
         return $x % 2 != 0;
     });
 }

@@ -1,5 +1,7 @@
+src/163_in_array_impossible.php:8 PhanPluginPossiblyStaticClosure Closure($result) : void can be static
 src/163_in_array_impossible.php:15 PhanImpossibleTypeComparison Impossible attempt to check if null of type null is identical to elements of [0] of type 0
 src/163_in_array_impossible.php:16 PhanImpossibleTypeComparison Impossible attempt to check if 0.0 of type 0.0 is identical to elements of [0] of type 0
+src/163_in_array_impossible.php:19 PhanPluginPossiblyStaticClosure Closure(\stdClass $o1, \stdClass $o2, int $i, int ...$other) can be static
 src/163_in_array_impossible.php:22 PhanImpossibleTypeComparison Impossible attempt to check if $o2 of type \stdClass is identical to elements of $other of type int
 src/163_in_array_impossible.php:23 PhanImpossibleTypeComparison Impossible attempt to check if 2.3 of type 2.3 is identical to elements of $other of type int
 src/163_in_array_impossible.php:24 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare $o2 of type \stdClass to elements of $other of type int

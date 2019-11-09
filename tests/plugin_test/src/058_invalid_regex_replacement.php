@@ -1,5 +1,5 @@
 <?php
-call_user_func(function () {
+call_user_func(static function () {
     echo preg_replace('/foo/i', '\0t', 'fooball');
     echo preg_replace('/foo/i', '$0t', 'fooball');
     echo preg_replace('/foo/i', '\1t', 'fooball');

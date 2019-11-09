@@ -55,7 +55,7 @@ call_user_func(static function () : void {
         ],
         $optind
     );
-    $has_any_option = function (string ...$arg_names) use ($options) : bool {
+    $has_any_option = static function (string ...$arg_names) use ($options) : bool {
         foreach ($arg_names as $arg) {
             if (array_key_exists($arg, $options)) {
                 return true;
