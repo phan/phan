@@ -3,6 +3,11 @@ Phan NEWS
 ??? ?? 2019, Phan 2.4.3 (dev)
 -----------------------
 
+New features(CLI, Configs):
++ Support `NO_COLOR` environment variable. (https://no-color.org/)
+  When this variable is set, Phan's error message and issue text will not be colorized unless the CLI arg `--color` or `-c` is used.
+  This overrides the `PHAN_ENABLE_COLOR_OUTPUT` setting.
+
 New features(Analysis):
 + Make issue suggestions (and CLI suggestions) for completions of prefixes case-insensitive.
 

@@ -927,11 +927,15 @@ class CLI
             Config::setValue('color_issue_messages', true);
         } elseif (isset($opts['no-color'])) {
             Config::setValue('color_issue_messages', false);
-        } elseif (getenv('PHAN_DISABLE_COLOR_OUTPUT')) {
+        } elseif (self::hasNoColorEnv()) {
             Config::setValue('color_issue_messages', false);
         } elseif (getenv('PHAN_ENABLE_COLOR_OUTPUT')) {
             Config::setValue('color_issue_messages_if_supported', true);
         }
+    }
+
+    private static function hasNoColorEnv() : bool {
+        return getenv('PHAN_DISABLE_COLOR_OUTPUT') || getenv('NO_COLOR');
     }
 
     private static function checkValidFileConfig() : void
@@ -1687,7 +1691,7 @@ EOB
      */
     public static function colorizeHelpSectionIfSupported(string $section) : string
     {
-        if (Config::getValue('color_issue_messages') ?? (!getenv('PHAN_DISABLE_COLOR_OUTPUT') && self::supportsColor(\STDOUT))) {
+        if (Config::getValue('color_issue_messages') ?? (!self::hasNoColorEnv() && self::supportsColor(\STDOUT))) {
             $section = self::colorizeHelpSection($section);
         }
         return $section;

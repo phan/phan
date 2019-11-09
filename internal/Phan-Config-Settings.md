@@ -875,7 +875,7 @@ as well as how Phan will warn about being misconfigured.
 
 Enable this to automatically use colorized phan output for the 'text' output format if the terminal supports it.
 Alternately, set PHAN_ENABLE_COLOR_OUTPUT=1.
-This config setting can be overridden with PHAN_DISABLE_COLOR_OUTPUT=1.
+This config setting can be overridden with NO_COLOR=1 or PHAN_DISABLE_COLOR_OUTPUT=1.
 
 (Default: `false`)
 
