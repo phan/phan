@@ -680,10 +680,10 @@ class IssueFixSuggester
         $best_matches = [];
         $min_found_distance = $max_levenshtein_distance;
 
-        foreach ($potential_candidates as $name => $_) {
+        foreach ($potential_candidates as $name => $value) {
             $name = (string)$name;
-            if (\strncmp($name, $target, $target_length) === 0) {
-                // If this has $target as a case-sensitive prefix, then treat it as a fairly good match
+            if (\strncasecmp($name, $target, $target_length) === 0) {
+                // If this has $target as a case-insensitive prefix, then treat it as a fairly good match
                 // (included with single-character edits)
                 $distance = $target_length !== strlen($name) ? 1 : 0;
             } elseif ($target_length >= 1) {
@@ -699,7 +699,7 @@ class IssueFixSuggester
                     $min_found_distance = $distance;
                     $best_matches = [];
                 }
-                $best_matches[$name] = $_;
+                $best_matches[$name] = $value;
             }
         }
         return $best_matches;

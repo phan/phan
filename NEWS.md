@@ -3,6 +3,9 @@ Phan NEWS
 ??? ?? 2019, Phan 2.4.3 (dev)
 -----------------------
 
+New features(Analysis):
++ Make issue suggestions (and CLI suggestions) for completions of prefixes case-insensitive.
+
 Plugins:
 + Also start checking if closures (and arrow functions) can be static in `PossiblyStaticMethodPlugin`
 
