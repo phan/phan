@@ -38,6 +38,6 @@ php -r 'function_exists("ast\parse_code") || exit("Failed to enable php-ast");'
 
 echo "extension=$EXPECTED_AST_FILE" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
 
-# Disable xdebug, since we aren't currently gathering code coverage data and
-# having xdebug slows down Composer a bit.
+# Disable Xdebug, since we aren't currently gathering code coverage data and
+# having Xdebug slows down Composer a bit.
 phpenv config-rm xdebug.ini

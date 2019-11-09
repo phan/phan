@@ -914,7 +914,7 @@ By default, Phan will warn if the 'tokenizer' module isn't installed and enabled
 ## skip_slow_php_options_warning
 
 By default, Phan will log error messages to stdout if PHP is using options that slow the analysis.
-(e.g. PHP is compiled with `--enable-debug` or when using XDebug)
+(e.g. PHP is compiled with `--enable-debug` or when using Xdebug)
 
 (Default: `false`)
 
