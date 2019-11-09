@@ -32,7 +32,7 @@ function test_template($a, $b) {
      * @param \TTemplate2 $y
      * @return \TTemplate2
      */
-    call_user_func(function ($y) {
+    call_user_func(static function ($y) {
         var_export($y);
         return $y;
     }, $b);

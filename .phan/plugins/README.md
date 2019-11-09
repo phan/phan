@@ -382,7 +382,8 @@ E.g. warns about invoking `function example($first, $second, $third)` as `exampl
 
 Checks if a method can be made static without causing any errors.
 
-- **PhanPluginPossiblyStaticPublicMethod**: `Public method {PROPERTY} can be static` (Also exists for Private and Protected)
+- **PhanPluginPossiblyStaticPublicMethod**: `Public method {METHOD} can be static` (Also exists for Private and Protected)
+- **PhanPluginPossiblyStaticClosure**: `{FUNCTION} can be static`
 
 Warnings may need to be completely disabled due to the large number of method declarations in a typical codebase:
 

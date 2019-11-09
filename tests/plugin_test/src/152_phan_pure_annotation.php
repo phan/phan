@@ -69,7 +69,7 @@ $trace1 = function ($o) {
     return $o;
 };
 /** @phan-side-effect-free */
-$trace2 = function ($o) {
+$trace2 = static function ($o) {
     fwrite(STDERR, "Saw $o\n");
     return $o;
 };

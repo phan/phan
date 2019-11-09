@@ -692,7 +692,7 @@ final class UnionTypeTest extends BaseTest
 
     public function testFunctionSignatureMapConsistency() : void
     {
-        $signatures_dir = dirname(__DIR__, 3) . '/src/Phan/Language/Internal';
+        $signatures_dir = \dirname(__DIR__, 3) . '/src/Phan/Language/Internal';
         $php80_map = UnionType::internalFunctionSignatureMap(80000);
         $php74_map = UnionType::internalFunctionSignatureMap(70400);
         $php73_map = UnionType::internalFunctionSignatureMap(70300);
@@ -725,8 +725,8 @@ final class UnionTypeTest extends BaseTest
         $errors = '';
         $new_deltas = $deltas['new'];
         $old_deltas = $deltas['old'];
-        $new_deltas = array_change_key_case($new_deltas, \CASE_LOWER);
-        $old_deltas = array_change_key_case($old_deltas, \CASE_LOWER);
+        $new_deltas = \array_change_key_case($new_deltas, \CASE_LOWER);
+        $old_deltas = \array_change_key_case($old_deltas, \CASE_LOWER);
         foreach ($new_deltas as $function_key => $new_signature) {
             if (($old_deltas[$function_key] ?? null) === $new_deltas) {
                 $errors .= "For $function_key: Old deltas in $name were the same as new deltas\n";
@@ -740,7 +740,7 @@ final class UnionTypeTest extends BaseTest
                 continue;
             }
             if ($actual_new_signature !== $new_signature) {
-                $errors .= "Different $function_key for $name from new deltas :\n " . json_encode($actual_new_signature) . " !=\n " . json_encode($new_signature) . "\n";
+                $errors .= "Different $function_key for $name from new deltas :\n " . \json_encode($actual_new_signature) . " !=\n " . \json_encode($new_signature) . "\n";
                 continue;
             }
         }
@@ -754,7 +754,7 @@ final class UnionTypeTest extends BaseTest
                 continue;
             }
             if ($actual_old_signature !== $old_signature) {
-                $errors .= "Different $function_key for $name from old deltas :\n " . json_encode($actual_old_signature) . " !=\n " . json_encode($old_signature) . "\n";
+                $errors .= "Different $function_key for $name from old deltas :\n " . \json_encode($actual_old_signature) . " !=\n " . \json_encode($old_signature) . "\n";
                 continue;
             }
         }

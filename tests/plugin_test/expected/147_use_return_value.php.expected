@@ -1,1 +1,3 @@
+src/147_use_return_value.php:4 PhanPluginPossiblyStaticClosure Closure(int $v) can be static
+src/147_use_return_value.php:8 PhanPluginPossiblyStaticClosure Closure(int $v) can be static
 src/147_use_return_value.php:12 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method Closure(int $v) defined at src/147_use_return_value.php:4

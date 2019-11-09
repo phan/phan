@@ -1,1 +1,4 @@
+src/122_closure_reference.php:4 PhanPluginPossiblyStaticClosure Closure() can be static
+src/122_closure_reference.php:12 PhanPluginPossiblyStaticClosure Closure() can be static
+src/122_closure_reference.php:21 PhanPluginPossiblyStaticClosure Closure() can be static
 src/122_closure_reference.php:21 PhanUnusedVariableReference Unused definition of variable $was_called as a reference

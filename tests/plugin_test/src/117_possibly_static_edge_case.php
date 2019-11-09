@@ -49,3 +49,5 @@ $s->f3();
 $s->f4();
 $s->f4b();
 $s->f5('instanceMethod');
+$double = function ($x) { return $x * 2; };
+echo $double(2), "\n";

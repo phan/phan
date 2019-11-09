@@ -1,5 +1,5 @@
 <?php
-call_user_func(function () {
+call_user_func(static function () {
     preg_match('/(?|(a)b)/', 'ab', $matches);
     echo $matches[2];
     preg_match('/(?|(a)b|c(d))/', 'ab', $matches);

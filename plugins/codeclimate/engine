@@ -70,7 +70,7 @@ call_user_func(static function () use ($code_base) : void {
     /**
      * @param string $file_path
      */
-    $queue_file = function (string $file_path) use (&$include_paths, $file_extensions) : void {
+    $queue_file = static function (string $file_path) use (&$include_paths, $file_extensions) : void {
         $file_info = new SplFileInfo($file_path);
 
         if (in_array($file_info->getExtension(), $file_extensions, true)) {
@@ -79,7 +79,7 @@ call_user_func(static function () use ($code_base) : void {
     };
 
     // Todo: wrap with `-l` console logic instead of custom function
-    $queue_with_include_paths = function (string $dir_path) use (&$queue_with_include_paths, &$queue_file) : void {
+    $queue_with_include_paths = static function (string $dir_path) use (&$queue_with_include_paths, &$queue_file) : void {
         foreach (scandir($dir_path) as $f) {
             if ($f !== '.' and $f !== '..') {
                 if (is_dir("$dir_path/$f")) {

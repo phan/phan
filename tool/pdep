@@ -179,7 +179,7 @@ call_user_func(static function () : void {
     $cli_builder->setOption('config-file', dirname($tool_dir) . '/internal/pdep_config.php');
     // @phan-suppress-next-line PhanThrowTypeAbsentForCall
     $cli = $cli_builder->build();
-    $putenv = function (string $key, string $value) : void {
+    $putenv = static function (string $key, string $value) : void {
         putenv("$key=$value");
         $_ENV[$key] = $value;
     };

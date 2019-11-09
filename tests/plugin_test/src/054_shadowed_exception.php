@@ -1,6 +1,6 @@
 <?php
 
-call_user_func(function () {
+call_user_func(static function () {
     try {
         throw new Exception('first test');
     } catch (Exception $e) {  // Should warn

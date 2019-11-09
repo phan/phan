@@ -11,5 +11,6 @@ src/069_template_var.php:44 PhanTemplateTypeNotUsedInFunctionReturn Template typ
 src/069_template_var.php:47 PhanPluginDollarDollar $$ Variables are not allowed.
 src/069_template_var.php:48 PhanTypeMismatchArgumentInternal Argument 1 ($string) is TInner but \strlen() takes string
 src/069_template_var.php:50 PhanTypeMismatchArgumentInternal Argument 1 ($string) is TInner but \strlen() takes string
+src/069_template_var.php:54 PhanPluginPossiblyStaticClosure Closure($arg) can be static
 src/069_template_var.php:60 PhanTypeMismatchReturn Returning type TOther but test_inline_var_creation() is declared to return TInner
 src/069_template_var.php:63 PhanTypeMismatchReturn Returning type array{0:TInner} but test_inline_var_creation() is declared to return TInner

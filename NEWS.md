@@ -3,6 +3,9 @@ Phan NEWS
 ??? ?? 2019, Phan 2.4.3 (dev)
 -----------------------
 
+Plugins:
++ Also start checking if closures (and arrow functions) can be static in `PossiblyStaticMethodPlugin`
+
 Nov 08 2019, Phan 2.4.2
 -----------------------
 
