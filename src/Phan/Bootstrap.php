@@ -44,7 +44,7 @@ if (extension_loaded('ast')) {
 if (PHP_VERSION_ID < 70100) {
     fprintf(
         STDERR,
-        "Phan 2.0 requires PHP 7.1+ to run, but PHP %s is installed." . PHP_EOL,
+        "ERROR: Phan 2.x requires PHP 7.1+ to run, but PHP %s is installed." . PHP_EOL,
         PHP_VERSION
     );
     fwrite(STDERR, "PHP 7.0 reached its end of life in December 2018." . PHP_EOL);
@@ -93,13 +93,13 @@ assert_options(ASSERT_CALLBACK, '');  // Can't explicitly set ASSERT_CALLBACK to
  * @suppress PhanAccessMethodInternal
  */
 set_exception_handler(static function (Throwable $throwable) : void {
-    error_log("$throwable\n");
+    fwrite(STDERR, "ERROR: $throwable\n");
     if (class_exists(CodeBase::class, false)) {
         $most_recent_file = CodeBase::getMostRecentlyParsedOrAnalyzedFile();
         if (is_string($most_recent_file)) {
-            error_log(sprintf("(Phan %s crashed due to an uncaught Throwable when parsing/analyzing '%s')\n", CLI::PHAN_VERSION, $most_recent_file));
+            fprintf(STDERR, "(Phan %s crashed due to an uncaught Throwable when parsing/analyzing '%s')\n", CLI::PHAN_VERSION, $most_recent_file);
         } else {
-            error_log(sprintf("(Phan %s crashed due to an uncaught Throwable)\n", CLI::PHAN_VERSION));
+            fprintf(STDERR, "(Phan %s crashed due to an uncaught Throwable)\n", CLI::PHAN_VERSION);
         }
     }
     exit(EXIT_FAILURE);
@@ -203,23 +203,16 @@ function phan_error_handler(int $errno, string $errstr, string $errfile, int $er
         // Don't execute the PHP internal error handler.
         return true;
     }
-    if (in_array(basename($errfile), ['JsonMapper.php', 'Dispatcher.php'], true)) {
-        // TODO get rid of this once the minimum jsonmapper version is bumped to 1.5.2
-        // for https://github.com/cweiske/jsonmapper/pull/130
-        // and when php-advanced-json-rpc releases https://github.com/felixfbecker/php-advanced-json-rpc/pull/33
-        return true;
-    }
     if ($errno === E_DEPRECATED && preg_match('/ast\\\\parse_.*Version.*is deprecated/i', $errstr)) {
         static $did_warn = false;
         if (!$did_warn) {
             $did_warn = true;
             if (!getenv('PHAN_SUPPRESS_AST_DEPRECATION')) {
-                fprintf(
-                    STDERR,
+                CLI::printWarningToStderr(sprintf(
                     "php-ast AST version %d used by Phan %s has been deprecated. Check if a newer version of Phan is available." . PHP_EOL,
                     Config::AST_VERSION,
                     CLI::PHAN_VERSION
-                );
+                ));
                 fwrite(STDERR, "(Set PHAN_SUPPRESS_AST_DEPRECATION=1 to suppress this message)" . PHP_EOL);
             }
         }

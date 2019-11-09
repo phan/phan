@@ -9,6 +9,9 @@ New features(Analysis):
 Plugins:
 + Also start checking if closures (and arrow functions) can be static in `PossiblyStaticMethodPlugin`
 
+Maintenance:
++ Bump minimum version of netresearch/jsonmapper to avoid php notices in the language server in php 7.4
+
 Nov 08 2019, Phan 2.4.2
 -----------------------
 
