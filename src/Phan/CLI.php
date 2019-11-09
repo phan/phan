@@ -927,11 +927,15 @@ class CLI
             Config::setValue('color_issue_messages', true);
         } elseif (isset($opts['no-color'])) {
             Config::setValue('color_issue_messages', false);
-        } elseif (getenv('PHAN_DISABLE_COLOR_OUTPUT')) {
+        } elseif (self::hasNoColorEnv()) {
             Config::setValue('color_issue_messages', false);
         } elseif (getenv('PHAN_ENABLE_COLOR_OUTPUT')) {
             Config::setValue('color_issue_messages_if_supported', true);
         }
+    }
+
+    private static function hasNoColorEnv() : bool {
+        return getenv('PHAN_DISABLE_COLOR_OUTPUT') || getenv('NO_COLOR');
     }
 
     private static function checkValidFileConfig() : void
@@ -1687,7 +1691,7 @@ EOB
      */
     public static function colorizeHelpSectionIfSupported(string $section) : string
     {
-        if (Config::getValue('color_issue_messages') ?? (!getenv('PHAN_DISABLE_COLOR_OUTPUT') && self::supportsColor(\STDOUT))) {
+        if (Config::getValue('color_issue_messages') ?? (!self::hasNoColorEnv() && self::supportsColor(\STDOUT))) {
             $section = self::colorizeHelpSection($section);
         }
         return $section;
@@ -2291,13 +2295,13 @@ EOB
         $extensions_to_disable = [];
         if (self::shouldRestartToExclude('xdebug')) {
             $extensions_to_disable[] = 'xdebug';
-            // Restart if xdebug is loaded, unless the environment variable PHAN_ALLOW_XDEBUG is set.
+            // Restart if Xdebug is loaded, unless the environment variable PHAN_ALLOW_XDEBUG is set.
             if (!getenv('PHAN_DISABLE_XDEBUG_WARN')) {
                 fwrite(STDERR, <<<EOT
-[info] Disabling xdebug: Phan is around five times as slow when xdebug is enabled (xdebug only makes sense when debugging Phan itself)
-[info] To run Phan with xdebug, set the environment variable PHAN_ALLOW_XDEBUG to 1.
+[info] Disabling Xdebug: Phan is around five times as slow when Xdebug is enabled (Xdebug only makes sense when debugging Phan itself)
+[info] To run Phan with Xdebug, set the environment variable PHAN_ALLOW_XDEBUG to 1.
 [info] To disable this warning, set the environment variable PHAN_DISABLE_XDEBUG_WARN to 1.
-[info] To include function signatures of xdebug, see .phan/internal_stubs/xdebug.phan_php
+[info] To include function signatures of Xdebug, see .phan/internal_stubs/xdebug.phan_php
 
 EOT
                 );

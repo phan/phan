@@ -6,7 +6,7 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\LoggerTrait;
 
 /**
- * A PSR-3 logger for the composer xdebug handler
+ * A PSR-3 logger for the composer Xdebug handler
  */
 class StderrLogger implements LoggerInterface
 {

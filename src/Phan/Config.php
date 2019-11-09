@@ -696,7 +696,7 @@ class Config
 
         // Enable this to automatically use colorized phan output for the 'text' output format if the terminal supports it.
         // Alternately, set PHAN_ENABLE_COLOR_OUTPUT=1.
-        // This config setting can be overridden with PHAN_DISABLE_COLOR_OUTPUT=1.
+        // This config setting can be overridden with NO_COLOR=1 or PHAN_DISABLE_COLOR_OUTPUT=1.
         'color_issue_messages_if_supported' => false,
 
         // Emit colorized issue messages for the 'text' output mode (false by default with the 'text' output mode to supported terminals).
@@ -742,7 +742,7 @@ class Config
         'print_memory_usage_summary' => false,
 
         // By default, Phan will log error messages to stdout if PHP is using options that slow the analysis.
-        // (e.g. PHP is compiled with `--enable-debug` or when using XDebug)
+        // (e.g. PHP is compiled with `--enable-debug` or when using Xdebug)
         'skip_slow_php_options_warning' => false,
 
         // By default, Phan will warn if the 'tokenizer' module isn't installed and enabled.
