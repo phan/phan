@@ -1043,13 +1043,12 @@ class CLI
                     $details = ' (Referenced as ' . StringUtil::jsonEncode($plugin_path_or_name) . ')';
                     $details .= self::getPluginSuggestionText($plugin_path_or_name);
                 }
-                \fprintf(
-                    STDERR,
+                self::printErrorToStderr(\sprintf(
                     "Phan %s could not find plugin %s%s\n",
                     CLI::PHAN_VERSION,
                     StringUtil::jsonEncode($plugin_file_name),
                     $details
-                );
+                ));
                 $all_plugins_exist = false;
             }
         }
@@ -2219,10 +2218,11 @@ EOB
             return;
         }
         if (!\extension_loaded('ast')) {
-            fwrite(
-                STDERR,
+            self::printHelpSection(
                 // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-                "The php-ast extension must be loaded in order for Phan to work. See https://github.com/phan/phan#getting-started for more details. Alternately, invoke Phan with the CLI option --allow-polyfill-parser (which is noticeably slower)\n"
+                "ERROR: The php-ast extension must be loaded in order for Phan to work. See https://github.com/phan/phan#getting-started for more details. Alternately, invoke Phan with the CLI option --allow-polyfill-parser (which is noticeably slower)\n",
+                false,
+                true
             );
             exit(EXIT_FAILURE);
         }
@@ -2234,13 +2234,15 @@ EOB
                 Config::AST_VERSION
             );
         } catch (\LogicException $_) {
-            fwrite(
-                STDERR,
-                'Unknown AST version ('
+            self::printHelpSection(
+                'ERROR: Unknown AST version ('
                 . Config::AST_VERSION
                 . ') in configuration. '
                 . "You may need to rebuild the latest version of the php-ast extension.\n"
-                . "(You are using php-ast " . (new ReflectionExtension('ast'))->getVersion() . ", but " . Config::MINIMUM_AST_EXTENSION_VERSION . " or newer is required. Alternately, test with --force-polyfill-parser (which is noticeably slower))\n"
+                . "See https://github.com/phan/phan#getting-started for more details.\n"
+                . "(You are using php-ast " . (new ReflectionExtension('ast'))->getVersion() . ", but " . Config::MINIMUM_AST_EXTENSION_VERSION . " or newer is required. Alternately, test with --force-polyfill-parser (which is noticeably slower))\n",
+                false,
+                true
             );
             exit(EXIT_FAILURE);
         }
@@ -2251,12 +2253,13 @@ EOB
                 '<' . '?php syntaxerror',
                 Config::AST_VERSION
             );
-            fwrite(
-                STDERR,
-                'Expected ast\\parse_code to throw ParseError on invalid inputs. Configured AST version: '
+            self::printHelpSection(
+                'ERROR: Expected ast\\parse_code to throw ParseError on invalid inputs. Configured AST version: '
                 . Config::AST_VERSION
                 . '. '
-                . "You may need to rebuild the latest version of the php-ast extension.\n"
+                . "You may need to rebuild the latest version of the php-ast extension.\n",
+                false,
+                true
             );
             exit(EXIT_FAILURE);
         } catch (\ParseError $_) {
