@@ -5,7 +5,7 @@ namespace Phan\Language\Type;
 use Phan\Language\Type;
 
 /**
- * Phan's representation for types such as `non-empty-list` and `non-empty-list<string,MyClass>`
+ * Phan's representation for types such as `non-empty-associative-array` and `non-empty-associative-array<string, MyClass>`
  * @see GenericArrayType for representations of `string[]` and `array<int,bool>`
  * @see ArrayShapeType for representations of `array{key:MyClass}`
  * @see ArrayType for the representation of `array`

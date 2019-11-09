@@ -117,7 +117,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
         };
 
         $json_decode_array_types = UnionType::fromFullyQualifiedPHPDocString('array|string|float|int|bool|null');
-        $json_decode_object_types = UnionType::fromFullyQualifiedPHPDocString('\stdClass|list<int,mixed>|string|float|int|bool|null');
+        $json_decode_object_types = UnionType::fromFullyQualifiedPHPDocString('\stdClass|list<mixed>|string|float|int|bool|null');
         $json_decode_array_or_object_types = UnionType::fromFullyQualifiedPHPDocString('\stdClass|array|string|float|int|bool|null');
 
         $string_if_2_true           = $make_dependent_type_method(1, $string_union_type, $void_union_type, $nullable_string_union_type);
