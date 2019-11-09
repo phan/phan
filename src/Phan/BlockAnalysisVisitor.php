@@ -2141,6 +2141,9 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         }
         $left = $left->getRealUnionType();
         if (!$left->containsNullableOrUndefined()) {
+            if (RedundantCondition::shouldNotWarnAboutIssetCheckForNonNullExpression($this->code_base, $context, $left_node)) {
+                return;
+            }
             RedundantCondition::emitInstance(
                 $left_node,
                 $this->code_base,

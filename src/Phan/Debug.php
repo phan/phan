@@ -453,4 +453,14 @@ class Debug
 
         return [$exclusive, $combinable];
     }
+
+    /**
+     * Print a message with the file and line.
+     * @suppress PhanUnreferencedPublicMethod added for debugging
+     */
+    public static function debugLog(string $message) : void
+    {
+        $frame = \debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS)[0];
+        \fprintf(\STDERR, "%s:%d %s\n", $frame['file'] ?? 'unknown', $frame['line'] ?? 0, $message);
+    }
 }

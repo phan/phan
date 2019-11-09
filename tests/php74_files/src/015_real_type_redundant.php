@@ -7,6 +7,7 @@ class TypedProperties15 {
     public static array $my_array;
     /** @var array<int,string> */
     public static array $my_array2;
+    public static array $my_array3 = ['key' => 'value'];
     /** @var callable-string */
     public static string $my_string;
 
@@ -25,6 +26,7 @@ class TypedProperties15 {
         }
         assert(is_array(self::$my_array));  // should warn
         assert(is_array(self::$my_array2));  // should warn
+        assert(is_array(self::$my_array3));  // should warn
         assert(is_string(self::$my_string)); // should warn - php would throw when reading if it was not a string
         if (is_callable(self::$my_string)) {  // should not warn
             echo "This is callable\n";

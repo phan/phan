@@ -475,9 +475,11 @@ class Property extends ClassElement
         // given that its the default.
         if ($union_type->isType(NullType::instance(false))) {
             $union_type = UnionType::empty();
+        } else {
+            $union_type = $union_type->eraseRealTypeSetRecursively();
         }
 
-        return $union_type;
+        return $union_type->withRealTypeSet($this->real_union_type->getTypeSet());
     }
 
     public function getRealUnionType() : UnionType

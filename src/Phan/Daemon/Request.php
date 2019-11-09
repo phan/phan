@@ -524,6 +524,7 @@ class Request
                 $files = $request[self::PARAM_FILES] ?? null;
                 $request[self::PARAM_FORMAT] = $request[self::PARAM_FORMAT] ?? 'json';
                 $error_message = null;
+                // @phan-suppress-next-line PhanRedundantCondition failed to infer other types for PARAM_FILES were possible
                 if (\is_array($files) && count($files)) {
                     foreach ($files as $file) {
                         if (!\is_string($file)) {

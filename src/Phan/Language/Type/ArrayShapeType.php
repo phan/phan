@@ -1074,6 +1074,23 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         return self::fromFieldTypes($new_field_types, $this->is_nullable);
     }
 
+    /**
+     * Returns a type where all referenced union types (e.g. in generic arrays) have real type sets removed.
+     */
+    public function withErasedUnionTypes() : Type
+    {
+        return $this->memoize(__METHOD__, function () : ArrayShapeType {
+            $new_field_types = $this->field_types;
+            foreach ($this->field_types as $offset => $union_type) {
+                $new_field_types[$offset] = $union_type->eraseRealTypeSetRecursively();
+            }
+            if ($new_field_types === $this->field_types) {
+                return $this;
+            }
+            return self::fromFieldTypes($new_field_types, $this->is_nullable);
+        });
+    }
+
     public function asCallableType() : ?Type
     {
         if ($this->isDefiniteNonCallableType()) {

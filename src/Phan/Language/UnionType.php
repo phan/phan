@@ -722,7 +722,7 @@ class UnionType implements Serializable
     }
 
     /**
-     * Returns a union type with an empty union type set
+     * Returns a union type with an empty real type set
      * @phan-pure
      */
     public function eraseRealTypeSet() : UnionType
@@ -735,6 +735,21 @@ class UnionType implements Serializable
             return new UnionType($this->type_set, true, []);
         }
         return $this;
+    }
+
+    /**
+     * Returns a union type with an empty real type set (including in elements of generic arrays, etc.)
+     */
+    public function eraseRealTypeSetRecursively() : UnionType
+    {
+        $new_type_set = [];
+        foreach ($this->type_set as $type) {
+            $new_type_set[] = $type->withErasedUnionTypes();
+        }
+        if (!$this->real_type_set && $new_type_set === $this->type_set) {
+            return $this;
+        }
+        return UnionType::of($new_type_set);
     }
 
     /**
@@ -3546,8 +3561,10 @@ class UnionType implements Serializable
     /**
      * Takes `a|b[]|c|d[]|e` and returns `b|d`
      * Takes `array{field:int,other:string}` and returns `int|string`
+     *
+     * @param bool $add_real_types if true, this adds the real types that would be possible for `$x[$offset]`
      */
-    public function genericArrayElementTypes() : UnionType
+    public function genericArrayElementTypes(bool $add_real_types = false) : UnionType
     {
         // This is frequently called, and has been optimized
         $result = [];
@@ -3584,8 +3601,93 @@ class UnionType implements Serializable
             \in_array($mixed_type, $type_set, true)) {
             $result[] = $mixed_type;
         }
+        if ($add_real_types && $result && $this->real_type_set) {
+            return UnionType::of($result, self::computeRealElementTypesForDimAccess($this->real_type_set));
+        }
 
         return UnionType::of($result);
+    }
+
+    /**
+     * Returns the real types seen for an array dim access expression such as `$x = expr[offset]`
+     * @param non-empty-list<Type> $real_type_set the set of types of expr
+     * @return list<Type> possibly empty, possibly with duplicates. These types are nullable to indicate that array accesses can fail.
+     * @internal
+     */
+    public static function computeRealElementTypesForDimAccess(array $real_type_set) : array
+    {
+        $result = [];
+        foreach ($real_type_set as $type) {
+            if ($type instanceof StringType) {
+                // Note that 'var'[9] will still be a string (the empty string) if the offset is invalid.
+                // So will 'var'['not an int']
+                $result[] = StringType::instance(false);
+                continue;
+            }
+            if ($type->isPossiblyObject()) {
+                // e.g. Mixed, \MyClass, iterable, etc.
+                // We don't know some of the real types, so return the empty list as the set of real types.
+                return [];
+            }
+            if (!$type->isArrayLike()) {
+                continue;
+            }
+            if (!$type instanceof ArrayType) {
+                return [];
+            }
+            $new_types = $type->genericArrayElementUnionType()->getTypeSet();
+            if (!$new_types) {
+                return [];
+            }
+            foreach ($new_types as $element_type) {
+                if ($element_type instanceof MixedType) {
+                    return [];
+                }
+                $result[] = $element_type->withIsNullable(true);
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Returns the real types seen for an array destructuring expression such as `[$x] = expr`
+     * @param non-empty-list<Type> $real_type_set the set of types of expr
+     * @return list<Type> possibly empty, possibly with duplicates. These types are nullable to indicate that array accesses can fail.
+     * @internal
+     */
+    public static function computeRealElementTypesForDestructuringAccess(array $real_type_set) : array
+    {
+        $result = [];
+        foreach ($real_type_set as $type) {
+            if ($type instanceof StringType) {
+                // Note that 'var'[9] will still be a string (the empty string) if the offset is invalid.
+                // So will 'var'['not an int']
+                $result[] = NullType::instance(false);
+                continue;
+            }
+            if ($type->isPossiblyObject()) {
+                // e.g. Mixed, \MyClass, iterable, etc.
+                // We don't know some of the real types, so return the empty list as the set of real types.
+                return [];
+            }
+            if (!$type->isArrayLike()) {
+                continue;
+            }
+            if (!$type instanceof ArrayType) {
+                return [];
+            }
+            $new_types = $type->genericArrayElementUnionType()->getTypeSet();
+            if (!$new_types) {
+                return [];
+            }
+            foreach ($new_types as $element_type) {
+                if ($element_type instanceof MixedType) {
+                    return [];
+                }
+                $result[] = $element_type->withIsNullable(true);
+            }
+        }
+        return $result;
     }
 
     /**

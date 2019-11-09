@@ -1510,7 +1510,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         if (self::hasArrayShapeOrList($union_type)) {
             $element_type = $this->resolveArrayShapeElementTypes($node, $union_type);
             if ($element_type !== null) {
-                return $element_type->eraseRealTypeSet();
+                return $element_type;
             }
         }
 
@@ -1523,7 +1523,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         // Figure out what the types of accessed array
         // elements would be.
-        $generic_types = $union_type->genericArrayElementTypes()->eraseRealTypeSet();
+        $generic_types = $union_type->genericArrayElementTypes(true);
 
         // If we have generics, we're all set
         if (!$generic_types->isEmpty()) {
@@ -1623,6 +1623,10 @@ class UnionTypeVisitor extends AnalysisVisitor
                 }
             }
             $element_types = $element_types->withType($string_type);
+            if ($union_type->hasRealTypeSet()) {
+                // @phan-suppress-next-line PhanAccessMethodInternal
+                $element_types = $element_types->withRealTypeSet(UnionType::computeRealElementTypesForDimAccess($union_type->getRealTypeSet()));
+            }
         }
 
         if ($element_types->isEmpty()) {
@@ -1862,8 +1866,18 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
             return null;
         }
-        if ($has_string && $has_generic_array) {
-            return null;
+        if ($has_string || $has_generic_array) {
+            if ($has_string && $has_generic_array) {
+                return null;
+            }
+            if ($resulting_element_type->hasRealTypeSet()) {
+                $resulting_element_type = UnionType::of(
+                    $resulting_element_type->getTypeSet(),
+                    \array_map(static function (Type $type) : Type {
+                        return $type->withIsNullable(true);
+                    }, $resulting_element_type->getRealTypeSet())
+                );
+            }
         }
         return $resulting_element_type;
     }

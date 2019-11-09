@@ -685,6 +685,9 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
         }
         $real_type = $type->getRealUnionType();
         if (!$real_type->containsNullableOrUndefined()) {
+            if (RedundantCondition::shouldNotWarnAboutIssetCheckForNonNullExpression($this->code_base, $this->context, $var_node)) {
+                return;
+            }
             RedundantCondition::emitInstance(
                 $var_node,
                 $this->code_base,
