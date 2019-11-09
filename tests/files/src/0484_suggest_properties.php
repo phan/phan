@@ -2,7 +2,7 @@
 
 /**
  * @property int $magicProperty
- * @phan-forbid-undeclared-magic-properties
+ * @seal-properties
  */
 class BaseClass483 {
     private $baseProperty;
@@ -13,7 +13,7 @@ class BaseClass483 {
 }
 
 /**
- * @phan-forbid-undeclared-magic-methods
+ * @seal-methods
  */
 class SubClass483 extends BaseClass483 {
     private $privatePropertyInSameClass = 'v';
