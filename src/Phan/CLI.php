@@ -253,7 +253,14 @@ class CLI
 
         foreach ($argv as $arg) {
             if ($arg[0] == '-') {
-                throw new UsageException("Unknown option '$arg'" . self::getFlagSuggestionString(\preg_replace('@(=.*$)|(^-+)@', '', $arg)), EXIT_FAILURE);
+                $parts = \explode('=', $arg, 2);
+                $key = $parts[0];
+                $value = $parts[1] ?? '';  // php getopt() treats --processes and --processes= the same way
+                $key = \preg_replace('/^--?/', '', $key);
+                if ($value === '' && in_array($key . ':', self::GETOPT_LONG_OPTIONS, true)) {
+                    throw new UsageException("Missing required value for '$arg'", EXIT_FAILURE);
+                }
+                throw new UsageException("Unknown option '$arg'" . self::getFlagSuggestionString($key), EXIT_FAILURE);
             }
         }
     }
@@ -817,6 +824,10 @@ class CLI
                 default:
                     // All of phan's long options are currently at least 2 characters long.
                     $key_repr = strlen($key) >= 2 ? "--$key" : "-$key";
+                    echo "Checking $key\n";
+                    if ($value === false && in_array($key . ':', self::GETOPT_LONG_OPTIONS, true)) {
+                        throw new UsageException("Missing required argument value for '$key_repr'", EXIT_FAILURE);
+                    }
                     throw new UsageException("Unknown option '$key_repr'" . self::getFlagSuggestionString($key), EXIT_FAILURE);
             }
         }
@@ -1015,6 +1026,9 @@ class CLI
     private static function shouldUseProgressBarByDefault($output) : bool
     {
         if (self::isDaemonOrLanguageServer()) {
+            return false;
+        }
+        if (\getenv('PHAN_DISABLE_PROGRESS_BAR')) {
             return false;
         }
         if (\defined('PHP_WINDOWS_VERSION_BUILD')) {
@@ -1778,7 +1792,11 @@ EOB
                 continue;
             }
             if ($key === $flag) {
-                return " (This option may not apply to a regular Phan analysis, and/or it may be unintentionally unhandled in \Phan\CLI::__construct())";
+                if (in_array($key . ':', self::GETOPT_LONG_OPTIONS, true)) {
+                    return " (This option is probably missing the required value. Or this option may not apply to a regular Phan analysis, and/or it may be unintentionally unhandled in \Phan\CLI::__construct())";
+                } else {
+                    return " (This option may not apply to a regular Phan analysis, and/or it may be unintentionally unhandled in \Phan\CLI::__construct())";
+                }
             }
             $similarities[$flag] = [$distance, "x" . \strtolower($flag), $flag];
         }

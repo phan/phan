@@ -1017,6 +1017,11 @@ class AssignmentVisitor extends AnalysisVisitor
                 // swallow it
             }
         } elseif (\count($class_list) > 0) {
+            foreach ($class_list as $clazz) {
+                if ($clazz->hasDynamicProperties($this->code_base)) {
+                    return $this->context;
+                }
+            }
             $first_class = $class_list[0];
             $this->emitIssueWithSuggestion(
                 Issue::UndeclaredProperty,
