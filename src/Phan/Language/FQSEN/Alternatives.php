@@ -84,7 +84,7 @@ trait Alternatives
      */
     public function getCanonicalFQSEN() : FQSEN
     {
-        if ($this->alternate_id == 0) {
+        if ($this->alternate_id === 0) {
             return $this;
         }
 

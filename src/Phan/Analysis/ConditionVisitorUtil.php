@@ -549,9 +549,11 @@ trait ConditionVisitorUtil
     }
 
     /**
+     * Returns true if `$node` is an `ast\Node` representing the PHP variable `$this`.
+     *
      * @param Node|string|int|float $node
      */
-    protected static function isThisVarNode($node) : bool
+    public static function isThisVarNode($node) : bool
     {
         return $node instanceof Node && $node->kind === ast\AST_VAR &&
             $node->children['name'] === 'this';

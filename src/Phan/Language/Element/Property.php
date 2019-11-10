@@ -141,7 +141,7 @@ class Property extends ClassElement
             // do nothing
         }
 
-        $string .= "\${$this->getName()}";
+        $string .= "\${$this->name}";
 
         return $string;
     }
@@ -161,7 +161,7 @@ class Property extends ClassElement
     {
         return $this->getClassFQSEN()->__toString() .
             ($this->isStatic() ? '::$' : '->') .
-            $this->getName();
+            $this->name;
     }
 
     /**
@@ -205,7 +205,7 @@ class Property extends ClassElement
             $string .= 'static ';
         }
 
-        $string .= "\${$this->getName()}";
+        $string .= "\${$this->name}";
 
         return $string;
     }
@@ -223,7 +223,7 @@ class Property extends ClassElement
             $string .= 'static ';
         }
 
-        $string .= "\${$this->getName()}";
+        $string .= "\${$this->name}";
         $string .= ';';
 
         return $string;
@@ -463,7 +463,7 @@ class Property extends ClassElement
                         Issue::TypeInvalidPropertyDefaultReal,
                         $future_union_type->getContext()->getLineNumberStart(),
                         $this->real_union_type,
-                        $this->getName(),
+                        $this->name,
                         $union_type
                     );
             }

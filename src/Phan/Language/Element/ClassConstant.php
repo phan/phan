@@ -82,7 +82,7 @@ class ClassConstant extends ClassElement implements ConstantInterface
 
     public function __toString() : string
     {
-        return $this->getVisibilityName() . ' const ' . $this->getName();
+        return $this->getVisibilityName() . ' const ' . $this->name;
     }
 
     /**
@@ -93,7 +93,7 @@ class ClassConstant extends ClassElement implements ConstantInterface
         return $this->getVisibilityName() . ' ' .
             $this->getClassFQSEN()->__toString() .
             '::' .
-            $this->getName();
+            $this->name;
     }
 
     /**
@@ -131,7 +131,7 @@ class ClassConstant extends ClassElement implements ConstantInterface
             $string .= 'private ';
         }
 
-        $string .= 'const ' . $this->getName() . ' = ';
+        $string .= 'const ' . $this->name . ' = ';
         $value_node = $this->getNodeForValue();
         $string .= ASTReverter::toShortString($value_node);
         return $string;
@@ -167,7 +167,7 @@ class ClassConstant extends ClassElement implements ConstantInterface
         // For PHP 7.0 compatibility of stubs,
         // show public class constants as 'const', not 'public const'.
         // Also, PHP modules probably won't have private/protected constants.
-        $string .= 'const ' . $this->getName() . ' = ';
+        $string .= 'const ' . $this->name . ' = ';
         $fqsen = $this->getFQSEN()->__toString();
         if (\defined($fqsen)) {
             // TODO: Could start using $this->getNodeForValue()?

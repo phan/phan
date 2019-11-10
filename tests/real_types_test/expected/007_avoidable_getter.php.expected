@@ -1,0 +1,2 @@
+src/007_avoidable_getter.php:18 PhanPluginAvoidableGetter Can replace $this->getProp() with $this->prop
+src/007_avoidable_getter.php:24 PhanPluginAvoidableGetter Can replace $this->getProp() with $this->prop

@@ -269,8 +269,8 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
     {
         $string = '';
 
-        if (!$this->getUnionType()->isEmpty()) {
-            $string .= "{$this->getUnionType()} ";
+        if (!$this->type->isEmpty()) {
+            $string .= "{$this->type} ";
         }
 
         return "$string\${$this->getName()}";
@@ -285,8 +285,8 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
     {
         $string = '';
 
-        if (!$this->getUnionType()->isEmpty()) {
-            $string .= "{$this->getUnionType()->getDebugRepresentation()} ";
+        if (!$this->type->isEmpty()) {
+            $string .= "{$this->type->getDebugRepresentation()} ";
         }
 
         return "$string\${$this->getName()}";

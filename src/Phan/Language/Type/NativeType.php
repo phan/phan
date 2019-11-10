@@ -127,7 +127,8 @@ abstract class NativeType extends Type
             $matrix = self::initializeTypeCastingMatrix();
         }
 
-        return $matrix[$this->getName()][$type->getName()]
+        // Both this and $type are NativeType and getName() isn't needed
+        return $matrix[$this->name][$type->name]
             ?? parent::canCastToNonNullableType($type);
     }
 
@@ -157,7 +158,8 @@ abstract class NativeType extends Type
             $matrix = self::initializeTypeCastingMatrix();
         }
 
-        return $matrix[$this->getName()][$type->getName()]
+        // Both this and $type are NativeType and getName() isn't needed
+        return $matrix[$this->name][$type->name]
             ?? parent::canCastToNonNullableTypeWithoutConfig($type);
     }
 
@@ -180,7 +182,8 @@ abstract class NativeType extends Type
             $matrix = self::initializeTypeCastingMatrix();
         }
 
-        return $matrix[$this->getName()][$type->getName()]
+        // Both this and $type are NativeType and getName() isn't needed
+        return $matrix[$this->name][$type->name]
             ?? parent::canCastToNonNullableType($type);
     }
 

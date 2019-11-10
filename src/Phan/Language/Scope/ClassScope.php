@@ -56,10 +56,8 @@ class ClassScope extends ClosedScope
      */
     public function getClassFQSEN() : FullyQualifiedClassName
     {
-        $fqsen = $this->getFQSEN();
-
-        if ($fqsen instanceof FullyQualifiedClassName) {
-            return $fqsen;
+        if ($this->fqsen instanceof FullyQualifiedClassName) {
+            return $this->fqsen;
         }
 
         throw new AssertionError("FQSEN must be a FullyQualifiedClassName");
@@ -72,10 +70,8 @@ class ClassScope extends ClosedScope
      */
     public function getClassFQSENOrNull() : FullyQualifiedClassName
     {
-        $fqsen = $this->getFQSEN();
-
-        if ($fqsen instanceof FullyQualifiedClassName) {
-            return $fqsen;
+        if ($this->fqsen instanceof FullyQualifiedClassName) {
+            return $this->fqsen;
         }
 
         throw new AssertionError("FQSEN must be a FullyQualifiedClassName");

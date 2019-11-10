@@ -495,7 +495,7 @@ class Context extends FileRef
     public function toDebugString() : string
     {
         $result = (string)$this;
-        foreach ($this->getScope()->getVariableMap() as $variable) {
+        foreach ($this->scope->getVariableMap() as $variable) {
             $result .= "\n{$variable->getDebugRepresentation()}";
         }
         return $result;
@@ -735,7 +735,7 @@ class Context extends FileRef
         CodeBase $code_base,
         string $issue_name
     ) : bool {
-        if ($code_base->hasFileLevelSuppression($this->getFile(), $issue_name)) {
+        if ($code_base->hasFileLevelSuppression($this->file, $issue_name)) {
             return true;
         }
         if (!$this->scope->isInElementScope()) {
@@ -891,7 +891,7 @@ class Context extends FileRef
      */
     public function importNamespaceMapFromParsePhase(CodeBase $code_base) : void
     {
-        $this->parse_namespace_map = $code_base->getNamespaceMapFromParsePhase($this->getFile(), $this->namespace, $this->namespace_id);
+        $this->parse_namespace_map = $code_base->getNamespaceMapFromParsePhase($this->file, $this->namespace, $this->namespace_id);
     }
 
     /**

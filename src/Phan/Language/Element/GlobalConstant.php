@@ -123,7 +123,7 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
 
     public function getMarkupDescription() : string
     {
-        $string = 'const ' . $this->getName() . ' = ';
+        $string = 'const ' . $this->name . ' = ';
         $value_node = $this->getNodeForValue();
         $string .= ASTReverter::toShortString($value_node);
         return $string;

@@ -255,7 +255,7 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function isMagic() : bool
     {
-        return \array_key_exists($this->getName(), FullyQualifiedMethodName::MAGIC_METHOD_NAME_SET);
+        return \array_key_exists($this->name, FullyQualifiedMethodName::MAGIC_METHOD_NAME_SET);
     }
 
     /**
@@ -263,7 +263,7 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function getUnionTypeOfMagicIfKnown() : ?UnionType
     {
-        $type_string = FullyQualifiedMethodName::MAGIC_METHOD_TYPE_MAP[$this->getName()] ?? null;
+        $type_string = FullyQualifiedMethodName::MAGIC_METHOD_TYPE_MAP[$this->name] ?? null;
         return $type_string ? UnionType::fromFullyQualifiedPHPDocString($type_string) : null;
     }
 
@@ -283,7 +283,7 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function isMagicAndVoid() : bool
     {
-        return \array_key_exists($this->getName(), FullyQualifiedMethodName::MAGIC_VOID_METHOD_NAME_SET);
+        return \array_key_exists($this->name, FullyQualifiedMethodName::MAGIC_VOID_METHOD_NAME_SET);
     }
 
     /**
@@ -302,7 +302,7 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function isNewConstructor() : bool
     {
-        return $this->getName() === '__construct';
+        return $this->name === '__construct';
     }
 
     /**
@@ -310,7 +310,7 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function isMagicCall() : bool
     {
-        return $this->getName() === '__call';
+        return $this->name === '__call';
     }
 
     /**
@@ -318,7 +318,7 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function isMagicCallStatic() : bool
     {
-        return $this->getName() === '__callStatic';
+        return $this->name === '__callStatic';
     }
 
     /**
@@ -758,10 +758,10 @@ class Method extends ClassElement implements FunctionInterface
             // TODO: Handle edge cases in traits.
             // A trait may be earlier in $ancestor_class_list than the parent, but the parent may define abstract classes.
             // TODO: What about trait aliasing rules?
-            if ($ancestor_class->hasMethodWithName($code_base, $this->getName())) {
+            if ($ancestor_class->hasMethodWithName($code_base, $this->name)) {
                 $method = $ancestor_class->getMethodByName(
                     $code_base,
-                    $this->getName()
+                    $this->name
                 );
                 if ($method->getDefiningFQSEN() === $defining_fqsen) {
                     // Skip it, this method **is** the one which defined this.
@@ -814,7 +814,7 @@ class Method extends ClassElement implements FunctionInterface
         if ($this->returnsRef()) {
             $string .= '&';
         }
-        $string .= $this->getName();
+        $string .= $this->name;
 
         $string .= '(' . \implode(', ', $this->getParameterList()) . ')';
 
@@ -839,7 +839,7 @@ class Method extends ClassElement implements FunctionInterface
         if ($this->returnsRef()) {
             $string .= '&';
         }
-        $string .= $this->getName();
+        $string .= $this->name;
 
         $string .= '(' . \implode(', ', $this->getRealParameterList()) . ')';
 
@@ -874,7 +874,7 @@ class Method extends ClassElement implements FunctionInterface
         if ($this->returnsRef()) {
             $string .= '&';
         }
-        $string .= $this->getName();
+        $string .= $this->name;
 
         $string .= '(' . $this->getParameterStubText() . ')';
 
@@ -930,7 +930,7 @@ class Method extends ClassElement implements FunctionInterface
         if ($this->returnsRef()) {
             $string .= '&';
         }
-        $string .= $this->getName();
+        $string .= $this->name;
 
         $string .= '(' . $this->getRealParameterStubText() . ')';
 

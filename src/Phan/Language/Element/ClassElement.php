@@ -97,8 +97,8 @@ abstract class ClassElement extends AddressableElement
     {
         if (\is_null($this->defining_fqsen)) {
             throw new CodeBaseException(
-                $this->getFQSEN(),
-                "No defining class for {$this->getFQSEN()}"
+                $this->fqsen,
+                "No defining class for {$this->fqsen}"
             );
         }
         return $this->defining_fqsen->getFullyQualifiedClassName();
@@ -128,7 +128,7 @@ abstract class ClassElement extends AddressableElement
         if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
             throw new CodeBaseException(
                 $class_fqsen,
-                "Defining class $class_fqsen for {$this->getFQSEN()} not found"
+                "Defining class $class_fqsen for {$this->fqsen} not found"
             );
         }
 
@@ -163,7 +163,7 @@ abstract class ClassElement extends AddressableElement
         if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
             throw new CodeBaseException(
                 $class_fqsen,
-                "Defining class $class_fqsen for {$this->getFQSEN()} not found"
+                "Defining class $class_fqsen for {$this->fqsen} not found"
             );
         }
 
@@ -231,7 +231,7 @@ abstract class ClassElement extends AddressableElement
     public function getElementNamespace() : string
     {
         // Get the namespace that the class is within
-        return $this->getClassFQSEN()->getNamespace() ?: '\\';
+        return $this->class_fqsen->getNamespace() ?: '\\';
     }
 
     /**

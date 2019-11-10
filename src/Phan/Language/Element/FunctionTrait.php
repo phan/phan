@@ -88,12 +88,12 @@ trait FunctionTrait
     {
         $args_repr = '';
         if ($show_args) {
-            $parameter_list = $this->getParameterList();
+            $parameter_list = $this->parameter_list;
             if ($parameter_list) {
                 $is_internal = $this->isPHPInternal();
                 $args_repr = \implode(', ', \array_map(static function (Parameter $parameter) use ($is_internal) : string {
                     return $parameter->getShortRepresentationForIssue($is_internal);
-                }, $this->getParameterList()));
+                }, $parameter_list));
             }
         }
         return $this->getFQSEN()->__toString() . '(' . $args_repr . ')';
@@ -233,6 +233,8 @@ trait FunctionTrait
      * for internal modules lacking proper reflection info,
      * or if the installed module version's API changed from what Phan's stubs used,
      * or if a function/method uses variadics/func_get_arg*()
+     *
+     * @suppress PhanUnreferencedPublicMethod this is made available for plugins
      */
     public function getNumberOfOptionalRealParameters() : int
     {
@@ -264,10 +266,8 @@ trait FunctionTrait
      */
     public function getNumberOfRealParameters() : int
     {
-        return (
-            $this->getNumberOfRequiredRealParameters()
-            + $this->getNumberOfOptionalRealParameters()
-        );
+        return $this->number_of_required_real_parameters +
+               $this->number_of_optional_real_parameters;
     }
 
     /**
@@ -276,10 +276,8 @@ trait FunctionTrait
      */
     public function getNumberOfParameters() : int
     {
-        return (
-            $this->getNumberOfRequiredParameters()
-            + $this->getNumberOfOptionalParameters()
-        );
+        return $this->number_of_required_parameters +
+               $this->number_of_optional_parameters;
     }
 
     /**
@@ -1147,7 +1145,7 @@ trait FunctionTrait
                 static function (Parameter $parameter) : Parameter {
                     return clone($parameter);
                 },
-                $this->getParameterList()
+                $this->parameter_list
             )
         );
     }
@@ -1171,7 +1169,7 @@ trait FunctionTrait
     {
         $params = \array_map(static function (Parameter $parameter) : ClosureDeclarationParameter {
             return $parameter->asClosureDeclarationParameter();
-        }, $this->getParameterList());
+        }, $this->parameter_list);
 
         $return_type = $this->getUnionType();
         if ($return_type->isEmpty()) {
@@ -1195,7 +1193,7 @@ trait FunctionTrait
         $return_type = $this->getUnionType();
         $stub = [$return_type->__toString()];
         '@phan-var array<mixed,string> $stub';  // TODO: Should not warn about PhanTypeMismatchDimFetch in isset below
-        foreach ($this->getParameterList() as $parameter) {
+        foreach ($this->parameter_list as $parameter) {
             $name = $parameter->getName();
             if (!$name || isset($stub[$name])) {
                 throw new \InvalidArgumentException("Invalid name '$name' for {$this->getFQSEN()}");
@@ -1264,7 +1262,7 @@ trait FunctionTrait
         }
         $return_type = $this->getUnionTypeWithUnmodifiedStatic();
         $real_return_type = $this->getRealReturnType();
-        $phpdoc_return_type = $this->getPHPDocReturnType();
+        $phpdoc_return_type = $this->phpdoc_return_type;
         $context = $this->getContext();
         // TODO: use method->getPHPDocUnionType() to check compatibility, like analyzeParameterTypesDocblockSignaturesMatch
 
@@ -1541,7 +1539,7 @@ trait FunctionTrait
      */
     public function getParamIndexForName(string $name) : ?int
     {
-        foreach ($this->getParameterList() as $i => $param) {
+        foreach ($this->parameter_list as $i => $param) {
             if ($param->getName() === $name) {
                 return $i;
             }
@@ -1681,12 +1679,11 @@ trait FunctionTrait
      */
     private function makeAssertionUnionTypeExtractor(CodeBase $code_base, UnionType $type, int $asserted_param_index) : ?Closure
     {
-        $comment = $this->getComment();
-        if (!$comment) {
+        if (!$this->comment) {
             return null;
         }
         $parameter_extractor_map = [];
-        foreach ($comment->getTemplateTypeList() as $template_type) {
+        foreach ($this->comment->getTemplateTypeList() as $template_type) {
             if (!$type->usesTemplateType($template_type)) {
                 continue;
             }
@@ -1721,11 +1718,10 @@ trait FunctionTrait
      */
     public function getCommentParamAssertionClosure(CodeBase $code_base) : ?Closure
     {
-        $comment = $this->getComment();
-        if (!$comment) {
+        if (!$this->comment) {
             return null;
         }
-        $param_assertion_map = $comment->getParamAssertionMap();
+        $param_assertion_map = $this->comment->getParamAssertionMap();
         if ($param_assertion_map) {
             return $this->getPluginForParamAssertionMap($code_base, $param_assertion_map);
         }
@@ -1739,7 +1735,7 @@ trait FunctionTrait
     {
         return \implode(', ', \array_map(function (Parameter $parameter) : string {
             return $parameter->toStubString($this->isPHPInternal());
-        }, $this->getParameterList()));
+        }, $this->parameter_list));
     }
 
     /**

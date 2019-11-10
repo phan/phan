@@ -19,6 +19,8 @@ New features(Analysis):
 
 Plugins:
 + Also start checking if closures (and arrow functions) can be static in `PossiblyStaticMethodPlugin`
++ Add `AvoidableGetterPlugin` to suggest when `$this->prop` can be used instead of `$this->getProp()`.
+  (This will suggest using the property instead of the getter method if there are no known method overrides of the getter. This is only checked for instance properties of `$this`)
 
 Maintenance:
 + Bump minimum version of netresearch/jsonmapper to avoid php notices in the language server in php 7.4
@@ -27,6 +29,7 @@ Bug fixes:
 + Fix false positive inference that `$x[0]` was `string` for `$x` of types such as `list<\MyClass>|string` (reported in #3483)
 + Consistently inherit analysis settings from parent classes recursively, instead of only inheriting them from the direct parent class. (#3472)
   (settings include presence of dynamic properties, whether undeclared magic methods are forbidden, etc.)
++ Don't treat methods that were overridden in one class but inherited by a different class as if they had overrides.
 
 Nov 08 2019, Phan 2.4.2
 -----------------------

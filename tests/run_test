@@ -31,6 +31,7 @@ case "$TEST_SUITE" in
 		# This usually requires 1 GB with all plugins enabled.
 		./phan --plugin PHPUnitNotDeadCodePlugin \
 			--plugin InvokePHPNativeSyntaxCheckPlugin \
+			--plugin AvoidableGetterPlugin \
 			--dead-code-detection \
 			--assume-real-types-for-internal-functions \
 			--force-polyfill-parser \

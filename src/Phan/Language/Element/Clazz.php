@@ -826,7 +826,7 @@ class Clazz extends AddressableElement
             return true;  // Vacuously true.
         }
         $class_fqsen = $this->getFQSEN();
-        $context = $this->getInternalContext();
+        $context = $this->internal_context;
         foreach ($magic_property_map as $comment_parameter) {
             // $phan_flags can be used to indicate if something is property-read or property-write
             $phan_flags = $comment_parameter->getFlags();
@@ -1219,8 +1219,11 @@ class Clazz extends AddressableElement
     /**
      * @return array<string,list<Method>> maps property names to getters for that property
      */
-    private function getGettersMap(CodeBase $code_base) : array
+    public function getGettersMap(CodeBase $code_base) : array
     {
+        if ($this->isInterface()) {
+            return [];
+        }
         return $this->memoize(
             __METHOD__,
             /**
@@ -1230,6 +1233,9 @@ class Clazz extends AddressableElement
                 if ($this->isPHPInternal()) {
                     return [];
                 }
+
+                // Hydrate the class so that getters from ancestor classes will also be accessible
+                $this->hydrate($code_base);
                 $getters = [];
                 foreach ($this->getMethodMap($code_base) as $method) {
                     if ($method->isStatic()) {
@@ -1657,6 +1663,7 @@ class Clazz extends AddressableElement
             // When we inherit it from the ancestor class, it may be an override in the ancestor class,
             // but that doesn't imply it's an override in *this* class.
             $method->setIsOverride($is_override);
+            $method->setIsOverriddenByAnother(false);
 
             // Clone the parameter list, so that modifying the parameters on the first call won't modify the others.
             $method->cloneParameterList();
@@ -2172,8 +2179,8 @@ class Clazz extends AddressableElement
     public function getNonParentAncestorFQSENList() : array
     {
         return \array_merge(
-            $this->getInterfaceFQSENList(),
-            $this->getTraitFQSENList()
+            $this->interface_fqsen_list,
+            $this->trait_fqsen_list
         );
     }
 
@@ -2244,7 +2251,7 @@ class Clazz extends AddressableElement
             return;
         }
 
-        foreach ($this->getInterfaceFQSENList() as $fqsen) {
+        foreach ($this->interface_fqsen_list as $fqsen) {
             if (!$code_base->hasClassWithFQSEN($fqsen)) {
                 continue;
             }
@@ -2256,7 +2263,7 @@ class Clazz extends AddressableElement
             );
         }
 
-        foreach ($this->getTraitFQSENList() as $fqsen) {
+        foreach ($this->trait_fqsen_list as $fqsen) {
             if (!$code_base->hasClassWithFQSEN($fqsen)) {
                 continue;
             }
@@ -2287,7 +2294,7 @@ class Clazz extends AddressableElement
         }
         $this->importConstantsFromAncestorClasses($code_base);
 
-        foreach ($this->getInterfaceFQSENList() as $i => $fqsen) {
+        foreach ($this->interface_fqsen_list as $i => $fqsen) {
             if (!$code_base->hasClassWithFQSEN($fqsen)) {
                 continue;
             }
@@ -2305,7 +2312,7 @@ class Clazz extends AddressableElement
             );
         }
 
-        foreach ($this->getTraitFQSENList() as $i => $fqsen) {
+        foreach ($this->trait_fqsen_list as $i => $fqsen) {
             if (!$code_base->hasClassWithFQSEN($fqsen)) {
                 continue;
             }

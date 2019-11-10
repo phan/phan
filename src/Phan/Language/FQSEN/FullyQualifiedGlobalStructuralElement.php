@@ -22,8 +22,9 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
     /**
      * @var string
      * The namespace in this elements scope
+     * @readonly
      */
-    private $namespace = '\\';
+    protected $namespace = '\\';
 
     /**
      * @param string $namespace
@@ -358,9 +359,9 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
     public function getNamespacedName() : string
     {
         if ($this->namespace === '\\') {
-            return $this->getName();
+            return $this->name;
         }
-        return \ltrim($this->namespace, '\\') . '\\' . $this->getName();
+        return \ltrim($this->namespace, '\\') . '\\' . $this->name;
     }
 
     /**
@@ -373,7 +374,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         // @phan-suppress-next-line PhanThrowTypeAbsentForCall the class name was already validated
         return static::make(
             self::cleanNamespace($namespace),
-            $this->getName(),
+            $this->name,
             $this->getAlternateId()
         );
     }
@@ -395,8 +396,8 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
 
         // @phan-suppress-next-line PhanThrowTypeAbsentForCall the class name was already validated
         return static::make(
-            $this->getNamespace(),
-            $this->getName(),
+            $this->namespace,
+            $this->name,
             $alternate_id
         );
     }
@@ -466,8 +467,8 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
     public function __toString() : string
     {
         return $this->as_string ?? $this->as_string = static::toString(
-            $this->getNamespace(),
-            $this->getName(),
+            $this->namespace,
+            $this->name,
             $this->getAlternateId()
         );
     }

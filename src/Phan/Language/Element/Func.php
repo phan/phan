@@ -335,7 +335,7 @@ class Func extends AddressableElement implements FunctionInterface
     {
         $string = '';
 
-        $string .= 'function ' . $this->getName();
+        $string .= 'function ' . $this->name;
 
         $string .= '(' . \implode(', ', $this->getParameterList()) . ')';
 
@@ -485,6 +485,6 @@ class Func extends AddressableElement implements FunctionInterface
         if ($this->isClosure()) {
             return $this->getStubForClosure();
         }
-        return $this->getName() . '()';
+        return $this->name . '()';
     }
 }
