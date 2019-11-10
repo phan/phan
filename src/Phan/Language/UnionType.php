@@ -677,10 +677,10 @@ class UnionType implements Serializable
         // TODO: Figure out a better way to specify if involved types are real
         $type_set = $this->type_set;
         if (\count($type_set) === 0) {
-            return $type->asPHPDocUnionType();
+            return $type->withErasedUnionTypes()->asPHPDocUnionType();
         }
         if (\in_array($type, $type_set, true)) {
-            return $this->eraseRealTypeSet();
+            return $this->eraseRealTypeSetRecursively();
         }
         // 2 or more types in type_set
         $type_set[] = $type;
@@ -708,7 +708,7 @@ class UnionType implements Serializable
             }
         }
         // We did not find $type in type_set. The resulting union type is unchanged.
-        return $this->eraseRealTypeSet();
+        return $this->eraseRealTypeSetRecursively();
     }
 
     /**
@@ -724,6 +724,7 @@ class UnionType implements Serializable
     /**
      * Returns a union type with an empty real type set
      * @phan-pure
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function eraseRealTypeSet() : UnionType
     {
@@ -761,12 +762,12 @@ class UnionType implements Serializable
         // Precondition: Both UnionTypes have lists of unique types.
         $type_set = $this->type_set;
         if (\count($type_set) === 0) {
-            return $union_type->eraseRealTypeSet();
+            return $union_type->eraseRealTypeSetRecursively();
         }
         $other_type_set = $union_type->type_set;
 
         if (\count($other_type_set) === 0) {
-            return $this->eraseRealTypeSet();
+            return $this->eraseRealTypeSetRecursively();
         }
         $new_type_set = $type_set;
         foreach ($other_type_set as $type) {
@@ -5414,7 +5415,7 @@ class UnionType implements Serializable
             return $this;
         }
         if (!$real_type_set) {
-            return $this->eraseRealTypeSet();
+            return $this->eraseRealTypeSetRecursively();
         }
         if (!$this->type_set) {
             return UnionType::of($real_type_set, $real_type_set);

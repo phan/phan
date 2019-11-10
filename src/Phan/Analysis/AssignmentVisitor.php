@@ -1300,7 +1300,7 @@ class AssignmentVisitor extends AnalysisVisitor
                      ->withUnionType($property->getUnionType())
                      ->withStaticResolvedInContext($context)
                      ->withFlattenedArrayShapeOrLiteralTypeInstances()
-                     ->eraseRealTypeSet()
+                     ->eraseRealTypeSetRecursively()
             );
             return;
         }
@@ -1360,7 +1360,7 @@ class AssignmentVisitor extends AnalysisVisitor
                      ->withUnionType($property->getUnionType())
                      ->withStaticResolvedInContext($this->context)
                      ->withFlattenedArrayShapeOrLiteralTypeInstances()
-                     ->eraseRealTypeSet()
+                     ->eraseRealTypeSetRecursively()
             );
             return;
         }
@@ -1371,6 +1371,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 $this->right_type
                      ->withStaticResolvedInContext($this->context)
                      ->withFlattenedArrayShapeOrLiteralTypeInstances()
+                     ->eraseRealTypeSetRecursively()
                      ->withRealTypeSet($property->getRealUnionType()->getTypeSet())
             );
             return;

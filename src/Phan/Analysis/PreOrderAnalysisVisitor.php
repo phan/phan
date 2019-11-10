@@ -514,7 +514,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                     } else {
                         $union_type = $variable->getUnionType();
                         if ($union_type->hasRealTypeSet()) {
-                            $variable->setUnionType($union_type->eraseRealTypeSet());
+                            $variable->setUnionType($union_type->eraseRealTypeSetRecursively());
                         }
                     }
                 }

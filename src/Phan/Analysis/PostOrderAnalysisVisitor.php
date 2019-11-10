@@ -617,7 +617,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         // NOTE: Phan can't be sure that the type the static type starts with is the same as what it has later. Avoid false positive PhanRedundantCondition.
-        $variable->setUnionType($default_type->eraseRealTypeSet());
+        $variable->setUnionType($default_type->eraseRealTypeSetRecursively());
         // TODO: Probably not true in a loop?
         // TODO: Expand this to assigning to variables? (would need to make references invalidate that, and skip this in the global scope)
         $variable->enablePhanFlagBits(\Phan\Language\Element\Flags::IS_CONSTANT_DEFINITION);
@@ -3386,7 +3386,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                             return;
                         }
                     }
-                    $variable->setUnionType($variable->getUnionType()->eraseRealTypeSet());
+                    $variable->setUnionType($variable->getUnionType()->eraseRealTypeSetRecursively());
                 }
             } catch (NodeException $_) {
                 return;
@@ -3730,7 +3730,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $this->context,
                     $argument,
                     true
-                )->withStaticResolvedInContext($this->context)->eraseRealTypeSet();
+                )->withStaticResolvedInContext($this->context)->eraseRealTypeSetRecursively();
             }
 
             foreach ($parameter_list as $i => $parameter_clone) {
