@@ -96,7 +96,7 @@ class PassByReferenceVariable extends Variable
             );
             return;
         }
-        $this->element->setUnionType($type->eraseRealTypeSet());
+        $this->element->setUnionType($type->eraseRealTypeSetRecursively());
     }
 
     public function getFlags() : int

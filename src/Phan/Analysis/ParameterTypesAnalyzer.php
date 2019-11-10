@@ -940,7 +940,7 @@ class ParameterTypesAnalyzer
                     continue;
                 }
                 if ($parameter_type->isEmpty() || $parent_parameter_type->isExclusivelyNarrowedFormOf($code_base, $parameter_type)) {
-                    $parameter->setUnionType($parent_parameter_type->eraseRealTypeSet());
+                    $parameter->setUnionType($parent_parameter_type->eraseRealTypeSetRecursively());
                 }
             }
         }
