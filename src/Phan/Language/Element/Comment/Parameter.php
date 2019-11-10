@@ -90,8 +90,8 @@ class Parameter
     ) : Variable {
         return new Variable(
             $context,
-            $this->getName(),
-            $this->getUnionType(),
+            $this->name,
+            $this->type,
             0
         );
     }
@@ -106,13 +106,13 @@ class Parameter
         Context $context
     ) : \Phan\Language\Element\Parameter {
         $flags = 0;
-        if ($this->isVariadic()) {
+        if ($this->is_variadic) {
             $flags |= \ast\flags\PARAM_VARIADIC;
         }
-        $union_type = $this->getUnionType();
+        $union_type = $this->type;
         $param = \Phan\Language\Element\Parameter::create(
             $context,
-            $this->getName(),
+            $this->name,
             $union_type,
             $flags
         );

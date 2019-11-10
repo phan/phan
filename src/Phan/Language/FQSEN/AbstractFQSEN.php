@@ -18,8 +18,9 @@ abstract class AbstractFQSEN implements FQSEN, Serializable
     /**
      * @var string
      * The name of this structural element
+     * @readonly
      */
-    private $name = '';
+    protected $name = '';
 
     /**
      * @param string $name

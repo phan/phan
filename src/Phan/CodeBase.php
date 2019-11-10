@@ -1533,14 +1533,14 @@ class CodeBase
     public function totalElementCount() : int
     {
         $sum = (
-            \count($this->getFunctionMap())
-            + \count($this->getGlobalConstantMap())
-            + \count($this->getUserDefinedClassMap())
+            \count($this->fqsen_func_map)
+            + \count($this->fqsen_global_constant_map)
+            + \count($this->fqsen_class_map_user_defined)
             + \count($this->fqsen_class_map_internal)  // initialized internal classes
             + \count($this->fqsen_class_map_reflection)  // uninitialized internal classes
         );
 
-        foreach ($this->getClassMapMap() as $class_map) {
+        foreach ($this->class_fqsen_class_map_map as $class_map) {
             $sum += (
                 \count($class_map->getClassConstantMap())
                 + \count($class_map->getPropertyMap())

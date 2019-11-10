@@ -515,7 +515,7 @@ class Parameter extends Variable
         $string .= "\${$this->getName()}";
 
         if ($this->hasDefaultValue() && !$this->isVariadic()) {
-            $default_value = $this->getDefaultValue();
+            $default_value = $this->default_value;
             if ($default_value instanceof Node) {
                 $string .= ' = null';
             } else {
@@ -562,7 +562,7 @@ class Parameter extends Variable
         $string .= "\$$name";
 
         if ($this->hasDefaultValue() && !$this->isVariadic()) {
-            $default_value = $this->getDefaultValue();
+            $default_value = $this->default_value;
             if ($default_value instanceof Node) {
                 $kind = $default_value->kind;
                 if ($kind === \ast\AST_NAME) {
@@ -573,7 +573,7 @@ class Parameter extends Variable
                     $default_repr = 'null';
                 }
             } else {
-                $default_repr = \var_export($this->getDefaultValue(), true);
+                $default_repr = \var_export($this->default_value, true);
             }
             if (\strtolower($default_repr) === 'null') {
                 $default_repr = 'null';
@@ -625,7 +625,7 @@ class Parameter extends Variable
         $string .= "\$$name";
 
         if ($this->hasDefaultValue() && !$this->isVariadic()) {
-            $default_value = $this->getDefaultValue();
+            $default_value = $this->default_value;
             if ($default_value instanceof Node) {
                 $kind = $default_value->kind;
                 if ($kind === \ast\AST_NAME) {
@@ -636,7 +636,7 @@ class Parameter extends Variable
                     $default_repr = 'null';
                 }
             } else {
-                $default_repr = \var_export($this->getDefaultValue(), true);
+                $default_repr = \var_export($this->default_value, true);
                 if (strlen($default_repr) >= 50) {
                     $default_repr = 'default';
                 }

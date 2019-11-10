@@ -192,7 +192,7 @@ class IssueInstance
 
     public function getMessageAndMaybeSuggestion() : string
     {
-        $message = $this->getMessage();
+        $message = $this->message;
         $suggestion = $this->getSuggestionMessage();
         if ($suggestion) {
             return $message . ' (' . $suggestion . ')';
@@ -202,6 +202,6 @@ class IssueInstance
 
     public function __toString() : string
     {
-        return "{$this->getFile()}:{$this->getLine()} {$this->getMessageAndMaybeSuggestion()}";
+        return "{$this->file}:{$this->line} {$this->getMessageAndMaybeSuggestion()}";
     }
 }

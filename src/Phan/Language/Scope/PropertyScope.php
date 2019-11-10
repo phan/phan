@@ -48,10 +48,8 @@ class PropertyScope extends ClosedScope
      */
     public function getPropertyFQSEN() : FullyQualifiedPropertyName
     {
-        $fqsen = $this->getFQSEN();
-
-        if ($fqsen instanceof FullyQualifiedPropertyName) {
-            return $fqsen;
+        if ($this->fqsen instanceof FullyQualifiedPropertyName) {
+            return $this->fqsen;
         }
 
         throw new \AssertionError("FQSEN must be a FullyQualifiedPropertyName");

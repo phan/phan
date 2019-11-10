@@ -19,8 +19,9 @@ abstract class TypedElement implements TypedElementInterface
     /**
      * @var string
      * The name of the typed structural element
+     * @readonly
      */
-    private $name;
+    protected $name;
 
     /**
      * @var UnionType
@@ -237,11 +238,11 @@ abstract class TypedElement implements TypedElementInterface
      */
     public function setIsDeprecated(bool $is_deprecated) : void
     {
-        $this->setPhanFlags(Flags::bitVectorWithState(
-            $this->getPhanFlags(),
+        $this->phan_flags = Flags::bitVectorWithState(
+            $this->phan_flags,
             Flags::IS_DEPRECATED,
             $is_deprecated
-        ));
+        );
     }
 
     /**
@@ -310,12 +311,10 @@ abstract class TypedElement implements TypedElementInterface
 
     private function setIsPHPInternal(bool $is_internal) : void
     {
-        $this->setPhanFlags(
-            Flags::bitVectorWithState(
-                $this->getPhanFlags(),
-                Flags::IS_PHP_INTERNAL,
-                $is_internal
-            )
+        $this->phan_flags = Flags::bitVectorWithState(
+            $this->phan_flags,
+            Flags::IS_PHP_INTERNAL,
+            $is_internal
         );
     }
 

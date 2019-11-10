@@ -75,7 +75,7 @@ class FunctionLikeScope extends ClosedScope
      */
     public function getFunctionLikeFQSEN()
     {
-        $fqsen = $this->getFQSEN();
+        $fqsen = $this->fqsen;
 
         if ($fqsen instanceof FullyQualifiedMethodName) {
             return $fqsen;

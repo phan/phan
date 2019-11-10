@@ -5,6 +5,7 @@ namespace Phan\Debug;
 use Phan\IssueInstance;
 use Phan\Language\Context;
 use Phan\Language\Element\AddressableElement;
+use Phan\Language\Element\Method;
 use Phan\Language\Element\UnaddressableTypedElement;
 use Phan\Language\FQSEN;
 use Phan\Language\Type;
@@ -48,6 +49,9 @@ class Frame
                 return 'None';
             }
 
+            if ($value instanceof Method) {
+                return get_class($value) . '(' . $value->getRepresentationForIssue() . ')';
+            }
             if ($value instanceof AddressableElement
                 || $value instanceof UnaddressableTypedElement
                 || $value instanceof UnionType

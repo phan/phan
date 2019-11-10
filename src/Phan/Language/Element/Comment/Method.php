@@ -148,18 +148,18 @@ class Method
 
     public function __toString() : string
     {
-        if ($this->isStatic()) {
+        if ($this->is_static) {
             $string = 'static function ';
         } else {
             $string = 'function ';
         }
         // Magic methods can't be by ref?
-        $string .= $this->getName();
+        $string .= $this->name;
 
-        $string .= '(' . \implode(', ', $this->getParameterList()) . ')';
+        $string .= '(' . \implode(', ', $this->parameters) . ')';
 
-        if (!$this->getUnionType()->isEmpty()) {
-            $string .= ' : ' . (string)$this->getUnionType();
+        if (!$this->type->isEmpty()) {
+            $string .= ' : ' . (string)$this->type;
         }
 
         return $string;

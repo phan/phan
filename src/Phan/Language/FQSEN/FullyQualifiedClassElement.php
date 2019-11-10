@@ -91,14 +91,13 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
      */
     public function getCanonicalFQSEN() : FQSEN
     {
-        $old_fully_qualified_class_name = $this->getFullyQualifiedClassName();
-        $fully_qualified_class_name = $old_fully_qualified_class_name->getCanonicalFQSEN();
-        if ($this->alternate_id == 0 && $fully_qualified_class_name === $old_fully_qualified_class_name) {
+        $fully_qualified_class_name = $this->fully_qualified_class_name->getCanonicalFQSEN();
+        if ($this->alternate_id == 0 && $fully_qualified_class_name === $this->fully_qualified_class_name) {
             return $this;
         }
         return static::make(
             $fully_qualified_class_name,  // @phan-suppress-current-line PhanPartialTypeMismatchArgument
-            $this->getName(),
+            $this->name,
             0
         );
     }
@@ -220,8 +219,8 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
         }
 
         return static::make(
-            $this->getFullyQualifiedClassName(),
-            $this->getName(),
+            $this->fully_qualified_class_name,
+            $this->name,
             $alternate_id
         );
     }
@@ -235,7 +234,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
         string $name,
         int $alternate_id
     ) : string {
-        $fqsen_string = ((string)$fqsen) . '::' . $name;
+        $fqsen_string = $fqsen->__toString() . '::' . $name;
 
         if ($alternate_id) {
             $fqsen_string .= ",$alternate_id";
@@ -251,16 +250,12 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
      */
     public function __toString() : string
     {
-        $fqsen_string = $this->memoize(__METHOD__, function () : string {
+        return $this->memoize(__METHOD__, function () : string {
             return self::toString(
-                $this->getFullyQualifiedClassName(),
-                $this->getName(),
+                $this->fully_qualified_class_name,
+                $this->name,
                 $this->alternate_id
             );
         });
-
-        // print $fqsen_string . '|' . spl_object_hash($this) . "\n";
-
-        return $fqsen_string;
     }
 }

@@ -452,6 +452,26 @@ Note that this is not emitted for empty statement lists in functions or methods 
 - **PhanEmptyProtectedMethod**: `Empty protected method {METHOD}`
 - **PhanEmptyPublicMethod**: `Empty public method {METHOD}`
 
+#### DollarDollarPlugin.php
+
+Checks for complex variable access expressions `$$x`, which may be hard to read, and make the variable accesses hard/impossible to analyze.
+
+- **PhanPluginDollarDollar**: Warns about the use of $$x, ${(expr)}, etc.
+
+#### AvoidableGetterPlugin.php
+
+This plugin checks for uses of getters on `$this` that can be avoided inside of a class.
+(E.g. calling `$this->getFoo()` when the property `$this->foo` is accessible, and there are no known overrides of the getter)
+
+- **PhanPluginAvoidableGetter**: `Can replace {METHOD} with {PROPERTY}`
+- **PhanPluginAvoidableGetterInTrait**: `Can replace {METHOD} with {PROPERTY}`
+
+Note that switching to properties makes the code slightly faster,
+but may break code outside of the library that overrides those getters,
+or hurt the readability of code.
+
+This will also remove runtime type checks that were enforced by the getter's return type.
+
 ### 4. Demo plugins:
 
 These files demonstrate plugins for Phan.
@@ -466,12 +486,6 @@ Generates the following issue types under the types:
 - **DemoPluginMethodName**: a declared method isn't called `function`
   PHP's default checks(`php -l` would catch the class/function name types.)
 - **DemoPluginInstanceof**: codebase contains `(expr) instanceof object` (usually invalid, and `is_object()` should be used instead. That would actually be a check for `class object`).
-
-#### DollarDollarPlugin.php
-
-Checks for complex variable access expressions `$$x`, which may be hard to read, and make the variable accesses hard/impossible to analyze.
-
-- **PhanPluginDollarDollar**: Warns about the use of $$x, ${(expr)}, etc.
 
 ### 5. Third party plugins
 

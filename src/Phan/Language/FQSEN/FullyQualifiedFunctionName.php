@@ -113,6 +113,6 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement i
      */
     public function isClosure() : bool
     {
-        return (\preg_match('/^closure_/', $this->getName()) === 1);
+        return \strncmp('closure_', $this->name, 8) === 0;
     }
 }

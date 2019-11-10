@@ -125,8 +125,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
     {
         if ($type instanceof ArrayType) {
             if ($type instanceof GenericArrayType) {
-                if (!$this->genericArrayElementType()
-                    ->canCastToType($type->genericArrayElementType())) {
+                if (!$this->element_type->canCastToType($type->element_type)) {
                     return false;
                 }
                 if ((($this->key_type ?: self::KEY_MIXED) & ($type->key_type ?: self::KEY_MIXED)) === 0) {
@@ -169,8 +168,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
     {
         if ($type instanceof ArrayType) {
             if ($type instanceof GenericArrayType) {
-                if (!$this->genericArrayElementType()
-                    ->canCastToTypeWithoutConfig($type->genericArrayElementType())) {
+                if (!$this->element_type->canCastToTypeWithoutConfig($type->element_type)) {
                     return false;
                 }
                 if ((($this->key_type ?: self::KEY_MIXED) & ($type->key_type ?: self::KEY_MIXED)) === 0) {
@@ -359,7 +357,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
         return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) : UnionType {
             $union_type = $this->asPHPDocUnionType();
 
-            $element_type = $this->genericArrayElementType();
+            $element_type = $this->element_type;
             if (!$element_type->isObjectWithKnownFQSEN()) {
                 return $union_type;
             }
@@ -439,7 +437,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
         return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) : UnionType {
             $union_type = $this->asPHPDocUnionType();
 
-            $class_fqsen = FullyQualifiedClassName::fromType($this->genericArrayElementType());
+            $class_fqsen = FullyQualifiedClassName::fromType($this->element_type);
 
 
             if (!$code_base->hasClassWithFQSEN($class_fqsen)) {

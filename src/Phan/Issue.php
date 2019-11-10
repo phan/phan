@@ -4676,7 +4676,7 @@ class Issue
      */
     public function getCategoryName() : string
     {
-        return self::getNameForCategory($this->getCategory());
+        return self::getNameForCategory($this->category);
     }
 
     /**
@@ -4702,7 +4702,7 @@ class Issue
      */
     public function getSeverityName() : string
     {
-        switch ($this->getSeverity()) {
+        switch ($this->severity) {
             case self::SEVERITY_LOW:
                 return 'low';
             case self::SEVERITY_NORMAL:
@@ -4710,7 +4710,7 @@ class Issue
             case self::SEVERITY_CRITICAL:
                 return 'critical';
             default:
-                throw new \AssertionError('Unknown severity ' . $this->getSeverity());
+                throw new \AssertionError('Unknown severity ' . $this->severity);
         }
     }
 

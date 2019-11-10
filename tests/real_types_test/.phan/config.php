@@ -135,6 +135,7 @@ return [
         'DuplicateExpressionPlugin',
         'WhitespacePlugin',
         'UnknownElementTypePlugin',
+        'AvoidableGetterPlugin',
     ],
 
     // Set this to false to emit `PhanUndeclaredFunction` issues for internal functions that Phan has signatures for,

@@ -442,7 +442,7 @@ abstract class Scope
      */
     public function __toString() : string
     {
-        return $this->getFQSEN() . "\t" . \implode(',', $this->getVariableMap());
+        return $this->fqsen . "\t" . \implode(',', $this->getVariableMap());
     }
 
     /**

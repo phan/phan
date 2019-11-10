@@ -131,7 +131,7 @@ function with_disabled_phan_error_handler(Closure $closure)
 /**
  * Print a backtrace with values to stderr.
  */
-function phan_print_backtrace(bool $is_crash = false) : void
+function phan_print_backtrace(bool $is_crash = false, int $frames_to_skip = 2) : void
 {
     // Uncomment this if even trying to print the details would crash
     /*
@@ -150,7 +150,7 @@ function phan_print_backtrace(bool $is_crash = false) : void
         }
         $truncated = false;
         foreach ($frames as $i => $frame) {
-            if ($i < 2) {
+            if ($i < $frames_to_skip) {
                 continue;
             }
             $frame_details = \Phan\Debug\Frame::frameToString($frame);

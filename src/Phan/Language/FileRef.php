@@ -94,7 +94,7 @@ class FileRef implements \Serializable
      */
     public function isPHPInternal() : bool
     {
-        return ('internal' === $this->getFile());
+        return 'internal' === $this->file;
     }
 
     /**
@@ -103,7 +103,7 @@ class FileRef implements \Serializable
      */
     public function equals(FileRef $other) : bool
     {
-        return $this->getLineNumberStart() === $other->getLineNumberStart() && $this->getFile() === $other->getFile();
+        return $this->line_number_start === $other->line_number_start && $this->file === $other->file;
     }
 
     /**
