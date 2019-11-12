@@ -2226,8 +2226,20 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $this->context,
                 $node
             ))->getClassConst();
-
-            return $constant->getUnionType();
+            $union_type = $constant->getUnionType();
+            $class_node = $node->children['class'];
+            if (!$class_node instanceof Node || $class_node->kind !== ast\AST_NAME) {
+                // ignore nonsense like (0)::class, and dynamic accesses such as $var::CLASS
+                return $union_type->eraseRealTypeSet();
+            }
+            if (\strcasecmp($class_node->children['name'], 'static') === 0) {
+                if ($this->context->isInClassScope() && $this->context->getClassInScope($this->code_base)->isFinal()) {
+                    // static::X should be treated like self::X in a final class.
+                    return $union_type;
+                }
+                return $union_type->eraseRealTypeSet();
+            }
+            return $union_type;
         } catch (NodeException $_) {
             // ignore, this should warn elsewhere
         }
