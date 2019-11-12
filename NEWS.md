@@ -26,6 +26,8 @@ Maintenance:
 + Bump minimum version of netresearch/jsonmapper to avoid php notices in the language server in php 7.4
 
 Bug fixes:
++ Properly emit redundant and impossible condition warnings about uses of class constants defined as literal strings/floats/integers.
+  (i.e. infer their real union types)
 + Fix false positive inference that `$x[0]` was `string` for `$x` of types such as `list<\MyClass>|string` (reported in #3483)
 + Consistently inherit analysis settings from parent classes recursively, instead of only inheriting them from the direct parent class. (#3472)
   (settings include presence of dynamic properties, whether undeclared magic methods are forbidden, etc.)

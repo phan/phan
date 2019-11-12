@@ -755,7 +755,12 @@ class ParseVisitor extends ScopeVisitor
                     );
                 }
             } else {
-                $constant->setUnionType(Type::fromObject($value_node)->asPHPDocUnionType());
+                // This is a literal scalar value.
+                // Assume that this is the only definition of the class constant and that it's not a stub for something that depends on configuration.
+                //
+                // TODO: What about internal stubs (isPHPInternal()) - if Phan would treat those like being from phpdoc,
+                // it should do the same for FutureUnionType
+                $constant->setUnionType(Type::fromObject($value_node)->asRealUnionType());
             }
             $constant->setNodeForValue($value_node);
 
