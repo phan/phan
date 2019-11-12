@@ -72,7 +72,7 @@ abstract class ScalarType extends NativeType
             if (\count($scalar_implicit_partial) > 0) {
                 // check if $type->getName() is in the list of permitted types $this->getName() can cast to.
                 // Both this and $type are NativeType and getName() isn't needed
-                if (\in_array($type->name, $scalar_implicit_partial[$type->name] ?? [], true)) {
+                if (\in_array($type->name, $scalar_implicit_partial[$this->name] ?? [], true)) {
                     return true;
                 }
             }
