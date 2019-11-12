@@ -141,7 +141,7 @@ class AnnotatedUnionType extends UnionType
     {
         $id = parent::generateUniqueId();
         if ($this->is_possibly_undefined) {
-            return $id . '=';
+            return '(' . $id . ')=';
         }
         return $id;
     }

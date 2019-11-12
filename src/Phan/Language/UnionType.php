@@ -4395,46 +4395,151 @@ class UnionType implements Serializable
      * @param UnionType[] $union_types
      * @return UnionType union of these UnionTypes
      */
-    public static function merge(array $union_types) : UnionType
+    public static function merge(array $union_types, bool $normalize_array_shapes = true) : UnionType
     {
         $n = \count($union_types);
         if ($n < 2) {
             return \reset($union_types) ?: UnionType::$empty_instance;
         }
         $new_type_set = [];
+        $array_shape_types = [];
         foreach ($union_types as $union_type) {
             $type_set = $union_type->type_set;
             if (\count($type_set) === 0) {
                 continue;
             }
             if (\count($new_type_set) === 0) {
+                // Take advantage of copy-on-write when possible (this avoids creating a new array if nothing else gets added)
                 $new_type_set = $type_set;
+                foreach ($type_set as $type) {
+                    if ($type instanceof ArrayShapeType && $normalize_array_shapes) {
+                        $array_shape_types[] = $type;
+                    }
+                }
                 continue;
             }
             foreach ($type_set as $type) {
                 if (!\in_array($type, $new_type_set, true)) {
                     $new_type_set[] = $type;
+                    if ($type instanceof ArrayShapeType && $normalize_array_shapes) {
+                        $array_shape_types[] = $type;
+                    }
                 }
             }
         }
+        if ($array_shape_types) {
+            // @phan-suppress-next-line PhanPartialTypeMismatchArgument phan can't infer new_type_set/union_types are non-empty
+            $new_type_set = self::normalizeArrayShapes($new_type_set, $array_shape_types, $union_types, false);
+        }
         $new_real_type_set = [];
+        $array_shape_types = [];
         foreach ($union_types as $union_type) {
             $type_set = $union_type->real_type_set;
             if (\count($type_set) === 0) {
                 $new_real_type_set = [];
+                $array_shape_types = [];
                 break;
             }
             if (\count($new_real_type_set) === 0) {
                 $new_real_type_set = $type_set;
+                foreach ($type_set as $type) {
+                    if ($type instanceof ArrayShapeType && $normalize_array_shapes) {
+                        $array_shape_types[] = $type;
+                    }
+                }
                 continue;
             }
             foreach ($type_set as $type) {
                 if (!\in_array($type, $new_real_type_set, true)) {
                     $new_real_type_set[] = $type;
+                    if ($type instanceof ArrayShapeType && $normalize_array_shapes) {
+                        $array_shape_types[] = $type;
+                        continue;
+                    }
                 }
             }
         }
+        if ($array_shape_types) {
+            // @phan-suppress-next-line PhanPartialTypeMismatchArgument Phan can't count.
+            $new_real_type_set = self::normalizeArrayShapes($new_real_type_set, $array_shape_types, $union_types, true);
+        }
+        // \Phan\Debug::debugLog("Before: " . \implode(' or ', \array_map(function (UnionType $type) : string { return $type->getDebugRepresentation(); }, $union_types)) . " array_shape_types=" . \implode(' or ', $array_shape_types) . "\n");
         return UnionType::of($new_type_set, $new_real_type_set);
+        // \Phan\Debug::debugLog("After: " . $result->getDebugRepresentation() . "\n");
+        // return $result;
+    }
+
+    /**
+     * @param non-empty-list<Type> $type_set the elements of the type_set (both array shapes and non array shapes)
+     * @param non-empty-list<ArrayShapeType> $array_shape_types the elements of the type_set that were ArrayShapeType instances
+     * @param non-empty-list<UnionType> $union_types a list of two or more union types, at least one of which has array shapes
+     * @param bool $from_real_type_set
+     * @return non-empty-list<Type> $type_set a type set with all array shape types normalized
+     */
+    private static function normalizeArrayShapes(array $type_set, array $array_shape_types, array $union_types, bool $from_real_type_set) : array
+    {
+        // If one of the union types had no array shape types, merge the array shape types of other types with the empty type
+        $add_mixed = false;
+        foreach ($union_types as $union_type) {
+            foreach ($from_real_type_set ? $union_type->real_type_set : $union_type->type_set as $type) {
+                if ($type instanceof ArrayShapeType) {
+                    continue 2;
+                }
+            }
+            $add_mixed = true;
+            break;
+        }
+        if (!$add_mixed && \count($array_shape_types) === 1) {
+            return $type_set;
+        }
+        // Replace the prior array shape types with the new array shape types.
+        $array_shape_type = self::combineArrayShapeTypes($array_shape_types, $add_mixed);
+        $new_type_set = [$array_shape_type];
+        foreach ($type_set as $type) {
+            if (!$type instanceof ArrayShapeType) {
+                $new_type_set[] = $type;
+            }
+        }
+        return $new_type_set;
+    }
+
+    /**
+     * @param non-empty-list<ArrayShapeType> $types
+     */
+    private static function combineArrayShapeTypes(array $types, bool $add_mixed) : ArrayShapeType
+    {
+        $is_nullable = false;
+        $field_types_list = [];
+        $common_field_types = [];
+        foreach ($types as $type) {
+            $is_nullable = $is_nullable || $type->isNullable();
+            $field_types = $type->getFieldTypes();
+            $common_field_types += $field_types;
+            $field_types_list[] = $field_types;
+        }
+        foreach ($common_field_types as $key => $_) {
+            $is_possibly_undefined = false;
+            $new_element_union_types = [];
+            foreach ($field_types_list as $field_types) {
+                $element_union_type = $field_types[$key] ?? null;
+                if (!$element_union_type) {
+                    $is_possibly_undefined = true;
+                    continue;
+                }
+                if ($add_mixed) {
+                    $element_union_type = $element_union_type->eraseRealTypeSetRecursively();
+                }
+                $new_element_union_types[] = $element_union_type;
+                // @phan-suppress-next-line PhanImpossibleConditionInLoop not sure why
+                $is_possibly_undefined = $is_possibly_undefined || $element_union_type->isPossiblyUndefined();
+            }
+            $new_element_union_type = UnionType::merge($new_element_union_types);
+            if ($is_possibly_undefined) {
+                $new_element_union_type = $new_element_union_type->withIsPossiblyUndefined(true);
+            }
+            $common_field_types[$key] = $new_element_union_type;
+        }
+        return ArrayShapeType::fromFieldTypes($common_field_types, $is_nullable);
     }
 
     /**
