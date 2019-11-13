@@ -116,6 +116,7 @@ abstract class AbstractFQSEN implements FQSEN, Serializable
     /**
      * @param string $unused_serialized
      * @throws Error to prevent accidentally calling this
+     * @suppress PhanParamSignatureRealMismatchHasNoParamTypeInternal, PhanUnusedSuppression parameter type widening was allowed in php 7.2, signature changed in php 8
      */
     public function unserialize($unused_serialized) : void
     {
