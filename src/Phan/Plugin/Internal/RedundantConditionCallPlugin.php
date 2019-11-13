@@ -426,7 +426,9 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
         $code_base = $this->code_base;
         $left = $left->getRealUnionType()->withStaticResolvedInContext($this->context);
         $right = $right->getRealUnionType()->withStaticResolvedInContext($this->context);
-        if (!$left->hasAnyTypeOverlap($code_base, $right) && ($strict || !$left->hasAnyWeakTypeOverlap($right))) {
+        $left_non_literal = $left->asNonLiteralType();
+        $right_non_literal = $right->asNonLiteralType();
+        if (!$left_non_literal->hasAnyTypeOverlap($code_base, $right_non_literal) && ($strict || !$left->hasAnyWeakTypeOverlap($right))) {
             $this->emitIssueForBinaryOp(
                 $node,
                 $left,
@@ -583,6 +585,8 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
         $code_base = $this->code_base;
         $context = $this->context;
 
+        // TODO: check $this->shouldCheckScalarAsIfInLoopScope($node) in internal uses.
+        // e.g. should have some way to warn about `$x = []; while (!is_array($x)) { $x = null; }`
         if ($this->context->isInLoop()) {
             ['left' => $left_node, 'right' => $right_node] = $node->children;
             $left_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($code_base, $left_node);

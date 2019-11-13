@@ -1,0 +1,2 @@
+%s:18 PhanDebugAnnotation @phan-debug-var requested for variable $s - it has union type \NS823\Section|\NS823\SubSubSection(real=\NS823\Section|\NS823\SubSubSection)
+%s:22 PhanDebugAnnotation @phan-debug-var requested for variable $s - it has union type \NS823\SubSection(real=\NS823\SubSection)

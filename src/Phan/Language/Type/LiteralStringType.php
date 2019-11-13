@@ -268,6 +268,11 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
         if ($type instanceof ScalarType) {
             switch ($type::NAME) {
                 case 'string':
+                    if ($type instanceof LiteralStringType) {
+                        if ($this->value != $type->value) {
+                            return false;
+                        }
+                    }
                     return true;
                 case 'int':
                     // Allow int or float strings to cast to int or floats
@@ -398,6 +403,9 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
     {
         // TODO: Could be stricter
         if ($other instanceof ScalarType) {
+            if ($other instanceof LiteralTypeInterface) {
+                return $other->getValue() == $this->value;
+            }
             if ($other instanceof NullType || $other instanceof FalseType) {
                 // Allow 0 == null but not 1 == null
                 if (!$this->isPossiblyFalsey()) {

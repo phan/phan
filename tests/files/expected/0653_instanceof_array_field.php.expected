@@ -6,5 +6,5 @@
 %s:36 PhanNonClassMethodCall Call to method count on non-class type null
 %s:36 PhanTypeInvalidDimOffset Invalid offset 4 of array type array{5:\Countable}
 %s:39 PhanUndeclaredMethod Call to undeclared method \stdClass::count
-%s:47 PhanTypeMismatchReturn Returning type \stdClass but check_var_negate() is declared to return string
+%s:47 PhanTypeMismatchReturnReal Returning type \stdClass but check_var_negate() is declared to return string
 %s:49 PhanTypeMismatchReturn Returning type int but check_var_negate() is declared to return string

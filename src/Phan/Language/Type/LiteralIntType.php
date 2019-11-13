@@ -3,6 +3,8 @@
 namespace Phan\Language\Type;
 
 use Phan\Config;
+use Phan\CodeBase;
+use Phan\Language\Context;
 use Phan\Language\Type;
 use RuntimeException;
 
@@ -255,6 +257,9 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
     {
         // TODO: Could be stricter
         if ($other instanceof ScalarType) {
+            if ($other instanceof LiteralTypeInterface) {
+                return $other->getValue() == $this->value;
+            }
             if ($other instanceof NullType || $other instanceof FalseType) {
                 // Allow 0 == null but not 1 == null
                 if (!$this->isPossiblyFalsey()) {
@@ -264,6 +269,14 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
             return true;
         }
         return parent::weaklyOverlaps($other);
+    }
+
+    public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other) : bool
+    {
+        if ($other instanceof LiteralIntType) {
+            return $other->value === $this->value;
+        }
+        return parent::canCastToDeclaredType($code_base, $context, $other);
     }
 }
 
