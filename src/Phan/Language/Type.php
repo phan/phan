@@ -816,6 +816,8 @@ class Type
     /**
      * Creates a type for the ReflectionType of a parameter, return value, etc.
      * @phan-side-effect-free
+     * @deprecated - use UnionType::fromReflectionType to prepare for php 8
+     * @suppress PhanUnreferencedPublicMethod
      */
     public static function fromReflectionType(
         \ReflectionType $reflection_type
