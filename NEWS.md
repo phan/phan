@@ -32,6 +32,7 @@ Bug fixes:
 + Consistently inherit analysis settings from parent classes recursively, instead of only inheriting them from the direct parent class. (#3472)
   (settings include presence of dynamic properties, whether undeclared magic methods are forbidden, etc.)
 + Don't treat methods that were overridden in one class but inherited by a different class as if they had overrides.
++ Fix a crash when running in php 8.0.0-dev due to Union Types being found in Reflection. (#3503)
 
 Nov 08 2019, Phan 2.4.2
 -----------------------

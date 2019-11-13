@@ -504,12 +504,17 @@ class UnionType implements Serializable
      * @param ?\ReflectionType $reflection_type
      *
      * @return UnionType
-     * A UnionType with 0 or 1 nullable/non-nullable Types
+     * A UnionType with 0 or more nullable/non-nullable Types
+     * (limited to at most 1 in php 7, unlimited in php 8)
      */
     public static function fromReflectionType(?\ReflectionType $reflection_type) : UnionType
     {
         if ($reflection_type !== null) {
-            return Type::fromReflectionType($reflection_type)->asRealUnionType();
+            return self::fromStringInContext(
+                Type::stringFromReflectionType($reflection_type),
+                new Context(),
+                Type::FROM_TYPE
+            );
         }
         return self::$empty_instance;
     }
@@ -4083,6 +4088,7 @@ class UnionType implements Serializable
      *
      * @see \Serializable
      * @suppress PhanAccessReadOnlyProperty this unserializes
+     * @suppress PhanParamSignatureRealMismatchHasNoParamTypeInternal, PhanUnusedSuppression parameter type widening was allowed in php 7.2, signature changed in php 8
      */
     public function unserialize($serialized) : void
     {
