@@ -11,6 +11,8 @@ New features(CLI, Configs):
 
 New features(Analysis):
 + Make inferred real types more accurate for equality/identity/instanceof checks.
++ Combine array shape types into a single union type when merging variable types from multiple branches. (#3506)
+  Do a better job of invalidating the real union type of fields of array shape types when the field is only checked/set on some code branches.
 + Make issue suggestions (and CLI suggestions) for completions of prefixes case-insensitive.
 + Support `@seal-properties` and `@seal-methods` as aliases of `@phan-forbid-undeclared-magic-properties` and `@phan-forbid-undeclared-magic-methods`
 + More aggressively infer real types of array destructuring(e.g. `[$x] = expr`) and accesses of array dimensions (e.g. `$x = expr[dim]`) (#3481)

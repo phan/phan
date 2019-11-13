@@ -171,11 +171,10 @@ class ContextMergeVisitor extends KindVisitorImplementation
             $variable_name = (string)$variable_name;  // e.g. ${42}
             foreach ($catch_scope_list as $catch_scope) {
                 // Merge types if try and catch have a variable in common
-                if ($catch_scope->hasVariableWithName($variable_name)) {
-                    $catch_variable = $catch_scope->getVariableByName(
-                        $variable_name
-                    );
-
+                $catch_variable = $catch_scope->getVariableByNameOrNull(
+                    $variable_name
+                );
+                if ($catch_variable) {
                     $variable->setUnionType($variable->getUnionType()->withUnionType(
                         $catch_variable->getUnionType()
                     ));
@@ -338,11 +337,12 @@ class ContextMergeVisitor extends KindVisitorImplementation
                 // Get a list of all variables with the given name from
                 // each scope
                 foreach ($scope_list as $scope) {
-                    if (!$scope->hasVariableWithName($variable_name)) {
+                    $variable = $scope->getVariableByNameOrNull($variable_name);
+                    if (\is_null($variable)) {
                         continue;
                     }
 
-                    $type = $scope->getVariableByName($variable_name)->getUnionType();
+                    $type = $variable->getUnionType();
                     // Frequently, a branch won't even modify a variable's type.
                     // The immutable UnionType might have the exact same instance
                     if ($type !== $previous_type) {
@@ -353,10 +353,10 @@ class ContextMergeVisitor extends KindVisitorImplementation
                 }
 
                 if (\count($type_list) < 2) {
-                    $result = \reset($type_list) ?: UnionType::empty();
+                    return \reset($type_list) ?: UnionType::empty();
                 } else {
                     // compute the un-normalized types
-                    $result = UnionType::merge($type_list);
+                    $result = UnionType::merge($type_list, $variable_name !== Context::VAR_NAME_THIS_PROPERTIES);
                 }
 
                 $result_count = $result->typeCount();
