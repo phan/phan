@@ -151,7 +151,7 @@ class UnionType implements Serializable
                 // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
                 return \reset($type_list)->asRealUnionType();
             }
-            return new UnionType($type_list, true, $real_type_set);
+            return new self($type_list, true, $real_type_set);
         } else {
             return new self($type_list, false, $real_type_set);
         }
@@ -1558,11 +1558,11 @@ class UnionType implements Serializable
         if (!$this->hasLiterals()) {
             return $this;
         }
-        $result = UnionType::empty();
+        $new_types = [];
         foreach ($this->type_set as $type) {
-            $result = $result->withType($type->asNonLiteralType());
+            $new_types[] = $type->asNonLiteralType();
         }
-        return $result;
+        return UnionType::of($new_types);
     }
 
     /**

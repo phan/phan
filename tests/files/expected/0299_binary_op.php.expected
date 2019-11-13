@@ -8,11 +8,11 @@
 %s:16 PhanTypeMismatchArgumentReal Argument 1 ($x) is 2 but \expect_string_298() takes string defined at %s:3
 %s:17 PhanSuspiciousValueComparison Suspicious attempt to compare 4 of type 4 to 2 of type 2 with operator '=='
 %s:17 PhanTypeMismatchArgumentReal Argument 1 ($x) is bool but \expect_string_298() takes string defined at %s:3
-%s:18 PhanImpossibleTypeComparison Impossible attempt to check if 4 of type 4 is identical to 2 of type 2
+%s:18 PhanSuspiciousValueComparison Suspicious attempt to compare 4 of type 4 to 2 of type 2 with operator '==='
 %s:18 PhanTypeMismatchArgumentReal Argument 1 ($x) is bool but \expect_string_298() takes string defined at %s:3
 %s:19 PhanSuspiciousValueComparison Suspicious attempt to compare 4 of type 4 to 2 of type 2 with operator '!='
 %s:19 PhanTypeMismatchArgumentReal Argument 1 ($x) is bool but \expect_string_298() takes string defined at %s:3
-%s:20 PhanImpossibleTypeComparison Impossible attempt to check if 4 of type 4 is identical to 2 of type 2
+%s:20 PhanSuspiciousValueComparison Suspicious attempt to compare 4 of type 4 to 2 of type 2 with operator '!=='
 %s:20 PhanTypeMismatchArgumentReal Argument 1 ($x) is bool but \expect_string_298() takes string defined at %s:3
 %s:21 PhanSuspiciousValueComparison Suspicious attempt to compare 4 of type 4 to 2 of type 2 with operator '<'
 %s:21 PhanTypeMismatchArgumentReal Argument 1 ($x) is bool but \expect_string_298() takes string defined at %s:3

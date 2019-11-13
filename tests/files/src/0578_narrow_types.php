@@ -34,6 +34,8 @@ function test578($a, Subclass578A $b, $c, $d, $e, $f) {
         echo $e;
     }
     if ($f instanceof BaseInterface578) {
+        // A class could exist outside the codebase that extends stdClass and implements BaseInterface578.
+        // Infer phpdoc type is BaseInterface578, not the 2 subclasses.
         echo $f;
     }
 }

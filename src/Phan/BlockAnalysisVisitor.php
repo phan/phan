@@ -690,15 +690,13 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 BlockExitStatusChecker::willUnconditionallyProceed($stmts_node)
             ))->checkRedundantOrImpossibleTruthyCondition($condition_node, $context, null, false);
         }
-        if ($stmts_node instanceof Node) {
-            $context = $this->analyzeAndGetUpdatedContext(
-                $context->withScope(
-                    new BranchScope($context->getScope())
-                )->withLineNumberStart($stmts_node->lineno),
-                $node,
-                $stmts_node
-            );
-        }
+        $context = $this->analyzeAndGetUpdatedContext(
+            $context->withScope(
+                new BranchScope($context->getScope())
+            )->withLineNumberStart($stmts_node->lineno),
+            $node,
+            $stmts_node
+        );
         // Analyze the loop after analyzing the statements, in case it uses variables defined within the statements.
         $loop_node = $node->children['loop'];
         if ($loop_node instanceof Node) {
@@ -1494,7 +1492,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                      */
                     function (Context $child_context, $cond_node) use ($switch_case_node) : Context {
                         $visitor = new ConditionVisitor($this->code_base, $child_context);
-                        return $visitor->updateVariableToBeIdentical($switch_case_node, $cond_node, $child_context);
+                        return $visitor->updateVariableToBeEqual($switch_case_node, $cond_node, $child_context);
                     },
                 ];
             } elseif ($switch_kind === ast\AST_CALL) {

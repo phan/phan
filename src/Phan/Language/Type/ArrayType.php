@@ -290,6 +290,17 @@ class ArrayType extends IterableType
         // The base type has unknown keys. Do nothing.
         return $this;
     }
+
+    public function weaklyOverlaps(Type $other) : bool
+    {
+        // TODO: Could be stricter
+        if ($other instanceof ScalarType) {
+            if (!$other->isInBoolFamily()) {
+                return false;
+            }
+        }
+        return parent::weaklyOverlaps($other);
+    }
 }
 // Trigger the autoloader for GenericArrayType so that it won't be called
 // before ArrayType.

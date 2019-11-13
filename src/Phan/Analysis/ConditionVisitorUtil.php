@@ -602,8 +602,9 @@ trait ConditionVisitorUtil
             return $this->modifyPropertySimple($var_node, function (UnionType $old_type) use ($new_union_type, $is_weak_type_assertion) : UnionType {
                 if ($is_weak_type_assertion) {
                     return $this->combineTypesAfterWeakEqualityCheck($old_type, $new_union_type);
+                } else {
+                    return $this->combineTypesAfterStrictEqualityCheck($old_type, $new_union_type);
                 }
-                return $new_union_type;
             }, $context);
         }
         // TODO: Support ast\AST_DIM
@@ -617,9 +618,12 @@ trait ConditionVisitorUtil
             // Make a copy of the variable
             $variable = clone($variable);
 
-            $variable->setUnionType(
-                $this->combineTypesAfterWeakEqualityCheck($variable->getUnionType(), $new_union_type)
-            );
+            if ($is_weak_type_assertion) {
+                $new_variable_type = $this->combineTypesAfterWeakEqualityCheck($variable->getUnionType(), $new_union_type);
+            } else {
+                $new_variable_type = $this->combineTypesAfterStrictEqualityCheck($variable->getUnionType(), $new_union_type);
+            }
+            $variable->setUnionType($new_variable_type);
 
             // Overwrite the variable with its new type in this
             // scope without overwriting other scopes
@@ -639,8 +643,12 @@ trait ConditionVisitorUtil
     protected function combineTypesAfterWeakEqualityCheck(UnionType $old_union_type, UnionType $new_union_type) : UnionType
     {
         // TODO: Be more precise about these checks - e.g. forbid anything such as stdClass == false in the new type
+        if (!$old_union_type->hasRealTypeSet()) {
+            // This is a weak check of equality. We aren't sure of the real types
+            return $new_union_type->eraseRealTypeSet();
+        }
         if (!$new_union_type->hasRealTypeSet()) {
-            return $new_union_type;
+            return $new_union_type->withRealTypeSet($old_union_type->getRealTypeSet());
         }
         $new_real_union_type = $new_union_type->getRealUnionType();
         $combined_real_types = [];
@@ -660,10 +668,57 @@ trait ConditionVisitorUtil
                 // e.g. if asserting ?stdClass == false, then remove stdClass and leave null
                 $type = $type->asNonTruthyType();
             }
+            if ($type instanceof LiteralTypeInterface) {
+                foreach ($new_real_union_type->getTypeSet() as $other_type) {
+                    if (!$other_type instanceof LiteralTypeInterface || $type->getValue() == $other_type->getValue()) {
+                        $combined_real_types[] = $type;
+                        continue 2;
+                    }
+                }
+
+            }
             $combined_real_types[] = $type;
-            break;
         }
-        return $new_union_type->withRealTypeSet($combined_real_types);
+        if ($combined_real_types) {
+            // @phan-suppress-next-line PhanPartialTypeMismatchArgument TODO: Remove when intersection types are supported.
+            return $new_union_type->withRealTypeSet($combined_real_types);
+        }
+        return $new_union_type;
+    }
+
+    protected function combineTypesAfterStrictEqualityCheck(UnionType $old_union_type, UnionType $new_union_type) : UnionType
+    {
+        // TODO: Be more precise about these checks - e.g. forbid anything such as stdClass == false in the new type
+        if (!$new_union_type->hasRealTypeSet()) {
+            return $new_union_type->withRealTypeSet($old_union_type->getRealTypeSet());
+        }
+        $new_real_union_type = $new_union_type->getRealUnionType();
+        $combined_real_types = [];
+        foreach ($old_union_type->getRealTypeSet() as $type) {
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            // TODO: Implement Type->canWeakCastToUnionType?
+            if ($type->isPossiblyFalsey() && !$new_real_union_type->containsFalsey()) {
+                if ($type->isAlwaysFalsey()) {
+                    continue;
+                }
+                // e.g. if asserting ?stdClass == true, then remove null
+                $type = $type->asNonFalseyType();
+            } elseif ($type->isPossiblyTruthy() && !$new_real_union_type->containsTruthy()) {
+                if ($type->isAlwaysTruthy()) {
+                    continue;
+                }
+                // e.g. if asserting ?stdClass == false, then remove stdClass and leave null
+                $type = $type->asNonTruthyType();
+            }
+            if (!$type->asPHPDocUnionType()->canCastToDeclaredType($this->code_base, $this->context, $new_real_union_type)) {
+                continue;
+            }
+            $combined_real_types[] = $type;
+        }
+        if ($combined_real_types) {
+            return $new_union_type->withRealTypeSet($combined_real_types);
+        }
+        return $new_union_type;
     }
 
     /**
@@ -970,8 +1025,7 @@ trait ConditionVisitorUtil
         }
         // analyze `if (($a = $b) == true)` (etc.) but not `if ((list($x) = expr) == true)`
         // The latter is really a check on expr, not on an array.
-        if ($tmp instanceof Node &&
-                ($tmp === $var_node || $tmp->kind !== ast\AST_ARRAY) &&
+        if (($tmp === $var_node || $tmp->kind !== ast\AST_ARRAY) &&
                 ParseVisitor::isConstExpr($expr_node)) {
             return $condition->analyzeComplexCondition($this, $tmp, $expr_node);
         }

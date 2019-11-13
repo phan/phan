@@ -726,8 +726,7 @@ final class MiscParamPlugin extends PluginV3 implements
                     1
                 ))->__invoke($modified_array_node);
             }
-            if ($function->getName() === 'array_unshift'
-                    && $modified_array_node instanceof Node &&
+            if ($function->getName() === 'array_unshift' &&
                     $modified_array_node->kind === ast\AST_VAR) {
                 $variable = (new ConditionVisitor($code_base, $new_context))->getVariableFromScope($modified_array_node, $new_context);
                 if ($variable) {

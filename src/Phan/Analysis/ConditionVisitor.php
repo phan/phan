@@ -650,7 +650,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             // See https://secure.php.net/instanceof -
 
             // Add the type to the variable
-            $variable->setUnionType(self::calculateNarrowedUnionType($this->code_base, $variable->getUnionType(), $object_types));
+            $variable->setUnionType(self::calculateNarrowedUnionType($this->code_base, $this->context, $variable->getUnionType(), $object_types));
         } else {
             // We know that variable is some sort of object if this condition is true.
             if ($class_node->kind !== ast\AST_NAME &&
@@ -671,11 +671,12 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
      * E.g. Given subclass1|subclass2|false and base_class/base_interface, returns subclass1|subclass2
      * E.g. Given subclass1|mixed|false and base_class/base_interface, returns base_class/base_interface
      */
-    private static function calculateNarrowedUnionType(CodeBase $code_base, UnionType $old_type, UnionType $asserted_object_type) : UnionType
+    private static function calculateNarrowedUnionType(CodeBase $code_base, Context $context, UnionType $old_type, UnionType $asserted_object_type) : UnionType
     {
-        $result = UnionType::empty();
+        $new_type_set = [];
         foreach ($old_type->getTypeSet() as $type) {
             if ($type instanceof MixedType) {
+                // MixedType can cast to other types
                 return $asserted_object_type;
             }
             if (!$type->isObject()) {
@@ -683,18 +684,49 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                 continue;
             }
             if (!$type->isObjectWithKnownFQSEN()) {
+                // Anything that can cast to $asserted_object_type should become $asserted_object_type
+                // TODO: Handle isPossiblyObject/iterable
                 return $asserted_object_type;
             }
             $type = $type->withIsNullable(false);
+            if (!$type->asPHPDocUnionType()->canCastToDeclaredType($code_base, $context, $asserted_object_type)) {
+                // This isn't on a common type hierarchy
+                continue;
+            }
             if (!$type->asExpandedTypes($code_base)->canCastToUnionType($asserted_object_type)) {
+                // The variable includes a base class of the asserted type.
                 return $asserted_object_type;
             }
-            $result = $result->withType($type);
+            $new_type_set[] = $type;
         }
-        if ($result->isEmpty()) {
+        if (!$new_type_set) {
             return $asserted_object_type;
         }
-        return $result;
+        if (!$asserted_object_type->hasRealTypeSet()) {
+            return UnionType::of($new_type_set, $old_type->getRealTypeSet());
+        }
+        $new_real_type_set = [];
+        foreach ($old_type->getRealTypeSet() as $type) {
+            if ($type instanceof MixedType) {
+                // MixedType can cast to other types
+                return $asserted_object_type;
+            }
+            if (!$type->isObject()) {
+                // ignore non-object types
+                continue;
+            }
+            if (!$type->isObjectWithKnownFQSEN()) {
+                // Anything that can cast to $asserted_object_type should become $asserted_object_type
+                // TODO: Handle isPossiblyObject/iterable
+                return UnionType::of($new_type_set, $old_type->getRealTypeSet());
+            }
+            $type = $type->withIsNullable(false);
+            if (!$type->asExpandedTypes($code_base)->canCastToUnionType($asserted_object_type)) {
+                continue;
+            }
+            $new_real_type_set[] = $type;
+        }
+        return UnionType::of($new_type_set, $new_real_type_set ?: $asserted_object_type->getRealTypeSet());
     }
 
     /**
@@ -774,7 +806,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             }
             // TODO: validate argument
             $class_type = \is_string($real_class_name) ? $fqsen->asType()->asRealUnionType() : $fqsen->asType()->asPHPDocUnionType();
-            $variable->setUnionType(self::calculateNarrowedUnionType($code_base, $variable->getUnionType(), $class_type));
+            $variable->setUnionType(self::calculateNarrowedUnionType($code_base, $context, $variable->getUnionType(), $class_type));
         };
 
         /**
