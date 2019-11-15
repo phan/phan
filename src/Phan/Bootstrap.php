@@ -27,11 +27,17 @@ if (extension_loaded('ast')) {
             "ERROR: Phan 2.x requires php-ast 1.0.1+ because it depends on AST version 70. php-ast %s is installed." . PHP_EOL,
             $ast_version
         );
-        fwrite(
-            STDERR,
-            "Exiting without analyzing files." . PHP_EOL
-        );
+        fwrite(STDERR, "See https://github.com/phan/phan/wiki/Getting-Started#installing-dependencies" . PHP_EOL);
+        fwrite(STDERR, "Exiting without analyzing files." . PHP_EOL);
         exit(1);
+    } elseif (PHP_VERSION_ID >= 80000 && version_compare($ast_version, '1.0.4') < 0) {
+        fprintf(
+            STDERR,
+            "WARNING: Phan 2.x requires php-ast 1.0.4+ to properly analyze ASTs for php 8.0+. php-ast %s and php %s is installed." . PHP_EOL,
+            $ast_version,
+            PHP_VERSION
+        );
+        fwrite(STDERR, "See https://github.com/phan/phan/wiki/Getting-Started#installing-dependencies" . PHP_EOL);
     } elseif (PHP_VERSION_ID >= 70400 && version_compare($ast_version, '1.0.2') < 0) {
         fprintf(
             STDERR,
@@ -39,6 +45,7 @@ if (extension_loaded('ast')) {
             $ast_version,
             PHP_VERSION
         );
+        fwrite(STDERR, "See https://github.com/phan/phan/wiki/Getting-Started#installing-dependencies" . PHP_EOL);
     }
 }
 if (PHP_VERSION_ID < 70100) {
