@@ -896,13 +896,19 @@ class Context extends FileRef
 
     /**
      * Copy private properties of $other to this
-     * @suppress PhanTypeSuspiciousNonTraversableForeach
      */
     final protected function copyPropertiesFrom(Context $other) : void
     {
-        foreach ($other as $k => $v) {
-            $this->{$k} = $v;
-        }
+        $this->file = $other->file;
+        $this->line_number_start = $other->line_number_start;
+        $this->namespace = $other->namespace;
+        $this->namespace_id = $other->namespace_id;
+        $this->namespace_map = $other->namespace_map;
+        $this->parse_namespace_map = $other->parse_namespace_map;
+        $this->strict_types = $other->strict_types;
+        $this->loop_nodes = $other->loop_nodes;
+        $this->scope = $other->scope;
+        $this->cache = $other->cache;
     }
 
     /**
