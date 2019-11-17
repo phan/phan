@@ -1,5 +1,5 @@
 src/009_vprintf.php:6 PhanPluginPrintfNoArguments No format string arguments are given for "%s", consider using fwrite instead
-src/009_vprintf.php:6 PhanPluginPrintfNonexistentArgument Format string "%s" refers to nonexistent argument #1 in "%s"
+src/009_vprintf.php:6 PhanPluginPrintfNonexistentArgument Format string "%s" refers to nonexistent argument #1 in "%s". This will be an ArgumentCountError in PHP 8
 src/009_vprintf.php:7 PhanPluginPrintfNoArguments No format string arguments are given for "some literal", consider using echo instead
 src/009_vprintf.php:9 PhanPluginPrintfNonexistentArgument Format string "%d dollars 100% down\n" refers to nonexistent argument #2 in "% d"
 src/009_vprintf.php:9 PhanPluginPrintfNotPercent Format string "%d dollars 100% down\n" contains something that is not a percent sign, it will be treated as a format string '% d' with padding of " " and alignment of '' but no width. Use %% for a literal percent sign, or '%2$d' to be less ambiguous
