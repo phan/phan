@@ -22,6 +22,7 @@ use Phan\Library\ConversionSpec;
 use Phan\PluginV3;
 use Phan\PluginV3\AnalyzeFunctionCallCapability;
 use Phan\PluginV3\ReturnTypeOverrideCapability;
+use Throwable;
 use function count;
 use function implode;
 use function is_object;
@@ -193,7 +194,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
         $sprintf_handler = static function (
             CodeBase $code_base,
             Context $context,
-            Func $unused_function,
+            Func $function,
             array $args
         ) use ($string_union_type) : UnionType {
             if (count($args) < 1) {
@@ -229,13 +230,27 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
                     }
                     $sprintf_args[] = $arg;
                 }
-                $result = \with_disabled_phan_error_handler(
-                    /** @return string|false */
-                    static function () use ($format_string, $sprintf_args) {
-                        // @phan-suppress-next-line PhanPluginPrintfVariableFormatString
-                        return @\vsprintf($format_string, $sprintf_args);
-                    }
-                );
+                try {
+                    $result = \with_disabled_phan_error_handler(
+                        /** @return string|false */
+                        static function () use ($format_string, $sprintf_args) {
+                            // @phan-suppress-next-line PhanPluginPrintfVariableFormatString
+                            return @\vsprintf($format_string, $sprintf_args);
+                        }
+                    );
+                } catch (Throwable $e) {
+                    // PHP 8 throws ValueError for too few arguments to vsprintf
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::TypeErrorInInternalCall,
+                        $args[0]->lineno ?? $context->getLineNumberStart(),
+                        $function->getName(),
+                        $e->getMessage()
+                    );
+                    // TODO: When PHP 8.0 stable is out, replace this with string?
+                    $result = false;
+                }
                 $result_union_type = $result_union_type->withType(Type::fromObject($result));
             }
             return $result_union_type;
@@ -448,9 +463,9 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
                 // emit issues with 1-based offsets
                 $emit_issue(
                     'PhanPluginPrintfNonexistentArgument',
-                    'Format string {STRING_LITERAL} refers to nonexistent argument #{INDEX} in {STRING_LITERAL}',
+                    'Format string {STRING_LITERAL} refers to nonexistent argument #{INDEX} in {STRING_LITERAL}. This will be an ArgumentCountError in PHP 8',
                     [self::encodeString($fmt_str), $largest_positional, \implode(',', $examples)],
-                    Issue::SEVERITY_NORMAL,
+                    Issue::SEVERITY_CRITICAL,
                     self::ERR_UNTRANSLATED_NONEXISTENT
                 );
             }

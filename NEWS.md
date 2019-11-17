@@ -24,6 +24,7 @@ Plugins:
 + Also start checking if closures (and arrow functions) can be static in `PossiblyStaticMethodPlugin`
 + Add `AvoidableGetterPlugin` to suggest when `$this->prop` can be used instead of `$this->getProp()`.
   (This will suggest using the property instead of the getter method if there are no known method overrides of the getter. This is only checked for instance properties of `$this`)
++ Increase severity of `PhanPluginPrintfNonexistentArgument` to critical. It will become an ArgumentCountError in PHP 8.
 
 Maintenance:
 + Bump minimum version of netresearch/jsonmapper to avoid php notices in the language server in php 7.4
