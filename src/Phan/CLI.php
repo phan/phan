@@ -2039,16 +2039,21 @@ EOB
      */
     public static function outputProgressLine(string $msg, float $p, float $memory, float $peak) : void
     {
-        $left_side = \str_pad($msg, 10, ' ', STR_PAD_LEFT) .  ' ';
-        $right_side =
-               " " . \sprintf("%1$ 3d", (int)(100 * $p)) . "%" .
-               \sprintf(' %.2dMB/%.2dMB', (int)$memory, (int)$peak);
-
         static $columns = null;
         if ($columns === null) {
             // Only call this once per process, since it can be rather expensive
             $columns = (new Terminal())->getWidth();
         }
+        $left_side = \str_pad($msg, 10, ' ', STR_PAD_LEFT) .  ' ';
+        if ($columns - (60 + 10) > 19) {
+            $percent_progress = \sprintf('%1$ 5.1f', (int)(1000 * $p) / 10);
+        } else {
+            $percent_progress = \sprintf("%1$ 3d", (int)(100 * $p));
+        }
+        $right_side =
+               " " . $percent_progress . "%" .
+               \sprintf(' %.2dMB/%.2dMB', (int)$memory, (int)$peak);
+
         // strlen("  99% 999MB/999MB") == 17
         $used_length = strlen($left_side) + \max(17, strlen($right_side));
         $remaining_length = $columns - $used_length;
