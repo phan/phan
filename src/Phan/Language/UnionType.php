@@ -178,6 +178,14 @@ class UnionType implements Serializable
         }
     }
 
+    /**
+     * @suppress PhanAccessReadOnlyProperty
+     */
+    public function __clone() {
+        $this->with_erased_real_type_set = null;
+        $this->as_normalized = null;
+    }
+
     // __clone of $this->type_set would be a no-op due to copy on write semantics.
     // And clone isn't necessary anymore now that type_set is immutable
 
@@ -744,10 +752,30 @@ class UnionType implements Serializable
     }
 
     /**
+     * @var ?UnionType|?true this union type, with the real type set erased.
+     *
+     * True if this union type already has all real types erased, to make it possible to garbage collect this with cycle detection disabled.
+     */
+    private $with_erased_real_type_set = null;
+
+    /**
      * Returns a union type with an empty real type set (including in elements of generic arrays, etc.)
+     * @suppress PhanAccessReadOnlyProperty
      */
     public function eraseRealTypeSetRecursively() : UnionType
     {
+        $with_erased_real_type_set = $this->with_erased_real_type_set;
+        if (\is_null($with_erased_real_type_set)) {
+            $this->with_erased_real_type_set = $with_erased_real_type_set = $this->computeEraseRealTypeSetRecursively();
+        }
+        if (\is_object($with_erased_real_type_set)) {
+            return $with_erased_real_type_set;
+        }
+        return $this;
+    }
+
+    /** @return UnionType|true */
+    private function computeEraseRealTypeSetRecursively() {
         $new_type_set = [];
         foreach ($this->type_set as $type) {
             $new_type_set[] = $type->withErasedUnionTypes();
@@ -4328,6 +4356,11 @@ class UnionType implements Serializable
     }
 
     /**
+     * @var ?UnionType|?bool this type as the normalized version
+     */
+    private $as_normalized = null;
+
+    /**
      * @return UnionType - A normalized version of this union type (May or may not be the same object, if no modifications were made)
      *
      * The following normalization rules apply
@@ -4335,48 +4368,51 @@ class UnionType implements Serializable
      * 1. If one of the types is null or nullable, convert all types to nullable and remove "null" from the union type
      * 2. If both "true" and "false" (possibly nullable) coexist, or either coexists with "bool" (possibly nullable),
      *    then remove "true" and "false"
+     *    @suppress PhanAccessReadOnlyProperty
      */
     public function asNormalizedTypes() : UnionType
     {
-        $type_set = $this->type_set;
-        if (\count($type_set) <= 1) {
+        if (\count($this->type_set) <= 1) {
             // Optimization: can't simplify if there's only one type
             return $this;
         }
+        $normalized = $this->as_normalized;
+        if (\is_null($normalized)) {
+            $this->as_normalized = $normalized = $this->asNormalizedTypesInner();
+        }
+        return \is_object($normalized) ? $normalized : $this;
+    }
+
+    /**
+     * @return UnionType|true
+     */
+    private function asNormalizedTypesInner()
+    {
+        $type_set = $this->type_set;
         $flags = 0;
         foreach ($type_set as $type) {
             $flags |= $type->getNormalizationFlags();
         }
         if ($flags === 0) {
             // Optimization: nothing to do if no types are null/nullable or booleans
-            return $this;
+            return true;
         }
-        return self::asNormalizedTypesInner($type_set, $flags, $this->real_type_set);
-    }
-
-    /**
-     * @param Type[] $type_set
-     * @param int $flags non-zero
-     * @param ?list<Type> $real_type_set
-     */
-    public static function asNormalizedTypesInner(array $type_set, int $flags, ?array $real_type_set) : UnionType
-    {
         $nullable = ($flags & Type::_bit_nullable) !== 0;
-        $builder = new UnionTypeBuilder($type_set);
         if ($nullable) {
-            if (\count($type_set) > 0) {
-                foreach ($type_set as $type) {
-                    if (!$type->isNullable()) {
-                        $builder->removeType($type);
-                        $builder->addType($type->withIsNullable(true));
-                    }
+            $new_types = [];
+            foreach ($type_set as $type) {
+                if ($type instanceof NullType || $type instanceof VoidType) {
+                    continue;
                 }
-                static $nullable_type = null;
-                if ($nullable_type === null) {
-                    $nullable_type = NullType::instance(false);
+                if ($type->isNullable()) {
+                    $new_types[] = $type;
+                } else {
+                    $new_types[] = $type->withIsNullable(true);
                 }
-                $builder->removeType($nullable_type);
             }
+            $builder = new UnionTypeBuilder(self::getUniqueTypes($new_types));
+        } else {
+            $builder = new UnionTypeBuilder($type_set);
         }
 
         // If this contains both true and false types, filter out both and add "bool" (or "?bool" for nullable)
@@ -4387,8 +4423,12 @@ class UnionType implements Serializable
                 self::convertToTypeSetWithNormalizedNonNullableBools($builder);
             }
         }
+        $result_type_set = $builder->getTypeSet();
+        if ($result_type_set === $type_set) {
+            return true;
+        }
         // TODO: Convert array|array{} to array?
-        return UnionType::of($builder->getTypeSet(), $real_type_set ?? []);
+        return UnionType::of($result_type_set, $this->real_type_set);
     }
 
     /**

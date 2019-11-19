@@ -1297,10 +1297,10 @@ class AssignmentVisitor extends AnalysisVisitor
         if ($property->getRealUnionType()->isEmpty() && $property->getPHPDocUnionType()->isEmpty()) {
             $property->setUnionType(
                 $new_types
-                     ->withUnionType($property->getUnionType())
+                     ->eraseRealTypeSetRecursively()
+                     ->withUnionType($property->getUnionType()->eraseRealTypeSetRecursively())
                      ->withStaticResolvedInContext($context)
                      ->withFlattenedArrayShapeOrLiteralTypeInstances()
-                     ->eraseRealTypeSetRecursively()
             );
             return;
         }
