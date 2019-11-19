@@ -38,6 +38,7 @@ final class EmptyUnionTypeTest extends BaseTest
     const SKIPPED_METHOD_NAMES = [
         'unserialize',  // throws
         '__construct',
+        '__clone',
         // UnionType implementation can't be optimized
         'withIsPossiblyUndefined',
         'isPossiblyUndefined',

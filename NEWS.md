@@ -28,6 +28,7 @@ Plugins:
 
 Maintenance:
 + Bump minimum version of netresearch/jsonmapper to avoid php notices in the language server in php 7.4
++ Improve worst-case performance when analyzing code that has many possible combinations of array shapes.
 
 Bug fixes:
 + Properly emit redundant and impossible condition warnings about uses of class constants defined as literal strings/floats/integers.
