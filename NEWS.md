@@ -20,6 +20,7 @@ New features(Analysis):
 
   This will result in a few more false positives about potentially real redundant/impossible conditions and real type mismatches.
 + Fix false positives caused by assuming that the default values of properties are the real types of properties.
++ Infer that globals used in functions (`global $myGlobal;`) have unknown real types - don't emit warnings about redundant/impossible conditions. (#3521)
 
 Plugins:
 + Also start checking if closures (and arrow functions) can be static in `PossiblyStaticMethodPlugin`

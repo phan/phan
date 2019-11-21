@@ -555,18 +555,17 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitGlobal(Node $node) : Context
     {
-        $name = $node->children['var']->children['name'] ?? null;
-        if (!\is_string($name)) {
+        $variable_name = $node->children['var']->children['name'] ?? null;
+        if (!\is_string($variable_name)) {
             // Shouldn't happen?
             return $this->context;
         }
         $variable = new Variable(
             $this->context->withLineNumberStart($node->lineno),
-            $name,
+            $variable_name,
             UnionType::empty(),
             0
         );
-        $variable_name = $variable->getName();
         $optional_global_variable_type = Variable::getUnionTypeOfHardcodedGlobalVariableWithName($variable_name);
         if ($optional_global_variable_type) {
             $variable->setUnionType($optional_global_variable_type);
@@ -575,6 +574,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if ($scope->hasGlobalVariableWithName($variable_name)) {
                 // TODO: Support @global, add a clone to the method context?
                 $actual_global_variable = clone($scope->getGlobalVariableByName($variable_name));
+                $actual_global_variable->setUnionType($actual_global_variable->getUnionType()->eraseRealTypeSetRecursively());
                 $this->context->addScopeVariable($actual_global_variable);
                 return $this->context;
             }
