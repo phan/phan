@@ -192,30 +192,7 @@ class ParseVisitor extends ScopeVisitor
             // Look to see if we have a parent class
             $extends_node = $node->children['extends'] ?? null;
             if ($extends_node instanceof Node) {
-                $parent_class_name =
-                    (string)$extends_node->children['name'];
-
-                // Check to see if the name isn't fully qualified
-                if ($extends_node->flags & \ast\flags\NAME_NOT_FQ) {
-                    if ($this->context->hasNamespaceMapFor(
-                        \ast\flags\USE_NORMAL,
-                        $parent_class_name
-                    )) {
-                        // Get a fully-qualified name
-                        $parent_class_name =
-                            (string)($this->context->getNamespaceMapFor(
-                                \ast\flags\USE_NORMAL,
-                                $parent_class_name
-                            ));
-                    } else {
-                        $parent_class_name =
-                            \rtrim($this->context->getNamespace(), '\\') . '\\' . $parent_class_name;
-                    }
-                } elseif ($extends_node->flags & \ast\flags\NAME_RELATIVE) {
-                    $parent_class_name =
-                        \rtrim($this->context->getNamespace(), '\\') . '\\' . $parent_class_name;
-                }
-                // $extends_node->flags is 0 when it is fully qualified?
+                $parent_class_name = (string)UnionTypeVisitor::unionTypeFromClassNode($this->code_base, $this->context, $extends_node);
 
                 // The name is fully qualified.
                 $parent_fqsen = FullyQualifiedClassName::fromFullyQualifiedString(
