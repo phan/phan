@@ -646,6 +646,14 @@ Cannot use {CLASS} as type when not in object context in {FUNCTION}
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.2.13/tests/misc/fallback_test/expected/034_function_return_self.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.13/tests/misc/fallback_test/src/034_function_return_self.php#L3).
 
+## PhanSuspiciousMagicConstant
+
+```
+Suspicious reference to magic constant {CODE}: {DETAILS}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0594_magic_constant.php.expected#L10) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0594_magic_constant.php#L8).
+
 # DeprecatedError
 
 This category of issue comes up when you're accessing deprecated elements (as marked by the `@deprecated` comment).
@@ -2163,6 +2171,14 @@ This checks for a functionlike directly calling itself in a way that seems to be
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.2.13/tests/rasmus_files/expected/0007_self_call.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.13/tests/rasmus_files/src/0007_self_call.php#L8).
 
+## PhanInvalidMixin
+
+```
+Attempting to use a mixin of invalid or missing type {TYPE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0806_mixin.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0806_mixin.php#L39).
+
 ## PhanMismatchVariadicComment
 
 ```
@@ -2646,6 +2662,14 @@ Invalid non-int/non-string operand provided to operator '{OPERATOR}' between typ
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.2.13/tests/plugin_test/expected/138_suspicious_object_comparison.php.expected#L10) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.13/tests/plugin_test/src/138_suspicious_object_comparison.php#L15).
+
+## PhanTypeInvalidCallExpressionAssignment
+
+```
+Probably unused assignment to function result {CODE} for function returning {TYPE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0232_assignment_to_call.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0232_assignment_to_call.php#L7).
 
 ## PhanTypeInvalidCallable
 
@@ -3341,6 +3365,14 @@ Expected an object to be passed to clone() but got possible non-object {TYPE}
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.2.13/tests/plugin_test/expected/144_bad_clone.php.expected#L6) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.13/tests/plugin_test/src/144_bad_clone.php#L14).
 
+## PhanTypePossiblyInvalidDimOffset
+
+```
+Possibly invalid offset {SCALAR} of array type {TYPE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0824_undefined_becomes_null.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0824_undefined_becomes_null.php#L14).
+
 ## PhanTypeSuspiciousEcho
 
 ```
@@ -3744,7 +3776,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.2.13/tests/plugin_test/exp
 ## PhanUndeclaredMagicConstant
 
 ```
-Reference to magic constant {CONST} that is undeclared in the current scope
+Reference to magic constant {CONST} that is undeclared in the current scope: {DETAILS}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.2.13/tests/files/expected/0594_magic_constant.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.2.13/tests/files/src/0594_magic_constant.php#L2).

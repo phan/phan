@@ -165,4 +165,12 @@ class AnnotatedUnionType extends UnionType
         $result->is_possibly_undefined = $this->is_possibly_undefined;
         return $result;
     }
+
+    public function convertUndefinedToNullable() : UnionType
+    {
+        if ($this->is_possibly_undefined) {
+            return $this->nullableClone()->withIsPossiblyUndefined(false);
+        }
+        return $this;
+    }
 }

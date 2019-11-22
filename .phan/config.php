@@ -108,6 +108,10 @@ return [
     // (subset of scalar_implicit_cast)
     'scalar_implicit_partial' => [],
 
+    // If true, Phan will convert the type of a possibly undefined array offset to the nullable, defined equivalent.
+    // If false, Phan will convert the type of a possibly undefined array offset to the defined equivalent (without converting to nullable).
+    'convert_possibly_undefined_offset_to_nullable' => false,
+
     // If true, seemingly undeclared variables in the global
     // scope will be ignored. This is useful for projects
     // with complicated cross-file globals that you have no
@@ -316,6 +320,8 @@ return [
         'PhanPluginRedundantClosureComment',
         'PhanPluginPossiblyStaticPublicMethod',
         'PhanPluginPossiblyStaticProtectedMethod',
+        // The types of ast\Node->children are all possibly unset.
+        'PhanTypePossiblyInvalidDimOffset',
     ],
 
     // If empty, no filter against issues types will be applied.

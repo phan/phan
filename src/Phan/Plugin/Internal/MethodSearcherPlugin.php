@@ -289,7 +289,7 @@ final class MethodSearcherPlugin extends PluginV3 implements
         if ($desired_type->isEqualTo($actual_signature_type)) {
             return $bonus + 5;
         }
-        $desired_type_normalized = $desired_type->withIsNullable(true);
+        $desired_type_normalized = $desired_type->nullableClone();
         $expanded_actual_signature_type = $actual_signature_type->asExpandedTypes($code_base);
         $result = 0;
         // TODO: This should handle Liskov Substitution Principle
@@ -347,7 +347,7 @@ final class MethodSearcherPlugin extends PluginV3 implements
         if ($desired_param_type->isEmpty()) {
             $desired_param_type_for_comparison = $desired_param_type;
         } else {
-            $desired_param_type_for_comparison = $desired_param_type->withIsNullable(true);
+            $desired_param_type_for_comparison = $desired_param_type->nullableClone();
         }
         foreach ($signature_param_types as $i => $actual_type) {
             if ($actual_type->asExpandedTypes($code_base)->canCastToUnionType($desired_param_type_for_comparison)) {
