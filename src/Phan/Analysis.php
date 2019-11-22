@@ -343,7 +343,7 @@ class Analysis
         $plugin_set = ConfigPluginSet::instance();
         foreach ($plugin_set->getReturnTypeOverrides($code_base) as $fqsen_string => $closure) {
             try {
-                if (\stripos($fqsen_string, '::') !== false) {
+                if (\strpos($fqsen_string, '::') !== false) {
                     $fqsen = FullyQualifiedMethodName::fromFullyQualifiedString($fqsen_string);
                     $class_fqsen = $fqsen->getFullyQualifiedClassName();
                     // We have to call hasClassWithFQSEN before calling hasMethodWithFQSEN in order to autoload the internal function signatures.
@@ -372,7 +372,7 @@ class Analysis
 
         foreach ($plugin_set->getAnalyzeFunctionCallClosures($code_base) as $fqsen_string => $closure) {
             try {
-                if (\stripos($fqsen_string, '::') !== false) {
+                if (\strpos($fqsen_string, '::') !== false) {
                     // This is an override of a method.
                     [$class, $method_name] = \explode('::', $fqsen_string, 2);
                     $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class);

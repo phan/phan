@@ -138,7 +138,7 @@ class PhanParameterInfo
         $name = $original_name_spec;
         $this->is_by_reference = ($name[0] ?? '') === '&';
         $name = ltrim($name, '&');
-        $this->is_variadic = stripos($name, '...') !== false;
+        $this->is_variadic = strpos($name, '...') !== false;
         $name = trim($name, '.');
         $this->is_optional = $name[strlen($name) - 1] === '=';
         $name = rtrim($name, '=');
@@ -356,7 +356,7 @@ function check_fields(string $function_name, array $fields, array $signatures) :
                 $reflection_representation = getUnionTypeStringForReflectionType($reflection_type);
                 $phan_representation = $phan_parameter->value;
                 if (strcasecmp($reflection_representation, $phan_representation) !== 0) {
-                    if ($reflection_representation === 'array' && stripos($phan_representation, '[]') !== false) {
+                    if ($reflection_representation === 'array' && strpos($phan_representation, '[]') !== false) {
                         // nothing to do
                     } else {
                         if ($has_alternate) {

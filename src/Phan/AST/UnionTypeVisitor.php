@@ -3545,7 +3545,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             $node = (new ContextNode($this->code_base, $this->context, $node))->getEquivalentPHPValue();
         }
         if (is_string($node)) {
-            if (\stripos($node, '::') !== false) {
+            if (\strpos($node, '::') !== false) {
                 [$class_name, $method_name] = \explode('::', $node, 2);
                 return $this->methodFQSENListFromParts($class_name, $method_name);
             }

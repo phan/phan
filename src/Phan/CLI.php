@@ -47,7 +47,6 @@ use const FILE_IGNORE_NEW_LINES;
 use const FILE_SKIP_EMPTY_LINES;
 use const FILTER_VALIDATE_INT;
 use const FILTER_VALIDATE_IP;
-use const PHP_OS;
 use const STDERR;
 use const STR_PAD_LEFT;
 
@@ -64,7 +63,7 @@ class CLI
     /**
      * This should be updated to x.y.z-dev after every release, and x.y.z before a release.
      */
-    const PHAN_VERSION = '2.4.3';
+    const PHAN_VERSION = '2.4.4-dev';
 
     /**
      * List of short flags passed to getopt
@@ -2184,7 +2183,8 @@ EOB
      */
     public static function doesTerminalSupportUtf8() : bool
     {
-        if (\strtoupper(\substr(PHP_OS, 0, 3)) === 'WIN') {
+        // TODO: Use PHP_OS_FAMILY once the minimum supported php version is 7.2 or higher.
+        if (\DIRECTORY_SEPARATOR === '\\') {
             if (!\function_exists('sapi_windows_cp_is_utf8') || !\sapi_windows_cp_is_utf8()) {
                 return false;
             }
