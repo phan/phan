@@ -814,12 +814,12 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
          * @param UnionType $default_if_empty
          * @return Closure(CodeBase,Context,Variable,array):void
          */
-        $make_callback = static function (string $extract_types, UnionType $default_if_empty) : Closure {
+        $make_callback = static function (string $extract_types, UnionType $default_if_empty, bool $allow_undefined = false) : Closure {
             $method = new ReflectionMethod(UnionType::class, $extract_types);
             /**
              * @param list<Node|mixed> $args
              */
-            return static function (CodeBase $code_base, Context $context, Variable $variable, array $args) use ($method, $default_if_empty) : void {
+            return static function (CodeBase $code_base, Context $context, Variable $variable, array $args) use ($method, $default_if_empty, $allow_undefined) : void {
                 // Change the type to match the is_a relationship
                 // If we already have possible callable types, then keep those
                 // (E.g. Closure|false becomes Closure)
@@ -836,6 +836,9 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                     $new_type = $new_type->nonNullableClone();
                     if (!$new_type->hasRealTypeSet()) {
                         $new_type = $new_type->withRealTypeSet($default_if_empty->getRealTypeSet());
+                    }
+                    if (!$allow_undefined) {
+                        $new_type = $new_type->withIsPossiblyUndefined(false);
                     }
                 }
                 $variable->setUnionType($new_type);
@@ -892,7 +895,6 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             'is_resource' => $make_direct_assertion_callback('resource'),
             'is_scalar' => $scalar_callback,
             'is_string' => $string_callback,
-            'empty' => $null_callback,
         ];
     }
 

@@ -1479,7 +1479,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         )->withStaticResolvedInContext($this->context);
 
         if ($union_type->isEmpty()) {
-            return $union_type;
+            return UnionType::empty();
         }
 
         // If none of the types we found were arrays with elements,
@@ -1510,6 +1510,18 @@ class UnionTypeVisitor extends AnalysisVisitor
         if (self::hasArrayShapeOrList($union_type)) {
             $element_type = $this->resolveArrayShapeElementTypes($node, $union_type);
             if ($element_type !== null) {
+                if ($element_type->isPossiblyUndefined() && !($node->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF)) {
+                    $this->emitIssue(
+                        Issue::TypePossiblyInvalidDimOffset,
+                        $node->lineno,
+                        ASTReverter::toShortString($node->children['dim']),
+                        $union_type
+                    );
+                    if (Config::getValue('convert_possibly_undefined_offset_to_nullable')) {
+                        return $element_type->nullableClone()->withIsPossiblyUndefined(false);
+                    }
+                    return $element_type->withIsPossiblyUndefined(false);
+                }
                 return $element_type;
             }
         }
@@ -2101,6 +2113,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $variable_name
             );
 
+            // TODO: check for possibly undefined variables and emit convertUndefinedToNullable once ContextMergeVisitor sets variables to possibly undefined
             return $variable->getUnionType();
         }
 

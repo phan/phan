@@ -398,6 +398,10 @@ class Config
         // (subset of `scalar_implicit_cast`)
         'scalar_implicit_partial' => [],
 
+        // If true, Phan will convert the type of a possibly undefined array offset to the nullable, defined equivalent.
+        // If false, Phan will convert the type of a possibly undefined array offset to the defined equivalent (without converting to nullable).
+        'convert_possibly_undefined_offset_to_nullable' => false,
+
         // If true, seemingly undeclared variables in the global
         // scope will be ignored.
         //

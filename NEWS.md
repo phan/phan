@@ -2,6 +2,17 @@ Phan NEWS
 
 ??? ?? 2019, Phan 2.4.4 (dev)
 -----------------------
+New features(CLI, Configs):
++ Treat `$var = $x['possibly undefined offset']` as creating a definitely defined variable,
+  not a possibly undefined variable. (#3534)
+
+  The config setting `convert_possibly_undefined_offset_to_nullable` controls
+  whether the field type gets cast to the nullable equivalent after removing undefined.
+
+New features(Analysis):
++ Emit `PhanPossiblyUndefinedArrayOffset` for accesses to array fields that are possibly undefined. (#3534)
+
+Bug fixes:
 
 Nov 20 2019, Phan 2.4.3
 -----------------------

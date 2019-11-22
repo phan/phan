@@ -5652,6 +5652,15 @@ class UnionType implements Serializable
         }
         return \count($this->type_set) !== 0;
     }
+
+    /**
+     * Overridden in AnnotatedUnionType, which can be possibly nullable
+     * @suppress PhanUnreferencedPublicMethod possibly useful for future code.
+     */
+    public function convertUndefinedToNullable() : UnionType
+    {
+        return $this;
+    }
 }
 
 UnionType::init();
