@@ -196,7 +196,7 @@ class RegexKeyExtractor
 
         $start_chr = $pattern[0] ?? '/';
         // @phan-suppress-next-line PhanParamSuspiciousOrder this is deliberate
-        $i = \stripos('({[', $start_chr);
+        $i = \strpos('({[', $start_chr);
         if ($i !== false) {
             $end_chr = ')}]'[$i];
         } else {

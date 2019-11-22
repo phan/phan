@@ -183,8 +183,8 @@ final class Builder
             } else {
                 $union_type = UnionType::empty();
             }
-            $is_output_parameter = \stripos($line, '@phan-output-reference') !== false;
-            $is_ignored_parameter = \stripos($line, '@phan-ignore-reference') !== false;
+            $is_output_parameter = \strpos($line, '@phan-output-reference') !== false;
+            $is_ignored_parameter = \strpos($line, '@phan-ignore-reference') !== false;
 
             return new Parameter(
                 $variable_name,
@@ -462,7 +462,7 @@ final class Builder
             }
         }
 
-        if (\stripos($line, 'override') !== false) {
+        if (\strpos($line, 'verride') !== false) {
             if (\preg_match('/@([Oo]verride)\b/', $line, $match)) {
                 // TODO: split class const and global const.
                 if ($this->checkCompatible('@override', [Comment::ON_METHOD, Comment::ON_CONST], $i)) {
@@ -928,7 +928,7 @@ final class Builder
         $trimmed_line = \trim($line);
         for ($check_lineno = $lineno_search; $check_lineno >= $lineno_stop; $check_lineno--) {
             $cur_line = $lines_array[$check_lineno];
-            if (\stripos($cur_line, $line) !== false) {
+            if (\strpos($cur_line, $line) !== false) {
                 // Better heuristic: Lines in the middle of phpdoc are guaranteed to be complete, including a few newlines at the end.
                 $j = $i - ($lineno_search - $check_lineno);
                 if ($j > 0 && $j < $this->comment_lines_count - 1) {
@@ -963,7 +963,7 @@ final class Builder
         $trimmed_line = \trim($lines[$i]);
         for ($check_lineno = $lineno_search; $check_lineno >= $lineno_stop; $check_lineno--) {
             $cur_line = $lines_array[$check_lineno];
-            if (\stripos($cur_line, $line) !== false) {
+            if (\strpos($cur_line, $line) !== false) {
                 // Better heuristic: Lines in the middle of phpdoc are guaranteed to be complete, including a few newlines at the end.
                 $j = $i - ($lineno_search - $check_lineno);
                 if ($j > 0 && $j < $count - 1) {

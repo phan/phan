@@ -419,7 +419,7 @@ class MarkupDescription
     public static function trimLine(string $line) : string
     {
         $line = \rtrim($line);
-        $pos = \stripos($line, '*');
+        $pos = \strpos($line, '*');
         if ($pos !== false) {
             return (string)\substr($line, $pos + 1);
         } else {

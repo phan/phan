@@ -3032,7 +3032,7 @@ class TolerantASTConverter
      */
     private static function getDevelopmentBuildDate() : ?string
     {
-        if (\stripos(\PHP_VERSION, '-dev') === false) {
+        if (\strpos(\PHP_VERSION, '-dev') === false) {
             return null;
         }
         \ob_start();
