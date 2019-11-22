@@ -8,7 +8,7 @@ use Phan\Config\Initializer;
 /**
  * Unit tests of Phan's analysis creating the expected element representations on snippets of code.
  */
-final class ConfigInitializerTest extends BaseTest
+final class InitializerTest extends BaseTest
 {
     public function testInitializesValid() : void
     {

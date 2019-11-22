@@ -12,8 +12,9 @@ use Symfony\Component\Console\Output\BufferedOutput;
 
 /**
  * Unit tests that PlainTextPrinter converts `IssueInstance`s to the expected 'text' output format.
+ * NOTE: Changing the name of this file to something equivalent case-insensitively may cause issues in case-sensitive file systems (e.g. Windows)
  */
-final class PlainTextPrinterTest extends BaseTest
+final class PlaintextPrinterTest extends BaseTest
 {
 
     public function setUp()  : void
