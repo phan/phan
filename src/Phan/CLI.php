@@ -47,6 +47,7 @@ use const FILE_IGNORE_NEW_LINES;
 use const FILE_SKIP_EMPTY_LINES;
 use const FILTER_VALIDATE_INT;
 use const FILTER_VALIDATE_IP;
+use const PHP_EOL;
 use const STDERR;
 use const STR_PAD_LEFT;
 
@@ -136,6 +137,7 @@ class CLI
         'language-server-tcp-server:',
         'language-server-verbose',
         'load-baseline:',
+        'long-progress-bar',
         'markdown-issue-messages',
         'memory-limit:',
         'minimum-severity:',
@@ -326,12 +328,12 @@ class CLI
             throw new UsageException('', EXIT_SUCCESS, UsageException::PRINT_NORMAL);  // --help prints help and calls exit(0)
         }
         if (\array_key_exists('help-annotations', $opts)) {
-            $result = "See https://github.com/phan/phan/wiki/Annotating-Your-Source-Code for more details." . \PHP_EOL . \PHP_EOL;
+            $result = "See https://github.com/phan/phan/wiki/Annotating-Your-Source-Code for more details." . PHP_EOL . PHP_EOL;
 
-            $result .= "Annotations specific to Phan:" . \PHP_EOL;
+            $result .= "Annotations specific to Phan:" . PHP_EOL;
             // @phan-suppress-next-line PhanAccessClassConstantInternal
             foreach (Builder::SUPPORTED_ANNOTATIONS as $key => $_) {
-                $result .= "- " . $key . \PHP_EOL;
+                $result .= "- " . $key . PHP_EOL;
             }
             throw new ExitException($result, EXIT_SUCCESS);
         }
@@ -501,6 +503,10 @@ class CLI
                     break;
                 case 'p':
                 case 'progress-bar':
+                    $progress_bar = true;
+                    break;
+                case 'long-progress-bar':
+                    Config::setValue('__long_progress_bar', true);
                     $progress_bar = true;
                     break;
                 case 'no-progress-bar':
@@ -842,7 +848,17 @@ class CLI
         self::restartWithoutProblematicExtensions();
         self::checkPluginsExist();
         self::checkValidFileConfig();
-        Config::setValue('progress_bar', $progress_bar ?? self::shouldUseProgressBarByDefault(\STDERR));
+        if (\is_null($progress_bar)) {
+            if (self::isProgressBarDisabledByDefault()) {
+                $progress_bar = false;
+            } else {
+                $progress_bar = true;
+                if (!self::isTerminal(\STDERR)) {
+                    Config::setValue('__long_progress_bar', true);
+                }
+            }
+        }
+        Config::setValue('progress_bar', $progress_bar);
 
         $output = $this->output;
         $printer = $factory->getPrinter($printer_type, $output);
@@ -961,7 +977,7 @@ class CLI
                 } else {
                     \fprintf(
                         STDERR,
-                        "%sCould not find file '%s' passed in %s" . \PHP_EOL,
+                        "%sCould not find file '%s' passed in %s" . PHP_EOL,
                         self::colorizeHelpSectionIfSupported('WARNING: '),
                         $absolute_path,
                         self::colorizeHelpSectionIfSupported('--include-analysis-file-list')
@@ -971,7 +987,7 @@ class CLI
             if ($valid_files === 0) {
                 // TODO convert this to an error in Phan 3.
                 $error_message = \sprintf(
-                    "None of the files to analyze in %s exist - This will be an error in future Phan releases." . \PHP_EOL,
+                    "None of the files to analyze in %s exist - This will be an error in future Phan releases." . PHP_EOL,
                     Config::getProjectRootDirectory()
                 );
                 CLI::printWarningToStderr($error_message);
@@ -1019,20 +1035,25 @@ class CLI
         return $stat ? 0020000 === ($stat['mode'] & 0170000) : false;
     }
 
+    private static function isProgressBarDisabledByDefault() : bool
+    {
+        if (self::isDaemonOrLanguageServer()) {
+            return true;
+        }
+        if (\getenv('PHAN_DISABLE_PROGRESS_BAR')) {
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Returns true if the output stream is a TTY.
      *
      * @param resource $output A valid CLI output stream
      * @suppress PhanUndeclaredFunction
      */
-    private static function shouldUseProgressBarByDefault($output) : bool
+    private static function isTerminal($output) : bool
     {
-        if (self::isDaemonOrLanguageServer()) {
-            return false;
-        }
-        if (\getenv('PHAN_DISABLE_PROGRESS_BAR')) {
-            return false;
-        }
         if (\defined('PHP_WINDOWS_VERSION_BUILD')) {
             // https://www.php.net/sapi_windows_vt100_support
             // >  By the way, if a stream is redirected, the VT100 feature will not be enabled:
@@ -1108,7 +1129,7 @@ class CLI
         // Also, the implementation of some requests such as "Go to Definition", "Find References" (planned), etc. assume Phan runs as a single process.
         $processes = Config::getValue('processes');
         if ($processes !== 1) {
-            \fprintf(STDERR, "Notice: Running with processes=1 instead of processes=%s - the daemon/language server assumes it will run as a single process" . \PHP_EOL, (string)\json_encode($processes));
+            \fprintf(STDERR, "Notice: Running with processes=1 instead of processes=%s - the daemon/language server assumes it will run as a single process" . PHP_EOL, (string)\json_encode($processes));
             Config::setValue('processes', 1);
         }
     }
@@ -1676,7 +1697,7 @@ EOB
         if (!CLI::shouldShowProgress()) {
             return false;
         }
-        if (CLI::shouldShowDebugOutput()) {
+        if (CLI::shouldShowLongProgress() || CLI::shouldShowDebugOutput()) {
             return false;
         }
         // @phan-suppress-next-line PhanUndeclaredFunction
@@ -1937,6 +1958,15 @@ EOB
     }
 
     /**
+     * Returns true if the long version of the progress bar should be shown.
+     * Precondition: shouldShowProgress is true.
+     */
+    public static function shouldShowLongProgress() : bool
+    {
+        return Config::getValue('__long_progress_bar');
+    }
+
+    /**
      * Returns true if this is a daemon or language server responding to requests
      */
     public static function isDaemonOrLanguageServer() : bool
@@ -1993,11 +2023,20 @@ EOB
      *
      * @param ?(string|FQSEN|AddressableElement) $details
      * Details about what is being analyzed within the phase for $msg
+     *
+     * @param ?int $offset
+     * The index of this event in the list of events that will be emitted
+     *
+     * @param ?int $count
+     * The number of events in the list.
+     * This is constant for 'parse' and 'analyze' phases, but may change for other phases.
      */
     public static function progress(
         string $msg,
         float $p,
-        $details = null
+        $details = null,
+        ?int $offset = null,
+        ?int $count = null
     ) : void {
         if (self::shouldShowDebugOutput()) {
             self::debugProgress($msg, $p, $details);
@@ -2006,7 +2045,6 @@ EOB
         if (!self::shouldShowProgress()) {
             return;
         }
-
         // Bound the percentage to [0, 1]
         $p = self::boundPercentage($p);
 
@@ -2027,25 +2065,47 @@ EOB
         $previous_update_time = $time;
         if ($msg === 'analyze' && Writer::isForkPoolWorker()) {
             // The original process of the fork pool is responsible for rendering the combined progress.
-            Writer::recordProgress($p);
+            Writer::recordProgress($p, (int)$offset, (int)$count);
             return;
         }
         $memory = \memory_get_usage() / 1024 / 1024;
         $peak = \memory_get_peak_usage() / 1024 / 1024;
 
-        self::outputProgressLine($msg, $p, $memory, $peak);
+        self::outputProgressLine($msg, $p, $memory, $peak, $offset, $count);
     }
 
+    /** @var ?string */
+    private static $current_progress_state = null;
+    /** @var int the number of events that were handled */
+    private static $current_progress_offset = 0;
+
+    // 80 - strlen(' 9999 / 9999 (100%) 9999MB') == 54
+    private const PROGRESS_WIDTH = 54;
+
     /**
-     * @internal
+     * Returns the number of columns in the terminal
      */
-    public static function outputProgressLine(string $msg, float $p, float $memory, float $peak) : void
+    private static function getColumns() : int
     {
         static $columns = null;
         if ($columns === null) {
             // Only call this once per process, since it can be rather expensive
             $columns = (new Terminal())->getWidth();
         }
+        return $columns;
+    }
+
+    /**
+     * @internal
+     */
+    public static function outputProgressLine(string $msg, float $p, float $memory, float $peak, ?int $offset = null, ?int $count = null) : void
+    {
+        if (self::shouldShowLongProgress()) {
+            self::showLongProgress($msg, $p, $memory, $offset, $count);
+            return;
+        }
+
+        $columns = self::getColumns();
         $left_side = \str_pad($msg, 10, ' ', STR_PAD_LEFT) .  ' ';
         if ($columns - (60 + 10) > 19) {
             $percent_progress = \sprintf('%1$ 5.1f', (int)(1000 * $p) / 10);
@@ -2092,7 +2152,7 @@ EOB
         }
         if (self::shouldShowProgress()) {
             // Print a newline to stderr to visuall separate stderr from stdout
-            fwrite(STDERR, \PHP_EOL);
+            fwrite(STDERR, PHP_EOL);
             \fflush(\STDOUT);
         }
     }
@@ -2132,7 +2192,7 @@ EOB
     public static function debugOutput(string $line) : void
     {
         if (self::shouldShowDebugOutput()) {
-            fwrite(STDERR, $line . \PHP_EOL);
+            fwrite(STDERR, $line . PHP_EOL);
         }
     }
 
@@ -2170,6 +2230,88 @@ EOB
             $progress_bar .= str_repeat("\u{2591}", $rest);
         }
         return $progress_bar;
+    }
+
+    /**
+     * Shows a long version of the progress bar, suitable for Continuous Integration logs
+     */
+    private static function showLongProgress(string $msg, float $p, float $memory, ?int $offset, ?int $count) : void
+    {
+        $buf = self::renderLongProgress($msg, $p, $memory, $offset, $count);
+        // Do a single write call (more efficient than multiple calls)
+        if (strlen($buf) > 0) {
+            fwrite(STDERR, $buf);
+        }
+    }
+
+    private static function renderLongProgress(string $msg, float $p, float $memory, ?int $offset, ?int $count) : string
+    {
+        $buf = '';
+        if ($msg !== self::$current_progress_state) {
+            switch ($msg) {
+                case 'parse':
+                    $buf .= "Parsing files..." . PHP_EOL;
+                    break;
+                case 'function':
+                    $buf .= "Analyzing functions..." . PHP_EOL;
+                    break;
+                case 'method':
+                    $buf .= "Analyzing methods..." . PHP_EOL;
+                    break;
+                case 'analyze':
+                    $buf .= "Analyzing files..." . PHP_EOL;
+                    break;
+                case 'dead code':
+                    $buf .= "Checking for dead code..." . PHP_EOL;
+                    break;
+                default:
+                    $buf .= "In '$msg' phase\n";
+            }
+            self::$current_progress_state = $msg;
+            self::$current_progress_offset = 0;
+        }
+        if (in_array($msg, ['analyze', 'parse'], true)) {
+            while (self::$current_progress_offset < $offset) {
+                self::$current_progress_offset++;
+                if (self::doesTerminalSupportUtf8()) {
+                    $buf .= "\u{2591}";
+                } else {
+                    $buf .= ".";
+                }
+                $mod = self::$current_progress_offset % self::PROGRESS_WIDTH;
+                if ($mod == 0 || self::$current_progress_offset === $count) {
+                    if ($mod) {
+                        $buf .= str_repeat(" ", self::PROGRESS_WIDTH - $mod);
+                    }
+                    // @phan-suppress-next-line PhanPluginPrintfVariableFormatString
+                    $buf .= " " . \sprintf("%" . strlen((string)(int)$count) . "d / %d (%3d%%) %.0fMB" . PHP_EOL,
+                        $offset ?? 0,
+                        (int)$count,
+                        100*$p,
+                        $memory
+                    );
+                }
+            }
+        } else {
+            $offset = (int)($p * self::PROGRESS_WIDTH);
+            while (self::$current_progress_offset < $offset) {
+                self::$current_progress_offset++;
+                if (self::doesTerminalSupportUtf8()) {
+                    $buf .= "\u{2591}";
+                } else {
+                    $buf .= ".";
+                }
+                $mod = self::$current_progress_offset % self::PROGRESS_WIDTH;
+                if ($mod == 0 || self::$current_progress_offset === $count) {
+                    if ($mod) {
+                        $buf .= str_repeat(" ", self::PROGRESS_WIDTH - $mod);
+                    }
+                    // @phan-suppress-next-line PhanPluginPrintfVariableFormatString
+                    $buf .= " " . \sprintf("%.0fMB" . PHP_EOL, $memory);
+                }
+            }
+        }
+        return $buf;
     }
 
     /**
@@ -2338,8 +2480,8 @@ EOT
             $extensions_to_disable[] = 'uopz';
             fwrite(
                 STDERR,
-                "[info] Restarting with uopz disabled, it can cause unpredictable behavior." . \PHP_EOL .
-                "[info] Set the environment variable PHAN_ALLOW_UOPZ to 1 to disable this message and to allow uopz." . \PHP_EOL
+                "[info] Restarting with uopz disabled, it can cause unpredictable behavior." . PHP_EOL .
+                "[info] Set the environment variable PHAN_ALLOW_UOPZ to 1 to disable this message and to allow uopz." . PHP_EOL
             );
         }
         if (self::shouldRestartToExclude('grpc') && self::willUseMultipleProcesses()) {
@@ -2347,9 +2489,9 @@ EOT
             $extensions_to_disable[] = 'grpc';
             fwrite(
                 STDERR,
-                "[info] grpc can cause php to hang when Phan is run with options that require forking." . \PHP_EOL .
-                "[info] Restarting with grpc disabled." . \PHP_EOL .
-                "[info] Set the environment variable PHAN_ALLOW_GRPC to 1 to disable this message and to allow grpc." . \PHP_EOL
+                "[info] grpc can cause php to hang when Phan is run with options that require forking." . PHP_EOL .
+                "[info] Restarting with grpc disabled." . PHP_EOL .
+                "[info] Set the environment variable PHAN_ALLOW_GRPC to 1 to disable this message and to allow grpc." . PHP_EOL
             );
         }
         // php-ast + opcache causes issues if we suddenly restart without an outdated php-ast version, so there's no good way to exclude an outdated 'ast'.

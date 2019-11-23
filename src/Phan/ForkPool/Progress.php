@@ -17,10 +17,17 @@ class Progress
     /** @var int the maximum memory usage of this worker, in bytes. The total gets overestimated because summing doesn't account for memory sharing. */
     public $max_mem;
 
-    public function __construct(float $progress)
+    /** @var int the number of files this worker has analyzed so far */
+    public $analyzed_files;
+    /** @var int the total number of files this worker will analyze */
+    public $file_count;
+
+    public function __construct(float $progress, int $file_count, int $analyzed_files)
     {
         $this->progress = $progress;
         $this->cur_mem = \memory_get_usage();
         $this->max_mem = \memory_get_peak_usage();
+        $this->analyzed_files = $analyzed_files;
+        $this->file_count = $file_count;
     }
 }

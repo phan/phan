@@ -628,6 +628,10 @@ class Config
         // Include a progress bar in the output.
         'progress_bar' => false,
 
+        // When true, use a different version of the progress bar
+        // that's suitable for Continuous Integration logs.
+        '__long_progress_bar' => false,
+
         // If this much time (in seconds) has passed since the last update,
         // then update the progress bar.
         'progress_bar_sample_interval' => 0.1,
@@ -1363,6 +1367,7 @@ class Config
             'language_server_enable_hover' => $is_bool,
             'language_server_hide_category_of_issues' => $is_bool,
             'language_server_use_pcntl_fallback' => $is_bool,
+            'long_progress_bar' => $is_bool,
             'markdown_issue_messages' => $is_bool,
             'max_literal_string_type_length' => $is_int_strict,
             'minimum_severity' => $is_int_strict,

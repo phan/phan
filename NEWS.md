@@ -3,6 +3,12 @@ Phan NEWS
 ??? ?? 2019, Phan 2.4.4 (dev)
 -----------------------
 New features(CLI, Configs):
++ When stderr is redirected a file or to another program, show an append-only progress bar by default. (#3514)
+  Phan would previously disable the progress bar entirely by default.
+
+  The new `--long-progress-bar` CLI flag can be used to choose this progress bar.
+
+  (The `--no-progress-bar` CLI flag or the environment variable `PHAN_DISABLE_PROGRESS_BAR=1` can be used to disable this)
 + Treat `$var = $x['possibly undefined offset']` as creating a definitely defined variable,
   not a possibly undefined variable. (#3534)
 

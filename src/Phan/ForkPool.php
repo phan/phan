@@ -75,12 +75,16 @@ class ForkPool
         $total_progress = 0.0;
         $total_cur_mem = 0.0;
         $total_max_mem = 0.0;
+        $file_count = 0;
+        $analyzed_files = 0;
         foreach ($this->progress as $progress) {
             $total_progress += $progress->progress;
             $total_cur_mem += $progress->cur_mem / 1024 / 1024;
             $total_max_mem += $progress->max_mem / 1024 / 1024;
+            $file_count += $progress->file_count;
+            $analyzed_files += $progress->analyzed_files;
         }
-        CLI::outputProgressLine('analysis', $total_progress / count($this->progress), $total_cur_mem, $total_max_mem);
+        CLI::outputProgressLine('analyze', $total_progress / count($this->progress), $total_cur_mem, $total_max_mem, $file_count, $analyzed_files);
     }
 
     /**
@@ -107,6 +111,7 @@ class ForkPool
         Closure $task_closure,
         Closure $shutdown_closure
     ) {
+        $process_task_data_iterator = \array_values($process_task_data_iterator);
 
         $pool_size = count($process_task_data_iterator);
 
@@ -121,8 +126,6 @@ class ForkPool
         // We'll keep track of if this is the parent process
         // so that we can tell who will be doing the waiting
         $is_parent = false;
-
-        $progress = new Progress(0.0);
 
         // Fork as many times as requested to get the given
         // pool size
@@ -147,7 +150,8 @@ class ForkPool
                 $this->child_pid_list[] = $pid;
                 $read_stream = self::streamForParent($sockets);
                 $i = \count($this->progress);
-                $this->progress[] = $progress;
+                $task_data_iterator = $process_task_data_iterator[$proc_id];
+                $this->progress[] = new Progress(0.0, 0, count($task_data_iterator));
                 $this->read_streams[] = $read_stream;
                 $this->readers[intval($read_stream)] = new Reader($read_stream, function (string $notification_type, string $payload) use ($i) : void {
                     switch ($notification_type) {
@@ -156,6 +160,10 @@ class ForkPool
                             $this->updateProgress($i, $progress);
                             break;
                         case Writer::TYPE_ISSUE_LIST:
+                            // This worker has stopped, and should no longer be using memory shortly
+                            // @phan-suppress-next-line PhanAccessReadOnlyProperty
+                            $this->progress[$i]->cur_mem = 0;
+
                             $issues = unserialize($payload);
                             if ($issues) {
                                 \array_push($this->issues, ...$issues);
@@ -187,7 +195,7 @@ class ForkPool
         $startup_closure();
 
         // Get the work for this process
-        $task_data_iterator = \array_values($process_task_data_iterator)[$proc_id];
+        $task_data_iterator = $process_task_data_iterator[$proc_id];
         $task_count = \count($task_data_iterator);
         foreach ($task_data_iterator as $i => $task_data) {
             $task_closure($i, $task_data, $task_count);

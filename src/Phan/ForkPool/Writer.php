@@ -52,11 +52,10 @@ class Writer
 
     /**
      * Report the analysis progress
-     * @param float $percent
      */
-    public static function recordProgress(float $percent) : void
+    public static function recordProgress(float $percent, int $files_analyzed, int $total_files) : void
     {
-        self::writeNotification(self::TYPE_PROGRESS, \serialize(new Progress($percent)));
+        self::writeNotification(self::TYPE_PROGRESS, \serialize(new Progress($percent, $files_analyzed, $total_files)));
     }
 
     /**
