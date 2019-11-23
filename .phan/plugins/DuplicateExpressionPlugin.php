@@ -392,7 +392,8 @@ class RedundantNodePreAnalysisVisitor extends PluginAwarePreAnalysisVisitor
         ['cond' => $prev_cond /*, 'stmts' => $prev_stmts */] = $children[0]->children;
         // $prev_stmts_hash = ASTHasher::hash($prev_cond);
         $condition_set = [ASTHasher::hash($prev_cond) => true];
-        for ($i = 1; $i < count($children); $i++) {
+        $N = count($children);
+        for ($i = 1; $i < $N; $i++) {
             ['cond' => $cond /*, 'stmts' => $stmts */] = $children[$i]->children;
             $cond_hash = ASTHasher::hash($cond);
             if (isset($condition_set[$cond_hash])) {
@@ -405,6 +406,18 @@ class RedundantNodePreAnalysisVisitor extends PluginAwarePreAnalysisVisitor
                 );
             } else {
                 $condition_set[$cond_hash] = true;
+            }
+        }
+        if ($cond === null) {
+            $stmts = $children[$N - 1]->children['stmts'];
+            if (($stmts->children ?? null) && ASTHasher::hash($stmts) === ASTHasher::hash($children[$N - 2]->children['stmts'])) {
+                $this->emitPluginIssue(
+                    $this->code_base,
+                    clone($this->context)->withLineNumberStart($children[$N - 1]->lineno),
+                    'PhanPluginDuplicateIfStatements',
+                    'The statements of the else duplicate the statements of the previous if/elseif statement with condition {CODE}',
+                    [ASTReverter::toShortString($children[$N - 2]->children['cond'])]
+                );
             }
         }
     }
