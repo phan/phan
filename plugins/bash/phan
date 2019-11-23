@@ -51,6 +51,7 @@ _phan() {
 --progress-bar
 -p
 --no-progress-bar
+--long-progress-bar
 -D
 --debug
 --debug-emitted-issues

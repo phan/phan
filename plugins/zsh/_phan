@@ -40,7 +40,7 @@ _arguments \
 	'(--color --no-color -C)'{--color,-C}'[add colors to phan'\''s output]' \
 	'(--color --no-color -C)--no-color[disable colors in phan'\''s output]' \
 	'(--color-scheme)--color-scheme[set the color scheme]:color_scheme:(default code eclipse-dark light vim)' \
-	'(--no-progress-bar --progress-bar -p)'{--progress-bar,-p}'[show progress bar]' \
+	'(--no-progress-bar --long-progress-bar --progress-bar -p)'{--long-progress-bar,--progress-bar,-p}'[show progress bar]' \
 	'(--no-progress-bar --progress-bar -p)--no-progress-bar[disable progress bar]' \
 	'(--debug -D)'{-D,--debug}'[print debugging output to stderr]' \
 	'(--debug-emitted-issues)--debug-emitted-issues=[print stack trace to stderr when Phan emits issues]:verbosity:(basic verbose)' \

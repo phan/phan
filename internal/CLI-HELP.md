@@ -90,8 +90,9 @@ Usage: ./phan [options] [files...]
   [--color-scheme={default,code,light,eclipse_dark,vim}]
     This (or the environment variable PHAN_COLOR_SCHEME) can be used to set the color scheme for emitted issues.
 
- -p, --progress-bar
-  Show progress bar
+ -p, --progress-bar, --no-progress-bar, --long-progress-bar
+  Show progress bar. --no-progress-bar disables the progress bar.
+  --long-progress-bar shows a progress bar that doesn't overwrite the current line.
 
  -D, --debug
   Print debugging output to stderr. Useful for looking into performance issues or crashes.
@@ -227,7 +228,7 @@ Usage: ./phan [options] [files...]
 
   Paths such as .phan/baseline.php, .phan/baseline_deadcode.php, etc. are recommended.
 
- --load-baseline <path/to/baseline.php>
+ -B, -load-baseline <path/to/baseline.php>
   Loads a baseline of pre-existing issues to suppress.
 
   (For best results, the baseline should be generated with the same/similar

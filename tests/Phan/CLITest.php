@@ -5,6 +5,7 @@ namespace Phan\Tests;
 use Phan\CLI;
 use Phan\Config;
 use Phan\Daemon\ExitException;
+use Phan\Exception\UsageException;
 use Phan\Output\Printer\CSVPrinter;
 use Phan\Output\Printer\PlainTextPrinter;
 use Phan\Output\Printer\PylintPrinter;
@@ -296,5 +297,23 @@ final class CLITest extends BaseTest
     {
         $this->assertSame([], CLI::uniqueFileList([]));
         $this->assertSame(['src/a.php', 'src/b.php'], CLI::uniqueFileList(['src/a.php', 'src' . \DIRECTORY_SEPARATOR . 'a.php', 'src/b.php', 'src//b.php']));
+    }
+
+    public function testInternalDocsUpdated() : void
+    {
+        global $argv;
+        $old_argv = $argv;
+        $argv = ['./phan'];
+        try {
+            \ob_start();
+            CLI::usage('', null, UsageException::PRINT_EXTENDED);
+            $usage_message = \ob_get_clean();
+            $expected_file_contents = "```\n$usage_message```\n";
+            $actual_cli_help = \file_get_contents(\dirname(__DIR__, 2) . '/internal/CLI-HELP.md');
+            $this->assertSame($expected_file_contents, $actual_cli_help);
+
+        } finally {
+            $argv = $old_argv;
+        }
     }
 }
