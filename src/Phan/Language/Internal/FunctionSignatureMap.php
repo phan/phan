@@ -1535,7 +1535,7 @@ return [
 'Couchbase\zlibCompress' => ['string', 'data'=>'string'],
 'Couchbase\zlibDecompress' => ['string', 'data'=>'string'],
 'count' => ['int', 'var'=>'Countable|array|SimpleXMLElement|ResourceBundle', 'mode='=>'int'],
-'count_chars' => ['array|false|string', 'input'=>'string', 'mode='=>'int'],
+'count_chars' => ['array<int,int>|false|string', 'input'=>'string', 'mode='=>'int'],
 'Countable::count' => ['int'],
 'crack_check' => ['bool', 'dictionary'=>'', 'password'=>'string'],
 'crack_closedict' => ['bool', 'dictionary='=>'resource'],

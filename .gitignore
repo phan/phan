@@ -17,3 +17,4 @@ nohup.out
 *.md.new
 .idea/
 src_copy
+phpspy.*

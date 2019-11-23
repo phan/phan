@@ -4350,3 +4350,19 @@ Cannot mix keyed and unkeyed array entries in array destructuring assignments
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0799_array_destructuring_failures.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0799_array_destructuring_failures.php#L4).
+
+## PhanSyntaxReturnExpectedValue
+
+```
+Syntax error: Function {FUNCTIONLIKE} with return type {TYPE} must return a value (did you mean "{CODE}" instead of "{CODE}"?)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0242_void_71.php.expected#L5) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0242_void_71.php#L6).
+
+## PhanSyntaxReturnValueInVoid
+
+```
+Syntax error: {TYPE} function {FUNCTIONLIKE} must not return a value (did you mean "{CODE}" instead of "{CODE}"?)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0242_void_71.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0242_void_71.php#L3).
