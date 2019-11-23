@@ -1,1 +1,3 @@
 %s:10 PhanTypeArraySuspicious Suspicious array access to null
+%s:18 PhanTypeMismatchProperty Assigning null to property but \B->p is \A[]
+%s:19 PhanTypeArraySuspicious Suspicious array access to null

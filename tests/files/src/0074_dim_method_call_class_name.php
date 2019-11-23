@@ -13,5 +13,10 @@ class B {
     public function f() {
         $this->p[0]->g();
     }
+
+    public function h() {
+        $this->p = null;
+        $this->p[] = new A();
+    }
 }
 (new B)->f();

@@ -1179,6 +1179,7 @@ class AssignmentVisitor extends AnalysisVisitor
             // Copied from visitVar
             $old_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node);
             $right_type = $this->typeCheckDimAssignment($old_type, $node);
+            $old_type = $old_type->nonNullableClone();
             if ($old_type->isEmpty()) {
                 $old_type = ArrayType::instance(false)->asPHPDocUnionType();
             }
@@ -1571,6 +1572,8 @@ class AssignmentVisitor extends AnalysisVisitor
                 if ($old_variable_union_type->isEmpty()) {
                     $old_variable_union_type = ArrayType::instance(false)->asPHPDocUnionType();
                 }
+                // Note: Trying to assign dim offsets to a scalar such as `$x = 2` does not modify the variable.
+                $old_variable_union_type = $old_variable_union_type->nonNullableClone();
                 // TODO: Make the behavior more precise for $x['a']['b'] = ...; when $x is an array shape.
                 if ($this->dim_depth > 1 || ($old_variable_union_type->hasTopLevelNonArrayShapeTypeInstances() || $right_type->hasTopLevelNonArrayShapeTypeInstances() || $right_type->isEmpty())) {
                     $new_union_type = $old_variable_union_type->withUnionType(

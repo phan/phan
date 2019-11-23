@@ -403,6 +403,7 @@ class Issue
     const UnusedGlobalFunctionParameter         = 'PhanUnusedGlobalFunctionParameter';
     const UnusedVariableValueOfForeachWithKey   = 'PhanUnusedVariableValueOfForeachWithKey';  // has higher false positive rates than UnusedVariable
     const EmptyForeach                          = 'PhanEmptyForeach';
+    const EmptyForeachBody                      = 'PhanEmptyForeachBody';
     const EmptyYieldFrom                        = 'PhanEmptyYieldFrom';
     const UselessBinaryAddRight                 = 'PhanUselessBinaryAddRight';
     const SuspiciousBinaryAddLists              = 'PhanSuspiciousBinaryAddLists';
@@ -3523,6 +3524,14 @@ class Issue
                 'Saw a foreach statement with empty iterable type {TYPE}',
                 self::REMEDIATION_B,
                 6079
+            ),
+            new Issue(
+                self::EmptyForeachBody,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Saw a foreach statement with empty body over array of type {TYPE} (iterating has no side effects)',
+                self::REMEDIATION_B,
+                6086
             ),
             new Issue(
                 self::EmptyYieldFrom,

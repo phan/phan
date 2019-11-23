@@ -1,5 +1,7 @@
 src/139_suppress_empty_statement_warning.php:4 PhanPluginEmptyStatementTryFinally Empty statement list statement detected for the try's finally body
 src/139_suppress_empty_statement_warning.php:18 PhanPluginEmptyStatementIf Empty statement list statement detected for the last if/elseif statement
 src/139_suppress_empty_statement_warning.php:26 PhanPluginEmptyStatementWhileLoop Empty statement list statement detected for the while loop
+src/139_suppress_empty_statement_warning.php:30 PhanEmptyForeachBody Saw a foreach statement with empty body over array of type array{0:2} (iterating has no side effects)
+src/139_suppress_empty_statement_warning.php:34 PhanEmptyForeachBody Saw a foreach statement with empty body over array of type array{0:2} (iterating has no side effects)
 src/139_suppress_empty_statement_warning.php:34 PhanPluginEmptyStatementForeachLoop Empty statement list statement detected for the foreach loop
 src/139_suppress_empty_statement_warning.php:41 PhanPluginEmptyStatementForLoop Empty statement list statement detected for the for loop

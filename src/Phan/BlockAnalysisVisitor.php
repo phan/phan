@@ -996,6 +996,30 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 Closure::fromCallable([self::class, 'isEmptyIterable'])
             );
         }
+        if (!($node->children['stmts']->children ?? null) && self::isDefinitelyNotObject($union_type)) {
+            RedundantCondition::emitInstance(
+                $node->children['expr'],
+                $this->code_base,
+                (clone($this->context))->withLineNumberStart($node->children['expr']->lineno ?? $node->lineno),
+                Issue::EmptyForeachBody,
+                [(string)$union_type],
+                Closure::fromCallable([self::class, 'isDefinitelyNotObject'])
+            );
+        }
+    }
+
+    private static function isDefinitelyNotObject(UnionType $type) : bool
+    {
+        $type_set = $type->getRealTypeSet();
+        if (!$type_set) {
+            return false;
+        }
+        foreach ($type_set as $type) {
+            if ($type->isPossiblyObject()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
