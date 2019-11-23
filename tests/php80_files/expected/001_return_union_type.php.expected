@@ -1,0 +1,5 @@
+%s:7 PhanTypeMismatchReturn Returning type false|null|object but testUnionType() is declared to return int|string
+%s:12 PhanTypeMismatchArgumentReal Argument 1 ($a) is null but \testUnionType() takes int|string defined at %s:3
+%s:12 PhanTypeMismatchArgument Argument 2 ($b) is true but \testUnionType() takes false|null|object defined at %s:3
+%s:13 PhanTypeMismatchArgumentReal Argument 1 ($a) is \stdClass but \testUnionType() takes int|string defined at %s:3
+%s:13 PhanTypeMismatchArgumentReal Argument 2 ($b) is array{} but \testUnionType() takes false|null|object defined at %s:3

@@ -23,6 +23,9 @@ New features(Analysis):
 + Emit `PhanEmptyForeachBody` when iterating over a type that isn't `Traversable` with an empty statement list.
 + Warn about computing `array_values` for an array that is already a list. (#3540)
 
+Maintenance:
++ Support native parsing of `AST_TYPE_UNION` (union type) nodes for PHP 8.0.0-dev.
+
 Nov 20 2019, Phan 2.4.3
 -----------------------
 

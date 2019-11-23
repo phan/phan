@@ -103,6 +103,7 @@ class Element
         ast\AST_SWITCH_CASE        => 'visitSwitchCase',
         ast\AST_SWITCH_LIST        => 'visitSwitchList',
         ast\AST_TYPE               => 'visitType',
+        ast\AST_TYPE_UNION         => 'visitTypeUnion',
         ast\AST_NULLABLE_TYPE      => 'visitNullableType',
         ast\AST_UNARY_OP           => 'visitUnaryOp',
         ast\AST_USE                => 'visitUse',
