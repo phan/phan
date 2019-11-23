@@ -43,6 +43,7 @@ use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\ClassStringType;
 use Phan\Language\Type\ClosureType;
+use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
@@ -639,10 +640,60 @@ class UnionTypeVisitor extends AnalysisVisitor
                 return StringType::instance(false)->asRealUnionType();
             case \ast\flags\TYPE_VOID:
                 return VoidType::instance(false)->asRealUnionType();
+            case \ast\flags\TYPE_FALSE:
+                return FalseType::instance(false)->asRealUnionType();
             default:
-                throw new AssertionError("All flags must match. Found "
+                \Phan\Debug::printNode($node);
+                throw new AssertionError("All flags must match. Found ($node->flags) "
                     . Debug::astFlagDescription($node->flags ?? 0, $node->kind));
         }
+    }
+
+    /**
+     * Visit a node with kind `\ast\AST_TYPE_UNION`
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
+     *
+     * @throws AssertionError if the type flags were unknown
+     */
+    public function visitTypeUnion(Node $node) : UnionType
+    {
+        // TODO: Validate that there aren't any duplicates
+        if (\count($node->children) === 1) {
+            // Might be possible due to the polyfill in the future.
+            return $this->__invoke($node->children[0]);
+        }
+        $types = [];
+        foreach ($node->children as $c) {
+            if (!$c instanceof Node) {
+                throw new AssertionError("Saw non-node in union type");
+            }
+            $kind = $c->kind;
+            if ($kind === ast\AST_TYPE) {
+                $types[] = $this->visitType($c);
+            } elseif ($kind === ast\AST_NAME) {
+                if ($this->context->getScope()->isInTraitScope()) {
+                    $name = \strtolower($node->children['name']);
+                    if ($name === 'self') {
+                        $types[] = SelfType::instance(false)->asRealUnionType();
+                        continue;
+                    } elseif ($name === 'static') {
+                        $types[] = StaticType::instance(false)->asRealUnionType();
+                        continue;
+                    }
+                }
+                $types[] = $this->visitName($c);
+            } else {
+                throw new AssertionError("Expected union type to be composed of types and names");
+            }
+        }
+        return new UnionType($types, true, $types);
     }
 
     /**
@@ -717,10 +768,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         $kind = $node->kind;
         if ($kind === ast\AST_TYPE) {
             $result = $this->visitType($node);
-        } else {
-            if ($kind !== ast\AST_NAME) {
-                throw new AssertionError("Expected either a type or a name in the signature: node: " . Debug::nodeToString($node));
-            }
+        } elseif ($kind === ast\AST_NAME) {
             if ($this->context->getScope()->isInTraitScope()) {
                 $name = \strtolower($node->children['name']);
                 if ($name === 'self') {
@@ -730,6 +778,10 @@ class UnionTypeVisitor extends AnalysisVisitor
                 }
             }
             $result = $this->visitName($node);
+        } elseif ($kind === ast\AST_TYPE_UNION) {
+            $result = $this->visitTypeUnion($node);
+        } else {
+            throw new AssertionError("Expected a type, union type, or a name in the signature: node: " . Debug::nodeToString($node));
         }
         if ($is_nullable) {
             return $result->nullableClone();

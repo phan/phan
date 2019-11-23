@@ -20,6 +20,9 @@ New features(Analysis):
 + Warn about returning/not returning in void/non-void functions.
   New issue types: `PhanSyntaxReturnValueInVoid`, `PhanSyntaxReturnExpectedValue`
 
+Maintenance:
++ Support native parsing of `AST_TYPE_UNION` (union type) nodes for PHP 8.0.0-dev.
+
 Nov 20 2019, Phan 2.4.3
 -----------------------
 

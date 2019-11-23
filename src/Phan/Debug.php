@@ -325,6 +325,7 @@ class Debug
             ];
             $types = [
                 flags\TYPE_NULL => 'TYPE_NULL',
+                flags\TYPE_FALSE => 'TYPE_FALSE',
                 flags\TYPE_BOOL => 'TYPE_BOOL',
                 flags\TYPE_LONG => 'TYPE_LONG',
                 flags\TYPE_DOUBLE => 'TYPE_DOUBLE',

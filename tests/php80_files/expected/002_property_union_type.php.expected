@@ -1,0 +1,4 @@
+%s:9 PhanTypeMismatchPropertyReal Assigning null to property but \Example::$scalar is int|string
+%s:10 PhanTypeMismatchPropertyReal Assigning false to property but \Example::$scalar is int|string
+%s:11 PhanTypeMismatchPropertyReal Assigning array{} to property but \Example::$scalar is int|string
+%s:16 PhanTypeMismatchPropertyReal Assigning array{} to property but \Example->ip is \stdClass|false
