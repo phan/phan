@@ -1281,23 +1281,33 @@ EOT;
     // FIXME: If I stop using defined() in UnionTypeVisitor,
     // this will warn about the undefined constant EXIT_SUCCESS when a
     // user-defined constant is used in parse phase in a function declaration
-    private static function usage(string $msg = '', int $exit_code = EXIT_SUCCESS, int $usage_type = UsageException::PRINT_NORMAL, bool $forbid_color_in_error = true) : void
+    /**
+     * Print usage message to stdout.
+     * @internal
+     */
+    public static function usage(string $msg = '', ?int $exit_code = EXIT_SUCCESS, int $usage_type = UsageException::PRINT_NORMAL, bool $forbid_color = true) : void
     {
         global $argv;
 
         if ($msg !== '') {
             self::printHelpSection("ERROR:");
-            self::printHelpSection(" $msg\n", $forbid_color_in_error);
+            self::printHelpSection(" $msg\n", $forbid_color);
         }
 
         $init_help = self::INIT_HELP;
         echo "Usage: {$argv[0]} [options] [files...]\n";
         if ($usage_type === UsageException::PRINT_INVALID_ARGS) {
             self::printHelpSection("Type {$argv[0]} --help (or --extended-help) for usage.\n");
+            if ($exit_code === null) {
+                return;
+            }
             exit($exit_code);
         }
         if ($usage_type === UsageException::PRINT_INIT_ONLY) {
             self::printHelpSection($init_help . "\n");
+            if ($exit_code === null) {
+                return;
+            }
             exit($exit_code);
         }
         self::printHelpSection(<<<EOB
@@ -1365,8 +1375,9 @@ $init_help
   [--color-scheme={default,code,light,eclipse_dark,vim}]
     This (or the environment variable PHAN_COLOR_SCHEME) can be used to set the color scheme for emitted issues.
 
- -p, --progress-bar, --no-progress-bar
+ -p, --progress-bar, --no-progress-bar, --long-progress-bar
   Show progress bar. --no-progress-bar disables the progress bar.
+  --long-progress-bar shows a progress bar that doesn't overwrite the current line.
 
  -D, --debug
   Print debugging output to stderr. Useful for looking into performance issues or crashes.
@@ -1502,7 +1513,7 @@ $init_help
 
   Paths such as .phan/baseline.php, .phan/baseline_deadcode.php, etc. are recommended.
 
- --B, -load-baseline <path/to/baseline.php>
+ -B, -load-baseline <path/to/baseline.php>
   Loads a baseline of pre-existing issues to suppress.
 
   (For best results, the baseline should be generated with the same/similar
@@ -1519,6 +1530,8 @@ $init_help
   (E.g. for daemon mode)
 
 EOB
+            ,
+            $forbid_color
         );
         if ($usage_type === UsageException::PRINT_EXTENDED) {
             self::printHelpSection(<<<EOB
@@ -1647,7 +1660,12 @@ Extended help:
   Print details on annotations supported by Phan.
 
 EOB
+                ,
+                $forbid_color
             );
+        }
+        if ($exit_code === null) {
+            return;
         }
         exit($exit_code);
     }
