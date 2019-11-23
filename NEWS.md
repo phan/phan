@@ -21,6 +21,7 @@ New features(Analysis):
   New issue types: `PhanSyntaxReturnValueInVoid`, `PhanSyntaxReturnExpectedValue`
 + Infer that `$var[$offset] = expr;`/`$this->prop[$offset] = expr;` causes that element to be non-null (#3546)
 + Emit `PhanEmptyForeachBody` when iterating over a type that isn't `Traversable` with an empty statement list.
++ Warn about computing `array_values` for an array that is already a list. (#3540)
 
 Nov 20 2019, Phan 2.4.3
 -----------------------

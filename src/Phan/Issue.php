@@ -413,6 +413,7 @@ class Issue
     const UnusedVariableStatic                  = 'PhanUnusedVariableStatic';
     const UnusedVariableGlobal                  = 'PhanUnusedVariableGlobal';
     const UnusedReturnBranchWithoutSideEffects  = 'PhanUnusedReturnBranchWithoutSideEffects';
+    const RedundantArrayValuesCall                  = 'PhanRedundantArrayValuesCall';
     const VariableDefinitionCouldBeConstant     = 'PhanVariableDefinitionCouldBeConstant';
     const VariableDefinitionCouldBeConstantEmptyArray = 'PhanVariableDefinitionCouldBeConstantEmptyArray';
     const VariableDefinitionCouldBeConstantString = 'PhanVariableDefinitionCouldBeConstantString';
@@ -3596,6 +3597,14 @@ class Issue
                 'Possibly useless branch in a function where the return value must be used - all branches return values equivalent to {CODE} (previous return is at line {LINE})',
                 self::REMEDIATION_B,
                 6083
+            ),
+            new Issue(
+                self::RedundantArrayValuesCall,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Attempting to convert {TYPE} to a list using {FUNCTION} (it is already a list)',
+                self::REMEDIATION_B,
+                6087
             ),
             new Issue(
                 self::UseNormalNamespacedNoEffect,
