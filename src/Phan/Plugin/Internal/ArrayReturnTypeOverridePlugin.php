@@ -6,9 +6,11 @@ use ast\Node;
 use Closure;
 use Phan\Analysis\ArgumentType;
 use Phan\Analysis\PostOrderAnalysisVisitor;
+use Phan\Analysis\RedundantCondition;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Type\ArrayShapeType;
@@ -47,7 +49,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
         $array_type  = ArrayType::instance(false);
         $null_type   = NullType::instance(false);
         $nullable_array_type_set = [ArrayType::instance(true)];
-        $nullable_int_key_array_type_set = [ListType::fromElementType(MixedType::instance(true), true)];
+        $nullable_list_type_set = [ListType::fromElementType(MixedType::instance(true), true)];
         $int_or_string_or_false = UnionType::fromFullyQualifiedRealString('int|string|false');
         $int_or_string_or_null = UnionType::fromFullyQualifiedRealString('int|string|null');
         $int_or_string = UnionType::fromFullyQualifiedRealString('int|string');
@@ -467,7 +469,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
         /**
          * @param list<Node|int|string|float> $args
          */
-        $array_keys_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($probably_real_array, $nullable_int_key_array_type_set) : UnionType {
+        $array_keys_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($probably_real_array, $nullable_list_type_set) : UnionType {
             if (\count($args) < 1 || \count($args) > 3) {
                 return $probably_real_array;
             }
@@ -478,22 +480,51 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             if ($key_union_type->isEmpty()) {
                 return UnionType::fromFullyQualifiedPHPDocAndRealString('list<mixed>', '?list<mixed>');
             }
-            return $key_union_type->asListTypes()->withRealTypeSet($nullable_int_key_array_type_set);
+            return $key_union_type->asListTypes()->withRealTypeSet($nullable_list_type_set);
         };
         /**
          * @param list<Node|int|string|float> $args
          */
-        $array_values_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($nullable_int_key_array_type_set, $real_nullable_array) : UnionType {
+        $array_values_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($nullable_list_type_set, $real_nullable_array) : UnionType {
             if (\count($args) != 1) {
                 return $real_nullable_array;
             }
             $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
-            $element_type = $union_type->genericArrayElementTypes();
+            $element_type = $union_type->genericArrayElementTypes(true);
             $result = $element_type->asListTypes();
             if ($result->isEmpty()) {
                 return UnionType::fromFullyQualifiedPHPDocAndRealString('list<mixed>', '?list<mixed>');
             }
-            return $result->withRealTypeSet($nullable_int_key_array_type_set);
+            if (!$result->hasRealTypeSet()) {
+                $result = $result->withRealTypeSet($nullable_list_type_set);
+            }
+            if ($union_type->hasRealTypeSet()) {
+                foreach ($union_type->getRealTypeSet() as $type) {
+                    if (!$type instanceof ListType) {
+                        return $result;
+                    }
+                }
+                RedundantCondition::emitInstance(
+                    $args[0],
+                    $code_base,
+                    // @phan-suppress-next-line PhanPossiblyUndeclaredProperty
+                    (clone($context))->withLineNumberStart($args[0]->lineno),
+                    Issue::RedundantArrayValuesCall,
+                    [
+                        $union_type->asRealUnionType(),
+                        $function->getRepresentationForIssue(),
+                    ],
+                    static function (UnionType $union_type) : bool {
+                        foreach ($union_type->getRealTypeSet() as $type) {
+                            if (!$type instanceof ListType) {
+                                return false;
+                            }
+                        }
+                        return $union_type->hasRealTypeSet();
+                    }
+                );
+            }
+            return $result;
         };
         /**
          * @param list<Node|int|string|float> $args
