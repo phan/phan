@@ -35,6 +35,8 @@ class Issue
     const SyntaxCompileWarning           = 'PhanSyntaxCompileWarning';
     const SyntaxEmptyListArrayDestructuring = 'PhanSyntaxEmptyListArrayDestructuring';
     const SyntaxMixedKeyNoKeyArrayDestructuring = 'PhanSyntaxMixedKeyNoKeyArrayDestructuring';
+    const SyntaxReturnExpectedValue      = 'PhanSyntaxReturnExpectedValue';
+    const SyntaxReturnValueInVoid        = 'PhanSyntaxReturnValueInVoid';
 
     // Issue::CATEGORY_UNDEFINED
     const AmbiguousTraitAliasSource = 'PhanAmbiguousTraitAliasSource';
@@ -857,6 +859,22 @@ class Issue
                 'Cannot mix keyed and unkeyed array entries in array destructuring assignments',
                 self::REMEDIATION_A,
                 17013
+            ),
+            new Issue(
+                self::SyntaxReturnValueInVoid,
+                self::CATEGORY_SYNTAX,
+                self::SEVERITY_CRITICAL,
+                'Syntax error: {TYPE} function {FUNCTIONLIKE} must not return a value (did you mean "{CODE}" instead of "{CODE}"?)',
+                self::REMEDIATION_A,
+                17014
+            ),
+            new Issue(
+                self::SyntaxReturnExpectedValue,
+                self::CATEGORY_SYNTAX,
+                self::SEVERITY_CRITICAL,
+                'Syntax error: Function {FUNCTIONLIKE} with return type {TYPE} must return a value (did you mean "{CODE}" instead of "{CODE}"?)',
+                self::REMEDIATION_A,
+                17015
             ),
 
             // Issue::CATEGORY_UNDEFINED

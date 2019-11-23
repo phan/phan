@@ -1360,7 +1360,7 @@ trait FunctionTrait
                 }
             } else {
                 if ($this instanceof Func || ($this instanceof Method && ($this->isPrivate() || $this->isEffectivelyFinal() || $this->isMagicAndVoid() || $this->getClass($code_base)->isFinal()))) {
-                    $this->setUnionType(VoidType::instance(false)->asRealUnionType());
+                    $this->setUnionType(VoidType::instance(false)->asPHPDocUnionType());
                 }
             }
         }

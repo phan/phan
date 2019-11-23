@@ -1323,12 +1323,42 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // Figure out what we intend to return
         // (For traits, lower the false positive rate by comparing against the real return type instead of the phpdoc type (#800))
         $method_return_type = $is_trait ? $method->getRealReturnType()->withAddedClassForResolvedSelf($method->getContext()) : $method->getUnionType();
+        $expr = $node->children['expr'];
+
+        // Check for failing to return a value, or returning a value in a void method.
+        if ($expr !== null) {
+            if ($method_return_type->hasRealTypeSet() && $method_return_type->asRealUnionType()->isVoidType()) {
+                $this->emitIssue(
+                    Issue::SyntaxReturnValueInVoid,
+                    $expr->lineno ?? $node->lineno,
+                    'void',
+                    $method->getNameForIssue(),
+                    'return;',
+                    'return ' . ASTReverter::toShortString($expr) . ';'
+                );
+                return $context;
+            }
+        } else {
+            // `function test() : ?string { return; }` is a fatal error. (We already checked for generators)
+            if ($method_return_type->hasRealTypeSet() && !$method_return_type->asRealUnionType()->isVoidType()) {
+                $this->emitIssue(
+                    Issue::SyntaxReturnExpectedValue,
+                    $node->lineno,
+                    $method->getNameForIssue(),
+                    $method_return_type,
+                    'return null',
+                    'return'
+                );
+                return $context;
+            }
+        }
+
 
         // This leaves functions which aren't syntactically generators.
 
         // Figure out what is actually being returned
         // TODO: Properly check return values of array shapes
-        foreach ($this->getReturnTypes($context, $node->children['expr'], $node->lineno) as $lineno => $expression_type) {
+        foreach ($this->getReturnTypes($context, $expr, $node->lineno) as $lineno => $expression_type) {
             // If there is no declared type, see if we can deduce
             // what it should be based on the return type
             if ($method_return_type->isEmpty()
@@ -1415,10 +1445,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         } else {
             $issue_type = Issue::TypeMismatchReturn;
             // TODO: Don't warn for callable <-> string
-            if ($expression_type->hasRealTypeSet() && $method_return_type->hasRealTypeSet()) {
-                $real_expression_type = $expression_type->getRealUnionType();
+            if ($method_return_type->hasRealTypeSet()) {
+                // Always emit a real type warning about returning a value in a void method
                 $real_method_return_type = $method_return_type->getRealUnionType();
-                if (!$real_expression_type->canCastToDeclaredType($this->code_base, $this->context, $real_method_return_type)) {
+                $real_expression_type = $expression_type->getRealUnionType();
+                if ($real_method_return_type->isVoidType() ||
+                    ($expression_type->hasRealTypeSet() &&!$real_expression_type->canCastToDeclaredType($this->code_base, $this->context, $real_method_return_type))) {
                     $this->emitIssue(
                         Issue::TypeMismatchReturnReal,
                         $lineno,

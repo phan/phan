@@ -276,6 +276,13 @@ declared in the method signature.
 
 (Default: `true`)
 
+## convert_possibly_undefined_offset_to_nullable
+
+If true, Phan will convert the type of a possibly undefined array offset to the nullable, defined equivalent.
+If false, Phan will convert the type of a possibly undefined array offset to the defined equivalent (without converting to nullable).
+
+(Default: `false`)
+
 ## enable_class_alias_support
 
 If true, Phan will read `class_alias()` calls in the global scope, then

@@ -1,0 +1,4 @@
+%s:3 PhanClassContainsAbstractMethodInternal non-abstract class \Foo292 contains abstract internal method \Serializable::unserialize(string $serialized)
+%s:13 PhanClassContainsAbstractMethod non-abstract class \B292 contains abstract method \A292::f2(int $x) declared at %s:9
+%s:42 PhanClassContainsAbstractMethod non-abstract class \ClassExtendingInterface292 contains abstract method \Interface292::myFunction() declared at %s:38
+%s:49 PhanClassContainsAbstractMethod non-abstract class \G292 contains abstract method \F292::&foo(array &$called, string $x = 'default'): string declared at %s:47

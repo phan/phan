@@ -17,8 +17,8 @@ New features(CLI, Configs):
 
 New features(Analysis):
 + Emit `PhanPossiblyUndefinedArrayOffset` for accesses to array fields that are possibly undefined. (#3534)
-
-Bug fixes:
++ Warn about returning/not returning in void/non-void functions.
+  New issue types: `PhanSyntaxReturnValueInVoid`, `PhanSyntaxReturnExpectedValue`
 
 Nov 20 2019, Phan 2.4.3
 -----------------------
