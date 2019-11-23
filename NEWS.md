@@ -19,6 +19,8 @@ New features(Analysis):
 + Emit `PhanPossiblyUndefinedArrayOffset` for accesses to array fields that are possibly undefined. (#3534)
 + Warn about returning/not returning in void/non-void functions.
   New issue types: `PhanSyntaxReturnValueInVoid`, `PhanSyntaxReturnExpectedValue`
++ Infer that `$var[$offset] = expr;`/`$this->prop[$offset] = expr;` causes that element to be non-null (#3546)
++ Emit `PhanEmptyForeachBody` when iterating over a type that isn't `Traversable` with an empty statement list.
 
 Nov 20 2019, Phan 2.4.3
 -----------------------

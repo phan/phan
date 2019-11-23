@@ -4,4 +4,5 @@ src/135_empty_statement_list.php:5 PhanPluginRedundantAssignmentInGlobalScope As
 src/135_empty_statement_list.php:8 PhanPluginEmptyStatementWhileLoop Empty statement list statement detected for the while loop
 src/135_empty_statement_list.php:9 PhanPluginEmptyStatementDoWhileLoop Empty statement list statement detected for the do-while loop
 src/135_empty_statement_list.php:13 PhanPluginEmptyStatementIf Empty statement list statement detected for the last if/elseif statement
+src/135_empty_statement_list.php:15 PhanEmptyForeachBody Saw a foreach statement with empty body over array of type array{0:2} (iterating has no side effects)
 src/135_empty_statement_list.php:15 PhanPluginEmptyStatementForeachLoop Empty statement list statement detected for the foreach loop

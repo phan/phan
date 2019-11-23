@@ -1,1 +1,2 @@
+%s:3 PhanEmptyForeachBody Saw a foreach statement with empty body over array of type array{} (iterating has no side effects)
 %s:3 PhanEmptyForeach Saw a foreach statement with empty iterable type array{}

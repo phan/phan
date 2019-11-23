@@ -2684,7 +2684,6 @@ class UnionType implements Serializable
      * @return bool
      * True if this union type represents types that are arrays
      * or generic arrays, but nothing else.
-     * @suppress PhanUnreferencedPublicMethod
      */
     public function isExclusivelyArray() : bool
     {
