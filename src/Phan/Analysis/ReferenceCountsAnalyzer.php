@@ -100,6 +100,7 @@ class ReferenceCountsAnalyzer
             $issue_type = $issue_types[\get_class($element)];
             self::analyzeElementReferenceCounts($code_base, $element, $issue_type);
         }
+        CLI::progress('dead code', 1.0);
     }
 
     /**

@@ -108,8 +108,8 @@ class Phan implements IgnoredFilesFilterInterface
      * it to be initialized before any classes or files are
      * loaded.
      *
-     * @param Closure $file_path_lister
-     * Returns a list of files to scan (string[])
+     * @param Closure():(list<string>) $file_path_lister
+     * Returns a list of files to scan
      *
      * @return bool
      * We emit messages to the configured printer and return
@@ -184,13 +184,13 @@ class Phan implements IgnoredFilesFilterInterface
         // This first pass parses code and populates the
         // global state we'll need for doing a second
         // analysis after.
-        CLI::progress('parse', 0.0, null);
+        CLI::progress('parse', 0.0, null, 0, $file_count);
         $code_base->setCurrentParsedFile(null);
         foreach ($file_path_list as $i => $file_path) {
             $file_path = (string)$file_path;
 
             $code_base->setCurrentParsedFile($file_path);
-            CLI::progress('parse', ($i + 1) / $file_count, $file_path);
+            CLI::progress('parse', ($i + 1) / $file_count, $file_path, $i + 1, $file_count);
 
             // Kick out anything we read from the former version
             // of this file
@@ -401,7 +401,7 @@ class Phan implements IgnoredFilesFilterInterface
              * This worker takes a file and analyzes it
              */
             $analysis_worker = static function (int $i, string $file_path, int $file_count) use ($code_base, $temporary_file_mapping, $request) : void {
-                CLI::progress('analyze', ($i + 1) / $file_count, $file_path);
+                CLI::progress('analyze', ($i + 1) / $file_count, $file_path, $i + 1, $file_count);
                 Analysis::analyzeFile($code_base, $file_path, $request, $temporary_file_mapping[$file_path] ?? null);
             };
 
@@ -418,7 +418,7 @@ class Phan implements IgnoredFilesFilterInterface
 
             $did_fork_pool_have_error = false;
 
-            CLI::progress('analyze', 0.0, null);
+            CLI::progress('analyze', 0.0, null, 0, $file_count);
             // Check to see if we're running as multiple processes
             // or not
             if ($process_count > 1) {
