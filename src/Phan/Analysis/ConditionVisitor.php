@@ -520,13 +520,17 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             }
             return ArrayType::combineArrayShapeTypesWithField($union_type, $dim_value, MixedType::instance(false)->asPHPDocUnionType());
         } elseif ($dim_union_type->containsNullableOrUndefined()) {
-            if (!$non_nullable) {
+            if (!$non_nullable && !$dim_union_type->isPossiblyUndefined()) {
                 // The offset in question already exists in the array shape type, and we won't be changing it.
                 // (E.g. array_key_exists('key', $x) where $x is array{key:?int,other:string})
                 return $union_type;
             }
 
-            return ArrayType::combineArrayShapeTypesWithField($union_type, $dim_value, $dim_union_type->nonNullableClone());
+            return ArrayType::combineArrayShapeTypesWithField(
+                $union_type,
+                $dim_value,
+                $dim_union_type->nonNullableClone()->withIsPossiblyUndefined(false)
+            );
         }
         return $union_type;
     }
