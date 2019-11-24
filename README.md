@@ -157,7 +157,8 @@ return [
     ],
 
     // A list of plugin files to execute.
-    // Plugins which are bundled with Phan can be added here by providing their name (e.g. 'AlwaysReturnPlugin')
+    // Plugins which are bundled with Phan can be added here by providing their name
+    // (e.g. 'AlwaysReturnPlugin')
     //
     // Documentation about available bundled plugins can be found
     // at https://github.com/phan/phan/tree/master/.phan/plugins
@@ -282,3 +283,11 @@ To run all of Phan's unit tests and integration tests, run `./tests/run_all_test
 
 We are committed to fostering a welcoming community. Any participant and
 contributor is required to adhere to our [Code of Conduct](./CODE_OF_CONDUCT.md).
+
+# Online Demo
+
+**This is experimental, and requires an up to date version of Firefox/Chrome and at least 4GB of free RAM.** (this is a 10MB download)
+
+[Run Phan entirely in your browser](https://phan.github.io/demo/).
+
+[![Preview of analyzing PHP](https://raw.githubusercontent.com/phan/demo/master/static/preview.png)](https://phan.github.io/demo/)
