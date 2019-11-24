@@ -1,7 +1,14 @@
 Phan NEWS
 
+??? ?? 2019, Phan 2.4.5 (dev)
+-----------------------
+
+Bug fixes:
++ Fix bug in native parsing of `AST_TYPE_UNION` (union type) nodes for PHP 8.0.0-dev.
+
 Nov 24 2019, Phan 2.4.4
 -----------------------
+
 New features(CLI, Configs):
 + When stderr is redirected a file or to another program, show an append-only progress bar by default. (#3514)
   Phan would previously disable the progress bar entirely by default.

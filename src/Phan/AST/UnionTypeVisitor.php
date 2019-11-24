@@ -693,7 +693,13 @@ class UnionTypeVisitor extends AnalysisVisitor
                 throw new AssertionError("Expected union type to be composed of types and names");
             }
         }
-        return new UnionType($types, true, $types);
+        $result = [];
+        foreach ($types as $union_type) {
+            foreach ($union_type->getTypeSet() as $type) {
+                $result[] = $type;
+            }
+        }
+        return UnionType::of($result, $result);
     }
 
     /**
