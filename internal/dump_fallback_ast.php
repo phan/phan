@@ -32,6 +32,7 @@ if (file_exists(__DIR__ . "/../../../../vendor/autoload.php")) {
     require __DIR__ . "/../vendor/autoload.php";
 }
 use Microsoft\PhpParser\Parser;
+use Phan\AST\TolerantASTConverter\TolerantASTConverter;
 
 dump_main();
 
@@ -118,7 +119,7 @@ function dump_expr_as_ast(string $expr, bool $with_placeholders, bool $native) :
     if ($native) {
         $ast_data = ast\parse_code($expr, \Phan\Config::AST_VERSION);
     } else {
-        $converter = new \Phan\AST\TolerantASTConverter\TolerantASTConverter();
+        $converter = new TolerantASTConverter();
         $converter->setShouldAddPlaceholders($with_placeholders);
         $ast_data = $converter->parseCodeAsPHPAST($expr, \Phan\Config::AST_VERSION);
     }
@@ -135,12 +136,7 @@ function dump_expr(string $expr) : void
     $parser = new Parser();
     // Return and print an AST from string contents
     $ast_node = $parser->parseSourceFile($expr);
-    foreach ($ast_node->getDescendantNodes() as $descendant) {
-        // echo "unsetting " . get_class($descendant) . $descendant->getStart() . "\n";
-        $descendant->parent = null;
-    }
-
-    $ast_node->parent = null;
+    TolerantASTConverter::unlinkDescendantNodes($ast_node);
     unset($ast_node->statementList[0]);
     $dumper = new \Phan\AST\TolerantASTConverter\NodeDumper($expr);
     $dumper->setIncludeTokenKind(true);

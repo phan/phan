@@ -29,6 +29,9 @@ Plugins:
 
 Maintenance:
 + Support native parsing of `AST_TYPE_UNION` (union type) nodes for PHP 8.0.0-dev.
++ Reduce memory usage after the polyfill/fallback parser parses ASTs
+  (when the final AST isn't cached on disk from a previous run)
++ Make the error message for missing `php-ast` contain more detailed instructions on how to install `php-ast`.
 
 Nov 20 2019, Phan 2.4.3
 -----------------------

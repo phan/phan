@@ -14,40 +14,6 @@ ini_set("memory_limit", '-1');
 define('CLASS_DIR', __DIR__ . '/../');
 set_include_path(get_include_path() . PATH_SEPARATOR . CLASS_DIR);
 
-if (extension_loaded('ast')) {
-    // Warn if the php-ast version is too low.
-    $ast_version = (string)phpversion('ast');
-    if (version_compare($ast_version, '1.0.0') <= 0) {
-        // TODO: Change this to a warning for 0.1.5 - 1.0.0. (https://github.com/phan/phan/issues/2954)
-        // 0.1.5 introduced the ast\Node constructor, which is required by the polyfill
-        //
-        // NOTE: We haven't loaded the autoloader yet, so these issue messages can't be colorized.
-        fprintf(
-            STDERR,
-            "ERROR: Phan 2.x requires php-ast 1.0.1+ because it depends on AST version 70. php-ast %s is installed." . PHP_EOL,
-            $ast_version
-        );
-        fwrite(STDERR, "See https://github.com/phan/phan/wiki/Getting-Started#installing-dependencies" . PHP_EOL);
-        fwrite(STDERR, "Exiting without analyzing files." . PHP_EOL);
-        exit(1);
-    } elseif (PHP_VERSION_ID >= 80000 && version_compare($ast_version, '1.0.4') < 0) {
-        fprintf(
-            STDERR,
-            "WARNING: Phan 2.x requires php-ast 1.0.4+ to properly analyze ASTs for php 8.0+. php-ast %s and php %s is installed." . PHP_EOL,
-            $ast_version,
-            PHP_VERSION
-        );
-        fwrite(STDERR, "See https://github.com/phan/phan/wiki/Getting-Started#installing-dependencies" . PHP_EOL);
-    } elseif (PHP_VERSION_ID >= 70400 && version_compare($ast_version, '1.0.2') < 0) {
-        fprintf(
-            STDERR,
-            "WARNING: Phan 2.x requires php-ast 1.0.2+ to properly analyze ASTs for php 7.4+. php-ast %s and php %s is installed." . PHP_EOL,
-            $ast_version,
-            PHP_VERSION
-        );
-        fwrite(STDERR, "See https://github.com/phan/phan/wiki/Getting-Started#installing-dependencies" . PHP_EOL);
-    }
-}
 if (PHP_VERSION_ID < 70100) {
     fprintf(
         STDERR,
@@ -60,6 +26,89 @@ if (PHP_VERSION_ID < 70100) {
     exit(1);
 }
 
+const LATEST_KNOWN_PHP_AST_VERSION = '1.0.4';
+
+/**
+ * Dump instructions on how to install php-ast
+ */
+function phan_output_ast_installation_instructions() : void {
+    $ini_path = php_ini_loaded_file() ?: '(php.ini path could not be determined)';
+    $extension_dir = ini_get('extension_dir') ?: '(extension directory could not be determined)';
+    if (DIRECTORY_SEPARATOR === '\\') {
+        if (PHP_VERSION_ID <= 70300 || !preg_match('/[a-zA-Z]/', PHP_VERSION)) {
+            fprintf(STDERR, PHP_EOL . "Windows users can download php-ast from https://windows.php.net/downloads/pecl/releases/ast/%s/php_ast-%s-%s-%s-%s-%s.zip" . PHP_EOL,
+                LATEST_KNOWN_PHP_AST_VERSION,
+                LATEST_KNOWN_PHP_AST_VERSION,
+                PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION,
+                PHP_ZTS ? 'ts' : 'nts',
+                PHP_VERSION_ID <= 70100 ? 'vc14' : 'vc15',
+                PHP_INT_SIZE == 4 ? 'x86' : 'x64'
+            );
+            fwrite(STDERR, "(if that link doesn't work, check https://windows.php.net/downloads/pecl/releases/ast/ )" . PHP_EOL);
+            fwrite(STDERR, "To install php-ast, add php_ast.dll from the zip to '$extension_dir'," . PHP_EOL);
+            fwrite(STDERR, "Then, enable php-ast by adding the following line to your php.ini file at '$ini_path'" . PHP_EOL . PHP_EOL);
+            fwrite(STDERR, "extension=php_ast.dll" . PHP_EOL . PHP_EOL);
+        }
+    } else {
+        fwrite(STDERR, <<<EOT
+php-ast can be installed in the following ways:
+
+1. Unix (PECL): Run 'pecl install ast' and add extension=ast.so to your php.ini.
+
+2. Unix (Compile): Download https://github.com/nikic/php-ast then compile and install the extension as follows:
+
+   cd path/to/php-ast
+   phpize
+   ./configure
+   make
+   sudo make install
+
+   Additionally, add extension=ast.so to your php.ini file.
+
+EOT
+        );
+    }
+    fwrite(STDERR, "For more information, see https://github.com/phan/phan/wiki/Getting-Started#installing-dependencies" . PHP_EOL);
+}
+
+if (extension_loaded('ast')) {
+    // Warn if the php-ast version is too low.
+    $ast_version = (string)phpversion('ast');
+    if (version_compare($ast_version, '1.0.0') <= 0) {
+        if ($ast_version === '') {
+            // Seen in php 7.3 with file_cache when ast is initially enabled but later disabled, due to the result of extension_loaded being assumed to be a constant by opcache.
+            fwrite(STDERR, "ERROR: extension_loaded('ast') is true, but phpversion('ast') is the empty string. You probably need to clear opcache (opcache.file_cache='" . ini_get('opcache.file_cache') . "')" . PHP_EOL);
+        }
+        // TODO: Change this to a warning for 0.1.5 - 1.0.0. (https://github.com/phan/phan/issues/2954)
+        // 0.1.5 introduced the ast\Node constructor, which is required by the polyfill
+        //
+        // NOTE: We haven't loaded the autoloader yet, so these issue messages can't be colorized.
+        fprintf(
+            STDERR,
+            "ERROR: Phan 2.x requires php-ast 1.0.1+ because it depends on AST version 70. php-ast '%s' is installed." . PHP_EOL,
+            $ast_version
+        );
+        phan_output_ast_installation_instructions();
+        fwrite(STDERR, "Exiting without analyzing files." . PHP_EOL);
+        exit(1);
+    } elseif (PHP_VERSION_ID >= 80000 && version_compare($ast_version, '1.0.4') < 0) {
+        fprintf(
+            STDERR,
+            "WARNING: Phan 2.x requires php-ast 1.0.4+ to properly analyze ASTs for php 8.0+. php-ast %s and php %s is installed." . PHP_EOL,
+            $ast_version,
+            PHP_VERSION
+        );
+        phan_output_ast_installation_instructions();
+    } elseif (PHP_VERSION_ID >= 70400 && version_compare($ast_version, '1.0.2') < 0) {
+        fprintf(
+            STDERR,
+            "WARNING: Phan 2.x requires php-ast 1.0.2+ to properly analyze ASTs for php 7.4+. php-ast %s and php %s is installed." . PHP_EOL,
+            $ast_version,
+            PHP_VERSION
+        );
+        phan_output_ast_installation_instructions();
+    }
+}
 // Use the composer autoloader
 $found_autoloader = false;
 foreach ([
