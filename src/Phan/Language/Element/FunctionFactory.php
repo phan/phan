@@ -2,6 +2,7 @@
 
 namespace Phan\Language\Element;
 
+use ast;
 use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -114,11 +115,30 @@ class FunctionFactory
             $reflection_method->getName()
         );
 
+        // Deliberately don't use getModifiers - flags we don't know about might cause unexpected effects,
+        // and there's no guarantee MODIFIER_PUBLIC would continue to equal ReflectionMethod::IS_PUBLIC
+        if ($reflection_method->isPublic()) {
+            $modifiers = ast\flags\MODIFIER_PUBLIC;
+        } elseif ($reflection_method->isProtected()) {
+            $modifiers = ast\flags\MODIFIER_PROTECTED;
+        } else {
+            $modifiers = ast\flags\MODIFIER_PRIVATE;
+        }
+        if ($reflection_method->isStatic()) {
+            $modifiers |= ast\flags\MODIFIER_STATIC;
+        }
+        if ($reflection_method->isFinal()) {
+            $modifiers |= ast\flags\MODIFIER_FINAL;
+        }
+        if ($reflection_method->isAbstract()) {
+            $modifiers |= ast\flags\MODIFIER_ABSTRACT;
+        }
+
         $method = new Method(
             $context,
             $reflection_method->name,
             UnionType::empty(),
-            $reflection_method->getModifiers(),
+            $modifiers,
             $method_fqsen,
             null
         );

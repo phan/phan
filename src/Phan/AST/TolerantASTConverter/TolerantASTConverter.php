@@ -213,9 +213,26 @@ class TolerantASTConverter
      */
     public function parseCodeAsPHPASTUncached(string $file_contents, int $version, array &$errors = []) : \ast\Node
     {
-        // Aside: this can be implemented as a stub.
         $parser_node = static::phpParserParse($file_contents, $errors);
-        return $this->phpParserToPhpast($parser_node, $version, $file_contents);
+        try {
+            return $this->phpParserToPhpast($parser_node, $version, $file_contents);
+        } finally {
+            // Unlink the nodes manually to free memory - automatic cyclic garbage collection is disabled for performance in older php 7 versions.
+            self::unlinkDescendantNodes($parser_node);
+        }
+    }
+
+    /**
+     * Unlink the nodes manually to free memory (or to exclude them from var_export())
+     *
+     * Automatic cyclic garbage collection is disabled for performance in older php 7 versions.
+     */
+    public static function unlinkDescendantNodes(PhpParser\Node $root) : void
+    {
+        foreach ($root->getDescendantNodes() as $descendant) {
+            $descendant->parent = null;
+        }
+        $root->parent = null;
     }
 
     /**
@@ -3020,6 +3037,7 @@ class TolerantASTConverter
                 self::getDevelopmentBuildDate(),
                 \phpversion('ast'),
                 \ini_get('short_open_tag'),
+                \sha1((string)\file_get_contents(__DIR__ . '/ast_shim.php')),
                 class_exists(CLI::class) ? CLI::getDevelopmentVersionId() : 'unknown'
             ], true));
         }

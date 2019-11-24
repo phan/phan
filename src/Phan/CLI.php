@@ -2411,12 +2411,14 @@ EOB
         if (!\extension_loaded('ast')) {
             self::printHelpSection(
                 // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-                "ERROR: The php-ast extension must be loaded in order for Phan to work. See https://github.com/phan/phan#getting-started for more details. Alternately, invoke Phan with the CLI option --allow-polyfill-parser (which is noticeably slower)\n",
+                "ERROR: The php-ast extension must be loaded in order for Phan to work. Either install and enable php-ast, or invoke Phan with the CLI option --allow-polyfill-parser (which is noticeably slower)\n",
                 false,
                 true
             );
+            \phan_output_ast_installation_instructions();
             exit(EXIT_FAILURE);
         }
+        self::sanityCheckAstVersion();
 
         try {
             // Split up the opening PHP tag to fix highlighting in vim.
@@ -2455,6 +2457,33 @@ EOB
             exit(EXIT_FAILURE);
         } catch (\ParseError $_) {
             // error message may validate with locale and version, don't validate that.
+        }
+    }
+
+    /**
+     * This duplicates the check in Bootstrap.php, in case opcache.file_cache has outdated information about whether extension_loaded('ast') is true. exists.
+     */
+    private static function sanityCheckAstVersion() : void
+    {
+        $ast_version = (string)\phpversion('ast');
+        if (\version_compare($ast_version, '1.0.0') <= 0) {
+            if ($ast_version === '') {
+                // Seen in php 7.3 with file_cache when ast is initially enabled but later disabled, due to the result of extension_loaded being assumed to be a constant by opcache.
+                fwrite(STDERR, "ERROR: extension_loaded('ast') is true, but phpversion('ast') is the empty string. You probably need to clear opcache (opcache.file_cache='" . \ini_get('opcache.file_cache') . "')" . PHP_EOL);
+            }
+            // TODO: Change this to a warning for 0.1.5 - 1.0.0. (https://github.com/phan/phan/issues/2954)
+            // 0.1.5 introduced the ast\Node constructor, which is required by the polyfill
+            //
+            // NOTE: We haven't loaded the autoloader yet, so these issue messages can't be colorized.
+            \fprintf(
+                STDERR,
+                "ERROR: Phan 2.x requires php-ast 1.0.1+ because it depends on AST version 70. php-ast '%s' is installed." . PHP_EOL,
+                $ast_version
+            );
+            require_once __DIR__ . '/Bootstrap.php';
+            \phan_output_ast_installation_instructions();
+            \fwrite(STDERR, "Exiting without analyzing files." . PHP_EOL);
+            exit(1);
         }
     }
 
