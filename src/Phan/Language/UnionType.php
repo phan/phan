@@ -2523,11 +2523,11 @@ class UnionType implements Serializable
         if (!$other_type_set) {
             return true;
         }
-        $type_set = $this->getTypeSet();
+        $type_set = $this->type_set;
         if (!$type_set) {
             return true;
         }
-        foreach ($this->getTypeSet() as $type) {
+        foreach ($type_set as $type) {
             $type = $type->withIsNullable(false);
             foreach ($other_type_set as $other) {
                 if ($type->canCastToDeclaredType($code_base, $context, $other)) {
@@ -4981,7 +4981,7 @@ class UnionType implements Serializable
         if ($is_possibly_undefined === false) {
             return $this;
         }
-        $result = new AnnotatedUnionType($this->getTypeSet(), true, []);
+        $result = new AnnotatedUnionType($this->type_set, true, $this->real_type_set);
         $result->is_possibly_undefined = $is_possibly_undefined;
         return $result;
     }
@@ -4995,7 +4995,7 @@ class UnionType implements Serializable
      */
     public function withIsDefinitelyUndefined() : UnionType
     {
-        $result = new AnnotatedUnionType($this->getTypeSet(), true, []);
+        $result = new AnnotatedUnionType($this->type_set, true, []);
         $result->is_possibly_undefined = AnnotatedUnionType::DEFINITELY_UNDEFINED;
         return $result;
     }
@@ -5060,7 +5060,7 @@ class UnionType implements Serializable
         $fallback_values = UnionType::empty();
         $fallback_keys = UnionType::empty();
 
-        foreach ($this->getTypeSet() as $type) {
+        foreach ($this->type_set as $type) {
             if ($type->isGenerator()) {
                 if ($type->hasTemplateParameterTypes()) {
                     return $type;
@@ -5525,7 +5525,6 @@ class UnionType implements Serializable
     /**
      * @return bool
      * True if this is the void type
-     * @see self::isVoid()
      */
     public function isVoidType() : bool
     {
@@ -5555,7 +5554,7 @@ class UnionType implements Serializable
     }
 
     /**
-     * Shorter version of `UnionType::of($this->getTypeSet(), $real_type_set)`
+     * Shorter version of `UnionType::of($this->type_set, $real_type_set)`
      * @param ?list<Type> $real_type_set
      * @suppress PhanAccessReadOnlyProperty
      */

@@ -167,21 +167,53 @@ class ArrayType extends IterableType
      */
     public static function combineArrayShapeTypesWithField(UnionType $left, $field_dim_value, UnionType $field_type) : UnionType
     {
-        $result = [];
+        $type_set = [];
         $left_array_shape_types = [];
         foreach ($left->getTypeSet() as $type) {
             if ($type instanceof ArrayShapeType) {
                 $left_array_shape_types[] = $type;
             } else {
-                $result[] = $type;
+                $type_set[] = $type;
             }
         }
-        $result[] = ArrayShapeType::combineWithPrecedence(
+        $type_set[] = ArrayShapeType::combineWithPrecedence(
             ArrayShapeType::fromFieldTypes([$field_dim_value => $field_type], false),
             // TODO: Add possibly_undefined annotations in union
             ArrayShapeType::union($left_array_shape_types)
         );
-        return UnionType::of($result);
+        $real_type_set = $left->hasRealTypeSet() ? self::computeRealTypeSetForArrayShapeTypeWithField($left, $field_dim_value, $field_type) : [];
+        // TODO: Determine if the real type is an array
+        return UnionType::of($type_set, $real_type_set);
+    }
+
+    /**
+     * Precondition: $left has real types
+     * @param UnionType $left the left-hand side (e.g. of an isset check).
+     * @param int|string|float|bool $field_dim_value (Ideally int|string)
+     * @param UnionType $field_type
+     * @return list<ArrayType>
+     */
+    private static function computeRealTypeSetForArrayShapeTypeWithField(UnionType $left, $field_dim_value, UnionType $field_type) : array
+    {
+        $has_non_array_shape = false;
+        foreach ($left->getRealTypeSet() as $type) {
+            if (!$type instanceof ArrayType || $type->isNullable()) {
+                return [];
+            }
+            if (!$type instanceof ArrayShapeType) {
+                $has_non_array_shape = true;
+            }
+        }
+        if ($has_non_array_shape) {
+            return [ArrayType::instance(false)];
+        }
+        return [
+            ArrayShapeType::combineWithPrecedence(
+                ArrayShapeType::fromFieldTypes([$field_dim_value => $field_type->asRealUnionType()], false),
+                // @phan-suppress-next-line PhanTypeMismatchArgument this was asserted to be list<ArrayShapeType>
+                ArrayShapeType::union($left->getRealTypeSet())
+            )
+        ];
     }
 
     protected function canCastToNonNullableType(Type $type) : bool

@@ -22,6 +22,7 @@ New features(Analysis):
 + Infer that `$var[$offset] = expr;`/`$this->prop[$offset] = expr;` causes that element to be non-null (#3546)
 + Emit `PhanEmptyForeachBody` when iterating over a type that isn't `Traversable` with an empty statement list.
 + Warn about computing `array_values` for an array that is already a list. (#3540)
++ Infer the real type is still an array after assigning to a field of an array.
 
 Plugins:
 + In `DuplicateExpressionPlugin`, emit `PhanPluginDuplicateIfStatements`
