@@ -1,6 +1,6 @@
 Phan NEWS
 
-??? ?? 2019, Phan 2.4.4 (dev)
+Nov 24 2019, Phan 2.4.4
 -----------------------
 New features(CLI, Configs):
 + When stderr is redirected a file or to another program, show an append-only progress bar by default. (#3514)
