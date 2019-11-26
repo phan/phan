@@ -344,21 +344,17 @@ class Analysis
         $return_type_overrides = $plugin_set->getReturnTypeOverrides($code_base);
         $return_type_override_fqsen_strings = [];
         foreach ($return_type_overrides as $fqsen_string => $unused_closure) {
-            if (\stripos($fqsen_string, '::') !== false) {
-                $fqsen = null;
+            if (\strpos($fqsen_string, '::') !== false) {
                 try {
                     $fqsen = FullyQualifiedMethodName::fromFullyQualifiedString($fqsen_string);
-                } catch (FQSENException $e) {
+                } catch (FQSENException | InvalidArgumentException $e) {
                     \fprintf(STDERR, "getReturnTypeOverrides returned an invalid FQSEN %s: %s\n", $fqsen_string, $e->getMessage());
-                } catch (InvalidArgumentException $e) {
-                    \fprintf(STDERR, "getReturnTypeOverrides returned an invalid FQSEN %s: %s\n", $fqsen_string, $e->getMessage());
+                    continue;
                 }
 
-                if ($fqsen !== null) {
-                    // The FQSEN that's actually in the code base is allowed to differ from what the plugin used as an array key.
-                    // Thus, we use $fqsen->__toString() rather than $fqsen_string.
-                    $return_type_override_fqsen_strings[$fqsen->__toString()] = true;
-                }
+                // The FQSEN that's actually in the code base is allowed to differ from what the plugin used as an array key.
+                // Thus, we use $fqsen->__toString() rather than $fqsen_string.
+                $return_type_override_fqsen_strings[$fqsen->__toString()] = true;
             }
         }
 
@@ -377,10 +373,10 @@ class Analysis
 
                             // 1) The FQSEN that's actually in the code base is allowed to differ from what the plugin used as an array key.
                             //      Thus, we use $fqsen->__toString() rather than $fqsen_string.
-                            // 2) The parent method is included in this list, i.e. the parent method is it's own defining method.
+                            // 2) The parent method is included in this list, i.e. the parent method is its own defining method.
                             foreach ($methods_by_defining_fqsen[$fqsen->__toString()] as $child_method) {
                                 if (
-                                    $child_method->getFQSEN()->__toString() !== $fqsen->__toString() &&
+                                    $child_method->getFQSEN() !== $fqsen &&
                                     isset($return_type_override_fqsen_strings[$child_method->getFQSEN()->__toString()])
                                 ) {
                                     // An override closure targeting SubClass::foo should take precedence over BaseClass::foo
@@ -399,9 +395,7 @@ class Analysis
                         $function->setDependentReturnTypeClosure($closure);
                     }
                 }
-            } catch (FQSENException $e) {
-                \fprintf(STDERR, "getReturnTypeOverrides returned an invalid FQSEN %s: %s\n", $fqsen_string, $e->getMessage());
-            } catch (InvalidArgumentException $e) {
+            } catch (FQSENException | InvalidArgumentException $e) {
                 \fprintf(STDERR, "getReturnTypeOverrides returned an invalid FQSEN %s: %s\n", $fqsen_string, $e->getMessage());
             }
         }
