@@ -26,7 +26,7 @@ if (PHP_VERSION_ID < 70100) {
     exit(1);
 }
 
-const LATEST_KNOWN_PHP_AST_VERSION = '1.0.4';
+const LATEST_KNOWN_PHP_AST_VERSION = '1.0.5';
 
 /**
  * Dump instructions on how to install php-ast
