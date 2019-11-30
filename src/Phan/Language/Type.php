@@ -911,14 +911,22 @@ class Type
 
         if (!$namespace) {
             if (count($template_parameter_type_name_list) > 0) {
-                switch (\strtolower($type_name)) {
+                $type_name = \strtolower($type_name);
+                switch ($type_name) {
                     case 'array':
+                    case 'non-empty-array':
                         // template parameter type list
                         $template_parameter_type_list = self::createTemplateParameterTypeList($template_parameter_type_name_list);
-                        return self::parseGenericArrayTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, false, false);
-                    case 'list':
+                        return self::parseGenericArrayTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, $type_name === 'non-empty-array', false);
+                    case 'associative-array':
+                    case 'non-empty-associative-array':
+                        // template parameter type list
                         $template_parameter_type_list = self::createTemplateParameterTypeList($template_parameter_type_name_list);
-                        return self::parseListTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, false);
+                        return self::parseGenericArrayTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, $type_name === 'non-empty-array', true);
+                    case 'list':
+                    case 'non-empty-list':
+                        $template_parameter_type_list = self::createTemplateParameterTypeList($template_parameter_type_name_list);
+                        return self::parseListTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, $type_name === 'non-empty-list');
                     case 'iterable':
                         // template parameter type list
                         $template_parameter_type_list = self::createTemplateParameterTypeList($template_parameter_type_name_list);
