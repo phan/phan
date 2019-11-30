@@ -165,6 +165,9 @@ EOT;
 
         $function_map = $code_base->getFunctionMap();
         foreach ($function_map as $function) {
+            if ($function->getFQSEN()->isAlternate()) {
+                continue;
+            }
             $stub_collection->addFunc($function);
         }
 
