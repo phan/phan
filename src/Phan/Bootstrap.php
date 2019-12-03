@@ -35,7 +35,7 @@ function phan_output_ast_installation_instructions() : void {
     $ini_path = php_ini_loaded_file() ?: '(php.ini path could not be determined)';
     $extension_dir = ini_get('extension_dir') ?: '(extension directory could not be determined)';
     if (DIRECTORY_SEPARATOR === '\\') {
-        if (PHP_VERSION_ID <= 70300 || !preg_match('/[a-zA-Z]/', PHP_VERSION)) {
+        if (PHP_VERSION_ID < 70500 || !preg_match('/[a-zA-Z]/', PHP_VERSION)) {
             fprintf(STDERR, PHP_EOL . "Windows users can download php-ast from https://windows.php.net/downloads/pecl/releases/ast/%s/php_ast-%s-%s-%s-%s-%s.zip" . PHP_EOL,
                 LATEST_KNOWN_PHP_AST_VERSION,
                 LATEST_KNOWN_PHP_AST_VERSION,
