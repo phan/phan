@@ -7,6 +7,10 @@ Bug fixes:
 + Fix bug in native parsing of `AST_TYPE_UNION` (union type) nodes for PHP 8.0.0-dev.
 + Don't print duplicate entries for functions with alternate signatures in `tool/make_stubs`
 + Fix Error parsing internal template types such as `non-empty-list<string>` when using `Type::fromFullyQualifiedString()`.
++ Fix warnings about `password_hash()` algorithm constants with php 7.4 (#3560)
+  `PASSWORD_DEFAULT` became null in php 7.4, and other constants became strings.
+
+  Note that you will need to run Phan with both php 7.4 and a `target_php_version` of 7.4 to fix the errors.
 
 Nov 24 2019, Phan 2.4.4
 -----------------------
