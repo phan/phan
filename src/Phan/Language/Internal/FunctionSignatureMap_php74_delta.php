@@ -50,6 +50,7 @@ return [
 'WeakReference::get' => ['?object'],
 ],
 'old' => [
+'password_hash' => ['string|false|null', 'password'=>'string', 'algo'=>'int', 'options='=>'array'],
 'proc_open' => ['resource|false', 'command'=>'string', 'descriptorspec'=>'array', '&w_pipes'=>'resource[]', 'cwd='=>'?string', 'env='=>'?array', 'other_options='=>'array'],
 'strip_tags' => ['string', 'str'=>'string', 'allowable_tags='=>'string'],
 ]
