@@ -369,12 +369,17 @@ class Analysis
                     if ($code_base->hasClassWithFQSEN($class_fqsen)) {
                         // This is an override of a method.
                         if ($code_base->hasMethodWithFQSEN($fqsen)) {
+                            // The $fqsen_string from a plugin can refer to a method
+                            // that is not the original definition.
+                            $method = $code_base->getMethodByFQSEN($fqsen);
+                            $method->setDependentReturnTypeClosure($closure);
+
                             $methods_by_defining_fqsen = $methods_by_defining_fqsen ?? $code_base->getMethodsGroupedByDefiningFQSEN();
 
                             // 1) The FQSEN that's actually in the code base is allowed to differ from what the plugin used as an array key.
                             //      Thus, we use $fqsen->__toString() rather than $fqsen_string.
                             // 2) The parent method is included in this list, i.e. the parent method is its own defining method.
-                            foreach ($methods_by_defining_fqsen[$fqsen->__toString()] as $child_method) {
+                            foreach ($methods_by_defining_fqsen[$fqsen->__toString()] ?? [] as $child_method) {
                                 if (
                                     $child_method->getFQSEN() !== $fqsen &&
                                     isset($return_type_override_fqsen_strings[$child_method->getFQSEN()->__toString()])
