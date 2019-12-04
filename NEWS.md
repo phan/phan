@@ -3,6 +3,10 @@ Phan NEWS
 ??? ?? 2019, Phan 2.4.5 (dev)
 -----------------------
 
+Plugins:
++ When adding a plugin overriding the return type of a method,
+  make it affect all methods of descendant classlikes that inherited that method definition.
+
 Bug fixes:
 + Fix bug in native parsing of `AST_TYPE_UNION` (union type) nodes for PHP 8.0.0-dev.
 + Don't print duplicate entries for functions with alternate signatures in `tool/make_stubs`
