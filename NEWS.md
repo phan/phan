@@ -7,6 +7,9 @@ Plugins:
 + When adding a plugin overriding the return type of a method,
   make it affect all methods of descendant classlikes that inherited that method definition.
 
+New Features(Analysis)
++ Infer that `!empty($x['field']...)` also implies $x['field'] is non-falsey. (#3570)
+
 Bug fixes:
 + Fix bug in native parsing of `AST_TYPE_UNION` (union type) nodes for PHP 8.0.0-dev.
 + Don't print duplicate entries for functions with alternate signatures in `tool/make_stubs`
