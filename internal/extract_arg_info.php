@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../src/Phan/Bootstrap.php';
 
+use Phan\AST\TolerantASTConverter\Shim;
 use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\Type;
@@ -226,6 +227,7 @@ class OpcacheFuncInfoParser
      */
     public static function main() : void
     {
+        Shim::load();
         global $argv;
         if (count($argv) !== 2) {
             fwrite(STDERR, "Usage: {$argv[0]} path/to/php-src" . PHP_EOL);
