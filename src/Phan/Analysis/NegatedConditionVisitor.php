@@ -1016,7 +1016,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                 $variable
             );
             // TODO finish
-        } elseif ($dim_union_type->containsNullableOrUndefined()) {
+        } elseif ($dim_union_type->containsNullableOrUndefined() || $dim_union_type->containsFalsey()) {
             if (!$non_nullable) {
                 // The offset in question already exists in the array shape type, and we won't be changing it.
                 // (E.g. array_key_exists('key', $x) where $x is array{key:?int,other:string})
