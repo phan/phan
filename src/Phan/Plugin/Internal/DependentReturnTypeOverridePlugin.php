@@ -96,6 +96,38 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
         /**
          * @phan-return Closure(CodeBase,Context,Func,array):UnionType
          */
+        $make_nonzero_dependent_type_method = static function (int $argument_pos, UnionType $type_if_zero, UnionType $type_if_nonzero, UnionType $type_if_unknown) : Closure {
+            /**
+             * @param Func $function @phan-unused-param
+             * @param list<Node|int|float|string> $args
+             */
+            return static function (
+                CodeBase $code_base,
+                Context $context,
+                Func $function,
+                array $args
+            ) use (
+                $type_if_zero,
+                $type_if_unknown,
+                $type_if_nonzero,
+                $argument_pos
+            ) : UnionType {
+                if (count($args) <= $argument_pos) {
+                    return $type_if_unknown;
+                }
+                $result = (new ContextNode($code_base, $context, $args[$argument_pos]))->getEquivalentPHPScalarValue();
+                if (is_numeric($result)) {
+                    if ($result == 0) {
+                        return $type_if_zero;
+                    }
+                    return $type_if_nonzero;
+                }
+                return $type_if_unknown;
+            };
+        };
+        /**
+         * @phan-return Closure(CodeBase,Context,Func,array):UnionType
+         */
         $make_arg_existence_dependent_type_method = static function (int $arg_pos, string $type_if_exists_string, string $type_if_missing_string) : Closure {
             $type_if_exists = UnionType::fromFullyQualifiedPHPDocString($type_if_exists_string);
             $type_if_missing = UnionType::fromFullyQualifiedPHPDocString($type_if_missing_string);
@@ -326,6 +358,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             'substr'                      => $substr_handler,
             'dirname'                     => $dirname_handler,
             'basename'                    => self::makeStringFunctionHandler('basename'),
+            'bcdiv'                       => $make_nonzero_dependent_type_method(1, $nullable_string_union_type, $string_union_type, $nullable_string_union_type),
         ];
     }
 
