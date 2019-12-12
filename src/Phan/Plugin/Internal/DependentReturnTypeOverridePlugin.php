@@ -93,6 +93,33 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
                 }
             };
         };
+
+        /**
+         * @param Func $function @phan-unused-param
+         * @param list<Node|int|float|string> $args
+         */
+        $bcdiv_callback = static function (
+            CodeBase $code_base,
+            Context $context,
+            Func $function,
+            array $args
+        ) use (
+            $nullable_string_union_type,
+            $string_union_type
+        ) : UnionType {
+            //PHP 8 will throw a DivisionByZero error instead of returning null
+            if (Config::getValue('target_php_version') >= 80000) {
+                return $string_union_type;
+            }
+            if (count($args) <= 1) {
+                return $nullable_string_union_type;
+            }
+            $result = (new ContextNode($code_base, $context, $args[1]))->getEquivalentPHPScalarValue();
+            if (is_numeric($result) && $result != 0) {
+                return $string_union_type;
+            }
+            return $nullable_string_union_type;
+        };
         /**
          * @phan-return Closure(CodeBase,Context,Func,array):UnionType
          */
@@ -326,6 +353,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             'substr'                      => $substr_handler,
             'dirname'                     => $dirname_handler,
             'basename'                    => self::makeStringFunctionHandler('basename'),
+            'bcdiv'                       => $bcdiv_callback,
         ];
     }
 
