@@ -94,6 +94,10 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             };
         };
 
+        /**
+         * @param Func $function @phan-unused-param
+         * @param list<Node|int|float|string> $args
+         */
         $bcdiv_callback = static function (
             CodeBase $code_base,
             Context $context,
