@@ -93,37 +93,28 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
                 }
             };
         };
-        /**
-         * @phan-return Closure(CodeBase,Context,Func,array):UnionType
-         */
-        $make_nonzero_dependent_type_method = static function (int $argument_pos, UnionType $type_if_zero, UnionType $type_if_nonzero, UnionType $type_if_unknown) : Closure {
-            /**
-             * @param Func $function @phan-unused-param
-             * @param list<Node|int|float|string> $args
-             */
-            return static function (
-                CodeBase $code_base,
-                Context $context,
-                Func $function,
-                array $args
-            ) use (
-                $type_if_zero,
-                $type_if_unknown,
-                $type_if_nonzero,
-                $argument_pos
-            ) : UnionType {
-                if (count($args) <= $argument_pos) {
-                    return $type_if_unknown;
-                }
-                $result = (new ContextNode($code_base, $context, $args[$argument_pos]))->getEquivalentPHPScalarValue();
-                if (is_numeric($result)) {
-                    if ($result == 0) {
-                        return $type_if_zero;
-                    }
-                    return $type_if_nonzero;
-                }
-                return $type_if_unknown;
-            };
+
+        $bcdiv_callback = static function (
+            CodeBase $code_base,
+            Context $context,
+            Func $function,
+            array $args
+        ) use (
+            $nullable_string_union_type,
+            $string_union_type
+        ) : UnionType {
+            //PHP 8 will throw a DivisionByZero error instead of returning null
+            if (Config::getValue('target_php_version') >= 80000) {
+                return $string_union_type;
+            }
+            if (count($args) <= 1) {
+                return $nullable_string_union_type;
+            }
+            $result = (new ContextNode($code_base, $context, $args[1]))->getEquivalentPHPScalarValue();
+            if (is_numeric($result) && $result != 0) {
+                return $string_union_type;
+            }
+            return $nullable_string_union_type;
         };
         /**
          * @phan-return Closure(CodeBase,Context,Func,array):UnionType
@@ -358,7 +349,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             'substr'                      => $substr_handler,
             'dirname'                     => $dirname_handler,
             'basename'                    => self::makeStringFunctionHandler('basename'),
-            'bcdiv'                       => $make_nonzero_dependent_type_method(1, $nullable_string_union_type, $string_union_type, $nullable_string_union_type),
+            'bcdiv'                       => $bcdiv_callback,
         ];
     }
 
