@@ -1,0 +1,3 @@
+%s:3 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type array{a:array{b:'c',x:\stdClass}}(real=array{a:array{b:'c',x:\stdClass}})
+%s:5 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type array{a:array{b:null,x:\stdClass}}(real=array{a:array{b:null,x:\stdClass}})
+%s:9 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type array{a:array{b:array{0:'x',1:'y'},x:\stdClass}}(real=array{a:array{b:array{0:'x',1:'y'},x:\stdClass}})
