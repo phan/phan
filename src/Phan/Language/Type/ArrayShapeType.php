@@ -783,6 +783,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      */
     public static function combineWithPrecedence(ArrayShapeType $left, ArrayShapeType $right, bool $is_assignment = false) : ArrayShapeType
     {
+        // echo "Called combineWithPrecedence left=$left right=$right is_assignment=" . json_encode($is_assignment) . "\n";
         if ($is_assignment) {
             // Not using $left->field_types + $right->field_types because that would put the array keys from $added before the array keys from $existing when iterating/displaying types.
             $combination = $right->field_types;

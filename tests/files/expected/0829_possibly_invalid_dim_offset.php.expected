@@ -1,0 +1,2 @@
+%s:27 PhanCoalescingNeverNull Using non-null !isset($data['prefix']) of type bool as the left hand side of a null coalescing (??) operation. The right hand side may be unnecessary.
+%s:27 PhanRedundantCondition Redundant attempt to cast $data['prefix'] of type '' to isset

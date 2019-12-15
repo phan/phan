@@ -313,6 +313,18 @@ class ASTReverter
                 }
                 return \sprintf('(%s ?: %s)', self::toShortString($cond), self::toShortString($false));
             },
+            ast\AST_ISSET => static function (Node $node) : string {
+                return \sprintf(
+                    'isset(%s)',
+                    self::toShortString($node->children['var'])
+                );
+            },
+            ast\AST_EMPTY => static function (Node $node) : string {
+                return \sprintf(
+                    'empty(%s)',
+                    self::toShortString($node->children['expr'])
+                );
+            },
         ];
     }
 

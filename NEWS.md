@@ -3,6 +3,14 @@ Phan NEWS
 ??? ?? 2019, Phan 2.4.6 (dev)
 -----------------------
 
+New Features(Analysis)
++ Improve inferred array shapes for multi-dimensional assignments or conditions on arrays
+  (e.g. `$x['first']['second'] = expr` or `if (cond($x['first']['second']))`) (#1510, #3569)
+
+Bug fixes:
++ Fix false positive PhanTypePossiblyInvalidDimOffset seen after
+  other array fields get added to an array shape by assignment or condition (#3579, #3569)
+
 Dec 10 2019, Phan 2.4.5
 -----------------------
 

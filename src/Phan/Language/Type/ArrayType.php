@@ -96,19 +96,27 @@ class ArrayType extends IterableType
      */
     public static function combineArrayTypesOverriding(UnionType $left, UnionType $right, bool $is_assignment = false) : UnionType
     {
+        // echo "Called " . __METHOD__ . " left={$left->getDebugRepresentation()} right={$right->getDebugRepresentation()} is_assignment=" . \json_encode($is_assignment) . "\n";
         return UnionType::of(
-            ArrayType::combineArrayTypeListsOverriding($left->getTypeSet(), $right->getTypeSet(), $is_assignment),
-            ArrayType::combineArrayTypeListsOverriding($left->getRealTypeSet(), $right->getRealTypeSet(), $is_assignment)
+            ArrayType::combineArrayTypeListsOverriding($left->getTypeSet(), $right->getTypeSet(), $is_assignment, false),
+            ArrayType::combineArrayTypeListsOverriding($left->getRealTypeSet(), $right->getRealTypeSet(), $is_assignment, true)
         );
     }
 
     /**
-     * @param list<Type> $left_types
-     * @param list<Type> $right_types
+     * @param list<Type> $left_types The types being added to $right_types (types from array fields of these take precedence over $right_types)
+     * @param list<Type> $right_types The type that is having $left_types get added to it.
+     *
+     * @param bool $is_assignment true if this is an assignment instead of a conditional.
+     *                            This affects the field order of ArrayShapeType instances, among other things.
+     * @param bool $is_real true if this is computing the real type set. If true, the resulting type is computed more conservatively, to avoid false positives for redundant/impossible condition detection.
      * @return list<Type>
      */
-    private static function combineArrayTypeListsOverriding(array $left_types, array $right_types, bool $is_assignment) : array
+    private static function combineArrayTypeListsOverriding(array $left_types, array $right_types, bool $is_assignment, bool $is_real) : array
     {
+        if ($is_real && !$right_types) {
+            return [];
+        }
         $result = [];
         $left_array_shape_types = [];
         foreach ($left_types as $type) {
@@ -119,6 +127,9 @@ class ArrayType extends IterableType
                     $result[] = $type;
                 }
             } elseif ($type instanceof ArrayType) {
+                if ($is_real) {
+                    return self::computeRealTypeSetFromArrayTypeLists($right_types, $is_assignment);
+                }
                 return [ArrayType::instance(false)];
             }
         }
@@ -131,28 +142,87 @@ class ArrayType extends IterableType
                     $result[] = $type;
                 }
             } elseif ($type instanceof ArrayType) {
-                return [$type];
+                if ($is_assignment) {
+                    $result[] = $type;
+                } else {
+                    if ($is_real) {
+                        return self::computeRealTypeSetFromArrayTypeLists($right_types, $is_assignment);
+                    }
+                    return [$type];
+                }
+            } elseif ($is_real) {
+                // TODO: More robust handling of non-arrays
+                return [];
             }
         }
-        if (!$result) {
-            if (\count($left_array_shape_types) === 0) {
-                return $right_array_shape_types;
-            }
-            if (\count($right_array_shape_types) === 0) {
-                return $left_array_shape_types;
-            }
+        if (\count($left_array_shape_types) === 0) {
+            $combined_type_shapes = $right_array_shape_types;
+        } elseif (\count($right_array_shape_types) === 0) {
+            $combined_type_shapes = $left_array_shape_types;
+        } else {
             // Fields from the left take precedence (e.g. [0, false] + ['string'] becomes [0, false])
             $left_union_type = ArrayShapeType::union($left_array_shape_types);
             $right_union_type = ArrayShapeType::union($right_array_shape_types);
-            return [ArrayShapeType::combineWithPrecedence($left_union_type, $right_union_type, $is_assignment)];
+            $combined_type_shapes = [ArrayShapeType::combineWithPrecedence($left_union_type, $right_union_type, $is_assignment)];
         }
-        foreach (\array_merge($left_array_shape_types, $right_array_shape_types) as $type) {
+
+        if (!$result) {
+            return $combined_type_shapes;
+        }
+        // if ($is_real) {
+            if ($left_array_shape_types) {
+                foreach ($combined_type_shapes as $type) {
+                    $result[] = $type;
+                }
+            } else {
+                foreach ($combined_type_shapes as $type) {
+                    foreach ($type->withFlattenedArrayShapeOrLiteralTypeInstances() as $type_part) {
+                        $result[] = $type_part;
+                    }
+                }
+            }
+            // @phan-suppress-next-line PhanPartialTypeMismatchArgument
+            return UnionType::getUniqueTypes($result);
+            /*
+        }
+        foreach ($combined_type_shapes as $type) {
+            $result[] = $type;
+        }
+        return
+        f
+        foreach ($left_array_shape_types as $type) {
+            if ($is_assignment && !$is_real) {
+                $result[] = $type;
+                continue;
+            }
+            foreach ($type->withFlattenedArrayShapeOrLiteralTypeInstances() as $type_part) {
+                $result[] = $type_part;
+            }
+        }
+        foreach ($right_array_shape_types as $type) {
             foreach ($type->withFlattenedArrayShapeOrLiteralTypeInstances() as $type_part) {
                 $result[] = $type_part;
             }
         }
         // @phan-suppress-next-line PhanPartialTypeMismatchArgument
         return UnionType::getUniqueTypes($result);
+             */
+    }
+
+    /**
+     * @param non-empty-list<Type> $right_types the original types being added to
+     * @return list<ArrayType>
+     */
+    private static function computeRealTypeSetFromArrayTypeLists(array $right_types, bool $is_assignment) : array
+    {
+        /* if (!$right_types) { return []; } */
+        foreach ($right_types as $type) {
+            if (!$type instanceof ArrayType && !($is_assignment && ($type instanceof NullType || $type instanceof VoidType))) {
+                return [];
+            }
+        }
+        static $array_type_set;
+        return $array_type_set ?? ($array_type_set = UnionType::typeSetFromString('array'));
     }
 
     /**

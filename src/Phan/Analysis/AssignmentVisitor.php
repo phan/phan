@@ -1183,7 +1183,10 @@ class AssignmentVisitor extends AnalysisVisitor
             if ($old_type->isEmpty()) {
                 $old_type = ArrayType::instance(false)->asPHPDocUnionType();
             }
-            if ($this->dim_depth > 1 || ($old_type->hasTopLevelNonArrayShapeTypeInstances() || $right_type->hasTopLevelNonArrayShapeTypeInstances() || $right_type->isEmpty())) {
+
+            if ($this->dim_depth > 1) {
+                $new_type = $this->computeTypeOfMultiDimensionalAssignment($old_type, $right_type);
+            } elseif ($old_type->hasTopLevelNonArrayShapeTypeInstances() || $right_type->hasTopLevelNonArrayShapeTypeInstances() || $right_type->isEmpty()) {
                 $new_type = $old_type->withUnionType($right_type);
             } else {
                 $new_type = ArrayType::combineArrayTypesOverriding($right_type, $old_type, true);
@@ -1575,10 +1578,13 @@ class AssignmentVisitor extends AnalysisVisitor
                 // Note: Trying to assign dim offsets to a scalar such as `$x = 2` does not modify the variable.
                 $old_variable_union_type = $old_variable_union_type->nonNullableClone();
                 // TODO: Make the behavior more precise for $x['a']['b'] = ...; when $x is an array shape.
-                if ($this->dim_depth > 1 || ($old_variable_union_type->hasTopLevelNonArrayShapeTypeInstances() || $right_type->hasTopLevelNonArrayShapeTypeInstances() || $right_type->isEmpty())) {
+                if ($this->dim_depth > 1) {
+                    $new_union_type = $this->computeTypeOfMultiDimensionalAssignment($old_variable_union_type, $right_type);
+                } elseif ($old_variable_union_type->isEmpty() || $old_variable_union_type->hasPossiblyObjectTypes() || $right_type->hasTopLevelNonArrayShapeTypeInstances() || $right_type->isEmpty()) {
                     $new_union_type = $old_variable_union_type->withUnionType(
                         $right_type
                     );
+                    // echo "Combining array shape types $right_type $old_variable_union_type $new_union_type\n";
                 } else {
                     $new_union_type = ArrayType::combineArrayTypesOverriding(
                         $right_type,
@@ -1654,6 +1660,82 @@ class AssignmentVisitor extends AnalysisVisitor
         $this->context->addScopeVariable($variable);
 
         return $this->context;
+    }
+
+    private function computeTypeOfMultiDimensionalAssignment(UnionType $old_union_type, UnionType $right_type) : UnionType
+    {
+        if ($this->dim_depth <= 1) {
+            throw new AssertionError("Expected dim_depth > 1, got $this->dim_depth");
+        }
+        if (!$right_type->hasTopLevelArrayShapeTypeInstances() || !$old_union_type->hasTopLevelArrayShapeTypeInstances()) {
+            return $old_union_type->withUnionType($right_type);
+        }
+
+        return UnionType::of(
+            self::computeTypeSetOfMergedArrayShapeTypes($old_union_type->getTypeSet(), $right_type->getTypeSet(), $this->dim_depth, false),
+            self::computeTypeSetOfMergedArrayShapeTypes($old_union_type->getRealTypeSet(), $right_type->getRealTypeSet(), $this->dim_depth, true)
+        );
+    }
+
+    /**
+     * @param list<Type> $old_type_set may contain ArrayShapeType instances
+     * @param list<Type> $new_type_set may contain ArrayShapeType instances
+     * @return list<Type> possibly containing duplicates.
+     * TODO: Handle $this->dim_depth of more than 2
+     */
+    private static function computeTypeSetOfMergedArrayShapeTypes(array $old_type_set, array $new_type_set, int $dim_depth, bool $is_real) : array
+    {
+        if ($is_real) {
+            if (!$old_type_set || !$new_type_set) {
+                return [];
+            }
+        }
+        $result = [];
+        $new_array_shape_types = [];
+        foreach ($new_type_set as $type) {
+            if ($type instanceof ArrayShapeType) {
+                $new_array_shape_types[] = $type;
+            } else {
+                $result[] = $type;
+            }
+        }
+        if (!$new_array_shape_types) {
+            return \array_merge($old_type_set, $new_type_set);
+        }
+        $old_array_shape_types = [];
+        foreach ($old_type_set as $type) {
+            if ($type instanceof ArrayShapeType) {
+                $old_array_shape_types[] = $type;
+            } else {
+                $result[] = $type;
+            }
+        }
+        if (!$old_array_shape_types) {
+            return \array_merge($old_type_set, $new_type_set);
+        }
+        // Postcondition: $old_array_shape_types and $new_array_shape_types are non-empty lists of ArrayShapeTypes
+        $old_array_shape_type = ArrayShapeType::union($old_array_shape_types);
+        $new_array_shape_type = ArrayShapeType::union($new_array_shape_types);
+        $combined_fields = $old_array_shape_type->getFieldTypes();
+        foreach ($new_array_shape_type->getFieldTypes() as $field => $field_type) {
+            $old_field_type = $combined_fields[$field] ?? null;
+            if ($old_field_type) {
+                if ($dim_depth >= 3) {
+                    $combined_fields[$field] = UnionType::of(self::computeTypeSetOfMergedArrayShapeTypes(
+                        $old_field_type->getTypeSet(),
+                        $field_type->getTypeSet(),
+                        $dim_depth - 1,
+                        true
+                    ));
+                } else {
+                    $combined_fields[$field] = ArrayType::combineArrayTypesOverriding($field_type, $old_field_type, true);
+                }
+            } else {
+                $combined_fields[$field] = $field_type;
+            }
+        }
+        $result[] = ArrayShapeType::fromFieldTypes($combined_fields, false);
+        return $result;
     }
 
     /**
