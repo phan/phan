@@ -6,6 +6,7 @@ Phan NEWS
 New Features(Analysis)
 + Improve inferred array shapes for multi-dimensional assignments or conditions on arrays
   (e.g. `$x['first']['second'] = expr` or `if (cond($x['first']['second']))`) (#1510, #3569)
++ Infer that array offsets are no longer possibly undefined after conditions such as `if (!is_null($x['offset']))`
 
 Bug fixes:
 + Fix false positive PhanTypePossiblyInvalidDimOffset seen after

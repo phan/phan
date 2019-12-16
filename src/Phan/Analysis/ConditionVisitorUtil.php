@@ -516,15 +516,15 @@ trait ConditionVisitorUtil
             }
         }
         try {
-            // Get the type of the field we're operating on
-            $old_field_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $context, $node);
+            // Get the type of the field we're operating on, accounting for whether the field is possibly undefined
+            $old_field_type = (new UnionTypeVisitor($this->code_base, $context))->visitDim($node, true);
             if (!$should_filter_cb($old_field_type)) {
                 return $context;
             }
 
             // Give the field an unused stub name and compute the new type
             $new_field_type = $filter_union_type_cb($old_field_type);
-            if ($old_field_type->isEqualTo($new_field_type)) {
+            if ($old_field_type->isIdenticalTo($new_field_type)) {
                 return $context;
             }
 

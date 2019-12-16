@@ -353,7 +353,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
                 }
 
                 if (\count($type_list) < 2) {
-                    return \reset($type_list) ?: UnionType::empty();
+                    return $type_list[0] ?? UnionType::empty();
                 } else {
                     // compute the un-normalized types
                     $result = UnionType::merge($type_list, $variable_name !== Context::VAR_NAME_THIS_PROPERTIES);

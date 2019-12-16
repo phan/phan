@@ -293,7 +293,15 @@ final class EmptyUnionType extends UnionType
      */
     public function isEqualTo(UnionType $union_type) : bool
     {
-        return $union_type->isEmpty();
+        return $union_type instanceof EmptyUnionType || ($union_type->isEmpty() && !$union_type->isPossiblyUndefined());
+    }
+
+    /**
+     * @override
+     */
+    public function isIdenticalTo(UnionType $union_type) : bool
+    {
+        return $union_type->isEmpty() && !$union_type->isPossiblyUndefined() && !$union_type->getRealTypeSet();
     }
 
     /**
@@ -343,6 +351,12 @@ final class EmptyUnionType extends UnionType
 
     /** @override */
     public function nullableClone() : UnionType
+    {
+        return $this;
+    }
+
+    /** @override */
+    public function withNullableRealTypes() : UnionType
     {
         return $this;
     }
