@@ -253,10 +253,10 @@ trait ConditionVisitorUtil
             $var_node,
             $context,
             static function (UnionType $type) : bool {
-                return $type->containsNullable();
+                return $type->containsNullableOrUndefined();
             },
             static function (UnionType $type) : UnionType {
-                return $type->nonNullableClone();
+                return $type->nonNullableClone()->withIsPossiblyUndefined(false);
             },
             $suppress_issues,
             false
