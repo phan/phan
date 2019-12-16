@@ -173,4 +173,54 @@ class AnnotatedUnionType extends UnionType
         }
         return $this;
     }
+
+    /**
+     * @override
+     */
+    public function isEqualTo(UnionType $union_type) : bool
+    {
+        if ($this === $union_type) {
+            return true;
+        }
+        if ($union_type instanceof AnnotatedUnionType) {
+            if ($this->is_possibly_undefined !== $union_type->is_possibly_undefined) {
+                return false;
+            }
+        } elseif ($this->is_possibly_undefined) {
+            return false;
+        }
+        $type_set = $this->getTypeSet();
+        $other_type_set = $union_type->getTypeSet();
+        if (\count($type_set) !== \count($other_type_set)) {
+            return false;
+        }
+        foreach ($type_set as $type) {
+            if (!\in_array($type, $other_type_set, true)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public function isIdenticalTo(UnionType $union_type) : bool
+    {
+        if ($this === $union_type) {
+            return true;
+        }
+        if (!$this->isEqualTo($union_type)) {
+            return false;
+        }
+        $real_type_set = $this->getRealTypeSet();
+        $other_real_type_set = $union_type->getRealTypeSet();
+        if (\count($real_type_set) !== \count($other_real_type_set)) {
+            return false;
+        }
+        foreach ($real_type_set as $type) {
+            if (!\in_array($type, $other_real_type_set, true)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }

@@ -1178,6 +1178,10 @@ class UnionType implements Serializable
      */
     public function isEqualTo(UnionType $union_type) : bool
     {
+        if ($this === $union_type) {
+            // true about half the time.
+            return true;
+        }
         $type_set = $this->type_set;
         $other_type_set = $union_type->type_set;
         if (\count($type_set) !== \count($other_type_set)) {
@@ -1188,7 +1192,43 @@ class UnionType implements Serializable
                 return false;
             }
         }
-        return true;
+        return !$union_type->isPossiblyUndefined();
+    }
+
+    /**
+     * @return bool
+     * True iff this union contains the exact set of types
+     * represented in the given union type.
+     *
+     * This checks real types.
+     */
+    public function isIdenticalTo(UnionType $union_type) : bool
+    {
+        if ($this === $union_type) {
+            // true about half the time.
+            return true;
+        }
+        $type_set = $this->type_set;
+        $other_type_set = $union_type->type_set;
+        if (\count($type_set) !== \count($other_type_set)) {
+            return false;
+        }
+        foreach ($type_set as $type) {
+            if (!\in_array($type, $other_type_set, true)) {
+                return false;
+            }
+        }
+        $real_type_set = $this->real_type_set;
+        $other_real_type_set = $union_type->real_type_set;
+        if (\count($real_type_set) !== \count($other_real_type_set)) {
+            return false;
+        }
+        foreach ($real_type_set as $type) {
+            if (!\in_array($type, $other_real_type_set, true)) {
+                return false;
+            }
+        }
+        return !$union_type->isPossiblyUndefined();
     }
 
     /**
@@ -1343,6 +1383,21 @@ class UnionType implements Serializable
             self::toNullableTypeList($this->type_set),
             self::toNullableTypeList($this->real_type_set)
         );
+    }
+
+    /**
+     * This can be used to handle the fact that the real types might be nullable to avoid false positives in redundant condition detection (e.g. accessing an array offset)
+     */
+    public function withNullableRealTypes() : UnionType
+    {
+        if (!$this->real_type_set) {
+            return $this;
+        }
+        $real_type_set = self::toNullableTypeList($this->real_type_set);
+        if ($real_type_set === $this->real_type_set) {
+            return $this;
+        }
+        return self::of($this->type_set, $real_type_set);
     }
 
     /**

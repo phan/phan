@@ -1527,7 +1527,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @throws IssueException
      * if the dimension access is invalid
      */
-    public function visitDim(Node $node) : UnionType
+    public function visitDim(Node $node, bool $treat_undef_as_nullable = false) : UnionType
     {
         $union_type = self::unionTypeFromNode(
             $this->code_base,
@@ -1575,10 +1575,10 @@ class UnionTypeVisitor extends AnalysisVisitor
                         ASTReverter::toShortString($node->children['dim']),
                         $union_type
                     );
-                    if (Config::getValue('convert_possibly_undefined_offset_to_nullable')) {
+                    if ($treat_undef_as_nullable || Config::getValue('convert_possibly_undefined_offset_to_nullable')) {
                         return $element_type->nullableClone()->withIsPossiblyUndefined(false);
                     }
-                    return $element_type->withIsPossiblyUndefined(false);
+                    return $element_type->withNullableRealTypes()->withIsPossiblyUndefined(false);
                 }
                 return $element_type;
             }
