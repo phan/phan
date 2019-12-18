@@ -157,6 +157,36 @@ class UnionType implements Serializable
         }
     }
 
+    /**
+     * @param Type[] $type_list
+     * @param Type[] $real_type_set
+     * @phan-pure
+     */
+    private static function ofUnique(array $type_list, array $real_type_set = []) : UnionType
+    {
+        $n = \count($type_list);
+        if ($n === 0) {
+            if ($real_type_set) {
+                if (\count($real_type_set) === 1) {
+                    // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
+                    return \reset($real_type_set)->asRealUnionType();
+                }
+                return new self($real_type_set, true, $real_type_set);
+            }
+            return self::$empty_instance;
+        }
+        if ($n === 1 && \count($real_type_set) <= 1) {
+            if (!$real_type_set) {
+                // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
+                return \reset($type_list)->asPHPDocUnionType();
+            } elseif ($real_type_set === $type_list) {
+                // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
+                return \reset($type_list)->asRealUnionType();
+            }
+        }
+        return new self($type_list, true, $real_type_set);
+    }
+
     /** @var EmptyUnionType an empty union type - Cached here for quick access. */
     private static $empty_instance;
 
@@ -273,7 +303,7 @@ class UnionType implements Serializable
         if (\is_null($union_type)) {
             $phpdoc = UnionType::fromFullyQualifiedPHPDocString($fully_qualified_phpdoc_string);
             $real = UnionType::fromFullyQualifiedPHPDocString($fully_qualified_real_string);
-            $union_type = UnionType::of($phpdoc->getTypeSet(), $real->getTypeSet());
+            $union_type = UnionType::ofUnique($phpdoc->getTypeSet(), $real->getTypeSet());
             $memoize_map[$key] = $union_type;
         }
         return $union_type;
@@ -346,6 +376,35 @@ class UnionType implements Serializable
             }
         }
         return $new_type_list;
+    }
+
+    /**
+     * @param list<Type> $type_list a list of unique types
+     * @param list<Type> $other_type_list a list of unique types
+     * @return list<Type> a list of the unique types from both lists
+     * @phan-pure
+     */
+    private static function mergeUniqueTypes(array $type_list, array $other_type_list) : array
+    {
+        if (\count($other_type_list) <= 4) {
+            // NOTE: implementing it this way takes advantage of copy-on-write for small arrays.
+            // If no new types were added, the original array $type_list will be reused.
+            foreach ($other_type_list as $type) {
+                if (!\in_array($type, $type_list, true)) {
+                    $type_list[] = $type;
+                }
+            }
+            return $type_list;
+        }
+        $new_type_list = [];
+        // Avoid worst-case quadratic runtime
+        foreach ($type_list as $type) {
+            $new_type_list[\spl_object_id($type)] = $type;
+        }
+        foreach ($other_type_list as $type) {
+            $new_type_list[\spl_object_id($type)] = $type;
+        }
+        return \array_values($new_type_list);
     }
 
     /**
@@ -717,7 +776,7 @@ class UnionType implements Serializable
                 // Remove the only instance of $type from the copy.
                 // TODO: Make this work for removing from the real type set
                 unset($type_set[$key]);
-                return UnionType::of($type_set, []);
+                return UnionType::ofUnique(\array_values($type_set), []);
             }
         }
         // We did not find $type in type_set. The resulting union type is unchanged.
@@ -802,23 +861,10 @@ class UnionType implements Serializable
         if (\count($other_type_set) === 0) {
             return $this->eraseRealTypeSetRecursively();
         }
-        $new_type_set = $type_set;
-        foreach ($other_type_set as $type) {
-            if (!\in_array($type, $type_set, true)) {
-                $new_type_set[] = $type;
-            }
-        }
-        $real_type_set = $this->real_type_set;
-        if ($real_type_set && $union_type->real_type_set) {
-            foreach ($union_type->real_type_set as $type) {
-                if (!\in_array($type, $real_type_set, true)) {
-                    $real_type_set[] = $type;
-                }
-            }
-        } else {
-            $real_type_set = [];
-        }
-        return new UnionType($new_type_set, true, $real_type_set);
+        return UnionType::ofUnique(
+            self::mergeUniqueTypes($type_set, $other_type_set),
+            ($this->real_type_set && $union_type->real_type_set) ? self::mergeUniqueTypes($this->real_type_set, $union_type->real_type_set) : []
+        );
     }
 
     /**
@@ -4513,13 +4559,15 @@ class UnionType implements Serializable
                 continue;
             }
             foreach ($type_set as $type) {
-                if (!\in_array($type, $new_type_set, true)) {
-                    $new_type_set[] = $type;
-                    if ($type instanceof ArrayShapeType && $normalize_array_shapes) {
-                        $array_shape_types[] = $type;
-                    }
+                $new_type_set[] = $type;
+                if ($type instanceof ArrayShapeType && $normalize_array_shapes) {
+                    $array_shape_types[] = $type;
                 }
             }
+        }
+        if (\count($new_type_set) > 1) {
+            $new_type_set = self::getUniqueTypes($new_type_set);
+            $array_shape_types = self::getUniqueTypes($array_shape_types);
         }
         if ($array_shape_types) {
             // @phan-suppress-next-line PhanPartialTypeMismatchArgument phan can't infer new_type_set/union_types are non-empty
@@ -4544,14 +4592,16 @@ class UnionType implements Serializable
                 continue;
             }
             foreach ($type_set as $type) {
-                if (!\in_array($type, $new_real_type_set, true)) {
-                    $new_real_type_set[] = $type;
-                    if ($type instanceof ArrayShapeType && $normalize_array_shapes) {
-                        $array_shape_types[] = $type;
-                        continue;
-                    }
+                $new_real_type_set[] = $type;
+                if ($type instanceof ArrayShapeType && $normalize_array_shapes) {
+                    $array_shape_types[] = $type;
+                    continue;
                 }
             }
+        }
+        if (\count($new_real_type_set) > 1) {
+            $new_real_type_set = self::getUniqueTypes($new_real_type_set);
+            $array_shape_types = self::getUniqueTypes($array_shape_types);
         }
         if ($array_shape_types) {
             // @phan-suppress-next-line PhanPartialTypeMismatchArgument Phan can't count.
@@ -5644,7 +5694,7 @@ class UnionType implements Serializable
             // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             return \reset($real_type_set)->asRealUnionType();
         }
-        return new UnionType($this->real_type_set, true, $this->real_type_set);
+        return new UnionType($real_type_set, true, $real_type_set);
     }
 
     /**
@@ -5652,7 +5702,7 @@ class UnionType implements Serializable
      */
     public function asRealUnionType() : UnionType
     {
-        return UnionType::of($this->type_set, $this->type_set);
+        return UnionType::ofUnique($this->type_set, $this->type_set);
     }
 
     /**
