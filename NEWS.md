@@ -3,6 +3,9 @@ Phan NEWS
 ??? ?? 2019, Phan 2.4.6 (dev)
 -----------------------
 
+New features(CLI, Configs):
++ Add more detailed instructions for installing dependencies new php installations on Windows without a php.ini
+
 New Features(Analysis)
 + Improve inferred array shapes for multi-dimensional assignments or conditions on arrays
   (e.g. `$x['first']['second'] = expr` or `if (cond($x['first']['second']))`) (#1510, #3569)
