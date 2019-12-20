@@ -6,7 +6,7 @@ php:
   - 7.1
   - 7.2
   - 7.3
-  - 7.4snapshot
+  - 7.4
 
 # NOTE: Travis starts up 5 test suites at a time.
 # So, it's faster to run all of the tests at once per supported PHP version.
