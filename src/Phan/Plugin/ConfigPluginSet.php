@@ -1112,7 +1112,7 @@ final class ConfigPluginSet extends PluginV3 implements
      * @template T
      * @param list<PluginV3> $plugin_set
      * @param class-string<T> $interface_name
-     * @param ?class-string $alternate_interface_name a legacy inferface from PluginV2 accepting the same arguments
+     * @param ?class-string $alternate_interface_name a legacy interface from PluginV2 accepting the same arguments
      * @return list<T>
      * @suppress PhanPartialTypeMismatchReturn unable to infer this
      */
