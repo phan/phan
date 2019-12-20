@@ -16,6 +16,7 @@ New Features(Analysis)
 Bug fixes:
 + Fix false positive PhanTypePossiblyInvalidDimOffset seen after
   other array fields get added to an array shape by assignment or condition (#3579, #3569)
++ Properly extract the value of binary integer literals and binary/hex/octal float literals in the polyfill/fallback parser. (#3586)
 
 Dec 10 2019, Phan 2.4.5
 -----------------------

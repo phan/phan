@@ -1093,10 +1093,27 @@ class TolerantASTConverter
             /** @return int|float */
             'Microsoft\PhpParser\Node\NumericLiteral' => static function (PhpParser\Node\NumericLiteral $n, int $_) {
                 // Support php 7.4 numeric literal separators. Ignore `_`.
-                $text = \str_replace('_', '', static::tokenToString($n->children));
-                $as_int = \filter_var($text, FILTER_VALIDATE_INT, FILTER_FLAG_ALLOW_OCTAL | FILTER_FLAG_ALLOW_HEX);
-                if ($as_int !== false) {
-                    return $as_int;
+                $n = $n->children;
+                $text = \str_replace('_', '', static::tokenToString($n));
+                if (($n->kind ?? null) === TokenKind::IntegerLiteralToken) {
+                    $as_int = \filter_var($text, FILTER_VALIDATE_INT, FILTER_FLAG_ALLOW_OCTAL | FILTER_FLAG_ALLOW_HEX);
+                    if ($as_int !== false) {
+                        return $as_int;
+                    }
+                    if (\preg_match('/^0[0-7]+$/', $text)) {
+                        // this is octal - FILTER_VALIDATE_FLOAT would treat it like decimal
+                        return \intval($text, 8);
+                    }
+                }
+                if ($text[0] === '0' && !\preg_match('/[.eE]/', $text)) {
+                    $c = $text[1];
+                    if ($c === 'b' || $c === 'B') {
+                        return \bindec($text);
+                    }
+                    if ($c === 'x' || $c === 'X') {
+                        return \hexdec($text);
+                    }
+                    return \octdec(substr($text, 0, \strcspn($text, '89')));
                 }
                 return (float)$text;
             },
