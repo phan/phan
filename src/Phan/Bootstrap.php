@@ -114,6 +114,7 @@ $found_autoloader = false;
 foreach ([
     dirname(__DIR__, 2) . '/vendor/autoload.php', // autoloader is in this project (we're in src/Phan and want vendor/autoload.php)
     dirname(__DIR__, 5) . '/vendor/autoload.php', // autoloader is in parent project (we're in vendor/phan/phan/src/Phan/Bootstrap.php and want autoload.php
+    dirname(__DIR__, 4) . '/autoload.php',        // autoloader is in parent project (we're in non-standard-vendor/phan/phan/src/Phan/Bootstrap.php and want non-standard-vendor/autoload.php
     ] as $file) {
     if (file_exists($file)) {
         require_once($file);

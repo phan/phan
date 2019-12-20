@@ -8,6 +8,7 @@ New Features(Analysis)
   (e.g. `$x['first']['second'] = expr` or `if (cond($x['first']['second']))`) (#1510, #3569)
 + Infer that array offsets are no longer possibly undefined after conditions such as `if (!is_null($x['offset']))`
 + Improve worst-case runtime when merging union types with many types (#3587)
++ Handle being installed in a non-standard composer directory name (i.e. not `vendor`) (mentioned in #1612)
 
 Bug fixes:
 + Fix false positive PhanTypePossiblyInvalidDimOffset seen after
