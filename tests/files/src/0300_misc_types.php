@@ -8,9 +8,9 @@ function test300() {
     $strVar = 'x';
     // Every one of these statements should warn about incorrect types, unless commented otherwise
     expect_string_300(++$intVar);
-    expect_string_300($intVar++);
+    expect_string_300($intVar++); '@phan-debug-var $intVar';
     expect_string_300(--$intVar);
-    expect_string_300($intVar--);
+    expect_string_300($intVar--); '@phan-debug-var $intVar';
     expect_int_300($strVar++);  // The first time we see it, we just convert $strVar from 'x' to type string
     expect_int_300(++$strVar);  // But then ++string can be anything (string/int, also float)
     expect_int_300($strVar--);

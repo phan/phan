@@ -16,7 +16,7 @@ call_user_func(function () {
     $k >>= $o;
     $w = 11;
     $w /= 3;
-    echo strlen($w);
+    echo strlen($w);  // $w==3.666...
     $w = 2.3;
     $w %= $o;
     $h = 'hello ';

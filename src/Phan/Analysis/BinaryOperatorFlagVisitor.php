@@ -275,8 +275,11 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         return UnionType::fromFullyQualifiedPHPDocAndRealString('int', 'int|string');
     }
 
-    // TODO: Switch to asRealUnionType when both operands are real
-    private static function computeIntOrFloatOperationResult(
+    /**
+     * TODO: Switch to asRealUnionType when both operands are real
+     * @internal
+     */
+    public static function computeIntOrFloatOperationResult(
         Node $node,
         UnionType $left,
         UnionType $right
@@ -311,17 +314,17 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                     case ast\flags\BINARY_BITWISE_OR:
                         return $make_literal_union_type(
                             LiteralIntType::instanceForValue($left_value | $right_value, false),
-                            $real_int_or_string
+                            $real_int
                         );
                     case ast\flags\BINARY_BITWISE_AND:
                         return $make_literal_union_type(
                             LiteralIntType::instanceForValue($left_value & $right_value, false),
-                            $real_int_or_string
+                            $real_int
                         );
                     case ast\flags\BINARY_BITWISE_XOR:
                         return $make_literal_union_type(
                             LiteralIntType::instanceForValue($left_value ^ $right_value, false),
-                            $real_int_or_string
+                            $real_int
                         );
                     case ast\flags\BINARY_MUL:
                         $value = $left_value * $right_value;
@@ -340,6 +343,16 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                             is_int($value) ? LiteralIntType::instanceForValue($value, false)
                                            : LiteralFloatType::instanceForValue($value, false),
                             $real_int_or_float
+                        );
+                    case ast\flags\BINARY_MOD:
+                        if (!$right_value) {
+                            // TODO: Emit warning about division by zero.
+                            return IntType::instance(false)->asRealUnionType();
+                        }
+                        $value = $left_value % $right_value;
+                        return $make_literal_union_type(
+                            LiteralIntType::instanceForValue($value, false),
+                            $real_int
                         );
                     case ast\flags\BINARY_SUB:
                         $value = $left_value - $right_value;

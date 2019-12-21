@@ -1,0 +1,2 @@
+%s:15 PhanUnusedVariable Unused definition of variable $resultArr
+%s:26 PhanSuspiciousValueComparison Suspicious attempt to compare $resultArr['requests'] of type 1 to $resultArr['foo'] of type -1 with operator '>'

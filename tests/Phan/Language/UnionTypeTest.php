@@ -130,24 +130,25 @@ final class UnionTypeTest extends BaseTest
         // TODO: Optionally, convert to "prefixSuffix"
         $this->assertUnionTypeStringEqual('$x="prefixSuffix"; $x .= "Suffix"; $x', 'string');
         $this->assertUnionTypeStringEqual('$x=[2]; $x += [3,"other"]; $x', "array{0:2,1:'other'}");
-        $this->assertUnionTypeStringEqual('$x=2; $x += 3; $x', 'int');
-        $this->assertUnionTypeStringEqual('$x=2.5; $x += 3; $x', 'float');
-        $this->assertUnionTypeStringEqual('$x=2; $x += 3.5; $x', 'float');
+        $this->assertUnionTypeStringEqual('$x=2; $x += 3; $x', '5');
+        $this->assertUnionTypeStringEqual('$x=2.5; $x += 3; $x', '5.5');
+        $this->assertUnionTypeStringEqual('$x=2; $x += 3.5; $x', '5.5');
         $this->assertUnionTypeStringEqual('$x=2; $x += (rand()%2) ? 3.5 : 2; $x', 'float|int');
-        $this->assertUnionTypeStringEqual('$x=2; $x -= 3; $x', 'int');
-        $this->assertUnionTypeStringEqual('$x=2; $x -= 3.5; $x', 'float');
-        $this->assertUnionTypeStringEqual('$x=2; $x *= 3.5; $x', 'float');
-        $this->assertUnionTypeStringEqual('$x=2; $x *= 3; $x', 'int');
-        $this->assertUnionTypeStringEqual('$x=2; $x **= 3; $x', 'int');
-        $this->assertUnionTypeStringEqual('$x=2; $x **= 3.5; $x', 'float');
-        $this->assertUnionTypeStringEqual('$x=5; $x %= 3; $x', 'int');  // This casts to float
-        $this->assertUnionTypeStringEqual('$x=21.2; $x %= 3.5; $x', 'int');  // This casts to float
-        $this->assertUnionTypeStringEqual('$x=5;    $x ^= 3;    $x', 'int');
+        $this->assertUnionTypeStringEqual('$x=2; $x -= 3; $x', '-1');
+        $this->assertUnionTypeStringEqual('$x=2; $x -= 3.5; $x', '-1.5');
+        $this->assertUnionTypeStringEqual('$x=2; $x *= 3.5; $x', '7.0');
+        $this->assertUnionTypeStringEqual('$x=2; $x *= 3; $x', '6');
+        $this->assertUnionTypeStringEqual('$x=2; $x **= 3; $x', '8');
+        $this->assertUnionTypeStringEqual('$x=4; $x **= 3.5; $x', '128.0');
+        $this->assertUnionTypeStringEqual('$x=5; $x %= 3; $x', '2');  // This casts to float
+        $this->assertUnionTypeStringEqual('$x=21.2; $x %= 3.5; $x', '0');
+        $this->assertUnionTypeStringEqual('$x=23.2; $x %= 3.5; $x', '2');
+        $this->assertUnionTypeStringEqual('$x=5;    $x ^= 3;    $x', '6');
         $this->assertUnionTypeStringEqual('$x="ab"; $x ^= "ac"; $x', 'string');
-        $this->assertUnionTypeStringEqual('$x=5;    $x |= 3;    $x', 'int');
+        $this->assertUnionTypeStringEqual('$x=5;    $x |= 3;    $x', '7');
         $this->assertUnionTypeStringEqual('$x="ab"; $x |= "ac"; $x', 'string');
         // `&=` is a bitwise and, not to be confused with `=&`
-        $this->assertUnionTypeStringEqual('$x=5;    $x &= 3;    $x', 'int');
+        $this->assertUnionTypeStringEqual('$x=5;    $x &= 3;    $x', '1');
         $this->assertUnionTypeStringEqual('$x="ab"; $x &= "ac"; $x', 'string');
 
         // TODO: Implement more code to warn about invalid operands.
@@ -268,7 +269,8 @@ final class UnionTypeTest extends BaseTest
     ) : void {
         $this->assertSame(
             $type_name,
-            self::typeStringFromCode('<' . '?php ' . $code_stub . ';')
+            self::typeStringFromCode('<' . '?php ' . $code_stub . ';'),
+            "Unexpected result of $code_stub"
         );
     }
 

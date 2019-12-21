@@ -5589,6 +5589,7 @@ class UnionType implements Serializable
 
     /**
      * Returns the union type resulting from applying the `++`/`--` operator to an expression with union type.
+     * TODO: Compute the real type set
      */
     public function getTypeAfterIncOrDec() : UnionType
     {

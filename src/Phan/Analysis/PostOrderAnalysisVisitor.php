@@ -1106,6 +1106,22 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if ($old_type === $new_type) {
                 return $this->context;
             }
+            if (!$this->context->isInLoop()) {
+                try {
+                    $value = $old_type->asSingleScalarValueOrNull();
+                    if (\is_numeric($value)) {
+                        if ($node->kind === ast\AST_POST_DEC || $node->kind === ast\AST_PRE_DEC) {
+                            @--$value;
+                        } else {
+                            @++$value;
+                        }
+                        // TODO: Compute the real type set.
+                        $new_type = Type::fromObject($value)->asPHPDocUnionType();
+                    }
+                } catch (\Throwable $_) {
+                    // ignore
+                }
+            }
             try {
                 $variable = (new ContextNode($this->code_base, $this->context, $var))->getVariableStrict();
             } catch (IssueException $_) {
@@ -1116,8 +1132,21 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $variable = clone($variable);
             $variable->setUnionType($new_type);
             $this->context->addScopeVariable($variable);
+            return $this->context;
         }
-        return $this->context;
+        // Treat expr++ like expr -= -1 and expr-- like expr -= 1.
+        // Use `-` to avoid false positives about array operations.
+        // (This isn't 100% accurate for invalid types)
+        $new_node = new Node(
+            ast\AST_ASSIGN_OP,
+            ast\flags\BINARY_SUB,
+            [
+                'var'  => $var,
+                'expr' => ($node->kind === ast\AST_POST_DEC || $node->kind === ast\AST_PRE_DEC) ? 1 : -1,
+            ],
+            $node->lineno
+        );
+        return (new AssignOperatorAnalysisVisitor($this->code_base, $this->context))->visitBinarySub($new_node);
     }
 
     /**
