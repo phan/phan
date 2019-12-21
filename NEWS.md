@@ -12,6 +12,8 @@ New Features(Analysis)
 + Infer that array offsets are no longer possibly undefined after conditions such as `if (!is_null($x['offset']))`
 + Improve worst-case runtime when merging union types with many types (#3587)
 + Handle being installed in a non-standard composer directory name (i.e. not `vendor`) (mentioned in #1612)
++ Improve analysis of assignment operators. (#3597)
++ Infer `$x op= expr` and `++`/`--` operators have a literal value when possible, outside of loops. (#3250, #3248)
 
 Bug fixes:
 + Fix false positive PhanTypePossiblyInvalidDimOffset seen after

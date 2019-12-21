@@ -56,7 +56,7 @@ function testIncDec2($x, array $y, iterable $it, $r, stdClass $s = null, stdClas
     echo strlen($v++);
     $f = 2.5;
     echo strlen(++$f);
-    $f = 3.1415;
+    $f = 3.25;
     $f++;
-    echo strlen($f);  // TODO: Fix this, should be 4.1415
+    echo strlen($f);  // This is 4.25
 }

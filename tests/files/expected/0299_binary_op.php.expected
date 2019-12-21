@@ -42,9 +42,9 @@
 %s:42 PhanTypeMismatchArgument Argument 1 ($x) is int but \expect_string_298() takes string defined at %s:3
 %s:43 PhanTypeMismatchArgument Argument 1 ($x) is int but \expect_string_298() takes string defined at %s:3
 %s:44 PhanTypeMismatchArgument Argument 1 ($x) is int but \expect_string_298() takes string defined at %s:3
-%s:45 PhanTypeMismatchArgumentInternal Argument 1 ($string) is float|int but \strlen() takes string
+%s:45 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is 21.5 but \strlen() takes string
 %s:45 PhanTypeMismatchArgumentReal Argument 1 ($x) is float but \expect_string_298() takes string defined at %s:3
-%s:46 PhanTypeMismatchArgumentReal Argument 1 ($x) is int (real type float) but \expect_string_298() takes string defined at %s:3
+%s:46 PhanTypeMismatchArgumentReal Argument 1 ($x) is float but \expect_string_298() takes string defined at %s:3
 %s:47 PhanTypeMismatchArgumentReal Argument 1 ($x) is float but \expect_string_298() takes string defined at %s:3
 %s:48 PhanTypeMismatchArgumentReal Argument 1 ($x) is int but \expect_string_298() takes string defined at %s:3
 %s:48 PhanUnusedVariable Unused definition of variable $intVar

@@ -109,11 +109,13 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         if ($this->context->getScope()->hasVariableWithName(
             $variable_name
         )) {
-            $variable =
+            $variable = clone(
                 $this->context->getScope()->getVariableByName(
                     $variable_name
-                );
+                )
+            );
             $variable->setUnionType($get_type($variable->getUnionType()));
+            return $this->context->withScopeVariable($variable);
         } else {
             if (Variable::isHardcodedVariableInScopeWithName($variable_name, $this->context->isInGlobalScope())) {
                 return $this->context;
@@ -124,12 +126,117 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
                 $this->code_base,
                 $this->context,
                 Issue::UndeclaredVariableAssignOp,
-                $node->lineno ?? 0,
+                $node->lineno,
                 [$variable_name],
                 IssueFixSuggester::suggestVariableTypoFix($this->code_base, $this->context, $variable_name)
             );
         }
         return $this->context;
+    }
+
+    /**
+     * Based on AssignmentVisitor->visitDim
+     * @param Node $assign_op_node a node of kind ast\AST_ASSIGN_OP with ast\AST_DIM as the left hand side
+     * @param Closure(UnionType):UnionType $get_type
+     */
+    private function updateTargetDimWithType(Node $assign_op_node, Closure $get_type) : Context
+    {
+        $node = $assign_op_node->children['var'];
+        $expr_node = $node->children['expr'];
+        if (!($expr_node instanceof Node)) {
+            $this->emitIssue(
+                Issue::InvalidWriteToTemporaryExpression,
+                $node->lineno,
+                Type::fromObject($expr_node)
+            );
+            return $this->context;
+        }
+        $dim_node = $node->children['dim'];
+        if ($expr_node->kind === \ast\AST_VAR) {
+            $variable_name = (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $node
+            ))->getVariableName();
+            if (Variable::isHardcodedVariableInScopeWithName($variable_name, $this->context->isInGlobalScope())) {
+                if ($variable_name === 'GLOBALS') {
+                    if (\is_string($dim_node)) {
+                        return $this->updateTargetDimWithType(new Node(ast\AST_VAR, 0, ['name' => $dim_node], $node->lineno), $get_type);
+                    }
+                    return $this->context;
+                }
+                if (!$this->context->getScope()->hasVariableWithName($variable_name)) {
+                    $this->context->addScopeVariable(new Variable(
+                        $this->context->withLineNumberStart($expr_node->lineno),
+                        $variable_name,
+                        // @phan-suppress-next-line PhanTypeMismatchArgumentNullable
+                        Variable::getUnionTypeOfHardcodedGlobalVariableWithName($variable_name),
+                        0
+                    ));
+                }
+            }
+        }
+
+        try {
+            $old_type = UnionTypeVisitor::unionTypeFromNode(
+                $this->code_base,
+                $this->context,
+                $node,
+                false
+            );
+        } catch (\Exception $_) {
+            return $this->context;
+        }
+
+        $new_type = $get_type($old_type);
+
+        // Recurse into whatever we're []'ing
+        return (new AssignmentVisitor(
+            $this->code_base,
+            $this->context,
+            $node,
+            $new_type
+        ))->visitDim($node);
+    }
+
+    /**
+     * Based on AssignmentVisitor->visitProp
+     * @param Node $assign_op_node a node of kind ast\AST_ASSIGN_OP with ast\AST_PROP as the left hand side
+     * @param Closure(UnionType):UnionType $get_type
+     */
+    private function updateTargetPropWithType(Node $assign_op_node, Closure $get_type) : Context
+    {
+        $node = $assign_op_node->children['var'];
+        $expr_node = $node->children['expr'];
+        if (!($expr_node instanceof Node)) {
+            $this->emitIssue(
+                Issue::InvalidWriteToTemporaryExpression,
+                $node->lineno,
+                Type::fromObject($expr_node)
+            );
+            return $this->context;
+        }
+
+        try {
+            $old_type = UnionTypeVisitor::unionTypeFromNode(
+                $this->code_base,
+                $this->context,
+                $node,
+                false
+            );
+        } catch (\Exception $_) {
+            return $this->context;
+        }
+
+        $new_type = $get_type($old_type);
+
+        // Recurse into whatever we're []'ing
+        return (new AssignmentVisitor(
+            $this->code_base,
+            $this->context,
+            $node,
+            $new_type
+        ))->visitProp($node);
     }
 
     /**
@@ -143,6 +250,10 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         $kind = $left->kind ?? null;
         if ($kind === ast\AST_VAR) {
             return $this->updateTargetVariableWithType($node, $get_type);
+        } elseif ($kind === ast\AST_DIM) {
+            return $this->updateTargetDimWithType($node, $get_type);
+        } elseif ($kind === ast\AST_PROP) {
+            return $this->updateTargetPropWithType($node, $get_type);
         }
         // TODO: Could check types of other expressions, such as properties
         // TODO: Could check for `@property-read` (invalid to pass to assignment operator), etc.
@@ -166,6 +277,9 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
 
             // fast-track common cases
             if ($left->isNonNullIntType() && $right->isNonNullIntType()) {
+                if (!$context->isInLoop()) {
+                    return BinaryOperatorFlagVisitor::computeIntOrFloatOperationResult($node, $left, $right);
+                }
                 return IntType::instance(false)->asPHPDocUnionType();
             }
 
@@ -201,6 +315,9 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
             }
 
             if ($left->isNonNullNumberType() && $right->isNonNullNumberType()) {
+                if (!$context->isInLoop()) {
+                    return BinaryOperatorFlagVisitor::computeIntOrFloatOperationResult($node, $left, $right);
+                }
                 if (!$left->hasNonNullIntType() || !$right->hasNonNullIntType()) {
                     // Heuristic: If one or more of the sides is a float, the result is always a float.
                     return $float_type->asPHPDocUnionType();
@@ -295,6 +412,9 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
 
             // fast-track common cases
             if ($left->isNonNullIntType() && $right->isNonNullIntType()) {
+                if (!$context->isInLoop()) {
+                    return BinaryOperatorFlagVisitor::computeIntOrFloatOperationResult($node, $left, $right);
+                }
                 if ($combination_is_int) {
                     // XXX can overflow to float so asRealUnionType isn't used.
                     return IntType::instance(false)->asPHPDocUnionType();
@@ -316,6 +436,9 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
             );
 
             if ($left->isNonNullNumberType() && $right->isNonNullNumberType()) {
+                if (!$context->isInLoop()) {
+                    return BinaryOperatorFlagVisitor::computeIntOrFloatOperationResult($node, $left, $right);
+                }
                 if (!$left->hasNonNullIntType() || !$right->hasNonNullIntType()) {
                     // Heuristic: If one or more of the sides is a float, the result is always a float.
                     // TODO: Return real types if both sides are real types, e.g. `$x = 2; $x += 3;`
@@ -393,6 +516,11 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
             // Expect int|string
 
             $right_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr']);
+            if (!$this->context->isInLoop()) {
+                if ($left_type->isNonNullNumberType() && $right_type->isNonNullNumberType()) {
+                    return BinaryOperatorFlagVisitor::computeIntOrFloatOperationResult($node, $left_type, $right_type);
+                }
+            }
             if ($right_type->hasStringType() || $left_type->hasStringType()) {
                 if ($right_type->isNonNullStringType() && $left_type->isNonNullStringType()) {
                     return StringType::instance(false)->asPHPDocUnionType();
@@ -434,7 +562,13 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
     public function visitBinaryMod(Node $node) : Context
     {
         $this->warnForInvalidOperandsOfModOp($node);
-        return $this->updateTargetWithType($node, static function (UnionType $unused_left) : UnionType {
+        return $this->updateTargetWithType($node, function (UnionType $left) use ($node) : UnionType {
+            $right = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr']);
+            if (!$this->context->isInLoop()) {
+                if ($left->isNonNullNumberType() && $right->isNonNullNumberType()) {
+                    return BinaryOperatorFlagVisitor::computeIntOrFloatOperationResult($node, $left, $right);
+                }
+            }
             // TODO: Check if both sides can cast to int and warn if they can't.
             return IntType::instance(false)->asRealUnionType();
         });
