@@ -64,7 +64,7 @@ final class LanguageServerIntegrationTest extends BaseTest
      */
     private function createPhanLanguageServer(bool $pcntlEnabled, bool $prefer_stdio = true, array $option_array = []) : array
     {
-        if (\getenv('PHAN_RUN_INTEGRATION_TEST') != '1') {
+        if (\getenv('PHAN_RUN_INTEGRATION_TEST') !== '1') {
             $this->markTestSkipped('skipping integration tests - set PHAN_RUN_INTEGRATION_TEST=1 to allow');
         }
         if (!\function_exists('proc_open')) {

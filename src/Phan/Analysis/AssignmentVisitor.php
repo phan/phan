@@ -799,7 +799,7 @@ class AssignmentVisitor extends AnalysisVisitor
             );
             return $this->context;
         }
-        if ($expr_node->kind == \ast\AST_VAR) {
+        if ($expr_node->kind === \ast\AST_VAR) {
             $variable_name = (new ContextNode(
                 $this->code_base,
                 $this->context,

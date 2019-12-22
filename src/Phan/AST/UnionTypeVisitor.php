@@ -3038,7 +3038,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         // If this is a list, build a union type by
         // recursively visiting the child nodes
         if ($node instanceof Node
-            && $node->kind == \ast\AST_NAME_LIST
+            && $node->kind === \ast\AST_NAME_LIST
         ) {
             $union_type = UnionType::empty();
             foreach ($node->children as $child_node) {
@@ -3056,7 +3056,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         // For simple nodes or very complicated nodes,
         // recurse
         if (!($node instanceof Node)
-            || $node->kind != \ast\AST_NAME
+            || $node->kind !== \ast\AST_NAME
         ) {
             return self::unionTypeFromNode(
                 $code_base,

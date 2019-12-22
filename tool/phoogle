@@ -11,7 +11,7 @@ use Phan\Phan;
 function phoogle_usage(int $status) : void {
     global $argv;
     $program = $argv[0];
-    fwrite($status != 0 ? STDERR : STDOUT, <<<EOT
+    fwrite($status !== 0 ? STDERR : STDOUT, <<<EOT
 Usage: $program [options] 'paramType1 -> paramType2 -> returnType'
 
 Options:
@@ -84,7 +84,7 @@ call_user_func(static function () : void {
     $limit_raw = $options['limit'] ?? $options['l'] ?? '10';
     if (is_string($limit_raw)) {
         $limit = filter_var($limit_raw, FILTER_VALIDATE_INT);
-        if ($limit == -1) {
+        if ($limit === -1) {
             $limit = PHP_INT_MAX;
         } elseif ($limit <= 0) {
             echo "ERROR: limit must be a positive integer, got $limit_raw\n";

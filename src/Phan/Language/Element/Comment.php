@@ -420,7 +420,7 @@ class Comment
      */
     public function isDeprecated() : bool
     {
-        return ($this->comment_flags & Flags::IS_DEPRECATED) != 0;
+        return ($this->comment_flags & Flags::IS_DEPRECATED) !== 0;
     }
 
     /**
@@ -430,7 +430,7 @@ class Comment
      */
     public function isOverrideIntended() : bool
     {
-        return ($this->comment_flags & Flags::IS_OVERRIDE_INTENDED) != 0;
+        return ($this->comment_flags & Flags::IS_OVERRIDE_INTENDED) !== 0;
     }
 
     /**
@@ -440,7 +440,7 @@ class Comment
      */
     public function isNSInternal() : bool
     {
-        return ($this->comment_flags & Flags::IS_NS_INTERNAL) != 0;
+        return ($this->comment_flags & Flags::IS_NS_INTERNAL) !== 0;
     }
 
     /**
@@ -501,7 +501,7 @@ class Comment
      */
     public function getForbidUndeclaredMagicProperties() : bool
     {
-        return ($this->comment_flags & Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES) != 0;
+        return ($this->comment_flags & Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES) !== 0;
     }
 
     /**
@@ -512,7 +512,7 @@ class Comment
      */
     public function getForbidUndeclaredMagicMethods() : bool
     {
-        return ($this->comment_flags & Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS) != 0;
+        return ($this->comment_flags & Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS) !== 0;
     }
 
     /**
@@ -716,7 +716,7 @@ class Comment
         // (magic methods, magic properties, custom @phan directives, etc.))
         $string = "/**\n";
 
-        if (($this->comment_flags & Flags::IS_DEPRECATED) != 0) {
+        if (($this->comment_flags & Flags::IS_DEPRECATED) !== 0) {
             $string  .= " * @deprecated\n";
         }
 

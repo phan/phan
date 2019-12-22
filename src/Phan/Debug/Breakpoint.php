@@ -8,7 +8,7 @@ namespace Phan\Debug;
 \readline_completion_function(static function (string $input) : array {
     $matches = [];
     foreach (\get_declared_classes() as $class_name) {
-        if (\strpos($class_name, $input) == 0) {
+        if (\strpos($class_name, $input) === 0) {
             $matches[] = $class_name;
         }
     }

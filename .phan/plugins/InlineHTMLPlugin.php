@@ -111,7 +111,7 @@ class InlineHTMLPlugin extends PluginV3 implements
      */
     private function warnAboutInlineHTML(CodeBase $code_base, Context $context, array $token, int $i, int $n) : void
     {
-        if ($i == 0) {
+        if ($i === 0) {
             $issue = self::InlineHTMLLeading;
             $message = 'Saw inline HTML at the start of the file: {STRING_LITERAL}';
         } elseif ($i >= $n - 1) {

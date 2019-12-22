@@ -82,10 +82,10 @@ class DemoPlugin extends PluginV3 implements
         Clazz $class
     ) : void {
         // As an example, we test to see if the name of
-        // the class is `Class`, and emit an issue explain that
+        // the class is `Class`, and emit an issue explaining that
         // the name is not allowed.
         // NOTE: Placeholders can be found in \Phan\Issue::uncolored_format_string_for_replace
-        if ($class->getName() == 'Class') {
+        if ($class->getName() === 'Class') {
             self::emitIssue(
                 $code_base,
                 $class->getContext(),
@@ -112,7 +112,7 @@ class DemoPlugin extends PluginV3 implements
         // As an example, we test to see if the name of the
         // method is `function`, and emit an issue if it is.
         // NOTE: Placeholders can be found in \Phan\Issue::uncolored_format_string_for_replace
-        if ($method->getName() == 'function') {
+        if ($method->getName() === 'function') {
             self::emitIssue(
                 $code_base,
                 $method->getContext(),
@@ -138,7 +138,7 @@ class DemoPlugin extends PluginV3 implements
     ) : void {
         // As an example, we test to see if the name of the
         // function is `function`, and emit an issue if it is.
-        if ($function->getName() == 'function') {
+        if ($function->getName() === 'function') {
             self::emitIssue(
                 $code_base,
                 $function->getContext(),
@@ -164,7 +164,7 @@ class DemoPlugin extends PluginV3 implements
     ) : void {
         // As an example, we test to see if the name of the
         // property is `property`, and emit an issue if it is.
-        if ($property->getName() == 'property') {
+        if ($property->getName() === 'property') {
             self::emitIssue(
                 $code_base,
                 $property->getContext(),
@@ -212,7 +212,7 @@ class DemoNodeVisitor extends PluginAwarePostAnalysisVisitor
 
         // As an example, enforce that we cannot call
         // instanceof against 'object'.
-        if ($class_name == 'object') {
+        if ($class_name === 'object') {
             $this->emit(
                 'PhanPluginInstanceOfObject',
                 "Cannot call instanceof against `object`"

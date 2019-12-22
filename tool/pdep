@@ -160,7 +160,7 @@ call_user_func(static function () : void {
         }
     }
 
-    if ($cmd == 'json' && $depth == 0) {
+    if ($cmd === 'json' && $depth === 0) {
         $mode = '';
     }
 

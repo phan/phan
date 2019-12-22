@@ -398,7 +398,7 @@ class ParseVisitor extends ScopeVisitor
         foreach ($props_node->children as $i => $child_node) {
             // Ignore children which are not property elements
             if (!($child_node instanceof Node)
-                || $child_node->kind != \ast\AST_PROP_ELEM
+                || $child_node->kind !== \ast\AST_PROP_ELEM
             ) {
                 continue;
             }
@@ -1032,14 +1032,14 @@ class ParseVisitor extends ScopeVisitor
     {
         $call = $node->children['class'];
 
-        if ($call instanceof Node && $call->kind == \ast\AST_NAME) {
+        if ($call instanceof Node && $call->kind === \ast\AST_NAME) {
             $func_name = \strtolower($call->children['name']);
-            if ($func_name == 'parent') {
+            if ($func_name === 'parent') {
                 // Make sure it is not a crazy dynamic parent method call
                 if (!($node->children['method'] instanceof Node)) {
                     $meth = \strtolower($node->children['method']);
 
-                    if ($meth == '__construct' && $this->context->isInClassScope()) {
+                    if ($meth === '__construct' && $this->context->isInClassScope()) {
                         $class = $this->getContextClass();
                         $class->setIsParentConstructorCalled(true);
                     }

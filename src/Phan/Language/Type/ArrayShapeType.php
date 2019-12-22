@@ -317,7 +317,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         }
 
         $d = \strtolower($type->__toString());
-        if ($d[0] == '\\') {
+        if ($d[0] === '\\') {
             $d = \substr($d, 1);
         }
         if ($d === 'callable') {
@@ -370,7 +370,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         }
 
         $d = \strtolower($type->__toString());
-        if ($d[0] == '\\') {
+        if ($d[0] === '\\') {
             $d = \substr($d, 1);
         }
         if ($d === 'callable') {

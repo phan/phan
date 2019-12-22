@@ -239,7 +239,7 @@ class CLI
                 $regex = '/^' . (isset($opt[1]) ? '--' : '-') . \preg_quote((string) $opt, '/') . '/';
 
                 if (in_array($chunk, is_array($value) ? $value : [$value], true)
-                    && $argv[$key - 1][0] == '-'
+                    && $argv[$key - 1][0] === '-'
                     || \preg_match($regex, $chunk)
                 ) {
                     $pruneargv[] = $key;
@@ -253,7 +253,7 @@ class CLI
         }
 
         foreach ($argv as $arg) {
-            if ($arg[0] == '-') {
+            if ($arg[0] === '-') {
                 $parts = \explode('=', $arg, 2);
                 $key = $parts[0];
                 $value = $parts[1] ?? '';  // php getopt() treats --processes and --processes= the same way
@@ -2297,7 +2297,7 @@ EOB
                     $buf .= ".";
                 }
                 $mod = self::$current_progress_offset % self::PROGRESS_WIDTH;
-                if ($mod == 0 || self::$current_progress_offset === $count) {
+                if ($mod === 0 || self::$current_progress_offset === $count) {
                     if ($mod) {
                         $buf .= str_repeat(" ", self::PROGRESS_WIDTH - $mod);
                     }
@@ -2320,7 +2320,7 @@ EOB
                     $buf .= ".";
                 }
                 $mod = self::$current_progress_offset % self::PROGRESS_WIDTH;
-                if ($mod == 0 || self::$current_progress_offset === $count) {
+                if ($mod === 0 || self::$current_progress_offset === $count) {
                     if ($mod) {
                         $buf .= str_repeat(" ", self::PROGRESS_WIDTH - $mod);
                     }

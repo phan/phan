@@ -479,7 +479,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
             );
             return;
         }
-        if (count($specs) == 0) {
+        if (count($specs) === 0) {
             $emit_issue(
                 'PhanPluginPrintfNoSpecifiers',
                 'None of the formatting arguments passed alongside format string {STRING_LITERAL} are used',

@@ -472,7 +472,7 @@ class ASTSimplifier
      */
     private static function applyIfAndReduction(Node $node) : Node
     {
-        if (count($node->children) != 1) {
+        if (count($node->children) !== 1) {
             throw new AssertionError('Expected an if statement with no else/elseif statements');
         }
         $inner_node_elem = clone($node->children[0]);  // AST_IF_ELEM

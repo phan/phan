@@ -171,7 +171,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
             $finally_status = self::STATUS_PROCEED;
         }
         $catches_node = $node->children['catches'];
-        if (\count($catches_node->children) == 0) {
+        if (\count($catches_node->children) === 0) {
             return self::mergeFinallyStatus($main_status, $finally_status);
         }
         // TODO: Could enhance slightly by checking for catch nodes with the exact same types (or subclasses) as names of exception thrown.

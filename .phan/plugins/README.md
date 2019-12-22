@@ -301,7 +301,17 @@ Encourages the usage of fully qualified global functions and constants (slightly
 
 Enforces that loose equality is used for numeric operands (e.g. `2 == 2.0`), and that strict equality is used for non-numeric operands (e.g. `"2" === "2e0"` is false).
 
-- **PhanPluginNumericalComparison**: nonnumerical values compared by the operators '==' or '!=='; numerical values compared by the operators '===' or '!=='
+- **PhanPluginNumericalComparison**: `nonnumerical values compared by the operators '==' or '!=='; numerical values compared by the operators '===' or '!=='`
+
+#### StrictLiteralComparisonPlugin.php
+
+Enforces that strict equality is used for comparisons to constant/literal integers or strings.
+This is used to avoid surprising behaviors such as `0 == 'a'`, `"10" == "1e1"`, etc.
+*Following the advice of this plugin may subtly break existing code (e.g. break implicit null/false checks, or code relying on these unexpected behaviors).*
+
+- **PhanPluginComparisonNotStrictForScalar**: `Expected strict equality check when comparing {TYPE} to {TYPE} in {CODE}`
+
+Also see [`StrictComparisonPlugin`](#StrictComparisonPlugin.php) and [`NumericalComparisonPlugin`](#NumericalComparisonPlugin.php).
 
 #### PHPUnitNotDeadCodePlugin.php
 

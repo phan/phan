@@ -452,7 +452,7 @@ class Request
             if (\array_key_exists($pid, self::$child_pids)) {
                 // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal
                 $exit_code = \pcntl_wexitstatus($status);
-                if ($exit_code != 0) {
+                if ($exit_code !== 0) {
                     \error_log(\sprintf("child process %d exited with status %d\n", $pid, $exit_code));
                 } else {
                     Daemon::debugf("child process %d completed successfully", $pid);
@@ -586,7 +586,7 @@ class Request
         $fork_result = \pcntl_fork();
         if ($fork_result < 0) {
             \error_log("The daemon failed to fork. Going to terminate");
-        } elseif ($fork_result == 0) {
+        } elseif ($fork_result === 0) {
             Daemon::debugf("This is the fork");
             self::handleBecomingChildAnalysisProcess();
             // @phan-suppress-next-line PhanPartialTypeMismatchArgument pre-existing

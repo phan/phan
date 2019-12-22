@@ -394,7 +394,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         Func $func
     ) : void {
         // skip adding $this to internal scope if the closure is a static one
-        if ($func->getFlags() == ast\flags\MODIFIER_STATIC) {
+        if ($func->getFlags() === ast\flags\MODIFIER_STATIC) {
             return;
         }
 
@@ -452,9 +452,9 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         // Make the closure reachable by FQSEN from anywhere
         $code_base->addFunction($func);
 
-        if (($node->children['uses']->kind ?? null) == ast\AST_CLOSURE_USES) {
+        if (($node->children['uses']->kind ?? null) === ast\AST_CLOSURE_USES) {
             foreach ($node->children['uses']->children ?? [] as $use) {
-                if (!($use instanceof Node) || $use->kind != ast\AST_CLOSURE_VAR) {
+                if (!($use instanceof Node) || $use->kind !== ast\AST_CLOSURE_VAR) {
                     $this->emitIssue(
                         Issue::VariableUseClause,
                         $node->lineno
