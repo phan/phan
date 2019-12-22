@@ -2337,6 +2337,22 @@ class Clazz extends AddressableElement
         }
     }
 
+    public function getLinenoOfAncestorReference(FullyQualifiedClassName $fqsen) : int
+    {
+        $class_line = $this->getFileRef()->getLineNumberStart();
+        foreach ($this->interface_fqsen_list as $i => $interface_fqsen) {
+            if ($interface_fqsen === $fqsen) {
+                return $this->interface_fqsen_lineno[$i] ?? $class_line;
+            }
+        }
+        foreach ($this->trait_fqsen_list as $i => $trait_fqsen) {
+            if ($trait_fqsen === $fqsen) {
+                return $this->trait_fqsen_lineno[$i] ?? $class_line;
+            }
+        }
+        return $class_line;
+    }
+
     /**
      * Import all methods of the other type as magic methods.
      */
