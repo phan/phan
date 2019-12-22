@@ -14,6 +14,7 @@ New Features(Analysis)
 + Handle being installed in a non-standard composer directory name (i.e. not `vendor`) (mentioned in #1612)
 + Improve analysis of assignment operators. (#3597)
 + Infer `$x op= expr` and `++`/`--` operators have a literal value when possible, outside of loops. (#3250, #3248)
++ Move `PhanUndeclaredInterface` and `PhanUndeclaredTrait` warnings to the line number of the `use`/`implements`. (#2159)
 
 Bug fixes:
 + Fix false positive PhanTypePossiblyInvalidDimOffset seen after

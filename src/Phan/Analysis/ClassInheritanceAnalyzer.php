@@ -108,7 +108,7 @@ class ClassInheritanceAnalyzer
                 $code_base,
                 $clazz->getContext(),
                 $issue_type,
-                $clazz->getFileRef()->getLineNumberStart(),
+                $clazz->getLinenoOfAncestorReference($fqsen),
                 [(string)$fqsen],
                 $suggestion
             );
