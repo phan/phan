@@ -359,7 +359,7 @@ final class MethodSearcherPlugin extends PluginV3 implements
                 }
             }
         }
-        if ($best == 0) {
+        if ($best === 0) {
             return 0;
         }
         return $best + 1 / (count($search_param_types) + 1);

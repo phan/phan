@@ -2368,8 +2368,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $class_node = $node->children['class'];
         if (!($class_node instanceof Node)) {
             $static_class = (string)$class_node;
-        } elseif ($node->children['class']->kind == ast\AST_NAME) {
-            $static_class = (string)$node->children['class']->children['name'];
+        } elseif ($class_node->kind === ast\AST_NAME) {
+            $static_class = (string)$class_node->children['name'];
         }
 
         $method = $this->getStaticMethodOrEmitIssue($node, $method_name);
@@ -3428,7 +3428,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     private function createPassByReferenceArgumentInCall(FunctionInterface $method, Node $argument, Parameter $parameter, ?Parameter $real_parameter) : void
     {
-        if ($argument->kind == ast\AST_VAR) {
+        if ($argument->kind === ast\AST_VAR) {
             // We don't do anything with the new variable; just create it
             // if it doesn't exist
             try {
@@ -3452,8 +3452,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             } catch (NodeException $_) {
                 return;
             }
-        } elseif ($argument->kind == ast\AST_STATIC_PROP
-            || $argument->kind == ast\AST_PROP
+        } elseif ($argument->kind === ast\AST_STATIC_PROP
+            || $argument->kind === ast\AST_PROP
         ) {
             $property_name = $argument->children['prop'];
             if ($property_name instanceof Node) {
@@ -3469,7 +3469,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         $this->code_base,
                         $this->context,
                         $argument
-                    ))->getOrCreateProperty($property_name, $argument->kind == ast\AST_STATIC_PROP);
+                    ))->getOrCreateProperty($property_name, $argument->kind === ast\AST_STATIC_PROP);
                     $property->setHasWriteReference();
                 } catch (IssueException $exception) {
                     Issue::maybeEmitInstance(
@@ -3532,7 +3532,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         $code_base,
                         $context,
                         $argument
-                    ))->getOrCreateProperty($property_name, $argument->kind == ast\AST_STATIC_PROP);
+                    ))->getOrCreateProperty($property_name, $argument->kind === ast\AST_STATIC_PROP);
                     $variable->addReference($context);
                 } catch (IssueException $exception) {
                     Issue::maybeEmitInstance(
@@ -4036,7 +4036,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         $variable = null;
-        if ($argument->kind == ast\AST_VAR) {
+        if ($argument->kind === ast\AST_VAR) {
             try {
                 $variable = (new ContextNode(
                     $this->code_base,

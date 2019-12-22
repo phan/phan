@@ -291,17 +291,17 @@ class DependencyGraphPlugin extends PluginV3 implements
         }
 
         if (empty($args)) {
-            if ($mode == 'class') {
+            if ($mode === 'class') {
                 $graph = $this->cgraph;
-            } elseif ($mode == 'file') {
+            } elseif ($mode === 'file') {
                 $graph = $this->fgraph;
             }
-        } elseif ($cmd != 'json' || ($cmd == 'json' && $this->depth != 0)) {
+        } elseif ($cmd !== 'json' || $this->depth !== 0) {
             foreach ($args as $v) {
                 if (empty($v)) {
                     continue;
                 }
-                if ($mode == 'class') {
+                if ($mode === 'class') {
                     if (\strstr($v, '.')) {
                         if (!\array_key_exists($v, $this->file_to_class)) {
                             // Probably no lineno specified, do a linear search
@@ -331,7 +331,7 @@ class DependencyGraphPlugin extends PluginV3 implements
                     }
                     cfound:
                     $graph = $this->walkcGraph($graph, $v);
-                } elseif ($mode == 'file') {
+                } elseif ($mode === 'file') {
                     if (!\strstr($v, '.')) {
                         try {
                             $fqsen = FullyQualifiedClassName::fromFullyQualifiedString($v);
@@ -370,17 +370,17 @@ class DependencyGraphPlugin extends PluginV3 implements
         if (($flags & \PDEP_IGNORE_STATIC) && $cached_graph) {
             foreach ($graph as $node => $els) {
                 foreach ($els as $el => $val) {
-                    if (\substr((string)$val, 0, 2) == 'v:' || \substr((string)$val, 0, 2) == 's:') {
+                    if (\substr((string)$val, 0, 2) === 'v:' || \substr((string)$val, 0, 2) === 's:') {
                         unset($graph[$node][$el]);
                     }
                 }
             }
         }
-        if ($cmd == 'graph') {
-            ($mode == 'class') ? $this->dumpClassDot(\basename((string)\getcwd()), $graph) : $this->dumpFileDot(\basename((string)\getcwd()), $graph);
-        } elseif ($cmd == 'graphml') {
-            $this->dumpGraphML(\basename((string)\getcwd()), $graph, $mode == 'class', (bool)($flags & \PDEP_HIDE_LABELS));
-        } elseif ($cmd == 'json' && $this->depth == 0) {
+        if ($cmd === 'graph') {
+            ($mode === 'class') ? $this->dumpClassDot(\basename((string)\getcwd()), $graph) : $this->dumpFileDot(\basename((string)\getcwd()), $graph);
+        } elseif ($cmd === 'graphml') {
+            $this->dumpGraphML(\basename((string)\getcwd()), $graph, $mode === 'class', (bool)($flags & \PDEP_HIDE_LABELS));
+        } elseif ($cmd === 'json' && $this->depth === 0) {
             echo \json_encode([
                 'cgraph' => $this->cgraph,
                 'fgraph' => $this->fgraph,
@@ -388,7 +388,7 @@ class DependencyGraphPlugin extends PluginV3 implements
                 'file_to_class' => $this->file_to_class,
                 'class_to_file' => $this->class_to_file
             ]);
-        } elseif ($cmd == 'json' && $this->depth != 0) {
+        } elseif ($cmd === 'json' && $this->depth !== 0) {
             echo \json_encode($graph, \JSON_PRETTY_PRINT);
         } else {
             $this->printGraph($graph);
@@ -417,10 +417,10 @@ class DependencyGraphPlugin extends PluginV3 implements
             foreach ($depNode as $dnode => $val) {
                 [$type,$lineno] = self::getFileLineno((string)$val);
                 $style = '';
-                if ($type == 's') {
+                if ($type === 's') {
                     $style = ',color="#E66100"';
                 }
-                if ($type == 'v') {
+                if ($type === 'v') {
                     $style = ',color="#5D3A9B",style=dashed';
                 }
                 echo "\"$dnode\" -> \"$node\" [taillabel=$lineno,labelfontsize=10,labeldistance=1.4{$style}]\n";
@@ -472,10 +472,9 @@ class DependencyGraphPlugin extends PluginV3 implements
                 [$dnode] = \explode(',', $dnode);
                 $type = self::getFileLineno((string)$val)[0];
                 $style = '';
-                if ($type == 's') {
+                if ($type === 's') {
                     $style = ' [color="#E66100"]';
-                }
-                if ($type == 'v') {
+                } elseif ($type === 'v') {
                     $style = ' [color="#5D3A9B",style=dashed]';
                 }
                 echo '"' . \addslashes(\trim($dnode, "\\")) . '" -> "' . \addslashes(\trim($node, "\\")) . "\"$style\n";
@@ -595,9 +594,9 @@ class DependencyGraphPlugin extends PluginV3 implements
                 $ecol = '#000000';
                 [$type,$lineno] = self::getFileLineno((string)$val);
                 [$dnode] = \explode(',', $dnode);
-                if ($type == 's') {
+                if ($type === 's') {
                     $ecol = '#E66100'; // Orange
-                } elseif ($type == 'v') {
+                } elseif ($type === 'v') {
                     $ecol = '#5D3A9B';  // Purple
                 }
                 $source = $nodes[\trim($dnode, "\\")];
@@ -659,7 +658,7 @@ class DependencyGraphVisitor extends PluginAwarePostAnalysisVisitor
         }
         $called_class_name = (string)$called_class->children['name'];
         // None of these add any dependency data we don't already have, so ignore them
-        if ($called_class_name == 'self' || $called_class_name == 'parent' || $called_class_name == 'class' || $called_class_name == 'static') {
+        if (\in_array($called_class_name, ['self', 'parent', 'class', 'static'], true)) {
             return;
         }
         $fqsen = (string)FullyQualifiedClassName::fromStringInContext($called_class_name, $context);
@@ -686,7 +685,7 @@ class DependencyGraphVisitor extends PluginAwarePostAnalysisVisitor
             return;
         }
         $called_class_name = (string)$called_class->children['name'];
-        if ($called_class_name == 'self' || $called_class_name == 'parent' || $called_class_name == 'class' || $called_class_name == 'static') {
+        if (\in_array($called_class_name, ['self', 'parent', 'class', 'static'], true)) {
             return;
         }
         $fqsen = (string)FullyQualifiedClassName::fromStringInContext($called_class_name, $context);

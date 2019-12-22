@@ -457,7 +457,7 @@ final class MiscParamPlugin extends PluginV3 implements
             // (string glue, string[] pieces),
             // (string[] pieces, string glue) or
             // (string[] pieces)
-            if ($argcount == 1) {
+            if ($argcount === 1) {
                 if (($args[0]->kind ?? null) === ast\AST_UNPACK) {
                     // implode(...$var)
                     return;
@@ -482,7 +482,7 @@ final class MiscParamPlugin extends PluginV3 implements
                     }
                 );
                 throw $stop_exception;
-            } elseif ($argcount == 2) {
+            } elseif ($argcount === 2) {
                 $arg1_type = UnionTypeVisitor::unionTypeFromNode(
                     $code_base,
                     $context,

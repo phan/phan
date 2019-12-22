@@ -274,7 +274,7 @@ class Debug
 
             if (ast\kind_uses_flags($ast->kind)) {
                 $flags_without_phan_additions = $ast->flags & ~BlockExitStatusChecker::STATUS_BITMASK;
-                if ($flags_without_phan_additions != 0) {
+                if ($flags_without_phan_additions !== 0) {
                     $result .= "\n    flags: " . self::formatFlags($ast->kind, $flags_without_phan_additions);
                 }
             }

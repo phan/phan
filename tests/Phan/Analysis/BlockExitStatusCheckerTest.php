@@ -25,7 +25,7 @@ final class BlockExitStatusCheckerTest extends BaseTest
         }
 
         $parts = [];
-        while ($status != 0) {
+        while ($status !== 0) {
             // Remove low order bit, and record the representation of that pet.
             $bit = ($status & ($status - 1)) ^ $status;
             $status &= ~$bit;

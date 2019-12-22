@@ -198,7 +198,7 @@ class Colorizing
      */
     public static function colorizeTextWithColorCode(string $color_code, string $text) : string
     {
-        if ($color_code == '0') {
+        if ($color_code === '0') {
             return $text;
         }
         return \sprintf(self::ESC_PATTERN, $color_code) . $text . self::ESC_RESET;

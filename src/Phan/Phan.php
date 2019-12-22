@@ -385,7 +385,7 @@ class Phan implements IgnoredFilesFilterInterface
 
             // Prevent an ugly failure if we have no files to
             // analyze.
-            if (0 == $file_count) {
+            if (0 === $file_count) {
                 return false;
             }
 

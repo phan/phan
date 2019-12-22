@@ -16,6 +16,9 @@ New Features(Analysis)
 + Infer `$x op= expr` and `++`/`--` operators have a literal value when possible, outside of loops. (#3250, #3248)
 + Move `PhanUndeclaredInterface` and `PhanUndeclaredTrait` warnings to the line number of the `use`/`implements`. (#2159)
 
+Plugins:
++ Add `StrictLiteralComparisonPlugin` to warn about loose equality comparisons of constant string/int to other values. (#2310)
+
 Bug fixes:
 + Fix false positive PhanTypePossiblyInvalidDimOffset seen after
   other array fields get added to an array shape by assignment or condition (#3579, #3569)

@@ -782,7 +782,7 @@ class CodeBase
                 $fqsen_alias_map = $inner->fqsen_alias_map[$original] ?? null;
                 if ($fqsen_alias_map) {
                     $fqsen_alias_map->detach($alias_record);
-                    if ($fqsen_alias_map->count() == 0) {
+                    if ($fqsen_alias_map->count() === 0) {
                         unset($inner->fqsen_alias_map[$original]);
                     }
                 }

@@ -1086,7 +1086,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         $value_node = $node->children['value'];
         if ($value_node instanceof Node) {
             // should be a parse error when not a Node
-            if ($value_node->kind == ast\AST_ARRAY) {
+            if ($value_node->kind === ast\AST_ARRAY) {
                 if (Config::get_closest_target_php_version_id() < 70100) {
                     self::analyzeArrayAssignBackwardsCompatibility($code_base, $context, $value_node);
                 }

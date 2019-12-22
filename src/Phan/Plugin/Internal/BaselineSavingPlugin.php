@@ -170,7 +170,7 @@ EOT;
             $entries[] = [
                 -self::roundSuppressCount($count),
                 $issueType,
-                \sprintf("    // %s : %s %s\n", $issueType, $count_name, $count != 1 ? "occurrences" : "occurrence"),
+                \sprintf("    // %s : %s %s\n", $issueType, $count_name, $count !== 1 ? "occurrences" : "occurrence"),
             ];
         }
         // Sort by most common issues first, breaking ties by the name of the issue.

@@ -430,11 +430,11 @@ class ContextNode
         $node = $this->node;
 
         while (($node instanceof Node)
-            && ($node->kind != ast\AST_VAR)
-            && ($node->kind != ast\AST_STATIC)
-            && ($node->kind != ast\AST_MAGIC_CONST)
+            && ($node->kind !== ast\AST_VAR)
+            && ($node->kind !== ast\AST_STATIC)
+            && ($node->kind !== ast\AST_MAGIC_CONST)
         ) {
-            $node = \array_values($node->children)[0] ?? null;
+            $node = \reset($node->children);
         }
 
         if (!($node instanceof Node)) {
@@ -877,7 +877,7 @@ class ContextNode
             // TODO: this might need to account for 'myFunction'()
             return [];
         }
-        if ($expression->kind == ast\AST_NAME) {
+        if ($expression->kind === ast\AST_NAME) {
             $name = $expression->children['name'];
             try {
                 return [
@@ -1670,7 +1670,7 @@ class ContextNode
         }
 
         $flags = 0;
-        if ($node->kind == ast\AST_STATIC_PROP) {
+        if ($node->kind === ast\AST_STATIC_PROP) {
             $flags |= ast\flags\MODIFIER_STATIC;
         }
 
@@ -2025,15 +2025,15 @@ class ContextNode
             return;
         }
 
-        if (!($temp->kind == ast\AST_PROP
-            || $temp->kind == ast\AST_STATIC_PROP
+        if (!($temp->kind === ast\AST_PROP
+            || $temp->kind === ast\AST_STATIC_PROP
         )) {
             return;
         }
 
         while ($temp instanceof Node
-            && ($temp->kind == ast\AST_PROP
-            || $temp->kind == ast\AST_STATIC_PROP)
+            && ($temp->kind === ast\AST_PROP
+            || $temp->kind === ast\AST_STATIC_PROP)
         ) {
             $llnode = $lnode;
             $lnode = $temp;
@@ -2067,29 +2067,29 @@ class ContextNode
         if ((
                 (
                     $lnode->children['prop'] instanceof Node
-                    && $lnode->children['prop']->kind == ast\AST_VAR
+                    && $lnode->children['prop']->kind === ast\AST_VAR
                 )
                 ||
                 (
                     ($lnode->children['class'] ?? null) instanceof Node
                     && (
-                        $lnode->children['class']->kind == ast\AST_VAR
-                        || $lnode->children['class']->kind == ast\AST_NAME
+                        $lnode->children['class']->kind === ast\AST_VAR
+                        || $lnode->children['class']->kind === ast\AST_NAME
                     )
                 )
                 ||
                 (
                     ($lnode->children['expr'] ?? null) instanceof Node
                     && (
-                        $lnode->children['expr']->kind == ast\AST_VAR
-                        || $lnode->children['expr']->kind == ast\AST_NAME
+                        $lnode->children['expr']->kind === ast\AST_VAR
+                        || $lnode->children['expr']->kind === ast\AST_NAME
                     )
                 )
             )
             &&
             (
-                $temp->kind == ast\AST_VAR
-                || $temp->kind == ast\AST_NAME
+                $temp->kind === ast\AST_VAR
+                || $temp->kind === ast\AST_NAME
             )
         ) {
             $cache_entry = FileCache::getOrReadEntry($this->context->getFile());
@@ -2201,7 +2201,7 @@ class ContextNode
                 self::warnAboutEmptyArrayElements($this->code_base, $this->context, $node);
                 continue;
             }
-            $key_node = ($flags & self::RESOLVE_ARRAY_KEYS) != 0 ? $child_node->children['key'] : null;
+            $key_node = ($flags & self::RESOLVE_ARRAY_KEYS) !== 0 ? $child_node->children['key'] : null;
             $value_node = $child_node->children['value'];
             if (self::RESOLVE_ARRAY_VALUES) {
                 $value_node = $this->getEquivalentPHPValueForNode($value_node, $flags);

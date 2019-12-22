@@ -285,7 +285,7 @@ final class CLITest extends BaseTest
         $first_version = $versions[0];
         $this->assertSame(CLI::PHAN_VERSION, $first_version, 'expected NEWS.md and CLI::PHAN_VERSION to have the same version');
         foreach ($versions as $i => $version) {
-            if ($i == 0) {
+            if ($i === 0) {
                 continue;
             }
             $this->assertLessThan(0, \version_compare($version, \str_replace('-dev', '', $versions[$i - 1])), "unexpected order of $version and {$versions[$i - 1]}");

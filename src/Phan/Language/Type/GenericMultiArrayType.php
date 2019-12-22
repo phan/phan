@@ -183,7 +183,7 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
         }
 
         $d = \strtolower((string)$type);
-        if ($d[0] == '\\') {
+        if ($d[0] === '\\') {
             $d = \substr($d, 1);
         }
         if ($d === 'callable') {
@@ -208,7 +208,7 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
         }
 
         $d = \strtolower((string)$type);
-        if ($d[0] == '\\') {
+        if ($d[0] === '\\') {
             $d = \substr($d, 1);
         }
         if ($d === 'callable') {

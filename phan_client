@@ -176,7 +176,7 @@ class PhanPHPLinter
                 self::debugInfo("Not in a Phan project, nothing to do.");
             }
         }
-        if (count($file_mapping) == 0) {
+        if (count($file_mapping) === 0) {
             self::debugInfo("Not in a real project");
         }
         // The file is syntactically valid. Run phan.

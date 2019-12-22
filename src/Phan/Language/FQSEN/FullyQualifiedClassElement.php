@@ -92,7 +92,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
     public function getCanonicalFQSEN() : FQSEN
     {
         $fully_qualified_class_name = $this->fully_qualified_class_name->getCanonicalFQSEN();
-        if ($this->alternate_id == 0 && $fully_qualified_class_name === $this->fully_qualified_class_name) {
+        if (!$this->alternate_id && $fully_qualified_class_name === $this->fully_qualified_class_name) {
             return $this;
         }
         return static::make(

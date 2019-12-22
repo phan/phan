@@ -23,7 +23,7 @@ $visit_node = static function (\ast\Node $node, string $file_path) : void {
 
     // Take a look at Phan\AST\Visitor\Element to see all
     // of the kinds of nodes
-    if ($node->kind == \ast\AST_CLASS_CONST) {
+    if ($node->kind === \ast\AST_CLASS_CONST) {
         // Debug::printNode($node);
 
         if (\is_string($node->children['const'])) {

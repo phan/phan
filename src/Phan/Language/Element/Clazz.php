@@ -1174,7 +1174,7 @@ class Clazz extends AddressableElement
                     if ($method->isStatic()) {
                         continue;
                     }
-                    if ($method->getNumberOfParameters() == 0) {
+                    if ($method->getNumberOfParameters() === 0) {
                         continue;
                     }
                     $node = $method->getNode()->children['stmts'] ?? null;

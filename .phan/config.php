@@ -545,6 +545,8 @@ return [
         'RedundantAssignmentPlugin',
         // These are specific to Phan's coding style
         'StrictComparisonPlugin',
+        // Warn about `$var == SOME_INT_OR_STRING_CONST` due to unintuitive behavior such as `0 == 'a'`
+        '.phan/plugins/StrictLiteralComparisonPlugin.php',
 
         ////////////////////////////////////////////////////////////////////////
         // End plugins for Phan's self-analysis
