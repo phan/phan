@@ -696,6 +696,26 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
+     * These types are either types which create variables,
+     * or types which will be checked in other parts of Phan
+     */
+    private const SKIP_VAR_CHECK_TYPES = [
+        ast\AST_ARG_LIST       => true,  // may be a reference
+        ast\AST_ARRAY_ELEM     => true,  // [$x, $y] = expr() is an AST_ARRAY_ELEM. visitArray() checks the right-hand side.
+        ast\AST_ASSIGN_OP      => true,  // checked in visitAssignOp
+        ast\AST_ASSIGN_REF     => true,  // Creates by reference?
+        ast\AST_ASSIGN         => true,  // checked in visitAssign
+        ast\AST_DIM            => true,  // should be checked elsewhere, as part of check for array access to non-array/string
+        ast\AST_EMPTY          => true,  // TODO: Enable this in the future?
+        ast\AST_GLOBAL         => true,  // global $var;
+        ast\AST_ISSET          => true,  // TODO: Enable this in the future?
+        ast\AST_PARAM_LIST     => true,  // this creates the variable
+        ast\AST_STATIC         => true,  // static $var;
+        ast\AST_STMT_LIST      => true,  // ;$var; (Implicitly creates the variable. Already checked to emit PhanNoopVariable)
+        ast\AST_USE_ELEM       => true,  // may be a reference, checked elsewhere
+    ];
+
+    /**
      * @param Node $node
      * A node to parse
      *
@@ -707,29 +727,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     {
         $this->analyzeNoOp($node, Issue::NoopVariable);
         $parent_node = \end($this->parent_node_list);
-        if ($parent_node instanceof Node) {
+        if ($parent_node instanceof Node && !($node->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF)) {
             $parent_kind = $parent_node->kind;
-            /**
-             * These types are either types which create variables,
-             * or types which will be checked in other parts of Phan
-             */
-            static $skip_var_check_types = [
-                ast\AST_ARG_LIST       => true,  // may be a reference
-                ast\AST_ARRAY_ELEM     => true,  // [$X, $y] = expr() is an AST_ARRAY_ELEM. visitArray() checks the right-hand side.
-                ast\AST_ASSIGN_OP      => true,  // checked in visitAssignOp
-                ast\AST_ASSIGN_REF     => true,  // Creates by reference?
-                ast\AST_ASSIGN         => true,  // checked in visitAssign
-                ast\AST_DIM            => true,  // should be checked elsewhere, as part of check for array access to non-array/string
-                ast\AST_EMPTY          => true,  // TODO: Enable this in the future?
-                ast\AST_GLOBAL         => true,  // global $var;
-                ast\AST_ISSET          => true,  // TODO: Enable this in the future?
-                ast\AST_PARAM_LIST     => true,  // this creates the variable
-                ast\AST_STATIC         => true,  // static $var;
-                ast\AST_STMT_LIST      => true,  // ;$var; (Implicitly creates the variable. Already checked to emit PhanNoopVariable)
-                ast\AST_USE_ELEM       => true,  // may be a reference, checked elsewhere
-            ];
-
-            if (!\array_key_exists($parent_kind, $skip_var_check_types)) {
+            if (!\array_key_exists($parent_kind, self::SKIP_VAR_CHECK_TYPES)) {
                 $this->checkForUndeclaredVariable($node);
             }
         }

@@ -2155,6 +2155,27 @@ class UnionTypeVisitor extends AnalysisVisitor
                 // @phan-suppress-next-line PhanTypeMismatchReturnNullable variable existence was checked
                 return Variable::getUnionTypeOfHardcodedGlobalVariableWithName($variable_name);
             }
+            if ($node->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF) {
+                if (!$this->context->isInGlobalScope()) {
+                    if ($this->should_catch_issue_exception && !(($node->flags & PhanAnnotationAdder::FLAG_INITIALIZES) && $this->context->isInLoop()) ) {
+                        // Warn about `$var ??= expr;`, except when it's done in a loop.
+                        $this->emitIssueWithSuggestion(
+                            Variable::chooseIssueForUndeclaredVariable($this->context, $variable_name),
+                            $node->lineno,
+                            [$variable_name],
+                            IssueFixSuggester::suggestVariableTypoFix($this->code_base, $this->context, $variable_name)
+                        );
+                    }
+                    if ($variable_name === 'this') {
+                        return ObjectType::instance(false)->asRealUnionType();
+                    }
+                    return NullType::instance(false)->asRealUnionType();
+                }
+                if ($variable_name === 'this') {
+                    return ObjectType::instance(false)->asRealUnionType();
+                }
+                return NullType::instance(false)->asPHPDocUnionType();
+            }
 
             if (!($this->context->isInGlobalScope() && Config::getValue('ignore_undeclared_variables_in_global_scope'))) {
                 throw new IssueException(
@@ -2165,6 +2186,9 @@ class UnionTypeVisitor extends AnalysisVisitor
                         IssueFixSuggester::suggestVariableTypoFix($this->code_base, $this->context, $variable_name)
                     )
                 );
+            }
+            if ($variable_name === 'this') {
+                return ObjectType::instance(false)->asRealUnionType();
             }
         } else {
             $variable = $this->context->getScope()->getVariableByName(

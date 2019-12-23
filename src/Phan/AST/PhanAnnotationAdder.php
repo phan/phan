@@ -30,6 +30,7 @@ class PhanAnnotationAdder
 {
     const PHAN_NODE_FLAGS = 'phan_nf';
 
+    const FLAG_INITIALIZES = 1 << 28;
     const FLAG_IGNORE_NULLABLE = 1 << 29;
     const FLAG_IGNORE_UNDEF = 1 << 30;
 
@@ -113,7 +114,7 @@ class PhanAnnotationAdder
             if ($node->flags === flags\BINARY_COALESCE) {
                 $inner_node = $node->children['var'];
                 if ($inner_node instanceof Node) {
-                    self::markNode($inner_node, self::FLAG_IGNORE_NULLABLE_AND_UNDEF);
+                    self::markNode($inner_node, self::FLAG_IGNORE_NULLABLE_AND_UNDEF | self::FLAG_INITIALIZES);
                 }
             }
         };
