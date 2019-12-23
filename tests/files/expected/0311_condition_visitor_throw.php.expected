@@ -16,13 +16,16 @@
 %s:24 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is string but \intdiv() takes int
 %s:25 PhanRedundantCondition Redundant attempt to cast $inCondVar of type 3 to truthy
 %s:25 PhanTypeMismatchArgumentInternal Argument 1 ($string) is 3 but \strlen() takes string
+%s:26 PhanCoalescingAlwaysNull Using $c of type null as the left hand side of a null coalescing (??) operation. The left hand side may be unnecessary.
 %s:26 PhanUndeclaredVariable Variable $c is undeclared (Did you mean $y)
 %s:27 PhanUndeclaredVariable Variable $unaryMissing1 is undeclared
 %s:28 PhanUndeclaredVariable Variable $unaryMissing2 is undeclared
 %s:30 PhanUndeclaredVariable Variable $unaryMissing3 is undeclared
+%s:31 PhanCoalescingAlwaysNullInLoop Using $c2 of type null as the left hand side of a null coalescing (??) operation. The left hand side may be unnecessary. (in a loop body - this is likely a false positive)
 %s:31 PhanUndeclaredVariable Variable $c2 is undeclared
 %s:33 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is string but \intdiv() takes int
 %s:35 PhanUndeclaredVariable Variable $unaryMissing3 is undeclared
+%s:36 PhanCoalescingAlwaysNullInLoop Using $c2 of type null as the left hand side of a null coalescing (??) operation. The left hand side may be unnecessary. (in a loop body - this is likely a false positive)
 %s:36 PhanUndeclaredVariable Variable $c2 is undeclared
 %s:38 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is string but \intdiv() takes int
 %s:39 PhanUndeclaredVariable Variable $x3 is undeclared

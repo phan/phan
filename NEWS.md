@@ -15,6 +15,7 @@ New Features(Analysis)
 + Improve analysis of assignment operators. (#3597)
 + Infer `$x op= expr` and `++`/`--` operators have a literal value when possible, outside of loops. (#3250, #3248)
 + Move `PhanUndeclaredInterface` and `PhanUndeclaredTrait` warnings to the line number of the `use`/`implements`. (#2159)
++ Don't emit `PhanUndeclaredGlobalVariable` for the left side of `??`/`??=` in the global scope (#3601)
 
 Plugins:
 + Add `StrictLiteralComparisonPlugin` to warn about loose equality comparisons of constant string/int to other values. (#2310)

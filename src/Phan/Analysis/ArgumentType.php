@@ -582,6 +582,7 @@ final class ArgumentType
         // alternates of the method until we find one that
         // takes the correct types
         $alternate_parameter = null;
+        $alternate_parameter_type = null;  // TODO: Properly merge "possibly undefined" union types - without this, undefined is inferred instead of possibly undefined
 
         foreach ($method->alternateGenerator($code_base) as $alternate_method) {
             // Get the parameter associated with this argument
