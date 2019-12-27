@@ -11,6 +11,6 @@ $x = function() {
         $myVar = $i;
         $myUnusedVar3 = $i;
     }
-    echo $myVar;
+    echo $myVar;  // TODO: Infer the loop will run at least once and that myVar will be defined..
 };
 call_user_func($x);

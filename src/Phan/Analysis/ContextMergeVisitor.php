@@ -8,6 +8,8 @@ use Phan\AST\Visitor\KindVisitorImplementation;
 use Phan\Language\Context;
 use Phan\Language\Element\Variable;
 use Phan\Language\Scope;
+use Phan\Language\Type;
+use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
 
@@ -381,24 +383,28 @@ class ContextMergeVisitor extends KindVisitorImplementation
             $name = (string)$name;
             // Skip variables that are only partially defined
             if (!$is_defined_on_all_branches($name)) {
-                if ($this->context->isStrictTypes()) {
-                    continue;
-                } else {
-                    // Limit the type of the variable to the subset
-                    // of types that are common to all branches
-                    // Record that it can be null, as the best available equivalent for undefined.
+                if ($name === Context::VAR_NAME_THIS_PROPERTIES) {
+                    $type = $union_type($name)->asNormalizedTypes()->asMappedUnionType(static function (Type $type) : Type {
+                        if (!$type instanceof ArrayShapeType) {
+                            return $type;
+                        }
+                        $new_field_types = [];
+                        foreach ($type->getFieldTypes() as $field_name => $value) {
+                            $new_field_types[$field_name] = $value->isDefinitelyUndefined() ? $value : $value->withIsPossiblyUndefined(true);
+                        }
+                        return ArrayShapeType::fromFieldTypes($new_field_types, $type->isNullable());
+                    });
                     $variable = clone($variable);
-
-                    $variable->setUnionType(
-                        $union_type($name)->withType(
-                            NullType::instance(false)
-                        )
-                    );
-
-                    // Add the variable to the outgoing scope
+                    $variable->setUnionType($type);
                     $scope->addVariable($variable);
+                    // there are no overrides for $this on at least one branch.
+                    // TODO: Could try to combine local overrides with the defaults.
                     continue;
                 }
+                $variable = clone($variable);
+                $variable->setUnionType($union_type($name)->nullableClone()->withIsPossiblyUndefined(true));
+                $scope->addVariable($variable);
+                continue;
             }
 
             // Limit the type of the variable to the subset

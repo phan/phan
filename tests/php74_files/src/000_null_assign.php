@@ -13,7 +13,7 @@ function null_handler(?int $a, ?int $b, string $default, array $values) {
     foreach ($values as $v) {
         $otherMissing ??= $v;
     }
-    echo "Saw $otherMissing\n";
+    echo "Saw $otherMissing\n";  // this is possibly undefined - $values may be the empty array.
 }
 // Should not warn
 $missing000 ??= 'default';

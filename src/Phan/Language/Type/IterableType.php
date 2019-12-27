@@ -28,7 +28,6 @@ class IterableType extends NativeType
         return $other instanceof IterableType || $other instanceof CallableDeclarationType || $other->isPossiblyObject();
     }
 
-
     public function asIterable(CodeBase $_) : ?Type
     {
         return $this->withIsNullable(false);

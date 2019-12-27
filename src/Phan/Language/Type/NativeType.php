@@ -386,5 +386,6 @@ abstract class NativeType extends Type
         return false;
     }
 }
+\class_exists(IterableType::class);
 \class_exists(ArrayType::class);
 \class_exists(ScalarType::class);

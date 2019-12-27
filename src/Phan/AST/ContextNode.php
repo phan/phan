@@ -1251,9 +1251,14 @@ class ContextNode
     {
         // Return the original variable if it existed
         try {
-            return $this->getVariable();
+            $variable = $this->getVariable();
+            $union_type = $variable->getUnionType();
+            if ($union_type->isPossiblyUndefined()) {
+                $variable->setUnionType($union_type->convertUndefinedToNullable());
+            }
+            return $variable;
         } catch (IssueException $_) {
-            // Swallow it
+            // Swallow exceptions fetching the variable
         }
         // Create a new variable, and set its union type to null if that wouldn't create false positives.
 

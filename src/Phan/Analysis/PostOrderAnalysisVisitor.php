@@ -145,7 +145,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         // Handle the assignment based on the type of the
         // right side of the equation and the kind of item
-        // on the left
+        // on the left.
+        // (AssignmentVisitor converts possibly undefined types to nullable)
         $context = (new AssignmentVisitor(
             $this->code_base,
             $this->context,

@@ -187,6 +187,9 @@ class ForkPool
         }
 
         // Get the write stream for the child.
+        if (!isset($sockets)) {
+            throw new AssertionError('$sockets must be set if this is the child process');
+        }
         $write_stream = self::streamForChild($sockets);
         Writer::initialize($write_stream);
 

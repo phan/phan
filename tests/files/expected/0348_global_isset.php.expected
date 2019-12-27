@@ -1,2 +1,2 @@
-%s:6 PhanUndeclaredGlobalVariable Global variable $global348 is undeclared
+%s:6 PhanPossiblyUndeclaredGlobalVariable Global variable $global348 is possibly undeclared
 %s:12 PhanUndeclaredGlobalVariable Global variable $globalC348 is undeclared

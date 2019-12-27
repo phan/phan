@@ -31,7 +31,7 @@ final class GenericIterableType extends IterableType
 
     protected function __construct(UnionType $key_union_type, UnionType $element_union_type, bool $is_nullable)
     {
-        parent::__construct('', self::NAME, [], $is_nullable);
+        parent::__construct('\\', self::NAME, [], $is_nullable);
         $this->key_union_type = $key_union_type;
         $this->element_union_type = $element_union_type;
     }

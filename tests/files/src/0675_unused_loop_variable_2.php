@@ -17,7 +17,7 @@ call_user_func (function () {
         } else {
         }
         var_dump($c);
-        $c = $c + 1;  // should emit PhanUnusedVariable
+        $c = $c + 1;  // should not emit PhanUnusedVariable
     }
 });
 call_user_func (function () {

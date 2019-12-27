@@ -26,6 +26,6 @@ function unused_return(int $v) {
         }
         $myVar = 22;
     }
-    echo $myVar;
+    echo $myVar;  // TODO: Infer the loop will run at least once and all branches set $myVar.
 }
 unused_return(rand() % 20 - 10);

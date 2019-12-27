@@ -2194,9 +2194,37 @@ class UnionTypeVisitor extends AnalysisVisitor
             $variable = $this->context->getScope()->getVariableByName(
                 $variable_name
             );
+            $union_type = $variable->getUnionType();
+            if ($union_type->isPossiblyUndefined()) {
+                if ($node->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF) {
+                    if ($this->context->isInGlobalScope()) {
+                        $union_type = $union_type->eraseRealTypeSet();
+                    }
+                    return $union_type->convertUndefinedToNullable();
+                }
+                if ($this->context->isInGlobalScope()) {
+                    $union_type = $union_type->eraseRealTypeSet();
+                    if ($this->should_catch_issue_exception) {
+                        if (!Config::getValue('ignore_undeclared_variables_in_global_scope')) {
+                            $this->emitIssue(
+                                Issue::PossiblyUndeclaredGlobalVariable,
+                                $node->lineno,
+                                $variable_name
+                            );
+                        }
+                    }
+                } else {
+                    if ($this->should_catch_issue_exception) {
+                        $this->emitIssue(
+                            Issue::PossiblyUndeclaredVariable,
+                            $node->lineno,
+                            $variable_name
+                        );
+                    }
+                }
+            }
 
-            // TODO: check for possibly undefined variables and emit convertUndefinedToNullable once ContextMergeVisitor sets variables to possibly undefined
-            return $variable->getUnionType();
+            return $union_type;
         }
 
         return UnionType::empty();
