@@ -1,0 +1,8 @@
+%s:7 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type 
+%s:7 PhanUnusedVariable Unused definition of variable $v
+%s:10 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type 
+%s:10 PhanUnusedVariable Unused definition of variable $v
+%s:14 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type array{}(real=array{})
+%s:14 PhanUnusedVariable Unused definition of variable $v
+%s:17 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type array
+%s:17 PhanUnusedVariable Unused definition of variable $v
