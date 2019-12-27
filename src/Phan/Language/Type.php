@@ -319,6 +319,7 @@ class Type
      * @param string $namespace
      * The (optional) namespace of the type such as '\'
      * or '\Phan\Language'.
+     * This should not be the empty string.
      *
      * @param string $name
      * The name of the type such as 'int' or 'MyClass'
@@ -1182,7 +1183,7 @@ class Type
         $template_count = count($template_parameter_type_list);
         if ($template_count === 1) {
             return new ClassStringType(
-                '',
+                '\\',
                 'class-string',
                 $template_parameter_type_list,
                 $is_nullable

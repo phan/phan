@@ -1,1 +1,4 @@
 %s:10 PhanUnusedVariable Unused definition of variable $c
+%s:19 PhanPossiblyUndeclaredVariable Variable $c is possibly undeclared
+%s:20 PhanPossiblyUndeclaredVariable Variable $c is possibly undeclared
+%s:28 PhanPossiblyUndeclaredVariable Variable $c is possibly undeclared

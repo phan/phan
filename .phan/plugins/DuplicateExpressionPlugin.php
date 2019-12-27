@@ -408,7 +408,7 @@ class RedundantNodePreAnalysisVisitor extends PluginAwarePreAnalysisVisitor
                 $condition_set[$cond_hash] = true;
             }
         }
-        if ($cond === null) {
+        if (!isset($cond)) {
             $stmts = $children[$N - 1]->children['stmts'];
             if (($stmts->children ?? null) && ASTHasher::hash($stmts) === ASTHasher::hash($children[$N - 2]->children['stmts'])) {
                 $this->emitPluginIssue(

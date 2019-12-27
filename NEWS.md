@@ -16,6 +16,8 @@ New Features(Analysis)
 + Infer `$x op= expr` and `++`/`--` operators have a literal value when possible, outside of loops. (#3250, #3248)
 + Move `PhanUndeclaredInterface` and `PhanUndeclaredTrait` warnings to the line number of the `use`/`implements`. (#2159)
 + Don't emit `PhanUndeclaredGlobalVariable` for the left side of `??`/`??=` in the global scope (#3601)
++ More consistently infer that variables are possibly undefined if they are not defined in all branches.
++ Add new issue types for possibly undeclared variables: `PhanPossiblyUndeclaredVariable` and `PhanPossiblyUndeclaredGlobalVariable`.
 
 Plugins:
 + Add `StrictLiteralComparisonPlugin` to warn about loose equality comparisons of constant string/int to other values. (#2310)

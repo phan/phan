@@ -118,7 +118,7 @@ class AssignmentVisitor extends AnalysisVisitor
     ) {
         parent::__construct($code_base, $context);
 
-        $this->right_type = $right_type->withSelfResolvedInContext($context);
+        $this->right_type = $right_type->withSelfResolvedInContext($context)->convertUndefinedToNullable();
         $this->dim_depth = $dim_depth;
         $this->dim_type = $dim_type;  // null for `$x[] =` or when dim_depth is 0.
         $this->assignment_node = $assignment_node;
@@ -541,6 +541,9 @@ class AssignmentVisitor extends AnalysisVisitor
         UnionType $element_type,
         $node
     ) : void {
+        // Let the caller warn about possibly undefined offsets, e.g. ['field' => $value] = ...
+        // TODO: Convert real types to nullable?
+        $element_type = $element_type->withIsPossiblyUndefined(false);
         $element->setUnionType($element_type);
         if ($element instanceof PassByReferenceVariable) {
             self::analyzeSetUnionTypePassByRef($this->code_base, $this->context, $element, $element_type, $node);

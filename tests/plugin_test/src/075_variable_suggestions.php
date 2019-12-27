@@ -7,7 +7,7 @@ function test_variable_suggestions() {
     } else {
         $value2 = 2;
     }
-    echo $value1;
+    echo $value1;  // possibly undefined
     echo $value3;
     echo $unrelatedValueName;
 }
