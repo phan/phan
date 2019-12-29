@@ -441,7 +441,7 @@ return [
     ],
 
     // By default, Phan will log error messages to stdout if PHP is using options that slow the analysis.
-    // (e.g. PHP is compiled with --enable-debug or when using XDebug)
+    // (e.g. PHP is compiled with --enable-debug or when using Xdebug)
     'skip_slow_php_options_warning' => false,
 
     // You can put paths to internal stubs in this config option.
