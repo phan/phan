@@ -3533,6 +3533,16 @@ This issue will be emitted from the following code
 class F { function f() { $v = parent::f(); } }
 ```
 
+## PhanPossiblyUndeclaredGlobalVariable
+
+```
+Global variable ${VARIABLE} is possibly undeclared
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0158_conditional_assignment.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0158_conditional_assignment.php#L7).
+
+This may have a lot of false positives, and you may wish to suppress this issue entirely, either through `suppress_issue_list` or with the config setting `ignore_undeclared_variables_in_global_scope`
+
 ## PhanPossiblyUndeclaredMethod
 
 ```
@@ -3543,6 +3553,23 @@ Call to possibly undeclared method {METHOD} on type {TYPE} ({TYPE} does not decl
 
 ```
 Reference to possibly undeclared property {PROPERTY} of expression of type {TYPE} ({TYPE} does not declare that property)
+```
+
+## PhanPossiblyUndeclaredVariable
+
+```
+Variable ${VARIABLE} is possibly undeclared
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0489_crash.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0489_crash.php#L7).
+
+This may have a lot of false positives, and you may wish to suppress this issue entirely in the config setting `suppress_issue_list`.
+Phan does not attempt to analyze the relationship between variables or conditions at all, e.g. `PhanPossiblyUndeclaredVariable` will be emitted for the below snippet:
+
+```php
+if ($cond) { $var = expr; }
+// ...
+if ($cond) { use($var); }
 ```
 
 ## PhanPossiblyUnsetPropertyOfThis
