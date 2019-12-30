@@ -6,6 +6,9 @@ Phan NEWS
 New Features(Analysis):
 + Infer that merging defined variables with possibly undefined variables is also possibly undefined. (#1942)
 
+Bug fixes:
++ Fix a crash analyzing assignment operations on `$GLOBALS` such as `$GLOBALS['var'] += expr;` (#3615)
+
 Dec 29 2019, Phan 2.4.6
 -----------------------
 

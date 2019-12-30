@@ -1,0 +1,3 @@
+%s:4 PhanSuspiciousBinaryAddLists Addition of array{} + array{0:'a',1:'b'} ($GLOBALS['wgAutoloadClasses'] += ['a','b']) is a suspicious way to add two lists. Some of the array fields from the left hand side will be part of the result, replacing the fields with the same key from the right hand side (this operator does not concatenate the lists)
+%s:5 PhanUndeclaredVariable Variable $wgAutoloadClasses is undeclared
+%s:9 PhanTypeMismatchArgumentInternal Argument 1 ($obj) is array{0:'a',1:'b'} but \spl_object_id() takes object
