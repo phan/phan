@@ -17,6 +17,7 @@ use Phan\IssueFixSuggester;
 use Phan\Language\Context;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN;
+use Phan\Language\Scope\GlobalScope;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FloatType;
@@ -161,7 +162,21 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
             if (Variable::isHardcodedVariableInScopeWithName($variable_name, $this->context->isInGlobalScope())) {
                 if ($variable_name === 'GLOBALS') {
                     if (\is_string($dim_node)) {
-                        return $this->updateTargetDimWithType(new Node(ast\AST_VAR, 0, ['name' => $dim_node], $node->lineno), $get_type);
+                        $assign_op_node = new Node(ast\AST_ASSIGN_OP, 0, [
+                            'var' => new Node(ast\AST_VAR, 0, ['name' => $dim_node], $node->lineno),
+                            'expr' => $assign_op_node->children['expr'],
+                        ], $assign_op_node->lineno);
+                        if ($this->context->isInGlobalScope()) {
+                            return $this->updateTargetWithType($assign_op_node, $get_type);
+                        }
+                        // TODO: Could handle using both `global $x` and `$GLOBALS['x']` in the same function (low priority)
+
+                        // Modify the global scope
+                        (new self(
+                            $this->code_base,
+                            $this->context->withScope(new GlobalScope())
+                        ))->updateTargetWithType($assign_op_node, $get_type);
+                        // fall through and return the context still inside of the function
                     }
                     return $this->context;
                 }
