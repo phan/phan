@@ -31,7 +31,8 @@ const LATEST_KNOWN_PHP_AST_VERSION = '1.0.5';
 /**
  * Dump instructions on how to install php-ast
  */
-function phan_output_ast_installation_instructions() : void {
+function phan_output_ast_installation_instructions() : void
+{
     $ini_path = php_ini_loaded_file() ?: '(php.ini path could not be determined - try creating one at ' . dirname(PHP_BINARY) . '\\php.ini as a new empty file, or one based on php.ini.development or php.ini.production)';
     $configured_extension_dir = ini_get('extension_dir');
     $extension_dir = $configured_extension_dir ?: '(extension directory could not be determined)';
@@ -42,7 +43,9 @@ function phan_output_ast_installation_instructions() : void {
     }
     if (DIRECTORY_SEPARATOR === '\\') {
         if (PHP_VERSION_ID < 70500 || !preg_match('/[a-zA-Z]/', PHP_VERSION)) {
-            fprintf(STDERR, PHP_EOL . "Windows users can download php-ast from https://windows.php.net/downloads/pecl/releases/ast/%s/php_ast-%s-%s-%s-%s-%s.zip" . PHP_EOL,
+            fprintf(
+                STDERR,
+                PHP_EOL . "Windows users can download php-ast from https://windows.php.net/downloads/pecl/releases/ast/%s/php_ast-%s-%s-%s-%s-%s.zip" . PHP_EOL,
                 LATEST_KNOWN_PHP_AST_VERSION,
                 LATEST_KNOWN_PHP_AST_VERSION,
                 PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION,

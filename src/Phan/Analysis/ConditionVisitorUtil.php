@@ -676,7 +676,6 @@ trait ConditionVisitorUtil
                         continue 2;
                     }
                 }
-
             }
             $combined_real_types[] = $type;
         }

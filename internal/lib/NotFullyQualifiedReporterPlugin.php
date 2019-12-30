@@ -17,7 +17,8 @@ use Phan\PluginV3\PostAnalyzeNodeCapability;
  *   file being analyzed
  * - finalize
  */
-class NotFullyQualifiedReporterPlugin extends PluginV3 implements PostAnalyzeNodeCapability,
+class NotFullyQualifiedReporterPlugin extends PluginV3 implements
+    PostAnalyzeNodeCapability,
     FinalizeProcessCapability
 {
     /**
@@ -45,7 +46,7 @@ class NotFullyQualifiedReporterPlugin extends PluginV3 implements PostAnalyzeNod
 
     public function finalizeProcess(CodeBase $_) : void
     {
-        echo "<"."?php declare(strict_types=1);\n";
+        echo "<" . "?php declare(strict_types=1);\n";
         ksort(self::$calls);
         foreach (self::$calls as $namespace => $name_set) {
             // TODO: This might be a bug in the php engine - it warns about redeclaring functions,

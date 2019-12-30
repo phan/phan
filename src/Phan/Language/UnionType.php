@@ -211,7 +211,8 @@ class UnionType implements Serializable
     /**
      * @suppress PhanAccessReadOnlyProperty
      */
-    public function __clone() {
+    public function __clone()
+    {
         $this->with_erased_real_type_set = null;
         $this->as_normalized = null;
     }
@@ -834,7 +835,8 @@ class UnionType implements Serializable
     }
 
     /** @return UnionType|true */
-    private function computeEraseRealTypeSetRecursively() {
+    private function computeEraseRealTypeSetRecursively()
+    {
         $new_type_set = [];
         foreach ($this->type_set as $type) {
             $new_type_set[] = $type->withErasedUnionTypes();
