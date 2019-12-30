@@ -311,21 +311,26 @@ class ContextMergeVisitor extends KindVisitorImplementation
         $is_defined_on_all_branches =
             function (string $variable_name) use ($scope_list) : bool {
                 foreach ($scope_list as $scope) {
-                    if (!$scope->hasVariableWithName($variable_name)) {
-                        // When there are conditions on superglobals or hardcoded globals,
-                        // then one scope will have a copy of the variable but not the other.
-                        if (Variable::isHardcodedVariableInScopeWithName($variable_name, $this->context->isInGlobalScope())) {
-                            $scope->addVariable(new Variable(
-                                $this->context,
-                                $variable_name,
-                                // @phan-suppress-next-line PhanTypeMismatchArgumentNullable
-                                Variable::getUnionTypeOfHardcodedGlobalVariableWithName($variable_name),
-                                0
-                            ));
-                            return true;
+                    $variable = $scope->getVariableByNameOrNull($variable_name);
+                    if (\is_object($variable)) {
+                        if (!$variable->getUnionType()->isPossiblyUndefined()) {
+                            continue;
                         }
-                        return false;
+                        // fall through and check if this is a superglobal or global
                     }
+                    // When there are conditions on superglobals or hardcoded globals,
+                    // then one scope will have a copy of the variable but not the other.
+                    if (Variable::isHardcodedVariableInScopeWithName($variable_name, $this->context->isInGlobalScope())) {
+                        $scope->addVariable(new Variable(
+                            $this->context,
+                            $variable_name,
+                            // @phan-suppress-next-line PhanTypeMismatchArgumentNullable
+                            Variable::getUnionTypeOfHardcodedGlobalVariableWithName($variable_name),
+                            0
+                        ));
+                        return true;
+                    }
+                    return false;
                 }
                 return true;
             };

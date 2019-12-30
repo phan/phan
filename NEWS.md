@@ -3,6 +3,9 @@ Phan NEWS
 ??? ?? 20??, Phan 2.4.7 (dev)
 -----------------------
 
+New Features(Analysis):
++ Infer that merging defined variables with possibly undefined variables is also possibly undefined. (#1942)
+
 Dec 29 2019, Phan 2.4.6
 -----------------------
 

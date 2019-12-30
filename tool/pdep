@@ -91,6 +91,7 @@ call_user_func(static function () : void {
     if (isset($options['import'])) {
         $options['i'] = false;
     }
+    $mode = null;
     if (isset($options['c'])) {
         if (isset($options['f'])) {
             echo "ERROR: Cannot pass both -c and -f\n";

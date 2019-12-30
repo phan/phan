@@ -1,0 +1,3 @@
+%s:21 PhanDebugAnnotation @phan-debug-var requested for variable $obj - it has union type ?object=
+%s:33 PhanNonClassMethodCall Call to method func on non-class type ?object=
+%s:33 PhanPossiblyUndeclaredGlobalVariable Global variable $obj is possibly undeclared
