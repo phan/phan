@@ -4474,7 +4474,7 @@ class UnionType implements Serializable
      */
     public function asNormalizedTypes() : UnionType
     {
-        if (\count($this->type_set) <= 1) {
+        if (\count($this->type_set) <= 1 && \count($this->real_type_set) <= 1) {
             // Optimization: can't simplify if there's only one type
             return $this;
         }
@@ -4491,13 +4491,31 @@ class UnionType implements Serializable
     private function asNormalizedTypesInner()
     {
         $type_set = $this->type_set;
+        $real_type_set = $this->real_type_set;
+        $new_type_set = self::asNormalizedTypeSetInner($type_set);
+        $new_real_type_set = self::asNormalizedTypeSetInner($real_type_set);
+        if ($type_set === $new_type_set && $real_type_set === $new_real_type_set) {
+            return $this;
+        }
+        return UnionType::of($new_type_set, $new_real_type_set);
+    }
+
+    /**
+     * @param list<Type> $type_set
+     * @return list<Type>
+     */
+    private static function asNormalizedTypeSetInner(array $type_set) : array
+    {
+        if (\count($type_set) <= 1) {
+            return $type_set;
+        }
         $flags = 0;
         foreach ($type_set as $type) {
             $flags |= $type->getNormalizationFlags();
         }
         if ($flags === 0) {
             // Optimization: nothing to do if no types are null/nullable or booleans
-            return true;
+            return $type_set;
         }
         $nullable = ($flags & Type::_bit_nullable) !== 0;
         if ($nullable) {
@@ -4527,10 +4545,10 @@ class UnionType implements Serializable
         }
         $result_type_set = $builder->getTypeSet();
         if ($result_type_set === $type_set) {
-            return true;
+            // Reuse the first array if possible, to keep memory usage down.
+            return $type_set;
         }
-        // TODO: Convert array|array{} to array?
-        return UnionType::of($result_type_set, $this->real_type_set);
+        return $result_type_set;
     }
 
     /**
@@ -4676,7 +4694,6 @@ class UnionType implements Serializable
                     $element_union_type = $element_union_type->eraseRealTypeSetRecursively();
                 }
                 $new_element_union_types[] = $element_union_type;
-                // @phan-suppress-next-line PhanImpossibleConditionInLoop not sure why
                 $is_possibly_undefined = $is_possibly_undefined || $element_union_type->isPossiblyUndefined();
             }
             $new_element_union_type = UnionType::merge($new_element_union_types);

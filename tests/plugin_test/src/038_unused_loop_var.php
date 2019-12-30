@@ -12,6 +12,7 @@ class ExampleLoopUnused {
                     $ast_items[] = null;  // warns because ast_items isn't used
                     continue;
                 }
+                '@phan-debug-var $prev_was_element';  // should be true before reassignment, not unknown
                 $prev_was_element = false;
                 $myUnusedVariable = new stdClass();
                 continue;

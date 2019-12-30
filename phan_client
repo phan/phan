@@ -284,7 +284,6 @@ class PhanPHPLinter
             }
             $pathInProject = $issue['location']['path'];  // relative path
             if (!isset($file_mapping[$pathInProject])) {
-                // @phan-suppress-next-line PhanRedundantConditionInLoop this is a known false positive in loops
                 if (!$did_debug) {
                     self::debugInfo(sprintf("Unexpected path for issue (expected %s): %s\n", json_encode($file_mapping) ?: 'invalid', json_encode($issue) ?: 'invalid'));
                 }

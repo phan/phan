@@ -2800,6 +2800,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitAssign(Node $node) : UnionType
     {
+        // XXX typed properties/references will change the type of the result from the right hand side
         return self::unionTypeFromNode(
             $this->code_base,
             $this->context,

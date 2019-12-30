@@ -41,7 +41,6 @@ final class EmptyUnionType extends UnionType
     protected static function instance() : EmptyUnionType
     {
         static $self = null;
-        // @phan-suppress-next-line PhanCoalescingNeverNull false positive involving assignment within null coalescing operator
         return $self ?? ($self = new EmptyUnionType());
     }
 

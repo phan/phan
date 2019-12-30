@@ -2327,7 +2327,6 @@ EOB
                     if ($mod) {
                         $buf .= str_repeat(" ", self::PROGRESS_WIDTH - $mod);
                     }
-                    // @phan-suppress-next-line PhanPluginPrintfVariableFormatString
                     $buf .= " " . \sprintf("%.0fMB" . PHP_EOL, $memory);
                 }
             }

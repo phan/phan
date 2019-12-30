@@ -336,7 +336,6 @@ class TolerantASTConverter
         $children = [];
         foreach ($parser_nodes as $parser_node) {
             try {
-                // @phan-suppress-next-line PhanPossiblyNullTypeArgument
                 $child_node = static::phpParserNodeToAstNode($parser_node);
             } catch (InvalidNodeException $_) {
                 continue;
@@ -1142,7 +1141,6 @@ class TolerantASTConverter
             'Microsoft\PhpParser\Node\Statement\CompoundStatementNode' => static function (PhpParser\Node\Statement\CompoundStatementNode $n, int $_) {
                 $children = [];
                 foreach ($n->statements as $parser_node) {
-                    // @phan-suppress-next-line PhanPossiblyNullTypeArgument
                     $child_node = static::phpParserNodeToAstNode($parser_node);
                     if (\is_array($child_node)) {
                         // EchoExpression returns multiple children.
@@ -2906,7 +2904,6 @@ class TolerantASTConverter
         // TODO: Handle error case (can there be missing parts?)
         $result = '';
         foreach ($name_parts as $part) {
-            // @phan-suppress-next-line PhanPossiblyNullTypeArgument
             $part_as_string = static::tokenToString($part);
             if ($part_as_string !== '') {
                 $result .= \trim($part_as_string);
@@ -3063,7 +3060,7 @@ class TolerantASTConverter
 
     /**
      * For development PHP versions such as 8.0.0-dev, use the build date as part of the cache key to invalidate cached ASTs when this gets rebuilt.
-     * @suppress PhanImpossibleTypeComparison, PhanRedundantCondition, PhanImpossibleCondition, PhanSuspiciousValueComparison
+     * @suppress PhanImpossibleTypeComparison, PhanRedundantCondition, PhanImpossibleCondition, PhanSuspiciousValueComparison Phan evaluates the strpos to a constant, so this is either impossible or redundant
      */
     private static function getDevelopmentBuildDate() : ?string
     {

@@ -1,2 +1,3 @@
+src/038_unused_loop_var.php:11 PhanDebugAnnotation @phan-debug-var requested for variable $prev_was_element - it has union type true(real=true)
 src/038_unused_loop_var.php:12 PhanUnusedVariable Unused definition of variable $ast_items
-src/038_unused_loop_var.php:16 PhanUnusedVariable Unused definition of variable $myUnusedVariable
+src/038_unused_loop_var.php:17 PhanUnusedVariable Unused definition of variable $myUnusedVariable

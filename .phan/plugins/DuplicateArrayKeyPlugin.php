@@ -204,13 +204,11 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
             if (!is_scalar($key)) {
                 $key = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $key)->asSingleScalarValueOrNullOrSelf();
                 if (is_object($key)) {
-                    // @phan-suppress-next-line PhanPossiblyUndeclaredProperty
                     $key = self::HASH_PREFIX . ASTHasher::hash($entry->children['key']);
                 }
             }
 
             if (isset($key_set[$key])) {
-                // @phan-suppress-next-line PhanPartialTypeMismatchArgument
                 $this->warnAboutDuplicateArrayKey($node, $entry, $key);
             }
             // @phan-suppress-next-line PhanTypeMismatchDimAssignment
