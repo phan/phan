@@ -14,6 +14,7 @@ New Features(Analysis):
   If all types assigned to the variable in a loop in a function are known,
   then try applying the condition to the union of those types. (#3614)
   (This approach was chosen because it needs to run only once per function)
++ Infer that assignment operations (e.g. `+=`) create variables if they were undefined.
 
 Bug fixes:
 + Fix a crash analyzing assignment operations on `$GLOBALS` such as `$GLOBALS['var'] += expr;` (#3615)
