@@ -1003,7 +1003,14 @@ trait FunctionTrait
     public function getDependentReturnType(CodeBase $code_base, Context $context, array $args) : UnionType
     {
         // @phan-suppress-next-line PhanTypePossiblyInvalidCallable - Callers should check hasDependentReturnType
-        return ($this->return_type_callback)($code_base, $context, $this, $args);
+        $result = ($this->return_type_callback)($code_base, $context, $this, $args);
+        if (!$result->hasRealTypeSet()) {
+            $real_return_type = $this->getRealReturnType();
+            if (!$real_return_type->isEmpty()) {
+                return $result->withRealTypeSet($real_return_type->getTypeSet());
+            }
+        }
+        return $result;
     }
 
     public function setDependentReturnTypeClosure(Closure $closure) : void

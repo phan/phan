@@ -10,6 +10,12 @@ Bug fixes:
 + Fix a crash analyzing assignment operations on `$GLOBALS` such as `$GLOBALS['var'] += expr;` (#3615)
 + Fix false positive `Phan[Possibly]UndeclaredGlobalVariable` after conditions such as `assert($var instanceof MyClass` when the variable was not assigned to within the file or previously analyzed files. (#3616)
 
+Plugins:
++ Make Phan use the real type set of the return value of the function being analyzed when plugins return a union type without a real type set.
+
+Maintenance:
++ Infer that `explode()` is possibly the empty list when `$limit` is possibly negative. (#3617)
+
 Dec 29 2019, Phan 2.4.6
 -----------------------
 
