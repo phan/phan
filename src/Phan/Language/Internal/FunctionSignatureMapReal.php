@@ -177,7 +177,7 @@ return [
 'exif_tagname' => '?false|?string',
 'exif_thumbnail' => '?false|?string',
 'exp' => 'float',
-'explode' => 'non-empty-list<string>',
+'explode' => 'list<string>',
 'expm1' => 'float',
 'ezmlm_hash' => 'int',
 'fclose' => 'bool',
