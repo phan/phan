@@ -594,10 +594,11 @@ class Method extends ClassElement implements FunctionInterface
         $is_trait = $class->isTrait();
         // Add the syntax-level return type to the method's union type
         // if it exists
-        if ($node->children['returnType'] !== null) {
+        $return_type = $node->children['returnType'];
+        if ($return_type instanceof Node) {
             // TODO: Avoid resolving this, but only in traits
             $return_union_type = (new UnionTypeVisitor($code_base, $context))->fromTypeInSignature(
-                $node->children['returnType']
+                $return_type
             );
             $method->setUnionType($method->getUnionType()->withUnionType($return_union_type)->withRealTypeSet($return_union_type->getTypeSet()));
             // TODO: Replace 'self' with the real class when not in a trait

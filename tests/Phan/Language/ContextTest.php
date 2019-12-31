@@ -16,7 +16,7 @@ use Phan\Tests\BaseTest;
 /**
  * Unit tests of Context and scopes
  * @phan-file-suppress PhanThrowTypeAbsentForCall
- * @phan-file-suppress PhanPartialTypeMismatchArgument
+ * @phan-file-suppress PhanPartialTypeMismatchArgument, PhanTypeMismatchArgumentNullable
  */
 final class ContextTest extends BaseTest
 {

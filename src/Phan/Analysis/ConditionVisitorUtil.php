@@ -1093,7 +1093,10 @@ trait ConditionVisitorUtil
             if (\is_string($name)) {
                 $name = \strtolower($name);
                 if ($name === 'get_class') {
-                    return $condition->analyzeClassCheck($this, $var_node->children['args']->children[0] ?? null, $expr_node);
+                    $arg = $var_node->children['args']->children[0] ?? null;
+                    if (!\is_null($arg)) {
+                        return $condition->analyzeClassCheck($this, $arg, $expr_node);
+                    }
                 }
                 return $condition->analyzeCall($this, $var_node, $expr_node);
             }

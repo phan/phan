@@ -2012,6 +2012,9 @@ EOT;
         self::debugLog("Wrote a $method notification\n");
     }
 
+    /**
+     * @suppress PhanImpossibleCondition DEBUG_ENABLED is manually changed if needed.
+     */
     private static function debugLog(string $message) : void
     {
         if (self::DEBUG_ENABLED) {

@@ -6,6 +6,7 @@ namespace Phan\Language\Internal;
 // Documenting all of these helps prevent Phan from crashing when analyzing it.
 $ordinary_ast_node = 'ast\Node|float|int|string';
 $ast_node_shape_inner = \implode(',', [
+    "__declId?:int",
     "args?:ast\Node",
     "catches?:ast\Node",
     "class?:ast\Node",
@@ -15,16 +16,19 @@ $ast_node_shape_inner = \implode(',', [
     "declares?:ast\Node",
     "docComment?:?string",
     "expr?:$ordinary_ast_node",
+    "false?:$ordinary_ast_node",
     "finally?:ast\Node",
     "insteadof?:ast\Node",
     "key?:$ordinary_ast_node",
     "left?:$ordinary_ast_node",
     "method?:$ordinary_ast_node",
     "name?:$ordinary_ast_node",
+    "params?:ast\Node",
     "prop?:$ordinary_ast_node",
     "right?:$ordinary_ast_node",
     "stmts?:?ast\Node",
     "try?:ast\Node",
+    "true?:$ordinary_ast_node",
     "type?:?ast\Node",
     "value?:$ordinary_ast_node",
     "var?:ast\Node",

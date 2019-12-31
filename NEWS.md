@@ -15,6 +15,10 @@ New Features(Analysis):
   then try applying the condition to the union of those types. (#3614)
   (This approach was chosen because it needs to run only once per function)
 + Infer that assignment operations (e.g. `+=`) create variables if they were undefined.
++ Properly infer that class constants that weren't literal int/float/strings have real type sets in their union types.
++ Normalize union types of generic array elements after fetching `$x[$offset]`.
+  (e.g. change `bool|false|null` to `?bool`)
++ Normalize union types of result of `??` operator.
 
 Bug fixes:
 + Fix a crash analyzing assignment operations on `$GLOBALS` such as `$GLOBALS['var'] += expr;` (#3615)
