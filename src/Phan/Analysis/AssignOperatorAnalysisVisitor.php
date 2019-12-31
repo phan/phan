@@ -23,6 +23,7 @@ use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
+use Phan\Language\Type\NullType;
 use Phan\Language\Type\ScalarType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
@@ -117,22 +118,28 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
             );
             $variable->setUnionType($get_type($variable->getUnionType()));
             return $this->context->withScopeVariable($variable);
-        } else {
-            if (Variable::isHardcodedVariableInScopeWithName($variable_name, $this->context->isInGlobalScope())) {
-                return $this->context;
-            }
-            // no such variable exists, warn about this
-            // TODO: Add Suggestions
-            Issue::maybeEmitWithParameters(
-                $this->code_base,
-                $this->context,
-                Issue::UndeclaredVariableAssignOp,
-                $node->lineno,
-                [$variable_name],
-                IssueFixSuggester::suggestVariableTypoFix($this->code_base, $this->context, $variable_name)
-            );
         }
-        return $this->context;
+
+        if (Variable::isHardcodedVariableInScopeWithName($variable_name, $this->context->isInGlobalScope())) {
+            return $this->context;
+        }
+        // no such variable exists, warn about this
+        Issue::maybeEmitWithParameters(
+            $this->code_base,
+            $this->context,
+            Issue::UndeclaredVariableAssignOp,
+            $node->lineno,
+            [$variable_name],
+            IssueFixSuggester::suggestVariableTypoFix($this->code_base, $this->context, $variable_name)
+        );
+        // Then create the variable
+        $variable = new Variable(
+            $this->context,
+            $variable_name,
+            $get_type(NullType::instance(false)->asPHPDocUnionType()),
+            0
+        );
+        return $this->context->withScopeVariable($variable);
     }
 
     /**

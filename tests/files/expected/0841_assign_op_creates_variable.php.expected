@@ -1,0 +1,2 @@
+%s:3 PhanUndeclaredVariableAssignOp Variable $x was undeclared, but it is being used as the left-hand side of an assignment operation
+%s:4 PhanTypeMismatchReturn Returning type string but test() is declared to return float
