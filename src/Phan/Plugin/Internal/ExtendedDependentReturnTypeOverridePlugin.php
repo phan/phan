@@ -27,74 +27,80 @@ final class ExtendedDependentReturnTypeOverridePlugin extends PluginV3 implement
     ReturnTypeOverrideCapability
 {
     /**
+     * Given the name of a pure function with no side effects,
+     * this returns a callback that will call the function if all args are known,
+     * and return the value as a union type.
+     * (or return the default union type)
+     *
+     * @param callable-string $function_name
+     * @return Closure(CodeBase,Context,Func,array):UnionType
+     */
+    public static function wrapNArgumentFunction(
+        string $function_name,
+        int $min_args,
+        ?int $max_args = null
+    ) : Closure {
+        $max_args = $max_args ?? $min_args;
+        /**
+         * @param list<Node|string|int|float> $args
+         */
+        return static function (
+            CodeBase $code_base,
+            Context $context,
+            Func $function,
+            array $args
+        ) use (
+            $function_name,
+            $min_args,
+            $max_args
+        ) : UnionType {
+            if (count($args) < $min_args || count($args) > $max_args) {
+                // Phan should already warn about too many or too few
+                return $function->getUnionType();
+            }
+            $values = [];
+            foreach ($args as $arg) {
+                $value = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $arg)->asValueOrNullOrSelf();
+                if (\is_object($value)) {
+                    return $function->getUnionType();
+                }
+                $values[] = $value;
+            }
+            try {
+                $result = \with_disabled_phan_error_handler(/** @return mixed */ static function () use ($function_name, $values) {
+                    return @$function_name(...$values);
+                });
+            } catch (Throwable $e) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::TypeErrorInInternalCall,
+                    $args[0]->lineno ?? $context->getLineNumberStart(),
+                    $function_name,
+                    $e->getMessage()
+                );
+                return $function->getUnionType();
+            }
+            return Type::fromObjectExtended($result)->asRealUnionType();
+        };
+    }
+
+    /**
      * @param CodeBase $code_base @phan-unused-param
      * @return array<string,\Closure>
      * @phan-return array<string, Closure(CodeBase,Context,Func,array):UnionType>
      */
     private static function getReturnTypeOverridesStatic(CodeBase $code_base) : array
     {
-        /**
-         * @param callable-string $function_name
-         * @return Closure(CodeBase,Context,Func,array):UnionType
-         */
-        $wrap_n_argument_function = static function (
-            string $function_name,
-            int $min_args,
-            ?int $max_args = null
-        ) : Closure {
-            $max_args = $max_args ?? $min_args;
-            /**
-             * @param list<Node|string|int|float> $args
-             */
-            return static function (
-                CodeBase $code_base,
-                Context $context,
-                Func $function,
-                array $args
-            ) use (
-                $function_name,
-                $min_args,
-                $max_args
-            ) : UnionType {
-                if (count($args) < $min_args || count($args) > $max_args) {
-                    // Phan should already warn about too many or too few
-                    return $function->getUnionType();
-                }
-                $values = [];
-                foreach ($args as $arg) {
-                    $value = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $arg)->asValueOrNullOrSelf();
-                    if (\is_object($value)) {
-                        return $function->getUnionType();
-                    }
-                    $values[] = $value;
-                }
-                try {
-                    $result = \with_disabled_phan_error_handler(/** @return mixed */ static function () use ($function_name, $values) {
-                        return @$function_name(...$values);
-                    });
-                } catch (Throwable $e) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $context,
-                        Issue::TypeErrorInInternalCall,
-                        $args[0]->lineno ?? $context->getLineNumberStart(),
-                        $function_name,
-                        $e->getMessage()
-                    );
-                    return $function->getUnionType();
-                }
-                return Type::fromObjectExtended($result)->asRealUnionType();
-            };
-        };
         $basic_return_type_overrides = (new DependentReturnTypeOverridePlugin())->getReturnTypeOverrides($code_base);
         /**
          * @param callable-string $function
          */
-        $wrap = static function (string $function, int $min, ?int $max = null) use ($basic_return_type_overrides, $wrap_n_argument_function) : ?Closure {
+        $wrap = static function (string $function, int $min, ?int $max = null) use ($basic_return_type_overrides) : ?Closure {
             if (!\is_callable($function)) {
                 return null;
             }
-            $cb = $wrap_n_argument_function($function, $min, $max);
+            $cb = self::wrapNArgumentFunction($function, $min, $max);
             $cb_fallback = $basic_return_type_overrides[$function] ?? null;
             if (!$cb_fallback) {
                 return $cb;

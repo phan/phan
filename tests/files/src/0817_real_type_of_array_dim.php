@@ -8,4 +8,6 @@ function main(string $name) {
         '@phan-debug-var $methodName';
         echo "Saw $methodName\n";
     }
+    $nvals = explode('-', $name, -2);
+    '@phan-debug-var $nvals';
 }

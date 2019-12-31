@@ -30,10 +30,7 @@ use function is_string;
 /**
  * NOTE: This is automatically loaded by phan. Do not include it in a config.
  *
- * This internal plugin will warn if calls to internal string functions
- * or regex function appear to have arguments in the wrong order,
- *
- * e.g. explode($var, ':') or strpos(':', $x)
+ * This internal plugin will infer return types based on argument types and counts.
  *
  * TODO: Make these have corresponding real type sets in the union type.
  */
@@ -331,6 +328,34 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             $result = \dirname($arg, $levels);
             return Type::fromObject($result)->asPHPDocUnionType();
         };
+        /**
+         * @param list<Node|int|float|string> $args
+         */
+        $explode_handler = static function (
+            CodeBase $code_base,
+            Context $context,
+            Func $unused_function,
+            array $args
+        ) : UnionType {
+            $is_php8 = Config::get_closest_target_php_version_id() >= 80000;
+            if (count($args) > 2) {
+                $limit = $args[2];
+                if ($limit instanceof Node) {
+                    $limit = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $limit)->asSingleScalarValueOrNullOrSelf();
+                }
+                if (\is_object($limit) || $limit < 0) {
+                    // PHP will only ever return an empty list if there is a negative limit for explode().
+                    return UnionType::fromFullyQualifiedPHPDocAndRealString(
+                        'list<string>',
+                        $is_php8 ? 'list<string>' : '?list<string>'
+                    );
+                }
+            }
+            return UnionType::fromFullyQualifiedPHPDocAndRealString(
+                'non-empty-list<string>',
+                $is_php8 ? 'non-empty-list<string>' : '?non-empty-list<string>'
+            );
+        };
 
         // TODO: Handle flags of preg_split.
         return [
@@ -354,6 +379,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             'dirname'                     => $dirname_handler,
             'basename'                    => self::makeStringFunctionHandler('basename'),
             'bcdiv'                       => $bcdiv_callback,
+            'explode'                     => $explode_handler,
         ];
     }
 
