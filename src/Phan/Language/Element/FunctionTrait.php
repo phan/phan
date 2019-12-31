@@ -6,6 +6,7 @@ use AssertionError;
 use ast\Node;
 use Closure;
 use Phan\Analysis\ConditionVisitor;
+use Phan\Analysis\FallbackMethodTypesVisitor;
 use Phan\Analysis\NegatedConditionVisitor;
 use Phan\Analysis\ParameterTypesAnalyzer;
 use Phan\AST\UnionTypeVisitor;
@@ -1106,7 +1107,26 @@ trait FunctionTrait
         }
     }
 
-    abstract public function memoizeFlushAll() : void;
+    /**
+     * Memoize the result of $fn(), saving the result
+     * with key $key.
+     *
+     * @template T
+     *
+     * @param string $key
+     * The key to use for storing the result of the
+     * computation.
+     *
+     * @param Closure():T $fn
+     * A function to compute only once for the given
+     * $key.
+     *
+     * @return T
+     * The result of the given computation is returned
+     */
+    abstract protected function memoize(string $key, Closure $fn);
+
+    abstract protected function memoizeFlushAll() : void;
 
     /** @return UnionType union type this function-like's declared return type (from PHPDoc, signatures, etc.)  */
     abstract public function getUnionType() : UnionType;
@@ -1771,5 +1791,21 @@ trait FunctionTrait
     public function isPure() : bool
     {
         return $this->getPhanFlagsHasState(Flags::IS_SIDE_EFFECT_FREE);
+    }
+
+    /**
+     * @return array<mixed, UnionType> very conservatively maps variable names to union types they can have.
+     * Entries are omitted if there are possible assignments that aren't known.
+     *
+     * This is useful as a fallback for determining missing types when analyzing the first iterations of loops.
+     *
+     * Other approaches, such as analyzing loops multiple times, are possible, but not implemented.
+     */
+    public function getVariableTypeFallbackMap(CodeBase $code_base) : array
+    {
+        return $this->memoize(__METHOD__, /** @return array<mixed, UnionType> */ function () use ($code_base) : array {
+            // @phan-suppress-next-line PhanTypeMismatchArgument no way to indicate $this always implements FunctionInterface
+            return FallbackMethodTypesVisitor::inferTypes($code_base, $this);
+        });
     }
 }

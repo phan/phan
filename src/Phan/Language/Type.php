@@ -600,10 +600,8 @@ class Type
     {
         switch (\gettype($object)) {
             case 'integer':
-                '@phan-var int $object';
                 return LiteralIntType::instanceForValue($object, false);
             case 'string':
-                '@phan-var string $object';
                 return LiteralStringType::instanceForValue($object, false);
             case 'NULL':
                 return NullType::instance(false);
@@ -3920,7 +3918,6 @@ class Type
      */
     public function asFunctionInterfaceOrNull(CodeBase $code_base, Context $context) : ?FunctionInterface
     {
-        // @phan-suppress-next-line PhanSuspiciousValueComparison
         if (static::class !== self::class) {
             // Overridden in other subclasses
             return null;

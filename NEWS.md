@@ -5,6 +5,10 @@ Phan NEWS
 
 New Features(Analysis):
 + Infer that merging defined variables with possibly undefined variables is also possibly undefined. (#1942)
++ Add a fallback when some types of conditional check results in a empty union type in a loop:
+  If all types assigned to the variable in a loop in a function are known,
+  then try applying the condition to the union of those types. (#3614)
+  (This approach was chosen because it needs to run only once per function)
 
 Bug fixes:
 + Fix a crash analyzing assignment operations on `$GLOBALS` such as `$GLOBALS['var'] += expr;` (#3615)

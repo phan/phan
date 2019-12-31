@@ -46,7 +46,6 @@ final class NodeUtils
         // TODO: Handle error case (can there be missing parts?)
         $result = '';
         foreach ($name_parts as $part) {
-            // @phan-suppress-next-line PhanPossiblyNullTypeArgument
             $part_as_string = $this->tokenToString($part);
             if ($part_as_string !== '') {
                 $result .= \trim($part_as_string);

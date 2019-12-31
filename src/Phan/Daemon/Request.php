@@ -459,7 +459,6 @@ class Request
                 }
                 unset(self::$child_pids[$pid]);
             } elseif ($pid > 0) {
-                // @phan-suppress-next-line PhanPartialTypeMismatchProperty
                 self::$exited_pid_status[$pid] = $status;
             }
             $pid = \pcntl_waitpid(-1, $status, WNOHANG);
@@ -524,7 +523,6 @@ class Request
                 $files = $request[self::PARAM_FILES] ?? null;
                 $request[self::PARAM_FORMAT] = $request[self::PARAM_FORMAT] ?? 'json';
                 $error_message = null;
-                // @phan-suppress-next-line PhanRedundantCondition failed to infer other types for PARAM_FILES were possible
                 if (\is_array($files) && count($files)) {
                     foreach ($files as $file) {
                         if (!\is_string($file)) {
@@ -574,7 +572,6 @@ class Request
             Daemon::debugf("This is the main process pretending to be the fork");
             self::$child_pids = [];
             // This is running on the only thread, so configure $request_obj to throw ExitException instead of calling exit()
-            // @phan-suppress-next-line PhanPartialTypeMismatchArgument pre-existing
             $request_obj = new self($responder, $request, null, false);
             $temporary_file_mapping = $request_obj->getTemporaryFileMapping();
             if (count($temporary_file_mapping) > 0) {
@@ -589,7 +586,6 @@ class Request
         } elseif ($fork_result === 0) {
             Daemon::debugf("This is the fork");
             self::handleBecomingChildAnalysisProcess();
-            // @phan-suppress-next-line PhanPartialTypeMismatchArgument pre-existing
             $request_obj = new self($responder, $request, null, true);
             $temporary_file_mapping = $request_obj->getTemporaryFileMapping();
             if (count($temporary_file_mapping) > 0) {

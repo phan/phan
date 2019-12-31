@@ -435,4 +435,14 @@ interface FunctionInterface extends AddressableElementInterface
      * @internal
      */
     public function getCommentParamAssertionClosure(CodeBase $code_base) : ?Closure;
+
+    /**
+     * @return array<mixed, UnionType> very conservatively maps variable names to union types they can have.
+     * Entries are omitted if there are possible assignments that aren't known.
+     *
+     * This is useful as a fallback for determining missing types when analyzing the first iterations of loops.
+     *
+     * Other approaches, such as analyzing loops multiple times, are possible, but not implemented.
+     */
+    public function getVariableTypeFallbackMap(CodeBase $code_base) : array;
 }

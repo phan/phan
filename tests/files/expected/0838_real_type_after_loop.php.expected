@@ -1,0 +1,4 @@
+%s:10 PhanDebugAnnotation @phan-debug-var requested for variable $is_valid - it has union type bool(real=bool)
+%s:12 PhanDebugAnnotation @phan-debug-var requested for variable $is_valid - it has union type bool(real=bool)
+%s:22 PhanDebugAnnotation @phan-debug-var requested for variable $is_valid - it has union type bool(real=bool)
+%s:24 PhanDebugAnnotation @phan-debug-var requested for variable $is_valid - it has union type bool(real=bool)

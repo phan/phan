@@ -1423,10 +1423,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                             // TODO: Also support switch(get_class($variable))
                             $child_context = $switch_variable_condition($child_context, $case_cond_node);
                             if ($previous_child_context !== null) {
-                                // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this being non-null is implied by switch_variable_condition
                                 $variable = $child_context->getScope()->getVariableByNameOrNull($var_name);
                                 if ($variable) {
-                                    // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this being non-null is implied by switch_variable_condition
                                     $old_variable = $previous_child_context->getScope()->getVariableByNameOrNull($var_name);
 
                                     if ($old_variable) {

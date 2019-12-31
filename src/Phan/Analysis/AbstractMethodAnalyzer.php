@@ -56,9 +56,6 @@ class AbstractMethodAnalyzer
         }
     }
 
-    /**
-     * @suppress PhanAccessMethodInternal
-     */
     private static function toRealSignature(Method $method) : string
     {
         $fqsen = $method->getDefiningFQSEN();
