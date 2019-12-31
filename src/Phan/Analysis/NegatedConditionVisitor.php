@@ -302,7 +302,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
             }
             return $callback(
                 $this,
-                $args[0],  // @phan-suppress-current-line PhanPartialTypeMismatchArgument
+                $args[0],  // @phan-suppress-current-line PhanTypeMismatchArgumentNullable
                 $context
             );
         }

@@ -60,7 +60,7 @@ if (!\function_exists('spl_object_id')) {
 
 /**
  * Methods for an AST node in context
- * @phan-file-suppress PhanPartialTypeMismatchArgument
+ * @phan-file-suppress PhanPartialTypeMismatchArgument, PhanTypeMismatchArgumentNullable
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class ContextNode

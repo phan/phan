@@ -35,7 +35,7 @@ use Phan\Language\UnionType;
  * @see UnionTypeVisitor for what should be used for the vast majority of use cases
  * @see FallbackMethodTypesVisitor for the code using this.
  *
- * @phan-file-suppress PhanPartialTypeMismatchArgument node is complicated
+ * @phan-file-suppress PhanPartialTypeMismatchArgument, PhanTypeMismatchArgumentNullable node is complicated
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal node is complicated
  */
 class FallbackUnionTypeVisitor extends KindVisitorImplementation

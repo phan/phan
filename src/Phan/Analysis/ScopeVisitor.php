@@ -125,7 +125,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
         $context = $this->context;
 
         $alias_target_map = self::aliasTargetMapFromUseNode(
-            $children['uses'],
+            $children['uses'],  // @phan-suppress-current-line PhanTypeMismatchArgumentNullable the key is also used by AST_CLOSURE
             $prefix,
             $node->flags ?? 0
         );

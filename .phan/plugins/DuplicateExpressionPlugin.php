@@ -222,7 +222,7 @@ class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
         if ($node->kind !== ast\AST_CONST) {
             return $node;
         }
-        // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal
+        // @phan-suppress-next-line PhanTypeMismatchArgumentNullableInternal
         switch (\strtolower($node->children['name']->children['name'] ?? null)) {
             case 'false':
                 return false;

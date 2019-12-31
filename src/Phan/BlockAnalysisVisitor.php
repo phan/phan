@@ -1523,7 +1523,10 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     $name = \strtolower($name);
                     if ($name === 'get_class') {
                         $switch_variable_node = $switch_case_node->children['args']->children[0] ?? null;
-                        if (($switch_variable_node->kind ?? null) !== ast\AST_VAR) {
+                        if (!$switch_variable_node instanceof Node) {
+                            return [null, null];
+                        }
+                        if ($switch_variable_node->kind !== ast\AST_VAR) {
                             return [null, null];
                         }
                         $switch_variable = (new ConditionVisitor($this->code_base, $this->context))->getVariableFromScope($switch_variable_node, $this->context);

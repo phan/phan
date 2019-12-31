@@ -667,6 +667,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         // TODO: Validate that there aren't any duplicates
         if (\count($node->children) === 1) {
             // Might be possible due to the polyfill in the future.
+            // @phan-suppress-next-line PhanTypeMismatchArgumentNullable
             return $this->__invoke($node->children[0]);
         }
         $types = [];
@@ -1597,6 +1598,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         // If we have generics, we're all set
         if (!$generic_types->isEmpty()) {
+            $generic_types = $generic_types->asNormalizedTypes();
             if (!($node->flags & self::FLAG_IGNORE_NULLABLE) && $union_type->containsNullable()) {
                 $this->emitIssue(
                     Issue::TypeArraySuspiciousNullable,

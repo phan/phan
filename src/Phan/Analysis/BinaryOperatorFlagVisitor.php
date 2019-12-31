@@ -20,6 +20,7 @@ use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\FloatType;
+use Phan\Language\Type\MixedType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\ListType;
 use Phan\Language\Type\LiteralFloatType;
@@ -1021,7 +1022,6 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             $this->should_catch_issue_exception
         );
         if (!($left_node instanceof Node)) {
-            // TODO: Warn about this being an unnecessary coalesce operation
             // TODO: Be more aggressive for constants, etc, when we are very sure the type is accurate.
             return $left_type;
         }
@@ -1032,6 +1032,18 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             $node->children['right'],
             $this->should_catch_issue_exception
         );
+        if ($left_type->isEmpty()) {
+            if ($right_type->isEmpty()) {
+                return MixedType::instance(false)->asPHPDocUnionType();
+            } elseif ($right_type->isNull()) {
+                // When the right type is null, and the left type is unknown,
+                // infer nullable mixed.
+                //
+                // To infer something useful when strict type checking is disabled,
+                // don't add mixed when the right type is something other than null.
+                return MixedType::instance(true)->asPHPDocUnionType();
+            }
+        }
 
         // On the left side, remove null and replace '?T' with 'T'
         // Don't bother if the right side contains null.
@@ -1039,6 +1051,6 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             $left_type = $left_type->nonNullableClone();
         }
 
-        return $left_type->withUnionType($right_type);
+        return $left_type->withUnionType($right_type)->asNormalizedTypes();
     }
 }

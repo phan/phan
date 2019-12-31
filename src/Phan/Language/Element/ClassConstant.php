@@ -63,8 +63,9 @@ class ClassConstant extends ClassElement implements ConstantInterface
      */
     public function getUnionType() : UnionType
     {
-        if (null !== ($union_type = $this->getFutureUnionType())) {
-            $this->setUnionType(parent::getUnionType()->withUnionType($union_type));
+        $union_type = $this->getFutureUnionType();
+        if (!\is_null($union_type)) {
+            $this->setUnionType($union_type);
         }
 
         return parent::getUnionType();
