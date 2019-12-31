@@ -1,0 +1,6 @@
+%s:2 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type \ArrayObject(real=\ArrayObject)
+%s:2 PhanUndeclaredGlobalVariable Global variable $x is undeclared
+%s:5 PhanUndeclaredThis Variable $this is undeclared
+%s:6 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is \ArrayAccess|\ArrayObject|\Countable|\IteratorAggregate|\Serializable|\Traversable|iterable but \strlen() takes string
+%s:8 PhanUndeclaredProperty Reference to undeclared property \ArrayObject->prop
+%s:10 PhanUndeclaredProperty Reference to undeclared property \ArrayObject->prop2

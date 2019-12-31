@@ -170,26 +170,24 @@ class ArrayType extends IterableType
             return $combined_type_shapes;
         }
         // if ($is_real) {
-            if ($left_array_shape_types) {
-                foreach ($combined_type_shapes as $type) {
-                    $result[] = $type;
-                }
-            } else {
-                foreach ($combined_type_shapes as $type) {
-                    foreach ($type->withFlattenedArrayShapeOrLiteralTypeInstances() as $type_part) {
-                        $result[] = $type_part;
-                    }
+        if ($left_array_shape_types) {
+            foreach ($combined_type_shapes as $type) {
+                $result[] = $type;
+            }
+        } else {
+            foreach ($combined_type_shapes as $type) {
+                foreach ($type->withFlattenedArrayShapeOrLiteralTypeInstances() as $type_part) {
+                    $result[] = $type_part;
                 }
             }
-            // @phan-suppress-next-line PhanPartialTypeMismatchArgument
-            return UnionType::getUniqueTypes($result);
-            /*
+        }
+        // @phan-suppress-next-line PhanPartialTypeMismatchArgument
+        return UnionType::getUniqueTypes($result);
+        /*
         }
         foreach ($combined_type_shapes as $type) {
             $result[] = $type;
         }
-        return
-        f
         foreach ($left_array_shape_types as $type) {
             if ($is_assignment && !$is_real) {
                 $result[] = $type;

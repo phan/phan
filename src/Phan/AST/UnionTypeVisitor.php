@@ -2157,7 +2157,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
             if ($node->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF) {
                 if (!$this->context->isInGlobalScope()) {
-                    if ($this->should_catch_issue_exception && !(($node->flags & PhanAnnotationAdder::FLAG_INITIALIZES) && $this->context->isInLoop()) ) {
+                    if ($this->should_catch_issue_exception && !(($node->flags & PhanAnnotationAdder::FLAG_INITIALIZES) && $this->context->isInLoop())) {
                         // Warn about `$var ??= expr;`, except when it's done in a loop.
                         $this->emitIssueWithSuggestion(
                             Variable::chooseIssueForUndeclaredVariable($this->context, $variable_name),

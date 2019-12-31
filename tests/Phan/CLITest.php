@@ -311,7 +311,6 @@ final class CLITest extends BaseTest
             $expected_file_contents = "```\n$usage_message```\n";
             $actual_cli_help = \file_get_contents(\dirname(__DIR__, 2) . '/internal/CLI-HELP.md');
             $this->assertSame($expected_file_contents, $actual_cli_help);
-
         } finally {
             $argv = $old_argv;
         }

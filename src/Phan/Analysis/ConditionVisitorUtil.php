@@ -14,6 +14,7 @@ use Phan\Analysis\ConditionVisitor\NotEqualsCondition;
 use Phan\Analysis\ConditionVisitor\NotIdenticalCondition;
 use Phan\AST\ASTReverter;
 use Phan\AST\ContextNode;
+use Phan\AST\PhanAnnotationAdder;
 use Phan\AST\UnionTypeVisitor;
 use Phan\BlockAnalysisVisitor;
 use Phan\CodeBase;
@@ -675,7 +676,6 @@ trait ConditionVisitorUtil
                         continue 2;
                     }
                 }
-
             }
             $combined_real_types[] = $type;
         }
@@ -1180,15 +1180,28 @@ trait ConditionVisitorUtil
                 $context->addScopeVariable($variable);
                 return $variable;
             }
-            if (!($is_in_global_scope && Config::getValue('ignore_undeclared_variables_in_global_scope'))) {
-                throw new IssueException(
-                    Issue::fromType(Variable::chooseIssueForUndeclaredVariable($context, $variable_name))(
-                        $context->getFile(),
-                        $var_node->lineno ?? 0,
-                        [$variable_name],
-                        IssueFixSuggester::suggestVariableTypoFix($this->code_base, $context, $variable_name)
-                    )
-                );
+            if (!($var_node->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF)) {
+                if ($is_in_global_scope) {
+                    if (!Config::getValue('ignore_undeclared_variables_in_global_scope')) {
+                        Issue::maybeEmitWithParameters(
+                            $this->code_base,
+                            $context,
+                            Variable::chooseIssueForUndeclaredVariable($context, $variable_name),
+                            $var_node->lineno,
+                            [$variable_name],
+                            IssueFixSuggester::suggestVariableTypoFix($this->code_base, $context, $variable_name)
+                        );
+                    }
+                } else {
+                    throw new IssueException(
+                        Issue::fromType(Variable::chooseIssueForUndeclaredVariable($context, $variable_name))(
+                            $context->getFile(),
+                            $var_node->lineno,
+                            [$variable_name],
+                            IssueFixSuggester::suggestVariableTypoFix($this->code_base, $context, $variable_name)
+                        )
+                    );
+                }
             }
             $variable = new Variable(
                 $context,

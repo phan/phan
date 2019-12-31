@@ -614,7 +614,6 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             );
         }
 
-
         try {
             // Get the variable we're operating on
             $variable = $this->getVariableFromScope($expr_node, $context);

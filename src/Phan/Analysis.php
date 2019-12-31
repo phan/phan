@@ -380,8 +380,7 @@ class Analysis
                             //      Thus, we use $fqsen->__toString() rather than $fqsen_string.
                             // 2) The parent method is included in this list, i.e. the parent method is its own defining method.
                             foreach ($methods_by_defining_fqsen[$fqsen->__toString()] ?? [] as $child_method) {
-                                if (
-                                    $child_method->getFQSEN() !== $fqsen &&
+                                if ($child_method->getFQSEN() !== $fqsen &&
                                     isset($return_type_override_fqsen_strings[$child_method->getFQSEN()->__toString()])
                                 ) {
                                     // An override closure targeting SubClass::foo should take precedence over BaseClass::foo

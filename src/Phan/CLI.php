@@ -1310,7 +1310,8 @@ EOT;
             }
             exit($exit_code);
         }
-        self::printHelpSection(<<<EOB
+        self::printHelpSection(
+            <<<EOB
  -f, --file-list <filename>
   A file containing a list of PHP files to be analyzed
 
@@ -1534,7 +1535,8 @@ EOB
             $forbid_color
         );
         if ($usage_type === UsageException::PRINT_EXTENDED) {
-            self::printHelpSection(<<<EOB
+            self::printHelpSection(
+                <<<EOB
 
 Extended help:
  -a, --dump-ast
@@ -2302,10 +2304,11 @@ EOB
                         $buf .= str_repeat(" ", self::PROGRESS_WIDTH - $mod);
                     }
                     // @phan-suppress-next-line PhanPluginPrintfVariableFormatString
-                    $buf .= " " . \sprintf("%" . strlen((string)(int)$count) . "d / %d (%3d%%) %.0fMB" . PHP_EOL,
+                    $buf .= " " . \sprintf(
+                        "%" . strlen((string)(int)$count) . "d / %d (%3d%%) %.0fMB" . PHP_EOL,
                         $offset ?? 0,
                         (int)$count,
-                        100*$p,
+                        100 * $p,
                         $memory
                     );
                 }

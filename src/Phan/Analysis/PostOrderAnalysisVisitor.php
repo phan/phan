@@ -1480,7 +1480,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $real_method_return_type = $method_return_type->getRealUnionType();
                 $real_expression_type = $expression_type->getRealUnionType();
                 if ($real_method_return_type->isVoidType() ||
-                    ($expression_type->hasRealTypeSet() &&!$real_expression_type->canCastToDeclaredType($this->code_base, $this->context, $real_method_return_type))) {
+                    ($expression_type->hasRealTypeSet() && !$real_expression_type->canCastToDeclaredType($this->code_base, $this->context, $real_method_return_type))) {
                     $this->emitIssue(
                         Issue::TypeMismatchReturnReal,
                         $lineno,
