@@ -791,6 +791,8 @@ final class VariableTrackerVisitor extends AnalysisVisitor
             // Skip over empty case statements (incomplete heuristic), TODO: test
             if (\count($stmts_node->children ?? []) !== 0 || $i === \count($node->children) - 1) {
                 if ($inner_scope) {
+                    // $this->analyze() returns a VariableTrackingLoopScope when a VariableTrackingLoopScope is passed in.
+                    '@phan-var VariableTrackingLoopScope $inner_scope';
                     $inner_scope = clone($inner_scope);
                     $inner_scope->inheritDefsFromOuterScope($outer_scope);
                 } else {

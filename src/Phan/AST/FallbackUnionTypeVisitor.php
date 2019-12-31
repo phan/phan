@@ -8,8 +8,6 @@ use ast\Node;
 use Exception;
 use Phan\AST\Visitor\KindVisitorImplementation;
 use Phan\CodeBase;
-use Phan\Exception\FQSENException;
-use Phan\Exception\IssueException;
 use Phan\Exception\NodeException;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
@@ -31,8 +29,8 @@ use Phan\Language\UnionType;
  * Determines the UnionType associated with a given node as a fallback,
  * for cases that aren't constant expressions (those get resolved by UnionTypeVisitor::unionTypeFromNode).
  *
- * This is useful for finding out possible variable types when analyzing loops, because not all assignments are seen yet.
- * This is very conservative in UnionTypes it infers
+ * This is useful for finding out possible variable types when analyzing loops, because not all assignments (from later in the loop) are seen yet.
+ * This is very conservative in UnionTypes it infers.
  *
  * @see UnionTypeVisitor for what should be used for the vast majority of use cases
  * @see FallbackMethodTypesVisitor for the code using this.
@@ -575,9 +573,6 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
      * @return UnionType
      * The set of types that are possibly produced by the
      * given node
-     *
-     * @throws IssueException
-     * An exception is thrown if we can't find the constant
      */
     public function visitClassConst(Node $node) : UnionType
     {
@@ -614,14 +609,12 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
      * Visit a node with kind `\ast\AST_CALL`
      *
      * @param Node $node
-     * A node of the type indicated by the method name that we'd
+     * A node of the type indicated by the function name that we'd
      * like to figure out the type that it produces.
      *
      * @return UnionType
      * The set of types that are possibly produced by the
      * given node
-     *
-     * @throws FQSENException if the fqsen for the called function is empty/invalid
      */
     public function visitCall(Node $node) : UnionType
     {
@@ -630,30 +623,111 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
             // Give up on closures, callables
             return UnionType::empty();
         }
-        $function_list_generator = (new ContextNode(
-            $this->code_base,
-            $this->context,
-            $expression
-        ))->getFunctionFromNode(true);
+        try {
+            $function_list_generator = (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $expression
+            ))->getFunctionFromNode(true);
 
-        $possible_types = null;
-        foreach ($function_list_generator as $function) {
-            $function->analyzeReturnTypes($this->code_base);  // For daemon/server mode, call this to consistently ensure accurate return types.
+            $possible_types = null;
+            foreach ($function_list_generator as $function) {
+                $function->analyzeReturnTypes($this->code_base);  // For daemon/server mode, call this to consistently ensure accurate return types.
 
-            // NOTE: Deliberately do not use the closure for $function->hasDependentReturnType().
-            // Most plugins expect the context to have variables, which this won't provide.
-            $function_types = $function->getUnionType();
-            if ($possible_types) {
-                $possible_types = $possible_types->withUnionType($function_types);
-            } else {
-                $possible_types = $function_types;
+                // NOTE: Deliberately do not use the closure for $function->hasDependentReturnType().
+                // Most plugins expect the context to have variables, which this won't provide.
+                $function_types = $function->getUnionType();
+                if ($possible_types) {
+                    $possible_types = $possible_types->withUnionType($function_types);
+                } else {
+                    $possible_types = $function_types;
+                }
             }
-        }
 
-        return $possible_types ?? UnionType::empty();
+            return $possible_types ?? UnionType::empty();
+        } catch (Exception $_) {
+            return UnionType::empty();
+        }
     }
 
-    // TODO: Support AST_STATIC_CALL
+    /**
+     * Visit a node with kind `\ast\AST_STATIC_CALL`
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
+     */
+    public function visitStaticCall(Node $node) : UnionType
+    {
+        ['class' => $class_node, 'method' => $method_name] = $node->children;
+        if (!\is_string($method_name) || !($class_node instanceof Node) || $class_node->kind !== ast\AST_NAME) {
+            // Give up on dynamic calls
+            return UnionType::empty();
+        }
+        try {
+            $possible_types = null;
+            foreach (UnionTypeVisitor::classListFromNodeAndContext($this->code_base, $this->context, $class_node) as $class) {
+                if (!$class->hasMethodWithName($this->code_base, $method_name)) {
+                    return UnionType::empty();
+                }
+                $method = $class->getMethodByName($this->code_base, $method_name);
+                $method_types = $method->getUnionType();
+                if ($possible_types) {
+                    $possible_types = $possible_types->withUnionType($method_types);
+                } else {
+                    $possible_types = $method_types;
+                }
+            }
+            return $possible_types ?? UnionType::empty();
+        } catch (Exception $_) {
+            return UnionType::empty();
+        }
+    }
+
+    /**
+     * Visit a node with kind `\ast\AST_METHOD_CALL`.
+     *
+     * Conservatively try to infer the returned union type of calls such
+     * as $this->someMethod(...)
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
+     */
+    public function visitMethodCall(Node $node) : UnionType
+    {
+        ['expr' => $expr_node, 'method' => $method_name] = $node->children;
+        if (!\is_string($method_name) || !($expr_node instanceof Node) || $expr_node->kind !== ast\AST_VAR) {
+            // Give up on dynamic calls
+            return UnionType::empty();
+        }
+        // Only attempt to handle $this->method()
+        // Don't attempt to handle possibility of closures being rebound.
+        if ($expr_node->children['name'] !== 'this') {
+            return UnionType::empty();
+        }
+        if (!$this->context->isInClassScope()) {
+            return UnionType::empty();
+        }
+        try {
+            $class = $this->context->getClassInScope($this->code_base);
+            if (!$class->hasMethodWithName($this->code_base, $method_name)) {
+                return UnionType::empty();
+            }
+            $method = $class->getMethodByName($this->code_base, $method_name);
+            return $method->getUnionType();
+        } catch (Exception $_) {
+            return UnionType::empty();
+        }
+    }
 
     /**
      * Visit a node with kind `\ast\AST_ASSIGN`
@@ -721,10 +795,6 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
      * @return UnionType
      * The set of types that are possibly produced by the
      * given node
-     *
-     * @throws IssueException
-     * An exception is thrown if we can't find a class for
-     * the given type
      */
     private function visitClassNameNode(Node $node) : ?UnionType
     {
