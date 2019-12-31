@@ -3,6 +3,11 @@ Phan NEWS
 ??? ?? 20??, Phan 2.4.7 (dev)
 -----------------------
 
+New features(CLI, Configs):
++ Add an environment variable `PHAN_NO_UTF8=1` to always avoid UTF-8 in progress bars.
+  This may help with terminals or logs that have issues with UTF-8 output.
+  Error messages will continue to include UTF-8 when part of the error.
+
 New Features(Analysis):
 + Infer that merging defined variables with possibly undefined variables is also possibly undefined. (#1942)
 + Add a fallback when some types of conditional check results in a empty union type in a loop:

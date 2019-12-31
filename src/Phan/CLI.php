@@ -2345,6 +2345,9 @@ EOB
      */
     public static function doesTerminalSupportUtf8() : bool
     {
+        if (getenv('PHAN_NO_UTF8')) {
+            return false;
+        }
         // TODO: Use PHP_OS_FAMILY once the minimum supported php version is 7.2 or higher.
         if (\DIRECTORY_SEPARATOR === '\\') {
             if (!\function_exists('sapi_windows_cp_is_utf8') || !\sapi_windows_cp_is_utf8()) {
