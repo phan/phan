@@ -1,6 +1,6 @@
 Phan NEWS
 
-??? ?? 20??, Phan 2.4.7 (dev)
+??? ?? 2020, Phan 2.4.7 (dev)
 -----------------------
 
 New features(CLI, Configs):
