@@ -1,6 +1,8 @@
-%s:3 PhanDebugAnnotation @phan-debug-var requested for variable $vals - it has union type non-empty-list<string>(real=array)
+%s:3 PhanDebugAnnotation @phan-debug-var requested for variable $vals - it has union type non-empty-list<string>(real=?non-empty-list<string>)
 %s:3 PhanParamSuspiciousOrder Argument #1 of this call to \explode is typically a literal or constant but isn't, but argument #2 (which is typically a variable) is a literal or constant. The arguments may be in the wrong order.
 %s:3 PhanTypeMismatchArgumentInternal Argument 2 ($str) is 2 but \explode() takes string
-%s:5 PhanDebugAnnotation @phan-debug-var requested for variable $methodName - it has union type string
+%s:5 PhanDebugAnnotation @phan-debug-var requested for variable $methodName - it has union type string(real=?string)
 %s:5 PhanUnusedVariable Unused definition of variable $className
-%s:7 PhanDebugAnnotation @phan-debug-var requested for variable $methodName - it has union type string(real=non-empty-array<mixed,mixed>|object|string)
+%s:7 PhanDebugAnnotation @phan-debug-var requested for variable $methodName - it has union type string(real=string)
+%s:11 PhanDebugAnnotation @phan-debug-var requested for variable $nvals - it has union type list<string>(real=?list<string>)
+%s:11 PhanUnusedVariable Unused definition of variable $nvals (Did you mean $vals)
