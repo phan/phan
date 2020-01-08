@@ -39,7 +39,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
     }
 
     /**
-     * @return array<string,array{0:array,1:string}> Array of <filename => [filename]>
+     * @return array<mixed,array{0:list<string>,1:string}> Array of <filename => [filename]>
      */
     abstract public function getTestFiles(): array;
 

@@ -765,6 +765,9 @@ final class ArgumentType
         if (!is_string($issue_type)) {
             return;
         }
+        // FIXME call memoizeFlushAll not just on types in Type::$canonical_object_map,
+        // but other derived types. Alternately, move away from asExpandedTypes for anything except
+        // classlikes, and pass in the CodeBase to canCastToUnionType and other methods.
         if ($issue_type === Issue::TypeMismatchArgumentReal) {
             Issue::maybeEmit(
                 $code_base,

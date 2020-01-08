@@ -1093,6 +1093,7 @@ class AssignmentVisitor extends AnalysisVisitor
                     $property_union_type,
                     $this->code_base
                 )) {
+                    // echo "Emitting warning for $new_types\n";
                     // TODO: Don't emit if array shape type is compatible with the original value of $property_union_type
                     $this->emitIssue(
                         self::isRealMismatch($this->code_base, $property->getRealUnionType(), $resolved_right_type) ? Issue::TypeMismatchPropertyReal : Issue::TypeMismatchProperty,
@@ -1139,6 +1140,7 @@ class AssignmentVisitor extends AnalysisVisitor
                         'null'
                     );
                 } else {
+                    // echo "Emitting warning for {$resolved_right_type->asExpandedTypes($this->code_base)} to {$property_union_type->asExpandedTypes($this->code_base)}\n";
                     $this->emitIssue(
                         self::isRealMismatch($this->code_base, $property->getRealUnionType(), $resolved_right_type) ? Issue::TypeMismatchPropertyReal : Issue::TypeMismatchProperty,
                         $node->lineno,
