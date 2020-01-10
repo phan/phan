@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan;
 
@@ -29,6 +31,7 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
 use Symfony\Component\Console\Terminal;
+
 use function array_map;
 use function array_slice;
 use function count;
@@ -40,6 +43,7 @@ use function is_resource;
 use function is_string;
 use function str_repeat;
 use function strlen;
+
 use const DIRECTORY_SEPARATOR;
 use const EXIT_FAILURE;
 use const EXIT_SUCCESS;

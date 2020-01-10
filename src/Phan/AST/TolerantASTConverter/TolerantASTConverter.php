@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\AST\TolerantASTConverter;
 
@@ -22,6 +24,7 @@ use Microsoft\PhpParser\TokenKind;
 use Phan\CLI;
 use Phan\Library\Cache;
 use RuntimeException;
+
 use function array_merge;
 use function class_exists;
 use function count;
@@ -31,6 +34,7 @@ use function is_array;
 use function sprintf;
 use function substr;
 use function var_export;
+
 use const FILTER_FLAG_ALLOW_HEX;
 use const FILTER_FLAG_ALLOW_OCTAL;
 use const FILTER_VALIDATE_FLOAT;

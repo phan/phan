@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Plugin;
 
@@ -67,10 +69,12 @@ use Phan\PluginV3\SuppressionCapability;
 use Phan\Suggestion;
 use Throwable;
 use UnusedSuppressionPlugin;
+
 use function get_class;
 use function is_null;
 use function is_object;
 use function property_exists;
+
 use const EXIT_FAILURE;
 use const PHP_EOL;
 use const STDERR;

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\AST;
 
@@ -24,6 +26,7 @@ use Phan\Library\FileCacheEntry;
 use Phan\Phan;
 use Phan\Plugin\ConfigPluginSet;
 use Throwable;
+
 use function error_clear_last;
 use function error_get_last;
 use function error_reporting;

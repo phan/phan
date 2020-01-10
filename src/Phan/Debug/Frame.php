@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Debug;
 
@@ -13,6 +15,7 @@ use Phan\Language\UnionType;
 use Phan\Library\None;
 use Phan\Library\Some;
 use Phan\Library\StringUtil;
+
 use function count;
 use function get_class;
 use function is_array;
