@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Type;
 
@@ -13,7 +15,7 @@ use Phan\Language\Type;
  */
 class StaticOrSelfType extends Type
 {
-    public function hasStaticOrSelfTypesRecursive(CodeBase $_) : bool
+    public function hasStaticOrSelfTypesRecursive(CodeBase $_): bool
     {
         return true;
     }

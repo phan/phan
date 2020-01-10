@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Library;
 
@@ -28,7 +30,7 @@ abstract class Option
     /**
      * @return bool true if this is defined (i.e. this is an instance of Some)
      */
-    abstract public function isDefined() : bool;
+    abstract public function isDefined(): bool;
 
     /**
      * Gets the value, or throws if this was an instance of None.

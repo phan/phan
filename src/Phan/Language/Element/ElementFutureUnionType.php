@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Element;
 
@@ -30,7 +32,7 @@ trait ElementFutureUnionType
      * Set the type of this element
      * @param UnionType $type
      */
-    abstract public function setUnionType(UnionType $type) : void;
+    abstract public function setUnionType(UnionType $type): void;
 
     /**
      * Sets a value that can be used once parsing/hydration is completed,
@@ -38,7 +40,7 @@ trait ElementFutureUnionType
      */
     public function setFutureUnionType(
         FutureUnionType $future_union_type
-    ) : void {
+    ): void {
         $this->future_union_type = $future_union_type;
     }
 
@@ -49,7 +51,7 @@ trait ElementFutureUnionType
      * @internal because this is mostly useful for Phan internals
      *           (e.g. a property with an unresolved future union type can't have a template type)
      */
-    public function hasUnresolvedFutureUnionType() : bool
+    public function hasUnresolvedFutureUnionType(): bool
     {
         return $this->future_union_type !== null;
     }
@@ -60,7 +62,7 @@ trait ElementFutureUnionType
      * on this object or null if there is no future
      * union type.
      */
-    public function getFutureUnionType() : ?UnionType
+    public function getFutureUnionType(): ?UnionType
     {
         $future_union_type = $this->future_union_type;
         if ($future_union_type === null) {

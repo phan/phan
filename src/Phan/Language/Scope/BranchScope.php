@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Scope;
 
@@ -26,7 +28,7 @@ class BranchScope extends Scope
      *
      * TODO: Allow unsetting a variable within a scope, and properly account for that in this check.
      */
-    public function hasVariableWithName(string $name) : bool
+    public function hasVariableWithName(string $name): bool
     {
         return (
             \array_key_exists($name, $this->variable_map)
@@ -34,7 +36,7 @@ class BranchScope extends Scope
         );
     }
 
-    public function getVariableByName(string $name) : Variable
+    public function getVariableByName(string $name): Variable
     {
         return (
             $this->variable_map[$name]
@@ -42,7 +44,7 @@ class BranchScope extends Scope
         );
     }
 
-    public function getVariableByNameOrNull(string $name) : ?Variable
+    public function getVariableByNameOrNull(string $name): ?Variable
     {
         return (
             $this->variable_map[$name]
@@ -54,7 +56,7 @@ class BranchScope extends Scope
      * @return array<string|int,Variable> (keys are variable names, which are *almost* always strings)
      * A map from name to Variable in this scope
      */
-    public function getVariableMap() : array
+    public function getVariableMap(): array
     {
         return $this->variable_map + $this->parent_scope->getVariableMap();
     }
@@ -63,7 +65,7 @@ class BranchScope extends Scope
      * @return array<string|int,Variable> (keys are variable names, which are *almost* always strings)
      * A map from name to Variable in this scope
      */
-    public function getVariableMapExcludingScope(?Scope $common_scope) : array
+    public function getVariableMapExcludingScope(?Scope $common_scope): array
     {
         if ($this === $common_scope) {
             return [];
@@ -75,7 +77,7 @@ class BranchScope extends Scope
      * @return FullyQualifiedClassName
      * Crawl the scope hierarchy to get a class FQSEN.
      */
-    public function getClassFQSEN() : FullyQualifiedClassName
+    public function getClassFQSEN(): FullyQualifiedClassName
     {
         return $this->parent_scope->getClassFQSEN();
     }
@@ -85,7 +87,7 @@ class BranchScope extends Scope
      * Crawl the scope hierarchy to get a class FQSEN.
      * Return null if there is no class FQSEN.
      */
-    public function getClassFQSENOrNull() : ?FullyQualifiedClassName
+    public function getClassFQSENOrNull(): ?FullyQualifiedClassName
     {
         return $this->parent_scope->getClassFQSENOrNull();
     }

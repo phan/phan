@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Type;
 
@@ -21,18 +23,18 @@ final class CallableType extends NativeType implements CallableInterface
      * @return bool
      * True if this type is a callable or a Closure.
      */
-    public function isCallable() : bool
+    public function isCallable(): bool
     {
         return true;
     }
 
-    protected function canCastToNonNullableType(Type $type) : bool
+    protected function canCastToNonNullableType(Type $type): bool
     {
         // CallableDeclarationType is not a native type, we check separately here
         return parent::canCastToNonNullableType($type) || $type instanceof CallableDeclarationType;
     }
 
-    protected function canCastToNonNullableTypeWithoutConfig(Type $type) : bool
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type): bool
     {
         // CallableDeclarationType is not a native type, we check separately here
         return parent::canCastToNonNullableTypeWithoutConfig($type) || $type instanceof CallableDeclarationType;
@@ -43,17 +45,17 @@ final class CallableType extends NativeType implements CallableInterface
      * e.g. returns true for false, array, int
      *      returns false for callable, string, array, object, iterable, T, etc.
      */
-    public function isDefiniteNonCallableType() : bool
+    public function isDefiniteNonCallableType(): bool
     {
         return false;
     }
 
-    public function isPossiblyObject() : bool
+    public function isPossiblyObject(): bool
     {
         return true;  // callable-object, Closure, etc. are objects
     }
 
-    public function asObjectType() : ?Type
+    public function asObjectType(): ?Type
     {
         return CallableObjectType::instance(false);
     }
@@ -62,17 +64,17 @@ final class CallableType extends NativeType implements CallableInterface
      * Convert this to a subtype that satisfies is_array(), or returns null
      * @see UnionType::arrayTypesStrictCast
      */
-    public function asArrayType() : ?Type
+    public function asArrayType(): ?Type
     {
         return CallableArrayType::instance(false);
     }
 
-    public function asScalarType() : ?Type
+    public function asScalarType(): ?Type
     {
         return CallableStringType::instance(false);
     }
 
-    public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other) : bool
+    public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other): bool
     {
         if ($other instanceof IterableType) {
             return !$other->isDefiniteNonCallableType();

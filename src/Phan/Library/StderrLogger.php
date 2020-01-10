@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Library;
 
@@ -18,7 +20,7 @@ class StderrLogger implements LoggerInterface
      * @param array<string,mixed> $unused_context
      * @override
      */
-    public function log($level, $message, array $unused_context = []) : void
+    public function log($level, $message, array $unused_context = []): void
     {
         \fprintf(\STDERR, "[%s] %s\n", $level, $message);
     }

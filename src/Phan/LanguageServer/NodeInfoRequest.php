@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\LanguageServer;
 
@@ -42,14 +44,14 @@ abstract class NodeInfoRequest
      * If a response hasn't been sent to the client, then send a null response
      * so that it knows it should stop waiting.
      */
-    abstract public function finalize() : void;
+    abstract public function finalize(): void;
 
     /**
      * Returns the file URL for which info is being requested
      *
      * @suppress PhanUnreferencedPublicMethod TODO: Compare against the context->getPath() to be sure we're looking up the right node
      */
-    final public function getUrl() : string
+    final public function getUrl(): string
     {
         return $this->uri;
     }
@@ -57,7 +59,7 @@ abstract class NodeInfoRequest
     /**
      * Returns the path for which info is being requested
      */
-    final public function getPath() : string
+    final public function getPath(): string
     {
         return $this->path;
     }
@@ -65,7 +67,7 @@ abstract class NodeInfoRequest
     /**
      * Returns the position (line+column) for which info is being requested
      */
-    final public function getPosition() : Position
+    final public function getPosition(): Position
     {
         return $this->position;
     }
@@ -75,7 +77,7 @@ abstract class NodeInfoRequest
      *
      * (to be used to fetch/await the value)
      */
-    final public function getPromise() : Promise
+    final public function getPromise(): Promise
     {
         return $this->promise;
     }

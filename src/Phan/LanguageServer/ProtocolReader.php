@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Phan\LanguageServer;
@@ -17,5 +18,5 @@ use Sabre\Event\EmitterInterface;
  */
 interface ProtocolReader extends EmitterInterface
 {
-    public function stopAcceptingNewRequests() : void;
+    public function stopAcceptingNewRequests(): void;
 }

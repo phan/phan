@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Phan\LanguageServer\Protocol;
@@ -55,7 +56,7 @@ class MarkupContent
      * Generates a MarkupContent from an unserialized data array.
      * @param array{kind:string,value:string} $data
      */
-    public static function fromArray(array $data) : self
+    public static function fromArray(array $data): self
     {
         return new self(
             $data['kind'],

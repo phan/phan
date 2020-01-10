@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests;
 
@@ -19,5 +21,5 @@ interface CodeBaseAwareTestInterface
      *
      * @param ?CodeBase $code_base
      */
-    public function setCodeBase(CodeBase $code_base = null) : void;
+    public function setCodeBase(CodeBase $code_base = null): void;
 }

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Phan\LanguageServer\Protocol;
@@ -99,7 +100,7 @@ class CompletionItem
      * Create a CompletionItem from a serialized array $data
      * @param array<string,mixed> $data
      */
-    public static function fromArray(array $data) : CompletionItem
+    public static function fromArray(array $data): CompletionItem
     {
         return new self(
             $data['label'],

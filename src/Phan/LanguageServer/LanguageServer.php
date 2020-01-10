@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\LanguageServer;
 
@@ -174,7 +176,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         parent::__construct($this, '/');
         $this->protocolReader = $reader;
         $this->file_mapping = new FileMapping();
-        $reader->on('close', function () : void {
+        $reader->on('close', function (): void {
             if (!$this->is_accepting_new_requests) {
                 // This is the forked process, which forced the ProtocolReader to close. Don't exit().
                 // Instead, carry on and analyze the input files.
@@ -183,9 +185,9 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             $this->shutdown();
             $this->exit();
         });
-        $reader->on('message', function (Message $msg) : void {
+        $reader->on('message', function (Message $msg): void {
             /** @suppress PhanUndeclaredProperty Request->body->id is a request with an id */
-            coroutine(function () use ($msg) : \Generator {
+            coroutine(function () use ($msg): \Generator {
                 $body = $msg->body;
                 if (!$body) {
                     return;
@@ -227,7 +229,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             })->otherwise('\\Phan\\LanguageServer\\Utils::crash');
         });
 
-        $reader->on('readMessageGroup', function () : void {
+        $reader->on('readMessageGroup', function (): void {
             $this->finalizeAnalyzingURIs();
         });
 
@@ -261,7 +263,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      *
      * @suppress PhanUndeclaredConstant, UnusedSuppression (pcntl unavailable on Windows)
      */
-    public static function run(CodeBase $code_base, Closure $file_path_lister, array $options) : ?Request
+    public static function run(CodeBase $code_base, Closure $file_path_lister, array $options): ?Request
     {
         if (!$code_base->isUndoTrackingEnabled()) {
             throw new AssertionError("Expected undo tracking to be enabled");
@@ -272,13 +274,13 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
                 /**
                  * @param ?(int|array) $status
                  */
-                static function (int $signo, $status = null, ?int $pid = null) : void {
+                static function (int $signo, $status = null, ?int $pid = null): void {
                     Request::childSignalHandler($signo, $status, $pid);
                 }
             );
         }
 
-        $make_language_server = static function (ProtocolStreamReader $in, ProtocolStreamWriter $out) use ($code_base, $file_path_lister) : LanguageServer {
+        $make_language_server = static function (ProtocolStreamReader $in, ProtocolStreamWriter $out) use ($code_base, $file_path_lister): LanguageServer {
             return new LanguageServer(
                 $in,
                 $out,
@@ -438,7 +440,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     /**
      * Asynchronously analyze the given URI.
      */
-    public function analyzeURIAsync(string $uri) : void
+    public function analyzeURIAsync(string $uri): void
     {
         $path_to_analyze = Utils::uriToPath($uri);
         Logger::logInfo("Called analyzeURIAsync, uri=$uri, path=$path_to_analyze");
@@ -455,7 +457,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         string $uri,
         Position $position,
         bool $is_type_definition_request
-    ) : Promise {
+    ): Promise {
         // TODO: Add a way to "go to definition" (etc.) without emitting analysis results as a side effect
         $path_to_analyze = Utils::uriToPath($uri);
         $logType = $is_type_definition_request ? 'awaitTypeDefinition' : 'awaitDefinition';
@@ -481,7 +483,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     public function awaitHover(
         string $uri,
         Position $position
-    ) : Promise {
+    ): Promise {
         // TODO: Add a way to "go to definition" without emitting analysis results as a side effect
         $path_to_analyze = Utils::uriToPath($uri);
         Logger::logInfo("Called LanguageServer->awaitHover, uri=$uri, position=" . StringUtil::jsonEncode($position));
@@ -506,7 +508,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         string $uri,
         Position $position,
         CompletionContext $completion_context = null
-    ) : Promise {
+    ): Promise {
         // TODO: Add a way to "go to definition" without emitting analysis results as a side effect
         $path_to_analyze = Utils::uriToPath($uri);
         Logger::logInfo("Called LanguageServer->awaitCompletion, uri=$uri, position=" . StringUtil::jsonEncode($position));
@@ -522,7 +524,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         return $request->getPromise();
     }
 
-    private function discardPreviousNodeInfoRequest() : void
+    private function discardPreviousNodeInfoRequest(): void
     {
         $prev_node_info_request = $this->most_recent_node_info_request;
         if ($prev_node_info_request) {
@@ -540,7 +542,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      * First element maps relative path to the file URI.
      * Second element is the result of file_path_lister (unless there's nothing to analyze)
      */
-    private function getFilteredURIsToAnalyze() : array
+    private function getFilteredURIsToAnalyze(): array
     {
         $uris_to_analyze = $this->analyze_request_set;
         if (\count($uris_to_analyze) === 0) {
@@ -573,7 +575,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         return [$filtered_uris_to_analyze, $file_path_list];
     }
 
-    private function finalizeAnalyzingURIs() : void
+    private function finalizeAnalyzingURIs(): void
     {
         [$uris_to_analyze, $file_path_list] = $this->getFilteredURIsToAnalyze();
         // TODO: Add a better abstraction of
@@ -653,7 +655,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             $paths_to_analyze,
             $this->code_base,
             /** @return list<string> */
-            static function (bool $unused_recompute_file_list = false) use ($file_path_list) : array {
+            static function (bool $unused_recompute_file_list = false) use ($file_path_list): array {
                 return $file_path_list;
             },
             $this->file_mapping,
@@ -674,7 +676,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      *
      * @param resource $read_stream
      */
-    private static function waitForDataOnReadSocket($read_stream) : void
+    private static function waitForDataOnReadSocket($read_stream): void
     {
         $read = [$read_stream];
         $write = [];
@@ -690,7 +692,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      *
      * @suppress PhanAccessMethodInternal
      */
-    private function finishAnalyzingURIsWithoutPcntl(array $uris_to_analyze) : void
+    private function finishAnalyzingURIsWithoutPcntl(array $uris_to_analyze): void
     {
         $paths_to_analyze = \array_keys($uris_to_analyze);
         Logger::logInfo('in ' . __METHOD__ . ' paths: ' . StringUtil::jsonEncode($paths_to_analyze));
@@ -758,7 +760,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      * @param array{issues:array[],definitions?:?Location|?(Location[]),completions?:?(CompletionItem[]),hover_response?:Hover} $response_data
      * @see Request::respondWithIssues() for where $response_data is serialized
      */
-    private function handleJSONResponseFromWorker(array $uris_to_analyze, array $response_data) : void
+    private function handleJSONResponseFromWorker(array $uris_to_analyze, array $response_data): void
     {
         $most_recent_node_info_request = $this->most_recent_node_info_request;
         if ($most_recent_node_info_request) {
@@ -803,7 +805,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     /**
      * @param array<string,list<Diagnostic>> $diagnostics
      */
-    private function publishDiagnosticsListsForURIs(array $diagnostics) : void
+    private function publishDiagnosticsListsForURIs(array $diagnostics): void
     {
         if (count($diagnostics) === 0) {
             return;
@@ -821,7 +823,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      */
     private static $last_publish_timestamp = 0;
 
-    private static function delayBeforePublishDiagnostics() : void
+    private static function delayBeforePublishDiagnostics(): void
     {
         $delay = Config::getMinDiagnosticsDelayMs();
         if ($delay > 0) {
@@ -834,7 +836,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         }
     }
 
-    private static function delayAfterPublishDiagnostics() : void
+    private static function delayAfterPublishDiagnostics(): void
     {
         $delay = Config::getMinDiagnosticsDelayMs();
         if ($delay > 0) {
@@ -848,7 +850,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      * @param array{type:string,description:string,suggestion?:string,severity:int,location:array{path:string,lines:array{begin:int,begin_column?:int,end:int}}} $issue
      * @return null[]|string[]|Diagnostic[] - On success, returns [string $uri, Diagnostic $diagnostic]
      */
-    private static function generateDiagnostic(array $issue) : array
+    private static function generateDiagnostic(array $issue): array
     {
         if ($issue['type'] !== 'issue') {
             return [null, null];
@@ -885,7 +887,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      * @return int
      * A DiagnosticSeverity constant used by the language server protocol.
      */
-    public static function diagnosticSeverityFromPhanSeverity(int $severity) : int
+    public static function diagnosticSeverityFromPhanSeverity(int $severity): int
     {
         switch ($severity) {
             case Issue::SEVERITY_LOW:
@@ -955,7 +957,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      */
     public function initialize(ClientCapabilities $capabilities, string $rootPath = null, int $processId = null): Promise
     {
-        return coroutine(function () : \Generator {
+        return coroutine(function (): \Generator {
             // Eventually, this might block on something. Leave it as a generator.
             // @phan-suppress-next-line PhanImpossibleCondition deliberately unreachable yield
             if (false) {
@@ -1007,7 +1009,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         });
     }
 
-    private static function makeTextDocumentSyncOptions() : TextDocumentSyncOptions
+    private static function makeTextDocumentSyncOptions(): TextDocumentSyncOptions
     {
         $textDocumentSyncOptions = new TextDocumentSyncOptions();
         $textDocumentSyncOptions->openClose = true;
@@ -1027,7 +1029,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      *
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function initialized() : void
+    public function initialized(): void
     {
         Logger::logInfo("Called initialized on language server, currently a no-op");
     }
@@ -1037,7 +1039,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      * (otherwise the response might not be delivered correctly to the client). There is a separate exit notification that
      * asks the server to exit.
      */
-    public function shutdown() : void
+    public function shutdown(): void
     {
         // TODO: Does phan need to do anything else except respond?
         Logger::logInfo("Called shutdown on language server");
@@ -1046,7 +1048,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     /**
      * A notification to ask the server to exit its process.
      */
-    public function exit() : void
+    public function exit(): void
     {
         // This is handled by the main process. No forks are active.
         Logger::logInfo("Called exit on language server");

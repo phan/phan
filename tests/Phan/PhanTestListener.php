@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests;
 
@@ -27,7 +29,7 @@ final class PhanTestListener implements TestListener
 {
     use TestListenerDefaultImplementation;
 
-    public function startTest(Test $test) : void
+    public function startTest(Test $test): void
     {
         if ($test instanceof CodeBaseAwareTestInterface) {
             // We're holding a static reference to the
@@ -58,7 +60,7 @@ final class PhanTestListener implements TestListener
     /**
      * @param float $time @phan-unused-param
      */
-    public function endTest(Test $test, float $time) : void
+    public function endTest(Test $test, float $time): void
     {
         if ($test instanceof CodeBaseAwareTestInterface) {
             $test->setCodeBase(null);

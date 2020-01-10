@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Plugin\Internal\UseReturnValuePlugin;
 
@@ -23,7 +25,7 @@ class PureMethodInferrer
     /**
      * Identify which methods are pure, recursively.
      */
-    public static function identifyPureMethods(CodeBase $code_base) : void
+    public static function identifyPureMethods(CodeBase $code_base): void
     {
         $graph = new PureMethodGraph($code_base);
         // $start = microtime(true);
@@ -41,7 +43,7 @@ class PureMethodInferrer
         // printf("Marking functions as pure took %.f seconds\n", $end - $start);
     }
 
-    private static function checkIsReadOnlyMethod(CodeBase $code_base, Method $method, PureMethodGraph $graph) : void
+    private static function checkIsReadOnlyMethod(CodeBase $code_base, Method $method, PureMethodGraph $graph): void
     {
         if ($method->isPHPInternal() || $method->isAbstract()) {
             return;
@@ -71,7 +73,7 @@ class PureMethodInferrer
         self::checkIsReadOnlyFunctionCommon($code_base, $method, $graph);
     }
 
-    private static function checkIsReadOnlyFunction(CodeBase $code_base, Func $func, PureMethodGraph $graph) : void
+    private static function checkIsReadOnlyFunction(CodeBase $code_base, Func $func, PureMethodGraph $graph): void
     {
         if ($func->isPHPInternal()) {
             return;
@@ -88,7 +90,7 @@ class PureMethodInferrer
     /**
      * @param Func|Method $method
      */
-    private static function checkIsReadOnlyFunctionCommon(CodeBase $code_base, FunctionInterface $method, PureMethodGraph $graph) : void
+    private static function checkIsReadOnlyFunctionCommon(CodeBase $code_base, FunctionInterface $method, PureMethodGraph $graph): void
     {
         if ($method->getFlags() & ast\flags\FUNC_RETURNS_REF) {
             return;
@@ -118,7 +120,7 @@ class PureMethodInferrer
      * Emit PhanUseReturnValueNoopVoid for regular function/methods
      * @internal
      */
-    public static function warnNoopVoid(CodeBase $code_base, FunctionInterface $method) : void
+    public static function warnNoopVoid(CodeBase $code_base, FunctionInterface $method): void
     {
         if ($method instanceof Method) {
             if ($method->isMagic()) {

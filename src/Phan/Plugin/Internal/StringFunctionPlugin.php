@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Plugin\Internal;
 
@@ -27,7 +29,7 @@ final class StringFunctionPlugin extends PluginV3 implements
      * @param Node|string|float|int|null $arg
      * @return bool true if the expression is simple to look up.
      */
-    private static function isSimpleExpression($arg) : bool
+    private static function isSimpleExpression($arg): bool
     {
         if (\is_scalar($arg)) {
             return true;
@@ -64,9 +66,9 @@ final class StringFunctionPlugin extends PluginV3 implements
     /**
      * @return array<string,Closure(CodeBase,Context,FunctionInterface,array,?Node):void>
      */
-    private static function getAnalyzeFunctionCallClosuresStatic() : array
+    private static function getAnalyzeFunctionCallClosuresStatic(): array
     {
-        $make_order_warner = static function (int $expected_const_pos, int $expected_variable_pos) : Closure {
+        $make_order_warner = static function (int $expected_const_pos, int $expected_variable_pos): Closure {
             $expected_arg_count = 1 + (int)\max($expected_const_pos, $expected_variable_pos);
             /**
              * @param list<Node|int|float|string> $args
@@ -81,7 +83,7 @@ final class StringFunctionPlugin extends PluginV3 implements
                 $expected_const_pos,
                 $expected_variable_pos,
                 $expected_arg_count
-) : void {
+): void {
                 if (\count($args) < $expected_arg_count) {
                     return;
                 }
@@ -199,7 +201,7 @@ final class StringFunctionPlugin extends PluginV3 implements
      * @return array<string,Closure(CodeBase,Context,FunctionInterface,array,?Node):void>
      * @override
      */
-    public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array
+    public function getAnalyzeFunctionCallClosures(CodeBase $code_base): array
     {
         // Unit tests invoke this repeatedly. Cache it.
         static $analyzers = null;

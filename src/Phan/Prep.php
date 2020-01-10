@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan;
 
@@ -25,7 +27,7 @@ class Prep
     public static function scanFileList(
         array $file_list,
         \Closure $visit_node
-    ) : void {
+    ): void {
         foreach ($file_list as $file_path) {
             // Convert the file to an Abstract Syntax Tree
             // before passing it on to the recursive version
@@ -53,7 +55,7 @@ class Prep
         Node $node,
         string $file_path,
         \Closure $visit_node
-    ) : void {
+    ): void {
         // Visit the node doing whatever the caller
         // likes
         $visit_node($node, $file_path);

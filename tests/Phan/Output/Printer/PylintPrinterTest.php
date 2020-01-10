@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests\Output\Printer;
 
@@ -14,7 +16,7 @@ use Symfony\Component\Console\Output\BufferedOutput;
 final class PylintPrinterTest extends BaseTest
 {
 
-    public function testPrintOutput() : void
+    public function testPrintOutput(): void
     {
         $output = new BufferedOutput();
 

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Phan\LanguageServer;
@@ -19,7 +20,7 @@ class IdGenerator
     /**
      * Returns a unique ID
      */
-    public function generate() : int
+    public function generate(): int
     {
         return $this->counter++;
     }

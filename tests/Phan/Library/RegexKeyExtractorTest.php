@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests\Library;
 
@@ -17,7 +19,7 @@ final class RegexKeyExtractorTest extends BaseTest
      * @param list<int|string> $expected_keys
      * @dataProvider getKeysProvider
      */
-    public function testGetKeys(string $regex, array $expected_keys) : void
+    public function testGetKeys(string $regex, array $expected_keys): void
     {
         $expected = self::toArraySet($expected_keys);
         $actual = RegexKeyExtractor::getKeys($regex);
@@ -27,7 +29,7 @@ final class RegexKeyExtractorTest extends BaseTest
     /**
      * @return list<array{0:string,1:list<int|string>}>
      */
-    public function getKeysProvider()  : array
+    public function getKeysProvider(): array
     {
         return [
             ['//',          [0]],
@@ -43,7 +45,7 @@ final class RegexKeyExtractorTest extends BaseTest
      * @param list<int|string> $list
      * @return array<int|string,true>
      */
-    private static function toArraySet(array $list) : array
+    private static function toArraySet(array $list): array
     {
         $set = [];
         foreach ($list as $key) {

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Type;
 
@@ -22,7 +24,7 @@ final class CallableObjectType extends ObjectType
         parent::__construct('\\', self::NAME, [], $is_nullable);
     }
 
-    protected function canCastToNonNullableType(Type $type) : bool
+    protected function canCastToNonNullableType(Type $type): bool
     {
         // Inverse of check in Type->canCastToNullableType
         if ($type instanceof CallableType) {
@@ -31,7 +33,7 @@ final class CallableObjectType extends ObjectType
         return parent::canCastToNonNullableType($type);
     }
 
-    protected function canCastToNonNullableTypeWithoutConfig(Type $type) : bool
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type): bool
     {
         // Inverse of check in Type->canCastToNullableType
         if ($type instanceof CallableType) {
@@ -45,13 +47,13 @@ final class CallableObjectType extends ObjectType
      * True if this type is a callable
      * @override
      */
-    public function isCallable() : bool
+    public function isCallable(): bool
     {
         return true;  // Overridden in various subclasses
     }
 
     // Definitely not possible.
-    public function canUseInRealSignature() : bool
+    public function canUseInRealSignature(): bool
     {
         return false;
     }
@@ -65,7 +67,7 @@ final class CallableObjectType extends ObjectType
      *
      * @return static
      */
-    public static function instance(bool $is_nullable) : Type
+    public static function instance(bool $is_nullable): Type
     {
         if ($is_nullable) {
             static $nullable_instance = null;
@@ -88,7 +90,7 @@ final class CallableObjectType extends ObjectType
     /**
      * @return CallableObjectType
      */
-    public function withIsNullable(bool $is_nullable) : Type
+    public function withIsNullable(bool $is_nullable): Type
     {
         if ($is_nullable === $this->is_nullable) {
             return $this;
@@ -96,7 +98,7 @@ final class CallableObjectType extends ObjectType
         return self::instance($is_nullable);
     }
 
-    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $other) : bool
+    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $other): bool
     {
         // TODO: Filter out final classes, etc.
         return $other->isPossiblyObject();

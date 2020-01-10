@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan;
 
@@ -30,7 +32,7 @@ class Debug
      *
      * @suppress PhanUnreferencedPublicMethod
      */
-    public static function mark() : void
+    public static function mark(): void
     {
         print "mark\n";
     }
@@ -42,7 +44,7 @@ class Debug
      * An AST node
      * @suppress PhanUnreferencedPublicMethod
      */
-    public static function printNode($node) : void
+    public static function printNode($node): void
     {
         print self::nodeToString($node);
     }
@@ -54,7 +56,7 @@ class Debug
      * @param Node|string|null $node
      * @param int $indent
      */
-    public static function printNodeName($node, int $indent = 0) : void
+    public static function printNodeName($node, int $indent = 0): void
     {
         print \str_repeat("\t", $indent);
         print self::nodeName($node);
@@ -65,7 +67,7 @@ class Debug
      * Print $message with the given indent level
      * @suppress PhanUnreferencedPublicMethod
      */
-    public static function print(string $message, int $indent = 0) : void
+    public static function print(string $message, int $indent = 0): void
     {
         print \str_repeat("\t", $indent);
         print $message . "\n";
@@ -77,7 +79,7 @@ class Debug
      * @param Node|string|null $node
      * @return string The name of the node
      */
-    public static function nodeName($node) : string
+    public static function nodeName($node): string
     {
         if (\is_string($node)) {
             return "string";
@@ -118,7 +120,7 @@ class Debug
         $node,
         $name = null,
         int $indent = 0
-    ) : string {
+    ): string {
         $string = \str_repeat("\t", $indent);
 
         if ($name !== null) {
@@ -175,7 +177,7 @@ class Debug
      * 'ASSIGN_DIV|TYPE_ARRAY'
      * @see self::formatFlags() for a similar function also printing the integer flag value.
      */
-    public static function astFlagDescription(int $flags, int $kind) : string
+    public static function astFlagDescription(int $flags, int $kind): string
     {
         [$exclusive, $combinable] = self::getFlagInfo();
         $flag_names = [];
@@ -202,7 +204,7 @@ class Debug
      * 'ASSIGN_DIV (26)'
      * Source: https://github.com/nikic/php-ast/blob/master/util.php
      */
-    public static function formatFlags(int $kind, int $flags) : string
+    public static function formatFlags(int $kind, int $flags): string
     {
         [$exclusive, $combinable] = self::getFlagInfo();
         if (isset($exclusive[$kind])) {
@@ -232,7 +234,7 @@ class Debug
      *
      * @suppress PhanUnreferencedPublicMethod
      */
-    public static function backtrace(int $levels = 0) : void
+    public static function backtrace(int $levels = 0): void
     {
         $bt = \debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS, $levels + 1);
         foreach ($bt as $level => $context) {
@@ -259,7 +261,7 @@ class Debug
      * @param Node|string|int|float|null $ast
      * @param int $options (self::AST_DUMP_*)
      */
-    public static function astDump($ast, int $options = 0) : string
+    public static function astDump($ast, int $options = 0): string
     {
         if ($ast instanceof Node) {
             $result = Parser::getKindName($ast->kind);
@@ -299,7 +301,7 @@ class Debug
      * @return array{0:associative-array<int,array<int,string>>,1:associative-array<int,array<int,string>>}
      * Returns [string[][] $exclusive, string[][] $combinable].
      */
-    private static function getFlagInfo() : array
+    private static function getFlagInfo(): array
     {
         // TODO: Use AST's built in flag info if available.
         static $exclusive, $combinable;
@@ -459,7 +461,7 @@ class Debug
      * Print a message with the file and line.
      * @suppress PhanUnreferencedPublicMethod added for debugging
      */
-    public static function debugLog(string $message) : void
+    public static function debugLog(string $message): void
     {
         $frame = \debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS)[0];
         \fprintf(\STDERR, "%s:%d %s\n", $frame['file'] ?? 'unknown', $frame['line'] ?? 0, $message);

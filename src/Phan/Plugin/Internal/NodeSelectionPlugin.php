@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Plugin\Internal;
 
@@ -19,7 +21,7 @@ class NodeSelectionPlugin extends PluginV3 implements PostAnalyzeNodeCapability
      * @return void
      * TODO: Fix false positive TypeMismatchDeclaredParam with Closure $closure = null in this method
      */
-    public function setNodeSelectorClosure(?Closure $closure) : void
+    public function setNodeSelectorClosure(?Closure $closure): void
     {
         NodeSelectionVisitor::$closure = $closure;
     }
@@ -27,7 +29,7 @@ class NodeSelectionPlugin extends PluginV3 implements PostAnalyzeNodeCapability
     /**
      * @return string - name of PluginAwarePostAnalysisVisitor subclass
      */
-    public static function getPostAnalyzeNodeVisitorClassName() : string
+    public static function getPostAnalyzeNodeVisitorClassName(): string
     {
         return NodeSelectionVisitor::class;
     }
@@ -59,7 +61,7 @@ class NodeSelectionVisitor extends PluginAwarePostAnalysisVisitor
      * @param list<Node> $parent_node_list
      * @see ConfigPluginSet::prepareNodeSelectionPlugin() for how this is called
      */
-    public function visitCommonImplementation(Node $node, array $parent_node_list) : void
+    public function visitCommonImplementation(Node $node, array $parent_node_list): void
     {
         if (!\property_exists($node, 'isSelected')) {
             return;

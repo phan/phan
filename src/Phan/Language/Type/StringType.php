@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Type;
 
@@ -18,30 +20,30 @@ class StringType extends ScalarType
     /** @phan-override */
     const NAME = 'string';
 
-    protected function canCastToNonNullableType(Type $type) : bool
+    protected function canCastToNonNullableType(Type $type): bool
     {
         // CallableDeclarationType is not a native type, we check separately here
         return parent::canCastToNonNullableType($type) || $type instanceof CallableDeclarationType;
     }
 
-    protected function canCastToNonNullableTypeWithoutConfig(Type $type) : bool
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type): bool
     {
         // CallableDeclarationType is not a native type, we check separately here
         return parent::canCastToNonNullableTypeWithoutConfig($type) || $type instanceof CallableDeclarationType;
     }
 
-    protected function isSubtypeOfNonNullableType(Type $type) : bool
+    protected function isSubtypeOfNonNullableType(Type $type): bool
     {
         return \get_class($type) === self::class || $type instanceof MixedType;
     }
 
     /** @override */
-    public function isPossiblyNumeric() : bool
+    public function isPossiblyNumeric(): bool
     {
         return true;
     }
 
-    public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other) : bool
+    public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other): bool
     {
         // Allow casting scalars to other scalars, but not to null.
         if ($other instanceof ScalarType) {
@@ -55,7 +57,7 @@ class StringType extends ScalarType
      * e.g. returns true for false, array, int
      *      returns false for callable, string, array, object, iterable, T, etc.
      */
-    public function isDefiniteNonCallableType() : bool
+    public function isDefiniteNonCallableType(): bool
     {
         return false;
     }
@@ -63,12 +65,12 @@ class StringType extends ScalarType
     /**
      * Returns the type after an expression such as `++$x`
      */
-    public function getTypeAfterIncOrDec() : UnionType
+    public function getTypeAfterIncOrDec(): UnionType
     {
         return UnionType::fromFullyQualifiedPHPDocString('int|string|float');
     }
 
-    public function isValidNumericOperand() : bool
+    public function isValidNumericOperand(): bool
     {
         if (Config::getValue('scalar_implicit_cast')) {
             return true;
@@ -80,27 +82,27 @@ class StringType extends ScalarType
         return \in_array('int', $string_casts, true) || \in_array('float', $string_casts, true);
     }
 
-    public function isPossiblyFalsey() : bool
+    public function isPossiblyFalsey(): bool
     {
         return true;
     }
 
-    public function isPossiblyTruthy() : bool
+    public function isPossiblyTruthy(): bool
     {
         return true;
     }
 
-    public function isAlwaysFalsey() : bool
+    public function isAlwaysFalsey(): bool
     {
         return false;
     }
 
-    public function isAlwaysTruthy() : bool
+    public function isAlwaysTruthy(): bool
     {
         return false;
     }
 
-    public function asCallableType() : ?Type
+    public function asCallableType(): ?Type
     {
         return CallableStringType::instance(false);
     }

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Plugin\Internal\VariableTracker;
 
@@ -13,6 +15,7 @@ use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Parse\ParseVisitor;
+
 use function is_string;
 
 /**
@@ -66,7 +69,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * This is the default implementation for node types which don't have any overrides
      * @override
      */
-    public function visit(Node $node) : VariableTrackingScope
+    public function visit(Node $node): VariableTrackingScope
     {
         foreach ($node->children as $child_node) {
             if (!($child_node instanceof Node)) {
@@ -83,7 +86,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @param ?Node $node a node of kind ast\AST_CALL
      * @suppress PhanUndeclaredProperty
      */
-    public static function recordDynamicVariableUse(string $var_name, ?Node $node) : void
+    public static function recordDynamicVariableUse(string $var_name, ?Node $node): void
     {
         if (!$node) {
             return;
@@ -97,7 +100,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     /**
      * @suppress PhanUndeclaredProperty
      */
-    public function visitCall(Node $node) : VariableTrackingScope
+    public function visitCall(Node $node): VariableTrackingScope
     {
         if (isset($node->dynamic_var_uses)) {
             $this->handleDynamicVarUses($node, $node->dynamic_var_uses);
@@ -115,12 +118,12 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         return $this->scope;
     }
 
-    public function visitMethodCall(Node $node) : VariableTrackingScope
+    public function visitMethodCall(Node $node): VariableTrackingScope
     {
         return $this->visitCall($node);
     }
 
-    public function visitStaticCall(Node $node) : VariableTrackingScope
+    public function visitStaticCall(Node $node): VariableTrackingScope
     {
         return $this->visitCall($node);
     }
@@ -129,7 +132,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @param Node $node a node of kind ast\AST_CALL, e.g. for compact()
      * @param array<string,string> $dynamic_var_uses
      */
-    private function handleDynamicVarUses(Node $node, array $dynamic_var_uses) : void
+    private function handleDynamicVarUses(Node $node, array $dynamic_var_uses): void
     {
         foreach ($dynamic_var_uses as $name) {
             self::$variable_graph->recordVariableUsage($name, $node, $this->scope);
@@ -139,7 +142,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     /**
      * @param array{0:non-empty-list<string>,1:string} $check_infinite_recursion an array of 1 or more argument names to check for redefinition, and a name of the method
      */
-    private function handleInfiniteRecursion(Node $node, array $check_infinite_recursion) : void
+    private function handleInfiniteRecursion(Node $node, array $check_infinite_recursion): void
     {
         [$arg_names, $method_name] = $check_infinite_recursion;
         foreach ($arg_names as $arg_name) {
@@ -158,7 +161,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * This is the default implementation for node types which don't have any overrides
      * @override
      */
-    public function visitStmtList(Node $node) : VariableTrackingScope
+    public function visitStmtList(Node $node): VariableTrackingScope
     {
         $top_level_statement = $this->top_level_statement;
         foreach ($node->children as $child_node) {
@@ -177,7 +180,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     /**
      * @override
      */
-    public function visitAssignRef(Node $node) : VariableTrackingScope
+    public function visitAssignRef(Node $node): VariableTrackingScope
     {
         $expr = $node->children['expr'];
         if ($expr instanceof Node) {
@@ -194,7 +197,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         return $this->analyzeAssignmentTarget($var_node, true, null);
     }
 
-    private static function markVariablesAsReference(Node $expr) : void
+    private static function markVariablesAsReference(Node $expr): void
     {
         while (\in_array($expr->kind, [ast\AST_DIM, ast\AST_PROP], true)) {
             $expr = $expr->children['expr'];
@@ -214,7 +217,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * Analyze X++
      * @override
      */
-    public function visitPostInc(Node $node) : VariableTrackingScope
+    public function visitPostInc(Node $node): VariableTrackingScope
     {
         return $this->analyzeIncDec($node);
     }
@@ -223,7 +226,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * Analyze X--
      * @override
      */
-    public function visitPostDec(Node $node) : VariableTrackingScope
+    public function visitPostDec(Node $node): VariableTrackingScope
     {
         return $this->analyzeIncDec($node);
     }
@@ -232,7 +235,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * Analyze ++X
      * @override
      */
-    public function visitPreInc(Node $node) : VariableTrackingScope
+    public function visitPreInc(Node $node): VariableTrackingScope
     {
         return $this->analyzeIncDec($node);
     }
@@ -241,12 +244,12 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * Analyze --X
      * @override
      */
-    public function visitPreDec(Node $node) : VariableTrackingScope
+    public function visitPreDec(Node $node): VariableTrackingScope
     {
         return $this->analyzeIncDec($node);
     }
 
-    private function analyzeIncDec(Node $node) : VariableTrackingScope
+    private function analyzeIncDec(Node $node): VariableTrackingScope
     {
         $var_node = $node->children['var'];
         if ($var_node instanceof Node && $var_node->kind === ast\AST_VAR) {
@@ -270,7 +273,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     /**
      * @override
      */
-    public function visitAssignOp(Node $node) : VariableTrackingScope
+    public function visitAssignOp(Node $node): VariableTrackingScope
     {
         $expr = $node->children['expr'];
         if ($expr instanceof Node) {
@@ -309,7 +312,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     /**
      * @override
      */
-    public function visitAssign(Node $node) : VariableTrackingScope
+    public function visitAssign(Node $node): VariableTrackingScope
     {
         $expr = $node->children['expr'];
         if ($expr instanceof Node) {
@@ -331,7 +334,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @param Node|int|string|float|null $node
      * @param Node|int|string|float|null $const_expr
      */
-    private function analyzeAssignmentTarget($node, bool $is_ref, $const_expr) : VariableTrackingScope
+    private function analyzeAssignmentTarget($node, bool $is_ref, $const_expr): VariableTrackingScope
     {
         // TODO: Push onto the node list?
         if (!($node instanceof Node)) {
@@ -370,7 +373,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     /**
      * @param Node|int|string|float|null $const_expr
      */
-    private function analyzeArrayAssignmentTarget(Node $node, $const_expr) : VariableTrackingScope
+    private function analyzeArrayAssignmentTarget(Node $node, $const_expr): VariableTrackingScope
     {
         foreach ($node->children as $elem_node) {
             if (!($elem_node instanceof Node)) {
@@ -387,7 +390,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         return $this->scope;
     }
 
-    private function analyzePropAssignmentTarget(Node $node) : VariableTrackingScope
+    private function analyzePropAssignmentTarget(Node $node): VariableTrackingScope
     {
         // Treat $y in `$x->$y = $z;` as a usage of $y
         $this->scope = $this->analyzeWhenValidNode($this->scope, $node->children['prop']);
@@ -405,7 +408,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         // return $this->analyzeAssignmentTarget($expr, false);
     }
 
-    private function analyzeDimAssignmentTarget(Node $node) : VariableTrackingScope
+    private function analyzeDimAssignmentTarget(Node $node): VariableTrackingScope
     {
         // Treat $y in `$x[$y] = $z;` as a usage of $y
         $this->scope = $this->analyzeWhenValidNode($this->scope, $node->children['dim']);
@@ -438,7 +441,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         // return $this->analyzeAssignmentTarget($expr, false);
     }
 
-    public function handleMissingNodeKind(Node $unused_node) : VariableTrackingScope
+    public function handleMissingNodeKind(Node $unused_node): VariableTrackingScope
     {
         // do nothing
         return $this->scope;
@@ -447,7 +450,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     /**
      * @param Node|string|int|float|null $child_node
      */
-    private function analyzeWhenValidNode(VariableTrackingScope $scope, $child_node) : VariableTrackingScope
+    private function analyzeWhenValidNode(VariableTrackingScope $scope, $child_node): VariableTrackingScope
     {
         if ($child_node instanceof Node) {
             return $this->analyze($scope, $child_node);
@@ -460,7 +463,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      *
      * @param Node $child_node - The node which will be analyzed to create the updated context.
      */
-    private function analyze(VariableTrackingScope $scope, Node $child_node) : VariableTrackingScope
+    private function analyze(VariableTrackingScope $scope, Node $child_node): VariableTrackingScope
     {
         // Modify the original object instead of creating a new BlockAnalysisVisitor.
         // this is slightly more efficient, especially if a large number of unchanged parameters would exist.
@@ -477,7 +480,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * Do not recurse into function declarations within a scope
      * @override
      */
-    public function visitFuncDecl(Node $unused_node) : VariableTrackingScope
+    public function visitFuncDecl(Node $unused_node): VariableTrackingScope
     {
         return $this->scope;
     }
@@ -486,7 +489,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * Do not recurse into class declarations within a scope
      * @override
      */
-    public function visitClass(Node $unused_node) : VariableTrackingScope
+    public function visitClass(Node $unused_node): VariableTrackingScope
     {
         return $this->scope;
     }
@@ -495,7 +498,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * Do not recurse into closure declarations within a scope.
      * @override
      */
-    public function visitClosure(Node $node) : VariableTrackingScope
+    public function visitClosure(Node $node): VariableTrackingScope
     {
         foreach ($node->children['uses']->children ?? [] as $closure_use) {
             if (!($closure_use instanceof Node)) {
@@ -523,7 +526,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * TODO: This could be improved by checking if the short arrow redefines the variable and ignores the original value.
      * @override
      */
-    public function visitArrowFunc(Node $node) : VariableTrackingScope
+    public function visitArrowFunc(Node $node): VariableTrackingScope
     {
         foreach (ArrowFunc::getUses($node) as $name => $var_node) {
             self::$variable_graph->recordVariableUsage((string)$name, $var_node, $this->scope);
@@ -536,7 +539,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @return VariableTrackingScope
      * Common no-op
      */
-    public function visitName(Node $unused_node) : VariableTrackingScope
+    public function visitName(Node $unused_node): VariableTrackingScope
     {
         return $this->scope;
     }
@@ -545,7 +548,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * TODO: Check if the current context is a function call passing an argument by reference
      * @override
      */
-    public function visitVar(Node $node) : VariableTrackingScope
+    public function visitVar(Node $node): VariableTrackingScope
     {
         $name = $node->children['name'];
         if (\is_string($name)) {
@@ -564,7 +567,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * Analyzes `static $var [ = default ];`
      * @override
      */
-    public function visitStatic(Node $node) : VariableTrackingScope
+    public function visitStatic(Node $node): VariableTrackingScope
     {
         $name = $node->children['var']->children['name'] ?? null;
         if (\is_string($name)) {
@@ -579,7 +582,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * Analyzes `global $var;` (analyzed like it was declared with the value from the global scope).
      * @override
      */
-    public function visitGlobal(Node $node) : VariableTrackingScope
+    public function visitGlobal(Node $node): VariableTrackingScope
     {
         self::$variable_graph->markAsGlobal($node, $this->scope);
         return $this->scope;
@@ -588,7 +591,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     /**
      * Analyzes `foreach ($expr as $key => $value) { stmts }
      */
-    public function visitForeach(Node $node) : VariableTrackingScope
+    public function visitForeach(Node $node): VariableTrackingScope
     {
         $expr_node = $node->children['expr'];
         $outer_scope_unbranched = $this->analyzeWhenValidNode($this->scope, $expr_node);
@@ -621,7 +624,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * Analyzes `while (cond) { stmts }`
      * @override
      */
-    public function visitWhile(Node $node) : VariableTrackingScope
+    public function visitWhile(Node $node): VariableTrackingScope
     {
         $outer_scope_unbranched = $this->analyzeWhenValidNode($this->scope, $node->children['cond']);
         $outer_scope = new VariableTrackingBranchScope($outer_scope_unbranched);
@@ -644,7 +647,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @param Node $node a node of type AST_DO_WHILE
      * @override
      */
-    public function visitDoWhile(Node $node) : VariableTrackingScope
+    public function visitDoWhile(Node $node): VariableTrackingScope
     {
         $outer_scope_unbranched = $this->scope;
         $outer_scope = new VariableTrackingBranchScope($outer_scope_unbranched);
@@ -665,7 +668,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @param Node $node a node of type AST_FOR
      * @override
      */
-    public function visitFor(Node $node) : VariableTrackingScope
+    public function visitFor(Node $node): VariableTrackingScope
     {
         $top_level_statement = $this->top_level_statement;
         $init_node = $node->children['init'];
@@ -714,7 +717,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @see BlockAnalysisVisitor::visitIf()
      * @override
      */
-    public function visitIf(Node $node) : VariableTrackingScope
+    public function visitIf(Node $node): VariableTrackingScope
     {
         $outer_scope = $this->scope;
 
@@ -764,7 +767,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @param Node $node a node of kind AST_SWITCH
      * @override
      */
-    public function visitSwitchList(Node $node) : VariableTrackingScope
+    public function visitSwitchList(Node $node): VariableTrackingScope
     {
         $outer_scope = $this->scope;
 
@@ -825,7 +828,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * Implements analysis of `cond_node ? true_node : false_node` and `cond_node ?: false_node`
      * @override
      */
-    public function visitConditional(Node $node) : VariableTrackingScope
+    public function visitConditional(Node $node): VariableTrackingScope
     {
         $outer_scope = $this->scope;
         $cond_node = $node->children['cond'];
@@ -856,7 +859,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @param Node $node a node of kind AST_TRY
      * @override
      */
-    public function visitTry(Node $node) : VariableTrackingScope
+    public function visitTry(Node $node): VariableTrackingScope
     {
         $outer_scope = $this->scope;
 
@@ -887,7 +890,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @param Node $node a node of kind AST_CATCH_LIST
      * @override
      */
-    public function visitCatchList(Node $node) : VariableTrackingScope
+    public function visitCatchList(Node $node): VariableTrackingScope
     {
         $outer_scope = $this->scope;
 
@@ -914,7 +917,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @param Node $node a node of kind AST_CATCH
      * @override
      */
-    public function visitCatch(Node $node) : VariableTrackingScope
+    public function visitCatch(Node $node): VariableTrackingScope
     {
         $var_node = $node->children['var'];
 

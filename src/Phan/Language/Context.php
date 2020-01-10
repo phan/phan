@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language;
 
@@ -103,7 +105,7 @@ class Context extends FileRef
      * @return Context
      * A clone of this context with the given value is returned
      */
-    public function withNamespace(string $namespace) : Context
+    public function withNamespace(string $namespace): Context
     {
         $context = clone($this);
         $context->namespace = $namespace;
@@ -116,7 +118,7 @@ class Context extends FileRef
      * @return string
      * The namespace of the file
      */
-    public function getNamespace() : string
+    public function getNamespace(): string
     {
         return $this->namespace;
     }
@@ -126,7 +128,7 @@ class Context extends FileRef
      * The namespace id within the file (incrementing starting from 0)
      * Used because a file can have duplicate identical namespace declarations.
      */
-    public function getNamespaceId() : int
+    public function getNamespaceId(): int
     {
         return $this->namespace_id;
     }
@@ -135,7 +137,7 @@ class Context extends FileRef
      * @return bool
      * True if we have a mapped NS for the given named element
      */
-    public function hasNamespaceMapFor(int $flags, string $name) : bool
+    public function hasNamespaceMapFor(int $flags, string $name): bool
     {
         // Look for the mapping on the part before a
         // slash
@@ -163,7 +165,7 @@ class Context extends FileRef
     public function getNamespaceMapFor(
         int $flags,
         string $name
-    ) : FullyQualifiedGlobalStructuralElement {
+    ): FullyQualifiedGlobalStructuralElement {
 
         // Look for the mapping on the part before a
         // slash
@@ -233,7 +235,7 @@ class Context extends FileRef
         FullyQualifiedGlobalStructuralElement $target,
         int $lineno,
         CodeBase $code_base = null
-    ) : Context {
+    ): Context {
         $original_alias = $alias;
         if ($flags !== \ast\flags\USE_CONST) {
             $alias = \strtolower($alias);
@@ -262,7 +264,7 @@ class Context extends FileRef
         return $this;
     }
 
-    private function warnDuplicateUse(CodeBase $code_base, FullyQualifiedGlobalStructuralElement $target, int $lineno, int $flags, string $alias) : void
+    private function warnDuplicateUse(CodeBase $code_base, FullyQualifiedGlobalStructuralElement $target, int $lineno, int $flags, string $alias): void
     {
         switch ($flags) {
             case \ast\flags\USE_FUNCTION:
@@ -293,7 +295,7 @@ class Context extends FileRef
      * @return Context
      * This context with the given value is returned
      */
-    public function withStrictTypes(int $strict_types) : Context
+    public function withStrictTypes(int $strict_types): Context
     {
         $this->strict_types = $strict_types;
         return $this;
@@ -303,7 +305,7 @@ class Context extends FileRef
      * @return bool
      * Returns true if strict_types is set to 1 in this context.
      */
-    public function isStrictTypes() : bool
+    public function isStrictTypes(): bool
     {
         return (1 === $this->strict_types);
     }
@@ -313,7 +315,7 @@ class Context extends FileRef
      * @deprecated use isStrictTypes
      * @suppress PhanUnreferencedPublicMethod
      */
-    final public function getIsStrictTypes() : bool
+    final public function getIsStrictTypes(): bool
     {
         return $this->isStrictTypes();
     }
@@ -323,7 +325,7 @@ class Context extends FileRef
      * An object describing the contents of the current
      * scope.
      */
-    public function getScope() : Scope
+    public function getScope(): Scope
     {
         return $this->scope;
     }
@@ -331,7 +333,7 @@ class Context extends FileRef
     /**
      * Set the scope on the context
      */
-    public function setScope(Scope $scope) : void
+    public function setScope(Scope $scope): void
     {
         $this->scope = $scope;
         // TODO: Less aggressive? ConditionVisitor creates a lot of scopes
@@ -343,7 +345,7 @@ class Context extends FileRef
      * A new context with the given scope
      * @phan-pure
      */
-    public function withScope(Scope $scope) : Context
+    public function withScope(Scope $scope): Context
     {
         $context = clone($this);
         $context->setScope($scope);
@@ -353,14 +355,14 @@ class Context extends FileRef
     /**
      * @phan-pure
      */
-    public function withEnterLoop(Node $node) : Context
+    public function withEnterLoop(Node $node): Context
     {
         $context = clone($this);
         $context->loop_nodes[] = $node;
         return $context;
     }
 
-    public function withExitLoop(Node $node) : Context
+    public function withExitLoop(Node $node): Context
     {
         $context = clone($this);
 
@@ -381,7 +383,7 @@ class Context extends FileRef
     /**
      * @suppress PhanUndeclaredProperty
      */
-    public function deferCheckToOutermostLoop(Closure $closure) : void
+    public function deferCheckToOutermostLoop(Closure $closure): void
     {
         $node = $this->loop_nodes[0] ?? null;
         if ($node) {
@@ -395,7 +397,7 @@ class Context extends FileRef
     /**
      * Is this in a loop of the current function body (or global scope)?
      */
-    public function isInLoop() : bool
+    public function isInLoop(): bool
     {
         return \count($this->loop_nodes) > 0;
     }
@@ -404,12 +406,12 @@ class Context extends FileRef
      * Fetches the innermost loop node.
      * @suppress PhanPossiblyFalseTypeReturn
      */
-    public function getInnermostLoopNode() : Node
+    public function getInnermostLoopNode(): Node
     {
         return \end($this->loop_nodes);
     }
 
-    public function withoutLoops() : Context
+    public function withoutLoops(): Context
     {
         $context = clone($this);
         $context->loop_nodes = [];
@@ -423,7 +425,7 @@ class Context extends FileRef
      * This is useful when using AssignmentVisitor for things that aren't actually assignment operations.
      * (AssignmentVisitor modifies the passed in scope variables in place)
      */
-    public function withClonedScope() : Context
+    public function withClonedScope(): Context
     {
         $context = clone($this);
         $context->scope = clone($context->scope);
@@ -442,7 +444,7 @@ class Context extends FileRef
      */
     public function withScopeVariable(
         Variable $variable
-    ) : Context {
+    ): Context {
         return $this->withScope(
             $this->scope->withVariable($variable)
         );
@@ -453,7 +455,7 @@ class Context extends FileRef
      * A variable to add to the scope for the new
      * context
      */
-    public function addGlobalScopeVariable(Variable $variable) : void
+    public function addGlobalScopeVariable(Variable $variable): void
     {
         $this->scope->addGlobalVariable($variable);
     }
@@ -469,7 +471,7 @@ class Context extends FileRef
      */
     public function addScopeVariable(
         Variable $variable
-    ) : void {
+    ): void {
         $this->scope->addVariable($variable);
     }
 
@@ -484,7 +486,7 @@ class Context extends FileRef
      */
     public function unsetScopeVariable(
         string $variable_name
-    ) : void {
+    ): void {
         $this->scope->unsetVariable($variable_name);
     }
 
@@ -492,7 +494,7 @@ class Context extends FileRef
      * Returns a string representing this Context for debugging
      * @suppress PhanUnreferencedPublicMethod kept around to make it easy to dump variables in a context
      */
-    public function toDebugString() : string
+    public function toDebugString(): string
     {
         $result = (string)$this;
         foreach ($this->scope->getVariableMap() as $variable) {
@@ -506,7 +508,7 @@ class Context extends FileRef
      * True if this context is currently within a class
      * scope, else false.
      */
-    public function isInClassScope() : bool
+    public function isInClassScope(): bool
     {
         return $this->scope->isInClassScope();
     }
@@ -516,12 +518,12 @@ class Context extends FileRef
      * A fully-qualified structural element name describing
      * the current class in scope.
      */
-    public function getClassFQSEN() : FullyQualifiedClassName
+    public function getClassFQSEN(): FullyQualifiedClassName
     {
         return $this->scope->getClassFQSEN();
     }
 
-    public function getClassFQSENOrNull() : ?FullyQualifiedClassName
+    public function getClassFQSENOrNull(): ?FullyQualifiedClassName
     {
         return $this->scope->getClassFQSENOrNull();
     }
@@ -532,7 +534,7 @@ class Context extends FileRef
      * scope, else false.
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function isInPropertyScope() : bool
+    public function isInPropertyScope(): bool
     {
         return $this->scope->isInPropertyScope();
     }
@@ -542,7 +544,7 @@ class Context extends FileRef
      * A fully-qualified structural element name describing
      * the current property in scope.
      */
-    public function getPropertyFQSEN() : FullyQualifiedPropertyName
+    public function getPropertyFQSEN(): FullyQualifiedPropertyName
     {
         return $this->scope->getPropertyFQSEN();
     }
@@ -558,7 +560,7 @@ class Context extends FileRef
      * Thrown if we can't find the class in scope within the
      * given codebase.
      */
-    public function getClassInScope(CodeBase $code_base) : Clazz
+    public function getClassInScope(CodeBase $code_base): Clazz
     {
         if (!$this->scope->isInClassScope()) {
             throw new AssertionError("Must be in class scope to get class");
@@ -587,7 +589,7 @@ class Context extends FileRef
      * Thrown if we can't find the property in scope within the
      * given codebase.
      */
-    public function getPropertyInScope(CodeBase $code_base) : Property
+    public function getPropertyInScope(CodeBase $code_base): Property
     {
         if (!$this->scope->isInPropertyScope()) {
             throw new AssertionError("Must be in property scope to get property");
@@ -611,7 +613,7 @@ class Context extends FileRef
      * True if this context is currently within a method,
      * function or closure scope.
      */
-    public function isInFunctionLikeScope() : bool
+    public function isInFunctionLikeScope(): bool
     {
         return $this->scope->isInFunctionLikeScope();
     }
@@ -620,7 +622,7 @@ class Context extends FileRef
      * @return bool
      * True if this context is currently within a method.
      */
-    public function isInMethodScope() : bool
+    public function isInMethodScope(): bool
     {
         return $this->scope->isInMethodLikeScope();
     }
@@ -648,7 +650,7 @@ class Context extends FileRef
      */
     public function getFunctionLikeInScope(
         CodeBase $code_base
-    ) : FunctionInterface {
+    ): FunctionInterface {
         $fqsen = $this->getFunctionLikeFQSEN();
 
         if ($fqsen instanceof FullyQualifiedFunctionName) {
@@ -675,7 +677,7 @@ class Context extends FileRef
      * scope
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function isInElementScope() : bool
+    public function isInElementScope(): bool
     {
         return $this->scope->isInElementScope();
     }
@@ -685,7 +687,7 @@ class Context extends FileRef
      * True if we're in the global scope (not in a class,
      * method, function, closure).
      */
-    public function isInGlobalScope() : bool
+    public function isInGlobalScope(): bool
     {
         return !$this->scope->isInElementScope();
     }
@@ -702,7 +704,7 @@ class Context extends FileRef
      * @throws CodeBaseException if this was called without first checking
      * if this context is in an element scope
      */
-    public function getElementInScope(CodeBase $code_base) : TypedElement
+    public function getElementInScope(CodeBase $code_base): TypedElement
     {
         if ($this->scope->isInFunctionLikeScope()) {
             return $this->getFunctionLikeInScope($code_base);
@@ -734,7 +736,7 @@ class Context extends FileRef
     public function hasSuppressIssue(
         CodeBase $code_base,
         string $issue_name
-    ) : bool {
+    ): bool {
         if ($code_base->hasFileLevelSuppression($this->file, $issue_name)) {
             return true;
         }
@@ -778,7 +780,7 @@ class Context extends FileRef
      * @param int $node_id \spl_object_id($node)
      * @param bool $should_catch_issue_exception the value passed to UnionTypeVisitor
      */
-    public function getUnionTypeOfNodeIfCached(int $node_id, bool $should_catch_issue_exception) : ?UnionType
+    public function getUnionTypeOfNodeIfCached(int $node_id, bool $should_catch_issue_exception): ?UnionType
     {
         if ($should_catch_issue_exception) {
             return $this->cache[$node_id] ?? null;
@@ -795,7 +797,7 @@ class Context extends FileRef
      * @param UnionType $type the type to cache.
      * @param bool $should_catch_issue_exception the value passed to UnionTypeVisitor
      */
-    public function setCachedUnionTypeOfNode(int $node_id, UnionType $type, bool $should_catch_issue_exception) : void
+    public function setCachedUnionTypeOfNode(int $node_id, UnionType $type, bool $should_catch_issue_exception): void
     {
         if (!$should_catch_issue_exception) {
             $this->cache[$node_id ^ self::HIGH_BIT_1] = $type;
@@ -811,7 +813,7 @@ class Context extends FileRef
      * @return ?array{0:UnionType,1:Clazz[]} $result
      * @suppress PhanPartialTypeMismatchReturn cache is mixed with other cache objects
      */
-    public function getCachedClassListOfNode(int $node_id) : ?array
+    public function getCachedClassListOfNode(int $node_id): ?array
     {
         return $this->cache[$node_id ^ self::HIGH_BIT_2] ?? null;
     }
@@ -821,12 +823,12 @@ class Context extends FileRef
      * @param int $node_id \spl_object_id($node)
      * @param array{0:UnionType,1:Clazz[]} $result
      */
-    public function setCachedClassListOfNode(int $node_id, array $result) : void
+    public function setCachedClassListOfNode(int $node_id, array $result): void
     {
         $this->cache[$node_id ^ self::HIGH_BIT_2] = $result;
     }
 
-    public function clearCachedUnionTypes() : void
+    public function clearCachedUnionTypes(): void
     {
         $this->cache = [];
     }
@@ -840,7 +842,7 @@ class Context extends FileRef
      * @return array<int,array<string,NamespaceMapEntry>> maps use kind flags to the entries.
      * @phan-return associative-array<int,array<string,NamespaceMapEntry>> maps use kind flags to the entries.
      */
-    public function getNamespaceMap() : array
+    public function getNamespaceMap(): array
     {
         return $this->namespace_map;
     }
@@ -854,7 +856,7 @@ class Context extends FileRef
      *
      * @internal
      */
-    public function warnAboutUnusedUseElements(CodeBase $code_base) : void
+    public function warnAboutUnusedUseElements(CodeBase $code_base): void
     {
         foreach ($this->namespace_map as $flags => $entries_for_flag) {
             foreach ($entries_for_flag as $namespace_map_entry) {
@@ -889,7 +891,7 @@ class Context extends FileRef
      * @internal
      * @suppress PhanAccessMethodInternal
      */
-    public function importNamespaceMapFromParsePhase(CodeBase $code_base) : void
+    public function importNamespaceMapFromParsePhase(CodeBase $code_base): void
     {
         $this->parse_namespace_map = $code_base->getNamespaceMapFromParsePhase($this->file, $this->namespace, $this->namespace_id);
     }
@@ -897,7 +899,7 @@ class Context extends FileRef
     /**
      * Copy private properties of $other to this
      */
-    final protected function copyPropertiesFrom(Context $other) : void
+    final protected function copyPropertiesFrom(Context $other): void
     {
         $this->file = $other->file;
         $this->line_number_start = $other->line_number_start;
@@ -920,7 +922,7 @@ class Context extends FileRef
      * Analyzes the side effects of setting the type of $this->property to $type
      * @suppress PhanUnreferencedPublicMethod this might be used in the future
      */
-    public function withThisPropertySetToType(Property $property, UnionType $type) : Context
+    public function withThisPropertySetToType(Property $property, UnionType $type): Context
     {
         $old_union_type = $property->getUnionType();
         if ($this->scope->hasVariableWithName(self::VAR_NAME_THIS_PROPERTIES)) {
@@ -953,7 +955,7 @@ class Context extends FileRef
      *
      * The caller should check if it is necessary to do this.
      */
-    public function withThisPropertySetToTypeByName(string $property_name, UnionType $type) : Context
+    public function withThisPropertySetToTypeByName(string $property_name, UnionType $type): Context
     {
         if ($this->scope->hasVariableWithName(self::VAR_NAME_THIS_PROPERTIES)) {
             $variable = clone($this->scope->getVariableByName(self::VAR_NAME_THIS_PROPERTIES));
@@ -979,7 +981,7 @@ class Context extends FileRef
     /**
      * @param list<Type> $type_set
      */
-    private static function addArrayShapeTypes(ArrayShapeType $override_type, array $type_set) : ArrayShapeType
+    private static function addArrayShapeTypes(ArrayShapeType $override_type, array $type_set): ArrayShapeType
     {
         if (!$type_set) {
             return $override_type;
@@ -997,7 +999,7 @@ class Context extends FileRef
         return $override_type;
     }
 
-    public function getThisPropertyIfOverridden(string $name) : ?UnionType
+    public function getThisPropertyIfOverridden(string $name): ?UnionType
     {
         if (!$this->scope->hasVariableWithName(self::VAR_NAME_THIS_PROPERTIES)) {
             return null;

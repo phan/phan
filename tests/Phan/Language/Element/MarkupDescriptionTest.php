@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests\Language\Element;
 
@@ -16,7 +18,7 @@ final class MarkupDescriptionTest extends BaseTest
     /**
      * @dataProvider extractDocCommentProvider
      */
-    public function testExtractDocComment(string $expected, string $doc_comment, int $category = null) : void
+    public function testExtractDocComment(string $expected, string $doc_comment, int $category = null): void
     {
         // @phan-suppress-next-line PhanAccessMethodInternal
         $this->assertSame($expected, MarkupDescription::extractDocComment($doc_comment, $category));
@@ -25,7 +27,7 @@ final class MarkupDescriptionTest extends BaseTest
     /**
      * @return list<array{0:string,1:string,2?:int}>
      */
-    public function extractDocCommentProvider() : array
+    public function extractDocCommentProvider(): array
     {
         return [
             [
@@ -212,7 +214,7 @@ EOT
     /**
      * @dataProvider getDocCommentWithoutWhitespaceProvider
      */
-    public function testGetDocCommentWithoutWhitespace(string $expected, string $doc_comment) : void
+    public function testGetDocCommentWithoutWhitespace(string $expected, string $doc_comment): void
     {
         $this->assertSame($expected, MarkupDescription::getDocCommentWithoutWhitespace($doc_comment));
     }
@@ -220,7 +222,7 @@ EOT
     /**
      * @return list<array{0:string,1:string}>
      */
-    public function getDocCommentWithoutWhitespaceProvider() : array
+    public function getDocCommentWithoutWhitespaceProvider(): array
     {
         return [
             [
@@ -300,7 +302,7 @@ EOT
     /**
      * @throws \Exception
      */
-    public function testDescriptionForBuiltinConstant() : void
+    public function testDescriptionForBuiltinConstant(): void
     {
         $const = GlobalConstant::fromGlobalConstantName('STDERR');
         $expected = <<<EOT

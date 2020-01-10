@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\AST;
 
@@ -65,7 +67,7 @@ abstract class AnalysisVisitor extends KindVisitorImplementation
         string $issue_type,
         int $lineno,
         ...$parameters
-    ) : void {
+    ): void {
         Issue::maybeEmitWithParameters(
             $this->code_base,
             $this->context,
@@ -93,7 +95,7 @@ abstract class AnalysisVisitor extends KindVisitorImplementation
         int $lineno,
         array $parameters,
         ?Suggestion $suggestion
-    ) : void {
+    ): void {
         Issue::maybeEmitWithParameters(
             $this->code_base,
             $this->context,
@@ -110,7 +112,7 @@ abstract class AnalysisVisitor extends KindVisitorImplementation
      * This is useful for ensuring that TypeMismatchProperty also suppresses PhanPossiblyNullTypeMismatchProperty,
      * for example.
      */
-    protected function shouldSuppressIssue(string $issue_type, int $lineno) : bool
+    protected function shouldSuppressIssue(string $issue_type, int $lineno): bool
     {
         return Issue::shouldSuppressIssue(
             $this->code_base,

@@ -1,9 +1,12 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Library;
 
 use AssertionError;
 use Composer\XdebugHandler\XdebugHandler;
+
 use function array_filter;
 use function extension_loaded;
 use function file_get_contents;
@@ -33,7 +36,7 @@ class Restarter extends XdebugHandler
      * Mark this extension as disabled
      * @param string $disabledExtension
      */
-    public function disableExtension(string $disabledExtension) : void
+    public function disableExtension(string $disabledExtension): void
     {
         $this->disabledExtensions[] = $disabledExtension;
     }
@@ -47,7 +50,7 @@ class Restarter extends XdebugHandler
     {
         $excluded_extensions = array_filter(
             $this->disabledExtensions,
-            static function (string $extension) : bool {
+            static function (string $extension): bool {
                 return extension_loaded($extension);
             }
         );

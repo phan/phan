@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Plugin\Internal;
 
@@ -20,6 +22,7 @@ use Phan\PluginV3;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
 use Phan\PluginV3\PostAnalyzeNodeCapability;
 use Phan\Suggestion;
+
 use function count;
 use function is_string;
 use function strlen;
@@ -35,7 +38,7 @@ final class VariableTrackerPlugin extends PluginV3 implements
     /**
      * @return string the name of a visitor
      */
-    public static function getPostAnalyzeNodeVisitorClassName() : string
+    public static function getPostAnalyzeNodeVisitorClassName(): string
     {
         return VariableTrackerElementVisitor::class;
     }
@@ -49,7 +52,7 @@ final class VariableTrackerPlugin extends PluginV3 implements
  */
 final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
 {
-    public function visitMethod(Node $node) : void
+    public function visitMethod(Node $node): void
     {
         $this->analyzeMethodLike($node);
     }
@@ -57,7 +60,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @override
      */
-    public function visitFuncDecl(Node $node) : void
+    public function visitFuncDecl(Node $node): void
     {
         $this->analyzeMethodLike($node);
     }
@@ -65,7 +68,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @override
      */
-    public function visitClosure(Node $node) : void
+    public function visitClosure(Node $node): void
     {
         $this->analyzeMethodLike($node);
     }
@@ -73,12 +76,12 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @override
      */
-    public function visitArrowFunc(Node $node) : void
+    public function visitArrowFunc(Node $node): void
     {
         $this->analyzeMethodLike($node);
     }
 
-    private function analyzeMethodLike(Node $node) : void
+    private function analyzeMethodLike(Node $node): void
     {
         // \Phan\Debug::printNode($node);
         $stmts_node = $node->children['stmts'] ?? null;
@@ -108,7 +111,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
         Node $node,
         VariableGraph $graph,
         VariableTrackingScope $scope
-    ) : array {
+    ): array {
         $result = [];
         // AST_PARAM_LIST of AST_PARAM
         foreach ($node->children['params']->children ?? [] as $parameter) {
@@ -156,7 +159,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
         return $result;
     }
 
-    private function methodHasOverrides() : bool
+    private function methodHasOverrides(): bool
     {
         if (Config::getValue('unused_variable_detection_assume_override_exists')) {
             return true;
@@ -174,7 +177,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
             return false;
         }
     }
-    private function getParameterCategory(Node $method_node) : string
+    private function getParameterCategory(Node $method_node): string
     {
         $kind = $method_node->kind;
         if ($kind === ast\AST_CLOSURE) {
@@ -206,7 +209,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
         return Issue::UnusedPublicMethodParameter;
     }
 
-    private function isParameterFinal(int $flags) : bool
+    private function isParameterFinal(int $flags): bool
     {
         if (($flags & ast\flags\MODIFIER_FINAL) !== 0) {
             return true;
@@ -229,7 +232,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
         Node $method_node,
         VariableGraph $graph,
         array $issue_overrides_for_definition_ids
-    ) : void {
+    ): void {
         foreach ($graph->def_uses as $variable_name => $def_uses_for_variable) {
             if ($variable_name === 'this') {
                 continue;
@@ -316,7 +319,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
         VariableGraph $graph,
         string $variable_name,
         array $issue_overrides_for_definition_ids
-    ) : void {
+    ): void {
         $uses = $graph->def_uses[$variable_name];
         \reset($uses);
         $definition_id = \key($uses);
@@ -358,7 +361,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param Node|string|int|float $value_node
      */
-    private function warnAboutCouldBeConstant(VariableGraph $graph, string $variable_name, int $definition_id, $value_node) : void
+    private function warnAboutCouldBeConstant(VariableGraph $graph, string $variable_name, int $definition_id, $value_node): void
     {
         $issue_type = Issue::VariableDefinitionCouldBeConstant;
         if ($value_node instanceof Node) {
@@ -397,7 +400,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
         );
     }
 
-    private static function makeSuggestion(VariableGraph $graph, string $variable_name, string $issue_type) : ?Suggestion
+    private static function makeSuggestion(VariableGraph $graph, string $variable_name, string $issue_type): ?Suggestion
     {
         if ($issue_type !== Issue::UnusedVariable) {
             return null;

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Element;
 
@@ -19,7 +21,7 @@ trait ClosedScopeElement
     /**
      * Sets the internal scope of this closed scope element.
      */
-    public function setInternalScope(ClosedScope $internal_scope) : void
+    public function setInternalScope(ClosedScope $internal_scope): void
     {
         $this->internal_scope = $internal_scope;
     }
@@ -28,7 +30,7 @@ trait ClosedScopeElement
      * @return ClosedScope
      * The internal scope of this closed scope element
      */
-    public function getInternalScope() : ClosedScope
+    public function getInternalScope(): ClosedScope
     {
         return $this->internal_scope;
     }

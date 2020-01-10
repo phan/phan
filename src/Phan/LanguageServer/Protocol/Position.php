@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Phan\LanguageServer\Protocol;
@@ -74,7 +75,7 @@ class Position
      * Creates a Position from a serialized array $data
      * @param array{line:int,character?:?int} $data
      */
-    public static function fromArray(array $data) : Position
+    public static function fromArray(array $data): Position
     {
         return new self(
             $data['line'],
@@ -85,7 +86,7 @@ class Position
     /**
      * Used for debugging
      */
-    public function __toString() : string
+    public function __toString(): string
     {
         return "$this->line:$this->character";
     }

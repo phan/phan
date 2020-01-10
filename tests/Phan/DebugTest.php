@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests;
 
@@ -9,7 +11,7 @@ use Phan\Debug;
  */
 final class DebugTest extends BaseTest
 {
-    public function testNodeToString() : void
+    public function testNodeToString(): void
     {
         $this->assertSame("2\n", Debug::nodeToString(2));
         $this->assertSame("example\n", Debug::nodeToString('example'));

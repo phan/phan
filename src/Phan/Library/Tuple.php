@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Library;
 
@@ -14,7 +16,7 @@ abstract class Tuple
      * The arity of this tuple
      * @suppress PhanUnreferencedPublicMethod potentially used in the future
      */
-    public function arity() : int
+    public function arity(): int
     {
         return static::ARITY;
     }
@@ -23,5 +25,5 @@ abstract class Tuple
      * @return array{}
      * An array of all elements in this tuple.
      */
-    abstract public function toArray() : array;
+    abstract public function toArray(): array;
 }

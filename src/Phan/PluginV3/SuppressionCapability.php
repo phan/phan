@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\PluginV3;
 
@@ -52,7 +54,7 @@ interface SuppressionCapability
         int $lineno,
         array $parameters,
         ?Suggestion $suggestion
-    ) : bool;
+    ): bool;
 
     /**
      * This method is used only by UnusedSuppressionPlugin.
@@ -73,5 +75,5 @@ interface SuppressionCapability
     public function getIssueSuppressionList(
         CodeBase $code_base,
         string $file_path
-    ) : array;
+    ): array;
 }

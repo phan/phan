@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Type;
 
@@ -19,37 +21,37 @@ final class FalseType extends ScalarType
     /** @phan-override */
     const NAME = 'false';
 
-    public function isPossiblyFalsey() : bool
+    public function isPossiblyFalsey(): bool
     {
         return true;  // it's always falsey, whether or not it's nullable.
     }
 
-    public function isAlwaysFalsey() : bool
+    public function isAlwaysFalsey(): bool
     {
         return true;  // FalseType is always falsey, whether or not it's nullable.
     }
 
-    public function isAlwaysFalse() : bool
+    public function isAlwaysFalse(): bool
     {
         return !$this->is_nullable;  // If it can be null, it's not **always** identical to false
     }
 
-    public function isPossiblyTruthy() : bool
+    public function isPossiblyTruthy(): bool
     {
         return false;
     }
 
-    public function isAlwaysTruthy() : bool
+    public function isAlwaysTruthy(): bool
     {
         return false;
     }
 
-    public function isPossiblyFalse() : bool
+    public function isPossiblyFalse(): bool
     {
         return true;
     }
 
-    public function asNonFalseType() : Type
+    public function asNonFalseType(): Type
     {
         if (!($this->is_nullable)) {
             throw new AssertionError('should only call FalseType->asNonFalseType on ?false');
@@ -57,7 +59,7 @@ final class FalseType extends ScalarType
         return NullType::instance(false);
     }
 
-    public function isInBoolFamily() : bool
+    public function isInBoolFamily(): bool
     {
         return true;
     }
@@ -65,18 +67,18 @@ final class FalseType extends ScalarType
     /**
      * Helper function for internal use by UnionType
      */
-    public function getNormalizationFlags() : int
+    public function getNormalizationFlags(): int
     {
         return $this->is_nullable ? (self::_bit_nullable | self::_bit_false) : self::_bit_false;
     }
 
-    public function isPrintableScalar() : bool
+    public function isPrintableScalar(): bool
     {
         // This would be '', which is probably not intended
         return Config::getValue('scalar_implicit_cast');
     }
 
-    public function isValidNumericOperand() : bool
+    public function isValidNumericOperand(): bool
     {
         return Config::getValue('scalar_implicit_cast');
     }
@@ -87,12 +89,12 @@ final class FalseType extends ScalarType
      * @param int $flags (e.g. \ast\flags\BINARY_IS_SMALLER)
      * @internal
      */
-    public function canSatisfyComparison($scalar, int $flags) : bool
+    public function canSatisfyComparison($scalar, int $flags): bool
     {
         return self::performComparison(false, $scalar, $flags);
     }
 
-    public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other) : bool
+    public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other): bool
     {
         return $other->isInBoolFamily() || (!$context->isStrictTypes() && parent::canCastToDeclaredType($code_base, $context, $other));
     }
@@ -103,7 +105,7 @@ final class FalseType extends ScalarType
      * Returns the corresponding type that would be used in a signature
      * @override
      */
-    public function asSignatureType() : Type
+    public function asSignatureType(): Type
     {
         return BoolType::instance($this->is_nullable);
     }

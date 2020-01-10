@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Analysis;
 
@@ -73,7 +75,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visit(Node $node) : Context
+    public function visit(Node $node): Context
     {
         $this->checkVariablesDefined($node);
         if (Config::getValue('redundant_condition_detection')) {
@@ -87,7 +89,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      * @param Node $node
      * A node to parse
      */
-    private function checkVariablesDefined(Node $node) : void
+    private function checkVariablesDefined(Node $node): void
     {
         while ($node->kind === ast\AST_UNARY_OP) {
             $node = $node->children['expr'];
@@ -113,7 +115,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitBinaryOp(Node $node) : Context
+    public function visitBinaryOp(Node $node): Context
     {
         $flags = $node->flags ?? 0;
         switch ($flags) {
@@ -163,7 +165,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      * A new or an unchanged context resulting from
      * analyzing the negation of the short-circuiting and.
      */
-    private function analyzeShortCircuitingAnd($left, $right) : Context
+    private function analyzeShortCircuitingAnd($left, $right): Context
     {
         // Analyze expressions such as if (!(is_string($x) || is_int($x)))
         // which would be equivalent to if (!is_string($x)) { if (!is_int($x)) { ... }}
@@ -210,7 +212,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      * A new or an unchanged context resulting from
      * analyzing the negation of the short-circuiting or.
      */
-    private function analyzeShortCircuitingOr($left, $right) : Context
+    private function analyzeShortCircuitingOr($left, $right): Context
     {
         // Analyze expressions such as if (!(is_string($x) || is_int($x)))
         // which would be equivalent to if (!is_string($x)) { if (!is_int($x)) { ... }}
@@ -234,7 +236,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitUnaryOp(Node $node) : Context
+    public function visitUnaryOp(Node $node): Context
     {
         $expr_node = $node->children['expr'];
         $flags = $node->flags;
@@ -272,7 +274,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitCall(Node $node) : Context
+    public function visitCall(Node $node): Context
     {
         $raw_function_name = self::getFunctionName($node);
         if (!\is_string($raw_function_name)) {
@@ -313,7 +315,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
         return $context;
     }
 
-    public function visitVar(Node $node) : Context
+    public function visitVar(Node $node): Context
     {
         $this->checkVariablesDefined($node);
         return $this->removeTruthyFromVariable($node, $this->context, false, false);
@@ -327,7 +329,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitProp(Node $node) : Context
+    public function visitProp(Node $node): Context
     {
         $expr_node = $node->children['expr'];
         if (!($expr_node instanceof Node)) {
@@ -341,7 +343,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
         }
         return $this->modifyPropertyOfThisSimple(
             $node,
-            static function (UnionType $type) : UnionType {
+            static function (UnionType $type): UnionType {
                 return $type->nonTruthyClone();
             },
             $this->context
@@ -351,7 +353,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
     /**
      * @param list<Node|string|int|float> $args
      */
-    private function analyzeArrayKeyExistsNegation(array $args) : Context
+    private function analyzeArrayKeyExistsNegation(array $args): Context
     {
         if (\count($args) !== 2) {
             return $this->context;
@@ -363,10 +365,10 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
         return $this->updateVariableWithConditionalFilter(
             $var_node,
             $this->context,
-            static function (UnionType $_) : bool {
+            static function (UnionType $_): bool {
                 return true;
             },
-            function (UnionType $type) use ($args) : UnionType {
+            function (UnionType $type) use ($args): UnionType {
                 if ($type->hasTopLevelArrayShapeTypeInstances()) {
                     return $this->withNullOrUnsetArrayShapeTypes($type, $args[0], $this->context, true);
                 }
@@ -387,7 +389,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitInstanceof(Node $node) : Context
+    public function visitInstanceof(Node $node): Context
     {
         //$this->checkVariablesDefined($node);
         // Only look at things of the form
@@ -408,7 +410,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                  * @param list<mixed> $args
                  * @suppress PhanUnusedClosureParameter
                  */
-                function (CodeBase $code_base, Context $context, Variable $variable, array $args) use ($class_node) : void {
+                function (CodeBase $code_base, Context $context, Variable $variable, array $args) use ($class_node): void {
                     $union_type = $this->computeNegatedInstanceofType($variable->getUnionType(), $class_node);
                     if ($union_type) {
                         $variable->setUnionType($union_type);
@@ -459,7 +461,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      * Compute the type of $union_type after asserting `!(expr instanceof $class_node)`
      * @param Node|string|int|float $class_node
      */
-    private function computeNegatedInstanceofType(UnionType $union_type, $class_node) : ?UnionType
+    private function computeNegatedInstanceofType(UnionType $union_type, $class_node): ?UnionType
     {
         $right_hand_union_type = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
@@ -489,19 +491,19 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      * @return array<string,Closure> (NegatedConditionVisitor $cv, Node $var_node, Context $context) -> Context
      * @phan-return array<string,Closure(NegatedConditionVisitor,Node|int|string|float,Context):Context>
      */
-    private static function createNegationCallbackMap() : array
+    private static function createNegationCallbackMap(): array
     {
-        $remove_null_cb = static function (NegatedConditionVisitor $cv, Node $var_node, Context $context) : Context {
+        $remove_null_cb = static function (NegatedConditionVisitor $cv, Node $var_node, Context $context): Context {
             return $cv->removeNullFromVariable($var_node, $context, false);
         };
 
         // Remove any Types from UnionType that are subclasses of $base_class_name
-        $make_basic_negated_assertion_callback = static function (string $base_class_name) : Closure {
-            return static function (NegatedConditionVisitor $cv, Node $var_node, Context $context) use ($base_class_name) : Context {
+        $make_basic_negated_assertion_callback = static function (string $base_class_name): Closure {
+            return static function (NegatedConditionVisitor $cv, Node $var_node, Context $context) use ($base_class_name): Context {
                 return $cv->updateVariableWithConditionalFilter(
                     $var_node,
                     $context,
-                    static function (UnionType $union_type) use ($base_class_name) : bool {
+                    static function (UnionType $union_type) use ($base_class_name): bool {
                         foreach ($union_type->getTypeSet() as $type) {
                             if ($type instanceof $base_class_name) {
                                 return true;
@@ -514,7 +516,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                         }
                         return false;
                     },
-                    static function (UnionType $union_type) use ($base_class_name) : UnionType {
+                    static function (UnionType $union_type) use ($base_class_name): UnionType {
                         $new_type_builder = new UnionTypeBuilder();
                         $has_null = false;
                         $has_other_nullable_types = false;
@@ -544,15 +546,15 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
          * @param Closure(Type):bool $type_filter
          * @return Closure(NegatedConditionVisitor,Node,Context):Context
          */
-        $remove_conditional_function_callback = static function (Closure $type_filter) : Closure {
-            return static function (NegatedConditionVisitor $cv, Node $var_node, Context $context) use ($type_filter) : Context {
+        $remove_conditional_function_callback = static function (Closure $type_filter): Closure {
+            return static function (NegatedConditionVisitor $cv, Node $var_node, Context $context) use ($type_filter): Context {
                 return $cv->updateVariableWithConditionalFilter(
                     $var_node,
                     $context,
-                    static function (UnionType $union_type) use ($type_filter) : bool {
+                    static function (UnionType $union_type) use ($type_filter): bool {
                         return $union_type->hasTypeMatchingCallback($type_filter);
                     },
-                    static function (UnionType $union_type) use ($type_filter) : UnionType {
+                    static function (UnionType $union_type) use ($type_filter): UnionType {
                         $new_type_builder = new UnionTypeBuilder();
                         $has_null = false;
                         $has_other_nullable_types = false;
@@ -576,27 +578,27 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                 );
             };
         };
-        $remove_scalar_callback = $remove_conditional_function_callback(static function (Type $type) : bool {
+        $remove_scalar_callback = $remove_conditional_function_callback(static function (Type $type): bool {
             return $type instanceof ScalarType && !($type instanceof NullType);
         });
-        $remove_numeric_callback = $remove_conditional_function_callback(static function (Type $type) : bool {
+        $remove_numeric_callback = $remove_conditional_function_callback(static function (Type $type): bool {
             return $type instanceof IntType || $type instanceof FloatType;
         });
-        $remove_bool_callback = $remove_conditional_function_callback(static function (Type $type) : bool {
+        $remove_bool_callback = $remove_conditional_function_callback(static function (Type $type): bool {
             return $type->isInBoolFamily();
         });
-        $remove_callable_callback = static function (NegatedConditionVisitor $cv, Node $var_node, Context $context) : Context {
+        $remove_callable_callback = static function (NegatedConditionVisitor $cv, Node $var_node, Context $context): Context {
             return $cv->updateVariableWithConditionalFilter(
                 $var_node,
                 $context,
                 // if (!is_callable($x)) removes non-callable/closure types from $x.
                 // TODO: Could check for __invoke()
-                static function (UnionType $union_type) : bool {
-                    return $union_type->hasTypeMatchingCallback(static function (Type $type) : bool {
+                static function (UnionType $union_type): bool {
+                    return $union_type->hasTypeMatchingCallback(static function (Type $type): bool {
                         return $type->isCallable();
                     });
                 },
-                static function (UnionType $union_type) : UnionType {
+                static function (UnionType $union_type): UnionType {
                     $new_type_builder = new UnionTypeBuilder();
                     $has_null = false;
                     $has_other_nullable_types = false;
@@ -620,18 +622,18 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                 false
             );
         };
-        $remove_countable_callback = static function (NegatedConditionVisitor $cv, Node $var_node, Context $context) : Context {
+        $remove_countable_callback = static function (NegatedConditionVisitor $cv, Node $var_node, Context $context): Context {
             $code_base = $cv->getCodeBase();
             return $cv->updateVariableWithConditionalFilter(
                 $var_node,
                 $context,
                 // if (!is_countable($x)) removes non-array/Countable types from $x.
-                static function (UnionType $union_type) use ($code_base) : bool {
-                    return $union_type->hasTypeMatchingCallback(static function (Type $type) use ($code_base) : bool {
+                static function (UnionType $union_type) use ($code_base): bool {
+                    return $union_type->hasTypeMatchingCallback(static function (Type $type) use ($code_base): bool {
                         return $type->isCountable($code_base);
                     });
                 },
-                static function (UnionType $union_type) use ($code_base) : UnionType {
+                static function (UnionType $union_type) use ($code_base): UnionType {
                     $new_type_builder = new UnionTypeBuilder();
                     $has_null = false;
                     $has_other_nullable_types = false;
@@ -655,13 +657,13 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                 false
             );
         };
-        $remove_array_callback = static function (NegatedConditionVisitor $cv, Node $var_node, Context $context) : Context {
+        $remove_array_callback = static function (NegatedConditionVisitor $cv, Node $var_node, Context $context): Context {
             return $cv->updateVariableWithConditionalFilter(
                 $var_node,
                 $context,
                 // if (!is_callable($x)) removes non-callable/closure types from $x.
                 // TODO: Could check for __invoke()
-                static function (UnionType $union_type) : bool {
+                static function (UnionType $union_type): bool {
                     if ($union_type->hasIterable()) {
                         return true;
                     }
@@ -673,7 +675,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                     }
                     return false;
                 },
-                static function (UnionType $union_type) : UnionType {
+                static function (UnionType $union_type): UnionType {
                     return UnionType::of(
                         self::filterNonArrayTypes($union_type->getTypeSet()),
                         self::filterNonArrayTypes($union_type->getRealTypeSet())
@@ -683,16 +685,16 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                 false
             );
         };
-        $remove_object_callback = static function (NegatedConditionVisitor $cv, Node $var_node, Context $context) : Context {
+        $remove_object_callback = static function (NegatedConditionVisitor $cv, Node $var_node, Context $context): Context {
             return $cv->updateVariableWithConditionalFilter(
                 $var_node,
                 $context,
                 // if (!is_callable($x)) removes non-callable/closure types from $x.
                 // TODO: Could check for __invoke()
-                static function (UnionType $union_type) : bool {
+                static function (UnionType $union_type): bool {
                     return $union_type->hasPossiblyObjectTypes();
                 },
-                static function (UnionType $union_type) : UnionType {
+                static function (UnionType $union_type): UnionType {
                     $new_type_builder = new UnionTypeBuilder();
                     $has_null = false;
                     $has_other_nullable_types = false;
@@ -747,7 +749,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      * @param list<Type> $type_set
      * @return list<Type> which may contain duplicates
      */
-    private static function filterNonArrayTypes(array $type_set) : array
+    private static function filterNonArrayTypes(array $type_set): array
     {
         $new_types = [];
         $has_null = false;
@@ -783,7 +785,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitIsset(Node $node) : Context
+    public function visitIsset(Node $node): Context
     {
         $var_node = $node->children['var'];
         if (!($var_node instanceof Node)) {
@@ -799,7 +801,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
     /**
      * Analyze expressions such as $x['offset'] inside of a negated isset type check
      */
-    public function checkComplexIsset(Node $var_node) : Context
+    public function checkComplexIsset(Node $var_node): Context
     {
         $context = $this->context;
         if ($var_node->kind === ast\AST_DIM) {
@@ -846,7 +848,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                 }
             }
         } elseif ($var_node->kind === ast\AST_PROP) {
-            $context = $this->modifyPropertySimple($var_node, static function (UnionType $_) : UnionType {
+            $context = $this->modifyPropertySimple($var_node, static function (UnionType $_): UnionType {
                 return NullType::instance(false)->asPHPDocUnionType();
             }, $context);
         }
@@ -858,7 +860,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      * @param Node|string|float|int|bool $dim_node represents the dimension being accessed. (E.g. can be a literal or an AST_CONST, etc.
      * @param Context $context the context with inferences made prior to this condition
      */
-    private function withNullOrUnsetArrayShapeTypes(UnionType $union_type, $dim_node, Context $context, bool $remove_offset) : UnionType
+    private function withNullOrUnsetArrayShapeTypes(UnionType $union_type, $dim_node, Context $context, bool $remove_offset): UnionType
     {
         $dim_value = $dim_node instanceof Node ? (new ContextNode($this->code_base, $context, $dim_node))->getEquivalentPHPScalarValue() : $dim_node;
         // TODO: detect and warn about null
@@ -892,7 +894,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitEmpty(Node $node) : Context
+    public function visitEmpty(Node $node): Context
     {
         $context = $this->context;
         $var_node = $node->children['expr'];
@@ -938,7 +940,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
         return $context;
     }
 
-    private function checkComplexNegatedEmpty(Node $var_node) : Context
+    private function checkComplexNegatedEmpty(Node $var_node): Context
     {
         $context = $this->context;
         // TODO: !empty($obj->prop['offset']) should imply $obj is not null (removeNullFromVariable)
@@ -994,7 +996,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      *
      * @param bool $non_nullable if an offset is created, will it be non-nullable?
      */
-    private function withNonFalseyArrayShapeTypes(Variable $variable, $dim_node, Context $context, bool $non_nullable) : Context
+    private function withNonFalseyArrayShapeTypes(Variable $variable, $dim_node, Context $context, bool $non_nullable): Context
     {
         $dim_value = $dim_node instanceof Node ? (new ContextNode($this->code_base, $this->context, $dim_node))->getEquivalentPHPScalarValue() : $dim_node;
         // TODO: detect and warn about null
@@ -1048,7 +1050,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitExprList(Node $node) : Context
+    public function visitExprList(Node $node): Context
     {
         $children = $node->children;
         $count = \count($children);
@@ -1082,7 +1084,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitAssign(Node $node) : Context
+    public function visitAssign(Node $node): Context
     {
         $context = (new BlockAnalysisVisitor($this->code_base, $this->context))->visitAssign($node);
         $left = $node->children['var'];
@@ -1110,7 +1112,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitAssignRef(Node $node) : Context
+    public function visitAssignRef(Node $node): Context
     {
         $context = (new BlockAnalysisVisitor($this->code_base, $this->context))->visitAssignRef($node);
         $left = $node->children['var'];

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Analysis;
 
@@ -20,14 +22,15 @@ use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\FloatType;
-use Phan\Language\Type\MixedType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\ListType;
 use Phan\Language\Type\LiteralFloatType;
 use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\LiteralStringType;
+use Phan\Language\Type\MixedType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
+
 use function is_int;
 
 /**
@@ -87,7 +90,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      * @throws AssertionError
      * @suppress PhanUnreferencedPrivateMethod this is referenced by __invoke
      */
-    private function handleMissing(Node $node) : void
+    private function handleMissing(Node $node): void
     {
         throw new AssertionError("All flags must match. Found kind=" . Debug::nodeName($node) . ', flags=' . Element::flagDescription($node) . ' raw flags=' . $node->flags . ' at ' . $this->context->withLineNumberStart((int)$node->lineno));
     }
@@ -102,7 +105,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visit(Node $node) : UnionType
+    public function visit(Node $node): UnionType
     {
         $left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
@@ -119,27 +122,29 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         );
         static $int_or_float = null;
 
-        if ($left->isExclusivelyArray()
+        if (        $left->isExclusivelyArray()
             || $right->isExclusivelyArray()
         ) {
             return UnionType::empty();
-        } elseif ($left->hasType(FloatType::instance(false))
+        } elseif (            $left->hasType(FloatType::instance(false))
             || $right->hasType(FloatType::instance(false))
         ) {
-            if ($left->hasTypeMatchingCallback(
-                static function (Type $type) : bool {
+            if (
+            $left->hasTypeMatchingCallback(
+                static function (Type $type): bool {
                     return !($type instanceof FloatType);
                 }
             ) && $right->hasTypeMatchingCallback(
-                static function (Type $type) : bool {
-                    return !($type instanceof FloatType);
-                }
-            )) {
+                    static function (Type $type): bool {
+                        return !($type instanceof FloatType);
+                    }
+                )
+            ) {
                 return $int_or_float ?? ($int_or_float = UnionType::fromFullyQualifiedPHPDocString('int|float'));
             }
 
             return FloatType::instance(false)->asPHPDocUnionType();
-        } elseif ($left->hasNonNullIntType()
+        } elseif (        $left->hasNonNullIntType()
             && $right->hasNonNullIntType()
         ) {
             return IntType::instance(false)->asPHPDocUnionType();
@@ -157,7 +162,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visitBinarySpaceship(Node $node) : UnionType
+    public function visitBinarySpaceship(Node $node): UnionType
     {
         // TODO: Any sanity checks should go here.
 
@@ -174,7 +179,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visitBinaryShiftLeft(Node $node) : UnionType
+    public function visitBinaryShiftLeft(Node $node): UnionType
     {
         // TODO: Any sanity checks should go here.
         return IntType::instance(false)->asRealUnionType();
@@ -189,7 +194,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visitBinaryShiftRight(Node $node) : UnionType
+    public function visitBinaryShiftRight(Node $node): UnionType
     {
         // TODO: Any sanity checks should go here.
         return IntType::instance(false)->asRealUnionType();
@@ -199,7 +204,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      * Code can bitwise xor strings byte by byte (or integers by value) in PHP
      * @override
      */
-    public function visitBinaryBitwiseXor(Node $node) : UnionType
+    public function visitBinaryBitwiseXor(Node $node): UnionType
     {
         return $this->analyzeBinaryBitwiseCommon($node);
     }
@@ -207,7 +212,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
     /**
      * @override
      */
-    public function visitBinaryBitwiseOr(Node $node) : UnionType
+    public function visitBinaryBitwiseOr(Node $node): UnionType
     {
         return $this->analyzeBinaryBitwiseCommon($node);
     }
@@ -215,12 +220,12 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
     /**
      * @override
      */
-    public function visitBinaryBitwiseAnd(Node $node) : UnionType
+    public function visitBinaryBitwiseAnd(Node $node): UnionType
     {
         return $this->analyzeBinaryBitwiseCommon($node);
     }
 
-    private function analyzeBinaryBitwiseCommon(Node $node) : UnionType
+    private function analyzeBinaryBitwiseCommon(Node $node): UnionType
     {
         $left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
@@ -284,7 +289,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         Node $node,
         UnionType $left,
         UnionType $right
-    ) : UnionType {
+    ): UnionType {
         static $real_int_or_string;
         static $real_int;
         static $real_float;
@@ -305,7 +310,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                  *
                  * @param list<Type> $default_types
                  */
-                $make_literal_union_type = static function (Type $result, array $default_types) use ($left, $right) : UnionType {
+                $make_literal_union_type = static function (Type $result, array $default_types) use ($left, $right): UnionType {
                     if ($left->isExclusivelyRealTypes() && $right->isExclusivelyRealTypes()) {
                         return $result->asRealUnionType();
                     }
@@ -420,7 +425,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         string $issue_type,
         int $lineno,
         ...$parameters
-    ) : void {
+    ): void {
         Issue::maybeEmitWithParameters(
             $this->code_base,
             $this->context,
@@ -437,7 +442,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visitBinaryBoolAnd(Node $unused_node) : UnionType
+    public function visitBinaryBoolAnd(Node $unused_node): UnionType
     {
         return BoolType::instance(false)->asRealUnionType();
     }
@@ -449,7 +454,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visitBinaryBoolXor(Node $unused_node) : UnionType
+    public function visitBinaryBoolXor(Node $unused_node): UnionType
     {
         return BoolType::instance(false)->asRealUnionType();
     }
@@ -461,7 +466,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visitBinaryBoolOr(Node $unused_node) : UnionType
+    public function visitBinaryBoolOr(Node $unused_node): UnionType
     {
         return BoolType::instance(false)->asRealUnionType();
     }
@@ -474,7 +479,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visitBinaryConcat(Node $node) : UnionType
+    public function visitBinaryConcat(Node $node): UnionType
     {
         $left_node = $node->children['left'];
         $left_value = $left_node instanceof Node ? UnionTypeVisitor::unionTypeFromNode(
@@ -506,7 +511,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    private function visitBinaryOpCommon(Node $node) : UnionType
+    private function visitBinaryOpCommon(Node $node): UnionType
     {
         $left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
@@ -533,7 +538,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             ArrayType::instance(false)->asPHPDocUnionType()
         );
 
-        if ($left_is_array_like
+        if (        $left_is_array_like
             && !$right->hasArrayLike()
             && !$right_can_cast_to_array
             && !$right->isEmpty()
@@ -545,13 +550,12 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                 $node->lineno ?? 0,
                 (string)$right->asNonLiteralType()
             );
-        } elseif ($right_is_array_like
+        } elseif (        $right_is_array_like
             && !$left->hasArrayLike()
             && !$left_can_cast_to_array
             && !$left->isEmpty()
             && !$left->containsNullable()
             && !$right->hasAnyType($left->getTypeSet())  // TODO: Strict canCastToUnionType() variant?
-
         ) {
             $this->emitIssue(
                 Issue::TypeComparisonToArray,
@@ -570,7 +574,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visitBinaryIsIdentical(Node $node) : UnionType
+    public function visitBinaryIsIdentical(Node $node): UnionType
     {
         return $this->visitBinaryOpCommon($node);
     }
@@ -582,7 +586,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visitBinaryIsNotIdentical(Node $node) : UnionType
+    public function visitBinaryIsNotIdentical(Node $node): UnionType
     {
         return $this->visitBinaryOpCommon($node);
     }
@@ -594,7 +598,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visitBinaryIsEqual(Node $node) : UnionType
+    public function visitBinaryIsEqual(Node $node): UnionType
     {
         return $this->visitBinaryOpCommon($node);
     }
@@ -606,7 +610,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visitBinaryIsNotEqual(Node $node) : UnionType
+    public function visitBinaryIsNotEqual(Node $node): UnionType
     {
         return $this->visitBinaryOpCommon($node);
     }
@@ -618,7 +622,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visitBinaryIsSmaller(Node $node) : UnionType
+    public function visitBinaryIsSmaller(Node $node): UnionType
     {
         return $this->visitBinaryOpCommon($node);
     }
@@ -630,7 +634,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visitBinaryIsSmallerOrEqual(Node $node) : UnionType
+    public function visitBinaryIsSmallerOrEqual(Node $node): UnionType
     {
         return $this->visitBinaryOpCommon($node);
     }
@@ -642,7 +646,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visitBinaryIsGreater(Node $node) : UnionType
+    public function visitBinaryIsGreater(Node $node): UnionType
     {
         return $this->visitBinaryOpCommon($node);
     }
@@ -654,7 +658,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visitBinaryIsGreaterOrEqual(Node $node) : UnionType
+    public function visitBinaryIsGreaterOrEqual(Node $node): UnionType
     {
         return $this->visitBinaryOpCommon($node);
     }
@@ -670,7 +674,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         UnionType $right,
         string $left_issue_type,
         string $right_issue_type
-    ) : void {
+    ): void {
         if (!$left->isEmpty()) {
             if (!$left->hasTypeMatchingCallback($is_valid_type)) {
                 $this->emitIssue(
@@ -700,7 +704,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visitBinaryAdd(Node $node) : UnionType
+    public function visitBinaryAdd(Node $node): UnionType
     {
         $code_base = $this->code_base;
         $context = $this->context;
@@ -750,7 +754,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
 
         $this->warnAboutInvalidUnionType(
             $node,
-            static function (Type $type) : bool {
+            static function (Type $type): bool {
                 return $type->isValidNumericOperand() || $type instanceof ArrayType;
             },
             $left,
@@ -782,7 +786,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                 return ArrayType::combineArrayTypesOverriding($left, $right, false);
             }
 
-            if ($left_is_array
+            if (            $left_is_array
                 && !$right->canCastToUnionType(
                     ArrayType::instance(false)->asPHPDocUnionType()
                 )
@@ -817,7 +821,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         Node $node,
         UnionType $left,
         UnionType $right
-    ) : void {
+    ): void {
         if (!$left->hasRealTypeSet() || !$right->hasRealTypeSet()) {
             return;
         }
@@ -898,7 +902,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    private function getTypeOfNumericArithmeticOp(Node $node) : UnionType
+    private function getTypeOfNumericArithmeticOp(Node $node): UnionType
     {
         $code_base = $this->code_base;
         $context = $this->context;
@@ -923,7 +927,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
 
         $this->warnAboutInvalidUnionType(
             $node,
-            static function (Type $type) : bool {
+            static function (Type $type): bool {
                 // TODO: Stricten this to warn about strings based on user config.
                 return $type->isValidNumericOperand();
             },
@@ -952,7 +956,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visitBinarySub(Node $node) : UnionType
+    public function visitBinarySub(Node $node): UnionType
     {
         return $this->getTypeOfNumericArithmeticOp($node);
     }
@@ -964,7 +968,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visitBinaryMul(Node $node) : UnionType
+    public function visitBinaryMul(Node $node): UnionType
     {
         return $this->getTypeOfNumericArithmeticOp($node);
     }
@@ -976,7 +980,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visitBinaryDiv(Node $node) : UnionType
+    public function visitBinaryDiv(Node $node): UnionType
     {
         return $this->getTypeOfNumericArithmeticOp($node);
     }
@@ -988,7 +992,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visitBinaryPow(Node $node) : UnionType
+    public function visitBinaryPow(Node $node): UnionType
     {
         return $this->getTypeOfNumericArithmeticOp($node);
     }
@@ -997,7 +1001,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visitBinaryMod(Node $unused_node) : UnionType
+    public function visitBinaryMod(Node $unused_node): UnionType
     {
         // TODO: Warn about invalid left or right side
         return IntType::instance(false)->asRealUnionType();
@@ -1012,7 +1016,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visitBinaryCoalesce(Node $node) : UnionType
+    public function visitBinaryCoalesce(Node $node): UnionType
     {
         $left_node = $node->children['left'];
         $left_type = UnionTypeVisitor::unionTypeFromNode(

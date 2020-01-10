@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Config;
 
@@ -14,11 +16,13 @@ use Phan\Exception\UsageException;
 use Phan\Issue;
 use Phan\Language\Context;
 use TypeError;
+
 use function count;
 use function is_array;
 use function is_int;
 use function is_null;
 use function is_string;
+
 use const EXIT_FAILURE;
 use const FILTER_VALIDATE_INT;
 
@@ -33,7 +37,7 @@ class Initializer
      * Returns
      * @throws UsageException with a process exit code for `phan --init`
      */
-    public static function initPhanConfig(array $opts) : void
+    public static function initPhanConfig(array $opts): void
     {
         Config::setValue('use_polyfill_parser', true);
         $cwd = \getcwd();
@@ -84,7 +88,7 @@ class Initializer
     /**
      * @return array<string,string[]> maps a config name to a list of comment lines about that config
      */
-    public static function computeCommentNameDocumentationMap() : array
+    public static function computeCommentNameDocumentationMap(): array
     {
         // Hackish way of extracting comment lines from Config::DEFAULT_CONFIGURATION
         // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
@@ -113,7 +117,7 @@ class Initializer
      * Returns indented PHP comment lines to use for the comment on $setting_name.
      * Returns the empty string if nothing could be generated.
      */
-    public static function generateCommentForSetting(string $setting_name) : string
+    public static function generateCommentForSetting(string $setting_name): string
     {
         static $comment_source = null;
         if (is_null($comment_source)) {
@@ -123,7 +127,7 @@ class Initializer
         if ($lines === null) {
             return '';
         }
-        return \implode('', \array_map(static function (string $line) : string {
+        return \implode('', \array_map(static function (string $line): string {
             return "    $line\n";
         }, $lines));
     }
@@ -133,7 +137,7 @@ class Initializer
      * @param string|int|float|bool|array|null $setting_value
      * @param list<string> $additional_comment_lines
      */
-    public static function generateEntrySnippetForSetting(string $setting_name, $setting_value, array $additional_comment_lines) : string
+    public static function generateEntrySnippetForSetting(string $setting_name, $setting_value, array $additional_comment_lines): string
     {
         $source = self::generateCommentForSetting($setting_name);
         foreach ($additional_comment_lines as $line) {
@@ -178,7 +182,7 @@ class Initializer
     /**
      * Returns a string containing the full source to use for the generated `.phan/config.php`
      */
-    public static function generatePhanConfigFileContents(InitializedSettings $settings_object) : string
+    public static function generatePhanConfigFileContents(InitializedSettings $settings_object): string
     {
         $phan_settings = $settings_object->settings;
         $init_level = $settings_object->init_level;
@@ -247,7 +251,7 @@ EOT;
      * @throws UsageException if provided settings are invalid
      * @internal
      */
-    public static function createPhanSettingsForComposerSettings(array $composer_settings, ?string $vendor_path, array $opts) : InitializedSettings
+    public static function createPhanSettingsForComposerSettings(array $composer_settings, ?string $vendor_path, array $opts): InitializedSettings
     {
         $level = $opts['init-level'] ?? 3;
         $level = self::LEVEL_MAP[\strtolower((string)$level)] ?? $level;
@@ -414,7 +418,7 @@ EOT;
      * @param array<string,mixed> $composer_settings parsed from composer.json
      * @return array{0:?string,1:list<string>}
      */
-    public static function determineTargetPHPVersion(array $composer_settings) : array
+    public static function determineTargetPHPVersion(array $composer_settings): array
     {
         $php_version_constraint = $composer_settings['require']['php'] ?? null;
         if (!$php_version_constraint || !is_string($php_version_constraint)) {
@@ -440,7 +444,7 @@ EOT;
         return [$version_guess, ['Automatically inferred from composer.json requirement for "php" of ' . \json_encode($php_version_constraint)]];
     }
 
-    private static function parseConstraintsForRange(string $constraints) : ConstraintInterface
+    private static function parseConstraintsForRange(string $constraints): ConstraintInterface
     {
         return (new VersionParser())->parseConstraints($constraints);
     }
@@ -449,7 +453,7 @@ EOT;
      * @param array<string,mixed> $composer_settings settings parsed from composer.json
      * @return list<list<string>> [$directory_list, $file_list]
      */
-    private static function extractAutoloadFilesAndDirectories(string $relative_dir, array $composer_settings) : array
+    private static function extractAutoloadFilesAndDirectories(string $relative_dir, array $composer_settings): array
     {
         $directory_list = [];
         $file_list = [];
@@ -496,7 +500,7 @@ EOT;
      * @param list<string> $file_list
      * @return list<list<string>> [$directory_list, $file_list]
      */
-    public static function filterDirectoryAndFileList(array $directory_list, array $file_list) : array
+    public static function filterDirectoryAndFileList(array $directory_list, array $file_list): array
     {
         \sort($directory_list);
         \sort($file_list);
@@ -515,13 +519,13 @@ EOT;
      * @param string[] $directory_list
      * @return Closure(string):bool a closure that returns true if the passed in file is not within any folders in $directory_list
      */
-    private static function createNotInDirectoryFilter(array $directory_list) : Closure
+    private static function createNotInDirectoryFilter(array $directory_list): Closure
     {
-        $parts = \array_map(static function (string $path) : string {
+        $parts = \array_map(static function (string $path): string {
             return \preg_quote($path, '@');
         }, $directory_list);
         $prefix_filter = '@^(' . \implode('|', $parts) . ')[\\\\/]@';
-        return static function (string $path) use ($prefix_filter) : bool {
+        return static function (string $path) use ($prefix_filter): bool {
             return !\preg_match($prefix_filter, $path);
         };
     }
@@ -530,7 +534,7 @@ EOT;
      * @param array<string,mixed> $opts
      * @return list<string>
      */
-    private static function getArrayOption(array $opts, string $key) : array
+    private static function getArrayOption(array $opts, string $key): array
     {
         $values = $opts[$key] ?? [];
         if (is_string($values)) {
@@ -544,7 +548,7 @@ EOT;
      *
      * This indicates that $relative_path points to a PHP binary file that should be analyzed.
      */
-    public static function isPHPBinary(string $relative_path) : bool
+    public static function isPHPBinary(string $relative_path): bool
     {
         $cwd = \getcwd();
         $absolute_path = "$cwd/$relative_path";

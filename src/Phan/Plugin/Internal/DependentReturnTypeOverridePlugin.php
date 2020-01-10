@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Plugin\Internal;
 
@@ -23,6 +25,7 @@ use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 use Phan\PluginV3;
 use Phan\PluginV3\ReturnTypeOverrideCapability;
+
 use function count;
 use function is_int;
 use function is_string;
@@ -44,7 +47,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
      * @phan-return array<string, Closure(CodeBase,Context,Func,array):UnionType>
      * @internal
      */
-    public static function getReturnTypeOverridesStatic(CodeBase $code_base) : array
+    public static function getReturnTypeOverridesStatic(CodeBase $code_base): array
     {
         $string_union_type = StringType::instance(false)->asPHPDocUnionType();
         $true_union_type = TrueType::instance(false)->asPHPDocUnionType();
@@ -57,7 +60,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
         /**
          * @phan-return Closure(CodeBase,Context,Func,array):UnionType
          */
-        $make_dependent_type_method = static function (int $expected_bool_pos, UnionType $type_if_true, UnionType $type_if_false, UnionType $type_if_unknown) : Closure {
+        $make_dependent_type_method = static function (int $expected_bool_pos, UnionType $type_if_true, UnionType $type_if_false, UnionType $type_if_unknown): Closure {
             /**
              * @param Func $function @phan-unused-param
              * @param list<Node|int|float|string> $args
@@ -72,7 +75,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
                 $type_if_unknown,
                 $type_if_false,
                 $expected_bool_pos
-) : UnionType {
+): UnionType {
                 if (count($args) <= $expected_bool_pos) {
                     return $type_if_false;
                 }
@@ -103,7 +106,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
         ) use (
             $nullable_string_union_type,
             $string_union_type
-        ) : UnionType {
+        ): UnionType {
             //PHP 8 will throw a DivisionByZero error instead of returning null
             if (Config::getValue('target_php_version') >= 80000) {
                 return $string_union_type;
@@ -120,7 +123,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
         /**
          * @phan-return Closure(CodeBase,Context,Func,array):UnionType
          */
-        $make_arg_existence_dependent_type_method = static function (int $arg_pos, string $type_if_exists_string, string $type_if_missing_string) : Closure {
+        $make_arg_existence_dependent_type_method = static function (int $arg_pos, string $type_if_exists_string, string $type_if_missing_string): Closure {
             $type_if_exists = UnionType::fromFullyQualifiedPHPDocString($type_if_exists_string);
             $type_if_missing = UnionType::fromFullyQualifiedPHPDocString($type_if_missing_string);
             /**
@@ -135,7 +138,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
                 $arg_pos,
                 $type_if_exists,
                 $type_if_missing
-) : UnionType {
+): UnionType {
                 return isset($args[$arg_pos]) ? $type_if_exists : $type_if_missing;
             };
         };
@@ -160,7 +163,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             $json_decode_array_types,
             $json_decode_object_types,
             $json_decode_array_or_object_types
-) : UnionType {
+): UnionType {
             //  mixed json_decode ( string $json [, bool $assoc = FALSE [, int $depth = 512 [, int $options = 0 ]]] )
             //  $options can include JSON_OBJECT_AS_ARRAY in a bitmask
             // TODO: reject `...` operator? (Low priority)
@@ -204,7 +207,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             $string_union_type,
             $str_replace_types,
             $str_array_type
-        ) : UnionType {
+        ): UnionType {
             //  mixed json_decode ( string $json [, bool $assoc = FALSE [, int $depth = 512 [, int $options = 0 ]]] )
             //  $options can include JSON_OBJECT_AS_ARRAY in a bitmask
             // TODO: reject `...` operator? (Low priority)
@@ -227,7 +230,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             Context $unused_context,
             Func $unused_function,
             array $args
-        ) use ($string_or_false) : UnionType {
+        ) use ($string_or_false): UnionType {
             if (count($args) === 0 && Config::get_closest_target_php_version_id() >= 70100) {
                 return UnionType::fromFullyQualifiedPHPDocString('array<string,string>');
             }
@@ -244,7 +247,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
         ) use (
             $string_or_false,
             $string_union_type
-) : UnionType {
+): UnionType {
             if (count($args) >= 2 && is_int($args[1]) && $args[1] <= 0) {
                 // Cut down on false positive warnings about substr($str, 0, $len) possibly being false
                 return $string_union_type;
@@ -260,7 +263,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             Context $context,
             Func $unused_function,
             array $args
-        ) use ($real_int_type) : UnionType {
+        ) use ($real_int_type): UnionType {
             if (count($args) < 1 || count($args) >= 3) {
                 return NullType::instance(false)->asRealUnionType();
             }
@@ -303,7 +306,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             array $args
         ) use (
             $string_union_type
-) : UnionType {
+): UnionType {
             if (count($args) !== 1) {
                 if (count($args) !== 2) {
                     // Cut down on false positive warnings about substr($str, 0, $len) possibly being false
@@ -336,7 +339,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             Context $context,
             Func $unused_function,
             array $args
-        ) : UnionType {
+        ): UnionType {
             $is_php8 = Config::get_closest_target_php_version_id() >= 80000;
             if (count($args) > 2) {
                 $limit = $args[2];
@@ -386,7 +389,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
     /**
      * @param callable(string):string $callable a function that acts on strings.
      */
-    private static function makeStringFunctionHandler(callable $callable) : Closure
+    private static function makeStringFunctionHandler(callable $callable): Closure
     {
         $string_union_type = StringType::instance(false)->asPHPDocUnionType();
         /**
@@ -400,7 +403,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
         ) use (
             $string_union_type,
             $callable
-) : UnionType {
+): UnionType {
             if (count($args) !== 1) {
                 // Cut down on false positive warnings about substr($str, 0, $len) possibly being false
                 return $string_union_type;
@@ -419,7 +422,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
      * @return array<string,\Closure>
      * @override
      */
-    public function getReturnTypeOverrides(CodeBase $code_base) : array
+    public function getReturnTypeOverrides(CodeBase $code_base): array
     {
         // Unit tests invoke this repeatedly. Cache it.
         static $overrides = null;

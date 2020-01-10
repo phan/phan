@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language;
 
@@ -20,7 +22,7 @@ class ElementContext extends Context
         $this->element = $element;
     }
 
-    public function isInElementScope() : bool
+    public function isInElementScope(): bool
     {
         return true;
     }
@@ -31,17 +33,17 @@ class ElementContext extends Context
      *
      * (Phan runs without garbage collection for performance reasons)
      */
-    public function freeElementReference() : void
+    public function freeElementReference(): void
     {
         $this->element = null;
     }
 
-    public function getElementInScope(CodeBase $code_base) : TypedElement
+    public function getElementInScope(CodeBase $code_base): TypedElement
     {
         return $this->element ?? parent::getElementInScope($code_base);
     }
 
-    public function isInGlobalScope() : bool
+    public function isInGlobalScope(): bool
     {
         return false;
     }

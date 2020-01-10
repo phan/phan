@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests;
 
@@ -15,14 +17,14 @@ abstract class PhanTestRange extends PhanTestCommon
     const START_RANGE = '';
     const END_RANGE = '';
 
-    public function getTestFiles() : array
+    public function getTestFiles(): array
     {
         return \array_filter(
             $this->getAllTestFiles(),
             /**
              * @param array{0:array{0:string},1:string} $data
              */
-            static function (array $data) : bool {
+            static function (array $data): bool {
                 $expected_file = \basename($data[1]);
                 return \strcmp($expected_file, static::START_RANGE) >= 0 && \strcmp($expected_file, static::END_RANGE) < 0;
             }

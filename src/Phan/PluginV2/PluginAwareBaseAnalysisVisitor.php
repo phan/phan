@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\PluginV2;
 
@@ -61,7 +63,7 @@ abstract class PluginAwareBaseAnalysisVisitor extends AnalysisVisitor
     /**
      * @return list<int> The list of $node->kind values this plugin is capable of analyzing.
      */
-    final public static function getHandledNodeKinds() : array
+    final public static function getHandledNodeKinds(): array
     {
         $defines_visit = self::isDefinedInSubclass('visit');
         $kinds = [];
@@ -77,7 +79,7 @@ abstract class PluginAwareBaseAnalysisVisitor extends AnalysisVisitor
      * @return bool true if $method_name is defined by the subclass of PluginAwareBaseAnalysisVisitor,
      * and not by PluginAwareBaseAnalysisVisitor or one of its parents.
      */
-    private static function isDefinedInSubclass(string $method_name) : bool
+    private static function isDefinedInSubclass(string $method_name): bool
     {
         $method = new \ReflectionMethod(static::class, $method_name);
         return \is_subclass_of($method->class, self::class);

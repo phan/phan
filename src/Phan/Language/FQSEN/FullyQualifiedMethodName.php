@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\FQSEN;
 
@@ -89,7 +91,7 @@ class FullyQualifiedMethodName extends FullyQualifiedClassElement implements Ful
      * The canonical representation of the name of the object. Functions
      * and Methods, for instance, lowercase their names.
      */
-    public static function canonicalName(string $name) : string
+    public static function canonicalName(string $name): string
     {
         return self::CANONICAL_NAMES[\strtolower($name)] ?? $name;
     }
@@ -98,7 +100,7 @@ class FullyQualifiedMethodName extends FullyQualifiedClassElement implements Ful
      * @return bool
      * True if this FQSEN represents a closure
      */
-    public function isClosure() : bool
+    public function isClosure(): bool
     {
         return false;
     }

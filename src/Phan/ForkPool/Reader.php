@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\ForkPool;
 
@@ -60,7 +62,7 @@ class Reader
     /**
      * Read serialized messages from the analysis workers
      */
-    public function readMessages() : void
+    public function readMessages(): void
     {
         if ($this->eof) {
             return;
@@ -105,7 +107,7 @@ class Reader
      * Returns an error message for errors caused by an analysis worker exiting abnormally or sending invalid data.
      * During normal operation, should return null.
      */
-    public function computeErrorsAfterRead() : ?string
+    public function computeErrorsAfterRead(): ?string
     {
         $error = "";
         if ($this->buffer) {

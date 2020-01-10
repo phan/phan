@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Analysis;
 
@@ -17,7 +19,7 @@ class DuplicateClassAnalyzer
     public static function analyzeDuplicateClass(
         CodeBase $code_base,
         Clazz $clazz
-    ) : void {
+    ): void {
         // Determine if it's a duplicate by looking to see if
         // the FQSEN is suffixed with an alternate ID.
 

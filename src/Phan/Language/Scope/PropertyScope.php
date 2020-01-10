@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Scope;
 
@@ -25,7 +27,7 @@ class PropertyScope extends ClosedScope
      * True if we're in a property scope
      * @override
      */
-    public function isInPropertyScope() : bool
+    public function isInPropertyScope(): bool
     {
         return true;
     }
@@ -35,7 +37,7 @@ class PropertyScope extends ClosedScope
      * True if we're in a class scope (True for properties)
      * @override
      */
-    public function isInClassScope() : bool
+    public function isInClassScope(): bool
     {
         return true;
     }
@@ -46,7 +48,7 @@ class PropertyScope extends ClosedScope
      * we're in.
      * @override
      */
-    public function getPropertyFQSEN() : FullyQualifiedPropertyName
+    public function getPropertyFQSEN(): FullyQualifiedPropertyName
     {
         if ($this->fqsen instanceof FullyQualifiedPropertyName) {
             return $this->fqsen;
@@ -59,7 +61,7 @@ class PropertyScope extends ClosedScope
      * @return FullyQualifiedClassName
      * Crawl the scope hierarchy to get a class FQSEN.
      */
-    public function getClassFQSEN() : FullyQualifiedClassName
+    public function getClassFQSEN(): FullyQualifiedClassName
     {
         return $this->parent_scope->getClassFQSEN();
     }
@@ -69,7 +71,7 @@ class PropertyScope extends ClosedScope
      * Crawl the scope hierarchy to get a class FQSEN.
      * Return null if there is no class FQSEN.
      */
-    public function getClassFQSENOrNull() : ?FullyQualifiedClassName
+    public function getClassFQSENOrNull(): ?FullyQualifiedClassName
     {
         return $this->parent_scope->getClassFQSENOrNull();
     }

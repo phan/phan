@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Phan\Tests\LanguageServer;
@@ -23,7 +24,7 @@ class MockProtocolStream extends Emitter implements ProtocolReader, ProtocolWrit
      */
     public function write(Message $msg): Promise
     {
-        Loop\nextTick(function () use ($msg) : void {
+        Loop\nextTick(function () use ($msg): void {
             $this->emit('message', [Message::parse((string)$msg)]);
         });
         return Promise\resolve(null);
@@ -35,7 +36,7 @@ class MockProtocolStream extends Emitter implements ProtocolReader, ProtocolWrit
      */
     public $did_stop_accepting_new_requests = false;
 
-    public function stopAcceptingNewRequests() : void
+    public function stopAcceptingNewRequests(): void
     {
         $this->did_stop_accepting_new_requests = true;
     }

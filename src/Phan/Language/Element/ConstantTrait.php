@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Element;
 
@@ -22,9 +24,9 @@ trait ConstantTrait
      * @return string
      * The (not fully-qualified) name of this element.
      */
-    abstract public function getName() : string;
+    abstract public function getName(): string;
 
-    public function __toString() : string
+    public function __toString(): string
     {
         return 'const ' . $this->getName();
     }
@@ -35,7 +37,7 @@ trait ConstantTrait
      * @param Node|string|float|int|resource $node Either a node or a constant to be used as the value of the constant.
      * Can be resource for STDERR, etc.
      */
-    public function setNodeForValue($node) : void
+    public function setNodeForValue($node): void
     {
         $this->defining_node = $node;
     }
@@ -54,7 +56,7 @@ trait ConstantTrait
      * Used by daemon mode to restore an element to the state it had before parsing.
      * @internal
      */
-    public function createRestoreCallback() : ?Closure
+    public function createRestoreCallback(): ?Closure
     {
         $future_union_type = $this->future_union_type;
         if ($future_union_type === null) {
@@ -64,7 +66,7 @@ trait ConstantTrait
         }
         // If this refers to a class constant in another file,
         // the resolved union type might change if that file changes.
-        return function () use ($future_union_type) : void {
+        return function () use ($future_union_type): void {
             $this->future_union_type = $future_union_type;
             // Probably don't need to call setUnionType(mixed) again...
         };

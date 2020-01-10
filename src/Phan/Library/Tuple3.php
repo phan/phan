@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Library;
 
@@ -47,7 +49,7 @@ class Tuple3 extends Tuple2
      * @return array{0:T0,1:T1,2:T2}
      * An array of all elements in this tuple.
      */
-    public function toArray() : array
+    public function toArray(): array
     {
         return [
             $this->_0,

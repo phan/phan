@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Type;
 
@@ -16,22 +18,22 @@ class CallableArrayType extends ArrayType
     /** @phan-override */
     const NAME = 'callable-array';
 
-    public function isAlwaysTruthy() : bool
+    public function isAlwaysTruthy(): bool
     {
         return !$this->is_nullable;
     }
 
-    public function isPossiblyObject() : bool
+    public function isPossiblyObject(): bool
     {
         return false;  // Overrides IterableType returning true
     }
 
-    public function isPossiblyTruthy() : bool
+    public function isPossiblyTruthy(): bool
     {
         return true;
     }
 
-    public function isPossiblyFalsey() : bool
+    public function isPossiblyFalsey(): bool
     {
         return $this->is_nullable;
     }
@@ -40,7 +42,7 @@ class CallableArrayType extends ArrayType
      * @return UnionType int|string for arrays
      * @override
      */
-    public function iterableKeyUnionType(CodeBase $unused_code_base) : UnionType
+    public function iterableKeyUnionType(CodeBase $unused_code_base): UnionType
     {
         // Reduce false positive partial type mismatch errors
         return IntType::instance(false)->asPHPDocUnionType();
@@ -49,12 +51,12 @@ class CallableArrayType extends ArrayType
     /**
      * @override
      */
-    public function iterableValueUnionType(CodeBase $unused_code_base) : UnionType
+    public function iterableValueUnionType(CodeBase $unused_code_base): UnionType
     {
         return UnionType::fromFullyQualifiedPHPDocString('string|object');
     }
 
-    public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other) : bool
+    public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other): bool
     {
         if ($other instanceof IterableType) {
             return !$other->isDefiniteNonCallableType();

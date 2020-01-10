@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan;
 
@@ -58,12 +60,12 @@ trait Profile
     /**
      * Initialize the profiler
      */
-    private static function initialize() : void
+    private static function initialize(): void
     {
 
         // Create a shutdown function to emit the log when we're
         // all done
-        \register_shutdown_function(static function () : void {
+        \register_shutdown_function(static function (): void {
             $label_metric_map = [];
 
             // Compute whatever metric we care about
@@ -85,7 +87,7 @@ trait Profile
                  * @param array{0:int,1:float,2:float} $a
                  * @param array{0:int,1:float,2:float} $b
                  */
-                static function (array $a, array $b) : int {
+                static function (array $a, array $b): int {
                     return $b[1] <=> $a[1];
                 }
             );
@@ -94,7 +96,7 @@ trait Profile
             foreach ($label_metric_map as $label => $metrics) {
                 print $label
                     . "\t"
-                    . \implode("\t", \array_map(static function (float $v) : string {
+                    . \implode("\t", \array_map(static function (float $v): string {
                         return \sprintf("%.6f", $v);
                     }, $metrics))
                     . "\n";

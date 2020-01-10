@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests\LanguageServer;
 
@@ -20,7 +22,7 @@ use ReflectionClass;
  */
 final class DocBlockTest extends BaseTest
 {
-    public function testAllCommentsValid() : void
+    public function testAllCommentsValid(): void
     {
         $doc_block_factory = DocBlockFactory::createInstance();
         $context_factory = new ContextFactory();

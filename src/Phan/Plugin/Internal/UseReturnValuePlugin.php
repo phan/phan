@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Plugin\Internal;
 
@@ -79,7 +81,7 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
     /**
      * @return string - name of PluginAwarePostAnalysisVisitor subclass
      */
-    public static function getPostAnalyzeNodeVisitorClassName() : string
+    public static function getPostAnalyzeNodeVisitorClassName(): string
     {
         self::$stats = [];
         // NOTE: debug should be used together with dynamic checks.
@@ -90,7 +92,7 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
     }
 
     /** @override */
-    public function beforeAnalyzePhase(CodeBase $code_base) : void
+    public function beforeAnalyzePhase(CodeBase $code_base): void
     {
         if (!(Config::getValue('plugin_config')['infer_pure_methods'] ?? false)) {
             return;
@@ -105,7 +107,7 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
     /**
      * @override
      */
-    public function finalizeProcess(CodeBase $code_base) : void
+    public function finalizeProcess(CodeBase $code_base): void
     {
         if (!self::$use_dynamic) {
             return;

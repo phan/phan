@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Type;
 
@@ -14,5 +16,5 @@ interface MultiType
      * @return non-empty-list<Type>
      * A list of 2 or more types that this MultiType represents
      */
-    public function asIndividualTypeInstances() : array;
+    public function asIndividualTypeInstances(): array;
 }

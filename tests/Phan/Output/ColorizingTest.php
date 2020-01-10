@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests\Output;
 
@@ -11,7 +13,7 @@ use Phan\Tests\BaseTest;
  */
 final class ColorizingTest extends BaseTest
 {
-    public function testColorSchemesAreValid() : void
+    public function testColorSchemesAreValid(): void
     {
         foreach (Colorizing::COLOR_SCHEMES as $scheme_name => $_) {
             $colors = Colorizing::loadColorScheme($scheme_name);

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\PluginV2;
 
@@ -35,5 +37,5 @@ interface SuppressionCapability
         int $lineno,
         array $parameters,
         $suggestion
-    ) : bool;
+    ): bool;
 }

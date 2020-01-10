@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Analysis;
 
@@ -15,7 +17,7 @@ class GotoAnalyzer
      * @param list<Node> $parent_node_list
      * @return array<string,true>
      */
-    public static function getLabelSet(array $parent_node_list) : array
+    public static function getLabelSet(array $parent_node_list): array
     {
         // Find the AST_STMT_LIST that is the root of the function-like
         $prev_node = null;
@@ -37,7 +39,7 @@ class GotoAnalyzer
     /**
      * @return array<string,true> the set of labels that are used by "goto label" in this function-like scope or global scope.
      */
-    private static function computeLabelSet(Node $node) : array
+    private static function computeLabelSet(Node $node): array
     {
         $result = [];
         $nodes = [];

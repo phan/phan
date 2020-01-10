@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Plugin\Internal\VariableTracker;
 
@@ -25,7 +27,7 @@ class VariableTrackingBranchScope extends VariableTrackingScope
      * @return ?associative-array<int,true>
      * @override
      */
-    public function getDefinition(string $variable_name) : ?array
+    public function getDefinition(string $variable_name): ?array
     {
         $definitions = $this->defs[$variable_name] ?? null;
         if ($definitions === null) {
@@ -42,7 +44,7 @@ class VariableTrackingBranchScope extends VariableTrackingScope
      * @return ?associative-array<int,true>
      * @override
      */
-    public function getDefinitionUpToScope(string $variable_name, VariableTrackingScope $forbidden_scope) : ?array
+    public function getDefinitionUpToScope(string $variable_name, VariableTrackingScope $forbidden_scope): ?array
     {
         if ($this === $forbidden_scope) {
             return null;
@@ -53,7 +55,7 @@ class VariableTrackingBranchScope extends VariableTrackingScope
     /**
      * @return array<string,associative-array<int,true>>
      */
-    public function getDefinitionsRecursively() : array
+    public function getDefinitionsRecursively(): array
     {
         $defs = $this->parent_scope->getDefinitionsRecursively();
         foreach ($this->defs as $variable_name => $def) {
@@ -67,7 +69,7 @@ class VariableTrackingBranchScope extends VariableTrackingScope
      * inherit definitions from outer scope.
      * Used to analyze fallthrough in switch statements.
      */
-    public function inheritDefsFromOuterScope(VariableTrackingScope $outer_scope) : void
+    public function inheritDefsFromOuterScope(VariableTrackingScope $outer_scope): void
     {
         foreach ($this->defs as $variable_name => $_) {
             $outer_defs = $outer_scope->getDefinition((string)$variable_name);
@@ -86,7 +88,7 @@ class VariableTrackingBranchScope extends VariableTrackingScope
      *             This would mean that the branch uses variables, but does not define them outside of that scope.
      * @override
      */
-    public function recordSkippedScope(VariableTrackingBranchScope $inner_scope, bool $exits) : void
+    public function recordSkippedScope(VariableTrackingBranchScope $inner_scope, bool $exits): void
     {
         $this->parent_scope->recordSkippedScope($inner_scope, $exits);
     }

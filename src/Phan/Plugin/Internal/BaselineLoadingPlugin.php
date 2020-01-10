@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Plugin\Internal;
 
@@ -72,7 +74,7 @@ final class BaselineLoadingPlugin extends PluginV3 implements
         int $lineno,
         array $parameters,
         ?Suggestion $suggestion
-    ) : bool {
+    ): bool {
         return \in_array($issue_type, $this->file_suppressions[$context->getFile()] ?? [], true);
     }
 
@@ -85,7 +87,7 @@ final class BaselineLoadingPlugin extends PluginV3 implements
     public function getIssueSuppressionList(
         CodeBase $unused_code_base,
         string $unused_file_path
-    ) : array {
+    ): array {
         return [];
     }
 }

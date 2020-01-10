@@ -1,8 +1,11 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan;
 
 use Phan\Library\Paths;
+
 use function array_key_exists;
 use function gettype;
 use function is_array;
@@ -11,6 +14,7 @@ use function is_float;
 use function is_int;
 use function is_null;
 use function is_string;
+
 use const PHP_EOL;
 use const PHP_VERSION;
 use const STDERR;
@@ -917,7 +921,7 @@ class Config
      * scanning
      * @suppress PhanPossiblyFalseTypeReturn getcwd() can technically be false, but we should have checked earlier
      */
-    public static function getProjectRootDirectory() : string
+    public static function getProjectRootDirectory(): string
     {
         return self::$project_root_directory ?? \getcwd();
     }
@@ -929,7 +933,7 @@ class Config
      */
     public static function setProjectRootDirectory(
         string $project_root_directory
-    ) : void {
+    ): void {
         self::$project_root_directory = $project_root_directory;
     }
 
@@ -938,7 +942,7 @@ class Config
      *
      * This is automatically called with the defaults, to set any derived configuration and static properties as side effects.
      */
-    public static function init() : void
+    public static function init(): void
     {
         static $did_init = false;
         if ($did_init) {
@@ -948,7 +952,7 @@ class Config
         self::initOnce();
     }
 
-    private static function initOnce() : void
+    private static function initOnce(): void
     {
         // Trigger magic setters
         foreach (self::$configuration as $name => $v) {
@@ -960,7 +964,7 @@ class Config
      * @return array<string,mixed>
      * A map of configuration keys and their values
      */
-    public static function toArray() : array
+    public static function toArray(): array
     {
         return self::$configuration;
     }
@@ -972,7 +976,7 @@ class Config
      * Allow null to be cast as any type and for any
      * type to be cast to null.
      */
-    public static function get_null_casts_as_any_type() : bool
+    public static function get_null_casts_as_any_type(): bool
     {
         return self::$null_casts_as_any_type;
     }
@@ -982,7 +986,7 @@ class Config
      * is definitely not an object,
      * or if **any** type in an invoked expression is not a callable.
      */
-    public static function get_strict_method_checking() : bool
+    public static function get_strict_method_checking(): bool
     {
         return self::$strict_method_checking;
     }
@@ -991,7 +995,7 @@ class Config
      * If enabled, Phan will warn if **any** type in the argument's type
      * cannot be cast to a type in the parameter's expected type.
      */
-    public static function get_strict_param_checking() : bool
+    public static function get_strict_param_checking(): bool
     {
         return self::$strict_param_checking;
     }
@@ -1000,7 +1004,7 @@ class Config
      * If enabled, Phan will warn if **any** type in a property assignment's type
      * cannot be cast to a type in the property's expected type.
      */
-    public static function get_strict_property_checking() : bool
+    public static function get_strict_property_checking(): bool
     {
         return self::$strict_property_checking;
     }
@@ -1009,7 +1013,7 @@ class Config
      * If enabled, Phan will warn if **any** type in the return statement's union type
      * cannot be cast to a type in the method's declared return type.
      */
-    public static function get_strict_return_checking() : bool
+    public static function get_strict_return_checking(): bool
     {
         return self::$strict_return_checking;
     }
@@ -1018,31 +1022,31 @@ class Config
      * If enabled, Phan will warn if **any** type in the object expression for a property
      * does not contain that property.
      */
-    public static function get_strict_object_checking() : bool
+    public static function get_strict_object_checking(): bool
     {
         return self::$strict_object_checking;
     }
 
     /** If enabled, allow null to cast to any array-like type. */
-    public static function get_null_casts_as_array() : bool
+    public static function get_null_casts_as_array(): bool
     {
         return self::$null_casts_as_array;
     }
 
     /** If enabled, allow any array-like type to be cast to null. */
-    public static function get_array_casts_as_null() : bool
+    public static function get_array_casts_as_null(): bool
     {
         return self::$array_casts_as_null;
     }
 
     /** If true, then Phan tracks references to elements */
-    public static function get_track_references() : bool
+    public static function get_track_references(): bool
     {
         return self::$track_references;
     }
 
     /** If true, then Phan enables backwards compatibility checking. */
-    public static function get_backward_compatibility_checks() : bool
+    public static function get_backward_compatibility_checks(): bool
     {
         return self::$backward_compatibility_checks;
     }
@@ -1052,13 +1056,13 @@ class Config
      * time at the cost of not running as thorough
      * of an analysis.
      */
-    public static function get_quick_mode() : bool
+    public static function get_quick_mode(): bool
     {
         return self::$quick_mode;
     }
 
     /** @return int the 5-digit PHP version id which is closest to matching the PHP_VERSION_ID for the 'target_php_version' string */
-    public static function get_closest_target_php_version_id() : int
+    public static function get_closest_target_php_version_id(): int
     {
         return self::$closest_target_php_version_id;
     }
@@ -1076,7 +1080,7 @@ class Config
      * Resets the configuration to the initial state, prior to parsing config files and CLI arguments.
      * @internal - this should only be used in unit tests.
      */
-    public static function reset() : void
+    public static function reset(): void
     {
         self::$configuration = self::DEFAULT_CONFIGURATION;
         // Trigger magic behavior
@@ -1087,7 +1091,7 @@ class Config
      * @param string $name
      * @param mixed $value
      */
-    public static function setValue(string $name, $value) : void
+    public static function setValue(string $name, $value): void
     {
         self::$configuration[$name] = $value;
         switch ($name) {
@@ -1158,12 +1162,12 @@ class Config
     /**
      * @param string[] $value
      */
-    private static function generateDirectoryListRegex(array $value) : ?string
+    private static function generateDirectoryListRegex(array $value): ?string
     {
         if (!$value) {
             return null;
         }
-        $parts = \array_map(static function (string $path) : string {
+        $parts = \array_map(static function (string $path): string {
             $path = \str_replace('\\', '/', $path);  // Normalize \\ to / in configs
             $path = \rtrim($path, '\//');  // remove trailing / from directory
             $path = \preg_replace('@^(\./)+@', '', $path);  // Remove any number of leading ./ sections
@@ -1173,7 +1177,7 @@ class Config
         return '@^(\./)*(' . \implode('|', $parts) . ')([/\\\\]|$)@';
     }
 
-    private static function computeClosestTargetPHPVersionId(string $version) : int
+    private static function computeClosestTargetPHPVersionId(string $version): int
     {
         if (\version_compare($version, '6.0') < 0) {
             return 50600;
@@ -1199,7 +1203,7 @@ class Config
      * @suppress PhanUnreferencedPublicMethod
      * @see FileRef::getProjectRelativePathForPath() for converting to relative paths
      */
-    public static function projectPath(string $relative_path) : string
+    public static function projectPath(string $relative_path): string
     {
         return Paths::toAbsolutePath(self::getProjectRootDirectory(), $relative_path);
     }
@@ -1207,7 +1211,7 @@ class Config
     /**
      * @param mixed $value
      */
-    private static function errSuffixGotType($value) : string
+    private static function errSuffixGotType($value): string
     {
         return ", but got type '" . gettype($value) . "'";
     }
@@ -1216,12 +1220,12 @@ class Config
      * @param array<string,mixed> $configuration
      * @return list<string> a list of 0 or more error messages for invalid config settings
      */
-    public static function getConfigErrors(array $configuration) : array
+    public static function getConfigErrors(array $configuration): array
     {
         /**
          * @param mixed $value
          */
-        $is_scalar = static function ($value) : ?string {
+        $is_scalar = static function ($value): ?string {
             if (is_null($value) || \is_scalar($value)) {
                 return null;
             }
@@ -1230,7 +1234,7 @@ class Config
         /**
          * @param mixed $value
          */
-        $is_bool = static function ($value) : ?string {
+        $is_bool = static function ($value): ?string {
             if (is_bool($value)) {
                 return null;
             }
@@ -1239,7 +1243,7 @@ class Config
         /**
          * @param mixed $value
          */
-        $is_bool_or_null = static function ($value) : ?string {
+        $is_bool_or_null = static function ($value): ?string {
             if (is_bool($value) || is_null($value)) {
                 return null;
             }
@@ -1248,7 +1252,7 @@ class Config
         /**
          * @param mixed $value
          */
-        $is_string_or_null = static function ($value) : ?string {
+        $is_string_or_null = static function ($value): ?string {
             if (is_null($value) || is_string($value)) {
                 return null;
             }
@@ -1257,7 +1261,7 @@ class Config
         /**
          * @param mixed $value
          */
-        $is_string = static function ($value) : ?string {
+        $is_string = static function ($value): ?string {
             if (is_string($value)) {
                 return null;
             }
@@ -1266,7 +1270,7 @@ class Config
         /**
          * @param mixed $value
          */
-        $is_array = static function ($value) : ?string {
+        $is_array = static function ($value): ?string {
             if (is_array($value)) {
                 return null;
             }
@@ -1275,7 +1279,7 @@ class Config
         /**
          * @param mixed $value
          */
-        $is_int_strict = static function ($value) : ?string {
+        $is_int_strict = static function ($value): ?string {
             if (is_int($value)) {
                 return null;
             }
@@ -1284,7 +1288,7 @@ class Config
         /**
          * @param mixed $value
          */
-        $is_string_list = static function ($value) : ?string {
+        $is_string_list = static function ($value): ?string {
             if (!is_array($value)) {
                 return 'Expected a list of strings' . self::errSuffixGotType($value);
             }
@@ -1298,7 +1302,7 @@ class Config
         /**
          * @param mixed $value
          */
-        $is_associative_string_array = static function ($value) : ?string {
+        $is_associative_string_array = static function ($value): ?string {
             if (!is_array($value)) {
                 return 'Expected an associative array mapping strings to strings'  . self::errSuffixGotType($value);
             }
@@ -1434,7 +1438,7 @@ class Config
     /**
      * Prints errors to stderr if any config options are definitely invalid.
      */
-    public static function warnIfInvalid() : void
+    public static function warnIfInvalid(): void
     {
         $errors = self::getConfigErrors(self::$configuration);
         foreach ($errors as $error) {
@@ -1445,7 +1449,7 @@ class Config
     /**
      * Check if the issue fixing plugin (from --automatic-fix) is enabled.
      */
-    public static function isIssueFixingPluginEnabled() : bool
+    public static function isIssueFixingPluginEnabled(): bool
     {
         return \in_array(__DIR__ . '/Plugin/Internal/IssueFixingPlugin.php', Config::getValue('plugins'), true);
     }
@@ -1453,7 +1457,7 @@ class Config
     /**
      * Fetches the value of language_server_min_diagnostics_delay_ms, constrained to 0..1000ms
      */
-    public static function getMinDiagnosticsDelayMs() : float
+    public static function getMinDiagnosticsDelayMs(): float
     {
         $delay = Config::getValue('language_server_min_diagnostics_delay_ms');
         if (\is_numeric($delay) && $delay > 0) {

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Phan\LanguageServer\Protocol;
@@ -49,7 +50,7 @@ class Range
     /**
      * Creates a placeholder Range which spans the entire line of source code of $context.
      */
-    public static function fromContextOnSingleLine(FileRef $context) : Range
+    public static function fromContextOnSingleLine(FileRef $context): Range
     {
         $lineno = $context->getLineNumberStart();
         return new Range(new Position($lineno - 1, 0), new Position($lineno, 0));
@@ -59,7 +60,7 @@ class Range
      * Create a range from a serialized array
      * @param array{start:array,end:array} $data
      */
-    public static function fromArray(array $data) : Range
+    public static function fromArray(array $data): Range
     {
         return new self(
             Position::fromArray($data['start']),

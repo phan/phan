@@ -1,8 +1,11 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Plugin\Internal\VariableTracker;
 
 use ast\Node;
+
 use function spl_object_id;
 
 /**
@@ -64,7 +67,7 @@ final class VariableGraph
      * Record the fact that $node is a definition of the variable with name $name in the scope $scope
      * @param ?(Node|string|int|float) $const_expr is the definition's value a value that could be a constant?
      */
-    public function recordVariableDefinition(string $name, Node $node, VariableTrackingScope $scope, $const_expr) : void
+    public function recordVariableDefinition(string $name, Node $node, VariableTrackingScope $scope, $const_expr): void
     {
         // TODO: Measure performance against SplObjectHash
         $id = \spl_object_id($node);
@@ -83,7 +86,7 @@ final class VariableGraph
      *
      * This marks the definitions that are accessible from this scope as being used at $node.
      */
-    public function recordVariableUsage(string $name, Node $node, VariableTrackingScope $scope) : void
+    public function recordVariableUsage(string $name, Node $node, VariableTrackingScope $scope): void
     {
         if (!\array_key_exists($name, $this->variable_types)) {
             // Set this to 0 to record that the variable was used somewhere
@@ -110,7 +113,7 @@ final class VariableGraph
     /**
      * Record that $name was modified in place
      */
-    public function recordVariableModification(string $name) : void
+    public function recordVariableModification(string $name): void
     {
         $this->const_expr_declarations[$name][-1] = 0;
     }
@@ -118,7 +121,7 @@ final class VariableGraph
     /**
      * @param associative-array<int,mixed> $loop_uses_of_own_variable any array that has node ids for uses of $def_id as keys
      */
-    public function recordLoopSelfUsage(string $name, int $def_id, array $loop_uses_of_own_variable) : void
+    public function recordLoopSelfUsage(string $name, int $def_id, array $loop_uses_of_own_variable): void
     {
         foreach ($loop_uses_of_own_variable as $node_id => $_) {
             // For expressions such as `;$var++;` or `$var += 1;`, don't count the modifying declaration in a loop as a usage - it's unused if nothing else uses that.
@@ -132,7 +135,7 @@ final class VariableGraph
      * Records that the variable with the name $name was used as a reference
      * somewhere within the function body
      */
-    public function markAsReference(string $name) : void
+    public function markAsReference(string $name): void
     {
         $this->markBitForVariableName($name, self::IS_REFERENCE);
     }
@@ -141,7 +144,7 @@ final class VariableGraph
      * Records that the variable with the name $name was declared as a static variable
      * somewhere within the function body
      */
-    public function markAsStaticVariable(string $name) : void
+    public function markAsStaticVariable(string $name): void
     {
         $this->markBitForVariableName($name, self::IS_STATIC);
     }
@@ -150,7 +153,7 @@ final class VariableGraph
      * Records that the variable with the name $name was declared as a global variable
      * somewhere within the function body
      */
-    public function markAsGlobalVariable(string $name) : void
+    public function markAsGlobalVariable(string $name): void
     {
         $this->markBitForVariableName($name, self::IS_GLOBAL);
     }
@@ -161,7 +164,7 @@ final class VariableGraph
      *
      * @param Node|string|int|float|null $node
      */
-    public function markAsLoopValueNode($node) : void
+    public function markAsLoopValueNode($node): void
     {
         if ($node instanceof Node) {
             $this->def_bitset[spl_object_id($node)] = self::IS_LOOP_DEF;
@@ -171,7 +174,7 @@ final class VariableGraph
     /**
      * Checks if the node for this id is defined as the value in a foreach over keys of an array.
      */
-    public function isLoopValueDefinitionId(int $definition_id) : bool
+    public function isLoopValueDefinitionId(int $definition_id): bool
     {
         return ($this->def_bitset[$definition_id] ?? 0) === self::IS_LOOP_DEF;
     }
@@ -182,7 +185,7 @@ final class VariableGraph
      *
      * @param Node|int|string|float|null $node
      */
-    public function markAsCaughtException($node) : void
+    public function markAsCaughtException($node): void
     {
         if ($node instanceof Node) {
             $this->def_bitset[spl_object_id($node)] = self::IS_CAUGHT_EXCEPTION;
@@ -192,7 +195,7 @@ final class VariableGraph
     /**
      * Checks if the node for this id is defined as a caught exception
      */
-    public function isCaughtException(int $definition_id) : bool
+    public function isCaughtException(int $definition_id): bool
     {
         return ($this->def_bitset[$definition_id] ?? 0) === self::IS_CAUGHT_EXCEPTION;
     }
@@ -200,7 +203,7 @@ final class VariableGraph
     /**
      * Marks something as being a declaration of a global
      */
-    public function markAsGlobal(Node $node, VariableTrackingScope $scope) : void
+    public function markAsGlobal(Node $node, VariableTrackingScope $scope): void
     {
         $this->def_bitset[spl_object_id($node)] = self::IS_GLOBAL;
         $name = $node->children['var']->children['name'] ?? null;
@@ -213,12 +216,12 @@ final class VariableGraph
     /**
      * Is this definition_id the first declarration of a global?
      */
-    public function isGlobal(int $definition_id) : bool
+    public function isGlobal(int $definition_id): bool
     {
         return ($this->def_bitset[$definition_id] ?? 0) === self::IS_GLOBAL;
     }
 
-    private function markBitForVariableName(string $name, int $bit) : void
+    private function markBitForVariableName(string $name, int $bit): void
     {
         $this->variable_types[$name] = (($this->variable_types[$name] ?? 0) | $bit);
     }

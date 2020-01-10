@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Plugin\Internal;
 
@@ -34,7 +36,7 @@ final class DumpPHPDocPlugin extends PluginV3 implements
      */
     private $stubs = [];
 
-    private static function generatePHPMarkdownBlock(string $php_snippet) : string
+    private static function generatePHPMarkdownBlock(string $php_snippet): string
     {
         $php_snippet = \trim($php_snippet);
         return "```php\n$php_snippet\n```";
@@ -51,7 +53,7 @@ final class DumpPHPDocPlugin extends PluginV3 implements
     public function analyzeClass(
         CodeBase $unused_code_base,
         Clazz $class
-    ) : void {
+    ): void {
         if ($class->getFQSEN()->isAlternate()) {
             return;
         }
@@ -64,7 +66,7 @@ final class DumpPHPDocPlugin extends PluginV3 implements
         );
     }
 
-    private function recordStub(AddressableElement $element, string $header_text, string $doc_comment_markup = null) : void
+    private function recordStub(AddressableElement $element, string $header_text, string $doc_comment_markup = null): void
     {
         if (Phan::isExcludedAnalysisFile($element->getFileRef()->getFile())) {
             return;
@@ -89,7 +91,7 @@ final class DumpPHPDocPlugin extends PluginV3 implements
     public function analyzeProperty(
         CodeBase $unused_code_base,
         Property $property
-    ) : void {
+    ): void {
         if ($property->isDynamicProperty()) {
             // Dynamic properties don't have declarations or phpdoc.
             return;
@@ -123,7 +125,7 @@ final class DumpPHPDocPlugin extends PluginV3 implements
     public function analyzeMethod(
         CodeBase $unused_code_base,
         Method $method
-    ) : void {
+    ): void {
         if ($method->isFromPHPDoc()) {
             // Phan does not track descriptions of (at)method.
             return;
@@ -166,7 +168,7 @@ final class DumpPHPDocPlugin extends PluginV3 implements
     public function analyzeFunction(
         CodeBase $code_base,
         Func $function
-    ) : void {
+    ): void {
         if ($function->isPHPInternal()) {
             // This isn't user-defined, there's no reason to warn or way to change it.
             return;
@@ -200,7 +202,7 @@ final class DumpPHPDocPlugin extends PluginV3 implements
      * Executed before the analysis phase starts.
      * @override
      */
-    public function finalizeProcess(CodeBase $unused_code_base) : void
+    public function finalizeProcess(CodeBase $unused_code_base): void
     {
         \ksort($this->stubs);
         echo "# Phan Signatures\n\n";

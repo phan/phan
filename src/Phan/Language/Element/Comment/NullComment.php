@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Phan\Language\Element\Comment;
@@ -26,7 +27,7 @@ final class NullComment extends Comment
     /**
      * Returns the immutable NullComment.
      */
-    public static function instance() : NullComment
+    public static function instance(): NullComment
     {
         return self::$instance;
     }
@@ -35,7 +36,7 @@ final class NullComment extends Comment
      * Ensures the static property is set, for users of this class
      * @internal
      */
-    public static function init() : void
+    public static function init(): void
     {
         self::$instance = new NullComment();
     }

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Phan\LanguageServer\Protocol;
@@ -32,7 +33,7 @@ class Hover
      *
      * @param array{contents:array,range?:array} $data
      */
-    public static function fromArray(array $data) : self
+    public static function fromArray(array $data): self
     {
         return new self(
             MarkupContent::fromArray($data['contents']),

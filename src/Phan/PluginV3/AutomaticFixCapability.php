@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\PluginV3;
 
@@ -20,5 +22,5 @@ interface AutomaticFixCapability
      *
      * @return array<string,Closure(CodeBase,FileCacheEntry,IssueInstance):(?FileEditSet)>
      */
-    public function getAutomaticFixers() : array;
+    public function getAutomaticFixers(): array;
 }

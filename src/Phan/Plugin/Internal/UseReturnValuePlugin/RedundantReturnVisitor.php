@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Plugin\Internal\UseReturnValuePlugin;
 
@@ -39,7 +41,7 @@ class RedundantReturnVisitor
     /**
      * Check for any code paths where 2 or more return statements would return the same value
      */
-    public function analyze() : void
+    public function analyze(): void
     {
         try {
             $this->analyzeNode($this->stmts);
@@ -57,7 +59,7 @@ class RedundantReturnVisitor
      * @throws IssueException for the first issue seen in this function-like, if any
      * TODO: Instead, iterate backwards through the AST_STMT_LIST to check if the last group of returns and second-last group of returns are redundant.
      */
-    private function analyzeNode(Node $stmts) : array
+    private function analyzeNode(Node $stmts): array
     {
         $kind = $stmts->kind;
         switch ($kind) {
@@ -156,7 +158,7 @@ class RedundantReturnVisitor
      * @param non-empty-list<Node> $possible_return_nodes
      * @throws IssueException for the first issue seen in this function-like, if any
      */
-    private function checkMultipleReturns(array $possible_return_nodes) : void
+    private function checkMultipleReturns(array $possible_return_nodes): void
     {
         if (\count($possible_return_nodes) <= 1) {
             return;

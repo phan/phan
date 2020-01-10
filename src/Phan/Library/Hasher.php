@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Library;
 
@@ -11,11 +13,11 @@ interface Hasher
     /**
      * Returns an integer between 0 and the number of groups - 1
      */
-    public function getGroup(string $key) : int;
+    public function getGroup(string $key): int;
 
     /**
      * @return void
      * If there is any state, clear it.
      */
-    public function reset() : void;
+    public function reset(): void;
 }

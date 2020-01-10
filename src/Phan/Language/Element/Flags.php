@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Element;
 
@@ -93,7 +95,7 @@ class Flags
         int $bit_vector,
         int $flag,
         bool $value
-    ) : int {
+    ): int {
         return $value
             ? ($bit_vector | $flag)
             : ($bit_vector & (~$flag));
@@ -113,7 +115,7 @@ class Flags
     public static function bitVectorHasState(
         int $bit_vector,
         int $flag
-    ) : bool {
+    ): bool {
         return (($bit_vector & $flag) === $flag);
     }
 }

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Analysis\ConditionVisitor;
 
@@ -17,7 +19,7 @@ interface BinaryCondition
      * @param Node $var
      * @param Node|int|string|float $expr
      */
-    public function analyzeVar(ConditionVisitorInterface $visitor, Node $var, $expr) : Context;
+    public function analyzeVar(ConditionVisitorInterface $visitor, Node $var, $expr): Context;
 
     /**
      * Assert that this condition applies to the variable $object (i.e. get_class($object) OPERATION $expr)
@@ -25,7 +27,7 @@ interface BinaryCondition
      * @param Node|int|string|float $object
      * @param Node|int|string|float $expr
      */
-    public function analyzeClassCheck(ConditionVisitorInterface $visitor, $object, $expr) : Context;
+    public function analyzeClassCheck(ConditionVisitorInterface $visitor, $object, $expr): Context;
 
     /**
      * Assert that this condition applies to the function call $call_node (e.g. is_string($object) OPERATION $expr)
@@ -33,7 +35,7 @@ interface BinaryCondition
      * @param Node $call_node a node of kind AST_CALL
      * @param Node|string|int|float $expr
      */
-    public function analyzeCall(ConditionVisitorInterface $visitor, Node $call_node, $expr) : ?Context;
+    public function analyzeCall(ConditionVisitorInterface $visitor, Node $call_node, $expr): ?Context;
 
     /**
      * Assert that this condition applies to the function call $complex_node (e.g. ($var instanceof Xyz) OPERATION $expr)
@@ -41,5 +43,5 @@ interface BinaryCondition
      * @param Node $complex_node a node of various kinds
      * @param Node|string|int|float $expr a node with a constant value
      */
-    public function analyzeComplexCondition(ConditionVisitorInterface $visitor, Node $complex_node, $expr) : ?Context;
+    public function analyzeComplexCondition(ConditionVisitorInterface $visitor, Node $complex_node, $expr): ?Context;
 }

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\LanguageServer;
 
@@ -59,7 +61,7 @@ final class CompletionRequest extends NodeInfoRequest
      * @param ?CompletionItem|?list<CompletionItem>|array<string,mixed> $completions
      * @suppress PhanPartialTypeMismatchArgument this accepts multiple types of arrays
      */
-    public function recordCompletionList($completions) : void
+    public function recordCompletionList($completions): void
     {
         if ($completions instanceof CompletionItem || isset($completions['label'])) {
             $completions = [$completions];
@@ -82,12 +84,12 @@ final class CompletionRequest extends NodeInfoRequest
         CodeBase $code_base,
         TypedElementInterface $element,
         string $prefix = null
-    ) : void {
+    ): void {
         $item = self::createCompletionItem($code_base, $element, $prefix);
         $this->recordCompletionItem($item);
     }
 
-    private function recordCompletionItem(CompletionItem $item) : void
+    private function recordCompletionItem(CompletionItem $item): void
     {
         $this->completions[$item->label . ':' . $item->kind] = $item;
     }
@@ -96,7 +98,7 @@ final class CompletionRequest extends NodeInfoRequest
         CodeBase $unused_code_base,
         TypedElementInterface $element,
         string $prefix = null
-    ) : CompletionItem {
+    ): CompletionItem {
         $item = new CompletionItem();
         $item->label = self::labelForElement($element);
         $item->kind = self::kindForElement($element);
@@ -120,12 +122,12 @@ final class CompletionRequest extends NodeInfoRequest
     /**
      * If true, then return completion suggestions that are compatible with VS Code.
      */
-    public static function useVSCodeCompletion() : bool
+    public static function useVSCodeCompletion(): bool
     {
         return Config::COMPLETION_VSCODE === Config::getValue('language_server_enable_completion');
     }
 
-    private static function labelForElement(TypedElementInterface $element) : string
+    private static function labelForElement(TypedElementInterface $element): string
     {
         if (self::useVSCodeCompletion()) {
             $name = $element->getName();
@@ -140,7 +142,7 @@ final class CompletionRequest extends NodeInfoRequest
         return $element->getName();
     }
 
-    private static function kindForElement(TypedElementInterface $element) : ?int
+    private static function kindForElement(TypedElementInterface $element): ?int
     {
         if ($element instanceof ClassConstant) {
             return CompletionItemKind::VARIABLE;
@@ -164,12 +166,12 @@ final class CompletionRequest extends NodeInfoRequest
     /**
      * @return list<CompletionItem>
      */
-    public function getCompletions() : array
+    public function getCompletions(): array
     {
         return \array_values($this->completions);
     }
 
-    public function finalize() : void
+    public function finalize(): void
     {
         if ($this->fulfilled) {
             return;
@@ -185,7 +187,7 @@ final class CompletionRequest extends NodeInfoRequest
                  * @param int|string $a usually strings
                  * @param int|string $b
                  */
-                static function ($a, $b) : int {
+                static function ($a, $b): int {
                     $a = \ltrim((string)$a, '$');
                     $b = \ltrim((string)$b, '$');
                     return (\strtolower($a) <=> \strtolower($b)) ?: ($a <=> $b);

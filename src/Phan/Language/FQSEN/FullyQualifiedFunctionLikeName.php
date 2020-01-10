@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\FQSEN;
 
@@ -10,15 +12,15 @@ interface FullyQualifiedFunctionLikeName
     /**
      * Returns true if this FQSEN represents a closure.
      */
-    public function isClosure() : bool;
+    public function isClosure(): bool;
 
     /**
      * Returns the method name or (not fully-qualified) name of this function.
      */
-    public function getName() : string;
+    public function getName(): string;
 
     /**
      * Returns a string representation of this function or method signature.
      */
-    public function __toString() : string;
+    public function __toString(): string;
 }

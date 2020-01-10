@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Type;
 
@@ -15,42 +17,42 @@ use Phan\Language\UnionType;
  */
 abstract class ScalarType extends NativeType
 {
-    public function isScalar() : bool
+    public function isScalar(): bool
     {
         return true;
     }
 
-    public function isPrintableScalar() : bool
+    public function isPrintableScalar(): bool
     {
         return true;  // Overridden in subclass BoolType
     }
 
-    public function isValidBitwiseOperand() : bool
+    public function isValidBitwiseOperand(): bool
     {
         return true;
     }
 
-    public function isSelfType() : bool
+    public function isSelfType(): bool
     {
         return false;
     }
 
-    public function isStaticType() : bool
+    public function isStaticType(): bool
     {
         return false;
     }
 
-    public function isIterable() : bool
+    public function isIterable(): bool
     {
         return false;
     }
 
-    public function isArrayLike() : bool
+    public function isArrayLike(): bool
     {
         return false;
     }
 
-    public function isGenericArray() : bool
+    public function isGenericArray(): bool
     {
         return false;
     }
@@ -60,7 +62,7 @@ abstract class ScalarType extends NativeType
      * True if this Type can be cast to the given Type
      * cleanly
      */
-    protected function canCastToNonNullableType(Type $type) : bool
+    protected function canCastToNonNullableType(Type $type): bool
     {
         // Scalars may be configured to always cast to each other.
         // NOTE: This deliberately includes NullType, which doesn't satisfy `is_scalar()`
@@ -90,26 +92,26 @@ abstract class ScalarType extends NativeType
         UnionType $union_type,
         Context $unused_context,
         CodeBase $unused_code_base
-    ) : bool {
+    ): bool {
         return $union_type->hasType($this) || $this->asPHPDocUnionType()->canCastToUnionType($union_type);
     }
 
     /**
      * @override
      */
-    public function asFQSENString() : string
+    public function asFQSENString(): string
     {
         return $this->name;
     }
 
-    public function isAlwaysTruthy() : bool
+    public function isAlwaysTruthy(): bool
     {
         // Most scalars (Except ResourceType) have a false value, e.g. 0/""/"0"/0.0/false.
         // (But ResourceType isn't a subclass of ScalarType in Phan's implementation)
         return false;
     }
 
-    public function asNonTruthyType() : Type
+    public function asNonTruthyType(): Type
     {
         // Subclasses of ScalarType all have false values within their types.
         return $this;
@@ -118,17 +120,17 @@ abstract class ScalarType extends NativeType
     /**
      * @override
      */
-    public function shouldBeReplacedBySpecificTypes() : bool
+    public function shouldBeReplacedBySpecificTypes(): bool
     {
         return false;
     }
 
-    public function isValidNumericOperand() : bool
+    public function isValidNumericOperand(): bool
     {
         return true;
     }
 
-    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $other) : bool
+    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $other): bool
     {
         // Allow casting scalars to other scalars, but not to null.
         return $other instanceof ScalarType && !($other instanceof NullType);
@@ -139,7 +141,7 @@ abstract class ScalarType extends NativeType
      * e.g. returns true false, array, int
      *      returns false for callable, object, iterable, T, etc.
      */
-    public function isDefiniteNonObjectType() : bool
+    public function isDefiniteNonObjectType(): bool
     {
         return true;
     }
@@ -149,17 +151,17 @@ abstract class ScalarType extends NativeType
      * e.g. returns true false, array, int
      *      returns false for callable, object, iterable, T, etc.
      */
-    public function isDefiniteNonCallableType() : bool
+    public function isDefiniteNonCallableType(): bool
     {
         return true;
     }
 
-    public function asScalarType() : ?Type
+    public function asScalarType(): ?Type
     {
         return $this->withIsNullable(false);
     }
 
-    public function canPossiblyCastToClass(CodeBase $unused_codebase, Type $unused_class_type) : bool
+    public function canPossiblyCastToClass(CodeBase $unused_codebase, Type $unused_class_type): bool
     {
         return false;
     }

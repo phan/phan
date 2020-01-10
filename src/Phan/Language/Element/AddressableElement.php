@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Element;
 
@@ -101,7 +103,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * A fully qualified structural element name to set on
      * this element
      */
-    public function setFQSEN(FQSEN $fqsen) : void
+    public function setFQSEN(FQSEN $fqsen): void
     {
         $this->fqsen = $fqsen;
     }
@@ -110,7 +112,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * @return bool true if this element's visibility
      *                   is strictly more visible than $other (public > protected > private)
      */
-    public function isStrictlyMoreVisibleThan(AddressableElementInterface $other) : bool
+    public function isStrictlyMoreVisibleThan(AddressableElementInterface $other): bool
     {
         if ($this->isPrivate()) {
             return false;
@@ -132,7 +134,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * @return bool
      * True if this is a public property
      */
-    public function isPublic() : bool
+    public function isPublic(): bool
     {
         return !(
             $this->isProtected() || $this->isPrivate()
@@ -143,7 +145,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * @return bool
      * True if this is a protected element
      */
-    public function isProtected() : bool
+    public function isProtected(): bool
     {
         return $this->getFlagsHasState(\ast\flags\MODIFIER_PROTECTED);
     }
@@ -152,7 +154,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * @return bool
      * True if this is a private element
      */
-    public function isPrivate() : bool
+    public function isPrivate(): bool
     {
         return $this->getFlagsHasState(\ast\flags\MODIFIER_PRIVATE);
     }
@@ -164,7 +166,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * @return bool
      * True if this is marked as an `(at)internal` element
      */
-    public function isNSInternal(CodeBase $code_base) : bool
+    public function isNSInternal(CodeBase $code_base): bool
     {
         return $this->getPhanFlagsHasState(Flags::IS_NS_INTERNAL);
     }
@@ -172,7 +174,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     /**
      * Set this element as being `internal`.
      */
-    public function setIsNSInternal(bool $is_internal) : void
+    public function setIsNSInternal(bool $is_internal): void
     {
         $this->setPhanFlags(Flags::bitVectorWithState(
             $this->getPhanFlags(),
@@ -191,7 +193,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     public function isNSInternalAccessFromContext(
         CodeBase $code_base,
         Context $context
-    ) : bool {
+    ): bool {
         // Figure out which namespace this element is within
         $element_namespace = $this->getElementNamespace() ?: '\\';
 
@@ -208,7 +210,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * A reference to a location in which this typed structural
      * element is referenced.
      */
-    public function addReference(FileRef $file_ref) : void
+    public function addReference(FileRef $file_ref): void
     {
         if (Config::get_track_references()) {
             // Currently, we don't need to track references to PHP-internal methods/functions/constants
@@ -224,7 +226,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     /**
      * Copy addressable references from an element of the same subclass
      */
-    public function copyReferencesFrom(AddressableElement $element) : void
+    public function copyReferencesFrom(AddressableElement $element): void
     {
         if ($this === $element) {
             // Should be impossible
@@ -239,7 +241,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * @return array<string,FileRef>
      * A list of references to this typed structural element.
      */
-    public function getReferenceList() : array
+    public function getReferenceList(): array
     {
         return $this->reference_list;
     }
@@ -254,7 +256,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      */
     public function getReferenceCount(
         CodeBase $code_base
-    ) : int {
+    ): int {
         return \count($this->reference_list);
     }
 
@@ -263,7 +265,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * begins.
      * @override
      */
-    public function hydrate(CodeBase $code_base) : void
+    public function hydrate(CodeBase $code_base): void
     {
         if ($this->is_hydrated) {  // Same as isFirstExecution(), inlined due to being called frequently.
             return;
@@ -273,7 +275,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
         $this->hydrateOnce($code_base);
     }
 
-    protected function hydrateOnce(CodeBase $unused_code_base) : void
+    protected function hydrateOnce(CodeBase $unused_code_base): void
     {
         // Do nothing unless overridden
     }
@@ -281,7 +283,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     /**
      * Returns the namespace in which this element was declared
      */
-    public function getElementNamespace() : string
+    public function getElementNamespace(): string
     {
         $element_fqsen = $this->getFQSEN();
         if (!$element_fqsen instanceof FullyQualifiedGlobalStructuralElement) {
@@ -296,12 +298,12 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * Used by daemon mode to restore an element to the state it had before parsing.
      * @internal
      */
-    abstract public function createRestoreCallback() : ?Closure;
+    abstract public function createRestoreCallback(): ?Closure;
 
     /**
      * @param ?string $doc_comment the 'docComment' for this element, if any exists.
      */
-    public function setDocComment(string $doc_comment = null) : void
+    public function setDocComment(string $doc_comment = null): void
     {
         $this->doc_comment = $doc_comment;
     }
@@ -309,7 +311,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     /**
      * @return ?string the 'docComment' for this element, if any exists.
      */
-    public function getDocComment() : ?string
+    public function getDocComment(): ?string
     {
         return $this->doc_comment;
     }
@@ -317,9 +319,9 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     /**
      * @return string the reason why this element was deprecated, or null if this could not be determined.
      */
-    public function getDeprecationReason() : string
+    public function getDeprecationReason(): string
     {
-        return $this->memoize(__METHOD__, function () : string {
+        return $this->memoize(__METHOD__, function (): string {
             if (!\is_string($this->doc_comment)) {
                 return '';
             }
@@ -336,7 +338,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
                         return '';
                     }
                     $new_lines[0] = \preg_replace('/^\s*@deprecated\b\s*/', '', $new_lines[0]);
-                    $reason = \implode(' ', \array_filter(\array_map('trim', $new_lines), static function (string $line) : bool {
+                    $reason = \implode(' ', \array_filter(\array_map('trim', $new_lines), static function (string $line): bool {
                         return $line !== '';
                     }));
                     if ($reason !== '') {
@@ -354,7 +356,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * Overridden in some subclasses
      * @suppress PhanUnreferencedPublicMethod (inference error?)
      */
-    public function getRepresentationForIssue() : string
+    public function getRepresentationForIssue(): string
     {
         return $this->getFQSEN()->__toString();
     }

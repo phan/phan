@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Element;
 
@@ -37,37 +39,37 @@ interface FunctionInterface extends AddressableElementInterface
      * @return string
      * The fully-qualified structural element name and args of this function-like.
      */
-    public function getRepresentationForIssue(bool $show_args = false) : string;
+    public function getRepresentationForIssue(bool $show_args = false): string;
 
     /**
      * @return string
      * The name of this structural element (without namespace/class),
      * or a string for FunctionLikeDeclarationType (or a closure) which lacks a real FQSEN
      */
-    public function getNameForIssue() : string;
+    public function getNameForIssue(): string;
 
     /**
      * Sets the scope within this function-like element's body,
      * for tracking variables within the function-like.
      */
-    public function setInternalScope(ClosedScope $internal_scope) : void;
+    public function setInternalScope(ClosedScope $internal_scope): void;
 
     /**
      * @return ClosedScope
      * The internal scope of this closed scope element
      */
-    public function getInternalScope() : ClosedScope;
+    public function getInternalScope(): ClosedScope;
 
     /**
      * @return int
      * The number of optional parameters on this method
      */
-    public function getNumberOfOptionalParameters() : int;
+    public function getNumberOfOptionalParameters(): int;
 
     /**
      * The number of optional parameters
      */
-    public function setNumberOfOptionalParameters(int $number) : void;
+    public function setNumberOfOptionalParameters(int $number): void;
 
     /**
      * @return int
@@ -77,24 +79,24 @@ interface FunctionInterface extends AddressableElementInterface
      * or if the installed module version's API changed from what Phan's stubs used,
      * or if a function/method uses variadics/func_get_arg*()
      */
-    public function getNumberOfOptionalRealParameters() : int;
+    public function getNumberOfOptionalRealParameters(): int;
 
     /**
      * @return int
      * The maximum number of parameters to this method
      */
-    public function getNumberOfParameters() : int;
+    public function getNumberOfParameters(): int;
 
     /**
      * @return int
      * The number of required parameters on this method
      */
-    public function getNumberOfRequiredParameters() : int;
+    public function getNumberOfRequiredParameters(): int;
 
     /**
      * The number of required parameters
      */
-    public function setNumberOfRequiredParameters(int $number) : void;
+    public function setNumberOfRequiredParameters(int $number): void;
 
     /**
      * @return int
@@ -102,7 +104,7 @@ interface FunctionInterface extends AddressableElementInterface
      * This may differ for internal modules lacking proper reflection info,
      * or if the installed module version's API changed from what Phan's stubs used.
      */
-    public function getNumberOfRequiredRealParameters() : int;
+    public function getNumberOfRequiredRealParameters(): int;
 
     /**
      * @return bool
@@ -110,7 +112,7 @@ interface FunctionInterface extends AddressableElementInterface
      * was defined (either in the signature itself or in the
      * docblock).
      */
-    public function isReturnTypeUndefined() : bool;
+    public function isReturnTypeUndefined(): bool;
 
     /**
      * Sets whether this method had no return type defined when it
@@ -122,20 +124,20 @@ interface FunctionInterface extends AddressableElementInterface
      */
     public function setIsReturnTypeUndefined(
         bool $is_return_type_undefined
-    ) : void;
+    ): void;
 
     /**
      * @return bool
      * True if this method returns a value
      */
-    public function hasReturn() : bool;
+    public function hasReturn(): bool;
 
     /**
      * @param bool $has_return
      * Set to true to mark this method as having a
      * return value (Only through `return`)
      */
-    public function setHasReturn(bool $has_return) : void;
+    public function setHasReturn(bool $has_return): void;
 
     /**
      * @param bool $has_yield
@@ -144,7 +146,7 @@ interface FunctionInterface extends AddressableElementInterface
      * This implies that it has a return value of \Generator.
      * (or a parent interface)
      */
-    public function setHasYield(bool $has_yield) : void;
+    public function setHasYield(bool $has_yield): void;
 
     /**
      * @return list<Parameter>
@@ -161,7 +163,7 @@ interface FunctionInterface extends AddressableElementInterface
      * @param int $i - offset of the parameter.
      * @return Parameter|null The parameter type that the **caller** observes.
      */
-    public function getParameterForCaller(int $i) : ?Parameter;
+    public function getParameterForCaller(int $i): ?Parameter;
 
     /**
      * Gets the $ith real parameter for the **caller**.
@@ -172,37 +174,37 @@ interface FunctionInterface extends AddressableElementInterface
      * @param int $i - offset of the parameter.
      * @return Parameter|null The parameter type that the **caller** observes.
      */
-    public function getRealParameterForCaller(int $i) : ?Parameter;
+    public function getRealParameterForCaller(int $i): ?Parameter;
 
     /**
      * @param Parameter $parameter
      * A parameter to append to the parameter list
      */
-    public function appendParameter(Parameter $parameter) : void;
+    public function appendParameter(Parameter $parameter): void;
 
     /**
      * @return void
      *
      * Call this before calling appendParameter, if parameters were already added.
      */
-    public function clearParameterList() : void;
+    public function clearParameterList(): void;
 
     /**
      * Records the fact that $parameter_name is an output-only reference.
      * @param string $parameter_name
      */
-    public function recordOutputReferenceParamName(string $parameter_name) : void;
+    public function recordOutputReferenceParamName(string $parameter_name): void;
 
     /**
      * @return list<string> list of output references (annotated with (at)phan-output-reference. Usually empty.
      */
-    public function getOutputReferenceParamNames() : array;
+    public function getOutputReferenceParamNames(): array;
 
     /**
      * @return \Generator
      * The set of all alternates to this function
      */
-    public function alternateGenerator(CodeBase $code_base) : \Generator;
+    public function alternateGenerator(CodeBase $code_base): \Generator;
 
     /**
      * @param CodeBase $code_base
@@ -212,7 +214,7 @@ interface FunctionInterface extends AddressableElementInterface
      * True if this is marked as an element internal to
      * its namespace
      */
-    public function isNSInternal(CodeBase $code_base) : bool;
+    public function isNSInternal(CodeBase $code_base): bool;
 
     /**
      * @param CodeBase $code_base
@@ -224,14 +226,14 @@ interface FunctionInterface extends AddressableElementInterface
     public function isNSInternalAccessFromContext(
         CodeBase $code_base,
         Context $context
-    ) : bool;
+    ): bool;
 
     /**
      * @return Context
      * Analyze the node associated with this object
      * in the given context
      */
-    public function analyze(Context $context, CodeBase $code_base) : Context;
+    public function analyze(Context $context, CodeBase $code_base): Context;
 
     /**
      * @return Context
@@ -240,20 +242,20 @@ interface FunctionInterface extends AddressableElementInterface
      * This function's parameter list may or may not have been modified.
      * @param list<Parameter> $parameter_list
      */
-    public function analyzeWithNewParams(Context $context, CodeBase $code_base, array $parameter_list) : Context;
+    public function analyzeWithNewParams(Context $context, CodeBase $code_base, array $parameter_list): Context;
 
     /**
      * @return string the namespace in which this function interface was declared.
      *
      * Used for checking (at)internal annotations, etc.
      */
-    public function getElementNamespace() : string;
+    public function getElementNamespace(): string;
 
     /**
      * @return UnionType
      * The type of this method in its given context.
      */
-    public function getRealReturnType() : UnionType;
+    public function getRealReturnType(): UnionType;
 
     /**
      * @return list<Parameter>
@@ -265,33 +267,33 @@ interface FunctionInterface extends AddressableElementInterface
      * @param array<string,UnionType> $parameter_map maps a subset of param names to the unmodified phpdoc parameter types.
      * Will differ from real parameter types (ideally narrower)
      */
-    public function setPHPDocParameterTypeMap(array $parameter_map) : void;
+    public function setPHPDocParameterTypeMap(array $parameter_map): void;
 
     /**
      * @return array<string,UnionType> maps a subset of param names to the unmodified phpdoc parameter types.
      */
-    public function getPHPDocParameterTypeMap() : array;
+    public function getPHPDocParameterTypeMap(): array;
 
     /**
      * @param ?UnionType $union_type the raw phpdoc union type
      */
-    public function setPHPDocReturnType(?UnionType $union_type) : void;
+    public function setPHPDocReturnType(?UnionType $union_type): void;
 
     /**
      * @return ?UnionType the raw phpdoc union type
      */
-    public function getPHPDocReturnType() : ?UnionType;
+    public function getPHPDocReturnType(): ?UnionType;
 
     /**
      * @return bool
      * True if this function or method returns a reference
      */
-    public function returnsRef() : bool;
+    public function returnsRef(): bool;
 
     /**
      * Returns true if the return type depends on the argument, and a plugin makes Phan aware of that.
      */
-    public function hasDependentReturnType() : bool;
+    public function hasDependentReturnType(): bool;
 
     /**
      * Returns a union type based on $args_node and $context
@@ -299,18 +301,18 @@ interface FunctionInterface extends AddressableElementInterface
      * @param Context $context
      * @param list<Node|int|string|float> $args
      */
-    public function getDependentReturnType(CodeBase $code_base, Context $context, array $args) : UnionType;
+    public function getDependentReturnType(CodeBase $code_base, Context $context, array $args): UnionType;
 
     /**
      * Make calculation of the return type of this function/method use $closure
      */
-    public function setDependentReturnTypeClosure(Closure $closure) : void;
+    public function setDependentReturnTypeClosure(Closure $closure): void;
 
     /**
      * Returns true if this function or method has additional analysis logic for invocations (From internal and user defined plugins)
      * @see getDependentReturnType
      */
-    public function hasFunctionCallAnalyzer() : bool;
+    public function hasFunctionCallAnalyzer(): bool;
 
     /**
      * Perform additional analysis logic for invocations (From internal and user defined plugins)
@@ -320,113 +322,113 @@ interface FunctionInterface extends AddressableElementInterface
      * @param list<Node|int|string> $args
      * @param ?Node $node - the node causing the call. This may be dynamic, e.g. call_user_func_array. This will be required in Phan 3.
      */
-    public function analyzeFunctionCall(CodeBase $code_base, Context $context, array $args, Node $node = null) : void;
+    public function analyzeFunctionCall(CodeBase $code_base, Context $context, array $args, Node $node = null): void;
 
     /**
      * Make additional analysis logic of this function/method use $closure
      * If callers need to invoke multiple closures, they should pass in a closure to invoke multiple closures or use addFunctionCallAnalyzer.
      */
-    public function setFunctionCallAnalyzer(Closure $closure) : void;
+    public function setFunctionCallAnalyzer(Closure $closure): void;
 
     /**
      * If callers need to invoke multiple closures, they should pass in a closure to invoke multiple closures.
      */
-    public function addFunctionCallAnalyzer(Closure $closure) : void;
+    public function addFunctionCallAnalyzer(Closure $closure): void;
 
     /**
      * Initialize the inner scope of this method with variables created from the parameters.
      *
      * Deferred until the parse phase because getting the UnionType of parameter defaults requires having all class constants be known.
      */
-    public function ensureScopeInitialized(CodeBase $code_base) : void;
+    public function ensureScopeInitialized(CodeBase $code_base): void;
 
     /** Get the node with the declaration of this function/method, if it exists and if Phan is running in non-quick mode */
-    public function getNode() : ?Node;
+    public function getNode(): ?Node;
 
     /**
      * @return ?Comment - Not set for internal functions/methods
      */
-    public function getComment() : ?Comment;
+    public function getComment(): ?Comment;
 
     /**
      * @return string - a suffix for an issue message indicating the cause for deprecation. This string is empty if the cause is unknown.
      */
-    public function getDeprecationReason() : string;
+    public function getDeprecationReason(): string;
 
     /**
      * Set the comment data for this function/method
      */
-    public function setComment(Comment $comment) : void;
+    public function setComment(Comment $comment): void;
 
     /**
      * Mark this function or method as pure (having no visible side effects)
      */
-    public function setIsPure() : void;
+    public function setIsPure(): void;
 
     /**
      * Check if this function or method is marked as pure (having no visible side effects)
      */
-    public function isPure() : bool;
+    public function isPure(): bool;
 
     /**
      * @return UnionType of 0 or more types from (at)throws annotations on this function-like
      */
-    public function getThrowsUnionType() : UnionType;
+    public function getThrowsUnionType(): UnionType;
 
     /**
      * @return bool
      * True if this is a magic phpdoc method (declared via (at)method on class declaration phpdoc)
      * Always false for global functions(Func).
      */
-    public function isFromPHPDoc() : bool;
+    public function isFromPHPDoc(): bool;
 
     /**
      * Clone the parameter list, so that modifying the parameters on the first call won't modify the others.
      * TODO: If parameters were changed to be immutable, they can be shared without cloning with less worry.
      * @internal
      */
-    public function cloneParameterList() : void;
+    public function cloneParameterList(): void;
 
     /**
      * @return bool - Does any parameter type possibly require recursive analysis if more specific types are provided?
      *
      * If this returns true, there is at least one parameter and at least one of those can be overridden with a more specific type.
      */
-    public function needsRecursiveAnalysis() : bool;
+    public function needsRecursiveAnalysis(): bool;
 
     /**
      * Returns a FunctionLikeDeclarationType based on phpdoc+real types.
      * The return value is used for type casting rule checking.
      */
-    public function asFunctionLikeDeclarationType() : FunctionLikeDeclarationType;
+    public function asFunctionLikeDeclarationType(): FunctionLikeDeclarationType;
 
     /**
      * @return array<mixed,string> in the same format as FunctionSignatureMap.php
      */
-    public function toFunctionSignatureArray() : array;
+    public function toFunctionSignatureArray(): array;
 
     /**
      * Precondition: This function is a generator type
      * Converts Generator|T[] to Generator<T>
      * Converts Generator|array<int,stdClass> to Generator<int,stdClass>, etc.
      */
-    public function getReturnTypeAsGeneratorTemplateType() : Type;
+    public function getReturnTypeAsGeneratorTemplateType(): Type;
 
     /**
      * Returns this function's union type without resolving `static` in the function declaration's context.
      */
-    public function getUnionTypeWithUnmodifiedStatic() : UnionType;
+    public function getUnionTypeWithUnmodifiedStatic(): UnionType;
 
     /**
      * Check this method's return types (phpdoc and real) to make sure they're valid,
      * and infer a return type from the combination of the signature and phpdoc return types.
      */
-    public function analyzeReturnTypes(CodeBase $code_base) : void;
+    public function analyzeReturnTypes(CodeBase $code_base): void;
 
     /**
      * Does this function/method declare an (at)template type for this type?
      */
-    public function declaresTemplateTypeInComment(TemplateType $template_type) : bool;
+    public function declaresTemplateTypeInComment(TemplateType $template_type): bool;
 
     /**
      * Create any plugins that exist due to doc comment annotations.
@@ -434,7 +436,7 @@ interface FunctionInterface extends AddressableElementInterface
      * @return ?Closure(CodeBase, Context, array):UnionType
      * @internal
      */
-    public function getCommentParamAssertionClosure(CodeBase $code_base) : ?Closure;
+    public function getCommentParamAssertionClosure(CodeBase $code_base): ?Closure;
 
     /**
      * @return array<mixed, UnionType> very conservatively maps variable names to union types they can have.
@@ -444,5 +446,5 @@ interface FunctionInterface extends AddressableElementInterface
      *
      * Other approaches, such as analyzing loops multiple times, are possible, but not implemented.
      */
-    public function getVariableTypeFallbackMap(CodeBase $code_base) : array;
+    public function getVariableTypeFallbackMap(CodeBase $code_base): array;
 }

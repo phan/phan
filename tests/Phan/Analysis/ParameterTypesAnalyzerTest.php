@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests\Analysis;
 
@@ -12,7 +14,7 @@ use Phan\Tests\BaseTest;
  */
 final class ParameterTypesAnalyzerTest extends BaseTest
 {
-    public function setUp() : void
+    public function setUp(): void
     {
         parent::setUp();
         Config::setValue('prefer_narrowed_phpdoc_return_type', true);
@@ -23,7 +25,7 @@ final class ParameterTypesAnalyzerTest extends BaseTest
         string $expected_type_string,
         string $phpdoc_return_type_string,
         string $real_return_type_string
-    ) : void {
+    ): void {
         $expected_type = UnionType::fromFullyQualifiedPHPDocString($expected_type_string);
         $phpdoc_return_type = UnionType::fromFullyQualifiedPHPDocString($phpdoc_return_type_string);
         $real_return_type = UnionType::fromFullyQualifiedPHPDocString($real_return_type_string);
@@ -42,7 +44,7 @@ final class ParameterTypesAnalyzerTest extends BaseTest
     private function assertNullNarrowedType(
         string $phpdoc_return_type_string,
         string $real_return_type_string
-    ) : void {
+    ): void {
         $phpdoc_return_type = UnionType::fromFullyQualifiedPHPDocString($phpdoc_return_type_string);
         $real_return_type = UnionType::fromFullyQualifiedPHPDocString($real_return_type_string);
 
@@ -53,7 +55,7 @@ final class ParameterTypesAnalyzerTest extends BaseTest
         $this->assertNull($actual_normalized_type, $msg);
     }
 
-    public function testNormalizeNarrowedParamType() : void
+    public function testNormalizeNarrowedParamType(): void
     {
         $this->assertSameNarrowedType('int', 'int', 'int');
         $this->assertSameNarrowedType('array<int,string>', 'array<int,string>', 'array');

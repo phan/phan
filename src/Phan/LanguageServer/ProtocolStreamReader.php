@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Phan\LanguageServer;
@@ -44,11 +45,11 @@ class ProtocolStreamReader extends Emitter implements ProtocolReader
     {
         $this->input = $input;
 
-        $this->on('close', function () : void {
+        $this->on('close', function (): void {
             Loop\removeReadStream($this->input);
         });
 
-        Loop\addReadStream($this->input, function () : void {
+        Loop\addReadStream($this->input, function (): void {
             if (\feof($this->input)) {
                 // If stream_select reported a status change for this stream,
                 // but the stream is EOF, it means it was closed.
@@ -67,7 +68,7 @@ class ProtocolStreamReader extends Emitter implements ProtocolReader
         });
     }
 
-    private function readMessages() : int
+    private function readMessages(): int
     {
         $emitted_messages = 0;
         while (($c = \fgetc($this->input)) !== false && $c !== '') {
@@ -124,12 +125,12 @@ class ProtocolStreamReader extends Emitter implements ProtocolReader
         return $emitted_messages;
     }
 
-    public function stopAcceptingNewRequests() : void
+    public function stopAcceptingNewRequests(): void
     {
         $this->is_accepting_new_requests = false;
     }
 
-    private function emitClose() : void
+    private function emitClose(): void
     {
         if ($this->did_emit_close) {
             return;

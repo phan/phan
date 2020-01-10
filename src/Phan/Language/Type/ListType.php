@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Type;
 
@@ -22,7 +24,7 @@ class ListType extends GenericArrayType
         Type $type,
         bool $is_nullable,
         int $unused_key_type = GenericArrayType::KEY_INT
-    ) : GenericArrayType {
+    ): GenericArrayType {
         // Make sure we only ever create exactly one
         // object for any unique type
         static $canonical_object_maps = null;
@@ -51,19 +53,19 @@ class ListType extends GenericArrayType
      * True if this Type can be cast to the given Type
      * cleanly
      */
-    protected function canCastToNonNullableType(Type $type) : bool
+    protected function canCastToNonNullableType(Type $type): bool
     {
         return $this->canCastToTypeCommon($type) &&
             parent::canCastToNonNullableType($type);
     }
 
-    protected function canCastToNonNullableTypeWithoutConfig(Type $type) : bool
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type): bool
     {
         return $this->canCastToTypeCommon($type) &&
             parent::canCastToNonNullableTypeWithoutConfig($type);
     }
 
-    private function canCastToTypeCommon(Type $type) : bool
+    private function canCastToTypeCommon(Type $type): bool
     {
         if (!$type->isPossiblyTruthy()) {
             return false;
@@ -78,7 +80,7 @@ class ListType extends GenericArrayType
         return true;
     }
 
-    public function asNonFalseyType() : Type
+    public function asNonFalseyType(): Type
     {
         return NonEmptyListType::fromElementType(
             $this->element_type,
@@ -87,13 +89,13 @@ class ListType extends GenericArrayType
         );
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         return ($this->is_nullable ? '?' : '') . 'list<' . $this->element_type->__toString() . '>';
     }
 
     // This is already a list.
-    public function convertIntegerKeyArrayToList() : ArrayType
+    public function convertIntegerKeyArrayToList(): ArrayType
     {
         return $this;
     }

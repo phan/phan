@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests;
 
@@ -12,7 +14,7 @@ use Phan\Plugin\ConfigPluginSet;
  */
 abstract class PhanTestCommon extends AbstractPhanFileTest
 {
-    public static function setUpBeforeClass() : void
+    public static function setUpBeforeClass(): void
     {
         parent::setUpBeforeClass();
 
@@ -31,7 +33,7 @@ abstract class PhanTestCommon extends AbstractPhanFileTest
      * @suppress PhanUndeclaredConstant
      * @return array<string,array{0:array{0:string},1:string}>
      */
-    final public function getAllTestFiles() : array
+    final public function getAllTestFiles(): array
     {
         static $results = null;
         return $results ?? $results = $this->scanSourceFilesDir(\TEST_FILE_DIR, \EXPECTED_DIR);

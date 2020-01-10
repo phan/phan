@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Analysis;
 
@@ -30,7 +32,7 @@ class RegexAnalyzer
         CodeBase $code_base,
         Context $context,
         array $argument_list
-    ) : UnionType {
+    ): UnionType {
         static $string_array_type = null;
         static $string_type = null;
         static $array_type = null;
@@ -85,7 +87,7 @@ class RegexAnalyzer
         CodeBase $code_base,
         Context $context,
         array $argument_list
-    ) : UnionType {
+    ): UnionType {
         if (\count($argument_list) > 3) {
             $offset_flags_node = $argument_list[3];
             $bit = (new ContextNode($code_base, $context, $offset_flags_node))->getEquivalentPHPScalarValue();
@@ -101,7 +103,7 @@ class RegexAnalyzer
         if ($bit & \PREG_SET_ORDER) {
             return $shape_array_type->asGenericArrayTypes(GenericArrayType::KEY_INT);
         }
-        return $shape_array_type->withMappedElementTypes(static function (UnionType $type) : UnionType {
+        return $shape_array_type->withMappedElementTypes(static function (UnionType $type): UnionType {
             return $type->elementTypesToGenericArray(GenericArrayType::KEY_INT);
         });
     }
@@ -112,10 +114,10 @@ class RegexAnalyzer
     private static function makeArrayShape(
         array $regex_group_keys,
         UnionType $type
-    ) : UnionType {
+    ): UnionType {
         $field_types = \array_map(
             /** @param true $_ */
-            static function (bool $_) use ($type) : UnionType {
+            static function (bool $_) use ($type): UnionType {
                 return $type;
             },
             $regex_group_keys

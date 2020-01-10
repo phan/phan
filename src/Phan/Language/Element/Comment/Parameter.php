@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Phan\Language\Element\Comment;
@@ -87,7 +88,7 @@ class Parameter
      */
     public function asVariable(
         Context $context
-    ) : Variable {
+    ): Variable {
         return new Variable(
             $context,
             $this->name,
@@ -104,7 +105,7 @@ class Parameter
      */
     public function asRealParameter(
         Context $context
-    ) : \Phan\Language\Element\Parameter {
+    ): \Phan\Language\Element\Parameter {
         $flags = 0;
         if ($this->is_variadic) {
             $flags |= \ast\flags\PARAM_VARIADIC;
@@ -129,7 +130,7 @@ class Parameter
      * @return string
      * The name of the parameter
      */
-    public function getName() : string
+    public function getName(): string
     {
         return $this->name;
     }
@@ -138,7 +139,7 @@ class Parameter
      * @return UnionType
      * The type of the parameter
      */
-    public function getUnionType() : UnionType
+    public function getUnionType(): UnionType
     {
         return $this->type;
     }
@@ -147,7 +148,7 @@ class Parameter
      * @return int
      * The line number of the parameter
      */
-    public function getLineno() : int
+    public function getLineno(): int
     {
         return $this->lineno;
     }
@@ -155,7 +156,7 @@ class Parameter
      * @return bool
      * Whether or not the parameter is variadic
      */
-    public function isVariadic() : bool
+    public function isVariadic(): bool
     {
         return $this->is_variadic;
     }
@@ -164,7 +165,7 @@ class Parameter
      * @return bool
      * Whether or not the parameter is an output reference
      */
-    public function isOutputReference() : bool
+    public function isOutputReference(): bool
     {
         return $this->reference_type === self::REFERENCE_OUTPUT;
     }
@@ -173,7 +174,7 @@ class Parameter
      * @return bool
      * Whether or not the parameter is an ignored reference
      */
-    public function isIgnoredReference() : bool
+    public function isIgnoredReference(): bool
     {
         return $this->reference_type === self::REFERENCE_IGNORED;
     }
@@ -182,7 +183,7 @@ class Parameter
      * @return bool
      * Whether or not the parameter is required
      */
-    public function isRequired() : bool
+    public function isRequired(): bool
     {
         return !$this->isOptional();
     }
@@ -191,12 +192,12 @@ class Parameter
      * @return bool
      * Whether or not the parameter is optional
      */
-    public function isOptional() : bool
+    public function isOptional(): bool
     {
         return $this->has_default_value || $this->is_variadic;
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         $string = '';
 

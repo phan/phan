@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Daemon\Transport;
 
@@ -25,7 +27,7 @@ class CapturerResponder implements Responder
     /**
      * @return array<string,mixed> the request data
      */
-    public function getRequestData() : array
+    public function getRequestData(): array
     {
         return $this->request_data;
     }
@@ -34,7 +36,7 @@ class CapturerResponder implements Responder
      * @param array<string,mixed> $data
      * @throws \RuntimeException if called twice
      */
-    public function sendResponseAndClose(array $data) : void
+    public function sendResponseAndClose(array $data): void
     {
         if (\is_array($this->response_data)) {
             throw new \RuntimeException("Called sendResponseAndClose twice: data = " . StringUtil::jsonEncode($data));
@@ -45,7 +47,7 @@ class CapturerResponder implements Responder
     /**
      * @return ?array<string,mixed> the raw response data that the analysis would have sent back serialized if this was actually a fork.
      */
-    public function getResponseData() : ?array
+    public function getResponseData(): ?array
     {
         return $this->response_data;
     }

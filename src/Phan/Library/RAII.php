@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Library;
 
@@ -30,7 +32,7 @@ class RAII
     /**
      * Calls the finalizer, unless it has already been called.
      */
-    public function callFinalizerOnce() : void
+    public function callFinalizerOnce(): void
     {
         if ($this->finalizer) {
             ($this->finalizer)();

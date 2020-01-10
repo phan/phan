@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Analysis;
 
@@ -20,7 +22,7 @@ class AbstractMethodAnalyzer
     public static function analyzeAbstractMethodsAreImplemented(
         CodeBase $code_base,
         Clazz $class
-    ) : void {
+    ): void {
         // Don't worry about internal classes
         if ($class->isPHPInternal()) {
             return;
@@ -56,7 +58,7 @@ class AbstractMethodAnalyzer
         }
     }
 
-    private static function toRealSignature(Method $method) : string
+    private static function toRealSignature(Method $method): string
     {
         $fqsen = $method->getDefiningFQSEN();
         $result = \sprintf(

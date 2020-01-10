@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\FQSEN;
 
@@ -89,7 +91,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
      * Get the canonical (non-alternate) FQSEN associated
      * with this FQSEN
      */
-    public function getCanonicalFQSEN() : FQSEN
+    public function getCanonicalFQSEN(): FQSEN
     {
         $fully_qualified_class_name = $this->fully_qualified_class_name->getCanonicalFQSEN();
         if (!$this->alternate_id && $fully_qualified_class_name === $this->fully_qualified_class_name) {
@@ -201,7 +203,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
      * The fully qualified class name associated with this
      * class element.
      */
-    public function getFullyQualifiedClassName() : FullyQualifiedClassName
+    public function getFullyQualifiedClassName(): FullyQualifiedClassName
     {
         return $this->fully_qualified_class_name;
     }
@@ -233,7 +235,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
         FullyQualifiedClassName $fqsen,
         string $name,
         int $alternate_id
-    ) : string {
+    ): string {
         $fqsen_string = $fqsen->__toString() . '::' . $name;
 
         if ($alternate_id) {
@@ -248,9 +250,9 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
      * A string representation of this fully-qualified
      * structural element name.
      */
-    public function __toString() : string
+    public function __toString(): string
     {
-        return $this->memoize(__METHOD__, function () : string {
+        return $this->memoize(__METHOD__, function (): string {
             return self::toString(
                 $this->fully_qualified_class_name,
                 $this->name,

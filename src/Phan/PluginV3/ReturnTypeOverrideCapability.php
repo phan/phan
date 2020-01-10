@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\PluginV3;
 
@@ -19,5 +21,5 @@ interface ReturnTypeOverrideCapability
      *         '\A::foo' as a key will override a method, and '\foo' as a key will override a function.
      *         Closure type: function(CodeBase $code_base, Context $context, Func|Method $function, array $args) : UnionType {...}
      */
-    public function getReturnTypeOverrides(CodeBase $code_base) : array;
+    public function getReturnTypeOverrides(CodeBase $code_base): array;
 }

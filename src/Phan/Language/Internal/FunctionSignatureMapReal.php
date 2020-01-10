@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -15,6 +16,7 @@ declare(strict_types=1);
  * Note that this has less entries than the php 7 map because Reflection already has accurate real types.
  * For accurate real condition detection of code targeting php 8.0-dev, run Phan with php 8.0-dev.
  */
+
 return [
 '_' => 'false|string',
 'addcslashes' => 'string',

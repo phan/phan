@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Phan\LanguageServer;
@@ -53,12 +54,12 @@ class ClientHandler
             new Protocol\Message(
                 new AdvancedJsonRpc\Request($id, $method, (object)$params)
             )
-        )->then(function () use ($id) : Promise {
+        )->then(function () use ($id): Promise {
             $promise = new Promise();
             /**
              * @suppress PhanUndeclaredProperty taken care of by isResponse checks on msg->body
              */
-            $listener = function (Protocol\Message $msg) use ($id, $promise, &$listener) : void {
+            $listener = function (Protocol\Message $msg) use ($id, $promise, &$listener): void {
                 $body = $msg->body;
                 if (!$body) {
                     return;

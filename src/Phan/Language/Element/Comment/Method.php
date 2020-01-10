@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Phan\Language\Element\Comment;
@@ -76,7 +77,7 @@ class Method
      * @return string
      * The name of the magic method
      */
-    public function getName() : string
+    public function getName(): string
     {
         return $this->name;
     }
@@ -85,7 +86,7 @@ class Method
      * @return UnionType
      * The return type of the magic method
      */
-    public function getUnionType() : UnionType
+    public function getUnionType(): UnionType
     {
         return $this->type;
     }
@@ -93,7 +94,7 @@ class Method
     /**
      * @return list<Parameter> - comment parameters of magic method, from phpdoc.
      */
-    public function getParameterList() : array
+    public function getParameterList(): array
     {
         return $this->parameters;
     }
@@ -102,7 +103,7 @@ class Method
      * @return bool
      * Whether or not the magic method is static
      */
-    public function isStatic() : bool
+    public function isStatic(): bool
     {
         return $this->is_static;
     }
@@ -111,7 +112,7 @@ class Method
      * @return int
      * The line of this method
      */
-    public function getLine() : int
+    public function getLine(): int
     {
         return $this->line;
     }
@@ -120,11 +121,11 @@ class Method
      * @return int
      * Number of required parameters of this method
      */
-    public function getNumberOfRequiredParameters() : int
+    public function getNumberOfRequiredParameters(): int
     {
         return \array_reduce(
             $this->parameters,
-            static function (int $carry, Parameter $parameter) : int {
+            static function (int $carry, Parameter $parameter): int {
                 return ($carry + ($parameter->isRequired() ? 1 : 0));
             },
             0
@@ -135,18 +136,18 @@ class Method
      * @return int
      * Number of optional parameters of this method
      */
-    public function getNumberOfOptionalParameters() : int
+    public function getNumberOfOptionalParameters(): int
     {
         return \array_reduce(
             $this->parameters,
-            static function (int $carry, Parameter $parameter) : int {
+            static function (int $carry, Parameter $parameter): int {
                 return ($carry + ($parameter->isOptional() ? 1 : 0));
             },
             0
         );
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         if ($this->is_static) {
             $string = 'static function ';

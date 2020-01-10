@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests;
 
@@ -10,7 +12,7 @@ use ReflectionClass;
  */
 final class PluginV3Test extends BaseTest
 {
-    public function testDocumentation() : void
+    public function testDocumentation(): void
     {
         $comment = (new ReflectionClass(PluginV3::class))->getDocComment();
         $this->assertIsString($comment);

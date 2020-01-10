@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Type;
 
@@ -22,18 +24,18 @@ final class CallableStringType extends StringType implements CallableInterface
      * @return bool
      * True if this type is a callable or a Closure.
      */
-    public function isCallable() : bool
+    public function isCallable(): bool
     {
         return true;
     }
 
-    protected function canCastToNonNullableType(Type $type) : bool
+    protected function canCastToNonNullableType(Type $type): bool
     {
         // CallableDeclarationType is not a native type, we check separately here
         return parent::canCastToNonNullableType($type) || $type instanceof CallableDeclarationType;
     }
 
-    protected function canCastToNonNullableTypeWithoutConfig(Type $type) : bool
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type): bool
     {
         // CallableDeclarationType is not a native type, we check separately here
         return parent::canCastToNonNullableTypeWithoutConfig($type) || $type instanceof CallableDeclarationType;
@@ -44,13 +46,13 @@ final class CallableStringType extends StringType implements CallableInterface
      * e.g. returns true for false, array, int
      *      returns false for callable, string, array, object, iterable, T, etc.
      */
-    public function isDefiniteNonCallableType() : bool
+    public function isDefiniteNonCallableType(): bool
     {
         return false;
     }
 
     /** @override */
-    public function isPossiblyNumeric() : bool
+    public function isPossiblyNumeric(): bool
     {
         return false;
     }
@@ -58,27 +60,27 @@ final class CallableStringType extends StringType implements CallableInterface
     /**
      * Returns the type after an expression such as `++$x`
      */
-    public function getTypeAfterIncOrDec() : UnionType
+    public function getTypeAfterIncOrDec(): UnionType
     {
         return UnionType::fromFullyQualifiedPHPDocString('string');
     }
 
-    public function canUseInRealSignature() : bool
+    public function canUseInRealSignature(): bool
     {
         return false;
     }
 
-    public function isAlwaysTruthy() : bool
+    public function isAlwaysTruthy(): bool
     {
         return !$this->is_nullable;
     }
 
-    public function isPossiblyFalsey() : bool
+    public function isPossiblyFalsey(): bool
     {
         return $this->is_nullable;
     }
 
-    public function isPossiblyObject() : bool
+    public function isPossiblyObject(): bool
     {
         return false;
     }
@@ -97,7 +99,7 @@ final class CallableStringType extends StringType implements CallableInterface
      *
      * @return static
      */
-    public static function instance(bool $is_nullable) : Type
+    public static function instance(bool $is_nullable): Type
     {
         if ($is_nullable) {
             static $nullable_instance = null;
@@ -120,7 +122,7 @@ final class CallableStringType extends StringType implements CallableInterface
     /**
      * @return CallableStringType
      */
-    public function withIsNullable(bool $is_nullable) : Type
+    public function withIsNullable(bool $is_nullable): Type
     {
         if ($is_nullable === $this->is_nullable) {
             return $this;
@@ -128,7 +130,7 @@ final class CallableStringType extends StringType implements CallableInterface
         return self::instance($is_nullable);
     }
 
-    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $other) : bool
+    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $other): bool
     {
         return $other instanceof StringType ||
             $other instanceof CallableType;

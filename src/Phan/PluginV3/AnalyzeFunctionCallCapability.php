@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\PluginV3;
 
@@ -26,5 +28,5 @@ interface AnalyzeFunctionCallCapability
      *
      * Note that $function->getMostRecentParentNodeListForCall() can be used to get the parent node list of the current call (will be the empty array if fetching it failed).
      */
-    public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array;
+    public function getAnalyzeFunctionCallClosures(CodeBase $code_base): array;
 }

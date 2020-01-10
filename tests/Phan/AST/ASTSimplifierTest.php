@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests\AST;
 
@@ -15,7 +17,7 @@ final class ASTSimplifierTest extends AbstractPhanFileTest
     /**
      * @suppress PhanUndeclaredConstant
      */
-    public function getTestFiles() : array
+    public function getTestFiles(): array
     {
         return $this->scanSourceFilesDir(\AST_TEST_FILE_DIR, \AST_EXPECTED_DIR);
     }
@@ -33,7 +35,7 @@ final class ASTSimplifierTest extends AbstractPhanFileTest
      * @override
      * @suppress PhanPossiblyFalseTypeArgumentInternal
      */
-    public function testFiles(array $test_file_list, string $expected_file_path, ?string $config_file_path = null) : void
+    public function testFiles(array $test_file_list, string $expected_file_path, ?string $config_file_path = null): void
     {
         $this->assertCount(1, $test_file_list);
         [$original_file_path] = $test_file_list;

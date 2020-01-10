@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests\Exception;
 
@@ -12,7 +14,7 @@ use Phan\Tests\BaseTest;
  */
 final class IssueExceptionTest extends BaseTest
 {
-    public function testToString() : void
+    public function testToString(): void
     {
         $issue = new Issue(
             "PhanPlaceholderIssue",

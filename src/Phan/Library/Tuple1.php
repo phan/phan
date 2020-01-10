@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Library;
 
@@ -30,7 +32,7 @@ class Tuple1 extends Tuple
      * @return int
      * The arity of this tuple
      */
-    public function arity() : int
+    public function arity(): int
     {
         return static::ARITY;
     }
@@ -39,7 +41,7 @@ class Tuple1 extends Tuple
      * @return array{0:T0}
      * An array of all elements in this tuple.
      */
-    public function toArray() : array
+    public function toArray(): array
     {
         return [
             $this->_0,

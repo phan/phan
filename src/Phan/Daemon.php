@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan;
 
@@ -36,7 +38,7 @@ class Daemon
      *
      * @throws Exception if analysis fails unexpectedly
      */
-    public static function run(CodeBase $code_base, Closure $file_path_lister) : ?Request
+    public static function run(CodeBase $code_base, Closure $file_path_lister): ?Request
     {
         if (Config::getValue('language_server_use_pcntl_fallback')) {
             self::runWithoutPcntl($code_base, $file_path_lister);
@@ -61,7 +63,7 @@ class Daemon
                 \pcntl_signal(
                     \SIGCHLD,
                     /** @param ?(int|array) $status */
-                    static function (int $signo, $status = null, ?int $pid = null) use (&$got_signal) : void {
+                    static function (int $signo, $status = null, ?int $pid = null) use (&$got_signal): void {
                         $got_signal = true;
                         Request::childSignalHandler($signo, $status, $pid);
                     }
@@ -77,7 +79,7 @@ class Daemon
                  * @param int $line
                  * @return bool
                  */
-                $previous_error_handler = \set_error_handler(static function (int $severity, string $message, string $file, int $line) use (&$previous_error_handler) : bool {
+                $previous_error_handler = \set_error_handler(static function (int $severity, string $message, string $file, int $line) use (&$previous_error_handler): bool {
                     self::debugf("In new error handler '$message'");
                     if (!\preg_match('/stream_socket_accept/i', $message)) {
                         return $previous_error_handler($severity, $message, $file, $line);
@@ -126,7 +128,7 @@ class Daemon
      *
      * @throws Exception if analysis failed in an unexpected way
      */
-    private static function runWithoutPcntl(CodeBase $code_base, Closure $file_path_lister) : void
+    private static function runWithoutPcntl(CodeBase $code_base, Closure $file_path_lister): void
     {
         // This is a single threaded server, it only analyzes one TCP request at a time
         $socket_server = self::createDaemonStreamSocketServer();
@@ -134,7 +136,7 @@ class Daemon
             while (true) {
                 // We get an error from stream_socket_accept. After the RuntimeException is thrown, pcntl_signal is called.
                 $previous_error_handler = \set_error_handler(
-                    static function (int $severity, string $message, string $file, int $line) use (&$previous_error_handler) : bool {
+                    static function (int $severity, string $message, string $file, int $line) use (&$previous_error_handler): bool {
                         self::debugf("In new error handler '$message'");
                         if (!\preg_match('/stream_socket_accept/i', $message)) {
                             return $previous_error_handler($severity, $message, $file, $line);
@@ -184,7 +186,7 @@ class Daemon
     /**
      * @throws Exception if analysis throws
      */
-    private static function analyzeDaemonRequestOnMainThread(CodeBase $code_base, Request $request) : void
+    private static function analyzeDaemonRequestOnMainThread(CodeBase $code_base, Request $request): void
     {
         $restore_point = $code_base->createRestorePoint();
 
@@ -243,7 +245,7 @@ class Daemon
      * @param mixed ...$args - printf args
      * @suppress PhanPluginPrintfVariableFormatString
      */
-    public static function debugf(string $format, ...$args) : void
+    public static function debugf(string $format, ...$args): void
     {
         if (\getenv('PHAN_DAEMON_ENABLE_DEBUG')) {
             if (\count($args) > 0) {

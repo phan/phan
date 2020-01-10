@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Plugin\Internal;
 
@@ -29,6 +31,7 @@ use Phan\PluginV3\AnalyzeFunctionCallCapability;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
 use Phan\PluginV3\PostAnalyzeNodeCapability;
 use ReflectionMethod;
+
 use function count;
 
 /**
@@ -47,18 +50,18 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
     /**
      * @return array<string,\Closure>
      */
-    private static function getAnalyzeFunctionCallClosuresStatic() : array
+    private static function getAnalyzeFunctionCallClosuresStatic(): array
     {
         /**
          * @param Closure(UnionType):int $checker returns _IS_IMPOSSIBLE/_IS_REDUNDANT/_IS_REASONABLE_CONDITION
          * @param string $expected_type
          * @return Closure(CodeBase, Context, FunctionInterface, list<mixed>, ?Node):void
          */
-        $make_first_arg_checker = static function (Closure $checker, string $expected_type) : Closure {
+        $make_first_arg_checker = static function (Closure $checker, string $expected_type): Closure {
             /**
              * @param list<Node|int|float|string> $args
              */
-            return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args, ?Node $_) use ($checker, $expected_type) : void {
+            return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args, ?Node $_) use ($checker, $expected_type): void {
                 if (count($args) < 1) {
                     return;
                 }
@@ -90,7 +93,7 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
                             $union_type->getRealUnionType(),
                             $expected_type,
                         ],
-                        static function (UnionType $type) use ($checker) : bool {
+                        static function (UnionType $type) use ($checker): bool {
                             return $checker($type) === self::_IS_REDUNDANT;
                         }
                     );
@@ -105,7 +108,7 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
                             $union_type->getRealUnionType(),
                             $expected_type,
                         ],
-                        static function (UnionType $type) use ($checker) : bool {
+                        static function (UnionType $type) use ($checker): bool {
                             return $checker($type) === self::_IS_IMPOSSIBLE;
                         }
                     );
@@ -117,12 +120,12 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
          * @param string $expected_type
          * @return Closure(CodeBase, Context, FunctionInterface, list<mixed>, ?Node):void
          */
-        $make_codebase_aware_first_arg_checker = static function (Closure $checker, string $expected_type) use ($make_first_arg_checker) : Closure {
+        $make_codebase_aware_first_arg_checker = static function (Closure $checker, string $expected_type) use ($make_first_arg_checker): Closure {
             /**
              * @param list<Node|int|float|string> $args
              */
-            return static function (CodeBase $code_base, Context $context, FunctionInterface $function, array $args, ?Node $node) use ($checker, $expected_type, $make_first_arg_checker) : void {
-                $single_checker = static function (UnionType $type) use ($checker, $code_base) : int {
+            return static function (CodeBase $code_base, Context $context, FunctionInterface $function, array $args, ?Node $node) use ($checker, $expected_type, $make_first_arg_checker): void {
+                $single_checker = static function (UnionType $type) use ($checker, $code_base): int {
                     return $checker($type, $code_base);
                 };
                 $arg_checker = $make_first_arg_checker($single_checker, $expected_type);
@@ -130,9 +133,9 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
             };
         };
 
-        $make_simple_first_arg_checker = static function (string $extract_types_method, string $expected_type) use ($make_first_arg_checker) : Closure {
+        $make_simple_first_arg_checker = static function (string $extract_types_method, string $expected_type) use ($make_first_arg_checker): Closure {
             $method = new ReflectionMethod(UnionType::class, $extract_types_method);
-            return $make_first_arg_checker(static function (UnionType $type) use ($method) : int {
+            return $make_first_arg_checker(static function (UnionType $type) use ($method): int {
                 $new_real_type = $method->invoke($type)->nonNullableClone();
                 if ($new_real_type->isEmpty()) {
                     return self::_IS_IMPOSSIBLE;
@@ -143,8 +146,8 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
                 return self::_IS_REASONABLE_CONDITION;
             }, $expected_type);
         };
-        $resource_callback = $make_first_arg_checker(static function (UnionType $type) : int {
-            $new_real_type = $type->makeFromFilter(static function (Type $type) : bool {
+        $resource_callback = $make_first_arg_checker(static function (UnionType $type): int {
+            $new_real_type = $type->makeFromFilter(static function (Type $type): bool {
                 return $type instanceof ResourceType;
             })->nonNullableClone();
             if ($new_real_type->isEmpty()) {
@@ -155,7 +158,7 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
             }
             return self::_IS_REASONABLE_CONDITION;
         }, 'resource');
-        $null_callback = $make_first_arg_checker(static function (UnionType $type) : int {
+        $null_callback = $make_first_arg_checker(static function (UnionType $type): int {
             if (!$type->containsNullableOrUndefined()) {
                 return self::_IS_IMPOSSIBLE;
             }
@@ -164,7 +167,7 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
             }
             return self::_IS_REASONABLE_CONDITION;
         }, 'null');
-        $numeric_callback = $make_first_arg_checker(static function (UnionType $union_type) : int {
+        $numeric_callback = $make_first_arg_checker(static function (UnionType $union_type): int {
             $has_non_numeric = false;
             $has_numeric = false;
             foreach ($union_type->getTypeSet() as $type) {
@@ -192,38 +195,40 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
          * @param Closure(UnionType):bool $condition
          * @return Closure(CodeBase, Context, FunctionInterface, list<mixed>, ?Node):void
          */
-        $make_cast_callback = static function (Closure $condition, string $expected_type) use ($make_first_arg_checker) : Closure {
-            return $make_first_arg_checker(static function (UnionType $union_type) use ($condition) : int {
+        $make_cast_callback = static function (Closure $condition, string $expected_type) use ($make_first_arg_checker): Closure {
+            return $make_first_arg_checker(static function (UnionType $union_type) use ($condition): int {
                 if (!$union_type->containsNullableOrUndefined() && $condition($union_type)) {
                     return self::_IS_REDUNDANT;
                 }
                 return self::_IS_REASONABLE_CONDITION;
             }, $expected_type);
         };
-        $callable_callback = $make_first_arg_checker(static function (UnionType $type) : int {
+        $callable_callback = $make_first_arg_checker(static function (UnionType $type): int {
             $new_real_type = $type->callableTypes()->nonNullableClone();
             if ($new_real_type->isEmpty()) {
                 return self::_IS_IMPOSSIBLE;
             }
             if ($new_real_type->isEqualTo($type)) {
-                if (!$new_real_type->hasTypeMatchingCallback(static function (Type $type) : bool {
+                if (                !$new_real_type->hasTypeMatchingCallback(static function (Type $type): bool {
                     return $type instanceof ArrayShapeType;
-                })) {
+                })
+                ) {
                     return self::_IS_REDUNDANT;
                 }
                 // is_callable([$obj, 'someFn') is a reasonable condition, fall through.
             }
             return self::_IS_REASONABLE_CONDITION;
         }, 'callable');
-        $scalar_callback = $make_first_arg_checker(static function (UnionType $type) : int {
+        $scalar_callback = $make_first_arg_checker(static function (UnionType $type): int {
             $new_real_type = $type->scalarTypesStrict(true);
             if ($new_real_type->isEmpty()) {
                 return self::_IS_IMPOSSIBLE;
             }
             if ($new_real_type->isEqualTo($type)) {
-                if (!$new_real_type->hasTypeMatchingCallback(static function (Type $type) : bool {
+                if (                    !$new_real_type->hasTypeMatchingCallback(static function (Type $type): bool {
                     return $type instanceof ArrayShapeType;
-                })) {
+                })
+                ) {
                     return self::_IS_REDUNDANT;
                 }
                 // is_callable([$obj, 'someFn') is a reasonable condition, fall through.
@@ -231,23 +236,23 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
             return self::_IS_REASONABLE_CONDITION;
         }, 'scalar');
 
-        $intval_callback = $make_cast_callback(static function (UnionType $union_type) : bool {
+        $intval_callback = $make_cast_callback(static function (UnionType $union_type): bool {
             return $union_type->intTypes()->isEqualTo($union_type);
         }, 'int');
-        $boolval_callback = $make_cast_callback(static function (UnionType $union_type) : bool {
+        $boolval_callback = $make_cast_callback(static function (UnionType $union_type): bool {
             return $union_type->isExclusivelyBoolTypes();
         }, 'bool');
-        $doubleval_callback = $make_cast_callback(static function (UnionType $union_type) : bool {
+        $doubleval_callback = $make_cast_callback(static function (UnionType $union_type): bool {
             return $union_type->floatTypes()->isEqualTo($union_type);
         }, 'float');
-        $strval_callback = $make_cast_callback(static function (UnionType $union_type) : bool {
+        $strval_callback = $make_cast_callback(static function (UnionType $union_type): bool {
             return $union_type->isExclusivelyStringTypes();
         }, 'string');
 
         $int_callback = $make_simple_first_arg_checker('intTypes', 'int');
         $bool_callback = $make_simple_first_arg_checker('getTypesInBoolFamily', 'bool');
         $float_callback = $make_simple_first_arg_checker('floatTypes', 'float');
-        $iterable_callback = $make_codebase_aware_first_arg_checker(static function (UnionType $union_type, CodeBase $code_base) : int {
+        $iterable_callback = $make_codebase_aware_first_arg_checker(static function (UnionType $union_type, CodeBase $code_base): int {
             $new_real_type = $union_type->iterableTypesStrictCastAssumeTraversable($code_base);
             if ($new_real_type->isEmpty()) {
                 return self::_IS_IMPOSSIBLE;
@@ -258,7 +263,7 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
             return self::_IS_REASONABLE_CONDITION;
         }, 'iterable');
         /** @suppress PhanAccessMethodInternal */
-        $countable_callback = $make_codebase_aware_first_arg_checker(static function (UnionType $union_type, CodeBase $code_base) : int {
+        $countable_callback = $make_codebase_aware_first_arg_checker(static function (UnionType $union_type, CodeBase $code_base): int {
             $new_real_type = UnionType::of(
                 UnionType::castTypeListToCountable($code_base, $union_type->getTypeSet(), true),
                 []
@@ -310,7 +315,7 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
      * @return array<string,\Closure>
      * @override
      */
-    public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array
+    public function getAnalyzeFunctionCallClosures(CodeBase $code_base): array
     {
         // Unit tests invoke this repeatedly. Cache it.
         static $overrides = null;
@@ -323,7 +328,7 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
     /**
      * @return string - name of PluginAwarePostAnalysisVisitor subclass
      */
-    public static function getPostAnalyzeNodeVisitorClassName() : string
+    public static function getPostAnalyzeNodeVisitorClassName(): string
     {
         return RedundantConditionVisitor::class;
     }
@@ -337,7 +342,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @override
      */
-    public function visitEmpty(Node $node) : void
+    public function visitEmpty(Node $node): void
     {
         $var_node = $node->children['expr'];
         try {
@@ -360,7 +365,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
                     $type->getRealUnionType(),
                     'empty',
                 ],
-                static function (UnionType $type) : bool {
+                static function (UnionType $type): bool {
                     return !$type->containsTruthy();
                 }
             );
@@ -375,7 +380,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
                     $type->getRealUnionType(),
                     'empty',
                 ],
-                static function (UnionType $type) : bool {
+                static function (UnionType $type): bool {
                     return !$type->containsFalsey();
                 }
             );
@@ -386,12 +391,12 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
      * Choose a more specific issue name based on where the issue was emitted from.
      * @param Node|int|string|float $node
      */
-    private function chooseIssue($node, string $issue_name) : string
+    private function chooseIssue($node, string $issue_name): string
     {
         return RedundantCondition::chooseSpecificImpossibleOrRedundantIssueKind($node, $this->context, $issue_name);
     }
 
-    public function visitBinaryOp(Node $node) : void
+    public function visitBinaryOp(Node $node): void
     {
         switch ($node->flags) {
             case flags\BINARY_IS_IDENTICAL:
@@ -413,7 +418,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
         }
     }
 
-    private function checkImpossibleComparison(Node $node, bool $strict) : void
+    private function checkImpossibleComparison(Node $node, bool $strict): void
     {
         $left = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['left']);
         if (!$left->hasRealTypeSet()) {
@@ -434,7 +439,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
                 $left,
                 $right,
                 $strict ? Issue::ImpossibleTypeComparison : Issue::SuspiciousWeakTypeComparison,
-                static function (UnionType $new_left_type, UnionType $new_right_type) use ($strict, $code_base) : bool {
+                static function (UnionType $new_left_type, UnionType $new_right_type) use ($strict, $code_base): bool {
                     return !$new_left_type->hasAnyTypeOverlap($code_base, $new_right_type) && ($strict || !$new_left_type->hasAnyWeakTypeOverlap($new_right_type));
                 }
             );
@@ -446,7 +451,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @suppress PhanAccessMethodInternal
      */
-    private function checkUselessScalarComparison(Node $node, UnionType $left, UnionType $right) : void
+    private function checkUselessScalarComparison(Node $node, UnionType $left, UnionType $right): void
     {
         // Give up if any of the sides aren't constant
         $left_values = $left->asScalarValues(true);
@@ -494,15 +499,15 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
             $left_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($code_base, $left_node);
             $right_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($code_base, $right_node);
             if ($left_type_fetcher || $right_type_fetcher) {
-                $left_type_fetcher = $left_type_fetcher ?? static function (Context $_) use ($left) : UnionType {
+                $left_type_fetcher = $left_type_fetcher ?? static function (Context $_) use ($left): UnionType {
                     return $left;
                 };
-                $right_type_fetcher = $right_type_fetcher ?? static function (Context $_) use ($right) : UnionType {
+                $right_type_fetcher = $right_type_fetcher ?? static function (Context $_) use ($right): UnionType {
                     return $right;
                 };
 
                 // @phan-suppress-next-line PhanAccessMethodInternal
-                $context->deferCheckToOutermostLoop(static function (Context $context_after_loop) use ($code_base, $node, $left_type_fetcher, $right_type_fetcher, $left, $right, $issue_name, $issue_args, $context) : void {
+                $context->deferCheckToOutermostLoop(static function (Context $context_after_loop) use ($code_base, $node, $left_type_fetcher, $right_type_fetcher, $left, $right, $issue_name, $issue_args, $context): void {
                     // Give up in any of these cases, for the left or right types
                     // 1. We don't know how to fetch the new type after the loop.
                     // 2. We don't know the real value of the new type after the loop.
@@ -547,7 +552,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
      * @param Node $node a node resolving to 1 or more known scalars
      * @param int|string|float|null|Node|array|bool $evaluated_value
      */
-    private function shouldCheckScalarAsIfInLoopScope(Node $node, $evaluated_value) : bool
+    private function shouldCheckScalarAsIfInLoopScope(Node $node, $evaluated_value): bool
     {
         if (!$this->context->isInLoop()) {
             // This isn't even in a loop.
@@ -574,7 +579,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
      * @param Closure(UnionType,UnionType):bool $is_still_issue
      * @suppress PhanAccessMethodInternal
      */
-    public function emitIssueForBinaryOp(Node $node, UnionType $left, UnionType $right, string $issue_name, Closure $is_still_issue) : void
+    public function emitIssueForBinaryOp(Node $node, UnionType $left, UnionType $right, string $issue_name, Closure $is_still_issue): void
     {
         $issue_args = [
             ASTReverter::toShortString($node->children['left']),
@@ -593,7 +598,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
             $right_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($code_base, $right_node);
             if ($left_type_fetcher || $right_type_fetcher) {
                 // @phan-suppress-next-line PhanAccessMethodInternal
-                $context->deferCheckToOutermostLoop(static function (Context $context_after_loop) use ($code_base, $node, $left_type_fetcher, $right_type_fetcher, $left, $right, $is_still_issue, $issue_name, $issue_args, $context) : void {
+                $context->deferCheckToOutermostLoop(static function (Context $context_after_loop) use ($code_base, $node, $left_type_fetcher, $right_type_fetcher, $left, $right, $is_still_issue, $issue_name, $issue_args, $context): void {
                     $left = ($left_type_fetcher ? $left_type_fetcher($context_after_loop) : null) ?? $left;
                     if ($left->isEmpty()) {
                         return;
@@ -676,7 +681,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @override
      */
-    public function visitIsset(Node $node) : void
+    public function visitIsset(Node $node): void
     {
         $var_node = $node->children['var'];
         try {
@@ -702,7 +707,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
                     $real_type,
                     'isset'
                 ],
-                static function (UnionType $type) : bool {
+                static function (UnionType $type): bool {
                     return !$type->containsNullableOrUndefined();
                 }
             );
@@ -717,7 +722,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
                     $real_type,
                     'isset'
                 ],
-                static function (UnionType $type) : bool {
+                static function (UnionType $type): bool {
                     return $type->isNull();
                 }
             );
@@ -728,7 +733,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
      * Check if a loop is increasing or decreasing when it should be doing the opposite.
      * @override
      */
-    public function visitFor(Node $node) : void
+    public function visitFor(Node $node): void
     {
         $cond_list = $node->children['cond'];
         if (!$cond_list instanceof Node) {
@@ -768,7 +773,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @override
      */
-    public function visitInstanceof(Node $node) : void
+    public function visitInstanceof(Node $node): void
     {
         $expr_node = $node->children['expr'];
         $code_base = $this->code_base;
@@ -792,8 +797,10 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
         $real_type = $real_type_unresolved->withStaticResolvedInContext($this->context);
         // The isEqualTo check was added to check for `$this instanceof static`
         // The isExclusivelyStringTypes check warns about everything else, e.g. `$subclass instanceof BaseClass`
-        if ($real_type_unresolved->isEqualTo($class_type->asRealUnionType())
-            || $real_type->isExclusivelySubclassesOf($code_base, $class_type)) {
+        if (
+        $real_type_unresolved->isEqualTo($class_type->asRealUnionType())
+            || $real_type->isExclusivelySubclassesOf($code_base, $class_type)
+        ) {
             RedundantCondition::emitInstance(
                 $expr_node,
                 $code_base,
@@ -804,7 +811,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
                     $real_type_unresolved,
                     $class_type,
                 ],
-                static function (UnionType $type) use ($code_base, $class_type) : bool {
+                static function (UnionType $type) use ($code_base, $class_type): bool {
                     return $type->isExclusivelySubclassesOf($code_base, $class_type);
                 }
             );
@@ -819,14 +826,14 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
                     $real_type,
                     $class_type,
                 ],
-                static function (UnionType $type) use ($code_base, $class_type) : bool {
+                static function (UnionType $type) use ($code_base, $class_type): bool {
                     return !$type->canPossiblyCastToClass($code_base, $class_type);
                 }
             );
         }
     }
 
-    private function getClassTypeFromNode(Node $class_node) : Type
+    private function getClassTypeFromNode(Node $class_node): Type
     {
         if ($class_node->kind === ast\AST_NAME) {
             $class_union_type = UnionTypeVisitor::unionTypeFromNode(
@@ -842,7 +849,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
         return ObjectType::instance(false);
     }
 
-    private function warnForCast(Node $node, UnionType $real_expr_type, string $expected_type) : void
+    private function warnForCast(Node $node, UnionType $real_expr_type, string $expected_type): void
     {
         $expr_node = $node->children['expr'];
         $this->emitIssue(
@@ -857,7 +864,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @override
      */
-    public function visitCast(Node $node) : void
+    public function visitCast(Node $node): void
     {
         // TODO: Check if the cast would throw an error at runtime, based on the type (e.g. casting object to string/int)
         $expr_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr']);

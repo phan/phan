@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests\Debug;
 
@@ -20,7 +22,7 @@ final class FrameTest extends BaseTest
     /**
      * @param mixed $value
      */
-    private function assertHasEncodedValue(string $expected, $value) : void
+    private function assertHasEncodedValue(string $expected, $value): void
     {
         $this->assertSame($expected, Frame::encodeValue($value), 'unexpected result of encodeValue');
     }
@@ -28,14 +30,14 @@ final class FrameTest extends BaseTest
     /**
      * @throws \Exception
      */
-    public function testToString() : void
+    public function testToString(): void
     {
         $this->assertHasEncodedValue('[0, "", false, null]', [0, '', false, null]);
         $this->assertHasEncodedValue('[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]', \range(1, 10));
         $this->assertHasEncodedValue('[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, ... 5 more element(s)]', \range(1, 15));
         $this->assertHasEncodedValue('{"key":"value://something"}', ['key' => 'value://something']);
         $this->assertHasEncodedValue('[]', []);
-        $this->assertHasEncodedValue('Closure', static function () : void {
+        $this->assertHasEncodedValue('Closure', static function (): void {
         });
         $this->assertHasEncodedValue('stdClass({})', new stdClass());
         $this->assertHasEncodedValue('stdClass({"key":"value","2":"other"})', (object)['key' => 'value', '2' => 'other']);

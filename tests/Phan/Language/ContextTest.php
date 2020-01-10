@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests\Language;
 
@@ -24,20 +26,20 @@ final class ContextTest extends BaseTest
     /** @var CodeBase The code base within which this unit test is running */
     protected $code_base = null;
 
-    protected function setUp() : void
+    protected function setUp(): void
     {
         // Deliberately not calling parent::setUp()
         $this->code_base = new CodeBase([], [], [], [], []);
     }
 
-    protected function tearDown() : void
+    protected function tearDown(): void
     {
         // Deliberately not calling parent::tearDown()
         // @phan-suppress-next-line PhanTypeMismatchProperty
         $this->code_base = null;
     }
 
-    public function testSimple() : void
+    public function testSimple(): void
     {
         $context = new Context();
 
@@ -66,7 +68,7 @@ final class ContextTest extends BaseTest
         $this->assertNotEmpty($context_method);
     }
 
-    public function testClassContext() : void
+    public function testClassContext(): void
     {
         $code = "<?php
             class C {

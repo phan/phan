@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Exception;
 
@@ -31,7 +33,7 @@ class FQSENException extends Exception
     /**
      * @return string the empty, unparseable FQSEN input that caused this exception
      */
-    public function getFQSEN() : string
+    public function getFQSEN(): string
     {
         return $this->fqsen;
     }

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Type;
 
@@ -18,7 +20,7 @@ final class ScalarRawType extends ScalarType implements MultiType
     /**
      * @return list<ScalarType>
      */
-    public function asIndividualTypeInstances() : array
+    public function asIndividualTypeInstances(): array
     {
         if ($this->is_nullable) {
             static $nullable_types = null;

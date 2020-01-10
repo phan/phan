@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Exception;
 
@@ -35,7 +37,7 @@ class CodeBaseException extends \Exception
      *
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function hasFQSEN() : bool
+    public function hasFQSEN(): bool
     {
         return !\is_null($this->missing_fqsen);
     }
@@ -44,7 +46,7 @@ class CodeBaseException extends \Exception
      * @return FQSEN
      * The missing FQSEN
      */
-    public function getFQSEN() : FQSEN
+    public function getFQSEN(): FQSEN
     {
         $fqsen = $this->missing_fqsen;
         if (!$fqsen) {

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\PluginV3;
 
@@ -23,5 +25,5 @@ interface AnalyzeFunctionCapability extends \Phan\PluginV2\AnalyzeFunctionCapabi
     public function analyzeFunction(
         CodeBase $code_base,
         Func $function
-    ) : void;
+    ): void;
 }

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Element;
 
@@ -93,7 +95,7 @@ abstract class UnaddressableTypedElement
      * @return string
      * The (not fully-qualified) name of this element.
      */
-    public function getName() : string
+    public function getName(): string
     {
         return $this->name;
     }
@@ -103,7 +105,7 @@ abstract class UnaddressableTypedElement
      * Get the type of this structural element
      * If this is a parameter, get the variadic version seen inside the function.
      */
-    public function getUnionType() : UnionType
+    public function getUnionType(): UnionType
     {
         return $this->type;
     }
@@ -115,7 +117,7 @@ abstract class UnaddressableTypedElement
      *
      * @suppress PhanUnreferencedPublicMethod possibly used by PassByReferenceVariable
      */
-    public function getNonVariadicUnionType() : UnionType
+    public function getNonVariadicUnionType(): UnionType
     {
         return $this->type;
     }
@@ -124,12 +126,12 @@ abstract class UnaddressableTypedElement
      * @param UnionType $type
      * Set the type of this element
      */
-    public function setUnionType(UnionType $type) : void
+    public function setUnionType(UnionType $type): void
     {
         $this->type = $type;
     }
 
-    protected function convertToNullable() : void
+    protected function convertToNullable(): void
     {
         // Avoid a redundant clone of nonNullableClone()
         $type = $this->type;
@@ -142,7 +144,7 @@ abstract class UnaddressableTypedElement
     /**
      * Returns the flags of the node declaring/defining this element.
      */
-    public function getFlags() : int
+    public function getFlags(): int
     {
         return $this->flags;
     }
@@ -155,7 +157,7 @@ abstract class UnaddressableTypedElement
      * True if all bits in the ast\Node flags are enabled in the bit
      * vector, else false.
      */
-    public function getFlagsHasState(int $flag) : bool
+    public function getFlagsHasState(int $flag): bool
     {
         return ($this->flags & $flag) === $flag;
     }
@@ -166,7 +168,7 @@ abstract class UnaddressableTypedElement
      *
      * @suppress PhanUnreferencedPublicMethod unused, other modifiers are used by Phan right now
      */
-    public function setFlags(int $flags) : void
+    public function setFlags(int $flags): void
     {
         $this->flags = $flags;
     }
@@ -175,7 +177,7 @@ abstract class UnaddressableTypedElement
      * Records the Phan flags for this element
      * @see \Phan\Flags
      */
-    public function getPhanFlags() : int
+    public function getPhanFlags(): int
     {
         return $this->phan_flags;
     }
@@ -188,7 +190,7 @@ abstract class UnaddressableTypedElement
      * True if all bits in the phan flag are enabled in the bit
      * vector, else false.
      */
-    public function getPhanFlagsHasState(int $flag) : bool
+    public function getPhanFlagsHasState(int $flag): bool
     {
         return ($this->phan_flags & $flag) === $flag;
     }
@@ -198,7 +200,7 @@ abstract class UnaddressableTypedElement
      *
      * @suppress PhanUnreferencedPublicMethod potentially used in the future
      */
-    public function setPhanFlags(int $phan_flags) : void
+    public function setPhanFlags(int $phan_flags): void
     {
         $this->phan_flags = $phan_flags;
     }
@@ -206,7 +208,7 @@ abstract class UnaddressableTypedElement
     /**
      * Enable an individual bit of phan flags.
      */
-    public function enablePhanFlagBits(int $new_bits) : void
+    public function enablePhanFlagBits(int $new_bits): void
     {
         $this->phan_flags |= $new_bits;
     }
@@ -214,7 +216,7 @@ abstract class UnaddressableTypedElement
     /**
      * Disable an individual bit of phan flags.
      */
-    public function disablePhanFlagBits(int $new_bits) : void
+    public function disablePhanFlagBits(int $new_bits): void
     {
         $this->phan_flags &= (~$new_bits);
     }
@@ -224,7 +226,7 @@ abstract class UnaddressableTypedElement
      * A reference to where this element was found. This will return a Context object if
      * `record_variable_context_and_scope` is true, and a FileRef otherwise.
      */
-    public function getFileRef() : FileRef
+    public function getFileRef(): FileRef
     {
         return $this->file_ref;
     }
@@ -233,10 +235,10 @@ abstract class UnaddressableTypedElement
      * Returns whether this element stores Context and Scope.
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function storesContext() : bool
+    public function storesContext(): bool
     {
         return Config::getValue('record_variable_context_and_scope');
     }
 
-    abstract public function __toString() : string;
+    abstract public function __toString(): string;
 }

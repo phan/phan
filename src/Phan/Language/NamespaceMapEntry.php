@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language;
 
@@ -43,7 +45,7 @@ class NamespaceMapEntry implements \Serializable
         $this->lineno = $lineno;
     }
 
-    public function serialize() : string
+    public function serialize(): string
     {
         return \serialize([
             \get_class($this->fqsen),
@@ -59,7 +61,7 @@ class NamespaceMapEntry implements \Serializable
      * @suppress PhanAccessReadOnlyProperty TODO fix #3179
      * @suppress PhanParamSignatureRealMismatchHasNoParamTypeInternal, PhanUnusedSuppression parameter type widening was allowed in php 7.2, signature changed in php 8
      */
-    public function unserialize($representation) : void
+    public function unserialize($representation): void
     {
         [$fqsen_class, $fqsen, $this->original_name, $this->lineno, $this->is_used] = \unserialize($representation);
         if (!\is_string($fqsen_class)) {

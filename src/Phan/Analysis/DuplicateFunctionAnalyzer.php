@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Analysis;
 
@@ -19,7 +21,7 @@ class DuplicateFunctionAnalyzer
     public static function analyzeDuplicateFunction(
         CodeBase $code_base,
         FunctionInterface $method
-    ) : void {
+    ): void {
         $fqsen = $method->getFQSEN();
 
         if (!$fqsen->isAlternate()) {

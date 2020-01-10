@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests\Language;
 
@@ -22,20 +24,20 @@ final class FQSENTest extends BaseTest
     /** @var Context the context within which this unit test will run */
     protected $context = null;
 
-    protected function setUp() : void
+    protected function setUp(): void
     {
         // Deliberately not calling parent::setUp()
         $this->context = new Context();
     }
 
-    protected function tearDown() : void
+    protected function tearDown(): void
     {
         // Deliberately not calling parent::tearDown()
         // @phan-suppress-next-line PhanTypeMismatchProperty
         $this->context = null;
     }
 
-    public function testFullyQualifiedClassName() : void
+    public function testFullyQualifiedClassName(): void
     {
         $this->assertFQSENEqual(
             FullyQualifiedClassName::make('Name\\Space', 'A'),
@@ -83,7 +85,7 @@ final class FQSENTest extends BaseTest
         );
     }
 
-    public function testFullyQualifiedMethodName() : void
+    public function testFullyQualifiedMethodName(): void
     {
         $this->assertFQSENEqual(
             FullyQualifiedMethodName::make(
@@ -130,7 +132,7 @@ final class FQSENTest extends BaseTest
         );
     }
 
-    public function testFullyQualifiedPropertyName() : void
+    public function testFullyQualifiedPropertyName(): void
     {
         $this->assertFQSENEqual(
             FullyQualifiedPropertyName::make(
@@ -177,7 +179,7 @@ final class FQSENTest extends BaseTest
         );
     }
 
-    public function testFullyQualifiedClassConstantName() : void
+    public function testFullyQualifiedClassConstantName(): void
     {
         $this->assertFQSENEqual(
             FullyQualifiedClassConstantName::make(
@@ -224,7 +226,7 @@ final class FQSENTest extends BaseTest
         );
     }
 
-    public function testFullyQualifiedGlobalConstantName() : void
+    public function testFullyQualifiedGlobalConstantName(): void
     {
         $this->assertFQSENEqual(
             FullyQualifiedGlobalConstantName::make(
@@ -261,7 +263,7 @@ final class FQSENTest extends BaseTest
         );
     }
 
-    public function testFullyQualifiedFunctionName() : void
+    public function testFullyQualifiedFunctionName(): void
     {
         $this->assertFQSENEqual(
             FullyQualifiedFunctionName::make(
@@ -304,7 +306,7 @@ final class FQSENTest extends BaseTest
     public function assertFQSENEqual(
         FQSEN $fqsen,
         string $string
-    ) : void {
+    ): void {
         $this->assertSame($string, (string)$fqsen);
     }
 }

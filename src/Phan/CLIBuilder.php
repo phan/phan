@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan;
 
@@ -26,7 +28,7 @@ class CLIBuilder
      *
      * @param string|list<string>|false $value
      */
-    public function setOption(string $opt, $value = false) : self
+    public function setOption(string $opt, $value = false): self
     {
         $this->opts[$opt] = $value;
         if (!\is_array($value)) {
@@ -50,7 +52,7 @@ class CLIBuilder
      * @throws ExitException
      * @throws UsageException
      */
-    public function build() : CLI
+    public function build(): CLI
     {
         return CLI::fromRawValues($this->opts, $this->argv);
     }
@@ -59,7 +61,7 @@ class CLIBuilder
      * Return options in the same format as the getopt() call returns.
      * @return associative-array<int|string,string|string[]|false>
      */
-    public function getOpts() : array
+    public function getOpts(): array
     {
         return $this->opts;
     }
@@ -68,7 +70,7 @@ class CLIBuilder
      * Return an array of arguments that correspond to what would cause getopt() to return $this->getOpts().
      * @return list<string>
      */
-    public function getArgv() : array
+    public function getArgv(): array
     {
         return $this->argv;
     }

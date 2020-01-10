@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\PluginV3;
 
@@ -29,5 +31,5 @@ interface BeforeAnalyzeFileCapability extends \Phan\PluginV2\BeforeAnalyzeFileCa
         Context $context,
         string $file_contents,
         Node $node
-    ) : void;
+    ): void;
 }

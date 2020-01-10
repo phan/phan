@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Phan\LanguageServer;
@@ -20,7 +21,7 @@ class Logger
     /**
      * Should this verbosely log debug output?
      */
-    public static function shouldLog() : bool
+    public static function shouldLog(): bool
     {
         return Config::getValue('language_server_debug_level') === 'info';
     }
@@ -29,7 +30,7 @@ class Logger
      * Logs a request received from the client
      * @param array<string,string> $headers
      */
-    public static function logRequest(array $headers, string $buffer) : void
+    public static function logRequest(array $headers, string $buffer): void
     {
         if (!self::shouldLog()) {
             return;
@@ -41,7 +42,7 @@ class Logger
      * Logs a response this is about to send back to the client
      * @param array<string,mixed> $headers
      */
-    public static function logResponse(array $headers, string $buffer) : void
+    public static function logResponse(array $headers, string $buffer): void
     {
         if (!self::shouldLog()) {
             return;
@@ -56,7 +57,7 @@ class Logger
      * This is used by code related to the language server.
      * Phan is slower when verbose logging is enabled.
      */
-    public static function logInfo(string $msg) : void
+    public static function logInfo(string $msg): void
     {
         if (!self::shouldLog()) {
             return;
@@ -69,7 +70,7 @@ class Logger
      * Logs an error related to the language server protocol
      * to the configured log file (defaults to STDERR)
      */
-    public static function logError(string $msg) : void
+    public static function logError(string $msg): void
     {
         $file = self::getLogFile();
         \fwrite($file, $msg . "\n");
@@ -92,7 +93,7 @@ class Logger
      * @param resource $new_file
      * @suppress PhanUnreferencedPublicMethod this is made available for debugging issues
      */
-    public static function setLogFile($new_file) : void
+    public static function setLogFile($new_file): void
     {
         if (!\is_resource($new_file)) {
             throw new \TypeError("Expected newFile to be a resource, got " . \gettype($new_file));

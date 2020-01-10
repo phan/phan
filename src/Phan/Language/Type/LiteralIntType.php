@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Type;
 
@@ -36,7 +38,7 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
     /**
      * @return LiteralIntType a unique LiteralIntType for $value (and the nullability)
      */
-    public static function instanceForValue(int $value, bool $is_nullable) : LiteralIntType
+    public static function instanceForValue(int $value, bool $is_nullable): LiteralIntType
     {
         if ($is_nullable) {
             static $nullable_cache = [];
@@ -50,12 +52,12 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
      * Returns the literal int that this type represents
      * (whether or not this type is nullable)
      */
-    public function getValue() : int
+    public function getValue(): int
     {
         return $this->value;
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         if ($this->is_nullable) {
             return '?' . $this->value;
@@ -71,13 +73,13 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
     /**
      * Called at the bottom of the file to ensure static properties are set for quick access.
      */
-    public static function init() : void
+    public static function init(): void
     {
         self::$non_nullable_int_type = IntType::instance(false);
         self::$nullable_int_type = IntType::instance(true);
     }
 
-    public function asNonLiteralType() : Type
+    public function asNonLiteralType(): Type
     {
         return $this->is_nullable ? self::$nullable_int_type : self::$non_nullable_int_type;
     }
@@ -86,36 +88,36 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
      * @return Type[]
      * @override
      */
-    public function withFlattenedArrayShapeOrLiteralTypeInstances() : array
+    public function withFlattenedArrayShapeOrLiteralTypeInstances(): array
     {
         return [$this->is_nullable ? self::$nullable_int_type : self::$non_nullable_int_type];
     }
 
-    public function hasArrayShapeOrLiteralTypeInstances() : bool
+    public function hasArrayShapeOrLiteralTypeInstances(): bool
     {
         return true;
     }
 
     /** @override */
-    public function isPossiblyFalsey() : bool
+    public function isPossiblyFalsey(): bool
     {
         return $this->is_nullable || !$this->value;
     }
 
     /** @override */
-    public function isAlwaysFalsey() : bool
+    public function isAlwaysFalsey(): bool
     {
         return !$this->value;
     }
 
     /** @override */
-    public function isPossiblyTruthy() : bool
+    public function isPossiblyTruthy(): bool
     {
         return (bool)$this->value;
     }
 
     /** @override */
-    public function isAlwaysTruthy() : bool
+    public function isAlwaysTruthy(): bool
     {
         return (bool)$this->value && !$this->is_nullable;
     }
@@ -125,7 +127,7 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
      * True if this Type can be cast to the given Type
      * cleanly
      */
-    protected function canCastToNonNullableType(Type $type) : bool
+    protected function canCastToNonNullableType(Type $type): bool
     {
         if ($type instanceof ScalarType) {
             switch ($type::NAME) {
@@ -175,7 +177,7 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
      * True if this Type can be cast to the given Type
      * cleanly
      */
-    protected function canCastToNonNullableTypeWithoutConfig(Type $type) : bool
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type): bool
     {
         if ($type instanceof ScalarType) {
             switch ($type::NAME) {
@@ -201,7 +203,7 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
      * @return bool
      * True if this Type is a subtype of the given type
      */
-    protected function isSubtypeOfNonNullableType(Type $type) : bool
+    protected function isSubtypeOfNonNullableType(Type $type): bool
     {
         if ($type instanceof ScalarType) {
             if ($type instanceof IntType) {
@@ -225,7 +227,7 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
      * A new type that is a copy of this type but with the
      * given nullability value.
      */
-    public function withIsNullable(bool $is_nullable) : Type
+    public function withIsNullable(bool $is_nullable): Type
     {
         if ($is_nullable === $this->is_nullable) {
             return $this;
@@ -243,17 +245,17 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
      * @param int $flags (e.g. \ast\flags\BINARY_IS_SMALLER)
      * @internal
      */
-    public function canSatisfyComparison($scalar, int $flags) : bool
+    public function canSatisfyComparison($scalar, int $flags): bool
     {
         return self::performComparison($this->value, $scalar, $flags);
     }
 
-    public function asSignatureType() : Type
+    public function asSignatureType(): Type
     {
         return IntType::instance($this->is_nullable);
     }
 
-    public function weaklyOverlaps(Type $other) : bool
+    public function weaklyOverlaps(Type $other): bool
     {
         // TODO: Could be stricter
         if ($other instanceof ScalarType) {
@@ -271,7 +273,7 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
         return parent::weaklyOverlaps($other);
     }
 
-    public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other) : bool
+    public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other): bool
     {
         if ($other instanceof LiteralIntType) {
             return $other->value === $this->value;

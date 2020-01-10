@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests\Language\Internal;
 
@@ -21,7 +23,7 @@ final class PropertyMapTest extends BaseTest
     // Matches a union type of 0 or more parts.
     const ONLY_UNION_TYPE_REGEX = '/^(' . UnionType::union_type_regex . ')?$/';
 
-    public function testPropertySignatureMap() : void
+    public function testPropertySignatureMap(): void
     {
         $map = require(\realpath(__DIR__) . '/../../../../src/Phan/Language/Internal/PropertyMap.php');
         $failures = [];
@@ -52,7 +54,7 @@ final class PropertyMapTest extends BaseTest
      * @param array<string,string> $signature
      * @param list<string> &$failures
      */
-    private static function checkPropertySignaturesOfClassName(string $class_name, array $signature, array &$failures) : void
+    private static function checkPropertySignaturesOfClassName(string $class_name, array $signature, array &$failures): void
     {
         $prev_prop_name = '';
         foreach ($signature as $prop_name => $value) {

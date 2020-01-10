@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Library\Hasher;
 
@@ -25,7 +27,7 @@ class Sequential implements Hasher
      * @param string $key (Used by sibling class Consistent) (@phan-unused-param)
      * @return int - an integer between 0 and $this->group_count - 1, inclusive
      */
-    public function getGroup(string $key) : int
+    public function getGroup(string $key): int
     {
         return ($this->counter++) % $this->group_count;
     }
@@ -33,7 +35,7 @@ class Sequential implements Hasher
     /**
      * Resets counter
      */
-    public function reset() : void
+    public function reset(): void
     {
         $this->counter = 1;
     }

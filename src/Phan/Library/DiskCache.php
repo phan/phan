@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Library;
 
@@ -41,7 +43,7 @@ class DiskCache implements Cache
     /**
      * Returns the path to the file used to cache $cache_key
      */
-    public function getPath(string $cache_key) : string
+    public function getPath(string $cache_key): string
     {
         return $this->directory . '/' . $cache_key . ($this->use_igbinary ? '-ig' : '') . $this->suffix;
     }
@@ -72,7 +74,7 @@ class DiskCache implements Cache
         }
     }
 
-    private function ensureDirectoryExists() : bool
+    private function ensureDirectoryExists(): bool
     {
         if ($this->directory_exists === null) {
             $this->directory_exists = false;
@@ -92,7 +94,7 @@ class DiskCache implements Cache
      * @param T $value
      * @return bool true if successfully saved
      */
-    public function save(string $key, $value) : bool
+    public function save(string $key, $value): bool
     {
         if (!$this->ensureDirectoryExists()) {
             return false;

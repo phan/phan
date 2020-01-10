@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Phan\LanguageServer\Protocol;
@@ -35,7 +36,7 @@ class Location
     /**
      * Callers should check $context->isPHPInternal() first
      */
-    public static function fromContext(FileRef $context) : Location
+    public static function fromContext(FileRef $context): Location
     {
         $path = Config::projectPath($context->getFile());
         $uri = Utils::pathToUri($path);
@@ -47,7 +48,7 @@ class Location
      * Creates a Location from the unserialized data
      * @param array{uri:string,range:array} $data
      */
-    public static function fromArray(array $data) : Location
+    public static function fromArray(array $data): Location
     {
         return new self($data['uri'], Range::fromArray($data['range']));
     }

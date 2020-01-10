@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Element;
 
@@ -106,7 +108,7 @@ class Func extends AddressableElement implements FunctionInterface
         Context $context,
         Type $closure_scope_type,
         Node $node
-    ) : ?FullyQualifiedClassName {
+    ): ?FullyQualifiedClassName {
         if ($node->kind !== ast\AST_CLOSURE) {
             return null;
         }
@@ -156,7 +158,7 @@ class Func extends AddressableElement implements FunctionInterface
         CodeBase $code_base,
         Node $node,
         FullyQualifiedFunctionName $fqsen
-    ) : Func {
+    ): Func {
         // Create the skeleton function object from what
         // we know so far
         $func = new Func(
@@ -275,7 +277,7 @@ class Func extends AddressableElement implements FunctionInterface
 
             // FIXME properly handle self/static in closures declared within methods.
             if ($union_type->hasSelfType()) {
-                $union_type = $union_type->makeFromFilter(static function (Type $type) : bool {
+                $union_type = $union_type->makeFromFilter(static function (Type $type): bool {
                     return !$type->isSelfType();
                 });
                 if ($context->isInClassScope()) {
@@ -306,7 +308,7 @@ class Func extends AddressableElement implements FunctionInterface
         return $func;
     }
 
-    public function getFQSEN() : FullyQualifiedFunctionName
+    public function getFQSEN(): FullyQualifiedFunctionName
     {
         return $this->fqsen;
     }
@@ -316,7 +318,7 @@ class Func extends AddressableElement implements FunctionInterface
      * @phan-return \Generator<Func>
      * The set of all alternates to this function
      */
-    public function alternateGenerator(CodeBase $code_base) : \Generator
+    public function alternateGenerator(CodeBase $code_base): \Generator
     {
         $alternate_id = 0;
         $fqsen = $this->getFQSEN();
@@ -331,7 +333,7 @@ class Func extends AddressableElement implements FunctionInterface
      * @return string
      * A string representation of this function signature
      */
-    public function __toString() : string
+    public function __toString(): string
     {
         $string = '';
 
@@ -352,7 +354,7 @@ class Func extends AddressableElement implements FunctionInterface
      * @return bool
      * True if this function returns a reference
      */
-    public function returnsRef() : bool
+    public function returnsRef(): bool
     {
         return $this->getFlagsHasState(flags\FUNC_RETURNS_REF);
     }
@@ -361,7 +363,7 @@ class Func extends AddressableElement implements FunctionInterface
      * @return bool
      * True if this is a static closure or arrow func, such as `static fn() => $x`
      */
-    public function isStatic() : bool
+    public function isStatic(): bool
     {
         return $this->getFlagsHasState(flags\MODIFIER_STATIC);
     }
@@ -369,7 +371,7 @@ class Func extends AddressableElement implements FunctionInterface
     /**
      * @return bool Always false for global functions.
      */
-    public function isFromPHPDoc() : bool
+    public function isFromPHPDoc(): bool
     {
         return false;
     }
@@ -377,7 +379,7 @@ class Func extends AddressableElement implements FunctionInterface
     /**
      * True if this is a closure
      */
-    public function isClosure() : bool
+    public function isClosure(): bool
     {
         return $this->getFQSEN()->isClosure();
     }
@@ -386,7 +388,7 @@ class Func extends AddressableElement implements FunctionInterface
      * Returns a string that can be used as a standalone PHP stub for this global function.
      * @suppress PhanUnreferencedPublicMethod (toStubInfo is used by callers for more flexibility)
      */
-    public function toStub() : string
+    public function toStub(): string
     {
         [$namespace, $string] = $this->toStubInfo();
         $namespace_text = $namespace === '' ? '' : "$namespace ";
@@ -394,7 +396,7 @@ class Func extends AddressableElement implements FunctionInterface
         return $string;
     }
 
-    public function getMarkupDescription() : string
+    public function getMarkupDescription(): string
     {
         $fqsen = $this->getFQSEN();
         $namespace = \ltrim($fqsen->getNamespace(), '\\');
@@ -421,7 +423,7 @@ class Func extends AddressableElement implements FunctionInterface
      * Returns stub info for `tool/make_stubs`
      * @return array{0:string,1:string} [string $namespace, string $text]
      */
-    public function toStubInfo() : array
+    public function toStubInfo(): array
     {
         $fqsen = $this->getFQSEN();
         $stub = 'function ';
@@ -441,7 +443,7 @@ class Func extends AddressableElement implements FunctionInterface
         return [$namespace, $stub];
     }
 
-    public function getUnionTypeWithUnmodifiedStatic() : UnionType
+    public function getUnionTypeWithUnmodifiedStatic(): UnionType
     {
         return $this->getUnionType();
     }
@@ -452,7 +454,7 @@ class Func extends AddressableElement implements FunctionInterface
      * structural element (or something else for closures and callables)
      * @override
      */
-    public function getRepresentationForIssue(bool $show_args = false) : string
+    public function getRepresentationForIssue(bool $show_args = false): string
     {
         if ($this->isClosure()) {
             return $this->getStubForClosure();
@@ -460,13 +462,13 @@ class Func extends AddressableElement implements FunctionInterface
         return $this->getRepresentationForIssueInternal($show_args);
     }
 
-    private function getStubForClosure() : string
+    private function getStubForClosure(): string
     {
         $stub = 'Closure';
         if ($this->returnsRef()) {
             $stub .= '&';
         }
-        $stub .= '(' . \implode(', ', \array_map(static function (Parameter $parameter) : string {
+        $stub .= '(' . \implode(', ', \array_map(static function (Parameter $parameter): string {
             return $parameter->toStubString();
         }, $this->getRealParameterList())) . ')';
         if ($this->real_return_type && !$this->getRealReturnType()->isEmpty()) {
@@ -480,7 +482,7 @@ class Func extends AddressableElement implements FunctionInterface
      * The name of this structural element (without namespace/class),
      * or a string for FunctionLikeDeclarationType (or a closure) which lacks a real FQSEN
      */
-    public function getNameForIssue() : string
+    public function getNameForIssue(): string
     {
         if ($this->isClosure()) {
             return $this->getStubForClosure();

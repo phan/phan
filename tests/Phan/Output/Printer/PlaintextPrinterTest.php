@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests\Output\Printer;
 
@@ -17,13 +19,13 @@ use Symfony\Component\Console\Output\BufferedOutput;
 final class PlaintextPrinterTest extends BaseTest
 {
 
-    public function setUp()  : void
+    public function setUp(): void
     {
         Config::setValue('color_issue_messages', false);
         Colorizing::resetColorScheme();
     }
 
-    public function tearDown() : void
+    public function tearDown(): void
     {
         parent::tearDown();
         Config::setValue('color_issue_messages', false);
@@ -34,7 +36,7 @@ final class PlaintextPrinterTest extends BaseTest
     /**
      * Sanity check of output without color codes
      */
-    public function testPrintUncolorizedOutput() : void
+    public function testPrintUncolorizedOutput(): void
     {
         $actual_output = self::generatePhanOutput(
             new IssueInstance(Issue::fromType(Issue::UndeclaredVariableDim), 'dim.php', 10, ['varName']),
@@ -53,7 +55,7 @@ final class PlaintextPrinterTest extends BaseTest
     /**
      * Sanity check that the expected color codes are emitted.
      */
-    public function testPrintColorizedOutput() : void
+    public function testPrintColorizedOutput(): void
     {
         Config::setValue('color_issue_messages', true);
         $actual_output = self::generatePhanOutput(
@@ -71,7 +73,7 @@ final class PlaintextPrinterTest extends BaseTest
         $this->assertSame($expected_output, $actual_output);
     }
 
-    private static function generatePhanOutput(IssueInstance ...$instances) : string
+    private static function generatePhanOutput(IssueInstance ...$instances): string
     {
         $output = new BufferedOutput();
 
@@ -86,7 +88,7 @@ final class PlaintextPrinterTest extends BaseTest
     /**
      * Sanity check that the expected color codes are emitted.
      */
-    public function testPrintColorizedOutputSchemaEclipseDark() : void
+    public function testPrintColorizedOutputSchemaEclipseDark(): void
     {
         \putenv('PHAN_COLOR_SCHEME=eclipse_dark');
         Config::setValue('color_issue_messages', true);
@@ -101,7 +103,7 @@ final class PlaintextPrinterTest extends BaseTest
     /**
      * Sanity check that the expected color codes are emitted.
      */
-    public function testPrintColorizedOutputSchemaVim() : void
+    public function testPrintColorizedOutputSchemaVim(): void
     {
         \putenv('PHAN_COLOR_SCHEME=vim');
         Config::setValue('color_issue_messages', true);

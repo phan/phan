@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Exception;
 
@@ -42,7 +44,7 @@ class NodeException extends Exception
      *
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function getNode() : Node
+    public function getNode(): Node
     {
         return $this->node;
     }

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Phan\Language\Element\Comment;
@@ -25,7 +26,7 @@ class ReturnComment
     /**
      * Gets the type of this (at)return comment
      */
-    public function getType() : UnionType
+    public function getType(): UnionType
     {
         return $this->type;
     }
@@ -33,7 +34,7 @@ class ReturnComment
     /**
      * Sets the type of this (at)return comment
      */
-    public function setType(UnionType $type) : void
+    public function setType(UnionType $type): void
     {
         $this->type = $type;
     }
@@ -41,7 +42,7 @@ class ReturnComment
     /**
      * Gets the line number of this (at)return comment's declaration in PHPDoc
      */
-    public function getLineno() : int
+    public function getLineno(): int
     {
         return $this->lineno;
     }
@@ -49,7 +50,7 @@ class ReturnComment
     /**
      * Helper for debugging
      */
-    public function __toString() : string
+    public function __toString(): string
     {
         return "ReturnComment(type=$this->type)";
     }

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Phan\Language\Element\Comment;
@@ -62,7 +63,7 @@ class Property
      * @return string
      * The name of the property
      */
-    public function getName() : string
+    public function getName(): string
     {
         return $this->name;
     }
@@ -71,7 +72,7 @@ class Property
      * @return UnionType
      * The type of the property
      */
-    public function getUnionType() : UnionType
+    public function getUnionType(): UnionType
     {
         return $this->type;
     }
@@ -80,7 +81,7 @@ class Property
      * @return int
      * The line of the property
      */
-    public function getLine() : int
+    public function getLine(): int
     {
         return $this->line;
     }
@@ -89,12 +90,12 @@ class Property
      * @return int
      * The flags of the property
      */
-    public function getFlags() : int
+    public function getFlags(): int
     {
         return $this->flags;
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         $string = '';
 
