@@ -263,9 +263,6 @@ EOT;
 
         $cwd = \getcwd();
         [$project_directory_list, $project_file_list] = self::extractAutoloadFilesAndDirectories('', $composer_settings);
-        if ($vendor_path !== null && count($project_directory_list) === 0 && count($project_file_list) === 0) {
-            throw new UsageException('phan --init expects composer.json to contain "autoload" psr-4 directories', EXIT_FAILURE, UsageException::PRINT_INIT_ONLY);
-        }
         $minimum_severity = $is_weak_level ? Issue::SEVERITY_NORMAL : Issue::SEVERITY_LOW;
         if ($is_weakest_level) {
             $plugins = [];
@@ -397,6 +394,9 @@ EOT;
                 throw new UsageException("phan --init-analyze-file was given a missing/invalid relative file '$extra_file'", EXIT_FAILURE, UsageException::PRINT_INIT_ONLY);
             }
             $phan_file_list[] = $extra_file;
+        }
+        if ($vendor_path !== null && count($project_directory_list) === 0 && count($project_file_list) === 0 && count($phan_file_list) === 0 && count($phan_directory_list) === 0) {
+            throw new UsageException('phan --init expects composer.json to contain "autoload" psr-4 directories (and could not determine any directories or files to analyze)', EXIT_FAILURE, UsageException::PRINT_INIT_ONLY);
         }
 
         if (count($phan_file_list) === 0 && count($phan_directory_list) === 0) {

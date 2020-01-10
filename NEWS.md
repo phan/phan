@@ -7,6 +7,8 @@ New features(CLI, Configs):
 + Add an environment variable `PHAN_NO_UTF8=1` to always avoid UTF-8 in progress bars.
   This may help with terminals or logs that have issues with UTF-8 output.
   Error messages will continue to include UTF-8 when part of the error.
++ Allow `phan --init` to complete even if composer.json has no configured `autoload` directories,
+  as long as at least one directory or file was configured.
 
 New Features(Analysis):
 + Infer that merging defined variables with possibly undefined variables is also possibly undefined. (#1942)
