@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use Phan\CodeBase;
 use Phan\IssueInstance;
@@ -41,7 +43,7 @@ class PHPDocToRealTypesPlugin extends PluginV3 implements
     /**
      * @return array<string,Closure(CodeBase,FileCacheEntry,IssueInstance):(?FileEditSet)>
      */
-    public function getAutomaticFixers() : array
+    public function getAutomaticFixers(): array
     {
         require_once __DIR__ .  '/PHPDocToRealTypesPlugin/Fixers.php';
         $param_closure = Closure::fromCallable([Fixers::class, 'fixParamType']);
@@ -55,12 +57,12 @@ class PHPDocToRealTypesPlugin extends PluginV3 implements
         ];
     }
 
-    public function analyzeFunction(CodeBase $code_base, Func $function) : void
+    public function analyzeFunction(CodeBase $code_base, Func $function): void
     {
         self::analyzeFunctionLike($code_base, $function);
     }
 
-    public function analyzeMethod(CodeBase $unused_code_base, Method $method) : void
+    public function analyzeMethod(CodeBase $unused_code_base, Method $method): void
     {
         if ($method->isFromPHPDoc() || $method->isMagic() || $method->isPHPInternal()) {
             return;
@@ -71,7 +73,7 @@ class PHPDocToRealTypesPlugin extends PluginV3 implements
         $this->deferred_analysis_methods[$method->getFQSEN()->__toString()] = $method;
     }
 
-    public function beforeAnalyzePhase(CodeBase $code_base) : void
+    public function beforeAnalyzePhase(CodeBase $code_base): void
     {
         $ignore_overrides = (bool)getenv('PHPDOC_TO_REAL_TYPES_IGNORE_INHERITANCE');
         foreach ($this->deferred_analysis_methods as $method) {
@@ -84,7 +86,7 @@ class PHPDocToRealTypesPlugin extends PluginV3 implements
         }
     }
 
-    private static function analyzeFunctionLike(CodeBase $code_base, FunctionInterface $method) : void
+    private static function analyzeFunctionLike(CodeBase $code_base, FunctionInterface $method): void
     {
         if (Phan::isExcludedAnalysisFile($method->getContext()->getFile())) {
             // This has no side effects, so we can skip files that don't need to be analyzed
@@ -120,7 +122,7 @@ class PHPDocToRealTypesPlugin extends PluginV3 implements
         }
     }
 
-    private static function analyzeReturnTypeOfFunctionLike(CodeBase $code_base, FunctionInterface $method) : void
+    private static function analyzeReturnTypeOfFunctionLike(CodeBase $code_base, FunctionInterface $method): void
     {
         $union_type = $method->getUnionType();
         if ($union_type->isVoidType()) {

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use ast\Node;
 use Phan\Config;
@@ -47,7 +49,7 @@ final class EmptyStatementListPlugin extends PluginV3 implements PostAnalyzeNode
     /**
      * @return string - The name of the visitor that will be called.
      */
-    public static function getPostAnalyzeNodeVisitorClassName() : string
+    public static function getPostAnalyzeNodeVisitorClassName(): string
     {
         return EmptyStatementListVisitor::class;
     }
@@ -73,7 +75,7 @@ final class EmptyStatementListVisitor extends PluginAwarePostAnalysisVisitor
      * A node to analyze
      * @override
      */
-    public function visitIf(Node $node) : void
+    public function visitIf(Node $node): void
     {
         // @phan-suppress-next-line PhanUndeclaredProperty set by ASTSimplifier
         if (isset($node->is_simplified)) {
@@ -112,7 +114,7 @@ final class EmptyStatementListVisitor extends PluginAwarePostAnalysisVisitor
         );
     }
 
-    private function hasTODOComment(int $lineno, Node $analyzed_node, ?int $end_lineno = null) : bool
+    private function hasTODOComment(int $lineno, Node $analyzed_node, ?int $end_lineno = null): bool
     {
         if (EmptyStatementListPlugin::$ignore_todos) {
             return false;
@@ -132,7 +134,7 @@ final class EmptyStatementListVisitor extends PluginAwarePostAnalysisVisitor
         return false;
     }
 
-    private function findEndLine(int $lineno, Node $search_node) : int
+    private function findEndLine(int $lineno, Node $search_node): int
     {
         for ($node_index = count($this->parent_node_list) - 1; $node_index >= 0; $node_index--) {
             $node = $this->parent_node_list[$node_index] ?? null;
@@ -165,7 +167,7 @@ final class EmptyStatementListVisitor extends PluginAwarePostAnalysisVisitor
      * A node of kind ast\AST_FOR to analyze
      * @override
      */
-    public function visitFor(Node $node) : void
+    public function visitFor(Node $node): void
     {
         $stmts_node = $node->children['stmts'];
         if (!$stmts_node instanceof Node) {
@@ -194,7 +196,7 @@ final class EmptyStatementListVisitor extends PluginAwarePostAnalysisVisitor
      * A node to analyze
      * @override
      */
-    public function visitWhile(Node $node) : void
+    public function visitWhile(Node $node): void
     {
         $stmts_node = $node->children['stmts'];
         if (!$stmts_node instanceof Node) {
@@ -222,7 +224,7 @@ final class EmptyStatementListVisitor extends PluginAwarePostAnalysisVisitor
      * A node to analyze
      * @override
      */
-    public function visitDoWhile(Node $node) : void
+    public function visitDoWhile(Node $node): void
     {
         $stmts_node = $node->children['stmts'];
         if (!$stmts_node instanceof Node) {
@@ -250,7 +252,7 @@ final class EmptyStatementListVisitor extends PluginAwarePostAnalysisVisitor
      * A node to analyze
      * @override
      */
-    public function visitForeach(Node $node) : void
+    public function visitForeach(Node $node): void
     {
         $stmts_node = $node->children['stmts'];
         if (!$stmts_node instanceof Node) {
@@ -279,7 +281,7 @@ final class EmptyStatementListVisitor extends PluginAwarePostAnalysisVisitor
      * A node to analyze
      * @override
      */
-    public function visitTry(Node $node) : void
+    public function visitTry(Node $node): void
     {
         ['try' => $try_node, 'finally' => $finally_node] = $node->children;
         if (!$try_node->children) {
@@ -311,7 +313,7 @@ final class EmptyStatementListVisitor extends PluginAwarePostAnalysisVisitor
      * A node of kind ast\AST_SWITCH to analyze
      * @override
      */
-    public function visitSwitch(Node $node) : void
+    public function visitSwitch(Node $node): void
     {
         // Check all case statements and return if something that isn't a no-op is seen.
         foreach ($node->children['stmts']->children ?? [] as $c) {

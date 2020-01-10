@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Output;
 
@@ -16,7 +18,7 @@ interface IssueCollectorInterface
      * Collect issue
      * @param IssueInstance $issue
      */
-    public function collectIssue(IssueInstance $issue) : void;
+    public function collectIssue(IssueInstance $issue): void;
 
     /**
      * @return list<IssueInstance> the list of collected issues from calls to collectIssue()
@@ -29,10 +31,10 @@ interface IssueCollectorInterface
      *
      * @param list<string> $files - the relative paths to those files
      */
-    public function removeIssuesForFiles(array $files) : void;
+    public function removeIssuesForFiles(array $files): void;
 
     /**
      * Remove all collected issues.
      */
-    public function reset() : void;
+    public function reset(): void;
 }

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Output;
 
@@ -25,12 +27,12 @@ class HTML
     public static function htmlTemplate(
         string $template,
         array $template_parameters
-    ) : string {
+    ): string {
         $template = \htmlentities($template);
 
         $i = 0;
         /** @param list<string> $matches */
-        return \preg_replace_callback('/(\$?){([A-Z_]+)}|%[sdf]/', static function (array $matches) use ($template, $template_parameters, &$i) : string {
+        return \preg_replace_callback('/(\$?){([A-Z_]+)}|%[sdf]/', static function (array $matches) use ($template, $template_parameters, &$i): string {
             $j = $i++;
             if ($j >= \count($template_parameters)) {
                 \error_log("Missing argument for colorized output ($template), offset $j");

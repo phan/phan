@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use ast\Node;
 use Phan\AST\ASTReverter;
@@ -38,12 +40,12 @@ class StrictComparisonPlugin extends PluginV3 implements
      * @param CodeBase $code_base @phan-unused-param
      * @return array<string, Closure(CodeBase,Context,Func,array):void>
      */
-    public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array
+    public function getAnalyzeFunctionCallClosures(CodeBase $code_base): array
     {
         /**
          * @return Closure(CodeBase,Context,Func,array):void
          */
-        $make_callback = static function (int $index, string $index_name, int $min_args) : Closure {
+        $make_callback = static function (int $index, string $index_name, int $min_args): Closure {
             /**
              * @param list<Node|string|int|float> $args the nodes for the arguments to the invocation
              */
@@ -56,7 +58,7 @@ class StrictComparisonPlugin extends PluginV3 implements
                 $index,
                 $index_name,
                 $min_args
-) : void {
+): void {
                 if (count($args) < $min_args) {
                     return;
                 }
@@ -91,7 +93,7 @@ class StrictComparisonPlugin extends PluginV3 implements
      * @return string - The name of the visitor that will be called (formerly analyzeNode)
      * @override
      */
-    public static function getPostAnalyzeNodeVisitorClassName() : string
+    public static function getPostAnalyzeNodeVisitorClassName(): string
     {
         return StrictComparisonVisitor::class;
     }
@@ -108,7 +110,7 @@ class StrictComparisonVisitor extends PluginAwarePostAnalysisVisitor
      *
      * @override
      */
-    public function visitBinaryOp(Node $node) : void
+    public function visitBinaryOp(Node $node): void
     {
         switch ($node->flags) {
             case ast\flags\BINARY_IS_EQUAL:
@@ -146,7 +148,7 @@ class StrictComparisonVisitor extends PluginAwarePostAnalysisVisitor
         }
     }
 
-    private function bothSidesArePossiblyObjects(Node $node) : bool
+    private function bothSidesArePossiblyObjects(Node $node): bool
     {
         ['left' => $left, 'right' => $right] = $node->children;
         if (!($left instanceof Node) || !($right instanceof Node)) {

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use Microsoft\PhpParser\Node\Expression\CallExpression;
 use Microsoft\PhpParser\Node\QualifiedName;
@@ -17,11 +19,12 @@ use Phan\Plugin\Internal\IssueFixingPlugin\IssueFixer;
  *
  * This is a prototype, there are various features it does not implement.
  */
-call_user_func(static function () : void {
+
+call_user_func(static function (): void {
     /**
      * @return ?FileEditSet
      */
-    $fix = static function (CodeBase $code_base, FileCacheEntry $contents, IssueInstance $instance) : ?FileEditSet {
+    $fix = static function (CodeBase $code_base, FileCacheEntry $contents, IssueInstance $instance): ?FileEditSet {
         $line = $instance->getLine();
         $expected_name = $instance->getTemplateParameters()[0];
         $edits = [];

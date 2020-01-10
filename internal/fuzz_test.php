@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -12,7 +13,7 @@ class FuzzTest
     /**
      * @return array<string,string>
      */
-    private static function readFileContents(string $basename) : array
+    private static function readFileContents(string $basename): array
     {
         $files = glob("$basename/*.php");
         $result = [];
@@ -78,7 +79,7 @@ class FuzzTest
         }
     }
 
-    private static function tokensToString(array $tokens) : string
+    private static function tokensToString(array $tokens): string
     {
         $result = '';
         foreach ($tokens as $token) {

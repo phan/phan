@@ -1,10 +1,13 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\AST\Visitor;
 
 use AssertionError;
 use ast\Node;
 use Phan\Debug;
+
 use const STDERR;
 
 /**

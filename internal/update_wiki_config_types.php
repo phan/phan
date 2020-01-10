@@ -1,5 +1,6 @@
 #!/usr/bin/env php
 <?php
+
 declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/vendor/autoload.php';
@@ -177,7 +178,7 @@ class ConfigEntry
     /**
      * @return string the configuration setting name (e.g. `null_casts_as_any_type`)
      */
-    public function getConfigName() : string
+    public function getConfigName(): string
     {
         return $this->config_name;
     }
@@ -185,7 +186,7 @@ class ConfigEntry
     /**
      * Returns a markdown description for this issue type
      */
-    public function getMarkdown() : string
+    public function getMarkdown(): string
     {
         $result = '';
         foreach ($this->lines as $line) {
@@ -195,7 +196,7 @@ class ConfigEntry
         $result = preg_replace_callback(
             '@(?<!\[)`([A-Za-z_0-9]+)`@',
             /** @param array{0:string,1:string} $matches */
-            function (array $matches) : string {
+            function (array $matches): string {
                 [$markdown, $name] = $matches;
                 if ($name !== $this->config_name && isset(Config::DEFAULT_CONFIGURATION[$name])) {
                     return sprintf('[%s](#%s)', $markdown, $name);
@@ -211,7 +212,7 @@ class ConfigEntry
      * @return list<string> the raw lines
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function getLines() : array
+    public function getLines(): array
     {
         return $this->lines;
     }
@@ -219,7 +220,7 @@ class ConfigEntry
     /**
      * @return string the name of the category
      */
-    public function getCategory() : string
+    public function getCategory(): string
     {
         return $this->category;
     }
@@ -228,7 +229,7 @@ class ConfigEntry
      * @return int a value used to group config settings into categories of the documentation that will be generated.
      * Categories are output in the order of the index value.
      */
-    public function getCategoryIndex() : int
+    public function getCategoryIndex(): int
     {
         $category_index = array_search($this->category, ConfigEntry::ORDER_OF_CATEGORIES, true);
         return is_int($category_index) ? $category_index : 99999;
@@ -237,7 +238,7 @@ class ConfigEntry
     /**
      * Is this config setting hidden from the generated markdown document?
      */
-    public function isHidden() : bool
+    public function isHidden(): bool
     {
         if (strncmp($this->config_name, '__', 2) === 0) {
             return true;
@@ -248,7 +249,7 @@ class ConfigEntry
     /**
      * @return string a markdown representation of the default value of this config setting.
      */
-    public function getRepresentationOfDefault() : string
+    public function getRepresentationOfDefault(): string
     {
         if ($this->config_name === 'minimum_severity') {
             return '`Issue::SEVERITY_LOW`';
@@ -270,7 +271,7 @@ class WikiConfigUpdater
      */
     private static $verbose = false;
 
-    private static function printUsageAndExit(int $exit_code = 1) : void
+    private static function printUsageAndExit(int $exit_code = 1): void
     {
         global $argv;
         $program = $argv[0];
@@ -285,7 +286,7 @@ EOT;
     /**
      * @return array<string,ConfigEntry>
      */
-    private static function getSortedConfigMap() : array
+    private static function getSortedConfigMap(): array
     {
         $map = Initializer::computeCommentNameDocumentationMap();
         $results = [];
@@ -296,7 +297,7 @@ EOT;
             }
             $results[$config_name] = $entry;
         }
-        uasort($results, static function (ConfigEntry $a, ConfigEntry $b) : int {
+        uasort($results, static function (ConfigEntry $a, ConfigEntry $b): int {
             return
                 $a->getCategoryIndex() <=> $b->getCategoryIndex() ?:
                 strcasecmp($a->getCategory(), $b->getCategory()) ?:
@@ -309,7 +310,7 @@ EOT;
      * @return array<string,string> maps section header to the contents for that section header
      * TODO: Deduplicate
      */
-    private static function extractOldTextForSections(string $wiki_filename) : array
+    private static function extractOldTextForSections(string $wiki_filename): array
     {
         if (!file_exists($wiki_filename)) {
             fwrite(STDERR, "Failed to locate '$wiki_filename'\n");
@@ -342,7 +343,7 @@ EOT;
      * Updates the markdown document of issue types with minimal documentation of missing issue types.
      * @throws InvalidArgumentException (uncaught) if the documented issue types can't be found.
      */
-    public static function main() : void
+    public static function main(): void
     {
         global $argv;
         if (count($argv) !== 1) {
@@ -387,7 +388,7 @@ EOT;
      * @param array<string,string> $old_text_for_section
      * @throws InvalidArgumentException
      */
-    private static function documentConfigCategorySection(WikiWriter $writer, ConfigEntry $config_entry, array $old_text_for_section) : void
+    private static function documentConfigCategorySection(WikiWriter $writer, ConfigEntry $config_entry, array $old_text_for_section): void
     {
         $category = $config_entry->getCategory();
         if (!$category) {
@@ -407,7 +408,7 @@ EOT;
         }
     }
 
-    private static function documentConfig(WikiWriter $writer, ConfigEntry $config_entry) : void
+    private static function documentConfig(WikiWriter $writer, ConfigEntry $config_entry): void
     {
         $header = '## ' . $config_entry->getConfigName();
 
@@ -426,7 +427,7 @@ EOT;
         $writer->append($placeholder);
     }
 
-    private static function debugLog(string $message) : void
+    private static function debugLog(string $message): void
     {
         // Uncomment the below line to enable debugging
         if (self::$verbose) {

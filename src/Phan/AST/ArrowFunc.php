@@ -1,10 +1,13 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\AST;
 
 use ast;
 use ast\Node;
 use InvalidArgumentException;
+
 use function is_string;
 
 /**
@@ -25,7 +28,7 @@ class ArrowFunc
      * @param Node $n a Node with kind ast\AST_ARROW_FUNC
      * @return associative-array<int|string, Node>
      */
-    public static function getUses(Node $n) : array
+    public static function getUses(Node $n): array
     {
         if ($n->kind !== ast\AST_ARROW_FUNC) {
             throw new InvalidArgumentException("Expected node kind AST_ARROW_FUNC but got " . ast\get_kind_name($n->kind));
@@ -37,7 +40,7 @@ class ArrowFunc
     /**
      * @return array<string|int,Node>
      */
-    private function computeUses(Node $n) : array
+    private function computeUses(Node $n): array
     {
         $stmts = $n->children['stmts'];
         if ($stmts instanceof Node) {  // should always be a node
@@ -58,12 +61,12 @@ class ArrowFunc
      * @param int|string $name the name of the variable being used by this arrow func.
      *                         may need to handle `${'0'}`?
      */
-    private function recordUse($name, Node $n) : void
+    private function recordUse($name, Node $n): void
     {
         $this->uses[$name] = $this->uses[$name] ?? $n;
     }
 
-    private function buildUses(Node $n) : void
+    private function buildUses(Node $n): void
     {
         switch ($n->kind) {
             case ast\AST_VAR:
@@ -107,7 +110,7 @@ class ArrowFunc
     /**
      * Record that variable $variable_name exists in the outer scope of the arrow function with node $n
      */
-    public static function recordVariableExistsInOuterScope(Node $n, string $variable_name) : void
+    public static function recordVariableExistsInOuterScope(Node $n, string $variable_name): void
     {
         if ($n->kind !== ast\AST_ARROW_FUNC) {
             throw new InvalidArgumentException("Expected node kind AST_ARROW_FUNC but got " . ast\get_kind_name($n->kind));

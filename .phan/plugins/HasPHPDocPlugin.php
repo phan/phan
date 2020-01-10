@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace HasPHPDocPlugin;
 
@@ -17,6 +19,7 @@ use Phan\PluginV3\AnalyzeClassCapability;
 use Phan\PluginV3\AnalyzeFunctionCapability;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
 use Phan\PluginV3\PostAnalyzeNodeCapability;
+
 use function array_shift;
 use function count;
 use function gettype;
@@ -26,6 +29,7 @@ use function ltrim;
 use function preg_match;
 use function strpos;
 use function ucfirst;
+
 use const JSON_UNESCAPED_SLASHES;
 use const JSON_UNESCAPED_UNICODE;
 
@@ -89,7 +93,7 @@ final class HasPHPDocPlugin extends PluginV3 implements
     public function analyzeClass(
         CodeBase $code_base,
         Clazz $class
-    ) : void {
+    ): void {
         if ($class->isAnonymous()) {
             // Probably not useful in many cases to document a short anonymous class.
             return;
@@ -132,7 +136,7 @@ final class HasPHPDocPlugin extends PluginV3 implements
     public function analyzeFunction(
         CodeBase $code_base,
         Func $function
-    ) : void {
+    ): void {
         $doc_comment = $function->getDocComment();
         if ($function->isPHPInternal()) {
             // This isn't user-defined, there's no reason to warn or way to change it.
@@ -173,12 +177,12 @@ final class HasPHPDocPlugin extends PluginV3 implements
      * Encode the doc comment in a one-line form that can be used in Phan's issue message.
      * @internal
      */
-    public static function getDocCommentRepresentation(string $doc_comment) : string
+    public static function getDocCommentRepresentation(string $doc_comment): string
     {
         return (string)json_encode(MarkupDescription::getDocCommentWithoutWhitespace($doc_comment), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 
-    public static function getPostAnalyzeNodeVisitorClassName() : string
+    public static function getPostAnalyzeNodeVisitorClassName(): string
     {
         return (bool)(Config::getValue('plugin_config')['has_phpdoc_check_duplicates'] ?? false)
             ? DuplicatePHPDocCheckerPlugin::class
@@ -190,7 +194,7 @@ final class HasPHPDocPlugin extends PluginV3 implements
 class BasePHPDocCheckerPlugin extends PluginAwarePostAnalysisVisitor
 {
     /** @return array{0:list<ClassElementEntry>,1:list<ClassElementEntry>} */
-    public function visitClass(Node $node) : array
+    public function visitClass(Node $node): array
     {
         $class = $this->context->getClassInScope($this->code_base);
         $property_descriptions = [];
@@ -220,7 +224,7 @@ class BasePHPDocCheckerPlugin extends PluginAwarePostAnalysisVisitor
     /**
      * @param Node $node a node of kind ast\AST_METHOD
      */
-    private function checkMethodDescription(Clazz $class, Node $node) : ?ClassElementEntry
+    private function checkMethodDescription(Clazz $class, Node $node): ?ClassElementEntry
     {
         $method_name = (string)$node->children['name'];
         $method = $class->getMethodByName($this->code_base, $method_name);
@@ -270,7 +274,7 @@ class BasePHPDocCheckerPlugin extends PluginAwarePostAnalysisVisitor
     /**
      * @param Node $node a node of type ast\AST_PROP_GROUP
      */
-    private function checkPropGroupDescription(Clazz $class, Node $node) : ?ClassElementEntry
+    private function checkPropGroupDescription(Clazz $class, Node $node): ?ClassElementEntry
     {
         $property_name = $node->children['props']->children[0]->children['name'] ?? null;
         if (!is_string($property_name)) {
@@ -332,7 +336,7 @@ final class ClassElementEntry
 final class DuplicatePHPDocCheckerPlugin extends BasePHPDocCheckerPlugin
 {
     /** No-op */
-    public function visitClass(Node $node) : array
+    public function visitClass(Node $node): array
     {
         [$property_descriptions, $method_descriptions] = parent::visitClass($node);
         foreach (self::findGroups($property_descriptions) as $entries) {
@@ -376,7 +380,7 @@ final class DuplicatePHPDocCheckerPlugin extends BasePHPDocCheckerPlugin
      * @param list<ClassElementEntry> $values
      * @return array<string, list<ClassElementEntry>>
      */
-    private static function findGroups(array $values) : array
+    private static function findGroups(array $values): array
     {
         $result = [];
         foreach ($values as $v) {

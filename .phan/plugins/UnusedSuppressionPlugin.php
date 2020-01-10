@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use ast\Node;
 use Phan\CodeBase;
@@ -71,7 +73,7 @@ class UnusedSuppressionPlugin extends PluginV3 implements
     private static function analyzeAddressableElement(
         CodeBase $code_base,
         AddressableElement $element
-    ) : void {
+    ): void {
         // Get the set of suppressed issues on the element
         $suppress_issue_list =
             $element->getSuppressIssueList();
@@ -99,7 +101,7 @@ class UnusedSuppressionPlugin extends PluginV3 implements
         }
     }
 
-    private function postponeAnalysisOfElement(AddressableElement $element) : void
+    private function postponeAnalysisOfElement(AddressableElement $element): void
     {
         if (count($element->getSuppressIssueList()) === 0) {
             // There are no suppressions, so there's no reason to check this
@@ -119,7 +121,7 @@ class UnusedSuppressionPlugin extends PluginV3 implements
     public function analyzeClass(
         CodeBase $unused_code_base,
         Clazz $class
-    ) : void {
+    ): void {
         $this->postponeAnalysisOfElement($class);
     }
 
@@ -134,7 +136,7 @@ class UnusedSuppressionPlugin extends PluginV3 implements
     public function analyzeMethod(
         CodeBase $unused_code_base,
         Method $method
-    ) : void {
+    ): void {
 
         // Ignore methods inherited by subclasses
         if ($method->getFQSEN() !== $method->getDefiningFQSEN()) {
@@ -155,7 +157,7 @@ class UnusedSuppressionPlugin extends PluginV3 implements
     public function analyzeFunction(
         CodeBase $unused_code_base,
         Func $function
-    ) : void {
+    ): void {
         $this->postponeAnalysisOfElement($function);
     }
 
@@ -170,7 +172,7 @@ class UnusedSuppressionPlugin extends PluginV3 implements
     public function analyzeProperty(
         CodeBase $unused_code_base,
         Property $property
-    ) : void {
+    ): void {
         $this->elements_for_postponed_analysis[] = $property;
     }
 
@@ -180,7 +182,7 @@ class UnusedSuppressionPlugin extends PluginV3 implements
      *       Putting this hook in finalizeProcess() just minimizes the incorrect result counts.
      * @override
      */
-    public function finalizeProcess(CodeBase $code_base) : void
+    public function finalizeProcess(CodeBase $code_base): void
     {
         foreach ($this->elements_for_postponed_analysis as $element) {
             self::analyzeAddressableElement($code_base, $element);
@@ -188,7 +190,7 @@ class UnusedSuppressionPlugin extends PluginV3 implements
         $this->analyzePluginSuppressions($code_base);
     }
 
-    private function analyzePluginSuppressions(CodeBase $code_base) : void
+    private function analyzePluginSuppressions(CodeBase $code_base): void
     {
         $suppression_plugin_set = ConfigPluginSet::instance()->getSuppressionPluginSet();
         if (count($suppression_plugin_set) === 0) {
@@ -205,17 +207,17 @@ class UnusedSuppressionPlugin extends PluginV3 implements
     /**
      * @return list<string>
      */
-    private static function getUnusedSuppressionIgnoreList() : array
+    private static function getUnusedSuppressionIgnoreList(): array
     {
         return Config::getValue('plugin_config')['unused_suppression_ignore_list'] ?? [];
     }
 
-    private static function getReportOnlyWhitelisted() : bool
+    private static function getReportOnlyWhitelisted(): bool
     {
         return Config::getValue('plugin_config')['unused_suppression_whitelisted_only'] ?? false;
     }
 
-    private static function shouldReportUnusedSuppression(string $issue_type) : bool
+    private static function shouldReportUnusedSuppression(string $issue_type): bool
     {
         $ignore_list = self::getUnusedSuppressionIgnoreList();
         $only_whitelisted = self::getReportOnlyWhitelisted();
@@ -225,7 +227,7 @@ class UnusedSuppressionPlugin extends PluginV3 implements
             (!$only_whitelisted || in_array($issue_type, $issue_whitelist, true));
     }
 
-    private function analyzePluginSuppressionsForFile(CodeBase $code_base, SuppressionCapability $plugin, string $relative_file_path) : void
+    private function analyzePluginSuppressionsForFile(CodeBase $code_base, SuppressionCapability $plugin, string $relative_file_path): void
     {
         $absolute_file_path = Config::projectPath($relative_file_path);
         $plugin_class = \get_class($plugin);
@@ -276,7 +278,7 @@ class UnusedSuppressionPlugin extends PluginV3 implements
         Context $context,
         string $unused_file_contents,
         Node $unused_node
-    ) : void {
+    ): void {
         $file = $context->getFile();
         $this->files_for_postponed_analysis[$file] = $file;
     }
@@ -290,7 +292,7 @@ class UnusedSuppressionPlugin extends PluginV3 implements
         string $file_path,
         string $issue_type,
         int $line
-    ) : void {
+    ): void {
         $file_name = Config::projectPath($file_path);
         $plugin_class = \get_class($plugin);
         $this->plugin_active_suppression_list[$plugin_class][$file_name][$issue_type][$line] = $line;

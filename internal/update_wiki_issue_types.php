@@ -1,5 +1,6 @@
 #!/usr/bin/env php
 <?php
+
 declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/vendor/autoload.php';
@@ -20,7 +21,7 @@ class WikiIssueTypeUpdater
     /** @var array<string,array>|null an example for a subset of the issue types */
     private static $examples;
 
-    private static function printUsageAndExit(int $exit_code = 1) : void
+    private static function printUsageAndExit(int $exit_code = 1): void
     {
         global $argv;
         $program = $argv[0];
@@ -35,10 +36,10 @@ EOT;
     /**
      * @return array<string,Issue>
      */
-    private static function getSortedIssueMap() : array
+    private static function getSortedIssueMap(): array
     {
         $map = Issue::issueMap();
-        uasort($map, static function (Issue $lhs, Issue $rhs) : int {
+        uasort($map, static function (Issue $lhs, Issue $rhs): int {
             // Order by category, then by the issue name (natural order)
             return ($lhs->getCategory() <=> $rhs->getCategory())
                 // ?: ($rhs->getSeverity() <=> $lhs->getSeverity())
@@ -50,7 +51,7 @@ EOT;
     /**
      * @return array<string,string> maps section header to the contents for that section header
      */
-    private static function extractOldTextForSections(string $wiki_filename) : array
+    private static function extractOldTextForSections(string $wiki_filename): array
     {
         if (!file_exists($wiki_filename)) {
             fwrite(STDERR, "Failed to locate '$wiki_filename'\n");
@@ -83,7 +84,7 @@ EOT;
      * Updates the markdown document of issue types with minimal documentation of missing issue types.
      * @throws InvalidArgumentException (uncaught) if the documented issue types can't be found.
      */
-    public static function main() : void
+    public static function main(): void
     {
         global $argv;
         if (count($argv) !== 1) {
@@ -129,7 +130,7 @@ EOT;
      * @param array<string,string> $old_text_for_section
      * @throws InvalidArgumentException
      */
-    private static function documentIssueCategorySection(WikiWriter $writer, Issue $issue, array $old_text_for_section) : void
+    private static function documentIssueCategorySection(WikiWriter $writer, Issue $issue, array $old_text_for_section): void
     {
         $category = $issue->getCategory();
         if (!$category) {
@@ -152,7 +153,7 @@ EOT;
     /**
      * @param array<string,string> $old_text_for_section
      */
-    private static function documentIssue(WikiWriter $writer, Issue $issue, array $old_text_for_section) : void
+    private static function documentIssue(WikiWriter $writer, Issue $issue, array $old_text_for_section): void
     {
         // TODO: Print each severity as we see it?
         $header = '## ' . $issue->getType();
@@ -178,7 +179,7 @@ EOT;
         }
     }
 
-    private static function debugLog(string $message) : void
+    private static function debugLog(string $message): void
     {
         // Uncomment the below line to enable debugging
         if (self::$verbose) {
@@ -189,7 +190,7 @@ EOT;
     /**
      * Returns the section with an updated issue template string (if there already was an issue template)
      */
-    private static function updateTextForSection(string $text, string $header) : string
+    private static function updateTextForSection(string $text, string $header): string
     {
         $issue_map = Issue::issueMap();
         $issue_name = preg_replace('@^[# ]*@', '', $header);
@@ -198,7 +199,7 @@ EOT;
         if ($issue instanceof Issue) {
             self::debugLog("Found $issue_name\n");
             /** @param list<string> $unused_match */
-            $text = preg_replace_callback('@\n```\n[^\n]*\n```@', static function (array $unused_match) use ($issue) : string {
+            $text = preg_replace_callback('@\n```\n[^\n]*\n```@', static function (array $unused_match) use ($issue): string {
                 return "\n```\n{$issue->getTemplateRaw()}\n```";
             }, $text);
             if (!preg_match('@```php|https?://@i', $text)) {
@@ -216,7 +217,7 @@ EOT;
     /**
      * @param array{0:UnitTestRecord,1:int,2:int} $example
      */
-    private static function textForExample(array $example) : string
+    private static function textForExample(array $example): string
     {
         [$record, $src_file_lineno, $expected_file_lineno] = $example;
         $src_url = preg_replace('@.*/tests/@', 'https://github.com/phan/phan/tree/master/tests/', $record->src_filename);
@@ -232,7 +233,7 @@ EOT;
     /**
      * @return array<string,array>
      */
-    private static function findExamples() : array
+    private static function findExamples(): array
     {
         return self::$examples ?? self::$examples = self::calculateExamples();
     }
@@ -240,7 +241,7 @@ EOT;
     /**
      * @return array<string,array>
      */
-    private static function calculateExamples() : array
+    private static function calculateExamples(): array
     {
         // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
         $base = dirname(realpath(__DIR__));
@@ -271,7 +272,7 @@ EOT;
             }
         }
         // Put the longest files first, we overwrite issue names even if they were seen already
-        usort($records, static function (UnitTestRecord $a, UnitTestRecord $b) : int {
+        usort($records, static function (UnitTestRecord $a, UnitTestRecord $b): int {
             return (strlen($b->src_contents) <=> strlen($a->src_contents)) ?: strcmp($a->src_filename, $b->src_filename);
         });
 
@@ -318,7 +319,7 @@ class UnitTestRecord
      * Contains the file name, issue type, and issue description.
      * The array keys start with 1 (the line number of the expected file)
      */
-    public function getIssues() : array
+    public function getIssues(): array
     {
         $issues = [];
         foreach (explode("\n", $this->expected_contents) as $i => $line) {
@@ -336,7 +337,7 @@ class UnitTestRecord
         return $issues;
     }
 
-    private static function getContents(string $filename) : string
+    private static function getContents(string $filename): string
     {
         $contents = file_get_contents($filename);
         if (!is_string($contents)) {

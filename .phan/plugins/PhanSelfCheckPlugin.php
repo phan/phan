@@ -1,6 +1,10 @@
-<?php declare(strict_types=1);
+<?php
 
-namespace Phan\Plugin\PhanSelfCheckPlugin;  // Don't pollute the global namespace
+declare(strict_types=1);
+
+namespace Phan\Plugin\PhanSelfCheckPlugin;
+
+// Don't pollute the global namespace
 
 use ast\Node;
 use Closure;
@@ -17,6 +21,7 @@ use Phan\Library\ConversionSpec;
 use Phan\Library\StringUtil;
 use Phan\PluginV3;
 use Phan\PluginV3\AnalyzeFunctionCallCapability;
+
 use function count;
 use function is_string;
 
@@ -39,12 +44,12 @@ class PhanSelfCheckPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
      * @param CodeBase $code_base @phan-unused-param
      * @return Closure[]
      */
-    public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array
+    public function getAnalyzeFunctionCallClosures(CodeBase $code_base): array
     {
         /**
          * @return Closure(CodeBase, Context, FunctionInterface, list<mixed>):void
          */
-        $make_array_issue_callback = static function (int $fmt_index, int $arg_index) : Closure {
+        $make_array_issue_callback = static function (int $fmt_index, int $arg_index): Closure {
             /**
              * @param list<Node|string|int|float> $args the nodes for the arguments to the invocation
              */
@@ -56,7 +61,7 @@ class PhanSelfCheckPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
             ) use (
                 $fmt_index,
                 $arg_index
-) : void {
+): void {
                 if (\count($args) <= $fmt_index) {
                     return;
                 }
@@ -80,7 +85,7 @@ class PhanSelfCheckPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
          * @param int $arg_index the index of an array parameter expecting sequential arguments. This is >= $type_index.
          * @return Closure(CodeBase, Context, FunctionInterface, list<mixed>):void
          */
-        $make_type_and_parameters_callback = static function (int $type_index, int $arg_index) : Closure {
+        $make_type_and_parameters_callback = static function (int $type_index, int $arg_index): Closure {
             /**
              * @param list<Node|string|int|float> $args the nodes for the arguments to the invocation
              */
@@ -92,7 +97,7 @@ class PhanSelfCheckPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
             ) use (
                 $type_index,
                 $arg_index
-) : void {
+): void {
                 if (\count($args) <= $type_index) {
                     return;
                 }
@@ -120,7 +125,7 @@ class PhanSelfCheckPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
          * @param int $arg_index the index of an array parameter expecting variable arguments. This is >= $type_index.
          * @return Closure(CodeBase, Context, FunctionInterface, list<mixed>):void
          */
-        $make_type_and_varargs_callback = static function (int $type_index, int $arg_index) : Closure {
+        $make_type_and_varargs_callback = static function (int $type_index, int $arg_index): Closure {
             /**
              * @param list<Node|string|int|float> $args the nodes for the arguments to the invocation
              */
@@ -132,7 +137,7 @@ class PhanSelfCheckPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
             ) use (
                 $type_index,
                 $arg_index
-) : void {
+): void {
                 if (\count($args) <= $type_index) {
                     return;
                 }
@@ -192,7 +197,7 @@ class PhanSelfCheckPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
         return $results;
     }
 
-    private static function getIssueOrWarn(CodeBase $code_base, Context $context, FunctionInterface $function, string $issue_type) : ?Issue
+    private static function getIssueOrWarn(CodeBase $code_base, Context $context, FunctionInterface $function, string $issue_type): ?Issue
     {
         try {
             return Issue::fromType($issue_type);
@@ -208,7 +213,7 @@ class PhanSelfCheckPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
         }
     }
 
-    private static function checkIssueTemplateUsage(CodeBase $code_base, Context $context, string $issue_message_template, int $issue_message_arg_count) : void
+    private static function checkIssueTemplateUsage(CodeBase $code_base, Context $context, string $issue_message_template, int $issue_message_arg_count): void
     {
         $issue_message_format_string = Issue::templateToFormatString($issue_message_template);
         $expected_arg_count = ConversionSpec::computeExpectedArgumentCount($issue_message_format_string);
@@ -239,7 +244,7 @@ class PhanSelfCheckPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
     /**
      * @param Node|mixed $arg
      */
-    private static function computeArraySize(CodeBase $code_base, Context $context, $arg) : ?int
+    private static function computeArraySize(CodeBase $code_base, Context $context, $arg): ?int
     {
         if ($arg === null) {
             return 0;

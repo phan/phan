@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\AST\TolerantASTConverter;
 
@@ -73,7 +75,7 @@ final class StringUtil
      *
      * @return string The parsed string
      */
-    public static function parse(string $str) : string
+    public static function parse(string $str): string
     {
         $c = $str[0];
         if ($c === '<') {
@@ -103,7 +105,7 @@ final class StringUtil
      * Converts a fragment of raw (possibly indented)
      * heredoc to the string that the PHP interpreter would treat it as.
      */
-    public static function parseHeredoc(string $str) : string
+    public static function parseHeredoc(string $str): string
     {
         // TODO: handle dos newlines
         // TODO: Parse escape sequences
@@ -135,7 +137,7 @@ final class StringUtil
      * @return string String with escape sequences parsed
      * @throws InvalidNodeException for invalid code points
      */
-    public static function parseEscapeSequences($str, ?string $quote) : string
+    public static function parseEscapeSequences($str, ?string $quote): string
     {
         if (!is_string($str)) {
             // Invalid AST input; give up
@@ -150,7 +152,7 @@ final class StringUtil
             /**
              * @param list<string> $matches
              */
-            static function (array $matches) : string {
+            static function (array $matches): string {
                 $str = $matches[1];
 
                 if (isset(self::REPLACEMENTS[$str])) {
@@ -179,7 +181,7 @@ final class StringUtil
      *
      * @throws InvalidNodeException for invalid code points
      */
-    private static function codePointToUtf8(int $num) : string
+    private static function codePointToUtf8(int $num): string
     {
         if ($num <= 0x7F) {
             return chr($num);

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace PreferNamespaceUsePlugin;
 
@@ -28,7 +30,7 @@ class Fixers
         CodeBase $unused_code_base,
         FileCacheEntry $contents,
         IssueInstance $instance
-    ) : ?FileEditSet {
+    ): ?FileEditSet {
         $params = $instance->getTemplateParameters();
         $shorter_return_type = \ltrim((string)$params[1], '?');
         $method_name = $params[0];
@@ -47,7 +49,7 @@ class Fixers
         CodeBase $unused_code_base,
         FileCacheEntry $contents,
         IssueInstance $instance
-    ) : ?FileEditSet {
+    ): ?FileEditSet {
         $params = $instance->getTemplateParameters();
         $shorter_return_type = \ltrim((string)$params[2], '?');
         $method_name = (string)$params[1];
@@ -62,7 +64,7 @@ class Fixers
     private static function computeEditsForReturnTypeDeclaration(
         FunctionLike $declaration,
         string $shorter_return_type
-    ) : ?FileEditSet {
+    ): ?FileEditSet {
         // @phan-suppress-next-line PhanUndeclaredProperty
         $return_type_node = $declaration->returnType;
         if (!$return_type_node) {
@@ -82,7 +84,7 @@ class Fixers
         FunctionLike $declaration,
         string $param_name,
         string $shorter_param_type
-    ) : ?FileEditSet {
+    ): ?FileEditSet {
         // @phan-suppress-next-line PhanUndeclaredProperty
         $return_type_node = $declaration->returnType;
         if (!$return_type_node) {
@@ -115,7 +117,7 @@ class Fixers
         FileCacheEntry $contents,
         int $line,
         string $name
-    ) : ?FunctionLike {
+    ): ?FunctionLike {
         $candidates = [];
         foreach ($contents->getNodesAtLine($line) as $node) {
             if ($node instanceof FunctionDeclaration || $node instanceof MethodDeclaration) {

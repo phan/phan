@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use ast\Node;
 use Phan\Language\Context;
@@ -18,7 +20,7 @@ class LoopVariableReusePlugin extends PluginV3 implements PostAnalyzeNodeCapabil
      *
      * @override
      */
-    public static function getPostAnalyzeNodeVisitorClassName() : string
+    public static function getPostAnalyzeNodeVisitorClassName(): string
     {
         return LoopVariableReuseVisitor::class;
     }
@@ -40,7 +42,7 @@ class LoopVariableReuseVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @override checks for reuse of variables in a node of kind ast\AST_FOREACH
      */
-    public function visitForeach(Node $node) : Context
+    public function visitForeach(Node $node): Context
     {
         $this->findVariableReuse($this->extractLoopVariablesOfForeach($node));
         return $this->context;
@@ -49,7 +51,7 @@ class LoopVariableReuseVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @return array<string|int,Node>
      */
-    private function extractLoopVariablesOfForeach(Node $node) : array
+    private function extractLoopVariablesOfForeach(Node $node): array
     {
         return $this->extractVariables($node->children['key']) + $this->extractVariables($node->children['value']);
     }
@@ -57,7 +59,7 @@ class LoopVariableReuseVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @override checks for reuse of variables in a node of kind ast\AST_FOR
      */
-    public function visitFor(Node $node) : Context
+    public function visitFor(Node $node): Context
     {
         $this->findVariableReuse($this->extractLoopVariablesOfFor($node));
         return $this->context;
@@ -68,7 +70,7 @@ class LoopVariableReuseVisitor extends PluginAwarePostAnalysisVisitor
      * @return array<string|int,Node>
      * @suppress PhanAccessMethodInternal
      */
-    private function extractLoopVariablesOfFor(Node $node) : array
+    private function extractLoopVariablesOfFor(Node $node): array
     {
         $directions = RedundantConditionLoopCheck::extractComparisonDirections($node->children['cond']) +
             RedundantConditionLoopCheck::extractIncrementDirections($this->code_base, $this->context, $node->children['loop']);
@@ -82,7 +84,7 @@ class LoopVariableReuseVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @override checks for reuse of variables in a node of kind ast\AST_WHILE
      */
-    public function visitWhile(Node $node) : Context
+    public function visitWhile(Node $node): Context
     {
         $this->findVariableReuse($this->extractLoopVariablesOfWhile($node));
         return $this->context;
@@ -93,7 +95,7 @@ class LoopVariableReuseVisitor extends PluginAwarePostAnalysisVisitor
      * @return array<string|int,Node>
      * @suppress PhanAccessMethodInternal
      */
-    private function extractLoopVariablesOfWhile(Node $node) : array
+    private function extractLoopVariablesOfWhile(Node $node): array
     {
         $directions = RedundantConditionLoopCheck::extractComparisonDirections($node->children['cond']);
         if (!$directions) {
@@ -105,7 +107,7 @@ class LoopVariableReuseVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param array<string|int,Node> $variables
      */
-    private function findVariableReuse(array $variables) : void
+    private function findVariableReuse(array $variables): void
     {
         if (!$variables) {
             return;
@@ -145,7 +147,7 @@ class LoopVariableReuseVisitor extends PluginAwarePostAnalysisVisitor
      * @param array<string|int,Node> $variables
      * @param array<string|int,Node> $common_outer_variables
      */
-    private function warnCommonOuterVariables(array $variables, array $common_outer_variables) : void
+    private function warnCommonOuterVariables(array $variables, array $common_outer_variables): void
     {
         foreach ($common_outer_variables as $variable_name => $node) {
             $inner_node = $variables[$variable_name];
@@ -163,7 +165,7 @@ class LoopVariableReuseVisitor extends PluginAwarePostAnalysisVisitor
      * @param Node|string|int|float|null $node
      * @return array<int|string,Node> a list of all variable nodes in this foreach
      */
-    private function extractVariables($node) : array
+    private function extractVariables($node): array
     {
         if (!$node instanceof Node) {
             return [];

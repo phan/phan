@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use ast\Node;
 use Phan\Analysis\BlockExitStatusChecker;
@@ -34,7 +36,7 @@ final class UnreachableCodePlugin extends PluginV3 implements PostAnalyzeNodeCap
     /**
      * @return string - The name of the visitor that will be called (formerly analyzeNode)
      */
-    public static function getPostAnalyzeNodeVisitorClassName() : string
+    public static function getPostAnalyzeNodeVisitorClassName(): string
     {
         return UnreachableCodeVisitor::class;
     }
@@ -62,7 +64,7 @@ final class UnreachableCodeVisitor extends PluginAwarePostAnalysisVisitor
      * A node to analyze
      * @override
      */
-    public function visitStmtList(Node $node) : void
+    public function visitStmtList(Node $node): void
     {
         $child_nodes = $node->children;
 

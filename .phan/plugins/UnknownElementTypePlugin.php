@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use ast\Node;
 use Phan\AST\UnionTypeVisitor;
@@ -39,11 +41,11 @@ class UnknownElementTypePlugin extends PluginV3 implements
     /**
      * Returns true for array, ?array, and array|null
      */
-    private static function isRegularArray(UnionType $type) : bool
+    private static function isRegularArray(UnionType $type): bool
     {
-        return $type->hasTypeMatchingCallback(static function (Type $type) : bool {
+        return $type->hasTypeMatchingCallback(static function (Type $type): bool {
             return get_class($type) === ArrayType::class;
-        }) && !$type->hasTypeMatchingCallback(static function (Type $type) : bool {
+        }) && !$type->hasTypeMatchingCallback(static function (Type $type): bool {
             return get_class($type) !== ArrayType::class && !($type instanceof NullType);
         });
     }
@@ -59,7 +61,7 @@ class UnknownElementTypePlugin extends PluginV3 implements
     public function analyzeMethod(
         CodeBase $code_base,
         Method $method
-    ) : void {
+    ): void {
         if ($method->getFQSEN() !== $method->getRealDefiningFQSEN()) {
             return;
         }
@@ -76,7 +78,7 @@ class UnknownElementTypePlugin extends PluginV3 implements
         $inferred_types = [];
         foreach ($method->getParameterList() as $i => $parameter) {
             if ($parameter->getUnionType()->isEmpty()) {
-                $warning_closures[$i] = static function () use ($code_base, $parameter, $method, $i, &$inferred_types) : void {
+                $warning_closures[$i] = static function () use ($code_base, $parameter, $method, $i, &$inferred_types): void {
                     $suggestion = self::suggestionFromUnionType($inferred_types[$i] ?? null);
                     self::emitIssueAndSuggestion(
                         $code_base,
@@ -88,7 +90,7 @@ class UnknownElementTypePlugin extends PluginV3 implements
                     );
                 };
             } elseif (self::isRegularArray($parameter->getUnionType())) {
-                $warning_closures[$i] = static function () use ($code_base, $parameter, $method, $i, &$inferred_types) : void {
+                $warning_closures[$i] = static function () use ($code_base, $parameter, $method, $i, &$inferred_types): void {
                     $suggestion = self::suggestionFromUnionTypeNotRegularArray($inferred_types[$i] ?? null);
                     self::emitIssueAndSuggestion(
                         $code_base,
@@ -104,7 +106,7 @@ class UnknownElementTypePlugin extends PluginV3 implements
         if (!$warning_closures) {
             return;
         }
-        $this->deferred_checks[$method->getFQSEN()->__toString()] = static function (CodeBase $_) use ($warning_closures) : void {
+        $this->deferred_checks[$method->getFQSEN()->__toString()] = static function (CodeBase $_) use ($warning_closures): void {
             foreach ($warning_closures as $cb) {
                 $cb();
             }
@@ -113,7 +115,7 @@ class UnknownElementTypePlugin extends PluginV3 implements
             /**
              * @param list<mixed> $args
              */
-            static function (CodeBase $code_base, Context $context, Method $unused_method, array $args, Node $unused_node) use ($warning_closures, &$inferred_types) : void {
+            static function (CodeBase $code_base, Context $context, Method $unused_method, array $args, Node $unused_node) use ($warning_closures, &$inferred_types): void {
                 foreach ($warning_closures as $i => $_) {
                     $parameter = $args[$i] ?? null;
                     if ($parameter !== null) {
@@ -134,7 +136,7 @@ class UnknownElementTypePlugin extends PluginV3 implements
         );
     }
 
-    private static function suggestionFromUnionType(?UnionType $type) : ?Suggestion
+    private static function suggestionFromUnionType(?UnionType $type): ?Suggestion
     {
         if (!$type || $type->isEmpty()) {
             return null;
@@ -143,7 +145,7 @@ class UnknownElementTypePlugin extends PluginV3 implements
         return Suggestion::fromString("Types inferred after analysis: $type");
     }
 
-    private static function suggestionFromUnionTypeNotRegularArray(?UnionType $type) : ?Suggestion
+    private static function suggestionFromUnionTypeNotRegularArray(?UnionType $type): ?Suggestion
     {
         if (!$type || $type->isEmpty()) {
             return null;
@@ -161,7 +163,7 @@ class UnknownElementTypePlugin extends PluginV3 implements
         string $message_for_empty,
         string $issue_type_for_unknown_array,
         string $message_for_unknown_array
-    ) : void {
+    ): void {
         $union_type = $element->getUnionType();
         if ($union_type->isEmpty()) {
             $issue_type = $issue_type_for_empty;
@@ -172,7 +174,7 @@ class UnknownElementTypePlugin extends PluginV3 implements
         } else {
             return;
         }
-        $this->deferred_checks[$issue_type . ':' . $element->getFQSEN()->__toString()] = static function (CodeBase $code_base) use ($element, $issue_type, $message, $issue_type_for_unknown_array) : void {
+        $this->deferred_checks[$issue_type . ':' . $element->getFQSEN()->__toString()] = static function (CodeBase $code_base) use ($element, $issue_type, $message, $issue_type_for_unknown_array): void {
             $new_union_type = $element->getUnionType();
             $suggestion = null;
             if (!$new_union_type->isEmpty()) {
@@ -201,7 +203,7 @@ class UnknownElementTypePlugin extends PluginV3 implements
         string $message,
         array $args,
         ?Suggestion $suggestion
-    ) : void {
+    ): void {
         self::emitIssue(
             $code_base,
             $context,
@@ -227,7 +229,7 @@ class UnknownElementTypePlugin extends PluginV3 implements
     public function analyzeFunction(
         CodeBase $code_base,
         Func $function
-    ) : void {
+    ): void {
         // NOTE: Placeholders can be found in \Phan\Issue::uncolored_format_string_for_replace
         if ($function->getUnionType()->isEmpty()) {
             if ($function->getFQSEN()->isClosure()) {
@@ -237,7 +239,7 @@ class UnknownElementTypePlugin extends PluginV3 implements
                 $issue = 'PhanPluginUnknownFunctionReturnType';
                 $message = 'Function {FUNCTION} has no declared or inferred return type';
             }
-            $this->deferred_checks[$issue . ':' . $function->getFQSEN()->__toString()] = static function (CodeBase $code_base) use ($function, $issue, $message) : void {
+            $this->deferred_checks[$issue . ':' . $function->getFQSEN()->__toString()] = static function (CodeBase $code_base) use ($function, $issue, $message): void {
                 $new_union_type = $function->getUnionType();
                 $suggestion = self::suggestionFromUnionType($new_union_type);
                 self::emitIssue(
@@ -260,7 +262,7 @@ class UnknownElementTypePlugin extends PluginV3 implements
                 $issue = 'PhanPluginUnknownArrayFunctionReturnType';
                 $message = 'Function {FUNCTION} has a return type of array, but does not specify key or value types';
             }
-            $this->deferred_checks[$issue . ':' . $function->getFQSEN()->__toString()] = static function (CodeBase $code_base) use ($function, $issue, $message) : void {
+            $this->deferred_checks[$issue . ':' . $function->getFQSEN()->__toString()] = static function (CodeBase $code_base) use ($function, $issue, $message): void {
                 $new_union_type = $function->getUnionType();
                 $suggestion = self::suggestionFromUnionTypeNotRegularArray($new_union_type);
                 self::emitIssue(
@@ -287,7 +289,7 @@ class UnknownElementTypePlugin extends PluginV3 implements
                     $issue = 'PhanPluginUnknownFunctionParamType';
                     $message = 'Function {FUNCTION} has no declared or inferred return type for ${PARAMETER}';
                 }
-                $warning_closures[$i] = static function () use ($code_base, $issue, $message, $parameter, $function, $i, &$inferred_types) : void {
+                $warning_closures[$i] = static function () use ($code_base, $issue, $message, $parameter, $function, $i, &$inferred_types): void {
                     $suggestion = self::suggestionFromUnionType($inferred_types[$i] ?? null);
                     self::emitIssueAndSuggestion(
                         $code_base,
@@ -306,7 +308,7 @@ class UnknownElementTypePlugin extends PluginV3 implements
                     $issue = 'PhanPluginUnknownArrayFunctionParamType';
                     $message = 'Function {FUNCTION} has a parameter type of array for ${PARAMETER}, but does not specify any key types or value types';
                 }
-                $warning_closures[$i] = static function () use ($code_base, $issue, $message, $parameter, $function, $i, &$inferred_types) : void {
+                $warning_closures[$i] = static function () use ($code_base, $issue, $message, $parameter, $function, $i, &$inferred_types): void {
                     $suggestion = self::suggestionFromUnionType($inferred_types[$i] ?? null);
                     self::emitIssueAndSuggestion(
                         $code_base,
@@ -322,7 +324,7 @@ class UnknownElementTypePlugin extends PluginV3 implements
         if (!$warning_closures) {
             return;
         }
-        $this->deferred_checks[$function->getFQSEN()->__toString()] = static function (CodeBase $_) use ($warning_closures) : void {
+        $this->deferred_checks[$function->getFQSEN()->__toString()] = static function (CodeBase $_) use ($warning_closures): void {
             foreach ($warning_closures as $cb) {
                 $cb();
             }
@@ -331,7 +333,7 @@ class UnknownElementTypePlugin extends PluginV3 implements
             /**
              * @param list<mixed> $args
              */
-            static function (CodeBase $code_base, Context $context, Func $unused_function, array $args, Node $unused_node) use ($warning_closures, &$inferred_types) : void {
+            static function (CodeBase $code_base, Context $context, Func $unused_function, array $args, Node $unused_node) use ($warning_closures, &$inferred_types): void {
                 foreach ($warning_closures as $i => $_) {
                     $parameter = $args[$i] ?? null;
                     if ($parameter !== null) {
@@ -363,7 +365,7 @@ class UnknownElementTypePlugin extends PluginV3 implements
     public function analyzeProperty(
         CodeBase $_,
         Property $property
-    ) : void {
+    ): void {
         if ($property->getFQSEN() !== $property->getRealDefiningFQSEN()) {
             return;
         }
@@ -376,7 +378,7 @@ class UnknownElementTypePlugin extends PluginV3 implements
         );
     }
 
-    public function finalizeProcess(CodeBase $code_base) : void
+    public function finalizeProcess(CodeBase $code_base): void
     {
         foreach ($this->deferred_checks as $check) {
             $check($code_base);

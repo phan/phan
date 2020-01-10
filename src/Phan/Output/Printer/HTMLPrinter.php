@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Output\Printer;
 
@@ -20,7 +22,7 @@ final class HTMLPrinter implements IssuePrinterInterface
     /** @var OutputInterface an output that pylint formatted issues can be written to. */
     private $output;
 
-    public function print(IssueInstance $instance) : void
+    public function print(IssueInstance $instance): void
     {
         $issue = $instance->getIssue();
         $message = HTML::htmlTemplate(
@@ -56,7 +58,7 @@ final class HTMLPrinter implements IssuePrinterInterface
         $this->output->writeln("<p>$inner_html</p>");
     }
 
-    public function configureOutput(OutputInterface $output) : void
+    public function configureOutput(OutputInterface $output): void
     {
         $this->output = $output;
     }

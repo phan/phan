@@ -1,5 +1,7 @@
 #!/usr/bin/env php
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 /**
  * The MIT License (MIT)
@@ -40,9 +42,9 @@ dump_main();
  * Dumps a snippet provided as a command line argument
  * @throws Exception if it can't render the AST
  */
-function dump_main() : void
+function dump_main(): void
 {
-    $print_help = static function (int $exit_code) : void {
+    $print_help = static function (int $exit_code): void {
         global $argv;
         $help = <<<"EOB"
 Usage: php [--help|-h|help] [--php-ast|--php-ast-native|--php-ast-with-placeholders] {$argv[0]} 'snippet'
@@ -114,7 +116,7 @@ EOB;
 /**
  * Parses $expr and echoes the compact AST representation to stdout.
  */
-function dump_expr_as_ast(string $expr, bool $with_placeholders, bool $native) : void
+function dump_expr_as_ast(string $expr, bool $with_placeholders, bool $native): void
 {
     if ($native) {
         $ast_data = ast\parse_code($expr, \Phan\Config::AST_VERSION);
@@ -130,7 +132,7 @@ function dump_expr_as_ast(string $expr, bool $with_placeholders, bool $native) :
  * Parses $expr and echoes the tolerant-php-parser AST to stdout.
  * @throws Exception
  */
-function dump_expr(string $expr) : void
+function dump_expr(string $expr): void
 {
     // Instantiate new parser instance
     $parser = new Parser();

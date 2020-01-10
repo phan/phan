@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Output\Printer;
 
@@ -21,7 +23,7 @@ class JSONPrinter implements BufferedPrinterInterface
     /** @var list<array<string,mixed>> the issue data to be JSON encoded. */
     protected $messages = [];
 
-    public function print(IssueInstance $instance) : void
+    public function print(IssueInstance $instance): void
     {
         $issue = $instance->getIssue();
         $message = [
@@ -52,7 +54,7 @@ class JSONPrinter implements BufferedPrinterInterface
     }
 
     /** flush printer buffer */
-    public function flush() : void
+    public function flush(): void
     {
         // NOTE: Need to use OUTPUT_RAW for JSON.
         // Otherwise, error messages such as "...Unexpected << (T_SL)" don't get formatted properly (They get escaped into unparsable JSON)
@@ -64,7 +66,7 @@ class JSONPrinter implements BufferedPrinterInterface
         $this->messages = [];
     }
 
-    public function configureOutput(OutputInterface $output) : void
+    public function configureOutput(OutputInterface $output): void
     {
         $this->output = $output;
     }

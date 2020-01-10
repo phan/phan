@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use ast\Node;
 use Phan\CodeBase;
@@ -21,7 +23,7 @@ class WhitespacePlugin extends PluginV3 implements
     const Tab = 'PhanPluginWhitespaceTab';
     const WhitespaceTrailing = 'PhanPluginWhitespaceTrailing';
 
-    private static function calculateLine(string $contents, int $byte_offset) : int
+    private static function calculateLine(string $contents, int $byte_offset): int
     {
         return 1 + substr_count($contents, "\n", 0, $byte_offset);
     }
@@ -43,7 +45,7 @@ class WhitespacePlugin extends PluginV3 implements
         Context $context,
         string $file_contents,
         Node $node
-    ) : void {
+    ): void {
         if (!preg_match('/[\r\t]|[ \t]\r?$/m', $file_contents)) {
             // Typical case: no errors
             return;
@@ -79,7 +81,7 @@ class WhitespacePlugin extends PluginV3 implements
     /**
      * @return array<string,Closure(CodeBase,FileCacheEntry,IssueInstance):(?FileEditSet)>
      */
-    public function getAutomaticFixers() : array
+    public function getAutomaticFixers(): array
     {
         return require(__DIR__ . '/WhitespacePlugin/fixers.php');
     }

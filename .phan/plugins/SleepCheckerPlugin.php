@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use ast\Node;
 use Phan\AST\ContextNode;
@@ -25,7 +27,7 @@ class SleepCheckerPlugin extends PluginV3 implements PostAnalyzeNodeCapability
     /**
      * @return string - name of PluginAwarePostAnalysisVisitor subclass
      */
-    public static function getPostAnalyzeNodeVisitorClassName() : string
+    public static function getPostAnalyzeNodeVisitorClassName(): string
     {
         return SleepCheckerVisitor::class;
     }
@@ -48,7 +50,7 @@ class SleepCheckerVisitor extends PluginAwarePostAnalysisVisitor
      * A node to analyze
      * @override
      */
-    public function visitMethod(Node $node) : void
+    public function visitMethod(Node $node): void
     {
         if (strcasecmp('__sleep', (string)$node->children['name']) !== 0) {
             return;
@@ -64,7 +66,7 @@ class SleepCheckerVisitor extends PluginAwarePostAnalysisVisitor
      *
      * @param array<string,true> $sleep_properties
      */
-    private function warnAboutTransientSleepProperties(array $sleep_properties) : void
+    private function warnAboutTransientSleepProperties(array $sleep_properties): void
     {
         if (count($sleep_properties) === 0) {
             // Give up, failed to extract property names
@@ -110,7 +112,7 @@ class SleepCheckerVisitor extends PluginAwarePostAnalysisVisitor
      * @param Node|int|string|float|null $node
      * @param array<string,true> $sleep_properties
      */
-    private function analyzeStatementsOfSleep($node, array &$sleep_properties = []) : void
+    private function analyzeStatementsOfSleep($node, array &$sleep_properties = []): void
     {
         if (!($node instanceof Node)) {
             if (is_array($node)) {
@@ -145,7 +147,7 @@ class SleepCheckerVisitor extends PluginAwarePostAnalysisVisitor
      * @param int $lineno
      * @param array<string,true> $sleep_properties
      */
-    private function analyzeReturnValue($expr_node, int $lineno, array &$sleep_properties) : void
+    private function analyzeReturnValue($expr_node, int $lineno, array &$sleep_properties): void
     {
         $context = clone($this->context)->withLineNumberStart($lineno);
         if (!($expr_node instanceof Node)) {

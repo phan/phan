@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan;
 
@@ -22,7 +24,7 @@ final class Suggestion
     /**
      * Create a Suggestion suggesting $message
      */
-    public static function fromString(string $message) : Suggestion
+    public static function fromString(string $message): Suggestion
     {
         return new self($message);
     }
@@ -30,7 +32,7 @@ final class Suggestion
     /**
      * Contains the text of the suggestion to fix the issue
      */
-    public function getMessage() : string
+    public function getMessage(): string
     {
         return $this->message;
     }
@@ -38,7 +40,7 @@ final class Suggestion
     /**
      * Contains the text of the suggestion to fix the issue
      */
-    public function __toString() : string
+    public function __toString(): string
     {
         return $this->message;
     }
@@ -51,7 +53,7 @@ final class Suggestion
      * @param mixed $data
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function setInternalData($data) : void
+    public function setInternalData($data): void
     {
         $this->internal_data = $data;
     }

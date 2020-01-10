@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Output\Printer;
 
@@ -23,7 +25,7 @@ final class FilteringPrinter implements BufferedPrinterInterface
     /** @var IssuePrinterInterface the wrapped printer */
     private $printer;
 
-    private static function normalize(string $file) : string
+    private static function normalize(string $file): string
     {
         return \str_replace(\DIRECTORY_SEPARATOR, "//", $file);
     }
@@ -46,7 +48,7 @@ final class FilteringPrinter implements BufferedPrinterInterface
      * @param IssueInstance $instance
      * @override
      */
-    public function print(IssueInstance $instance) : void
+    public function print(IssueInstance $instance): void
     {
         $file = $instance->getDisplayedFile();
         if (!isset($this->file_set[self::normalize($file)])) {
@@ -59,7 +61,7 @@ final class FilteringPrinter implements BufferedPrinterInterface
      * @param OutputInterface $output
      * @override
      */
-    public function configureOutput(OutputInterface $output) : void
+    public function configureOutput(OutputInterface $output): void
     {
         $this->printer->configureOutput($output);
     }
@@ -67,7 +69,7 @@ final class FilteringPrinter implements BufferedPrinterInterface
     /**
      * @override
      */
-    public function flush() : void
+    public function flush(): void
     {
         if ($this->printer instanceof BufferedPrinterInterface) {
             $this->printer->flush();

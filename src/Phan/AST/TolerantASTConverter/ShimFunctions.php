@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\AST\TolerantASTConverter;
 
@@ -110,7 +112,7 @@ class ShimFunctions
      * Get a string representation of the AST kind value.
      * @see Parser::
      */
-    public static function getKindName(int $kind) : string
+    public static function getKindName(int $kind): string
     {
         $name = self::KIND_LOOKUP[$kind] ?? null;
         if (!$name) {

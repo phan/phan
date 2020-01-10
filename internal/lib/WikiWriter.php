@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -25,7 +26,7 @@ class WikiWriter
     /**
      * Append $text to the buffer of text to save.
      */
-    public function append(string $text) : void
+    public function append(string $text): void
     {
         $this->contents .= $text;
         if ($this->print_to_stdout) {
@@ -36,7 +37,7 @@ class WikiWriter
     /**
      * @return string the built up contents to save to the markdown file
      */
-    public function getContents() : string
+    public function getContents(): string
     {
         return $this->contents;
     }

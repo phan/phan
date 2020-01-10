@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use ast\Node;
 use Phan\AST\ASTHasher;
@@ -20,7 +22,7 @@ class DuplicateArrayKeyPlugin extends PluginV3 implements PostAnalyzeNodeCapabil
      * @return string - name of PluginAwarePostAnalysisVisitor subclass
      * @override
      */
-    public static function getPostAnalyzeNodeVisitorClassName() : string
+    public static function getPostAnalyzeNodeVisitorClassName(): string
     {
         return DuplicateArrayKeyVisitor::class;
     }
@@ -46,7 +48,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
      * A switch statement's case statement(AST_SWITCH_LIST) node to analyze
      * @override
      */
-    public function visitSwitchList(Node $node) : void
+    public function visitSwitchList(Node $node): void
     {
         $children = $node->children;
         if (count($children) <= 1) {
@@ -110,7 +112,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param array<mixed,mixed> $values_to_check scalar constant values of case statements
      */
-    private static function areAllSwitchCasesTheSameType(array $values_to_check) : bool
+    private static function areAllSwitchCasesTheSameType(array $values_to_check): bool
     {
         $categories = 0;
         foreach ($values_to_check as $value) {
@@ -144,7 +146,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
      * @param array<mixed, mixed> $values_to_check
      * @param list<mixed> $children an array of scalars
      */
-    private function extendedLooseEqualityCheck(array $values_to_check, array $children) : void
+    private function extendedLooseEqualityCheck(array $values_to_check, array $children): void
     {
         $numeric_set = [];
         $fuzzy_numeric_set = [];
@@ -181,7 +183,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
      * An array literal(AST_ARRAY) node to analyze
      * @override
      */
-    public function visitArray(Node $node) : void
+    public function visitArray(Node $node): void
     {
         $children = $node->children;
         if (count($children) <= 1) {
@@ -231,7 +233,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param int|string|float|bool|null $key
      */
-    private function warnAboutDuplicateArrayKey(Node $node, Node $entry, $key) : void
+    private function warnAboutDuplicateArrayKey(Node $node, Node $entry, $key): void
     {
         if (is_string($key) && strncmp($key, self::HASH_PREFIX, strlen(self::HASH_PREFIX)) === 0) {
             $this->emitPluginIssue(
@@ -266,7 +268,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
      * @param int|string|float|bool|null $key - The array key literal to be normalized.
      * @return string - The normalized representation.
      */
-    private static function normalizeSwitchKey($key) : string
+    private static function normalizeSwitchKey($key): string
     {
         if (is_int($key)) {
             return (string)$key;
@@ -284,7 +286,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
      * @param int|string|float|bool|null $key - The array key literal to be normalized.
      * @return string - The normalized representation.
      */
-    private static function normalizeKey($key) : string
+    private static function normalizeKey($key): string
     {
         if (is_int($key)) {
             return (string)$key;

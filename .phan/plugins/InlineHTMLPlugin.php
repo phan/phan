@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use ast\Node;
 use Phan\AST\Parser;
@@ -41,7 +43,7 @@ class InlineHTMLPlugin extends PluginV3 implements
         $this->blacklist_regex = $plugin_config['inline_html_blacklist_regex'] ?? null;
     }
 
-    private function shouldCheckFile(string $path) : bool
+    private function shouldCheckFile(string $path): bool
     {
         if ($this->blacklist_regex) {
             if (CLI::isPathMatchedByRegex($this->blacklist_regex, $path)) {
@@ -71,7 +73,7 @@ class InlineHTMLPlugin extends PluginV3 implements
         Context $context,
         string $file_contents,
         Node $node
-    ) : void {
+    ): void {
         $file = $context->getFile();
         if (!isset(self::$file_set_to_analyze[$file])) {
             // token_get_all is noticeably slow when there are a lot of files, so we check for the existence of echo statements in the parsed AST as a heuristic to avoid calling token_get_all.
@@ -109,7 +111,7 @@ class InlineHTMLPlugin extends PluginV3 implements
     /**
      * @param array{0:int,1:string,2:int} $token a token from token_get_all
      */
-    private function warnAboutInlineHTML(CodeBase $code_base, Context $context, array $token, int $i, int $n) : void
+    private function warnAboutInlineHTML(CodeBase $code_base, Context $context, array $token, int $i, int $n): void
     {
         if ($i === 0) {
             $issue = self::InlineHTMLLeading;
@@ -130,7 +132,7 @@ class InlineHTMLPlugin extends PluginV3 implements
         );
     }
 
-    private static function truncate(string $token) : string
+    private static function truncate(string $token): string
     {
         if (strlen($token) > 20) {
             return mb_substr($token, 0, 20) . "...";
@@ -143,7 +145,7 @@ class InlineHTMLPlugin extends PluginV3 implements
      *
      * @override
      */
-    public static function getPostAnalyzeNodeVisitorClassName() : string
+    public static function getPostAnalyzeNodeVisitorClassName(): string
     {
         return InlineHTMLVisitor::class;
     }

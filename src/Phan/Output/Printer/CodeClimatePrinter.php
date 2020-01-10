@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Output\Printer;
 
@@ -24,7 +26,7 @@ final class CodeClimatePrinter implements BufferedPrinterInterface
     /** @var list<array> a list of associative arrays with codeclimate issue fields. */
     private $messages = [];
 
-    public function print(IssueInstance $instance) : void
+    public function print(IssueInstance $instance): void
     {
         $this->messages[] = [
             'type' => 'issue',
@@ -43,7 +45,7 @@ final class CodeClimatePrinter implements BufferedPrinterInterface
         ];
     }
 
-    private static function mapSeverity(int $raw_severity) : string
+    private static function mapSeverity(int $raw_severity): string
     {
         $severity = self::CODECLIMATE_SEVERITY_INFO;
         switch ($raw_severity) {
@@ -59,7 +61,7 @@ final class CodeClimatePrinter implements BufferedPrinterInterface
     }
 
     /** flush printer buffer */
-    public function flush() : void
+    public function flush(): void
     {
 
         // See https://github.com/codeclimate/spec/blob/master/SPEC.md#output
@@ -71,7 +73,7 @@ final class CodeClimatePrinter implements BufferedPrinterInterface
         $this->messages = [];
     }
 
-    public function configureOutput(OutputInterface $output) : void
+    public function configureOutput(OutputInterface $output): void
     {
         $this->output = $output;
     }

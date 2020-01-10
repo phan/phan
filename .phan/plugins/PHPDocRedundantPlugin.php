@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use Phan\CodeBase;
 use Phan\IssueInstance;
@@ -36,12 +38,12 @@ class PHPDocRedundantPlugin extends PluginV3 implements
     const RedundantMethodComment = 'PhanPluginRedundantMethodComment';
     const RedundantReturnComment = 'PhanPluginRedundantReturnComment';
 
-    public function analyzeFunction(CodeBase $code_base, Func $function) : void
+    public function analyzeFunction(CodeBase $code_base, Func $function): void
     {
         self::analyzeFunctionLike($code_base, $function);
     }
 
-    public function analyzeMethod(CodeBase $code_base, Method $method) : void
+    public function analyzeMethod(CodeBase $code_base, Method $method): void
     {
         if ($method->isMagic() || $method->isPHPInternal()) {
             return;
@@ -55,7 +57,7 @@ class PHPDocRedundantPlugin extends PluginV3 implements
     /**
      * @suppress PhanAccessClassConstantInternal
      */
-    private static function isRedundantFunctionComment(FunctionInterface $method, string $doc_comment) : bool
+    private static function isRedundantFunctionComment(FunctionInterface $method, string $doc_comment): bool
     {
         $lines = explode("\n", $doc_comment);
         foreach ($lines as $line) {
@@ -118,7 +120,7 @@ class PHPDocRedundantPlugin extends PluginV3 implements
         return true;
     }
 
-    private static function analyzeFunctionLike(CodeBase $code_base, FunctionInterface $method) : void
+    private static function analyzeFunctionLike(CodeBase $code_base, FunctionInterface $method): void
     {
         if (Phan::isExcludedAnalysisFile($method->getContext()->getFile())) {
             // This has no side effects, so we can skip files that don't need to be analyzed
@@ -160,7 +162,7 @@ class PHPDocRedundantPlugin extends PluginV3 implements
         }
     }
 
-    private static function checkIsRedundantReturn(CodeBase $code_base, FunctionInterface $method, string $doc_comment) : void
+    private static function checkIsRedundantReturn(CodeBase $code_base, FunctionInterface $method, string $doc_comment): void
     {
         if (strpos($doc_comment, '@return') === false) {
             return;
@@ -215,7 +217,7 @@ class PHPDocRedundantPlugin extends PluginV3 implements
     /**
      * @return array<string,Closure(CodeBase,FileCacheEntry,IssueInstance):(?FileEditSet)>
      */
-    public function getAutomaticFixers() : array
+    public function getAutomaticFixers(): array
     {
         require_once __DIR__ .  '/PHPDocRedundantPlugin/Fixers.php';
         $function_like_fixer = Closure::fromCallable([Fixers::class, 'fixRedundantFunctionLikeComment']);

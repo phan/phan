@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\CodeBase;
 
@@ -33,7 +35,7 @@ class ClassMap
     /**
      * Record that the class this represents has the provided class constant.
      */
-    public function addClassConstant(ClassConstant $constant) : void
+    public function addClassConstant(ClassConstant $constant): void
     {
         $this->class_constant_map[
             $constant->getFQSEN()->getNameWithAlternateId()
@@ -43,7 +45,7 @@ class ClassMap
     /**
      * @return bool does this class have a constant with name $name
      */
-    public function hasClassConstantWithName(string $name) : bool
+    public function hasClassConstantWithName(string $name): bool
     {
         return isset($this->class_constant_map[$name]);
     }
@@ -51,7 +53,7 @@ class ClassMap
     /**
      * Gets the class constant $name of this class
      */
-    public function getClassConstantByName(string $name) : ClassConstant
+    public function getClassConstantByName(string $name): ClassConstant
     {
         return $this->class_constant_map[$name];
     }
@@ -59,7 +61,7 @@ class ClassMap
     /**
      * @return array<string,ClassConstant>
      */
-    public function getClassConstantMap() : array
+    public function getClassConstantMap(): array
     {
         return $this->class_constant_map;
     }
@@ -67,7 +69,7 @@ class ClassMap
     /**
      * Record that the class this represents has the provided property information
      */
-    public function addProperty(Property $property) : void
+    public function addProperty(Property $property): void
     {
         $this->property_map[
             $property->getFQSEN()->getNameWithAlternateId()
@@ -77,7 +79,7 @@ class ClassMap
     /**
      * Checks if the class this represents has a property with name $name
      */
-    public function hasPropertyWithName(string $name) : bool
+    public function hasPropertyWithName(string $name): bool
     {
         return isset($this->property_map[$name]);
     }
@@ -85,7 +87,7 @@ class ClassMap
     /**
      * Fetch information about the property (of the class this represents) with name $name
      */
-    public function getPropertyByName(string $name) : Property
+    public function getPropertyByName(string $name): Property
     {
         return $this->property_map[$name];
     }
@@ -93,7 +95,7 @@ class ClassMap
     /**
      * @return array<string,Property>
      */
-    public function getPropertyMap() : array
+    public function getPropertyMap(): array
     {
         return $this->property_map;
     }
@@ -101,7 +103,7 @@ class ClassMap
     /**
      * Records that the class that this represents has the provided method.
      */
-    public function addMethod(Method $method) : void
+    public function addMethod(Method $method): void
     {
         $this->method_map[\strtolower(
             $method->getFQSEN()->getNameWithAlternateId()
@@ -111,7 +113,7 @@ class ClassMap
     /**
      * Checks if the class that this represents has a method with name $name.
      */
-    public function hasMethodWithName(string $name) : bool
+    public function hasMethodWithName(string $name): bool
     {
         return isset($this->method_map[\strtolower($name)]);
     }
@@ -119,7 +121,7 @@ class ClassMap
     /**
      * Fetches the method signature with name $name of the class that this represents.
      */
-    public function getMethodByName(string $name) : Method
+    public function getMethodByName(string $name): Method
     {
         return $this->method_map[\strtolower($name)];
     }
@@ -127,7 +129,7 @@ class ClassMap
     /**
      * @return array<string,Method>
      */
-    public function getMethodMap() : array
+    public function getMethodMap(): array
     {
         return $this->method_map;
     }

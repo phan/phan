@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 use ast\Node;
@@ -20,7 +21,7 @@ class AvoidableGetterPlugin extends PluginV3 implements
     /**
      * @return class-string - name of PluginAwarePostAnalysisVisitor subclass
      */
-    public static function getPostAnalyzeNodeVisitorClassName() : string
+    public static function getPostAnalyzeNodeVisitorClassName(): string
     {
         return AvoidableGetterVisitor::class;
     }
@@ -37,7 +38,7 @@ class AvoidableGetterVisitor extends PluginAwarePostAnalysisVisitor
      */
     private $getter_to_property_map = [];
 
-    public function visitClass(Node $node) : void
+    public function visitClass(Node $node): void
     {
         if (!$this->context->isInClassScope()) {
             // should be impossible
@@ -73,7 +74,7 @@ class AvoidableGetterVisitor extends PluginAwarePostAnalysisVisitor
         $this->recursivelyCheck($node->children['stmts']);
     }
 
-    private function recursivelyCheck(Node $node) : void
+    private function recursivelyCheck(Node $node): void
     {
         switch ($node->kind) {
             // TODO: Handle phan-closure-scope.
@@ -104,7 +105,7 @@ class AvoidableGetterVisitor extends PluginAwarePostAnalysisVisitor
         }
     }
 
-    private function warnCanReplaceGetterWithProperty(Node $node, string $property_name) : void
+    private function warnCanReplaceGetterWithProperty(Node $node, string $property_name): void
     {
         $class = $this->context->getClassInScope($this->code_base);
         if ($class->isTrait()) {

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 // add all files in the project
@@ -27,7 +28,7 @@ foreach (['src', 'vendor', '.phan'] as $subdir) {
 // Include all files with suffix .php, excluding those found in the tests folder.
 $iterator = new CallbackFilterIterator(
     $iterators,
-    static function (SplFileInfo $file_info) : bool {
+    static function (SplFileInfo $file_info): bool {
         if ($file_info->getExtension() !== 'php') {
             return false;
         }

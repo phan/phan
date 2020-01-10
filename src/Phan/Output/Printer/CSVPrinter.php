@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Output\Printer;
 
@@ -20,7 +22,7 @@ final class CSVPrinter implements BufferedPrinterInterface
     /** @var resource in-memory stream for fputcsv() */
     private $stream;
 
-    public function print(IssueInstance $instance) : void
+    public function print(IssueInstance $instance): void
     {
         \fputcsv($this->stream, [
             $instance->getDisplayedFile(),
@@ -34,7 +36,7 @@ final class CSVPrinter implements BufferedPrinterInterface
     }
 
     /** flush printer buffer */
-    public function flush() : void
+    public function flush(): void
     {
         \fseek($this->stream, 0);
         $contents = \stream_get_contents($this->stream);
@@ -46,13 +48,13 @@ final class CSVPrinter implements BufferedPrinterInterface
         $this->initStream();
     }
 
-    public function configureOutput(OutputInterface $output) : void
+    public function configureOutput(OutputInterface $output): void
     {
         $this->output = $output;
         $this->initStream();
     }
 
-    private function initStream() : void
+    private function initStream(): void
     {
         // Because fputcsv works on file pointers we need to do a bit
         // of dancing around with a memory stream.

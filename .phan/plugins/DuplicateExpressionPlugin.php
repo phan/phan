@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 use ast\flags;
@@ -49,7 +50,7 @@ class DuplicateExpressionPlugin extends PluginV3 implements
     /**
      * @return class-string - name of PluginAwarePostAnalysisVisitor subclass
      */
-    public static function getPostAnalyzeNodeVisitorClassName() : string
+    public static function getPostAnalyzeNodeVisitorClassName(): string
     {
         return RedundantNodePostAnalysisVisitor::class;
     }
@@ -57,7 +58,7 @@ class DuplicateExpressionPlugin extends PluginV3 implements
     /**
      * @return class-string - name of PluginAwarePreAnalysisVisitor subclass
      */
-    public static function getPreAnalyzeNodeVisitorClassName() : string
+    public static function getPreAnalyzeNodeVisitorClassName(): string
     {
         return RedundantNodePreAnalysisVisitor::class;
     }
@@ -123,7 +124,7 @@ class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
      * @override
      * @suppress PhanAccessClassConstantInternal
      */
-    public function visitBinaryOp(Node $node) : void
+    public function visitBinaryOp(Node $node): void
     {
         $flags = $node->flags;
         if (!\array_key_exists($flags, self::REDUNDANT_BINARY_OP_SET)) {
@@ -185,7 +186,7 @@ class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
      * An assignment operation node to analyze
      * @override
      */
-    public function visitAssignRef(Node $node) : void
+    public function visitAssignRef(Node $node): void
     {
         $this->visitAssign($node);
     }
@@ -195,7 +196,7 @@ class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
      * An assignment operation node to analyze
      * @override
      */
-    public function visitAssign(Node $node) : void
+    public function visitAssign(Node $node): void
     {
         $var = $node->children['var'];
         $expr = $node->children['expr'];
@@ -240,7 +241,7 @@ class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
      * A binary operation node to analyze
      * @override
      */
-    public function visitConditional(Node $node) : void
+    public function visitConditional(Node $node): void
     {
         $cond_node = $node->children['cond'];
         $true_node_hash = ASTHasher::hash($node->children['true']);
@@ -288,7 +289,7 @@ class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param int|string $true_node_hash
      */
-    private function checkBinaryOpOfConditional(Node $cond_node, $true_node_hash) : void
+    private function checkBinaryOpOfConditional(Node $cond_node, $true_node_hash): void
     {
         if ($cond_node->flags !== ast\flags\BINARY_IS_NOT_IDENTICAL) {
             return;
@@ -309,7 +310,7 @@ class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param int|string $true_node_hash
      */
-    private function checkUnaryOpOfConditional(Node $cond_node, $true_node_hash) : void
+    private function checkUnaryOpOfConditional(Node $cond_node, $true_node_hash): void
     {
         if ($cond_node->flags !== ast\flags\UNARY_BOOL_NOT) {
             return;
@@ -320,9 +321,10 @@ class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
         }
         if ($expr->kind === ast\AST_CALL) {
             $function = $expr->children['expr'];
-            if (!$function instanceof Node ||
+            if (            !$function instanceof Node ||
                     $function->kind !== ast\AST_NAME ||
-                    strcasecmp((string)($function->children['name'] ?? ''), 'is_null') !== 0) {
+                    strcasecmp((string)($function->children['name'] ?? ''), 'is_null') !== 0
+            ) {
                 return;
             }
             $args = $expr->children['args']->children;
@@ -338,7 +340,7 @@ class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param Node|mixed $node
      */
-    private static function isNullConstantNode($node) : bool
+    private static function isNullConstantNode($node): bool
     {
         if (!$node instanceof Node) {
             return false;
@@ -349,7 +351,7 @@ class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param ?(Node|string|int|float) $x_node
      */
-    private function warnDuplicateConditionalNullCoalescing(string $expr, $x_node) : void
+    private function warnDuplicateConditionalNullCoalescing(string $expr, $x_node): void
     {
         $this->emitPluginIssue(
             $this->code_base,
@@ -370,7 +372,7 @@ class RedundantNodePreAnalysisVisitor extends PluginAwarePreAnalysisVisitor
     /**
      * @override
      */
-    public function visitIf(Node $node) : void
+    public function visitIf(Node $node): void
     {
         if (count($node->children) <= 1) {
             // There can't be any duplicates.
@@ -427,7 +429,7 @@ class RedundantNodePreAnalysisVisitor extends PluginAwarePreAnalysisVisitor
      * @return list<Node> the list of AST_IF_ELEM nodes making up the chain of if/elseif/else if conditions.
      * @suppress PhanPartialTypeMismatchReturn
      */
-    private static function extractIfElseifChain(Node $node) : array
+    private static function extractIfElseifChain(Node $node): array
     {
         $children = $node->children;
         if (count($children) <= 1) {

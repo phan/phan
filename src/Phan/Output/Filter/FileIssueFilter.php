@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Output\Filter;
 
@@ -26,7 +28,7 @@ final class FileIssueFilter implements IssueFilterInterface
         $this->ignored_files_filter = $ignored_files_filter;
     }
 
-    public function supports(IssueInstance $issue):bool
+    public function supports(IssueInstance $issue): bool
     {
         return !$this->ignored_files_filter->isFilenameIgnored($issue->getFile());
     }

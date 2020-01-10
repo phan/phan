@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\CodeBase;
 
@@ -54,7 +56,7 @@ class UndoTracker
      *
      * (This is the list prior to any analysis exclusion or whitelisting steps)
      */
-    public function getParsedFilePathList() : array
+    public function getParsedFilePathList(): array
     {
         return \array_keys($this->file_modification_state);
     }
@@ -62,7 +64,7 @@ class UndoTracker
     /**
      * @return int The size of $this->getParsedFilePathList()
      */
-    public function getParsedFilePathCount() : int
+    public function getParsedFilePathCount(): int
     {
         return count($this->file_modification_state);
     }
@@ -72,7 +74,7 @@ class UndoTracker
      *
      * This allows us to track which changes need to be undone when that file's contents change or the file gets removed.
      */
-    public function setCurrentParsedFile(?string $current_parsed_file) : void
+    public function setCurrentParsedFile(?string $current_parsed_file): void
     {
         if (\is_string($current_parsed_file)) {
             Daemon::debugf("Recording file modification state for %s", $current_parsed_file);
@@ -86,7 +88,7 @@ class UndoTracker
     /**
      * @return ?string - This string should change when the file is modified. Returns null if the file somehow doesn't exist
      */
-    public static function getFileState(string $path) : ?string
+    public static function getFileState(string $path): ?string
     {
         \clearstatcache(true, $path);  // TODO: does this work properly with symlinks? seems to.
         $real = \realpath($path);
@@ -107,7 +109,7 @@ class UndoTracker
      * Called when a file is unparsable.
      * Removes the classes and functions, etc. from an older version of the file, if one exists.
      */
-    public function recordUnparsableFile(CodeBase $code_base, string $current_parsed_file) : void
+    public function recordUnparsableFile(CodeBase $code_base, string $current_parsed_file): void
     {
         Daemon::debugf("%s was unparsable, had a syntax error", $current_parsed_file);
         Phan::getIssueCollector()->removeIssuesForFiles([$current_parsed_file]);
@@ -118,7 +120,7 @@ class UndoTracker
     /**
      * Undoes all of the changes for the relative path at $path
      */
-    private function undoFileChanges(CodeBase $code_base, string $path) : void
+    private function undoFileChanges(CodeBase $code_base, string $path): void
     {
         Daemon::debugf("Undoing file changes for $path");
         foreach ($this->undo_operations_for_path[$path] ?? [] as $undo_operation) {
@@ -131,7 +133,7 @@ class UndoTracker
      * @param \Closure $undo_operation - a closure expecting 1 param - inner. It undoes a change caused by a parsed file.
      * Ideally, this would extend to all changes. (e.g. including dead code detection)
      */
-    public function recordUndo(Closure $undo_operation) : void
+    public function recordUndo(Closure $undo_operation): void
     {
         $file = $this->current_parsed_file;
         if (!\is_string($file)) {
@@ -151,7 +153,7 @@ class UndoTracker
      *                    This fixes #1921
      * @return list<string> - Subset of $new_file_list which changed on disk and has to be parsed again. Automatically unparses the old versions of files which were modified.
      */
-    public function updateFileList(CodeBase $code_base, array $new_file_list, array $file_mapping_contents, array $reanalyze_files = null) : array
+    public function updateFileList(CodeBase $code_base, array $new_file_list, array $file_mapping_contents, array $reanalyze_files = null): array
     {
         $new_file_set = [];
         foreach ($new_file_list as $path) {
@@ -203,7 +205,7 @@ class UndoTracker
      * @param string $file_path
      * @return bool - true if the file existed
      */
-    public function beforeReplaceFileContents(CodeBase $code_base, string $file_path) : bool
+    public function beforeReplaceFileContents(CodeBase $code_base, string $file_path): bool
     {
         if (!isset($this->file_modification_state[$file_path])) {
             Daemon::debugf("Tried to replace contents of '$file_path', but that path does not yet exist");

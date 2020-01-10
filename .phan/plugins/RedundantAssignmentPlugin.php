@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 use ast\Node;
@@ -41,7 +42,7 @@ class RedundantAssignmentPlugin extends PluginV3 implements
     /**
      * @return class-string - name of PluginAwarePreAnalysisVisitor subclass
      */
-    public static function getPreAnalyzeNodeVisitorClassName() : string
+    public static function getPreAnalyzeNodeVisitorClassName(): string
     {
         return RedundantAssignmentPreAnalysisVisitor::class;
     }
@@ -58,7 +59,7 @@ class RedundantAssignmentPreAnalysisVisitor extends PluginAwarePreAnalysisVisito
      * An assignment operation node to analyze
      * @override
      */
-    public function visitAssign(Node $node) : void
+    public function visitAssign(Node $node): void
     {
         $var = $node->children['var'];
         if ($var->kind !== ast\AST_VAR) {
@@ -112,7 +113,7 @@ class RedundantAssignmentPreAnalysisVisitor extends PluginAwarePreAnalysisVisito
             $issue_name = 'PhanPluginRedundantAssignment';
         }
         if ($this->context->isInLoop()) {
-            $this->context->deferCheckToOutermostLoop(function (Context $context_after_loop) use ($issue_name, $var_name, $variable_type) : void {
+            $this->context->deferCheckToOutermostLoop(function (Context $context_after_loop) use ($issue_name, $var_name, $variable_type): void {
                 $new_variable = $context_after_loop->getScope()->getVariableByNameOrNull($var_name);
                 if (!$new_variable) {
                     return;

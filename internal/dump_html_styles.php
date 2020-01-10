@@ -1,5 +1,7 @@
 #!/usr/bin/env php
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/src/Phan/Bootstrap.php';
 
@@ -13,7 +15,7 @@ class DumpHTMLStyles
     /**
      * Given a terminal color name such as 'light_red', return 'style: LightRed'
      */
-    public static function generateCssForColor(string $color) : string
+    public static function generateCssForColor(string $color): string
     {
         $combination = [];
         foreach (explode(',', $color) as $color_component) {
@@ -40,7 +42,7 @@ class DumpHTMLStyles
     /**
      * Returns the colorscheme name as an HTML scheme.
      */
-    public static function generateHTMLStyle(string $color_scheme_name) : string
+    public static function generateHTMLStyle(string $color_scheme_name): string
     {
         $scheme = Colorizing::loadColorScheme($color_scheme_name);
         if (!is_array($scheme)) {
@@ -57,7 +59,7 @@ class DumpHTMLStyles
             if ($color_name === 'none') {
                 continue;
             }
-            $css_selector = implode(', ', array_map(static function (string $template_name) : string {
+            $css_selector = implode(', ', array_map(static function (string $template_name): string {
                 return '.phan_' . strtolower($template_name);
             }, $template_names));
             $entries[] = sprintf("%s {\n    %s\n}", $css_selector, self::generateCssForColor($color_name));
@@ -69,7 +71,7 @@ class DumpHTMLStyles
      * Dumps all styles
      * @suppress PhanAccessClassConstantInternal
      */
-    public static function main() : void
+    public static function main(): void
     {
         foreach (Colorizing::COLOR_SCHEMES as $name => $_) {
             $contents = self::generateHTMLStyle($name);

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace PHPDocToRealTypesPlugin;
 
@@ -27,7 +29,7 @@ class Fixers
         CodeBase $unused_code_base,
         FileCacheEntry $contents,
         IssueInstance $instance
-    ) : ?FileEditSet {
+    ): ?FileEditSet {
         $params = $instance->getTemplateParameters();
         $return_type = $params[0];
         $name = $params[1];
@@ -46,7 +48,7 @@ class Fixers
         CodeBase $unused_code_base,
         FileCacheEntry $contents,
         IssueInstance $instance
-    ) : ?FileEditSet {
+    ): ?FileEditSet {
         $params = $instance->getTemplateParameters();
         $param_type = $params[0];
         $param_name = $params[1];
@@ -59,7 +61,7 @@ class Fixers
         return self::computeEditsForParamTypeDeclaration($contents, $declaration, (string)$param_name, (string)$param_type);
     }
 
-    private static function computeEditsForReturnTypeDeclaration(FunctionLike $declaration, string $return_type) : ?FileEditSet
+    private static function computeEditsForReturnTypeDeclaration(FunctionLike $declaration, string $return_type): ?FileEditSet
     {
         if (!$return_type) {
             return null;
@@ -75,7 +77,7 @@ class Fixers
         return new FileEditSet([$file_edit]);
     }
 
-    private static function computeEditsForParamTypeDeclaration(FileCacheEntry $contents, FunctionLike $declaration, string $param_name, string $param_type) : ?FileEditSet
+    private static function computeEditsForParamTypeDeclaration(FileCacheEntry $contents, FunctionLike $declaration, string $param_name, string $param_type): ?FileEditSet
     {
         if (!$param_type) {
             return null;
@@ -102,7 +104,7 @@ class Fixers
         FileCacheEntry $contents,
         int $line,
         string $name
-    ) : ?FunctionLike {
+    ): ?FunctionLike {
         $candidates = [];
         foreach ($contents->getNodesAtLine($line) as $node) {
             if ($node instanceof FunctionDeclaration || $node instanceof MethodDeclaration) {

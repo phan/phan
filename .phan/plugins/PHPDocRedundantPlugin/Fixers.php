@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace PHPDocRedundantPlugin;
 
@@ -32,7 +34,7 @@ class Fixers
         CodeBase $unused_code_base,
         FileCacheEntry $contents,
         IssueInstance $instance
-    ) : ?FileEditSet {
+    ): ?FileEditSet {
         $params = $instance->getTemplateParameters();
         $name = $params[0];
         $encoded_comment = $params[1];
@@ -44,7 +46,7 @@ class Fixers
         return self::computeEditsToRemoveFunctionLikeComment($contents, $declaration, (string)$encoded_comment);
     }
 
-    private static function computeEditsToRemoveFunctionLikeComment(FileCacheEntry $contents, FunctionLike $declaration, string $encoded_comment) : ?FileEditSet
+    private static function computeEditsToRemoveFunctionLikeComment(FileCacheEntry $contents, FunctionLike $declaration, string $encoded_comment): ?FileEditSet
     {
         if (!$declaration instanceof PhpParser\Node) {
             // impossible
@@ -63,7 +65,7 @@ class Fixers
         return self::computeEditSetToDeleteComment($file_contents, $comment_token);
     }
 
-    private static function computeEditSetToDeleteComment(string $file_contents, Token $comment_token) : ?FileEditSet
+    private static function computeEditSetToDeleteComment(string $file_contents, Token $comment_token): ?FileEditSet
     {
         // get the byte where the `)` of the argument list ends
         $last_byte_index = $comment_token->getEndPosition();
@@ -101,7 +103,7 @@ class Fixers
         CodeBase $unused_code_base,
         FileCacheEntry $contents,
         IssueInstance $instance
-    ) : ?FileEditSet {
+    ): ?FileEditSet {
         $lineno = $instance->getLine();
         $file_lines = $contents->getLines();
 
@@ -112,7 +114,7 @@ class Fixers
         }
         $first_deleted_line = $lineno;
         $last_deleted_line = $lineno;
-        $is_blank_comment_line = static function (int $i) use ($file_lines) : bool {
+        $is_blank_comment_line = static function (int $i) use ($file_lines): bool {
             return \trim($file_lines[$i] ?? '') === '*';
         };
         while ($is_blank_comment_line($first_deleted_line - 1)) {
@@ -135,7 +137,7 @@ class Fixers
      * @suppress PhanUndeclaredClassMethod
      * @suppress UnusedSuppression false positive for PhpTokenizer with polyfill due to https://github.com/Microsoft/tolerant-php-parser/issues/292
      */
-    private static function getDocCommentToken(PhpParser\Node $node) : ?Token
+    private static function getDocCommentToken(PhpParser\Node $node): ?Token
     {
         $leadingTriviaText = $node->getLeadingCommentAndWhitespaceText();
         $leadingTriviaTokens = PhpTokenizer::getTokensArrayFromContent(
@@ -157,7 +159,7 @@ class Fixers
         FileCacheEntry $contents,
         int $line,
         string $name
-    ) : ?FunctionLike {
+    ): ?FunctionLike {
         $candidates = [];
         foreach ($contents->getNodesAtLine($line) as $node) {
             if ($node instanceof FunctionDeclaration || $node instanceof MethodDeclaration) {

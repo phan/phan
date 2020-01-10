@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan;
 
@@ -38,6 +40,7 @@ use Phan\Language\UnionType;
 use Phan\Library\StringUtil;
 use Phan\Parse\ParseVisitor;
 use Phan\Plugin\ConfigPluginSet;
+
 use function array_map;
 use function count;
 use function end;
@@ -89,7 +92,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     }
 
     // No-ops for frequent node types
-    public function visitVar(Node $node) : Context
+    public function visitVar(Node $node): Context
     {
         $context = $this->context->withLineNumberStart(
             $node->lineno
@@ -120,7 +123,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     /**
      * @param Node $node @phan-unused-param this was analyzed in visitUse
      */
-    public function visitUseElem(Node $node) : Context
+    public function visitUseElem(Node $node): Context
     {
         // Could invoke plugins, but not right now
         return $this->context;
@@ -130,7 +133,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * Analyzes a namespace block or statement (e.g. `namespace NS\SubNS;` or `namespace OtherNS { ... }`)
      * @param Node $node a node of type AST_NAMESPACE
      */
-    public function visitNamespace(Node $node) : Context
+    public function visitNamespace(Node $node): Context
     {
         $context = $this->context->withLineNumberStart(
             $node->lineno
@@ -176,7 +179,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     /**
      * Analyzes a node with type AST_NAME (Relative or fully qualified name)
      */
-    public function visitName(Node $node) : Context
+    public function visitName(Node $node): Context
     {
         $context = $this->context;
         // Only invoke post-order plugins, needed for NodeSelectionPlugin.
@@ -206,7 +209,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      *          │
      *          ▼
      */
-    public function visitStmtList(Node $node) : Context
+    public function visitStmtList(Node $node): Context
     {
         $context = $this->context;
         $plugin_set = ConfigPluginSet::instance();
@@ -245,7 +248,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * Optimized visitor for arrays, skipping unnecessary steps.
      * Equivalent to visit()
      */
-    public function visitArray(Node $node) : Context
+    public function visitArray(Node $node): Context
     {
         $context = $this->context;
         $context->setLineNumberStart($node->lineno);
@@ -292,7 +295,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * Optimized visitor for array elements, skipping unnecessary steps.
      * Equivalent to visitArrayElem
      */
-    public function visitArrayElem(Node $node) : Context
+    public function visitArrayElem(Node $node): Context
     {
         $context = $this->context;
         $context->setLineNumberStart($node->lineno);
@@ -333,7 +336,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * @param Context $context
      * @param int|float|string|null $child_node (probably not null)
      */
-    private function handleScalarStmt(Node $node, Context $context, $child_node) : void
+    private function handleScalarStmt(Node $node, Context $context, $child_node): void
     {
         if (\is_string($child_node)) {
             if (\strpos($child_node, '@phan-') !== false) {
@@ -359,7 +362,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         }
     }
 
-    private function getLineNumberOfParent() : int
+    private function getLineNumberOfParent(): int
     {
         $parent = end($this->parent_node_list);
         if (!($parent instanceof Node)) {
@@ -386,7 +389,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      *
      * Modifies the type of the variable (in the scope of $context) to be identical to the annotated union type.
      */
-    private function analyzeSubstituteVarAssert(CodeBase $code_base, Context $context, string $text) : void
+    private function analyzeSubstituteVarAssert(CodeBase $code_base, Context $context, string $text): void
     {
         $has_known_annotations = false;
         if (\preg_match_all(self::PHAN_VAR_REGEX, $text, $matches, \PREG_SET_ORDER) > 0) {
@@ -447,7 +450,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     /**
      * @see ConditionVarUtil::getVariableFromScope()
      */
-    private static function createVarForInlineComment(CodeBase $code_base, Context $context, string $variable_name, UnionType $type, bool $create_variable) : void
+    private static function createVarForInlineComment(CodeBase $code_base, Context $context, string $variable_name, UnionType $type, bool $create_variable): void
     {
         if (!$context->getScope()->hasVariableWithName($variable_name)) {
             if (Variable::isHardcodedVariableInScopeWithName($variable_name, $context->isInGlobalScope())) {
@@ -501,7 +504,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * @return Context
      * The updated context after visiting the node
      */
-    public function visit(Node $node) : Context
+    public function visit(Node $node): Context
     {
         $context = $this->context;
         $context->setLineNumberStart($node->lineno);
@@ -615,7 +618,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * @suppress PhanUndeclaredProperty
      * TODO: Add similar handling (e.g. of possibility of 0 iterations) for foreach
      */
-    public function visitFor(Node $node) : Context
+    public function visitFor(Node $node): Context
     {
         $context = $this->context->withLineNumberStart(
             $node->lineno
@@ -763,7 +766,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      *
      * @suppress PhanUndeclaredProperty
      */
-    public function visitWhile(Node $node) : Context
+    public function visitWhile(Node $node): Context
     {
         $context = $this->context->withLineNumberStart(
             $node->lineno
@@ -859,7 +862,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * @throws NodeException
      * @suppress PhanUndeclaredProperty
      */
-    public function visitForeach(Node $node) : Context
+    public function visitForeach(Node $node): Context
     {
         $code_base = $this->code_base;
         $context = $this->context;
@@ -956,7 +959,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * @param UnionType $union_type the type of $node->children['expr']
      * @param Node $node a node of kind AST_FOREACH
      */
-    private function checkCanIterate(UnionType $union_type, Node $node) : void
+    private function checkCanIterate(UnionType $union_type, Node $node): void
     {
         if ($union_type->isEmpty()) {
             return;
@@ -1008,7 +1011,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         }
     }
 
-    private static function isDefinitelyNotObject(UnionType $type) : bool
+    private static function isDefinitelyNotObject(UnionType $type): bool
     {
         $type_set = $type->getRealTypeSet();
         if (!$type_set) {
@@ -1026,7 +1029,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * Returns true if there is at least one iterable type,
      * no object types, and that iterable type is the empty array shape.
      */
-    public static function isEmptyIterable(UnionType $union_type) : bool
+    public static function isEmptyIterable(UnionType $union_type): bool
     {
         $has_iterable_types = false;
         foreach ($union_type->getRealTypeSet() as $type) {
@@ -1046,7 +1049,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         return $has_iterable_types;
     }
 
-    private function warnAboutNonTraversableType(Node $node, Type $type) : void
+    private function warnAboutNonTraversableType(Node $node, Type $type): void
     {
         $fqsen = FullyQualifiedClassName::fromType($type);
         if (!$this->code_base->hasClassWithFQSEN($fqsen)) {
@@ -1080,7 +1083,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         );
     }
 
-    private function analyzeForeachIteration(Context $context, UnionType $expression_union_type, Node $node) : Context
+    private function analyzeForeachIteration(Context $context, UnionType $expression_union_type, Node $node): Context
     {
         $code_base = $this->code_base;
         $value_node = $node->children['value'];
@@ -1130,7 +1133,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     /**
      * Analyze an expression such as `[$a] = $values` or `list('key' => $v) = $values` for backwards compatibility issues
      */
-    public static function analyzeArrayAssignBackwardsCompatibility(CodeBase $code_base, Context $context, Node $node) : void
+    public static function analyzeArrayAssignBackwardsCompatibility(CodeBase $code_base, Context $context, Node $node): void
     {
         if ($node->flags !== ast\flags\ARRAY_SYNTAX_LIST) {
             Issue::maybeEmit(
@@ -1160,7 +1163,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      *
      * @suppress PhanUndeclaredProperty
      */
-    public function visitDoWhile(Node $node) : Context
+    public function visitDoWhile(Node $node): Context
     {
         $context = $this->context;
         $context->setLineNumberStart($node->lineno);
@@ -1226,7 +1229,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      *
      * NOTE: This should never get called.
      */
-    public function visitIfElem(Node $node) : Context
+    public function visitIfElem(Node $node): Context
     {
         $context = $this->context->withLineNumberStart(
             $node->lineno
@@ -1303,7 +1306,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * @return Context
      * The updated context after visiting the node
      */
-    public function visitClosedContext(Node $node) : Context
+    public function visitClosedContext(Node $node): Context
     {
         // Make a copy of the internal context so that we don't
         // leak any changes within the closed context to the
@@ -1357,7 +1360,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * The updated context after visiting the node
      * @suppress PhanAccessMethodInternal
      */
-    public function visitSwitchList(Node $node) : Context
+    public function visitSwitchList(Node $node): Context
     {
         // Make a copy of the internal context so that we don't
         // leak any changes within the closed context to the
@@ -1498,7 +1501,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * @param Node|int|string|float $switch_case_node
      * @return array{0:?Node,1:?Closure}
      */
-    private function createSwitchConditionAnalyzer($switch_case_node) : array
+    private function createSwitchConditionAnalyzer($switch_case_node): array
     {
         $switch_kind = ($switch_case_node->kind ?? null);
         try {
@@ -1512,7 +1515,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     /**
                      * @param Node|string|int|float $cond_node
                      */
-                    function (Context $child_context, $cond_node) use ($switch_case_node) : Context {
+                    function (Context $child_context, $cond_node) use ($switch_case_node): Context {
                         $visitor = new ConditionVisitor($this->code_base, $child_context);
                         return $visitor->updateVariableToBeEqual($switch_case_node, $cond_node, $child_context);
                     },
@@ -1538,7 +1541,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                             /**
                              * @param Node|string|int|float $cond_node
                              */
-                            function (Context $child_context, $cond_node) use ($switch_variable_node) : Context {
+                            function (Context $child_context, $cond_node) use ($switch_variable_node): Context {
                                 $visitor = new ConditionVisitor($this->code_base, $child_context);
                                 return $visitor->analyzeClassAssertion(
                                     $switch_variable_node,
@@ -1555,7 +1558,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     /**
                      * @param Node|string|int|float $cond_node
                      */
-                    function (Context $child_context, $cond_node) use ($switch_case_node) : Context {
+                    function (Context $child_context, $cond_node) use ($switch_case_node): Context {
                         $visitor = new ConditionVisitor($this->code_base, $child_context);
                         return $visitor->analyzeAndUpdateToBeEqual($switch_case_node, $cond_node);
                     },
@@ -1582,7 +1585,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      *
      * The code in visitIfElem had to be inlined in order to properly modify the associated contexts.
      */
-    public function visitIf(Node $node) : Context
+    public function visitIf(Node $node): Context
     {
         $context = $this->context->withLineNumberStart(
             $node->lineno
@@ -1761,7 +1764,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * TODO: This is a heuristic that could be improved (differentiate break/continue, check if all branches are already handled, etc.)
      * @suppress PhanUndeclaredProperty
      */
-    private function recordLoopContextForBreakOrContinue(Context $child_context) : void
+    private function recordLoopContextForBreakOrContinue(Context $child_context): void
     {
         for ($i = \count($this->parent_node_list) - 1; $i >= 0; $i--) {
             $node = $this->parent_node_list[$i];
@@ -1798,7 +1801,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * @return Context
      * The updated context after visiting the node
      */
-    public function visitTry(Node $node) : Context
+    public function visitTry(Node $node): Context
     {
         $context = $this->context->withLineNumberStart(
             $node->lineno
@@ -1914,7 +1917,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * @param list<Node> $catch_nodes
      * @param Context $context
      */
-    private function checkUnreachableCatch(array $catch_nodes, Context $context) : void
+    private function checkUnreachableCatch(array $catch_nodes, Context $context): void
     {
         if (count($catch_nodes) <= 1) {
             return;
@@ -1966,7 +1969,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitBinaryOp(Node $node) : Context
+    public function visitBinaryOp(Node $node): Context
     {
         $flags = $node->flags;
         switch ($flags) {
@@ -1987,7 +1990,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * @return Context
      * A new context resulting from analyzing this logical `&&` operator.
      */
-    public function analyzeBinaryBoolAnd(Node $node) : Context
+    public function analyzeBinaryBoolAnd(Node $node): Context
     {
         $context = $this->context->withLineNumberStart(
             $node->lineno
@@ -2048,7 +2051,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * @return Context
      * A new context resulting from analyzing this `||` operator.
      */
-    public function analyzeBinaryBoolOr(Node $node) : Context
+    public function analyzeBinaryBoolOr(Node $node): Context
     {
         $context = $this->context->withLineNumberStart(
             $node->lineno
@@ -2116,7 +2119,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function analyzeBinaryCoalesce(Node $node) : Context
+    public function analyzeBinaryCoalesce(Node $node): Context
     {
         $context = $this->context->withLineNumberStart(
             $node->lineno
@@ -2155,7 +2158,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     /**
      * Checks if the left hand side of a null coalescing operator is never null or always null
      */
-    private function analyzeBinaryCoalesceForRedundantCondition(Context $context, Node $node) : void
+    private function analyzeBinaryCoalesceForRedundantCondition(Context $context, Node $node): void
     {
         $left_node = $node->children['left'];
         $left = UnionTypeVisitor::unionTypeFromNode($this->code_base, $context, $left_node);
@@ -2176,7 +2179,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     ASTReverter::toShortString($left_node),
                     $left
                 ],
-                static function (UnionType $type) : bool {
+                static function (UnionType $type): bool {
                     return !$type->containsNullableOrUndefined();
                 },
                 self::canNodeKindBeNull($left_node)
@@ -2191,7 +2194,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     ASTReverter::toShortString($left_node),
                     $left
                 ],
-                static function (UnionType $type) : bool {
+                static function (UnionType $type): bool {
                     return $type->isNull();
                 }
             );
@@ -2201,7 +2204,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     /**
      * @param Node|string|int|float $node
      */
-    private static function canNodeKindBeNull($node) : bool
+    private static function canNodeKindBeNull($node): bool
     {
         if (!$node instanceof Node) {
             return false;
@@ -2245,7 +2248,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         }
     }
 
-    public function visitConditional(Node $node) : Context
+    public function visitConditional(Node $node): Context
     {
         $context = $this->context->withLineNumberStart(
             $node->lineno
@@ -2335,7 +2338,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      *
      * @see self::visitClosedContext()
      */
-    public function visitClass(Node $node) : Context
+    public function visitClass(Node $node): Context
     {
         return $this->visitClosedContext($node);
     }
@@ -2349,7 +2352,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      *
      * @see self::visitClosedContext()
      */
-    public function visitMethod(Node $node) : Context
+    public function visitMethod(Node $node): Context
     {
         // Make a copy of the internal context so that we don't
         // leak any changes within the method to the
@@ -2387,7 +2390,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      *
      * @see self::visitClosedContext()
      */
-    public function visitFuncDecl(Node $node) : Context
+    public function visitFuncDecl(Node $node): Context
     {
         // Analyze nodes with AST_FUNC_DECL the same way as AST_METHOD
         return $this->visitMethod($node);
@@ -2402,7 +2405,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      *
      * @see self::visitClosedContext()
      */
-    public function visitClosure(Node $node) : Context
+    public function visitClosure(Node $node): Context
     {
         return $this->visitClosedContext($node);
     }
@@ -2416,7 +2419,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      *
      * @see self::visitClosedContext()
      */
-    public function visitArrowFunc(Node $node) : Context
+    public function visitArrowFunc(Node $node): Context
     {
         return $this->visitClosedContext($node);
     }
@@ -2435,7 +2438,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * @return Context
      * The updated context after pre-order analysis of the node
      */
-    private function preOrderAnalyze(Context $context, Node $node) : Context
+    private function preOrderAnalyze(Context $context, Node $node): Context
     {
         // Visit the given node populating the code base
         // with anything we learn and get a new context
@@ -2471,7 +2474,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * @return Context
      * The updated context after post-order analysis of the node
      */
-    private function postOrderAnalyze(Context $context, Node $node) : Context
+    private function postOrderAnalyze(Context $context, Node $node): Context
     {
         // Now that we know all about our context (like what
         // 'self' means), we can analyze statements like
@@ -2503,7 +2506,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * (E.g. for use \NS\{const X, const Y}, we don't want to analyze const X or const Y
      * without the preceding \NS\)
      */
-    public function visitGroupUse(Node $node) : Context
+    public function visitGroupUse(Node $node): Context
     {
         $context = $this->context->withLineNumberStart(
             $node->lineno
@@ -2538,7 +2541,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * @return Context
      * The updated context after visiting the node
      */
-    public function visitPropElem(Node $node) : Context
+    public function visitPropElem(Node $node): Context
     {
         $prop_name = (string)$node->children['name'];
 
