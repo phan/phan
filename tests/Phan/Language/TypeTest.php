@@ -43,13 +43,13 @@ use function get_class;
  */
 final class TypeTest extends BaseTest
 {
-    private function makePHPDocType(string $type_string) : Type
+    private function makePHPDocType(string $type_string): Type
     {
         $this->assertRegExp('@^' . Type::type_regex_or_this . '$@', $type_string, "Failed to parse '$type_string'");
         return Type::fromStringInContext($type_string, new Context(), Type::FROM_PHPDOC);
     }
 
-    public function testBracketedTypes() : void
+    public function testBracketedTypes(): void
     {
         $this->assertParsesAsType(ArrayType::instance(false), '(array)');
         $this->assertParsesAsType(ArrayType::instance(false), '((array))');
@@ -61,13 +61,13 @@ final class TypeTest extends BaseTest
     /**
      * Assert that all of $type_string is parseable as a single Type, and that that type is $expected_type.
      */
-    public function assertParsesAsType(Type $expected_type, string $type_string) : void
+    public function assertParsesAsType(Type $expected_type, string $type_string): void
     {
         $this->assertRegExp(self::DELIMITED_TYPE_REGEX_OR_THIS, $type_string, "Failed to parse '$type_string'");
         $this->assertSameType($expected_type, self::makePHPDocType($type_string));
     }
 
-    public function testBasicTypes() : void
+    public function testBasicTypes(): void
     {
         $this->assertParsesAsType(ArrayType::instance(false), 'array');
         $this->assertParsesAsType(ArrayType::instance(true), '?array');
@@ -88,7 +88,7 @@ final class TypeTest extends BaseTest
         $this->assertParsesAsType(VoidType::instance(false), 'void');
     }
 
-    public function testLiteralIntType() : void
+    public function testLiteralIntType(): void
     {
         $this->assertParsesAsType(LiteralIntType::instanceForValue(1, false), '1');
         $this->assertParsesAsType(LiteralIntType::instanceForValue(0, false), '0');
@@ -105,7 +105,7 @@ final class TypeTest extends BaseTest
         $this->assertParsesAsType(LiteralIntType::instanceForValue(-1, true), '?-1');
     }
 
-    public function testLiteralStringType() : void
+    public function testLiteralStringType(): void
     {
         $this->assertParsesAsType(LiteralStringType::instanceForValue('a', false), "'a'");
         $this->assertParsesAsType(LiteralStringType::instanceForValue('a', true), "?'a'");
@@ -119,7 +119,7 @@ final class TypeTest extends BaseTest
         $this->assertParsesAsType(LiteralStringType::instanceForValue("<=>\n", false), "'\\x3c\\x3d\\x3e\\x0a'");
     }
 
-    private function assertSameType(Type $expected, Type $actual, string $extra = '') : void
+    private function assertSameType(Type $expected, Type $actual, string $extra = ''): void
     {
         $message = \sprintf("Expected %s to be %s", (string)$actual, (string)$expected);
         if ($extra) {
@@ -129,13 +129,13 @@ final class TypeTest extends BaseTest
         $this->assertSame($expected, $actual, $message);
     }
 
-    public function testUnionTypeOfThis() : void
+    public function testUnionTypeOfThis(): void
     {
         $this->assertParsesAsType(StaticType::instance(false), '$this');
         $this->assertParsesAsType(StaticType::instance(true), '?$this');
     }
 
-    public function testGenericArray() : void
+    public function testGenericArray(): void
     {
         $generic_array_type = self::makePHPDocType('int[][]');
         $expected_generic_array_type = self::createGenericArrayTypeWithMixedKey(
@@ -151,7 +151,7 @@ final class TypeTest extends BaseTest
         $this->assertSameType($expected_generic_array_type, self::makePHPDocType('((int)[])[]'));
     }
 
-    public function testTemplateTypes() : void
+    public function testTemplateTypes(): void
     {
         $type = self::makePHPDocType('TypeTestClass<A1,B2>');
         $this->assertSame('\\', $type->getNamespace());
@@ -162,7 +162,7 @@ final class TypeTest extends BaseTest
         $this->assertTrue($parts[1]->isType(self::makePHPDocType('B2')));
     }
 
-    public function testTemplateTypesWithArray() : void
+    public function testTemplateTypesWithArray(): void
     {
         $type = self::makePHPDocType('TypeTestClass<array<string>,array<int>>');  // not exactly a template, but has the same parsing
         $this->assertSame('\\', $type->getNamespace());
@@ -173,7 +173,7 @@ final class TypeTest extends BaseTest
         $this->assertTrue($parts[1]->isType(self::makePHPDocType('int[]')));
     }
 
-    public function testTemplateTypesWithTemplates() : void
+    public function testTemplateTypesWithTemplates(): void
     {
         $type = self::makePHPDocType('TypeTestClass<T1<int,string[]>,T2>');  // not exactly a template, but has the same parsing
         $this->assertSame('\\', $type->getNamespace());
@@ -188,7 +188,7 @@ final class TypeTest extends BaseTest
         $this->assertTrue($inner_parts[1]->isType(self::makePHPDocType('string[]')));
     }
 
-    public function testTemplateTypesWithNullable() : void
+    public function testTemplateTypesWithNullable(): void
     {
         $type = self::makePHPDocType('TypeTestClass<' . '?int,?string>');  // not exactly a template, but has the same parsing
         $this->assertSame('\\', $type->getNamespace());
@@ -202,7 +202,7 @@ final class TypeTest extends BaseTest
     /**
      * Regression test - Phan parses ?int[] as ?(int[])
      */
-    public function testGenericArrayNullable() : void
+    public function testGenericArrayNullable(): void
     {
         $generic_array_type = self::makePHPDocType('?int[]');
         $expected_generic_array_type = self::createGenericArrayTypeWithMixedKey(
@@ -221,7 +221,7 @@ final class TypeTest extends BaseTest
         $this->assertSameType($expected_generic_array_array_type, $generic_array_array_type);
     }
 
-    public function testIterable() : void
+    public function testIterable(): void
     {
         $string_iterable_type = self::makePHPDocType('iterable<string>');
         $expected_string_iterable_type = GenericIterableType::fromKeyAndValueTypes(
@@ -240,7 +240,7 @@ final class TypeTest extends BaseTest
         $this->assertSameType($expectedstring_to_std_class_array_type, $string_to_stdclass_array_type);
     }
 
-    public function testArrayAlternate() : void
+    public function testArrayAlternate(): void
     {
         $string_array_type = self::makePHPDocType('array<string>');
         $expected_string_array_type = self::createGenericArrayTypeWithMixedKey(
@@ -280,13 +280,13 @@ final class TypeTest extends BaseTest
         $this->assertParsesAsType($expected_string_array_array_type, 'array<mixed,array<mixed,string>>');
     }
 
-    public function testArrayNested() : void
+    public function testArrayNested(): void
     {
         $deeply_nested_array = self::makePHPDocType('array<int,array<mixed,array<mixed,stdClass>>>');
         $this->assertSame('array<int,\stdClass[][]>', (string)$deeply_nested_array);
     }
 
-    public function testArrayExtraBrackets() : void
+    public function testArrayExtraBrackets(): void
     {
         $string_array_type = self::makePHPDocType('?(float[])');
         $expected_string_array_type = self::createGenericArrayTypeWithMixedKey(
@@ -297,7 +297,7 @@ final class TypeTest extends BaseTest
         $this->assertSame('?float[]', (string)$string_array_type);
     }
 
-    public function testArrayExtraBracketsForElement() : void
+    public function testArrayExtraBracketsForElement(): void
     {
         $string_array_type = self::makePHPDocType('(?float)[]');
         $expected_string_array_type = self::createGenericArrayTypeWithMixedKey(
@@ -308,7 +308,7 @@ final class TypeTest extends BaseTest
         $this->assertSame('(?float)[]', (string)$string_array_type);
     }
 
-    public function testArrayExtraBracketsAfterNullable() : void
+    public function testArrayExtraBracketsAfterNullable(): void
     {
         $string_array_type = self::makePHPDocType('?(float)[]');
         $expected_string_array_type = self::createGenericArrayTypeWithMixedKey(
@@ -319,7 +319,7 @@ final class TypeTest extends BaseTest
         $this->assertSame('?float[]', (string)$string_array_type);
     }
 
-    private static function makeBasicClosureParam(string $type_string) : ClosureDeclarationParameter
+    private static function makeBasicClosureParam(string $type_string): ClosureDeclarationParameter
     {
         // is_variadic, is_reference, is_optional
         return new ClosureDeclarationParameter(
@@ -330,7 +330,7 @@ final class TypeTest extends BaseTest
         );
     }
 
-    private function verifyClosureParam(FunctionLikeDeclarationType $expected_closure_type, string $union_type_string, string $normalized_type_string) : void
+    private function verifyClosureParam(FunctionLikeDeclarationType $expected_closure_type, string $union_type_string, string $normalized_type_string): void
     {
         $this->assertRegExp(self::DELIMITED_TYPE_REGEX_OR_THIS, $union_type_string, "Failed to parse '$union_type_string'");
         $parsed_closure_type = self::makePHPDocType($union_type_string);
@@ -341,7 +341,7 @@ final class TypeTest extends BaseTest
         $this->assertTrue($parsed_closure_type->canCastToType($expected_closure_type), "failed casting $union_type_string");
     }
 
-    public function testClosureAnnotation() : void
+    public function testClosureAnnotation(): void
     {
         $expected_closure_void_type = new ClosureDeclarationType(
             new Context(),
@@ -355,7 +355,7 @@ final class TypeTest extends BaseTest
         }
     }
 
-    public function testCallableAnnotation() : void
+    public function testCallableAnnotation(): void
     {
         $expected_closure_void_type = new CallableDeclarationType(
             new Context(),
@@ -369,7 +369,7 @@ final class TypeTest extends BaseTest
         }
     }
 
-    public function testNullableCallableAnnotation() : void
+    public function testNullableCallableAnnotation(): void
     {
         $expected_closure_void_type = new CallableDeclarationType(
             new Context(),
@@ -383,7 +383,7 @@ final class TypeTest extends BaseTest
         }
     }
 
-    public function testClosureBasicAnnotation() : void
+    public function testClosureBasicAnnotation(): void
     {
         $expected_closure_type = new ClosureDeclarationType(
             new Context(),
@@ -397,7 +397,7 @@ final class TypeTest extends BaseTest
         }
     }
 
-    public function testClosureUnionAnnotation() : void
+    public function testClosureUnionAnnotation(): void
     {
         $nullable_scalar_param = self::makeBasicClosureParam('?int|?string');
 
@@ -416,7 +416,7 @@ final class TypeTest extends BaseTest
         }
     }
 
-    public function testClosureRefVariadicAnnotations() : void
+    public function testClosureRefVariadicAnnotations(): void
     {
         // is_variadic, is_reference, is_optional
         $string_ref_annotation = new ClosureDeclarationParameter(UnionType::fromFullyQualifiedPHPDocString('string'), false, true, false);
@@ -434,7 +434,7 @@ final class TypeTest extends BaseTest
         }
     }
 
-    public function testClosureOptionalParam() : void
+    public function testClosureOptionalParam(): void
     {
         // is_variadic, is_reference, is_optional
         $optional_string_annotation = new ClosureDeclarationParameter(UnionType::fromFullyQualifiedPHPDocString('?string'), false, false, true);
@@ -455,7 +455,7 @@ final class TypeTest extends BaseTest
     /**
      * @dataProvider canCastToTypeProvider
      */
-    public function testCanCastToType(string $from_type_string, string $to_type_string) : void
+    public function testCanCastToType(string $from_type_string, string $to_type_string): void
     {
         $from_type = self::makePHPDocType($from_type_string);
         $to_type = self::makePHPDocType($to_type_string);
@@ -463,7 +463,7 @@ final class TypeTest extends BaseTest
     }
 
     /** @return list<list> */
-    public function canCastToTypeProvider() : array
+    public function canCastToTypeProvider(): array
     {
         return [
             ['int', 'int'],
@@ -493,7 +493,7 @@ final class TypeTest extends BaseTest
     /**
      * @dataProvider cannotCastToTypeProvider
      */
-    public function testCannotCastToType(string $from_type_string, string $to_type_string) : void
+    public function testCannotCastToType(string $from_type_string, string $to_type_string): void
     {
         $from_type = self::makePHPDocType($from_type_string);
         $to_type = self::makePHPDocType($to_type_string);
@@ -501,7 +501,7 @@ final class TypeTest extends BaseTest
     }
 
     /** @return list<list> */
-    public function cannotCastToTypeProvider() : array
+    public function cannotCastToTypeProvider(): array
     {
         return [
             ['?int', 'int'],
@@ -535,7 +535,7 @@ final class TypeTest extends BaseTest
     /**
      * @dataProvider arrayShapeProvider
      */
-    public function testArrayShape(string $normalized_union_type_string, string $type_string) : void
+    public function testArrayShape(string $normalized_union_type_string, string $type_string): void
     {
         $this->assertRegExp('@^' . Type::type_regex . '$@', $type_string, "Failed to parse '$type_string' with type_regex");
         $this->assertRegExp('@^' . Type::type_regex_or_this . '$@', $type_string, "Failed to parse '$type_string' with type_regex_or_this");
@@ -550,7 +550,7 @@ final class TypeTest extends BaseTest
     }
 
     /** @return array<int,array> */
-    public function arrayShapeProvider() : array
+    public function arrayShapeProvider(): array
     {
         return [
             [
@@ -613,14 +613,14 @@ final class TypeTest extends BaseTest
     }
 
     /** @dataProvider unparsableTypeProvider */
-    public function testUnparsableType(string $type_string) : void
+    public function testUnparsableType(string $type_string): void
     {
         $this->assertNotRegExp('@^' . Type::type_regex . '$@', $type_string, "Failed to parse '$type_string' with type_regex");
         $this->assertNotRegExp('@^' . Type::type_regex_or_this . '$@', $type_string, "Failed to parse '$type_string' with type_regex_or_this");
     }
 
     /** @return array<int,array> */
-    public function unparsableTypeProvider() : array
+    public function unparsableTypeProvider(): array
     {
         return [
             ['array{'],
@@ -637,12 +637,12 @@ final class TypeTest extends BaseTest
         ];
     }
 
-    private static function createGenericArrayTypeWithMixedKey(Type $type, bool $is_nullable) : GenericArrayType
+    private static function createGenericArrayTypeWithMixedKey(Type $type, bool $is_nullable): GenericArrayType
     {
         return GenericArrayType::fromElementType($type, $is_nullable, GenericArrayType::KEY_MIXED);
     }
 
-    public function testClassString() : void
+    public function testClassString(): void
     {
         $class_string_type = Type::fromFullyQualifiedString('class-string');
         $expected_class_string_type = ClassStringType::instance(false);
@@ -650,7 +650,7 @@ final class TypeTest extends BaseTest
         $this->assertSame('class-string', (string)$class_string_type);
     }
 
-    public function testCallableString() : void
+    public function testCallableString(): void
     {
         $callable_string_type = Type::fromFullyQualifiedString('?callable-string');
         $expected_callable_string_type = CallableStringType::instance(true);
@@ -658,17 +658,17 @@ final class TypeTest extends BaseTest
         $this->assertSame('?callable-string', (string)$callable_string_type);
     }
 
-    private function assertCannotCastToType(Type $source, Type $target, string $details) : void
+    private function assertCannotCastToType(Type $source, Type $target, string $details): void
     {
         $this->assertFalse($source->canCastToType($target), "expected type $source not to be able to cast to type $target when $details");
     }
 
-    private function assertCanCastToType(Type $source, Type $target, string $details) : void
+    private function assertCanCastToType(Type $source, Type $target, string $details): void
     {
         $this->assertTrue($source->canCastToType($target), "expected type $source to be able to cast to type $target when $details");
     }
 
-    public function testCastingLiteralStringToInt() : void
+    public function testCastingLiteralStringToInt(): void
     {
         $empty_string = LiteralStringType::instanceForValue('', false);
         $zero_string = LiteralStringType::instanceForValue('0', false);

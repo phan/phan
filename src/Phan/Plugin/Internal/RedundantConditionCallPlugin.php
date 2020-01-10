@@ -209,7 +209,7 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
                 return self::_IS_IMPOSSIBLE;
             }
             if ($new_real_type->isEqualTo($type)) {
-                if (                !$new_real_type->hasTypeMatchingCallback(static function (Type $type): bool {
+                if (!$new_real_type->hasTypeMatchingCallback(static function (Type $type): bool {
                     return $type instanceof ArrayShapeType;
                 })
                 ) {
@@ -225,7 +225,7 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
                 return self::_IS_IMPOSSIBLE;
             }
             if ($new_real_type->isEqualTo($type)) {
-                if (                    !$new_real_type->hasTypeMatchingCallback(static function (Type $type): bool {
+                if (!$new_real_type->hasTypeMatchingCallback(static function (Type $type): bool {
                     return $type instanceof ArrayShapeType;
                 })
                 ) {
@@ -797,8 +797,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
         $real_type = $real_type_unresolved->withStaticResolvedInContext($this->context);
         // The isEqualTo check was added to check for `$this instanceof static`
         // The isExclusivelyStringTypes check warns about everything else, e.g. `$subclass instanceof BaseClass`
-        if (
-        $real_type_unresolved->isEqualTo($class_type->asRealUnionType())
+        if ($real_type_unresolved->isEqualTo($class_type->asRealUnionType())
             || $real_type->isExclusivelySubclassesOf($code_base, $class_type)
         ) {
             RedundantCondition::emitInstance(

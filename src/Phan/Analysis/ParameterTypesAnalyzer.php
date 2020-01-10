@@ -50,7 +50,7 @@ class ParameterTypesAnalyzer
     public static function analyzeParameterTypes(
         CodeBase $code_base,
         FunctionInterface $method
-    ) : void {
+    ): void {
         try {
             self::analyzeParameterTypesInner($code_base, $method);
         } catch (RecursionDepthException $_) {
@@ -63,7 +63,7 @@ class ParameterTypesAnalyzer
     private static function analyzeParameterTypesInner(
         CodeBase $code_base,
         FunctionInterface $method
-    ) : void {
+    ): void {
         if (Config::getValue('check_docblock_signature_param_type_match')) {
             self::analyzeParameterTypesDocblockSignaturesMatch($code_base, $method);
         }
@@ -197,7 +197,7 @@ class ParameterTypesAnalyzer
     /**
      * Precondition: $target_php_version < 70200
      */
-    private static function analyzeRealSignatureCompatibility(CodeBase $code_base, FunctionInterface $method, int $target_php_version) : void
+    private static function analyzeRealSignatureCompatibility(CodeBase $code_base, FunctionInterface $method, int $target_php_version): void
     {
         $php70_checks = $target_php_version < 70100;
 
@@ -283,7 +283,7 @@ class ParameterTypesAnalyzer
         }
     }
 
-    private static function checkCommentParametersAreInOrder(CodeBase $code_base, FunctionInterface $method) : void
+    private static function checkCommentParametersAreInOrder(CodeBase $code_base, FunctionInterface $method): void
     {
         $comment = $method->getComment();
         if ($comment === null) {
@@ -331,7 +331,7 @@ class ParameterTypesAnalyzer
     private static function analyzeOverrideSignature(
         CodeBase $code_base,
         Method $method
-    ) : void {
+    ): void {
         if (!Config::getValue('analyze_signature_compatibility')) {
             return;
         }
@@ -381,7 +381,7 @@ class ParameterTypesAnalyzer
         }
     }
 
-    private static function analyzeOverrideComment(CodeBase $code_base, Method $method) : void
+    private static function analyzeOverrideComment(CodeBase $code_base, Method $method): void
     {
         if ($method->isMagic()) {
             return;
@@ -414,7 +414,7 @@ class ParameterTypesAnalyzer
         Method $method,
         Clazz $class,
         Method $o_method
-    ) : void {
+    ): void {
         if ($o_method->isFinal()) {
             // Even if it is a constructor, verify that a method doesn't override a final method.
             // TODO: different warning for trait (#1126)
@@ -480,7 +480,7 @@ class ParameterTypesAnalyzer
         // template type parameters we may have
         if ($type_option->isDefined()) {
             $o_parameter_list =
-                \array_map(static function (Parameter $parameter) use ($type_option, $code_base) : Parameter {
+                \array_map(static function (Parameter $parameter) use ($type_option, $code_base): Parameter {
 
                     if (!$parameter->getUnionType()->hasTemplateTypeRecursive()) {
                         return $parameter;
@@ -697,7 +697,7 @@ class ParameterTypesAnalyzer
         Clazz $class,
         Method $o_method,
         Clazz $o_class
-    ) : void {
+    ): void {
         if ($o_class->isTrait() && $method->getDefiningFQSEN()->getFullyQualifiedClassName() === $class->getFQSEN()) {
             // Give up on analyzing if the class **directly** overrides any (abstract OR non-abstract) method defined by the trait
             // TODO: Fix edge cases caused by hack changing FQSEN of private methods
@@ -902,7 +902,7 @@ class ParameterTypesAnalyzer
     /**
      * @return array<string,CommentParameter>
      */
-    private static function extractCommentParameterMap(Method $method) : array
+    private static function extractCommentParameterMap(Method $method): array
     {
         $comment = $method->getComment();
         return $comment ? $comment->getParameterMap() : [];
@@ -915,7 +915,7 @@ class ParameterTypesAnalyzer
         CodeBase $code_base,
         Method $method,
         Method $o_method
-    ) : void {
+    ): void {
         // Get the parameters for that method
         $phpdoc_parameter_list = $method->getParameterList();
         $o_phpdoc_parameter_list = $o_method->getParameterList();
@@ -960,7 +960,7 @@ class ParameterTypesAnalyzer
      * @param Method $method a method which has a union type, but is permitted to inherit a more specific type.
      * @param UnionType $inherited_union_type a non-empty union type
      */
-    private static function maybeInheritCommentReturnType(CodeBase $code_base, Method $method, UnionType $inherited_union_type) : void
+    private static function maybeInheritCommentReturnType(CodeBase $code_base, Method $method, UnionType $inherited_union_type): void
     {
         $comment = $method->getComment();
         if ($comment && $comment->hasReturnUnionType()) {
@@ -996,7 +996,7 @@ class ParameterTypesAnalyzer
         string $phpdoc_issue_type,
         ?int $lineno,
         ...$args
-    ) : void {
+    ): void {
         if ($method->isFromPHPDoc() || $o_method->isFromPHPDoc()) {
             Issue::maybeEmit(
                 $code_base,
@@ -1039,7 +1039,7 @@ class ParameterTypesAnalyzer
     private static function analyzeParameterTypesDocblockSignaturesMatch(
         CodeBase $code_base,
         FunctionInterface $method
-    ) : void {
+    ): void {
         $phpdoc_parameter_map = $method->getPHPDocParameterTypeMap();
         if (\count($phpdoc_parameter_map) === 0) {
             // nothing to check.
@@ -1066,7 +1066,7 @@ class ParameterTypesAnalyzer
         Parameter $parameter,
         UnionType $real_param_type,
         UnionType $phpdoc_param_union_type
-    ) : void {
+    ): void {
         $context = $method->getContext();
         $resolved_real_param_type = $real_param_type->withStaticResolvedInContext($context);
         $is_exclusively_narrowed = true;
@@ -1124,7 +1124,7 @@ class ParameterTypesAnalyzer
         }
     }
 
-    private static function guessCommentParamLineNumber(FunctionInterface $method, Parameter $param) : ?int
+    private static function guessCommentParamLineNumber(FunctionInterface $method, Parameter $param): ?int
     {
         $comment = $method->getComment();
         if ($comment === null) {
@@ -1143,7 +1143,7 @@ class ParameterTypesAnalyzer
      * Returns null if that could not be found.
      * @internal
      */
-    public static function guessCommentReturnLineNumber(FunctionInterface $method) : ?int
+    public static function guessCommentReturnLineNumber(FunctionInterface $method): ?int
     {
         $comment = $method->getComment();
         if ($comment === null) {
@@ -1155,7 +1155,7 @@ class ParameterTypesAnalyzer
         return $comment->getReturnLineno();
     }
 
-    private static function recordOutputReferences(FunctionInterface $method) : void
+    private static function recordOutputReferences(FunctionInterface $method): void
     {
         foreach ($method->getOutputReferenceParamNames() as $output_param_name) {
             foreach ($method->getRealParameterList() as $parameter) {
@@ -1181,7 +1181,7 @@ class ParameterTypesAnalyzer
      *           if Phan should proceed using phpdoc type instead of real types. (Converting T|null to ?T)
      *         - null if the type is an invalid narrowing, and Phan should warn.
      */
-    public static function normalizeNarrowedParamType(UnionType $phpdoc_param_union_type, UnionType $real_param_type) : ?UnionType
+    public static function normalizeNarrowedParamType(UnionType $phpdoc_param_union_type, UnionType $real_param_type): ?UnionType
     {
         // "@param null $x" is almost always a mistake. Forbid it for now.
         // But allow "@param T|null $x"
@@ -1205,7 +1205,7 @@ class ParameterTypesAnalyzer
     /**
      * Warns if a method is overriding a final method
      */
-    private static function warnOverridingFinalMethod(CodeBase $code_base, Method $method, Clazz $class, Method $o_method) : void
+    private static function warnOverridingFinalMethod(CodeBase $code_base, Method $method, Clazz $class, Method $o_method): void
     {
         if ($method->isFromPHPDoc()) {
             // TODO: Track phpdoc methods separately from real methods

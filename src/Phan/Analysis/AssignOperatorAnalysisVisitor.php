@@ -75,7 +75,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
      * @param Node $node
      * A node to check types on
      */
-    public function visit(Node $node) : Context
+    public function visit(Node $node): Context
     {
         $this->emitIssue(
             Issue::Unanalyzable,
@@ -88,7 +88,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
      * @param Node $node a node of kind AST_VAR
      * @param Closure(UnionType):UnionType $get_type
      */
-    private function updateTargetVariableWithType(Node $node, Closure $get_type) : Context
+    private function updateTargetVariableWithType(Node $node, Closure $get_type): Context
     {
         try {
             $variable_name = (new ContextNode(
@@ -147,7 +147,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
      * @param Node $assign_op_node a node of kind ast\AST_ASSIGN_OP with ast\AST_DIM as the left hand side
      * @param Closure(UnionType):UnionType $get_type
      */
-    private function updateTargetDimWithType(Node $assign_op_node, Closure $get_type) : Context
+    private function updateTargetDimWithType(Node $assign_op_node, Closure $get_type): Context
     {
         $node = $assign_op_node->children['var'];
         $expr_node = $node->children['expr'];
@@ -226,7 +226,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
      * @param Node $assign_op_node a node of kind ast\AST_ASSIGN_OP with ast\AST_PROP as the left hand side
      * @param Closure(UnionType):UnionType $get_type
      */
-    private function updateTargetPropWithType(Node $assign_op_node, Closure $get_type) : Context
+    private function updateTargetPropWithType(Node $assign_op_node, Closure $get_type): Context
     {
         $node = $assign_op_node->children['var'];
         $expr_node = $node->children['expr'];
@@ -265,7 +265,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
      * @param Node $node
      * @param Closure(UnionType):UnionType $get_type
      */
-    private function updateTargetWithType(Node $node, Closure $get_type) : Context
+    private function updateTargetWithType(Node $node, Closure $get_type): Context
     {
         $left = $node->children['var'];
         // The left can be a non-Node for an invalid AST
@@ -285,9 +285,9 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
     /**
      * @see BinaryOperatorFlagVisitor::visitBinaryAdd() for analysis of "+", which is similar to "+="
      */
-    public function visitBinaryAdd(Node $node) : Context
+    public function visitBinaryAdd(Node $node): Context
     {
-        return $this->updateTargetWithType($node, function (UnionType $left) use ($node) : UnionType {
+        return $this->updateTargetWithType($node, function (UnionType $left) use ($node): UnionType {
             $code_base = $this->code_base;
             $context = $this->context;
 
@@ -317,7 +317,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
 
             $this->warnAboutInvalidUnionType(
                 $node,
-                static function (Type $type) : bool {
+                static function (Type $type): bool {
                     // TODO: Stricten this to warn about strings based on user config.
                     return $type instanceof ScalarType || $type instanceof ArrayType || $type instanceof MixedType;
                 },
@@ -389,7 +389,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         });
     }
 
-    public function visitBinaryCoalesce(Node $node) : Context
+    public function visitBinaryCoalesce(Node $node): Context
     {
         $var_node = $node->children['var'];
         $new_node = new ast\Node(ast\AST_BINARY_OP, $node->lineno, [
@@ -410,9 +410,9 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         ))->__invoke($var_node);
     }
 
-    private function analyzeNumericArithmeticOp(Node $node, bool $combination_is_int) : Context
+    private function analyzeNumericArithmeticOp(Node $node, bool $combination_is_int): Context
     {
-        return $this->updateTargetWithType($node, function (UnionType $left) use ($node, $combination_is_int) : UnionType {
+        return $this->updateTargetWithType($node, function (UnionType $left) use ($node, $combination_is_int): UnionType {
             $code_base = $this->code_base;
             $context = $this->context;
 
@@ -447,7 +447,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
 
             $this->warnAboutInvalidUnionType(
                 $node,
-                static function (Type $type) : bool {
+                static function (Type $type): bool {
                     // TODO: Stricten this to warn about strings based on user config.
                     return $type instanceof ScalarType || $type instanceof MixedType;
                 },
@@ -479,7 +479,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
      * Warn about the right hand side always casting to zero when used in a numeric operation.
      * @param UnionType $right_type a type that always casts to zero.
      */
-    private function warnRightSideZero(Node $node, UnionType $right_type) : void
+    private function warnRightSideZero(Node $node, UnionType $right_type): void
     {
         $issue_type = PostOrderAnalysisVisitor::ISSUE_TYPES_RIGHT_SIDE_ZERO[$node->flags] ?? null;
         if (!\is_string($issue_type)) {
@@ -507,7 +507,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         UnionType $right,
         string $left_issue_type,
         string $right_issue_type
-    ) : void {
+    ): void {
         if (!$left->isEmpty()) {
             if (!$left->hasTypeMatchingCallback($is_valid_type)) {
                 $this->emitIssue(
@@ -530,9 +530,9 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         }
     }
 
-    private function analyzeBitwiseOperation(Node $node) : Context
+    private function analyzeBitwiseOperation(Node $node): Context
     {
-        return $this->updateTargetWithType($node, function (UnionType $left_type) use ($node) : UnionType {
+        return $this->updateTargetWithType($node, function (UnionType $left_type) use ($node): UnionType {
             // TODO: Warn about invalid left and right-hand sides here and in BinaryOperatorFlagVisitor.
             // TODO: Return real types if both sides are real types.
             // Expect int|string
@@ -553,38 +553,38 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         });
     }
 
-    public function visitBinaryBitwiseAnd(Node $node) : Context
+    public function visitBinaryBitwiseAnd(Node $node): Context
     {
         return $this->analyzeBitwiseOperation($node);
     }
 
-    public function visitBinaryBitwiseOr(Node $node) : Context
+    public function visitBinaryBitwiseOr(Node $node): Context
     {
         return $this->analyzeBitwiseOperation($node);
     }
 
-    public function visitBinaryBitwiseXor(Node $node) : Context
+    public function visitBinaryBitwiseXor(Node $node): Context
     {
         return $this->analyzeBitwiseOperation($node);
     }
 
-    public function visitBinaryConcat(Node $node) : Context
+    public function visitBinaryConcat(Node $node): Context
     {
-        return $this->updateTargetWithType($node, static function (UnionType $unused_left) : UnionType {
+        return $this->updateTargetWithType($node, static function (UnionType $unused_left): UnionType {
             // TODO: Check if both sides can cast to string and warn if they can't.
             return StringType::instance(false)->asRealUnionType();
         });
     }
 
-    public function visitBinaryDiv(Node $node) : Context
+    public function visitBinaryDiv(Node $node): Context
     {
         return $this->analyzeNumericArithmeticOp($node, false);
     }
 
-    public function visitBinaryMod(Node $node) : Context
+    public function visitBinaryMod(Node $node): Context
     {
         $this->warnForInvalidOperandsOfModOp($node);
-        return $this->updateTargetWithType($node, function (UnionType $left) use ($node) : UnionType {
+        return $this->updateTargetWithType($node, function (UnionType $left) use ($node): UnionType {
             $right = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr']);
             if (!$this->context->isInLoop()) {
                 if ($left->isNonNullNumberType() && $right->isNonNullNumberType()) {
@@ -596,7 +596,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         });
     }
 
-    private function warnForInvalidOperandsOfModOp(Node $node) : void
+    private function warnForInvalidOperandsOfModOp(Node $node): void
     {
         $left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
@@ -614,7 +614,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         }
         $this->warnAboutInvalidUnionType(
             $node,
-            static function (Type $type) : bool {
+            static function (Type $type): bool {
                 return $type->isValidNumericOperand();
             },
             $left,
@@ -625,12 +625,12 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
     }
 
 
-    public function visitBinaryMul(Node $node) : Context
+    public function visitBinaryMul(Node $node): Context
     {
         return $this->analyzeNumericArithmeticOp($node, true);
     }
 
-    public function visitBinaryPow(Node $node) : Context
+    public function visitBinaryPow(Node $node): Context
     {
         // TODO: 2 ** (-2)  is a float
         return $this->analyzeNumericArithmeticOp($node, true);
@@ -641,27 +641,27 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
      * NOTE: There's a draft RFC to make binary shift left/right apply to strings. (https://wiki.php.net/rfc/string-bitwise-shifts)
      * For now, it always casts to int.
      */
-    public function visitBinaryShiftLeft(Node $node) : Context
+    public function visitBinaryShiftLeft(Node $node): Context
     {
         $this->analyzeBinaryShift($node);
-        return $this->updateTargetWithType($node, static function (UnionType $unused_left) : UnionType {
+        return $this->updateTargetWithType($node, static function (UnionType $unused_left): UnionType {
             // TODO: Check if both sides can cast to int and warn if they can't.
             // TODO: Handle both sides being literals
             return IntType::instance(false)->asRealUnionType();
         });
     }
 
-    public function visitBinaryShiftRight(Node $node) : Context
+    public function visitBinaryShiftRight(Node $node): Context
     {
         $this->analyzeBinaryShift($node);
-        return $this->updateTargetWithType($node, static function (UnionType $unused_left) : UnionType {
+        return $this->updateTargetWithType($node, static function (UnionType $unused_left): UnionType {
             // TODO: Check if both sides can cast to int and warn if they can't.
             // TODO: Handle both sides being literals
             return IntType::instance(false)->asRealUnionType();
         });
     }
 
-    private function analyzeBinaryShift(Node $node) : void
+    private function analyzeBinaryShift(Node $node): void
     {
         $left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
@@ -676,7 +676,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         );
         $this->warnAboutInvalidUnionType(
             $node,
-            static function (Type $type) : bool {
+            static function (Type $type): bool {
                 return $type instanceof IntType && !$type->isNullable();
             },
             $left,
@@ -686,7 +686,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         );
     }
 
-    public function visitBinarySub(Node $node) : Context
+    public function visitBinarySub(Node $node): Context
     {
         return $this->analyzeNumericArithmeticOp($node, true);
     }
@@ -705,7 +705,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         string $issue_type,
         int $lineno,
         ...$parameters
-    ) : void {
+    ): void {
         Issue::maybeEmitWithParameters(
             $this->code_base,
             $this->context,

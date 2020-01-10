@@ -97,7 +97,7 @@ class ContextNode
      * @throws FQSENException if the node has invalid names
      * @suppress PhanUnreferencedPublicMethod this used to be used
      */
-    public function getQualifiedNameList() : array
+    public function getQualifiedNameList(): array
     {
         if (!($this->node instanceof Node)) {
             return [];
@@ -119,7 +119,7 @@ class ContextNode
      * @throws FQSENException if the node is invalid
      * @internal TODO: Stop using this
      */
-    public function getQualifiedName() : string
+    public function getQualifiedName(): string
     {
         return UnionTypeVisitor::unionTypeFromClassNode(
             $this->code_base,
@@ -134,7 +134,7 @@ class ContextNode
      * @return list<FullyQualifiedClassName>
      * @throws FQSENException
      */
-    public function getTraitFQSENList() : array
+    public function getTraitFQSENList(): array
     {
         if (!($this->node instanceof Node)) {
             return [];
@@ -167,7 +167,7 @@ class ContextNode
      * @return ?FullyQualifiedClassName (If this returns null, the caller is responsible for emitting an issue or falling back)
      * @throws FQSENException hopefully impossible
      */
-    public function getTraitFQSEN(array $adaptations_map) : ?FullyQualifiedClassName
+    public function getTraitFQSEN(array $adaptations_map): ?FullyQualifiedClassName
     {
         // TODO: In a subsequent PR, try to make trait analysis work when $adaptations_map has multiple possible traits.
         $trait_fqsen_string = $this->getQualifiedName();
@@ -195,7 +195,7 @@ class ContextNode
      *
      * @throws UnanalyzableException (should be caught and emitted as an issue)
      */
-    public function getTraitAdaptationsMap(array $trait_fqsen_list) : array
+    public function getTraitAdaptationsMap(array $trait_fqsen_list): array
     {
         if (!($this->node instanceof Node)) {
             return [];
@@ -229,7 +229,7 @@ class ContextNode
      * @param array<string,TraitAdaptations> $adaptations_map
      * @param Node $adaptation_node
      */
-    private function handleTraitAlias(array $adaptations_map, Node $adaptation_node) : void
+    private function handleTraitAlias(array $adaptations_map, Node $adaptation_node): void
     {
         $trait_method_node = $adaptation_node->children['method'];
         if (!$trait_method_node instanceof Node) {
@@ -276,7 +276,7 @@ class ContextNode
                 $trait_method_node->lineno ?? 0,
                 $trait_new_method_name,
                 $trait_original_method_name,
-                '[' . implode(', ', \array_map(static function (TraitAdaptations $t) : string {
+                '[' . implode(', ', \array_map(static function (TraitAdaptations $t): string {
                     return (string) $t->getTraitFQSEN();
                 }, $adaptations_map)) . ']'
             );
@@ -313,7 +313,7 @@ class ContextNode
         string $issue_type,
         int $lineno,
         ...$parameters
-    ) : void {
+    ): void {
         Issue::maybeEmit(
             $this->code_base,
             $this->context,
@@ -329,7 +329,7 @@ class ContextNode
      * @param Node $adaptation_node
      * @throws UnanalyzableException (should be caught and emitted as an issue)
      */
-    private function handleTraitPrecedence(array $adaptations_map, Node $adaptation_node) : void
+    private function handleTraitPrecedence(array $adaptations_map, Node $adaptation_node): void
     {
         // TODO: Should also verify that the original method exists, in a future PR?
         $trait_method_node = $adaptation_node->children['method'];
@@ -421,7 +421,7 @@ class ContextNode
      * TODO: Deprecate this and use more precise ways to locate the desired element
      * TODO: Distinguish between the empty string and the lack of a name
      */
-    public function getVariableName() : string
+    public function getVariableName(): string
     {
         if (!($this->node instanceof Node)) {
             return (string)$this->node;
@@ -480,7 +480,7 @@ class ContextNode
      * @deprecated call UnionTypeVisitor::unionTypeFromClassNode
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function getClassUnionType() : UnionType
+    public function getClassUnionType(): UnionType
     {
         return UnionTypeVisitor::unionTypeFromClassNode(
             $this->code_base,
@@ -498,7 +498,7 @@ class ContextNode
      * @return array{0:UnionType,1:Clazz[]}
      * @throws CodeBaseException if $ignore_missing_classes == false
      */
-    public function getClassListInner(bool $ignore_missing_classes) : array
+    public function getClassListInner(bool $ignore_missing_classes): array
     {
         $node = $this->node;
         if (!($node instanceof Node)) {
@@ -592,7 +592,7 @@ class ContextNode
      * An exception is thrown if fetching the requested class name
      * would trigger an issue (e.g. Issue::ContextNotObject)
      */
-    public function getClassList(bool $ignore_missing_classes = false, int $expected_type_categories = self::CLASS_LIST_ACCEPT_ANY, string $custom_issue_type = null) : array
+    public function getClassList(bool $ignore_missing_classes = false, int $expected_type_categories = self::CLASS_LIST_ACCEPT_ANY, string $custom_issue_type = null): array
     {
         [$union_type, $class_list] = $this->getClassListInner($ignore_missing_classes);
         if ($union_type->isEmpty()) {
@@ -601,7 +601,7 @@ class ContextNode
 
         // TODO: Should this check that count($class_list) > 0 instead? Or just always check?
         if (\count($class_list) === 0 && $expected_type_categories !== self::CLASS_LIST_ACCEPT_ANY) {
-            if (!$union_type->hasTypeMatchingCallback(static function (Type $type) use ($expected_type_categories) : bool {
+            if (!$union_type->hasTypeMatchingCallback(static function (Type $type) use ($expected_type_categories): bool {
                 return $type->isObject() || ($type instanceof MixedType) || ($expected_type_categories === self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME && $type instanceof StringType);
             })) {
                 if ($custom_issue_type === Issue::TypeExpectedObjectPropAccess) {
@@ -676,7 +676,7 @@ class ContextNode
         bool $is_static,
         bool $is_direct = false,
         bool $is_new_expression = false
-    ) : Method {
+    ): Method {
 
         if ($method_name instanceof Node) {
             $method_name_type = UnionTypeVisitor::unionTypeFromNode(
@@ -819,7 +819,7 @@ class ContextNode
                     Issue::PossiblyUndeclaredMethod,
                     $node->lineno,
                     $method_name,
-                    implode('|', \array_map(static function (Clazz $class) : string {
+                    implode('|', \array_map(static function (Clazz $class): string {
                         return $class->getFQSEN()->__toString();
                     }, $class_list)),
                     $class_without_method
@@ -861,7 +861,7 @@ class ContextNode
      * Yields a list of FunctionInterface objects for the 'expr' of an AST_CALL.
      * @return iterable<mixed, FunctionInterface>
      */
-    public function getFunctionFromNode(bool $return_placeholder_for_undefined = false) : iterable
+    public function getFunctionFromNode(bool $return_placeholder_for_undefined = false): iterable
     {
         $expression = $this->node;
         if (!($expression instanceof Node)) {
@@ -910,7 +910,7 @@ class ContextNode
      *
      * @return \Generator<void, FunctionInterface, void, void>
      */
-    private function getFunctionLikeFromDynamicExpression() : \Generator
+    private function getFunctionLikeFromDynamicExpression(): \Generator
     {
         $code_base = $this->code_base;
         $context = $this->context;
@@ -954,7 +954,7 @@ class ContextNode
     /**
      * @throws IssueException for PhanUndeclaredFunction to be caught and reported by the caller
      */
-    private function returnStubOrThrowUndeclaredFunctionIssueException(FullyQualifiedFunctionName $function_fqsen, bool $suggest_in_global_namespace, FullyQualifiedFunctionName $namespaced_function_fqsen = null, bool $return_placeholder_for_undefined = false) : Func
+    private function returnStubOrThrowUndeclaredFunctionIssueException(FullyQualifiedFunctionName $function_fqsen, bool $suggest_in_global_namespace, FullyQualifiedFunctionName $namespaced_function_fqsen = null, bool $return_placeholder_for_undefined = false): Func
     {
         if ($return_placeholder_for_undefined) {
             $functions = $this->code_base->getPlaceholdersForUndeclaredFunction($function_fqsen);
@@ -1009,7 +1009,7 @@ class ContextNode
         string $function_name,
         bool $is_function_declaration = false,
         bool $return_placeholder_for_undefined = false
-    ) : FunctionInterface {
+    ): FunctionInterface {
 
         $node = $this->node;
         if (!($node instanceof Node)) {
@@ -1093,7 +1093,7 @@ class ContextNode
      * An IssueException is thrown if the variable doesn't
      * exist
      */
-    public function getVariable() : Variable
+    public function getVariable(): Variable
     {
         $node = $this->node;
         if (!($node instanceof Node)) {
@@ -1150,7 +1150,7 @@ class ContextNode
      * An IssueException is thrown if the variable doesn't
      * exist
      */
-    public function getVariableStrict() : Variable
+    public function getVariableStrict(): Variable
     {
         $node = $this->node;
         if (!($node instanceof Node)) {
@@ -1210,7 +1210,7 @@ class ContextNode
      * @suppress PhanUnreferencedPublicMethod
      * @see self::getOrCreateVariableForReferenceParameter() - That is probably what you want instead.
      */
-    public function getOrCreateVariable() : Variable
+    public function getOrCreateVariable(): Variable
     {
         try {
             return $this->getVariable();
@@ -1247,7 +1247,7 @@ class ContextNode
      * @throws NodeException
      * An exception is thrown if we can't understand the node
      */
-    public function getOrCreateVariableForReferenceParameter(Parameter $parameter, ?Parameter $real_parameter) : Variable
+    public function getOrCreateVariableForReferenceParameter(Parameter $parameter, ?Parameter $real_parameter): Variable
     {
         // Return the original variable if it existed
         try {
@@ -1321,7 +1321,7 @@ class ContextNode
     public function getProperty(
         bool $is_static,
         bool $is_known_assignment = false
-    ) : Property {
+    ): Property {
         $node = $this->node;
 
         if (!($node instanceof Node)) {
@@ -1580,7 +1580,7 @@ class ContextNode
     /**
      * @return NodeException|IssueException
      */
-    private function createExceptionForInvalidPropertyName(Node $node, bool $is_static) : Exception
+    private function createExceptionForInvalidPropertyName(Node $node, bool $is_static): Exception
     {
         $property_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['prop']);
         if ($property_type->canCastToUnionType(StringType::instance(false)->asPHPDocUnionType())) {
@@ -1620,7 +1620,7 @@ class ContextNode
     public function getOrCreateProperty(
         string $property_name,
         bool $is_static
-    ) : Property {
+    ): Property {
 
         try {
             return $this->getProperty($is_static);
@@ -1707,7 +1707,7 @@ class ContextNode
      * @throws IssueException
      * should be emitted by the caller if caught.
      */
-    public function getConst() : GlobalConstant
+    public function getConst(): GlobalConstant
     {
         $node = $this->node;
         if (!$node instanceof Node) {
@@ -1806,7 +1806,7 @@ class ContextNode
     /**
      * @throws IssueException
      */
-    private function throwUndeclaredGlobalConstantIssueException(CodeBase $code_base, Context $context, FullyQualifiedGlobalConstantName $fqsen) : void
+    private function throwUndeclaredGlobalConstantIssueException(CodeBase $code_base, Context $context, FullyQualifiedGlobalConstantName $fqsen): void
     {
         throw new IssueException(
             Issue::fromType(Issue::UndeclaredConstant)(
@@ -1838,7 +1838,7 @@ class ContextNode
      * An exception is thrown if an issue is found while getting
      * the list of possible classes.
      */
-    public function getClassConst() : ClassConstant
+    public function getClassConst(): ClassConstant
     {
         $node = $this->node;
         if (!($node instanceof Node)) {
@@ -1939,7 +1939,7 @@ class ContextNode
      * @return string
      * A unique and stable name for an anonymous class
      */
-    public function getUnqualifiedNameForAnonymousClass() : string
+    public function getUnqualifiedNameForAnonymousClass(): string
     {
         if (!($this->node instanceof Node)) {
             throw new AssertionError('$this->node must be a node');
@@ -1960,7 +1960,7 @@ class ContextNode
     /**
      * @throws CodeBaseException if the closure could not be found
      */
-    public function getClosure() : Func
+    public function getClosure(): Func
     {
         $closure_fqsen =
             FullyQualifiedFunctionName::fromClosureInContext(
@@ -1986,7 +1986,7 @@ class ContextNode
      * TODO: This is repetitive, move these checks into ParseVisitor?
      * @suppress PhanPossiblyUndeclaredProperty
      */
-    public function analyzeBackwardCompatibility() : void
+    public function analyzeBackwardCompatibility(): void
     {
         if (!Config::get_backward_compatibility_checks()) {
             return;
@@ -2117,7 +2117,7 @@ class ContextNode
     /**
      * @throws IssueException if the list of possible classes couldn't be determined.
      */
-    public function resolveClassNameInContext() : ?FullyQualifiedClassName
+    public function resolveClassNameInContext(): ?FullyQualifiedClassName
     {
         // A function argument to resolve into an FQSEN
         $arg = $this->node;
@@ -2198,7 +2198,7 @@ class ContextNode
      * @param int $flags - See self::RESOLVE_*
      * @return ?array<mixed,mixed> - returns an array if elements could be resolved.
      */
-    private function getEquivalentPHPArrayElements(Node $node, int $flags) : ?array
+    private function getEquivalentPHPArrayElements(Node $node, int $flags): ?array
     {
         $elements = [];
         foreach ($node->children as $child_node) {
@@ -2237,7 +2237,7 @@ class ContextNode
      * @param Node $node a node of kind AST_ARRAY
      * @suppress PhanUndeclaredProperty this adds a dynamic property
      */
-    public static function warnAboutEmptyArrayElements(CodeBase $code_base, Context $context, Node $node) : void
+    public static function warnAboutEmptyArrayElements(CodeBase $code_base, Context $context, Node $node): void
     {
         if (isset($node->didWarnAboutEmptyArrayElements)) {
             return;
@@ -2401,7 +2401,7 @@ class ContextNode
      * to have a definition that was constant at this point in the codebase.
      * (This is a heuristic)
      */
-    public function isVarWithConstantDefinition(Node $node) : bool
+    public function isVarWithConstantDefinition(Node $node): bool
     {
         if ($node->kind !== ast\AST_VAR) {
             return false;
@@ -2441,7 +2441,7 @@ class ContextNode
         }
     }
 
-    private function handleErrorInOperation(Node $node, Error $e) : void
+    private function handleErrorInOperation(Node $node, Error $e): void
     {
         $this->emitIssue(
             Issue::TypeErrorInOperation,

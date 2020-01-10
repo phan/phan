@@ -321,7 +321,7 @@ class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
         }
         if ($expr->kind === ast\AST_CALL) {
             $function = $expr->children['expr'];
-            if (            !$function instanceof Node ||
+            if (!$function instanceof Node ||
                     $function->kind !== ast\AST_NAME ||
                     strcasecmp((string)($function->children['name'] ?? ''), 'is_null') !== 0
             ) {

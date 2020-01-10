@@ -61,7 +61,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visit(Node $unused_node) : Context
+    public function visit(Node $unused_node): Context
     {
         // TODO: if ($this->context->isInGlobalScope()) {
         //            copy local to global
@@ -81,7 +81,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
      *
      * TODO: Look at ways to improve accuracy based on inferences of the exit status of the node?
      */
-    public function mergeTryContext(Node $node) : Context
+    public function mergeTryContext(Node $node): Context
     {
         if (\count($this->child_context_list) !== 1) {
             throw new AssertionError("Expected one child context in " . __METHOD__);
@@ -101,7 +101,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         return $try_context;
     }
 
-    private static function willRemainingStatementsBeAnalyzedAsIfTryMightFail(Node $node) : bool
+    private static function willRemainingStatementsBeAnalyzedAsIfTryMightFail(Node $node): bool
     {
         if ($node->children['finally'] !== null) {
             // We want to analyze finally as if the try block (and one or more of the catch blocks) was or wasn't executed.
@@ -127,14 +127,14 @@ class ContextMergeVisitor extends KindVisitorImplementation
      * Returns a context resulting from merging the possible variable types from the catch statements
      * that will fall through.
      */
-    public function mergeCatchContext(Node $node) : Context
+    public function mergeCatchContext(Node $node): Context
     {
         if (\count($this->child_context_list) < 2) {
             throw new AssertionError("Expected at least two contexts in " . __METHOD__);
         }
         // Get the list of scopes for each branch of the
         // conditional
-        $scope_list = \array_map(static function (Context $context) : Scope {
+        $scope_list = \array_map(static function (Context $context): Scope {
             return $context->getScope();
         }, $this->child_context_list);
 
@@ -213,11 +213,11 @@ class ContextMergeVisitor extends KindVisitorImplementation
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitIf(Node $node) : Context
+    public function visitIf(Node $node): Context
     {
         // Get the list of scopes for each branch of the
         // conditional
-        $scope_list = \array_map(static function (Context $context) : Scope {
+        $scope_list = \array_map(static function (Context $context): Scope {
             return $context->getScope();
         }, $this->child_context_list);
 
@@ -242,11 +242,11 @@ class ContextMergeVisitor extends KindVisitorImplementation
     /**
      * Similar to visitIf, but only includes contexts up to (and including) the first context inferred to be unconditionally true.
      */
-    public function mergePossiblySingularChildContextList() : Context
+    public function mergePossiblySingularChildContextList(): Context
     {
         // Get the list of scopes for each branch of the
         // conditional
-        $scope_list = \array_map(static function (Context $context) : Scope {
+        $scope_list = \array_map(static function (Context $context): Scope {
             return $context->getScope();
         }, $this->child_context_list);
 
@@ -263,7 +263,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
     /**
      * @param array<mixed,Node|mixed> $children children of a Node of kind AST_IF
      */
-    private static function hasElse(array $children) : bool
+    private static function hasElse(array $children): bool
     {
         foreach ($children as $child_node) {
             if ($child_node instanceof Node
@@ -278,13 +278,13 @@ class ContextMergeVisitor extends KindVisitorImplementation
      * A generic helper method to merge multiple Contexts. (e.g. for use outside of BlockAnalysisVisitor)
      * If you wish to include the base context, add it to $child_context_list in the constructor of ContextMergeVisitor.
      */
-    public function combineChildContextList() : Context
+    public function combineChildContextList(): Context
     {
         $child_context_list = $this->child_context_list;
         if (\count($child_context_list) < 2) {
             throw new AssertionError("Expected at least two child contexts in " . __METHOD__);
         }
-        $scope_list = \array_map(static function (Context $context) : Scope {
+        $scope_list = \array_map(static function (Context $context): Scope {
             return $context->getScope();
         }, $child_context_list);
         return $this->combineScopeList($scope_list);
@@ -295,7 +295,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
      * (one of those scopes is permitted to be the parent scope)
      * @param list<Scope> $scope_list
      */
-    public function combineScopeList(array $scope_list) : Context
+    public function combineScopeList(array $scope_list): Context
     {
         if (\count($scope_list) < 2) {
             throw new AssertionError("Expected at least two child contexts in " . __METHOD__);
@@ -309,7 +309,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         // A function that determines if a variable is defined on
         // every branch
         $is_defined_on_all_branches =
-            function (string $variable_name) use ($scope_list) : bool {
+            function (string $variable_name) use ($scope_list): bool {
                 foreach ($scope_list as $scope) {
                     $variable = $scope->getVariableByNameOrNull($variable_name);
                     if (\is_object($variable)) {
@@ -338,7 +338,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         // Get the intersection of all types for all versions of
         // the variable from every side of the branch
         $union_type =
-            static function (string $variable_name) use ($scope_list) : UnionType {
+            static function (string $variable_name) use ($scope_list): UnionType {
                 $previous_type = null;
                 $type_list = [];
                 // Get a list of all variables with the given name from
@@ -389,7 +389,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
             // Skip variables that are only partially defined
             if (!$is_defined_on_all_branches($name)) {
                 if ($name === Context::VAR_NAME_THIS_PROPERTIES) {
-                    $type = $union_type($name)->asNormalizedTypes()->asMappedUnionType(static function (Type $type) : Type {
+                    $type = $union_type($name)->asNormalizedTypes()->asMappedUnionType(static function (Type $type): Type {
                         if (!$type instanceof ArrayShapeType) {
                             return $type;
                         }

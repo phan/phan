@@ -122,29 +122,28 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         );
         static $int_or_float = null;
 
-        if (        $left->isExclusivelyArray()
+        if ($left->isExclusivelyArray()
             || $right->isExclusivelyArray()
         ) {
             return UnionType::empty();
-        } elseif (            $left->hasType(FloatType::instance(false))
+        } elseif ($left->hasType(FloatType::instance(false))
             || $right->hasType(FloatType::instance(false))
         ) {
-            if (
-            $left->hasTypeMatchingCallback(
+            if ($left->hasTypeMatchingCallback(
                 static function (Type $type): bool {
                     return !($type instanceof FloatType);
                 }
             ) && $right->hasTypeMatchingCallback(
-                    static function (Type $type): bool {
+                static function (Type $type): bool {
                         return !($type instanceof FloatType);
-                    }
-                )
+                }
+            )
             ) {
                 return $int_or_float ?? ($int_or_float = UnionType::fromFullyQualifiedPHPDocString('int|float'));
             }
 
             return FloatType::instance(false)->asPHPDocUnionType();
-        } elseif (        $left->hasNonNullIntType()
+        } elseif ($left->hasNonNullIntType()
             && $right->hasNonNullIntType()
         ) {
             return IntType::instance(false)->asPHPDocUnionType();
@@ -538,7 +537,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             ArrayType::instance(false)->asPHPDocUnionType()
         );
 
-        if (        $left_is_array_like
+        if ($left_is_array_like
             && !$right->hasArrayLike()
             && !$right_can_cast_to_array
             && !$right->isEmpty()
@@ -550,7 +549,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                 $node->lineno ?? 0,
                 (string)$right->asNonLiteralType()
             );
-        } elseif (        $right_is_array_like
+        } elseif ($right_is_array_like
             && !$left->hasArrayLike()
             && !$left_can_cast_to_array
             && !$left->isEmpty()
@@ -786,7 +785,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                 return ArrayType::combineArrayTypesOverriding($left, $right, false);
             }
 
-            if (            $left_is_array
+            if ($left_is_array
                 && !$right->canCastToUnionType(
                     ArrayType::instance(false)->asPHPDocUnionType()
                 )

@@ -65,7 +65,7 @@ class Analysis
      * See autoload_internal_extension_signatures.
      * @throws InvalidArgumentException for invalid stub files
      */
-    public static function parseFile(CodeBase $code_base, string $file_path, bool $suppress_parse_errors = false, string $override_contents = null, bool $is_php_internal_stub = false) : Context
+    public static function parseFile(CodeBase $code_base, string $file_path, bool $suppress_parse_errors = false, string $override_contents = null, bool $is_php_internal_stub = false): Context
     {
         $original_file_path = $file_path;
         $code_base->setCurrentParsedFile($file_path);
@@ -241,7 +241,7 @@ class Analysis
      *
      * @param ?array<string,mixed> $file_filter if non-null, limit analysis to functions and methods declared in this array
      */
-    public static function analyzeFunctions(CodeBase $code_base, array $file_filter = null) : void
+    public static function analyzeFunctions(CodeBase $code_base, array $file_filter = null): void
     {
         $plugin_set = ConfigPluginSet::instance();
         $has_function_or_method_plugins = $plugin_set->hasAnalyzeFunctionPlugins() || $plugin_set->hasAnalyzeMethodPlugins();
@@ -251,7 +251,7 @@ class Analysis
             $plugin_set,
             $has_function_or_method_plugins,
             $file_filter
-        ) : void {
+        ): void {
             if ($function_or_method->isPHPInternal()) {
                 return;
             }
@@ -338,7 +338,7 @@ class Analysis
     /**
      * Loads extra logic for analyzing function and method calls.
      */
-    public static function loadMethodPlugins(CodeBase $code_base) : void
+    public static function loadMethodPlugins(CodeBase $code_base): void
     {
         $plugin_set = ConfigPluginSet::instance();
         $return_type_overrides = $plugin_set->getReturnTypeOverrides($code_base);
@@ -439,7 +439,7 @@ class Analysis
      *
      * @param ?array<string,mixed> $path_filter if non-null, limit analysis to classes in this array
      */
-    public static function analyzeClasses(CodeBase $code_base, array $path_filter = null) : void
+    public static function analyzeClasses(CodeBase $code_base, array $path_filter = null): void
     {
         $classes = $code_base->getUserDefinedClassMap();
         if (\is_array($path_filter)) {
@@ -465,7 +465,7 @@ class Analysis
      * Take a look at all globally accessible elements and see if
      * we can find any dead code that is never referenced
      */
-    public static function analyzeDeadCode(CodeBase $code_base) : void
+    public static function analyzeDeadCode(CodeBase $code_base): void
     {
         // Check to see if dead code detection is enabled. Keep
         // in mind that the results here are just a guess and
@@ -497,7 +497,7 @@ class Analysis
         string $file_path,
         ?Request $request,
         string $override_contents = null
-    ) : Context {
+    ): Context {
         // Set the file on the context
         $context = (new Context())->withFile($file_path);
         // @phan-suppress-next-line PhanAccessMethodInternal
@@ -565,7 +565,7 @@ class Analysis
         CodeBase $code_base,
         Context $context,
         Throwable $e
-    ) : void {
+    ): void {
         Issue::maybeEmit(
             $code_base,
             $context,

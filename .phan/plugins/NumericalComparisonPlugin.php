@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use ast\Node;
 use Phan\AST\UnionTypeVisitor;
@@ -19,7 +21,7 @@ class NumericalComparisonPlugin extends PluginV3 implements PostAnalyzeNodeCapab
      *
      * @override
      */
-    public static function getPostAnalyzeNodeVisitorClassName() : string
+    public static function getPostAnalyzeNodeVisitorClassName(): string
     {
         return NumericalComparisonVisitor::class;
     }
@@ -33,13 +35,13 @@ class NumericalComparisonPlugin extends PluginV3 implements PostAnalyzeNodeCapab
 class NumericalComparisonVisitor extends PluginAwarePostAnalysisVisitor
 {
     /** define equal operator list */
-    const BINARY_EQUAL_OPERATORS = [
+    protected const BINARY_EQUAL_OPERATORS = [
         ast\flags\BINARY_IS_EQUAL,
         ast\flags\BINARY_IS_NOT_EQUAL,
     ];
 
     /** define identical operator list */
-    const BINARY_IDENTICAL_OPERATORS = [
+    protected const BINARY_IDENTICAL_OPERATORS = [
         ast\flags\BINARY_IS_IDENTICAL,
         ast\flags\BINARY_IS_NOT_IDENTICAL,
     ];
@@ -49,7 +51,7 @@ class NumericalComparisonVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @override
      */
-    public function visitBinaryOp(Node $node) : Context
+    public function visitBinaryOp(Node $node): Context
     {
         // get the types of left and right values
         $left_node = $node->children['left'];
@@ -59,9 +61,7 @@ class NumericalComparisonVisitor extends PluginAwarePostAnalysisVisitor
 
         // non numerical values are not allowed in the operator equal(==, !=)
         if (in_array($node->flags, self::BINARY_EQUAL_OPERATORS, true)) {
-            if (!$left_type->isNonNullNumberType() &&
-                !$right_type->isNonNullNumberType()
-            ) {
+            if (!$left_type->isNonNullNumberType() && !$right_type->isNonNullNumberType()) {
                 $this->emit(
                     'PhanPluginNumericalComparison',
                     "non numerical values compared by the operators '==' or '!='",
@@ -70,8 +70,7 @@ class NumericalComparisonVisitor extends PluginAwarePostAnalysisVisitor
             }
             // numerical values are not allowed in the operator identical('===', '!==')
         } elseif (in_array($node->flags, self::BINARY_IDENTICAL_OPERATORS, true)) {
-            if ($left_type->isNonNullNumberType() ||
-                $right_type->isNonNullNumberType()) {
+            if ($left_type->isNonNullNumberType() || $right_type->isNonNullNumberType()) {
                 // TODO: different name for this issue type?
                 $this->emit(
                     'PhanPluginNumericalComparison',

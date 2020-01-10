@@ -19,7 +19,7 @@ class PropertyTypesAnalyzer
     /**
      * Check to see if the given class's properties have issues.
      */
-    public static function analyzePropertyTypes(CodeBase $code_base, Clazz $clazz) : void
+    public static function analyzePropertyTypes(CodeBase $code_base, Clazz $clazz): void
     {
         foreach ($clazz->getPropertyMap($code_base) as $property) {
             // This phase is done before the analysis phase, so there aren't any dynamic properties to filter out.

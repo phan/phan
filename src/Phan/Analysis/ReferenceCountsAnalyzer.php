@@ -36,7 +36,7 @@ class ReferenceCountsAnalyzer
      * Take a look at all globally accessible elements and see if
      * we can find any dead code that is never referenced
      */
-    public static function analyzeReferenceCounts(CodeBase $code_base) : void
+    public static function analyzeReferenceCounts(CodeBase $code_base): void
     {
         // Check to see if dead code detection is enabled. Keep
         // in mind that the results here are just a guess and
@@ -117,7 +117,7 @@ class ReferenceCountsAnalyzer
         ClassMap $class_map,
         int $total_count,
         int &$i
-    ) : \Generator {
+    ): \Generator {
         // Constants
         yield from self::getElementsFromElementListForDeferredAnalysis(
             $code_base,
@@ -156,7 +156,7 @@ class ReferenceCountsAnalyzer
         string $issue_type,
         int $total_count,
         int &$i
-    ) : void {
+    ): void {
         foreach ($element_list as $element) {
             CLI::progress('dead code', (++$i) / $total_count, $element);
             // Don't worry about internal elements
@@ -183,7 +183,7 @@ class ReferenceCountsAnalyzer
         iterable $element_list,
         int $total_count,
         int &$i
-    ) : \Generator {
+    ): \Generator {
         foreach ($element_list as $element) {
             CLI::progress('dead code', (++$i) / $total_count, $element);
             // Don't worry about internal elements
@@ -271,7 +271,7 @@ class ReferenceCountsAnalyzer
         CodeBase $code_base,
         AddressableElement $element,
         string $issue_type
-    ) : void {
+    ): void {
         /*
         print "digraph G {\n";
         foreach ($element->getReferenceList() as $file_ref) {
@@ -379,13 +379,13 @@ class ReferenceCountsAnalyzer
         );
     }
 
-    private static function hasSuppressionForUnreferencedClosure(CodeBase $code_base, Func $func) : bool
+    private static function hasSuppressionForUnreferencedClosure(CodeBase $code_base, Func $func): bool
     {
         $context = $func->getContext();
         return $context->withScope($context->getScope()->getParentScope())->hasSuppressIssue($code_base, Issue::UnreferencedClosure);
     }
 
-    private static function maybeWarnWriteOnlyProperty(CodeBase $code_base, Property $property) : void
+    private static function maybeWarnWriteOnlyProperty(CodeBase $code_base, Property $property): void
     {
         if ($property->isWriteOnly()) {
             // Handle annotations such as property-write and phan-write-only
@@ -418,7 +418,7 @@ class ReferenceCountsAnalyzer
         );
     }
 
-    private static function maybeWarnReadOnlyProperty(CodeBase $code_base, Property $property) : void
+    private static function maybeWarnReadOnlyProperty(CodeBase $code_base, Property $property): void
     {
         if ($property->isReadOnly()) {
             // Handle annotations such as property-read and phan-read-only.
@@ -460,7 +460,7 @@ class ReferenceCountsAnalyzer
     public static function findAlternateReferencedElementDeclaration(
         CodeBase $code_base,
         AddressableElement $element
-    ) : ?AddressableElement {
+    ): ?AddressableElement {
         $old_fqsen = $element->getFQSEN();
         if ($old_fqsen instanceof FullyQualifiedGlobalStructuralElement) {
             $fqsen = $old_fqsen->getCanonicalFQSEN();

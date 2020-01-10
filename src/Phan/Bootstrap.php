@@ -31,7 +31,7 @@ const LATEST_KNOWN_PHP_AST_VERSION = '1.0.5';
 /**
  * Dump instructions on how to install php-ast
  */
-function phan_output_ast_installation_instructions() : void
+function phan_output_ast_installation_instructions(): void
 {
     $ini_path = php_ini_loaded_file() ?: '(php.ini path could not be determined - try creating one at ' . dirname(PHP_BINARY) . '\\php.ini as a new empty file, or one based on php.ini.development or php.ini.production)';
     $configured_extension_dir = ini_get('extension_dir');
@@ -161,7 +161,7 @@ assert_options(ASSERT_CALLBACK, '');  // Can't explicitly set ASSERT_CALLBACK to
  * Print more of the backtrace than is done by default
  * @suppress PhanAccessMethodInternal
  */
-set_exception_handler(static function (Throwable $throwable) : void {
+set_exception_handler(static function (Throwable $throwable): void {
     fwrite(STDERR, "ERROR: $throwable\n");
     if (class_exists(CodeBase::class, false)) {
         $most_recent_file = CodeBase::getMostRecentlyParsedOrAnalyzedFile();
@@ -200,7 +200,7 @@ function with_disabled_phan_error_handler(Closure $closure)
 /**
  * Print a backtrace with values to stderr.
  */
-function phan_print_backtrace(bool $is_crash = false, int $frames_to_skip = 2) : void
+function phan_print_backtrace(bool $is_crash = false, int $frames_to_skip = 2): void
 {
     // Uncomment this if even trying to print the details would crash
     /*
@@ -250,7 +250,7 @@ function phan_print_backtrace(bool $is_crash = false, int $frames_to_skip = 2) :
  * @param string $errfile
  * @param int $errline
  */
-function phan_error_handler(int $errno, string $errstr, string $errfile, int $errline) : bool
+function phan_error_handler(int $errno, string $errstr, string $errfile, int $errline): bool
 {
     global $__no_echo_phan_errors;
     if ($__no_echo_phan_errors) {

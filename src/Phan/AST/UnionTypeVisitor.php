@@ -1499,7 +1499,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         );
         // TODO: Unify UnionTypeVisitor, AssignmentVisitor, and PostOrderAnalysisVisitor
         if (!$type->isEmpty() && !$type->hasObjectTypes()) {
-            if (            $class_node->kind !== \ast\AST_NAME &&
+            if ($class_node->kind !== \ast\AST_NAME &&
                     !$type->canCastToUnionType(StringType::instance(false)->asPHPDocUnionType())
             ) {
                 Issue::maybeEmit(
@@ -1678,7 +1678,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         // You can access string characters via array index,
         // so we'll add the string type to the result if we're
         // indexing something that could be a string
-        if (            $union_type->isNonNullStringType()
+        if ($union_type->isNonNullStringType()
             || ($union_type->canCastToUnionType($string_union_type) && !$union_type->hasMixedType())
         ) {
             if (Config::get_closest_target_php_version_id() < 70100 && $union_type->isNonNullStringType()) {
@@ -1711,8 +1711,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             try {
                 foreach ($union_type->asClassList($this->code_base, $this->context) as $class) {
                     $expanded_types = $class->getUnionType()->asExpandedTypes($this->code_base);
-                    if (
-                    $expanded_types->hasType($array_access_type) ||
+                    if ($expanded_types->hasType($array_access_type) ||
                             $expanded_types->hasType($simple_xml_element_type)
                     ) {
                         return $element_types;
@@ -2056,8 +2055,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         // Check that this is possibly valid, e.g. array<int, mixed>, Generator<int, mixed>, or iterable<int, mixed>
         // TODO: Warn if key_type contains nullable types (excluding VoidType)
         // TODO: Warn about union types that are partially invalid.
-        if (
-        $is_invalid_because_associative || !$key_type->isEmpty() && !$key_type->hasTypeMatchingCallback(static function (Type $type): bool {
+        if ($is_invalid_because_associative || !$key_type->isEmpty() && !$key_type->hasTypeMatchingCallback(static function (Type $type): bool {
             return $type instanceof IntType || $type instanceof MixedType;
         })
         ) {
@@ -2499,8 +2497,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 );
             }
 
-            if (
-            $expr_node instanceof Node &&
+            if ($expr_node instanceof Node &&
                     $expr_node->kind === ast\AST_VAR &&
                     $expr_node->children['name'] === 'this'
             ) {
@@ -2570,8 +2567,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             // just can't figure out.
         }
         $property_name = $property_name ?? $node->children['prop'];
-        if (
-        \is_string($property_name) && $expr_node instanceof Node &&
+        if (\is_string($property_name) && $expr_node instanceof Node &&
                 $expr_node->kind === ast\AST_VAR &&
                 $expr_node->children['name'] === 'this'
         ) {
@@ -2719,8 +2715,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
             $combined_union_type = null;
             foreach ($this->classListFromNode($class_node) as $class) {
-                if (
-                !$class->hasMethodWithName(
+                if (!$class->hasMethodWithName(
                     $this->code_base,
                     $method_name
                 )
@@ -2939,8 +2934,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     {
         $kind = $node->kind;
         // Anonymous class of form `new class { ... }`
-        if (
-        $kind === \ast\AST_CLASS
+        if ($kind === \ast\AST_CLASS
             && ($node->flags & \ast\flags\CLASS_ANONYMOUS)
         ) {
             // Generate a stable name for the anonymous class
@@ -3107,8 +3101,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     ): UnionType {
         // If this is a list, build a union type by
         // recursively visiting the child nodes
-        if (
-        $node instanceof Node
+        if ($node instanceof Node
             && $node->kind === \ast\AST_NAME_LIST
         ) {
             $union_type = UnionType::empty();
@@ -3126,8 +3119,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         // For simple nodes or very complicated nodes,
         // recurse
-        if (
-        !($node instanceof Node)
+        if (!($node instanceof Node)
             || $node->kind !== \ast\AST_NAME
         ) {
             return self::unionTypeFromNode(

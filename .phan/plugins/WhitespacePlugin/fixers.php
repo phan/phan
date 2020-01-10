@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * Fixers for --automatic-fix and WhitespacePlugin
+ */
+
 declare(strict_types=1);
 
 use Phan\CodeBase;
@@ -9,10 +13,6 @@ use Phan\Library\FileCacheEntry;
 use Phan\Plugin\Internal\IssueFixingPlugin\FileEdit;
 use Phan\Plugin\Internal\IssueFixingPlugin\FileEditSet;
 use Phan\Plugin\Internal\IssueFixingPlugin\IssueFixer;
-
-/**
- * Fixers for --automatic-fix and WhitespacePlugin
- */
 
 return [
     /**

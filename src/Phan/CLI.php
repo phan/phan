@@ -177,7 +177,7 @@ class CLI
     /**
      * @suppress PhanUnreferencedPublicMethod not used yet.
      */
-    public function getOutput() : OutputInterface
+    public function getOutput(): OutputInterface
     {
         return $this->output;
     }
@@ -211,7 +211,7 @@ class CLI
      * @param string|string[] $value
      * @return list<string>
      */
-    public static function readCommaSeparatedListOrLists($value) : array
+    public static function readCommaSeparatedListOrLists($value): array
     {
         if (is_array($value)) {
             $value = \implode(',', $value);
@@ -231,7 +231,7 @@ class CLI
      * @param list<string> $argv
      * @throws UsageException
      */
-    private static function checkAllArgsUsed(array $opts, array &$argv) : void
+    private static function checkAllArgsUsed(array $opts, array &$argv): void
     {
         $pruneargv = [];
         foreach ($opts as $opt => $value) {
@@ -269,7 +269,7 @@ class CLI
     /**
      * Creates a CLI object from argv
      */
-    public static function fromArgv() : CLI
+    public static function fromArgv(): CLI
     {
         global $argv;
 
@@ -301,7 +301,7 @@ class CLI
      * @throws UsageException
      * @internal - used for unit tests only
      */
-    public static function fromRawValues(array $opts, array $argv) : CLI
+    public static function fromRawValues(array $opts, array $argv): CLI
     {
         return new self($opts, $argv);
     }
@@ -899,7 +899,7 @@ class CLI
     /**
      * @param list<string> $argv
      */
-    private static function warnSuspiciousShortOptions(array $argv) : void
+    private static function warnSuspiciousShortOptions(array $argv): void
     {
         $opt_set = [];
         foreach (self::GETOPT_LONG_OPTIONS as $opt) {
@@ -921,7 +921,7 @@ class CLI
      * @param array<string|int,mixed> $opts
      * @throws UsageException if using a flag such as --init-level without --init
      */
-    private static function throwIfUsingInitModifiersWithoutInit(array $opts) : void
+    private static function throwIfUsingInitModifiersWithoutInit(array $opts): void
     {
         if (isset($opts['init'])) {
             return;
@@ -944,7 +944,7 @@ class CLI
      * Configure settings for colorized output for help and issue messages.
      * @param array<string,mixed> $opts
      */
-    private static function detectAndConfigureColorSupport(array $opts) : void
+    private static function detectAndConfigureColorSupport(array $opts): void
     {
         if (is_string($opts['color-scheme'] ?? false)) {
             \putenv('PHAN_COLOR_SCHEME=' . $opts['color-scheme']);
@@ -960,12 +960,12 @@ class CLI
         }
     }
 
-    private static function hasNoColorEnv() : bool
+    private static function hasNoColorEnv(): bool
     {
         return getenv('PHAN_DISABLE_COLOR_OUTPUT') || getenv('NO_COLOR');
     }
 
-    private static function checkValidFileConfig() : void
+    private static function checkValidFileConfig(): void
     {
         $include_analysis_file_list = Config::getValue('include_analysis_file_list');
         if ($include_analysis_file_list) {
@@ -1008,7 +1008,7 @@ class CLI
      * @param resource $output A valid CLI output stream
      * @suppress PhanUndeclaredFunction
      */
-    public static function supportsColor($output) : bool
+    public static function supportsColor($output): bool
     {
         if (self::isDaemonOrLanguageServer()) {
             return false;
@@ -1035,7 +1035,7 @@ class CLI
         return $stat ? 0020000 === ($stat['mode'] & 0170000) : false;
     }
 
-    private static function isProgressBarDisabledByDefault() : bool
+    private static function isProgressBarDisabledByDefault(): bool
     {
         if (self::isDaemonOrLanguageServer()) {
             return true;
@@ -1052,7 +1052,7 @@ class CLI
      * @param resource $output A valid CLI output stream
      * @suppress PhanUndeclaredFunction
      */
-    private static function isTerminal($output) : bool
+    private static function isTerminal($output): bool
     {
         if (\defined('PHP_WINDOWS_VERSION_BUILD')) {
             // https://www.php.net/sapi_windows_vt100_support
@@ -1072,7 +1072,7 @@ class CLI
         return $stat ? 0020000 === ($stat['mode'] & 0170000) : false;
     }
 
-    private static function checkPluginsExist() : void
+    private static function checkPluginsExist(): void
     {
         $all_plugins_exist = true;
         foreach (Config::getValue('plugins') as $plugin_path_or_name) {
@@ -1103,7 +1103,7 @@ class CLI
     /**
      * @throws UsageException if the combination of options is invalid
      */
-    private static function checkSaveBaselineOptionsAreValid() : void
+    private static function checkSaveBaselineOptionsAreValid(): void
     {
         if (Config::getValue('__save_baseline_path')) {
             if (Config::getValue('processes') !== 1) {
@@ -1117,7 +1117,7 @@ class CLI
         }
     }
 
-    private static function ensureServerRunsSingleAnalysisProcess() : void
+    private static function ensureServerRunsSingleAnalysisProcess(): void
     {
         if (!self::isDaemonOrLanguageServer()) {
             return;
@@ -1137,7 +1137,7 @@ class CLI
     /**
      * @internal (visible for tests)
      */
-    public static function getPluginSuggestionText(string $plugin_path_or_name) : string
+    public static function getPluginSuggestionText(string $plugin_path_or_name): string
     {
         $plugin_dirname = ConfigPluginSet::getBuiltinPluginDirectory();
         $candidates = [];
@@ -1158,7 +1158,7 @@ class CLI
     /**
      * Recompute the list of files (used in daemon mode or language server mode)
      */
-    public function recomputeFileList() : void
+    public function recomputeFileList(): void
     {
         $this->file_list = $this->file_list_in_config;
 
@@ -1194,7 +1194,7 @@ class CLI
 
             $this->file_list = \array_values(\array_filter(
                 $this->file_list,
-                static function (string $file) use ($exclude_file_set) : bool {
+                static function (string $file) use ($exclude_file_set): bool {
                     // Handle edge cases such as 'mydir/subdir\subsubdir' on Windows, if mydir/subdir was in the Phan config.
                     return !isset($exclude_file_set[\str_replace('\\', '/', $file)]);
                 }
@@ -1206,7 +1206,7 @@ class CLI
      * @param string[] $file_list
      * @return list<string> $file_list without duplicates
      */
-    public static function uniqueFileList(array $file_list) : array
+    public static function uniqueFileList(array $file_list): array
     {
         $result = [];
         foreach ($file_list as $file) {
@@ -1223,7 +1223,7 @@ class CLI
      * @return void - exits on usage error
      * @throws UsageException
      */
-    private static function checkCanDaemonize(string $protocol, string $opt) : void
+    private static function checkCanDaemonize(string $protocol, string $opt): void
     {
         $opt = strlen($opt) >= 2 ? "--$opt" : "-$opt";
         if (!in_array($protocol, \stream_get_transports(), true)) {
@@ -1243,7 +1243,7 @@ class CLI
      * @return list<string>
      * Get the set of files to analyze
      */
-    public function getFileList() : array
+    public function getFileList(): array
     {
         return $this->file_list;
     }
@@ -1285,7 +1285,7 @@ EOT;
      * Print usage message to stdout.
      * @internal
      */
-    public static function usage(string $msg = '', ?int $exit_code = EXIT_SUCCESS, int $usage_type = UsageException::PRINT_NORMAL, bool $forbid_color = true) : void
+    public static function usage(string $msg = '', ?int $exit_code = EXIT_SUCCESS, int $usage_type = UsageException::PRINT_NORMAL, bool $forbid_color = true): void
     {
         global $argv;
 
@@ -1678,7 +1678,7 @@ EOB
      *
      * NOTE: Callers should usually add a trailing newline.
      */
-    public static function printWarningToStderr(string $message) : void
+    public static function printWarningToStderr(string $message): void
     {
         self::printToStderr(self::colorizeHelpSectionIfSupported('WARNING: ') . $message);
     }
@@ -1689,7 +1689,7 @@ EOB
      *
      * NOTE: Callers should usually add a trailing newline.
      */
-    public static function printErrorToStderr(string $message) : void
+    public static function printErrorToStderr(string $message): void
     {
         self::printToStderr(self::colorizeHelpSectionIfSupported('ERROR: ') . $message);
     }
@@ -1698,7 +1698,7 @@ EOB
      * Prints to stderr, clearing the progress bar if needed.
      * NOTE: Callers should usually add a trailing newline.
      */
-    public static function printToStderr(string $message) : void
+    public static function printToStderr(string $message): void
     {
         if (self::shouldClearStderrBeforePrinting()) {
             // http://ascii-table.com/ansi-escape-sequences.php
@@ -1711,7 +1711,7 @@ EOB
     /**
      * Check if the progress bar should be cleared.
      */
-    private static function shouldClearStderrBeforePrinting() : bool
+    private static function shouldClearStderrBeforePrinting(): bool
     {
         // Don't clear if a regular progress bar isn't being rendered.
         if (!CLI::shouldShowProgress()) {
@@ -1731,7 +1731,7 @@ EOB
      * Prints a section of the help or usage message to stdout.
      * @internal
      */
-    public static function printHelpSection(string $section, bool $forbid_color = false, bool $toStderr = false) : void
+    public static function printHelpSection(string $section, bool $forbid_color = false, bool $toStderr = false): void
     {
         if (!$forbid_color) {
             $section = self::colorizeHelpSectionIfSupported($section);
@@ -1747,7 +1747,7 @@ EOB
      * Add ansi color codes to the CLI flags included in the --help or --extended-help message,
      * but only if the CLI/config flags and environment supports it.
      */
-    public static function colorizeHelpSectionIfSupported(string $section) : string
+    public static function colorizeHelpSectionIfSupported(string $section): string
     {
         if (Config::getValue('color_issue_messages') ?? (!self::hasNoColorEnv() && self::supportsColor(\STDOUT))) {
             $section = self::colorizeHelpSection($section);
@@ -1758,14 +1758,14 @@ EOB
     /**
      * Add ansi color codes to the CLI flags included in the --help or --extended-help message.
      */
-    public static function colorizeHelpSection(string $section) : string
+    public static function colorizeHelpSection(string $section): string
     {
-        $colorize_flag_cb = /** @param list<string> $match */ static function (array $match) : string {
+        $colorize_flag_cb = /** @param list<string> $match */ static function (array $match): string {
             [$_, $prefix, $cli_flag, $suffix] = $match;
             $colorized_cli_flag = Colorizing::colorizeTextWithColorCode(Colorizing::STYLES['green'], $cli_flag);
             return $prefix . $colorized_cli_flag . $suffix;
         };
-        $long_flag_regex = '(()((?:--)(?:' . \implode('|', array_map(static function (string $option) : string {
+        $long_flag_regex = '(()((?:--)(?:' . \implode('|', array_map(static function (string $option): string {
             return \preg_quote(\rtrim($option, ':'));
         }, self::GETOPT_LONG_OPTIONS)) . '))([^\w-]|$))';
         $section = \preg_replace_callback($long_flag_regex, $colorize_flag_cb, $section);
@@ -1773,7 +1773,7 @@ EOB
 
         $section = \preg_replace_callback($short_flag_regex, $colorize_flag_cb, $section);
 
-        $colorize_opt_cb = /** @param list<string> $match */ static function (array $match) : string {
+        $colorize_opt_cb = /** @param list<string> $match */ static function (array $match): string {
             $cli_flag = $match[0];
             return Colorizing::colorizeTextWithColorCode(Colorizing::STYLES['yellow'], $cli_flag);
         };
@@ -1794,14 +1794,14 @@ EOB
      */
     public static function getFlagSuggestionString(
         string $key
-    ) : string {
-        $trim = static function (string $s) : string {
+    ): string {
+        $trim = static function (string $s): string {
             return \rtrim($s, ':');
         };
-        $generate_suggestion = static function (string $suggestion) : string {
+        $generate_suggestion = static function (string $suggestion): string {
             return (strlen($suggestion) === 1 ? '-' : '--') . $suggestion;
         };
-        $generate_suggestion_text = static function (string $suggestion, string ...$other_suggestions) use ($generate_suggestion) : string {
+        $generate_suggestion_text = static function (string $suggestion, string ...$other_suggestions) use ($generate_suggestion): string {
             $suggestions = \array_merge([$suggestion], $other_suggestions);
             return ' (did you mean ' . \implode(' or ', array_map($generate_suggestion, $suggestions)) . '?)';
         };
@@ -1860,7 +1860,7 @@ EOB
      * Checks if a file (not a folder) which has potentially not yet been created on disk should be parsed.
      * @param string $file_path a relative path to a file within the project
      */
-    public static function shouldParse(string $file_path) : bool
+    public static function shouldParse(string $file_path): bool
     {
         $exclude_file_regex = Config::getValue('exclude_file_regex');
         if ($exclude_file_regex && self::isPathMatchedByRegex($exclude_file_regex, $file_path)) {
@@ -1892,7 +1892,7 @@ EOB
      */
     private static function directoryNameToFileList(
         string $directory_name
-    ) : array {
+    ): array {
         $file_list = [];
 
         try {
@@ -1905,7 +1905,7 @@ EOB
             }
 
             $exclude_file_regex = Config::getValue('exclude_file_regex');
-            $filter_folder_or_file = /** @param mixed $unused_key */ static function (\SplFileInfo $file_info, $unused_key, \RecursiveIterator $iterator) use ($file_extensions, $exclude_file_regex) : bool {
+            $filter_folder_or_file = /** @param mixed $unused_key */ static function (\SplFileInfo $file_info, $unused_key, \RecursiveIterator $iterator) use ($file_extensions, $exclude_file_regex): bool {
                 if (\in_array($file_info->getBaseName(), ['.', '..'], true)) {
                     // Exclude '.' and '..'
                     return false;
@@ -1970,7 +1970,7 @@ EOB
     /**
      * Returns true if the progress bar was requested and it makes sense to display.
      */
-    public static function shouldShowProgress() : bool
+    public static function shouldShowProgress(): bool
     {
         return (Config::getValue('progress_bar') || Config::getValue('debug_output')) &&
             !Config::getValue('dump_ast') &&
@@ -1981,7 +1981,7 @@ EOB
      * Returns true if the long version of the progress bar should be shown.
      * Precondition: shouldShowProgress is true.
      */
-    public static function shouldShowLongProgress() : bool
+    public static function shouldShowLongProgress(): bool
     {
         return Config::getValue('__long_progress_bar');
     }
@@ -1989,7 +1989,7 @@ EOB
     /**
      * Returns true if this is a daemon or language server responding to requests
      */
-    public static function isDaemonOrLanguageServer() : bool
+    public static function isDaemonOrLanguageServer(): bool
     {
         return Config::getValue('daemonize_tcp') ||
             Config::getValue('daemonize_socket') ||
@@ -1999,7 +1999,7 @@ EOB
     /**
      * Should this show --debug output
      */
-    public static function shouldShowDebugOutput() : bool
+    public static function shouldShowDebugOutput(): bool
     {
         return Config::getValue('debug_output') && !self::isDaemonOrLanguageServer();
     }
@@ -2017,7 +2017,7 @@ EOB
     public static function isPathMatchedByRegex(
         string $exclude_file_regex,
         string $path_name
-    ) : bool {
+    ): bool {
         // Make this behave the same way on Linux/Unix and on Windows.
         if (DIRECTORY_SEPARATOR === '\\') {
             $path_name = \str_replace(DIRECTORY_SEPARATOR, '/', $path_name);
@@ -2026,7 +2026,7 @@ EOB
     }
 
     // Bound the percentage to [0, 1]
-    private static function boundPercentage(float $p) : float
+    private static function boundPercentage(float $p): float
     {
         return \min(\max($p, 0.0), 1.0);
     }
@@ -2057,7 +2057,7 @@ EOB
         $details = null,
         ?int $offset = null,
         ?int $count = null
-    ) : void {
+    ): void {
         if (self::shouldShowDebugOutput()) {
             self::debugProgress($msg, $p, $details);
             return;
@@ -2105,7 +2105,7 @@ EOB
     /**
      * Returns the number of columns in the terminal
      */
-    private static function getColumns() : int
+    private static function getColumns(): int
     {
         static $columns = null;
         if ($columns === null) {
@@ -2118,7 +2118,7 @@ EOB
     /**
      * @internal
      */
-    public static function outputProgressLine(string $msg, float $p, float $memory, float $peak, ?int $offset = null, ?int $count = null) : void
+    public static function outputProgressLine(string $msg, float $p, float $memory, float $peak, ?int $offset = null, ?int $count = null): void
     {
         if (self::shouldShowLongProgress()) {
             self::showLongProgress($msg, $p, $memory, $offset, $count);
@@ -2158,7 +2158,7 @@ EOB
     /**
      * Print an end to progress bars or debug output
      */
-    public static function endProgressBar() : void
+    public static function endProgressBar(): void
     {
         static $did_end = false;
         if ($did_end) {
@@ -2180,7 +2180,7 @@ EOB
     /**
      * @param ?(string|FQSEN|AddressableElement) $details
      */
-    public static function debugProgress(string $msg, float $p, $details) : void
+    public static function debugProgress(string $msg, float $p, $details): void
     {
         $pct = \sprintf("%d%%", (int)(100 * self::boundPercentage($p)));
 
@@ -2209,7 +2209,7 @@ EOB
     /**
      * Write a line of output for debugging.
      */
-    public static function debugOutput(string $line) : void
+    public static function debugOutput(string $line): void
     {
         if (self::shouldShowDebugOutput()) {
             fwrite(STDERR, $line . PHP_EOL);
@@ -2221,7 +2221,7 @@ EOB
      * The length in the console is the positive integer $length
      * @see https://en.wikipedia.org/wiki/Block_Elements
      */
-    private static function renderInnerProgressBar(int $length, float $p) : string
+    private static function renderInnerProgressBar(int $length, float $p): string
     {
         $current_float = $p * $length;
         $current = (int)$current_float;
@@ -2255,7 +2255,7 @@ EOB
     /**
      * Shows a long version of the progress bar, suitable for Continuous Integration logs
      */
-    private static function showLongProgress(string $msg, float $p, float $memory, ?int $offset, ?int $count) : void
+    private static function showLongProgress(string $msg, float $p, float $memory, ?int $offset, ?int $count): void
     {
         $buf = self::renderLongProgress($msg, $p, $memory, $offset, $count);
         // Do a single write call (more efficient than multiple calls)
@@ -2264,7 +2264,7 @@ EOB
         }
     }
 
-    private static function renderLongProgress(string $msg, float $p, float $memory, ?int $offset, ?int $count) : string
+    private static function renderLongProgress(string $msg, float $p, float $memory, ?int $offset, ?int $count): string
     {
         $buf = '';
         if ($msg !== self::$current_progress_state) {
@@ -2343,7 +2343,7 @@ EOB
      * @suppress PhanUndeclaredFunction, UnusedSuppression the function exists only in Windows.
      * @suppress PhanImpossibleTypeComparison, PhanRedundantCondition, PhanImpossibleCondition, PhanSuspiciousValueComparison the value for strtoupper is inferred as a literal.
      */
-    public static function doesTerminalSupportUtf8() : bool
+    public static function doesTerminalSupportUtf8(): bool
     {
         if (getenv('PHAN_NO_UTF8')) {
             return false;
@@ -2363,7 +2363,7 @@ EOB
      * the configuration.
      * @throws UsageException
      */
-    private function maybeReadConfigFile(bool $require_config_exists) : void
+    private function maybeReadConfigFile(bool $require_config_exists): void
     {
 
         // If the file doesn't exist here, try a directory up
@@ -2408,7 +2408,7 @@ EOB
      * This will assert that ast\parse_code or a polyfill can be called.
      * @throws AssertionError on failure
      */
-    private static function ensureASTParserExists() : void
+    private static function ensureASTParserExists(): void
     {
         if (Config::getValue('use_polyfill_parser')) {
             return;
@@ -2468,7 +2468,7 @@ EOB
     /**
      * This duplicates the check in Bootstrap.php, in case opcache.file_cache has outdated information about whether extension_loaded('ast') is true. exists.
      */
-    private static function sanityCheckAstVersion() : void
+    private static function sanityCheckAstVersion(): void
     {
         $ast_version = (string)\phpversion('ast');
         if (\version_compare($ast_version, '1.0.0') <= 0) {
@@ -2497,7 +2497,7 @@ EOB
      *
      * This is useful for checking if caches (e.g. of ASTs) should be invalidated.
      */
-    public static function getDevelopmentVersionId() : string
+    public static function getDevelopmentVersionId(): string
     {
         $news_path = \dirname(__DIR__) . '/NEWS.md';
         $version = self::PHAN_VERSION;
@@ -2511,7 +2511,7 @@ EOB
      * If any problematic extensions are installed, then restart without them
      * @suppress PhanAccessMethodInternal
      */
-    public function restartWithoutProblematicExtensions() : void
+    public function restartWithoutProblematicExtensions(): void
     {
         $extensions_to_disable = [];
         if (self::shouldRestartToExclude('xdebug')) {
@@ -2560,12 +2560,12 @@ EOT
         }
     }
 
-    private static function shouldRestartToExclude(string $extension) : bool
+    private static function shouldRestartToExclude(string $extension): bool
     {
         return \extension_loaded($extension) && !getenv('PHAN_ALLOW_' . \strtoupper($extension));
     }
 
-    private static function willUseMultipleProcesses() : bool
+    private static function willUseMultipleProcesses(): bool
     {
         if (Config::getValue('processes') > 1) {
             return true;

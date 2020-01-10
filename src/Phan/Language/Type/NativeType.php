@@ -51,52 +51,52 @@ abstract class NativeType extends Type
         return $instance;
     }
 
-    public function isNativeType() : bool
+    public function isNativeType(): bool
     {
         return true;
     }
 
-    public function isSelfType() : bool
+    public function isSelfType(): bool
     {
         return false;
     }
 
-    public function isArrayAccess() : bool
+    public function isArrayAccess(): bool
     {
         return false;
     }
 
-    public function isArrayOrArrayAccessSubType(CodeBase $unused_code_base) : bool
+    public function isArrayOrArrayAccessSubType(CodeBase $unused_code_base): bool
     {
         return false;
     }
 
-    public function isCountable(CodeBase $_) : bool
+    public function isCountable(CodeBase $_): bool
     {
         return false;
     }
 
-    public function isTraversable() : bool
+    public function isTraversable(): bool
     {
         return false;
     }
 
-    public function isGenerator() : bool
+    public function isGenerator(): bool
     {
         return false;
     }
 
-    public function isObject() : bool
+    public function isObject(): bool
     {
         return false;
     }
 
-    public function isObjectWithKnownFQSEN() : bool
+    public function isObjectWithKnownFQSEN(): bool
     {
         return false;
     }
 
-    public function isPossiblyObject() : bool
+    public function isPossiblyObject(): bool
     {
         return false;
     }
@@ -106,7 +106,7 @@ abstract class NativeType extends Type
      * True if this Type can be cast to the given Type
      * cleanly
      */
-    protected function canCastToNonNullableType(Type $type) : bool
+    protected function canCastToNonNullableType(Type $type): bool
     {
         // Anything can cast to mixed or ?mixed
         // Not much of a distinction in nullable mixed, except to emphasize in comments that it definitely can be null.
@@ -137,7 +137,7 @@ abstract class NativeType extends Type
      * True if this Type can be cast to the given Type
      * cleanly
      */
-    protected function canCastToNonNullableTypeWithoutConfig(Type $type) : bool
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type): bool
     {
         // Anything can cast to mixed or ?mixed
         // Not much of a distinction in nullable mixed, except to emphasize in comments that it definitely can be null.
@@ -163,7 +163,7 @@ abstract class NativeType extends Type
             ?? parent::canCastToNonNullableTypeWithoutConfig($type);
     }
 
-    protected function isSubtypeOfNonNullableType(Type $type) : bool
+    protected function isSubtypeOfNonNullableType(Type $type): bool
     {
         // Anything is a subtype of mixed or ?mixed
         if ($type instanceof MixedType) {
@@ -190,12 +190,12 @@ abstract class NativeType extends Type
     /**
      * @return array<string,array<string,bool>>
      */
-    private static function initializeTypeCastingMatrix() : array
+    private static function initializeTypeCastingMatrix(): array
     {
         /**
          * @return array<string,bool>
          */
-        $generate_row = static function (string ...$permitted_cast_type_names) : array {
+        $generate_row = static function (string ...$permitted_cast_type_names): array {
             return [
                 ArrayType::NAME    => in_array(ArrayType::NAME, $permitted_cast_type_names, true),
                 IterableType::NAME => in_array(IterableType::NAME, $permitted_cast_type_names, true),
@@ -245,7 +245,7 @@ abstract class NativeType extends Type
         ];
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         // Native types can just use their
         // non-fully-qualified names
@@ -258,7 +258,7 @@ abstract class NativeType extends Type
         return $string;
     }
 
-    public function asFQSENString() : string
+    public function asFQSENString(): string
     {
         return $this->name;
     }
@@ -279,7 +279,7 @@ abstract class NativeType extends Type
     public function asExpandedTypes(
         CodeBase $code_base,
         int $recursion_depth = 0
-    ) : UnionType {
+    ): UnionType {
         return $this->asPHPDocUnionType();
     }
 
@@ -299,11 +299,11 @@ abstract class NativeType extends Type
     public function asExpandedTypesPreservingTemplate(
         CodeBase $code_base,
         int $recursion_depth = 0
-    ) : UnionType {
+    ): UnionType {
         return $this->asPHPDocUnionType();
     }
 
-    public function hasTemplateParameterTypes() : bool
+    public function hasTemplateParameterTypes(): bool
     {
         return false;
     }
@@ -311,7 +311,7 @@ abstract class NativeType extends Type
     /**
      * @return ?UnionType returns the iterable value's union type if this is a subtype of iterable, null otherwise.
      */
-    public function iterableKeyUnionType(CodeBase $unused_code_base) : ?UnionType
+    public function iterableKeyUnionType(CodeBase $unused_code_base): ?UnionType
     {
         return null;
     }
@@ -319,7 +319,7 @@ abstract class NativeType extends Type
     /**
      * @return ?UnionType returns the iterable value's union type if this is a subtype of iterable, null otherwise.
      */
-    public function iterableValueUnionType(CodeBase $unused_code_base) : ?UnionType
+    public function iterableValueUnionType(CodeBase $unused_code_base): ?UnionType
     {
         return null;
     }
@@ -330,11 +330,11 @@ abstract class NativeType extends Type
      */
     public function withTemplateParameterTypeMap(
         array $unused_template_parameter_type_map
-    ) : UnionType {
+    ): UnionType {
         return $this->asPHPDocUnionType();
     }
 
-    public function isTemplateSubtypeOf(Type $unused_type) : bool
+    public function isTemplateSubtypeOf(Type $unused_type): bool
     {
         return false;
     }
@@ -344,17 +344,17 @@ abstract class NativeType extends Type
      *
      * Overridden in subclasses.
      */
-    public function hasTemplateTypeRecursive() : bool
+    public function hasTemplateTypeRecursive(): bool
     {
         return false;
     }
 
-    public function getTemplateTypeExtractorClosure(CodeBase $unused_code_base, TemplateType $unused_template_type) : ?\Closure
+    public function getTemplateTypeExtractorClosure(CodeBase $unused_code_base, TemplateType $unused_template_type): ?\Closure
     {
         return null;
     }
 
-    public function asFunctionInterfaceOrNull(CodeBase $unused_codebase, Context $unused_context) : ?\Phan\Language\Element\FunctionInterface
+    public function asFunctionInterfaceOrNull(CodeBase $unused_codebase, Context $unused_context): ?\Phan\Language\Element\FunctionInterface
     {
         // overridden in subclasses
         return null;
@@ -364,24 +364,24 @@ abstract class NativeType extends Type
      * @return Generator<mixed,Type>
      * @suppress PhanImpossibleCondition deliberately creating empty generator
      */
-    public function getReferencedClasses() : Generator
+    public function getReferencedClasses(): Generator
     {
         if (false) {
             yield $this;
         }
     }
 
-    public function asObjectType() : ?Type
+    public function asObjectType(): ?Type
     {
         return null;
     }
 
-    public function asIterable(CodeBase $_) : ?Type
+    public function asIterable(CodeBase $_): ?Type
     {
         return null;
     }
 
-    public function hasStaticOrSelfTypesRecursive(CodeBase $_) : bool
+    public function hasStaticOrSelfTypesRecursive(CodeBase $_): bool
     {
         return false;
     }

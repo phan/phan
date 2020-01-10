@@ -21,7 +21,7 @@ class ClassInheritanceAnalyzer
     public static function analyzeClassInheritance(
         CodeBase $code_base,
         Clazz $clazz
-    ) : void {
+    ): void {
 
         // Don't worry about internal classes
         if ($clazz->isPHPInternal()) {
@@ -88,7 +88,7 @@ class ClassInheritanceAnalyzer
         CodeBase $code_base,
         Clazz $clazz,
         string $issue_type
-    ) : bool {
+    ): bool {
         if (!$code_base->hasClassWithFQSEN($fqsen)) {
             $filter = null;
             switch ($issue_type) {
@@ -133,7 +133,7 @@ class ClassInheritanceAnalyzer
         Clazz $source_class,
         Clazz $target_class,
         CodeBase $code_base
-    ) : void {
+    ): void {
         if ($target_class->isNSInternal($code_base)
             && !$target_class->isNSInternalAccessFromContext(
                 $code_base,

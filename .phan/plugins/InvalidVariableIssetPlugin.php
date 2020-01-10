@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use ast\Node;
 use Phan\Config;
@@ -19,7 +21,7 @@ class InvalidVariableIssetPlugin extends PluginV3 implements PostAnalyzeNodeCapa
      *
      * @override
      */
-    public static function getPostAnalyzeNodeVisitorClassName() : string
+    public static function getPostAnalyzeNodeVisitorClassName(): string
     {
         return InvalidVariableIssetVisitor::class;
     }
@@ -49,7 +51,7 @@ class InvalidVariableIssetVisitor extends PluginAwarePostAnalysisVisitor
     // A plugin's visitors should not override visit() unless they need to.
 
     /** @override */
-    public function visitIsset(Node $node) : Context
+    public function visitIsset(Node $node): Context
     {
         $argument = $node->children['var'];
         $variable = $argument;

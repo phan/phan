@@ -30,7 +30,7 @@ class Frame
      * Utilities to encode values might be seen in Phan or its plugins in a crash.
      * @param mixed $value
      */
-    public static function encodeValue($value, int $max_depth = 2) : string
+    public static function encodeValue($value, int $max_depth = 2): string
     {
         if (is_object($value)) {
             if ($value instanceof IssueInstance) {
@@ -110,9 +110,9 @@ class Frame
      * Utility to show more information about an unexpected error
      * @param array<string,mixed> $frame the frame from debug_backtrace()
      */
-    public static function frameToString(array $frame) : string
+    public static function frameToString(array $frame): string
     {
-        return \with_disabled_phan_error_handler(static function () use ($frame) : string {
+        return \with_disabled_phan_error_handler(static function () use ($frame): string {
             $invocation = $frame['function'] ?? '(unknown)';
             if (isset($frame['class'])) {
                 $invocation = $frame['class'] . ($frame['type'] ?? '::') . $invocation;
@@ -132,7 +132,7 @@ class Frame
     /**
      * Returns details about a call to asExpandedTypes that hit a RecursionDepthException
      */
-    public static function getExpandedTypesDetails() : string
+    public static function getExpandedTypesDetails(): string
     {
         $result = [];
         foreach (\debug_backtrace() as $frame) {

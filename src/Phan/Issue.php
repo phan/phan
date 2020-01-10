@@ -710,7 +710,7 @@ class Issue
      */
     public static function templateToFormatString(
         string $template
-    ) : string {
+    ): string {
         /** @param list<string> $matches */
         return \preg_replace_callback('/{([A-Z_]+)}/', static function (array $matches) use ($template): string {
             $key = $matches[1];
@@ -731,7 +731,7 @@ class Issue
     /**
      * @return array<string,Issue>
      */
-    public static function issueMap() : array
+    public static function issueMap(): array
     {
         static $error_map;
         return $error_map ?? ($error_map = self::generateIssueMap());
@@ -740,7 +740,7 @@ class Issue
     /**
      * @return array<string,Issue>
      */
-    private static function generateIssueMap() : array
+    private static function generateIssueMap(): array
     {
         // phpcs:disable Generic.Files.LineLength
         /**
@@ -4657,7 +4657,7 @@ class Issue
     /**
      * @param list<Issue> $issue_list the declared Issue types
      */
-    private static function getNextTypeId(array $issue_list, int $invalid_type_id) : int
+    private static function getNextTypeId(array $issue_list, int $invalid_type_id): int
     {
         for ($id = $invalid_type_id + 1; true; $id++) {
             foreach ($issue_list as $error) {
@@ -4672,7 +4672,7 @@ class Issue
     /**
      * @param list<Issue> $error_list
      */
-    private static function sanityCheckErrorList(array $error_list) : void
+    private static function sanityCheckErrorList(array $error_list): void
     {
         $error_map = [];
         $unique_type_id_set = [];
@@ -4712,7 +4712,7 @@ class Issue
     /**
      * Returns the type name of this issue (e.g. Issue::UndeclaredVariable)
      */
-    public function getType() : string
+    public function getType(): string
     {
         return $this->type;
     }
@@ -4720,7 +4720,7 @@ class Issue
     /**
      * @return int (Unique integer code corresponding to getType())
      */
-    public function getTypeId() : int
+    public function getTypeId(): int
     {
         return $this->type_id;
     }
@@ -4728,7 +4728,7 @@ class Issue
     /**
      * Returns the category of this issue (e.g. Issue::CATEGORY_UNDEFINED)
      */
-    public function getCategory() : int
+    public function getCategory(): int
     {
         return $this->category;
     }
@@ -4737,7 +4737,7 @@ class Issue
      * @return string
      * The name of this issue's category
      */
-    public function getCategoryName() : string
+    public function getCategoryName(): string
     {
         return self::getNameForCategory($this->category);
     }
@@ -4746,7 +4746,7 @@ class Issue
      * @return string
      * The name of the category
      */
-    public static function getNameForCategory(int $category) : string
+    public static function getNameForCategory(int $category): string
     {
         return self::CATEGORY_NAME[$category] ?? '';
     }
@@ -4754,7 +4754,7 @@ class Issue
     /**
      * Returns the severity of this issue (Issue::SEVERITY_LOW, Issue::SEVERITY_NORMAL, or Issue::SEVERITY_CRITICAL)
      */
-    public function getSeverity() : int
+    public function getSeverity(): int
     {
         return $this->severity;
     }
@@ -4763,7 +4763,7 @@ class Issue
      * @return string
      * A descriptive name of the severity of the issue
      */
-    public function getSeverityName() : string
+    public function getSeverityName(): string
     {
         switch ($this->severity) {
             case self::SEVERITY_LOW:
@@ -4780,7 +4780,7 @@ class Issue
     /**
      * @suppress PhanUnreferencedPublicMethod (no reporters use this right now)
      */
-    public function getRemediationDifficulty() : int
+    public function getRemediationDifficulty(): int
     {
         return $this->remediation_difficulty;
     }
@@ -4788,7 +4788,7 @@ class Issue
     /**
      * Returns the template text of this issue (e.g. `'Variable ${VARIABLE} is undeclared'`)
      */
-    public function getTemplate() : string
+    public function getTemplate(): string
     {
         return $this->template;
     }
@@ -4797,7 +4797,7 @@ class Issue
      * Returns the number of arguments expected for the format string $this->getTemplate()
      * @suppress PhanAccessReadOnlyProperty lazily computed
      */
-    public function getExpectedArgumentCount() : int
+    public function getExpectedArgumentCount(): int
     {
         return $this->argument_count ?? $this->argument_count = ConversionSpec::computeExpectedArgumentCount($this->template);
     }
@@ -4805,7 +4805,7 @@ class Issue
     /**
      * @return string - template with the information needed to colorize this.
      */
-    public function getTemplateRaw() : string
+    public function getTemplateRaw(): string
     {
         return $this->template_raw;
     }
@@ -4820,7 +4820,7 @@ class Issue
         array $template_parameters = [],
         Suggestion $suggestion = null,
         int $column = 0
-    ) : IssueInstance {
+    ): IssueInstance {
         // TODO: Add callable to expanded union types instead
         return new IssueInstance(
             $this,
@@ -4835,7 +4835,7 @@ class Issue
     /**
      * @throws InvalidArgumentException
      */
-    public static function fromType(string $type) : Issue
+    public static function fromType(string $type): Issue
     {
         $error_map = self::issueMap();
 
@@ -4871,7 +4871,7 @@ class Issue
         string $file,
         int $line,
         ...$template_parameters
-    ) : void {
+    ): void {
         self::emitWithParameters(
             $type,
             $file,
@@ -4903,7 +4903,7 @@ class Issue
         array $template_parameters,
         Suggestion $suggestion = null,
         int $column = 0
-    ) : void {
+    ): void {
         $issue = self::fromType($type);
 
         self::emitInstance(
@@ -4920,7 +4920,7 @@ class Issue
      */
     public static function emitInstance(
         IssueInstance $issue_instance
-    ) : void {
+    ): void {
         Phan::getIssueCollector()->collectIssue($issue_instance);
     }
 
@@ -4938,7 +4938,7 @@ class Issue
         CodeBase $code_base,
         Context $context,
         IssueInstance $issue_instance
-    ) : void {
+    ): void {
         // If this issue type has been suppressed in
         // the config, ignore it
 
@@ -4981,7 +4981,7 @@ class Issue
         string $issue_type,
         int $lineno,
         ...$parameters
-    ) : void {
+    ): void {
         self::maybeEmitWithParameters(
             $code_base,
             $context,
@@ -5018,7 +5018,7 @@ class Issue
         array $parameters,
         Suggestion $suggestion = null,
         int $column = 0
-    ) : void {
+    ): void {
         if (self::shouldSuppressIssue(
             $code_base,
             $context,
@@ -5050,7 +5050,7 @@ class Issue
         int $lineno,
         array $parameters,
         Suggestion $suggestion = null
-    ) : bool {
+    ): bool {
         if (Config::getValue('disable_suppression')) {
             return false;
         }

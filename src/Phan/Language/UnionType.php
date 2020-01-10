@@ -2072,7 +2072,7 @@ class UnionType implements Serializable
 
         if (Config::get_null_casts_as_any_type()) {
             // null <-> null
-            if (            $this->isType($null_type)
+            if ($this->isType($null_type)
                 || $target->isType($null_type)
             ) {
                 return true;
@@ -2087,16 +2087,14 @@ class UnionType implements Serializable
         }
 
         // mixed <-> mixed
-        if (
-        \in_array($mixed_type, $type_set, true)
+        if (\in_array($mixed_type, $type_set, true)
             || \in_array($mixed_type, $target_type_set, true)
         ) {
             return true;
         }
 
         // int -> float
-        if (
-        \in_array($int_type, $type_set, true)
+        if (\in_array($int_type, $type_set, true)
             && \in_array($float_type, $target_type_set, true)
         ) {
             return true;
@@ -2170,8 +2168,7 @@ class UnionType implements Serializable
         if (Config::get_null_casts_as_any_type()) {
             // null <-> null
             // (this fork has weaker type casting rules than phan/phan, using hasType instead of isType)
-            if (
-            $this->hasType(NullType::instance(false))
+            if ($this->hasType(NullType::instance(false))
                 || $target->isType(NullType::instance(false))
             ) {
                 return true;
@@ -2185,16 +2182,14 @@ class UnionType implements Serializable
         }
 
         // mixed <-> mixed
-        if (
-        \in_array($mixed_type, $type_set, true)
+        if (\in_array($mixed_type, $type_set, true)
             || \in_array($mixed_type, $target_type_set, true)
         ) {
             return true;
         }
 
         // int -> float
-        if (
-        \in_array($int_type, $type_set, true)
+        if (\in_array($int_type, $type_set, true)
             && \in_array($float_type, $target_type_set, true)
         ) {
             return true;
@@ -2266,16 +2261,14 @@ class UnionType implements Serializable
         }
 
         // mixed <-> mixed
-        if (
-        \in_array($mixed_type, $type_set, true)
+        if (\in_array($mixed_type, $type_set, true)
             || \in_array($mixed_type, $target_type_set, true)
         ) {
             return true;
         }
 
         // int -> float
-        if (
-        \in_array($int_type, $type_set, true)
+        if (\in_array($int_type, $type_set, true)
             && \in_array($float_type, $target_type_set, true)
         ) {
             return true;
@@ -2340,8 +2333,7 @@ class UnionType implements Serializable
     {
         foreach ($this->type_set as $type) {
             if ($type instanceof IntType && !$allow_casting) {
-                if (
-                !$target->hasTypeMatchingCallback(static function (Type $type): bool {
+                if (!$target->hasTypeMatchingCallback(static function (Type $type): bool {
                     return $type instanceof IntType || $type instanceof MixedType;
                 })
                 ) {
@@ -2403,8 +2395,7 @@ class UnionType implements Serializable
         }
 
         // int -> float
-        if (
-        \in_array($int_type, $type_set, true)
+        if (\in_array($int_type, $type_set, true)
             && \in_array($float_type, $target_type_set, true)
         ) {
             return true;
@@ -3697,8 +3688,7 @@ class UnionType implements Serializable
         // If array is in there, then it can be any type
         if (\in_array($array_type_nonnull, $type_set, true)) {
             $builder->addType($mixed_type);
-        } elseif (
-        \in_array($mixed_type, $type_set, true)
+        } elseif (\in_array($mixed_type, $type_set, true)
             || \in_array($array_type_nullable, $type_set, true)
         ) {
             // Same for mixed
@@ -3746,8 +3736,7 @@ class UnionType implements Serializable
             // TODO: More consistency in what causes this check to infer null
             $result[] = $mixed_type;
             $result[] = $null_type;
-        } elseif (
-        \in_array($array_type_nonnull, $type_set, true) ||
+        } elseif (\in_array($array_type_nonnull, $type_set, true) ||
             // If array is in there, then it can be any type
             \in_array($mixed_type, $type_set, true)
         ) {

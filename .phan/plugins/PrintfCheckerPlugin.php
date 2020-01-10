@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Phan\Plugin\PrintfCheckerPlugin;
 
-
 // Don't pollute the global namespace
 
 use ast;
@@ -543,7 +542,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
                         self::ERR_UNTRANSLATED_NOT_PERCENT
                     );
                 }
-                if (                $is_translated && $spec->width &&
+                if ($is_translated && $spec->width &&
                         ($spec->padding_char === '' || $spec->padding_char === ' ')
                 ) {
                     $intended_string = $spec->toCanonicalStringWithWidthAsPosition();
