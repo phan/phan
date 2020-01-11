@@ -77,7 +77,7 @@ class StringUtil
      * @phan-assert string $str TODO: This unconditionally sets the type of $str to string - add an equivalent that only sets the type when true.
      * @psalm-assert-if-true string $str
      */
-    public static function isNonZeroLengthString($str) : bool
+    public static function isNonZeroLengthString($str): bool
     {
         return \is_string($str) && $str !== '';
     }

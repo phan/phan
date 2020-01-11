@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Phan\ForkPool;
 
 use Closure;
-use TypeError;
 use Phan\Library\StringUtil;
+use TypeError;
 
 /**
  * This reads messages from a forked worker.

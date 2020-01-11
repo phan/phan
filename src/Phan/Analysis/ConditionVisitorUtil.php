@@ -241,7 +241,7 @@ trait ConditionVisitorUtil
      *
      * @suppress PhanUndeclaredProperty did_check_redundant_condition
      */
-    private function checkErrorProneTruthyCast(Node $node, Context $context, UnionType $union_type) : void
+    private function checkErrorProneTruthyCast(Node $node, Context $context, UnionType $union_type): void
     {
         // Here, we only perform the redundant condition checks on whichever ran first, to avoid warning about both impossible and redundant conditions
         if (isset($node->did_check_error_prone_truthy)) {

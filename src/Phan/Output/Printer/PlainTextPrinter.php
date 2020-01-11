@@ -11,6 +11,7 @@ use Phan\Library\StringUtil;
 use Phan\Output\Colorizing;
 use Phan\Output\IssuePrinterInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+
 use function is_string;
 
 /**

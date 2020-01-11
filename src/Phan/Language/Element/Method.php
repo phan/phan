@@ -628,7 +628,7 @@ class Method extends ClassElement implements FunctionInterface
         return $method;
     }
 
-    private static function computeNewTypeForComment(CodeBase $code_base, UnionType $signature_union_type, UnionType $comment_return_union_type) : UnionType
+    private static function computeNewTypeForComment(CodeBase $code_base, UnionType $signature_union_type, UnionType $comment_return_union_type): UnionType
     {
         $new_type = $comment_return_union_type;
         foreach ($comment_return_union_type->getTypeSet() as $type) {
