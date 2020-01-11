@@ -574,7 +574,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         }
         return $this->modifyPropertyOfThisSimple(
             $node,
-            function (UnionType $type): UnionType {
+            function (UnionType $type) use ($node): UnionType {
                 if (Config::getValue('error_prone_truthy_condition_detection')) {
                     $this->checkErrorProneTruthyCast($node, $this->context, $type);
                 }
