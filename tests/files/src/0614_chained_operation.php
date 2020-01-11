@@ -24,7 +24,7 @@ function test_false_positive_preg_match($docComment) {
     if (\is_string($docComment)
             && \preg_match('#\*[ \t]*+@deprecated[ \t]*+(.*?)\r?+\n[ \t]*+\*(?:[ \t]*+@|/$)#s', $docComment, $deprecation)
     ) {
-        $deprecation = \trim(\preg_replace('#[ \t]*\r?\n[ \t]*+\*[ \t]*+#', ' ', $deprecation[1]));
+        '@phan-debug-var $deprecation'; $deprecation = \trim(\preg_replace('#[ \t]*\r?\n[ \t]*+\*[ \t]*+#', ' ', $deprecation[1]));
     } else {
         $deprecation = null;
     }

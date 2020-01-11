@@ -538,13 +538,17 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                 $element_types = $array_type->genericArrayElementTypes();
                 $key_type_enum = GenericArrayType::keyTypeFromUnionTypeKeys($array_type);
                 if ($key_type_enum !== GenericArrayType::KEY_MIXED) {
-                    $key_type = GenericArrayType::unionTypeForKeyType($key_type_enum);
+                    $key_type = GenericArrayType::unionTypeForKeyType($key_type_enum)->withRealTypeSet($int_or_string->getRealTypeSet());
                 } else {
                     $key_type = $int_or_string;
                 }
                 $array_shape_type = ArrayShapeType::fromFieldTypes([$key_type, $element_types], false);
 
-                return new UnionType([$array_shape_type, $false_type], false, [ArrayType::instance(false), $false_type]);
+                return new UnionType(
+                    [$array_shape_type, $false_type],
+                    true,
+                    [ArrayShapeType::fromFieldTypes([$int_or_string, MixedType::instance(false)->asRealUnionType()], false), $false_type]
+                );
             }
             return $mixed_type->asPHPDocUnionType();
         };

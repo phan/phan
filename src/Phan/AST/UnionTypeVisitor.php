@@ -1585,6 +1585,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                     }
                     return $element_type->withNullableRealTypes()->withIsPossiblyUndefined(false);
                 }
+                // echo "Returning $element_type for {$union_type->getDebugRepresentation()}\n";
                 return $element_type;
             }
         }
@@ -1595,6 +1596,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             $node->children['dim'],
             true
         );
+        // echo "Getting dim $dim_type for $union_type\n";
 
         // Figure out what the types of accessed array
         // elements would be.
@@ -1890,7 +1892,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      *  returns false if there the offset was invalid and there are no ways to get that offset
      *  returns null if the dim_value offset could not be found, but there were other generic array types
      */
-    public static function resolveArrayShapeElementTypesForOffset(UnionType $union_type, $dim_value)
+    public static function resolveArrayShapeElementTypesForOffset(UnionType $union_type, $dim_value, bool $is_computing_real_type_set = false)
     {
         /**
          * @var bool $has_non_array_shape_type this will be true if there are types that support array access
@@ -1955,6 +1957,15 @@ class UnionTypeVisitor extends AnalysisVisitor
                     }, $resulting_element_type->getRealTypeSet())
                 );
             }
+        }
+        if (!$resulting_element_type->containsNullableOrUndefined() && $union_type->containsNullableOrUndefined()) {
+            $resulting_element_type = $resulting_element_type->nullableClone();
+        }
+        if (!$is_computing_real_type_set) {
+            $resulting_real_element_type = self::resolveArrayShapeElementTypesForOffset($union_type->getRealUnionType(), $dim_value, true);
+            return $resulting_element_type->withRealTypeSet(
+                \is_object($resulting_real_element_type) ? $resulting_real_element_type->getRealTypeSet() : []
+            );
         }
         return $resulting_element_type;
     }
