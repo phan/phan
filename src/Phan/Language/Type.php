@@ -553,7 +553,7 @@ class Type
      * Handle the current analysis state changing to parse, analyze, method, etc.
      * Clear any memoizations of expanded types.
      */
-    public static function handleChangeCurrentProgressState(?string $state) : void
+    public static function handleChangeCurrentProgressState(?string $state): void
     {
         self::$current_progress_state = $state;
     }
@@ -578,7 +578,8 @@ class Type
      * This replaces Memoize::memoize.
      * @suppress PhanPartialTypeMismatchReturn
      */
-    public function memoize(string $key, Closure $fn) {
+    public function memoize(string $key, Closure $fn)
+    {
         if (($this->memoized_data['current_progress_state'] ?? null) !== self::$current_progress_state) {
             $this->memoized_data = [
                 'current_progress_state' => self::$current_progress_state,
