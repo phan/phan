@@ -32,6 +32,7 @@ function foo2(array $options)
 function foo3(array $options)
 {
     if (is_string($options['hooks'])) {
+        '@phan-debug-var $options';  // TODO: More precise
         echo intdiv($options['hooks'], 2);  // should infer string and warn
     } else {
         echo strlen($options['hooks']);  // should infer array and warn

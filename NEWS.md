@@ -24,6 +24,7 @@ New Features(Analysis):
 + Normalize union types of generic array elements after fetching `$x[$offset]`.
   (e.g. change `bool|false|null` to `?bool`)
 + Normalize union types of result of `??` operator.
++ Fix false positives in redundant condition detection for the real types of array accesses. (#3638)
 
 Bug fixes:
 + Fix a crash analyzing assignment operations on `$GLOBALS` such as `$GLOBALS['var'] += expr;` (#3615)

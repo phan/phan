@@ -1540,10 +1540,12 @@ trait ConditionVisitorUtil
         }
         // Give the field an unused stub name and compute the new type
         $old_field_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $context, $node);
+        // echo "Old field type is {$old_field_type->getDebugRepresentation()}\n";
         $field_variable = new Variable($context, "__phan", $old_field_type, 0);
         $type_modification_callback($this->code_base, $context, $field_variable, $args);
         $new_field_type = $field_variable->getUnionType();
-        if ($new_field_type->isEqualTo($old_field_type)) {
+        // echo "New field type is {$new_field_type->getDebugRepresentation()}\n";
+        if ($new_field_type->isIdenticalTo($old_field_type)) {
             return $context;
         }
         // Treat if (is_array($x['field'])) similarly to `$x['field'] = some_function_returning_array()
@@ -1583,8 +1585,7 @@ trait ConditionVisitorUtil
         $property_variable = new Variable($context, "__phan", $old_property_type, 0);
         $type_modification_callback($this->code_base, $context, $property_variable, $args);
         $new_property_type = $property_variable->getUnionType();
-        if ($new_property_type->isEqualTo($old_property_type)) {
-            // This didn't change anything
+        if ($new_property_type->isIdenticalTo($old_property_type)) {
             return $context;
         }
         return $context->withThisPropertySetToTypeByName($property_name, $new_property_type);
@@ -1607,7 +1608,7 @@ trait ConditionVisitorUtil
         // Give the property a type and compute the new type
         $old_property_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $context, $node);
         $new_property_type = $type_mapping_callback($old_property_type);
-        if ($new_property_type->isEqualTo($old_property_type)) {
+        if ($new_property_type->isIdenticalTo($old_property_type)) {
             // This didn't change anything
             return $context;
         }

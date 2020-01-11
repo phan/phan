@@ -10,7 +10,10 @@ call_user_func(function() {
 $x = function(array $arr) {
     $val = each($arr);
     if (is_array($val)) {
-        echo count($val[0]);
+        '@phan-debug-var $val';
+        $v = $val[0];
+        '@phan-debug-var $v';
+        echo count($v);
         echo strlen($val[1]);  // unknown type, should not warn
     }
 };
