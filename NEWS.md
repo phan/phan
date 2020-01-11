@@ -9,6 +9,9 @@ New features(CLI, Configs):
   Error messages will continue to include UTF-8 when part of the error.
 + Allow `phan --init` to complete even if composer.json has no configured `autoload` directories,
   as long as at least one directory or file was configured.
++ Add a setting `error_prone_truthy_condition_detection` that can be enabled to warn about error-prone truthiness/falsiness checks.  New issue types:
+  - `PhanSuspiciousTruthyCondition` (e.g. for `if ($x)` where `$x` is `object|int`)
+  - `PhanSuspiciousTruthyString` (e.g. for `?string` - `'0'` is also falsey in PHP)
 
 New Features(Analysis):
 + Infer that merging defined variables with possibly undefined variables is also possibly undefined. (#1942)
