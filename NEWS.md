@@ -31,6 +31,8 @@ Plugins:
 
 Maintenance:
 + Infer that `explode()` is possibly the empty list when `$limit` is possibly negative. (#3617)
++ Make Phan's code follow more PSR-12 style guidelines
+  (`<?php` on its own line, `function(): T` instead of `function() : T`, declare visibility for class constants)
 
 Dec 29 2019, Phan 2.4.6
 -----------------------
