@@ -11,6 +11,7 @@ use Phan\Language\Element\UnaddressableTypedElement;
 use Phan\Language\FQSEN;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
+use Phan\Library\StringUtil;
 
 /**
  * Contains utilities for colorizing Phan's issue messages (and colorized CLI output in general)
@@ -136,7 +137,7 @@ class Colorizing
             }
             $prefix = $matches[1];
             $template = $matches[2];
-            if ($prefix) {
+            if (StringUtil::isNonZeroLengthString($prefix)) {
                 $arg = $prefix . $arg;
             }
             return self::colorizeField($template, $arg);
@@ -246,6 +247,7 @@ class Colorizing
     {
         self::$color_scheme = self::DEFAULT_COLOR_FOR_TEMPLATE;
         $env_color_scheme = \getenv('PHAN_COLOR_SCHEME');
+        // @phan-suppress-next-line PhanSuspiciousTruthyString allow 0 to be equal to unset.
         if ($env_color_scheme) {
             $data = self::loadColorScheme($env_color_scheme);
             if ($data) {

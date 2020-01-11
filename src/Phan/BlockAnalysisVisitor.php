@@ -1584,6 +1584,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * - What the context would be if that expression were falsey (NegatedConditionVisitor)
      *
      * The code in visitIfElem had to be inlined in order to properly modify the associated contexts.
+     * @suppress PhanSuspiciousTruthyCondition, PhanSuspiciousTruthyString the value Phan infers for conditions can be array literals. This seems to be handled properly.
      */
     public function visitIf(Node $node): Context
     {

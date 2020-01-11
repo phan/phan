@@ -133,7 +133,7 @@ class PhanPHPLinter
         // TODO: Check that everything in $this->file_list is in the same path.
         // $path = reset($opts->file_list);
         $real = realpath($path);
-        if (!$real) {
+        if (!is_string($real)) {
             self::debugError("Could not resolve $path\n");
         }
         // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
@@ -161,7 +161,7 @@ class PhanPHPLinter
         $real_files = [];
         foreach ($opts->file_list as $path) {
             $real = realpath($path);
-            if (!$real) {
+            if (!is_string($real)) {
                 self::debugInfo("could not find real path to '$path'");
                 continue;
             }
@@ -345,7 +345,7 @@ class PhanPHPLinterOpts
      */
     public function usage($msg = '', $exit_code = 0)
     {
-        if (!$msg || $this->print_usage_on_error) {
+        if (strlen($msg) > 0 || $this->print_usage_on_error) {
             global $argv;
             if (!empty($msg)) {
                 echo "$msg\n";

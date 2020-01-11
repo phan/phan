@@ -6,6 +6,7 @@ namespace Phan\Output\Printer;
 
 use Phan\Issue;
 use Phan\IssueInstance;
+use Phan\Library\StringUtil;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -41,7 +42,7 @@ class CapturingJSONPrinter extends JSONPrinter
             $message['location']['lines']['begin_column'] = $instance->getColumn();
         }
         $suggestion = $instance->getSuggestionMessage();
-        if ($suggestion) {
+        if (StringUtil::isNonZeroLengthString($suggestion)) {
             $message['suggestion'] = $suggestion;
         }
         $this->messages[] = $message;

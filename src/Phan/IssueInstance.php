@@ -150,7 +150,7 @@ class IssueInstance
             return null;
         }
         $text = $this->suggestion->getMessage();
-        if (!$text) {
+        if (!StringUtil::isNonZeroLengthString($text)) {
             return null;
         }
         return StringUtil::asSingleLineUtf8($text);
@@ -196,7 +196,7 @@ class IssueInstance
     {
         $message = $this->message;
         $suggestion = $this->getSuggestionMessage();
-        if ($suggestion) {
+        if (StringUtil::isNonZeroLengthString($suggestion)) {
             return $message . ' (' . $suggestion . ')';
         }
         return $message;

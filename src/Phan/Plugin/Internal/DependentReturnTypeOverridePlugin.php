@@ -115,6 +115,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
                 return $nullable_string_union_type;
             }
             $result = (new ContextNode($code_base, $context, $args[1]))->getEquivalentPHPScalarValue();
+            // @phan-suppress-next-line PhanSuspiciousTruthyString
             if (\is_numeric($result) && $result) {
                 return $string_union_type;
             }

@@ -8,6 +8,7 @@ use Exception;
 use Phan\CodeBase;
 use Phan\Language\Element\Comment\Builder;
 use Phan\Language\UnionType;
+use Phan\Library\StringUtil;
 
 use function count;
 
@@ -30,7 +31,7 @@ class MarkupDescription
         $markup = $element->getMarkupDescription();
         $result = "```php\n$markup\n```";
         $extracted_doc_comment = self::extractDescriptionFromDocCommentOrAncestor($element, $code_base);
-        if ($extracted_doc_comment) {
+        if (StringUtil::isNonZeroLengthString($extracted_doc_comment)) {
             $result .= "\n\n" . $extracted_doc_comment;
         }
 
@@ -131,7 +132,7 @@ class MarkupDescription
         array &$checked_class_fqsens = []
     ): ?string {
         $extracted_doc_comment = self::extractDescriptionFromDocComment($element, $code_base);
-        if ($extracted_doc_comment) {
+        if (StringUtil::isNonZeroLengthString($extracted_doc_comment)) {
             return $extracted_doc_comment;
         }
         if ($element instanceof ClassElement) {
@@ -170,10 +171,9 @@ class MarkupDescription
             }
 
             $extracted_doc_comment = self::extractDescriptionFromDocCommentOrAncestor($ancestor_element, $code_base, $checked_class_fqsens);
-            if ($extracted_doc_comment) {
+            if (StringUtil::isNonZeroLengthString($extracted_doc_comment)) {
                 return $extracted_doc_comment;
             }
-            $extracted_doc_comment = self::extractDescriptionFromDocCommentOfAncestorOfClassElement($ancestor_element, $code_base, $checked_class_fqsens);
         }
         return null;
     }
@@ -187,7 +187,7 @@ class MarkupDescription
         CodeBase $code_base = null
     ): ?string {
         $extracted_doc_comment = self::extractDescriptionFromDocCommentRaw($element);
-        if ($extracted_doc_comment) {
+        if (StringUtil::isNonZeroLengthString($extracted_doc_comment)) {
             return $extracted_doc_comment;
         }
 
@@ -202,7 +202,7 @@ class MarkupDescription
                 }
                 $key = \strtolower(\ltrim((string)$fqsen, '\\'));
                 $result = self::loadFunctionDescriptionMap()[$key] ?? null;
-                if ($result) {
+                if (StringUtil::isNonZeroLengthString($result)) {
                     return $result;
                 }
                 if ($code_base && $element instanceof Method) {
@@ -210,7 +210,7 @@ class MarkupDescription
                         if (\strtolower($element->getName()) === '__construct') {
                             $class = $element->getClass($code_base);
                             $class_description = self::extractDescriptionFromDocComment($class, $code_base);
-                            if ($class_description) {
+                            if (StringUtil::isNonZeroLengthString($class_description)) {
                                 return "Construct an instance of `{$class->getFQSEN()}`.\n\n$class_description";
                             }
                         }
@@ -240,7 +240,7 @@ class MarkupDescription
     private static function extractDescriptionFromDocCommentRaw(AddressableElementInterface $element): ?string
     {
         $doc_comment = $element->getDocComment();
-        if (!$doc_comment) {
+        if (!StringUtil::isNonZeroLengthString($doc_comment)) {
             return null;
         }
         $comment_category = null;
@@ -252,7 +252,7 @@ class MarkupDescription
             $comment_category = Comment::ON_FUNCTION;
         }
         $extracted_doc_comment = self::extractDocComment($doc_comment, $comment_category, $element->getUnionType());
-        return $extracted_doc_comment ?: null;
+        return StringUtil::isNonZeroLengthString($extracted_doc_comment) ? $extracted_doc_comment : null;
     }
 
     /**
@@ -261,7 +261,7 @@ class MarkupDescription
     public static function extractParamTagsFromDocComment(AddressableElementInterface $element, bool $with_param_details = true): array
     {
         $doc_comment = $element->getDocComment();
-        if (!$doc_comment) {
+        if (!\is_string($doc_comment)) {
             return [];
         }
         if (\strpos($doc_comment, '@param') === false) {

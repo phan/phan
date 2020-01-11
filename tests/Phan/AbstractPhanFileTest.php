@@ -7,6 +7,7 @@ namespace Phan\Tests;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Type;
+use Phan\Library\StringUtil;
 use Phan\Output\Collector\BufferingCollector;
 use Phan\Output\Printer\PlainTextPrinter;
 use Phan\Phan;
@@ -38,7 +39,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
     }
 
     /**
-     * @return array<string,array{0:array,1:string}> Array of <filename => [filename]>
+     * @return array<mixed,array{0:list<string>,1:string}> Array of <filename => [filename]>
      */
     abstract public function getTestFiles(): array;
 
@@ -159,7 +160,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
         }
 
         // Overlay any test-specific config modifiers
-        if ($config_file_path) {
+        if (StringUtil::isNonZeroLengthString($config_file_path)) {
             foreach (require($config_file_path) as $key => $value) {
                 Config::setValue($key, $value);
             }
@@ -252,7 +253,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
             $output,
             "Unexpected output in {$test_file_list[0]}"
         );
-        if ($config_file_path) {
+        if (StringUtil::isNonZeroLengthString($config_file_path)) {
             foreach (require($config_file_path) as $key => $_) {
                 Config::setValue($key, Config::DEFAULT_CONFIGURATION[$key]);
             }

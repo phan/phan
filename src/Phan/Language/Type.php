@@ -65,6 +65,7 @@ use Phan\Language\Type\StringType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\Type\VoidType;
+use Phan\Library\StringUtil;
 use Phan\Library\Tuple5;
 
 use function count;
@@ -85,6 +86,7 @@ use function trim;
  *
  *
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
+ * @phan-file-suppress PhanSuspiciousTruthyString
  * phpcs:disable Generic.NamingConventions.UpperCaseConstantName
  * @phan-pure types/union types are immutable, but technically not pure (some methods cause issues to be emitted with Issue::maybeEmit()).
  *            However, it's useful to treat them as if they were pure, to warn about not using return types.
@@ -319,6 +321,12 @@ class Type
     private static $canonical_object_map = [];
 
     /**
+     * @var ?string the progress state of the app. Used to clear memoizations for Type instances not in canonical_object_map.
+     * TODO: Look into WeakMap and garbage collection in php 8, if it is supported?
+     */
+    protected static $current_progress_state = null;
+
+    /**
      * @param string $namespace
      * The (optional) namespace of the type such as '\'
      * or '\Phan\Language'.
@@ -541,6 +549,48 @@ class Type
         }
     }
 
+    /**
+     * Handle the current analysis state changing to parse, analyze, method, etc.
+     * Clear any memoizations of expanded types.
+     */
+    public static function handleChangeCurrentProgressState(?string $state): void
+    {
+        self::$current_progress_state = $state;
+    }
+
+    /**
+     * Memoize the result of $fn(), saving the result
+     * with key $key.
+     *
+     * @template T
+     *
+     * @param string $key
+     * The key to use for storing the result of the
+     * computation.
+     *
+     * @param Closure():T $fn
+     * A function to compute only once for the given
+     * $key.
+     *
+     * @return T
+     * The result of the given computation is returned.
+     *
+     * This replaces Memoize::memoize.
+     * @suppress PhanPartialTypeMismatchReturn
+     */
+    public function memoize(string $key, Closure $fn)
+    {
+        if (($this->memoized_data['current_progress_state'] ?? null) !== self::$current_progress_state) {
+            $this->memoized_data = [
+                'current_progress_state' => self::$current_progress_state,
+                $key => $fn(),
+            ];
+        } elseif (!\array_key_exists($key, $this->memoized_data)) {
+            $this->memoized_data[$key] = $fn();
+        }
+
+        return $this->memoized_data[$key];
+    }
 
     /**
      * Constructs a type based on the input type and the provided mapping
@@ -1555,7 +1605,7 @@ class Type
         bool $is_nullable
     ): FunctionLikeDeclarationType {
         $return_type = \array_pop($shape_components);
-        if (!$return_type) {
+        if (!StringUtil::isNonZeroLengthString($return_type)) {
             throw new AssertionError("Expected a return type");
         }
         if ($return_type[0] === '(' && \substr($return_type, -1) === ')') {
@@ -2614,7 +2664,7 @@ class Type
      * @param CodeBase $code_base
      * The code base to use in order to find super classes, etc.
      *
-     * @param $recursion_depth
+     * @param int $recursion_depth
      * This thing has a tendency to run-away on me. This tracks
      * how bad I messed up by seeing how far the expanded types
      * go
@@ -2624,14 +2674,20 @@ class Type
      * a superset of this type.
      *
      * TODO: Add equivalent to preserve the real type
+     *
+     * @suppress PhanPartialTypeMismatchReturn
      */
     public function asExpandedTypes(
         CodeBase $code_base,
         int $recursion_depth = 0
     ): UnionType {
-        $memoized = $this->memoized_data['expanded_types'] ?? null;
-        if ($memoized) {
-            return $memoized;
+        if (($this->memoized_data['current_progress_state'] ?? null) === self::$current_progress_state) {
+            $memoized = $this->memoized_data['expanded_types'] ?? null;
+            if (\is_object($memoized)) {
+                return $memoized;
+            }
+        } else {
+            $this->memoized_data = ['current_progress_state' => self::$current_progress_state];
         }
         // We're going to assume that if the type hierarchy
         // is taller than some value we probably messed up
@@ -2716,14 +2772,20 @@ class Type
      * @return UnionType
      * Expands class types to all inherited classes returning
      * a superset of this type.
+     *
+     * @suppress PhanPartialTypeMismatchReturn
      */
     public function asExpandedTypesPreservingTemplate(
         CodeBase $code_base,
         int $recursion_depth = 0
     ): UnionType {
-        $memoized = $this->memoized_data['expanded_types_preserving_template'] ?? null;
-        if ($memoized) {
-            return $memoized;
+        if (($this->memoized_data['current_progress_state'] ?? null) === self::$current_progress_state) {
+            $memoized = $this->memoized_data['expanded_types_preserving_template'] ?? null;
+            if (\is_object($memoized)) {
+                return $memoized;
+            }
+        } else {
+            $this->memoized_data = ['current_progress_state' => self::$current_progress_state];
         }
         // We're going to assume that if the type hierarchy
         // is taller than some value we probably messed up

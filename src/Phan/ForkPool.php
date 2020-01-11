@@ -10,6 +10,7 @@ use InvalidArgumentException;
 use Phan\ForkPool\Progress;
 use Phan\ForkPool\Reader;
 use Phan\ForkPool\Writer;
+use Phan\Library\StringUtil;
 
 use function count;
 use function intval;
@@ -318,7 +319,7 @@ class ForkPool
         $saw_errors = false;
         foreach ($this->readers as $reader) {
             $errors = $reader->computeErrorsAfterRead();
-            if ($errors) {
+            if (StringUtil::isNonZeroLengthString($errors)) {
                 \fwrite(\STDERR, "Saw errors for an analysis worker:\n" . $errors);
                 $saw_errors = true;
             }

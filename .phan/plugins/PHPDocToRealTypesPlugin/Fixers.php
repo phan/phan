@@ -63,7 +63,7 @@ class Fixers
 
     private static function computeEditsForReturnTypeDeclaration(FunctionLike $declaration, string $return_type): ?FileEditSet
     {
-        if (!$return_type) {
+        if ($return_type === '') {
             return null;
         }
         // @phan-suppress-next-line PhanUndeclaredProperty
@@ -79,7 +79,7 @@ class Fixers
 
     private static function computeEditsForParamTypeDeclaration(FileCacheEntry $contents, FunctionLike $declaration, string $param_name, string $param_type): ?FileEditSet
     {
-        if (!$param_type) {
+        if ($param_type === '') {
             return null;
         }
         // @phan-suppress-next-line PhanUndeclaredProperty

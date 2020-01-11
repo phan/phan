@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phan\ForkPool;
 
 use Closure;
+use Phan\Library\StringUtil;
 use TypeError;
 
 /**
@@ -110,7 +111,7 @@ class Reader
     public function computeErrorsAfterRead(): ?string
     {
         $error = "";
-        if ($this->buffer) {
+        if (StringUtil::isNonZeroLengthString($this->buffer)) {
             $error .= \sprintf("Saw non-empty buffer of length %d\n", \strlen($this->buffer));
         }
         if ($this->parsing_mode !== self::PARSE_HEADERS) {
@@ -122,6 +123,6 @@ class Reader
         if (!isset($this->read_messages[Writer::TYPE_ISSUE_LIST])) {
             $error .= "Expected to have received a list of 0 or more issues (as the last notification)\n";
         }
-        return $error ?: null;
+        return $error !== '' ? $error : null;
     }
 }

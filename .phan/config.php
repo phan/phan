@@ -219,6 +219,11 @@ return [
     // variables set in branches of loops, and global variables.
     'redundant_condition_detection' => true,
 
+    // Set to true in order to attempt to detect error-prone truthiness/falsiness checks.
+    //
+    // This is not suitable for all codebases.
+    'error_prone_truthy_condition_detection' => true,
+
     // Enable this to warn about harmless redundant use for classes and namespaces such as `use Foo\bar` in namespace Foo.
     //
     // Note: This does not affect warnings about redundant uses in the global namespace.

@@ -667,7 +667,7 @@ class UnionType implements Serializable
          * @return UnionType|null
          */
         $get_for_global_context = static function (?string $type_name): ?UnionType {
-            if (!$type_name) {
+            if (!\is_string($type_name) || $type_name === '') {
                 return null;
             }
 

@@ -14,6 +14,7 @@ use Phan\ForkPool\Writer;
 use Phan\Language\Element\AddressableElement;
 use Phan\Language\Element\Comment\Builder;
 use Phan\Language\FQSEN;
+use Phan\Language\Type;
 use Phan\Library\Restarter;
 use Phan\Library\StderrLogger;
 use Phan\Library\StringUtil;
@@ -287,10 +288,7 @@ class CLI
             self::usage($e->getMessage(), (int)$e->getCode(), $e->print_type, $e->forbid_color);
             exit((int)$e->getCode());  // unreachable
         } catch (ExitException $e) {
-            $message = $e->getMessage();
-            if ($message) {
-                fwrite(STDERR, $message);
-            }
+            \fwrite(STDERR, $e->getMessage());
             exit($e->getCode());
         }
     }
@@ -1876,7 +1874,7 @@ EOB
             return false;
         }
         $extension = \pathinfo($file_path, \PATHINFO_EXTENSION);
-        if (!$extension || !in_array($extension, $file_extensions, true)) {
+        if (!is_string($extension) || !in_array($extension, $file_extensions, true)) {
             return false;
         }
 
@@ -2062,6 +2060,10 @@ EOB
         ?int $offset = null,
         ?int $count = null
     ): void {
+        if ($msg !== self::$current_progress_state_any) {
+            self::$current_progress_state_any = $msg;
+            Type::handleChangeCurrentProgressState($msg);
+        }
         if (self::shouldShowDebugOutput()) {
             self::debugProgress($msg, $p, $details);
             return;
@@ -2098,10 +2100,13 @@ EOB
         self::outputProgressLine($msg, $p, $memory, $peak, $offset, $count);
     }
 
-    /** @var ?string */
-    private static $current_progress_state = null;
+    /** @var ?string the current state of CLI::progress, with any progress bar */
+    private static $current_progress_state_any = null;
+
+    /** @var ?string the state for long progress */
+    private static $current_progress_state_long_progress = null;
     /** @var int the number of events that were handled */
-    private static $current_progress_offset = 0;
+    private static $current_progress_offset_long_progress = 0;
 
     // 80 - strlen(' 9999 / 9999 (100%) 9999MB') == 54
     private const PROGRESS_WIDTH = 54;
@@ -2271,7 +2276,7 @@ EOB
     private static function renderLongProgress(string $msg, float $p, float $memory, ?int $offset, ?int $count): string
     {
         $buf = '';
-        if ($msg !== self::$current_progress_state) {
+        if ($msg !== self::$current_progress_state_long_progress) {
             switch ($msg) {
                 case 'parse':
                     $buf .= "Parsing files..." . PHP_EOL;
@@ -2291,19 +2296,19 @@ EOB
                 default:
                     $buf .= "In '$msg' phase\n";
             }
-            self::$current_progress_state = $msg;
-            self::$current_progress_offset = 0;
+            self::$current_progress_state_long_progress = $msg;
+            self::$current_progress_offset_long_progress = 0;
         }
         if (in_array($msg, ['analyze', 'parse'], true)) {
-            while (self::$current_progress_offset < $offset) {
-                self::$current_progress_offset++;
+            while (self::$current_progress_offset_long_progress < $offset) {
+                self::$current_progress_offset_long_progress++;
                 if (self::doesTerminalSupportUtf8()) {
                     $buf .= "\u{2591}";
                 } else {
                     $buf .= ".";
                 }
-                $mod = self::$current_progress_offset % self::PROGRESS_WIDTH;
-                if ($mod === 0 || self::$current_progress_offset === $count) {
+                $mod = self::$current_progress_offset_long_progress % self::PROGRESS_WIDTH;
+                if ($mod === 0 || self::$current_progress_offset_long_progress === $count) {
                     if ($mod) {
                         $buf .= str_repeat(" ", self::PROGRESS_WIDTH - $mod);
                     }
@@ -2319,15 +2324,15 @@ EOB
             }
         } else {
             $offset = (int)($p * self::PROGRESS_WIDTH);
-            while (self::$current_progress_offset < $offset) {
-                self::$current_progress_offset++;
+            while (self::$current_progress_offset_long_progress < $offset) {
+                self::$current_progress_offset_long_progress++;
                 if (self::doesTerminalSupportUtf8()) {
                     $buf .= "\u{2591}";
                 } else {
                     $buf .= ".";
                 }
-                $mod = self::$current_progress_offset % self::PROGRESS_WIDTH;
-                if ($mod === 0 || self::$current_progress_offset === $count) {
+                $mod = self::$current_progress_offset_long_progress % self::PROGRESS_WIDTH;
+                if ($mod === 0 || self::$current_progress_offset_long_progress === $count) {
                     if ($mod) {
                         $buf .= str_repeat(" ", self::PROGRESS_WIDTH - $mod);
                     }
@@ -2373,7 +2378,7 @@ EOB
         // If the file doesn't exist here, try a directory up
         $config_file_name = $this->config_file;
         $config_file_name =
-            $config_file_name
+            StringUtil::isNonZeroLengthString($config_file_name)
             ? \realpath($config_file_name)
             : \implode(DIRECTORY_SEPARATOR, [
                 Config::getProjectRootDirectory(),

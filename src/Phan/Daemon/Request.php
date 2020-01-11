@@ -234,7 +234,7 @@ class Request
         $file = FileRef::getProjectRelativePathForPath($completion_request->getPath());
         // fwrite(STDERR, "\nSaw $file in " . json_encode(array_keys($file_mapping_contents)) . "\n");
         $contents = $file_mapping_contents[$file] ?? null;
-        if ($contents) {
+        if (is_string($contents)) {
             $position = $completion_request->getPosition();
             $lines = \explode("\n", $contents);
             $line = $lines[$position->line] ?? null;

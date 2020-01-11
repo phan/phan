@@ -60,7 +60,7 @@ class DiskCache implements Cache
             return null;
         }
         $contents = \file_get_contents($path);
-        if (!$contents) {
+        if (!\is_string($contents)) {
             return null;
         }
         if ($this->use_igbinary) {
@@ -109,7 +109,7 @@ class DiskCache implements Cache
         } else {
             $contents = \serialize($value);
         }
-        if (!$contents) {
+        if (!\is_string($contents)) {
             return false;
         }
         $path = $this->getPath($key);

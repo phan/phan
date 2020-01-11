@@ -7,6 +7,7 @@ namespace Phan\Output\Printer;
 use AssertionError;
 use Phan\Issue;
 use Phan\IssueInstance;
+use Phan\Library\StringUtil;
 use Phan\Output\BufferedPrinterInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -47,7 +48,7 @@ class JSONPrinter implements BufferedPrinterInterface
             $message['location']['lines']['begin_column'] = $instance->getColumn();
         }
         $suggestion = $instance->getSuggestionMessage();
-        if ($suggestion) {
+        if (StringUtil::isNonZeroLengthString($suggestion)) {
             $message['suggestion'] = $suggestion;
         }
         $this->messages[] = $message;

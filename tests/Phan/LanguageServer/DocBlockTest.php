@@ -8,6 +8,7 @@ use Exception;
 use InvalidArgumentException;
 use Phan\LanguageServer\Server\TextDocument;
 use Phan\LanguageServer\Server\Workspace;
+use Phan\Library\StringUtil;
 use Phan\Tests\BaseTest;
 use phpDocumentor\Reflection\DocBlockFactory;
 use phpDocumentor\Reflection\Types\ContextFactory;
@@ -38,7 +39,7 @@ final class DocBlockTest extends BaseTest
                     continue;
                 }
                 $comment = $method->getDocComment();
-                if (!$comment) {
+                if (!StringUtil::isNonZeroLengthString($comment)) {
                     continue;
                 }
                 try {

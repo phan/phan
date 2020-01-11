@@ -22,6 +22,7 @@ use const FILTER_VALIDATE_INT;
 /**
  * Phan's representation of the type for a specific string, e.g. `'a string'`
  * @phan-pure
+ * @phan-file-suppress PhanSuspiciousTruthyString helpers to check truthiness
  */
 final class LiteralStringType extends StringType implements LiteralTypeInterface
 {

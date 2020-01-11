@@ -21,6 +21,7 @@ use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
 use Phan\Library\None;
 use Phan\Library\Option;
+use Phan\Library\StringUtil;
 
 /**
  * Handles extracting information(param types, return types, magic methods/properties, etc.) from phpdoc comments.
@@ -232,7 +233,7 @@ class Comment
 
         foreach ($this->parameter_list as $i => $parameter) {
             $name = $parameter->getName();
-            if ($name) {
+            if (StringUtil::isNonZeroLengthString($name)) {
                 if (isset($this->parameter_map[$name])) {
                     Issue::maybeEmit(
                         $code_base,
@@ -251,7 +252,7 @@ class Comment
         }
         foreach ($magic_property_list as $property) {
             $name = $property->getName();
-            if ($name) {
+            if (StringUtil::isNonZeroLengthString($name)) {
                 if (isset($this->magic_property_map[$name])) {
                     // Emit warning for duplicates.
                     Issue::maybeEmit(
@@ -268,7 +269,7 @@ class Comment
         }
         foreach ($magic_method_list as $method) {
             $name = $method->getName();
-            if ($name) {
+            if (StringUtil::isNonZeroLengthString($name)) {
                 if (isset($this->magic_method_map[$name])) {
                     // Emit warning for duplicates.
                     Issue::maybeEmit(
@@ -398,7 +399,7 @@ class Comment
     ): Comment {
 
         // Don't parse the comment if this doesn't need to.
-        if (!$comment || !Config::getValue('read_type_annotations') || \strpos($comment, '@') === false) {
+        if ($comment === '' || !Config::getValue('read_type_annotations') || \strpos($comment, '@') === false) {
             return NullComment::instance();
         }
 

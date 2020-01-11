@@ -19,6 +19,7 @@ require_once __DIR__ . '/IncompatibleStubsSignatureDetector.php';
  * TODO: Refactor this class into multiple classes
  * TODO: This has a bit of code in common with sanitycheck.php, refactor?
  * phpdoc-en can be downloaded via 'svn checkout https://svn.php.net/repository/phpdoc/modules/doc-en phpdoc-en'
+ * @phan-file-suppress PhanSuspiciousTruthyString TODO: Fix
  */
 class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
 {

@@ -14,6 +14,7 @@ use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Comment;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\MarkupDescription;
+use Phan\Library\StringUtil;
 use Phan\PluginV3;
 use Phan\PluginV3\AnalyzeClassCapability;
 use Phan\PluginV3\AnalyzeFunctionCapability;
@@ -99,7 +100,7 @@ final class HasPHPDocPlugin extends PluginV3 implements
             return;
         }
         $doc_comment = $class->getDocComment();
-        if (!$doc_comment) {
+        if (!StringUtil::isNonZeroLengthString($doc_comment)) {
             self::emitIssue(
                 $code_base,
                 $class->getContext(),
@@ -110,7 +111,7 @@ final class HasPHPDocPlugin extends PluginV3 implements
             return;
         }
         $description = MarkupDescription::extractDescriptionFromDocComment($class);
-        if (!$description) {
+        if (!StringUtil::isNonZeroLengthString($description)) {
             if (strpos($doc_comment, '@deprecated') !== false) {
                 return;
             }
@@ -137,7 +138,6 @@ final class HasPHPDocPlugin extends PluginV3 implements
         CodeBase $code_base,
         Func $function
     ): void {
-        $doc_comment = $function->getDocComment();
         if ($function->isPHPInternal()) {
             // This isn't user-defined, there's no reason to warn or way to change it.
             return;
@@ -150,7 +150,8 @@ final class HasPHPDocPlugin extends PluginV3 implements
             // Probably not useful in many cases to document a short closure passed to array_map, etc.
             return;
         }
-        if (!$doc_comment) {
+        $doc_comment = $function->getDocComment();
+        if (!StringUtil::isNonZeroLengthString($doc_comment)) {
             self::emitIssue(
                 $code_base,
                 $function->getContext(),
@@ -161,7 +162,7 @@ final class HasPHPDocPlugin extends PluginV3 implements
             return;
         }
         $description = MarkupDescription::extractDescriptionFromDocComment($function);
-        if (!$description) {
+        if (!StringUtil::isNonZeroLengthString($description)) {
             self::emitIssue(
                 $code_base,
                 $function->getContext(),
@@ -244,7 +245,7 @@ class BasePHPDocCheckerPlugin extends PluginAwarePostAnalysisVisitor
         }
 
         $doc_comment = $method->getDocComment();
-        if (!$doc_comment) {
+        if (!StringUtil::isNonZeroLengthString($doc_comment)) {
             $visibility_upper = ucfirst($method->getVisibilityName());
             self::emitPluginIssue(
                 $this->code_base,
@@ -255,9 +256,8 @@ class BasePHPDocCheckerPlugin extends PluginAwarePostAnalysisVisitor
             );
             return null;
         }
-        // @phan-suppress-next-line PhanAccessMethodInternal
-        $description = MarkupDescription::extractDocComment($doc_comment, Comment::ON_METHOD, null, true);
-        if (!$description) {
+        $description = MarkupDescription::extractDescriptionFromDocComment($method);
+        if (!StringUtil::isNonZeroLengthString($description)) {
             $visibility_upper = ucfirst($method->getVisibilityName());
             self::emitPluginIssue(
                 $this->code_base,
@@ -282,7 +282,7 @@ class BasePHPDocCheckerPlugin extends PluginAwarePostAnalysisVisitor
         }
         $property = $class->getPropertyByName($this->code_base, $property_name);
         $doc_comment = $property->getDocComment();
-        if (!$doc_comment) {
+        if (!StringUtil::isNonZeroLengthString($doc_comment)) {
             $visibility_upper = ucfirst($property->getVisibilityName());
             self::emitPluginIssue(
                 $this->code_base,
@@ -295,7 +295,7 @@ class BasePHPDocCheckerPlugin extends PluginAwarePostAnalysisVisitor
         }
         // @phan-suppress-next-line PhanAccessMethodInternal
         $description = MarkupDescription::extractDocComment($doc_comment, Comment::ON_PROPERTY, null, true);
-        if (!$description) {
+        if (!StringUtil::isNonZeroLengthString($description)) {
             $visibility_upper = ucfirst($property->getVisibilityName());
             self::emitPluginIssue(
                 $this->code_base,

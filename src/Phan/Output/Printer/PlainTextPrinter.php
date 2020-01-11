@@ -7,9 +7,12 @@ namespace Phan\Output\Printer;
 use Phan\Config;
 use Phan\Issue;
 use Phan\IssueInstance;
+use Phan\Library\StringUtil;
 use Phan\Output\Colorizing;
 use Phan\Output\IssuePrinterInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+
+use function is_string;
 
 /**
  * Outputs `IssueInstance`s to the provided OutputInterface in plain text format.
@@ -55,10 +58,10 @@ final class PlainTextPrinter implements IssuePrinterInterface
                 $type,
                 $message
             ]);
-            if ($column_message) {
+            if (is_string($column_message)) {
                 $issue .= Colorizing::colorizeTemplate(" ({DETAILS})", [$column_message]);
             }
-            if ($suggestion_message) {
+            if (StringUtil::isNonZeroLengthString($suggestion_message)) {
                 $issue .= Colorizing::colorizeTemplate(" ({SUGGESTION})", [$suggestion_message]);
             }
         } else {
@@ -69,10 +72,10 @@ final class PlainTextPrinter implements IssuePrinterInterface
                 $type,
                 $message
             );
-            if ($column_message) {
+            if (is_string($column_message)) {
                 $issue .= " ($column_message)";
             }
-            if ($suggestion_message) {
+            if (StringUtil::isNonZeroLengthString($suggestion_message)) {
                 $issue .= " ($suggestion_message)";
             }
         }

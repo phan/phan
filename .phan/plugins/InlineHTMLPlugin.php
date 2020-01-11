@@ -45,12 +45,12 @@ class InlineHTMLPlugin extends PluginV3 implements
 
     private function shouldCheckFile(string $path): bool
     {
-        if ($this->blacklist_regex) {
+        if (is_string($this->blacklist_regex)) {
             if (CLI::isPathMatchedByRegex($this->blacklist_regex, $path)) {
                 return false;
             }
         }
-        if ($this->whitelist_regex) {
+        if (is_string($this->whitelist_regex)) {
             return CLI::isPathMatchedByRegex($this->whitelist_regex, $path);
         }
         return true;

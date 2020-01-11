@@ -207,16 +207,17 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
                     // End this early if this token ends before the cursor even starts
                     continue;
                 }
+                // Either the node, or true if a the node was found as a descendant, or false.
                 $state = self::findNodeAtOffsetRecursive($node_or_token, $offset);
-                if ($state) {
+                if (\is_object($state)) {
                     // fwrite(STDERR, "Found parent node for $key: " . get_class($parser_node) . "\n");
                     // fwrite(STDERR, "Found parent node for $key: " . json_encode($parser_node) . "\n");
-                    if ($state instanceof PhpParser\Node) {
-                        if (!is_string($key)) {
-                            throw new AssertionError("Expected key to be a string");
-                        }
-                        return self::adjustClosestNodeOrToken($parser_node, $key);
+                    // $state is either a Node or a Token
+                    if (!is_string($key)) {
+                        throw new AssertionError("Expected key to be a string");
                     }
+                    return self::adjustClosestNodeOrToken($parser_node, $key);
+                } elseif ($state) {
                     return true;
                 }
             }

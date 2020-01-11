@@ -32,7 +32,7 @@ class StubsGenerator
      */
     public static function printHelpAndExit(string $message = '', int $exit_code = 1) : void
     {
-        if ($message) {
+        if ($message !== '') {
             echo "$message\n";
         }
         global $argv;

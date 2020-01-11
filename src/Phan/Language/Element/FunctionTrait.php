@@ -1224,7 +1224,7 @@ trait FunctionTrait
         '@phan-var array<mixed,string> $stub';  // TODO: Should not warn about PhanTypeMismatchDimFetch in isset below
         foreach ($this->parameter_list as $parameter) {
             $name = $parameter->getName();
-            if (!$name || isset($stub[$name])) {
+            if ($name === '' || isset($stub[$name])) {
                 throw new \InvalidArgumentException("Invalid name '$name' for {$this->getFQSEN()}");
             }
             if ($parameter->isOptional()) {
@@ -1610,7 +1610,7 @@ trait FunctionTrait
 
     /**
      * @param int $i the index of the parameter which $assertion acts upon.
-     * @return ?Closure(CodeBase, Context, FunctionInterface, array, ?Node):void
+     * @return ?Closure(CodeBase, Context, FunctionInterface, array, ?Node):void a closure to update the scope with the side effect of the condition
      * @suppress PhanAccessPropertyInternal
      * @internal
      */
@@ -1637,7 +1637,7 @@ trait FunctionTrait
      * @internal
      * @suppress PhanAccessClassConstantInternal
      * @param Closure(CodeBase, Context, array):UnionType $union_type_extractor
-     * @return ?Closure(CodeBase, Context, FunctionInterface, array, ?Node):void
+     * @return ?Closure(CodeBase, Context, FunctionInterface, array, ?Node):void a closure to update the scope with the side effect of the condition given the new type from $union_type_extractor
      */
     public static function createClosureForUnionTypeExtractorAndAssertionType(Closure $union_type_extractor, int $assertion_type, int $i): ?Closure
     {

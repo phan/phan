@@ -134,10 +134,10 @@ EOT;
     {
         $category = $issue->getCategory();
         if (!$category) {
-            throw new InvalidArgumentException("Failed to find category for {$issue->getType()}");
+            throw new InvalidArgumentException("Failed to find category for issue {$issue->getType()}");
         }
         $category_name = Issue::getNameForCategory($category);
-        if (!$category_name) {
+        if ($category_name === '') {
             throw new InvalidArgumentException("Failed to find category name for category $category of {$issue->getType()}");
         }
 

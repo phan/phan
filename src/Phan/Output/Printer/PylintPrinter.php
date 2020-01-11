@@ -7,6 +7,7 @@ namespace Phan\Output\Printer;
 use Phan\Config;
 use Phan\Issue;
 use Phan\IssueInstance;
+use Phan\Library\StringUtil;
 use Phan\Output\IssuePrinterInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -37,7 +38,7 @@ final class PylintPrinter implements IssuePrinterInterface
             $line .= " (at column $column)";
         }
         $suggestion = $instance->getSuggestionMessage();
-        if ($suggestion) {
+        if (StringUtil::isNonZeroLengthString($suggestion)) {
             $line .= " ($suggestion)";
         }
 

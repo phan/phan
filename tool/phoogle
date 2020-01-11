@@ -88,7 +88,7 @@ call_user_func(static function () : void {
             $limit = PHP_INT_MAX;
         } elseif ($limit <= 0) {
             echo "ERROR: limit must be a positive integer, got $limit_raw\n";
-            usage(1);
+            phoogle_usage(1);
         }
         $_ENV['PHOOGLE_LIMIT'] = $limit;
     }

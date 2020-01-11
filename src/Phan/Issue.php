@@ -241,6 +241,8 @@ class Issue
     public const SuspiciousWeakTypeComparison          = 'PhanSuspiciousWeakTypeComparison';
     public const SuspiciousWeakTypeComparisonInLoop    = 'PhanSuspiciousWeakTypeComparisonInLoop';
     public const SuspiciousWeakTypeComparisonInGlobalScope    = 'PhanSuspiciousWeakTypeComparisonInGlobalScope';
+    public const SuspiciousTruthyCondition         = 'PhanSuspiciousTruthyCondition';
+    public const SuspiciousTruthyString            = 'PhanSuspiciousTruthyString';
     public const CoalescingNeverNull               = 'PhanCoalescingNeverNull';
     public const CoalescingNeverNullInLoop         = 'PhanCoalescingNeverNullInLoop';
     public const CoalescingNeverNullInGlobalScope  = 'PhanCoalescingNeverNullInGlobalScope';
@@ -2505,6 +2507,22 @@ class Issue
                 "Suspicious attempt to compare {CODE} of type {TYPE} to {CODE} of type {TYPE} in the global scope (likely a false positive)",
                 self::REMEDIATION_B,
                 10130
+            ),
+            new Issue(
+                self::SuspiciousTruthyCondition,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Suspicious attempt to check if {CODE} of type {TYPE} is truthy/falsey. This contains both objects/arrays and scalars",
+                self::REMEDIATION_B,
+                10155
+            ),
+            new Issue(
+                self::SuspiciousTruthyString,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Suspicious attempt to check if {CODE} of type {TYPE} is truthy/falsey. This is false both for '' and '0'",
+                self::REMEDIATION_B,
+                10156
             ),
             new Issue(
                 self::CoalescingNeverNull,

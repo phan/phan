@@ -104,7 +104,7 @@ class ParseVisitor extends ScopeVisitor
 
         // This happens now and then and I have no idea
         // why.
-        if (!$class_name) {
+        if ($class_name === '') {
             return $this->context;
         }
 

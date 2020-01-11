@@ -127,7 +127,7 @@ class PHPDocRedundantPlugin extends PluginV3 implements
             return;
         }
         $comment = $method->getDocComment();
-        if (!$comment) {
+        if (!StringUtil::isNonZeroLengthString($comment)) {
             return;
         }
         if (!self::isRedundantFunctionComment($method, $comment)) {

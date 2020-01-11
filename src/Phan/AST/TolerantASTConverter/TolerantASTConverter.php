@@ -31,6 +31,7 @@ use function count;
 use function get_class;
 use function implode;
 use function is_array;
+use function is_string;
 use function sprintf;
 use function substr;
 use function var_export;
@@ -196,14 +197,14 @@ class TolerantASTConverter
         $cache_key = null;
         if ($cache) {
             $cache_key = $this->generateCacheKey($file_contents, $version);
-            $result = $cache_key ? $cache->getIfExists($cache_key) : null;
+            $result = \Phan\Library\StringUtil::isNonZeroLengthString($cache_key) ? $cache->getIfExists($cache_key) : null;
             if ($result) {
                 $errors = $result->diagnostics;
                 return $result->node;
             }
         }
         $result = $this->parseCodeAsPHPASTUncached($file_contents, $version, $errors);
-        if ($cache && $cache_key) {
+        if ($cache && \Phan\Library\StringUtil::isNonZeroLengthString($cache_key)) {
             $cache->save($cache_key, new ParseResult($result, $errors));
         }
         return $result;
@@ -1958,7 +1959,7 @@ class TolerantASTConverter
     private static function resolveDocCommentForClosure(PhpParser\Node\Expression $node): ?string
     {
         $doc_comment = $node->getDocCommentText();
-        if ($doc_comment) {
+        if (\Phan\Library\StringUtil::isNonZeroLengthString($doc_comment)) {
             return $doc_comment;
         }
         for ($prev_node = $node; $node = $node->parent; $prev_node = $node) {
@@ -1967,7 +1968,7 @@ class TolerantASTConverter
                 $node instanceof PhpParser\Node\ArrayElement ||
                 $node instanceof PhpParser\Node\Statement\ReturnStatement) {
                 $doc_comment = $node->getDocCommentText();
-                if ($doc_comment) {
+                if (\Phan\Library\StringUtil::isNonZeroLengthString($doc_comment)) {
                     return $doc_comment;
                 }
                 continue;
@@ -1985,7 +1986,7 @@ class TolerantASTConverter
                     return null;
                 }
                 $doc_comment = $node->getDocCommentText();
-                if ($doc_comment) {
+                if (is_string($doc_comment)) {
                     return $doc_comment;
                 }
                 continue;
@@ -1993,7 +1994,7 @@ class TolerantASTConverter
             if ($node instanceof PhpParser\Node\Expression\CallExpression) {
                 if ($prev_node === $node->callableExpression) {
                     $doc_comment = $node->getDocCommentText();
-                    if ($doc_comment) {
+                    if (is_string($doc_comment)) {
                         return $doc_comment;
                     }
                     continue;
@@ -2010,7 +2011,7 @@ class TolerantASTConverter
                     if ($expression === $prev_node) {
                         $found = true;
                         $doc_comment = $node->getDocCommentText();
-                        if ($doc_comment) {
+                        if (is_string($doc_comment)) {
                             return $doc_comment;
                         }
                         break;
@@ -2147,9 +2148,9 @@ class TolerantASTConverter
     ): ast\Node {
 
         // NOTE: `null` would be an anonymous class.
-        // the empty string or '0' is a missing string we pretend is an anonymous class
+        // the empty string is a missing string we pretend is an anonymous class
         // so that Phan won't throw an UnanalyzableException during the analysis phase
-        if ($name === null || !$name) {
+        if ($name === null || $name === '') {
             $flags |= flags\CLASS_ANONYMOUS;
         }
 

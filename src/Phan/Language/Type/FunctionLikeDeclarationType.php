@@ -19,6 +19,7 @@ use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\Scope\ClosedScope;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
+use Phan\Library\StringUtil;
 
 /**
  * Phan's base class for representations of `callable(MyClass):MyOtherClass` and `Closure(MyClass):MyOtherClass`
@@ -822,12 +823,12 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         $fragments = [];
         foreach ($parts as $name => $signature) {
             $fragment = '\$' . $name;
-            if ($signature) {
+            if (StringUtil::isNonZeroLengthString($signature)) {
                 $fragment = "$signature $fragment";
             }
         }
         $signature = static::NAME . '(' . \implode(',', $fragments) . ')';
-        if ($return_type) {
+        if (StringUtil::isNonZeroLengthString($return_type)) {
             // TODO: Make this unambiguous
             $signature .= ':' . $return_type;
         }

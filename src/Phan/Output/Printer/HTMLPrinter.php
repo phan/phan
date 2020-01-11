@@ -7,6 +7,7 @@ namespace Phan\Output\Printer;
 use Phan\Config;
 use Phan\Issue;
 use Phan\IssueInstance;
+use Phan\Library\StringUtil;
 use Phan\Output\HTML;
 use Phan\Output\IssuePrinterInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -51,7 +52,7 @@ final class HTMLPrinter implements IssuePrinterInterface
             $inner_html .= HTML::htmlTemplate(" ({DETAILS})", ["at column $column"]);
         }
         $suggestion = $instance->getSuggestionMessage();
-        if ($suggestion) {
+        if (StringUtil::isNonZeroLengthString($suggestion)) {
             $inner_html .= HTML::htmlTemplate(" ({SUGGESTION})", [$suggestion]);
         }
 

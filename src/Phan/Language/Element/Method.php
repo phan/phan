@@ -619,10 +619,7 @@ class Method extends ClassElement implements FunctionInterface
             }
             $signature_union_type = $method->getUnionType();
 
-            $new_type = $signature_union_type->withUnionType($comment_return_union_type)->withRealTypeSet($signature_union_type->getRealTypeSet());
-            if ($comment_return_union_type->hasRealTypeSet() && !$new_type->hasRealTypeSet()) {
-                $new_type = $new_type->withRealTypeSet($comment_return_union_type->getRealTypeSet());
-            }
+            $new_type = self::computeNewTypeForComment($code_base, $context, $signature_union_type, $comment_return_union_type);
             $method->setUnionType($new_type);
             $method->setPHPDocReturnType($comment_return_union_type);
         }
@@ -630,6 +627,34 @@ class Method extends ClassElement implements FunctionInterface
 
         return $method;
     }
+
+    private static function computeNewTypeForComment(CodeBase $code_base, Context $context, UnionType $signature_union_type, UnionType $comment_return_union_type): UnionType
+    {
+        $new_type = $comment_return_union_type;
+        foreach ($comment_return_union_type->getTypeSet() as $type) {
+            if (!$type->asPHPDocUnionType()->canAnyTypeStrictCastToUnionType($code_base, $signature_union_type)) {
+                // Allow `@return static` to override a real type of MyClass.
+                // php8 may add a real type of static.
+                $resolved_type = $type->withStaticResolvedInContext($context);
+                if ($resolved_type === $type || !$resolved_type->asPHPDocUnionType()->canAnyTypeStrictCastToUnionType($code_base, $signature_union_type)) {
+                    $new_type = $new_type->withoutType($type);
+                }
+            }
+        }
+
+        if ($new_type !== $comment_return_union_type) {
+            $new_type = $signature_union_type->withUnionType($new_type)->withRealTypeSet($signature_union_type->getRealTypeSet());
+            if ($comment_return_union_type->hasRealTypeSet() && !$new_type->hasRealTypeSet()) {
+                $new_type = $new_type->withRealTypeSet($comment_return_union_type->getRealTypeSet());
+            }
+            return $new_type;
+        }
+        if ($comment_return_union_type->hasRealTypeSet() && !$signature_union_type->hasRealTypeSet()) {
+            return $comment_return_union_type;
+        }
+        return $comment_return_union_type->withRealTypeSet($signature_union_type->getRealTypeSet());
+    }
+
 
     /**
      * Ensure that this clone will use the return type of the ancestor method

@@ -243,7 +243,7 @@ class OpcacheFuncInfoParser
             exit(1);
         }
         $contents = file_get_contents($func_info_path);
-        if (!$contents) {
+        if (!is_string($contents)) {
             fwrite(STDERR, "Could not read contents of $func_info_path\n");
             exit(1);
         }

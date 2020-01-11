@@ -24,6 +24,7 @@ use Phan\LanguageServer\Protocol\Hover;
 use Phan\LanguageServer\Protocol\Location;
 use Phan\LanguageServer\Protocol\MarkupContent;
 use Phan\LanguageServer\Protocol\Position;
+use Phan\Library\StringUtil;
 
 use function count;
 use function is_array;
@@ -126,7 +127,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
             $description = $this->getDescriptionOfVariable($code_base, $context, $element);
         }
         if (count($type_set) === 0) {
-            if ($description) {
+            if (StringUtil::isNonZeroLengthString($description)) {
                 $this->setHoverMarkdown($description);
             }
             // Don't bother generating hover text if there are no known types or descriptions, maybe a subsequent call will have types
@@ -135,7 +136,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
         $maybe_set_markdown_to_union_type = function () use ($union_type, $description): void {
             if ($this->hover_response === null) {
                 $markdown = \sprintf('`%s`', (string)$union_type);
-                if ($description) {
+                if (StringUtil::isNonZeroLengthString($description)) {
                     $markdown = \sprintf("%s %s", $markdown, $description);
                 }
                 $this->setHoverMarkdown($markdown);
@@ -211,12 +212,12 @@ final class GoToDefinitionRequest extends NodeInfoRequest
         // TODO(optional): Could support (at)var
         $param_tags = MarkupDescription::extractParamTagsFromDocComment($function, false);
         $variable_description = $param_tags[$variable_name] ?? null;
-        if (!$variable_description) {
+        if (!StringUtil::isNonZeroLengthString($variable_description)) {
             return null;
         }
         // Remove the first part of '`@param int $x` description'
         $variable_description = \preg_replace('@^`[^`]*`\s*@', '', $variable_description);
-        if (!$variable_description) {
+        if (!StringUtil::isNonZeroLengthString($variable_description)) {
             return null;
         }
         return $variable_description;

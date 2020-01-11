@@ -124,7 +124,7 @@ final class TypeTest extends BaseTest
     private function assertSameType(Type $expected, Type $actual, string $extra = ''): void
     {
         $message = \sprintf("Expected %s to be %s", (string)$actual, (string)$expected);
-        if ($extra) {
+        if ($extra !== '') {
             $message .= ": $extra";
         }
         $this->assertSame($expected, $actual, $message);

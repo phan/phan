@@ -43,9 +43,8 @@ final class BufferingCollector implements IssueCollectorInterface
      */
     public static function setTraceIssues(?string $level): void
     {
-        self::$trace_issues = $level ? \strtolower($level) : null;
+        self::$trace_issues = \is_string($level) ? \strtolower($level) : null;
     }
-
 
     /**
      * Collect issue

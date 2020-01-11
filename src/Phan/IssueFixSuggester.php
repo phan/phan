@@ -19,6 +19,7 @@ use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 
 use function count;
+use function is_string;
 use function strlen;
 use function strtolower;
 use function uksort;
@@ -104,7 +105,7 @@ class IssueFixSuggester
         bool $suggest_in_global_namespace = true,
         string $prefix = ""
     ): ?Suggestion {
-        if (!$prefix) {
+        if ($prefix === '') {
             $prefix = self::DEFAULT_FUNCTION_SUGGESTION_PREFIX;
         }
         $namespace = $function_fqsen->getNamespace();
@@ -153,7 +154,7 @@ class IssueFixSuggester
         string $prefix = null,
         int $class_suggest_type = self::CLASS_SUGGEST_ONLY_CLASSES
     ): ?Suggestion {
-        if (!$prefix) {
+        if (!is_string($prefix) || $prefix === '') {
             $prefix = self::DEFAULT_CLASS_SUGGESTION_PREFIX;
         }
         $suggested_fqsens = \array_merge(

@@ -189,6 +189,7 @@ class ASTReverter
                 $parts = [];
                 foreach ($node->children as $elem) {
                     if (!$elem instanceof Node) {
+                        // Should always either be a Node or null.
                         $parts[] = '';
                         continue;
                     }
