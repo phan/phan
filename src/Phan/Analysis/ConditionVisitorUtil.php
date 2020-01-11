@@ -206,6 +206,11 @@ trait ConditionVisitorUtil
                         $this->checkErrorProneTruthyCast($var_node, $context, $type);
                     }
                 }
+                foreach ($type->getRealTypeSet() as $single_type) {
+                    if ($single_type->isPossiblyFalsey()) {
+                        return true;
+                    }
+                }
                 return $type->containsFalsey();
             },
             function (UnionType $type) use ($var_node, $context): UnionType {

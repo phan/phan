@@ -24,7 +24,7 @@ function example471NotEmpty($a, array $a2, array $a3, string $offset) {
         echo intdiv($a, 2);
     }
     if (!empty($a2['key'])) {
-        echo intdiv($a2, -2);  // Expect array{key:string} (not falsey)
+        echo intdiv($a2, -2);  // Expect array{key:non-empty-string} (not falsey)
     }
     if (!empty($a3['key'])) {
         echo intdiv($a3, -2);  // Expect array{key:true} (not falsey)

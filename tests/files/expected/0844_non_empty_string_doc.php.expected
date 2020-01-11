@@ -1,0 +1,9 @@
+%s:6 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type non-empty-string(real=non-empty-string)
+%s:8 PhanRedundantCondition Redundant attempt to cast $x of type non-empty-string to truthy
+%s:20 PhanRedundantCondition Redundant attempt to cast $x of type non-empty-string to truthy
+%s:24 PhanTypeMismatchArgumentNullableInternal Argument 1 ($string) is ?non-empty-string but \strlen() takes string (expected type to be non-nullable)
+%s:28 PhanTypeMismatchArgument Argument 1 ($x) is '' but \expect_non_empty_string() takes non-empty-string defined at %s:5
+%s:29 PhanTypeMismatchArgument Argument 1 ($x) is '0' but \expect_non_empty_string() takes non-empty-string defined at %s:5
+%s:31 PhanTypeMismatchArgumentReal Argument 1 ($x) is null but \expect_non_empty_string() takes non-empty-string (real type string) defined at %s:5
+%s:33 PhanTypeMismatchArgument Argument 1 ($x) is '' but \expect_nullable_non_empty_string() takes ?non-empty-string defined at %s:18
+%s:34 PhanTypeMismatchArgument Argument 1 ($x) is '0' but \expect_nullable_non_empty_string() takes ?non-empty-string defined at %s:18
