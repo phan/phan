@@ -99,7 +99,7 @@ final class CallableStringType extends StringType implements CallableInterface
      *
      * @return static
      */
-    public static function instance(bool $is_nullable): Type
+    public static function instance(bool $is_nullable)
     {
         if ($is_nullable) {
             static $nullable_instance = null;

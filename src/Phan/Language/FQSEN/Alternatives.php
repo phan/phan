@@ -81,10 +81,9 @@ trait Alternatives
      * Get the canonical (non-alternate) FQSEN associated
      * with this FQSEN
      *
-     * @suppress PhanTypeMismatchDeclaredReturn (static vs FQSEN)
      * @suppress PhanTypeMismatchReturn (Alternatives is a trait, cannot directly implement the FQSEN interface. Related to #800)
      */
-    public function getCanonicalFQSEN(): FQSEN
+    public function getCanonicalFQSEN()
     {
         if ($this->alternate_id === 0) {
             return $this;

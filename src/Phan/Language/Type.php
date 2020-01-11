@@ -2663,7 +2663,7 @@ class Type
      * @param CodeBase $code_base
      * The code base to use in order to find super classes, etc.
      *
-     * @param $recursion_depth
+     * @param int $recursion_depth
      * This thing has a tendency to run-away on me. This tracks
      * how bad I messed up by seeing how far the expanded types
      * go
@@ -2673,6 +2673,8 @@ class Type
      * a superset of this type.
      *
      * TODO: Add equivalent to preserve the real type
+     *
+     * @suppress PhanPartialTypeMismatchReturn
      */
     public function asExpandedTypes(
         CodeBase $code_base,
@@ -2769,6 +2771,8 @@ class Type
      * @return UnionType
      * Expands class types to all inherited classes returning
      * a superset of this type.
+     *
+     * @suppress PhanPartialTypeMismatchReturn
      */
     public function asExpandedTypesPreservingTemplate(
         CodeBase $code_base,
