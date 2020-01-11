@@ -112,7 +112,7 @@ final class Builder
     }
 
     /** @internal */
-    const PARAM_COMMENT_REGEX =
+    public const PARAM_COMMENT_REGEX =
         '/@(?:phan-)?(param|var)\b\s*(' . UnionType::union_type_regex . ')?(?:\s*(\.\.\.)?\s*&?(?:\\$' . self::WORD_REGEX . '))?/';
 
     /**
@@ -214,7 +214,7 @@ final class Builder
     }
 
     /** @internal */
-    const RETURN_COMMENT_REGEX = '/@(?:phan-)?(?:real-)?(?:return|throws)\s+(&\s*)?(' . UnionType::union_type_regex_or_this . ')/';
+    public const RETURN_COMMENT_REGEX = '/@(?:phan-)?(?:real-)?(?:return|throws)\s+(&\s*)?(' . UnionType::union_type_regex_or_this . ')/';
 
     /**
      * @param string $line
@@ -572,7 +572,7 @@ final class Builder
     /**
      * @internal
      */
-    const ASSERT_REGEX = '/@phan-assert(?:(-true-condition|-false-condition)|\s+(!?)(' . UnionType::union_type_regex . '))\s+\$' . self::WORD_REGEX . '/';
+    public const ASSERT_REGEX = '/@phan-assert(?:(-true-condition|-false-condition)|\s+(!?)(' . UnionType::union_type_regex . '))\s+\$' . self::WORD_REGEX . '/';
     private function assertFromCommentLine(string $line): ?Assertion
     {
         if (!\preg_match(self::ASSERT_REGEX, $line, $match)) {
@@ -849,7 +849,7 @@ final class Builder
     /**
      * Maps supported annotations starting with phan- to the empty string or a description
      */
-    const SUPPORTED_ANNOTATIONS = [
+    public const SUPPORTED_ANNOTATIONS = [
         '@phan-assert' => '',
         '@phan-assert-true-condition' => '',
         '@phan-assert-false-condition' => '',
@@ -1057,7 +1057,7 @@ final class Builder
      * (e.g. for variable names, magic property names, etc.)
      * This does not allow backslashes.
      */
-    const WORD_REGEX = '([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)';
+    public const WORD_REGEX = '([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)';
 
     /**
      * This regex contains a single pattern, which matches a reasonable Phan issue name
@@ -1067,17 +1067,17 @@ final class Builder
      *
      * Note that Phan doesn't forbid using names not matching this regex in the Issue constructor at the time of writing.
      */
-    const ISSUE_REGEX = '([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(-[a-zA-Z0-9_\x7f-\xff]+)*)';
+    public const ISSUE_REGEX = '([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(-[a-zA-Z0-9_\x7f-\xff]+)*)';
 
     /**
      * @internal
      */
-    const SUPPRESS_ISSUE_LIST = '(' . self::ISSUE_REGEX . '(,\s*' . self::ISSUE_REGEX . ')*)';
+    public const SUPPRESS_ISSUE_LIST = '(' . self::ISSUE_REGEX . '(,\s*' . self::ISSUE_REGEX . ')*)';
 
     /**
      * @internal
      */
-    const PHAN_SUPPRESS_REGEX = '/@(?:phan-)?suppress\s+' . self::SUPPRESS_ISSUE_LIST . '/';
+    public const PHAN_SUPPRESS_REGEX = '/@(?:phan-)?suppress\s+' . self::SUPPRESS_ISSUE_LIST . '/';
 
     /**
      * @param string $line
@@ -1097,7 +1097,7 @@ final class Builder
     }
 
     /** @internal */
-    const MAGIC_PARAM_REGEX = '/^(' . UnionType::union_type_regex . ')?\s*(?:(\.\.\.)\s*)?(?:\$' . self::WORD_REGEX . ')?((?:\s*=.*)?)$/';
+    public const MAGIC_PARAM_REGEX = '/^(' . UnionType::union_type_regex . ')?\s*(?:(\.\.\.)\s*)?(?:\$' . self::WORD_REGEX . ')?((?:\s*=.*)?)$/';
 
     /**
      * Parses a magic method based on https://phpdoc.org/docs/latest/references/phpdoc/tags/method.html

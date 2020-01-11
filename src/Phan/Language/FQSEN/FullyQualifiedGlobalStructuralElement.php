@@ -71,9 +71,9 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
     }
 
     /** @internal */
-    const VALID_STRUCTURAL_ELEMENT_REGEX = '/^\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*$/';
+    public const VALID_STRUCTURAL_ELEMENT_REGEX = '/^\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*$/';
     /** @internal */
-    const VALID_STRUCTURAL_ELEMENT_REGEX_PART = '/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/';
+    public const VALID_STRUCTURAL_ELEMENT_REGEX_PART = '/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/';
 
     /**
      * Construct a fully-qualified global structural element from a namespace and name.

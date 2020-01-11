@@ -84,8 +84,8 @@ class FFIPreAnalysisVisitor extends PluginAwarePreAnalysisVisitor
         $node->is_ffi = $category;
     }
 
-    const PARTIALLY_FFI_CDATA = 1;
-    const ENTIRELY_FFI_CDATA = 2;
+    public const PARTIALLY_FFI_CDATA = 1;
+    public const ENTIRELY_FFI_CDATA = 2;
 
     /**
      * Check if the type contains FFI\CData

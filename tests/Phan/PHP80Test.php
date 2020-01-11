@@ -13,7 +13,7 @@ use Phan\Plugin\ConfigPluginSet;
  */
 final class PHP80Test extends AbstractPhanFileTest
 {
-    const OVERRIDES = [
+    private const OVERRIDES = [
         'allow_method_param_type_widening' => true,
         'unused_variable_detection' => true,  // for use with tests of arrow functions
         'redundant_condition_detection' => true,  // for use with typed properties

@@ -13,7 +13,7 @@ use Phan\Language\Scope;
  */
 class ClassScope extends ClosedScope
 {
-    const IN_CLASS_OR_PROPERTY_SCOPE = Scope::IN_CLASS_LIKE_SCOPE | Scope::IN_PROPERTY_SCOPE;
+    public const IN_CLASS_OR_PROPERTY_SCOPE = Scope::IN_CLASS_LIKE_SCOPE | Scope::IN_PROPERTY_SCOPE;
 
     public function __construct(
         Scope $parent_scope,

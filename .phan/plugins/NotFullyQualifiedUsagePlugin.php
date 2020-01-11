@@ -47,15 +47,15 @@ class NotFullyQualifiedUsageVisitor extends PluginAwarePostAnalysisVisitor
     // A plugin's visitors should NOT implement visit(), unless they need to.
 
     // phpcs:disable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
-    const NotFullyQualifiedFunctionCall = 'PhanPluginNotFullyQualifiedFunctionCall';
-    const NotFullyQualifiedOptimizableFunctionCall = 'PhanPluginNotFullyQualifiedOptimizableFunctionCall';
-    const NotFullyQualifiedGlobalConstant = 'PhanPluginNotFullyQualifiedGlobalConstant';
+    public const NotFullyQualifiedFunctionCall = 'PhanPluginNotFullyQualifiedFunctionCall';
+    public const NotFullyQualifiedOptimizableFunctionCall = 'PhanPluginNotFullyQualifiedOptimizableFunctionCall';
+    public const NotFullyQualifiedGlobalConstant = 'PhanPluginNotFullyQualifiedGlobalConstant';
     // phpcs:enable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
 
     /**
      * Source of functions: `zend_try_compile_special_func` from https://github.com/php/php-src/blob/master/Zend/zend_compile.c
      */
-    const OPTIMIZABLE_FUNCTIONS = [
+    private const OPTIMIZABLE_FUNCTIONS = [
         'array_key_exists' => true,
         'array_slice' => true,
         'boolval' => true,

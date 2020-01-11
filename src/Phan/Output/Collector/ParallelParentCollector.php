@@ -16,7 +16,7 @@ use Phan\Output\IssueCollectorInterface;
  */
 class ParallelParentCollector implements IssueCollectorInterface
 {
-    const MESSAGE_TYPE_ISSUE = 1;
+    public const MESSAGE_TYPE_ISSUE = 1;
 
     /**
      * @var IssueCollectorInterface

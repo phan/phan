@@ -398,7 +398,7 @@ final class ArgumentType
      * These node types are guaranteed to be usable as references
      * @internal
      */
-    const REFERENCE_NODE_KINDS = [
+    public const REFERENCE_NODE_KINDS = [
         \ast\AST_VAR,
         \ast\AST_DIM,
         \ast\AST_PROP,

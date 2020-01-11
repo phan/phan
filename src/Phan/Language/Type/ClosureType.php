@@ -19,7 +19,7 @@ use Phan\Language\Type;
 final class ClosureType extends Type
 {
     /** Not an override */
-    const NAME = 'Closure';
+    public const NAME = 'Closure';
 
     /**
      * @var FQSEN|null the FQSEN of the function-like from which this ClosureType was derived

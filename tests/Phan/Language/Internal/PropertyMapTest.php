@@ -16,12 +16,12 @@ use function is_string;
  */
 final class PropertyMapTest extends BaseTest
 {
-    const CLASS_NAME_LOWER_REGEX = '/^([a-z_][a-z0-9_]*(\\\\[a-z_][a-z0-9_]*)*|\*)$/';
+    private const CLASS_NAME_LOWER_REGEX = '/^([a-z_][a-z0-9_]*(\\\\[a-z_][a-z0-9_]*)*|\*)$/';
 
-    const PROPERTY_KEY_REGEX = '/^([a-z_][a-z0-9_]*|\*)$/i';
+    private const PROPERTY_KEY_REGEX = '/^([a-z_][a-z0-9_]*|\*)$/i';
 
     // Matches a union type of 0 or more parts.
-    const ONLY_UNION_TYPE_REGEX = '/^(' . UnionType::union_type_regex . ')?$/';
+    private const ONLY_UNION_TYPE_REGEX = '/^(' . UnionType::union_type_regex . ')?$/';
 
     public function testPropertySignatureMap(): void
     {

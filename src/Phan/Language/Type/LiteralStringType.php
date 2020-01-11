@@ -26,7 +26,7 @@ use const FILTER_VALIDATE_INT;
 final class LiteralStringType extends StringType implements LiteralTypeInterface
 {
 
-    const MINIMUM_MAX_STRING_LENGTH = 50;
+    public const MINIMUM_MAX_STRING_LENGTH = 50;
 
     /** @var string $value */
     private $value;
@@ -90,7 +90,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
     /**
      * @internal - For use within LiteralStringType
      */
-    const ESCAPE_CHARACTER_LOOKUP = [
+    private const ESCAPE_CHARACTER_LOOKUP = [
         "\n" => '\\n',
         "\r" => '\\r',
         "\t" => '\\t',
@@ -101,7 +101,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
     /**
      * @internal - For use within LiteralStringType
      */
-    const UNESCAPE_CHARACTER_LOOKUP = [
+    private const UNESCAPE_CHARACTER_LOOKUP = [
         '\\n' => "\n",
         '\\r' => "\r",
         '\\t' => "\t",

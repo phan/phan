@@ -9,7 +9,7 @@ namespace Phan\Library;
  */
 abstract class Tuple
 {
-    const ARITY = 0;
+    public const ARITY = 0;
 
     /**
      * @return int

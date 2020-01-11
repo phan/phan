@@ -17,7 +17,7 @@ use Phan\Language\Type;
 final class CallableObjectType extends ObjectType
 {
     /** @phan-override */
-    const NAME = 'callable-object';
+    public const NAME = 'callable-object';
 
     protected function __construct(bool $is_nullable)
     {

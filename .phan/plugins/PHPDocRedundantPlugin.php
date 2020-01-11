@@ -33,10 +33,10 @@ class PHPDocRedundantPlugin extends PluginV3 implements
     AnalyzeMethodCapability,
     AutomaticFixCapability
 {
-    const RedundantFunctionComment = 'PhanPluginRedundantFunctionComment';
-    const RedundantClosureComment = 'PhanPluginRedundantClosureComment';
-    const RedundantMethodComment = 'PhanPluginRedundantMethodComment';
-    const RedundantReturnComment = 'PhanPluginRedundantReturnComment';
+    private const RedundantFunctionComment = 'PhanPluginRedundantFunctionComment';
+    private const RedundantClosureComment = 'PhanPluginRedundantClosureComment';
+    private const RedundantMethodComment = 'PhanPluginRedundantMethodComment';
+    private const RedundantReturnComment = 'PhanPluginRedundantReturnComment';
 
     public function analyzeFunction(CodeBase $code_base, Func $function): void
     {

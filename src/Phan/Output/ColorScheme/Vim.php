@@ -12,7 +12,7 @@ namespace Phan\Output\ColorScheme;
 class Vim
 {
     /** @suppress PhanUnreferencedPublicClassConstant this is used dynamically */
-    const DEFAULT_COLOR_FOR_TEMPLATE = [
+    public const DEFAULT_COLOR_FOR_TEMPLATE = [
         'CLASS'         => 'green',
         'CLASSLIKE'     => 'green',
         'CODE'          => 'magenta',

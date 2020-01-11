@@ -28,15 +28,15 @@ use function spl_object_id;
  */
 abstract class Scope
 {
-    const IN_FUNCTION_LIKE_SCOPE = 0x01;
+    public const IN_FUNCTION_LIKE_SCOPE = 0x01;
     // If this is set, and neither IN_TRAIT_SCOPE and IN_INTERFACE_SCOPE are set, this is
-    const IN_CLASS_SCOPE         = 0x02;
+    public const IN_CLASS_SCOPE         = 0x02;
     // If this is set, this is a trait (self::IN_CLASS_SCOPE will also be set)
-    const IN_TRAIT_SCOPE         = 0x04;
+    public const IN_TRAIT_SCOPE         = 0x04;
     // If this is set, this is an interface (self::IN_CLASS_SCOPE will also be set)
-    const IN_INTERFACE_SCOPE     = 0x08;
-    const IN_CLASS_LIKE_SCOPE    = self::IN_CLASS_SCOPE | self::IN_TRAIT_SCOPE | self::IN_INTERFACE_SCOPE;
-    const IN_PROPERTY_SCOPE      = 0x10;
+    public const IN_INTERFACE_SCOPE     = 0x08;
+    public const IN_CLASS_LIKE_SCOPE    = self::IN_CLASS_SCOPE | self::IN_TRAIT_SCOPE | self::IN_INTERFACE_SCOPE;
+    public const IN_PROPERTY_SCOPE      = 0x10;
 
     /**
      * @var Scope the parent scope, if this is not the global scope

@@ -755,7 +755,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /** @internal */
-    const NAME_FOR_BINARY_OP = [
+    public const NAME_FOR_BINARY_OP = [
         flags\BINARY_BOOL_AND            => '&&',
         flags\BINARY_BOOL_OR             => '||',
         flags\BINARY_BOOL_XOR            => 'xor',
@@ -854,7 +854,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         );
     }
 
-    const ISSUE_TYPES_RIGHT_SIDE_ZERO = [
+    public const ISSUE_TYPES_RIGHT_SIDE_ZERO = [
         flags\BINARY_POW => Issue::PowerOfZero,
         flags\BINARY_DIV => Issue::DivisionByZero,
         flags\BINARY_MOD => Issue::ModuloByZero,
@@ -939,7 +939,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
     }
 
-    const NAME_FOR_UNARY_OP = [
+    public const NAME_FOR_UNARY_OP = [
         flags\UNARY_BOOL_NOT => '!',
         flags\UNARY_BITWISE_NOT => '~',
         flags\UNARY_SILENCE => '@',
@@ -970,7 +970,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * @internal
      * Maps the flags of nodes with kind AST_CAST to their types
      */
-    const AST_CAST_FLAGS_LOOKUP = [
+    public const AST_CAST_FLAGS_LOOKUP = [
         flags\TYPE_NULL => 'unset',
         flags\TYPE_BOOL => 'bool',
         flags\TYPE_LONG => 'int',
@@ -1084,7 +1084,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         return $this->analyzeIncOrDec($node);
     }
 
-    const NAME_FOR_INC_OR_DEC_KIND = [
+    public const NAME_FOR_INC_OR_DEC_KIND = [
         ast\AST_PRE_INC => '++(expr)',
         ast\AST_PRE_DEC => '--(expr)',
         ast\AST_POST_INC => '(expr)++',
@@ -3223,7 +3223,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     // An incomplete list of known parent node kinds that simultaneously read and write the given expression
     // TODO: ASSIGN_OP?
-    const _READ_AND_WRITE_KINDS = [
+    private const READ_AND_WRITE_KINDS = [
         ast\AST_PRE_INC,
         ast\AST_PRE_DEC,
         ast\AST_POST_INC,
@@ -3268,7 +3268,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         } elseif ($parent_kind === ast\AST_ASSIGN_REF) {
             return null;
         } else {
-            return \in_array($parent_kind, self::_READ_AND_WRITE_KINDS, true);
+            return \in_array($parent_kind, self::READ_AND_WRITE_KINDS, true);
         }
     }
 
@@ -4228,7 +4228,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         );
     }
 
-    const LOOP_SCOPE_KINDS = [
+    public const LOOP_SCOPE_KINDS = [
         ast\AST_FOR => true,
         ast\AST_FOREACH => true,
         ast\AST_WHILE => true,

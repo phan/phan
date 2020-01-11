@@ -27,7 +27,7 @@ final class CommentTest extends BaseTest
     /** @var array<string,mixed> the old values of Phan's Config. */
     protected $old_values = [];
 
-    const OVERRIDES = [
+    public const OVERRIDES = [
         'read_type_annotations' => true,
         'read_magic_property_annotations' => true,
         'read_magic_method_annotations' => true,

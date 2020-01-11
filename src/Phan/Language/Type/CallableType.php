@@ -17,7 +17,7 @@ use Phan\Language\Type;
 final class CallableType extends NativeType implements CallableInterface
 {
     /** @phan-override */
-    const NAME = 'callable';
+    public const NAME = 'callable';
 
     /**
      * @return bool

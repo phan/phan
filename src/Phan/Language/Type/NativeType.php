@@ -20,10 +20,10 @@ use function in_array;
  */
 abstract class NativeType extends Type
 {
-    const NAME = '';
+    public const NAME = '';
 
     /** @phan-override */
-    const KEY_PREFIX = '!';
+    public const KEY_PREFIX = '!';
 
     /**
      * @param bool $is_nullable

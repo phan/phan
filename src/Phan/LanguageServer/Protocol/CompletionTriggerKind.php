@@ -13,15 +13,15 @@ class CompletionTriggerKind
     /**
      * Completion was triggered by invoking it manually or by using the API.
      */
-    const INVOKED = 1;
+    public const INVOKED = 1;
 
     /**
      * Completion was triggered by a trigger character.
      */
-    const TRIGGER_CHARACTER = 2;
+    public const TRIGGER_CHARACTER = 2;
 
     /**
      * Completion was re-triggered as the current completion list is incomplete.
      */
-    const TRIGGER_FOR_INVALID_COMPLETIONS = 3;
+    public const TRIGGER_FOR_INVALID_COMPLETIONS = 3;
 }

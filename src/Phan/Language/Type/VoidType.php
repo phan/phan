@@ -17,7 +17,7 @@ use Phan\Language\UnionType;
 final class VoidType extends NativeType
 {
     /** @phan-override */
-    const NAME = 'void';
+    public const NAME = 'void';
 
     /**
      * @param string $namespace

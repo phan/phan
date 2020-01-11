@@ -87,7 +87,7 @@ class UnionType implements Serializable
      * character (e.g. 'int|DateTime|string[]')
      */
     // phpcs:ignore Generic.NamingConventions.UpperCaseConstantName
-    const union_type_regex =
+    public const union_type_regex =
         Type::type_regex
         . '(\s*\|\s*' . Type::type_regex . ')*';
 
@@ -100,7 +100,7 @@ class UnionType implements Serializable
      * TODO: Equivalent variants with no capturing? (May not improve performance much)
      */
     // phpcs:ignore Generic.NamingConventions.UpperCaseConstantName
-    const union_type_regex_or_this =
+    public const union_type_regex_or_this =
         Type::type_regex_or_this
         . '(\s*\|\s*' . Type::type_regex_or_this . ')*';
 

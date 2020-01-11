@@ -19,7 +19,7 @@ use function json_encode;
 final class GenericIterableType extends IterableType
 {
     /** @phan-override */
-    const NAME = 'iterable';
+    public const NAME = 'iterable';
 
     /**
      * @var UnionType the union type of the keys of this iterable.

@@ -14,7 +14,7 @@ use Phan\Language\Type;
 final class ClosureDeclarationType extends FunctionLikeDeclarationType
 {
     /** @override */
-    const NAME = 'Closure';
+    public const NAME = 'Closure';
 
     /**
      * @return bool

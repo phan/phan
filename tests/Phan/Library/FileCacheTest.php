@@ -12,8 +12,8 @@ use Phan\Tests\BaseTest;
  */
 final class FileCacheTest extends BaseTest
 {
-    const MOCK_PATH = '/path/to/a';
-    const MOCK_CONTENTS = "Mock contents\nOther lines\n";
+    public const MOCK_PATH = '/path/to/a';
+    public const MOCK_CONTENTS = "Mock contents\nOther lines\n";
 
     public function setUp(): void
     {

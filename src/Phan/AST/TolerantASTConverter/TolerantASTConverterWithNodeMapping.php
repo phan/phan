@@ -153,10 +153,8 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
     /**
      * We use a blacklist because there are more many more tokens we want to use the parent for.
      * For example, when navigating to class names in comments, the comment can be prior to pretty much any token (e.g. AmpersandToken, PublicKeyword, etc.)
-     *
-     * @internal
      */
-    const KINDS_TO_NOT_RETURN_PARENT = [
+    private const KINDS_TO_NOT_RETURN_PARENT = [
         TokenKind::QualifiedName => true,
     ];
 
@@ -301,10 +299,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
         }
     }
 
-    /**
-     * @internal
-     */
-    const VALID_FRAGMENT_CHARACTER_REGEX = '/[\\\\a-z0-9_\x7f-\xff]/i';
+    private const VALID_FRAGMENT_CHARACTER_REGEX = '/[\\\\a-z0-9_\x7f-\xff]/i';
 
     /**
      * @return ?string A fragment that is a potentially valid class or function identifier (e.g. 'MyNs\MyClass', '\MyClass')

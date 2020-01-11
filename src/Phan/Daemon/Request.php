@@ -43,24 +43,24 @@ use const WNOHANG;
  */
 class Request
 {
-    const METHOD_ANALYZE_FILES = 'analyze_files';  // has shorthand analyze_file with param 'file'
+    public const METHOD_ANALYZE_FILES = 'analyze_files';  // has shorthand analyze_file with param 'file'
 
-    const PARAM_METHOD = 'method';
-    const PARAM_FILES  = 'files';
-    const PARAM_FORMAT = 'format';
-    const PARAM_COLOR  = 'color';
-    const PARAM_TEMPORARY_FILE_MAPPING_CONTENTS = 'temporary_file_mapping_contents';
+    public const PARAM_METHOD = 'method';
+    public const PARAM_FILES  = 'files';
+    public const PARAM_FORMAT = 'format';
+    public const PARAM_COLOR  = 'color';
+    public const PARAM_TEMPORARY_FILE_MAPPING_CONTENTS = 'temporary_file_mapping_contents';
 
     // success codes
-    const STATUS_OK = 'ok';  // unrecognized output format
-    const STATUS_NO_FILES = 'no_files';  // none of the requested files were in this project's config directories
+    public const STATUS_OK = 'ok';  // unrecognized output format
+    public const STATUS_NO_FILES = 'no_files';  // none of the requested files were in this project's config directories
 
     // failure codes
-    const STATUS_INVALID_FORMAT = 'invalid_format';  // unrecognized requested output "format"
-    const STATUS_ERROR_UNKNOWN = 'error_unknown';
-    const STATUS_INVALID_FILES = 'invalid_files';  // expected a valid string for 'files'/'file'
-    const STATUS_INVALID_METHOD = 'invalid_method';  // expected 'method' to be analyze_files or
-    const STATUS_INVALID_REQUEST = 'invalid_request';  // expected a valid string for 'files'/'file'
+    public const STATUS_INVALID_FORMAT = 'invalid_format';  // unrecognized requested output "format"
+    public const STATUS_ERROR_UNKNOWN = 'error_unknown';
+    public const STATUS_INVALID_FILES = 'invalid_files';  // expected a valid string for 'files'/'file'
+    public const STATUS_INVALID_METHOD = 'invalid_method';  // expected 'method' to be analyze_files or
+    public const STATUS_INVALID_REQUEST = 'invalid_request';  // expected a valid string for 'files'/'file'
 
     /** @var Responder|null - Null after the response is sent. */
     private $responder;

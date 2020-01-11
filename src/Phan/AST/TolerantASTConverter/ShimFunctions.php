@@ -12,7 +12,7 @@ use ast;
  */
 class ShimFunctions
 {
-    const KIND_LOOKUP = [
+    private const KIND_LOOKUP = [
         ast\AST_ARG_LIST => 'AST_ARG_LIST',
         ast\AST_ARRAY => 'AST_ARRAY',
         ast\AST_ENCAPS_LIST => 'AST_ENCAPS_LIST',

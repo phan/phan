@@ -15,8 +15,8 @@ use Sabre\Event\Loop;
  */
 class ProtocolStreamReader extends Emitter implements ProtocolReader
 {
-    const PARSE_HEADERS = 1;
-    const PARSE_BODY = 2;
+    public const PARSE_HEADERS = 1;
+    public const PARSE_BODY = 2;
 
     /** @var resource the input stream resource for data from the client. */
     private $input;

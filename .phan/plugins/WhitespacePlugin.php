@@ -19,9 +19,9 @@ class WhitespacePlugin extends PluginV3 implements
     AfterAnalyzeFileCapability,
     AutomaticFixCapability
 {
-    const CarriageReturn = 'PhanPluginWhitespaceCarriageReturn';
-    const Tab = 'PhanPluginWhitespaceTab';
-    const WhitespaceTrailing = 'PhanPluginWhitespaceTrailing';
+    public const CarriageReturn = 'PhanPluginWhitespaceCarriageReturn';
+    public const Tab = 'PhanPluginWhitespaceTab';
+    public const WhitespaceTrailing = 'PhanPluginWhitespaceTrailing';
 
     private static function calculateLine(string $contents, int $byte_offset): int
     {

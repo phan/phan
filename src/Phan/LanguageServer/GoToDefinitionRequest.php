@@ -57,9 +57,9 @@ final class GoToDefinitionRequest extends NodeInfoRequest
      */
     private $hover_response = null;
 
-    const REQUEST_DEFINITION = 0;
-    const REQUEST_TYPE_DEFINITION = 1;
-    const REQUEST_HOVER = 2;
+    public const REQUEST_DEFINITION = 0;
+    public const REQUEST_TYPE_DEFINITION = 1;
+    public const REQUEST_HOVER = 2;
 
     public function __construct(
         string $uri,
@@ -179,7 +179,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
     /**
      * Based on https://secure.php.net/manual/en/reserved.variables.php
      */
-    const GLOBAL_DESCRIPTIONS = [
+    protected const GLOBAL_DESCRIPTIONS = [
         'argc' => 'The number of arguments passed to the script',
         'argv' => 'Array of arguments passed to the script. The first argument `$argv[0]` is always the name that was used to run the script.',
         '_COOKIE' => 'An associative array of variables passed to the current script via HTTP Cookies.',

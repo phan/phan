@@ -34,8 +34,8 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
 {
     // phpcs:disable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
     // this is deliberate for issue names
-    const SuspiciousParamOrderInternal = 'PhanPluginSuspiciousParamOrderInternal';
-    const SuspiciousParamOrder = 'PhanPluginSuspiciousParamOrder';
+    private const SuspiciousParamOrderInternal = 'PhanPluginSuspiciousParamOrderInternal';
+    private const SuspiciousParamOrder = 'PhanPluginSuspiciousParamOrder';
     // phpcs:enable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
 
     /**

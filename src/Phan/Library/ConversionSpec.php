@@ -39,12 +39,12 @@ class ConversionSpec
 
     // A padding string regex may be a space or 0.
     // Alternate padding specifiers may be specified by prefixing it with a single quote.
-    const PADDING_STRING_REGEX_PART = '[0 ]?|\'.';
+    public const PADDING_STRING_REGEX_PART = '[0 ]?|\'.';
 
     /**
      * Based on https://secure.php.net/manual/en/function.sprintf.php
      */
-    const FORMAT_STRING_INNER_REGEX_PART =
+    public const FORMAT_STRING_INNER_REGEX_PART =
         '%'  // Every format string begins with a percent
         . '(\d+\$)?'  // Optional n$ position specifier must go immediately after percent
         . '(' . self::PADDING_STRING_REGEX_PART . ')'  // optional padding specifier
@@ -55,7 +55,7 @@ class ConversionSpec
         . '([bcdeEfFgGosuxX])';  // A type specifier
 
 
-    const FORMAT_STRING_REGEX = '/%%|' . self::FORMAT_STRING_INNER_REGEX_PART . '/';
+    public const FORMAT_STRING_REGEX = '/%%|' . self::FORMAT_STRING_INNER_REGEX_PART . '/';
 
     /**
      * Compute the number of additional arguments expected when sprintf is called
@@ -119,7 +119,7 @@ class ConversionSpec
     {
         return '%' . $this->width . '$' . $this->padding_char . $this->alignment . $this->precision . $this->arg_type;
     }
-    const ARG_TYPE_LOOKUP = [
+    public const ARG_TYPE_LOOKUP = [
         'b' => 'int',
         'c' => 'int',
         'd' => 'int',

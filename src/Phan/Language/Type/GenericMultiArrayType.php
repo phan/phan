@@ -23,7 +23,7 @@ use Phan\Language\UnionTypeBuilder;
 final class GenericMultiArrayType extends ArrayType implements MultiType, GenericArrayInterface
 {
     /** @phan-override */
-    const NAME = 'array';
+    public const NAME = 'array';
 
     /**
      * @var non-empty-list<Type>

@@ -34,13 +34,13 @@ class InvalidVariableIssetVisitor extends PluginAwarePostAnalysisVisitor
 {
 
     /** define classes to parse */
-    const CLASSES = [
+    private const CLASSES = [
         ast\AST_STATIC_CALL,
         ast\AST_STATIC_PROP,
     ];
 
     /** define expression to parse */
-    const EXPRESSIONS = [
+    private const EXPRESSIONS = [
         ast\AST_CALL,
         ast\AST_DIM,
         ast\AST_INSTANCEOF,

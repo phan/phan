@@ -16,7 +16,7 @@ use Phan\Language\UnionType;
 class CallableArrayType extends ArrayType
 {
     /** @phan-override */
-    const NAME = 'callable-array';
+    public const NAME = 'callable-array';
 
     public function isAlwaysTruthy(): bool
     {

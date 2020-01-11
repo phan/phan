@@ -24,9 +24,9 @@ class InlineHTMLPlugin extends PluginV3 implements
     AfterAnalyzeFileCapability,
     PostAnalyzeNodeCapability
 {
-    const InlineHTML = 'PhanPluginInlineHTML';
-    const InlineHTMLLeading = 'PhanPluginInlineHTMLLeading';
-    const InlineHTMLTrailing = 'PhanPluginInlineHTMLTrailing';
+    private const InlineHTML = 'PhanPluginInlineHTML';
+    private const InlineHTMLLeading = 'PhanPluginInlineHTMLLeading';
+    private const InlineHTMLTrailing = 'PhanPluginInlineHTMLTrailing';
 
     /** @var array<string,true> set of files that have echo statements */
     public static $file_set_to_analyze = [];

@@ -14,8 +14,8 @@ namespace Phan\Tests;
 abstract class PhanTestRange extends PhanTestCommon
 {
 
-    const START_RANGE = '';
-    const END_RANGE = '';
+    public const START_RANGE = '';
+    public const END_RANGE = '';
 
     public function getTestFiles(): array
     {

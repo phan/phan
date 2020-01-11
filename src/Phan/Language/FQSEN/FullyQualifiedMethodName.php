@@ -13,7 +13,7 @@ class FullyQualifiedMethodName extends FullyQualifiedClassElement implements Ful
      * Maps lowercase versions of function names to their canonical names, for magic methods.
      * This makes checks for magic method names more reliable.
      */
-    const CANONICAL_NAMES = [
+    public const CANONICAL_NAMES = [
         '__call'        => '__call',
         '__callstatic'  => '__callStatic',
         '__clone'       => '__clone',
@@ -33,7 +33,7 @@ class FullyQualifiedMethodName extends FullyQualifiedClassElement implements Ful
         '__wakeup'      => '__wakeup',
     ];
 
-    const MAGIC_METHOD_NAME_SET = [
+    public const MAGIC_METHOD_NAME_SET = [
         '__call'        => true,
         '__callStatic'  => true,
         '__clone'       => true,
@@ -57,7 +57,7 @@ class FullyQualifiedMethodName extends FullyQualifiedClassElement implements Ful
      * Maps magic method names with known types to those types.
      * Excludes values with mixed types.
      */
-    const MAGIC_METHOD_TYPE_MAP = [
+    public const MAGIC_METHOD_TYPE_MAP = [
         '__clone'       => 'void',
         '__construct'   => 'void',
         '__debugInfo'   => 'array<string,mixed>',
@@ -76,7 +76,7 @@ class FullyQualifiedMethodName extends FullyQualifiedClassElement implements Ful
     /**
      * A list of magic methods which should have a return type of void
      */
-    const MAGIC_VOID_METHOD_NAME_SET = [
+    public const MAGIC_VOID_METHOD_NAME_SET = [
         '__clone'       => true,
         '__construct'   => true,
         '__destruct'    => true,

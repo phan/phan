@@ -13,21 +13,21 @@ abstract class DiagnosticSeverity
     /**
      * Reports an error.
      */
-    const ERROR = 1;
+    public const ERROR = 1;
 
     /**
      * Reports a warning.
      */
-    const WARNING = 2;
+    public const WARNING = 2;
 
     /**
      * Reports an information.
      */
-    const INFORMATION = 3;
+    public const INFORMATION = 3;
 
     /**
      * Reports a hint.
      * @suppress PhanUnreferencedPublicClassConstant unused, but documented
      */
-    const HINT = 4;
+    public const HINT = 4;
 }

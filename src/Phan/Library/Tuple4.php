@@ -26,7 +26,7 @@ namespace Phan\Library;
 class Tuple4 extends Tuple3
 {
     /** @var int */
-    const ARITY = 4;
+    public const ARITY = 4;
 
     /** @var T3 element 3 of this tuple (0-based index) */
     public $_3;

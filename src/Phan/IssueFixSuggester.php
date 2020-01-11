@@ -132,12 +132,12 @@ class IssueFixSuggester
         return Suggestion::fromString($suggestion_text);
     }
 
-    const DEFAULT_CLASS_SUGGESTION_PREFIX = 'Did you mean';
-    const DEFAULT_FUNCTION_SUGGESTION_PREFIX = 'Did you mean';
+    public const DEFAULT_CLASS_SUGGESTION_PREFIX = 'Did you mean';
+    public const DEFAULT_FUNCTION_SUGGESTION_PREFIX = 'Did you mean';
 
-    const CLASS_SUGGEST_ONLY_CLASSES = 0;
-    const CLASS_SUGGEST_CLASSES_AND_TYPES = 1;
-    const CLASS_SUGGEST_CLASSES_AND_TYPES_AND_VOID = 2;
+    public const CLASS_SUGGEST_ONLY_CLASSES = 0;
+    public const CLASS_SUGGEST_CLASSES_AND_TYPES = 1;
+    public const CLASS_SUGGEST_CLASSES_AND_TYPES_AND_VOID = 2;
 
     /**
      * Returns a message suggesting a class name that is similar to the provided undeclared class

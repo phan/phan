@@ -68,20 +68,20 @@ class CLI
     /**
      * This should be updated to x.y.z-dev after every release, and x.y.z before a release.
      */
-    const PHAN_VERSION = '2.4.7-dev';
+    public const PHAN_VERSION = '2.4.7-dev';
 
     /**
      * List of short flags passed to getopt
      * still available: g,n,w
      * @internal
      */
-    const GETOPT_SHORT_OPTIONS = 'f:m:o:c:k:aeqbr:pid:3:y:l:tuxj:zhvs:SCP:I:DB:';
+    public const GETOPT_SHORT_OPTIONS = 'f:m:o:c:k:aeqbr:pid:3:y:l:tuxj:zhvs:SCP:I:DB:';
 
     /**
      * List of long flags passed to getopt
      * @internal
      */
-    const GETOPT_LONG_OPTIONS = [
+    public const GETOPT_LONG_OPTIONS = [
         'absolute-path-issue-messages',
         'allow-polyfill-parser',
         'assume-real-types-for-internal-functions',
@@ -1252,7 +1252,7 @@ class CLI
         return $this->file_list;
     }
 
-    const INIT_HELP = <<<'EOT'
+    public const INIT_HELP = <<<'EOT'
  --init
    [--init-level=3]
    [--init-analyze-dir=path/to/src]

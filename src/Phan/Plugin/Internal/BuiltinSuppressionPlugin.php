@@ -199,7 +199,7 @@ final class BuiltinSuppressionPlugin extends PluginV3 implements
     }
 
     // @phan-suppress-next-line PhanAccessClassConstantInternal
-    const SUPPRESS_ISSUE_REGEX = '/@phan-(suppress-(next(?:-next)?|current|previous)-line|file-suppress)\s+' . Builder::SUPPRESS_ISSUE_LIST . '/';
+    private const SUPPRESS_ISSUE_REGEX = '/@phan-(suppress-(next(?:-next)?|current|previous)-line|file-suppress)\s+' . Builder::SUPPRESS_ISSUE_LIST . '/';
 
     /**
      * @return Generator<array{0:string,1:int,2:int,3:string,4:string}>

@@ -97,20 +97,20 @@ class Type
      * @var string
      * A legal type identifier (e.g. 'int' or 'DateTime')
      */
-    const simple_type_regex =
+    public const simple_type_regex =
         '(\??)(?:callable-(?:string|object|array)|associative-array|class-string|non-empty-(?:associative-array|array|list)|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
 
-    const simple_noncapturing_type_regex =
+    public const simple_noncapturing_type_regex =
         '\\\\?(?:callable-(?:string|object|array)|associative-array|class-string|non-empty-(?:associative-array|array|list)|[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
 
     /**
      * @var string
      * A legal type identifier (e.g. 'int' or 'DateTime')
      */
-    const simple_type_regex_or_this =
+    public const simple_type_regex_or_this =
         '(\??)(callable-(?:string|object|array)|associative-array|class-string|non-empty-(?:associative-array|array|list)|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*|\$this)';
 
-    const shape_key_regex =
+    public const shape_key_regex =
         '(?:[-.\/^;$%*+_a-zA-Z0-9\x7f-\xff]|\\\\(?:[nrt\\\\]|x[0-9a-fA-F]{2}))+\??';
 
     /**
@@ -119,7 +119,7 @@ class Type
      * Note that string literals can only contain a whitelist of characters.
      * NOTE: The / is escaped
      */
-    const noncapturing_literal_regex =
+    public const noncapturing_literal_regex =
         '\??(?:-?(?:(?:0|[1-9][0-9]*)(?:\.[0-9]+)?)|\'(?:[- ,.\/?:;"!#$%^&*_+=a-zA-Z0-9_\x80-\xff]|\\\\(?:[\'\\\\]|x[0-9a-fA-F]{2}))*\')';
         // '\??(?:-?(?:0|[1-9][0-9]*)|\'(?:[a-zA-Z0-9_])*\')';
 
@@ -129,7 +129,7 @@ class Type
      *
      * @suppress PhanUnreferencedPublicClassConstant
      */
-    const array_shape_entry_regex_noncapturing =
+    public const array_shape_entry_regex_noncapturing =
         '(?:' . self::shape_key_regex . '\s*:)?\s*(?:' . self::simple_noncapturing_type_regex . '=?)';
 
     /**
@@ -140,7 +140,7 @@ class Type
      *
      * https://www.debuggex.com/ is useful for a visual description of these regexes
      */
-    const type_regex =
+    public const type_regex =
         '('
         . '(?:\??\((?-1)(?:\|(?-1))*\)|'  // Recursion: "?(T)" or "(T)" with brackets. Also allow parsing (a|b) within brackets.
         . '(?:'
@@ -180,7 +180,7 @@ class Type
      *
      * https://www.debuggex.com/ is useful for a visual description of these regexes
      */
-    const type_regex_or_this =
+    public const type_regex_or_this =
         '('
         . '('
           . '(?:'
@@ -217,7 +217,7 @@ class Type
     /**
      * @var array<string,bool> - For checking if a string is an internal type. This is used for case-insensitive lookup.
      */
-    const _internal_type_set = [
+    public const _internal_type_set = [
         'associative-array' => true,
         'array'           => true,
         'bool'            => true,
@@ -256,7 +256,7 @@ class Type
      *
      * (numeric not supported yet)
      */
-    const _soft_internal_type_set = [
+    public const _soft_internal_type_set = [
         'false'     => true,
         'mixed'     => true,
         'object'    => true,
@@ -269,22 +269,22 @@ class Type
     // e.g. integer and resource are phpdoc types, but they aren't actual types.
 
     /** For types created from a type in an AST node, e.g. `int $x` */
-    const FROM_NODE = 0;
+    public const FROM_NODE = 0;
 
     /** For types copied from another type, e.g. `$x = $y` gets types from $y */
-    const FROM_TYPE = 1;
+    public const FROM_TYPE = 1;
 
     /** For types copied from phpdoc, e.g. `(at)param integer $x` */
-    const FROM_PHPDOC = 2;
+    public const FROM_PHPDOC = 2;
 
     /** To distinguish NativeType subclasses and classes with the same name. Overridden in subclasses */
-    const KEY_PREFIX = '';
+    public const KEY_PREFIX = '';
 
     /** To normalize combinations of union types */
-    const _bit_false    = (1 << 0);
-    const _bit_true     = (1 << 1);
-    const _bit_bool_combination = self::_bit_false | self::_bit_true;
-    const _bit_nullable = (1 << 2);
+    public const _bit_false    = (1 << 0);
+    public const _bit_true     = (1 << 1);
+    public const _bit_bool_combination = self::_bit_false | self::_bit_true;
+    public const _bit_nullable = (1 << 2);
 
     /**
      * @var string

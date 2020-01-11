@@ -13,7 +13,7 @@ use Phan\Language\Type;
 final class CallableDeclarationType extends FunctionLikeDeclarationType implements CallableInterface
 {
     /** @override */
-    const NAME = 'callable';
+    public const NAME = 'callable';
 
     /**
      * @return bool

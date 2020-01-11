@@ -108,13 +108,13 @@ class TolerantASTConverter
 {
     // The latest stable version of php-ast.
     // For something != 70, update the library's release.
-    const AST_VERSION = 70;
+    public const AST_VERSION = 70;
 
     // The versions that this supports
     // TODO: Also enable support for version 60 once there is a stable 1.0.0 release. (Issue #2038)
-    const SUPPORTED_AST_VERSIONS = [self::AST_VERSION];
+    public const SUPPORTED_AST_VERSIONS = [self::AST_VERSION];
 
-    const _IGNORED_STRING_TOKEN_KIND_SET = [
+    private const _IGNORED_STRING_TOKEN_KIND_SET = [
         TokenKind::OpenBraceDollarToken => true,
         TokenKind::OpenBraceToken => true,
         TokenKind::DollarOpenBraceToken => true,
@@ -123,11 +123,11 @@ class TolerantASTConverter
 
     // If this environment variable is set, this will throw.
     // (For debugging, may be removed in the future)
-    const ENV_AST_THROW_INVALID = 'AST_THROW_INVALID';
+    public const ENV_AST_THROW_INVALID = 'AST_THROW_INVALID';
 
-    const INCOMPLETE_CLASS_CONST = '__INCOMPLETE_CLASS_CONST__';
-    const INCOMPLETE_PROPERTY = '__INCOMPLETE_PROPERTY__';
-    const INCOMPLETE_VARIABLE = '__INCOMPLETE_VARIABLE__';
+    public const INCOMPLETE_CLASS_CONST = '__INCOMPLETE_CLASS_CONST__';
+    public const INCOMPLETE_PROPERTY = '__INCOMPLETE_PROPERTY__';
+    public const INCOMPLETE_VARIABLE = '__INCOMPLETE_VARIABLE__';
 
     /**
      * @var int - A version in SUPPORTED_AST_VERSIONS
@@ -1061,7 +1061,7 @@ class TolerantASTConverter
                         if (\preg_match('@^__(LINE|FILE|DIR|FUNCTION|CLASS|TRAIT|METHOD|NAMESPACE)__$@i', $imploded_parts) > 0) {
                             return new ast\Node(
                                 ast\AST_MAGIC_CONST,
-                                self::_MAGIC_CONST_LOOKUP[\strtoupper($imploded_parts)],
+                                self::MAGIC_CONST_LOOKUP[\strtoupper($imploded_parts)],
                                 [],
                                 self::getStartLine($part)
                             );
@@ -2853,7 +2853,7 @@ class TolerantASTConverter
     }
 
     /** @internal */
-    const _MAGIC_CONST_LOOKUP = [
+    private const MAGIC_CONST_LOOKUP = [
         '__LINE__' => flags\MAGIC_LINE,
         '__FILE__' => flags\MAGIC_FILE,
         '__DIR__' => flags\MAGIC_DIR,

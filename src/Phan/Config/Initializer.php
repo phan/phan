@@ -235,7 +235,7 @@ EOT;
         return $source;
     }
 
-    const LEVEL_MAP = [
+    public const LEVEL_MAP = [
         'strict'  => 1,
         'strong'  => 2,
         'average' => 3,

@@ -75,7 +75,7 @@ class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
      * likely to be a typo if both the left and right-hand sides
      * of the operation are the same.
      */
-    const REDUNDANT_BINARY_OP_SET = [
+    private const REDUNDANT_BINARY_OP_SET = [
         flags\BINARY_BOOL_AND            => true,
         flags\BINARY_BOOL_OR             => true,
         flags\BINARY_BOOL_XOR            => true,
@@ -102,7 +102,7 @@ class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
      *
      * These binary operations will make this plugin warn if both sides are literals.
      */
-    const BINARY_OP_BOTH_LITERAL_WARN_SET = [
+    private const BINARY_OP_BOTH_LITERAL_WARN_SET = [
         flags\BINARY_BOOL_AND            => true,
         flags\BINARY_BOOL_OR             => true,
         flags\BINARY_BOOL_XOR            => true,

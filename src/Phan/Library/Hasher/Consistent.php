@@ -14,9 +14,9 @@ use Phan\Library\Hasher;
 class Consistent implements Hasher
 {
     /** A larger number means a more balanced distribution. */
-    const VIRTUAL_COPY_COUNT = 16;
+    private const VIRTUAL_COPY_COUNT = 16;
     /** i.e. (1 << 30) */
-    const MAX = 0x40000000;
+    private const MAX = 0x40000000;
     /** @var list<int> - Sorted list of hash values, for binary search. */
     protected $hash_ring_ids;
     /** @var list<int> - Groups corresponding to hash values in hash_ring_ids */

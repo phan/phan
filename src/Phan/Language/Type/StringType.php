@@ -18,7 +18,7 @@ use Phan\Language\UnionType;
 class StringType extends ScalarType
 {
     /** @phan-override */
-    const NAME = 'string';
+    public const NAME = 'string';
 
     protected function canCastToNonNullableType(Type $type): bool
     {

@@ -38,7 +38,7 @@ use function count;
  */
 final class EmptyUnionTypeTest extends BaseTest
 {
-    const SKIPPED_METHOD_NAMES = [
+    private const SKIPPED_METHOD_NAMES = [
         'unserialize',  // throws
         '__construct',
         '__clone',

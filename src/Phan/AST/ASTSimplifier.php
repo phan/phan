@@ -165,7 +165,7 @@ class ASTSimplifier
         }
     }
 
-    const NON_SHORT_CIRCUITING_BINARY_OPERATOR_FLAGS = [
+    public const NON_SHORT_CIRCUITING_BINARY_OPERATOR_FLAGS = [
         flags\BINARY_BOOL_XOR,
         flags\BINARY_IS_IDENTICAL,
         flags\BINARY_IS_NOT_IDENTICAL,

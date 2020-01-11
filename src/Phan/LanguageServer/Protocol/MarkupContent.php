@@ -33,8 +33,8 @@ namespace Phan\LanguageServer\Protocol;
 class MarkupContent
 {
     // MarkupKind values
-    const PLAINTEXT = 'plaintext';
-    const MARKDOWN = 'markdown';
+    public const PLAINTEXT = 'plaintext';
+    public const MARKDOWN = 'markdown';
 
     /**
      * @var string the type of the Markup

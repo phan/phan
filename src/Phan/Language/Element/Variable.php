@@ -29,7 +29,7 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
      * (e.g. ${4} = 'x'; adds 4 to $GLOBALS.
      * And user-provided input of integer representations of strings as keys would also become integers.
      */
-    const _BUILTIN_SUPERGLOBAL_TYPES = [
+    public const _BUILTIN_SUPERGLOBAL_TYPES = [
         '_GET' => 'array<string,string|string[]>',
         '_POST' => 'array<string,string|string[]>',
         '_COOKIE' => 'array<string,string|string[]>',
@@ -44,12 +44,13 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
 
     /**
      * @var array<string,string>
+     * @internal this will be protected in a future release
      *
      * NOTE: The string array keys of superglobals **can** be integers in edge cases, but those should be rare.
      * (e.g. ${4} = 'x'; adds 4 to $GLOBALS.
      * And user-provided input of integer representations of strings as keys would also become integers.
      */
-    const _BUILTIN_GLOBAL_TYPES = [
+    public const _BUILTIN_GLOBAL_TYPES = [
         '_GET' => 'array<string,string|string[]>',
         '_POST' => 'array<string,string|string[]>',
         '_COOKIE' => 'array<string,string|string[]>',

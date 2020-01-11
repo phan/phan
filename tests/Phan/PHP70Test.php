@@ -12,7 +12,7 @@ use Phan\Config;
  */
 class PHP70Test extends AbstractPhanFileTest
 {
-    const OVERRIDES = [
+    private const OVERRIDES = [
         'target_php_version' => '7.0',
         'use_polyfill_parser' => true, // We use the polyfill parser because it behaves consistently in all php versions.
         'backward_compatibility_checks' => false,

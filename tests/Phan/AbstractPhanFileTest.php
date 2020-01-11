@@ -24,7 +24,7 @@ use function strlen;
  */
 abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTestInterface
 {
-    const EXPECTED_SUFFIX = '.expected';
+    public const EXPECTED_SUFFIX = '.expected';
 
     /** @var CodeBase represents the known state of the test code base we're analyzing. */
     private $code_base;
@@ -131,7 +131,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
         return $path;
     }
 
-    const WHITELIST = [
+    private const WHITELIST = [
         '0338_magic_const_types.php.expected',
     ];
 

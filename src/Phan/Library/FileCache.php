@@ -11,7 +11,7 @@ use RuntimeException;
  */
 final class FileCache
 {
-    const MINIMUM_CACHE_SIZE = 20;
+    public const MINIMUM_CACHE_SIZE = 20;
     /**
      * @var int - Maximum cache size
      */

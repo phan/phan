@@ -16,8 +16,8 @@ use TypeError;
  */
 class Writer
 {
-    const TYPE_ISSUE_LIST = 'issue-list';
-    const TYPE_PROGRESS   = 'progress';
+    public const TYPE_ISSUE_LIST = 'issue-list';
+    public const TYPE_PROGRESS   = 'progress';
 
     /** @var resource */
     private static $output;

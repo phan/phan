@@ -392,7 +392,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         return LiteralStringType::instanceForValue($value, false)->asRealUnionType();
     }
 
-    const MAGIC_CONST_NAME_MAP = [
+    public const MAGIC_CONST_NAME_MAP = [
         ast\flags\MAGIC_LINE => '__LINE__',
         ast\flags\MAGIC_FILE => '__FILE__',
         ast\flags\MAGIC_DIR => '__DIR__',
@@ -1515,8 +1515,8 @@ class UnionTypeVisitor extends AnalysisVisitor
         return BoolType::instance(false)->asRealUnionType();
     }
 
-    /** @internal - Duplicated for performance. Use PhanAnnotationAdder instead */
-    const FLAG_IGNORE_NULLABLE = 1 << 29;
+    /** @internal - Duplicated for performance. Use the constant from PhanAnnotationAdder instead */
+    private const FLAG_IGNORE_NULLABLE = 1 << 29;
 
     /**
      * Visit a node with kind `\ast\AST_DIM`

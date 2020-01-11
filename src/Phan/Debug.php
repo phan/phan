@@ -24,7 +24,7 @@ Shim::load();
 class Debug
 {
     // option for self::astDump
-    const AST_DUMP_LINENOS = 1;
+    public const AST_DUMP_LINENOS = 1;
 
     /**
      * Print a lil' something to the console to

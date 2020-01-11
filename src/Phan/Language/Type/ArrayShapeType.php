@@ -29,7 +29,7 @@ use RuntimeException;
 final class ArrayShapeType extends ArrayType implements GenericArrayInterface
 {
     /** @phan-override */
-    const NAME = 'array';
+    public const NAME = 'array';
 
     /**
      * @var array<string|int,UnionType|AnnotatedUnionType>
@@ -556,7 +556,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     /**
      * @internal - For use within ArrayShapeType
      */
-    const ESCAPE_CHARACTER_LOOKUP = [
+    private const ESCAPE_CHARACTER_LOOKUP = [
         "\n" => '\\n',
         "\r" => '\\r',
         "\t" => '\\t',
@@ -566,7 +566,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     /**
      * @internal - For use within ArrayShapeType
      */
-    const UNESCAPE_CHARACTER_LOOKUP = [
+    private const UNESCAPE_CHARACTER_LOOKUP = [
         '\\n' => "\n",
         '\\r' => "\r",
         '\\t' => "\t",

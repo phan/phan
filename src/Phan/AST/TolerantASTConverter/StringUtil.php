@@ -55,7 +55,7 @@ use function substr;
  */
 final class StringUtil
 {
-    const REPLACEMENTS = [
+    private const REPLACEMENTS = [
         '\\' => '\\',
         '$'  =>  '$',
         'n'  => "\n",

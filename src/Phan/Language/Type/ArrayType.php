@@ -18,7 +18,7 @@ use Phan\Language\UnionType;
 class ArrayType extends IterableType
 {
     /** @phan-override */
-    const NAME = 'array';
+    public const NAME = 'array';
 
     public function asNonTruthyType(): Type
     {

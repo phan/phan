@@ -19,7 +19,7 @@ use Phan\Language\Type;
 final class BoolType extends ScalarType
 {
     /** @phan-override */
-    const NAME = 'bool';
+    public const NAME = 'bool';
     public function isPossiblyFalsey(): bool
     {
         return true;  // it's always falsey, since this is conceptually a collection of FalseType and TrueType

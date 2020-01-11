@@ -32,8 +32,8 @@ class PreferNamespaceUsePlugin extends PluginV3 implements
     AnalyzeMethodCapability,
     AutomaticFixCapability
 {
-    const PreferNamespaceUseParamType = 'PhanPluginPreferNamespaceUseParamType';
-    const PreferNamespaceUseReturnType = 'PhanPluginPreferNamespaceUseReturnType';
+    private const PreferNamespaceUseParamType = 'PhanPluginPreferNamespaceUseParamType';
+    private const PreferNamespaceUseReturnType = 'PhanPluginPreferNamespaceUseReturnType';
 
     public function analyzeFunction(CodeBase $code_base, Func $function): void
     {

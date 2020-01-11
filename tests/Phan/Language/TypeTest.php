@@ -58,7 +58,7 @@ final class TypeTest extends BaseTest
         $this->assertParsesAsType(ArrayType::instance(false), '((array))');
     }
 
-    const DELIMITED_TYPE_REGEX_OR_THIS = '@^' . Type::type_regex_or_this . '$@';
+    private const DELIMITED_TYPE_REGEX_OR_THIS = '@^' . Type::type_regex_or_this . '$@';
 
     /**
      * Assert that all of $type_string is parseable as a single Type, and that that type is $expected_type.

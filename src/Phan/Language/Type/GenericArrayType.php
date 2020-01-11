@@ -28,7 +28,7 @@ use Phan\Language\UnionTypeBuilder;
 class GenericArrayType extends ArrayType implements GenericArrayInterface
 {
     /** @phan-override */
-    const NAME = 'array';
+    public const NAME = 'array';
 
     // In PHP, array keys can be integers or strings. These constants describe all possible combinations of those key types.
 
@@ -37,15 +37,15 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      * Array types with this key type Similar to KEY_MIXED, but adding a key type will change the array to the new key
      * instead of staying as KEY_MIXED.
      */
-    const KEY_EMPTY  = 0;  // No way to create this type yet.
+    public const KEY_EMPTY  = 0;  // No way to create this type yet.
     /** array keys are integers */
-    const KEY_INT    = 1;
+    public const KEY_INT    = 1;
     /** array keys are strings */
-    const KEY_STRING = 2;
+    public const KEY_STRING = 2;
     /** array keys are integers or strings. */
-    const KEY_MIXED  = 3;  // i.e. KEY_INT|KEY_STRING
+    public const KEY_MIXED  = 3;  // i.e. KEY_INT|KEY_STRING
 
-    const KEY_NAMES = [
+    public const KEY_NAMES = [
         self::KEY_EMPTY  => 'empty',
         self::KEY_INT    => 'int',
         self::KEY_STRING => 'string',
@@ -552,8 +552,8 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
     }
 
     /** @suppress PhanUnreferencedPublicClassConstant */
-    const CONVERT_KEY_MIXED_TO_EMPTY_UNION_TYPE = 0;
-    const CONVERT_KEY_MIXED_TO_INT_OR_STRING_UNION_TYPE = 1;
+    public const CONVERT_KEY_MIXED_TO_EMPTY_UNION_TYPE = 0;
+    public const CONVERT_KEY_MIXED_TO_INT_OR_STRING_UNION_TYPE = 1;
 
     /**
      * @return UnionType a union type corresponding to $key_type

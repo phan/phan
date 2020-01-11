@@ -1993,7 +1993,7 @@ class CodeBase
     /**
      * @internal
      */
-    const _NON_CLASS_TYPE_SUGGESTION_SET = [
+    protected const _NON_CLASS_TYPE_SUGGESTION_SET = [
         'array'     => 'array',
         'bool'      => 'bool',
         'callable'  => 'callable',

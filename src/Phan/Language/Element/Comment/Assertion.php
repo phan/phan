@@ -14,10 +14,10 @@ use Phan\Language\UnionType;
  */
 class Assertion
 {
-    const IS_OF_TYPE = 1;
-    const IS_NOT_OF_TYPE = 2;
-    const IS_TRUE = 3;
-    const IS_FALSE = 4;
+    public const IS_OF_TYPE = 1;
+    public const IS_NOT_OF_TYPE = 2;
+    public const IS_TRUE = 3;
+    public const IS_FALSE = 4;
 
     /** @var UnionType the type that is used in this assertion */
     public $union_type;

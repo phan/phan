@@ -34,7 +34,7 @@ class NonBoolInLogicalArithVisitor extends PluginAwarePostAnalysisVisitor
 {
 
     /** define boolean operator list */
-    const BINARY_BOOL_OPERATORS = [
+    private const BINARY_BOOL_OPERATORS = [
         ast\flags\BINARY_BOOL_OR,
         ast\flags\BINARY_BOOL_AND,
         ast\flags\BINARY_BOOL_XOR,

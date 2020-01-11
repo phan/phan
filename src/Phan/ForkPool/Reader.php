@@ -16,8 +16,8 @@ use TypeError;
  */
 class Reader
 {
-    const PARSE_HEADERS = 1;
-    const PARSE_BODY = 2;
+    public const PARSE_HEADERS = 1;
+    public const PARSE_BODY = 2;
 
     /** @var resource */
     private $input;

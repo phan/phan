@@ -18,7 +18,7 @@ use Phan\Language\UnionType;
 final class SelfType extends StaticOrSelfType
 {
     /** Not an override */
-    const NAME = 'self';
+    public const NAME = 'self';
 
     protected function __construct(bool $is_nullable)
     {

@@ -39,7 +39,7 @@ class DuplicateArrayKeyPlugin extends PluginV3 implements PostAnalyzeNodeCapabil
  */
 class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
 {
-    const HASH_PREFIX = "\x00__phan_dnu_";
+    private const HASH_PREFIX = "\x00__phan_dnu_";
 
     // Do not define the visit() method unless a plugin has code and needs to visit most/all node types.
 

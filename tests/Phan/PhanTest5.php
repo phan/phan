@@ -9,6 +9,6 @@ namespace Phan\Tests;
  */
 class PhanTest5 extends PhanTestRange
 {
-    const START_RANGE = '0500';
-    const END_RANGE   = '0600';
+    public const START_RANGE = '0500';
+    public const END_RANGE   = '0600';
 }

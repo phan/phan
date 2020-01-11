@@ -308,7 +308,7 @@ class Property extends ClassElement
     /**
      * @internal
      */
-    const _IS_DYNAMIC_OR_MAGIC = Flags::IS_FROM_PHPDOC | Flags::IS_DYNAMIC_PROPERTY;
+    protected const _IS_DYNAMIC_OR_MAGIC = Flags::IS_FROM_PHPDOC | Flags::IS_DYNAMIC_PROPERTY;
 
     /**
      * Equivalent to $this->isDynamicProperty() || $this->isFromPHPDoc()

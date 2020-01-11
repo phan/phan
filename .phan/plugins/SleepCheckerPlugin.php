@@ -137,7 +137,7 @@ class SleepCheckerVisitor extends PluginAwarePostAnalysisVisitor
         }
     }
 
-    const RESOLVE_SETTINGS =
+    private const RESOLVE_SETTINGS =
         ContextNode::RESOLVE_ARRAYS |
         ContextNode::RESOLVE_ARRAY_VALUES |
         ContextNode::RESOLVE_CONSTANTS;

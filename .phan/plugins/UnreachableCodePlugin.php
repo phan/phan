@@ -53,7 +53,7 @@ final class UnreachableCodeVisitor extends PluginAwarePostAnalysisVisitor
 {
     // A plugin's visitors should NOT implement visit(), unless they need to.
 
-    const DECL_KIND_SET = [
+    private const DECL_KIND_SET = [
         \ast\AST_CLASS      => true,
         \ast\AST_FUNC_DECL  => true,
         \ast\AST_CONST      => true,

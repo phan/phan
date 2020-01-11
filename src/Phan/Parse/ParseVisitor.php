@@ -1551,7 +1551,7 @@ class ParseVisitor extends ScopeVisitor
     /**
      * @internal
      */
-    const ALLOWED_CONST_EXPRESSION_KINDS = [
+    public const ALLOWED_CONST_EXPRESSION_KINDS = [
         ast\AST_ARRAY_ELEM => true,
         ast\AST_ARRAY => true,
         ast\AST_BINARY_OP => true,

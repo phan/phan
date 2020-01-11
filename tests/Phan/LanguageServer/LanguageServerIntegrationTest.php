@@ -33,7 +33,7 @@ final class LanguageServerIntegrationTest extends BaseTest
 {
     // Uncomment to enable debug logging within this test.
     // There are separate config settings to make the language server emit debug messages.
-    const DEBUG_ENABLED = false;
+    private const DEBUG_ENABLED = false;
 
     /**
      * Returns the path of the folder used for these integration tests
@@ -412,7 +412,7 @@ EOT;
     }
 
     // Here, we use a prefix of M9 to avoid suggesting MYSQLI_...
-    const COMPLETION_BASIC_FILE_CONTENTS = <<<'EOT'
+    private const COMPLETION_BASIC_FILE_CONTENTS = <<<'EOT'
 <?php namespace { // line 0
 class M9Example {
     public static $myVar = 2;
@@ -609,7 +609,7 @@ EOT;
     }
 
     // Here, we use a prefix of M9 to avoid suggesting MYSQLI_...
-    const COMPLETION_VARIABLE_FILE_CONTENTS = <<<'EOT'
+    private const COMPLETION_VARIABLE_FILE_CONTENTS = <<<'EOT'
 <?php  // line 0
 
 namespace LSP {

@@ -32,9 +32,9 @@ class StrictComparisonPlugin extends PluginV3 implements
     AnalyzeFunctionCallCapability,
     PostAnalyzeNodeCapability
 {
-    const ComparisonNotStrictInCall         = 'PhanPluginComparisonNotStrictInCall';
-    const ComparisonObjectEqualityNotStrict = 'PhanPluginComparisonObjectEqualityNotStrict';
-    const ComparisonObjectOrdering          = 'PhanPluginComparisonObjectOrdering';
+    public const ComparisonNotStrictInCall         = 'PhanPluginComparisonNotStrictInCall';
+    public const ComparisonObjectEqualityNotStrict = 'PhanPluginComparisonObjectEqualityNotStrict';
+    public const ComparisonObjectOrdering          = 'PhanPluginComparisonObjectOrdering';
 
     /**
      * @param CodeBase $code_base @phan-unused-param

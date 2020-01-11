@@ -17,7 +17,7 @@ use Phan\Language\UnionType;
 class IterableType extends NativeType
 {
     /** @phan-override */
-    const NAME = 'iterable';
+    public const NAME = 'iterable';
 
     public function isIterable(): bool
     {

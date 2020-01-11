@@ -49,15 +49,15 @@ final class VariableGraph
     public $variable_types = [];
 
     // Are these names/definition ids references, globals, or static
-    const IS_REFERENCE      = 1 << 0;
-    const IS_GLOBAL         = 1 << 1;
-    const IS_STATIC         = 1 << 2;
+    public const IS_REFERENCE      = 1 << 0;
+    public const IS_GLOBAL         = 1 << 1;
+    public const IS_STATIC         = 1 << 2;
     // Is this possibly a placeholder loop variable
-    const IS_LOOP_DEF       = 1 << 3;
+    public const IS_LOOP_DEF       = 1 << 3;
     // Is this a caught exception
-    const IS_CAUGHT_EXCEPTION = 1 << 4;
+    public const IS_CAUGHT_EXCEPTION = 1 << 4;
 
-    const IS_REFERENCE_OR_GLOBAL_OR_STATIC = self::IS_REFERENCE | self::IS_GLOBAL | self::IS_STATIC;
+    public const IS_REFERENCE_OR_GLOBAL_OR_STATIC = self::IS_REFERENCE | self::IS_GLOBAL | self::IS_STATIC;
 
     public function __construct()
     {

@@ -17,7 +17,7 @@ use Phan\Language\UnionType;
 class FloatType extends ScalarType
 {
     /** @phan-override */
-    const NAME = 'float';
+    public const NAME = 'float';
 
     /** @override */
     public function isPossiblyNumeric(): bool

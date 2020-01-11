@@ -25,7 +25,7 @@ final class IssueFixingPluginTest extends BaseTest implements CodeBaseAwareTestI
         $this->code_base = $code_base;
     }
 
-    const FILE = 'fix_test.php';
+    private const FILE = 'fix_test.php';
 
     /**
      * @param IssueInstance[] $instances

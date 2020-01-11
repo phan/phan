@@ -26,7 +26,7 @@ interface FunctionInterface extends AddressableElementInterface
      * An easy workaround to mark a function-like as accepting an infinite number of optional parameters
      * TODO: Distinguish between __call and __callStatic invoked manually and via magic (See uses of this constant)
      */
-    const INFINITE_PARAMETERS = 999999;
+    public const INFINITE_PARAMETERS = 999999;
 
     /**
      * @return FullyQualifiedMethodName|FullyQualifiedFunctionName

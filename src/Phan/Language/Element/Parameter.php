@@ -35,10 +35,10 @@ use function strlen;
  */
 class Parameter extends Variable
 {
-    const REFERENCE_DEFAULT = 1;
-    const REFERENCE_READ_WRITE = 2;
-    const REFERENCE_WRITE_ONLY = 3;
-    const REFERENCE_IGNORED = 4;
+    public const REFERENCE_DEFAULT = 1;
+    public const REFERENCE_READ_WRITE = 2;
+    public const REFERENCE_WRITE_ONLY = 3;
+    public const REFERENCE_IGNORED = 4;
 
     // __construct(Context $context, string $name, UnionType $type, int $flags) inherited from Variable
 

@@ -103,7 +103,7 @@ class RequireExistsVisitor extends PluginAwarePostAnalysisVisitor
         }
     }
 
-    const EXEC_NODE_FLAG_NAMES = [
+    private const EXEC_NODE_FLAG_NAMES = [
         flags\EXEC_EVAL => 'eval',
         flags\EXEC_INCLUDE => 'include',
         flags\EXEC_INCLUDE_ONCE => 'include_once',

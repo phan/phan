@@ -49,14 +49,14 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
 {
     // phpcs:disable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
     // this is deliberate for issue names
-    const UseReturnValue = 'PhanPluginUseReturnValue';
-    const UseReturnValueKnown = 'PhanPluginUseReturnValueKnown';
-    const UseReturnValueInternal = 'PhanPluginUseReturnValueInternal';
-    const UseReturnValueInternalKnown = 'PhanPluginUseReturnValueInternalKnown';
-    const UseReturnValueNoopVoid = 'PhanPluginUseReturnValueNoopVoid';
+    public const UseReturnValue = 'PhanPluginUseReturnValue';
+    public const UseReturnValueKnown = 'PhanPluginUseReturnValueKnown';
+    public const UseReturnValueInternal = 'PhanPluginUseReturnValueInternal';
+    public const UseReturnValueInternalKnown = 'PhanPluginUseReturnValueInternalKnown';
+    public const UseReturnValueNoopVoid = 'PhanPluginUseReturnValueNoopVoid';
     // phpcs:enable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
 
-    const DEFAULT_THRESHOLD_PERCENTAGE = 98;
+    public const DEFAULT_THRESHOLD_PERCENTAGE = 98;
 
     /**
      * @var array<string,StatsForFQSEN> maps an FQSEN to information about the FQSEN and its uses.
@@ -176,7 +176,7 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
      * Maps lowercase FQSENs to whether or not this plugin should warn about the return value of a method being unused.
      * This should remain sorted.
      */
-    const HARDCODED_FQSENS = [
+    public const HARDCODED_FQSENS = [
     '_' => true,
     'abs' => true,
     'acosh' => true,
@@ -875,6 +875,6 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
     'var_export' => self::SPECIAL_CASE,  // returns a string if second arg is true
     ];
 
-    const SPECIAL_CASE = 'specialcase';
-    const MUST_USE_WITH_SIDE_EFFECTS = 'sideeffects';
+    public const SPECIAL_CASE = 'specialcase';
+    public const MUST_USE_WITH_SIDE_EFFECTS = 'sideeffects';
 }

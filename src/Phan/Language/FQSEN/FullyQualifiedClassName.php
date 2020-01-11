@@ -51,7 +51,7 @@ class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement
     }
 
     /** @internal */
-    const VALID_CLASS_REGEX = '/^\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*$/';
+    public const VALID_CLASS_REGEX = '/^\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*$/';
 
     /**
      * Asserts that something is a valid class FQSEN in PHPDoc.

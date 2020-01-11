@@ -298,7 +298,7 @@ final class UnionTypeTest extends BaseTest
         )->asExpandedTypes(self::$code_base)->__toString();
     }
 
-    const VALID_UNION_TYPE_REGEX = '(^(' . UnionType::union_type_regex_or_this . ')$)';
+    private const VALID_UNION_TYPE_REGEX = '(^(' . UnionType::union_type_regex_or_this . ')$)';
 
     private static function makePHPDocUnionType(string $union_type_string): UnionType
     {

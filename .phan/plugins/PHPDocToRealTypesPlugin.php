@@ -30,12 +30,12 @@ class PHPDocToRealTypesPlugin extends PluginV3 implements
     AutomaticFixCapability,
     BeforeAnalyzePhaseCapability
 {
-    const CanUsePHP71Void = 'PhanPluginCanUsePHP71Void';
-    const CanUseReturnType = 'PhanPluginCanUseReturnType';
-    const CanUseNullableReturnType = 'PhanPluginCanUseNullableReturnType';
+    private const CanUsePHP71Void = 'PhanPluginCanUsePHP71Void';
+    private const CanUseReturnType = 'PhanPluginCanUseReturnType';
+    private const CanUseNullableReturnType = 'PhanPluginCanUseNullableReturnType';
 
-    const CanUseParamType = 'PhanPluginCanUseParamType';
-    const CanUseNullableParamType = 'PhanPluginCanUseNullableParamType';
+    private const CanUseParamType = 'PhanPluginCanUseParamType';
+    private const CanUseNullableParamType = 'PhanPluginCanUseNullableParamType';
 
     /** @var array<string,Method> */
     private $deferred_analysis_methods = [];

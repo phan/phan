@@ -19,7 +19,7 @@ use Phan\Language\Type;
 final class TrueType extends ScalarType
 {
     /** @phan-override */
-    const NAME = 'true';
+    public const NAME = 'true';
 
     public function isPossiblyTruthy(): bool
     {

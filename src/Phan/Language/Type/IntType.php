@@ -17,7 +17,7 @@ use Phan\Language\UnionType;
 class IntType extends ScalarType
 {
     /** @phan-override */
-    const NAME = 'int';
+    public const NAME = 'int';
 
     /** @override */
     public function isPossiblyNumeric(): bool

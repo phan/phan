@@ -36,9 +36,9 @@ use function is_string;
  */
 class PhanSelfCheckPlugin extends PluginV3 implements AnalyzeFunctionCallCapability
 {
-    const TooManyArgumentsForIssue = 'PhanPluginTooManyArgumentsForIssue';
-    const TooFewArgumentsForIssue = 'PhanPluginTooFewArgumentsForIssue';
-    const UnknownIssueType = 'PhanPluginUnknownIssueType';
+    private const TooManyArgumentsForIssue = 'PhanPluginTooManyArgumentsForIssue';
+    private const TooFewArgumentsForIssue = 'PhanPluginTooFewArgumentsForIssue';
+    private const UnknownIssueType = 'PhanPluginUnknownIssueType';
 
     /**
      * @param CodeBase $code_base @phan-unused-param

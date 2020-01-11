@@ -493,9 +493,9 @@ class ContextNode
     }
 
     // Constants for getClassList() API
-    const CLASS_LIST_ACCEPT_ANY = 0;
-    const CLASS_LIST_ACCEPT_OBJECT = 1;
-    const CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME = 2;
+    public const CLASS_LIST_ACCEPT_ANY = 0;
+    public const CLASS_LIST_ACCEPT_OBJECT = 1;
+    public const CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME = 2;
 
     /**
      * @return array{0:UnionType,1:Clazz[]}
@@ -2166,34 +2166,34 @@ class ContextNode
     // Flags for getEquivalentPHPValue
 
     // Should this attempt to resolve arrays?
-    const RESOLVE_ARRAYS = (1 << 0);
+    public const RESOLVE_ARRAYS = (1 << 0);
     // Should this attempt to resolve array keys?
-    const RESOLVE_ARRAY_KEYS = (1 << 1);
+    public const RESOLVE_ARRAY_KEYS = (1 << 1);
     // Should this attempt to resolve array values?
-    const RESOLVE_ARRAY_VALUES = (1 << 2);
+    public const RESOLVE_ARRAY_VALUES = (1 << 2);
     // Should this attempt to resolve accesses to constants?
-    const RESOLVE_CONSTANTS = (1 << 3);
+    public const RESOLVE_CONSTANTS = (1 << 3);
     // If resolving array keys fails, should this use a placeholder?
-    const RESOLVE_KEYS_USE_FALLBACK_PLACEHOLDER = (1 << 4);
+    public const RESOLVE_KEYS_USE_FALLBACK_PLACEHOLDER = (1 << 4);
     // Skip unknown keys
-    const RESOLVE_KEYS_SKIP_UNKNOWN_KEYS = (1 << 5);
+    public const RESOLVE_KEYS_SKIP_UNKNOWN_KEYS = (1 << 5);
     // Resolve unary and binary operations.
-    const RESOLVE_OPS = (1 << 6);
+    public const RESOLVE_OPS = (1 << 6);
     // Resolve calls to is_int, is_null, isset/empty, etc.
-    const RESOLVE_TYPE_CHECKS = (1 << 6);
+    public const RESOLVE_TYPE_CHECKS = (1 << 6);
     // Resolve variables, but only if this was defined as a constant AST.
     // This currently only supports static variables.
     // When disabled, all variables will be resolved.
-    const RESOLVE_ONLY_CONSTANT_VARS = (1 << 7);
+    public const RESOLVE_ONLY_CONSTANT_VARS = (1 << 7);
 
-    const RESOLVE_DEFAULT =
+    public const RESOLVE_DEFAULT =
         self::RESOLVE_ARRAYS |
         self::RESOLVE_ARRAY_KEYS |
         self::RESOLVE_ARRAY_VALUES |
         self::RESOLVE_CONSTANTS |
         self::RESOLVE_KEYS_USE_FALLBACK_PLACEHOLDER;
 
-    const RESOLVE_SCALAR_DEFAULT =
+    public const RESOLVE_SCALAR_DEFAULT =
         self::RESOLVE_CONSTANTS |
         self::RESOLVE_KEYS_USE_FALLBACK_PLACEHOLDER;
 

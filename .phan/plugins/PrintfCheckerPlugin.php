@@ -56,18 +56,18 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
 {
 
     // Pylint error codes for emitted issues.
-    const ERR_UNTRANSLATED_USE_ECHO                = 1300;
-    const ERR_UNTRANSLATED_NONE_USED               = 1301;
-    const ERR_UNTRANSLATED_NONEXISTENT             = 1302;
-    const ERR_UNTRANSLATED_UNUSED                  = 1303;
-    const ERR_UNTRANSLATED_NOT_PERCENT             = 1304;
-    const ERR_UNTRANSLATED_INCOMPATIBLE_SPECIFIER  = 1305;
-    const ERR_UNTRANSLATED_INCOMPATIBLE_ARGUMENT   = 1306;  // E.g. passing a string where an int is expected
-    const ERR_UNTRANSLATED_INCOMPATIBLE_ARGUMENT_WEAK = 1307;  // E.g. passing an int where a string is expected
-    const ERR_UNTRANSLATED_WIDTH_INSTEAD_OF_POSITION = 1308; // e.g. _('%1s'). Change to _('%1$1s' if you really mean that the width is 1, add positions for others ('%2$s', etc.)
-    const ERR_UNTRANSLATED_UNKNOWN_FORMAT_STRING   = 1310;
-    const ERR_TRANSLATED_INCOMPATIBLE              = 1309;
-    const ERR_TRANSLATED_HAS_MORE_ARGS             = 1311;
+    private const ERR_UNTRANSLATED_USE_ECHO                = 1300;
+    private const ERR_UNTRANSLATED_NONE_USED               = 1301;
+    private const ERR_UNTRANSLATED_NONEXISTENT             = 1302;
+    private const ERR_UNTRANSLATED_UNUSED                  = 1303;
+    private const ERR_UNTRANSLATED_NOT_PERCENT             = 1304;
+    private const ERR_UNTRANSLATED_INCOMPATIBLE_SPECIFIER  = 1305;
+    private const ERR_UNTRANSLATED_INCOMPATIBLE_ARGUMENT   = 1306;  // E.g. passing a string where an int is expected
+    private const ERR_UNTRANSLATED_INCOMPATIBLE_ARGUMENT_WEAK = 1307;  // E.g. passing an int where a string is expected
+    private const ERR_UNTRANSLATED_WIDTH_INSTEAD_OF_POSITION = 1308; // e.g. _('%1s'). Change to _('%1$1s' if you really mean that the width is 1, add positions for others ('%2$s', etc.)
+    private const ERR_UNTRANSLATED_UNKNOWN_FORMAT_STRING   = 1310;
+    private const ERR_TRANSLATED_INCOMPATIBLE              = 1309;
+    private const ERR_TRANSLATED_HAS_MORE_ARGS             = 1311;
 
     /**
      * People who have translations may subclass this plugin and return a mapping from other locales to those locales translations of $fmt_str.

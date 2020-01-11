@@ -19,7 +19,7 @@ use Phan\Language\UnionType;
 final class ClassStringType extends StringType
 {
     /** @phan-override */
-    const NAME = 'class-string';
+    public const NAME = 'class-string';
 
     /** @override */
     public function isPossiblyNumeric(): bool

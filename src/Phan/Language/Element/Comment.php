@@ -32,22 +32,22 @@ use Phan\Library\Option;
  */
 class Comment
 {
-    const ON_CLASS      = 1;
-    const ON_VAR        = 2;
-    const ON_PROPERTY   = 3;
-    const ON_CONST      = 4;
+    public const ON_CLASS      = 1;
+    public const ON_VAR        = 2;
+    public const ON_PROPERTY   = 3;
+    public const ON_CONST      = 4;
     // TODO: Add another type for closure. (e.g. (at)phan-closure-scope)
-    const ON_METHOD     = 5;
-    const ON_FUNCTION   = 6;
+    public const ON_METHOD     = 5;
+    public const ON_FUNCTION   = 6;
 
     // List of types that are function-like (e.g. have params and function body)
-    const FUNCTION_LIKE = [
+    public const FUNCTION_LIKE = [
         self::ON_METHOD,
         self::ON_FUNCTION,
     ];
 
     // Lists of types that can have (at)var annotations.
-    const HAS_VAR_ANNOTATION = [
+    public const HAS_VAR_ANNOTATION = [
         self::ON_METHOD,
         self::ON_FUNCTION,
         self::ON_VAR,
@@ -55,13 +55,13 @@ class Comment
         self::ON_CONST,
     ];
 
-    const HAS_TEMPLATE_ANNOTATION = [
+    public const HAS_TEMPLATE_ANNOTATION = [
         self::ON_CLASS,
         self::ON_FUNCTION,
         self::ON_METHOD,
     ];
 
-    const NAME_FOR_TYPE = [
+    public const NAME_FOR_TYPE = [
         self::ON_CLASS      => 'class',
         self::ON_VAR        => 'variable',
         self::ON_PROPERTY   => 'property',

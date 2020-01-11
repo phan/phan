@@ -29,7 +29,7 @@ class PregRegexCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
 {
     // Skip over analyzing regex keys that couldn't be resolved.
     // Don't try to convert values to PHP data (should be closures)
-    const RESOLVE_REGEX_KEY_FLAGS = (ContextNode::RESOLVE_DEFAULT | ContextNode::RESOLVE_KEYS_SKIP_UNKNOWN_KEYS) &
+    private const RESOLVE_REGEX_KEY_FLAGS = (ContextNode::RESOLVE_DEFAULT | ContextNode::RESOLVE_KEYS_SKIP_UNKNOWN_KEYS) &
         ~(ContextNode::RESOLVE_KEYS_SKIP_UNKNOWN_KEYS | ContextNode::RESOLVE_ARRAY_VALUES);
 
 

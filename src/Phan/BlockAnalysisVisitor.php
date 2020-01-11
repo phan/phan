@@ -371,15 +371,15 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         return $parent->lineno;
     }
 
-    const PHAN_FILE_SUPPRESS_REGEX =
+    private const PHAN_FILE_SUPPRESS_REGEX =
         '/@phan-file-suppress\s+' . Builder::SUPPRESS_ISSUE_LIST . '/';  // @phan-suppress-current-line PhanAccessClassConstantInternal
 
 
-    const PHAN_VAR_REGEX =
+    private const PHAN_VAR_REGEX =
         '/@(phan-var(?:-force)?)\b\s*(' . UnionType::union_type_regex . ')\s*&?\\$' . Builder::WORD_REGEX . '/';
     // @phan-suppress-previous-line PhanAccessClassConstantInternal
 
-    const PHAN_DEBUG_VAR_REGEX =
+    private const PHAN_DEBUG_VAR_REGEX =
         '/@phan-debug-var\s+\$(' . Builder::WORD_REGEX . '(,\s*\$' . Builder::WORD_REGEX . ')*)/';
     // @phan-suppress-previous-line PhanAccessClassConstantInternal
 

@@ -28,7 +28,7 @@ use Phan\Language\UnionType;
 abstract class FunctionLikeDeclarationType extends Type implements FunctionInterface
 {
     // Subclasses will override this
-    const NAME = '';
+    public const NAME = '';
 
     /**
      * The file and location where this function-like Type was declared.

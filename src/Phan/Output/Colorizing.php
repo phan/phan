@@ -19,7 +19,7 @@ use Phan\Language\UnionType;
  */
 class Colorizing
 {
-    const STYLES = [
+    public const STYLES = [
         'none'             => '0',  // Alias of 'reset'
         'reset'            => '0',  // Use 'reset' for the absence of color.
         'bold'             => '1',
@@ -65,12 +65,12 @@ class Colorizing
         'bg_white'         => '107',
     ];
 
-    const ESC_PATTERN = "\033[%sm";
-    const ESC_RESET = "\033[0m";
+    private const ESC_PATTERN = "\033[%sm";
+    private const ESC_RESET = "\033[0m";
 
     // NOTE: Keep sorted and in sync with Issue::UNCOLORED_FORMAT_STRING_FOR_TEMPLATE
     // By using 'color_scheme' in .phan/config.php, these settings can be overridden
-    const DEFAULT_COLOR_FOR_TEMPLATE = [
+    public const DEFAULT_COLOR_FOR_TEMPLATE = [
         'CLASS'         => 'green',
         'CLASSLIKE'     => 'green',
         'CODE'          => 'light_magenta',
@@ -219,7 +219,7 @@ class Colorizing
     /**
      * @internal
      */
-    const COLOR_SCHEMES = [
+    public const COLOR_SCHEMES = [
         'code' => \Phan\Output\ColorScheme\Code::class,
         'default' => self::class,
         'eclipse_dark' => \Phan\Output\ColorScheme\EclipseDark::class,

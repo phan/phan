@@ -18,7 +18,7 @@ use Phan\Language\UnionType;
 final class MixedType extends NativeType
 {
     /** @phan-override */
-    const NAME = 'mixed';
+    public const NAME = 'mixed';
 
     // mixed or ?mixed can cast to/from anything.
     // For purposes of analysis, there's usually no difference between mixed and nullable mixed.

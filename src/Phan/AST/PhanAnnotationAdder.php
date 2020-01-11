@@ -30,13 +30,13 @@ use Closure;
  */
 class PhanAnnotationAdder
 {
-    const PHAN_NODE_FLAGS = 'phan_nf';
+    public const PHAN_NODE_FLAGS = 'phan_nf';
 
-    const FLAG_INITIALIZES = 1 << 28;
-    const FLAG_IGNORE_NULLABLE = 1 << 29;
-    const FLAG_IGNORE_UNDEF = 1 << 30;
+    public const FLAG_INITIALIZES = 1 << 28;
+    public const FLAG_IGNORE_NULLABLE = 1 << 29;
+    public const FLAG_IGNORE_UNDEF = 1 << 30;
 
-    const FLAG_IGNORE_NULLABLE_AND_UNDEF = self::FLAG_IGNORE_UNDEF | self::FLAG_IGNORE_NULLABLE;
+    public const FLAG_IGNORE_NULLABLE_AND_UNDEF = self::FLAG_IGNORE_UNDEF | self::FLAG_IGNORE_NULLABLE;
 
     public function __construct()
     {
@@ -57,7 +57,7 @@ class PhanAnnotationAdder
         self::initInner();
     }
 
-    const FLAGS_NODE_TYPE_SET = [
+    public const FLAGS_NODE_TYPE_SET = [
         ast\AST_VAR => true,
         ast\AST_DIM => true,
         ast\AST_PROP => true,
@@ -203,7 +203,7 @@ class PhanAnnotationAdder
     }
 
     /** @internal */
-    const SCOPE_START_LIST = [
+    public const SCOPE_START_LIST = [
         ast\AST_CLASS,
         ast\AST_FUNC_DECL,
         ast\AST_CLOSURE,

@@ -19,7 +19,7 @@ use Phan\Language\UnionType;
 final class StaticType extends StaticOrSelfType
 {
     /** Not an override */
-    const NAME = 'static';
+    public const NAME = 'static';
 
     /**
      * Returns a nullable/non-nullable instance of this StaticType

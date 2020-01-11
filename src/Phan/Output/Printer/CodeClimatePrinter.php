@@ -16,9 +16,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 final class CodeClimatePrinter implements BufferedPrinterInterface
 {
 
-    const CODECLIMATE_SEVERITY_INFO = 'info';
-    const CODECLIMATE_SEVERITY_CRITICAL = 'critical';
-    const CODECLIMATE_SEVERITY_NORMAL = 'normal';
+    private const CODECLIMATE_SEVERITY_INFO = 'info';
+    private const CODECLIMATE_SEVERITY_CRITICAL = 'critical';
+    private const CODECLIMATE_SEVERITY_NORMAL = 'normal';
 
     /** @var OutputInterface an output that zero byte separated JSON can be written to.  */
     private $output;
