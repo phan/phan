@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests\Language\Internal;
 
@@ -18,11 +20,11 @@ use function is_string;
  */
 final class FunctionSignatureMapTest extends BaseTest implements CodeBaseAwareTestInterface
 {
-    const FUNCTION_KEY_REGEX = '/^[a-z_][a-z0-9_]*(\\\\[a-z_][a-z0-9_]*)*(::[a-z_][a-z0-9_]*)?(\'[1-9][0-9]*)?$/i';
-    const PARAM_KEY_REGEX = '/^\&?(\.\.\.)?[a-z_][a-z0-9_]*=?$/i';
+    private const FUNCTION_KEY_REGEX = '/^[a-z_][a-z0-9_]*(\\\\[a-z_][a-z0-9_]*)*(::[a-z_][a-z0-9_]*)?(\'[1-9][0-9]*)?$/i';
+    private const PARAM_KEY_REGEX = '/^\&?(\.\.\.)?[a-z_][a-z0-9_]*=?$/i';
 
     // Matches a union type of 0 or more parts.
-    const ONLY_UNION_TYPE_REGEX = '/^(' . UnionType::union_type_regex . ')?$/';
+    private const ONLY_UNION_TYPE_REGEX = '/^(' . UnionType::union_type_regex . ')?$/';
 
     /** @var CodeBase */
     private $code_base;
@@ -30,7 +32,7 @@ final class FunctionSignatureMapTest extends BaseTest implements CodeBaseAwareTe
     /**
      * @suppress PhanPossiblyNullTypeMismatchProperty
      */
-    public function setCodeBase(CodeBase $code_base = null) : void
+    public function setCodeBase(CodeBase $code_base = null): void
     {
         $this->code_base = $code_base;
     }
@@ -38,7 +40,7 @@ final class FunctionSignatureMapTest extends BaseTest implements CodeBaseAwareTe
     /**
      * @dataProvider phpVersionIdProvider
      */
-    public function testFunctionSignatureMap(int $php_version_id) : void
+    public function testFunctionSignatureMap(int $php_version_id): void
     {
         $map = UnionType::internalFunctionSignatureMap($php_version_id);
         $failures = [];
@@ -74,7 +76,7 @@ final class FunctionSignatureMapTest extends BaseTest implements CodeBaseAwareTe
     /**
      * @return list<list>
      */
-    public function phpVersionIdProvider() : array
+    public function phpVersionIdProvider(): array
     {
         return [
             [70000],  // PHP 7.0
@@ -106,7 +108,7 @@ final class FunctionSignatureMapTest extends BaseTest implements CodeBaseAwareTe
     /**
      * @dataProvider realFunctionSignatureMapVersionProvider
      */
-    public function testRealFunctionSignatureMap(int $php_version_id) : void
+    public function testRealFunctionSignatureMap(int $php_version_id): void
     {
         $map = UnionType::internalFunctionSignatureMap($php_version_id);
         // @phan-suppress-next-line PhanAccessMethodInternal
@@ -135,7 +137,7 @@ final class FunctionSignatureMapTest extends BaseTest implements CodeBaseAwareTe
      * Provides values of PHP_VERSION_ID
      * @return list<list<int>>
      */
-    public function realFunctionSignatureMapVersionProvider() : array
+    public function realFunctionSignatureMapVersionProvider(): array
     {
         return [[70400], [80000]];
     }

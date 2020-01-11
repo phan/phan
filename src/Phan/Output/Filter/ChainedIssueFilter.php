@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Output\Filter;
 
@@ -29,7 +31,7 @@ final class ChainedIssueFilter implements IssueFilterInterface
         $this->filters = $filters;
     }
 
-    public function supports(IssueInstance $issue):bool
+    public function supports(IssueInstance $issue): bool
     {
         foreach ($this->filters as $filter) {
             if (!$filter->supports($issue)) {

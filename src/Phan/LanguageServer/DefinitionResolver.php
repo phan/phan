@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\LanguageServer;
 
@@ -38,12 +40,12 @@ class DefinitionResolver
      * and "go to type definition" in their implementations,
      * based on $request->isTypeDefinitionRequest()
      */
-    public static function createGoToDefinitionClosure(GoToDefinitionRequest $request, CodeBase $code_base) : Closure
+    public static function createGoToDefinitionClosure(GoToDefinitionRequest $request, CodeBase $code_base): Closure
     {
         /**
          * @param list<Node> $parent_node_list
          */
-        return static function (Context $context, Node $node, array $parent_node_list = []) use ($request, $code_base) : void {
+        return static function (Context $context, Node $node, array $parent_node_list = []) use ($request, $code_base): void {
             // @phan-suppress-next-line PhanUndeclaredProperty this is overridden
             $selected_fragment = $node->selectedFragment ?? null;
             if (is_string($selected_fragment)) {
@@ -126,7 +128,7 @@ class DefinitionResolver
         CodeBase $code_base,
         Context $context,
         string $selected_fragment
-    ) : void {
+    ): void {
         // fprintf(STDERR, "locateCommentDefinition called for %s\n", $selected_fragment);
         if (self::locateClassDefinitionFromComment($request, $code_base, $context, $selected_fragment)) {
             return;
@@ -144,7 +146,7 @@ class DefinitionResolver
         CodeBase $code_base,
         Context $context,
         string $selected_fragment
-    ) : bool {
+    ): bool {
         // TODO: Handle method references in doc comments, global functions, etc.
         try {
             $union_type = UnionType::fromStringInContext($selected_fragment, $context, Type::FROM_PHPDOC);
@@ -164,7 +166,7 @@ class DefinitionResolver
         CodeBase $code_base,
         Context $context,
         string $selected_fragment
-    ) : bool {
+    ): bool {
         // TODO: Handle method references in doc comments, global functions, etc.
         try {
             $fqsen = FullyQualifiedFunctionName::make('', $selected_fragment);
@@ -193,7 +195,7 @@ class DefinitionResolver
         CodeBase $code_base,
         Context $context,
         string $selected_fragment
-    ) : bool {
+    ): bool {
         // TODO: Handle method references in doc comments, global functions, etc.
         try {
             $fqsen = FullyQualifiedGlobalConstantName::make('', $selected_fragment);
@@ -225,7 +227,7 @@ class DefinitionResolver
         CodeBase $code_base,
         Context $context,
         Node $node
-    ) : void {
+    ): void {
         try {
             $union_type = UnionTypeVisitor::unionTypeFromClassNode($code_base, $context, $node);
         } catch (FQSENException $_) {
@@ -239,7 +241,7 @@ class DefinitionResolver
         GoToDefinitionRequest $request,
         CodeBase $code_base,
         UnionType $union_type
-    ) : bool {
+    ): bool {
         $found = false;
         foreach ($union_type->getTypeSet() as $type) {
             if ($type->isNativeType()) {
@@ -258,7 +260,7 @@ class DefinitionResolver
         return $found;
     }
 
-    public static function locatePropDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node) : void
+    public static function locatePropDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node): void
     {
         $is_static = $node->kind === ast\AST_STATIC_PROP;
         try {
@@ -276,7 +278,7 @@ class DefinitionResolver
     /**
      * @param Node $node a node of type AST_CLASS_CONST
      */
-    public static function locateClassConstDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node) : void
+    public static function locateClassConstDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node): void
     {
         $name = $node->children['const'];
         if (!is_string($name)) {
@@ -300,7 +302,7 @@ class DefinitionResolver
         $request->recordDefinitionElement($code_base, $class_const, false);
     }
 
-    public static function locateGlobalConstDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node) : void
+    public static function locateGlobalConstDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node): void
     {
         try {
             $global_const = (new ContextNode($code_base, $context, $node))->getConst();
@@ -314,7 +316,7 @@ class DefinitionResolver
         $request->recordDefinitionElement($code_base, $global_const, false);
     }
 
-    public static function locateVariableDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node) : void
+    public static function locateVariableDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node): void
     {
         $name = $node->children['name'];
         if (!is_string($name)) {
@@ -337,7 +339,7 @@ class DefinitionResolver
     /**
      * Given a node of type AST_NEW, locate the constructor definition (or class definition)
      */
-    private static function locateNewDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node) : void
+    private static function locateNewDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node): void
     {
         try {
             $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $node);
@@ -352,7 +354,7 @@ class DefinitionResolver
         GoToDefinitionRequest $request,
         CodeBase $code_base,
         UnionType $union_type
-    ) : void {
+    ): void {
         foreach ($union_type->getTypeSet() as $type) {
             if ($type->isNativeType()) {
                 continue;
@@ -373,7 +375,7 @@ class DefinitionResolver
         }
     }
 
-    public static function locateMethodDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node) : void
+    public static function locateMethodDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node): void
     {
         $is_static = $node->kind === ast\AST_STATIC_CALL;
         $method_name = $node->children['method'];
@@ -392,7 +394,7 @@ class DefinitionResolver
         $request->recordDefinitionElement($code_base, $method, true);
     }
 
-    public static function locateFuncDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node) : void
+    public static function locateFuncDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node): void
     {
         try {
             foreach ((new ContextNode($code_base, $context, $node->children['expr']))->getFunctionFromNode() as $function_interface) {
@@ -410,7 +412,7 @@ class DefinitionResolver
     /**
      * @param Node $node a node of type AST_USE to find the definition of
      */
-    public static function locateNamespaceUseDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Node $node) : void
+    public static function locateNamespaceUseDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Node $node): void
     {
         // TODO: Support GroupUse (See ScopeVisitor->visitGroupUse)
         $targets = ScopeVisitor::aliasTargetMapFromUseNode($node);

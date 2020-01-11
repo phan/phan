@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Type;
 
@@ -27,7 +29,7 @@ use RuntimeException;
 final class ArrayShapeType extends ArrayType implements GenericArrayInterface
 {
     /** @phan-override */
-    const NAME = 'array';
+    public const NAME = 'array';
 
     /**
      * @var array<string|int,UnionType|AnnotatedUnionType>
@@ -82,7 +84,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      * @return array<string|int,UnionType>
      * An array mapping field keys of this type to their union types.
      */
-    public function getFieldTypes() : array
+    public function getFieldTypes(): array
     {
         return $this->field_types;
     }
@@ -91,7 +93,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      * Returns true if this has one or more optional or required fields
      * (i.e. this is not the type `array{}` or `?array{}`)
      */
-    public function isNotEmptyArrayShape() : bool
+    public function isNotEmptyArrayShape(): bool
     {
         return \count($this->field_types) !== 0;
     }
@@ -99,7 +101,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     /**
      * @override
      */
-    public function isDefinitelyNonEmptyArray() : bool
+    public function isDefinitelyNonEmptyArray(): bool
     {
         foreach ($this->field_types as $field) {
             if (!$field->isPossiblyUndefined()) {
@@ -113,7 +115,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      * Is this the union type `array{}` or `?array{}`?
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function isEmptyArrayShape() : bool
+    public function isEmptyArrayShape(): bool
     {
         return \count($this->field_types) === 0;
     }
@@ -123,7 +125,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      *
      * @param int|string|float|bool $field_key
      */
-    public function withoutField($field_key) : ArrayShapeType
+    public function withoutField($field_key): ArrayShapeType
     {
         $field_types = $this->field_types;
         // This check is written this way to avoid https://github.com/phan/phan/issues/1831
@@ -143,7 +145,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      * A new type that is a copy of this type but with the
      * given nullability value.
      */
-    public function withIsNullable(bool $is_nullable) : Type
+    public function withIsNullable(bool $is_nullable): Type
     {
         if ($is_nullable === $this->is_nullable) {
             return $this;
@@ -156,13 +158,13 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     }
 
     /** @override */
-    public function hasArrayShapeOrLiteralTypeInstances() : bool
+    public function hasArrayShapeOrLiteralTypeInstances(): bool
     {
         return true;
     }
 
     /** @override */
-    public function hasArrayShapeTypeInstances() : bool
+    public function hasArrayShapeTypeInstances(): bool
     {
         return true;
     }
@@ -170,7 +172,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     /**
      * @return list<ArrayType> the array shape transformed to remove literal keys and values.
      */
-    private function computeGenericArrayTypeInstances() : array
+    private function computeGenericArrayTypeInstances(): array
     {
         if (\count($this->field_types) === 0) {
             // there are 0 fields, so we know nothing about the field types (and there's no way to indicate an empty array yet)
@@ -198,7 +200,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      *
      * E.g. returns `GenericArrayType::KEY_STRING` for `array{key:\stdClass}`
      */
-    public function getKeyType() : int
+    public function getKeyType(): int
     {
         return $this->key_type ?? ($this->key_type = GenericArrayType::getKeyTypeForArrayLiteral($this->field_types));
     }
@@ -206,7 +208,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     /**
      * @phan-override
      */
-    public function iterableKeyUnionType(CodeBase $unused_code_base) : UnionType
+    public function iterableKeyUnionType(CodeBase $unused_code_base): UnionType
     {
         return $this->getKeyUnionType();
     }
@@ -217,7 +219,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      *
      * E.g. returns `int` for `array{0:\stdClass}`
      */
-    public function getKeyUnionType() : UnionType
+    public function getKeyUnionType(): UnionType
     {
         if (\count($this->field_types) === 0) {
             return UnionType::empty();
@@ -228,12 +230,12 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     /**
      * @override
      */
-    public function iterableValueUnionType(CodeBase $unused_code_base) : UnionType
+    public function iterableValueUnionType(CodeBase $unused_code_base): UnionType
     {
         return $this->genericArrayElementUnionType();
     }
 
-    public function genericArrayElementUnionType() : UnionType
+    public function genericArrayElementUnionType(): UnionType
     {
         return $this->generic_array_element_union_type ?? ($this->generic_array_element_union_type = UnionType::merge($this->field_types));
     }
@@ -241,7 +243,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     /**
      * Returns true for `T` and `T[]` and `\MyClass<T>`, but not `\MyClass<\OtherClass>` or `false`
      */
-    public function hasTemplateTypeRecursive() : bool
+    public function hasTemplateTypeRecursive(): bool
     {
         return $this->genericArrayElementUnionType()->hasTemplateTypeRecursive();
     }
@@ -250,7 +252,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      * @override
      * @param Type[] $target_type_set
      */
-    public function canCastToAnyTypeInSet(array $target_type_set) : bool
+    public function canCastToAnyTypeInSet(array $target_type_set): bool
     {
         $element_union_types = null;
         foreach ($target_type_set as $target_type) {
@@ -280,7 +282,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      * True if this Type can be cast to the given Type
      * cleanly
      */
-    protected function canCastToNonNullableType(Type $type) : bool
+    protected function canCastToNonNullableType(Type $type): bool
     {
         if ($type instanceof ArrayType) {
             if ($type instanceof GenericArrayType) {
@@ -332,7 +334,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      * True if this Type can be cast to the given Type
      * cleanly
      */
-    protected function canCastToNonNullableTypeWithoutConfig(Type $type) : bool
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type): bool
     {
         if ($type instanceof ArrayType) {
             if ($type instanceof GenericArrayType) {
@@ -383,7 +385,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     /**
      * Check if the keys of this array shape can cast to the keys of the generic array type $type
      */
-    public function canCastToGenericArrayKeys(GenericArrayType $type, bool $ignore_config = false) : bool
+    public function canCastToGenericArrayKeys(GenericArrayType $type, bool $ignore_config = false): bool
     {
         if ($type instanceof ListType) {
             $i = 0;
@@ -419,7 +421,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      * True if this can cast to a list type, based on the keys
      * @internal
      */
-    public function canCastToList() : bool
+    public function canCastToList(): bool
     {
         $i = 0;
         $has_possibly_undefined = false;
@@ -443,7 +445,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      *
      * @internal
      */
-    public function canCastToAssociativeArray() : bool
+    public function canCastToAssociativeArray(): bool
     {
         $i = 0;
         foreach ($this->field_types as $k => $v) {
@@ -454,7 +456,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         return \count($this->field_types) === 0;
     }
 
-    private function canCastToGenericIterableType(GenericIterableType $iterable_type) : bool
+    private function canCastToGenericIterableType(GenericIterableType $iterable_type): bool
     {
         if (!$this->getKeyUnionType()->canCastToUnionType($iterable_type->getKeyUnionType())) {
             // TODO: Use the scalar_array_key_cast config
@@ -464,13 +466,13 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     }
 
     /** @return list<UnionType> */
-    private function getUniqueValueUnionTypes() : array
+    private function getUniqueValueUnionTypes(): array
     {
         return $this->unique_value_union_types ?? ($this->unique_value_union_types = $this->calculateUniqueValueUnionTypes());
     }
 
     /** @return list<UnionType> */
-    private function calculateUniqueValueUnionTypes() : array
+    private function calculateUniqueValueUnionTypes(): array
     {
         $field_types = $this->field_types;
         $unique = [];
@@ -495,7 +497,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      * TODO: Consider ways to implement a strict mode
      *
      */
-    private function canEachFieldTypeCastToExpectedUnionType(UnionType $expected_type) : bool
+    private function canEachFieldTypeCastToExpectedUnionType(UnionType $expected_type): bool
     {
         foreach ($this->getUniqueValueUnionTypes() as $value_union_type) {
             if (!$value_union_type->canCastToUnionType($expected_type)) {
@@ -514,7 +516,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     public static function fromFieldTypes(
         array $field_types,
         bool $is_nullable
-    ) : ArrayShapeType {
+    ): ArrayShapeType {
         // TODO: Investigate if caching makes this any more efficient?
         static $cache = [];
 
@@ -536,7 +538,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      */
     public static function empty(
         bool $is_nullable = false
-    ) : ArrayShapeType {
+    ): ArrayShapeType {
         static $nullable_shape = null;
         static $nonnullable_shape = null;
 
@@ -546,7 +548,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         return $nonnullable_shape ?? ($nonnullable_shape = self::fromFieldTypes([], false));
     }
 
-    public function isGenericArray() : bool
+    public function isGenericArray(): bool
     {
         return true;
     }
@@ -554,7 +556,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     /**
      * @internal - For use within ArrayShapeType
      */
-    const ESCAPE_CHARACTER_LOOKUP = [
+    private const ESCAPE_CHARACTER_LOOKUP = [
         "\n" => '\\n',
         "\r" => '\\r',
         "\t" => '\\t',
@@ -564,14 +566,14 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     /**
      * @internal - For use within ArrayShapeType
      */
-    const UNESCAPE_CHARACTER_LOOKUP = [
+    private const UNESCAPE_CHARACTER_LOOKUP = [
         '\\n' => "\n",
         '\\r' => "\r",
         '\\t' => "\t",
         '\\\\' => "\\",
     ];
 
-    public function __toString() : string
+    public function __toString(): string
     {
         $parts = [];
         foreach ($this->field_types as $key => $value) {
@@ -592,14 +594,14 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     /**
      * Escape the key for display purposes
      */
-    public static function escapeKey(string $key) : string
+    public static function escapeKey(string $key): string
     {
         return \preg_replace_callback(
             '([^-./^;$%*+_a-zA-Z0-9\x7f-\xff])',
             /**
              * @param array{0:string} $match
              */
-            static function (array $match) : string {
+            static function (array $match): string {
                 $c = $match[0];
                 return self::ESCAPE_CHARACTER_LOOKUP[$c] ?? \sprintf('\\x%02x', \ord($c));
             },
@@ -626,14 +628,14 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     public function asExpandedTypes(
         CodeBase $code_base,
         int $recursion_depth = 0
-    ) : UnionType {
+    ): UnionType {
         // We're going to assume that if the type hierarchy
         // is taller than some value we probably messed up
         // and should bail out.
         if ($recursion_depth >= 20) {
             throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
         }
-        return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) : UnionType {
+        return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth): UnionType {
             $result_fields = [];
             foreach ($this->field_types as $key => $union_type) {
                 // UnionType already increments recursion_depth before calling asExpandedTypes on a subclass of Type,
@@ -673,14 +675,14 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     public function asExpandedTypesPreservingTemplate(
         CodeBase $code_base,
         int $recursion_depth = 0
-    ) : UnionType {
+    ): UnionType {
         // We're going to assume that if the type hierarchy
         // is taller than some value we probably messed up
         // and should bail out.
         if ($recursion_depth >= 20) {
             throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
         }
-        return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) : UnionType {
+        return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth): UnionType {
             $result_fields = [];
             foreach ($this->field_types as $key => $union_type) {
                 // UnionType already increments recursion_depth before calling asExpandedTypesPreservingTemplate on a subclass of Type,
@@ -705,7 +707,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      * @return list<ArrayType>
      * @override
      */
-    public function withFlattenedArrayShapeOrLiteralTypeInstances() : array
+    public function withFlattenedArrayShapeOrLiteralTypeInstances(): array
     {
         $instances = $this->as_generic_array_type_instances;
         if (\is_array($instances)) {
@@ -718,7 +720,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      * @return list<ArrayType>
      * @override
      */
-    public function withFlattenedTopLevelArrayShapeTypeInstances() : array
+    public function withFlattenedTopLevelArrayShapeTypeInstances(): array
     {
         if (\count($this->field_types) === 0) {
             // there are 0 fields, so we know nothing about the field types (and there's no way to indicate an empty array yet)
@@ -739,7 +741,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         return $union_type_builder->getTypeSet();
     }
 
-    public function asGenericArrayType(int $key_type) : Type
+    public function asGenericArrayType(int $key_type): Type
     {
         return GenericArrayType::fromElementType($this, false, $key_type);
     }
@@ -750,7 +752,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      * E.g. array{0: string} + array{0:int,1:int} === array{0:int|string,1:int}
      * @param list<ArrayShapeType> $array_shape_types
      */
-    public static function union(array $array_shape_types) : ArrayShapeType
+    public static function union(array $array_shape_types): ArrayShapeType
     {
         if (\count($array_shape_types) === 0) {
             throw new \AssertionError('Unexpected union of 0 array shape types');
@@ -781,7 +783,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      *
      * @param bool $is_assignment - If true, this is computing the effect of assigning each field in $left to an array with previous type $right, keeping array key order.
      */
-    public static function combineWithPrecedence(ArrayShapeType $left, ArrayShapeType $right, bool $is_assignment = false) : ArrayShapeType
+    public static function combineWithPrecedence(ArrayShapeType $left, ArrayShapeType $right, bool $is_assignment = false): ArrayShapeType
     {
         // echo "Called combineWithPrecedence left=$left right=$right is_assignment=" . json_encode($is_assignment) . "\n";
         if ($is_assignment) {
@@ -799,7 +801,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     /**
      * @phan-override
      */
-    public function shouldBeReplacedBySpecificTypes() : bool
+    public function shouldBeReplacedBySpecificTypes(): bool
     {
         return false;
     }
@@ -808,7 +810,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      * @return bool true if there is guaranteed to be at least one property
      * @phan-override
      */
-    public function isAlwaysTruthy() : bool
+    public function isAlwaysTruthy(): bool
     {
         if ($this->is_nullable) {
             return false;
@@ -821,17 +823,17 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         return false;
     }
 
-    public function isAlwaysFalsey() : bool
+    public function isAlwaysFalsey(): bool
     {
         return \count($this->field_types) === 0;
     }
 
-    public function isPossiblyTruthy() : bool
+    public function isPossiblyTruthy(): bool
     {
         return \count($this->field_types) > 0;
     }
 
-    public function isPossiblyFalsey() : bool
+    public function isPossiblyFalsey(): bool
     {
         return !$this->isAlwaysTruthy();
     }
@@ -841,7 +843,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      * e.g. returns true for false, array, int
      *      returns false for callable, array, object, iterable, T, etc.
      */
-    public function isDefiniteNonCallableType() : bool
+    public function isDefiniteNonCallableType(): bool
     {
         if (\array_keys($this->field_types) !== [0, 1]) {
             return true;
@@ -869,7 +871,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      */
     public function withTemplateParameterTypeMap(
         array $template_parameter_type_map
-    ) : UnionType {
+    ): UnionType {
         $field_types = $this->field_types;
         foreach ($field_types as $i => $type) {
             $new_type = $type->withTemplateParameterTypeMap($template_parameter_type_map);
@@ -889,7 +891,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      * @param CodeBase $code_base
      * @return ?Closure(UnionType, Context):UnionType
      */
-    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type) : ?Closure
+    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type): ?Closure
     {
         $closure = null;
         foreach ($this->field_types as $key => $type) {
@@ -899,7 +901,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
             }
             $closure = TemplateType::combineParameterClosures(
                 $closure,
-                static function (UnionType $union_type, Context $context) use ($key, $field_closure) : UnionType {
+                static function (UnionType $union_type, Context $context) use ($key, $field_closure): UnionType {
                     $result = UnionType::empty();
                     foreach ($union_type->getTypeSet() as $type) {
                         if (!($type instanceof ArrayShapeType)) {
@@ -941,7 +943,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     /**
      * Returns the function interface this references
      */
-    public function asFunctionInterfaceOrNull(CodeBase $code_base, Context $context) : ?FunctionInterface
+    public function asFunctionInterfaceOrNull(CodeBase $code_base, Context $context): ?FunctionInterface
     {
         if (\count($this->field_types) !== 2) {
             Issue::maybeEmit(
@@ -1005,7 +1007,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     /**
      * @return Generator<mixed,Type> (void => $inner_type)
      */
-    public function getReferencedClasses() : Generator
+    public function getReferencedClasses(): Generator
     {
         // Whether union types or types have been seen already for this ArrayShapeType
         $seen = [];
@@ -1030,12 +1032,12 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     /**
      * Convert an escaped key to an unescaped key
      */
-    public static function unescapeKey(string $escaped_key) : string
+    public static function unescapeKey(string $escaped_key): string
     {
         return \preg_replace_callback(
             '/\\\\(?:[nrt\\\\]|x[0-9a-fA-F]{2})/',
             /** @param array{0:string} $matches */
-            static function (array $matches) : string {
+            static function (array $matches): string {
                 $x = $matches[0];
                 if (\strlen($x) === 2) {
                     // Parses \\, \n, \t, and \r
@@ -1053,12 +1055,12 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      * Returns the corresponding type that would be used in a signature
      * @override
      */
-    public function asSignatureType() : Type
+    public function asSignatureType(): Type
     {
         return ArrayType::instance($this->is_nullable);
     }
 
-    public function withStaticResolvedInContext(Context $context) : Type
+    public function withStaticResolvedInContext(Context $context): Type
     {
         $did_change = false;
         $new_field_types = $this->field_types;
@@ -1078,9 +1080,9 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     /**
      * Returns a type where all referenced union types (e.g. in generic arrays) have real type sets removed.
      */
-    public function withErasedUnionTypes() : Type
+    public function withErasedUnionTypes(): Type
     {
-        return $this->memoize(__METHOD__, function () : ArrayShapeType {
+        return $this->memoize(__METHOD__, function (): ArrayShapeType {
             $new_field_types = $this->field_types;
             foreach ($this->field_types as $offset => $union_type) {
                 $new_field_types[$offset] = $union_type->eraseRealTypeSetRecursively();
@@ -1092,7 +1094,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         });
     }
 
-    public function asCallableType() : ?Type
+    public function asCallableType(): ?Type
     {
         if ($this->isDefiniteNonCallableType()) {
             return null;
@@ -1100,7 +1102,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         return $this->withIsNullable(false);
     }
 
-    public function asNonFalseyType() : Type
+    public function asNonFalseyType(): Type
     {
         if ($this->field_types) {
             // No simple way to handle `array{a?:b}` - just make it non-nullable
@@ -1113,7 +1115,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         );
     }
 
-    public function asAssociativeArrayType(bool $unused_can_reduce_size) : ArrayType
+    public function asAssociativeArrayType(bool $unused_can_reduce_size): ArrayType
     {
         return $this;
     }

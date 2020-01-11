@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\LanguageServer;
 
@@ -55,9 +57,9 @@ final class GoToDefinitionRequest extends NodeInfoRequest
      */
     private $hover_response = null;
 
-    const REQUEST_DEFINITION = 0;
-    const REQUEST_TYPE_DEFINITION = 1;
-    const REQUEST_HOVER = 2;
+    public const REQUEST_DEFINITION = 0;
+    public const REQUEST_TYPE_DEFINITION = 1;
+    public const REQUEST_HOVER = 2;
 
     public function __construct(
         string $uri,
@@ -75,7 +77,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
         CodeBase $code_base,
         AddressableElementInterface $element,
         bool $resolve_type_definition_if_needed
-    ) : void {
+    ): void {
         if ($this->isTypeDefinitionRequest() && $resolve_type_definition_if_needed) {
             if (!($element instanceof Clazz)) {
                 $this->recordTypeOfElement($code_base, $element->getContext(), $element);
@@ -88,7 +90,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
     private function recordFinalDefinitionElement(
         CodeBase $code_base,
         AddressableElementInterface $element
-    ) : void {
+    ): void {
         if ($this->request_type === self::REQUEST_HOVER) {
             if ($this->hover_response === null) {
                 $this->setHoverMarkdown(MarkupDescription::buildForElement($element, $code_base));
@@ -99,7 +101,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
         $this->recordDefinitionContext($element->getContext());
     }
 
-    private function setHoverMarkdown(string $markdown) : void
+    private function setHoverMarkdown(string $markdown): void
     {
         $this->hover_response = new Hover(
             new MarkupContent(
@@ -116,7 +118,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
         CodeBase $code_base,
         Context $context,
         TypedElementInterface $element
-    ) : void {
+    ): void {
         $union_type = $element->getUnionType();
         $type_set = $union_type->getTypeSet();
         $description = null;
@@ -130,7 +132,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
             // Don't bother generating hover text if there are no known types or descriptions, maybe a subsequent call will have types
             return;
         }
-        $maybe_set_markdown_to_union_type = function () use ($union_type, $description) : void {
+        $maybe_set_markdown_to_union_type = function () use ($union_type, $description): void {
             if ($this->hover_response === null) {
                 $markdown = \sprintf('`%s`', (string)$union_type);
                 if ($description) {
@@ -177,7 +179,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
     /**
      * Based on https://secure.php.net/manual/en/reserved.variables.php
      */
-    const GLOBAL_DESCRIPTIONS = [
+    protected const GLOBAL_DESCRIPTIONS = [
         'argc' => 'The number of arguments passed to the script',
         'argv' => 'Array of arguments passed to the script. The first argument `$argv[0]` is always the name that was used to run the script.',
         '_COOKIE' => 'An associative array of variables passed to the current script via HTTP Cookies.',
@@ -195,7 +197,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
         CodeBase $code_base,
         Context $context,
         Variable $variable
-    ) : ?string {
+    ): ?string {
         $variable_name = $variable->getName();
         $description = self::GLOBAL_DESCRIPTIONS[$variable_name] ?? null;
         if ($description) {
@@ -228,7 +230,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
         CodeBase $code_base,
         Context $context,
         Variable $variable
-    ) : void {
+    ): void {
         $this->recordTypeOfElement($code_base, $context, $variable);
     }
 
@@ -236,7 +238,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
         CodeBase $code_base,
         Context $context,
         TypedElementInterface $element
-    ) : void {
+    ): void {
         if ($this->isHoverRequest()) {
             $this->recordHoverTextForElementType($code_base, $context, $element);
             return;
@@ -273,8 +275,8 @@ final class GoToDefinitionRequest extends NodeInfoRequest
     private function recordDefinitionOfTypeFQSEN(
         CodeBase $code_base,
         FQSEN $type_fqsen
-    ) : void {
-        $record_definition = function (AddressableElementInterface $element) use ($code_base) : void {
+    ): void {
+        $record_definition = function (AddressableElementInterface $element) use ($code_base): void {
             if (!$element->isPHPInternal()) {
                 if ($this->isHoverRequest()) {
                     $this->recordDefinitionElement($code_base, $element, false);
@@ -309,7 +311,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
      * Record the location in which the Node or Token (that the client is requesting information about)
      * had the requested information defined (e.g. Definition, Type Definition, element that has information used to generate hover response, etc.)
      */
-    public function recordDefinitionContext(FileRef $context) : void
+    public function recordDefinitionContext(FileRef $context): void
     {
         if ($context->isPHPInternal()) {
             // We don't have complete stubs to show the user for internal functions such as is_string(), etc.
@@ -319,7 +321,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
     }
 
 
-    public function recordDefinitionLocation(Location $location) : void
+    public function recordDefinitionLocation(Location $location): void
     {
         $this->locations[$location->uri . ':' . \json_encode($location->range)] = $location;
     }
@@ -327,7 +329,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
     /**
      * @param Location|array<string,mixed>|list<Location|array> $locations
      */
-    public function recordDefinitionLocationList($locations) : void
+    public function recordDefinitionLocationList($locations): void
     {
         if ($locations instanceof Location || isset($locations['uri'])) {
             $locations = [$locations];
@@ -344,12 +346,12 @@ final class GoToDefinitionRequest extends NodeInfoRequest
     /**
      * @return list<Location>
      */
-    public function getDefinitionLocations() : array
+    public function getDefinitionLocations(): array
     {
         return \array_values($this->locations);
     }
 
-    public function getHoverResponse() : ?Hover
+    public function getHoverResponse(): ?Hover
     {
         return $this->hover_response;
     }
@@ -359,7 +361,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
      *
      * @param ?Hover|?array $hover
      */
-    public function setHoverResponse($hover) : void
+    public function setHoverResponse($hover): void
     {
         if (is_array($hover)) {
             $hover = Hover::fromArray($hover);
@@ -372,7 +374,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
      *
      * If a response for this request hasn't been sent yet, then send it (or null) back to the language server client
      */
-    public function finalize() : void
+    public function finalize(): void
     {
         if ($this->fulfilled) {
             return;
@@ -389,7 +391,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
     /**
      * Is this a "go to type definition" request?
      */
-    public function isTypeDefinitionRequest() : bool
+    public function isTypeDefinitionRequest(): bool
     {
         return $this->request_type === self::REQUEST_TYPE_DEFINITION;
     }
@@ -397,7 +399,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
     /**
      * Is this a hover request?
      */
-    public function isHoverRequest() : bool
+    public function isHoverRequest(): bool
     {
         return $this->request_type === self::REQUEST_HOVER;
     }

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests\Output\Printer;
 
@@ -21,7 +23,7 @@ final class CheckstylePrinterTest extends BaseTest
      *
      * @dataProvider invalidUTF8StringsProvider
      */
-    public function testUTF8CharactersDoNotCauseDOMAttrToFail(string $string) : void
+    public function testUTF8CharactersDoNotCauseDOMAttrToFail(string $string): void
     {
         $output = new BufferedOutput();
 
@@ -40,7 +42,7 @@ final class CheckstylePrinterTest extends BaseTest
     /**
      * @return list<array{0:string}>
      */
-    public function invalidUTF8StringsProvider() : array
+    public function invalidUTF8StringsProvider(): array
     {
         return [
             // Valid ASCII

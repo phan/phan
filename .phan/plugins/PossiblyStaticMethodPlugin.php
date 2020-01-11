@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use ast\Node;
 use Phan\AST\ContextNode;
@@ -63,7 +65,7 @@ final class PossiblyStaticMethodPlugin extends PluginV3 implements
     private static function analyzePostponedMethod(
         CodeBase $code_base,
         FunctionInterface $method
-    ) : void {
+    ): void {
         if ($method instanceof Method) {
             if ($method->isOverride()) {
                 // This method can't be static unless its parent is also static.
@@ -106,7 +108,7 @@ final class PossiblyStaticMethodPlugin extends PluginV3 implements
      * @param FunctionInterface $method
      * @return ?Node - returns null if there's no statement list to analyze
      */
-    private static function getStatementListToAnalyze(FunctionInterface $method) : ?Node
+    private static function getStatementListToAnalyze(FunctionInterface $method): ?Node
     {
         $node = $method->getNode();
         if (!$node) {
@@ -122,7 +124,7 @@ final class PossiblyStaticMethodPlugin extends PluginV3 implements
      * @param Node|int|string|float|null $node
      * @return bool - returns true if the node allows its method to be static
      */
-    private static function nodeCanBeStatic(CodeBase $code_base, FunctionInterface $method, $node) : bool
+    private static function nodeCanBeStatic(CodeBase $code_base, FunctionInterface $method, $node): bool
     {
         if (!($node instanceof Node)) {
             if (is_array($node)) {
@@ -174,7 +176,7 @@ final class PossiblyStaticMethodPlugin extends PluginV3 implements
      *
      * @return bool true if the AST_STATIC_CALL node is really calling an instance method
      */
-    private static function isSelfOrParentCallUsingObject(CodeBase $code_base, FunctionInterface $method, Node $node) : bool
+    private static function isSelfOrParentCallUsingObject(CodeBase $code_base, FunctionInterface $method, Node $node): bool
     {
         $class_node = $node->children['class'];
         if (!($class_node instanceof Node && $class_node->kind === ast\AST_NAME)) {
@@ -216,7 +218,7 @@ final class PossiblyStaticMethodPlugin extends PluginV3 implements
     public function analyzeMethod(
         CodeBase $unused_code_base,
         Method $method
-    ) : void {
+    ): void {
         // 1. Perform any checks that can be done immediately to rule out being able
         //    to convert this to a static method
         if ($method->isStatic()) {
@@ -261,7 +263,7 @@ final class PossiblyStaticMethodPlugin extends PluginV3 implements
     public function analyzeFunction(
         CodeBase $unused_code_base,
         Func $function
-    ) : void {
+    ): void {
         if (!$function->isClosure()) {
             return;
         }
@@ -286,7 +288,7 @@ final class PossiblyStaticMethodPlugin extends PluginV3 implements
      *
      * @override
      */
-    public function finalizeProcess(CodeBase $code_base) : void
+    public function finalizeProcess(CodeBase $code_base): void
     {
         foreach ($this->methods_for_postponed_analysis as $method) {
             self::analyzePostponedMethod($code_base, $method);

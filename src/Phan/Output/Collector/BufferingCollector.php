@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Output\Collector;
 
@@ -39,7 +41,7 @@ final class BufferingCollector implements IssueCollectorInterface
      * Ensure that backtraces with the cause of the emitted issue are printed to stderr.
      * If null, stop emitting backtraces.
      */
-    public static function setTraceIssues(?string $level) : void
+    public static function setTraceIssues(?string $level): void
     {
         self::$trace_issues = $level ? \strtolower($level) : null;
     }
@@ -49,7 +51,7 @@ final class BufferingCollector implements IssueCollectorInterface
      * Collect issue
      * @param IssueInstance $issue
      */
-    public function collectIssue(IssueInstance $issue) : void
+    public function collectIssue(IssueInstance $issue): void
     {
         if (!$this->filter->supports($issue)) {
             return;
@@ -68,7 +70,7 @@ final class BufferingCollector implements IssueCollectorInterface
         $this->issues[self::formatSortableKey($issue)] = $issue;
     }
 
-    private static function formatSortableKey(IssueInstance $issue) : string
+    private static function formatSortableKey(IssueInstance $issue): string
     {
         // This needs to be a sortable key so that output
         // is in the expected order
@@ -83,7 +85,7 @@ final class BufferingCollector implements IssueCollectorInterface
     /**
      * @return list<IssueInstance>
      */
-    public function getCollectedIssues():array
+    public function getCollectedIssues(): array
     {
         \ksort($this->issues);
         return \array_values($this->issues);
@@ -94,7 +96,7 @@ final class BufferingCollector implements IssueCollectorInterface
      *
      * Called after analysis ends.
      */
-    public function flush() : void
+    public function flush(): void
     {
         $this->issues = [];
     }
@@ -105,7 +107,7 @@ final class BufferingCollector implements IssueCollectorInterface
      *
      * @param list<string> $files - the relative paths to those files
      */
-    public function removeIssuesForFiles(array $files) : void
+    public function removeIssuesForFiles(array $files): void
     {
         $file_set = \array_flip($files);
         foreach ($this->issues as $key => $issue) {
@@ -118,7 +120,7 @@ final class BufferingCollector implements IssueCollectorInterface
     /**
      * Removes all collected issues.
      */
-    public function reset() : void
+    public function reset(): void
     {
         $this->issues = [];
     }

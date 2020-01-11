@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Phan\Output\ColorScheme;
@@ -11,7 +12,7 @@ namespace Phan\Output\ColorScheme;
 class Code
 {
     /** @suppress PhanUnreferencedPublicClassConstant this is used dynamically */
-    const DEFAULT_COLOR_FOR_TEMPLATE = [
+    public const DEFAULT_COLOR_FOR_TEMPLATE = [
         'CLASS'         => 'light_green',
         'CLASSLIKE'     => 'light_green',
         'CODE'          => 'magenta',

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Phan\LanguageServer;
@@ -37,7 +38,7 @@ class ProtocolStreamWriter implements ProtocolWriter
     {
         // if the message queue is currently empty, register a write handler.
         if (!$this->messages) {
-            Loop\addWriteStream($this->output, function () : void {
+            Loop\addWriteStream($this->output, function (): void {
                 $this->flush();
             });
         }
@@ -55,7 +56,7 @@ class ProtocolStreamWriter implements ProtocolWriter
     /**
      * Writes pending messages to the output stream.
      */
-    private function flush() : void
+    private function flush(): void
     {
         $keepWriting = true;
         while ($keepWriting) {

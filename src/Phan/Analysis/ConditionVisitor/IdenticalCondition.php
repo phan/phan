@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Analysis\ConditionVisitor;
 
@@ -21,7 +23,7 @@ class IdenticalCondition implements BinaryCondition
      * @param Node|int|string|float $expr
      * @override
      */
-    public function analyzeVar(ConditionVisitorInterface $visitor, Node $var, $expr) : Context
+    public function analyzeVar(ConditionVisitorInterface $visitor, Node $var, $expr): Context
     {
         return $visitor->updateVariableToBeIdentical($var, $expr);
     }
@@ -32,12 +34,12 @@ class IdenticalCondition implements BinaryCondition
      * @param Node|int|string|float $object
      * @param Node|int|string|float $expr
      */
-    public function analyzeClassCheck(ConditionVisitorInterface $visitor, $object, $expr) : Context
+    public function analyzeClassCheck(ConditionVisitorInterface $visitor, $object, $expr): Context
     {
         return $visitor->analyzeClassAssertion($object, $expr) ?? $visitor->getContext();
     }
 
-    public function analyzeCall(ConditionVisitorInterface $visitor, Node $call_node, $expr) : ?Context
+    public function analyzeCall(ConditionVisitorInterface $visitor, Node $call_node, $expr): ?Context
     {
         if (!$expr instanceof Node) {
             return null;
@@ -57,7 +59,7 @@ class IdenticalCondition implements BinaryCondition
         }
     }
 
-    public function analyzeComplexCondition(ConditionVisitorInterface $visitor, Node $complex_node, $expr) : ?Context
+    public function analyzeComplexCondition(ConditionVisitorInterface $visitor, Node $complex_node, $expr): ?Context
     {
         if (!$expr instanceof Node) {
             return null;

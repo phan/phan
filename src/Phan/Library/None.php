@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Library;
 
@@ -26,12 +28,12 @@ final class None extends Option
     /**
      * Fetches the shared instance of None.
      */
-    public static function instance() : None
+    public static function instance(): None
     {
         return self::$instance;
     }
 
-    public function isDefined() : bool
+    public function isDefined(): bool
     {
         return false;
     }
@@ -60,7 +62,7 @@ final class None extends Option
      * @return string
      * A string representation of this object
      */
-    public function __tostring() : string
+    public function __tostring(): string
     {
         return 'None()';
     }
@@ -70,7 +72,7 @@ final class None extends Option
      * @internal
      * @suppress PhanDeprecatedFunction
      */
-    public static function init() : void
+    public static function init(): void
     {
         self::$instance = new None();
     }

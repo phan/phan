@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Plugin\Internal\IssueFixingPlugin;
 
@@ -45,7 +47,7 @@ class FileContents
     /**
      * Gets the raw file contents
      */
-    public function getContents() : string
+    public function getContents(): string
     {
         return $this->contents;
     }
@@ -53,7 +55,7 @@ class FileContents
     /**
      * Gets the AST with all tokens (this assumes that the AST is valid)
      */
-    public function getAST() : PhpParser\Node
+    public function getAST(): PhpParser\Node
     {
         return $this->ast ?? ($this->ast = (new Parser())->parseSourceFile($this->contents));
     }
@@ -62,7 +64,7 @@ class FileContents
      * Get the nodes which start at a specific line number
      * @return list<PhpParser\Node>
      */
-    public function getNodesAtLine(int $line) : array
+    public function getNodesAtLine(int $line): array
     {
         $line_node_map = $this->nodes_at_lines ?? ($this->nodes_at_lines = $this->computeNodesAtLineMap());
         return $line_node_map[$line] ?? [];
@@ -74,7 +76,7 @@ class FileContents
      * This is efficient if called multiple times, but less efficient(e.g. uses more memory) if only called once.
      * @return associative-array<int,list<PhpParser\Node>>
      */
-    public function computeNodesAtLineMap() : array
+    public function computeNodesAtLineMap(): array
     {
         $result = [];
         $file_position_map = new FilePositionMap($this->contents);
@@ -89,7 +91,7 @@ class FileContents
      * Fetches the shared file position map
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function getFilePositionMap() : FilePositionMap
+    public function getFilePositionMap(): FilePositionMap
     {
         return $this->file_position_map ?? ($this->file_position_map = new FilePositionMap($this->contents));
     }
@@ -98,7 +100,7 @@ class FileContents
      * @return ?int the byte offset of the start of the given line (1-based)
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function getLineOffset(int $line) : ?int
+    public function getLineOffset(int $line): ?int
     {
         if ($this->line_offset_map === null) {
             $this->line_offset_map = self::computeLineOffsetMap($this->contents);
@@ -111,7 +113,7 @@ class FileContents
      * @internal
      * @return non-empty-list<int>
      */
-    public static function computeLineOffsetMap(string $contents) : array
+    public static function computeLineOffsetMap(string $contents): array
     {
         // start of line 1 is the 0th byte
         $offsets = [0, 0];
@@ -127,7 +129,7 @@ class FileContents
     /**
      * @return associative-array<int,string> a 1-based array of lines
      */
-    public function getLines() : array
+    public function getLines(): array
     {
         if (\is_array($this->lines)) {
             return $this->lines;
@@ -149,7 +151,7 @@ class FileContents
      *
      * @param int $lineno - A line number, starting with line 1
      */
-    public function getLine(int $lineno) : ?string
+    public function getLine(int $lineno): ?string
     {
         $lines = $this->getLines();
         return $lines[$lineno] ?? null;

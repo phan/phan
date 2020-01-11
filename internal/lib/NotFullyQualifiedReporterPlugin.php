@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use ast\Node;
 use Phan\CodeBase;
@@ -30,7 +32,7 @@ class NotFullyQualifiedReporterPlugin extends PluginV3 implements
     /**
      * Record an unqualified call made from a namespace
      */
-    public static function logUnqualifiedCall(string $namespace, string $name) : void
+    public static function logUnqualifiedCall(string $namespace, string $name): void
     {
         self::$calls[$namespace][strtolower($name)] = true;
     }
@@ -39,12 +41,12 @@ class NotFullyQualifiedReporterPlugin extends PluginV3 implements
      * @return string - The name of the visitor that will be called (formerly analyzeNode)
      * @override
      */
-    public static function getPostAnalyzeNodeVisitorClassName() : string
+    public static function getPostAnalyzeNodeVisitorClassName(): string
     {
         return NotFullyQualifiedReporterVisitor::class;
     }
 
-    public function finalizeProcess(CodeBase $_) : void
+    public function finalizeProcess(CodeBase $_): void
     {
         echo "<" . "?php declare(strict_types=1);\n";
         ksort(self::$calls);
@@ -101,7 +103,7 @@ class NotFullyQualifiedReporterVisitor extends PluginAwarePostAnalysisVisitor
      * A node to analyze of type ast\AST_CALL (call to a global function)
      * @override
      */
-    public function visitCall(Node $node) : void
+    public function visitCall(Node $node): void
     {
         $expression = $node->children['expr'];
         if (!($expression instanceof Node) || $expression->kind !== ast\AST_NAME) {

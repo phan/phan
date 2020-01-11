@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests;
 
@@ -9,7 +11,7 @@ use Phan\CLIBuilder;
  */
 final class CLIBuilderTest extends BaseTest
 {
-    public function testSetOptions() : void
+    public function testSetOptions(): void
     {
         $builder = new CLIBuilder();
         $builder->setOption('quick');
@@ -34,7 +36,7 @@ final class CLIBuilderTest extends BaseTest
         ], $builder->getOpts());
     }
 
-    public function testSetOptionsNumeric() : void
+    public function testSetOptionsNumeric(): void
     {
         $builder = new CLIBuilder();
         $builder->setOption('3', 'excluded.php');

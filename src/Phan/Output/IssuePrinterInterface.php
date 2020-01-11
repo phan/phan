@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Output;
 
@@ -16,12 +18,12 @@ interface IssuePrinterInterface
      *
      * @param IssueInstance $instance
      */
-    public function print(IssueInstance $instance) : void;
+    public function print(IssueInstance $instance): void;
 
     /**
      * Sets the OutputInterface instance that issues will be printed to.
      *
      * @param OutputInterface $output
      */
-    public function configureOutput(OutputInterface $output) : void;
+    public function configureOutput(OutputInterface $output): void;
 }

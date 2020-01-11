@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests\Language;
 
@@ -27,6 +29,7 @@ use ReflectionMethod;
 use ReflectionParameter;
 use RuntimeException;
 use TypeError;
+
 use function count;
 
 /**
@@ -35,7 +38,7 @@ use function count;
  */
 final class EmptyUnionTypeTest extends BaseTest
 {
-    const SKIPPED_METHOD_NAMES = [
+    private const SKIPPED_METHOD_NAMES = [
         'unserialize',  // throws
         '__construct',
         '__clone',
@@ -47,7 +50,7 @@ final class EmptyUnionTypeTest extends BaseTest
         'withIsDefinitelyUndefined',
     ];
 
-    public function testMethods() : void
+    public function testMethods(): void
     {
         $this->assertTrue(\class_exists(UnionType::class));  // Force the autoloader to load UnionType before attempting to load EmptyUnionType
         $failures = '';
@@ -71,7 +74,7 @@ final class EmptyUnionTypeTest extends BaseTest
     /**
      * Returns the test errors to show as a string, or the empty string on success
      */
-    public function checkHasSameImplementationForEmpty(ReflectionMethod $method) : string
+    public function checkHasSameImplementationForEmpty(ReflectionMethod $method): string
     {
         $method_name = $method->getName();
         if (!\method_exists(UnionType::class, $method_name)) {
@@ -104,7 +107,7 @@ final class EmptyUnionTypeTest extends BaseTest
      * @param mixed $expected_result
      * @param mixed $actual_result
      */
-    private static function isSameResult($expected_result, $actual_result) : bool
+    private static function isSameResult($expected_result, $actual_result): bool
     {
         if ($expected_result === $actual_result) {
             return true;
@@ -121,7 +124,7 @@ final class EmptyUnionTypeTest extends BaseTest
      *
      * @return list<list>
      */
-    public function generateArgLists(ReflectionMethod $method) : array
+    public function generateArgLists(ReflectionMethod $method): array
     {
         $list_of_arg_list = [[]];
 
@@ -152,7 +155,7 @@ final class EmptyUnionTypeTest extends BaseTest
      * to brute force test this parameter of EmptyUnionType
      * @return list<mixed>
      */
-    public function getPossibleArgValues(ReflectionParameter $param) : array
+    public function getPossibleArgValues(ReflectionParameter $param): array
     {
         $type = $param->getType();
         $type_name = Type::stringFromReflectionType($type);
@@ -199,11 +202,11 @@ final class EmptyUnionTypeTest extends BaseTest
             case Closure::class:
                 return [
                     /** @param mixed ...$unused_args */
-                    static function (...$unused_args) : bool {
+                    static function (...$unused_args): bool {
                         return false;
                     },
                     /** @param mixed ...$unused_args */
-                    static function (...$unused_args) : bool {
+                    static function (...$unused_args): bool {
                         return true;
                     },
                 ];

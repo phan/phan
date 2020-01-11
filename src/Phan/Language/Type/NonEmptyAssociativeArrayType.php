@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Type;
 
@@ -20,7 +22,7 @@ final class NonEmptyAssociativeArrayType extends AssociativeArrayType implements
         Type $type,
         bool $is_nullable,
         int $key_type = GenericArrayType::KEY_INT
-    ) : GenericArrayType {
+    ): GenericArrayType {
         if ($key_type === GenericArrayType::KEY_STRING) {
             return NonEmptyGenericArrayType::fromElementType($type, $is_nullable, $key_type);
         }
@@ -48,7 +50,7 @@ final class NonEmptyAssociativeArrayType extends AssociativeArrayType implements
         return $map->offsetGet($type);
     }
 
-    protected function canCastToNonNullableType(Type $type) : bool
+    protected function canCastToNonNullableType(Type $type): bool
     {
         if (!$type->isPossiblyTruthy()) {
             return false;
@@ -57,24 +59,24 @@ final class NonEmptyAssociativeArrayType extends AssociativeArrayType implements
     }
 
     /** @override */
-    public function isPossiblyFalsey() : bool
+    public function isPossiblyFalsey(): bool
     {
         return $this->is_nullable;
     }
 
     /** @override */
-    public function isAlwaysTruthy() : bool
+    public function isAlwaysTruthy(): bool
     {
         return !$this->is_nullable;
     }
 
     /** @override */
-    public function asNonFalseyType() : Type
+    public function asNonFalseyType(): Type
     {
         return $this->withIsNullable(false);
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         if ($this->key_type === GenericArrayType::KEY_MIXED) {
             $key_details = '';
@@ -86,12 +88,12 @@ final class NonEmptyAssociativeArrayType extends AssociativeArrayType implements
     }
 
     /** @override */
-    public function isDefinitelyNonEmptyArray() : bool
+    public function isDefinitelyNonEmptyArray(): bool
     {
         return true;
     }
 
-    public function asAssociativeArrayType(bool $can_reduce_size) : ArrayType
+    public function asAssociativeArrayType(bool $can_reduce_size): ArrayType
     {
         if ($can_reduce_size) {
             return AssociativeArrayType::fromElementType(
@@ -107,7 +109,7 @@ final class NonEmptyAssociativeArrayType extends AssociativeArrayType implements
      * @return ListType
      * @phan-real-return AssociativeArrayType
      */
-    public function asPossiblyEmptyArrayType() : ArrayType
+    public function asPossiblyEmptyArrayType(): ArrayType
     {
         return AssociativeArrayType::fromElementType(
             $this->element_type,

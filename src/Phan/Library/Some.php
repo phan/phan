@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Library;
 
@@ -26,7 +28,7 @@ class Some extends Option
         $this->_ = $_;
     }
 
-    public function isDefined() : bool
+    public function isDefined(): bool
     {
         return true;
     }
@@ -53,7 +55,7 @@ class Some extends Option
      * @suppress PhanTypeSuspiciousStringExpression this should be used with T where __toString() is defined.
      * A string representation of this object
      */
-    public function __toString() : string
+    public function __toString(): string
     {
         return 'Some(' . $this->_ . ')';
     }

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Type;
 
@@ -13,9 +15,9 @@ use Phan\Language\Type;
 class ObjectType extends NativeType
 {
     /** @phan-override */
-    const NAME = 'object';
+    public const NAME = 'object';
 
-    protected function canCastToNonNullableType(Type $type) : bool
+    protected function canCastToNonNullableType(Type $type): bool
     {
         // Inverse of check in Type->canCastToNullableType
         if (!$type->isNativeType() && !($type instanceof ArrayType)) {
@@ -24,7 +26,7 @@ class ObjectType extends NativeType
         return parent::canCastToNonNullableType($type);
     }
 
-    protected function canCastToNonNullableTypeWithoutConfig(Type $type) : bool
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type): bool
     {
         // Inverse of check in Type->canCastToNullableType
         if (!$type->isNativeType() && !($type instanceof ArrayType)) {
@@ -33,7 +35,7 @@ class ObjectType extends NativeType
         return parent::canCastToNonNullableTypeWithoutConfig($type);
     }
 
-    protected function isSubtypeOfNonNullableType(Type $type) : bool
+    protected function isSubtypeOfNonNullableType(Type $type): bool
     {
         return $type instanceof ObjectType || $type instanceof MixedType;
     }
@@ -43,7 +45,7 @@ class ObjectType extends NativeType
      * True if this type is an object (or the phpdoc `object`)
      * @override
      */
-    public function isObject() : bool
+    public function isObject(): bool
     {
         return true;  // Overridden in various subclasses
     }
@@ -51,7 +53,7 @@ class ObjectType extends NativeType
     /**
      * @override
      */
-    public function isObjectWithKnownFQSEN() : bool
+    public function isObjectWithKnownFQSEN(): bool
     {
         return false;  // Overridden in various subclasses
     }
@@ -61,7 +63,7 @@ class ObjectType extends NativeType
      * True if this type is an object (or the phpdoc `object`)
      * @override
      */
-    public function isPossiblyObject() : bool
+    public function isPossiblyObject(): bool
     {
         return true;
     }
@@ -69,29 +71,29 @@ class ObjectType extends NativeType
     /**
      * Check if this type can possibly cast to the declared type, ignoring nullability of this type
      */
-    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $other) : bool
+    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $other): bool
     {
         return $other->isPossiblyObject();
     }
 
-    public function canUseInRealSignature() : bool
+    public function canUseInRealSignature(): bool
     {
         // Callers should check this separately if they want to support php 7.2
         return false;
     }
 
     /** For ObjectType/CallableObjectType  */
-    public function asObjectType() : ?Type
+    public function asObjectType(): ?Type
     {
         return $this->withIsNullable(false);
     }
 
-    public function asCallableType() : ?Type
+    public function asCallableType(): ?Type
     {
         return CallableObjectType::instance(false);
     }
 
-    public function asIterable(CodeBase $_) : ?Type
+    public function asIterable(CodeBase $_): ?Type
     {
         return Type::traversableInstance();
     }

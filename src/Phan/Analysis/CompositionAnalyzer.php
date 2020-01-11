@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Analysis;
 
@@ -22,7 +24,7 @@ class CompositionAnalyzer
     public static function analyzeComposition(
         CodeBase $code_base,
         Clazz $class
-    ) : void {
+    ): void {
         // Get the list of all inherited classes.
         $inherited_class_list =
             $class->getAncestorClassList($code_base);

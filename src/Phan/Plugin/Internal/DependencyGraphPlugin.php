@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Plugin\Internal;
 
@@ -55,7 +57,7 @@ class DependencyGraphPlugin extends PluginV3 implements
     /**
      * Build <filename>:<lineno> string
      */
-    private static function getFileString(FileRef $file_ref):string
+    private static function getFileString(FileRef $file_ref): string
     {
         return $file_ref->getFile() . ':' . $file_ref->getLineNumberStart();
     }
@@ -63,7 +65,7 @@ class DependencyGraphPlugin extends PluginV3 implements
     /**
      * @return array{0:string,1:int}
      */
-    private static function getFileLineno(string $file_string):array
+    private static function getFileLineno(string $file_string): array
     {
         $idx = \strrpos($file_string, ':');
         if ($idx === false) {
@@ -96,7 +98,7 @@ class DependencyGraphPlugin extends PluginV3 implements
      * @param string $node
      * @return string[][]
      */
-    private function walkcGraph(array $newgraph, string $node, int $depth = 0):array
+    private function walkcGraph(array $newgraph, string $node, int $depth = 0): array
     {
         static $i = 0;
         static $visited = [];
@@ -130,7 +132,7 @@ class DependencyGraphPlugin extends PluginV3 implements
      * @param string $node
      * @return string[][]
      */
-    private function walkfGraph(array $newgraph, string $node, int $depth = 0):array
+    private function walkfGraph(array $newgraph, string $node, int $depth = 0): array
     {
         static $i = 0;
         static $visited = [];
@@ -158,7 +160,7 @@ class DependencyGraphPlugin extends PluginV3 implements
      *
      * @param string[][] $graph
      */
-    private function printGraph(array $graph):void
+    private function printGraph(array $graph): void
     {
         foreach ($graph as $k => $v) {
             echo "$k\n";
@@ -401,7 +403,7 @@ class DependencyGraphPlugin extends PluginV3 implements
      * @param string $title
      * @param ?array<string,array<string,string>> $graph
      */
-    private function dumpFileDot(string $title, array $graph = null):void
+    private function dumpFileDot(string $title, array $graph = null): void
     {
         if (!$graph) {
             $graph = $this->fgraph;
@@ -439,7 +441,7 @@ class DependencyGraphPlugin extends PluginV3 implements
      * @param string $title
      * @param ?array<string,array<string,string>> $graph
      */
-    private function dumpClassDot(string $title, array $graph = null):void
+    private function dumpClassDot(string $title, array $graph = null): void
     {
         if (!$graph) {
             $graph = $this->cgraph;
@@ -511,7 +513,7 @@ class DependencyGraphPlugin extends PluginV3 implements
      * @param bool $is_classgraph
      * @param bool $hide_labels
      */
-    private function dumpGraphML(string $title, array $graph, bool $is_classgraph, bool $hide_labels):void
+    private function dumpGraphML(string $title, array $graph, bool $is_classgraph, bool $hide_labels): void
     {
         $node_id = 0;
         $edge_id = 0;
@@ -641,7 +643,7 @@ class DependencyGraphVisitor extends PluginAwarePostAnalysisVisitor
      * When we hit an AST_CLASS_CONST
      * @throws Exception
      */
-    public function visitClassConst(Node $node):void
+    public function visitClassConst(Node $node): void
     {
         $context = $this->context;
         try {
@@ -669,7 +671,7 @@ class DependencyGraphVisitor extends PluginAwarePostAnalysisVisitor
      * When we hit an AST_STATIC_CALL
      * @throws Exception
      */
-    public function visitStaticCall(Node $node):void
+    public function visitStaticCall(Node $node): void
     {
         $context = $this->context;
         try {

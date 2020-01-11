@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Type;
 
@@ -16,15 +18,15 @@ use Phan\Language\UnionType;
 class ArrayType extends IterableType
 {
     /** @phan-override */
-    const NAME = 'array';
+    public const NAME = 'array';
 
-    public function asNonTruthyType() : Type
+    public function asNonTruthyType(): Type
     {
         // if (!$x) implies that $x is `[]` when $x is an array
         return ArrayShapeType::empty($this->is_nullable);
     }
 
-    public function asNonFalseyType() : Type
+    public function asNonFalseyType(): Type
     {
         // if (!$x) implies that $x is `[]` when $x is an array
         return NonEmptyGenericArrayType::fromElementType(
@@ -34,22 +36,22 @@ class ArrayType extends IterableType
         );
     }
 
-    public function isPossiblyObject() : bool
+    public function isPossiblyObject(): bool
     {
         return false;  // Overrides IterableType returning true
     }
 
-    public function isArrayLike() : bool
+    public function isArrayLike(): bool
     {
         return true;  // Overrides Type
     }
 
-    public function isArrayOrArrayAccessSubType(CodeBase $unused_code_base) : bool
+    public function isArrayOrArrayAccessSubType(CodeBase $unused_code_base): bool
     {
         return true;  // Overrides Type
     }
 
-    public function isCountable(CodeBase $unused_code_base) : bool
+    public function isCountable(CodeBase $unused_code_base): bool
     {
         return true;  // Overrides Type
     }
@@ -58,7 +60,7 @@ class ArrayType extends IterableType
      * @return UnionType with ArrayType subclass(es)
      * @suppress PhanUnreferencedPublicMethod may be used in the future or for plugins as array shape support improves.
      */
-    public static function combineArrayTypesMerging(UnionType $union_type) : UnionType
+    public static function combineArrayTypesMerging(UnionType $union_type): UnionType
     {
         $result = [];
         $array_shape_types = [];
@@ -94,7 +96,7 @@ class ArrayType extends IterableType
      * @param UnionType $right the right-hand side (e.g. of a `+` operator).
      * @return UnionType with ArrayType subclass(es)
      */
-    public static function combineArrayTypesOverriding(UnionType $left, UnionType $right, bool $is_assignment = false) : UnionType
+    public static function combineArrayTypesOverriding(UnionType $left, UnionType $right, bool $is_assignment = false): UnionType
     {
         // echo "Called " . __METHOD__ . " left={$left->getDebugRepresentation()} right={$right->getDebugRepresentation()} is_assignment=" . \json_encode($is_assignment) . "\n";
         return UnionType::of(
@@ -112,7 +114,7 @@ class ArrayType extends IterableType
      * @param bool $is_real true if this is computing the real type set. If true, the resulting type is computed more conservatively, to avoid false positives for redundant/impossible condition detection.
      * @return list<Type>
      */
-    private static function combineArrayTypeListsOverriding(array $left_types, array $right_types, bool $is_assignment, bool $is_real) : array
+    private static function combineArrayTypeListsOverriding(array $left_types, array $right_types, bool $is_assignment, bool $is_real): array
     {
         if ($is_real && !$right_types) {
             return [];
@@ -211,7 +213,7 @@ class ArrayType extends IterableType
      * @param non-empty-list<Type> $right_types the original types being added to
      * @return list<ArrayType>
      */
-    private static function computeRealTypeSetFromArrayTypeLists(array $right_types, bool $is_assignment) : array
+    private static function computeRealTypeSetFromArrayTypeLists(array $right_types, bool $is_assignment): array
     {
         /* if (!$right_types) { return []; } */
         foreach ($right_types as $type) {
@@ -233,7 +235,7 @@ class ArrayType extends IterableType
      * @param UnionType $field_type
      * @return UnionType with ArrayType subclass(es)
      */
-    public static function combineArrayShapeTypesWithField(UnionType $left, $field_dim_value, UnionType $field_type) : UnionType
+    public static function combineArrayShapeTypesWithField(UnionType $left, $field_dim_value, UnionType $field_type): UnionType
     {
         $type_set = [];
         $left_array_shape_types = [];
@@ -261,7 +263,7 @@ class ArrayType extends IterableType
      * @param UnionType $field_type
      * @return list<ArrayType>
      */
-    private static function computeRealTypeSetForArrayShapeTypeWithField(UnionType $left, $field_dim_value, UnionType $field_type) : array
+    private static function computeRealTypeSetForArrayShapeTypeWithField(UnionType $left, $field_dim_value, UnionType $field_type): array
     {
         $has_non_array_shape = false;
         foreach ($left->getRealTypeSet() as $type) {
@@ -284,19 +286,19 @@ class ArrayType extends IterableType
         ];
     }
 
-    protected function canCastToNonNullableType(Type $type) : bool
+    protected function canCastToNonNullableType(Type $type): bool
     {
         // CallableDeclarationType is not a native type, we check separately here
         return parent::canCastToNonNullableType($type) || $type instanceof ArrayType || $type instanceof CallableDeclarationType;
     }
 
-    protected function canCastToNonNullableTypeWithoutConfig(Type $type) : bool
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type): bool
     {
         // CallableDeclarationType is not a native type, we check separately here
         return parent::canCastToNonNullableTypeWithoutConfig($type) || $type instanceof ArrayType || $type instanceof CallableDeclarationType;
     }
 
-    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $other) : bool
+    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $other): bool
     {
         if ($other instanceof IterableType) {
             return true;
@@ -310,7 +312,7 @@ class ArrayType extends IterableType
     /**
      * @return UnionType int|string for arrays
      */
-    public function iterableKeyUnionType(CodeBase $unused_code_base) : UnionType
+    public function iterableKeyUnionType(CodeBase $unused_code_base): UnionType
     {
         // Reduce false positive partial type mismatch errors
         return UnionType::empty();
@@ -328,7 +330,7 @@ class ArrayType extends IterableType
      * e.g. returns true false, array, int
      *      returns false for callable, object, iterable, T, etc.
      */
-    public function isDefiniteNonObjectType() : bool
+    public function isDefiniteNonObjectType(): bool
     {
         return true;
     }
@@ -339,29 +341,29 @@ class ArrayType extends IterableType
      * @param int $flags (e.g. \ast\flags\BINARY_IS_SMALLER)
      * @internal
      */
-    public function canSatisfyComparison($scalar, int $flags) : bool
+    public function canSatisfyComparison($scalar, int $flags): bool
     {
         return parent::performComparison([], $scalar, $flags);
     }
 
     // There are more specific checks in GenericArrayType and ArrayShapeType
-    public function asCallableType() : ?Type
+    public function asCallableType(): ?Type
     {
         return CallableArrayType::instance(false);
     }
 
-    public function asArrayType() : ?Type
+    public function asArrayType(): ?Type
     {
         return $this->withIsNullable(false);
     }
 
     /** @override of IterableType */
-    public function asObjectType() : ?Type
+    public function asObjectType(): ?Type
     {
         return null;
     }
 
-    public function canPossiblyCastToClass(CodeBase $unused_code_base, Type $unused_other) : bool
+    public function canPossiblyCastToClass(CodeBase $unused_code_base, Type $unused_other): bool
     {
         // arrays can't cast to object.
         return false;
@@ -372,7 +374,7 @@ class ArrayType extends IterableType
      *
      * TODO: Implement for ArrayShapeType (not currently calling it) with $can_reduce_size
      */
-    public function asAssociativeArrayType(bool $unused_can_reduce_size) : ArrayType
+    public function asAssociativeArrayType(bool $unused_can_reduce_size): ArrayType
     {
         return AssociativeArrayType::fromElementType(
             MixedType::instance(false),
@@ -385,13 +387,13 @@ class ArrayType extends IterableType
      * Convert ArrayTypes with integer-only keys to ListType.
      * Calling withFlattenedArrayShapeTypeInstances first is recommended.
      */
-    public function convertIntegerKeyArrayToList() : ArrayType
+    public function convertIntegerKeyArrayToList(): ArrayType
     {
         // The base type has unknown keys. Do nothing.
         return $this;
     }
 
-    public function weaklyOverlaps(Type $other) : bool
+    public function weaklyOverlaps(Type $other): bool
     {
         // TODO: Could be stricter
         if ($other instanceof ScalarType) {

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use ast\Node;
 use Phan\PluginV3;
@@ -35,7 +37,7 @@ class NoAssertPlugin extends PluginV3 implements PostAnalyzeNodeCapability
     /**
      * @return string - name of PluginAwarePostAnalysisVisitor subclass
      */
-    public static function getPostAnalyzeNodeVisitorClassName() : string
+    public static function getPostAnalyzeNodeVisitorClassName(): string
     {
         return NoAssertVisitor::class;
     }
@@ -58,7 +60,7 @@ class NoAssertVisitor extends PluginAwarePostAnalysisVisitor
      * A node to analyze
      * @override
      */
-    public function visitCall(Node $node) : void
+    public function visitCall(Node $node): void
     {
         $name = $node->children['expr']->children['name'] ?? null;
         if (!is_string($name)) {

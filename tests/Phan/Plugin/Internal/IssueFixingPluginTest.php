@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests\Plugin\Internal;
 
@@ -18,18 +20,18 @@ final class IssueFixingPluginTest extends BaseTest implements CodeBaseAwareTestI
     /** @var CodeBase|null The code base within which this unit test is operating */
     private $code_base = null;
 
-    public function setCodeBase(CodeBase $code_base = null) : void
+    public function setCodeBase(CodeBase $code_base = null): void
     {
         $this->code_base = $code_base;
     }
 
-    const FILE = 'fix_test.php';
+    private const FILE = 'fix_test.php';
 
     /**
      * @param IssueInstance[] $instances
      * @dataProvider computeAndApplyFixesProvider
      */
-    public function testComputeAndApplyFixes(string $expected_contents, string $original_contents, array $instances) : void
+    public function testComputeAndApplyFixes(string $expected_contents, string $original_contents, array $instances): void
     {
         $fixers = IssueFixer::computeFixersForInstances($instances);
         //var_export($instances);
@@ -45,12 +47,12 @@ final class IssueFixingPluginTest extends BaseTest implements CodeBaseAwareTestI
     /**
      * @return list<array{0:string,1:string,2:list<IssueInstance>}>
      */
-    public function computeAndApplyFixesProvider() : array
+    public function computeAndApplyFixesProvider(): array
     {
         /**
          * @param int|string ...$args
          */
-        $make = static function (string $type, int $line, ...$args) : IssueInstance {
+        $make = static function (string $type, int $line, ...$args): IssueInstance {
             return new IssueInstance(Issue::fromType($type), self::FILE, $line, $args);
         };
         return [
@@ -89,7 +91,7 @@ EOT
      * @param FileEdit[] $all_edits
      * @dataProvider computeNewContentsProvider
      */
-    public function testComputeNewContents(?string $expected_contents, string $contents, array $all_edits) : void
+    public function testComputeNewContents(?string $expected_contents, string $contents, array $all_edits): void
     {
         $this->assertSame($expected_contents, IssueFixer::computeNewContents(self::FILE, $contents, $all_edits));
     }
@@ -97,7 +99,7 @@ EOT
     /**
      * @return list<array{0:?string,1:string,2:FileEdit[]}>
      */
-    public function computeNewContentsProvider() : array
+    public function computeNewContentsProvider(): array
     {
         return [
             [

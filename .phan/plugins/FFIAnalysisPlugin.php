@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 use ast\Node;
@@ -33,7 +34,7 @@ class FFIAnalysisPlugin extends PluginV3 implements PostAnalyzeNodeCapability, P
      * @return class-string - name of PluginAwarePostAnalysisVisitor subclass
      * @override
      */
-    public static function getPreAnalyzeNodeVisitorClassName() : string
+    public static function getPreAnalyzeNodeVisitorClassName(): string
     {
         return FFIPreAnalysisVisitor::class;
     }
@@ -42,7 +43,7 @@ class FFIAnalysisPlugin extends PluginV3 implements PostAnalyzeNodeCapability, P
      * @return class-string - name of PluginAwarePostAnalysisVisitor subclass
      * @override
      */
-    public static function getPostAnalyzeNodeVisitorClassName() : string
+    public static function getPostAnalyzeNodeVisitorClassName(): string
     {
         return FFIPostAnalysisVisitor::class;
     }
@@ -57,7 +58,7 @@ class FFIPreAnalysisVisitor extends PluginAwarePreAnalysisVisitor
      * @override
      * @param Node $node a node of kind ast\AST_ASSIGN
      */
-    public function visitAssign(Node $node) : void
+    public function visitAssign(Node $node): void
     {
         $left = $node->children['var'];
         if (!($left instanceof Node)) {
@@ -83,13 +84,13 @@ class FFIPreAnalysisVisitor extends PluginAwarePreAnalysisVisitor
         $node->is_ffi = $category;
     }
 
-    const PARTIALLY_FFI_CDATA = 1;
-    const ENTIRELY_FFI_CDATA = 2;
+    public const PARTIALLY_FFI_CDATA = 1;
+    public const ENTIRELY_FFI_CDATA = 2;
 
     /**
      * Check if the type contains FFI\CData
      */
-    private static function containsFFICDataType(UnionType $union_type) : int
+    private static function containsFFICDataType(UnionType $union_type): int
     {
         foreach ($union_type->getTypeSet() as $type) {
             if (strcasecmp('\FFI', $type->getNamespace()) !== 0) {
@@ -118,7 +119,7 @@ class FFIPostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @override
      */
-    public function visitAssign(Node $node) : void
+    public function visitAssign(Node $node): void
     {
         // @phan-suppress-next-line PhanUndeclaredProperty
         if (isset($node->is_ffi)) {
@@ -126,7 +127,7 @@ class FFIPostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
         }
     }
 
-    private function analyzeFFIAssign(Node $node) : void
+    private function analyzeFFIAssign(Node $node): void
     {
         $var_name = $node->children['var']->children['name'] ?? null;
         if (!is_string($var_name)) {

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Analysis\ConditionVisitor;
 
@@ -21,7 +23,7 @@ class NotEqualsCondition implements BinaryCondition
      * @param Node|int|string|float $expr
      * @override
      */
-    public function analyzeVar(ConditionVisitorInterface $visitor, Node $var, $expr) : Context
+    public function analyzeVar(ConditionVisitorInterface $visitor, Node $var, $expr): Context
     {
         return $visitor->updateVariableToBeNotEqual($var, $expr);
     }
@@ -34,12 +36,12 @@ class NotEqualsCondition implements BinaryCondition
      * @override
      * @suppress PhanUnusedPublicMethodParameter
      */
-    public function analyzeClassCheck(ConditionVisitorInterface $visitor, $object, $expr) : Context
+    public function analyzeClassCheck(ConditionVisitorInterface $visitor, $object, $expr): Context
     {
         return $visitor->getContext();
     }
 
-    public function analyzeCall(ConditionVisitorInterface $visitor, Node $call_node, $expr) : ?Context
+    public function analyzeCall(ConditionVisitorInterface $visitor, Node $call_node, $expr): ?Context
     {
         $code_base = $visitor->getCodeBase();
         $context = $visitor->getContext();
@@ -57,7 +59,7 @@ class NotEqualsCondition implements BinaryCondition
         return null;
     }
 
-    public function analyzeComplexCondition(ConditionVisitorInterface $visitor, Node $complex_node, $expr) : ?Context
+    public function analyzeComplexCondition(ConditionVisitorInterface $visitor, Node $complex_node, $expr): ?Context
     {
         $code_base = $visitor->getCodeBase();
         $context = $visitor->getContext();

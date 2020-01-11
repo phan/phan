@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests;
 
@@ -7,6 +9,6 @@ namespace Phan\Tests;
  */
 class PhanTest6 extends PhanTestRange
 {
-    const START_RANGE = '0600';
-    const END_RANGE   = '0700';
+    public const START_RANGE = '0600';
+    public const END_RANGE   = '0700';
 }

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan;
 
@@ -24,561 +26,561 @@ class Issue
     // phpcs:disable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
     // this is deliberate for issue names
     // Issue::CATEGORY_SYNTAX
-    const SyntaxError                    = 'PhanSyntaxError';
-    const InvalidConstantExpression      = 'PhanInvalidConstantExpression';
-    const InvalidNode                    = 'PhanInvalidNode';
-    const InvalidWriteToTemporaryExpression = 'PhanInvalidWriteToTemporaryExpression';
-    const InvalidTraitUse                = 'PhanInvalidTraitUse';
-    const ContinueTargetingSwitch        = 'PhanContinueTargetingSwitch';
-    const ContinueOrBreakNotInLoop       = 'PhanContinueOrBreakNotInLoop';
-    const ContinueOrBreakTooManyLevels   = 'PhanContinueOrBreakTooManyLevels';
-    const SyntaxCompileWarning           = 'PhanSyntaxCompileWarning';
-    const SyntaxEmptyListArrayDestructuring = 'PhanSyntaxEmptyListArrayDestructuring';
-    const SyntaxMixedKeyNoKeyArrayDestructuring = 'PhanSyntaxMixedKeyNoKeyArrayDestructuring';
-    const SyntaxReturnExpectedValue      = 'PhanSyntaxReturnExpectedValue';
-    const SyntaxReturnValueInVoid        = 'PhanSyntaxReturnValueInVoid';
+    public const SyntaxError                    = 'PhanSyntaxError';
+    public const InvalidConstantExpression      = 'PhanInvalidConstantExpression';
+    public const InvalidNode                    = 'PhanInvalidNode';
+    public const InvalidWriteToTemporaryExpression = 'PhanInvalidWriteToTemporaryExpression';
+    public const InvalidTraitUse                = 'PhanInvalidTraitUse';
+    public const ContinueTargetingSwitch        = 'PhanContinueTargetingSwitch';
+    public const ContinueOrBreakNotInLoop       = 'PhanContinueOrBreakNotInLoop';
+    public const ContinueOrBreakTooManyLevels   = 'PhanContinueOrBreakTooManyLevels';
+    public const SyntaxCompileWarning           = 'PhanSyntaxCompileWarning';
+    public const SyntaxEmptyListArrayDestructuring = 'PhanSyntaxEmptyListArrayDestructuring';
+    public const SyntaxMixedKeyNoKeyArrayDestructuring = 'PhanSyntaxMixedKeyNoKeyArrayDestructuring';
+    public const SyntaxReturnExpectedValue      = 'PhanSyntaxReturnExpectedValue';
+    public const SyntaxReturnValueInVoid        = 'PhanSyntaxReturnValueInVoid';
 
     // Issue::CATEGORY_UNDEFINED
-    const AmbiguousTraitAliasSource = 'PhanAmbiguousTraitAliasSource';
-    const ClassContainsAbstractMethodInternal = 'PhanClassContainsAbstractMethodInternal';
-    const ClassContainsAbstractMethod = 'PhanClassContainsAbstractMethod';
-    const EmptyFile                 = 'PhanEmptyFile';
-    const MissingRequireFile        = 'PhanMissingRequireFile';
-    const InvalidRequireFile        = 'PhanInvalidRequireFile';
-    const ParentlessClass           = 'PhanParentlessClass';
-    const RequiredTraitNotAdded     = 'PhanRequiredTraitNotAdded';
-    const TraitParentReference      = 'PhanTraitParentReference';
-    const UndeclaredAliasedMethodOfTrait = 'PhanUndeclaredAliasedMethodOfTrait';
-    const UndeclaredClass           = 'PhanUndeclaredClass';
-    const UndeclaredClassAliasOriginal = 'PhanUndeclaredClassAliasOriginal';
-    const UndeclaredClassCatch      = 'PhanUndeclaredClassCatch';
-    const UndeclaredClassConstant   = 'PhanUndeclaredClassConstant';
-    const UndeclaredClassInstanceof = 'PhanUndeclaredClassInstanceof';
-    const UndeclaredClassMethod     = 'PhanUndeclaredClassMethod';
-    const UndeclaredClassProperty   = 'PhanUndeclaredClassProperty';
-    const UndeclaredClassReference  = 'PhanUndeclaredClassReference';
-    const UndeclaredClassStaticProperty = 'PhanUndeclaredClassStaticProperty';
-    const UndeclaredClosureScope    = 'PhanUndeclaredClosureScope';
-    const UndeclaredConstant        = 'PhanUndeclaredConstant';
-    const UndeclaredMagicConstant   = 'PhanUndeclaredMagicConstant';
-    const UndeclaredExtendedClass   = 'PhanUndeclaredExtendedClass';
-    const UndeclaredFunction        = 'PhanUndeclaredFunction';
-    const UndeclaredInterface       = 'PhanUndeclaredInterface';
-    const UndeclaredMethod          = 'PhanUndeclaredMethod';
-    const PossiblyUndeclaredMethod  = 'PhanPossiblyUndeclaredMethod';
-    const UndeclaredProperty        = 'PhanUndeclaredProperty';
-    const PossiblyUndeclaredProperty = 'PhanPossiblyUndeclaredProperty';
-    const UndeclaredStaticMethod    = 'PhanUndeclaredStaticMethod';
-    const UndeclaredStaticProperty  = 'PhanUndeclaredStaticProperty';
-    const UndeclaredTrait           = 'PhanUndeclaredTrait';
-    const UndeclaredTypeParameter   = 'PhanUndeclaredTypeParameter';
-    const UndeclaredTypeReturnType  = 'PhanUndeclaredTypeReturnType';
-    const UndeclaredTypeProperty    = 'PhanUndeclaredTypeProperty';
-    const UndeclaredTypeThrowsType  = 'PhanUndeclaredTypeThrowsType';
-    const UndeclaredVariable        = 'PhanUndeclaredVariable';
-    const PossiblyUndeclaredVariable = 'PhanPossiblyUndeclaredVariable';
-    const UndeclaredGlobalVariable  = 'PhanUndeclaredGlobalVariable';
-    const PossiblyUndeclaredGlobalVariable  = 'PhanPossiblyUndeclaredGlobalVariable';
-    const UndeclaredThis            = 'PhanUndeclaredThis';
-    const UndeclaredVariableDim     = 'PhanUndeclaredVariableDim';
-    const UndeclaredVariableAssignOp = 'PhanUndeclaredVariableAssignOp';
-    const UndeclaredClassInCallable = 'PhanUndeclaredClassInCallable';
-    const UndeclaredStaticMethodInCallable = 'PhanUndeclaredStaticMethodInCallable';
-    const UndeclaredFunctionInCallable = 'PhanUndeclaredFunctionInCallable';
-    const UndeclaredMethodInCallable = 'PhanUndeclaredMethodInCallable';
-    const UndeclaredInvokeInCallable = 'PhanUndeclaredInvokeInCallable';
-    const EmptyFQSENInCallable      = 'PhanEmptyFQSENInCallable';
-    const InvalidFQSENInCallable    = 'PhanInvalidFQSENInCallable';
-    const EmptyFQSENInClasslike     = 'PhanEmptyFQSENInClasslike';
-    const InvalidFQSENInClasslike   = 'PhanInvalidFQSENInClasslike';
-    const PossiblyUnsetPropertyOfThis = 'PhanPossiblyUnsetPropertyOfThis';
+    public const AmbiguousTraitAliasSource = 'PhanAmbiguousTraitAliasSource';
+    public const ClassContainsAbstractMethodInternal = 'PhanClassContainsAbstractMethodInternal';
+    public const ClassContainsAbstractMethod = 'PhanClassContainsAbstractMethod';
+    public const EmptyFile                 = 'PhanEmptyFile';
+    public const MissingRequireFile        = 'PhanMissingRequireFile';
+    public const InvalidRequireFile        = 'PhanInvalidRequireFile';
+    public const ParentlessClass           = 'PhanParentlessClass';
+    public const RequiredTraitNotAdded     = 'PhanRequiredTraitNotAdded';
+    public const TraitParentReference      = 'PhanTraitParentReference';
+    public const UndeclaredAliasedMethodOfTrait = 'PhanUndeclaredAliasedMethodOfTrait';
+    public const UndeclaredClass           = 'PhanUndeclaredClass';
+    public const UndeclaredClassAliasOriginal = 'PhanUndeclaredClassAliasOriginal';
+    public const UndeclaredClassCatch      = 'PhanUndeclaredClassCatch';
+    public const UndeclaredClassConstant   = 'PhanUndeclaredClassConstant';
+    public const UndeclaredClassInstanceof = 'PhanUndeclaredClassInstanceof';
+    public const UndeclaredClassMethod     = 'PhanUndeclaredClassMethod';
+    public const UndeclaredClassProperty   = 'PhanUndeclaredClassProperty';
+    public const UndeclaredClassReference  = 'PhanUndeclaredClassReference';
+    public const UndeclaredClassStaticProperty = 'PhanUndeclaredClassStaticProperty';
+    public const UndeclaredClosureScope    = 'PhanUndeclaredClosureScope';
+    public const UndeclaredConstant        = 'PhanUndeclaredConstant';
+    public const UndeclaredMagicConstant   = 'PhanUndeclaredMagicConstant';
+    public const UndeclaredExtendedClass   = 'PhanUndeclaredExtendedClass';
+    public const UndeclaredFunction        = 'PhanUndeclaredFunction';
+    public const UndeclaredInterface       = 'PhanUndeclaredInterface';
+    public const UndeclaredMethod          = 'PhanUndeclaredMethod';
+    public const PossiblyUndeclaredMethod  = 'PhanPossiblyUndeclaredMethod';
+    public const UndeclaredProperty        = 'PhanUndeclaredProperty';
+    public const PossiblyUndeclaredProperty = 'PhanPossiblyUndeclaredProperty';
+    public const UndeclaredStaticMethod    = 'PhanUndeclaredStaticMethod';
+    public const UndeclaredStaticProperty  = 'PhanUndeclaredStaticProperty';
+    public const UndeclaredTrait           = 'PhanUndeclaredTrait';
+    public const UndeclaredTypeParameter   = 'PhanUndeclaredTypeParameter';
+    public const UndeclaredTypeReturnType  = 'PhanUndeclaredTypeReturnType';
+    public const UndeclaredTypeProperty    = 'PhanUndeclaredTypeProperty';
+    public const UndeclaredTypeThrowsType  = 'PhanUndeclaredTypeThrowsType';
+    public const UndeclaredVariable        = 'PhanUndeclaredVariable';
+    public const PossiblyUndeclaredVariable = 'PhanPossiblyUndeclaredVariable';
+    public const UndeclaredGlobalVariable  = 'PhanUndeclaredGlobalVariable';
+    public const PossiblyUndeclaredGlobalVariable  = 'PhanPossiblyUndeclaredGlobalVariable';
+    public const UndeclaredThis            = 'PhanUndeclaredThis';
+    public const UndeclaredVariableDim     = 'PhanUndeclaredVariableDim';
+    public const UndeclaredVariableAssignOp = 'PhanUndeclaredVariableAssignOp';
+    public const UndeclaredClassInCallable = 'PhanUndeclaredClassInCallable';
+    public const UndeclaredStaticMethodInCallable = 'PhanUndeclaredStaticMethodInCallable';
+    public const UndeclaredFunctionInCallable = 'PhanUndeclaredFunctionInCallable';
+    public const UndeclaredMethodInCallable = 'PhanUndeclaredMethodInCallable';
+    public const UndeclaredInvokeInCallable = 'PhanUndeclaredInvokeInCallable';
+    public const EmptyFQSENInCallable      = 'PhanEmptyFQSENInCallable';
+    public const InvalidFQSENInCallable    = 'PhanInvalidFQSENInCallable';
+    public const EmptyFQSENInClasslike     = 'PhanEmptyFQSENInClasslike';
+    public const InvalidFQSENInClasslike   = 'PhanInvalidFQSENInClasslike';
+    public const PossiblyUnsetPropertyOfThis = 'PhanPossiblyUnsetPropertyOfThis';
 
     // Issue::CATEGORY_TYPE
-    const NonClassMethodCall                = 'PhanNonClassMethodCall';
-    const PossiblyNonClassMethodCall        = 'PhanPossiblyNonClassMethodCall';
-    const TypeArrayOperator                 = 'PhanTypeArrayOperator';
-    const TypeInvalidBitwiseBinaryOperator  = 'PhanTypeInvalidBitwiseBinaryOperator';
-    const TypeMismatchBitwiseBinaryOperands = 'PhanTypeMismatchBitwiseBinaryOperands';
-    const TypeArraySuspicious               = 'PhanTypeArraySuspicious';
-    const TypeArrayUnsetSuspicious          = 'PhanTypeArrayUnsetSuspicious';
-    const TypeArraySuspiciousNullable       = 'PhanTypeArraySuspiciousNullable';
-    const TypeArraySuspiciousNull           = 'PhanTypeArraySuspiciousNull';
-    const TypeSuspiciousIndirectVariable    = 'PhanTypeSuspiciousIndirectVariable';
-    const TypeObjectUnsetDeclaredProperty   = 'PhanTypeObjectUnsetDeclaredProperty';
-    const TypeComparisonFromArray   = 'PhanTypeComparisonFromArray';
-    const TypeComparisonToArray     = 'PhanTypeComparisonToArray';
-    const TypeConversionFromArray   = 'PhanTypeConversionFromArray';
-    const TypeInstantiateAbstract   = 'PhanTypeInstantiateAbstract';
-    const TypeInstantiateAbstractStatic = 'PhanTypeInstantiateAbstractStatic';
-    const TypeInstantiateInterface  = 'PhanTypeInstantiateInterface';
-    const TypeInstantiateTrait      = 'PhanTypeInstantiateTrait';
-    const TypeInstantiateTraitStaticOrSelf = 'PhanTypeInstantiateTraitStaticOrSelf';
-    const TypeInvalidCloneNotObject = 'PhanTypeInvalidCloneNotObject';
-    const TypePossiblyInvalidCloneNotObject = 'PhanTypePossiblyInvalidCloneNotObject';
-    const TypeInvalidClosureScope   = 'PhanTypeInvalidClosureScope';
-    const TypeInvalidLeftOperand    = 'PhanTypeInvalidLeftOperand';
-    const TypeInvalidRightOperand   = 'PhanTypeInvalidRightOperand';
-    const TypeInvalidLeftOperandOfAdd  = 'PhanTypeInvalidLeftOperandOfAdd';
-    const TypeInvalidRightOperandOfAdd = 'PhanTypeInvalidRightOperandOfAdd';
-    const TypeInvalidLeftOperandOfNumericOp = 'PhanTypeInvalidLeftOperandOfNumericOp';
-    const TypeInvalidRightOperandOfNumericOp = 'PhanTypeInvalidRightOperandOfNumericOp';
-    const TypeInvalidLeftOperandOfIntegerOp = 'PhanTypeInvalidLeftOperandOfIntegerOp';
-    const TypeInvalidRightOperandOfIntegerOp = 'PhanTypeInvalidRightOperandOfIntegerOp';
-    const TypeInvalidUnaryOperandNumeric = 'PhanTypeInvalidUnaryOperandNumeric';
-    const TypeInvalidUnaryOperandBitwiseNot = 'PhanTypeInvalidUnaryOperandBitwiseNot';
-    const TypeInvalidUnaryOperandIncOrDec = 'PhanTypeInvalidUnaryOperandIncOrDec';
-    const TypeInvalidInstanceof     = 'PhanTypeInvalidInstanceof';
-    const TypeInvalidDimOffset      = 'PhanTypeInvalidDimOffset';
-    const TypeInvalidDimOffsetArrayDestructuring = 'PhanTypeInvalidDimOffsetArrayDestructuring';
-    const TypePossiblyInvalidDimOffset           = 'PhanTypePossiblyInvalidDimOffset';
-    const TypeInvalidCallExpressionAssignment    = 'PhanTypeInvalidCallExpressionAssignment';
-    const TypeInvalidExpressionArrayDestructuring = 'PhanTypeInvalidExpressionArrayDestructuring';
-    const TypeInvalidThrowsNonObject             = 'PhanTypeInvalidThrowsNonObject';
-    const TypeInvalidThrowsNonThrowable          = 'PhanTypeInvalidThrowsNonThrowable';
-    const TypeInvalidThrowsIsTrait               = 'PhanTypeInvalidThrowsIsTrait';
-    const TypeInvalidThrowsIsInterface           = 'PhanTypeInvalidThrowsIsInterface';
-    const TypeMagicVoidWithReturn                = 'PhanTypeMagicVoidWithReturn';
-    const TypeMismatchArgument                   = 'PhanTypeMismatchArgument';
-    const TypeMismatchArgumentReal               = 'PhanTypeMismatchArgumentReal';
-    const TypeMismatchArgumentNullable           = 'PhanTypeMismatchArgumentNullable';
-    const TypeMismatchArgumentInternal           = 'PhanTypeMismatchArgumentInternal';
-    const TypeMismatchArgumentInternalProbablyReal = 'PhanTypeMismatchArgumentInternalProbablyReal';
-    const TypeMismatchArgumentInternalReal       = 'PhanTypeMismatchArgumentInternalReal';
-    const TypeMismatchArgumentNullableInternal   = 'PhanTypeMismatchArgumentNullableInternal';
-    const PartialTypeMismatchArgument            = 'PhanPartialTypeMismatchArgument';
-    const PartialTypeMismatchArgumentInternal    = 'PhanPartialTypeMismatchArgumentInternal';
-    const PossiblyNullTypeArgument  = 'PhanPossiblyNullTypeArgument';
-    const PossiblyNullTypeArgumentInternal = 'PhanPossiblyNullTypeArgumentInternal';
-    const PossiblyFalseTypeArgument  = 'PhanPossiblyFalseTypeArgument';
-    const PossiblyFalseTypeArgumentInternal = 'PhanPossiblyFalseTypeArgumentInternal';
+    public const NonClassMethodCall                = 'PhanNonClassMethodCall';
+    public const PossiblyNonClassMethodCall        = 'PhanPossiblyNonClassMethodCall';
+    public const TypeArrayOperator                 = 'PhanTypeArrayOperator';
+    public const TypeInvalidBitwiseBinaryOperator  = 'PhanTypeInvalidBitwiseBinaryOperator';
+    public const TypeMismatchBitwiseBinaryOperands = 'PhanTypeMismatchBitwiseBinaryOperands';
+    public const TypeArraySuspicious               = 'PhanTypeArraySuspicious';
+    public const TypeArrayUnsetSuspicious          = 'PhanTypeArrayUnsetSuspicious';
+    public const TypeArraySuspiciousNullable       = 'PhanTypeArraySuspiciousNullable';
+    public const TypeArraySuspiciousNull           = 'PhanTypeArraySuspiciousNull';
+    public const TypeSuspiciousIndirectVariable    = 'PhanTypeSuspiciousIndirectVariable';
+    public const TypeObjectUnsetDeclaredProperty   = 'PhanTypeObjectUnsetDeclaredProperty';
+    public const TypeComparisonFromArray   = 'PhanTypeComparisonFromArray';
+    public const TypeComparisonToArray     = 'PhanTypeComparisonToArray';
+    public const TypeConversionFromArray   = 'PhanTypeConversionFromArray';
+    public const TypeInstantiateAbstract   = 'PhanTypeInstantiateAbstract';
+    public const TypeInstantiateAbstractStatic = 'PhanTypeInstantiateAbstractStatic';
+    public const TypeInstantiateInterface  = 'PhanTypeInstantiateInterface';
+    public const TypeInstantiateTrait      = 'PhanTypeInstantiateTrait';
+    public const TypeInstantiateTraitStaticOrSelf = 'PhanTypeInstantiateTraitStaticOrSelf';
+    public const TypeInvalidCloneNotObject = 'PhanTypeInvalidCloneNotObject';
+    public const TypePossiblyInvalidCloneNotObject = 'PhanTypePossiblyInvalidCloneNotObject';
+    public const TypeInvalidClosureScope   = 'PhanTypeInvalidClosureScope';
+    public const TypeInvalidLeftOperand    = 'PhanTypeInvalidLeftOperand';
+    public const TypeInvalidRightOperand   = 'PhanTypeInvalidRightOperand';
+    public const TypeInvalidLeftOperandOfAdd  = 'PhanTypeInvalidLeftOperandOfAdd';
+    public const TypeInvalidRightOperandOfAdd = 'PhanTypeInvalidRightOperandOfAdd';
+    public const TypeInvalidLeftOperandOfNumericOp = 'PhanTypeInvalidLeftOperandOfNumericOp';
+    public const TypeInvalidRightOperandOfNumericOp = 'PhanTypeInvalidRightOperandOfNumericOp';
+    public const TypeInvalidLeftOperandOfIntegerOp = 'PhanTypeInvalidLeftOperandOfIntegerOp';
+    public const TypeInvalidRightOperandOfIntegerOp = 'PhanTypeInvalidRightOperandOfIntegerOp';
+    public const TypeInvalidUnaryOperandNumeric = 'PhanTypeInvalidUnaryOperandNumeric';
+    public const TypeInvalidUnaryOperandBitwiseNot = 'PhanTypeInvalidUnaryOperandBitwiseNot';
+    public const TypeInvalidUnaryOperandIncOrDec = 'PhanTypeInvalidUnaryOperandIncOrDec';
+    public const TypeInvalidInstanceof     = 'PhanTypeInvalidInstanceof';
+    public const TypeInvalidDimOffset      = 'PhanTypeInvalidDimOffset';
+    public const TypeInvalidDimOffsetArrayDestructuring = 'PhanTypeInvalidDimOffsetArrayDestructuring';
+    public const TypePossiblyInvalidDimOffset           = 'PhanTypePossiblyInvalidDimOffset';
+    public const TypeInvalidCallExpressionAssignment    = 'PhanTypeInvalidCallExpressionAssignment';
+    public const TypeInvalidExpressionArrayDestructuring = 'PhanTypeInvalidExpressionArrayDestructuring';
+    public const TypeInvalidThrowsNonObject             = 'PhanTypeInvalidThrowsNonObject';
+    public const TypeInvalidThrowsNonThrowable          = 'PhanTypeInvalidThrowsNonThrowable';
+    public const TypeInvalidThrowsIsTrait               = 'PhanTypeInvalidThrowsIsTrait';
+    public const TypeInvalidThrowsIsInterface           = 'PhanTypeInvalidThrowsIsInterface';
+    public const TypeMagicVoidWithReturn                = 'PhanTypeMagicVoidWithReturn';
+    public const TypeMismatchArgument                   = 'PhanTypeMismatchArgument';
+    public const TypeMismatchArgumentReal               = 'PhanTypeMismatchArgumentReal';
+    public const TypeMismatchArgumentNullable           = 'PhanTypeMismatchArgumentNullable';
+    public const TypeMismatchArgumentInternal           = 'PhanTypeMismatchArgumentInternal';
+    public const TypeMismatchArgumentInternalProbablyReal = 'PhanTypeMismatchArgumentInternalProbablyReal';
+    public const TypeMismatchArgumentInternalReal       = 'PhanTypeMismatchArgumentInternalReal';
+    public const TypeMismatchArgumentNullableInternal   = 'PhanTypeMismatchArgumentNullableInternal';
+    public const PartialTypeMismatchArgument            = 'PhanPartialTypeMismatchArgument';
+    public const PartialTypeMismatchArgumentInternal    = 'PhanPartialTypeMismatchArgumentInternal';
+    public const PossiblyNullTypeArgument  = 'PhanPossiblyNullTypeArgument';
+    public const PossiblyNullTypeArgumentInternal = 'PhanPossiblyNullTypeArgumentInternal';
+    public const PossiblyFalseTypeArgument  = 'PhanPossiblyFalseTypeArgument';
+    public const PossiblyFalseTypeArgumentInternal = 'PhanPossiblyFalseTypeArgumentInternal';
 
-    const TypeMismatchDefault       = 'PhanTypeMismatchDefault';
-    const TypeMismatchDimAssignment = 'PhanTypeMismatchDimAssignment';
-    const TypeMismatchDimEmpty      = 'PhanTypeMismatchDimEmpty';
-    const TypeMismatchDimFetch      = 'PhanTypeMismatchDimFetch';
-    const TypeMismatchDimFetchNullable = 'PhanTypeMismatchDimFetchNullable';
-    const TypeMismatchUnpackKey     = 'PhanTypeMismatchUnpackKey';
-    const TypeMismatchUnpackKeyArraySpread = 'PhanTypeMismatchUnpackKeyArraySpread';
-    const TypeMismatchUnpackValue   = 'PhanTypeMismatchUnpackValue';
-    const TypeMismatchArrayDestructuringKey = 'PhanTypeMismatchArrayDestructuringKey';
-    const TypeMismatchVariadicComment = 'PhanMismatchVariadicComment';
-    const TypeMismatchVariadicParam = 'PhanMismatchVariadicParam';
-    const TypeMismatchForeach       = 'PhanTypeMismatchForeach';
-    const TypeNoAccessiblePropertiesForeach = 'PhanTypeNoAccessiblePropertiesForeach';
-    const TypeNoPropertiesForeach = 'PhanTypeNoPropertiesForeach';
-    const TypeSuspiciousNonTraversableForeach = 'PhanTypeSuspiciousNonTraversableForeach';
-    const TypeMismatchProperty      = 'PhanTypeMismatchProperty';
-    const PossiblyNullTypeMismatchProperty = 'PhanPossiblyNullTypeMismatchProperty';
-    const PossiblyFalseTypeMismatchProperty = 'PhanPossiblyFalseTypeMismatchProperty';
-    const PartialTypeMismatchProperty = 'PhanPartialTypeMismatchProperty';
-    const TypeMismatchReturn        = 'PhanTypeMismatchReturn';
-    const TypeMismatchReturnNullable = 'PhanTypeMismatchReturnNullable';
-    const TypeMismatchReturnReal     = 'PhanTypeMismatchReturnReal';
-    const PartialTypeMismatchReturn = 'PhanPartialTypeMismatchReturn';
-    const PossiblyNullTypeReturn  = 'PhanPossiblyNullTypeReturn';
-    const PossiblyFalseTypeReturn  = 'PhanPossiblyFalseTypeReturn';
-    const TypeMismatchDeclaredReturn = 'PhanTypeMismatchDeclaredReturn';
-    const TypeMismatchDeclaredReturnNullable = 'PhanTypeMismatchDeclaredReturnNullable';
-    const TypeMismatchDeclaredParam = 'PhanTypeMismatchDeclaredParam';
-    const TypeMismatchDeclaredParamNullable = 'PhanTypeMismatchDeclaredParamNullable';
-    const TypeMissingReturn         = 'PhanTypeMissingReturn';
-    const TypeNonVarPassByRef       = 'PhanTypeNonVarPassByRef';
-    const TypeNonVarReturnByRef       = 'PhanTypeNonVarReturnByRef';
-    const TypeParentConstructorCalled = 'PhanTypeParentConstructorCalled';
-    const TypeSuspiciousEcho        = 'PhanTypeSuspiciousEcho';
-    const TypeSuspiciousStringExpression = 'PhanTypeSuspiciousStringExpression';
-    const TypeVoidAssignment        = 'PhanTypeVoidAssignment';
-    const TypePossiblyInvalidCallable = 'PhanTypePossiblyInvalidCallable';
-    const TypeInvalidCallable = 'PhanTypeInvalidCallable';
-    const TypeInvalidCallableArraySize = 'PhanTypeInvalidCallableArraySize';
-    const TypeInvalidCallableArrayKey = 'PhanTypeInvalidCallableArrayKey';
-    const TypeInvalidCallableObjectOfMethod = 'PhanTypeInvalidCallableObjectOfMethod';
-    const TypeExpectedObject        = 'PhanTypeExpectedObject';
-    const TypeExpectedObjectOrClassName = 'PhanTypeExpectedObjectOrClassName';
-    const TypeExpectedObjectPropAccess = 'PhanTypeExpectedObjectPropAccess';
-    const TypeExpectedObjectPropAccessButGotNull = 'PhanTypeExpectedObjectPropAccessButGotNull';
-    const TypeExpectedObjectStaticPropAccess = 'PhanTypeExpectedObjectStaticPropAccess';
+    public const TypeMismatchDefault       = 'PhanTypeMismatchDefault';
+    public const TypeMismatchDimAssignment = 'PhanTypeMismatchDimAssignment';
+    public const TypeMismatchDimEmpty      = 'PhanTypeMismatchDimEmpty';
+    public const TypeMismatchDimFetch      = 'PhanTypeMismatchDimFetch';
+    public const TypeMismatchDimFetchNullable = 'PhanTypeMismatchDimFetchNullable';
+    public const TypeMismatchUnpackKey     = 'PhanTypeMismatchUnpackKey';
+    public const TypeMismatchUnpackKeyArraySpread = 'PhanTypeMismatchUnpackKeyArraySpread';
+    public const TypeMismatchUnpackValue   = 'PhanTypeMismatchUnpackValue';
+    public const TypeMismatchArrayDestructuringKey = 'PhanTypeMismatchArrayDestructuringKey';
+    public const TypeMismatchVariadicComment = 'PhanMismatchVariadicComment';
+    public const TypeMismatchVariadicParam = 'PhanMismatchVariadicParam';
+    public const TypeMismatchForeach       = 'PhanTypeMismatchForeach';
+    public const TypeNoAccessiblePropertiesForeach = 'PhanTypeNoAccessiblePropertiesForeach';
+    public const TypeNoPropertiesForeach = 'PhanTypeNoPropertiesForeach';
+    public const TypeSuspiciousNonTraversableForeach = 'PhanTypeSuspiciousNonTraversableForeach';
+    public const TypeMismatchProperty      = 'PhanTypeMismatchProperty';
+    public const PossiblyNullTypeMismatchProperty = 'PhanPossiblyNullTypeMismatchProperty';
+    public const PossiblyFalseTypeMismatchProperty = 'PhanPossiblyFalseTypeMismatchProperty';
+    public const PartialTypeMismatchProperty = 'PhanPartialTypeMismatchProperty';
+    public const TypeMismatchReturn        = 'PhanTypeMismatchReturn';
+    public const TypeMismatchReturnNullable = 'PhanTypeMismatchReturnNullable';
+    public const TypeMismatchReturnReal     = 'PhanTypeMismatchReturnReal';
+    public const PartialTypeMismatchReturn = 'PhanPartialTypeMismatchReturn';
+    public const PossiblyNullTypeReturn  = 'PhanPossiblyNullTypeReturn';
+    public const PossiblyFalseTypeReturn  = 'PhanPossiblyFalseTypeReturn';
+    public const TypeMismatchDeclaredReturn = 'PhanTypeMismatchDeclaredReturn';
+    public const TypeMismatchDeclaredReturnNullable = 'PhanTypeMismatchDeclaredReturnNullable';
+    public const TypeMismatchDeclaredParam = 'PhanTypeMismatchDeclaredParam';
+    public const TypeMismatchDeclaredParamNullable = 'PhanTypeMismatchDeclaredParamNullable';
+    public const TypeMissingReturn         = 'PhanTypeMissingReturn';
+    public const TypeNonVarPassByRef       = 'PhanTypeNonVarPassByRef';
+    public const TypeNonVarReturnByRef       = 'PhanTypeNonVarReturnByRef';
+    public const TypeParentConstructorCalled = 'PhanTypeParentConstructorCalled';
+    public const TypeSuspiciousEcho        = 'PhanTypeSuspiciousEcho';
+    public const TypeSuspiciousStringExpression = 'PhanTypeSuspiciousStringExpression';
+    public const TypeVoidAssignment        = 'PhanTypeVoidAssignment';
+    public const TypePossiblyInvalidCallable = 'PhanTypePossiblyInvalidCallable';
+    public const TypeInvalidCallable = 'PhanTypeInvalidCallable';
+    public const TypeInvalidCallableArraySize = 'PhanTypeInvalidCallableArraySize';
+    public const TypeInvalidCallableArrayKey = 'PhanTypeInvalidCallableArrayKey';
+    public const TypeInvalidCallableObjectOfMethod = 'PhanTypeInvalidCallableObjectOfMethod';
+    public const TypeExpectedObject        = 'PhanTypeExpectedObject';
+    public const TypeExpectedObjectOrClassName = 'PhanTypeExpectedObjectOrClassName';
+    public const TypeExpectedObjectPropAccess = 'PhanTypeExpectedObjectPropAccess';
+    public const TypeExpectedObjectPropAccessButGotNull = 'PhanTypeExpectedObjectPropAccessButGotNull';
+    public const TypeExpectedObjectStaticPropAccess = 'PhanTypeExpectedObjectStaticPropAccess';
 
-    const TypeMismatchGeneratorYieldValue = 'PhanTypeMismatchGeneratorYieldValue';
-    const TypeMismatchGeneratorYieldKey   = 'PhanTypeMismatchGeneratorYieldKey';
-    const TypeInvalidYieldFrom            = 'PhanTypeInvalidYieldFrom';
-    const TypeInvalidMethodName           = 'PhanTypeInvalidMethodName';
-    const TypeInvalidStaticMethodName     = 'PhanTypeInvalidStaticMethodName';
-    const TypeInvalidCallableMethodName   = 'PhanTypeInvalidCallableMethodName';
-    const TypeInvalidRequire              = 'PhanTypeInvalidRequire';
-    const TypeInvalidEval                 = 'PhanTypeInvalidEval';
-    const RelativePathUsed                = 'PhanRelativePathUsed';
-    const TypeInvalidTraitReturn          = 'PhanTypeInvalidTraitReturn';
-    const TypeInvalidTraitParam           = 'PhanTypeInvalidTraitParam';
-    const InfiniteRecursion               = 'PhanInfiniteRecursion';
-    const PossibleInfiniteRecursionSameParams = 'PhanPossiblyInfiniteRecursionSameParams';
-    const TypeComparisonToInvalidClass    = 'PhanTypeComparisonToInvalidClass';
-    const TypeComparisonToInvalidClassType = 'PhanTypeComparisonToInvalidClassType';
-    const TypeInvalidPropertyName = 'PhanTypeInvalidPropertyName';
-    const TypeInvalidStaticPropertyName = 'PhanTypeInvalidStaticPropertyName';
-    const TypeErrorInInternalCall = 'PhanTypeErrorInInternalCall';
-    const TypeErrorInOperation = 'PhanTypeErrorInOperation';
-    const TypeInvalidPropertyDefaultReal    = 'PhanTypeInvalidPropertyDefaultReal';
-    const TypeMismatchPropertyReal          = 'PhanTypeMismatchPropertyReal';
-    const TypeMismatchPropertyRealByRef     = 'PhanTypeMismatchPropertyRealByRef';
-    const TypeMismatchPropertyByRef         = 'PhanTypeMismatchPropertyByRef';
-    const ImpossibleCondition               = 'PhanImpossibleCondition';
-    const ImpossibleConditionInLoop         = 'PhanImpossibleConditionInLoop';
-    const ImpossibleConditionInGlobalScope  = 'PhanImpossibleConditionInGlobalScope';
-    const RedundantCondition                = 'PhanRedundantCondition';
-    const RedundantConditionInLoop          = 'PhanRedundantConditionInLoop';
-    const RedundantConditionInGlobalScope   = 'PhanRedundantConditionInGlobalScope';
-    const InfiniteLoop                      = 'PhanInfiniteLoop';
-    const ImpossibleTypeComparison          = 'PhanImpossibleTypeComparison';
-    const ImpossibleTypeComparisonInLoop    = 'PhanImpossibleTypeComparisonInLoop';
-    const ImpossibleTypeComparisonInGlobalScope = 'PhanImpossibleTypeComparisonInGlobalScope';
-    const SuspiciousValueComparison             = 'PhanSuspiciousValueComparison';
-    const SuspiciousValueComparisonInLoop       = 'PhanSuspiciousValueComparisonInLoop';
-    const SuspiciousValueComparisonInGlobalScope = 'PhanSuspiciousValueComparisonInGlobalScope';
-    const SuspiciousLoopDirection               = 'PhanSuspiciousLoopDirection';
-    const SuspiciousWeakTypeComparison          = 'PhanSuspiciousWeakTypeComparison';
-    const SuspiciousWeakTypeComparisonInLoop    = 'PhanSuspiciousWeakTypeComparisonInLoop';
-    const SuspiciousWeakTypeComparisonInGlobalScope    = 'PhanSuspiciousWeakTypeComparisonInGlobalScope';
-    const CoalescingNeverNull               = 'PhanCoalescingNeverNull';
-    const CoalescingNeverNullInLoop         = 'PhanCoalescingNeverNullInLoop';
-    const CoalescingNeverNullInGlobalScope  = 'PhanCoalescingNeverNullInGlobalScope';
-    const CoalescingAlwaysNull              = 'PhanCoalescingAlwaysNull';
-    const CoalescingAlwaysNullInLoop        = 'PhanCoalescingAlwaysNullInLoop';
-    const CoalescingAlwaysNullInGlobalScope = 'PhanCoalescingAlwaysNullInGlobalScope';
-    const TypeMismatchArgumentPropertyReference = 'PhanTypeMismatchArgumentPropertyReference';
-    const TypeMismatchArgumentPropertyReferenceReal = 'PhanTypeMismatchArgumentPropertyReferenceReal';
-    const DivisionByZero = 'PhanDivisionByZero';
-    const ModuloByZero = 'PhanModuloByZero';
-    const PowerOfZero = 'PhanPowerOfZero';
-    const InvalidMixin = 'PhanInvalidMixin';
+    public const TypeMismatchGeneratorYieldValue = 'PhanTypeMismatchGeneratorYieldValue';
+    public const TypeMismatchGeneratorYieldKey   = 'PhanTypeMismatchGeneratorYieldKey';
+    public const TypeInvalidYieldFrom            = 'PhanTypeInvalidYieldFrom';
+    public const TypeInvalidMethodName           = 'PhanTypeInvalidMethodName';
+    public const TypeInvalidStaticMethodName     = 'PhanTypeInvalidStaticMethodName';
+    public const TypeInvalidCallableMethodName   = 'PhanTypeInvalidCallableMethodName';
+    public const TypeInvalidRequire              = 'PhanTypeInvalidRequire';
+    public const TypeInvalidEval                 = 'PhanTypeInvalidEval';
+    public const RelativePathUsed                = 'PhanRelativePathUsed';
+    public const TypeInvalidTraitReturn          = 'PhanTypeInvalidTraitReturn';
+    public const TypeInvalidTraitParam           = 'PhanTypeInvalidTraitParam';
+    public const InfiniteRecursion               = 'PhanInfiniteRecursion';
+    public const PossibleInfiniteRecursionSameParams = 'PhanPossiblyInfiniteRecursionSameParams';
+    public const TypeComparisonToInvalidClass    = 'PhanTypeComparisonToInvalidClass';
+    public const TypeComparisonToInvalidClassType = 'PhanTypeComparisonToInvalidClassType';
+    public const TypeInvalidPropertyName = 'PhanTypeInvalidPropertyName';
+    public const TypeInvalidStaticPropertyName = 'PhanTypeInvalidStaticPropertyName';
+    public const TypeErrorInInternalCall = 'PhanTypeErrorInInternalCall';
+    public const TypeErrorInOperation = 'PhanTypeErrorInOperation';
+    public const TypeInvalidPropertyDefaultReal    = 'PhanTypeInvalidPropertyDefaultReal';
+    public const TypeMismatchPropertyReal          = 'PhanTypeMismatchPropertyReal';
+    public const TypeMismatchPropertyRealByRef     = 'PhanTypeMismatchPropertyRealByRef';
+    public const TypeMismatchPropertyByRef         = 'PhanTypeMismatchPropertyByRef';
+    public const ImpossibleCondition               = 'PhanImpossibleCondition';
+    public const ImpossibleConditionInLoop         = 'PhanImpossibleConditionInLoop';
+    public const ImpossibleConditionInGlobalScope  = 'PhanImpossibleConditionInGlobalScope';
+    public const RedundantCondition                = 'PhanRedundantCondition';
+    public const RedundantConditionInLoop          = 'PhanRedundantConditionInLoop';
+    public const RedundantConditionInGlobalScope   = 'PhanRedundantConditionInGlobalScope';
+    public const InfiniteLoop                      = 'PhanInfiniteLoop';
+    public const ImpossibleTypeComparison          = 'PhanImpossibleTypeComparison';
+    public const ImpossibleTypeComparisonInLoop    = 'PhanImpossibleTypeComparisonInLoop';
+    public const ImpossibleTypeComparisonInGlobalScope = 'PhanImpossibleTypeComparisonInGlobalScope';
+    public const SuspiciousValueComparison             = 'PhanSuspiciousValueComparison';
+    public const SuspiciousValueComparisonInLoop       = 'PhanSuspiciousValueComparisonInLoop';
+    public const SuspiciousValueComparisonInGlobalScope = 'PhanSuspiciousValueComparisonInGlobalScope';
+    public const SuspiciousLoopDirection               = 'PhanSuspiciousLoopDirection';
+    public const SuspiciousWeakTypeComparison          = 'PhanSuspiciousWeakTypeComparison';
+    public const SuspiciousWeakTypeComparisonInLoop    = 'PhanSuspiciousWeakTypeComparisonInLoop';
+    public const SuspiciousWeakTypeComparisonInGlobalScope    = 'PhanSuspiciousWeakTypeComparisonInGlobalScope';
+    public const CoalescingNeverNull               = 'PhanCoalescingNeverNull';
+    public const CoalescingNeverNullInLoop         = 'PhanCoalescingNeverNullInLoop';
+    public const CoalescingNeverNullInGlobalScope  = 'PhanCoalescingNeverNullInGlobalScope';
+    public const CoalescingAlwaysNull              = 'PhanCoalescingAlwaysNull';
+    public const CoalescingAlwaysNullInLoop        = 'PhanCoalescingAlwaysNullInLoop';
+    public const CoalescingAlwaysNullInGlobalScope = 'PhanCoalescingAlwaysNullInGlobalScope';
+    public const TypeMismatchArgumentPropertyReference = 'PhanTypeMismatchArgumentPropertyReference';
+    public const TypeMismatchArgumentPropertyReferenceReal = 'PhanTypeMismatchArgumentPropertyReferenceReal';
+    public const DivisionByZero = 'PhanDivisionByZero';
+    public const ModuloByZero = 'PhanModuloByZero';
+    public const PowerOfZero = 'PhanPowerOfZero';
+    public const InvalidMixin = 'PhanInvalidMixin';
 
     // Issue::CATEGORY_ANALYSIS
-    const Unanalyzable              = 'PhanUnanalyzable';
-    const UnanalyzableInheritance   = 'PhanUnanalyzableInheritance';
-    const InvalidConstantFQSEN      = 'PhanInvalidConstantFQSEN';
-    const ReservedConstantName      = 'PhanReservedConstantName';
+    public const Unanalyzable              = 'PhanUnanalyzable';
+    public const UnanalyzableInheritance   = 'PhanUnanalyzableInheritance';
+    public const InvalidConstantFQSEN      = 'PhanInvalidConstantFQSEN';
+    public const ReservedConstantName      = 'PhanReservedConstantName';
 
     // Issue::CATEGORY_VARIABLE
-    const VariableUseClause         = 'PhanVariableUseClause';
+    public const VariableUseClause         = 'PhanVariableUseClause';
 
     // Issue::CATEGORY_STATIC
-    const StaticCallToNonStatic     = 'PhanStaticCallToNonStatic';
-    const StaticPropIsStaticType    = 'PhanStaticPropIsStaticType';
+    public const StaticCallToNonStatic     = 'PhanStaticCallToNonStatic';
+    public const StaticPropIsStaticType    = 'PhanStaticPropIsStaticType';
 
     // Issue::CATEGORY_CONTEXT
-    const ContextNotObject           = 'PhanContextNotObject';
-    const ContextNotObjectInCallable = 'PhanContextNotObjectInCallable';
-    const ContextNotObjectUsingSelf  = 'PhanContextNotObjectUsingSelf';
-    const SuspiciousMagicConstant    = 'PhanSuspiciousMagicConstant';
+    public const ContextNotObject           = 'PhanContextNotObject';
+    public const ContextNotObjectInCallable = 'PhanContextNotObjectInCallable';
+    public const ContextNotObjectUsingSelf  = 'PhanContextNotObjectUsingSelf';
+    public const SuspiciousMagicConstant    = 'PhanSuspiciousMagicConstant';
 
     // Issue::CATEGORY_DEPRECATED
-    const DeprecatedClass           = 'PhanDeprecatedClass';
-    const DeprecatedInterface       = 'PhanDeprecatedInterface';
-    const DeprecatedTrait           = 'PhanDeprecatedTrait';
-    const DeprecatedFunction        = 'PhanDeprecatedFunction';
-    const DeprecatedFunctionInternal = 'PhanDeprecatedFunctionInternal';
-    const DeprecatedProperty        = 'PhanDeprecatedProperty';
-    const DeprecatedClassConstant   = 'PhanDeprecatedClassConstant';
-    const DeprecatedCaseInsensitiveDefine = 'PhanDeprecatedCaseInsensitiveDefine';
+    public const DeprecatedClass           = 'PhanDeprecatedClass';
+    public const DeprecatedInterface       = 'PhanDeprecatedInterface';
+    public const DeprecatedTrait           = 'PhanDeprecatedTrait';
+    public const DeprecatedFunction        = 'PhanDeprecatedFunction';
+    public const DeprecatedFunctionInternal = 'PhanDeprecatedFunctionInternal';
+    public const DeprecatedProperty        = 'PhanDeprecatedProperty';
+    public const DeprecatedClassConstant   = 'PhanDeprecatedClassConstant';
+    public const DeprecatedCaseInsensitiveDefine = 'PhanDeprecatedCaseInsensitiveDefine';
 
     // Issue::CATEGORY_PARAMETER
-    const ParamReqAfterOpt          = 'PhanParamReqAfterOpt';
-    const ParamSpecial1             = 'PhanParamSpecial1';
-    const ParamSpecial2             = 'PhanParamSpecial2';
-    const ParamSpecial3             = 'PhanParamSpecial3';
-    const ParamSpecial4             = 'PhanParamSpecial4';
-    const ParamSuspiciousOrder      = 'PhanParamSuspiciousOrder';
-    const ParamTooFew               = 'PhanParamTooFew';
-    const ParamTooFewInternal       = 'PhanParamTooFewInternal';
-    const ParamTooFewCallable       = 'PhanParamTooFewCallable';
-    const ParamTooMany              = 'PhanParamTooMany';
-    const ParamTooManyUnpack        = 'PhanParamTooManyUnpack';
-    const ParamTooManyInternal      = 'PhanParamTooManyInternal';
-    const ParamTooManyUnpackInternal = 'PhanParamTooManyUnpackInternal';
-    const ParamTooManyCallable      = 'PhanParamTooManyCallable';
-    const ParamTypeMismatch         = 'PhanParamTypeMismatch';
-    const ParamSignatureMismatch    = 'PhanParamSignatureMismatch';
-    const ParamSignatureMismatchInternal = 'PhanParamSignatureMismatchInternal';
-    const ParamRedefined            = 'PhanParamRedefined';
-    const ParamMustBeUserDefinedClassname = 'PhanParamMustBeUserDefinedClassname';
+    public const ParamReqAfterOpt          = 'PhanParamReqAfterOpt';
+    public const ParamSpecial1             = 'PhanParamSpecial1';
+    public const ParamSpecial2             = 'PhanParamSpecial2';
+    public const ParamSpecial3             = 'PhanParamSpecial3';
+    public const ParamSpecial4             = 'PhanParamSpecial4';
+    public const ParamSuspiciousOrder      = 'PhanParamSuspiciousOrder';
+    public const ParamTooFew               = 'PhanParamTooFew';
+    public const ParamTooFewInternal       = 'PhanParamTooFewInternal';
+    public const ParamTooFewCallable       = 'PhanParamTooFewCallable';
+    public const ParamTooMany              = 'PhanParamTooMany';
+    public const ParamTooManyUnpack        = 'PhanParamTooManyUnpack';
+    public const ParamTooManyInternal      = 'PhanParamTooManyInternal';
+    public const ParamTooManyUnpackInternal = 'PhanParamTooManyUnpackInternal';
+    public const ParamTooManyCallable      = 'PhanParamTooManyCallable';
+    public const ParamTypeMismatch         = 'PhanParamTypeMismatch';
+    public const ParamSignatureMismatch    = 'PhanParamSignatureMismatch';
+    public const ParamSignatureMismatchInternal = 'PhanParamSignatureMismatchInternal';
+    public const ParamRedefined            = 'PhanParamRedefined';
+    public const ParamMustBeUserDefinedClassname = 'PhanParamMustBeUserDefinedClassname';
 
-    const ParamSignatureRealMismatchReturnType                        = 'PhanParamSignatureRealMismatchReturnType';
-    const ParamSignatureRealMismatchReturnTypeInternal                = 'PhanParamSignatureRealMismatchReturnTypeInternal';
-    const ParamSignaturePHPDocMismatchReturnType                      = 'PhanParamSignaturePHPDocMismatchReturnType';
-    const ParamSignatureRealMismatchTooManyRequiredParameters         = 'PhanParamSignatureRealMismatchTooManyRequiredParameters';
-    const ParamSignatureRealMismatchTooManyRequiredParametersInternal = 'PhanParamSignatureRealMismatchTooManyRequiredParametersInternal';
-    const ParamSignaturePHPDocMismatchTooManyRequiredParameters       = 'PhanParamSignaturePHPDocMismatchTooManyRequiredParameters';
-    const ParamSignatureRealMismatchTooFewParameters                  = 'PhanParamSignatureRealMismatchTooFewParameters';
-    const ParamSignatureRealMismatchTooFewParametersInternal          = 'PhanParamSignatureRealMismatchTooFewParametersInternal';
-    const ParamSignaturePHPDocMismatchTooFewParameters                = 'PhanParamSignaturePHPDocMismatchTooFewParameters';
-    const ParamSignatureRealMismatchHasParamType                      = 'PhanParamSignatureRealMismatchHasParamType';
-    const ParamSignatureRealMismatchHasParamTypeInternal              = 'PhanParamSignatureRealMismatchHasParamTypeInternal';
-    const ParamSignaturePHPDocMismatchHasParamType                    = 'PhanParamSignaturePHPDocMismatchHasParamType';
-    const ParamSignatureRealMismatchHasNoParamType                    = 'PhanParamSignatureRealMismatchHasNoParamType';
-    const ParamSignatureRealMismatchHasNoParamTypeInternal            = 'PhanParamSignatureRealMismatchHasNoParamTypeInternal';
-    const ParamSignaturePHPDocMismatchHasNoParamType                  = 'PhanParamSignaturePHPDocMismatchHasNoParamType';
-    const ParamSignatureRealMismatchParamIsReference                  = 'PhanParamSignatureRealMismatchParamIsReference';
-    const ParamSignatureRealMismatchParamIsReferenceInternal          = 'PhanParamSignatureRealMismatchParamIsReferenceInternal';
-    const ParamSignaturePHPDocMismatchParamIsReference                = 'PhanParamSignaturePHPDocMismatchParamIsReference';
-    const ParamSignatureRealMismatchParamIsNotReference               = 'PhanParamSignatureRealMismatchParamIsNotReference';
-    const ParamSignatureRealMismatchParamIsNotReferenceInternal       = 'PhanParamSignatureRealMismatchParamIsNotReferenceInternal';
-    const ParamSignaturePHPDocMismatchParamIsNotReference             = 'PhanParamSignaturePHPDocMismatchParamIsNotReference';
-    const ParamSignatureRealMismatchParamVariadic                     = 'PhanParamSignatureRealMismatchParamVariadic';
-    const ParamSignatureRealMismatchParamVariadicInternal             = 'PhanParamSignatureRealMismatchParamVariadicInternal';
-    const ParamSignaturePHPDocMismatchParamVariadic                   = 'PhanParamSignaturePHPDocMismatchParamVariadic';
-    const ParamSignatureRealMismatchParamNotVariadic                  = 'PhanParamSignatureRealMismatchParamNotVariadic';
-    const ParamSignatureRealMismatchParamNotVariadicInternal          = 'PhanParamSignatureRealMismatchParamNotVariadicInternal';
-    const ParamSignaturePHPDocMismatchParamNotVariadic                = 'PhanParamSignaturePHPDocMismatchParamNotVariadic';
-    const ParamSignatureRealMismatchParamType                         = 'PhanParamSignatureRealMismatchParamType';
-    const ParamSignatureRealMismatchParamTypeInternal                 = 'PhanParamSignatureRealMismatchParamTypeInternal';
-    const ParamSignaturePHPDocMismatchParamType                       = 'PhanParamSignaturePHPDocMismatchParamType';
+    public const ParamSignatureRealMismatchReturnType                        = 'PhanParamSignatureRealMismatchReturnType';
+    public const ParamSignatureRealMismatchReturnTypeInternal                = 'PhanParamSignatureRealMismatchReturnTypeInternal';
+    public const ParamSignaturePHPDocMismatchReturnType                      = 'PhanParamSignaturePHPDocMismatchReturnType';
+    public const ParamSignatureRealMismatchTooManyRequiredParameters         = 'PhanParamSignatureRealMismatchTooManyRequiredParameters';
+    public const ParamSignatureRealMismatchTooManyRequiredParametersInternal = 'PhanParamSignatureRealMismatchTooManyRequiredParametersInternal';
+    public const ParamSignaturePHPDocMismatchTooManyRequiredParameters       = 'PhanParamSignaturePHPDocMismatchTooManyRequiredParameters';
+    public const ParamSignatureRealMismatchTooFewParameters                  = 'PhanParamSignatureRealMismatchTooFewParameters';
+    public const ParamSignatureRealMismatchTooFewParametersInternal          = 'PhanParamSignatureRealMismatchTooFewParametersInternal';
+    public const ParamSignaturePHPDocMismatchTooFewParameters                = 'PhanParamSignaturePHPDocMismatchTooFewParameters';
+    public const ParamSignatureRealMismatchHasParamType                      = 'PhanParamSignatureRealMismatchHasParamType';
+    public const ParamSignatureRealMismatchHasParamTypeInternal              = 'PhanParamSignatureRealMismatchHasParamTypeInternal';
+    public const ParamSignaturePHPDocMismatchHasParamType                    = 'PhanParamSignaturePHPDocMismatchHasParamType';
+    public const ParamSignatureRealMismatchHasNoParamType                    = 'PhanParamSignatureRealMismatchHasNoParamType';
+    public const ParamSignatureRealMismatchHasNoParamTypeInternal            = 'PhanParamSignatureRealMismatchHasNoParamTypeInternal';
+    public const ParamSignaturePHPDocMismatchHasNoParamType                  = 'PhanParamSignaturePHPDocMismatchHasNoParamType';
+    public const ParamSignatureRealMismatchParamIsReference                  = 'PhanParamSignatureRealMismatchParamIsReference';
+    public const ParamSignatureRealMismatchParamIsReferenceInternal          = 'PhanParamSignatureRealMismatchParamIsReferenceInternal';
+    public const ParamSignaturePHPDocMismatchParamIsReference                = 'PhanParamSignaturePHPDocMismatchParamIsReference';
+    public const ParamSignatureRealMismatchParamIsNotReference               = 'PhanParamSignatureRealMismatchParamIsNotReference';
+    public const ParamSignatureRealMismatchParamIsNotReferenceInternal       = 'PhanParamSignatureRealMismatchParamIsNotReferenceInternal';
+    public const ParamSignaturePHPDocMismatchParamIsNotReference             = 'PhanParamSignaturePHPDocMismatchParamIsNotReference';
+    public const ParamSignatureRealMismatchParamVariadic                     = 'PhanParamSignatureRealMismatchParamVariadic';
+    public const ParamSignatureRealMismatchParamVariadicInternal             = 'PhanParamSignatureRealMismatchParamVariadicInternal';
+    public const ParamSignaturePHPDocMismatchParamVariadic                   = 'PhanParamSignaturePHPDocMismatchParamVariadic';
+    public const ParamSignatureRealMismatchParamNotVariadic                  = 'PhanParamSignatureRealMismatchParamNotVariadic';
+    public const ParamSignatureRealMismatchParamNotVariadicInternal          = 'PhanParamSignatureRealMismatchParamNotVariadicInternal';
+    public const ParamSignaturePHPDocMismatchParamNotVariadic                = 'PhanParamSignaturePHPDocMismatchParamNotVariadic';
+    public const ParamSignatureRealMismatchParamType                         = 'PhanParamSignatureRealMismatchParamType';
+    public const ParamSignatureRealMismatchParamTypeInternal                 = 'PhanParamSignatureRealMismatchParamTypeInternal';
+    public const ParamSignaturePHPDocMismatchParamType                       = 'PhanParamSignaturePHPDocMismatchParamType';
 
     // Issue::CATEGORY_NOOP
-    const NoopArray                     = 'PhanNoopArray';
-    const NoopClosure                   = 'PhanNoopClosure';
-    const NoopConstant                  = 'PhanNoopConstant';
-    const NoopProperty                  = 'PhanNoopProperty';
-    const NoopArrayAccess               = 'PhanNoopArrayAccess';
-    const NoopVariable                  = 'PhanNoopVariable';
-    const NoopUnaryOperator             = 'PhanNoopUnaryOperator';
-    const NoopBinaryOperator            = 'PhanNoopBinaryOperator';
-    const NoopStringLiteral             = 'PhanNoopStringLiteral';
-    const NoopEncapsulatedStringLiteral = 'PhanNoopEncapsulatedStringLiteral';
-    const NoopNumericLiteral            = 'PhanNoopNumericLiteral';
-    const NoopEmpty                     = 'PhanNoopEmpty';
-    const NoopIsset                     = 'PhanNoopIsset';
-    const NoopCast                      = 'PhanNoopCast';
-    const NoopTernary                   = 'PhanNoopTernary';
-    const NoopNew                       = 'PhanNoopNew';
-    const NoopNewNoSideEffects          = 'PhanNoopNewNoSideEffects';
-    const UnreachableCatch              = 'PhanUnreachableCatch';
-    const UnreferencedClass             = 'PhanUnreferencedClass';
-    const UnreferencedFunction          = 'PhanUnreferencedFunction';
-    const UnreferencedPublicMethod      = 'PhanUnreferencedPublicMethod';
-    const UnreferencedProtectedMethod   = 'PhanUnreferencedProtectedMethod';
-    const UnreferencedPrivateMethod     = 'PhanUnreferencedPrivateMethod';
-    const UnreferencedPublicProperty    = 'PhanUnreferencedPublicProperty';
-    const UnreferencedProtectedProperty = 'PhanUnreferencedProtectedProperty';
-    const UnreferencedPrivateProperty   = 'PhanUnreferencedPrivateProperty';
-    const UnreferencedPHPDocProperty    = 'PhanUnreferencedPHPDocProperty';
-    const ReadOnlyPublicProperty        = 'PhanReadOnlyPublicProperty';
-    const ReadOnlyProtectedProperty     = 'PhanReadOnlyProtectedProperty';
-    const ReadOnlyPrivateProperty       = 'PhanReadOnlyPrivateProperty';
-    const ReadOnlyPHPDocProperty        = 'PhanReadOnlyPHPDocProperty';
-    const WriteOnlyPublicProperty       = 'PhanWriteOnlyPublicProperty';
-    const WriteOnlyProtectedProperty    = 'PhanWriteOnlyProtectedProperty';
-    const WriteOnlyPrivateProperty      = 'PhanWriteOnlyPrivateProperty';
-    const WriteOnlyPHPDocProperty       = 'PhanWriteOnlyPHPDocProperty';
-    const UnreferencedConstant          = 'PhanUnreferencedConstant';
-    const UnreferencedPublicClassConstant = 'PhanUnreferencedPublicClassConstant';
-    const UnreferencedProtectedClassConstant = 'PhanUnreferencedProtectedClassConstant';
-    const UnreferencedPrivateClassConstant = 'PhanUnreferencedPrivateClassConstant';
-    const UnreferencedClosure           = 'PhanUnreferencedClosure';
-    const UnreferencedUseNormal         = 'PhanUnreferencedUseNormal';
-    const UnreferencedUseFunction       = 'PhanUnreferencedUseFunction';
-    const UnreferencedUseConstant       = 'PhanUnreferencedUseConstant';
-    const DuplicateUseNormal            = 'PhanDuplicateUseNormal';
-    const DuplicateUseFunction          = 'PhanDuplicateUseFunction';
-    const DuplicateUseConstant          = 'PhanDuplicateUseConstant';
-    const UseNormalNoEffect             = 'PhanUseNormalNoEffect';
-    const UseNormalNamespacedNoEffect   = 'PhanUseNormalNamespacedNoEffect';
-    const UseFunctionNoEffect           = 'PhanUseFunctionNoEffect';
-    const UseConstantNoEffect           = 'PhanUseConstantNoEffect';
-    const EmptyPublicMethod = 'PhanEmptyPublicMethod';
-    const EmptyProtectedMethod = 'PhanEmptyProtectedMethod';
-    const EmptyPrivateMethod = 'PhanEmptyPrivateMethod';
-    const EmptyFunction = 'PhanEmptyFunction';
-    const EmptyClosure = 'PhanEmptyClosure';
+    public const NoopArray                     = 'PhanNoopArray';
+    public const NoopClosure                   = 'PhanNoopClosure';
+    public const NoopConstant                  = 'PhanNoopConstant';
+    public const NoopProperty                  = 'PhanNoopProperty';
+    public const NoopArrayAccess               = 'PhanNoopArrayAccess';
+    public const NoopVariable                  = 'PhanNoopVariable';
+    public const NoopUnaryOperator             = 'PhanNoopUnaryOperator';
+    public const NoopBinaryOperator            = 'PhanNoopBinaryOperator';
+    public const NoopStringLiteral             = 'PhanNoopStringLiteral';
+    public const NoopEncapsulatedStringLiteral = 'PhanNoopEncapsulatedStringLiteral';
+    public const NoopNumericLiteral            = 'PhanNoopNumericLiteral';
+    public const NoopEmpty                     = 'PhanNoopEmpty';
+    public const NoopIsset                     = 'PhanNoopIsset';
+    public const NoopCast                      = 'PhanNoopCast';
+    public const NoopTernary                   = 'PhanNoopTernary';
+    public const NoopNew                       = 'PhanNoopNew';
+    public const NoopNewNoSideEffects          = 'PhanNoopNewNoSideEffects';
+    public const UnreachableCatch              = 'PhanUnreachableCatch';
+    public const UnreferencedClass             = 'PhanUnreferencedClass';
+    public const UnreferencedFunction          = 'PhanUnreferencedFunction';
+    public const UnreferencedPublicMethod      = 'PhanUnreferencedPublicMethod';
+    public const UnreferencedProtectedMethod   = 'PhanUnreferencedProtectedMethod';
+    public const UnreferencedPrivateMethod     = 'PhanUnreferencedPrivateMethod';
+    public const UnreferencedPublicProperty    = 'PhanUnreferencedPublicProperty';
+    public const UnreferencedProtectedProperty = 'PhanUnreferencedProtectedProperty';
+    public const UnreferencedPrivateProperty   = 'PhanUnreferencedPrivateProperty';
+    public const UnreferencedPHPDocProperty    = 'PhanUnreferencedPHPDocProperty';
+    public const ReadOnlyPublicProperty        = 'PhanReadOnlyPublicProperty';
+    public const ReadOnlyProtectedProperty     = 'PhanReadOnlyProtectedProperty';
+    public const ReadOnlyPrivateProperty       = 'PhanReadOnlyPrivateProperty';
+    public const ReadOnlyPHPDocProperty        = 'PhanReadOnlyPHPDocProperty';
+    public const WriteOnlyPublicProperty       = 'PhanWriteOnlyPublicProperty';
+    public const WriteOnlyProtectedProperty    = 'PhanWriteOnlyProtectedProperty';
+    public const WriteOnlyPrivateProperty      = 'PhanWriteOnlyPrivateProperty';
+    public const WriteOnlyPHPDocProperty       = 'PhanWriteOnlyPHPDocProperty';
+    public const UnreferencedConstant          = 'PhanUnreferencedConstant';
+    public const UnreferencedPublicClassConstant = 'PhanUnreferencedPublicClassConstant';
+    public const UnreferencedProtectedClassConstant = 'PhanUnreferencedProtectedClassConstant';
+    public const UnreferencedPrivateClassConstant = 'PhanUnreferencedPrivateClassConstant';
+    public const UnreferencedClosure           = 'PhanUnreferencedClosure';
+    public const UnreferencedUseNormal         = 'PhanUnreferencedUseNormal';
+    public const UnreferencedUseFunction       = 'PhanUnreferencedUseFunction';
+    public const UnreferencedUseConstant       = 'PhanUnreferencedUseConstant';
+    public const DuplicateUseNormal            = 'PhanDuplicateUseNormal';
+    public const DuplicateUseFunction          = 'PhanDuplicateUseFunction';
+    public const DuplicateUseConstant          = 'PhanDuplicateUseConstant';
+    public const UseNormalNoEffect             = 'PhanUseNormalNoEffect';
+    public const UseNormalNamespacedNoEffect   = 'PhanUseNormalNamespacedNoEffect';
+    public const UseFunctionNoEffect           = 'PhanUseFunctionNoEffect';
+    public const UseConstantNoEffect           = 'PhanUseConstantNoEffect';
+    public const EmptyPublicMethod = 'PhanEmptyPublicMethod';
+    public const EmptyProtectedMethod = 'PhanEmptyProtectedMethod';
+    public const EmptyPrivateMethod = 'PhanEmptyPrivateMethod';
+    public const EmptyFunction = 'PhanEmptyFunction';
+    public const EmptyClosure = 'PhanEmptyClosure';
 
-    const UnusedVariable                        = 'PhanUnusedVariable';
-    const UnusedPublicMethodParameter           = 'PhanUnusedPublicMethodParameter';
-    const UnusedPublicFinalMethodParameter      = 'PhanUnusedPublicFinalMethodParameter';
-    const UnusedPublicNoOverrideMethodParameter = 'PhanUnusedPublicNoOverrideMethodParameter';
-    const UnusedProtectedMethodParameter        = 'PhanUnusedProtectedMethodParameter';
-    const UnusedProtectedFinalMethodParameter   = 'PhanUnusedProtectedFinalMethodParameter';
-    const UnusedProtectedNoOverrideMethodParameter = 'PhanUnusedProtectedNoOverrideMethodParameter';
-    const UnusedPrivateMethodParameter          = 'PhanUnusedPrivateMethodParameter';
-    const UnusedPrivateFinalMethodParameter     = 'PhanUnusedPrivateFinalMethodParameter';
-    const UnusedClosureUseVariable              = 'PhanUnusedClosureUseVariable';
-    const ShadowedVariableInArrowFunc           = 'PhanShadowedVariableInArrowFunc';
-    const UnusedClosureParameter                = 'PhanUnusedClosureParameter';
-    const UnusedGlobalFunctionParameter         = 'PhanUnusedGlobalFunctionParameter';
-    const UnusedVariableValueOfForeachWithKey   = 'PhanUnusedVariableValueOfForeachWithKey';  // has higher false positive rates than UnusedVariable
-    const EmptyForeach                          = 'PhanEmptyForeach';
-    const EmptyForeachBody                      = 'PhanEmptyForeachBody';
-    const EmptyYieldFrom                        = 'PhanEmptyYieldFrom';
-    const UselessBinaryAddRight                 = 'PhanUselessBinaryAddRight';
-    const SuspiciousBinaryAddLists              = 'PhanSuspiciousBinaryAddLists';
-    const UnusedVariableCaughtException         = 'PhanUnusedVariableCaughtException';  // has higher false positive rates than UnusedVariable
-    const UnusedGotoLabel                       = 'PhanUnusedGotoLabel';
-    const UnusedVariableReference               = 'PhanUnusedVariableReference';
-    const UnusedVariableStatic                  = 'PhanUnusedVariableStatic';
-    const UnusedVariableGlobal                  = 'PhanUnusedVariableGlobal';
-    const UnusedReturnBranchWithoutSideEffects  = 'PhanUnusedReturnBranchWithoutSideEffects';
-    const RedundantArrayValuesCall                  = 'PhanRedundantArrayValuesCall';
-    const VariableDefinitionCouldBeConstant     = 'PhanVariableDefinitionCouldBeConstant';
-    const VariableDefinitionCouldBeConstantEmptyArray = 'PhanVariableDefinitionCouldBeConstantEmptyArray';
-    const VariableDefinitionCouldBeConstantString = 'PhanVariableDefinitionCouldBeConstantString';
-    const VariableDefinitionCouldBeConstantFloat = 'PhanVariableDefinitionCouldBeConstantFloat';
-    const VariableDefinitionCouldBeConstantInt = 'PhanVariableDefinitionCouldBeConstantInt';
-    const VariableDefinitionCouldBeConstantTrue = 'PhanVariableDefinitionCouldBeConstantTrue';
-    const VariableDefinitionCouldBeConstantFalse = 'PhanVariableDefinitionCouldBeConstantFalse';
-    const VariableDefinitionCouldBeConstantNull = 'PhanVariableDefinitionCouldBeConstantNull';
+    public const UnusedVariable                        = 'PhanUnusedVariable';
+    public const UnusedPublicMethodParameter           = 'PhanUnusedPublicMethodParameter';
+    public const UnusedPublicFinalMethodParameter      = 'PhanUnusedPublicFinalMethodParameter';
+    public const UnusedPublicNoOverrideMethodParameter = 'PhanUnusedPublicNoOverrideMethodParameter';
+    public const UnusedProtectedMethodParameter        = 'PhanUnusedProtectedMethodParameter';
+    public const UnusedProtectedFinalMethodParameter   = 'PhanUnusedProtectedFinalMethodParameter';
+    public const UnusedProtectedNoOverrideMethodParameter = 'PhanUnusedProtectedNoOverrideMethodParameter';
+    public const UnusedPrivateMethodParameter          = 'PhanUnusedPrivateMethodParameter';
+    public const UnusedPrivateFinalMethodParameter     = 'PhanUnusedPrivateFinalMethodParameter';
+    public const UnusedClosureUseVariable              = 'PhanUnusedClosureUseVariable';
+    public const ShadowedVariableInArrowFunc           = 'PhanShadowedVariableInArrowFunc';
+    public const UnusedClosureParameter                = 'PhanUnusedClosureParameter';
+    public const UnusedGlobalFunctionParameter         = 'PhanUnusedGlobalFunctionParameter';
+    public const UnusedVariableValueOfForeachWithKey   = 'PhanUnusedVariableValueOfForeachWithKey';  // has higher false positive rates than UnusedVariable
+    public const EmptyForeach                          = 'PhanEmptyForeach';
+    public const EmptyForeachBody                      = 'PhanEmptyForeachBody';
+    public const EmptyYieldFrom                        = 'PhanEmptyYieldFrom';
+    public const UselessBinaryAddRight                 = 'PhanUselessBinaryAddRight';
+    public const SuspiciousBinaryAddLists              = 'PhanSuspiciousBinaryAddLists';
+    public const UnusedVariableCaughtException         = 'PhanUnusedVariableCaughtException';  // has higher false positive rates than UnusedVariable
+    public const UnusedGotoLabel                       = 'PhanUnusedGotoLabel';
+    public const UnusedVariableReference               = 'PhanUnusedVariableReference';
+    public const UnusedVariableStatic                  = 'PhanUnusedVariableStatic';
+    public const UnusedVariableGlobal                  = 'PhanUnusedVariableGlobal';
+    public const UnusedReturnBranchWithoutSideEffects  = 'PhanUnusedReturnBranchWithoutSideEffects';
+    public const RedundantArrayValuesCall                  = 'PhanRedundantArrayValuesCall';
+    public const VariableDefinitionCouldBeConstant     = 'PhanVariableDefinitionCouldBeConstant';
+    public const VariableDefinitionCouldBeConstantEmptyArray = 'PhanVariableDefinitionCouldBeConstantEmptyArray';
+    public const VariableDefinitionCouldBeConstantString = 'PhanVariableDefinitionCouldBeConstantString';
+    public const VariableDefinitionCouldBeConstantFloat = 'PhanVariableDefinitionCouldBeConstantFloat';
+    public const VariableDefinitionCouldBeConstantInt = 'PhanVariableDefinitionCouldBeConstantInt';
+    public const VariableDefinitionCouldBeConstantTrue = 'PhanVariableDefinitionCouldBeConstantTrue';
+    public const VariableDefinitionCouldBeConstantFalse = 'PhanVariableDefinitionCouldBeConstantFalse';
+    public const VariableDefinitionCouldBeConstantNull = 'PhanVariableDefinitionCouldBeConstantNull';
 
     // Issue::CATEGORY_REDEFINE
-    const RedefineClass             = 'PhanRedefineClass';
-    const RedefineClassAlias        = 'PhanRedefineClassAlias';
-    const RedefineClassInternal     = 'PhanRedefineClassInternal';
-    const RedefineFunction          = 'PhanRedefineFunction';
-    const RedefineFunctionInternal  = 'PhanRedefineFunctionInternal';
-    const RedefineClassConstant     = 'PhanRedefineClassConstant';
-    const RedefineProperty          = 'PhanRedefineProperty';
-    const IncompatibleCompositionProp = 'PhanIncompatibleCompositionProp';
-    const IncompatibleCompositionMethod = 'PhanIncompatibleCompositionMethod';
-    const RedefinedUsedTrait            = 'PhanRedefinedUsedTrait';
-    const RedefinedInheritedInterface   = 'PhanRedefinedInheritedInterface';
-    const RedefinedExtendedClass        = 'PhanRedefinedExtendedClass';
+    public const RedefineClass             = 'PhanRedefineClass';
+    public const RedefineClassAlias        = 'PhanRedefineClassAlias';
+    public const RedefineClassInternal     = 'PhanRedefineClassInternal';
+    public const RedefineFunction          = 'PhanRedefineFunction';
+    public const RedefineFunctionInternal  = 'PhanRedefineFunctionInternal';
+    public const RedefineClassConstant     = 'PhanRedefineClassConstant';
+    public const RedefineProperty          = 'PhanRedefineProperty';
+    public const IncompatibleCompositionProp = 'PhanIncompatibleCompositionProp';
+    public const IncompatibleCompositionMethod = 'PhanIncompatibleCompositionMethod';
+    public const RedefinedUsedTrait            = 'PhanRedefinedUsedTrait';
+    public const RedefinedInheritedInterface   = 'PhanRedefinedInheritedInterface';
+    public const RedefinedExtendedClass        = 'PhanRedefinedExtendedClass';
 
     // Issue::CATEGORY_ACCESS
-    const AccessPropertyPrivate     = 'PhanAccessPropertyPrivate';
-    const AccessPropertyProtected   = 'PhanAccessPropertyProtected';
+    public const AccessPropertyPrivate     = 'PhanAccessPropertyPrivate';
+    public const AccessPropertyProtected   = 'PhanAccessPropertyProtected';
 
-    const AccessReadOnlyProperty       = 'PhanAccessReadOnlyProperty';
-    const AccessWriteOnlyProperty      = 'PhanAccessWriteOnlyProperty';
-    const AccessReadOnlyMagicProperty  = 'PhanAccessReadOnlyMagicProperty';
-    const AccessWriteOnlyMagicProperty = 'PhanAccessWriteOnlyMagicProperty';
+    public const AccessReadOnlyProperty       = 'PhanAccessReadOnlyProperty';
+    public const AccessWriteOnlyProperty      = 'PhanAccessWriteOnlyProperty';
+    public const AccessReadOnlyMagicProperty  = 'PhanAccessReadOnlyMagicProperty';
+    public const AccessWriteOnlyMagicProperty = 'PhanAccessWriteOnlyMagicProperty';
 
-    const AccessMethodPrivate       = 'PhanAccessMethodPrivate';
-    const AccessMethodPrivateWithCallMagicMethod = 'PhanAccessMethodPrivateWithCallMagicMethod';
-    const AccessMethodProtected     = 'PhanAccessMethodProtected';
-    const AccessMethodProtectedWithCallMagicMethod = 'PhanAccessMethodProtectedWithCallMagicMethod';
-    const AccessSignatureMismatch         = 'PhanAccessSignatureMismatch';
-    const AccessSignatureMismatchInternal = 'PhanAccessSignatureMismatchInternal';
-    const ConstructAccessSignatureMismatch = 'PhanConstructAccessSignatureMismatch';
-    const PropertyAccessSignatureMismatch = 'PhanPropertyAccessSignatureMismatch';
-    const PropertyAccessSignatureMismatchInternal  = 'PhanPropertyAccessSignatureMismatchInternal';
-    const ConstantAccessSignatureMismatch = 'PhanConstantAccessSignatureMismatch';
-    const ConstantAccessSignatureMismatchInternal  = 'PhanConstantAccessSignatureMismatchInternal';
-    const AccessStaticToNonStatic         = 'PhanAccessStaticToNonStatic';
-    const AccessNonStaticToStatic         = 'PhanAccessNonStaticToStatic';
-    const AccessStaticToNonStaticProperty = 'PhanAccessStaticToNonStaticProperty';
-    const AccessNonStaticToStaticProperty = 'PhanAccessNonStaticToStaticProperty';
-    const AccessClassConstantPrivate      = 'PhanAccessClassConstantPrivate';
-    const AccessClassConstantProtected    = 'PhanAccessClassConstantProtected';
-    const AccessPropertyStaticAsNonStatic = 'PhanAccessPropertyStaticAsNonStatic';
-    const AccessPropertyNonStaticAsStatic = 'PhanAccessPropertyNonStaticAsStatic';
-    const AccessOwnConstructor            = 'PhanAccessOwnConstructor';
+    public const AccessMethodPrivate       = 'PhanAccessMethodPrivate';
+    public const AccessMethodPrivateWithCallMagicMethod = 'PhanAccessMethodPrivateWithCallMagicMethod';
+    public const AccessMethodProtected     = 'PhanAccessMethodProtected';
+    public const AccessMethodProtectedWithCallMagicMethod = 'PhanAccessMethodProtectedWithCallMagicMethod';
+    public const AccessSignatureMismatch         = 'PhanAccessSignatureMismatch';
+    public const AccessSignatureMismatchInternal = 'PhanAccessSignatureMismatchInternal';
+    public const ConstructAccessSignatureMismatch = 'PhanConstructAccessSignatureMismatch';
+    public const PropertyAccessSignatureMismatch = 'PhanPropertyAccessSignatureMismatch';
+    public const PropertyAccessSignatureMismatchInternal  = 'PhanPropertyAccessSignatureMismatchInternal';
+    public const ConstantAccessSignatureMismatch = 'PhanConstantAccessSignatureMismatch';
+    public const ConstantAccessSignatureMismatchInternal  = 'PhanConstantAccessSignatureMismatchInternal';
+    public const AccessStaticToNonStatic         = 'PhanAccessStaticToNonStatic';
+    public const AccessNonStaticToStatic         = 'PhanAccessNonStaticToStatic';
+    public const AccessStaticToNonStaticProperty = 'PhanAccessStaticToNonStaticProperty';
+    public const AccessNonStaticToStaticProperty = 'PhanAccessNonStaticToStaticProperty';
+    public const AccessClassConstantPrivate      = 'PhanAccessClassConstantPrivate';
+    public const AccessClassConstantProtected    = 'PhanAccessClassConstantProtected';
+    public const AccessPropertyStaticAsNonStatic = 'PhanAccessPropertyStaticAsNonStatic';
+    public const AccessPropertyNonStaticAsStatic = 'PhanAccessPropertyNonStaticAsStatic';
+    public const AccessOwnConstructor            = 'PhanAccessOwnConstructor';
 
-    const AccessConstantInternal    = 'PhanAccessConstantInternal';
-    const AccessClassInternal       = 'PhanAccessClassInternal';
-    const AccessClassConstantInternal = 'PhanAccessClassConstantInternal';
-    const AccessPropertyInternal    = 'PhanAccessPropertyInternal';
-    const AccessMethodInternal      = 'PhanAccessMethodInternal';
-    const AccessWrongInheritanceCategory = 'PhanAccessWrongInheritanceCategory';
-    const AccessWrongInheritanceCategoryInternal = 'PhanAccessWrongInheritanceCategoryInternal';
-    const AccessExtendsFinalClass                = 'PhanAccessExtendsFinalClass';
-    const AccessExtendsFinalClassInternal        = 'PhanAccessExtendsFinalClassInternal';
-    const AccessOverridesFinalMethod             = 'PhanAccessOverridesFinalMethod';
-    const AccessOverridesFinalMethodInTrait      = 'PhanAccessOverridesFinalMethodInTrait';
-    const AccessOverridesFinalMethodInternal     = 'PhanAccessOverridesFinalMethodInternal';
-    const AccessOverridesFinalMethodPHPDoc       = 'PhanAccessOverridesFinalMethodPHPDoc';
+    public const AccessConstantInternal    = 'PhanAccessConstantInternal';
+    public const AccessClassInternal       = 'PhanAccessClassInternal';
+    public const AccessClassConstantInternal = 'PhanAccessClassConstantInternal';
+    public const AccessPropertyInternal    = 'PhanAccessPropertyInternal';
+    public const AccessMethodInternal      = 'PhanAccessMethodInternal';
+    public const AccessWrongInheritanceCategory = 'PhanAccessWrongInheritanceCategory';
+    public const AccessWrongInheritanceCategoryInternal = 'PhanAccessWrongInheritanceCategoryInternal';
+    public const AccessExtendsFinalClass                = 'PhanAccessExtendsFinalClass';
+    public const AccessExtendsFinalClassInternal        = 'PhanAccessExtendsFinalClassInternal';
+    public const AccessOverridesFinalMethod             = 'PhanAccessOverridesFinalMethod';
+    public const AccessOverridesFinalMethodInTrait      = 'PhanAccessOverridesFinalMethodInTrait';
+    public const AccessOverridesFinalMethodInternal     = 'PhanAccessOverridesFinalMethodInternal';
+    public const AccessOverridesFinalMethodPHPDoc       = 'PhanAccessOverridesFinalMethodPHPDoc';
 
     // Issue::CATEGORY_COMPATIBLE
-    const CompatibleExpressionPHP7           = 'PhanCompatibleExpressionPHP7';
-    const CompatiblePHP7                     = 'PhanCompatiblePHP7';
-    const CompatibleNullableTypePHP70        = 'PhanCompatibleNullableTypePHP70';
-    const CompatibleShortArrayAssignPHP70    = 'PhanCompatibleShortArrayAssignPHP70';
-    const CompatibleKeyedArrayAssignPHP70    = 'PhanCompatibleKeyedArrayAssignPHP70';
-    const CompatibleVoidTypePHP70            = 'PhanCompatibleVoidTypePHP70';
-    const CompatibleIterableTypePHP70        = 'PhanCompatibleIterableTypePHP70';
-    const CompatibleObjectTypePHP71          = 'PhanCompatibleNullableTypePHP71';
-    const CompatibleUseVoidPHP70             = 'PhanCompatibleUseVoidPHP70';
-    const CompatibleUseIterablePHP71         = 'PhanCompatibleUseIterablePHP71';
-    const CompatibleUseObjectPHP71           = 'PhanCompatibleUseObjectPHP71';
-    const CompatibleMultiExceptionCatchPHP70 = 'PhanCompatibleMultiExceptionCatchPHP70';
-    const CompatibleNegativeStringOffset     = 'PhanCompatibleNegativeStringOffset';
-    const CompatibleAutoload                 = 'PhanCompatibleAutoload';
-    const CompatibleUnsetCast                = 'PhanCompatibleUnsetCast';
-    const CompatibleSyntaxNotice             = 'PhanCompatibleSyntaxNotice';
-    const CompatibleDimAlternativeSyntax     = 'PhanCompatibleDimAlternativeSyntax';
-    const CompatibleImplodeOrder             = 'PhanCompatibleImplodeOrder';
-    const CompatibleUnparenthesizedTernary   = 'PhanCompatibleUnparenthesizedTernary';
-    const CompatibleTypedProperty            = 'PhanCompatibleTypedProperty';
-    const CompatibleDefaultEqualsNull        = 'PhanCompatibleDefaultEqualsNull';
-    const CompatiblePHP8PHP4Constructor      = 'PhanCompatiblePHP8PHP4Constructor';
+    public const CompatibleExpressionPHP7           = 'PhanCompatibleExpressionPHP7';
+    public const CompatiblePHP7                     = 'PhanCompatiblePHP7';
+    public const CompatibleNullableTypePHP70        = 'PhanCompatibleNullableTypePHP70';
+    public const CompatibleShortArrayAssignPHP70    = 'PhanCompatibleShortArrayAssignPHP70';
+    public const CompatibleKeyedArrayAssignPHP70    = 'PhanCompatibleKeyedArrayAssignPHP70';
+    public const CompatibleVoidTypePHP70            = 'PhanCompatibleVoidTypePHP70';
+    public const CompatibleIterableTypePHP70        = 'PhanCompatibleIterableTypePHP70';
+    public const CompatibleObjectTypePHP71          = 'PhanCompatibleNullableTypePHP71';
+    public const CompatibleUseVoidPHP70             = 'PhanCompatibleUseVoidPHP70';
+    public const CompatibleUseIterablePHP71         = 'PhanCompatibleUseIterablePHP71';
+    public const CompatibleUseObjectPHP71           = 'PhanCompatibleUseObjectPHP71';
+    public const CompatibleMultiExceptionCatchPHP70 = 'PhanCompatibleMultiExceptionCatchPHP70';
+    public const CompatibleNegativeStringOffset     = 'PhanCompatibleNegativeStringOffset';
+    public const CompatibleAutoload                 = 'PhanCompatibleAutoload';
+    public const CompatibleUnsetCast                = 'PhanCompatibleUnsetCast';
+    public const CompatibleSyntaxNotice             = 'PhanCompatibleSyntaxNotice';
+    public const CompatibleDimAlternativeSyntax     = 'PhanCompatibleDimAlternativeSyntax';
+    public const CompatibleImplodeOrder             = 'PhanCompatibleImplodeOrder';
+    public const CompatibleUnparenthesizedTernary   = 'PhanCompatibleUnparenthesizedTernary';
+    public const CompatibleTypedProperty            = 'PhanCompatibleTypedProperty';
+    public const CompatibleDefaultEqualsNull        = 'PhanCompatibleDefaultEqualsNull';
+    public const CompatiblePHP8PHP4Constructor      = 'PhanCompatiblePHP8PHP4Constructor';
 
     // Issue::CATEGORY_GENERIC
-    const TemplateTypeConstant       = 'PhanTemplateTypeConstant';
-    const TemplateTypeStaticMethod   = 'PhanTemplateTypeStaticMethod';
-    const TemplateTypeStaticProperty = 'PhanTemplateTypeStaticProperty';
-    const GenericGlobalVariable      = 'PhanGenericGlobalVariable';
-    const GenericConstructorTypes    = 'PhanGenericConstructorTypes';
-    const TemplateTypeNotUsedInFunctionReturn = 'PhanTemplateTypeNotUsedInFunctionReturn';
-    const TemplateTypeNotDeclaredInFunctionParams = 'PhanTemplateTypeNotDeclaredInFunctionParams';
+    public const TemplateTypeConstant       = 'PhanTemplateTypeConstant';
+    public const TemplateTypeStaticMethod   = 'PhanTemplateTypeStaticMethod';
+    public const TemplateTypeStaticProperty = 'PhanTemplateTypeStaticProperty';
+    public const GenericGlobalVariable      = 'PhanGenericGlobalVariable';
+    public const GenericConstructorTypes    = 'PhanGenericConstructorTypes';
+    public const TemplateTypeNotUsedInFunctionReturn = 'PhanTemplateTypeNotUsedInFunctionReturn';
+    public const TemplateTypeNotDeclaredInFunctionParams = 'PhanTemplateTypeNotDeclaredInFunctionParams';
 
     // Issue::CATEGORY_COMMENT
-    const DebugAnnotation                  = 'PhanDebugAnnotation';
-    const InvalidCommentForDeclarationType = 'PhanInvalidCommentForDeclarationType';
-    const MisspelledAnnotation             = 'PhanMisspelledAnnotation';
-    const UnextractableAnnotation          = 'PhanUnextractableAnnotation';
-    const UnextractableAnnotationPart      = 'PhanUnextractableAnnotationPart';
-    const UnextractableAnnotationSuffix    = 'PhanUnextractableAnnotationSuffix';
-    const UnextractableAnnotationElementName = 'PhanUnextractableAnnotationElementName';
-    const CommentParamWithoutRealParam     = 'PhanCommentParamWithoutRealParam';
-    const CommentParamAssertionWithoutRealParam = 'PhanCommentParamAssertionWithoutRealParam';
-    const CommentParamOnEmptyParamList     = 'PhanCommentParamOnEmptyParamList';
-    const CommentOverrideOnNonOverrideMethod = 'PhanCommentOverrideOnNonOverrideMethod';
-    const CommentOverrideOnNonOverrideConstant = 'PhanCommentOverrideOnNonOverrideConstant';
-    const CommentParamOutOfOrder           = 'PhanCommentParamOutOfOrder';
-    const ThrowTypeAbsent                  = 'PhanThrowTypeAbsent';
-    const ThrowTypeAbsentForCall           = 'PhanThrowTypeAbsentForCall';
-    const ThrowTypeMismatch                = 'PhanThrowTypeMismatch';
-    const ThrowTypeMismatchForCall         = 'PhanThrowTypeMismatchForCall';
-    const ThrowStatementInToString         = 'PhanThrowStatementInToString';
-    const ThrowCommentInToString           = 'PhanThrowCommentInToString';
-    const CommentAmbiguousClosure          = 'PhanCommentAmbiguousClosure';
-    const CommentDuplicateParam            = 'PhanCommentDuplicateParam';
-    const CommentDuplicateMagicMethod      = 'PhanCommentDuplicateMagicMethod';
-    const CommentDuplicateMagicProperty    = 'PhanCommentDuplicateMagicProperty';
+    public const DebugAnnotation                  = 'PhanDebugAnnotation';
+    public const InvalidCommentForDeclarationType = 'PhanInvalidCommentForDeclarationType';
+    public const MisspelledAnnotation             = 'PhanMisspelledAnnotation';
+    public const UnextractableAnnotation          = 'PhanUnextractableAnnotation';
+    public const UnextractableAnnotationPart      = 'PhanUnextractableAnnotationPart';
+    public const UnextractableAnnotationSuffix    = 'PhanUnextractableAnnotationSuffix';
+    public const UnextractableAnnotationElementName = 'PhanUnextractableAnnotationElementName';
+    public const CommentParamWithoutRealParam     = 'PhanCommentParamWithoutRealParam';
+    public const CommentParamAssertionWithoutRealParam = 'PhanCommentParamAssertionWithoutRealParam';
+    public const CommentParamOnEmptyParamList     = 'PhanCommentParamOnEmptyParamList';
+    public const CommentOverrideOnNonOverrideMethod = 'PhanCommentOverrideOnNonOverrideMethod';
+    public const CommentOverrideOnNonOverrideConstant = 'PhanCommentOverrideOnNonOverrideConstant';
+    public const CommentParamOutOfOrder           = 'PhanCommentParamOutOfOrder';
+    public const ThrowTypeAbsent                  = 'PhanThrowTypeAbsent';
+    public const ThrowTypeAbsentForCall           = 'PhanThrowTypeAbsentForCall';
+    public const ThrowTypeMismatch                = 'PhanThrowTypeMismatch';
+    public const ThrowTypeMismatchForCall         = 'PhanThrowTypeMismatchForCall';
+    public const ThrowStatementInToString         = 'PhanThrowStatementInToString';
+    public const ThrowCommentInToString           = 'PhanThrowCommentInToString';
+    public const CommentAmbiguousClosure          = 'PhanCommentAmbiguousClosure';
+    public const CommentDuplicateParam            = 'PhanCommentDuplicateParam';
+    public const CommentDuplicateMagicMethod      = 'PhanCommentDuplicateMagicMethod';
+    public const CommentDuplicateMagicProperty    = 'PhanCommentDuplicateMagicProperty';
     // phpcs:enable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
     // end of issue name constants
 
     /** This category of issue is emitted when you're trying to access things that you can't access. */
-    const CATEGORY_ACCESS            = 1 << 1;
+    public const CATEGORY_ACCESS            = 1 << 1;
     /** This category will be emitted when Phan doesn't know how to analyze something. */
-    const CATEGORY_ANALYSIS          = 1 << 2;
+    public const CATEGORY_ANALYSIS          = 1 << 2;
     /** This category of issue is emitted when there are compatibility issues between PHP versions */
-    const CATEGORY_COMPATIBLE        = 1 << 3;
+    public const CATEGORY_COMPATIBLE        = 1 << 3;
     /** This category of issue is for when you're doing stuff out of the context in which you're allowed to do it, e.g. referencing `self` or `parent` when not in a class, interface or trait. */
-    const CATEGORY_CONTEXT           = 1 << 4;
+    public const CATEGORY_CONTEXT           = 1 << 4;
     /** This category of issue comes up when you're accessing deprecated elements (as marked by the `(at)deprecated` comment). */
-    const CATEGORY_DEPRECATED        = 1 << 5;
+    public const CATEGORY_DEPRECATED        = 1 << 5;
     /** Issues in this category are emitted when you have reasonable code but it isn't doing anything. */
-    const CATEGORY_NOOP              = 1 << 6;
+    public const CATEGORY_NOOP              = 1 << 6;
     /** This category of error comes up when you're messing up your method or function parameters in some way. */
-    const CATEGORY_PARAMETER         = 1 << 7;
+    public const CATEGORY_PARAMETER         = 1 << 7;
     /** This category of issue comes up when more than one thing of whatever type have the same name and namespace. */
-    const CATEGORY_REDEFINE          = 1 << 8;
+    public const CATEGORY_REDEFINE          = 1 << 8;
     /** Static access to non-static methods, etc. */
-    const CATEGORY_STATIC            = 1 << 9;
+    public const CATEGORY_STATIC            = 1 << 9;
     /** This category of issue come from using incorrect types or types that cannot cast to the expected types. */
-    const CATEGORY_TYPE              = 1 << 10;
+    public const CATEGORY_TYPE              = 1 << 10;
     /** This category of issue comes up when there are references to undefined things. */
-    const CATEGORY_UNDEFINED         = 1 << 11;
+    public const CATEGORY_UNDEFINED         = 1 << 11;
     /** This category is for using non-variables where variables are expected. */
-    const CATEGORY_VARIABLE          = 1 << 12;
+    public const CATEGORY_VARIABLE          = 1 << 12;
     /** This category is for plugins. */
-    const CATEGORY_PLUGIN            = 1 << 13;
+    public const CATEGORY_PLUGIN            = 1 << 13;
     /** This category contains issues related to [Phan's generic type support](https://github.com/phan/phan/wiki/Generic-Types). */
-    const CATEGORY_GENERIC           = 1 << 14;
+    public const CATEGORY_GENERIC           = 1 << 14;
     /** This issue category comes up when there is an attempt to access an `(at)internal` element outside of the namespace in which it's defined. */
-    const CATEGORY_INTERNAL          = 1 << 15;
+    public const CATEGORY_INTERNAL          = 1 << 15;
     /** This is emitted for some (but not all) comments which Phan thinks are invalid or unparsable. */
-    const CATEGORY_COMMENT           = 1 << 16;
+    public const CATEGORY_COMMENT           = 1 << 16;
     /** Emitted for syntax errors. */
-    const CATEGORY_SYNTAX            = 1 << 17;
+    public const CATEGORY_SYNTAX            = 1 << 17;
 
-    const CATEGORY_NAME = [
+    public const CATEGORY_NAME = [
         self::CATEGORY_ACCESS            => 'AccessError',
         self::CATEGORY_ANALYSIS          => 'Analysis',
         self::CATEGORY_COMMENT           => 'CommentError',
@@ -599,31 +601,31 @@ class Issue
     ];
 
     /** Low severity. E.g. documentation errors or code that would cause a (typically harmless) PHP notice. */
-    const SEVERITY_LOW      = 0;
+    public const SEVERITY_LOW      = 0;
     /** Normal severity. E.g. something that may cause a minor bug. */
-    const SEVERITY_NORMAL   = 5;
+    public const SEVERITY_NORMAL   = 5;
     /** Highest severity. Likely to cause an uncaught Error, Exception, or fatal error at runtime. */
-    const SEVERITY_CRITICAL = 10;
+    public const SEVERITY_CRITICAL = 10;
 
     // See https://docs.codeclimate.com/v1.0/docs/remediation
     // TODO: Decide on a way to estimate these and bring these up to date once codeclimate updates phan.
     // Right now, almost everything is REMEDIATION_B.
-    const REMEDIATION_A = 1000000;
-    const REMEDIATION_B = 3000000;
+    public const REMEDIATION_A = 1000000;
+    public const REMEDIATION_B = 3000000;
     /** @suppress PhanUnreferencedPublicClassConstant */
-    const REMEDIATION_C = 6000000;
+    public const REMEDIATION_C = 6000000;
     /** @suppress PhanUnreferencedPublicClassConstant */
-    const REMEDIATION_D = 12000000;
+    public const REMEDIATION_D = 12000000;
     /** @suppress PhanUnreferencedPublicClassConstant */
-    const REMEDIATION_E = 16000000;
+    public const REMEDIATION_E = 16000000;
     /** @suppress PhanUnreferencedPublicClassConstant */
-    const REMEDIATION_F = 18000000;
+    public const REMEDIATION_F = 18000000;
 
     // type id constants.
-    const TYPE_ID_UNKNOWN = 999;
+    public const TYPE_ID_UNKNOWN = 999;
 
     // Keep sorted and in sync with Colorizing::default_color_for_template
-    const UNCOLORED_FORMAT_STRING_FOR_TEMPLATE = [
+    public const UNCOLORED_FORMAT_STRING_FOR_TEMPLATE = [
         'CLASS'         => '%s',
         'CLASSLIKE'     => '%s',
         'CODE'          => '%s',  // A snippet from the code
@@ -710,7 +712,7 @@ class Issue
      */
     public static function templateToFormatString(
         string $template
-    ) : string {
+    ): string {
         /** @param list<string> $matches */
         return \preg_replace_callback('/{([A-Z_]+)}/', static function (array $matches) use ($template): string {
             $key = $matches[1];
@@ -731,7 +733,7 @@ class Issue
     /**
      * @return array<string,Issue>
      */
-    public static function issueMap() : array
+    public static function issueMap(): array
     {
         static $error_map;
         return $error_map ?? ($error_map = self::generateIssueMap());
@@ -740,7 +742,7 @@ class Issue
     /**
      * @return array<string,Issue>
      */
-    private static function generateIssueMap() : array
+    private static function generateIssueMap(): array
     {
         // phpcs:disable Generic.Files.LineLength
         /**
@@ -4657,7 +4659,7 @@ class Issue
     /**
      * @param list<Issue> $issue_list the declared Issue types
      */
-    private static function getNextTypeId(array $issue_list, int $invalid_type_id) : int
+    private static function getNextTypeId(array $issue_list, int $invalid_type_id): int
     {
         for ($id = $invalid_type_id + 1; true; $id++) {
             foreach ($issue_list as $error) {
@@ -4672,7 +4674,7 @@ class Issue
     /**
      * @param list<Issue> $error_list
      */
-    private static function sanityCheckErrorList(array $error_list) : void
+    private static function sanityCheckErrorList(array $error_list): void
     {
         $error_map = [];
         $unique_type_id_set = [];
@@ -4712,7 +4714,7 @@ class Issue
     /**
      * Returns the type name of this issue (e.g. Issue::UndeclaredVariable)
      */
-    public function getType() : string
+    public function getType(): string
     {
         return $this->type;
     }
@@ -4720,7 +4722,7 @@ class Issue
     /**
      * @return int (Unique integer code corresponding to getType())
      */
-    public function getTypeId() : int
+    public function getTypeId(): int
     {
         return $this->type_id;
     }
@@ -4728,7 +4730,7 @@ class Issue
     /**
      * Returns the category of this issue (e.g. Issue::CATEGORY_UNDEFINED)
      */
-    public function getCategory() : int
+    public function getCategory(): int
     {
         return $this->category;
     }
@@ -4737,7 +4739,7 @@ class Issue
      * @return string
      * The name of this issue's category
      */
-    public function getCategoryName() : string
+    public function getCategoryName(): string
     {
         return self::getNameForCategory($this->category);
     }
@@ -4746,7 +4748,7 @@ class Issue
      * @return string
      * The name of the category
      */
-    public static function getNameForCategory(int $category) : string
+    public static function getNameForCategory(int $category): string
     {
         return self::CATEGORY_NAME[$category] ?? '';
     }
@@ -4754,7 +4756,7 @@ class Issue
     /**
      * Returns the severity of this issue (Issue::SEVERITY_LOW, Issue::SEVERITY_NORMAL, or Issue::SEVERITY_CRITICAL)
      */
-    public function getSeverity() : int
+    public function getSeverity(): int
     {
         return $this->severity;
     }
@@ -4763,7 +4765,7 @@ class Issue
      * @return string
      * A descriptive name of the severity of the issue
      */
-    public function getSeverityName() : string
+    public function getSeverityName(): string
     {
         switch ($this->severity) {
             case self::SEVERITY_LOW:
@@ -4780,7 +4782,7 @@ class Issue
     /**
      * @suppress PhanUnreferencedPublicMethod (no reporters use this right now)
      */
-    public function getRemediationDifficulty() : int
+    public function getRemediationDifficulty(): int
     {
         return $this->remediation_difficulty;
     }
@@ -4788,7 +4790,7 @@ class Issue
     /**
      * Returns the template text of this issue (e.g. `'Variable ${VARIABLE} is undeclared'`)
      */
-    public function getTemplate() : string
+    public function getTemplate(): string
     {
         return $this->template;
     }
@@ -4797,7 +4799,7 @@ class Issue
      * Returns the number of arguments expected for the format string $this->getTemplate()
      * @suppress PhanAccessReadOnlyProperty lazily computed
      */
-    public function getExpectedArgumentCount() : int
+    public function getExpectedArgumentCount(): int
     {
         return $this->argument_count ?? $this->argument_count = ConversionSpec::computeExpectedArgumentCount($this->template);
     }
@@ -4805,7 +4807,7 @@ class Issue
     /**
      * @return string - template with the information needed to colorize this.
      */
-    public function getTemplateRaw() : string
+    public function getTemplateRaw(): string
     {
         return $this->template_raw;
     }
@@ -4820,7 +4822,7 @@ class Issue
         array $template_parameters = [],
         Suggestion $suggestion = null,
         int $column = 0
-    ) : IssueInstance {
+    ): IssueInstance {
         // TODO: Add callable to expanded union types instead
         return new IssueInstance(
             $this,
@@ -4835,7 +4837,7 @@ class Issue
     /**
      * @throws InvalidArgumentException
      */
-    public static function fromType(string $type) : Issue
+    public static function fromType(string $type): Issue
     {
         $error_map = self::issueMap();
 
@@ -4871,7 +4873,7 @@ class Issue
         string $file,
         int $line,
         ...$template_parameters
-    ) : void {
+    ): void {
         self::emitWithParameters(
             $type,
             $file,
@@ -4903,7 +4905,7 @@ class Issue
         array $template_parameters,
         Suggestion $suggestion = null,
         int $column = 0
-    ) : void {
+    ): void {
         $issue = self::fromType($type);
 
         self::emitInstance(
@@ -4911,8 +4913,8 @@ class Issue
         );
     }
 
-    const TRACE_BASIC   = 'basic';
-    const TRACE_VERBOSE = 'verbose';
+    public const TRACE_BASIC   = 'basic';
+    public const TRACE_VERBOSE = 'verbose';
 
     /**
      * @param IssueInstance $issue_instance
@@ -4920,7 +4922,7 @@ class Issue
      */
     public static function emitInstance(
         IssueInstance $issue_instance
-    ) : void {
+    ): void {
         Phan::getIssueCollector()->collectIssue($issue_instance);
     }
 
@@ -4938,7 +4940,7 @@ class Issue
         CodeBase $code_base,
         Context $context,
         IssueInstance $issue_instance
-    ) : void {
+    ): void {
         // If this issue type has been suppressed in
         // the config, ignore it
 
@@ -4981,7 +4983,7 @@ class Issue
         string $issue_type,
         int $lineno,
         ...$parameters
-    ) : void {
+    ): void {
         self::maybeEmitWithParameters(
             $code_base,
             $context,
@@ -5018,7 +5020,7 @@ class Issue
         array $parameters,
         Suggestion $suggestion = null,
         int $column = 0
-    ) : void {
+    ): void {
         if (self::shouldSuppressIssue(
             $code_base,
             $context,
@@ -5050,7 +5052,7 @@ class Issue
         int $lineno,
         array $parameters,
         Suggestion $suggestion = null
-    ) : bool {
+    ): bool {
         if (Config::getValue('disable_suppression')) {
             return false;
         }

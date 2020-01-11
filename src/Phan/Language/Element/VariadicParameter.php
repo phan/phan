@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Element;
 
@@ -29,7 +31,7 @@ class VariadicParameter extends Parameter
         return $result;
     }
 
-    private function convertToNonVariadic() : void
+    private function convertToNonVariadic(): void
     {
         // Avoid a redundant clone of toGenericArray()
         $this->type = $this->getUnionType();
@@ -41,7 +43,7 @@ class VariadicParameter extends Parameter
      * However, error messages still need to convert variadic parameters to a string.
      * @override
      */
-    public function isCloneOfVariadic() : bool
+    public function isCloneOfVariadic(): bool
     {
         return $this->getPhanFlagsHasState(Flags::IS_CLONE_OF_VARIADIC);
     }
@@ -53,7 +55,7 @@ class VariadicParameter extends Parameter
      * them as an array.
      * @override
      */
-    public function isVariadic() : bool
+    public function isVariadic(): bool
     {
         return true;
     }
@@ -63,7 +65,7 @@ class VariadicParameter extends Parameter
      * True if this is an optional parameter (true because this is variadic)
      * @override
      */
-    public function isOptional() : bool
+    public function isOptional(): bool
     {
         return true;
     }
@@ -73,7 +75,7 @@ class VariadicParameter extends Parameter
      * True if this is a required parameter (false because this is variadic)
      * @override
      */
-    public function isRequired() : bool
+    public function isRequired(): bool
     {
         return false;
     }
@@ -116,7 +118,7 @@ class VariadicParameter extends Parameter
      * method will return the element type (such as `DateTime`)
      * for variadic parameters.
      */
-    public function getNonVariadicUnionType() : UnionType
+    public function getNonVariadicUnionType(): UnionType
     {
         return $this->type;
     }
@@ -138,7 +140,7 @@ class VariadicParameter extends Parameter
      *
      * @override
      */
-    public function getUnionType() : UnionType
+    public function getUnionType(): UnionType
     {
         if (!$this->isCloneOfVariadic()) {
             return parent::getUnionType()->asNonEmptyListTypes();
@@ -146,7 +148,7 @@ class VariadicParameter extends Parameter
         return $this->type;
     }
 
-    public function hasEmptyNonVariadicType() : bool
+    public function hasEmptyNonVariadicType(): bool
     {
         return $this->has_empty_non_variadic_type ?? parent::getUnionType()->isEmpty();
     }

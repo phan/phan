@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Library;
 
@@ -37,12 +39,12 @@ class ConversionSpec
 
     // A padding string regex may be a space or 0.
     // Alternate padding specifiers may be specified by prefixing it with a single quote.
-    const PADDING_STRING_REGEX_PART = '[0 ]?|\'.';
+    public const PADDING_STRING_REGEX_PART = '[0 ]?|\'.';
 
     /**
      * Based on https://secure.php.net/manual/en/function.sprintf.php
      */
-    const FORMAT_STRING_INNER_REGEX_PART =
+    public const FORMAT_STRING_INNER_REGEX_PART =
         '%'  // Every format string begins with a percent
         . '(\d+\$)?'  // Optional n$ position specifier must go immediately after percent
         . '(' . self::PADDING_STRING_REGEX_PART . ')'  // optional padding specifier
@@ -53,14 +55,14 @@ class ConversionSpec
         . '([bcdeEfFgGosuxX])';  // A type specifier
 
 
-    const FORMAT_STRING_REGEX = '/%%|' . self::FORMAT_STRING_INNER_REGEX_PART . '/';
+    public const FORMAT_STRING_REGEX = '/%%|' . self::FORMAT_STRING_INNER_REGEX_PART . '/';
 
     /**
      * Compute the number of additional arguments expected when sprintf is called
      * with a format string of $fmt_str.
      * @param string $fmt_str
      */
-    public static function computeExpectedArgumentCount(string $fmt_str) : int
+    public static function computeExpectedArgumentCount(string $fmt_str): int
     {
         $result = 0;
         foreach (self::extractAll($fmt_str) as $i => $_) {
@@ -74,7 +76,7 @@ class ConversionSpec
      * @param string $fmt_str a format string to extract directives from.
      * @return associative-array<int,non-empty-list<ConversionSpec>> array(int position => array of ConversionSpec referring to arg at that position)
      */
-    public static function extractAll(string $fmt_str) : array
+    public static function extractAll(string $fmt_str): array
     {
         // echo "format is $fmt_str\n";
         $directives = [];
@@ -98,7 +100,7 @@ class ConversionSpec
     /**
      * @return string an unambiguous way of referring to this conversion spec.
      */
-    public function toCanonicalString() : string
+    public function toCanonicalString(): string
     {
         if ($this->width !== '') {
             $padding_char = $this->padding_char;
@@ -113,11 +115,11 @@ class ConversionSpec
     /**
      * @return string the conversion spec if the width was used as a position instead.
      */
-    public function toCanonicalStringWithWidthAsPosition() : string
+    public function toCanonicalStringWithWidthAsPosition(): string
     {
         return '%' . $this->width . '$' . $this->padding_char . $this->alignment . $this->precision . $this->arg_type;
     }
-    const ARG_TYPE_LOOKUP = [
+    public const ARG_TYPE_LOOKUP = [
         'b' => 'int',
         'c' => 'int',
         'd' => 'int',
@@ -137,7 +139,7 @@ class ConversionSpec
     /**
      * @return string the name of the union type expected for the arg for this conversion spec
      */
-    public function getExpectedUnionTypeName() : string
+    public function getExpectedUnionTypeName(): string
     {
         return self::ARG_TYPE_LOOKUP[$this->arg_type] ?? 'string';
     }

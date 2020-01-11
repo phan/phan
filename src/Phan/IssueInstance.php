@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan;
 
@@ -96,7 +98,7 @@ class IssueInstance
     private static function generatePlainMessage(
         Issue $issue,
         array $template_parameters
-    ) : string {
+    ): string {
         $template = $issue->getTemplate();
 
         // markdown_issue_messages doesn't make sense with color, unless you add <span style="color:red">msg</span>
@@ -121,7 +123,7 @@ class IssueInstance
     private static function generateColorizedMessage(
         Issue $issue,
         array $template_parameters
-    ) : string {
+    ): string {
         $template = $issue->getTemplateRaw();
 
         $result = Colorizing::colorizeTemplate($template, $template_parameters);
@@ -131,18 +133,18 @@ class IssueInstance
     /**
      * @return ?Suggestion If this is non-null, this contains suggestions on how to resolve the error.
      */
-    public function getSuggestion() : ?Suggestion
+    public function getSuggestion(): ?Suggestion
     {
         return $this->suggestion;
     }
 
     /** @return list<string|int|float|FQSEN|Type|UnionType> $template_parameters */
-    public function getTemplateParameters() : array
+    public function getTemplateParameters(): array
     {
         return $this->template_parameters;
     }
 
-    public function getSuggestionMessage() : ?string
+    public function getSuggestionMessage(): ?string
     {
         if (!$this->suggestion) {
             return null;
@@ -154,17 +156,17 @@ class IssueInstance
         return StringUtil::asSingleLineUtf8($text);
     }
 
-    public function getIssue() : Issue
+    public function getIssue(): Issue
     {
         return $this->issue;
     }
 
-    public function getFile() : string
+    public function getFile(): string
     {
         return $this->file;
     }
 
-    public function getDisplayedFile() : string
+    public function getDisplayedFile(): string
     {
         if (Config::getValue('absolute_path_issue_messages')) {
             return Config::projectPath($this->file);
@@ -172,7 +174,7 @@ class IssueInstance
         return $this->file;
     }
 
-    public function getLine() : int
+    public function getLine(): int
     {
         return $this->line;
     }
@@ -180,17 +182,17 @@ class IssueInstance
     /**
      * @return int the 1-based column, or 0 if the column is unknown.
      */
-    public function getColumn() : int
+    public function getColumn(): int
     {
         return $this->column;
     }
 
-    public function getMessage() : string
+    public function getMessage(): string
     {
         return $this->message;
     }
 
-    public function getMessageAndMaybeSuggestion() : string
+    public function getMessageAndMaybeSuggestion(): string
     {
         $message = $this->message;
         $suggestion = $this->getSuggestionMessage();
@@ -200,7 +202,7 @@ class IssueInstance
         return $message;
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         return "{$this->file}:{$this->line} {$this->getMessageAndMaybeSuggestion()}";
     }

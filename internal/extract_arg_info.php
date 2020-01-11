@@ -1,5 +1,6 @@
 #!/usr/bin/env php
 <?php
+
 declare(strict_types=1);
 
 require_once __DIR__ . '/../src/Phan/Bootstrap.php';
@@ -54,7 +55,7 @@ class OpcacheFuncInfoParser
     /**
      * @return array<string,UnionType> maps internal function names to their real union types (from Reflection)
      */
-    private static function extractInfoFromReflection() : array
+    private static function extractInfoFromReflection(): array
     {
         $result = [];
         $function_names = get_defined_functions();
@@ -90,7 +91,7 @@ class OpcacheFuncInfoParser
     /**
      * @return array<string,UnionType> maps internal function names to their real union types (From opcache's signatures)
      */
-    private static function extractInfoFromOpcache(string $contents) : array
+    private static function extractInfoFromOpcache(string $contents): array
     {
         $lines = explode("\n", $contents);
         $result = [];
@@ -118,7 +119,7 @@ class OpcacheFuncInfoParser
     /**
      * @param list<string> $flags
      */
-    private static function extractUnionType(array $flags) : UnionType
+    private static function extractUnionType(array $flags): UnionType
     {
         static $type_lookup = null;
         if ($type_lookup === null) {
@@ -176,7 +177,7 @@ class OpcacheFuncInfoParser
      * @param array<string,string> $flag_set
      * @return UnionType of 1 or more ArrayTypes to include
      */
-    private static function arrayTypeFromFlags(array $flag_set) : UnionType
+    private static function arrayTypeFromFlags(array $flag_set): UnionType
     {
         // 1. Convert key types from opcache to Phan's representation
         if (isset($flag_set['MAY_BE_ARRAY_KEY_ANY'])) {
@@ -225,7 +226,7 @@ class OpcacheFuncInfoParser
     /**
      * Parses the real types to expect for global functions from opcache and returns the result.
      */
-    public static function main() : void
+    public static function main(): void
     {
         Shim::load();
         global $argv;
@@ -289,7 +290,7 @@ EOT;
      * @param array<string,UnionType> $reflection_data
      * @param array<string,UnionType> $opcache_data
      */
-    private static function checkOpcacheAndReflectionAreConsistent(CodeBase $code_base, array $reflection_data, array $opcache_data) : void
+    private static function checkOpcacheAndReflectionAreConsistent(CodeBase $code_base, array $reflection_data, array $opcache_data): void
     {
         foreach ($opcache_data as $function_name => $opcache_type) {
             $reflection_type = $reflection_data[$function_name] ?? null;

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Output\Printer;
 
@@ -20,7 +22,7 @@ final class PlainTextPrinter implements IssuePrinterInterface
     /** @var OutputInterface an output that plaintext formatted issues can be written to. */
     private $output;
 
-    public function print(IssueInstance $instance) : void
+    public function print(IssueInstance $instance): void
     {
         $file    = $instance->getDisplayedFile();
         $line    = $instance->getLine();
@@ -78,7 +80,7 @@ final class PlainTextPrinter implements IssuePrinterInterface
         $this->output->writeln($issue);
     }
 
-    public function configureOutput(OutputInterface $output) : void
+    public function configureOutput(OutputInterface $output): void
     {
         $this->output = $output;
     }

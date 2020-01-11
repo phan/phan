@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use ast\Node;
 use Phan\PluginV3;
@@ -34,7 +36,7 @@ class DollarDollarPlugin extends PluginV3 implements PostAnalyzeNodeCapability
     /**
      * @return string - name of PluginAwarePostAnalysisVisitor subclass
      */
-    public static function getPostAnalyzeNodeVisitorClassName() : string
+    public static function getPostAnalyzeNodeVisitorClassName(): string
     {
         return DollarDollarVisitor::class;
     }
@@ -57,7 +59,7 @@ class DollarDollarVisitor extends PluginAwarePostAnalysisVisitor
      * A node to analyze
      * @override
      */
-    public function visitVar(Node $node) : void
+    public function visitVar(Node $node): void
     {
         if ($node->children['name'] instanceof Node) {
             $this->emitPluginIssue(

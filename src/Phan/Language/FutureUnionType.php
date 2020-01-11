@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language;
 
@@ -50,7 +52,7 @@ class FutureUnionType
      * An exception is thrown if we are unable to determine
      * the type at the time this method is called
      */
-    public function get() : UnionType
+    public function get(): UnionType
     {
         $this->context->clearCachedUnionTypes();
         return UnionTypeVisitor::unionTypeFromNode(
@@ -66,7 +68,7 @@ class FutureUnionType
      * (used to resolve class references, constants, etc.)
      * @internal (May rethink exposing the codebase in the future)
      */
-    public function getCodebase() : CodeBase
+    public function getCodebase(): CodeBase
     {
         return $this->code_base;
     }
@@ -76,7 +78,7 @@ class FutureUnionType
      * (used to resolve class references, constants, etc.)
      * @internal (May rethink exposing the codebase in the future)
      */
-    public function getContext() : Context
+    public function getContext(): Context
     {
         return $this->context;
     }

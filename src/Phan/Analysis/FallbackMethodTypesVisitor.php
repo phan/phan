@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Analysis;
 
@@ -46,7 +48,7 @@ class FallbackMethodTypesVisitor extends AnalysisVisitor
      * Gives up when non-literals are seen.
      * @return array<mixed, UnionType>
      */
-    public static function inferTypes(CodeBase $code_base, FunctionInterface $func) : array
+    public static function inferTypes(CodeBase $code_base, FunctionInterface $func): array
     {
         $function_node = $func->getNode();
         if (!$function_node instanceof Node) {
@@ -161,7 +163,7 @@ class FallbackMethodTypesVisitor extends AnalysisVisitor
         $this->excludeReferencedVariables($node);
     }
 
-    private function excludeReferencedVariables(Node $node) : void
+    private function excludeReferencedVariables(Node $node): void
     {
         switch ($node->kind) {
             case ast\AST_VAR:
@@ -185,7 +187,7 @@ class FallbackMethodTypesVisitor extends AnalysisVisitor
      * @param int|string|float|bool $var_name
      * @param int|string|float|Node $expr
      */
-    private function associateTypeWithExpression($var_name, $expr) : void
+    private function associateTypeWithExpression($var_name, $expr): void
     {
         if (isset($this->unknowns[$var_name])) {
             // No point in checking.
@@ -203,7 +205,7 @@ class FallbackMethodTypesVisitor extends AnalysisVisitor
         }
     }
 
-    private function determineUnionType(Node $expr) : ?UnionType
+    private function determineUnionType(Node $expr): ?UnionType
     {
         try {
             if (ParseVisitor::isConstExpr($expr)) {
@@ -219,7 +221,7 @@ class FallbackMethodTypesVisitor extends AnalysisVisitor
     /**
      * @param int|string|float|bool $var_name
      */
-    private function associateType($var_name, UnionType $type) : void
+    private function associateType($var_name, UnionType $type): void
     {
         if (!$type->isEmpty()) {
             $this->known_types[$var_name][] = $type;
@@ -232,7 +234,7 @@ class FallbackMethodTypesVisitor extends AnalysisVisitor
      * Returns a representation of this visitor suitable for debugging
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function getDebugRepresentation() : string
+    public function getDebugRepresentation(): string
     {
         return "FallbackTypeVisitor: " . json_encode([
             'known_types' => array_map(
@@ -240,8 +242,8 @@ class FallbackMethodTypesVisitor extends AnalysisVisitor
                  * @param list<UnionType> $union_types
                  * @return list<string>
                  */
-                static function (array $union_types) : array {
-                    return array_map(static function (UnionType $type) : string {
+                static function (array $union_types): array {
+                    return array_map(static function (UnionType $type): string {
                         return $type->getDebugRepresentation();
                     }, $union_types);
                 },

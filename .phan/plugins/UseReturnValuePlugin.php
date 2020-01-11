@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 // Moved to src/Phan/Plugin/Internal/UseReturnValuePlugin.php for autoloading convenience.
 // This may become a core part of Phan.

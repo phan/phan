@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests;
 
@@ -9,12 +11,12 @@ use Phan\Config;
  */
 final class ConfigTest extends BaseTest
 {
-    public function testDefaultsValid() : void
+    public function testDefaultsValid(): void
     {
         $this->assertSame([], Config::getConfigErrors(Config::DEFAULT_CONFIGURATION), 'default configuration should be valid');
     }
 
-    public function testWarnsInvalid() : void
+    public function testWarnsInvalid(): void
     {
         $config = \array_merge(
             Config::DEFAULT_CONFIGURATION,
@@ -37,7 +39,7 @@ final class ConfigTest extends BaseTest
      * @dataProvider warnsEnableCompletionProvider
      * @param mixed $value
      */
-    public function testWarnsEnableCompletion($value, string ...$expected_errors) : void
+    public function testWarnsEnableCompletion($value, string ...$expected_errors): void
     {
         $config = ['language_server_enable_completion' => $value];
         $this->assertSame($expected_errors, Config::getConfigErrors($config));
@@ -47,7 +49,7 @@ final class ConfigTest extends BaseTest
     /**
      * @return list<list>
      */
-    public function warnsEnableCompletionProvider() : array
+    public function warnsEnableCompletionProvider(): array
     {
         return [
             [false],

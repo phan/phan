@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Scope;
 
@@ -11,7 +13,7 @@ use Phan\Language\Scope;
  */
 class ClassScope extends ClosedScope
 {
-    const IN_CLASS_OR_PROPERTY_SCOPE = Scope::IN_CLASS_LIKE_SCOPE | Scope::IN_PROPERTY_SCOPE;
+    public const IN_CLASS_OR_PROPERTY_SCOPE = Scope::IN_CLASS_LIKE_SCOPE | Scope::IN_PROPERTY_SCOPE;
 
     public function __construct(
         Scope $parent_scope,
@@ -34,7 +36,7 @@ class ClassScope extends ClosedScope
      * True if we're in a class scope
      * @override
      */
-    public function isInClassScope() : bool
+    public function isInClassScope(): bool
     {
         return true;
     }
@@ -44,7 +46,7 @@ class ClassScope extends ClosedScope
      * True if we're in a class scope
      * @override
      */
-    public function isInPropertyScope() : bool
+    public function isInPropertyScope(): bool
     {
         return false;
     }
@@ -54,7 +56,7 @@ class ClassScope extends ClosedScope
      * Get the FullyQualifiedClassName of the class whose scope
      * we're in.
      */
-    public function getClassFQSEN() : FullyQualifiedClassName
+    public function getClassFQSEN(): FullyQualifiedClassName
     {
         if ($this->fqsen instanceof FullyQualifiedClassName) {
             return $this->fqsen;
@@ -68,7 +70,7 @@ class ClassScope extends ClosedScope
      * Get the FullyQualifiedClassName of the class whose scope
      * we're in. This subclass does not return null.
      */
-    public function getClassFQSENOrNull() : FullyQualifiedClassName
+    public function getClassFQSENOrNull(): FullyQualifiedClassName
     {
         if ($this->fqsen instanceof FullyQualifiedClassName) {
             return $this->fqsen;

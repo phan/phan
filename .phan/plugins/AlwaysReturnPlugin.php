@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use ast\Node;
 use Phan\Analysis\BlockExitStatusChecker;
@@ -56,7 +58,7 @@ final class AlwaysReturnPlugin extends PluginV3 implements
     public function analyzeMethod(
         CodeBase $code_base,
         Method $method
-    ) : void {
+    ): void {
         $stmts_list = self::getStatementListToAnalyze($method);
         if ($stmts_list === null) {
             // check for abstract methods, generators, etc.
@@ -95,7 +97,7 @@ final class AlwaysReturnPlugin extends PluginV3 implements
     public function analyzeFunction(
         CodeBase $code_base,
         Func $function
-    ) : void {
+    ): void {
         $stmts_list = self::getStatementListToAnalyze($function);
         if ($stmts_list === null) {
             // check for abstract methods, generators, etc.
@@ -122,7 +124,7 @@ final class AlwaysReturnPlugin extends PluginV3 implements
      * @param Func|Method $func
      * @return ?Node - returns null if there's no statement list to analyze
      */
-    private static function getStatementListToAnalyze($func) : ?Node
+    private static function getStatementListToAnalyze($func): ?Node
     {
         if (!$func->hasNode()) {
             return null;
@@ -142,7 +144,7 @@ final class AlwaysReturnPlugin extends PluginV3 implements
      * @return bool - Is void(absence of a return type) an acceptable return type.
      * NOTE: projects can customize this as needed.
      */
-    private static function returnTypeOfFunctionLikeAllowsNull(FunctionInterface $func) : bool
+    private static function returnTypeOfFunctionLikeAllowsNull(FunctionInterface $func): bool
     {
         $real_return_type = $func->getRealReturnType();
         if (!$real_return_type->isEmpty() && !$real_return_type->isType(VoidType::instance(false))) {

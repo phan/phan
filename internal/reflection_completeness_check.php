@@ -1,5 +1,6 @@
 #!/usr/bin/env php
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -8,6 +9,7 @@ declare(strict_types=1);
  * TODO: Refactor the scripts in internal/ to reuse more code.
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
+
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 
 use Phan\Config;
@@ -38,7 +40,7 @@ class ReflectionCompletenessCheck
         '_zendtestclassalias' => true,
     ];
 
-    private static function checkForUndeclaredTypeFunctions() : void
+    private static function checkForUndeclaredTypeFunctions(): void
     {
         foreach (get_defined_functions() as $unused_ext => $group) {
             foreach ($group as $function_name) {
@@ -67,7 +69,7 @@ class ReflectionCompletenessCheck
     /**
      * @return Generator<string,ReflectionClass>
      */
-    private static function getInternalClasses() : Generator
+    private static function getInternalClasses(): Generator
     {
         $classes = array_merge(
             get_declared_classes(),
@@ -87,7 +89,7 @@ class ReflectionCompletenessCheck
         }
     }
 
-    private static function checkForUndeclaredTypeMethods() : void
+    private static function checkForUndeclaredTypeMethods(): void
     {
         foreach (self::getInternalClasses() as $class_name => $reflection_class) {
             foreach ($reflection_class->getMethods() as $reflection_method) {
@@ -109,7 +111,7 @@ class ReflectionCompletenessCheck
     /**
      * @return string[]
      */
-    public static function createStubSignature(ReflectionFunctionAbstract $reflection_method) : array
+    public static function createStubSignature(ReflectionFunctionAbstract $reflection_method): array
     {
         $signature = [];
         $signature[] = (string)UnionType::fromReflectionType($reflection_method->getReturnType());
@@ -132,7 +134,7 @@ class ReflectionCompletenessCheck
     /**
      * @param array<int|string,string> $stub Phan's internal signature info
      */
-    private static function stubSignatureToString(array $stub) : string
+    private static function stubSignatureToString(array $stub): string
     {
         $result = "['$stub[0]'";
         unset($stub[0]);
@@ -144,7 +146,7 @@ class ReflectionCompletenessCheck
         return $result;
     }
 
-    private static function checkForUndeclaredTypeProperties() : void
+    private static function checkForUndeclaredTypeProperties(): void
     {
         foreach (self::getInternalClasses() as $class_name => $reflection_class) {
             $map_for_class = UnionType::internalPropertyMapForClassName($class_name);
@@ -165,7 +167,7 @@ class ReflectionCompletenessCheck
     /**
      * Run all checks that the function signatures are complete.
      */
-    public static function main() : void
+    public static function main(): void
     {
         Config::setValue('target_php_version', sprintf("%d.%d", PHP_MAJOR_VERSION, PHP_MINOR_VERSION));
         error_reporting(E_ALL);

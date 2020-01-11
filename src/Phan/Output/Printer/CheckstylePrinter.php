@@ -1,10 +1,13 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Output\Printer;
 
 use Phan\IssueInstance;
 use Phan\Output\BufferedPrinterInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+
 use const ENT_NOQUOTES;
 
 /**
@@ -20,7 +23,7 @@ final class CheckstylePrinter implements BufferedPrinterInterface
     /** @var array<string,list<array<string,mixed>>> maps files with issues to the list of those issues */
     private $files = [];
 
-    public function print(IssueInstance $instance) : void
+    public function print(IssueInstance $instance): void
     {
         $file = $instance->getDisplayedFile();
         if (!isset($this->files[$file])) {
@@ -37,7 +40,7 @@ final class CheckstylePrinter implements BufferedPrinterInterface
     }
 
     /** flush printer buffer */
-    public function flush() : void
+    public function flush(): void
     {
         $document = new \DOMDocument('1.0', 'ISO-8859-15');
 
@@ -95,7 +98,7 @@ final class CheckstylePrinter implements BufferedPrinterInterface
         $this->files = [];
     }
 
-    public function configureOutput(OutputInterface $output) : void
+    public function configureOutput(OutputInterface $output): void
     {
         $this->output = $output;
     }

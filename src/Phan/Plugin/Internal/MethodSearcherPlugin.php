@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Plugin\Internal;
 
@@ -16,6 +18,7 @@ use Phan\Language\UnionType;
 use Phan\PluginV3;
 use Phan\PluginV3\BeforeAnalyzeCapability;
 use TypeError;
+
 use function count;
 
 /**
@@ -46,7 +49,7 @@ final class MethodSearcherPlugin extends PluginV3 implements
      *
      * @throws InvalidArgumentException
      */
-    public static function setSearchString(string $search_string) : void
+    public static function setSearchString(string $search_string): void
     {
         // XXX improve parsing this
         $parts = \array_map('trim', \explode('->', $search_string));
@@ -77,7 +80,7 @@ final class MethodSearcherPlugin extends PluginV3 implements
      * Given a UnionType that may have references to regular class-like types that don't exist (e.g. `\Type`, `\Type[]`),
      * replace classes that don't exist (e.g. `\Type`) with ones that do exist in other namespaces (e.g. `\Phan\Language\Type`)
      */
-    public static function addMissingNamespaces(CodeBase $code_base, UnionType $union_type) : UnionType
+    public static function addMissingNamespaces(CodeBase $code_base, UnionType $union_type): UnionType
     {
         foreach ($union_type->getTypeSet() as $type) {
             if ($type->isObjectWithKnownFQSEN()) {
@@ -113,7 +116,7 @@ final class MethodSearcherPlugin extends PluginV3 implements
     public static function getReplacementTypesForFullyQualifiedClassName(
         CodeBase $code_base,
         Type $type
-    ) : array {
+    ): array {
         $fqsen = FullyQualifiedClassName::fromType($type);
         if ($code_base->hasClassWithFQSEN($fqsen)) {
             return [$type];
@@ -123,12 +126,12 @@ final class MethodSearcherPlugin extends PluginV3 implements
             \fwrite(\STDERR, "Phoogle could not find '$fqsen' in any namespace\n");
             exit(\EXIT_FAILURE);
         }
-        return \array_map(static function (FullyQualifiedClassName $fqsen) use ($type) : Type {
+        return \array_map(static function (FullyQualifiedClassName $fqsen) use ($type): Type {
             return $fqsen->asType()->withIsNullable($type->isNullable());
         }, $fqsens);
     }
 
-    private static function addMissingNamespacesToTypes(CodeBase $code_base) : void
+    private static function addMissingNamespacesToTypes(CodeBase $code_base): void
     {
         $original_param_types = self::$param_types;
         $original_return_type = self::$return_type;
@@ -142,7 +145,7 @@ final class MethodSearcherPlugin extends PluginV3 implements
         }
     }
 
-    public function beforeAnalyze(CodeBase $code_base) : void
+    public function beforeAnalyze(CodeBase $code_base): void
     {
         self::addMissingNamespacesToTypes($code_base);
 
@@ -187,7 +190,7 @@ final class MethodSearcherPlugin extends PluginV3 implements
         exit(\EXIT_SUCCESS);
     }
 
-    private function checkFunction(CodeBase $code_base, FunctionInterface $function) : void
+    private function checkFunction(CodeBase $code_base, FunctionInterface $function): void
     {
         $result = $this->functionMatchesSignature($code_base, $function);
         if ($result) {
@@ -201,7 +204,7 @@ final class MethodSearcherPlugin extends PluginV3 implements
     public function functionMatchesSignature(
         CodeBase $code_base,
         FunctionInterface $function
-    ) : float {
+    ): float {
         // TODO: Account for visibility
         if ($function instanceof Method) {
             if ($function->getFQSEN() !== $function->getDefiningFQSEN()) {
@@ -246,7 +249,7 @@ final class MethodSearcherPlugin extends PluginV3 implements
         return \max(0.1, $result + $adjustment + self::getTypeMatchingBonus($code_base, $return_type, self::$return_type));
     }
 
-    private static function guessUnionType(FunctionInterface $function) : UnionType
+    private static function guessUnionType(FunctionInterface $function): UnionType
     {
         if ($function instanceof Method) {
             // convert __set to void, __sleep to string[], etc.
@@ -265,7 +268,7 @@ final class MethodSearcherPlugin extends PluginV3 implements
         return UnionType::empty();
     }
 
-    private static function isMixed(UnionType $union_type) : bool
+    private static function isMixed(UnionType $union_type): bool
     {
         foreach ($union_type->getTypeSet() as $type) {
             if (!$type instanceof MixedType) {
@@ -277,7 +280,7 @@ final class MethodSearcherPlugin extends PluginV3 implements
     /**
      * Get the bonus for using $actual_signature_type where we are looking for $desired_type
      */
-    public static function getTypeMatchingBonus(CodeBase $code_base, UnionType $actual_signature_type, UnionType $desired_type) : float
+    public static function getTypeMatchingBonus(CodeBase $code_base, UnionType $actual_signature_type, UnionType $desired_type): float
     {
         if (self::isMixed($desired_type) || self::isMixed($actual_signature_type)) {
             return 0;
@@ -314,7 +317,7 @@ final class MethodSearcherPlugin extends PluginV3 implements
         return $bonus + ($result / \max($desired_type->typeCount(), $actual_signature_type->typeCount()));
     }
 
-    private static function isCastableButNotSubtype(UnionType $actual_type, Type $inner_type) : bool
+    private static function isCastableButNotSubtype(UnionType $actual_type, Type $inner_type): bool
     {
         if ($inner_type instanceof ObjectType) {
             foreach ($actual_type->getTypeSet() as $type) {
@@ -332,7 +335,7 @@ final class MethodSearcherPlugin extends PluginV3 implements
      * @param array<int, UnionType> $search_param_types (array keys are removed from both params when this recursively calls itself)
      * @param array<int, UnionType> $signature_param_types
      */
-    public static function matchesParamTypes(CodeBase $code_base, array $search_param_types, array $signature_param_types) : float
+    public static function matchesParamTypes(CodeBase $code_base, array $search_param_types, array $signature_param_types): float
     {
         if (\count($search_param_types) === 0) {
             // Award extra points for having the same number of matches

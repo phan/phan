@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use ast\Node;
 use Phan\Issue;
@@ -32,7 +34,7 @@ final class EmptyMethodAndFunctionPlugin extends PluginV3 implements PostAnalyze
 final class EmptyMethodAndFunctionVisitor extends PluginAwarePostAnalysisVisitor
 {
 
-    public function visitMethod(Node $node) : void
+    public function visitMethod(Node $node): void
     {
         $stmts_node = $node->children['stmts'] ?? null;
 
@@ -55,12 +57,12 @@ final class EmptyMethodAndFunctionVisitor extends PluginAwarePostAnalysisVisitor
         }
     }
 
-    public function visitFuncDecl(Node $node) : void
+    public function visitFuncDecl(Node $node): void
     {
         $this->analyzeFunction($node);
     }
 
-    public function visitClosure(Node $node) : void
+    public function visitClosure(Node $node): void
     {
         $this->analyzeFunction($node);
     }
@@ -96,7 +98,7 @@ final class EmptyMethodAndFunctionVisitor extends PluginAwarePostAnalysisVisitor
         }
     }
 
-    private static function getIssueTypeForEmptyMethod(FunctionInterface $method) : string
+    private static function getIssueTypeForEmptyMethod(FunctionInterface $method): string
     {
         if (!$method instanceof Method) {
             throw new \InvalidArgumentException("\$method is not an instance of Method");

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Output\Printer;
 
@@ -15,7 +17,7 @@ class CapturingJSONPrinter extends JSONPrinter
     /** @var list<array<string,mixed>> the issue data to be JSON encoded. */
     protected $messages = [];
 
-    public function print(IssueInstance $instance) : void
+    public function print(IssueInstance $instance): void
     {
         $issue = $instance->getIssue();
         $message = [
@@ -46,18 +48,18 @@ class CapturingJSONPrinter extends JSONPrinter
     }
 
     /** flush printer buffer */
-    public function flush() : void
+    public function flush(): void
     {
         // Deliberately a no-op
     }
 
-    public function configureOutput(OutputInterface $_) : void
+    public function configureOutput(OutputInterface $_): void
     {
         // Deliberately a no-op.
     }
 
     /** @return list<array<string,mixed>> the issue data to be JSON encoded. */
-    public function getIssues() : array
+    public function getIssues(): array
     {
         return $this->messages;
     }

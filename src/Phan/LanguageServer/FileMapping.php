@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\LanguageServer;
 
@@ -32,12 +34,12 @@ class FileMapping
     /**
      * @return array<string,string> maps the absolute paths on disks to the currently edited versions of those files.
      */
-    public function getOverrides() : array
+    public function getOverrides(): array
     {
         return $this->overrides;
     }
 
-    public function addOverrideURI(string $uri, ?string $new_contents) : void
+    public function addOverrideURI(string $uri, ?string $new_contents): void
     {
         $path = Utils::uriToPath($uri);
         if ($new_contents === null) {
@@ -47,7 +49,7 @@ class FileMapping
         $this->addOverride($path, $new_contents);
     }
 
-    public function addOverride(string $path, ?string $new_contents) : void
+    public function addOverride(string $path, ?string $new_contents): void
     {
         if ($new_contents === null) {
             $this->removeOverride($path);
@@ -56,7 +58,7 @@ class FileMapping
         $this->overrides[$path] = $new_contents;
     }
 
-    public function removeOverrideURI(string $uri) : void
+    public function removeOverrideURI(string $uri): void
     {
         $path = Utils::uriToPath($uri);
         $this->removeOverride($path);
@@ -67,12 +69,12 @@ class FileMapping
      *
      * This will prefer to return the URI that the client first sent (that got converted to $path)
      */
-    public function getURIForPath(string $path) : string
+    public function getURIForPath(string $path): string
     {
         return $this->uri_for_path[$path] ?? Utils::pathToUri($path);
     }
 
-    public function removeOverride(string $path) : void
+    public function removeOverride(string $path): void
     {
         unset($this->uri_for_path[$path]);
         unset($this->overrides[$path]);

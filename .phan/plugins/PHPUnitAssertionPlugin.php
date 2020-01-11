@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use ast\Node;
 use Phan\AST\UnionTypeVisitor;
@@ -29,7 +31,7 @@ class PHPUnitAssertionPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
     /**
      * @override
      */
-    public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array
+    public function getAnalyzeFunctionCallClosures(CodeBase $code_base): array
     {
         // @phan-suppress-next-line PhanThrowTypeAbsentForCall
         $assert_class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString('PHPUnit\Framework\Assert');
@@ -59,7 +61,7 @@ class PHPUnitAssertionPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
      * @return ?Closure(CodeBase, Context, FunctionInterface, array, ?Node):void
      * @suppress PhanAccessClassConstantInternal, PhanAccessMethodInternal
      */
-    private function createClosureForMethod(CodeBase $code_base, Method $method, string $name) : ?Closure
+    private function createClosureForMethod(CodeBase $code_base, Method $method, string $name): ?Closure
     {
         // TODO: Add a helper method which will convert a doc comment and a stub php function source code to a closure for a param index (or indices)
         switch (\strtolower($name)) {
@@ -112,7 +114,7 @@ class PHPUnitAssertionPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
                     /**
                      * @param list<Node|string|int|float> $args
                      */
-                    static function (CodeBase $code_base, Context $context, array $args) : UnionType {
+                    static function (CodeBase $code_base, Context $context, array $args): UnionType {
                         if (\count($args) < 2) {
                             return UnionType::empty();
                         }
@@ -126,7 +128,7 @@ class PHPUnitAssertionPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
                     /**
                      * @param list<Node|string|int|float> $args
                      */
-                    function (CodeBase $code_base, Context $context, array $args) : UnionType {
+                    function (CodeBase $code_base, Context $context, array $args): UnionType {
                         if (\count($args) < 2) {
                             return UnionType::empty();
                         }
@@ -216,7 +218,7 @@ class PHPUnitAssertionPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
                     /**
                      * @param list<Node|string|int|float> $args
                      */
-                    static function (CodeBase $code_base, Context $context, array $args) : UnionType {
+                    static function (CodeBase $code_base, Context $context, array $args): UnionType {
                         if (\count($args) < 2) {
                             return UnionType::empty();
                         }

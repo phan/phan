@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Library;
 
@@ -53,7 +55,7 @@ class Map extends SplObjectStorage
      * A new map containing the mapped keys and
      * values
      */
-    public function keyValueMap(Closure $key_closure, Closure $value_closure) : Map
+    public function keyValueMap(Closure $key_closure, Closure $value_closure): Map
     {
         $map = new Map();
         foreach ($this as $key => $value) {
@@ -68,7 +70,7 @@ class Map extends SplObjectStorage
      * A new map with each key and value cloned
      * @suppress PhanUnreferencedPublicMethod possibly useful but currently unused
      */
-    public function deepCopy() : Map
+    public function deepCopy(): Map
     {
         $clone =
             /**
@@ -85,7 +87,7 @@ class Map extends SplObjectStorage
      * @return Map<K,V>
      * A new map with each value cloned (keys remain uncloned)
      */
-    public function deepCopyValues() : Map
+    public function deepCopyValues(): Map
     {
         $map = new Map();
         foreach ($this as $key => $value) {
@@ -100,7 +102,7 @@ class Map extends SplObjectStorage
      * Precondition: values of this map are objects.
      * @suppress PhanUnreferencedPublicMethod possibly useful but currently unused
      */
-    public function valueSet() : Set
+    public function valueSet(): Set
     {
         $set = new Set();
         foreach ($this as $value) {
@@ -115,7 +117,7 @@ class Map extends SplObjectStorage
      * Precondition: values of this set are objects.
      * @suppress PhanUnreferencedPublicMethod possibly useful but currently unused
      */
-    public function keySet() : Set
+    public function keySet(): Set
     {
         $set = new Set();
         foreach ($this as $key => $_) {

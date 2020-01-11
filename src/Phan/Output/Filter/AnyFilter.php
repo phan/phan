@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Output\Filter;
 
@@ -14,7 +16,7 @@ final class AnyFilter implements IssueFilterInterface
     /**
      * @param IssueInstance $issue (@phan-unused-param)
      */
-    public function supports(IssueInstance $issue):bool
+    public function supports(IssueInstance $issue): bool
     {
         return true;
     }

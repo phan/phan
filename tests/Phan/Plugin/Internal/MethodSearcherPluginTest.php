@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests\Plugin\Internal;
 
@@ -16,7 +18,7 @@ final class MethodSearcherPluginTest extends BaseTest implements CodeBaseAwareTe
     /** @var CodeBase The code base within which this unit test is operating */
     private $code_base = null;
 
-    public function setCodeBase(CodeBase $code_base = null) : void
+    public function setCodeBase(CodeBase $code_base = null): void
     {
         // @phan-suppress-next-line PhanPossiblyNullTypeMismatchProperty
         $this->code_base = $code_base;
@@ -25,7 +27,7 @@ final class MethodSearcherPluginTest extends BaseTest implements CodeBaseAwareTe
     /**
      * @dataProvider getTypeMatchingBonusProvider
      */
-    public function testGetTypeMatchingBonus(float $expected_score, string $actual, string $desired) : void
+    public function testGetTypeMatchingBonus(float $expected_score, string $actual, string $desired): void
     {
         $actual_signature_type = UnionType::fromFullyQualifiedPHPDocString($actual);
         $desired_signature_type = UnionType::fromFullyQualifiedPHPDocString($desired);
@@ -36,7 +38,7 @@ final class MethodSearcherPluginTest extends BaseTest implements CodeBaseAwareTe
     /**
      * @return list<list>
      */
-    public function getTypeMatchingBonusProvider() : array
+    public function getTypeMatchingBonusProvider(): array
     {
         return [
             [0.0, 'int', 'mixed'],
@@ -54,7 +56,7 @@ final class MethodSearcherPluginTest extends BaseTest implements CodeBaseAwareTe
      * @param list<string> $desired
      * @dataProvider matchesParamTypesProvider
      */
-    public function testMatchesParamTypes(float $expected_score, array $actual, array $desired) : void
+    public function testMatchesParamTypes(float $expected_score, array $actual, array $desired): void
     {
         $actual_signature_types = \array_map('\Phan\Language\UnionType::fromFullyQualifiedPHPDocString', $actual);
         $desired_signature_types = \array_map('\Phan\Language\UnionType::fromFullyQualifiedPHPDocString', $desired);
@@ -65,7 +67,7 @@ final class MethodSearcherPluginTest extends BaseTest implements CodeBaseAwareTe
     /**
      * @return list<list>
      */
-    public function matchesParamTypesProvider() : array
+    public function matchesParamTypesProvider(): array
     {
         return [
             [8.6, ['\stdClass'], ['\stdClass']],

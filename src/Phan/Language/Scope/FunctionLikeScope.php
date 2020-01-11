@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Scope;
 
@@ -27,7 +29,7 @@ class FunctionLikeScope extends ClosedScope
      * @return FullyQualifiedClassName
      * Crawl the scope hierarchy to get a class FQSEN.
      */
-    public function getClassFQSEN() : FullyQualifiedClassName
+    public function getClassFQSEN(): FullyQualifiedClassName
     {
         return $this->parent_scope->getClassFQSEN();
     }
@@ -37,7 +39,7 @@ class FunctionLikeScope extends ClosedScope
      * Crawl the scope hierarchy to get a class FQSEN.
      * Return null if there is no class FQSEN.
      */
-    public function getClassFQSENOrNull() : ?FullyQualifiedClassName
+    public function getClassFQSENOrNull(): ?FullyQualifiedClassName
     {
         return $this->parent_scope->getClassFQSENOrNull();
     }
@@ -46,7 +48,7 @@ class FunctionLikeScope extends ClosedScope
      * @return bool
      * True if we're in a function scope
      */
-    public function isInFunctionLikeScope() : bool
+    public function isInFunctionLikeScope(): bool
     {
         return true;
     }
@@ -55,7 +57,7 @@ class FunctionLikeScope extends ClosedScope
      * @return bool
      * True if we're in a function scope
      */
-    public function isInPropertyScope() : bool
+    public function isInPropertyScope(): bool
     {
         return false;
     }
@@ -64,7 +66,7 @@ class FunctionLikeScope extends ClosedScope
      * @return bool
      * True if we're in a class-like scope
      */
-    public function isInMethodLikeScope() : bool
+    public function isInMethodLikeScope(): bool
     {
         return ($this->flags & self::IN_CLASS_LIKE_SCOPE) !== 0;
     }

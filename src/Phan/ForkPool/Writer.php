@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\ForkPool;
 
@@ -14,8 +16,8 @@ use TypeError;
  */
 class Writer
 {
-    const TYPE_ISSUE_LIST = 'issue-list';
-    const TYPE_PROGRESS   = 'progress';
+    public const TYPE_ISSUE_LIST = 'issue-list';
+    public const TYPE_PROGRESS   = 'progress';
 
     /** @var resource */
     private static $output;
@@ -25,7 +27,7 @@ class Writer
      * Initializes the stream writer for the forked analysis worker
      * @param resource $output
      */
-    public static function initialize($output) : void
+    public static function initialize($output): void
     {
         if (!\is_resource($output)) {
             throw new TypeError('Expected resource for $output, got ' . \gettype($output));
@@ -36,7 +38,7 @@ class Writer
     /**
      * Returns true if this is the forked analysis worker
      */
-    public static function isForkPoolWorker() : bool
+    public static function isForkPoolWorker(): bool
     {
         return \is_resource(self::$output);
     }
@@ -45,7 +47,7 @@ class Writer
      * Report the filtered issues seen by this analysis worker.
      * @param list<IssueInstance> $issues
      */
-    public static function emitIssues(array $issues) : void
+    public static function emitIssues(array $issues): void
     {
         self::writeNotification(self::TYPE_ISSUE_LIST, \serialize($issues));
     }
@@ -53,7 +55,7 @@ class Writer
     /**
      * Report the analysis progress
      */
-    public static function recordProgress(float $percent, int $files_analyzed, int $total_files) : void
+    public static function recordProgress(float $percent, int $files_analyzed, int $total_files): void
     {
         self::writeNotification(self::TYPE_PROGRESS, \serialize(new Progress($percent, $files_analyzed, $total_files)));
     }
@@ -61,7 +63,7 @@ class Writer
     /**
      * @suppress PhanThrowTypeAbsent
      */
-    private static function writeNotification(string $type, string $payload) : void
+    private static function writeNotification(string $type, string $payload): void
     {
         if (!\is_resource(self::$output)) {
             throw new Error('Attempted to writeNotification before calling Writer::initialize');

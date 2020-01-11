@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Plugin\Internal;
 
@@ -23,7 +25,7 @@ use function is_file;
  */
 class RequireExistsPlugin extends PluginV3 implements PostAnalyzeNodeCapability
 {
-    public static function getPostAnalyzeNodeVisitorClassName() : string
+    public static function getPostAnalyzeNodeVisitorClassName(): string
     {
         return RequireExistsVisitor::class;
     }
@@ -37,7 +39,7 @@ class RequireExistsVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @override
      */
-    public function visitIncludeOrEval(Node $node) : void
+    public function visitIncludeOrEval(Node $node): void
     {
         if ($node->flags === ast\flags\EXEC_EVAL) {
             $this->analyzeEval($node);
@@ -64,7 +66,7 @@ class RequireExistsVisitor extends PluginAwarePostAnalysisVisitor
         $this->checkPathExistsInContext($node, $path);
     }
 
-    private function analyzeEval(Node $node) : void
+    private function analyzeEval(Node $node): void
     {
         $expr = $node->children['expr'];
         $type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $expr);
@@ -80,7 +82,7 @@ class RequireExistsVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * Check if the path provided to include()/require_once()/etc is valid.
      */
-    private function checkPathExistsInContext(Node $node, string $relative_path) : void
+    private function checkPathExistsInContext(Node $node, string $relative_path): void
     {
         $absolute_path = $this->getAbsolutePath($node, $relative_path);
         if (!file_exists($absolute_path)) {
@@ -101,7 +103,7 @@ class RequireExistsVisitor extends PluginAwarePostAnalysisVisitor
         }
     }
 
-    const EXEC_NODE_FLAG_NAMES = [
+    private const EXEC_NODE_FLAG_NAMES = [
         flags\EXEC_EVAL => 'eval',
         flags\EXEC_INCLUDE => 'include',
         flags\EXEC_INCLUDE_ONCE => 'include_once',
@@ -109,7 +111,7 @@ class RequireExistsVisitor extends PluginAwarePostAnalysisVisitor
         flags\EXEC_REQUIRE_ONCE => 'require_once',
     ];
 
-    private function getAbsolutePath(Node $node, string $relative_path) : string
+    private function getAbsolutePath(Node $node, string $relative_path): string
     {
         if (Paths::isAbsolutePath($relative_path)) {
             return $relative_path;

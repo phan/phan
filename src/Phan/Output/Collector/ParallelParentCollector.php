@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Output\Collector;
 
@@ -14,7 +16,7 @@ use Phan\Output\IssueCollectorInterface;
  */
 class ParallelParentCollector implements IssueCollectorInterface
 {
-    const MESSAGE_TYPE_ISSUE = 1;
+    public const MESSAGE_TYPE_ISSUE = 1;
 
     /**
      * @var IssueCollectorInterface
@@ -54,7 +56,7 @@ class ParallelParentCollector implements IssueCollectorInterface
         // Listen for ALARMS that indicate we should flush
         // the queue
         \pcntl_sigprocmask(\SIG_UNBLOCK, [\SIGUSR1], $old);
-        \pcntl_signal(\SIGUSR1, function () : void {
+        \pcntl_signal(\SIGUSR1, function (): void {
             $this->readQueuedIssues();
         });
     }
@@ -75,7 +77,7 @@ class ParallelParentCollector implements IssueCollectorInterface
      * Collect issue
      * @param IssueInstance $issue
      */
-    public function collectIssue(IssueInstance $issue) : void
+    public function collectIssue(IssueInstance $issue): void
     {
         $this->base_collector->collectIssue($issue);
     }
@@ -84,7 +86,7 @@ class ParallelParentCollector implements IssueCollectorInterface
      * Read the entire queue and write all issues to the
      * base collector
      */
-    public function readQueuedIssues() : void
+    public function readQueuedIssues(): void
     {
         // Get the status of the queue
         $status = \msg_stat_queue(
@@ -129,7 +131,7 @@ class ParallelParentCollector implements IssueCollectorInterface
      *
      * @param string[] $files - the relative paths to those files (@phan-unused-param)
      */
-    public function removeIssuesForFiles(array $files) : void
+    public function removeIssuesForFiles(array $files): void
     {
         return;  // Never going to be called - daemon mode isn't combined with parallel execution.
     }
@@ -137,7 +139,7 @@ class ParallelParentCollector implements IssueCollectorInterface
     /**
      * @return list<IssueInstance>
      */
-    public function getCollectedIssues() : array
+    public function getCollectedIssues(): array
     {
         // Read any available issues waiting on the
         // message queue
@@ -150,7 +152,7 @@ class ParallelParentCollector implements IssueCollectorInterface
     /**
      * This method has no effect on a ParallelParentCollector.
      */
-    public function reset() : void
+    public function reset(): void
     {
     }
 }

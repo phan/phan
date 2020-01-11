@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Phan\LanguageServer\Server;
@@ -56,7 +57,7 @@ class Workspace
      * @param FileEvent[] $changes
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
-    public function didChangeWatchedFiles(array $changes) : void
+    public function didChangeWatchedFiles(array $changes): void
     {
         // invalidate Phan's cache for these files if changed, added, or modified outside of the IDE
         foreach ($changes as $change) {
@@ -89,7 +90,7 @@ class Workspace
      * @phan-param array<string,mixed> $settings @phan-unused-param NOTE: reflection-docblock does not support generic or associative arrays
      * @return void (unimplemented)
      */
-    public function didChangeConfiguration($settings) : void
+    public function didChangeConfiguration($settings): void
     {
     }
 }

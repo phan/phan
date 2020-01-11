@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests\Output\Printer;
 
@@ -14,7 +16,7 @@ use Symfony\Component\Console\Output\BufferedOutput;
 final class CSVPrinterTest extends BaseTest
 {
 
-    public function testHeaderCorrespondsToData() : void
+    public function testHeaderCorrespondsToData(): void
     {
         $output = new BufferedOutput();
 
@@ -42,7 +44,7 @@ final class CSVPrinterTest extends BaseTest
      *
      * @dataProvider specialCharacterCasesProvider
      */
-    public function testSpecialCharactersAreProperlyEncoded(string $string, string $expected_message) : void
+    public function testSpecialCharactersAreProperlyEncoded(string $string, string $expected_message): void
     {
         $output = new BufferedOutput();
 
@@ -57,7 +59,7 @@ final class CSVPrinterTest extends BaseTest
     }
 
     /** @return list<list> */
-    public function specialCharacterCasesProvider() : array
+    public function specialCharacterCasesProvider(): array
     {
         return [
             // Valid ASCII

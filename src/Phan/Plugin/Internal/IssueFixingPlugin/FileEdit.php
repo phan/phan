@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Plugin\Internal\IssueFixingPlugin;
 
@@ -37,7 +39,7 @@ class FileEdit
     /**
      * Returns true if this has the same effect as $other
      */
-    public function isEqualTo(FileEdit $other) : bool
+    public function isEqualTo(FileEdit $other): bool
     {
         return $this->replace_start === $other->replace_start &&
             $this->replace_end === $other->replace_end &&

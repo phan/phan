@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\FQSEN;
 
@@ -69,9 +71,9 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
     }
 
     /** @internal */
-    const VALID_STRUCTURAL_ELEMENT_REGEX = '/^\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*$/';
+    public const VALID_STRUCTURAL_ELEMENT_REGEX = '/^\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*$/';
     /** @internal */
-    const VALID_STRUCTURAL_ELEMENT_REGEX_PART = '/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/';
+    public const VALID_STRUCTURAL_ELEMENT_REGEX_PART = '/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/';
 
     /**
      * Construct a fully-qualified global structural element from a namespace and name.
@@ -136,7 +138,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         $key = static::class . '|' .
             static::toString(\strtolower($namespace), static::canonicalLookupKey($name), $alternate_id);
 
-        $fqsen = self::memoizeStatic($key, static function () use ($namespace, $name, $alternate_id) : FullyQualifiedGlobalStructuralElement {
+        $fqsen = self::memoizeStatic($key, static function () use ($namespace, $name, $alternate_id): FullyQualifiedGlobalStructuralElement {
             return new static(
                 $namespace,
                 $name,
@@ -166,7 +168,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
             /**
              * @throws FQSENException
              */
-            static function () use ($fully_qualified_string) : FullyQualifiedGlobalStructuralElement {
+            static function () use ($fully_qualified_string): FullyQualifiedGlobalStructuralElement {
                 // Split off the alternate_id
                 $parts = \explode(',', $fully_qualified_string);
                 $fqsen_string = $parts[0];
@@ -263,7 +265,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
                 /**
                  * @throws FQSENException
                  */
-                static function () : self {
+                static function (): self {
                     // Reuse the exception to save time generating an unused stack trace.
                     static $exception;
                     $exception = ($exception ?? new Exception());
@@ -340,13 +342,13 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
      * @return int
      * The namespace map type such as \ast\flags\USE_NORMAL or \ast\flags\USE_FUNCTION
      */
-    abstract protected static function getNamespaceMapType() : int;
+    abstract protected static function getNamespaceMapType(): int;
 
     /**
      * @return string
      * The namespace associated with this FQSEN
      */
-    public function getNamespace() : string
+    public function getNamespace(): string
     {
         return $this->namespace;
     }
@@ -356,7 +358,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
      * The namespace+name associated with this FQSEN.
      * (e.g. 'ast\parse_code')
      */
-    public function getNamespacedName() : string
+    public function getNamespacedName(): string
     {
         if ($this->namespace === '\\') {
             return $this->name;
@@ -410,7 +412,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
      * its always prefixed with a '\' and never ends in a
      * '\', and is the string "\" if there is no namespace.
      */
-    protected static function cleanNamespace(string $namespace) : string
+    protected static function cleanNamespace(string $namespace): string
     {
         if ($namespace === ''
             || $namespace === '\\'
@@ -438,7 +440,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         string $namespace,
         string $name,
         int $alternate_id
-    ) : string {
+    ): string {
         $fqsen_string = $namespace;
 
         if ($fqsen_string && $fqsen_string !== '\\') {
@@ -464,7 +466,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
      * A string representation of this fully-qualified
      * structural element name.
      */
-    public function __toString() : string
+    public function __toString(): string
     {
         return $this->as_string ?? $this->as_string = static::toString(
             $this->namespace,

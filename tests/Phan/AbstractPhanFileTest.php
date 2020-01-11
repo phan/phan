@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests;
 
@@ -10,6 +12,7 @@ use Phan\Output\Printer\PlainTextPrinter;
 use Phan\Phan;
 use Phan\Plugin\ConfigPluginSet;
 use Symfony\Component\Console\Output\BufferedOutput;
+
 use function in_array;
 use function strlen;
 
@@ -21,7 +24,7 @@ use function strlen;
  */
 abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTestInterface
 {
-    const EXPECTED_SUFFIX = '.expected';
+    public const EXPECTED_SUFFIX = '.expected';
 
     /** @var CodeBase represents the known state of the test code base we're analyzing. */
     private $code_base;
@@ -29,7 +32,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
     /**
      * @suppress PhanPossiblyNullTypeMismatchProperty
      */
-    public function setCodeBase(CodeBase $code_base = null) : void
+    public function setCodeBase(CodeBase $code_base = null): void
     {
         $this->code_base = $code_base;
     }
@@ -37,9 +40,9 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
     /**
      * @return array<string,array{0:array,1:string}> Array of <filename => [filename]>
      */
-    abstract public function getTestFiles() : array;
+    abstract public function getTestFiles(): array;
 
-    public static function setUpBeforeClass() : void
+    public static function setUpBeforeClass(): void
     {
         parent::setUpBeforeClass();
         // Reset the config file
@@ -48,7 +51,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
         ConfigPluginSet::reset();  // @phan-suppress-current-line PhanAccessMethodInternal
     }
 
-    public static function tearDownAfterClass() : void
+    public static function tearDownAfterClass(): void
     {
         parent::tearDownAfterClass();
         // Reset the config file
@@ -60,7 +63,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
     /**
      * Setup our state before running each test
      */
-    public function setUp() : void
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -70,7 +73,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
     /**
      * Reset any changes we made to our global state
      */
-    public function tearDown() : void
+    public function tearDown(): void
     {
         parent::tearDown();
 
@@ -83,11 +86,11 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
      * @param string $source_dir
      * @return array<string,array{0:array,1:string}>
      */
-    final protected function scanSourceFilesDir(string $source_dir, string $expected_dir) : array
+    final protected function scanSourceFilesDir(string $source_dir, string $expected_dir): array
     {
         $files = \array_filter(
             \scandir($source_dir) ?: [],
-            static function (string $filename) : bool {
+            static function (string $filename): bool {
                 // Ignore directories and hidden files.
                 return !in_array($filename, ['.', '..'], true) && \substr($filename, 0, 1) !== '.' && \preg_match('@\.php$@', $filename);
             }
@@ -108,7 +111,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
             $files,
             \array_map(
                 /** @return array{0:array{0:string},1:string} */
-                static function (string $filename) use ($source_dir, $expected_dir, $suffix) : array {
+                static function (string $filename) use ($source_dir, $expected_dir, $suffix): array {
                     return [
                         [self::getFileForPHPVersion($source_dir . \DIRECTORY_SEPARATOR . $filename, $suffix)],
                         self::getFileForPHPVersion($expected_dir . \DIRECTORY_SEPARATOR . $filename . self::EXPECTED_SUFFIX, $suffix),
@@ -119,7 +122,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
         );
     }
 
-    protected static function getFileForPHPVersion(string $path, string $suffix) : string
+    protected static function getFileForPHPVersion(string $path, string $suffix): string
     {
         $suffix_path = $path . $suffix;
         if (\file_exists($suffix_path)) {
@@ -128,7 +131,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
         return $path;
     }
 
-    const WHITELIST = [
+    private const WHITELIST = [
         '0338_magic_const_types.php.expected',
     ];
 
@@ -143,7 +146,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
      * @suppress PhanThrowTypeAbsentForCall
      * @dataProvider getTestFiles
      */
-    public function testFiles(array $test_file_list, string $expected_file_path, ?string $config_file_path = null) : void
+    public function testFiles(array $test_file_list, string $expected_file_path, ?string $config_file_path = null): void
     {
         $expected_output = '';
         if (\is_file($expected_file_path)) {
@@ -172,7 +175,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
         Phan::setIssueCollector(new BufferingCollector());
 
 
-        Phan::analyzeFileList($this->code_base, /** @return list<string> */ static function () use ($test_file_list) : array {
+        Phan::analyzeFileList($this->code_base, /** @return list<string> */ static function () use ($test_file_list): array {
             return $test_file_list;
         });
 

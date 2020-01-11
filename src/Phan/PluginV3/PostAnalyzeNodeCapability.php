@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\PluginV3;
 
@@ -26,5 +28,5 @@ interface PostAnalyzeNodeCapability
      *
      * @return string - The name of a class extending PluginAwarePostAnalysisVisitor
      */
-    public static function getPostAnalyzeNodeVisitorClassName() : string;
+    public static function getPostAnalyzeNodeVisitorClassName(): string;
 }

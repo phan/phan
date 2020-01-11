@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 // Phan does a ton of GC and this offers a major speed
 // improvement if your system can handle it (which it
@@ -19,7 +21,7 @@ $file_list = $cli->getFileList();
 
 // This is an example visitor. Do whatever you like here
 // to scan all nodes.
-$visit_node = static function (\ast\Node $node, string $file_path) : void {
+$visit_node = static function (\ast\Node $node, string $file_path): void {
 
     // Take a look at Phan\AST\Visitor\Element to see all
     // of the kinds of nodes

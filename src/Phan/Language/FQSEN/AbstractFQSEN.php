@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\FQSEN;
 
@@ -61,7 +63,7 @@ abstract class AbstractFQSEN implements FQSEN, Serializable
      * @return string
      * The class associated with this FQSEN
      */
-    public function getName() : string
+    public function getName(): string
     {
         return $this->name;
     }
@@ -71,7 +73,7 @@ abstract class AbstractFQSEN implements FQSEN, Serializable
      * The canonical representation of the name of the object. Functions
      * and Methods, for instance, lowercase their names.
      */
-    public static function canonicalName(string $name) : string
+    public static function canonicalName(string $name): string
     {
         return $name;
     }
@@ -83,7 +85,7 @@ abstract class AbstractFQSEN implements FQSEN, Serializable
      * This should not be used directly or indirectly in issue output
      * If an FQSEN is case-sensitive, this should return $name
      */
-    public static function canonicalLookupKey(string $name) : string
+    public static function canonicalLookupKey(string $name): string
     {
         return \strtolower($name);
     }
@@ -93,7 +95,7 @@ abstract class AbstractFQSEN implements FQSEN, Serializable
      * A string representation of this fully-qualified
      * structural element name.
      */
-    abstract public function __toString() : string;
+    abstract public function __toString(): string;
 
     /**
      * @throws Error to prevent accidentally calling this
@@ -107,7 +109,7 @@ abstract class AbstractFQSEN implements FQSEN, Serializable
     /**
      * @throws Error to prevent accidentally calling this
      */
-    public function serialize() : string
+    public function serialize(): string
     {
         // We compare and look up FQSENs by their identity
         throw new Error("serializing an FQSEN (" . (string)$this . ") is forbidden\n");
@@ -118,7 +120,7 @@ abstract class AbstractFQSEN implements FQSEN, Serializable
      * @throws Error to prevent accidentally calling this
      * @suppress PhanParamSignatureRealMismatchHasNoParamTypeInternal, PhanUnusedSuppression parameter type widening was allowed in php 7.2, signature changed in php 8
      */
-    public function unserialize($unused_serialized) : void
+    public function unserialize($unused_serialized): void
     {
         // We compare and look up FQSENs by their identity
         throw new Error("unserializing an FQSEN ($unused_serialized) is forbidden\n");

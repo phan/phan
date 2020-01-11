@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use ast\Node;
 use Phan\AST\UnionTypeVisitor;
@@ -19,7 +21,7 @@ class NonBoolInLogicalArithPlugin extends PluginV3 implements PostAnalyzeNodeCap
      *
      * @override
      */
-    public static function getPostAnalyzeNodeVisitorClassName() : string
+    public static function getPostAnalyzeNodeVisitorClassName(): string
     {
         return NonBoolInLogicalArithVisitor::class;
     }
@@ -32,7 +34,7 @@ class NonBoolInLogicalArithVisitor extends PluginAwarePostAnalysisVisitor
 {
 
     /** define boolean operator list */
-    const BINARY_BOOL_OPERATORS = [
+    private const BINARY_BOOL_OPERATORS = [
         ast\flags\BINARY_BOOL_OR,
         ast\flags\BINARY_BOOL_AND,
         ast\flags\BINARY_BOOL_XOR,
@@ -43,7 +45,7 @@ class NonBoolInLogicalArithVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @override
      */
-    public function visitBinaryOp(Node $node) : Context
+    public function visitBinaryOp(Node $node): Context
     {
         // check every boolean binary operation
         if (in_array($node->flags, self::BINARY_BOOL_OPERATORS, true)) {

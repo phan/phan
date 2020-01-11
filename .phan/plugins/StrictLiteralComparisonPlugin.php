@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use ast\Node;
 use Phan\AST\ASTReverter;
@@ -25,7 +27,7 @@ class StrictLiteralComparisonPlugin extends PluginV3 implements
      * @return string - The name of the visitor that will be called (formerly analyzeNode)
      * @override
      */
-    public static function getPostAnalyzeNodeVisitorClassName() : string
+    public static function getPostAnalyzeNodeVisitorClassName(): string
     {
         return StrictLiteralComparisonVisitor::class;
     }
@@ -42,7 +44,7 @@ class StrictLiteralComparisonVisitor extends PluginAwarePostAnalysisVisitor
      *
      * @override
      */
-    public function visitBinaryOp(Node $node) : void
+    public function visitBinaryOp(Node $node): void
     {
         if ($node->flags === ast\flags\BINARY_IS_NOT_EQUAL || $node->flags === ast\flags\BINARY_IS_EQUAL) {
             $this->analyzeEqualityCheck($node);
@@ -53,7 +55,7 @@ class StrictLiteralComparisonVisitor extends PluginAwarePostAnalysisVisitor
      * @param Node $node
      * A node of kind ast\AST_BINARY_OP for `==`/`!=` to analyze
      */
-    private function analyzeEqualityCheck(Node $node) : void
+    private function analyzeEqualityCheck(Node $node): void
     {
         ['left' => $left, 'right' => $right] = $node->children;
         $left_is_const = ParseVisitor::isConstExpr($left);

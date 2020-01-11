@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Phan\Output\Filter;
@@ -24,7 +25,7 @@ final class CategoryIssueFilter implements IssueFilterInterface
         $this->mask = $mask;
     }
 
-    public function supports(IssueInstance $issue) : bool
+    public function supports(IssueInstance $issue): bool
     {
         return (bool)($issue->getIssue()->getCategory() & $this->mask);
     }

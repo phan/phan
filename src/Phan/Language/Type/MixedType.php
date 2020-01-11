@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Type;
 
@@ -16,11 +18,11 @@ use Phan\Language\UnionType;
 final class MixedType extends NativeType
 {
     /** @phan-override */
-    const NAME = 'mixed';
+    public const NAME = 'mixed';
 
     // mixed or ?mixed can cast to/from anything.
     // For purposes of analysis, there's usually no difference between mixed and nullable mixed.
-    public function canCastToType(Type $unused_type) : bool
+    public function canCastToType(Type $unused_type): bool
     {
         return true;
     }
@@ -29,29 +31,29 @@ final class MixedType extends NativeType
      * @param Type[] $target_type_set 1 or more types @phan-unused-param
      * @override
      */
-    public function canCastToAnyTypeInSet(array $target_type_set) : bool
+    public function canCastToAnyTypeInSet(array $target_type_set): bool
     {
         return true;
     }
 
     // mixed or ?mixed can cast to/from anything.
     // For purposes of analysis, there's no difference between mixed and nullable mixed.
-    protected function canCastToNonNullableType(Type $unused_type) : bool
+    protected function canCastToNonNullableType(Type $unused_type): bool
     {
         return true;
     }
 
-    protected function canCastToNonNullableTypeWithoutConfig(Type $unused_type) : bool
+    protected function canCastToNonNullableTypeWithoutConfig(Type $unused_type): bool
     {
         return true;
     }
 
-    public function isSubtypeOf(Type $type) : bool
+    public function isSubtypeOf(Type $type): bool
     {
         return $type instanceof MixedType;
     }
 
-    public function isSubtypeOfNonNullableType(Type $type) : bool
+    public function isSubtypeOfNonNullableType(Type $type): bool
     {
         return $type instanceof MixedType;
     }
@@ -60,13 +62,13 @@ final class MixedType extends NativeType
         UnionType $union_type,
         Context $unused_context,
         CodeBase $unused_code_base
-    ) : bool {
+    ): bool {
         // Type casting rules allow mixed to cast to anything.
         // But we don't want `@param mixed $x` to take precedence over `int $x` in the signature.
         return $union_type->hasType($this);
     }
 
-    public function asGenericArrayType(int $key_type) : Type
+    public function asGenericArrayType(int $key_type): Type
     {
         if ($key_type === GenericArrayType::KEY_INT || $key_type === GenericArrayType::KEY_STRING) {
             return GenericArrayType::fromElementType($this, false, $key_type);
@@ -74,72 +76,72 @@ final class MixedType extends NativeType
         return ArrayType::instance(false);
     }
 
-    public function isArrayOrArrayAccessSubType(CodeBase $unused_code_base) : bool
+    public function isArrayOrArrayAccessSubType(CodeBase $unused_code_base): bool
     {
         return true;
     }
 
-    public function isPrintableScalar() : bool
+    public function isPrintableScalar(): bool
     {
         return true;  // It's possible.
     }
 
-    public function isValidBitwiseOperand() : bool
+    public function isValidBitwiseOperand(): bool
     {
         return true;
     }
 
-    public function isValidNumericOperand() : bool
+    public function isValidNumericOperand(): bool
     {
         return true;
     }
 
-    public function isPossiblyObject() : bool
+    public function isPossiblyObject(): bool
     {
         return true;  // It's possible.
     }
 
-    public function isPossiblyNumeric() : bool
+    public function isPossiblyNumeric(): bool
     {
         return true;  // It's possible.
     }
 
-    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $unused_other) : bool
+    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $unused_other): bool
     {
         return true;  // It's possible.
     }
 
-    public function isDefiniteNonObjectType() : bool
+    public function isDefiniteNonObjectType(): bool
     {
         return false;
     }
 
-    public function isDefiniteNonCallableType() : bool
+    public function isDefiniteNonCallableType(): bool
     {
         return false;
     }
 
-    public function canUseInRealSignature() : bool
+    public function canUseInRealSignature(): bool
     {
         return false;
     }
 
-    public function isPossiblyFalsey() : bool
+    public function isPossiblyFalsey(): bool
     {
         return true;
     }
 
-    public function isAlwaysTruthy() : bool
+    public function isAlwaysTruthy(): bool
     {
         return false;
     }
 
-    public function asObjectType() : ?Type
+    public function asObjectType(): ?Type
     {
         return ObjectType::instance(false);
     }
 
-    public function asArrayType() : ?Type
+    public function asArrayType(): ?Type
     {
         return ArrayType::instance(false);
     }

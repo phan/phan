@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Library;
 
@@ -11,7 +13,7 @@ class Paths
      * @return bool
      * Is the passed in path already an absolute path?
      */
-    public static function isAbsolutePath(string $path) : bool
+    public static function isAbsolutePath(string $path): bool
     {
         $first_character = \substr($path, 0, 1);
         // Make sure it's actually relative
@@ -37,7 +39,7 @@ class Paths
      * @param string $absolute_directory the path to use when converting $path from a relative path to an absolute path.
      * @param string $path a relative or absolute path
      */
-    public static function toAbsolutePath(string $absolute_directory, string $path) : string
+    public static function toAbsolutePath(string $absolute_directory, string $path): string
     {
         if (Paths::isAbsolutePath($path)) {
             return $path;
@@ -53,7 +55,7 @@ class Paths
     /**
      * Returns JSON encoded $path, without escaping unicode or "/"
      */
-    public static function escapePathForIssue(string $path) : string
+    public static function escapePathForIssue(string $path): string
     {
         // If possible, use json_encode.
         // If json_encode failed (e.g. invalid unicode), then use var_export

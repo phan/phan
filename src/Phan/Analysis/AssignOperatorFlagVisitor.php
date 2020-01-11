@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Analysis;
 
@@ -68,7 +70,7 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visit(Node $node) : UnionType
+    public function visit(Node $node): UnionType
     {
         // TODO: For some types (e.g. xor, bitwise or), set the type of the variable?
         // Or should that be done in PreOrderAnalysisVisitor?
@@ -112,7 +114,7 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
         return $int_or_float ?? ($int_or_float = UnionType::fromFullyQualifiedPHPDocString('int|float'));
     }
 
-    public function visitBinaryCoalesce(Node $node) : UnionType
+    public function visitBinaryCoalesce(Node $node): UnionType
     {
         $var_node = $node->children['var'];
         $new_node = new ast\Node(ast\AST_BINARY_OP, $node->lineno, [
@@ -129,7 +131,7 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
     /**
      * @return UnionType for the `&` operator
      */
-    public function visitBinaryBitwiseAnd(Node $node) : UnionType
+    public function visitBinaryBitwiseAnd(Node $node): UnionType
     {
         $left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
@@ -157,7 +159,7 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
     /**
      * @return UnionType for the `|` operator
      */
-    public function visitBinaryBitwiseOr(Node $node) : UnionType
+    public function visitBinaryBitwiseOr(Node $node): UnionType
     {
         $left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
@@ -189,7 +191,7 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
      *
      * @return UnionType for the `^` operator
      */
-    public function visitBinaryBitwiseXor(Node $node) : UnionType
+    public function visitBinaryBitwiseXor(Node $node): UnionType
     {
         $left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
@@ -239,7 +241,7 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visitBinaryConcat(Node $node) : UnionType
+    public function visitBinaryConcat(Node $node): UnionType
     {
         return StringType::instance(false)->asRealUnionType();
     }
@@ -251,7 +253,7 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visitBinaryAdd(Node $node) : UnionType
+    public function visitBinaryAdd(Node $node): UnionType
     {
         static $int_or_float_or_array;
         static $probably_int_type;
@@ -347,26 +349,26 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
     }
 
     /** @override */
-    public function visitBinaryDiv(Node $_) : UnionType
+    public function visitBinaryDiv(Node $_): UnionType
     {
         // analyzed in AssignOperatorAnalysisVisitor
         return FloatType::instance(false)->asRealUnionType();
     }
 
     /** @override */
-    public function visitBinaryMul(Node $node) : UnionType
+    public function visitBinaryMul(Node $node): UnionType
     {
         // both sides are analyzed for issues in AssignOperatorAnalysisVisitor
         return $this->optimisticAnalyzeNumericOp($node);
     }
 
     /** @override */
-    public function visitBinarySub(Node $node) : UnionType
+    public function visitBinarySub(Node $node): UnionType
     {
         return $this->optimisticAnalyzeNumericOp($node);
     }
 
-    private function optimisticAnalyzeNumericOp(Node $node) : UnionType
+    private function optimisticAnalyzeNumericOp(Node $node): UnionType
     {
         $left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
@@ -390,27 +392,27 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
     }
 
     /** @override */
-    public function visitBinaryMod(Node $_) : UnionType
+    public function visitBinaryMod(Node $_): UnionType
     {
         // analyzed in AssignOperatorAnalysisVisitor
         return IntType::instance(false)->asRealUnionType();
     }
 
     /** @override */
-    public function visitBinaryPow(Node $_) : UnionType
+    public function visitBinaryPow(Node $_): UnionType
     {
         // analyzed in AssignOperatorAnalysisVisitor
         return FloatType::instance(false)->asRealUnionType();
     }
 
     /** @override */
-    public function visitBinaryShiftLeft(Node $_) : UnionType
+    public function visitBinaryShiftLeft(Node $_): UnionType
     {
         return IntType::instance(false)->asRealUnionType();
     }
 
     /** @override */
-    public function visitBinaryShiftRight(Node $_) : UnionType
+    public function visitBinaryShiftRight(Node $_): UnionType
     {
         return IntType::instance(false)->asRealUnionType();
     }

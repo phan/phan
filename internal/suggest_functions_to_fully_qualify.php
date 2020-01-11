@@ -1,5 +1,6 @@
 #!/usr/bin/env php
 <?php
+
 declare(strict_types=1);
 
 use Phan\CLIBuilder;
@@ -8,7 +9,7 @@ use Phan\Phan;
 /**
  * Print usage for suggest_functions_to_fully_qualify and exit.
  */
-function suggest_functions_to_fully_qualify_usage(int $status) : void
+function suggest_functions_to_fully_qualify_usage(int $status): void
 {
     global $argv;
     $program = $argv[0];
@@ -24,7 +25,7 @@ EOT
     );
     exit($status);
 }
-call_user_func(static function () : void {
+call_user_func(static function (): void {
     global $argv;
     $options = getopt(
         "hp",
@@ -34,7 +35,7 @@ call_user_func(static function () : void {
         ],
         $optind
     );
-    $has_any_option = static function (string ...$arg_names) use ($options) : bool {
+    $has_any_option = static function (string ...$arg_names) use ($options): bool {
         foreach ($arg_names as $arg) {
             if (array_key_exists($arg, $options)) {
                 return true;
@@ -66,7 +67,7 @@ call_user_func(static function () : void {
     $cli = $cli_builder->build();
 
     // @phan-suppress-next-line PhanThrowTypeAbsentForCall
-    Phan::analyzeFileList($code_base, /** @return string[] */ static function () use ($cli) : array {
+    Phan::analyzeFileList($code_base, /** @return string[] */ static function () use ($cli): array {
         return $cli->getFileList();
     });
 });

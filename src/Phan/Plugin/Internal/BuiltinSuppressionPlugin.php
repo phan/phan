@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Plugin\Internal;
 
@@ -66,7 +68,7 @@ final class BuiltinSuppressionPlugin extends PluginV3 implements
         int $lineno,
         array $parameters,
         ?Suggestion $suggestion
-    ) : bool {
+    ): bool {
         $issue_suppression_list = $this->getRawIssueSuppressionList($code_base, $context->getFile());
         $suppressions_for_issue_type = $issue_suppression_list[$issue_type] ?? null;
         if (isset($suppressions_for_issue_type[$lineno])) {
@@ -89,7 +91,7 @@ final class BuiltinSuppressionPlugin extends PluginV3 implements
     public function getIssueSuppressionList(
         CodeBase $code_base,
         string $file_path
-    ) : array {
+    ): array {
         $result = self::getRawIssueSuppressionList($code_base, $file_path);
         $used_file_based_suppression_set = $this->used_file_based_suppressions[$file_path] ?? [];
         foreach ($used_file_based_suppression_set as $issue_kind => $_) {
@@ -109,7 +111,7 @@ final class BuiltinSuppressionPlugin extends PluginV3 implements
     public function getRawIssueSuppressionList(
         CodeBase $code_base,
         string $file_path
-    ) : array {
+    ): array {
         if ($file_path === 'internal') {
             return [];
         }
@@ -146,7 +148,7 @@ final class BuiltinSuppressionPlugin extends PluginV3 implements
     private static function computeIssueSuppressionList(
         CodeBase $unused_code_base,
         string $file_contents
-    ) : array {
+    ): array {
         if (!\preg_match(self::SUPPRESS_ISSUE_REGEX, $file_contents)) {
             // If the **file** doesn't contain the regex we're looking for,
             // then none of the comments will.
@@ -197,7 +199,7 @@ final class BuiltinSuppressionPlugin extends PluginV3 implements
     }
 
     // @phan-suppress-next-line PhanAccessClassConstantInternal
-    const SUPPRESS_ISSUE_REGEX = '/@phan-(suppress-(next(?:-next)?|current|previous)-line|file-suppress)\s+' . Builder::SUPPRESS_ISSUE_LIST . '/';
+    private const SUPPRESS_ISSUE_REGEX = '/@phan-(suppress-(next(?:-next)?|current|previous)-line|file-suppress)\s+' . Builder::SUPPRESS_ISSUE_LIST . '/';
 
     /**
      * @return Generator<array{0:string,1:int,2:int,3:string,4:string}>
@@ -205,7 +207,7 @@ final class BuiltinSuppressionPlugin extends PluginV3 implements
      */
     private static function yieldSuppressionComments(
         string $file_contents
-    ) : Generator {
+    ): Generator {
         foreach (\token_get_all($file_contents) as $token) {
             if (!\is_array($token)) {
                 continue;

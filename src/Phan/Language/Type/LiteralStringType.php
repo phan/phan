@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Type;
 
@@ -11,7 +13,9 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use RuntimeException;
+
 use function filter_var;
+
 use const FILTER_VALIDATE_FLOAT;
 use const FILTER_VALIDATE_INT;
 
@@ -22,7 +26,7 @@ use const FILTER_VALIDATE_INT;
 final class LiteralStringType extends StringType implements LiteralTypeInterface
 {
 
-    const MINIMUM_MAX_STRING_LENGTH = 50;
+    public const MINIMUM_MAX_STRING_LENGTH = 50;
 
     /** @var string $value */
     private $value;
@@ -48,7 +52,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
      * Check if Phan will represent strings of a given length in its type system.
      * @param int|float $length
      */
-    public static function canRepresentStringOfLength($length) : bool
+    public static function canRepresentStringOfLength($length): bool
     {
         // The config can only be used to increase this limit, not decrease it.
         return $length <= self::MINIMUM_MAX_STRING_LENGTH || $length <= Config::getValue('max_literal_string_type_length');
@@ -78,7 +82,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
     /**
      * Returns the literal string this type represents (whether or not this is the nullable type)
      */
-    public function getValue() : string
+    public function getValue(): string
     {
         return $this->value;
     }
@@ -86,7 +90,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
     /**
      * @internal - For use within LiteralStringType
      */
-    const ESCAPE_CHARACTER_LOOKUP = [
+    private const ESCAPE_CHARACTER_LOOKUP = [
         "\n" => '\\n',
         "\r" => '\\r',
         "\t" => '\\t',
@@ -97,7 +101,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
     /**
      * @internal - For use within LiteralStringType
      */
-    const UNESCAPE_CHARACTER_LOOKUP = [
+    private const UNESCAPE_CHARACTER_LOOKUP = [
         '\\n' => "\n",
         '\\r' => "\r",
         '\\t' => "\t",
@@ -105,7 +109,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
         '\\\'' => "'",
     ];
 
-    public function __toString() : string
+    public function __toString(): string
     {
         // TODO: Finalize escaping
         // NOTE: Phan has issues with parsing commas in phpdoc, so don't suggest them.
@@ -115,7 +119,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
             /**
              * @param array{0:string} $match
              */
-            static function (array $match) : string {
+            static function (array $match): string {
                 $c = $match[0];
                 return self::ESCAPE_CHARACTER_LOOKUP[$c] ?? \sprintf('\\x%02x', \ord($c));
             },
@@ -134,7 +138,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
      * if the $escaped_string is not using the proper escaping
      * (should not happen if UnionType's regex is used)
      */
-    public static function fromEscapedString(string $escaped_string, bool $is_nullable) : StringType
+    public static function fromEscapedString(string $escaped_string, bool $is_nullable): StringType
     {
         if (\strlen($escaped_string) < 2 || $escaped_string[0] !== "'" || \substr($escaped_string, -1) !== "'") {
             throw new InvalidArgumentException("Expected the literal type string to begin and end with \"'\"");
@@ -143,7 +147,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
         $escaped_string = \preg_replace_callback(
             '/\\\\(?:[\'\\\\trn]|x[0-9a-fA-F]{2})/',
             /** @param array{0:string} $matches */
-            static function (array $matches) : string {
+            static function (array $matches): string {
                 $x = $matches[0];
                 if (\strlen($x) === 2) {
                     // Parses one of \t \r \n \\ \'
@@ -167,13 +171,13 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
     /**
      * Called at the bottom of the file to ensure static properties are set for quick access.
      */
-    public static function init() : void
+    public static function init(): void
     {
         self::$non_nullable_string_type = StringType::instance(false);
         self::$nullable_string_type = StringType::instance(true);
     }
 
-    public function asNonLiteralType() : Type
+    public function asNonLiteralType(): Type
     {
         return $this->is_nullable ? self::$nullable_string_type : self::$non_nullable_string_type;
     }
@@ -182,36 +186,36 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
      * @return Type[]
      * @override
      */
-    public function withFlattenedArrayShapeOrLiteralTypeInstances() : array
+    public function withFlattenedArrayShapeOrLiteralTypeInstances(): array
     {
         return [$this->is_nullable ? self::$nullable_string_type : self::$non_nullable_string_type];
     }
 
-    public function hasArrayShapeOrLiteralTypeInstances() : bool
+    public function hasArrayShapeOrLiteralTypeInstances(): bool
     {
         return true;
     }
 
     /** @override */
-    public function isPossiblyFalsey() : bool
+    public function isPossiblyFalsey(): bool
     {
         return !$this->value || $this->is_nullable;
     }
 
     /** @override */
-    public function isAlwaysFalsey() : bool
+    public function isAlwaysFalsey(): bool
     {
         return !$this->value;
     }
 
     /** @override */
-    public function isPossiblyTruthy() : bool
+    public function isPossiblyTruthy(): bool
     {
         return (bool)$this->value;
     }
 
     /** @override */
-    public function isAlwaysTruthy() : bool
+    public function isAlwaysTruthy(): bool
     {
         return (bool)$this->value && !$this->is_nullable;
     }
@@ -221,7 +225,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
      * True if this Type can be cast to the given Type
      * cleanly
      */
-    protected function canCastToNonNullableType(Type $type) : bool
+    protected function canCastToNonNullableType(Type $type): bool
     {
         if ($type instanceof ScalarType) {
             switch ($type::NAME) {
@@ -263,7 +267,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
         return parent::canCastToNonNullableType($type);
     }
 
-    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $context, Type $type) : bool
+    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $context, Type $type): bool
     {
         if ($type instanceof ScalarType) {
             switch ($type::NAME) {
@@ -298,7 +302,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
      * cleanly without config overrides
      * @override
      */
-    protected function canCastToNonNullableTypeWithoutConfig(Type $type) : bool
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type): bool
     {
         if ($type instanceof ScalarType) {
             switch ($type::NAME) {
@@ -319,7 +323,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
      * @return bool
      * True if this Type is a subtype of the given type.
      */
-    protected function isSubtypeOfNonNullableType(Type $type) : bool
+    protected function isSubtypeOfNonNullableType(Type $type): bool
     {
         if ($type instanceof ScalarType) {
             if ($type instanceof StringType) {
@@ -343,7 +347,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
      * A new type that is a copy of this type but with the
      * given nullability value.
      */
-    public function withIsNullable(bool $is_nullable) : Type
+    public function withIsNullable(bool $is_nullable): Type
     {
         if ($is_nullable === $this->is_nullable) {
             return $this;
@@ -361,7 +365,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
      * @param int $flags (e.g. \ast\flags\BINARY_IS_SMALLER)
      * @internal
      */
-    public function canSatisfyComparison($scalar, int $flags) : bool
+    public function canSatisfyComparison($scalar, int $flags): bool
     {
         return self::performComparison($this->value, $scalar, $flags);
     }
@@ -369,7 +373,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
     /**
      * If a literal string is numeric, then it will have a numeric type (int/float) after being incremented/decremented
      */
-    public function getTypeAfterIncOrDec() : UnionType
+    public function getTypeAfterIncOrDec(): UnionType
     {
         $v = $this->value;
         ++$v;
@@ -381,7 +385,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
      * @param CodeBase $code_base the code base in which the function interface is found
      * @param Context $context the context where the function interface is referenced (for emitting issues)
      */
-    public function asFunctionInterfaceOrNull(CodeBase $code_base, Context $context) : ?FunctionInterface
+    public function asFunctionInterfaceOrNull(CodeBase $code_base, Context $context): ?FunctionInterface
     {
         // parse 'function_name' or 'class_name::method_name'
         // NOTE: In other subclasses of Type, calling this might recurse.
@@ -389,17 +393,17 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
         return $function_like_fqsens[0] ?? null;
     }
 
-    public function isValidNumericOperand() : bool
+    public function isValidNumericOperand(): bool
     {
         return filter_var($this->value, FILTER_VALIDATE_FLOAT) !== false;
     }
 
-    public function asSignatureType() : Type
+    public function asSignatureType(): Type
     {
         return StringType::instance($this->is_nullable);
     }
 
-    public function weaklyOverlaps(Type $other) : bool
+    public function weaklyOverlaps(Type $other): bool
     {
         // TODO: Could be stricter
         if ($other instanceof ScalarType) {

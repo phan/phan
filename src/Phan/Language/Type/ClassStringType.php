@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Type;
 
@@ -17,10 +19,10 @@ use Phan\Language\UnionType;
 final class ClassStringType extends StringType
 {
     /** @phan-override */
-    const NAME = 'class-string';
+    public const NAME = 'class-string';
 
     /** @override */
-    public function isPossiblyNumeric() : bool
+    public function isPossiblyNumeric(): bool
     {
         return false;
     }
@@ -28,12 +30,12 @@ final class ClassStringType extends StringType
     /**
      * Returns the type after an expression such as `++$x`
      */
-    public function getTypeAfterIncOrDec() : UnionType
+    public function getTypeAfterIncOrDec(): UnionType
     {
         return UnionType::fromFullyQualifiedPHPDocString('string');
     }
 
-    public function hasTemplateTypeRecursive() : bool
+    public function hasTemplateTypeRecursive(): bool
     {
         $template_union_type = $this->template_parameter_type_list[0] ?? null;
         if (!$template_union_type) {
@@ -50,13 +52,13 @@ final class ClassStringType extends StringType
     /**
      * Returns the class union type this class string represents, or the empty union type
      */
-    public function getClassUnionType() : UnionType
+    public function getClassUnionType(): UnionType
     {
         $template_union_type = $this->template_parameter_type_list[0] ?? null;
         if (!$template_union_type) {
             return UnionType::empty();
         }
-        return $template_union_type->makeFromFilter(static function (Type $type) : bool {
+        return $template_union_type->makeFromFilter(static function (Type $type): bool {
             return $type instanceof TemplateType || $type->isObjectWithKnownFQSEN();
         });
     }
@@ -68,7 +70,7 @@ final class ClassStringType extends StringType
      * @return ?Closure(UnionType):UnionType a closure to determine the union type(s) that are in the same position(s) as the template type.
      * This is overridden in subclasses.
      */
-    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type) : ?Closure
+    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type): ?Closure
     {
         $template_union_type = $this->template_parameter_type_list[0] ?? null;
         if (!$template_union_type) {
@@ -77,7 +79,7 @@ final class ClassStringType extends StringType
         if (!$template_union_type->isType($template_type)) {
             return null;
         }
-        return static function (UnionType $type) : UnionType {
+        return static function (UnionType $type): UnionType {
             $result = UnionType::empty();
             foreach ($type->asStringScalarValues() as $string) {
                 // Convert string arguments to the classes they represent
@@ -93,7 +95,7 @@ final class ClassStringType extends StringType
         };
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         $string = self::NAME;
 
@@ -108,12 +110,12 @@ final class ClassStringType extends StringType
         return $string;
     }
 
-    public function canUseInRealSignature() : bool
+    public function canUseInRealSignature(): bool
     {
         return false;
     }
 
-    public function withIsNullable(bool $is_nullable) : Type
+    public function withIsNullable(bool $is_nullable): Type
     {
         if ($is_nullable === $this->is_nullable) {
             return $this;

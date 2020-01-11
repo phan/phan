@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Type;
 
@@ -11,21 +13,21 @@ use Phan\Language\UnionType;
 interface GenericArrayInterface
 {
     /** Returns the union type of this generic array type's elements. */
-    public function genericArrayElementUnionType() : UnionType;
+    public function genericArrayElementUnionType(): UnionType;
 
     /**
      * Returns the key type of this generic or shaped array.
      * e.g. for `int[]`, returns self::KEY_MIXED, for `array<string,mixed>`, returns self::KEY_STRING.
      */
-    public function getKeyType() : int;
+    public function getKeyType(): int;
 
     /**
      * True for classes such as non-empty-array and non-empty-list.
      */
-    public function isDefinitelyNonEmptyArray() : bool;
+    public function isDefinitelyNonEmptyArray(): bool;
 
     /**
      * Is this type nullable
      */
-    public function isNullable() : bool;
+    public function isNullable(): bool;
 }

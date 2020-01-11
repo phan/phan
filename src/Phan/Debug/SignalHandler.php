@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Debug;
 
@@ -13,7 +15,7 @@ class SignalHandler
      * Set up the signal handlers
      * @suppress PhanAccessMethodInternal
      */
-    public static function init() : void
+    public static function init(): void
     {
         static $did_init = false;
         if ($did_init) {
@@ -29,7 +31,7 @@ class SignalHandler
         /**
          * @param mixed $unused_signinfo
          */
-        $handler = static function (int $signo, $unused_signinfo) : void {
+        $handler = static function (int $signo, $unused_signinfo): void {
             $trace = \debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS);
             if ($signo === \SIGINT) {
                 \phan_error_handler(\E_ERROR, "Phan was interrupted with SIGINT, exiting\n", $trace[0]['file'] ?? 'unknown file', $trace[0]['line'] ?? 0);

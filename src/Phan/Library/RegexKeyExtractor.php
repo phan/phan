@@ -1,8 +1,11 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Library;
 
 use InvalidArgumentException;
+
 use function strlen;
 use function strpos;
 
@@ -38,7 +41,7 @@ class RegexKeyExtractor
      * @return array<string|int,true> the best guess at the keys that would be parsed into $matches by preg_match, based on the regex and flags passed to preg_match
      * @throws InvalidArgumentException if the regex could not be parsed by these heuristics
      */
-    public static function getKeys($regex) : array
+    public static function getKeys($regex): array
     {
         if (!\is_string($regex)) {
             throw new InvalidArgumentException("regex is not a string");
@@ -56,7 +59,7 @@ class RegexKeyExtractor
         return $matcher->getMatchKeys();
     }
 
-    private function consumeUntil(string $next_char) : void
+    private function consumeUntil(string $next_char): void
     {
         $end = strpos($this->pattern, $next_char, $this->offset);
         if ($end === false) {
@@ -69,7 +72,7 @@ class RegexKeyExtractor
      * @throws InvalidArgumentException if an invalid pattern was seen
      * @suppress PhanPossiblyInfiniteRecursionSameParams this issue type does not attempt to check for changes to properties or global state.
      */
-    private function extractGroup() : void
+    private function extractGroup(): void
     {
         $pattern = $this->pattern;
         if ($pattern[$this->offset] === '?') {
@@ -147,7 +150,7 @@ class RegexKeyExtractor
         throw new InvalidArgumentException('Reached the end of the pattern before extracting the group');
     }
 
-    private function extractCombinationGroup() : void
+    private function extractCombinationGroup(): void
     {
         $original_matches = $this->matches;
         $possible_matches = $original_matches;
@@ -180,7 +183,7 @@ class RegexKeyExtractor
     }
 
     /** @return associative-array<int|string,true> */
-    private function getMatchKeys() : array
+    private function getMatchKeys(): array
     {
         return $this->matches;
     }
@@ -190,7 +193,7 @@ class RegexKeyExtractor
      * Extracts everything between the pattern delimiters.
      * @throws InvalidArgumentException if the length mismatched
      */
-    private static function extractInnerRegexPattern(string $pattern) : string
+    private static function extractInnerRegexPattern(string $pattern): string
     {
         $pattern = \trim($pattern);
 

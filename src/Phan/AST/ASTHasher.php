@@ -1,8 +1,11 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\AST;
 
 use ast\Node;
+
 use function is_int;
 use function is_string;
 use function md5;
@@ -17,7 +20,7 @@ class ASTHasher
      * @param string|int|float|null $node
      * @return string a 16-byte binary key for the array key
      */
-    public static function hashKey($node) : string
+    public static function hashKey($node): string
     {
         if (is_string($node)) {
             return md5('s' . $node, true);
@@ -33,7 +36,7 @@ class ASTHasher
      * @param Node|string|int|float|null $node
      * @return string a 16-byte binary key for the Node
      */
-    public static function hash($node) : string
+    public static function hash($node): string
     {
         if (!($node instanceof Node)) {
             // hashKey
@@ -53,7 +56,7 @@ class ASTHasher
      * @param Node $node
      * @return string a newly computed 16-byte binary key
      */
-    private static function computeHash(Node $node) : string
+    private static function computeHash(Node $node): string
     {
         $str = 'N' . $node->kind . ':' . ($node->flags & 0xfffff);
         foreach ($node->children as $key => $child) {

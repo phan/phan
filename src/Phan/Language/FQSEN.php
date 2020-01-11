@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language;
 
@@ -43,14 +45,14 @@ interface FQSEN
      * The class associated with this FQSEN or
      * null if not defined
      */
-    public function getName() : string;
+    public function getName(): string;
 
     /**
      * @return string
      * The canonical representation of the name of the object. Functions
      * and Methods, for instance, lowercase their names.
      */
-    public static function canonicalName(string $name) : string;
+    public static function canonicalName(string $name): string;
 
     /**
      * @return static
@@ -64,5 +66,5 @@ interface FQSEN
      * A string representation of this fully-qualified
      * structural element name.
      */
-    public function __toString() : string;
+    public function __toString(): string;
 }

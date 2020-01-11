@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Plugin\Internal\VariableTracker;
 
@@ -33,7 +35,7 @@ final class VariableTrackingLoopScope extends VariableTrackingBranchScope
      * @param VariableTrackingBranchScope $skipped_loop_scope
      * @param bool $exits
      */
-    public function recordSkippedScope(VariableTrackingBranchScope $skipped_loop_scope, bool $exits) : void
+    public function recordSkippedScope(VariableTrackingBranchScope $skipped_loop_scope, bool $exits): void
     {
         if ($exits) {
             $this->skipped_exiting_loop_scopes[] = $skipped_loop_scope;
@@ -47,7 +49,7 @@ final class VariableTrackingLoopScope extends VariableTrackingBranchScope
      * Account for the definitions and uses of the child scopes with `break`/`continue` inside of this switch statement,
      * using these to update the definition and uses of the outer scope of the `switch` node
      */
-    public function flattenSwitchCaseScopes(VariableGraph $graph) : void
+    public function flattenSwitchCaseScopes(VariableGraph $graph): void
     {
         foreach ($this->skipped_loop_scopes as $alternate_scope) {
             $this->flattenScopeToMergedLoopResult($this, $alternate_scope, $graph);

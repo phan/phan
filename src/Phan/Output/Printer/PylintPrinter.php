@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Output\Printer;
 
@@ -16,7 +18,7 @@ final class PylintPrinter implements IssuePrinterInterface
     /** @var OutputInterface an output that pylint formatted issues can be written to. */
     private $output;
 
-    public function print(IssueInstance $instance) : void
+    public function print(IssueInstance $instance): void
     {
         $message = \sprintf(
             "%s: %s",
@@ -46,7 +48,7 @@ final class PylintPrinter implements IssuePrinterInterface
      * Returns a severity code that can be parsed by programs parsing pylint output
      * (e.g. `"E17000"` for PhanSyntaxError)
      */
-    public static function getSeverityCode(IssueInstance $instance) : string
+    public static function getSeverityCode(IssueInstance $instance): string
     {
         $issue = $instance->getIssue();
         $category_id = $issue->getTypeId();
@@ -63,7 +65,7 @@ final class PylintPrinter implements IssuePrinterInterface
         }
     }
 
-    public function configureOutput(OutputInterface $output) : void
+    public function configureOutput(OutputInterface $output): void
     {
         $this->output = $output;
     }

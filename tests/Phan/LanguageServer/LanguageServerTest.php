@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests\LanguageServer;
 
@@ -19,14 +21,14 @@ use Phan\Tests\BaseTest;
  */
 final class LanguageServerTest extends BaseTest
 {
-    public function testInitializeMinimal() : void
+    public function testInitializeMinimal(): void
     {
         // @phan-suppress-next-line PhanAccessMethodInternal
         Config::reset();
         Config::setValue('language_server_enable_completion', false);
         Config::setValue('language_server_enable_hover', false);
         Config::setValue('language_server_enable_go_to_definition', false);
-        $mock_file_path_lister = /** @return array{} */ static function () : array {
+        $mock_file_path_lister = /** @return array{} */ static function (): array {
             return [];
         };
         $code_base = new CodeBase([], [], [], [], []);
@@ -46,11 +48,11 @@ final class LanguageServerTest extends BaseTest
         $this->assertEquals(new InitializeResult($server_capabilities), $result);
     }
 
-    public function testInitializeDefault() : void
+    public function testInitializeDefault(): void
     {
         // @phan-suppress-next-line PhanAccessMethodInternal
         Config::reset();
-        $mock_file_path_lister = /** @return array{} */ static function () : array {
+        $mock_file_path_lister = /** @return array{} */ static function (): array {
             return [];
         };
         $code_base = new CodeBase([], [], [], [], []);

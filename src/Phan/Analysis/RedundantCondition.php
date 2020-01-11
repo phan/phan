@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Analysis;
 
@@ -47,7 +49,7 @@ class RedundantCondition
      * @param Node|int|float|string $node
      * @param string $issue_name
      */
-    public static function chooseSpecificImpossibleOrRedundantIssueKind($node, Context $context, string $issue_name) : string
+    public static function chooseSpecificImpossibleOrRedundantIssueKind($node, Context $context, string $issue_name): string
     {
         if (ParseVisitor::isNonVariableExpr($node)) {
             return $issue_name;
@@ -77,12 +79,12 @@ class RedundantCondition
         array $issue_args,
         Closure $is_still_issue,
         bool $specialize_issue = true
-    ) : void {
+    ): void {
         if ($specialize_issue) {
             if ($context->isInLoop() && $node instanceof Node) {
                 $type_fetcher = self::getLoopNodeTypeFetcher($code_base, $node);
                 if ($type_fetcher) {
-                    $context->deferCheckToOutermostLoop(static function (Context $context_after_loop) use ($code_base, $node, $type_fetcher, $is_still_issue, $issue_name, $issue_args, $context) : void {
+                    $context->deferCheckToOutermostLoop(static function (Context $context_after_loop) use ($code_base, $node, $type_fetcher, $is_still_issue, $issue_name, $issue_args, $context): void {
                         $var_type = $type_fetcher($context_after_loop);
                         if ($var_type !== null && ($var_type->isEmpty() || !$is_still_issue($var_type))) {
                             return;
@@ -117,7 +119,7 @@ class RedundantCondition
      * @return ?Closure(Context):(?UnionType) A closure to fetch the type, or null if the inferred type isn't expected to vary.
      * @internal
      */
-    public static function getLoopNodeTypeFetcher(CodeBase $code_base, $node) : ?Closure
+    public static function getLoopNodeTypeFetcher(CodeBase $code_base, $node): ?Closure
     {
         if (!($node instanceof Node)) {
             // This scalar won't change.
@@ -126,7 +128,7 @@ class RedundantCondition
         if ($node->kind === ast\AST_VAR) {
             $var_name = $node->children['name'];
             if (\is_string($var_name)) {
-                return static function (Context $context_after_loop) use ($var_name) : ?UnionType {
+                return static function (Context $context_after_loop) use ($var_name): ?UnionType {
                     $scope = $context_after_loop->getScope();
                     if ($scope->hasVariableWithName($var_name)) {
                         return $scope->getVariableByName($var_name)->getUnionType()->getRealUnionType();
@@ -140,7 +142,7 @@ class RedundantCondition
             // We don't know any variables this uses
             return null;
         }
-        return static function (Context $context_after_loop) use ($code_base, $variable_set, $node) : ?UnionType {
+        return static function (Context $context_after_loop) use ($code_base, $variable_set, $node): ?UnionType {
             $scope = $context_after_loop->getScope();
             foreach ($variable_set as $var_name) {
                 if (!$scope->hasVariableWithName($var_name)) {
@@ -160,7 +162,7 @@ class RedundantCondition
      * @return associative-array<int|string, string> the set of variable names.
      * @internal
      */
-    public static function getVariableSet($node) : array
+    public static function getVariableSet($node): array
     {
         if (!$node instanceof Node) {
             return [];
@@ -190,7 +192,7 @@ class RedundantCondition
      * e.g. `isset($str[5])`
      * @param Node|string|int|float $node
      */
-    public static function shouldNotWarnAboutIssetCheckForNonNullExpression(CodeBase $code_base, Context $context, $node) : bool
+    public static function shouldNotWarnAboutIssetCheckForNonNullExpression(CodeBase $code_base, Context $context, $node): bool
     {
         if (!$node instanceof Node) {
             return false;

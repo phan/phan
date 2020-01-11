@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Analysis;
 
@@ -38,7 +40,7 @@ trait Analyzable
      * @param Node $node
      * The AST Node defining this object.
      */
-    public function setNode(Node $node) : void
+    public function setNode(Node $node): void
     {
         // Don't waste the memory if we're in quick mode
         if (Config::get_quick_mode()) {
@@ -52,7 +54,7 @@ trait Analyzable
      * @return bool
      * True if we have a node defined on this object
      */
-    public function hasNode() : bool
+    public function hasNode(): bool
     {
         return $this->node !== null;
     }
@@ -63,7 +65,7 @@ trait Analyzable
      * NOTE: This is non-null if hasNode is true
      * @suppress PhanTypeMismatchDeclaredReturnNullable
      */
-    public function getNode() : ?Node
+    public function getNode(): ?Node
     {
         return $this->node;
     }
@@ -72,7 +74,7 @@ trait Analyzable
      * Clears the node so that it won't be used for analysis.
      * @suppress PhanTypeMismatchProperty
      */
-    protected function clearNode() : void
+    protected function clearNode(): void
     {
         $this->node = null;
     }
@@ -81,7 +83,7 @@ trait Analyzable
      * Ensure that annotations about what flags a function declaration has have been added
      * @suppress PhanUndeclaredProperty deliberately using dynamic properties
      */
-    public static function ensureDidAnnotate(Node $node) : void
+    public static function ensureDidAnnotate(Node $node): void
     {
         if (!isset($node->did_annotate_node)) {
             // Set this to true to indicate that this node has already
@@ -99,7 +101,7 @@ trait Analyzable
      * in the given context
      * @suppress PhanUnreferencedPublicMethod phan has issues with dead code detection with traits and interfaces
      */
-    public function analyze(Context $context, CodeBase $code_base) : Context
+    public function analyze(Context $context, CodeBase $code_base): Context
     {
         // Don't do anything if we care about being
         // fast
@@ -147,7 +149,7 @@ trait Analyzable
     /**
      * Gets the recursion depth. Starts at 0, increases the deeper the recursion goes
      */
-    public function getRecursionDepth() : int
+    public function getRecursionDepth(): int
     {
         return self::$recursion_depth;
     }
@@ -155,7 +157,7 @@ trait Analyzable
     /**
      * Gets the maximum recursion depth.
      */
-    public static function getMaxRecursionDepth() : int
+    public static function getMaxRecursionDepth(): int
     {
         return Config::getValue('maximum_recursion_depth');
     }

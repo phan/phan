@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Plugin\Internal;
 
@@ -55,7 +57,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
     /**
      * @return array<string,\Closure>
      */
-    private static function getReturnTypeOverridesStatic() : array
+    private static function getReturnTypeOverridesStatic(): array
     {
         /**
          * @param list<Node|int|string|float> $args
@@ -65,7 +67,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
             Context $context,
             Func $unused_function,
             array $args
-        ) : UnionType {
+        ): UnionType {
             $element_types = UnionType::empty();
             if (\count($args) < 1) {
                 return $element_types;
@@ -96,7 +98,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
             Context $context,
             Func $unused_function,
             array $args
-        ) : UnionType {
+        ): UnionType {
             $element_types = UnionType::empty();
             if (\count($args) < 2) {
                 return $element_types;
@@ -134,7 +136,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
             Context $context,
             Method $unused_method,
             array $args
-        ) : UnionType {
+        ): UnionType {
             if (\count($args) !== 1) {
                 // Emits warning and returns null if 0 or 2+ args given
                 return NullType::instance(false)->asRealUnionType();
@@ -161,12 +163,12 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
             Context $context,
             Method $unused_method,
             array $args
-        ) : UnionType {
+        ): UnionType {
             if (\count($args) < 2 || \count($args) > 3) {
                 return NullType::instance(false)->asRealUnionType();
             }
             $types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0], true);
-            $types = $types->makeFromFilter(static function (Type $type) : bool {
+            $types = $types->makeFromFilter(static function (Type $type): bool {
                 if ($type instanceof ClosureType) {
                     return $type->hasKnownFQSEN();
                 }
@@ -194,7 +196,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
     /**
      * @return array<string,\Closure>
      */
-    private static function getAnalyzeFunctionCallClosuresStatic() : array
+    private static function getAnalyzeFunctionCallClosuresStatic(): array
     {
         /**
          * @param list<Node|int|string|float> $args
@@ -205,7 +207,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
             Func $unused_function,
             array $args,
             ?Node $_
-        ) : void {
+        ): void {
             if (\count($args) < 1) {
                 return;
             }
@@ -226,7 +228,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
             Func $unused_function,
             array $args,
             ?Node $_
-        ) : void {
+        ): void {
             if (\count($args) < 2) {
                 return;
             }
@@ -257,7 +259,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
      * @return array<string,\Closure>
      * @override
      */
-    public function getReturnTypeOverrides(CodeBase $code_base) : array
+    public function getReturnTypeOverrides(CodeBase $code_base): array
     {
         // Unit tests invoke this repeatedly. Cache it.
         static $overrides = null;
@@ -272,7 +274,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
      * @return array<string,\Closure>
      * @override
      */
-    public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array
+    public function getAnalyzeFunctionCallClosures(CodeBase $code_base): array
     {
         // Unit tests invoke this repeatedly. Cache it.
         static $analyzers = null;
@@ -289,13 +291,13 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
      * TODO: Is this still needed?
      * @return Closure(mixed,int):UnionType
      */
-    public static function createNormalArgumentCache(CodeBase $code_base, Context $context) : Closure
+    public static function createNormalArgumentCache(CodeBase $code_base, Context $context): Closure
     {
         $cache = [];
         /**
          * @param Node|int|string|float|null $argument
          */
-        return static function ($argument, int $i) use ($code_base, $context, &$cache) : UnionType {
+        return static function ($argument, int $i) use ($code_base, $context, &$cache): UnionType {
             $argument_type = $cache[$i] ?? null;
             if (isset($argument_type)) {
                 return $argument_type;
@@ -319,7 +321,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
      * @param Context $context
      * @param Node|int|string|float|null $arg_array_node
      */
-    private static function resetReferenceArgumentsTypes(CodeBase $code_base, Context $context, $arg_array_node) : void
+    private static function resetReferenceArgumentsTypes(CodeBase $code_base, Context $context, $arg_array_node): void
     {
         if (!($arg_array_node instanceof Node) || $arg_array_node->kind !== \ast\AST_ARRAY) {
             return;
@@ -356,7 +358,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
      * @param list<FunctionInterface> $function_like_list
      * @param list<Node|string|int|float> $arguments
      */
-    private static function analyzeFunctionAndNormalArgumentList(CodeBase $code_base, Context $context, array $function_like_list, array $arguments) : void
+    private static function analyzeFunctionAndNormalArgumentList(CodeBase $code_base, Context $context, array $function_like_list, array $arguments): void
     {
         $get_argument_type = self::createNormalArgumentCache($code_base, $context);
         foreach ($function_like_list as $function_like) {

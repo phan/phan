@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Exception;
 
@@ -16,10 +18,10 @@ class UsageException extends ExitException
     /** @var bool whether to forbid colorizing the exception message */
     public $forbid_color;
 
-    const PRINT_NORMAL = 10;
-    const PRINT_EXTENDED = 11;
-    const PRINT_INIT_ONLY = 12;
-    const PRINT_INVALID_ARGS = 13;
+    public const PRINT_NORMAL = 10;
+    public const PRINT_EXTENDED = 11;
+    public const PRINT_INIT_ONLY = 12;
+    public const PRINT_INVALID_ARGS = 13;
 
     /**
      * @param string $message

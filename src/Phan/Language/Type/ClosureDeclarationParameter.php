@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Type;
 
@@ -39,7 +41,7 @@ final class ClosureDeclarationParameter
      *
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function getNonVariadicUnionType() : UnionType
+    public function getNonVariadicUnionType(): UnionType
     {
         return $this->type;
     }
@@ -47,7 +49,7 @@ final class ClosureDeclarationParameter
     /**
      * Is this variadic?
      */
-    public function isVariadic() : bool
+    public function isVariadic(): bool
     {
         return $this->is_variadic;
     }
@@ -55,7 +57,7 @@ final class ClosureDeclarationParameter
     /**
      * Is this passed by reference?
      */
-    public function isPassByReference() : bool
+    public function isPassByReference(): bool
     {
         return $this->is_reference;
     }
@@ -64,13 +66,13 @@ final class ClosureDeclarationParameter
      * Is this an optional parameter
      * (i.e. do callers have to pass an argument for this parameter)
      */
-    public function isOptional() : bool
+    public function isOptional(): bool
     {
         return $this->is_optional;
     }
 
     // for debugging
-    public function __toString() : string
+    public function __toString(): string
     {
         $repr = $this->type->__toString();
         if ($this->is_reference) {
@@ -91,7 +93,7 @@ final class ClosureDeclarationParameter
      *
      * @see \Phan\Analysis\ParameterTypesAnalyzer::analyzeOverrideSignatureForOverriddenMethod() - Similar logic using LSP
      */
-    public function canCastToParameterIgnoringVariadic(ClosureDeclarationParameter $other) : bool
+    public function canCastToParameterIgnoringVariadic(ClosureDeclarationParameter $other): bool
     {
         if ($this->is_reference !== $other->is_reference) {
             return false;
@@ -112,7 +114,7 @@ final class ClosureDeclarationParameter
      *
      * @see \Phan\Analysis\ParameterTypesAnalyzer::analyzeOverrideSignatureForOverriddenMethod() - Similar logic using LSP
      */
-    public function canCastToParameterHandlingTemplatesIgnoringVariadic(ClosureDeclarationParameter $other, CodeBase $code_base) : bool
+    public function canCastToParameterHandlingTemplatesIgnoringVariadic(ClosureDeclarationParameter $other, CodeBase $code_base): bool
     {
         if ($this->is_reference !== $other->is_reference) {
             return false;
@@ -130,7 +132,7 @@ final class ClosureDeclarationParameter
      *
      * @param array<string,UnionType> $template_parameter_type_map
      */
-    public function withTemplateParameterTypeMap(array $template_parameter_type_map) : ClosureDeclarationParameter
+    public function withTemplateParameterTypeMap(array $template_parameter_type_map): ClosureDeclarationParameter
     {
         $new_type = $this->type->withTemplateParameterTypeMap($template_parameter_type_map);
         if ($new_type === $this->type) {
@@ -145,7 +147,7 @@ final class ClosureDeclarationParameter
      * Creates a parameter with the non-variadic version of the type
      * (i.e. with the type seen by callers for individual arguments)
      */
-    public function asNonVariadicRegularParameter(int $i) : Parameter
+    public function asNonVariadicRegularParameter(int $i): Parameter
     {
         $flags = 0;
         // Skip variadic
@@ -168,7 +170,7 @@ final class ClosureDeclarationParameter
      * Converts this to a regular parameter (e.g. as a placeholder for the ith parameter in a FunctionInterface)
      * (e.g. $p0, $p1, etc.)
      */
-    public function asRegularParameter(int $i) : Parameter
+    public function asRegularParameter(int $i): Parameter
     {
         $flags = 0;
         if ($this->is_variadic) {

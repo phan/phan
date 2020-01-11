@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\FQSEN;
 
@@ -17,12 +19,12 @@ trait Alternatives
     /**
      * Implementers must have a getName() method
      */
-    abstract public function getName() : string;
+    abstract public function getName(): string;
 
     /**
      * Implementers should use the \Phan\Memoize trait
      */
-    abstract protected function memoizeFlushAll() : void;
+    abstract protected function memoizeFlushAll(): void;
 
     /**
      * @var int
@@ -37,7 +39,7 @@ trait Alternatives
      * FQSEN or zero if none if this is not an
      * alternative.
      */
-    public function getAlternateId() : int
+    public function getAlternateId(): int
     {
         return $this->alternate_id;
     }
@@ -47,7 +49,7 @@ trait Alternatives
      * Get the name of this element with its alternate id
      * attached
      */
-    public function getNameWithAlternateId() : string
+    public function getNameWithAlternateId(): string
     {
         if ($this->alternate_id) {
             return "{$this->getName()},{$this->alternate_id}";
@@ -60,7 +62,7 @@ trait Alternatives
      * @return bool
      * True if this is an alternate
      */
-    public function isAlternate() : bool
+    public function isAlternate(): bool
     {
         return (0 !== $this->alternate_id);
     }
@@ -72,7 +74,7 @@ trait Alternatives
      */
     abstract public function withAlternateId(
         int $alternate_id
-    ) : FQSEN;
+    ): FQSEN;
 
     /**
      * @return static
@@ -82,7 +84,7 @@ trait Alternatives
      * @suppress PhanTypeMismatchDeclaredReturn (static vs FQSEN)
      * @suppress PhanTypeMismatchReturn (Alternatives is a trait, cannot directly implement the FQSEN interface. Related to #800)
      */
-    public function getCanonicalFQSEN() : FQSEN
+    public function getCanonicalFQSEN(): FQSEN
     {
         if ($this->alternate_id === 0) {
             return $this;

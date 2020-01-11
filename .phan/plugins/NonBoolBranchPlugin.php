@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 // .phan/plugins/NonBoolBranchPlugin.php
 
@@ -22,7 +24,7 @@ class NonBoolBranchPlugin extends PluginV3 implements PreAnalyzeNodeCapability
      *
      * @override
      */
-    public static function getPreAnalyzeNodeVisitorClassName() : string
+    public static function getPreAnalyzeNodeVisitorClassName(): string
     {
         return NonBoolBranchVisitor::class;
     }
@@ -38,7 +40,7 @@ class NonBoolBranchVisitor extends PluginAwarePreAnalysisVisitor
     /**
      * @override
      */
-    public function visitIf(Node $node) : Context
+    public function visitIf(Node $node): Context
     {
         // Here, we visit the group of if/elseif/else instead of the individuals (visitIfElem)
         // so that we have the Union types of the variables **before** the PreOrderAnalysisVisitor makes inferences

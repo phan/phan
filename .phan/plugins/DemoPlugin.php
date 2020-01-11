@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use ast\Node;
 use Phan\CodeBase;
@@ -63,7 +65,7 @@ class DemoPlugin extends PluginV3 implements
      * @return string - The name of the visitor that will be called (formerly analyzeNode)
      * @override
      */
-    public static function getPostAnalyzeNodeVisitorClassName() : string
+    public static function getPostAnalyzeNodeVisitorClassName(): string
     {
         return DemoNodeVisitor::class;
     }
@@ -80,7 +82,7 @@ class DemoPlugin extends PluginV3 implements
     public function analyzeClass(
         CodeBase $code_base,
         Clazz $class
-    ) : void {
+    ): void {
         // As an example, we test to see if the name of
         // the class is `Class`, and emit an issue explaining that
         // the name is not allowed.
@@ -108,7 +110,7 @@ class DemoPlugin extends PluginV3 implements
     public function analyzeMethod(
         CodeBase $code_base,
         Method $method
-    ) : void {
+    ): void {
         // As an example, we test to see if the name of the
         // method is `function`, and emit an issue if it is.
         // NOTE: Placeholders can be found in \Phan\Issue::uncolored_format_string_for_replace
@@ -135,7 +137,7 @@ class DemoPlugin extends PluginV3 implements
     public function analyzeFunction(
         CodeBase $code_base,
         Func $function
-    ) : void {
+    ): void {
         // As an example, we test to see if the name of the
         // function is `function`, and emit an issue if it is.
         if ($function->getName() === 'function') {
@@ -161,7 +163,7 @@ class DemoPlugin extends PluginV3 implements
     public function analyzeProperty(
         CodeBase $code_base,
         Property $property
-    ) : void {
+    ): void {
         // As an example, we test to see if the name of the
         // property is `property`, and emit an issue if it is.
         if ($property->getName() === 'property') {
@@ -198,7 +200,7 @@ class DemoNodeVisitor extends PluginAwarePostAnalysisVisitor
      *
      * @override
      */
-    public function visitInstanceof(Node $node) : void
+    public function visitInstanceof(Node $node): void
     {
         // Debug::printNode($node);
 

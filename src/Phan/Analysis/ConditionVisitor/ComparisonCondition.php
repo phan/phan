@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Analysis\ConditionVisitor;
 
@@ -26,7 +28,7 @@ class ComparisonCondition implements BinaryCondition
      * @param Node|int|string|float $expr
      * @override
      */
-    public function analyzeVar(ConditionVisitorInterface $visitor, Node $var, $expr) : Context
+    public function analyzeVar(ConditionVisitorInterface $visitor, Node $var, $expr): Context
     {
         return $visitor->updateVariableToBeCompared($var, $expr, $this->flags);
     }
@@ -38,7 +40,7 @@ class ComparisonCondition implements BinaryCondition
      * @param Node|int|string|float $expr
      * @suppress PhanUnusedPublicMethodParameter
      */
-    public function analyzeClassCheck(ConditionVisitorInterface $visitor, $object, $expr) : Context
+    public function analyzeClassCheck(ConditionVisitorInterface $visitor, $object, $expr): Context
     {
         return $visitor->getContext();
     }
@@ -46,7 +48,7 @@ class ComparisonCondition implements BinaryCondition
     /**
      * @suppress PhanUnusedPublicMethodParameter
      */
-    public function analyzeCall(ConditionVisitorInterface $visitor, Node $call_node, $expr) : ?Context
+    public function analyzeCall(ConditionVisitorInterface $visitor, Node $call_node, $expr): ?Context
     {
         return null;
     }
@@ -54,7 +56,7 @@ class ComparisonCondition implements BinaryCondition
     /**
      * @suppress PhanUnusedPublicMethodParameter
      */
-    public function analyzeComplexCondition(ConditionVisitorInterface $visitor, Node $complex_node, $expr) : ?Context
+    public function analyzeComplexCondition(ConditionVisitorInterface $visitor, Node $complex_node, $expr): ?Context
     {
         return null;
     }

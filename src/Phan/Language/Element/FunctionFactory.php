@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Element;
 
@@ -26,7 +28,7 @@ class FunctionFactory
     public static function functionListFromReflectionFunction(
         FullyQualifiedFunctionName $fqsen,
         \ReflectionFunction $reflection_function
-    ) : array {
+    ): array {
 
         $context = new Context();
 
@@ -75,7 +77,7 @@ class FunctionFactory
     public static function functionListFromSignature(
         FullyQualifiedFunctionName $fqsen,
         array $signature
-    ) : array {
+    ): array {
 
         // TODO: Look into adding helper method in UnionType caching this to speed up loading.
         $context = new Context();
@@ -107,7 +109,7 @@ class FunctionFactory
         Context $context,
         \ReflectionClass $class,
         \ReflectionMethod $reflection_method
-    ) : array {
+    ): array {
         $class_name = $class->getName();
         $method_fqsen = FullyQualifiedMethodName::make(
             // @phan-suppress-next-line PhanThrowTypeAbsentForCall
@@ -187,7 +189,7 @@ class FunctionFactory
      */
     public static function functionListFromFunction(
         FunctionInterface $function
-    ) : array {
+    ): array {
         // See if we have any type information for this
         // internal function
         $map_list = UnionType::internalFunctionSignatureMapForFQSEN(
@@ -206,7 +208,7 @@ class FunctionFactory
         return \array_map(static function (array $map) use (
             $function,
             &$alternate_id
-        ) : FunctionInterface {
+        ): FunctionInterface {
             $alternate_function = clone($function);
 
             $alternate_function->setFQSEN(
@@ -286,7 +288,7 @@ class FunctionFactory
             $alternate_function->setNumberOfRequiredParameters(
                 \array_reduce(
                     $alternate_function->getParameterList(),
-                    static function (int $carry, Parameter $parameter) : int {
+                    static function (int $carry, Parameter $parameter): int {
                         return ($carry + (
                             $parameter->isOptional() ? 0 : 1
                         ));

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Analysis;
 
@@ -33,7 +35,7 @@ class LoopConditionVisitor extends ConditionVisitor
         $this->loop_body_unconditionally_proceeds = $loop_body_unconditionally_proceeds;
     }
 
-    public function checkRedundantOrImpossibleTruthyCondition($node, Context $context, ?UnionType $type, bool $is_negated) : void
+    public function checkRedundantOrImpossibleTruthyCondition($node, Context $context, ?UnionType $type, bool $is_negated): void
     {
         if (!$this->loop_body_unconditionally_proceeds && $node === $this->loop_condition_node) {
             // Don't warn about `while (1)` or `while (true)`
@@ -58,7 +60,7 @@ class LoopConditionVisitor extends ConditionVisitor
      * @override
      * @param Node|mixed $node
      */
-    protected function chooseIssueForUnconditionallyTrue(bool $is_negated, $node) : string
+    protected function chooseIssueForUnconditionallyTrue(bool $is_negated, $node): string
     {
         if (!$is_negated && $node === $this->loop_condition_node) {
             return Issue::InfiniteLoop;
@@ -74,7 +76,7 @@ class LoopConditionVisitor extends ConditionVisitor
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitExprList(Node $node) : Context
+    public function visitExprList(Node $node): Context
     {
         $children = $node->children;
         $count = \count($children);

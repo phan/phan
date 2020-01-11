@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Plugin\Internal\IssueFixingPlugin;
 
@@ -29,7 +31,7 @@ class IssueFixer
         string $file_contents,
         NamespaceUseDeclaration $declaration,
         IssueInstance $issue_instance
-    ) : bool {
+    ): bool {
         $type = $issue_instance->getIssue()->getType();
 
         switch ($type) {
@@ -91,7 +93,7 @@ class IssueFixer
         string $file_contents,
         NamespaceUseDeclaration $declaration,
         IssueInstance $issue_instance
-    ) : ?FileEdit {
+    ): ?FileEdit {
         if (!self::isMatchingNamespaceUseDeclaration($file_contents, $declaration, $issue_instance)) {
             return null;
         }
@@ -103,7 +105,7 @@ class IssueFixer
         return new FileEdit($declaration->getStart(), $end);
     }
 
-    private static function skipTrailingWhitespaceAndNewlines(string $file_contents, int $end) : int
+    private static function skipTrailingWhitespaceAndNewlines(string $file_contents, int $end): int
     {
         // Handles \r\n and \n, but doesn't bother handling \r
         $next = \strpos($file_contents, "\n", $end);
@@ -128,7 +130,7 @@ class IssueFixer
      * @param callable(CodeBase,FileCacheEntry,IssueInstance):(?FileEditSet) $fixer
      *        this is neither a real type hint nor a real closure so that the implementation can optionally be moved to classes that aren't loaded by the PHP interpreter yet.
      */
-    public static function registerFixerClosure(string $issue_name, callable $fixer) : void
+    public static function registerFixerClosure(string $issue_name, callable $fixer): void
     {
         self::$fixer_closures[$issue_name] = $fixer;
     }
@@ -136,7 +138,7 @@ class IssueFixer
     /**
      * @return array<string,callable(CodeBase,FileCacheEntry,IssueInstance):(?FileEditSet)>
      */
-    private static function createClosures() : array
+    private static function createClosures(): array
     {
         /**
          * @return ?FileEditSet
@@ -145,7 +147,7 @@ class IssueFixer
             CodeBase $unused_code_base,
             FileCacheEntry $file_contents,
             IssueInstance $issue_instance
-        ) : ?FileEditSet {
+        ): ?FileEditSet {
             // 1-based line
             $line = $issue_instance->getLine();
             $edits = [];
@@ -176,7 +178,7 @@ class IssueFixer
      *
      * @param IssueInstance[] $instances
      */
-    public static function applyFixes(CodeBase $code_base, array $instances) : void
+    public static function applyFixes(CodeBase $code_base, array $instances): void
     {
         $fixers_for_files = self::computeFixersForInstances($instances);
         foreach ($fixers_for_files as $file => $fixers) {
@@ -191,7 +193,7 @@ class IssueFixer
      * @param IssueInstance[] $instances
      * @return array<string,list<Closure(CodeBase,FileCacheEntry):(?FileEditSet)>>
      */
-    public static function computeFixersForInstances(array $instances) : array
+    public static function computeFixersForInstances(array $instances): array
     {
         $closures = self::createClosures();
         $fixers_for_files = [];
@@ -210,7 +212,7 @@ class IssueFixer
                 ) use (
                     $closure,
                     $instance
-) : ?FileEditSet {
+): ?FileEditSet {
                     self::debug("Calling for $instance\n");
                     return $closure($code_base, $file_contents, $instance);
                 };
@@ -229,7 +231,7 @@ class IssueFixer
         string $file,
         string $raw_contents,
         array $fixers
-    ) : ?string {
+    ): ?string {
         // A tolerantparser ast node
 
         $contents = new FileCacheEntry($raw_contents);
@@ -259,7 +261,7 @@ class IssueFixer
         CodeBase $code_base,
         string $file,
         array $fixers
-    ) : void {
+    ): void {
         try {
             $entry = FileCache::getOrReadEntry($file);
         } catch (RuntimeException $e) {
@@ -288,9 +290,9 @@ class IssueFixer
      * @param FileEdit[] $all_edits
      * @return ?string - the new contents, if successful.
      */
-    public static function computeNewContents(string $file, string $contents, array $all_edits) : ?string
+    public static function computeNewContents(string $file, string $contents, array $all_edits): ?string
     {
-        \usort($all_edits, static function (FileEdit $a, FileEdit $b) : int {
+        \usort($all_edits, static function (FileEdit $a, FileEdit $b): int {
             return ($a->replace_start <=> $b->replace_start)
                 ?: ($a->replace_end <=> $b->replace_end)
                 ?: \strcmp($a->new_text, $b->new_text);
@@ -329,7 +331,7 @@ class IssueFixer
     /**
      * Log an error message to be shown to users for unexpected errors.
      */
-    public static function error(string $message) : void
+    public static function error(string $message): void
     {
         \fwrite(\STDERR, $message);
     }
@@ -337,7 +339,7 @@ class IssueFixer
     /**
      * Log an extremely verbose message - used for debugging why automatic fixing doesn't work.
      */
-    public static function debug(string $message) : void
+    public static function debug(string $message): void
     {
         if (\getenv('PHAN_DEBUG_AUTOMATIC_FIX')) {
             \fwrite(\STDERR, $message);

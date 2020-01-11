@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\LanguageServer;
 
@@ -16,6 +18,7 @@ use Phan\Language\Element\Func;
 use Phan\Language\Element\GlobalConstant;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+
 use function is_string;
 
 /**
@@ -30,14 +33,14 @@ class CompletionResolver
      * and "go to type definition" in their implementations,
      * based on $request->isTypeDefinitionRequest()
      */
-    public static function createCompletionClosure(CompletionRequest $request, CodeBase $code_base) : Closure
+    public static function createCompletionClosure(CompletionRequest $request, CodeBase $code_base): Closure
     {
         // TODO: Could use the parent node list
         // (e.g. don't use a method with a void return as an argument to another function)
         /**
          * @param list<Node> $unused_parent_node_list
          */
-        return static function (Context $context, Node $node, array $unused_parent_node_list) use ($request, $code_base) : void {
+        return static function (Context $context, Node $node, array $unused_parent_node_list) use ($request, $code_base): void {
             // @phan-suppress-next-line PhanUndeclaredProperty this is overridden
             $selected_fragment = $node->selectedFragment ?? null;
             if (is_string($selected_fragment)) {
@@ -125,7 +128,7 @@ class CompletionResolver
         Node $node,
         bool $is_static,
         $incomplete_prop_name
-    ) : void {
+    ): void {
         if (!is_string($incomplete_prop_name)) {
             return;
         }
@@ -170,7 +173,7 @@ class CompletionResolver
         Context $context,
         Node $node,
         $constant_name
-    ) : void {
+    ): void {
         if (!is_string($constant_name)) {
             return;
         }
@@ -222,7 +225,7 @@ class CompletionResolver
         Node $node,
         bool $is_static,
         $incomplete_method_name
-    ) : void {
+    ): void {
         if (!is_string($incomplete_method_name)) {
             return;
         }
@@ -263,7 +266,7 @@ class CompletionResolver
         Context $context,
         Node $node,
         string $incomplete_constant_name
-    ) : void {
+    ): void {
         // TODO: Limit this check to constants that are visible from the current namespace, with the shortest name from the alias map
         // TODO: Use the alias map
         $current_namespace = \ltrim($context->getNamespace(), "\\");
@@ -295,7 +298,7 @@ class CompletionResolver
         Context $context,
         Node $node,
         string $incomplete_class_name
-    ) : void {
+    ): void {
         // TODO: Use the alias map
         // TODO: Remove the namespace
         // fwrite(STDERR, "Looking up classes in " . $context->getNamespace() . "\n");
@@ -331,7 +334,7 @@ class CompletionResolver
         Context $context,
         Node $node,
         string $incomplete_function_name
-    ) : void {
+    ): void {
         // TODO: Include FQSENs which have a namespace matching what was typed so far
         $current_namespace = \ltrim($context->getNamespace(), "\\");
 
@@ -365,7 +368,7 @@ class CompletionResolver
         CodeBase $code_base,
         Context $context,
         string $incomplete_variable_name
-    ) : void {
+    ): void {
         $variable_candidates = $context->getScope()->getVariableMap();
         $prefix = CompletionRequest::useVSCodeCompletion() ? '$' : '';
         // TODO: Use the alias map

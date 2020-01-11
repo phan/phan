@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\AST\Visitor;
 
@@ -41,7 +43,7 @@ class Element
     // it may be more efficient.
     // See https://github.com/php/php-src/pull/2427/files
     // This decreased the duration of running phan by about 4%
-    const VISIT_LOOKUP_TABLE = [
+    public const VISIT_LOOKUP_TABLE = [
         ast\AST_ARG_LIST           => 'visitArgList',
         ast\AST_ARRAY              => 'visitArray',
         ast\AST_ARRAY_ELEM         => 'visitArrayElem',
@@ -159,7 +161,7 @@ class Element
         }
     }
 
-    const VISIT_BINARY_LOOKUP_TABLE = [
+    public const VISIT_BINARY_LOOKUP_TABLE = [
         252 => 'visitBinaryConcat',  // ZEND_PARENTHESIZED_CONCAT is returned instead of ZEND_CONCAT in earlier php-ast versions in PHP 7.4. This is fixed in php-ast 1.0.2
         flags\BINARY_ADD => 'visitBinaryAdd',
         flags\BINARY_BITWISE_AND => 'visitBinaryBitwiseAnd',
@@ -382,7 +384,7 @@ class Element
     /**
      * Helper method to get a tag describing the flags for a given Node kind.
      */
-    public static function flagDescription(Node $node) : string
+    public static function flagDescription(Node $node): string
     {
         return Debug::astFlagDescription($node->flags ?? 0, $node->kind);
     }

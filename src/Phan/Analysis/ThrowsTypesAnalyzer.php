@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Analysis;
 
@@ -28,7 +30,7 @@ class ThrowsTypesAnalyzer
     public static function analyzeThrowsTypes(
         CodeBase $code_base,
         FunctionInterface $method
-    ) : void {
+    ): void {
         try {
             foreach ($method->getThrowsUnionType()->getTypeSet() as $type) {
                 // TODO: When analyzing the method body, only check the valid exceptions
@@ -47,11 +49,11 @@ class ThrowsTypesAnalyzer
         CodeBase $code_base,
         FunctionInterface $method,
         Type $type
-    ) : bool {
+    ): bool {
         /**
          * @param list<int|string|Type> $args
          */
-        $maybe_emit_for_method = static function (string $issue_type, array $args, Suggestion $suggestion = null) use ($code_base, $method) : void {
+        $maybe_emit_for_method = static function (string $issue_type, array $args, Suggestion $suggestion = null) use ($code_base, $method): void {
             Issue::maybeEmitWithParameters(
                 $code_base,
                 $method->getContext(),
@@ -127,12 +129,12 @@ class ThrowsTypesAnalyzer
         CodeBase $code_base,
         Context $context,
         FullyQualifiedClassName $type_fqsen
-    ) : ?Suggestion {
+    ): ?Suggestion {
         return IssueFixSuggester::suggestSimilarClass(
             $code_base,
             $context,
             $type_fqsen,
-            IssueFixSuggester::createFQSENFilterFromClassFilter($code_base, static function (Clazz $class) use ($code_base) : bool {
+            IssueFixSuggester::createFQSENFilterFromClassFilter($code_base, static function (Clazz $class) use ($code_base): bool {
                 if ($class->isTrait()) {
                     return false;
                 }

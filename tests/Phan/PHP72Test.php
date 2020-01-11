@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests;
 
@@ -9,12 +11,12 @@ use Phan\Config;
  */
 class PHP72Test extends AbstractPhanFileTest
 {
-    const OVERRIDES = [
+    private const OVERRIDES = [
         'allow_method_param_type_widening' => true,
         'target_php_version' => '7.2',
     ];
 
-    public function setUp() : void
+    public function setUp(): void
     {
         parent::setUp();
         foreach (self::OVERRIDES as $key => $value) {
@@ -33,7 +35,7 @@ class PHP72Test extends AbstractPhanFileTest
      * @dataProvider getTestFiles
      * @override
      */
-    public function testFiles(array $test_file_list, string $expected_file_path, ?string $config_file_path = null) : void
+    public function testFiles(array $test_file_list, string $expected_file_path, ?string $config_file_path = null): void
     {
         $skip_reason = null;
         $main_path = \basename(\reset($test_file_list));
@@ -64,7 +66,7 @@ class PHP72Test extends AbstractPhanFileTest
     /**
      * @suppress PhanUndeclaredConstant
      */
-    public function getTestFiles() : array
+    public function getTestFiles(): array
     {
         return $this->scanSourceFilesDir(\PHP72_TEST_FILE_DIR, \PHP72_EXPECTED_DIR);
     }

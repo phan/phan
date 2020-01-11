@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests\AST\TolerantASTConverter;
 
@@ -13,7 +15,7 @@ use Phan\Tests\BaseTest;
  */
 final class ErrorTolerantConversionTest extends BaseTest
 {
-    public function testIncompleteVar() : void
+    public function testIncompleteVar(): void
     {
         $incomplete_contents = <<<'EOT'
 <?php
@@ -30,7 +32,7 @@ EOT;
         $this->runTestFallbackFromParser($incomplete_contents, $valid_contents);
     }
 
-    public function testIncompleteVarWithPlaceholderShort() : void
+    public function testIncompleteVarWithPlaceholderShort(): void
     {
         $incomplete_contents = <<<'EOT'
 <?php
@@ -43,7 +45,7 @@ EOT;
         $this->runTestFallbackFromParser($incomplete_contents, $valid_contents, true);
     }
 
-    public function testIncompleteVarWithPlaceholder() : void
+    public function testIncompleteVarWithPlaceholder(): void
     {
         $incomplete_contents = <<<'EOT'
 <?php
@@ -60,7 +62,7 @@ EOT;
         $this->runTestFallbackFromParser($incomplete_contents, $valid_contents, true);
     }
 
-    public function testIncompleteProperty() : void
+    public function testIncompleteProperty(): void
     {
         $incomplete_contents = <<<'EOT'
 <?php
@@ -79,7 +81,7 @@ EOT;
         $this->runTestFallbackFromParser($incomplete_contents, $valid_contents);
     }
 
-    public function testIncompletePropertyWithPlaceholder() : void
+    public function testIncompletePropertyWithPlaceholder(): void
     {
         $incomplete_contents = <<<'EOT'
 <?php
@@ -98,7 +100,7 @@ EOT;
         $this->runTestFallbackFromParser($incomplete_contents, $valid_contents, true);
     }
 
-    public function testIncompleteMethod() : void
+    public function testIncompleteMethod(): void
     {
         $incomplete_contents = <<<'EOT'
 <?php
@@ -117,7 +119,7 @@ EOT;
         $this->runTestFallbackFromParser($incomplete_contents, $valid_contents);
     }
 
-    public function testIncompleteMethodWithPlaceholder() : void
+    public function testIncompleteMethodWithPlaceholder(): void
     {
         $incomplete_contents = <<<'EOT'
 <?php
@@ -136,7 +138,7 @@ EOT;
         $this->runTestFallbackFromParser($incomplete_contents, $valid_contents, true);
     }
 
-    public function testMiscNoise() : void
+    public function testMiscNoise(): void
     {
         $incomplete_contents = <<<'EOT'
 <?php
@@ -155,7 +157,7 @@ EOT;
         $this->runTestFallbackFromParser($incomplete_contents, $valid_contents);
     }
 
-    public function testMiscNoiseWithPlaceholders() : void
+    public function testMiscNoiseWithPlaceholders(): void
     {
         $incomplete_contents = <<<'EOT'
 <?php
@@ -174,7 +176,7 @@ EOT;
         $this->runTestFallbackFromParser($incomplete_contents, $valid_contents, true);
     }
 
-    public function testIncompleteArithmeticWithPlaceholders() : void
+    public function testIncompleteArithmeticWithPlaceholders(): void
     {
         $incomplete_contents = <<<'EOT'
 <?php
@@ -191,7 +193,7 @@ EOT;
         $this->runTestFallbackFromParser($incomplete_contents, $valid_contents, true);
     }
 
-    public function testIncompleteArithmeticWithoutPlaceholders() : void
+    public function testIncompleteArithmeticWithoutPlaceholders(): void
     {
         $incomplete_contents = <<<'EOT'
 <?php
@@ -208,7 +210,7 @@ EOT;
         $this->runTestFallbackFromParser($incomplete_contents, $valid_contents, false);
     }
 
-    public function testMissingMember() : void
+    public function testMissingMember(): void
     {
         // in 0.0.17, this starts trying to parse a typed property declaration
         // and discards all of it because it's invalid.
@@ -230,7 +232,7 @@ EOT;
         $this->runTestFallbackFromParser($incomplete_contents, $valid_contents, false);
     }
 
-    public function testIncompleteTypedProperty() : void
+    public function testIncompleteTypedProperty(): void
     {
         $incomplete_contents = <<<'EOT'
 <?php
@@ -251,7 +253,7 @@ EOT;
         $this->runTestFallbackFromParser($incomplete_contents, $valid_contents, false);
     }
 
-    public function testEmptyConstList() : void
+    public function testEmptyConstList(): void
     {
         $incomplete_contents = <<<'EOT'
 <?php
@@ -264,7 +266,7 @@ EOT;
         $this->runTestFallbackFromParser($incomplete_contents, $valid_contents, false);
     }
 
-    public function testMissingSemicolon() : void
+    public function testMissingSemicolon(): void
     {
         $incomplete_contents = <<<'EOT'
 <?php
@@ -283,7 +285,7 @@ EOT;
         $this->runTestFallbackFromParser($incomplete_contents, $valid_contents);
     }
 
-    public function testIncompleteMethodCallBeforeIfWithPlaceholders() : void
+    public function testIncompleteMethodCallBeforeIfWithPlaceholders(): void
     {
         $incomplete_contents = <<<'EOT'
 <?php
@@ -309,7 +311,7 @@ EOT;
         $this->runTestFallbackFromParser($incomplete_contents, $valid_contents, true);
     }
 
-    public function testIncompleteMethodCallBeforeIfWithoutPlaceholders() : void
+    public function testIncompleteMethodCallBeforeIfWithoutPlaceholders(): void
     {
         $incomplete_contents = <<<'EOT'
 <?php
@@ -361,7 +363,7 @@ class C{
 EOT;
  */
 
-    private static function normalizePolyfillAST(ast\Node $ast) : void
+    private static function normalizePolyfillAST(ast\Node $ast): void
     {
         switch ($ast->kind) {
             case ast\AST_DIM:
@@ -377,7 +379,7 @@ EOT;
         }
     }
 
-    private function runTestFallbackFromParser(string $incomplete_contents, string $valid_contents, bool $should_add_placeholders = false) : void
+    private function runTestFallbackFromParser(string $incomplete_contents, string $valid_contents, bool $should_add_placeholders = false): void
     {
         $supports70 = ConversionTest::hasNativeASTSupport(70);
         if (!$supports70) {
@@ -386,7 +388,7 @@ EOT;
         $this->runTestFallbackFromParserForASTVersion($incomplete_contents, $valid_contents, 70, $should_add_placeholders);
     }
 
-    private function runTestFallbackFromParserForASTVersion(string $incomplete_contents, string $valid_contents, int $ast_version, bool $should_add_placeholders) : void
+    private function runTestFallbackFromParserForASTVersion(string $incomplete_contents, string $valid_contents, int $ast_version, bool $should_add_placeholders): void
     {
         $ast = \ast\parse_code($valid_contents, $ast_version);
         $this->assertInstanceOf('\ast\Node', $ast, 'Examples(for validContents) must be syntactically valid PHP parsable by php-ast');

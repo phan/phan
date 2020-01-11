@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\FQSEN;
 
@@ -11,7 +13,7 @@ class FullyQualifiedGlobalConstantName extends FullyQualifiedGlobalStructuralEle
      * @return int
      * The namespace map type such as \ast\flags\USE_NORMAL or \ast\flags\USE_FUNCTION
      */
-    protected static function getNamespaceMapType() : int
+    protected static function getNamespaceMapType(): int
     {
         return \ast\flags\USE_CONST;
     }
@@ -23,7 +25,7 @@ class FullyQualifiedGlobalConstantName extends FullyQualifiedGlobalStructuralEle
      * This should not be used directly or indirectly in issue output
      * If an FQSEN is case-sensitive, this should return $name
      */
-    public static function canonicalLookupKey(string $name) : string
+    public static function canonicalLookupKey(string $name): string
     {
         return $name;
     }

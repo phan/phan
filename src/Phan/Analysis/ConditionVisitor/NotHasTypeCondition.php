@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Analysis\ConditionVisitor;
 
@@ -28,7 +30,7 @@ class NotHasTypeCondition implements BinaryCondition
      * @param Node|int|string|float $unused_expr
      * @override
      */
-    public function analyzeVar(ConditionVisitorInterface $visitor, Node $var, $unused_expr) : Context
+    public function analyzeVar(ConditionVisitorInterface $visitor, Node $var, $unused_expr): Context
     {
         // Get the variable we're operating on
         $context = $visitor->getContext();
@@ -61,18 +63,18 @@ class NotHasTypeCondition implements BinaryCondition
      * @param Node|int|string|float $unused_object
      * @param Node|int|string|float $unused_expr
      */
-    public function analyzeClassCheck(ConditionVisitorInterface $visitor, $unused_object, $unused_expr) : Context
+    public function analyzeClassCheck(ConditionVisitorInterface $visitor, $unused_object, $unused_expr): Context
     {
         // Unimplemented, Not likely to be commonly used.
         return $visitor->getContext();
     }
 
-    public function analyzeCall(ConditionVisitorInterface $unused_visitor, Node $unused_call_node, $unused_expr) : ?Context
+    public function analyzeCall(ConditionVisitorInterface $unused_visitor, Node $unused_call_node, $unused_expr): ?Context
     {
         return null;
     }
 
-    public function analyzeComplexCondition(ConditionVisitorInterface $unused_visitor, Node $unused_complex_node, $unused_expr) : ?Context
+    public function analyzeComplexCondition(ConditionVisitorInterface $unused_visitor, Node $unused_complex_node, $unused_expr): ?Context
     {
         // TODO: Could analyze get_class($array['field']) === stdClass::class (e.g. with AssignmentVisitor)
         return null;

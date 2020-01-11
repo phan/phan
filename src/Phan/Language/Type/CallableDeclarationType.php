@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Type;
 
@@ -11,14 +13,14 @@ use Phan\Language\Type;
 final class CallableDeclarationType extends FunctionLikeDeclarationType implements CallableInterface
 {
     /** @override */
-    const NAME = 'callable';
+    public const NAME = 'callable';
 
     /**
      * @return bool
      * True if this Type can be cast to the given Type
      * cleanly
      */
-    public function canCastToNonNullableType(Type $type) : bool
+    public function canCastToNonNullableType(Type $type): bool
     {
         if ($type->isCallable()) {
             if ($type instanceof FunctionLikeDeclarationType) {
@@ -31,7 +33,7 @@ final class CallableDeclarationType extends FunctionLikeDeclarationType implemen
         return parent::canCastToNonNullableType($type);
     }
 
-    public function canCastToNonNullableTypeWithoutConfig(Type $type) : bool
+    public function canCastToNonNullableTypeWithoutConfig(Type $type): bool
     {
         if ($type->isCallable()) {
             if ($type instanceof FunctionLikeDeclarationType) {
@@ -47,7 +49,7 @@ final class CallableDeclarationType extends FunctionLikeDeclarationType implemen
     /**
      * @override to prevent Phan from emitting PhanUndeclaredTypeParameter when using this in phpdoc
      */
-    public function isNativeType() : bool
+    public function isNativeType(): bool
     {
         return true;
     }
@@ -56,7 +58,7 @@ final class CallableDeclarationType extends FunctionLikeDeclarationType implemen
      * Returns the corresponding type that would be used in a signature
      * @override
      */
-    public function asSignatureType() : Type
+    public function asSignatureType(): Type
     {
         return CallableType::instance($this->is_nullable);
     }

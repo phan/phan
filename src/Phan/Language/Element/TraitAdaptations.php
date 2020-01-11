@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Element;
 
@@ -36,7 +38,7 @@ class TraitAdaptations
     /**
      * Gets the trait's FQSEN
      */
-    public function getTraitFQSEN() : FullyQualifiedClassName
+    public function getTraitFQSEN(): FullyQualifiedClassName
     {
         return $this->trait_fqsen;
     }

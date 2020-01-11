@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests\Language\Type;
 
@@ -10,12 +12,12 @@ use Phan\Tests\BaseTest;
  */
 final class ArrayShapeTypeTest extends BaseTest
 {
-    private function assertUnescapedKeyEquals(string $expected, string $unescaped) : void
+    private function assertUnescapedKeyEquals(string $expected, string $unescaped): void
     {
         $this->assertSame($expected, ArrayShapeType::unescapeKey($unescaped), "unexpected value for $unescaped");
     }
 
-    public function testUnescapedKey() : void
+    public function testUnescapedKey(): void
     {
         $this->assertUnescapedKeyEquals("", "");
         $this->assertUnescapedKeyEquals("\\", "\\\\");
@@ -28,12 +30,12 @@ final class ArrayShapeTypeTest extends BaseTest
         $this->assertUnescapedKeyEquals("hello world", "hello\x20world");
     }
 
-    private function assertEscapedKeyEquals(string $expected, string $unescaped) : void
+    private function assertEscapedKeyEquals(string $expected, string $unescaped): void
     {
         $this->assertSame($expected, ArrayShapeType::escapeKey($unescaped), "unexpected escaped key");
     }
 
-    public function testEscapedKey() : void
+    public function testEscapedKey(): void
     {
         $this->assertEscapedKeyEquals("", "");
         $this->assertEscapedKeyEquals("\\\\", "\\");

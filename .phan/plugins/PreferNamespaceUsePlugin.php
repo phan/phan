@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use ast\Node;
 use Phan\CodeBase;
@@ -30,15 +32,15 @@ class PreferNamespaceUsePlugin extends PluginV3 implements
     AnalyzeMethodCapability,
     AutomaticFixCapability
 {
-    const PreferNamespaceUseParamType = 'PhanPluginPreferNamespaceUseParamType';
-    const PreferNamespaceUseReturnType = 'PhanPluginPreferNamespaceUseReturnType';
+    private const PreferNamespaceUseParamType = 'PhanPluginPreferNamespaceUseParamType';
+    private const PreferNamespaceUseReturnType = 'PhanPluginPreferNamespaceUseReturnType';
 
-    public function analyzeFunction(CodeBase $code_base, Func $function) : void
+    public function analyzeFunction(CodeBase $code_base, Func $function): void
     {
         self::analyzeFunctionLike($code_base, $function);
     }
 
-    public function analyzeMethod(CodeBase $code_base, Method $method) : void
+    public function analyzeMethod(CodeBase $code_base, Method $method): void
     {
         if ($method->isMagic() || $method->isPHPInternal()) {
             return;
@@ -49,7 +51,7 @@ class PreferNamespaceUsePlugin extends PluginV3 implements
         self::analyzeFunctionLike($code_base, $method);
     }
 
-    private static function analyzeFunctionLike(CodeBase $code_base, FunctionInterface $method) : void
+    private static function analyzeFunctionLike(CodeBase $code_base, FunctionInterface $method): void
     {
         $node = $method->getNode();
         if (!$node) {
@@ -68,7 +70,7 @@ class PreferNamespaceUsePlugin extends PluginV3 implements
         }
     }
 
-    private static function analyzeFunctionLikeReturn(CodeBase $code_base, FunctionInterface $method, Node $return_type) : void
+    private static function analyzeFunctionLikeReturn(CodeBase $code_base, FunctionInterface $method, Node $return_type): void
     {
         $is_nullable = false;
         if ($return_type->kind === ast\AST_NULLABLE_TYPE) {
@@ -92,7 +94,7 @@ class PreferNamespaceUsePlugin extends PluginV3 implements
         }
     }
 
-    private static function analyzeFunctionLikeParam(CodeBase $code_base, FunctionInterface $method, Node $param_node) : void
+    private static function analyzeFunctionLikeParam(CodeBase $code_base, FunctionInterface $method, Node $param_node): void
     {
         $param_type = $param_node->children['type'];
         if (!$param_type instanceof Node) {
@@ -131,7 +133,7 @@ class PreferNamespaceUsePlugin extends PluginV3 implements
      *
      * This does not try all possibilities, and only affects fully qualified types.
      */
-    private static function determineShorterType(Context $context, Node $type_node) : ?string
+    private static function determineShorterType(Context $context, Node $type_node): ?string
     {
         if ($type_node->kind !== ast\AST_NAME) {
             return null;
@@ -165,7 +167,7 @@ class PreferNamespaceUsePlugin extends PluginV3 implements
     /**
      * @return array<string,Closure(CodeBase,FileCacheEntry,IssueInstance):(?FileEditSet)>
      */
-    public function getAutomaticFixers() : array
+    public function getAutomaticFixers(): array
     {
         require_once __DIR__ .  '/PreferNamespaceUsePlugin/Fixers.php';
         return [

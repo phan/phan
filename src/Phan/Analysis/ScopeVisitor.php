@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Analysis;
 
@@ -14,6 +16,7 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
+
 use function implode;
 use function rtrim;
 
@@ -56,7 +59,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visit(Node $node) : Context
+    public function visit(Node $node): Context
     {
         // Many nodes don't change the context and we
         // don't need to read them.
@@ -73,7 +76,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitDeclare(Node $node) : Context
+    public function visitDeclare(Node $node): Context
     {
         $declares = $node->children['declares'];
         $context = $this->context;
@@ -99,7 +102,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
      * @return Context
      * A new context resulting from parsing the node
      */
-    public function visitNamespace(Node $node) : Context
+    public function visitNamespace(Node $node): Context
     {
         $namespace = '\\' . (string)$node->children['name'];
         return $this->context->withNamespace($namespace);
@@ -116,7 +119,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitGroupUse(Node $node) : Context
+    public function visitGroupUse(Node $node): Context
     {
         $children = $node->children;
 
@@ -153,7 +156,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitUse(Node $node) : Context
+    public function visitUse(Node $node): Context
     {
         $context = $this->context;
         $target_php_version = Config::get_closest_target_php_version_id();
@@ -178,7 +181,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
         return $context;
     }
 
-    private function maybeWarnSameNamespaceUse(string $alias, FullyQualifiedGlobalStructuralElement $target, int $flags, int $lineno) : void
+    private function maybeWarnSameNamespaceUse(string $alias, FullyQualifiedGlobalStructuralElement $target, int $flags, int $lineno): void
     {
         if (\strcasecmp($alias, $target->getName()) !== 0) {
             return;
@@ -215,7 +218,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
         FQSEN $target,
         int $target_php_version,
         int $lineno
-    ) : void {
+    ): void {
         $alias_lower = \strtolower($alias);
         if ($target_php_version < 70100) {
             if ($alias_lower === 'void') {
@@ -258,7 +261,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
         Node $node,
         string $prefix = '',
         int $flags = 0
-    ) : array {
+    ): array {
         if ($node->kind !== \ast\AST_USE) {
             throw new AssertionError('Method takes AST_USE nodes');
         }

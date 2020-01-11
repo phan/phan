@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Element;
 
@@ -61,7 +63,7 @@ class ClassConstant extends ClassElement implements ConstantInterface
      * Override the default getter to fill in a future
      * union type if available.
      */
-    public function getUnionType() : UnionType
+    public function getUnionType(): UnionType
     {
         $union_type = $this->getFutureUnionType();
         if (!\is_null($union_type)) {
@@ -76,12 +78,12 @@ class ClassConstant extends ClassElement implements ConstantInterface
      * The fully-qualified structural element name of this
      * structural element
      */
-    public function getFQSEN() : FQSEN
+    public function getFQSEN(): FQSEN
     {
         return $this->fqsen;
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         return $this->getVisibilityName() . ' const ' . $this->name;
     }
@@ -89,7 +91,7 @@ class ClassConstant extends ClassElement implements ConstantInterface
     /**
      * Used for generating issue messages
      */
-    public function asVisibilityAndFQSENString() : string
+    public function asVisibilityAndFQSENString(): string
     {
         return $this->getVisibilityName() . ' ' .
             $this->getClassFQSEN()->__toString() .
@@ -101,7 +103,7 @@ class ClassConstant extends ClassElement implements ConstantInterface
      * @return bool
      * True if this class constant is intended to be an override of another class constant (contains (at)override)
      */
-    public function isOverrideIntended() : bool
+    public function isOverrideIntended(): bool
     {
         return $this->getPhanFlagsHasState(Flags::IS_OVERRIDE_INTENDED);
     }
@@ -111,7 +113,7 @@ class ClassConstant extends ClassElement implements ConstantInterface
      * @param bool $is_override_intended
 
      */
-    public function setIsOverrideIntended(bool $is_override_intended) : void
+    public function setIsOverrideIntended(bool $is_override_intended): void
     {
         $this->setPhanFlags(
             Flags::bitVectorWithState(
@@ -122,7 +124,7 @@ class ClassConstant extends ClassElement implements ConstantInterface
         );
     }
 
-    public function getMarkupDescription() : string
+    public function getMarkupDescription(): string
     {
         $string = '';
 
@@ -142,7 +144,7 @@ class ClassConstant extends ClassElement implements ConstantInterface
      * Returns the visibility of this class constant
      * (either 'public', 'protected', or 'private')
      */
-    public function getVisibilityName() : string
+    public function getVisibilityName(): string
     {
         if ($this->isPrivate()) {
             return 'private';
@@ -156,7 +158,7 @@ class ClassConstant extends ClassElement implements ConstantInterface
     /**
      * Converts this class constant to a stub php snippet that can be used by `tool/make_stubs`
      */
-    public function toStub() : string
+    public function toStub(): string
     {
         $string = '    ';
         if ($this->isPrivate()) {

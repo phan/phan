@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests;
 
@@ -25,7 +27,7 @@ final class AnalyzerTest extends BaseTest
      */
     private $code_base;
 
-    protected function setUp() : void
+    protected function setUp(): void
     {
         $this->code_base = new CodeBase(
             [], // $this->class_name_list,
@@ -36,7 +38,7 @@ final class AnalyzerTest extends BaseTest
         );
     }
 
-    public function testClassInCodeBase() : void
+    public function testClassInCodeBase(): void
     {
 
         $this->contextForCode("
@@ -50,7 +52,7 @@ final class AnalyzerTest extends BaseTest
         );
     }
 
-    public function testNamespaceClassInCodeBase() : void
+    public function testNamespaceClassInCodeBase(): void
     {
         $this->contextForCode("
             namespace A;
@@ -64,7 +66,7 @@ final class AnalyzerTest extends BaseTest
         );
     }
 
-    public function testMethodInCodeBase() : void
+    public function testMethodInCodeBase(): void
     {
         $this->contextForCode("
             namespace A;
@@ -98,7 +100,7 @@ final class AnalyzerTest extends BaseTest
      */
     private function contextForCode(
         string $code_stub
-    ) : Context {
+    ): Context {
 
         return
             Analysis::parseNodeInContext(

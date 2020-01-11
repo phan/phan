@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Type;
 
@@ -17,53 +19,53 @@ use Phan\Language\Type;
 final class BoolType extends ScalarType
 {
     /** @phan-override */
-    const NAME = 'bool';
-    public function isPossiblyFalsey() : bool
+    public const NAME = 'bool';
+    public function isPossiblyFalsey(): bool
     {
         return true;  // it's always falsey, since this is conceptually a collection of FalseType and TrueType
     }
 
-    public function asNonFalseyType() : Type
+    public function asNonFalseyType(): Type
     {
         return TrueType::instance(false);
     }
 
-    public function asNonTruthyType() : Type
+    public function asNonTruthyType(): Type
     {
         return FalseType::instance($this->is_nullable);
     }
 
-    public function isPossiblyFalse() : bool
+    public function isPossiblyFalse(): bool
     {
         return true;  // it's possibly false, since this is conceptually a collection of FalseType and TrueType
     }
 
-    public function asNonFalseType() : Type
+    public function asNonFalseType(): Type
     {
         return TrueType::instance($this->is_nullable);
     }
 
-    public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other) : bool
+    public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other): bool
     {
         return $other->isInBoolFamily() || (!$context->isStrictTypes() && parent::canCastToDeclaredType($code_base, $context, $other));
     }
 
-    public function isPossiblyTrue() : bool
+    public function isPossiblyTrue(): bool
     {
         return true;  // it's possibly true, since this is conceptually a collection of FalseType and TrueType
     }
 
-    public function asNonTrueType() : Type
+    public function asNonTrueType(): Type
     {
         return FalseType::instance($this->is_nullable);
     }
 
-    public function isInBoolFamily() : bool
+    public function isInBoolFamily(): bool
     {
         return true;
     }
 
-    public function isAlwaysTruthy() : bool
+    public function isAlwaysTruthy(): bool
     {
         return false;  // overridden in various types. This base class (Type) is implicitly the type of an object, which is always truthy.
     }
@@ -71,18 +73,18 @@ final class BoolType extends ScalarType
     /**
      * Helper function for internal use by UnionType
      */
-    public function getNormalizationFlags() : int
+    public function getNormalizationFlags(): int
     {
         return $this->is_nullable ? (self::_bit_nullable | self::_bit_true | self::_bit_false) : (self::_bit_true | self::_bit_false);
     }
 
-    public function isPrintableScalar() : bool
+    public function isPrintableScalar(): bool
     {
         // This would be '' or '1', which is probably not intended
         return Config::getValue('scalar_implicit_cast');
     }
 
-    public function isValidNumericOperand() : bool
+    public function isValidNumericOperand(): bool
     {
         return Config::getValue('scalar_implicit_cast');
     }
@@ -93,7 +95,7 @@ final class BoolType extends ScalarType
      * @param int $flags (e.g. \ast\flags\BINARY_IS_SMALLER)
      * @internal
      */
-    public function canSatisfyComparison($scalar, int $flags) : bool
+    public function canSatisfyComparison($scalar, int $flags): bool
     {
         return self::performComparison(false, $scalar, $flags) ||
             self::performComparison(true, $scalar, $flags);

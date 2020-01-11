@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests;
 
@@ -10,7 +12,7 @@ use Phan\Config\Initializer;
  */
 final class InitializerTest extends BaseTest
 {
-    public function testInitializesValid() : void
+    public function testInitializesValid(): void
     {
         for ($init_level = 1; $init_level <= 5; $init_level++) {
             // @phan-suppress-next-line PhanAccessMethodInternal, PhanThrowTypeAbsentForCall
@@ -31,7 +33,7 @@ final class InitializerTest extends BaseTest
      * @param ?string $expected_version
      * @dataProvider determineTargetPHPVersionProvider
      */
-    public function testDetermineTargetPHPVersion(?string $expected_version, string $php_string) : void
+    public function testDetermineTargetPHPVersion(?string $expected_version, string $php_string): void
     {
         $actual = Initializer::determineTargetPHPVersion(['require' => ['php' => $php_string]])[0];
         $this->assertSame($expected_version, $actual);
@@ -41,7 +43,7 @@ final class InitializerTest extends BaseTest
      * Phan determines the minimum version based on https://getcomposer.org/doc/articles/versions.md
      * @return list<list>
      */
-    public function determineTargetPHPVersionProvider() : array
+    public function determineTargetPHPVersionProvider(): array
     {
         return [
             [null, 'nonsense'],
@@ -62,7 +64,7 @@ final class InitializerTest extends BaseTest
      * @param list<string> $files
      * @dataProvider filterDirectoryAndFileListProvider
      */
-    public function testFilterDirectoryAndFileList(array $expected_dirs, array $expected_files, array $dirs, array $files) : void
+    public function testFilterDirectoryAndFileList(array $expected_dirs, array $expected_files, array $dirs, array $files): void
     {
         $this->assertSame([$expected_dirs, $expected_files], Initializer::filterDirectoryAndFileList($dirs, $files));
     }
@@ -70,7 +72,7 @@ final class InitializerTest extends BaseTest
     /**
      * @return list<list<list<string>>>
      */
-    public function filterDirectoryAndFileListProvider() : array
+    public function filterDirectoryAndFileListProvider(): array
     {
         return [
             [

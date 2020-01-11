@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Output;
 
@@ -21,7 +23,7 @@ class PrinterFactory
     /**
      * @return list<string> the supported types of Printers
      */
-    public function getTypes():array
+    public function getTypes(): array
     {
         return ['text', 'json', 'csv', 'codeclimate', 'checkstyle', 'pylint', 'html'];
     }
@@ -30,7 +32,7 @@ class PrinterFactory
      * Return an IssuePrinterInterface of type $type that outputs issues to $output
      * @param ?string $type the configured type of printer
      */
-    public function getPrinter(?string $type, OutputInterface $output):IssuePrinterInterface
+    public function getPrinter(?string $type, OutputInterface $output): IssuePrinterInterface
     {
         switch ($type) {
             case 'codeclimate':

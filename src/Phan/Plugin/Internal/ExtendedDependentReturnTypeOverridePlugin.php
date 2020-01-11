@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Plugin\Internal;
 
@@ -39,7 +41,7 @@ final class ExtendedDependentReturnTypeOverridePlugin extends PluginV3 implement
         string $function_name,
         int $min_args,
         ?int $max_args = null
-    ) : Closure {
+    ): Closure {
         $max_args = $max_args ?? $min_args;
         /**
          * @param list<Node|string|int|float> $args
@@ -53,7 +55,7 @@ final class ExtendedDependentReturnTypeOverridePlugin extends PluginV3 implement
             $function_name,
             $min_args,
             $max_args
-        ) : UnionType {
+        ): UnionType {
             if (count($args) < $min_args || count($args) > $max_args) {
                 // Phan should already warn about too many or too few
                 return $function->getUnionType();
@@ -90,13 +92,13 @@ final class ExtendedDependentReturnTypeOverridePlugin extends PluginV3 implement
      * @return array<string,\Closure>
      * @phan-return array<string, Closure(CodeBase,Context,Func,array):UnionType>
      */
-    private static function getReturnTypeOverridesStatic(CodeBase $code_base) : array
+    private static function getReturnTypeOverridesStatic(CodeBase $code_base): array
     {
         $basic_return_type_overrides = (new DependentReturnTypeOverridePlugin())->getReturnTypeOverrides($code_base);
         /**
          * @param callable-string $function
          */
-        $wrap = static function (string $function, int $min, ?int $max = null) use ($basic_return_type_overrides) : ?Closure {
+        $wrap = static function (string $function, int $min, ?int $max = null) use ($basic_return_type_overrides): ?Closure {
             if (!\is_callable($function)) {
                 return null;
             }
@@ -116,7 +118,7 @@ final class ExtendedDependentReturnTypeOverridePlugin extends PluginV3 implement
             ) use (
                 $cb,
                 $cb_fallback
-) : UnionType {
+): UnionType {
                 $result = $cb($code_base, $context, $function_decl, $args);
                 if ($result !== $function_decl->getUnionType()) {
                     return $result;
@@ -160,7 +162,7 @@ final class ExtendedDependentReturnTypeOverridePlugin extends PluginV3 implement
      * @return array<string,\Closure>
      * @override
      */
-    public function getReturnTypeOverrides(CodeBase $code_base) : array
+    public function getReturnTypeOverrides(CodeBase $code_base): array
     {
         // Unit tests invoke this repeatedly. Cache it.
         static $overrides = null;

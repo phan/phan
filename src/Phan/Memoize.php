@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan;
 
@@ -52,7 +54,7 @@ trait Memoize
      * True if this is the first time this function has been
      * called on this class with this key.
      */
-    protected function isFirstExecution(string $key) : bool
+    protected function isFirstExecution(string $key): bool
     {
         if (!\array_key_exists($key, $this->memoized_data)) {
             $this->memoized_data[$key] = true;
@@ -94,7 +96,7 @@ trait Memoize
     /**
      * Delete all memoized data
      */
-    protected function memoizeFlushAll() : void
+    protected function memoizeFlushAll(): void
     {
         $this->memoized_data = [];
     }

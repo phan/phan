@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\PluginV3;
 
@@ -22,5 +24,5 @@ interface BeforeAnalyzeCapability extends \Phan\PluginV2\BeforeAnalyzeCapability
      */
     public function beforeAnalyze(
         CodeBase $code_base
-    ) : void;
+    ): void;
 }

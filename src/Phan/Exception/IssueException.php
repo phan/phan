@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Exception;
 
@@ -44,7 +46,7 @@ class IssueException extends Exception
      * @return IssueInstance
      * The issue that was found
      */
-    public function getIssueInstance() : IssueInstance
+    public function getIssueInstance(): IssueInstance
     {
         return $this->issue_instance;
     }

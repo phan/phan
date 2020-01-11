@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language;
 
@@ -27,7 +29,7 @@ class AnnotatedUnionType extends UnionType
      * @override
      * @suppress PhanAccessReadOnlyProperty this is the only way to set is_possibly_undefined
      */
-    public function withIsPossiblyUndefined(bool $is_possibly_undefined) : UnionType
+    public function withIsPossiblyUndefined(bool $is_possibly_undefined): UnionType
     {
         if ($this->is_possibly_undefined === $is_possibly_undefined) {
             return $this;
@@ -44,7 +46,7 @@ class AnnotatedUnionType extends UnionType
      * @override
      * @suppress PhanAccessReadOnlyProperty this is the only way to set is_possibly_undefined
      */
-    public function withIsDefinitelyUndefined() : UnionType
+    public function withIsDefinitelyUndefined(): UnionType
     {
         if ($this->is_possibly_undefined === self::DEFINITELY_UNDEFINED) {
             return $this;
@@ -79,17 +81,17 @@ class AnnotatedUnionType extends UnionType
         return parent::asValueOrNullOrSelf();
     }
 
-    public function isPossiblyUndefined() : bool
+    public function isPossiblyUndefined(): bool
     {
         return (bool) $this->is_possibly_undefined;
     }
 
-    public function isDefinitelyUndefined() : bool
+    public function isDefinitelyUndefined(): bool
     {
         return $this->is_possibly_undefined === self::DEFINITELY_UNDEFINED;
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         $result = parent::__toString();
         if ($this->is_possibly_undefined) {
@@ -102,7 +104,7 @@ class AnnotatedUnionType extends UnionType
      * Add a type name to the list of types
      * @override
      */
-    public function withType(Type $type) : UnionType
+    public function withType(Type $type): UnionType
     {
         return parent::withType($type)->withIsPossiblyUndefined(false);
     }
@@ -111,7 +113,7 @@ class AnnotatedUnionType extends UnionType
      * Remove a type name from the list of types
      * @override
      */
-    public function withoutType(Type $type) : UnionType
+    public function withoutType(Type $type): UnionType
     {
         return parent::withoutType($type)->withIsPossiblyUndefined(false);
     }
@@ -120,7 +122,7 @@ class AnnotatedUnionType extends UnionType
      * Returns a union type which adds the given types to this type
      * @override
      */
-    public function withUnionType(UnionType $union_type) : UnionType
+    public function withUnionType(UnionType $union_type): UnionType
     {
         return parent::withUnionType($union_type)->withIsPossiblyUndefined(false);
     }
@@ -129,7 +131,7 @@ class AnnotatedUnionType extends UnionType
      * @return bool - True if not empty, not possibly undefined, and at least one type is NullType or nullable.
      * @override
      */
-    public function containsNullableOrUndefined() : bool
+    public function containsNullableOrUndefined(): bool
     {
         return $this->is_possibly_undefined || $this->containsNullable();
     }
@@ -137,7 +139,7 @@ class AnnotatedUnionType extends UnionType
     /**
      * @override
      */
-    public function generateUniqueId() : string
+    public function generateUniqueId(): string
     {
         $id = parent::generateUniqueId();
         if ($this->is_possibly_undefined) {
@@ -149,7 +151,7 @@ class AnnotatedUnionType extends UnionType
     /**
      * Returns a union type with an empty real type set (including in elements of generic arrays, etc.)
      */
-    public function eraseRealTypeSetRecursively() : UnionType
+    public function eraseRealTypeSetRecursively(): UnionType
     {
         $type_set = $this->getTypeSet();
         $new_type_set = [];
@@ -166,7 +168,7 @@ class AnnotatedUnionType extends UnionType
         return $result;
     }
 
-    public function convertUndefinedToNullable() : UnionType
+    public function convertUndefinedToNullable(): UnionType
     {
         if ($this->is_possibly_undefined) {
             return $this->nullableClone()->withIsPossiblyUndefined(false);
@@ -177,7 +179,7 @@ class AnnotatedUnionType extends UnionType
     /**
      * @override
      */
-    public function isEqualTo(UnionType $union_type) : bool
+    public function isEqualTo(UnionType $union_type): bool
     {
         if ($this === $union_type) {
             return true;
@@ -202,7 +204,7 @@ class AnnotatedUnionType extends UnionType
         return true;
     }
 
-    public function isIdenticalTo(UnionType $union_type) : bool
+    public function isIdenticalTo(UnionType $union_type): bool
     {
         if ($this === $union_type) {
             return true;

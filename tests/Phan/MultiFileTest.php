@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests;
 
@@ -21,7 +23,7 @@ class MultiFileTest extends AbstractPhanFileTest
      * The constant MULTI_FILE_DIR is defined in `phpunit.xml`.
      * @return list<array{0:list<string>,1:string}>
      */
-    public function getTestFiles() : array
+    public function getTestFiles(): array
     {
         return [
             // Issue #157

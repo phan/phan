@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Analysis;
 
@@ -56,7 +58,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      */
 
     /** @param Node $unused_node implementation for unhandled nodes */
-    public function visit(Node $unused_node) : Context
+    public function visit(Node $unused_node): Context
     {
         return $this->context;
     }
@@ -77,7 +79,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      * @throws CodeBaseException
      * if the class could not be located
      */
-    public function visitClass(Node $node) : Context
+    public function visitClass(Node $node): Context
     {
         if ($node->flags & ast\flags\CLASS_ANONYMOUS) {
             $class_name =
@@ -139,7 +141,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      *
      * @throws CodeBaseException if the method could not be found
      */
-    public function visitMethod(Node $node) : Context
+    public function visitMethod(Node $node): Context
     {
         $method_name = (string)$node->children['name'];
         $code_base = $this->code_base;
@@ -226,7 +228,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     /**
      * Modifies the context of $class in place, adding types of default values for all declared properties
      */
-    private function addDefaultPropertiesOfThisToContext(Clazz $class, Context $context) : void
+    private function addDefaultPropertiesOfThisToContext(Clazz $class, Context $context): void
     {
         $property_types = [];
         foreach ($class->getPropertyMap($this->code_base) as $property) {
@@ -273,7 +275,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      * @throws CodeBaseException
      * if this function declaration could not be found
      */
-    public function visitFuncDecl(Node $node) : Context
+    public function visitFuncDecl(Node $node): Context
     {
         $function_name = (string)$node->children['name'];
         $code_base = $this->code_base;
@@ -354,7 +356,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         return $context;
     }
 
-    private static function getOverrideClassFQSEN(CodeBase $code_base, Func $func) : ?FullyQualifiedClassName
+    private static function getOverrideClassFQSEN(CodeBase $code_base, Func $func): ?FullyQualifiedClassName
     {
         $closure_scope = $func->getInternalScope();
         if ($closure_scope instanceof ClosureScope) {
@@ -392,7 +394,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         CodeBase $code_base,
         Context $context,
         Func $func
-    ) : void {
+    ): void {
         // skip adding $this to internal scope if the closure is a static one
         if ($func->getFlags() === ast\flags\MODIFIER_STATIC) {
             return;
@@ -432,7 +434,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitClosure(Node $node) : Context
+    public function visitClosure(Node $node): Context
     {
         $code_base = $this->code_base;
         $context = $this->context->withoutLoops();
@@ -570,7 +572,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      * parsing the node
      * @override
      */
-    public function visitArrowFunc(Node $node) : Context
+    public function visitArrowFunc(Node $node): Context
     {
         $code_base = $this->code_base;
         $context = $this->context->withoutLoops();
@@ -651,7 +653,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      * The return type of the given FunctionInterface to a Generator.
      * Emit an Issue if the documented return type is incompatible with that.
      */
-    private function setReturnTypeOfGenerator(FunctionInterface $func, Node $node) : void
+    private function setReturnTypeOfGenerator(FunctionInterface $func, Node $node): void
     {
         // Currently, there is no way to describe the types passed to
         // a Generator in phpdoc.
@@ -695,7 +697,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      * @return Context
      * An unchanged context resulting from parsing the node
      */
-    public function visitAssign(Node $node) : Context
+    public function visitAssign(Node $node): Context
     {
         $var_node = $node->children['var'];
         if (Config::get_closest_target_php_version_id() < 70100 && $var_node instanceof Node && $var_node->kind === ast\AST_ARRAY) {
@@ -714,7 +716,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitForeach(Node $_) : Context
+    public function visitForeach(Node $_): Context
     {
         return $this->context;
     }
@@ -727,7 +729,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitCatch(Node $node) : Context
+    public function visitCatch(Node $node): Context
     {
         // @phan-suppress-next-line PhanThrowTypeAbsentForCall
         $union_type = UnionTypeVisitor::unionTypeFromClassNode(
@@ -797,7 +799,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitIfElem(Node $node) : Context
+    public function visitIfElem(Node $node): Context
     {
         $cond = $node->children['cond'] ?? null;
         if (!($cond instanceof Node)) {
@@ -823,7 +825,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitFor(Node $node) : Context
+    public function visitFor(Node $node): Context
     {
         $cond = $node->children['cond'];
         if (!($cond instanceof Node)) {
@@ -847,7 +849,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitCall(Node $_) : Context
+    public function visitCall(Node $_): Context
     {
         return $this->context;
     }
@@ -856,7 +858,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      * @return Clazz
      * Get the class on this scope or fail real hard
      */
-    private function getContextClass() : Clazz
+    private function getContextClass(): Clazz
     {
         return $this->context->getClassInScope($this->code_base);
     }

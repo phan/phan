@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Library;
 
@@ -38,7 +40,7 @@ class StringSuggester
     /**
      * @return array<string,string> map of lowercase name to original name in namespace
      */
-    public function getSuggestions(string $name) : array
+    public function getSuggestions(string $name): array
     {
         if (!$this->strings || $name === '') {
             return [];
@@ -74,7 +76,7 @@ class StringSuggester
      * @return array<string,string> maps lowercase string to original string,
      * for those with names which case-insensitively begin with $name
      */
-    public function findStringsBeginningWith(string $name) : array
+    public function findStringsBeginningWith(string $name): array
     {
         $name = \strtolower($name);
         $name_len = strlen($name);
@@ -82,7 +84,7 @@ class StringSuggester
         $arr = $this->key_set;
         $N = \count($arr);
         $end = $N;
-        $cmp = static function (string $value) use ($name, $name_len) : int {
+        $cmp = static function (string $value) use ($name, $name_len): int {
             return \strncmp($value, $name, $name_len);
         };
         // Binary search for the start of the matches
@@ -123,7 +125,7 @@ class StringSuggester
     /**
      * @return array<string,string> a mapping from lowercase name to uppercase name for those strings near the requested length.
      */
-    private function getSimilarLengthStrings(int $strlen) : array
+    private function getSimilarLengthStrings(int $strlen): array
     {
         return $this->strings_near_length[$strlen] ?? ($this->strings_near_length[$strlen] = $this->computeSimilarLengthStrings($strlen));
     }
@@ -131,7 +133,7 @@ class StringSuggester
     /**
      * @return array<string,string> a newly computed mapping from lowercase name to uppercase name for those strings near the requested length.
      */
-    private function computeSimilarLengthStrings(int $strlen) : array
+    private function computeSimilarLengthStrings(int $strlen): array
     {
         $max_levenshtein_distance = (int)(1 + $strlen / 6);
         $results = [];

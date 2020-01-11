@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Phan\LanguageServer\Protocol;
@@ -15,15 +16,15 @@ abstract class FileChangeType
      * The file got created.
      * @suppress PhanUnreferencedPublicClassConstant
      */
-    const CREATED = 1;
+    public const CREATED = 1;
 
     /**
      * The file got changed.
      */
-    const CHANGED = 2;
+    public const CHANGED = 2;
 
     /**
      * The file got deleted.
      */
-    const DELETED = 3;
+    public const DELETED = 3;
 }

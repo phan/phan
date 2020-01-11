@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Type;
 
@@ -26,7 +28,7 @@ use Phan\Language\UnionTypeBuilder;
 class GenericArrayType extends ArrayType implements GenericArrayInterface
 {
     /** @phan-override */
-    const NAME = 'array';
+    public const NAME = 'array';
 
     // In PHP, array keys can be integers or strings. These constants describe all possible combinations of those key types.
 
@@ -35,15 +37,15 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      * Array types with this key type Similar to KEY_MIXED, but adding a key type will change the array to the new key
      * instead of staying as KEY_MIXED.
      */
-    const KEY_EMPTY  = 0;  // No way to create this type yet.
+    public const KEY_EMPTY  = 0;  // No way to create this type yet.
     /** array keys are integers */
-    const KEY_INT    = 1;
+    public const KEY_INT    = 1;
     /** array keys are strings */
-    const KEY_STRING = 2;
+    public const KEY_STRING = 2;
     /** array keys are integers or strings. */
-    const KEY_MIXED  = 3;  // i.e. KEY_INT|KEY_STRING
+    public const KEY_MIXED  = 3;  // i.e. KEY_INT|KEY_STRING
 
-    const KEY_NAMES = [
+    public const KEY_NAMES = [
         self::KEY_EMPTY  => 'empty',
         self::KEY_INT    => 'int',
         self::KEY_STRING => 'string',
@@ -89,7 +91,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      * Returns the key type of this generic array.
      * e.g. for `int[]`, returns self::KEY_MIXED, for `array<string,mixed>`, returns self::KEY_STRING.
      */
-    public function getKeyType() : int
+    public function getKeyType(): int
     {
         return $this->key_type;
     }
@@ -103,7 +105,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      * A new type that is a copy of this type but with the
      * given nullability value.
      */
-    public function withIsNullable(bool $is_nullable) : Type
+    public function withIsNullable(bool $is_nullable): Type
     {
         if ($is_nullable === $this->is_nullable) {
             return $this;
@@ -121,7 +123,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      * True if this Type can be cast to the given Type
      * cleanly
      */
-    protected function canCastToNonNullableType(Type $type) : bool
+    protected function canCastToNonNullableType(Type $type): bool
     {
         if ($type instanceof ArrayType) {
             if ($type instanceof GenericArrayType) {
@@ -164,7 +166,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
         return parent::canCastToNonNullableType($type);
     }
 
-    protected function canCastToNonNullableTypeWithoutConfig(Type $type) : bool
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type): bool
     {
         if ($type instanceof ArrayType) {
             if ($type instanceof GenericArrayType) {
@@ -207,7 +209,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
 
     private function canCastToGenericIterableType(
         GenericIterableType $iterable_type
-    ) : bool {
+    ): bool {
         if (!$this->element_type->asPHPDocUnionType()->canCastToUnionType($iterable_type->getElementUnionType())) {
             return false;
         }
@@ -237,7 +239,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
         Type $type,
         bool $is_nullable,
         int $key_type
-    ) : GenericArrayType {
+    ): GenericArrayType {
         // Make sure we only ever create exactly one
         // object for any unique type
         static $canonical_object_maps = null;
@@ -262,7 +264,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
         return $map->offsetGet($type);
     }
 
-    public function isGenericArray() : bool
+    public function isGenericArray(): bool
     {
         return true;
     }
@@ -272,7 +274,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      * A variation of this type that is not generic.
      * i.e. 'int[]' becomes 'int'.
      */
-    public function genericArrayElementType() : Type
+    public function genericArrayElementType(): Type
     {
         return $this->element_type;
     }
@@ -281,7 +283,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      * @return UnionType returns the array value's union type
      * @phan-override
      */
-    public function iterableValueUnionType(CodeBase $unused_codebase) : UnionType
+    public function iterableValueUnionType(CodeBase $unused_codebase): UnionType
     {
         return $this->element_type->asPHPDocUnionType();
     }
@@ -290,7 +292,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      * @return UnionType the array key's union type
      * @phan-override
      */
-    public function iterableKeyUnionType(CodeBase $unused_codebase) : UnionType
+    public function iterableKeyUnionType(CodeBase $unused_codebase): UnionType
     {
         return self::unionTypeForKeyType($this->key_type);
     }
@@ -300,12 +302,12 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      * A variation of this type that is not generic.
      * i.e. 'int[]' becomes 'int'.
      */
-    public function genericArrayElementUnionType() : UnionType
+    public function genericArrayElementUnionType(): UnionType
     {
         return $this->element_type->asPHPDocUnionType();
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         $string = $this->element_type->__toString();
         if ($this->key_type === self::KEY_MIXED) {
@@ -346,7 +348,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
     public function asExpandedTypes(
         CodeBase $code_base,
         int $recursion_depth = 0
-    ) : UnionType {
+    ): UnionType {
         // We're going to assume that if the type hierarchy
         // is taller than some value we probably messed up
         // and should bail out.
@@ -354,7 +356,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
             throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
         }
 
-        return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) : UnionType {
+        return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth): UnionType {
             $union_type = $this->asPHPDocUnionType();
 
             $element_type = $this->element_type;
@@ -426,7 +428,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
     public function asExpandedTypesPreservingTemplate(
         CodeBase $code_base,
         int $recursion_depth = 0
-    ) : UnionType {
+    ): UnionType {
         // We're going to assume that if the type hierarchy
         // is taller than some value we probably messed up
         // and should bail out.
@@ -434,7 +436,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
             throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
         }
 
-        return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) : UnionType {
+        return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth): UnionType {
             $union_type = $this->asPHPDocUnionType();
 
             $class_fqsen = FullyQualifiedClassName::fromType($this->element_type);
@@ -490,7 +492,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
         CodeBase $code_base,
         UnionTypeBuilder $union_type_builder,
         FullyQualifiedClassName $class_fqsen
-    ) : void {
+    ): void {
         $fqsen_aliases = $code_base->getClassAliasesByFQSEN($class_fqsen);
         foreach ($fqsen_aliases as $alias_fqsen_record) {
             $alias_fqsen = $alias_fqsen_record->alias_fqsen;
@@ -507,7 +509,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      * for `array<string,\stdClass>|array`, returns self::KEY_MIXED
      * @param list<Type> $type_set
      */
-    public static function keyUnionTypeFromTypeSetStrict(array $type_set) : int
+    public static function keyUnionTypeFromTypeSetStrict(array $type_set): int
     {
         $key_types = self::KEY_EMPTY;
         foreach ($type_set as $type) {
@@ -531,7 +533,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      * Returns the key type for the keys of this union type.
      * E.g. for `array<string,\stdClass>`, returns self::KEY_STRING
      */
-    public static function keyTypeFromUnionTypeKeys(UnionType $union_type) : int
+    public static function keyTypeFromUnionTypeKeys(UnionType $union_type): int
     {
         $key_types = self::KEY_EMPTY;
         foreach ($union_type->getTypeSet() as $type) {
@@ -550,13 +552,13 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
     }
 
     /** @suppress PhanUnreferencedPublicClassConstant */
-    const CONVERT_KEY_MIXED_TO_EMPTY_UNION_TYPE = 0;
-    const CONVERT_KEY_MIXED_TO_INT_OR_STRING_UNION_TYPE = 1;
+    public const CONVERT_KEY_MIXED_TO_EMPTY_UNION_TYPE = 0;
+    public const CONVERT_KEY_MIXED_TO_INT_OR_STRING_UNION_TYPE = 1;
 
     /**
      * @return UnionType a union type corresponding to $key_type
      */
-    public static function unionTypeForKeyType(int $key_type, int $behavior = self::CONVERT_KEY_MIXED_TO_INT_OR_STRING_UNION_TYPE) : UnionType
+    public static function unionTypeForKeyType(int $key_type, int $behavior = self::CONVERT_KEY_MIXED_TO_INT_OR_STRING_UNION_TYPE): UnionType
     {
         static $int_union_type = null;
         static $string_union_type = null;
@@ -583,7 +585,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      * Returns `self::KEY_*` corresponding to the provided union type.
      * E.g. for `string`, returns `self::KEY_STRING`.
      */
-    public static function keyTypeFromUnionTypeValues(UnionType $union_type) : int
+    public static function keyTypeFromUnionTypeValues(UnionType $union_type): int
     {
         $key_types = self::KEY_EMPTY;
         foreach ($union_type->getTypeSet() as $type) {
@@ -607,7 +609,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      * @return int
      * Corresponds to the type of the array keys of $array. This is a GenericArrayType::KEY_* constant (KEY_INT, KEY_STRING, or KEY_MIXED).
      */
-    public static function getKeyTypeForArrayLiteral(array $array) : int
+    public static function getKeyTypeForArrayLiteral(array $array): int
     {
         $key_type = GenericArrayType::KEY_EMPTY;
         foreach ($array as $key => $_) {
@@ -621,7 +623,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      * Corresponds to the type of the array keys of the array represented by $node.
      * This is a GenericArrayType::KEY_* constant (KEY_INT, KEY_STRING, or KEY_MIXED).
      */
-    public static function getKeyTypeOfArrayNode(CodeBase $code_base, Context $context, Node $node, bool $should_catch_issue_exception = true) : int
+    public static function getKeyTypeOfArrayNode(CodeBase $code_base, Context $context, Node $node, bool $should_catch_issue_exception = true): int
     {
         $key_type_enum = GenericArrayType::KEY_EMPTY;
         // Check the all elements for key types.
@@ -660,12 +662,12 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
         return $key_type_enum ?: GenericArrayType::KEY_MIXED;
     }
 
-    public function hasArrayShapeOrLiteralTypeInstances() : bool
+    public function hasArrayShapeOrLiteralTypeInstances(): bool
     {
         return $this->element_type->hasArrayShapeOrLiteralTypeInstances();
     }
 
-    public function hasArrayShapeTypeInstances() : bool
+    public function hasArrayShapeTypeInstances(): bool
     {
         return $this->element_type->hasArrayShapeTypeInstances();
     }
@@ -674,7 +676,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      * @return list<Type>
      * @override
      */
-    public function withFlattenedArrayShapeOrLiteralTypeInstances() : array
+    public function withFlattenedArrayShapeOrLiteralTypeInstances(): array
     {
         // TODO: Any point in caching this?
         $type_instances = $this->element_type->withFlattenedArrayShapeOrLiteralTypeInstances();
@@ -691,7 +693,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
     /**
      * @override
      */
-    public function shouldBeReplacedBySpecificTypes() : bool
+    public function shouldBeReplacedBySpecificTypes(): bool
     {
         return false;
     }
@@ -701,7 +703,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      * e.g. returns true false, array, int
      *      returns false for callable, object, iterable, T, etc.
      */
-    public function isDefiniteNonCallableType() : bool
+    public function isDefiniteNonCallableType(): bool
     {
         return $this->key_type === self::KEY_STRING;
     }
@@ -709,7 +711,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
     /**
      * Returns true for `T` and `T[]` and `\MyClass<T>`, but not `\MyClass<\OtherClass>` or `false`
      */
-    public function hasTemplateTypeRecursive() : bool
+    public function hasTemplateTypeRecursive(): bool
     {
         return $this->genericArrayElementUnionType()->hasTemplateTypeRecursive();
     }
@@ -726,7 +728,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      */
     public function withTemplateParameterTypeMap(
         array $template_parameter_type_map
-    ) : UnionType {
+    ): UnionType {
         $element_type = $this->genericArrayElementUnionType();
         $new_element_type = $element_type->withTemplateParameterTypeMap($template_parameter_type_map);
         if ($element_type === $new_element_type) {
@@ -739,7 +741,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
     /**
      * Precondition: Callers should check isObjectWithKnownFQSEN
      */
-    public function hasSameNamespaceAndName(Type $_) : bool
+    public function hasSameNamespaceAndName(Type $_): bool
     {
         return false;
     }
@@ -750,14 +752,14 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      * @param CodeBase $code_base
      * @return ?Closure(UnionType,Context):UnionType
      */
-    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type) : ?Closure
+    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type): ?Closure
     {
         $closure = $this->element_type->getTemplateTypeExtractorClosure($code_base, $template_type);
         if (!$closure) {
             return null;
         }
         // If a function expects T[], then T is the generic array element type of the passed in union type
-        return static function (UnionType $array_type, Context $context) use ($closure) : UnionType {
+        return static function (UnionType $array_type, Context $context) use ($closure): UnionType {
             return $closure($array_type->genericArrayElementTypes(), $context);
         };
     }
@@ -765,7 +767,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
     /**
      * @return Generator<void,Type> (void => $inner_type)
      */
-    public function getReferencedClasses() : Generator
+    public function getReferencedClasses(): Generator
     {
         return $this->element_type->getReferencedClasses();
     }
@@ -774,7 +776,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      * Returns the corresponding type that would be used in a signature
      * @override
      */
-    public function asSignatureType() : Type
+    public function asSignatureType(): Type
     {
         return ArrayType::instance($this->is_nullable);
     }
@@ -783,7 +785,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      * Given a type such as array<int,static>, return array<int,SomeClass>
      * @override
      */
-    public function withStaticResolvedInContext(Context $context) : Type
+    public function withStaticResolvedInContext(Context $context): Type
     {
         $resolved_element_type = $this->element_type->withStaticResolvedInContext($context);
         if ($this->element_type === $resolved_element_type) {
@@ -800,9 +802,9 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      * Returns a type where all referenced union types (e.g. in generic arrays) have real type sets removed.
      * @phan-real-return static
      */
-    public function withErasedUnionTypes() : Type
+    public function withErasedUnionTypes(): Type
     {
-        return $this->memoize(__METHOD__, function () : GenericArrayType {
+        return $this->memoize(__METHOD__, function (): GenericArrayType {
             $erased_element_type = $this->element_type->withErasedUnionTypes();
             if ($erased_element_type === $this->element_type) {
                 return $this;
@@ -815,7 +817,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
         });
     }
 
-    public function asCallableType() : ?Type
+    public function asCallableType(): ?Type
     {
         if ($this->key_type === self::KEY_INT) {
             return null;
@@ -823,7 +825,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
         return CallableArrayType::instance(false);
     }
 
-    public function asNonFalseyType() : Type
+    public function asNonFalseyType(): Type
     {
         return NonEmptyGenericArrayType::fromElementType(
             $this->element_type,
@@ -845,7 +847,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
     /**
      * Overridden in subclasses for non-empty-array and non-empty-list.
      */
-    public function isDefinitelyNonEmptyArray() : bool
+    public function isDefinitelyNonEmptyArray(): bool
     {
         return false;
     }
@@ -853,7 +855,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
     /**
      * Returns the equivalent (possibly nullable) associative array type for this type.
      */
-    public function asAssociativeArrayType(bool $unused_can_reduce_size) : ArrayType
+    public function asAssociativeArrayType(bool $unused_can_reduce_size): ArrayType
     {
         return AssociativeArrayType::fromElementType(
             $this->element_type,
@@ -865,7 +867,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
     /**
      * Convert ArrayTypes with integer-only keys to ListType.
      */
-    public function convertIntegerKeyArrayToList() : ArrayType
+    public function convertIntegerKeyArrayToList(): ArrayType
     {
         if ($this->key_type !== GenericArrayType::KEY_INT) {
             return $this;

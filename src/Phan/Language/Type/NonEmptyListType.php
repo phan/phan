@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Type;
 
@@ -23,7 +25,7 @@ final class NonEmptyListType extends ListType implements NonEmptyArrayInterface
         Type $type,
         bool $is_nullable,
         int $unused_key_type = GenericArrayType::KEY_INT
-    ) : GenericArrayType {
+    ): GenericArrayType {
         // Make sure we only ever create exactly one
         // object for any unique type
         static $canonical_object_maps = null;
@@ -48,7 +50,7 @@ final class NonEmptyListType extends ListType implements NonEmptyArrayInterface
         return $map->offsetGet($type);
     }
 
-    protected function canCastToNonNullableType(Type $type) : bool
+    protected function canCastToNonNullableType(Type $type): bool
     {
         if (!$type->isPossiblyTruthy()) {
             return false;
@@ -57,35 +59,35 @@ final class NonEmptyListType extends ListType implements NonEmptyArrayInterface
     }
 
     /** @override */
-    public function isPossiblyFalsey() : bool
+    public function isPossiblyFalsey(): bool
     {
         return $this->is_nullable;
     }
 
     /** @override */
-    public function isAlwaysTruthy() : bool
+    public function isAlwaysTruthy(): bool
     {
         return !$this->is_nullable;
     }
 
     /** @override */
-    public function asNonFalseyType() : Type
+    public function asNonFalseyType(): Type
     {
         return $this->withIsNullable(false);
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         return ($this->is_nullable ? '?' : '') . 'non-empty-list<' . $this->element_type->__toString() . '>';
     }
 
     /** @override */
-    public function isDefinitelyNonEmptyArray() : bool
+    public function isDefinitelyNonEmptyArray(): bool
     {
         return true;
     }
 
-    public function asAssociativeArrayType(bool $can_reduce_size) : ArrayType
+    public function asAssociativeArrayType(bool $can_reduce_size): ArrayType
     {
         if ($can_reduce_size) {
             return AssociativeArrayType::fromElementType(
@@ -105,7 +107,7 @@ final class NonEmptyListType extends ListType implements NonEmptyArrayInterface
      * @return ListType
      * @phan-real-return ListType
      */
-    public function asPossiblyEmptyArrayType() : ArrayType
+    public function asPossiblyEmptyArrayType(): ArrayType
     {
         return ListType::fromElementType(
             $this->element_type,

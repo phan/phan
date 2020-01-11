@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Plugin\Internal;
 
@@ -27,7 +29,7 @@ final class CompactPlugin extends PluginV3 implements
      * @param CodeBase $code_base @phan-unused-param
      * @return array<string,Closure(CodeBase,Context,FunctionInterface,array,?Node):void>
      */
-    public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array
+    public function getAnalyzeFunctionCallClosures(CodeBase $code_base): array
     {
         // Unit tests invoke this repeatedly. Cache it.
         static $analyzers = null;
@@ -40,7 +42,7 @@ final class CompactPlugin extends PluginV3 implements
     /**
      * @return array<string,Closure(CodeBase,Context,FunctionInterface,array,?Node):void>
      */
-    private static function getAnalyzeFunctionCallClosuresStatic() : array
+    private static function getAnalyzeFunctionCallClosuresStatic(): array
     {
         /**
          * @param list<Node|int|float|string> $args
@@ -51,8 +53,8 @@ final class CompactPlugin extends PluginV3 implements
             Func $unused_func,
             array $args,
             ?Node $node
-        ) : void {
-            $check_variable_usage = static function (string $variable_name, $arg = null) use ($code_base, $context, $node) : void {
+        ): void {
+            $check_variable_usage = static function (string $variable_name, $arg = null) use ($code_base, $context, $node): void {
                 VariableTrackerVisitor::recordDynamicVariableUse($variable_name, $node);
                 if (!$context->getScope()->hasVariableWithName($variable_name)) {
                     Issue::maybeEmitWithParameters(

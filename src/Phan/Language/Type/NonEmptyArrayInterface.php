@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Type;
 
@@ -11,5 +13,5 @@ interface NonEmptyArrayInterface
     /**
      * Convert this to the related type that's allowed to be empty
      */
-    public function asPossiblyEmptyArrayType() : ArrayType;
+    public function asPossiblyEmptyArrayType(): ArrayType;
 }

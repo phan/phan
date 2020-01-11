@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Type;
 
@@ -17,7 +19,7 @@ use Phan\Language\Type;
 final class ClosureType extends Type
 {
     /** Not an override */
-    const NAME = 'Closure';
+    public const NAME = 'Closure';
 
     /**
      * @var FQSEN|null the FQSEN of the function-like from which this ClosureType was derived
@@ -31,7 +33,7 @@ final class ClosureType extends Type
     private $func;
 
     // Same as instance(), but guaranteed not to have memoized state.
-    private static function closureInstance() : ClosureType
+    private static function closureInstance(): ClosureType
     {
         static $instance = null;
         if ($instance === null) {
@@ -44,7 +46,7 @@ final class ClosureType extends Type
      * Create an instance of Closure for the FQSEN of the passed in function/closure/method $func with FQSEN $fqsen
      * @suppress PhanAccessReadOnlyProperty this is acting on a clone
      */
-    public static function instanceWithClosureFQSEN(FQSEN $fqsen, FunctionInterface $func = null) : ClosureType
+    public static function instanceWithClosureFQSEN(FQSEN $fqsen, FunctionInterface $func = null): ClosureType
     {
         static $original_instance = null;
         if ($original_instance === null) {
@@ -76,7 +78,7 @@ final class ClosureType extends Type
      * Is this a closure which points to a known FQSEN
      * (in internal or parsed function-likes, classes, methods, closures, etc.
      */
-    public function hasKnownFQSEN() : bool
+    public function hasKnownFQSEN(): bool
     {
         return $this->fqsen !== null;
     }
@@ -84,7 +86,7 @@ final class ClosureType extends Type
     /**
      * Override asFQSEN to return the closure's FQSEN
      */
-    public function asFQSEN() : FQSEN
+    public function asFQSEN(): FQSEN
     {
         return $this->fqsen ?? parent::asFQSEN();
     }
@@ -94,7 +96,7 @@ final class ClosureType extends Type
      * True if this Type can be cast to the given Type
      * cleanly
      */
-    protected function canCastToNonNullableType(Type $type) : bool
+    protected function canCastToNonNullableType(Type $type): bool
     {
         if ($type->isCallable()) {
             if ($type instanceof FunctionLikeDeclarationType) {
@@ -109,7 +111,7 @@ final class ClosureType extends Type
         return parent::canCastToNonNullableType($type);
     }
 
-    protected function canCastToNonNullableTypeWithoutConfig(Type $type) : bool
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type): bool
     {
         if ($type->isCallable()) {
             if ($type instanceof FunctionLikeDeclarationType) {
@@ -161,7 +163,7 @@ final class ClosureType extends Type
      * @return bool
      * True if this type is a callable or a Closure.
      */
-    public function isCallable() : bool
+    public function isCallable(): bool
     {
         return true;
     }
@@ -182,7 +184,7 @@ final class ClosureType extends Type
      * e.g. returns true for false, array, int
      *      returns false for callable, array, object, iterable, T, etc.
      */
-    public function isDefiniteNonCallableType() : bool
+    public function isDefiniteNonCallableType(): bool
     {
         return false;
     }
@@ -194,12 +196,12 @@ final class ClosureType extends Type
      * @deprecated use asFunctionInterfaceOrNull
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function getFunctionLikeOrNull() : ?FunctionInterface
+    public function getFunctionLikeOrNull(): ?FunctionInterface
     {
         return $this->func;
     }
 
-    public function asFunctionInterfaceOrNull(CodeBase $unused_codebase, Context $unused_context) : ?FunctionInterface
+    public function asFunctionInterfaceOrNull(CodeBase $unused_codebase, Context $unused_context): ?FunctionInterface
     {
         return $this->func;
     }

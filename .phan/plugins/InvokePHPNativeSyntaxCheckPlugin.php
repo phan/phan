@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use ast\Node;
 use Phan\AST\Parser;
@@ -34,8 +36,8 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV3 implements
     BeforeAnalyzeFileCapability,
     FinalizeProcessCapability
 {
-    const LINE_NUMBER_REGEX = "@ on line ([1-9][0-9]*)$@";
-    const STDIN_FILENAME_REGEX = "@ in (Standard input code|-)@";
+    private const LINE_NUMBER_REGEX = "@ on line ([1-9][0-9]*)$@";
+    private const STDIN_FILENAME_REGEX = "@ in (Standard input code|-)@";
 
     /**
      * @var list<InvokeExecutionPromise>
@@ -61,7 +63,7 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV3 implements
         Context $context,
         string $file_contents,
         Node $node
-    ) : void {
+    ): void {
         $php_binaries = (Config::getValue('plugin_config')['php_native_syntax_check_binaries'] ?? null) ?: [PHP_BINARY];
 
         foreach ($php_binaries as $binary) {
@@ -86,7 +88,7 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV3 implements
         Context $context,
         string $file_contents,
         Node $node
-    ) : void {
+    ): void {
         $configured_max_incomplete_processes = (int)(Config::getValue('plugin_config')['php_native_syntax_check_max_processes'] ?? 1) - 1;
         $max_incomplete_processes = max(0, $configured_max_incomplete_processes);
         $this->awaitIncompleteProcesses($code_base, $max_incomplete_processes);
@@ -95,7 +97,7 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV3 implements
     /**
      * @throws Error if a syntax check process fails to shut down
      */
-    private function awaitIncompleteProcesses(CodeBase $code_base, int $max_incomplete_processes) : void
+    private function awaitIncompleteProcesses(CodeBase $code_base, int $max_incomplete_processes): void
     {
         foreach ($this->processes as $i => $process) {
             if (!$process->read()) {
@@ -119,12 +121,12 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV3 implements
      * @override
      * @throws Error if a syntax check process fails to shut down.
      */
-    public function finalizeProcess(CodeBase $code_base) : void
+    public function finalizeProcess(CodeBase $code_base): void
     {
         $this->awaitIncompleteProcesses($code_base, 0);
     }
 
-    private static function handleError(CodeBase $code_base, InvokeExecutionPromise $process) : void
+    private static function handleError(CodeBase $code_base, InvokeExecutionPromise $process): void
     {
         $check_error_message = $process->getError();
         if (!is_string($check_error_message)) {
@@ -241,7 +243,7 @@ class InvokeExecutionPromise
         }
     }
 
-    private function getAbsPathForFileContents(string $new_file_contents, bool $force_tmp_file) : ?string
+    private function getAbsPathForFileContents(string $new_file_contents, bool $force_tmp_file): ?string
     {
         $file_name = $this->context->getFile();
         if ($force_tmp_file || CLI::isDaemonOrLanguageServer()) {
@@ -273,7 +275,7 @@ class InvokeExecutionPromise
      * @return void
      * See https://bugs.php.net/bug.php?id=39598
      */
-    private static function streamPutContents($stream, string $file_contents) : void
+    private static function streamPutContents($stream, string $file_contents): void
     {
         try {
             while (strlen($file_contents) > 0) {
@@ -312,7 +314,7 @@ class InvokeExecutionPromise
     /**
      * @return bool false if an error was encountered when trying to read more output from the syntax check process.
      */
-    public function read() : bool
+    public function read(): bool
     {
         if ($this->done) {
             return true;
@@ -349,7 +351,7 @@ class InvokeExecutionPromise
     /**
      * @throws Error if reading failed
      */
-    public function blockingRead() : void
+    public function blockingRead(): void
     {
         if ($this->done) {
             return;
@@ -365,7 +367,7 @@ class InvokeExecutionPromise
     /**
      * @throws RangeException if this was called before the process finished
      */
-    public function getError() : ?string
+    public function getError(): ?string
     {
         if (!$this->done) {
             throw new RangeException("Called " . __METHOD__ . " too early");
@@ -376,7 +378,7 @@ class InvokeExecutionPromise
     /**
      * Returns the context containing the name of the file being syntax checked
      */
-    public function getContext() : Context
+    public function getContext(): Context
     {
         return $this->context;
     }
@@ -384,7 +386,7 @@ class InvokeExecutionPromise
     /**
      * @return string the path to the PHP interpreter binary. (e.g. `/usr/bin/php`)
      */
-    public function getBinary() : string
+    public function getBinary(): string
     {
         return $this->binary;
     }

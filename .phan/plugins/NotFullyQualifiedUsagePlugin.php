@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use ast\Node;
 use Phan\Config;
@@ -22,7 +24,7 @@ class NotFullyQualifiedUsagePlugin extends PluginV3 implements PostAnalyzeNodeCa
      * @return string - The name of the visitor that will be called (formerly analyzeNode)
      * @override
      */
-    public static function getPostAnalyzeNodeVisitorClassName() : string
+    public static function getPostAnalyzeNodeVisitorClassName(): string
     {
         return NotFullyQualifiedUsageVisitor::class;
     }
@@ -45,15 +47,15 @@ class NotFullyQualifiedUsageVisitor extends PluginAwarePostAnalysisVisitor
     // A plugin's visitors should NOT implement visit(), unless they need to.
 
     // phpcs:disable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
-    const NotFullyQualifiedFunctionCall = 'PhanPluginNotFullyQualifiedFunctionCall';
-    const NotFullyQualifiedOptimizableFunctionCall = 'PhanPluginNotFullyQualifiedOptimizableFunctionCall';
-    const NotFullyQualifiedGlobalConstant = 'PhanPluginNotFullyQualifiedGlobalConstant';
+    public const NotFullyQualifiedFunctionCall = 'PhanPluginNotFullyQualifiedFunctionCall';
+    public const NotFullyQualifiedOptimizableFunctionCall = 'PhanPluginNotFullyQualifiedOptimizableFunctionCall';
+    public const NotFullyQualifiedGlobalConstant = 'PhanPluginNotFullyQualifiedGlobalConstant';
     // phpcs:enable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
 
     /**
      * Source of functions: `zend_try_compile_special_func` from https://github.com/php/php-src/blob/master/Zend/zend_compile.c
      */
-    const OPTIMIZABLE_FUNCTIONS = [
+    private const OPTIMIZABLE_FUNCTIONS = [
         'array_key_exists' => true,
         'array_slice' => true,
         'boolval' => true,
@@ -93,7 +95,7 @@ class NotFullyQualifiedUsageVisitor extends PluginAwarePostAnalysisVisitor
      * A node to analyze of type ast\AST_CALL (call to a global function)
      * @override
      */
-    public function visitCall(Node $node) : void
+    public function visitCall(Node $node): void
     {
         $expression = $node->children['expr'];
         if (!($expression instanceof Node) || $expression->kind !== ast\AST_NAME) {
@@ -120,7 +122,7 @@ class NotFullyQualifiedUsageVisitor extends PluginAwarePostAnalysisVisitor
         $this->warnNotFullyQualifiedFunctionCall($function_name, $expression);
     }
 
-    private function warnNotFullyQualifiedFunctionCall(string $function_name, Node $expression) : void
+    private function warnNotFullyQualifiedFunctionCall(string $function_name, Node $expression): void
     {
         if (array_key_exists(strtolower($function_name), self::OPTIMIZABLE_FUNCTIONS)) {
             $issue_type = self::NotFullyQualifiedOptimizableFunctionCall;
@@ -144,7 +146,7 @@ class NotFullyQualifiedUsageVisitor extends PluginAwarePostAnalysisVisitor
      * A node to analyze of type ast\AST_CONST (reference to a constant)
      * @override
      */
-    public function visitConst(Node $node) : void
+    public function visitConst(Node $node): void
     {
         $expression = $node->children['name'];
         if (!($expression instanceof Node) || $expression->kind !== ast\AST_NAME) {
@@ -177,7 +179,7 @@ class NotFullyQualifiedUsageVisitor extends PluginAwarePostAnalysisVisitor
         $this->warnNotFullyQualifiedConstantUsage($constant_name, $expression);
     }
 
-    private function warnNotFullyQualifiedConstantUsage(string $constant_name, Node $expression) : void
+    private function warnNotFullyQualifiedConstantUsage(string $constant_name, Node $expression): void
     {
         $this->emitPluginIssue(
             $this->code_base,

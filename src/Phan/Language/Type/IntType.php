@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Type;
 
@@ -15,15 +17,15 @@ use Phan\Language\UnionType;
 class IntType extends ScalarType
 {
     /** @phan-override */
-    const NAME = 'int';
+    public const NAME = 'int';
 
     /** @override */
-    public function isPossiblyNumeric() : bool
+    public function isPossiblyNumeric(): bool
     {
         return true;
     }
 
-    public function getTypeAfterIncOrDec() : UnionType
+    public function getTypeAfterIncOrDec(): UnionType
     {
         return IntType::instance(false)->asPHPDocUnionType();
     }
@@ -31,7 +33,7 @@ class IntType extends ScalarType
     /**
      * Check if this type can possibly cast to the declared type, ignoring nullability of this type
      */
-    public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other) : bool
+    public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other): bool
     {
         // always allow int -> float or int -> int
         if ($other instanceof IntType || $other instanceof FloatType) {
@@ -43,22 +45,22 @@ class IntType extends ScalarType
         return parent::canCastToDeclaredType($code_base, $context, $other);
     }
 
-    public function isPossiblyTruthy() : bool
+    public function isPossiblyTruthy(): bool
     {
         return true;
     }
 
-    public function isPossiblyFalsey() : bool
+    public function isPossiblyFalsey(): bool
     {
         return true;
     }
 
-    public function isAlwaysTruthy() : bool
+    public function isAlwaysTruthy(): bool
     {
         return false;
     }
 
-    public function isAlwaysFalsey() : bool
+    public function isAlwaysFalsey(): bool
     {
         return false;
     }

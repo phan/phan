@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Element;
 
@@ -27,7 +29,7 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
      * (e.g. ${4} = 'x'; adds 4 to $GLOBALS.
      * And user-provided input of integer representations of strings as keys would also become integers.
      */
-    const _BUILTIN_SUPERGLOBAL_TYPES = [
+    public const _BUILTIN_SUPERGLOBAL_TYPES = [
         '_GET' => 'array<string,string|string[]>',
         '_POST' => 'array<string,string|string[]>',
         '_COOKIE' => 'array<string,string|string[]>',
@@ -42,12 +44,13 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
 
     /**
      * @var array<string,string>
+     * @internal this will be protected in a future release
      *
      * NOTE: The string array keys of superglobals **can** be integers in edge cases, but those should be rare.
      * (e.g. ${4} = 'x'; adds 4 to $GLOBALS.
      * And user-provided input of integer representations of strings as keys would also become integers.
      */
-    const _BUILTIN_GLOBAL_TYPES = [
+    public const _BUILTIN_GLOBAL_TYPES = [
         '_GET' => 'array<string,string|string[]>',
         '_POST' => 'array<string,string|string[]>',
         '_COOKIE' => 'array<string,string|string[]>',
@@ -83,7 +86,7 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
      * This will always return false in so far as variables
      * cannot be passed by reference.
      */
-    public function isPassByReference() : bool
+    public function isPassByReference(): bool
     {
         return false;
     }
@@ -93,7 +96,7 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
      * This will always return false in so far as variables
      * cannot be variadic
      */
-    public function isVariadic() : bool
+    public function isVariadic(): bool
     {
         return false;
     }
@@ -117,7 +120,7 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
         Context $context,
         CodeBase $code_base,
         bool $should_check_type = true
-    ) : Variable {
+    ): Variable {
 
         $variable_name = (new ContextNode(
             $code_base,
@@ -154,7 +157,7 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
      */
     public static function isSuperglobalVariableWithName(
         string $name
-    ) : bool {
+    ): bool {
         if (\array_key_exists($name, self::_BUILTIN_SUPERGLOBAL_TYPES)) {
             return true;
         }
@@ -166,7 +169,7 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
      */
     public static function isValidIdentifier(
         string $name
-    ) : bool {
+    ): bool {
         return \preg_match('/[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*/', $name) > 0;
     }
 
@@ -175,7 +178,7 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
      */
     public static function isHardcodedGlobalVariableWithName(
         string $name
-    ) : bool {
+    ): bool {
         return self::isSuperglobalVariableWithName($name) ||
             \array_key_exists($name, self::_BUILTIN_GLOBAL_TYPES) ||
             \array_key_exists($name, Config::getValue('globals_type_map'));
@@ -187,7 +190,7 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
     public static function isHardcodedVariableInScopeWithName(
         string $name,
         bool $is_in_global_scope
-    ) : bool {
+    ): bool {
         return $is_in_global_scope ? self::isHardcodedGlobalVariableWithName($name)
                                    : self::isSuperglobalVariableWithName($name);
     }
@@ -200,7 +203,7 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
      */
     public static function getUnionTypeOfHardcodedGlobalVariableWithName(
         string $name
-    ) : ?UnionType {
+    ): ?UnionType {
         if (\array_key_exists($name, self::_BUILTIN_GLOBAL_TYPES)) {
             // More efficient than using context.
             // Note that global constants can be modified by user code
@@ -227,7 +230,7 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
     public static function getUnionTypeOfHardcodedVariableInScopeWithName(
         string $name,
         bool $is_in_global_scope
-    ) : ?UnionType {
+    ): ?UnionType {
         if (\array_key_exists($name, $is_in_global_scope ? self::_BUILTIN_GLOBAL_TYPES : self::_BUILTIN_SUPERGLOBAL_TYPES)) {
             // More efficient than using context.
             // Note that global constants can be modified by user code
@@ -251,7 +254,7 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
      * for subclasses. Method will return the element
      * type (such as `DateTime`) for variadic parameters.
      */
-    public function getNonVariadicUnionType() : UnionType
+    public function getNonVariadicUnionType(): UnionType
     {
         return parent::getUnionType();
     }
@@ -265,7 +268,7 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
         return clone($this);
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         $string = '';
 
@@ -281,7 +284,7 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
      * The representation may change - this should not be used for issue messages, etc.
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function getDebugRepresentation() : string
+    public function getDebugRepresentation(): string
     {
         $string = '';
 

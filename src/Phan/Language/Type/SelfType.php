@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Type;
 
@@ -16,7 +18,7 @@ use Phan\Language\UnionType;
 final class SelfType extends StaticOrSelfType
 {
     /** Not an override */
-    const NAME = 'self';
+    public const NAME = 'self';
 
     protected function __construct(bool $is_nullable)
     {
@@ -31,7 +33,7 @@ final class SelfType extends StaticOrSelfType
      *
      * @return static
      */
-    public static function instance(bool $is_nullable) : Type
+    public static function instance(bool $is_nullable): Type
     {
         if ($is_nullable) {
             static $nullable_instance = null;
@@ -51,22 +53,22 @@ final class SelfType extends StaticOrSelfType
         return $instance;
     }
 
-    public function isNativeType() : bool
+    public function isNativeType(): bool
     {
         return false;
     }
 
-    public function isStaticType() : bool
+    public function isStaticType(): bool
     {
         return false;
     }
 
-    public function isSelfType() : bool
+    public function isSelfType(): bool
     {
         return true;
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         $string = $this->name;
 
@@ -83,7 +85,7 @@ final class SelfType extends StaticOrSelfType
      */
     public function withStaticResolvedInContext(
         Context $context
-    ) : Type {
+    ): Type {
         // If the context isn't in a class scope, there's nothing
         // we can do
         if (!$context->isInClassScope()) {
@@ -99,7 +101,7 @@ final class SelfType extends StaticOrSelfType
     /**
      * @return SelfType
      */
-    public function withIsNullable(bool $is_nullable) : Type
+    public function withIsNullable(bool $is_nullable): Type
     {
         if ($is_nullable === $this->is_nullable) {
             return $this;
@@ -111,7 +113,7 @@ final class SelfType extends StaticOrSelfType
         UnionType $union_type,
         Context $context,
         CodeBase $code_base
-    ) : bool {
+    ): bool {
         $result = $this->withStaticResolvedInContext($context);
         if ($result !== $this) {
             return $result->isExclusivelyNarrowedFormOrEquivalentTo($union_type, $context, $code_base);

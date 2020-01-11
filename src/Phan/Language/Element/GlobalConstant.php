@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Element;
 
@@ -20,7 +22,7 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
     /**
      * Sets whether this is a global constant that should be treated as if the real type is unknown.
      */
-    public function setIsDynamicConstant(bool $dynamic_constant) : void
+    public function setIsDynamicConstant(bool $dynamic_constant): void
     {
         $this->setPhanFlags(
             Flags::bitVectorWithState(
@@ -35,7 +37,7 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
      * @return bool
      * True if this is a global constant that should be treated as if the real type is unknown.
      */
-    public function isDynamicConstant() : bool
+    public function isDynamicConstant(): bool
     {
         return $this->getPhanFlagsHasState(Flags::IS_DYNAMIC_CONSTANT);
     }
@@ -44,7 +46,7 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
      * Override the default getter to fill in a future
      * union type if available.
      */
-    public function getUnionType() : UnionType
+    public function getUnionType(): UnionType
     {
         if (null !== ($union_type = $this->getFutureUnionType())) {
             $this->setUnionType($union_type);
@@ -54,7 +56,7 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
     }
 
     // TODO: Make callers check for object types. Those are impossible.
-    public function setUnionType(UnionType $type) : void
+    public function setUnionType(UnionType $type): void
     {
         if ($this->isDynamicConstant() || !$type->hasRealTypeSet()) {
             $type = $type->withRealTypeSet(UnionType::typeSetFromString('array|bool|float|int|string|resource|null'));
@@ -67,7 +69,7 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
      * The fully-qualified structural element name of this
      * structural element
      */
-    public function getFQSEN() : FullyQualifiedGlobalConstantName
+    public function getFQSEN(): FullyQualifiedGlobalConstantName
     {
         return $this->fqsen;
     }
@@ -89,7 +91,7 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
      */
     public static function fromGlobalConstantName(
         string $name
-    ) : GlobalConstant {
+    ): GlobalConstant {
         if (!\defined($name)) {
             throw new InvalidArgumentException(\sprintf("This should not happen, defined(%s) is false, but the constant was returned by get_defined_constants()", \var_export($name, true)));
         }
@@ -113,7 +115,7 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
      * Returns a standalone stub of PHP code for this global constant.
      * @suppress PhanUnreferencedPublicMethod toStubInfo is used by callers instead
      */
-    public function toStub() : string
+    public function toStub(): string
     {
         [$namespace, $string] = $this->toStubInfo();
         $namespace_text = $namespace === '' ? '' : "$namespace ";
@@ -121,7 +123,7 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
         return $string;
     }
 
-    public function getMarkupDescription() : string
+    public function getMarkupDescription(): string
     {
         $string = 'const ' . $this->name . ' = ';
         $value_node = $this->getNodeForValue();
@@ -130,7 +132,7 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
     }
 
     /** @return array{0:string,1:string} [string $namespace, string $text] */
-    public function toStubInfo() : array
+    public function toStubInfo(): array
     {
         $fqsen = (string)$this->getFQSEN();
         $pos = \strrpos($fqsen, '\\');

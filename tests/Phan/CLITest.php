@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests;
 
@@ -22,7 +24,7 @@ final class CLITest extends BaseTest
     /**
      * @suppress PhanAccessMethodInternal
      */
-    public function setUp() : void
+    public function setUp(): void
     {
         parent::setUp();
         Config::reset();
@@ -31,7 +33,7 @@ final class CLITest extends BaseTest
     /**
      * @suppress PhanAccessMethodInternal
      */
-    public function tearDown() : void
+    public function tearDown(): void
     {
         parent::tearDown();
         Config::reset();
@@ -40,7 +42,7 @@ final class CLITest extends BaseTest
     /**
      * @dataProvider getFlagSuggestionStringProvider
      */
-    public function testGetFlagSuggestionString(string $flag, string $expected_message) : void
+    public function testGetFlagSuggestionString(string $flag, string $expected_message): void
     {
         $this->assertSame($expected_message, CLI::getFlagSuggestionString($flag));
     }
@@ -48,9 +50,9 @@ final class CLITest extends BaseTest
     /**
      * @return list<array{0:string,1:string}>
      */
-    public function getFlagSuggestionStringProvider() : array
+    public function getFlagSuggestionStringProvider(): array
     {
-        $wrap_suggestion = static function (string $text) : string {
+        $wrap_suggestion = static function (string $text): string {
             return " (did you mean $text?)";
         };
         return [
@@ -76,7 +78,7 @@ final class CLITest extends BaseTest
      * @throws ExitException
      * @dataProvider setsConfigOptionsProvider
      */
-    public function testSetsConfigOptions(array $expected_changed_options, array $opts, array $extra = []) : void
+    public function testSetsConfigOptions(array $expected_changed_options, array $opts, array $extra = []): void
     {
         $opts += ['project-root-directory' => \dirname(__DIR__) . '/misc/config/'];
         $expected_changed_options += [
@@ -118,7 +120,7 @@ final class CLITest extends BaseTest
     /**
      * @return list<array{0:array,1:array,2?:array}>
      */
-    public function setsConfigOptionsProvider() : array
+    public function setsConfigOptionsProvider(): array
     {
         return [
             [
@@ -225,7 +227,7 @@ final class CLITest extends BaseTest
      * @param array<string,mixed> $opts
      * @dataProvider versionOptProvider
      */
-    public function testVersionOpt(array $opts) : void
+    public function testVersionOpt(array $opts): void
     {
         \ob_start();
         try {
@@ -241,7 +243,7 @@ final class CLITest extends BaseTest
     }
 
     /** @return list<list> */
-    public function versionOptProvider() : array
+    public function versionOptProvider(): array
     {
         return [
             [['version' => false]],
@@ -249,7 +251,7 @@ final class CLITest extends BaseTest
         ];
     }
 
-    public function testGetPluginSuggestionText() : void
+    public function testGetPluginSuggestionText(): void
     {
         $this->assertSame(
             ' (Did you mean DuplicateArrayKeyPlugin?)',
@@ -265,7 +267,7 @@ final class CLITest extends BaseTest
         );
     }
 
-    public function testSameVersionAsNEWS() : void
+    public function testSameVersionAsNEWS(): void
     {
         $news = \file_get_contents(\dirname(__DIR__, 2) . '/NEWS.md');
         $this->assertTrue(\is_string($news));
@@ -293,13 +295,13 @@ final class CLITest extends BaseTest
     }
 
     // Should pass both on Windows and Unix
-    public function testUniqueFileList() : void
+    public function testUniqueFileList(): void
     {
         $this->assertSame([], CLI::uniqueFileList([]));
         $this->assertSame(['src/a.php', 'src/b.php'], CLI::uniqueFileList(['src/a.php', 'src' . \DIRECTORY_SEPARATOR . 'a.php', 'src/b.php', 'src//b.php']));
     }
 
-    public function testInternalDocsUpdated() : void
+    public function testInternalDocsUpdated(): void
     {
         global $argv;
         $old_argv = $argv;

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Library;
 
@@ -43,7 +45,7 @@ class Set extends \SplObjectStorage
      * @return array<T>
      * An array of all elements in the set is returned
      */
-    public function toArray() : array
+    public function toArray(): array
     {
         return \iterator_to_array($this);
     }
@@ -56,7 +58,7 @@ class Set extends \SplObjectStorage
      * A new set which contains only items in this
      * Set and the given Set
      */
-    public function intersect(Set $other) : Set
+    public function intersect(Set $other): Set
     {
         $set = new Set();
         foreach ($this as $element) {
@@ -76,7 +78,7 @@ class Set extends \SplObjectStorage
      * all parameters
      * @suppress PhanUnreferencedPublicMethod potentially useful but currently unused
      */
-    public static function intersectAll(array $set_list) : Set
+    public static function intersectAll(array $set_list): Set
     {
         if (\count($set_list) === 0) {
             return new Set();
@@ -104,7 +106,7 @@ class Set extends \SplObjectStorage
      *
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function union(Set $other) : Set
+    public function union(Set $other): Set
     {
         $set = new Set();
         $set->addAll($this);
@@ -121,7 +123,7 @@ class Set extends \SplObjectStorage
      * any parameters
      * @suppress PhanUnreferencedPublicMethod potentially useful but currently unused
      */
-    public static function unionAll(array $set_list) : Set
+    public static function unionAll(array $set_list): Set
     {
         if (\count($set_list) === 0) {
             return new Set();
@@ -146,7 +148,7 @@ class Set extends \SplObjectStorage
      * True if this set contains any elements in the given list
      * @suppress PhanUnreferencedPublicMethod potentially useful but currently unused
      */
-    public function containsAny(array $element_list) : bool
+    public function containsAny(array $element_list): bool
     {
         foreach ($element_list as $element) {
             if ($this->contains($element)) {
@@ -168,7 +170,7 @@ class Set extends \SplObjectStorage
      * closure return true
      * @suppress PhanUnreferencedPublicMethod potentially useful but currently unused
      */
-    public function filter(Closure $closure) : Set
+    public function filter(Closure $closure): Set
     {
         $set = new Set();
         foreach ($this as $element) {
@@ -188,7 +190,7 @@ class Set extends \SplObjectStorage
      * @return Set<TNew>
      * A new set containing the mapped values
      */
-    public function map(Closure $closure) : Set
+    public function map(Closure $closure): Set
     {
         $set = new Set();
         foreach ($this as $element) {
@@ -201,7 +203,7 @@ class Set extends \SplObjectStorage
      * @return Set<T>
      * A new set with each element cloned
      */
-    public function deepCopy() : Set
+    public function deepCopy(): Set
     {
         return $this->map(
             /**
@@ -240,7 +242,7 @@ class Set extends \SplObjectStorage
      * A string representation of this set for use in
      * debugging
      */
-    public function __toString() : string
+    public function __toString(): string
     {
         return '['
             . \implode(',', \array_map('strval', \iterator_to_array($this)))

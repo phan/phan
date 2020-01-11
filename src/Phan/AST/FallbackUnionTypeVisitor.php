@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\AST;
 
@@ -91,7 +93,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
         CodeBase $code_base,
         Context $context,
         $node
-    ) : UnionType {
+    ): UnionType {
         if ($node instanceof Node) {
             return (new self($code_base, $context))->__invoke($node);
         }
@@ -109,7 +111,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
      * @return UnionType
      * The set of types associated with the given node
      */
-    public function visit(Node $node) : UnionType
+    public function visit(Node $node): UnionType
     {
         return UnionType::empty();
     }
@@ -134,7 +136,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitClone(Node $_) : UnionType
+    public function visitClone(Node $_): UnionType
     {
         return ObjectType::instance(false)->asRealUnionType();
     }
@@ -150,7 +152,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitEmpty(Node $node) : UnionType
+    public function visitEmpty(Node $node): UnionType
     {
         return BoolType::instance(false)->asRealUnionType();
     }
@@ -166,7 +168,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitIsset(Node $node) : UnionType
+    public function visitIsset(Node $node): UnionType
     {
         return BoolType::instance(false)->asRealUnionType();
     }
@@ -182,7 +184,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitIncludeOrEval(Node $node) : UnionType
+    public function visitIncludeOrEval(Node $node): UnionType
     {
         // require() can return arbitrary objects. Lets just
         // say that we don't know what it is and move on
@@ -200,7 +202,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitShellExec(Node $node) : UnionType
+    public function visitShellExec(Node $node): UnionType
     {
         return StringType::instance(true)->asRealUnionType();
     }
@@ -216,7 +218,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitConditional(Node $node) : UnionType
+    public function visitConditional(Node $node): UnionType
     {
         $cond_node = $node->children['cond'];
         $cond_truthiness = UnionTypeVisitor::checkCondUnconditionalTruthiness($cond_node);
@@ -289,7 +291,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitArray(Node $_) : UnionType
+    public function visitArray(Node $_): UnionType
     {
         // TODO: More precise
         return ArrayType::instance(false)->asRealUnionType();
@@ -306,7 +308,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitBinaryOp(Node $node) : UnionType
+    public function visitBinaryOp(Node $node): UnionType
     {
         switch ($node->flags) {
             case flags\BINARY_ADD:
@@ -349,7 +351,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
     /**
      * @param Node $node a node of kind ast\AST_ASSIGN_OP or ast\AST_BINARY_OP with flags ast\flags\BINARY_COALESCE
      */
-    private function analyzeCoalesce(Node $node) : UnionType
+    private function analyzeCoalesce(Node $node): UnionType
     {
         $left = self::unionTypeFromNode($this->code_base, $this->context, $node->children['left'] ?? $node->children['var']);
         if ($left->isEmpty()) {
@@ -373,7 +375,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitAssignOp(Node $node) : UnionType
+    public function visitAssignOp(Node $node): UnionType
     {
         // TODO: Refactor if this depends on $node->children in the future.
         return $this->visitBinaryOp($node);
@@ -393,7 +395,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
      * @throws NodeException if the flags are a value we aren't expecting
      * @suppress PhanThrowTypeMismatchForCall
      */
-    public function visitCast(Node $node) : UnionType
+    public function visitCast(Node $node): UnionType
     {
         // This calls unionTypeFromNode to trigger any warnings
         // TODO: Check if the cast would throw an error at runtime, based on the type (e.g. casting object to string/int)
@@ -433,7 +435,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitNew(Node $node) : UnionType
+    public function visitNew(Node $node): UnionType
     {
         static $object_type;
         if ($object_type === null) {
@@ -457,7 +459,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitInstanceOf(Node $_) : UnionType
+    public function visitInstanceOf(Node $_): UnionType
     {
         return BoolType::instance(false)->asRealUnionType();
     }
@@ -473,7 +475,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitClosure(Node $node) : UnionType
+    public function visitClosure(Node $node): UnionType
     {
         // The type of a closure is the fqsen pointing
         // at its definition
@@ -506,7 +508,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitArrowFunc(Node $node) : UnionType
+    public function visitArrowFunc(Node $node): UnionType
     {
         return $this->visitClosure($node);
     }
@@ -522,7 +524,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitEncapsList(Node $node) : UnionType
+    public function visitEncapsList(Node $node): UnionType
     {
         return StringType::instance(false)->asRealUnionType();
     }
@@ -538,7 +540,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitConst(Node $node) : UnionType
+    public function visitConst(Node $node): UnionType
     {
         // Figure out the name of the constant if it's
         // a string.
@@ -574,7 +576,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitClassConst(Node $node) : UnionType
+    public function visitClassConst(Node $node): UnionType
     {
         $class_node = $node->children['class'];
         if (!$class_node instanceof Node || $class_node->kind !== ast\AST_NAME) {
@@ -616,7 +618,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitCall(Node $node) : UnionType
+    public function visitCall(Node $node): UnionType
     {
         $expression = $node->children['expr'];
         if (!($expression instanceof Node && $expression->kind === ast\AST_NAME)) {
@@ -661,7 +663,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitStaticCall(Node $node) : UnionType
+    public function visitStaticCall(Node $node): UnionType
     {
         ['class' => $class_node, 'method' => $method_name] = $node->children;
         if (!\is_string($method_name) || !($class_node instanceof Node) || $class_node->kind !== ast\AST_NAME) {
@@ -702,7 +704,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitMethodCall(Node $node) : UnionType
+    public function visitMethodCall(Node $node): UnionType
     {
         ['expr' => $expr_node, 'method' => $method_name] = $node->children;
         if (!\is_string($method_name) || !($expr_node instanceof Node) || $expr_node->kind !== ast\AST_VAR) {
@@ -740,7 +742,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitAssign(Node $node) : UnionType
+    public function visitAssign(Node $node): UnionType
     {
         // XXX typed properties/references will change the type of the result from the right hand side
         return self::unionTypeFromNode(
@@ -761,7 +763,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitUnaryOp(Node $node) : UnionType
+    public function visitUnaryOp(Node $node): UnionType
     {
         // Shortcut some easy operators
         $flags = $node->flags;
@@ -783,7 +785,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
      * See https://secure.php.net/manual/en/function.print.php#refsect1-function.print-returnvalues
      * @param Node $node @phan-unused-param
      */
-    public function visitPrint(Node $node) : UnionType
+    public function visitPrint(Node $node): UnionType
     {
         return LiteralIntType::instanceForValue(1, false)->asRealUnionType();
     }
@@ -796,7 +798,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
      * The set of types that are possibly produced by the
      * given node
      */
-    private function visitClassNameNode(Node $node) : ?UnionType
+    private function visitClassNameNode(Node $node): ?UnionType
     {
         // Things of the form `new $className()`, `new $obj()`, `new (foo())()`, etc.
         if ($node->kind !== \ast\AST_NAME) {

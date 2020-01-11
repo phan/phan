@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Type;
 
@@ -21,7 +23,7 @@ use Phan\Language\UnionTypeBuilder;
 final class GenericMultiArrayType extends ArrayType implements MultiType, GenericArrayInterface
 {
     /** @phan-override */
-    const NAME = 'array';
+    public const NAME = 'array';
 
     /**
      * @var non-empty-list<Type>
@@ -102,7 +104,7 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
      * A new type that is a copy of this type but with the
      * given nullability value.
      */
-    public function withIsNullable(bool $is_nullable) : Type
+    public function withIsNullable(bool $is_nullable): Type
     {
         if ($is_nullable === $this->is_nullable) {
             return $this;
@@ -122,9 +124,9 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
      * @return non-empty-list<GenericArrayType>
      * @override
      */
-    public function asIndividualTypeInstances() : array
+    public function asIndividualTypeInstances(): array
     {
-        return \array_map(function (Type $type) : GenericArrayType {
+        return \array_map(function (Type $type): GenericArrayType {
             if ($this->always_has_elements) {
                 if ($this->is_list) {
                     return NonEmptyListType::fromElementType($type, $this->is_nullable);
@@ -159,7 +161,7 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
         bool $always_has_elements = false,
         bool $is_list = false,
         bool $is_associative = false
-    ) : GenericMultiArrayType {
+    ): GenericMultiArrayType {
         return new self($element_types, $is_nullable, $key_type, $always_has_elements, $is_list, $is_associative);
     }
 
@@ -168,7 +170,7 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
      * True if this Type can be cast to the given Type
      * cleanly
      */
-    protected function canCastToNonNullableType(Type $type) : bool
+    protected function canCastToNonNullableType(Type $type): bool
     {
         if ($type instanceof GenericArrayType) {
             return $this->genericArrayElementUnionType()->canCastToUnionType(
@@ -193,7 +195,7 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
         return parent::canCastToNonNullableType($type);
     }
 
-    protected function canCastToNonNullableTypeWithoutConfig(Type $type) : bool
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type): bool
     {
         if ($type instanceof GenericArrayType) {
             return $this->genericArrayElementUnionType()->canCastToUnionType(
@@ -218,7 +220,7 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
         return parent::canCastToNonNullableTypeWithoutConfig($type);
     }
 
-    public function isGenericArray() : bool
+    public function isGenericArray(): bool
     {
         return true;
     }
@@ -235,7 +237,7 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
      *
      * @suppress PhanAccessReadOnlyProperty this is lazily instantiating a property.
      */
-    public function genericArrayElementUnionType() : UnionType
+    public function genericArrayElementUnionType(): UnionType
     {
         return $this->element_types_union_type
             ?? ($this->element_types_union_type = UnionType::of(
@@ -244,7 +246,7 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
             ));
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         $string = 'array<' . \implode('|', $this->element_types) . '>';
         if ($this->is_nullable) {
@@ -270,7 +272,7 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
     public function asExpandedTypes(
         CodeBase $code_base,
         int $recursion_depth = 0
-    ) : UnionType {
+    ): UnionType {
         // We're going to assume that if the type hierarchy
         // is taller than some value we probably messed up
         // and should bail out.
@@ -313,7 +315,7 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
     public function asExpandedTypesPreservingTemplate(
         CodeBase $code_base,
         int $recursion_depth = 0
-    ) : UnionType {
+    ): UnionType {
         // We're going to assume that if the type hierarchy
         // is taller than some value we probably messed up
         // and should bail out.
@@ -339,12 +341,12 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
         return $result->getPHPDocUnionType();
     }
 
-    public function getKeyType() : int
+    public function getKeyType(): int
     {
         return $this->key_type;
     }
 
-    public function isDefinitelyNonEmptyArray() : bool
+    public function isDefinitelyNonEmptyArray(): bool
     {
         return $this->always_has_elements;
     }

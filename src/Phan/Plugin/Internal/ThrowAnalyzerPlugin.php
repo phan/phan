@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Plugin\Internal;
 
@@ -34,7 +36,7 @@ class ThrowAnalyzerPlugin extends PluginV3 implements PostAnalyzeNodeCapability,
      */
     public static $configured_ignore_throws_union_type = null;
 
-    public static function getPostAnalyzeNodeVisitorClassName() : string
+    public static function getPostAnalyzeNodeVisitorClassName(): string
     {
         self::$configured_ignore_throws_union_type = null;
         if (Config::getValue('warn_about_undocumented_exceptions_thrown_by_invoked_functions')) {
@@ -57,7 +59,7 @@ class ThrowAnalyzerPlugin extends PluginV3 implements PostAnalyzeNodeCapability,
     public function analyzeMethod(
         CodeBase $code_base,
         Method $method
-    ) : void {
+    ): void {
         if (Config::get_closest_target_php_version_id() >= 70400) {
             return;
         }
@@ -93,7 +95,7 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @override
      */
-    public function visitThrow(Node $node) : void
+    public function visitThrow(Node $node): void
     {
         $context = $this->context;
         if (!$context->isInFunctionLikeScope()) {
@@ -143,7 +145,7 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
         $this->warnAboutPossiblyThrownType($node, $analyzed_function, $union_type);
     }
 
-    protected function withoutCaughtUnionTypes(UnionType $union_type, bool $is_raw_throw) : UnionType
+    protected function withoutCaughtUnionTypes(UnionType $union_type, bool $is_raw_throw): UnionType
     {
         if ($union_type->isEmpty()) {
             if (!$is_raw_throw) {
@@ -187,7 +189,7 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
         FunctionInterface $analyzed_function,
         UnionType $union_type,
         FunctionInterface $call = null
-    ) : void {
+    ): void {
         foreach ($union_type->getTypeSet() as $type) {
             $expanded_type = $type->asExpandedTypes($this->code_base);
             if (!$this->shouldWarnAboutThrowType($expanded_type)) {
@@ -239,7 +241,7 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
         }
     }
 
-    protected static function calculateConfiguredIgnoreThrowsUnionType() : UnionType
+    protected static function calculateConfiguredIgnoreThrowsUnionType(): UnionType
     {
         $throws_union_type = UnionType::empty();
         foreach (Config::getValue('exception_classes_with_optional_throws_phpdoc') as $type_string) {
@@ -251,7 +253,7 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
         return $throws_union_type;
     }
 
-    protected function getConfiguredIgnoreThrowsUnionType() : UnionType
+    protected function getConfiguredIgnoreThrowsUnionType(): UnionType
     {
         return ThrowAnalyzerPlugin::$configured_ignore_throws_union_type ?? (ThrowAnalyzerPlugin::$configured_ignore_throws_union_type = $this->calculateConfiguredIgnoreThrowsUnionType());
     }
@@ -259,7 +261,7 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * Check if the user wants to warn about a given throw type.
      */
-    protected function shouldWarnAboutThrowType(UnionType $expanded_type) : bool
+    protected function shouldWarnAboutThrowType(UnionType $expanded_type): bool
     {
         $ignore_union_type = $this->getConfiguredIgnoreThrowsUnionType();
         if ($ignore_union_type->isEmpty()) {
@@ -279,7 +281,7 @@ class ThrowRecursiveVisitor extends ThrowVisitor
     /**
      * @override
      */
-    public function visitCall(Node $node) : void
+    public function visitCall(Node $node): void
     {
         $context = $this->context;
         if (!$context->isInFunctionLikeScope()) {
@@ -310,7 +312,7 @@ class ThrowRecursiveVisitor extends ThrowVisitor
     /**
      * @override
      */
-    public function visitMethodCall(Node $node) : void
+    public function visitMethodCall(Node $node): void
     {
         $context = $this->context;
         if (!$context->isInFunctionLikeScope()) {
@@ -351,7 +353,7 @@ class ThrowRecursiveVisitor extends ThrowVisitor
     /**
      * @override
      */
-    public function visitStaticCall(Node $node) : void
+    public function visitStaticCall(Node $node): void
     {
         $context = $this->context;
         if (!$context->isInFunctionLikeScope()) {

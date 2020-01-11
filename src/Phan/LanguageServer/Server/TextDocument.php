@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\LanguageServer\Server;
 
@@ -88,7 +90,7 @@ class TextDocument
      * @param TextDocumentItem $textDocument The document that was opened.
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
-    public function didOpen(TextDocumentItem $textDocument) : void
+    public function didOpen(TextDocumentItem $textDocument): void
     {
         Logger::logInfo("Called textDocument/didOpen, uri={$textDocument->uri}");
         try {
@@ -117,7 +119,7 @@ class TextDocument
      * @param string|null $text (NOTE: can't use ?T here)
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
-    public function didSave(TextDocumentIdentifier $textDocument, string $text = null) : void
+    public function didSave(TextDocumentIdentifier $textDocument, string $text = null): void
     {
         Logger::logInfo("Called textDocument/didSave, uri={$textDocument->uri} len(text)=" . \strlen($text ?? ''));
         try {
@@ -138,7 +140,7 @@ class TextDocument
      * @param TextDocumentContentChangeEvent[] $contentChanges
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
-    public function didChange(VersionedTextDocumentIdentifier $textDocument, array $contentChanges) : void
+    public function didChange(VersionedTextDocumentIdentifier $textDocument, array $contentChanges): void
     {
         foreach ($contentChanges as $change) {
             $this->file_mapping->addOverrideURI($textDocument->uri, $change->text);
@@ -160,7 +162,7 @@ class TextDocument
      * @param TextDocumentIdentifier $textDocument The document that was closed
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
-    public function didClose(TextDocumentIdentifier $textDocument) : void
+    public function didClose(TextDocumentIdentifier $textDocument): void
     {
         Logger::logInfo("Called textDocument/didClose, uri={$textDocument->uri}");
         try {
@@ -183,7 +185,7 @@ class TextDocument
      * @return ?Promise <Location|Location[]|null>
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
-    public function definition(TextDocumentIdentifier $textDocument, Position $position) : ?Promise
+    public function definition(TextDocumentIdentifier $textDocument, Position $position): ?Promise
     {
         Logger::logInfo("Called textDocument/definition, uri={$textDocument->uri} position={$position->line}:{$position->character}");
         try {
@@ -204,7 +206,7 @@ class TextDocument
      * @return ?Promise <Location|Location[]|null>
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
-    public function typeDefinition(TextDocumentIdentifier $textDocument, Position $position) : ?Promise
+    public function typeDefinition(TextDocumentIdentifier $textDocument, Position $position): ?Promise
     {
         Logger::logInfo("Called textDocument/typeDefinition, uri={$textDocument->uri} position={$position->line}:{$position->character}");
         try {
@@ -226,7 +228,7 @@ class TextDocument
      * @param Position $position @phan-unused-param
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
-    public function hover(TextDocumentIdentifier $textDocument, Position $position) : ?Promise
+    public function hover(TextDocumentIdentifier $textDocument, Position $position): ?Promise
     {
         // Some clients (e.g. emacs-lsp, the last time I checked)
         // don't respect the server's reported hover capability, and send this unconditionally.
@@ -256,7 +258,7 @@ class TextDocument
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      * @return ?Promise <CompletionItem[]|CompletionList>
      */
-    public function completion(TextDocumentIdentifier $textDocument, Position $position, CompletionContext $context = null) : ?Promise
+    public function completion(TextDocumentIdentifier $textDocument, Position $position, CompletionContext $context = null): ?Promise
     {
         if (!Config::getValue('language_server_enable_completion')) {
             // Placeholder to avoid a performance degradation on clients

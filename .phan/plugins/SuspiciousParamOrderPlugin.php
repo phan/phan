@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use ast\Node;
 use Phan\AST\ContextNode;
@@ -18,7 +20,7 @@ class SuspiciousParamOrderPlugin extends PluginV3 implements PostAnalyzeNodeCapa
     /**
      * @return string - name of PluginAwarePostAnalysisVisitor subclass
      */
-    public static function getPostAnalyzeNodeVisitorClassName() : string
+    public static function getPostAnalyzeNodeVisitorClassName(): string
     {
         return SuspiciousParamOrderVisitor::class;
     }
@@ -32,15 +34,15 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
 {
     // phpcs:disable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
     // this is deliberate for issue names
-    const SuspiciousParamOrderInternal = 'PhanPluginSuspiciousParamOrderInternal';
-    const SuspiciousParamOrder = 'PhanPluginSuspiciousParamOrder';
+    private const SuspiciousParamOrderInternal = 'PhanPluginSuspiciousParamOrderInternal';
+    private const SuspiciousParamOrder = 'PhanPluginSuspiciousParamOrder';
     // phpcs:enable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
 
     /**
      * @param Node $node a node of type AST_CALL
      * @override
      */
-    public function visitCall(Node $node) : void
+    public function visitCall(Node $node): void
     {
         $args = $node->children['args']->children;
         if (count($args) < 2) {
@@ -66,7 +68,7 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param Node|string|int|float|null $arg_node
      */
-    private static function extractName($arg_node) : ?string
+    private static function extractName($arg_node): ?string
     {
         if (!$arg_node instanceof Node) {
             return null;
@@ -103,7 +105,7 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
      * A distance of 0 means they are similar (e.g. foo and getFoo()),
      * and 1 means there are no letters in common (bar and foo)
      */
-    private static function computeDistance(string $a, string $b) : float
+    private static function computeDistance(string $a, string $b): float
     {
         $la = strlen($a);
         $lb = strlen($b);
@@ -113,7 +115,7 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param list<Node|string|int|float|null> $args
      */
-    private function checkCall(FunctionInterface $function, array $args, Node $node) : void
+    private function checkCall(FunctionInterface $function, array $args, Node $node): void
     {
         $arg_names = [];
         foreach ($args as $i => $arg_node) {
@@ -176,10 +178,10 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
                     continue 2;
                 }
             }
-            $arg_details = implode(' and ', array_map(static function (int $i) use ($args) : string {
+            $arg_details = implode(' and ', array_map(static function (int $i) use ($args): string {
                 return self::extractName($args[$i]) ?? 'unknown';
             }, $cycle));
-            $param_details = implode(' and ', array_map(static function (int $i) use ($parameters) : string {
+            $param_details = implode(' and ', array_map(static function (int $i) use ($parameters): string {
                 $param = $parameters[$i];
                 return '#' . ($i + 1) . ' (' . trim($param->getUnionType() . ' $' . $param->getName()) . ')';
             }, $cycle));
@@ -217,7 +219,7 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
      * @param list<int> $values
      * @return list<int> the same values of the cycle, rearranged to start with the smallest value.
      */
-    private static function normalizeCycle(array $values, int $next) : array
+    private static function normalizeCycle(array $values, int $next): array
     {
         $pos = array_search($next, $values, true);
         $values = array_slice($values, $pos ?: 0);
@@ -235,7 +237,7 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
      * @param array<int,int> $destination_map
      * @return array<int,array<int,int>>
      */
-    public static function findCycles(array $destination_map) : array
+    public static function findCycles(array $destination_map): array
     {
         $result = [];
         while (count($destination_map) > 0) {
@@ -267,7 +269,7 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
      * @param Node $node a node of type AST_METHOD_CALL
      * @override
      */
-    public function visitMethodCall(Node $node) : void
+    public function visitMethodCall(Node $node): void
     {
         $args = $node->children['args']->children;
         if (count($args) < 2) {
@@ -297,7 +299,7 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
      * @param Node $node a node of type AST_STATIC_CALL
      * @override
      */
-    public function visitStaticCall(Node $node) : void
+    public function visitStaticCall(Node $node): void
     {
         $args = $node->children['args']->children;
         if (count($args) < 2) {

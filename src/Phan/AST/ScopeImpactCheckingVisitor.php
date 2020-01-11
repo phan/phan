@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\AST;
 
@@ -33,7 +35,7 @@ class ScopeImpactCheckingVisitor extends InferPureVisitor
         CodeBase $code_base,
         Context $context,
         $node
-    ) : bool {
+    ): bool {
         if (!($node instanceof Node)) {
             return false;
         }
@@ -47,18 +49,18 @@ class ScopeImpactCheckingVisitor extends InferPureVisitor
     }
 
     // echo/print don't impact the scope.
-    public function visitEcho(Node $node) : void
+    public function visitEcho(Node $node): void
     {
         $this->maybeInvoke($node->children['expr']);
     }
 
-    public function visitPrint(Node $node) : void
+    public function visitPrint(Node $node): void
     {
         $this->maybeInvoke($node->children['expr']);
     }
 
 
-    public function visitVar(Node $node) : void
+    public function visitVar(Node $node): void
     {
         if (!\is_scalar($node->children['name'])) {
             throw new NodeException($node);
@@ -66,37 +68,37 @@ class ScopeImpactCheckingVisitor extends InferPureVisitor
     }
 
     /** @override */
-    public function visitContinue(Node $node) : void
+    public function visitContinue(Node $node): void
     {
         throw new NodeException($node);
     }
 
-    public function visitBreak(Node $node) : void
+    public function visitBreak(Node $node): void
     {
         throw new NodeException($node);
     }
 
-    public function visitPreInc(Node $node) : void
+    public function visitPreInc(Node $node): void
     {
         throw new NodeException($node);
     }
 
-    public function visitPreDec(Node $node) : void
+    public function visitPreDec(Node $node): void
     {
         throw new NodeException($node);
     }
 
-    public function visitPostInc(Node $node) : void
+    public function visitPostInc(Node $node): void
     {
         throw new NodeException($node);
     }
 
-    public function visitPostDec(Node $node) : void
+    public function visitPostDec(Node $node): void
     {
         throw new NodeException($node);
     }
 
-    private function checkPureIncDec(Node $node) : void
+    private function checkPureIncDec(Node $node): void
     {
         $var = $node->children['var'];
         if (!$var instanceof Node) {
@@ -109,38 +111,38 @@ class ScopeImpactCheckingVisitor extends InferPureVisitor
     }
 
     /** @override */
-    public function visitGoto(Node $node) : void
+    public function visitGoto(Node $node): void
     {
         throw new NodeException($node);
     }
 
     /** @override */
-    public function visitAssignOp(Node $node) : void
+    public function visitAssignOp(Node $node): void
     {
         throw new NodeException($node);
     }
 
     /** @override */
-    public function visitAssign(Node $node) : void
+    public function visitAssign(Node $node): void
     {
         throw new NodeException($node);
     }
 
     /** @override */
-    public function visitReturn(Node $node) : void
+    public function visitReturn(Node $node): void
     {
         throw new NodeException($node);
     }
 
     /** @override */
-    public function visitYield(Node $node) : void
+    public function visitYield(Node $node): void
     {
         $this->maybeInvoke($node->children['key']);
         $this->maybeInvoke($node->children['value']);
     }
 
     /** @override */
-    public function visitYieldFrom(Node $node) : void
+    public function visitYieldFrom(Node $node): void
     {
         $this->maybeInvoke($node->children['expr']);
     }

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Output\Collector;
 
@@ -57,7 +59,7 @@ class ParallelChildCollector implements IssueCollectorInterface
      * @throws AssertionError if PHP modules needed for shared communication aren't loaded
      * @internal
      */
-    final public static function assertSharedMemoryCommunicationEnabled() : void
+    final public static function assertSharedMemoryCommunicationEnabled(): void
     {
         if (!\extension_loaded('sysvsem')) {
             throw new AssertionError(
@@ -77,7 +79,7 @@ class ParallelChildCollector implements IssueCollectorInterface
      * @param IssueInstance $issue
      * @throws AssertionError if the message failed to be sent to the parent process
      */
-    public function collectIssue(IssueInstance $issue) : void
+    public function collectIssue(IssueInstance $issue): void
     {
         $error_code = 0;
 
@@ -108,7 +110,7 @@ class ParallelChildCollector implements IssueCollectorInterface
     /**
      * @return list<IssueInstance>
      */
-    public function getCollectedIssues():array
+    public function getCollectedIssues(): array
     {
         // This collector should not be used for collecting
         // issues. Instead, it proxies all messages on to a
@@ -123,7 +125,7 @@ class ParallelChildCollector implements IssueCollectorInterface
      * @param string[] $files @phan-unused-param - the relative paths to those files
      * @override
      */
-    public function removeIssuesForFiles(array $files) : void
+    public function removeIssuesForFiles(array $files): void
     {
         return;  // Never going to be called - daemon mode isn't combined with parallel execution.
     }
@@ -131,7 +133,7 @@ class ParallelChildCollector implements IssueCollectorInterface
     /**
      * This method has no effect on a ParallelChildCollector.
      */
-    public function reset() : void
+    public function reset(): void
     {
     }
 }

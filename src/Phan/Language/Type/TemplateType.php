@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Type;
 
@@ -33,7 +35,7 @@ final class TemplateType extends Type
     /**
      * Create an instance for this ID
      */
-    public static function instanceForId(string $id, bool $is_nullable) : TemplateType
+    public static function instanceForId(string $id, bool $is_nullable): TemplateType
     {
         if ($is_nullable) {
             static $nullable_cache = [];
@@ -52,7 +54,7 @@ final class TemplateType extends Type
      * A new type that is a copy of this type but with the
      * given nullability value.
      */
-    public function withIsNullable(bool $is_nullable) : Type
+    public function withIsNullable(bool $is_nullable): Type
     {
         if ($is_nullable === $this->is_nullable) {
             return $this;
@@ -68,7 +70,7 @@ final class TemplateType extends Type
      * @return string
      * The name associated with this type
      */
-    public function getName() : string
+    public function getName(): string
     {
         return $this->template_type_identifier;
     }
@@ -78,7 +80,7 @@ final class TemplateType extends Type
      * A string representation of this type in FQSEN form.
      * @override
      */
-    public function asFQSENString() : string
+    public function asFQSENString(): string
     {
         return $this->template_type_identifier;
     }
@@ -87,25 +89,25 @@ final class TemplateType extends Type
      * @return string
      * The namespace associated with this type
      */
-    public function getNamespace() : string
+    public function getNamespace(): string
     {
         return '';
     }
 
-    public function isObject() : bool
+    public function isObject(): bool
     {
         // Return true because we don't know, it may or may not be an object.
         // Not sure if this will be called.
         return true;
     }
 
-    public function isObjectWithKnownFQSEN() : bool
+    public function isObjectWithKnownFQSEN(): bool
     {
         // We have a template type ID, not an fqsen
         return false;
     }
 
-    public function isPossiblyObject() : bool
+    public function isPossiblyObject(): bool
     {
         return true;
     }
@@ -115,7 +117,7 @@ final class TemplateType extends Type
      *
      * Overridden in subclasses.
      */
-    public function hasTemplateTypeRecursive() : bool
+    public function hasTemplateTypeRecursive(): bool
     {
         return true;
     }
@@ -130,7 +132,7 @@ final class TemplateType extends Type
      */
     public function withTemplateParameterTypeMap(
         array $template_parameter_type_map
-    ) : UnionType {
+    ): UnionType {
         return $template_parameter_type_map[$this->template_type_identifier] ?? $this->asPHPDocUnionType();
     }
 
@@ -140,7 +142,7 @@ final class TemplateType extends Type
      * @param ?Closure(mixed, Context):UnionType $right
      * @return ?Closure(mixed, Context):UnionType
      */
-    public static function combineParameterClosures(?Closure $left, ?Closure $right) : ?Closure
+    public static function combineParameterClosures(?Closure $left, ?Closure $right): ?Closure
     {
         if (!$left) {
             return $right;
@@ -152,7 +154,7 @@ final class TemplateType extends Type
         /**
          * @param mixed $params
          */
-        return static function ($params, Context $context) use ($left, $right) : UnionType {
+        return static function ($params, Context $context) use ($left, $right): UnionType {
             return $left($params, $context)->withUnionType($right($params, $context));
         };
     }
@@ -162,10 +164,10 @@ final class TemplateType extends Type
      *
      * @return ?Closure(UnionType, Context):UnionType a closure to map types to the template type wherever it was in the original union type
      */
-    public function getTemplateTypeExtractorClosure(CodeBase $unused_code_base, TemplateType $template_type) : ?Closure
+    public function getTemplateTypeExtractorClosure(CodeBase $unused_code_base, TemplateType $template_type): ?Closure
     {
         if ($this === $template_type) {
-            return static function (UnionType $type, Context $_) : UnionType {
+            return static function (UnionType $type, Context $_): UnionType {
                 return $type;
             };
         }
@@ -176,12 +178,12 @@ final class TemplateType extends Type
     /**
      * @override
      */
-    public function canUseInRealSignature() : bool
+    public function canUseInRealSignature(): bool
     {
         return false;
     }
 
-    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $unused_other) : bool
+    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $unused_other): bool
     {
         // Always possible until we support inferring `@template T as ConcreteType`
         return true;

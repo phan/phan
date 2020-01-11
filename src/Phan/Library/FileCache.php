@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Library;
 
@@ -9,7 +11,7 @@ use RuntimeException;
  */
 final class FileCache
 {
-    const MINIMUM_CACHE_SIZE = 20;
+    public const MINIMUM_CACHE_SIZE = 20;
     /**
      * @var int - Maximum cache size
      */
@@ -24,7 +26,7 @@ final class FileCache
      * Sets the cache size to $max_size (or self::MINIMUM_CACHE_SIZE if that's larger).
      * Entries will be removed until there are $max_size or fewer entries.
      */
-    public static function setMaxCacheSize(int $max_size) : void
+    public static function setMaxCacheSize(int $max_size): void
     {
         self::$max_size = \max($max_size, self::MINIMUM_CACHE_SIZE);
         while (\count(self::$cache_entries) > self::$max_size) {
@@ -36,7 +38,7 @@ final class FileCache
      * Adds an entry recording that $file_name has contents $file_contents,
      * overwriting any previous entries
      */
-    public static function addEntry(string $file_name, string $contents) : FileCacheEntry
+    public static function addEntry(string $file_name, string $contents): FileCacheEntry
     {
         $old_entry = self::$cache_entries[$file_name] ?? null;
         if ($old_entry) {
@@ -60,7 +62,7 @@ final class FileCache
      * @return ?FileCacheEntry if the entry exists in cache, return it.
      * Otherwise, return null.
      */
-    public static function getEntry(string $file_name) : ?FileCacheEntry
+    public static function getEntry(string $file_name): ?FileCacheEntry
     {
         $entry = self::$cache_entries[$file_name] ?? null;
         if ($entry) {
@@ -77,7 +79,7 @@ final class FileCache
      * @return FileCacheEntry This will load the file from the filesystem if it could not be found.
      * @throws RuntimeException if the file could not be loaded
      */
-    public static function getOrReadEntry(string $file_name) : FileCacheEntry
+    public static function getOrReadEntry(string $file_name): FileCacheEntry
     {
         $entry = self::getEntry($file_name);
         if ($entry !== null) {
@@ -100,7 +102,7 @@ final class FileCache
     /**
      * Clear the cache (E.g. after pausing, accepting a daemon mode request, then resuming)
      */
-    public static function clear() : void
+    public static function clear(): void
     {
         self::$cache_entries = [];
     }
@@ -108,7 +110,7 @@ final class FileCache
     /**
      * @return list<string> list of file paths with most recently used entries at the end.
      */
-    public static function getCachedFileList() : array
+    public static function getCachedFileList(): array
     {
         return \array_keys(self::$cache_entries);
     }

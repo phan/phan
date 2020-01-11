@@ -1,6 +1,10 @@
-<?php declare(strict_types=1);
+<?php
 
-namespace Phan\Plugin\PrintfCheckerPlugin;  // Don't pollute the global namespace
+declare(strict_types=1);
+
+namespace Phan\Plugin\PrintfCheckerPlugin;
+
+// Don't pollute the global namespace
 
 use ast;
 use ast\Node;
@@ -23,6 +27,7 @@ use Phan\PluginV3;
 use Phan\PluginV3\AnalyzeFunctionCallCapability;
 use Phan\PluginV3\ReturnTypeOverrideCapability;
 use Throwable;
+
 use function count;
 use function implode;
 use function is_object;
@@ -51,25 +56,25 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
 {
 
     // Pylint error codes for emitted issues.
-    const ERR_UNTRANSLATED_USE_ECHO                = 1300;
-    const ERR_UNTRANSLATED_NONE_USED               = 1301;
-    const ERR_UNTRANSLATED_NONEXISTENT             = 1302;
-    const ERR_UNTRANSLATED_UNUSED                  = 1303;
-    const ERR_UNTRANSLATED_NOT_PERCENT             = 1304;
-    const ERR_UNTRANSLATED_INCOMPATIBLE_SPECIFIER  = 1305;
-    const ERR_UNTRANSLATED_INCOMPATIBLE_ARGUMENT   = 1306;  // E.g. passing a string where an int is expected
-    const ERR_UNTRANSLATED_INCOMPATIBLE_ARGUMENT_WEAK = 1307;  // E.g. passing an int where a string is expected
-    const ERR_UNTRANSLATED_WIDTH_INSTEAD_OF_POSITION = 1308; // e.g. _('%1s'). Change to _('%1$1s' if you really mean that the width is 1, add positions for others ('%2$s', etc.)
-    const ERR_UNTRANSLATED_UNKNOWN_FORMAT_STRING   = 1310;
-    const ERR_TRANSLATED_INCOMPATIBLE              = 1309;
-    const ERR_TRANSLATED_HAS_MORE_ARGS             = 1311;
+    private const ERR_UNTRANSLATED_USE_ECHO                = 1300;
+    private const ERR_UNTRANSLATED_NONE_USED               = 1301;
+    private const ERR_UNTRANSLATED_NONEXISTENT             = 1302;
+    private const ERR_UNTRANSLATED_UNUSED                  = 1303;
+    private const ERR_UNTRANSLATED_NOT_PERCENT             = 1304;
+    private const ERR_UNTRANSLATED_INCOMPATIBLE_SPECIFIER  = 1305;
+    private const ERR_UNTRANSLATED_INCOMPATIBLE_ARGUMENT   = 1306;  // E.g. passing a string where an int is expected
+    private const ERR_UNTRANSLATED_INCOMPATIBLE_ARGUMENT_WEAK = 1307;  // E.g. passing an int where a string is expected
+    private const ERR_UNTRANSLATED_WIDTH_INSTEAD_OF_POSITION = 1308; // e.g. _('%1s'). Change to _('%1$1s' if you really mean that the width is 1, add positions for others ('%2$s', etc.)
+    private const ERR_UNTRANSLATED_UNKNOWN_FORMAT_STRING   = 1310;
+    private const ERR_TRANSLATED_INCOMPATIBLE              = 1309;
+    private const ERR_TRANSLATED_HAS_MORE_ARGS             = 1311;
 
     /**
      * People who have translations may subclass this plugin and return a mapping from other locales to those locales translations of $fmt_str.
      * @param string $fmt_str @phan-unused-param
      * @return string[] mapping locale to the translation (e.g. ['fr_FR' => 'Bonjour'] for $fmt_str == 'Hello')
      */
-    protected static function gettextForAllLocales(string $fmt_str) : array
+    protected static function gettextForAllLocales(string $fmt_str): array
     {
         return [];
     }
@@ -83,7 +88,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
      * @param Context $context
      * @param bool|int|string|float|Node|array|null $ast_node
      */
-    protected function astNodeToPrimitive(CodeBase $code_base, Context $context, $ast_node) : ?PrimitiveValue
+    protected function astNodeToPrimitive(CodeBase $code_base, Context $context, $ast_node): ?PrimitiveValue
     {
         // Base case: convert primitive tokens such as numbers and strings.
         if (!($ast_node instanceof Node)) {
@@ -172,7 +177,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
      * @param PrimitiveValue $left the value on the left.
      * @param PrimitiveValue $right the value on the right.
      */
-    protected static function concatenateToPrimitive(PrimitiveValue $left, PrimitiveValue $right) : ?PrimitiveValue
+    protected static function concatenateToPrimitive(PrimitiveValue $left, PrimitiveValue $right): ?PrimitiveValue
     {
         // Combining untranslated strings with anything will cause problems.
         if ($left->is_translated) {
@@ -185,7 +190,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
         return new PrimitiveValue($str);
     }
 
-    public function getReturnTypeOverrides(CodeBase $unused_code_base) : array
+    public function getReturnTypeOverrides(CodeBase $unused_code_base): array
     {
         $string_union_type = StringType::instance(false)->asPHPDocUnionType();
         /**
@@ -196,7 +201,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
             Context $context,
             Func $function,
             array $args
-        ) use ($string_union_type) : UnionType {
+        ) use ($string_union_type): UnionType {
             if (count($args) < 1) {
                 return FalseType::instance(false)->asRealUnionType();
             }
@@ -264,7 +269,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
      * @param CodeBase $code_base @phan-unused-param
      * @return \Closure[]
      */
-    public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array
+    public function getAnalyzeFunctionCallClosures(CodeBase $code_base): array
     {
         /**
          * Analyzes a printf-like function with a format directive in the first position.
@@ -275,7 +280,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
             Context $context,
             Func $function,
             array $args
-        ) : void {
+        ): void {
             // TODO: Resolve global constants and class constants?
             // TODO: Check for AST_UNPACK
             $pattern = $args[0] ?? null;
@@ -297,7 +302,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
             Context $context,
             Func $function,
             array $args
-        ) : void {
+        ): void {
             if (\count($args) < 2) {
                 return;
             }
@@ -319,7 +324,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
             Context $context,
             Func $function,
             array $args
-        ) : void {
+        ): void {
             if (\count($args) < 2) {
                 return;
             }
@@ -342,7 +347,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
             Context $context,
             Func $function,
             array $args
-        ) : void {
+        ): void {
             if (\count($args) < 3) {
                 return;
             }
@@ -367,7 +372,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
         ];
     }
 
-    protected static function encodeString(string $str) : string
+    protected static function encodeString(string $str): string
     {
         $result = \json_encode($str, \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE);
         if ($result !== false) {
@@ -385,7 +390,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
      * @param ?(Node|string|int|float)[] $arg_nodes arguments following the format string. Null if the arguments could not be determined.
      * @suppress PhanPartialTypeMismatchArgument TODO: refactor into smaller functions
      */
-    protected function analyzePrintfPattern(CodeBase $code_base, Context $context, FunctionInterface $function, $pattern_node, $arg_nodes) : void
+    protected function analyzePrintfPattern(CodeBase $code_base, Context $context, FunctionInterface $function, $pattern_node, $arg_nodes): void
     {
         // Given a node, extract the printf directive and whether or not it could be translated
         $primitive_for_fmtstr = $this->astNodeToPrimitive($code_base, $context, $pattern_node);
@@ -410,7 +415,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
          *
          * @param int $issue_type_id An issue id for pylint
          */
-        $emit_issue = static function (string $issue_type, string $issue_message_format, array $issue_message_args, int $severity, int $issue_type_id) use ($code_base, $context) : void {
+        $emit_issue = static function (string $issue_type, string $issue_message_format, array $issue_message_args, int $severity, int $issue_type_id) use ($code_base, $context): void {
             self::emitIssue(
                 $code_base,
                 $context,
@@ -538,7 +543,8 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
                     );
                 }
                 if ($is_translated && $spec->width &&
-                        ($spec->padding_char === '' || $spec->padding_char === ' ')) {
+                        ($spec->padding_char === '' || $spec->padding_char === ' ')
+                ) {
                     $intended_string = $spec->toCanonicalStringWithWidthAsPosition();
                     $emit_issue(
                         'PhanPluginPrintfWidthNotPosition',
@@ -657,9 +663,9 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
     /**
      * @param ConversionSpec[] $specs
      */
-    private static function getSpecStringsRepresentation(array $specs) : string
+    private static function getSpecStringsRepresentation(array $specs): string
     {
-        return \implode(',', \array_unique(\array_map(static function (ConversionSpec $spec) : string {
+        return \implode(',', \array_unique(\array_map(static function (ConversionSpec $spec): string {
             return $spec->directive;
         }, $specs)));
     }
@@ -667,7 +673,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
     /**
      * @param array<string,true> $expected_set the types being checked for the ability to weakly cast to
      */
-    private static function canWeakCast(UnionType $actual_union_type, array $expected_set) : bool
+    private static function canWeakCast(UnionType $actual_union_type, array $expected_set): bool
     {
         if (isset($expected_set['string'])) {
             static $string_weak_types;
@@ -700,7 +706,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
      * @param ConversionSpec[][] $types_of_arg contains array of ConversionSpec for
      *                                         each position in the untranslated format string.
      */
-    protected static function validateTranslations(CodeBase $code_base, Context $context, string $fmt_str, array $types_of_arg) : void
+    protected static function validateTranslations(CodeBase $code_base, Context $context, string $fmt_str, array $types_of_arg): void
     {
         $translations = static::gettextForAllLocales($fmt_str);
         foreach ($translations as $locale => $translated_fmt_str) {

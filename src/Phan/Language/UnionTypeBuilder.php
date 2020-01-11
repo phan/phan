@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language;
 
@@ -21,19 +23,19 @@ final class UnionTypeBuilder
         $this->type_set = $type_set;
     }
 
-    public function addType(Type $type) : void
+    public function addType(Type $type): void
     {
         $this->type_set[] = $type;
     }
 
-    public function addUnionType(UnionType $union_type) : void
+    public function addUnionType(UnionType $union_type): void
     {
         foreach ($union_type->getTypeSet() as $type) {
             $this->type_set[] = $type;
         }
     }
 
-    public function removeType(Type $type) : void
+    public function removeType(Type $type): void
     {
         $found = false;
         foreach ($this->type_set as $i => $other_type) {
@@ -51,7 +53,7 @@ final class UnionTypeBuilder
     /**
      * Checks if this currently contains an empty list of types
      */
-    public function isEmpty() : bool
+    public function isEmpty(): bool
     {
         return \count($this->type_set) === 0;
     }
@@ -59,7 +61,7 @@ final class UnionTypeBuilder
     /**
      * @return list<Type> as a side-effect, this deduplicates the type_set property.
      */
-    public function getTypeSet() : array
+    public function getTypeSet(): array
     {
         $type_set = $this->type_set;
         if (\count($type_set) <= 1) {
@@ -68,7 +70,7 @@ final class UnionTypeBuilder
         return $this->type_set = UnionType::getUniqueTypes($type_set);
     }
 
-    public function clearTypeSet() : void
+    public function clearTypeSet(): void
     {
         $this->type_set = [];
     }
@@ -76,7 +78,7 @@ final class UnionTypeBuilder
     /**
      * Build and return the UnionType for the unique type set that this was building.
      */
-    public function getPHPDocUnionType() : UnionType
+    public function getPHPDocUnionType(): UnionType
     {
         return UnionType::of($this->type_set, []);
     }
@@ -85,7 +87,7 @@ final class UnionTypeBuilder
      * Build and return the UnionType for the unique type set that this was building.
      * @deprecated use self::getPHPDocUnionType()
      */
-    public function getUnionType() : UnionType
+    public function getUnionType(): UnionType
     {
         return self::getPHPDocUnionType();
     }

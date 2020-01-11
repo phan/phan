@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Analysis;
 
@@ -54,7 +56,7 @@ final class ArgumentType
         Node $node,
         Context $context,
         CodeBase $code_base
-    ) : void {
+    ): void {
         self::checkIsDeprecatedOrInternal($code_base, $context, $method);
         if ($method->hasFunctionCallAnalyzer()) {
             try {
@@ -135,7 +137,7 @@ final class ArgumentType
         FunctionInterface $method,
         Node $node,
         int $argcount
-    ) : void {
+    ): void {
         $max = $method->getNumberOfParameters();
         $caused_by_variadic = $argcount === $max + 1 && (\end($node->children['args']->children)->kind ?? null) === \ast\AST_UNPACK;
         if ($method->isPHPInternal()) {
@@ -163,7 +165,7 @@ final class ArgumentType
         }
     }
 
-    private static function checkIsDeprecatedOrInternal(CodeBase $code_base, Context $context, FunctionInterface $method) : void
+    private static function checkIsDeprecatedOrInternal(CodeBase $code_base, Context $context, FunctionInterface $method): void
     {
         // Special common cases where we want slightly
         // better multi-signature error messages
@@ -215,7 +217,7 @@ final class ArgumentType
         }
     }
 
-    private static function isVarargs(CodeBase $code_base, FunctionInterface $method) : bool
+    private static function isVarargs(CodeBase $code_base, FunctionInterface $method): bool
     {
         foreach ($method->alternateGenerator($code_base) as $alternate_method) {
             foreach ($alternate_method->getParameterList() as $parameter) {
@@ -231,7 +233,7 @@ final class ArgumentType
      * Figure out if any of the arguments are a call to unpack()
      * @param array<mixed,Node|int|string|float> $children
      */
-    private static function isUnpack(array $children) : bool
+    private static function isUnpack(array $children): bool
     {
         foreach ($children as $child) {
             if ($child instanceof Node) {
@@ -265,7 +267,7 @@ final class ArgumentType
         Context $context,
         CodeBase $code_base,
         Closure $get_argument_type
-    ) : void {
+    ): void {
         // Special common cases where we want slightly
         // better multi-signature error messages
         self::checkIsDeprecatedOrInternal($code_base, $context, $method);
@@ -355,7 +357,7 @@ final class ArgumentType
         array $arg_nodes,
         Context $context,
         Closure $get_argument_type
-    ) : void {
+    ): void {
         // There's nothing reasonable we can do here
         if ($method instanceof Method) {
             if ($method->isMagicCall() || $method->isMagicCallStatic()) {
@@ -396,7 +398,7 @@ final class ArgumentType
      * These node types are guaranteed to be usable as references
      * @internal
      */
-    const REFERENCE_NODE_KINDS = [
+    public const REFERENCE_NODE_KINDS = [
         \ast\AST_VAR,
         \ast\AST_DIM,
         \ast\AST_PROP,
@@ -421,7 +423,7 @@ final class ArgumentType
         FunctionInterface $method,
         Node $node,
         Context $context
-    ) : void {
+    ): void {
         // There's nothing reasonable we can do here
         if ($method instanceof Method) {
             if ($method->isMagicCall() || $method->isMagicCallStatic()) {
@@ -517,7 +519,7 @@ final class ArgumentType
         Node $node,
         Node $argument,
         UnionType $argument_type
-    ) : void {
+    ): void {
         // Check the remaining required parameters for this variadic argument.
         // To avoid false positives, don't check optional parameters for now.
 
@@ -567,7 +569,7 @@ final class ArgumentType
      * Analyze passing the an argument of type $argument_type to the ith parameter of the (possibly variadic) method $method,
      * for a call made from the line $lineno.
      */
-    public static function analyzeParameter(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, int $lineno, int $i) : void
+    public static function analyzeParameter(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, int $lineno, int $i): void
     {
         // Expand it to include all parent types up the chain
         try {
@@ -682,11 +684,11 @@ final class ArgumentType
         UnionType $argument_type_expanded_resolved,
         int $lineno,
         int $i
-    ) : void {
+    ): void {
         /**
          * @return ?string
          */
-        $choose_issue_type = static function (string $issue_type, string $nullable_issue_type, string $real_issue_type) use ($argument_type, $argument_type_expanded_resolved, $alternate_parameter_type, $code_base, $context, $lineno) : ?string {
+        $choose_issue_type = static function (string $issue_type, string $nullable_issue_type, string $real_issue_type) use ($argument_type, $argument_type_expanded_resolved, $alternate_parameter_type, $code_base, $context, $lineno): ?string {
             if ($context->hasSuppressIssue($code_base, $real_issue_type)) {
                 // Suppressing the most severe argument type mismatch error will suppress related issues.
                 // Record that the most severe issue type suppression was used and don't emit any issue.
@@ -796,7 +798,7 @@ final class ArgumentType
         );
     }
 
-    private static function analyzeParameterStrict(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, Variable $alternate_parameter, UnionType $parameter_type, int $lineno, int $i) : void
+    private static function analyzeParameterStrict(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, Variable $alternate_parameter, UnionType $parameter_type, int $lineno, int $i): void
     {
         if ($alternate_parameter instanceof Parameter && $alternate_parameter->isPassByReference() && $alternate_parameter->getReferenceType() === Parameter::REFERENCE_WRITE_ONLY) {
             return;
@@ -873,7 +875,7 @@ final class ArgumentType
         );
     }
 
-    private static function getStrictArgumentIssueType(UnionType $union_type, bool $is_internal) : string
+    private static function getStrictArgumentIssueType(UnionType $union_type, bool $is_internal): string
     {
         if ($union_type->typeCount() === 1) {
             $type = $union_type->getTypeSet()[0];
@@ -895,7 +897,7 @@ final class ArgumentType
      *
      * @return bool - True if this node is a call to a function that may return a reference?
      */
-    public static function isExpressionReturningReference(CodeBase $code_base, Context $context, $node) : bool
+    public static function isExpressionReturningReference(CodeBase $code_base, Context $context, $node): bool
     {
         if (!($node instanceof Node)) {
             return false;

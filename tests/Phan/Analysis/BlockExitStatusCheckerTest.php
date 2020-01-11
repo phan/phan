@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests\Analysis;
 
@@ -18,7 +20,7 @@ final class BlockExitStatusCheckerTest extends BaseTest
      *
      * This shouldn't be used outside of tests.
      */
-    private static function representStatus(int $status) : string
+    private static function representStatus(int $status): string
     {
         if ($status === 0) {
             return "invalid(0)";
@@ -60,7 +62,7 @@ final class BlockExitStatusCheckerTest extends BaseTest
     /**
      * @dataProvider exitStatusProvider
      */
-    public function testExitStatus(string $expected_status_representation, string $code_snippet) : void
+    public function testExitStatus(string $expected_status_representation, string $code_snippet): void
     {
         $ast = \ast\parse_code("<" . "?php " . $code_snippet, Config::AST_VERSION);
         $status_code = (new BlockExitStatusChecker())($ast);
@@ -70,7 +72,7 @@ final class BlockExitStatusCheckerTest extends BaseTest
     /**
      * @return list<array{0:string,1:string}>
      */
-    public function exitStatusProvider() : array
+    public function exitStatusProvider(): array
     {
         return [
             [

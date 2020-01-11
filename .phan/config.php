@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 use Phan\Issue;
@@ -25,6 +26,7 @@ use Phan\Issue;
  * of the phan executable or a path passed in via the CLI
  * '-d' flag.
  */
+
 return [
     // Supported values: `'5.6'`, `'7.0'`, `'7.1'`, `'7.2'`, `'7.3'`, `'7.4'`, `null`.
     // If this is set to `null`,

@@ -1,10 +1,11 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Daemon\Transport;
 
 use Phan\Daemon;
 use Phan\Library\StringUtil;
-
 use TypeError;
 
 /**
@@ -37,7 +38,7 @@ class StreamResponder implements Responder
     /**
      * @return ?array<string,mixed> the request data(E.g. returns null if JSON is malformed)
      */
-    public function getRequestData() : ?array
+    public function getRequestData(): ?array
     {
         if (!$this->did_read_request_data) {
             $response_connection = $this->connection;
@@ -65,7 +66,7 @@ class StreamResponder implements Responder
      * @param array<string,mixed> $data the response fields
      * @throws \RuntimeException if called twice
      */
-    public function sendResponseAndClose(array $data) : void
+    public function sendResponseAndClose(array $data): void
     {
         $connection = $this->connection;
         if (!$this->did_read_request_data) {

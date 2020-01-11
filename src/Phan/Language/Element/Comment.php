@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Phan\Language\Element;
@@ -31,22 +32,22 @@ use Phan\Library\Option;
  */
 class Comment
 {
-    const ON_CLASS      = 1;
-    const ON_VAR        = 2;
-    const ON_PROPERTY   = 3;
-    const ON_CONST      = 4;
+    public const ON_CLASS      = 1;
+    public const ON_VAR        = 2;
+    public const ON_PROPERTY   = 3;
+    public const ON_CONST      = 4;
     // TODO: Add another type for closure. (e.g. (at)phan-closure-scope)
-    const ON_METHOD     = 5;
-    const ON_FUNCTION   = 6;
+    public const ON_METHOD     = 5;
+    public const ON_FUNCTION   = 6;
 
     // List of types that are function-like (e.g. have params and function body)
-    const FUNCTION_LIKE = [
+    public const FUNCTION_LIKE = [
         self::ON_METHOD,
         self::ON_FUNCTION,
     ];
 
     // Lists of types that can have (at)var annotations.
-    const HAS_VAR_ANNOTATION = [
+    public const HAS_VAR_ANNOTATION = [
         self::ON_METHOD,
         self::ON_FUNCTION,
         self::ON_VAR,
@@ -54,13 +55,13 @@ class Comment
         self::ON_CONST,
     ];
 
-    const HAS_TEMPLATE_ANNOTATION = [
+    public const HAS_TEMPLATE_ANNOTATION = [
         self::ON_CLASS,
         self::ON_FUNCTION,
         self::ON_METHOD,
     ];
 
-    const NAME_FOR_TYPE = [
+    public const NAME_FOR_TYPE = [
         self::ON_CLASS      => 'class',
         self::ON_VAR        => 'variable',
         self::ON_PROPERTY   => 'property',
@@ -290,7 +291,7 @@ class Comment
         }
     }
 
-    private function applyRealReturnOverride(ReturnComment $real_return_comment) : void
+    private function applyRealReturnOverride(ReturnComment $real_return_comment): void
     {
         $old_comment = $this->return_comment;
         if (!$old_comment) {
@@ -304,7 +305,7 @@ class Comment
     /**
      * @param mixed $value
      */
-    private function applyOverride(string $key, $value) : void
+    private function applyOverride(string $key, $value): void
     {
         switch ($key) {
             case 'param':
@@ -362,7 +363,7 @@ class Comment
      * @param list<CommentParameter> $override_comment_vars
      * A list of CommentParameters from var declarations
      */
-    private function mergeVariableList(array $override_comment_vars) : void
+    private function mergeVariableList(array $override_comment_vars): void
     {
         $known_names = [];
         foreach ($override_comment_vars as $override_var) {
@@ -394,7 +395,7 @@ class Comment
         Context $context,
         int $lineno,
         int $comment_type
-    ) : Comment {
+    ): Comment {
 
         // Don't parse the comment if this doesn't need to.
         if (!$comment || !Config::getValue('read_type_annotations') || \strpos($comment, '@') === false) {
@@ -418,7 +419,7 @@ class Comment
      * Set to true if the comment contains a 'deprecated'
      * directive.
      */
-    public function isDeprecated() : bool
+    public function isDeprecated(): bool
     {
         return ($this->comment_flags & Flags::IS_DEPRECATED) !== 0;
     }
@@ -428,7 +429,7 @@ class Comment
      * Set to true if the comment contains an 'override'
      * directive.
      */
-    public function isOverrideIntended() : bool
+    public function isOverrideIntended(): bool
     {
         return ($this->comment_flags & Flags::IS_OVERRIDE_INTENDED) !== 0;
     }
@@ -438,7 +439,7 @@ class Comment
      * Set to true if the comment contains an 'internal'
      * directive.
      */
-    public function isNSInternal() : bool
+    public function isNSInternal(): bool
     {
         return ($this->comment_flags & Flags::IS_NS_INTERNAL) !== 0;
     }
@@ -449,7 +450,7 @@ class Comment
      * directive.
      * (or phan-read-only + phan-external-mutation-free, eventually)
      */
-    public function isPure() : bool
+    public function isPure(): bool
     {
         return ($this->comment_flags & Flags::IS_SIDE_EFFECT_FREE) === Flags::IS_SIDE_EFFECT_FREE;
     }
@@ -459,7 +460,7 @@ class Comment
     /**
      * Gets the subset of the bitmask that applies to properties.
      */
-    public function getPhanFlagsForProperty() : int
+    public function getPhanFlagsForProperty(): int
     {
         return $this->comment_flags & self::FLAGS_FOR_PROPERTY;
     }
@@ -475,7 +476,7 @@ class Comment
     /**
      * Gets the subset of the bitmask that applies to classes.
      */
-    public function getPhanFlagsForClass() : int
+    public function getPhanFlagsForClass(): int
     {
         return $this->comment_flags & self::FLAGS_FOR_CLASS;
     }
@@ -488,7 +489,7 @@ class Comment
     /**
      * Gets the subset of the bitmask that applies to methods.
      */
-    public function getPhanFlagsForMethod() : int
+    public function getPhanFlagsForMethod(): int
     {
         return $this->comment_flags & self::FLAGS_FOR_METHOD;
     }
@@ -499,7 +500,7 @@ class Comment
      * directive.
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function getForbidUndeclaredMagicProperties() : bool
+    public function getForbidUndeclaredMagicProperties(): bool
     {
         return ($this->comment_flags & Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES) !== 0;
     }
@@ -510,7 +511,7 @@ class Comment
      * directive.
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function getForbidUndeclaredMagicMethods() : bool
+    public function getForbidUndeclaredMagicMethods(): bool
     {
         return ($this->comment_flags & Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS) !== 0;
     }
@@ -519,7 +520,7 @@ class Comment
      * @return UnionType
      * A UnionType defined by a (at)return directive
      */
-    public function getReturnType() : UnionType
+    public function getReturnType(): UnionType
     {
         if (!$this->return_comment) {
             throw new AssertionError('Should check hasReturnUnionType');
@@ -531,7 +532,7 @@ class Comment
      * @return int
      * A line of a (at)return directive
      */
-    public function getReturnLineno() : int
+    public function getReturnLineno(): int
     {
         if (!$this->return_comment) {
             throw new AssertionError('Should check hasReturnUnionType');
@@ -544,7 +545,7 @@ class Comment
      * True if this doc block contains a (at)return
      * directive specifying a type.
      */
-    public function hasReturnUnionType() : bool
+    public function hasReturnUnionType(): bool
     {
         return $this->return_comment !== null;
     }
@@ -556,7 +557,7 @@ class Comment
      *
      * @suppress PhanPartialTypeMismatchReturn (Null)
      */
-    public function getClosureScopeOption() : Option
+    public function getClosureScopeOption(): Option
     {
         return $this->closure_scope;
     }
@@ -566,7 +567,7 @@ class Comment
      *
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function getParameterList() : array
+    public function getParameterList(): array
     {
         return $this->parameter_list;
     }
@@ -574,7 +575,7 @@ class Comment
     /**
      * @return array<string,CommentParameter> (maps the names of parameters to their values. Does not include parameters which didn't provide names)
      */
-    public function getParameterMap() : array
+    public function getParameterMap(): array
     {
         return $this->parameter_map;
     }
@@ -583,7 +584,7 @@ class Comment
      * @return list<TemplateType>
      * A list of template types parameterizing a generic class
      */
-    public function getTemplateTypeList() : array
+    public function getTemplateTypeList(): array
     {
         return $this->template_type_list;
     }
@@ -593,7 +594,7 @@ class Comment
      * An optional type declaring what a class extends.
      * @suppress PhanPartialTypeMismatchReturn (Null)
      */
-    public function getInheritedTypeOption() : Option
+    public function getInheritedTypeOption(): Option
     {
         return $this->inherited_type;
     }
@@ -602,7 +603,7 @@ class Comment
      * @return list<Type>
      * An optional type declaring the mixins used by a class.
      */
-    public function getMixinTypes() : array
+    public function getMixinTypes(): array
     {
         return $this->mixin_types;
     }
@@ -612,7 +613,7 @@ class Comment
      * A set of issue names like 'PhanUnreferencedPublicMethod' to suppress.
      * If the values of fields are 0, the suppressions were not used yet.
      */
-    public function getSuppressIssueSet() : array
+    public function getSuppressIssueSet(): array
     {
         return $this->suppress_issue_set;
     }
@@ -624,7 +625,7 @@ class Comment
     public function hasParameterWithNameOrOffset(
         string $name,
         int $offset
-    ) : bool {
+    ): bool {
         if (isset($this->parameter_map[$name])) {
             return true;
         }
@@ -639,7 +640,7 @@ class Comment
     public function getParameterWithNameOrOffset(
         string $name,
         int $offset
-    ) : CommentParameter {
+    ): CommentParameter {
         if (isset($this->parameter_map[$name])) {
             return $this->parameter_map[$name];
         }
@@ -654,7 +655,7 @@ class Comment
      */
     public function hasMagicPropertyWithName(
         string $name
-    ) : bool {
+    ): bool {
         return isset($this->magic_property_map[$name]);
     }
 
@@ -666,14 +667,14 @@ class Comment
      */
     public function getMagicPropertyWithName(
         string $name
-    ) : CommentProperty {
+    ): CommentProperty {
         return $this->magic_property_map[$name];
     }
 
     /**
      * @return array<string,CommentProperty> map from parameter name to parameter
      */
-    public function getMagicPropertyMap() : array
+    public function getMagicPropertyMap(): array
     {
         return $this->magic_property_map;
     }
@@ -681,7 +682,7 @@ class Comment
     /**
      * @return array<string,CommentMethod> map from method name to method info
      */
-    public function getMagicMethodMap() : array
+    public function getMagicMethodMap(): array
     {
         return $this->magic_method_map;
     }
@@ -689,7 +690,7 @@ class Comment
     /**
      * @return UnionType list of types for throws statements
      */
-    public function getThrowsUnionType() : UnionType
+    public function getThrowsUnionType(): UnionType
     {
         return $this->throw_union_type;
     }
@@ -697,7 +698,7 @@ class Comment
     /**
      * @return list<CommentParameter> the list of (at)var annotations
      */
-    public function getVariableList() : array
+    public function getVariableList(): array
     {
         return $this->variable_list;
     }
@@ -705,12 +706,12 @@ class Comment
     /**
      * @return array<string,Assertion> maps parameter names to assertions about those parameters
      */
-    public function getParamAssertionMap() : array
+    public function getParamAssertionMap(): array
     {
         return $this->param_assertion_map;
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         // TODO: add new properties of Comment to this method
         // (magic methods, magic properties, custom @phan directives, etc.))

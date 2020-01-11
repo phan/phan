@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests;
 
@@ -11,7 +13,7 @@ use Phan\Plugin\ConfigPluginSet;
  */
 final class PHP80Test extends AbstractPhanFileTest
 {
-    const OVERRIDES = [
+    private const OVERRIDES = [
         'allow_method_param_type_widening' => true,
         'unused_variable_detection' => true,  // for use with tests of arrow functions
         'redundant_condition_detection' => true,  // for use with typed properties
@@ -20,7 +22,7 @@ final class PHP80Test extends AbstractPhanFileTest
         'plugin_config' => ['infer_pure_methods' => true],
     ];
 
-    public static function setUpBeforeClass() : void
+    public static function setUpBeforeClass(): void
     {
         parent::setUpBeforeClass();
         foreach (self::OVERRIDES as $key => $value) {
@@ -41,7 +43,7 @@ final class PHP80Test extends AbstractPhanFileTest
      * @dataProvider getTestFiles
      * @override
      */
-    public function testFiles(array $test_file_list, string $expected_file_path, ?string $config_file_path = null) : void
+    public function testFiles(array $test_file_list, string $expected_file_path, ?string $config_file_path = null): void
     {
         $skip_reason = null;
         $main_path = \basename(\reset($test_file_list));
@@ -58,7 +60,7 @@ final class PHP80Test extends AbstractPhanFileTest
     /**
      * @suppress PhanUndeclaredConstant
      */
-    public function getTestFiles() : array
+    public function getTestFiles(): array
     {
         return $this->scanSourceFilesDir(\PHP80_TEST_FILE_DIR, \PHP80_EXPECTED_DIR);
     }

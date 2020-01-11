@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Element;
 
@@ -112,7 +114,7 @@ class Method extends ClassElement implements FunctionInterface
     /**
      * Sets hasTemplateType to true if it finds any template types in the parameters or methods
      */
-    public function checkForTemplateTypes() : void
+    public function checkForTemplateTypes(): void
     {
         if ($this->getUnionType()->hasTemplateTypeRecursive()) {
             $this->recordHasTemplateType();
@@ -130,7 +132,7 @@ class Method extends ClassElement implements FunctionInterface
      * @return bool
      * True if this is a magic phpdoc method (declared via (at)method on class declaration phpdoc)
      */
-    public function isFromPHPDoc() : bool
+    public function isFromPHPDoc(): bool
     {
         return $this->getPhanFlagsHasState(Flags::IS_FROM_PHPDOC);
     }
@@ -139,7 +141,7 @@ class Method extends ClassElement implements FunctionInterface
      * Sets whether this is a magic phpdoc method (declared via (at)method on class declaration phpdoc)
      * @param bool $from_phpdoc - True if this is a magic phpdoc method
      */
-    public function setIsFromPHPDoc(bool $from_phpdoc) : void
+    public function setIsFromPHPDoc(bool $from_phpdoc): void
     {
         $this->setPhanFlags(
             Flags::bitVectorWithState(
@@ -154,7 +156,7 @@ class Method extends ClassElement implements FunctionInterface
      * @return bool
      * True if this method is intended to be an override of another method (contains (at)override)
      */
-    public function isOverrideIntended() : bool
+    public function isOverrideIntended(): bool
     {
         return $this->getPhanFlagsHasState(Flags::IS_OVERRIDE_INTENDED);
     }
@@ -164,7 +166,7 @@ class Method extends ClassElement implements FunctionInterface
      * @param bool $is_override_intended
 
      */
-    public function setIsOverrideIntended(bool $is_override_intended) : void
+    public function setIsOverrideIntended(bool $is_override_intended): void
     {
         $this->setPhanFlags(
             Flags::bitVectorWithState(
@@ -178,7 +180,7 @@ class Method extends ClassElement implements FunctionInterface
     /**
      * Returns true if this element is overridden by at least one other element
      */
-    public function isOverriddenByAnother() : bool
+    public function isOverriddenByAnother(): bool
     {
         return $this->getPhanFlagsHasState(Flags::IS_OVERRIDDEN_BY_ANOTHER);
     }
@@ -188,7 +190,7 @@ class Method extends ClassElement implements FunctionInterface
      * @deprecated use isOverriddenByAnother
      * @suppress PhanUnreferencedPublicMethod
      */
-    final public function getIsOverriddenByAnother() : bool
+    final public function getIsOverriddenByAnother(): bool
     {
         return $this->isOverriddenByAnother();
     }
@@ -199,7 +201,7 @@ class Method extends ClassElement implements FunctionInterface
      * @param bool $is_overridden_by_another
      * True if this method is overridden by another method
      */
-    public function setIsOverriddenByAnother(bool $is_overridden_by_another) : void
+    public function setIsOverriddenByAnother(bool $is_overridden_by_another): void
     {
         $this->setPhanFlags(Flags::bitVectorWithState(
             $this->getPhanFlags(),
@@ -212,7 +214,7 @@ class Method extends ClassElement implements FunctionInterface
      * @return bool
      * True if this is an abstract method
      */
-    public function isAbstract() : bool
+    public function isAbstract(): bool
     {
         return $this->getFlagsHasState(ast\flags\MODIFIER_ABSTRACT);
     }
@@ -221,7 +223,7 @@ class Method extends ClassElement implements FunctionInterface
      * @return bool
      * True if this is a final method
      */
-    public function isFinal() : bool
+    public function isFinal(): bool
     {
         return $this->getFlagsHasState(ast\flags\MODIFIER_FINAL);
     }
@@ -230,7 +232,7 @@ class Method extends ClassElement implements FunctionInterface
      * @return bool
      * True if this should be analyzed as if it is a final method
      */
-    public function isEffectivelyFinal() : bool
+    public function isEffectivelyFinal(): bool
     {
         if ($this->isFinal()) {
             return true;
@@ -244,7 +246,7 @@ class Method extends ClassElement implements FunctionInterface
      * @return bool
      * True if this method returns a reference
      */
-    public function returnsRef() : bool
+    public function returnsRef(): bool
     {
         return $this->getFlagsHasState(ast\flags\FUNC_RETURNS_REF);
     }
@@ -253,7 +255,7 @@ class Method extends ClassElement implements FunctionInterface
      * Returns true if this is a magic method
      * (Names are all normalized in FullyQualifiedMethodName::make())
      */
-    public function isMagic() : bool
+    public function isMagic(): bool
     {
         return \array_key_exists($this->name, FullyQualifiedMethodName::MAGIC_METHOD_NAME_SET);
     }
@@ -261,7 +263,7 @@ class Method extends ClassElement implements FunctionInterface
     /**
      * Returns the return union type of this magic method, if known.
      */
-    public function getUnionTypeOfMagicIfKnown() : ?UnionType
+    public function getUnionTypeOfMagicIfKnown(): ?UnionType
     {
         $type_string = FullyQualifiedMethodName::MAGIC_METHOD_TYPE_MAP[$this->name] ?? null;
         return $type_string ? UnionType::fromFullyQualifiedPHPDocString($type_string) : null;
@@ -272,7 +274,7 @@ class Method extends ClassElement implements FunctionInterface
      * @deprecated use isMagic
      * @suppress PhanUnreferencedPublicMethod
      */
-    final public function getIsMagic() : bool
+    final public function getIsMagic(): bool
     {
         return $this->isMagic();
     }
@@ -281,7 +283,7 @@ class Method extends ClassElement implements FunctionInterface
      * Returns true if this is a magic method which should have return type of void
      * (Names are all normalized in FullyQualifiedMethodName::make())
      */
-    public function isMagicAndVoid() : bool
+    public function isMagicAndVoid(): bool
     {
         return \array_key_exists($this->name, FullyQualifiedMethodName::MAGIC_VOID_METHOD_NAME_SET);
     }
@@ -291,7 +293,7 @@ class Method extends ClassElement implements FunctionInterface
      * @deprecated use isMagicAndVoid
      * @suppress PhanUnreferencedPublicMethod
      */
-    final public function getIsMagicAndVoid() : bool
+    final public function getIsMagicAndVoid(): bool
     {
         return $this->isMagicAndVoid();
     }
@@ -300,7 +302,7 @@ class Method extends ClassElement implements FunctionInterface
      * Returns true if this is the `__construct` method
      * (Does not return true for php4 constructors)
      */
-    public function isNewConstructor() : bool
+    public function isNewConstructor(): bool
     {
         return $this->name === '__construct';
     }
@@ -308,7 +310,7 @@ class Method extends ClassElement implements FunctionInterface
     /**
      * Returns true if this is the magic `__call` method
      */
-    public function isMagicCall() : bool
+    public function isMagicCall(): bool
     {
         return $this->name === '__call';
     }
@@ -316,7 +318,7 @@ class Method extends ClassElement implements FunctionInterface
     /**
      * Returns true if this is the magic `__callStatic` method
      */
-    public function isMagicCallStatic() : bool
+    public function isMagicCallStatic(): bool
     {
         return $this->name === '__callStatic';
     }
@@ -328,7 +330,7 @@ class Method extends ClassElement implements FunctionInterface
     public static function defaultConstructorForClass(
         Clazz $clazz,
         CodeBase $code_base
-    ) : Method {
+    ): Method {
         if ($clazz->getFQSEN()->getNamespace() === '\\' && $clazz->hasMethodWithName($code_base, $clazz->getName())) {
             $old_style_constructor = $clazz->getMethodByName($code_base, $clazz->getName());
         } else {
@@ -368,7 +370,7 @@ class Method extends ClassElement implements FunctionInterface
      *
      * Precondition: This is not a magic method
      */
-    public function asPHPDocMethod(Clazz $class) : Method
+    public function asPHPDocMethod(Clazz $class): Method
     {
         $method = clone($this);
         $method->setFlags($method->getFlags() & (
@@ -404,7 +406,7 @@ class Method extends ClassElement implements FunctionInterface
         Clazz $clazz,
         string $alias_method_name,
         int $new_visibility_flags
-    ) : Method {
+    ): Method {
 
         $method_fqsen = FullyQualifiedMethodName::make(
             $clazz->getFQSEN(),
@@ -490,7 +492,7 @@ class Method extends ClassElement implements FunctionInterface
         Node $node,
         FullyQualifiedMethodName $fqsen,
         ?Clazz $class = null
-    ) : Method {
+    ): Method {
 
         // Create the skeleton method object from what
         // we know so far
@@ -632,7 +634,7 @@ class Method extends ClassElement implements FunctionInterface
     /**
      * Ensure that this clone will use the return type of the ancestor method
      */
-    public function ensureClonesReturnType(Method $original_method) : void
+    public function ensureClonesReturnType(Method $original_method): void
     {
         if ($this->defining_method_for_type_fetching) {
             return;
@@ -654,13 +656,13 @@ class Method extends ClassElement implements FunctionInterface
         $this->defining_method_for_type_fetching = $original_method;
     }
 
-    public function setUnionType(UnionType $union_type) : void
+    public function setUnionType(UnionType $union_type): void
     {
         $this->defining_method_for_type_fetching = null;
         parent::setUnionType($union_type);
     }
 
-    protected function getUnionTypeWithStatic() : UnionType
+    protected function getUnionTypeWithStatic(): UnionType
     {
         return parent::getUnionType();
     }
@@ -669,7 +671,7 @@ class Method extends ClassElement implements FunctionInterface
      * @return UnionType
      * The return type of this method in its given context.
      */
-    public function getUnionType() : UnionType
+    public function getUnionType(): UnionType
     {
         if ($this->defining_method_for_type_fetching) {
             $union_type = $this->defining_method_for_type_fetching->getUnionTypeWithStatic();
@@ -698,12 +700,12 @@ class Method extends ClassElement implements FunctionInterface
         return $union_type;
     }
 
-    public function getUnionTypeWithUnmodifiedStatic() : UnionType
+    public function getUnionTypeWithUnmodifiedStatic(): UnionType
     {
         return parent::getUnionType();
     }
 
-    public function getFQSEN() : FullyQualifiedMethodName
+    public function getFQSEN(): FullyQualifiedMethodName
     {
         return $this->fqsen;
     }
@@ -713,7 +715,7 @@ class Method extends ClassElement implements FunctionInterface
      * @phan-return \Generator<Method>
      * The set of all alternates to this method
      */
-    public function alternateGenerator(CodeBase $code_base) : \Generator
+    public function alternateGenerator(CodeBase $code_base): \Generator
     {
         // Workaround so that methods of generic classes will have the resolved template types
         yield $this;
@@ -740,7 +742,7 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function getOverriddenMethods(
         CodeBase $code_base
-    ) : array {
+    ): array {
         // Get the class that defines this method
         $class = $this->getClass($code_base);
 
@@ -797,7 +799,7 @@ class Method extends ClassElement implements FunctionInterface
      * @return FullyQualifiedMethodName the FQSEN with the original definition (Even if this is private/protected and inherited from a trait). Used for dead code detection.
      *                                  Inheritance tests use getDefiningFQSEN() so that access checks won't break.
      */
-    public function getRealDefiningFQSEN() : FullyQualifiedMethodName
+    public function getRealDefiningFQSEN(): FullyQualifiedMethodName
     {
         return $this->real_defining_fqsen ?? $this->getDefiningFQSEN();
     }
@@ -806,7 +808,7 @@ class Method extends ClassElement implements FunctionInterface
      * @return string
      * A string representation of this method signature (preferring phpdoc types)
      */
-    public function __toString() : string
+    public function __toString(): string
     {
         $string = '';
         // TODO: should this representation and other representations include visibility?
@@ -832,7 +834,7 @@ class Method extends ClassElement implements FunctionInterface
      * A string representation of this method signature
      * (Based on real types only, instead of phpdoc+real types)
      */
-    public function toRealSignatureString() : string
+    public function toRealSignatureString(): string
     {
         $string = '';
 
@@ -851,7 +853,7 @@ class Method extends ClassElement implements FunctionInterface
         return $string;
     }
 
-    public function getMarkupDescription() : string
+    public function getMarkupDescription(): string
     {
         $string = '';
         // It's an error to have visibility or abstract in an interface's stub (e.g. JsonSerializable)
@@ -894,7 +896,7 @@ class Method extends ClassElement implements FunctionInterface
     /**
      * Returns this method's visibility ('private', 'protected', or 'public')
      */
-    public function getVisibilityName() : string
+    public function getVisibilityName(): string
     {
         if ($this->isPrivate()) {
             return 'private';
@@ -908,7 +910,7 @@ class Method extends ClassElement implements FunctionInterface
     /**
      * Returns a PHP stub that can be used in the output of `tool/make_stubs`
      */
-    public function toStub(bool $class_is_interface = false) : string
+    public function toStub(bool $class_is_interface = false): string
     {
         $string = '    ';
         if ($this->isFinal()) {
@@ -951,12 +953,12 @@ class Method extends ClassElement implements FunctionInterface
      * Does this method have template types anywhere in its parameters or return type?
      * (This check is recursive)
      */
-    public function hasTemplateType() : bool
+    public function hasTemplateType(): bool
     {
         return $this->getPhanFlagsHasState(Flags::HAS_TEMPLATE_TYPE);
     }
 
-    private function recordHasTemplateType() : void
+    private function recordHasTemplateType(): void
     {
         $this->setPhanFlags($this->getPhanFlags() | Flags::HAS_TEMPLATE_TYPE);
     }
@@ -968,7 +970,7 @@ class Method extends ClassElement implements FunctionInterface
     public function resolveTemplateType(
         CodeBase $code_base,
         UnionType $object_union_type
-    ) : Method {
+    ): Method {
         $defining_fqsen = $this->getDefiningClassFQSEN();
         $defining_class = $code_base->getClassByFQSEN($defining_fqsen);
         if (!$defining_class->isGeneric()) {
@@ -1019,7 +1021,7 @@ class Method extends ClassElement implements FunctionInterface
      * @param array<string,UnionType> $template_type_map
      * A map from template type identifier to a concrete type
      */
-    private function cloneWithTemplateParameterTypeMap(array $template_type_map) : Method
+    private function cloneWithTemplateParameterTypeMap(array $template_type_map): Method
     {
         $result = clone($this);
         $result->cloneParameterList();

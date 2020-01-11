@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -15,6 +16,7 @@ declare(strict_types=1);
  * This was then manually patched (see the commit history)
  * - Add is_real signatures (including for invalid argument counts)
  */
+
 return [
 '_' => '?false|?string',
 'abs' => '?false|?float|?int',

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 // Phan does a ton of GC and this offers a major speed
 // improvement if your system can handle it (which it
@@ -26,7 +28,7 @@ $is_issue_found =
     Phan::analyzeFileList(
         $code_base,
         /** @return list<string> */
-        static function (bool $recompute_file_list = false) use ($cli) : array {
+        static function (bool $recompute_file_list = false) use ($cli): array {
             if ($recompute_file_list) {
                 $cli->recomputeFileList();
             }

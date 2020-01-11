@@ -5,6 +5,10 @@
 <!-- Use this with PHP_CodeSniffer 3.3.0 or newer -->
 <ruleset name="Custom Standard">
   <description>Coding standard for Phan</description>
+  <!-- <rule ref="SlevomatCodingStandard.Namespaces.FullyQualifiedGlobalFunctions" /> doesn't account for 'use function...' statements, don't use that -->
+
+  <!-- Look into SlevomatCodingStandard.TypeHints.TypeHintDeclaration.MissingTraversableParameterTypeHintSpecification if it ever supports generic arrays+array shapes - Or just add this functionality to Phan's annotation plugin -->
+
   <config name="installed_paths" value="../../slevomat/coding-standard"/>
   <rule ref="SlevomatCodingStandard.Classes.ModernClassNameReference" />
   <rule ref="SlevomatCodingStandard.Commenting.EmptyComment" />
@@ -35,11 +39,6 @@
     <exclude-pattern>*/.phan/plugins/*</exclude-pattern>
     <exclude-pattern>/internal/*</exclude-pattern>
   </rule>
-  <!-- <rule ref="SlevomatCodingStandard.Namespaces.FullyQualifiedGlobalFunctions" /> doesn't account for 'use function...' statements, don't use that -->
-  <!-- TODO: Look into SlevomatCodingStandard.TypeHints.ReturnTypeHintSpacing once PSR-12 is back into review -->
-
-  <!-- Look into SlevomatCodingStandard.TypeHints.TypeHintDeclaration.MissingTraversableParameterTypeHintSpecification if it ever supports generic arrays+array shapes - Or just add this functionality to Phan's annotation plugin -->
-
   <rule ref="PSR1" />
   <rule ref="PSR2">
     <exclude name="Generic.Files.LineLength.TooLong" />
@@ -48,7 +47,10 @@
     <exclude name="PSR1.Classes.ClassDeclaration.MultipleClasses" />
   </rule>
 
-  <rule ref="PSR12" />
+  <rule ref="PSR12">
+    <!-- conflicts with PSR2.ControlStructures.ControlStructureSpacing, the automatic fixes have strange space  -->
+    <exclude name="PSR12.ControlStructures.ControlStructureSpacing" />
+  </rule>
   <!-- Arbitrary increase of the line length limit -->
   <rule ref="Generic.Files.LineLength">
     <properties>
@@ -56,6 +58,7 @@
       <property name="absoluteLineLimit" value="200"/>
     </properties>
   </rule>
+  <exclude name="Generic.WhiteSpace.ScopeIndent" />
 
   <!-- Phan's coding style is to always use underscores for variable names and property declarations -->
   <rule ref="./internal/PHP_CodeSniffer/Sniffs">

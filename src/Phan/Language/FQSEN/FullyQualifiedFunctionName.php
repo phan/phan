@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\FQSEN;
 
@@ -17,7 +19,7 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement i
      * @return int
      * The namespace map type such as \ast\flags\USE_NORMAL or \ast\flags\USE_FUNCTION
      */
-    protected static function getNamespaceMapType() : int
+    protected static function getNamespaceMapType(): int
     {
         return \ast\flags\USE_FUNCTION;
     }
@@ -29,7 +31,7 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement i
      * TODO: Separate the function used to render names in phan errors
      *       from the ones used for generating array keys.
      */
-    public static function canonicalName(string $name) : string
+    public static function canonicalName(string $name): string
     {
         return $name;
     }
@@ -47,7 +49,7 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement i
     public static function fromStringInContext(
         string $fqsen_string,
         Context $context
-    ) : FullyQualifiedFunctionName {
+    ): FullyQualifiedFunctionName {
 
         // Check to see if we're fully qualified
         if (0 === \strpos($fqsen_string, '\\')) {
@@ -92,7 +94,7 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement i
     public static function fromClosureInContext(
         Context $context,
         Node $node
-    ) : FullyQualifiedFunctionName {
+    ): FullyQualifiedFunctionName {
         $hash_material =
             $context->getFile() . '|' .
             $node->lineno . '|' .
@@ -111,7 +113,7 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement i
      * @return bool
      * True if this FQSEN represents a closure
      */
-    public function isClosure() : bool
+    public function isClosure(): bool
     {
         return \strncmp('closure_', $this->name, 8) === 0;
     }

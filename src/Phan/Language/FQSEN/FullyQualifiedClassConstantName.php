@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\FQSEN;
 
@@ -14,7 +16,7 @@ class FullyQualifiedClassConstantName extends FullyQualifiedClassElement impleme
      * This should not be used directly or indirectly in issue output
      * If an FQSEN is case-sensitive, this should return $name
      */
-    public static function canonicalLookupKey(string $name) : string
+    public static function canonicalLookupKey(string $name): string
     {
         return $name;
     }

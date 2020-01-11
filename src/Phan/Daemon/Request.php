@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Daemon;
 
@@ -22,12 +24,14 @@ use Phan\Output\Printer\CapturingJSONPrinter;
 use Phan\Output\Printer\FilteringPrinter;
 use Phan\Output\PrinterFactory;
 use Symfony\Component\Console\Output\BufferedOutput;
+
 use function count;
 use function get_class;
 use function in_array;
 use function is_array;
 use function is_string;
 use function strlen;
+
 use const DEBUG_BACKTRACE_IGNORE_ARGS;
 use const SIGCHLD;
 use const SORT_STRING;
@@ -39,24 +43,24 @@ use const WNOHANG;
  */
 class Request
 {
-    const METHOD_ANALYZE_FILES = 'analyze_files';  // has shorthand analyze_file with param 'file'
+    public const METHOD_ANALYZE_FILES = 'analyze_files';  // has shorthand analyze_file with param 'file'
 
-    const PARAM_METHOD = 'method';
-    const PARAM_FILES  = 'files';
-    const PARAM_FORMAT = 'format';
-    const PARAM_COLOR  = 'color';
-    const PARAM_TEMPORARY_FILE_MAPPING_CONTENTS = 'temporary_file_mapping_contents';
+    public const PARAM_METHOD = 'method';
+    public const PARAM_FILES  = 'files';
+    public const PARAM_FORMAT = 'format';
+    public const PARAM_COLOR  = 'color';
+    public const PARAM_TEMPORARY_FILE_MAPPING_CONTENTS = 'temporary_file_mapping_contents';
 
     // success codes
-    const STATUS_OK = 'ok';  // unrecognized output format
-    const STATUS_NO_FILES = 'no_files';  // none of the requested files were in this project's config directories
+    public const STATUS_OK = 'ok';  // unrecognized output format
+    public const STATUS_NO_FILES = 'no_files';  // none of the requested files were in this project's config directories
 
     // failure codes
-    const STATUS_INVALID_FORMAT = 'invalid_format';  // unrecognized requested output "format"
-    const STATUS_ERROR_UNKNOWN = 'error_unknown';
-    const STATUS_INVALID_FILES = 'invalid_files';  // expected a valid string for 'files'/'file'
-    const STATUS_INVALID_METHOD = 'invalid_method';  // expected 'method' to be analyze_files or
-    const STATUS_INVALID_REQUEST = 'invalid_request';  // expected a valid string for 'files'/'file'
+    public const STATUS_INVALID_FORMAT = 'invalid_format';  // unrecognized requested output "format"
+    public const STATUS_ERROR_UNKNOWN = 'error_unknown';
+    public const STATUS_INVALID_FILES = 'invalid_files';  // expected a valid string for 'files'/'file'
+    public const STATUS_INVALID_METHOD = 'invalid_method';  // expected 'method' to be analyze_files or
+    public const STATUS_INVALID_REQUEST = 'invalid_request';  // expected a valid string for 'files'/'file'
 
     /** @var Responder|null - Null after the response is sent. */
     private $responder;
@@ -130,7 +134,7 @@ class Request
     /**
      * @param string $file_path an absolute or relative path to be analyzed
      */
-    public function shouldUseMappingPolyfill(string $file_path) : bool
+    public function shouldUseMappingPolyfill(string $file_path): bool
     {
         if ($this->most_recent_node_info_request) {
             return $this->most_recent_node_info_request->getPath() === Config::projectPath($file_path);
@@ -141,7 +145,7 @@ class Request
     /**
      * @param string $file_path an absolute or relative path to be analyzed
      */
-    public function shouldAddPlaceholdersForPath(string $file_path) : bool
+    public function shouldAddPlaceholdersForPath(string $file_path): bool
     {
         if ($this->most_recent_node_info_request instanceof CompletionRequest) {
             return $this->most_recent_node_info_request->getPath() === Config::projectPath($file_path);
@@ -152,7 +156,7 @@ class Request
     /**
      * Computes the byte offset of the node targeted by a language client's request (e.g. for a "Go to definition" request)
      */
-    public function getTargetByteOffset(string $file_contents) : int
+    public function getTargetByteOffset(string $file_contents): int
     {
         if ($this->most_recent_node_info_request) {
             $position = $this->most_recent_node_info_request->getPosition();
@@ -165,7 +169,7 @@ class Request
      * @return void (unreachable)
      * @throws ExitException to imitate an exit without actually exiting
      */
-    public function exit(int $exit_code) : void
+    public function exit(int $exit_code): void
     {
         if ($this->should_exit) {
             Daemon::debugf("Exiting");
@@ -191,7 +195,7 @@ class Request
         FileMapping $file_mapping,
         ?NodeInfoRequest $most_recent_node_info_request,
         bool $should_exit
-    ) : Request {
+    ): Request {
         FileCache::clear();
         $file_mapping_contents = self::normalizeFileMappingContents($file_mapping->getOverrides(), $error_message);
         if ($most_recent_node_info_request instanceof CompletionRequest) {
@@ -226,7 +230,7 @@ class Request
     private static function adjustFileMappingContentsForCompletionRequest(
         array $file_mapping_contents,
         CompletionRequest $completion_request
-    ) : array {
+    ): array {
         $file = FileRef::getProjectRelativePathForPath($completion_request->getPath());
         // fwrite(STDERR, "\nSaw $file in " . json_encode(array_keys($file_mapping_contents)) . "\n");
         $contents = $file_mapping_contents[$file] ?? null;
@@ -257,7 +261,7 @@ class Request
     /**
      * Returns a printer that will be used to send JSON serialized data to the daemon client (i.e. `phan_client`).
      */
-    public function getPrinter() : IssuePrinterInterface
+    public function getPrinter(): IssuePrinterInterface
     {
         $this->handleClientColorOutput();
 
@@ -289,7 +293,7 @@ class Request
     /**
      * Handle a request created by the client with `phan_client --color`
      */
-    private function handleClientColorOutput() : void
+    private function handleClientColorOutput(): void
     {
         // Back up the original state: If pcntl isn't used, we don't want subsequent requests to be accidentally colorized.
         static $original_color = null;
@@ -304,7 +308,7 @@ class Request
      * Respond with issues in the requested format
      * @see LanguageServer::handleJSONResponseFromWorker() for one possible usage of this
      */
-    public function respondWithIssues(int $issue_count) : void
+    public function respondWithIssues(int $issue_count): void
     {
         if ($this->raw_printer instanceof CapturingJSONPrinter) {
             // Optimization: Avoid json_encode+json_decode overhead and just take the raw array that was built.
@@ -332,7 +336,7 @@ class Request
      * Sends a response to the client indicating that
      * the requested file wasn't in .phan/config.php's list of files to analyze.
      */
-    public function respondWithNoFilesToAnalyze() : void
+    public function respondWithNoFilesToAnalyze(): void
     {
         $this->sendJSONResponse([
             "status" => self::STATUS_NO_FILES,
@@ -343,7 +347,7 @@ class Request
      * @param list<string> $analyze_file_path_list
      * @return list<string>
      */
-    public function filterFilesToAnalyze(array $analyze_file_path_list) : array
+    public function filterFilesToAnalyze(array $analyze_file_path_list): array
     {
         if (\is_null($this->files)) {
             Daemon::debugf("No files to filter in filterFilesToAnalyze");
@@ -372,7 +376,7 @@ class Request
      * TODO: convert absolute path to file contents
      * @return array<string,string> - Maps original relative file paths to contents.
      */
-    public function getTemporaryFileMapping() : array
+    public function getTemporaryFileMapping(): array
     {
         $mapping = $this->request_config[self::PARAM_TEMPORARY_FILE_MAPPING_CONTENTS] ?? [];
         if (!is_array($mapping)) {
@@ -386,7 +390,7 @@ class Request
      * Fetches the most recently made request for information about a node of the file.
      * (e.g. for "go to definition")
      */
-    public function getMostRecentNodeInfoRequest() : ?NodeInfoRequest
+    public function getMostRecentNodeInfoRequest(): ?NodeInfoRequest
     {
         return $this->most_recent_node_info_request;
     }
@@ -397,7 +401,7 @@ class Request
      *
      * (e.g. if we encountered a newer request before that request could be processed)
      */
-    public function rejectLanguageServerRequestsRequiringAnalysis() : void
+    public function rejectLanguageServerRequestsRequiringAnalysis(): void
     {
         if ($this->most_recent_node_info_request) {
             $this->most_recent_node_info_request->finalize();
@@ -412,7 +416,7 @@ class Request
      *
      * @param array<string,mixed> $response
      */
-    public function sendJSONResponse(array $response) : void
+    public function sendJSONResponse(array $response): void
     {
         if (!$this->responder) {
             Daemon::debugf("Already sent response");
@@ -436,7 +440,7 @@ class Request
     /**
      * @param ?(int|array) $status
      */
-    public static function childSignalHandler(int $signo, $status = null, ?int $pid = null) : void
+    public static function childSignalHandler(int $signo, $status = null, ?int $pid = null): void
     {
         // test
         if ($signo !== SIGCHLD) {
@@ -470,7 +474,7 @@ class Request
      * @param ?string &$error_message @phan-output-reference
      * @return array<string,string>
      */
-    public static function normalizeFileMappingContents(array $file_mapping_contents, ?string &$error_message) : array
+    public static function normalizeFileMappingContents(array $file_mapping_contents, ?string &$error_message): array
     {
         $error_message = null;
         $new_file_mapping_contents = [];
@@ -492,7 +496,7 @@ class Request
      * @param Responder $responder
      * @return ?Request - non-null if this is a worker process with work to do. null if request failed or this is the master.
      */
-    public static function accept(CodeBase $code_base, Closure $file_path_lister, Responder $responder, bool $fork) : ?Request
+    public static function accept(CodeBase $code_base, Closure $file_path_lister, Responder $responder, bool $fork): ?Request
     {
         FileCache::clear();
 
@@ -608,7 +612,7 @@ class Request
      *
      * @param int $pid the child PID of this process that is performing analysis
      */
-    public static function handleBecomingParentOfChildAnalysisProcess(int $pid) : void
+    public static function handleBecomingParentOfChildAnalysisProcess(int $pid): void
     {
         $status = self::$exited_pid_status[$pid] ?? null;
         if (isset($status)) {
@@ -627,7 +631,7 @@ class Request
     /**
      * Handle becoming a child analysis process - this should no longer be waiting to clean up previously forked child processes.
      */
-    public static function handleBecomingChildAnalysisProcess() : void
+    public static function handleBecomingChildAnalysisProcess(): void
     {
         self::$child_pids = [];
     }
@@ -637,7 +641,7 @@ class Request
      * @param array<string,string> $file_mapping_contents maps relative paths to file contents
      * @param ?list<string> $file_names
      */
-    public static function reloadFilePathListForDaemon(CodeBase $code_base, Closure $file_path_lister, array $file_mapping_contents, array $file_names = null) : void
+    public static function reloadFilePathListForDaemon(CodeBase $code_base, Closure $file_path_lister, array $file_mapping_contents, array $file_names = null): void
     {
         $old_count = $code_base->getParsedFilePathCount();
 
@@ -693,7 +697,7 @@ class Request
      *
      * @param array<string,string> $temporary_file_mapping_contents
      */
-    private static function applyTemporaryFileMappingForParsePhase(CodeBase $code_base, array $temporary_file_mapping_contents) : void
+    private static function applyTemporaryFileMappingForParsePhase(CodeBase $code_base, array $temporary_file_mapping_contents): void
     {
         if (count($temporary_file_mapping_contents) === 0) {
             return;

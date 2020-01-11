@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Analysis;
 
@@ -19,7 +21,7 @@ class ParentConstructorCalledAnalyzer
     public static function analyzeParentConstructorCalled(
         CodeBase $code_base,
         Clazz $clazz
-    ) : void {
+    ): void {
         // Only look at classes configured to require a call
         // to its parent constructor
         if (!\in_array(

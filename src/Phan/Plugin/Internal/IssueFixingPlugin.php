@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Plugin\Internal;
 
@@ -20,7 +22,7 @@ class IssueFixingPlugin extends PluginV3 implements
      * @override
      * @throws Error if a syntax check process fails to shut down.
      */
-    public function finalizeProcess(CodeBase $code_base) : void
+    public function finalizeProcess(CodeBase $code_base): void
     {
         $instances = Phan::getIssueCollector()->getCollectedIssues();
         if (\count($instances) > 0) {

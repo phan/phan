@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests\AST;
 
@@ -16,7 +18,7 @@ final class ASTReverterTest extends BaseTest
      * @param string $snippet
      * @dataProvider revertShorthandProvider
      */
-    public function testRevertShorthand(string $snippet, string $expected = null) : void
+    public function testRevertShorthand(string $snippet, string $expected = null): void
     {
         $expected = $expected ?? $snippet;
         $file_contents = '<' . '?php ' . $snippet . ';';
@@ -34,7 +36,7 @@ final class ASTReverterTest extends BaseTest
     /**
      * @return list<array{0:string}>
      */
-    public function revertShorthandProvider() : array
+    public function revertShorthandProvider(): array
     {
         return [
             ["'2'"],

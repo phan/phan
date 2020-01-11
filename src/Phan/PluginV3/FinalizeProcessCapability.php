@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\PluginV3;
 
@@ -19,5 +21,5 @@ interface FinalizeProcessCapability extends \Phan\PluginV2\FinalizeProcessCapabi
      * will not work as expected with more than one process.
      * If possible, write plugins to emit issues immediately.
      */
-    public function finalizeProcess(CodeBase $code_base) : void;
+    public function finalizeProcess(CodeBase $code_base): void;
 }

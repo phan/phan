@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Element;
 
@@ -21,6 +23,7 @@ use Phan\Language\Type\NullType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\UnionType;
 use Phan\Parse\ParseVisitor;
+
 use function strlen;
 
 /**
@@ -32,10 +35,10 @@ use function strlen;
  */
 class Parameter extends Variable
 {
-    const REFERENCE_DEFAULT = 1;
-    const REFERENCE_READ_WRITE = 2;
-    const REFERENCE_WRITE_ONLY = 3;
-    const REFERENCE_IGNORED = 4;
+    public const REFERENCE_DEFAULT = 1;
+    public const REFERENCE_READ_WRITE = 2;
+    public const REFERENCE_WRITE_ONLY = 3;
+    public const REFERENCE_IGNORED = 4;
 
     // __construct(Context $context, string $name, UnionType $type, int $flags) inherited from Variable
 
@@ -77,7 +80,7 @@ class Parameter extends Variable
      * True if this parameter has a type for its
      * default value
      */
-    public function hasDefaultValue() : bool
+    public function hasDefaultValue(): bool
     {
         return $this->default_value_type !== null;
     }
@@ -86,7 +89,7 @@ class Parameter extends Variable
      * @param UnionType $type
      * The type of the default value for this parameter
      */
-    public function setDefaultValueType(UnionType $type) : void
+    public function setDefaultValueType(UnionType $type): void
     {
         $this->default_value_type = $type;
     }
@@ -95,7 +98,7 @@ class Parameter extends Variable
      * @param FutureUnionType $type
      * The future type of the default value for this parameter
      */
-    public function setDefaultValueFutureType(FutureUnionType $type) : void
+    public function setDefaultValueFutureType(FutureUnionType $type): void
     {
         $this->default_value_future_type = $type;
     }
@@ -105,7 +108,7 @@ class Parameter extends Variable
      * The type of the default value for this parameter
      * if it exists
      */
-    public function getDefaultValueType() : UnionType
+    public function getDefaultValueType(): UnionType
     {
         $future_type = $this->default_value_future_type;
         if ($future_type !== null) {
@@ -132,7 +135,7 @@ class Parameter extends Variable
      * @param mixed $value
      * The value of the default for this parameter
      */
-    public function setDefaultValue($value) : void
+    public function setDefaultValue($value): void
     {
         $this->default_value = $value;
     }
@@ -142,7 +145,7 @@ class Parameter extends Variable
      * then the parameter type should be converted to nullable
      * (E.g. `int $x = null` and `?int $x = null` are equivalent.
      */
-    public function handleDefaultValueOfNull() : void
+    public function handleDefaultValueOfNull(): void
     {
         if ($this->default_value_type && $this->default_value_type->isType(NullType::instance(false))) {
             // If it isn't already nullable, convert the parameter type to nullable.
@@ -168,7 +171,7 @@ class Parameter extends Variable
         Context $context,
         CodeBase $code_base,
         Node $node
-    ) : array {
+    ): array {
         $parameter_list = [];
         foreach ($node->children as $child_node) {
             $parameter =
@@ -186,7 +189,7 @@ class Parameter extends Variable
      */
     public static function listFromReflectionParameterList(
         array $reflection_parameters
-    ) : array {
+    ): array {
         return \array_map([self::class, 'fromReflectionParameter'], $reflection_parameters);
     }
 
@@ -195,7 +198,7 @@ class Parameter extends Variable
      */
     public static function fromReflectionParameter(
         \ReflectionParameter $reflection_parameter
-    ) : Parameter {
+    ): Parameter {
         $flags = 0;
         // Check to see if it's a pass-by-reference parameter
         if ($reflection_parameter->isPassedByReference()) {
@@ -224,7 +227,7 @@ class Parameter extends Variable
      * @param Node|string|float|int $node
      * @return ?UnionType - Returns if we know the exact type of $node and can easily resolve it
      */
-    private static function maybeGetKnownDefaultValueForNode($node) : ?UnionType
+    private static function maybeGetKnownDefaultValueForNode($node): ?UnionType
     {
         if (!($node instanceof Node)) {
             return Type::nonLiteralFromObject($node)->asRealUnionType();
@@ -255,7 +258,7 @@ class Parameter extends Variable
         Context $context,
         CodeBase $code_base,
         Node $node
-    ) : Parameter {
+    ): Parameter {
         // Get the type of the parameter
         $type_node = $node->children['type'];
         if ($type_node) {
@@ -345,7 +348,7 @@ class Parameter extends Variable
      * @return bool
      * True if this is an optional parameter
      */
-    public function isOptional() : bool
+    public function isOptional(): bool
     {
         return $this->hasDefaultValue();
     }
@@ -355,7 +358,7 @@ class Parameter extends Variable
      * True if this is a required parameter
      * @suppress PhanUnreferencedPublicMethod provided for API completeness
      */
-    public function isRequired() : bool
+    public function isRequired(): bool
     {
         return !$this->isOptional();
     }
@@ -366,7 +369,7 @@ class Parameter extends Variable
      * take an unlimited list of parameters and express
      * them as an array.
      */
-    public function isVariadic() : bool
+    public function isVariadic(): bool
     {
         return false;
     }
@@ -392,7 +395,7 @@ class Parameter extends Variable
      * method will return the element type (such as `DateTime`)
      * for variadic parameters.
      */
-    public function getNonVariadicUnionType() : UnionType
+    public function getNonVariadicUnionType(): UnionType
     {
         return self::getUnionType();
     }
@@ -402,7 +405,7 @@ class Parameter extends Variable
      * (We avoid bugs by adding new types to a variadic parameter if this is cloned.)
      * However, error messages still need to convert variadic parameters to a string.
      */
-    public function isCloneOfVariadic() : bool
+    public function isCloneOfVariadic(): bool
     {
         return false;
     }
@@ -413,7 +416,7 @@ class Parameter extends Variable
      * @param UnionType $union_type
      * The type to add to this parameter's union type
      */
-    public function addUnionType(UnionType $union_type) : void
+    public function addUnionType(UnionType $union_type): void
     {
         parent::setUnionType(self::getUnionType()->withUnionType($union_type));
     }
@@ -424,7 +427,7 @@ class Parameter extends Variable
      * @param Type $type
      * The type to add to this parameter's union type
      */
-    public function addType(Type $type) : void
+    public function addType(Type $type): void
     {
         parent::setUnionType(self::getUnionType()->withType($type));
     }
@@ -434,7 +437,7 @@ class Parameter extends Variable
      * True if this parameter is pass-by-reference
      * i.e. prefixed with '&'.
      */
-    public function isPassByReference() : bool
+    public function isPassByReference(): bool
     {
         return $this->getFlagsHasState(\ast\flags\PARAM_REF);
     }
@@ -445,7 +448,7 @@ class Parameter extends Variable
      * E.g. for REFERENCE_WRITE_ONLY, the reference parameter ignores the passed in value and always replaces it with another type.
      * (added with (at)phan-output-parameter in PHPDoc or with special prefixes in FunctionSignatureMap.php)
      */
-    public function getReferenceType() : int
+    public function getReferenceType(): int
     {
         $flags = $this->getPhanFlags();
         if (Flags::bitVectorHasState($flags, Flags::IS_IGNORED_REFERENCE)) {
@@ -462,7 +465,7 @@ class Parameter extends Variable
      * Records that this parameter is an output reference
      * (it overwrites the value of the argument by reference)
      */
-    public function setIsOutputReference() : void
+    public function setIsOutputReference(): void
     {
         $this->enablePhanFlagBits(Flags::IS_WRITE_REFERENCE);
         $this->disablePhanFlagBits(Flags::IS_READ_REFERENCE);
@@ -472,13 +475,13 @@ class Parameter extends Variable
      * Records that this parameter is an ignored reference
      * (it should be assumed that the reference does not affect types in a meaningful way for the caller)
      */
-    public function setIsIgnoredReference() : void
+    public function setIsIgnoredReference(): void
     {
         $this->enablePhanFlagBits(Flags::IS_IGNORED_REFERENCE);
         $this->disablePhanFlagBits(Flags::IS_READ_REFERENCE | Flags::IS_WRITE_REFERENCE);
     }
 
-    private function setIsUsingNullableSyntax() : void
+    private function setIsUsingNullableSyntax(): void
     {
         $this->enablePhanFlagBits(Flags::IS_PARAM_USING_NULLABLE_SYNTAX);
     }
@@ -490,12 +493,12 @@ class Parameter extends Variable
      *
      * This is needed to deal with edge cases of analysis.
      */
-    public function isUsingNullableSyntax() : bool
+    public function isUsingNullableSyntax(): bool
     {
         return $this->getPhanFlagsHasState(Flags::IS_PARAM_USING_NULLABLE_SYNTAX);
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         $string = '';
 
@@ -532,7 +535,7 @@ class Parameter extends Variable
      * @param bool $is_internal is this being requested for the language server instead of real PHP code?
      * @suppress PhanAccessClassConstantInternal
      */
-    public function toStubString(bool $is_internal = false) : string
+    public function toStubString(bool $is_internal = false): string
     {
         $string = '';
 
@@ -596,7 +599,7 @@ class Parameter extends Variable
      *
      * @suppress PhanAccessClassConstantInternal
      */
-    public function getShortRepresentationForIssue(bool $is_internal = false) : string
+    public function getShortRepresentationForIssue(bool $is_internal = false): string
     {
         $string = '';
 
@@ -662,7 +665,7 @@ class Parameter extends Variable
      * Returns a limited length union type representation for issue messages.
      * Long types are truncated or omitted.
      */
-    private function getUnionTypeRepresentationForIssue() : string
+    private function getUnionTypeRepresentationForIssue(): string
     {
         $union_type = $this->getNonVariadicUnionType()->asNormalizedTypes();
         if ($union_type->isEmpty()) {
@@ -700,7 +703,7 @@ class Parameter extends Variable
      * E.g. when analyzing code such as `$x = Closure::fromCallable('some_function')`,
      * this is used on parameters of `some_function()` to infer the create the parameter types of the inferred type.
      */
-    public function asClosureDeclarationParameter() : ClosureDeclarationParameter
+    public function asClosureDeclarationParameter(): ClosureDeclarationParameter
     {
         $param_type = $this->getNonVariadicUnionType();
         if ($param_type->isEmpty()) {
@@ -718,7 +721,7 @@ class Parameter extends Variable
      * @param FunctionInterface $function - The function that has this Parameter.
      * @return Context a Context with the line number of this parameter
      */
-    public function createContext(FunctionInterface $function) : Context
+    public function createContext(FunctionInterface $function): Context
     {
         return clone($function->getContext())->withLineNumberStart($this->getFileRef()->getLineNumberStart());
     }
@@ -727,7 +730,7 @@ class Parameter extends Variable
      * Returns true if the non-variadic type of this declared parameter is empty.
      * e.g. `$x`, `...$y`
      */
-    public function hasEmptyNonVariadicType() : bool
+    public function hasEmptyNonVariadicType(): bool
     {
         return self::getUnionType()->isEmpty();
     }

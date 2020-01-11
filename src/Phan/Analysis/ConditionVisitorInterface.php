@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Analysis;
 
@@ -19,13 +21,13 @@ interface ConditionVisitorInterface
      * Returns this ConditionVisitorInterface's CodeBase.
      * This is needed by subclasses of BinaryCondition.
      */
-    public function getCodeBase() : CodeBase;
+    public function getCodeBase(): CodeBase;
 
     /**
      * Returns this ConditionVisitorInterface's Context.
      * This is needed by subclasses of BinaryCondition.
      */
-    public function getContext() : Context;
+    public function getContext(): Context;
 
     /**
      * @param Node $var_node
@@ -36,7 +38,7 @@ interface ConditionVisitorInterface
         Node $var_node,
         $expr,
         Context $context = null
-    ) : Context;
+    ): Context;
 
     /**
      * @param Node $var_node
@@ -47,7 +49,7 @@ interface ConditionVisitorInterface
         Node $var_node,
         $expr,
         Context $context = null
-    ) : Context;
+    ): Context;
 
     /**
      * @param Node $var_node
@@ -58,7 +60,7 @@ interface ConditionVisitorInterface
         Node $var_node,
         $expr,
         Context $context = null
-    ) : Context;
+    ): Context;
 
     /**
      * @param Node $var_node
@@ -70,7 +72,7 @@ interface ConditionVisitorInterface
         Node $var_node,
         $expr,
         int $flags
-    ) : Context;
+    ): Context;
 
     /**
      * @param Node $var_node
@@ -81,7 +83,7 @@ interface ConditionVisitorInterface
         Node $var_node,
         $expr,
         Context $context = null
-    ) : Context;
+    ): Context;
 
     /**
      * Returns a context where the variable for $object_node has the class found in $expr_node
@@ -89,7 +91,7 @@ interface ConditionVisitorInterface
      * @param Node|string|int|float $object_node
      * @param Node|string|int|float|bool $expr_node
      */
-    public function analyzeClassAssertion($object_node, $expr_node) : ?Context;
+    public function analyzeClassAssertion($object_node, $expr_node): ?Context;
 
     /**
      * @return ?Variable - Returns null if the variable is undeclared and ignore_undeclared_variables_in_global_scope applies.
@@ -99,5 +101,5 @@ interface ConditionVisitorInterface
      *
      * TODO: support assertions on superglobals, within the current file scope?
      */
-    public function getVariableFromScope(Node $var_node, Context $context) : ?Variable;
+    public function getVariableFromScope(Node $var_node, Context $context): ?Variable;
 }

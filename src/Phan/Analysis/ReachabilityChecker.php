@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Analysis;
 
@@ -23,7 +25,7 @@ final class ReachabilityChecker extends KindVisitorImplementation
         $this->inner = $inner;
     }
 
-    public function visitArgList(Node $node) : ?bool
+    public function visitArgList(Node $node): ?bool
     {
         if ($node === $this->inner) {
             return true;
@@ -35,7 +37,7 @@ final class ReachabilityChecker extends KindVisitorImplementation
      * If we don't know how to analyze a node type (or left it out), assume it always proceeds
      * @return ?bool - The status bitmask corresponding to always proceeding
      */
-    public function visit(Node $node) : ?bool
+    public function visit(Node $node): ?bool
     {
         foreach ($node->children as $child) {
             if (!($child instanceof Node)) {
@@ -52,7 +54,7 @@ final class ReachabilityChecker extends KindVisitorImplementation
     /**
      * @return ?bool this gives up on analyzing catch lists
      */
-    public function visitCatchList(Node $_) : ?bool
+    public function visitCatchList(Node $_): ?bool
     {
         return null;
     }
@@ -60,7 +62,7 @@ final class ReachabilityChecker extends KindVisitorImplementation
     /**
      * @return ?bool this gives up on analyzing switches, except for the condition
      */
-    public function visitSwitch(Node $node) : ?bool
+    public function visitSwitch(Node $node): ?bool
     {
         $cond = $node->children['cond'];
         if ($cond instanceof Node) {
@@ -72,7 +74,7 @@ final class ReachabilityChecker extends KindVisitorImplementation
     /**
      * @return ?bool this gives up on analyzing for loops, except for the initializer and condition
      */
-    public function visitFor(Node $node) : ?bool
+    public function visitFor(Node $node): ?bool
     {
         $init = $node->children['init'];
         if ($init instanceof Node) {
@@ -91,7 +93,7 @@ final class ReachabilityChecker extends KindVisitorImplementation
     /**
      * @return ?bool this gives up on analyzing loops, except for the condition
      */
-    public function visitWhile(Node $node) : ?bool
+    public function visitWhile(Node $node): ?bool
     {
         $cond = $node->children['cond'];
         if ($cond instanceof Node) {
@@ -103,7 +105,7 @@ final class ReachabilityChecker extends KindVisitorImplementation
     /**
      * @return ?bool this gives up on analyzing loops, except for the condition
      */
-    public function visitForeach(Node $node) : ?bool
+    public function visitForeach(Node $node): ?bool
     {
         $expr = $node->children['expr'];
         if ($expr instanceof Node) {
@@ -112,17 +114,17 @@ final class ReachabilityChecker extends KindVisitorImplementation
         return null;
     }
 
-    public function visitBreak(Node $_) : ?bool
+    public function visitBreak(Node $_): ?bool
     {
         return false;
     }
 
-    public function visitContinue(Node $_) : ?bool
+    public function visitContinue(Node $_): ?bool
     {
         return false;
     }
 
-    public function visitReturn(Node $node) : bool
+    public function visitReturn(Node $node): bool
     {
         $expr = $node->children['expr'];
         if (!($expr instanceof Node)) {
@@ -134,7 +136,7 @@ final class ReachabilityChecker extends KindVisitorImplementation
     /**
      * @override
      */
-    public function visitClosure(Node $_) : ?bool
+    public function visitClosure(Node $_): ?bool
     {
         return null;
     }
@@ -142,7 +144,7 @@ final class ReachabilityChecker extends KindVisitorImplementation
     /**
      * @override
      */
-    public function visitArrowFunc(Node $_) : ?bool
+    public function visitArrowFunc(Node $_): ?bool
     {
         return null;
     }
@@ -150,7 +152,7 @@ final class ReachabilityChecker extends KindVisitorImplementation
     /**
      * @override
      */
-    public function visitFuncDecl(Node $_) : ?bool
+    public function visitFuncDecl(Node $_): ?bool
     {
         return null;
     }
@@ -158,7 +160,7 @@ final class ReachabilityChecker extends KindVisitorImplementation
     /**
      * @override
      */
-    public function visitClass(Node $node) : ?bool
+    public function visitClass(Node $node): ?bool
     {
         $args = $node->children['args'] ?? null;
         if (!$args instanceof Node) {
@@ -167,7 +169,7 @@ final class ReachabilityChecker extends KindVisitorImplementation
         return $this->__invoke($args);
     }
 
-    public function visitThrow(Node $node) : bool
+    public function visitThrow(Node $node): bool
     {
         $expr = $node->children['expr'];
         if (!($expr instanceof Node)) {
@@ -176,7 +178,7 @@ final class ReachabilityChecker extends KindVisitorImplementation
         return $this->__invoke($expr) ?? false;
     }
 
-    public function visitExit(Node $node) : bool
+    public function visitExit(Node $node): bool
     {
         $expr = $node->children['expr'];
         if (!($expr instanceof Node)) {
@@ -188,7 +190,7 @@ final class ReachabilityChecker extends KindVisitorImplementation
     /**
      * @return ?bool the first result seen for any statement, or null.
      */
-    public function visitStmtList(Node $node) : ?bool
+    public function visitStmtList(Node $node): ?bool
     {
         foreach ($node->children as $child) {
             if (!($child instanceof Node)) {
@@ -214,7 +216,7 @@ final class ReachabilityChecker extends KindVisitorImplementation
      * @return ?bool the result seen for an if statement (if $node contains $this->inner or causes this to give up), or null
      * @override
      */
-    public function visitIf(Node $node) : ?bool
+    public function visitIf(Node $node): ?bool
     {
         foreach ($node->children as $i => $child) {
             // TODO could check first if element (not important)
@@ -231,7 +233,7 @@ final class ReachabilityChecker extends KindVisitorImplementation
      * Analyzes a node with kind \ast\AST_IF_ELEM
      * @return ?bool the result seen for an if statement element (if $node contains $this->inner or causes this to give up), or null
      */
-    public function visitIfElem(Node $node) : ?bool
+    public function visitIfElem(Node $node): ?bool
     {
         $cond = $node->children['cond'] ?? null;
         if ($cond instanceof Node) {
@@ -253,7 +255,7 @@ final class ReachabilityChecker extends KindVisitorImplementation
      * Analyzes a node with kind \ast\AST_CONDITIONAL
      * @return ?bool the result seen for a conditional
      */
-    public function visitConditional(Node $node) : ?bool
+    public function visitConditional(Node $node): ?bool
     {
         $cond = $node->children['cond'];
         if ($cond instanceof Node) {
@@ -283,7 +285,7 @@ final class ReachabilityChecker extends KindVisitorImplementation
      *
      * This does not attempt to check if any statements in $node might indirectly throw.
      */
-    public static function willUnconditionallyBeReached(Node $node, Node $inner) : bool
+    public static function willUnconditionallyBeReached(Node $node, Node $inner): bool
     {
         return (new self($inner))->__invoke($node) ?? false;
     }

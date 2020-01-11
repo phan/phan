@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests;
 
@@ -14,7 +16,7 @@ abstract class BaseTest extends TestCase
     /**
      * @suppress PhanAccessMethodInternal
      */
-    public static function setUpBeforeClass() : void
+    public static function setUpBeforeClass(): void
     {
         parent::setUpBeforeClass();
         // Need more than 1G to generate code coverage reports

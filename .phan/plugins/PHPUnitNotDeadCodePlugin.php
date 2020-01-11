@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use ast\Node;
 use Phan\Config;
@@ -27,7 +29,7 @@ class PHPUnitNotDeadCodePlugin extends PluginV3 implements PostAnalyzeNodeCapabi
     /**
      * @override
      */
-    public static function getPostAnalyzeNodeVisitorClassName() : string
+    public static function getPostAnalyzeNodeVisitorClassName(): string
     {
         return PHPUnitNotDeadPluginVisitor::class;
     }
@@ -53,7 +55,7 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
      * This is called after the parse phase is completely finished, so $this->code_base contains all class definitions
      * @override
      */
-    public function visitClass(Node $unused_node) : void
+    public function visitClass(Node $unused_node): void
     {
         if (!Config::get_track_references()) {
             return;
@@ -98,14 +100,14 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
      * (e.g. for variable names, magic property names, etc.
      * This does not allow backslashes.
      */
-    const WORD_REGEX = '([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)';
+    private const WORD_REGEX = '([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)';
 
     /**
      * Marks all data provider methods as being referenced
      *
      * @param Method $method the Method representing a unit test in a test case subclass
      */
-    private function markDataProvidersAsReferenced(Clazz $class, Method $method) : void
+    private function markDataProvidersAsReferenced(Clazz $class, Method $method): void
     {
         if (preg_match('/@dataProvider\s+' . self::WORD_REGEX . '/', $method->getNode()->children['docComment'] ?? '', $match)) {
             $data_provider_name = $match[1];
@@ -118,7 +120,7 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @return bool true if $method is a PHPUnit test case
      */
-    protected static function isTestCase(Method $method) : bool
+    protected static function isTestCase(Method $method): bool
     {
         if (!$method->isPublic()) {
             return false;
@@ -136,7 +138,7 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
      * Static initializer for this plugin - Gets called below before any methods can be used
      * @suppress PhanThrowTypeAbsentForCall this FQSEN is valid
      */
-    public static function init() : void
+    public static function init(): void
     {
         $fqsen = FullyQualifiedClassName::make('\\PHPUnit\Framework', 'TestCase');
         self::$phpunit_test_case_fqsen = $fqsen;

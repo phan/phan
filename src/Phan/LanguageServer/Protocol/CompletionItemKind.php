@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Phan\LanguageServer\Protocol;
@@ -9,22 +10,22 @@ namespace Phan\LanguageServer\Protocol;
  */
 abstract class CompletionItemKind
 {
-    const TEXT = 1;
-    const METHOD = 2;
-    const FUNCTION = 3;
-    const CONSTRUCTOR = 4;
-    const FIELD = 5;
-    const VARIABLE = 6;
-    const CLASS_ = 7;
-    const INTERFACE = 8;
-    const MODULE = 9;
-    const PROPERTY = 10;
-    const UNIT = 11;
-    const VALUE = 12;
-    const ENUM = 13;
-    const KEYWORD = 14;
-    const SNIPPET = 15;
-    const COLOR = 16;
-    const FILE = 17;
-    const REFERENCE = 18;
+    public const TEXT = 1;
+    public const METHOD = 2;
+    public const FUNCTION = 3;
+    public const CONSTRUCTOR = 4;
+    public const FIELD = 5;
+    public const VARIABLE = 6;
+    public const CLASS_ = 7;
+    public const INTERFACE = 8;
+    public const MODULE = 9;
+    public const PROPERTY = 10;
+    public const UNIT = 11;
+    public const VALUE = 12;
+    public const ENUM = 13;
+    public const KEYWORD = 14;
+    public const SNIPPET = 15;
+    public const COLOR = 16;
+    public const FILE = 17;
+    public const REFERENCE = 18;
 }

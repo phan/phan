@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Plugin\Internal\UseReturnValuePlugin;
 
@@ -50,7 +52,7 @@ class PureMethodGraph
      *
      * @param array<string, FunctionInterface> $dependencies
      */
-    public function recordPotentialPureFunction(string $fqsen_key, FunctionInterface $function, array $dependencies) : void
+    public function recordPotentialPureFunction(string $fqsen_key, FunctionInterface $function, array $dependencies): void
     {
         if ($dependencies) {
             $this->dependencies[$fqsen_key] = $dependencies;
@@ -61,7 +63,7 @@ class PureMethodGraph
         $this->functions[$fqsen_key] = $function;
     }
 
-    private function recordPureFunction(FunctionInterface $function) : void
+    private function recordPureFunction(FunctionInterface $function): void
     {
         if ($function->getUnionType()->isNull()) {
             PureMethodInferrer::warnNoopVoid($this->code_base, $function);
@@ -69,7 +71,7 @@ class PureMethodGraph
         $function->setIsPure();
     }
 
-    private function handleImpureFunction(string $key) : void
+    private function handleImpureFunction(string $key): void
     {
         if (!isset($this->dependencies[$key])) {
             return;
@@ -84,7 +86,7 @@ class PureMethodGraph
      *
      * This should be done exactly once after adding all functions and methods.
      */
-    public function recursivelyMarkNodesAsPure() : void
+    public function recursivelyMarkNodesAsPure(): void
     {
         // Go through the graph. Any nodes that are impure would either never be added to $this->functions,
         // or be removed in handleImpureFunction.

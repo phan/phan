@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Element;
 
@@ -60,7 +62,7 @@ class PassByReferenceVariable extends Variable
         }
     }
 
-    public function getName() : string
+    public function getName(): string
     {
         return $this->parameter->getName();
     }
@@ -70,12 +72,12 @@ class PassByReferenceVariable extends Variable
      * variables, but not necessarily for subclasses. Method will return
      * the element type (such as `DateTime`) for variadic parameters.
      */
-    public function getNonVariadicUnionType() : UnionType
+    public function getNonVariadicUnionType(): UnionType
     {
         return $this->type;
     }
 
-    public function getUnionType() : UnionType
+    public function getUnionType(): UnionType
     {
         return $this->type;
     }
@@ -83,7 +85,7 @@ class PassByReferenceVariable extends Variable
     /**
      * @suppress PhanAccessMethodInternal
      */
-    public function setUnionType(UnionType $type) : void
+    public function setUnionType(UnionType $type): void
     {
         $this->type = $type;
         if ($this->element instanceof Property && $this->code_base) {
@@ -99,37 +101,37 @@ class PassByReferenceVariable extends Variable
         $this->element->setUnionType($type->eraseRealTypeSetRecursively());
     }
 
-    public function getFlags() : int
+    public function getFlags(): int
     {
         return $this->element->getFlags();
     }
 
-    public function getFlagsHasState(int $bits) : bool
+    public function getFlagsHasState(int $bits): bool
     {
         return $this->element->getFlagsHasState($bits);
     }
 
-    public function setFlags(int $flags) : void
+    public function setFlags(int $flags): void
     {
         $this->element->setFlags($flags);
     }
 
-    public function getPhanFlags() : int
+    public function getPhanFlags(): int
     {
         return $this->element->getPhanFlags();
     }
 
-    public function getPhanFlagsHasState(int $bits) : bool
+    public function getPhanFlagsHasState(int $bits): bool
     {
         return $this->element->getPhanFlagsHasState($bits);
     }
 
-    public function setPhanFlags(int $phan_flags) : void
+    public function setPhanFlags(int $phan_flags): void
     {
         $this->element->setPhanFlags($phan_flags);
     }
 
-    public function getFileRef() : FileRef
+    public function getFileRef(): FileRef
     {
         return $this->element->getFileRef();
     }
@@ -141,7 +143,7 @@ class PassByReferenceVariable extends Variable
      * @suppress PhanPossiblyUndeclaredMethod
      * @suppress PhanUnreferencedPublicMethod not sure why
      */
-    public function getContext() : Context
+    public function getContext(): Context
     {
         return $this->element->getContext();
     }
@@ -150,7 +152,7 @@ class PassByReferenceVariable extends Variable
      * Returns the context where this reference was created.
      * This is currently only available for references to properties.
      */
-    public function getContextOfCreatedReference() : ?Context
+    public function getContextOfCreatedReference(): ?Context
     {
         return $this->context_of_created_reference;
     }
@@ -159,7 +161,7 @@ class PassByReferenceVariable extends Variable
      * Is the variable/property this is referring to part of a PHP module?
      * (only possible for properties)
      */
-    public function isPHPInternal() : bool
+    public function isPHPInternal(): bool
     {
         return $this->element instanceof AddressableElement && $this->element->isPHPInternal();
     }

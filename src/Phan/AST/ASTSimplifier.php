@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\AST;
 
@@ -6,6 +8,7 @@ use AssertionError;
 use ast;
 use ast\flags;
 use ast\Node;
+
 use function array_map;
 use function array_merge;
 use function array_pop;
@@ -30,7 +33,7 @@ class ASTSimplifier
      * @param Node $node
      * @return non-empty-list<Node> (Equivalent list of nodes to [$node], possibly a clone with modifications)
      */
-    private static function apply(Node $node) : array
+    private static function apply(Node $node): array
     {
         switch ($node->kind) {
             case \ast\AST_FUNC_DECL:
@@ -65,7 +68,7 @@ class ASTSimplifier
      * @param Node $node - A node which will have its child statements simplified.
      * @return Node - The same node, or an equivalent simplified node
      */
-    private static function applyToStmts(Node $node) : Node
+    private static function applyToStmts(Node $node): Node
     {
         $stmts = $node->children['stmts'];
         // Can be null, a single statement, or (possibly) a scalar instead of a node?
@@ -85,7 +88,7 @@ class ASTSimplifier
      * @param Node $statement_list - The statement list to simplify
      * @return Node - an equivalent statement list (Identical, or a clone)
      */
-    private static function applyToStatementList(Node $statement_list) : Node
+    private static function applyToStatementList(Node $statement_list): Node
     {
         if ($statement_list->kind !== \ast\AST_STMT_LIST) {
             $statement_list = self::buildStatementList($statement_list->lineno, $statement_list);
@@ -112,7 +115,7 @@ class ASTSimplifier
     /**
      * Creates a new node with kind \ast\AST_STMT_LIST from a list of 0 or more child nodes.
      */
-    private static function buildStatementList(int $lineno, Node ...$child_nodes) : Node
+    private static function buildStatementList(int $lineno, Node ...$child_nodes): Node
     {
         return new Node(
             \ast\AST_STMT_LIST,
@@ -126,7 +129,7 @@ class ASTSimplifier
      * @param list<?Node|?float|?int|?string|?float|?bool> $statements
      * @return array{0:list<Node>,1:bool} - [New/old list, bool $modified] An equivalent list after simplifying (or the original list)
      */
-    private static function normalizeStatementList(array $statements) : array
+    private static function normalizeStatementList(array $statements): array
     {
         $modified = false;
         $new_statements = [];
@@ -152,7 +155,7 @@ class ASTSimplifier
      * @param list<Node> $nodes
      * @param Node ...$new_statements
      */
-    private static function replaceLastNodeWithNodeList(array &$nodes, Node... $new_statements) : void
+    private static function replaceLastNodeWithNodeList(array &$nodes, Node...$new_statements): void
     {
         if (\array_pop($nodes) === false) {
             throw new AssertionError("Saw an unexpected empty node list");
@@ -162,7 +165,7 @@ class ASTSimplifier
         }
     }
 
-    const NON_SHORT_CIRCUITING_BINARY_OPERATOR_FLAGS = [
+    public const NON_SHORT_CIRCUITING_BINARY_OPERATOR_FLAGS = [
         flags\BINARY_BOOL_XOR,
         flags\BINARY_IS_IDENTICAL,
         flags\BINARY_IS_NOT_IDENTICAL,
@@ -183,7 +186,7 @@ class ASTSimplifier
      * @internal the way this behaves may change
      * @see ScopeImpactCheckingVisitor::hasPossibleImpact() for a more general check
      */
-    public static function isExpressionWithoutSideEffects($node) : bool
+    public static function isExpressionWithoutSideEffects($node): bool
     {
         if (!($node instanceof Node)) {
             return true;
@@ -214,7 +217,7 @@ class ASTSimplifier
      * @return non-empty-list<Node> - One or more nodes created from $original_node.
      *        Will return [$original_node] if no modifications were made.
      */
-    private static function normalizeIfStatement(Node $original_node) : array
+    private static function normalizeIfStatement(Node $original_node): array
     {
         $nodes = [$original_node];
         // Repeatedly apply these rules
@@ -298,7 +301,7 @@ class ASTSimplifier
      * @return array{0:Node} - An array with a single while statement
      *        Will return [$original_node] if no modifications were made.
      */
-    private static function normalizeWhileStatement(Node $original_node) : array
+    private static function normalizeWhileStatement(Node $original_node): array
     {
         $node = $original_node;
         // Repeatedly apply these rules
@@ -340,7 +343,7 @@ class ASTSimplifier
      * @return array{0:Node} - An array with a single for statement.
      *        Will return [$node] if no modifications were made.
      */
-    private static function normalizeForStatement(Node $node) : array
+    private static function normalizeForStatement(Node $node): array
     {
         // Repeatedly apply these rules
         while (true) {
@@ -376,7 +379,7 @@ class ASTSimplifier
      * @return array{0:Node,1:Node}
      * @suppress PhanTypePossiblyInvalidCloneNotObject this was checked by the caller.
      */
-    private static function applyAssignInLeftSideOfBinaryOpReduction(Node $node) : array
+    private static function applyAssignInLeftSideOfBinaryOpReduction(Node $node): array
     {
         $inner_assign_statement = $node->children[0]->children['cond']->children['left'];
         if (!($inner_assign_statement instanceof Node)) {
@@ -404,7 +407,7 @@ class ASTSimplifier
      * @return array{0:Node,1:Node}
      * @suppress PhanTypePossiblyInvalidCloneNotObject this was checked by the caller.
      */
-    private static function applyAssignInRightSideOfBinaryOpReduction(Node $node) : array
+    private static function applyAssignInRightSideOfBinaryOpReduction(Node $node): array
     {
         $inner_assign_statement = $node->children[0]->children['cond']->children['right'];
         $inner_assign_var = $inner_assign_statement->children['var'];
@@ -422,7 +425,7 @@ class ASTSimplifier
     /**
      * Creates a new node with kind \ast\AST_IF from two branches
      */
-    private static function buildIfNode(Node $l, Node $r) : Node
+    private static function buildIfNode(Node $l, Node $r): Node
     {
         return new Node(
             \ast\AST_IF,
@@ -435,7 +438,7 @@ class ASTSimplifier
     /**
      * maps if (A) {X} elseif (B) {Y} else {Z} -> if (A) {Y} else { if (B) {Y} else {Z}}
      */
-    private static function applyIfChainReduction(Node $node) : Node
+    private static function applyIfChainReduction(Node $node): Node
     {
         $children = $node->children;  // Copy of array of Nodes of type IF_ELEM
         if (count($children) <= 2) {
@@ -470,7 +473,7 @@ class ASTSimplifier
      * @return Node simplified node logically equivalent to $node, with kind \ast\AST_IF.
      * @suppress PhanTypePossiblyInvalidCloneNotObject this was checked by the caller.
      */
-    private static function applyIfAndReduction(Node $node) : Node
+    private static function applyIfAndReduction(Node $node): Node
     {
         if (count($node->children) !== 1) {
             throw new AssertionError('Expected an if statement with no else/elseif statements');
@@ -505,7 +508,7 @@ class ASTSimplifier
      * Converts `while (A && B) {X}` -> `while (A) { if (!B) { break;} X}`
      * @return Node simplified node logically equivalent to $node, with kind \ast\AST_IF.
      */
-    private static function applyWhileAndReduction(Node $node) : Node
+    private static function applyWhileAndReduction(Node $node): Node
     {
         $cond_node = $node->children['cond'];
         $right_node = $cond_node->children['right'];
@@ -532,7 +535,7 @@ class ASTSimplifier
      * Creates a Node for `if (!COND) { break; }`
      * @param Node|string|int|float $cond_node
      */
-    private static function makeBreakWithNegatedConditional($cond_node, int $lineno) : Node
+    private static function makeBreakWithNegatedConditional($cond_node, int $lineno): Node
     {
         $break_if_elem = new Node(
             ast\AST_IF_ELEM,
@@ -567,7 +570,7 @@ class ASTSimplifier
      * @return array{0:Node,1:Node} [$outer_assign_statement, $new_node]
      * @suppress PhanTypePossiblyInvalidCloneNotObject this was checked by the caller.
      */
-    private static function applyIfAssignReduction(Node $node) : array
+    private static function applyIfAssignReduction(Node $node): array
     {
         $outer_assign_statement = $node->children[0]->children['cond'];
         if (!($outer_assign_statement instanceof Node)) {
@@ -588,7 +591,7 @@ class ASTSimplifier
      * This improves Phan's analysis for cases such as `if (!is_string($x))`.
      * @suppress PhanTypePossiblyInvalidCloneNotObject this was checked by the caller.
      */
-    private static function applyIfNegateReduction(Node $node) : Node
+    private static function applyIfNegateReduction(Node $node): Node
     {
         if (!(
             count($node->children) === 2 &&
@@ -612,7 +615,7 @@ class ASTSimplifier
      * This improves Phan's analysis for cases such as `if (!!x)`
      * @suppress PhanTypePossiblyInvalidCloneNotObject this was checked by the caller.
      */
-    private static function applyIfDoubleNegateReduction(Node $node) : Node
+    private static function applyIfDoubleNegateReduction(Node $node): Node
     {
         if (!(
             $node->children[0]->children['cond']->flags === flags\UNARY_BOOL_NOT &&
@@ -635,7 +638,7 @@ class ASTSimplifier
      * Converts while (!!(x)) {Y} -> if (x) {Y}
      * This improves Phan's analysis for cases such as `if (!!x)`
      */
-    private static function applyWhileDoubleNegateReduction(Node $node) : Node
+    private static function applyWhileDoubleNegateReduction(Node $node): Node
     {
         if (!(
             $node->children['cond']->flags === flags\UNARY_BOOL_NOT &&
@@ -659,7 +662,7 @@ class ASTSimplifier
      * Converts for (INIT; !!(x); LOOP) {Y} -> if (INIT; x; LOOP) {Y}
      * This improves Phan's analysis for cases such as `if (!!x)`
      */
-    private static function applyForDoubleNegateReduction(Node $node) : Node
+    private static function applyForDoubleNegateReduction(Node $node): Node
     {
         $children = $node->children;
         $cond_node_list = $children['cond']->children;
@@ -687,7 +690,7 @@ class ASTSimplifier
         );
     }
 
-    private static function applyIfNegatedToIfElseReduction(Node $node) : Node
+    private static function applyIfNegatedToIfElseReduction(Node $node): Node
     {
         if (count($node->children) !== 1) {
             throw new AssertionError("Expected one child node");
@@ -727,7 +730,7 @@ class ASTSimplifier
      * Recurses on a list of 0 or more catch statements. (as in try/catch)
      * Returns an equivalent list of catch AST nodes (or the original if no changes were made)
      */
-    private static function normalizeCatchesList(Node $catches) : Node
+    private static function normalizeCatchesList(Node $catches): Node
     {
         $list = $catches->children;
         $new_list = array_map(
@@ -751,7 +754,7 @@ class ASTSimplifier
      * Recurses on a try/catch/finally node, applying simplifications(catch/finally are optional)
      * Returns an equivalent try/catch/finally node (or the original if no changes were made)
      */
-    private static function normalizeTryStatement(Node $node) : Node
+    private static function normalizeTryStatement(Node $node): Node
     {
         $try = $node->children['try'];
         $catches = $node->children['catches'];
@@ -775,7 +778,7 @@ class ASTSimplifier
      *
      * $node is not modified. This will reuse descendant nodes that didn't change.
      */
-    public static function applyStatic(Node $node) : Node
+    public static function applyStatic(Node $node): Node
     {
         $rewriter = new self();
         $nodes = $rewriter->apply($node);

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\AST\TolerantASTConverter;
 
@@ -27,7 +29,7 @@ final class NodeUtils
      *
      * @phan-suppress PhanPartialTypeMismatchArgumentInternal hopefully in range
      */
-    public function tokenToString(Token $n) : string
+    public function tokenToString(Token $n): string
     {
         $result = \trim($n->getText($this->file_contents));
         $kind = $n->kind;
@@ -40,7 +42,7 @@ final class NodeUtils
     /**
      * Converts a qualified name to the string it represents, combining name parts.
      */
-    public function phpParserNameToString(QualifiedName $name) : string
+    public function phpParserNameToString(QualifiedName $name): string
     {
         $name_parts = $name->nameParts;
         // TODO: Handle error case (can there be missing parts?)

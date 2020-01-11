@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan;
 
@@ -46,7 +48,7 @@ class Ordering
     public function orderForProcessCount(
         int $process_count,
         array $analysis_file_list
-    ) : array {
+    ): array {
 
         if ($process_count <= 0) {
             throw new InvalidArgumentException("The process count must be greater than zero.");
@@ -132,7 +134,7 @@ class Ordering
                  * @param array{depth:int,file:string} $a
                  * @param array{depth:int,file:string} $b
                  */
-                static function (array $a, array $b) : int {
+                static function (array $a, array $b): int {
                     return ($a['depth'] <=> $b['depth']) ?:
                            \strcmp($a['file'], $b['file']);
                 }

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Plugin\Internal\UseReturnValuePlugin;
 
@@ -30,7 +32,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
      * @return array{0:?Node,1:bool} - [$parent, $used]
      * $used is whether the expression is used - it should only be checked if the parent is known.
      */
-    private function findNonUnaryParentNode(Node $node) : array
+    private function findNonUnaryParentNode(Node $node): array
     {
         $parent = \end($this->parent_node_list);
         if (!$parent) {
@@ -70,7 +72,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         return [$parent, true];
     }
 
-    private function isUsedExpressionInExprList(Node $node, Node $parent) : bool
+    private function isUsedExpressionInExprList(Node $node, Node $parent): bool
     {
         return $node === \end($parent->children) && $parent === (\prev($this->parent_node_list)->children['cond'] ?? null);
     }
@@ -79,7 +81,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
      * @param Node $node a node of type AST_CALL
      * @override
      */
-    public function visitCall(Node $node) : void
+    public function visitCall(Node $node): void
     {
         [$parent, $used] = $this->findNonUnaryParentNode($node);
         if (!$parent) {
@@ -133,7 +135,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
      * @param Node $node a node of type AST_METHOD
      * @override
      */
-    public function visitMethod(Node $node) : void
+    public function visitMethod(Node $node): void
     {
         $this->analyzeFunctionLike($node);
     }
@@ -144,7 +146,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
      * @param Node $node a node of type AST_FUNC_DECL
      * @override
      */
-    public function visitFuncDecl(Node $node) : void
+    public function visitFuncDecl(Node $node): void
     {
         $this->analyzeFunctionLike($node);
     }
@@ -157,7 +159,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
      * @param Node $node a node of type AST_CLOSURE
      * @override
      */
-    public function visitClosure(Node $node) : void
+    public function visitClosure(Node $node): void
     {
         $this->analyzeFunctionLike($node);
     }
@@ -165,7 +167,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * Checks if a function-like has unnecessary branches leading to the same returned value
      */
-    private function analyzeFunctionLike(Node $node) : void
+    private function analyzeFunctionLike(Node $node): void
     {
         if (!$this->context->isInFunctionLikeScope()) {
             return;
@@ -192,7 +194,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
      * @param Node $node a node of type AST_METHOD_CALL
      * @override
      */
-    public function visitMethodCall(Node $node) : void
+    public function visitMethodCall(Node $node): void
     {
         [$parent, $used] = $this->findNonUnaryParentNode($node);
         if (!$parent) {
@@ -239,7 +241,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
      * @param Node $node a node of type AST_METHOD_CALL
      * @override
      */
-    public function visitStaticCall(Node $node) : void
+    public function visitStaticCall(Node $node): void
     {
         [$parent, $used] = $this->findNonUnaryParentNode($node);
         if (!$parent) {
@@ -282,7 +284,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         }
     }
 
-    private static function isSecondArgumentEqualToConst(Node $node, string $const_name) : bool
+    private static function isSecondArgumentEqualToConst(Node $node, string $const_name): bool
     {
         $args = $node->children['args']->children;
         $bool_node = $args[1] ?? null;
@@ -305,7 +307,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
      * @return bool true if $fqsen_key should be treated as if it were read-only.
      * Precondition: $fqsen_key is found as a special case in this plugin's set of functions.
      */
-    public static function doesSpecialCaseHaveSideEffects(string $fqsen_key, Node $node) : bool
+    public static function doesSpecialCaseHaveSideEffects(string $fqsen_key, Node $node): bool
     {
         switch ($fqsen_key) {
             case 'var_export':
@@ -325,7 +327,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         return true;
     }
 
-    private function shouldNotWarnForSpecialCase(string $fqsen_key, Node $node) : bool
+    private function shouldNotWarnForSpecialCase(string $fqsen_key, Node $node): bool
     {
         switch ($fqsen_key) {
             case 'call_user_func':
@@ -339,7 +341,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param ?(Node|string|int|float) $node_name
      */
-    private function shouldNotWarnForDynamicCall($node_name) : bool
+    private function shouldNotWarnForDynamicCall($node_name): bool
     {
         if ($node_name instanceof Node) {
             foreach ((new ContextNode(
@@ -358,7 +360,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         return (UseReturnValuePlugin::HARDCODED_FQSENS[$fqsen_key] ?? null) !== true;
     }
 
-    private function quickWarn(FunctionInterface $method, string $fqsen, Node $node) : void
+    private function quickWarn(FunctionInterface $method, string $fqsen, Node $node): void
     {
         if (!$method->isPure()) {
             $fqsen_key = \strtolower(\ltrim($fqsen, "\\"));

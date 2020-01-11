@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Language\Type;
 
@@ -32,7 +34,7 @@ class GenericArrayTemplateKeyType extends GenericArrayType
         Type $type,
         bool $is_nullable,
         UnionType $key_type
-    ) : GenericArrayTemplateKeyType {
+    ): GenericArrayTemplateKeyType {
         return new self($type, $is_nullable, $key_type);
     }
 
@@ -41,7 +43,7 @@ class GenericArrayTemplateKeyType extends GenericArrayType
      */
     public function withTemplateParameterTypeMap(
         array $template_parameter_type_map
-    ) : UnionType {
+    ): UnionType {
         $element_type = $this->genericArrayElementUnionType();
         $new_element_type = $element_type->withTemplateParameterTypeMap($template_parameter_type_map);
         $new_key_type = $this->template_key_type->withTemplateParameterTypeMap($template_parameter_type_map);
@@ -56,12 +58,12 @@ class GenericArrayTemplateKeyType extends GenericArrayType
                 GenericArrayType::keyTypeFromUnionTypeValues($new_key_type)
             )->withIsNullable($this->is_nullable);
         }
-        return $new_element_type->asMappedUnionType(function (Type $type) : Type {
+        return $new_element_type->asMappedUnionType(function (Type $type): Type {
             return self::fromTemplateAndElementType($type, $this->is_nullable, $this->template_key_type);
         });
     }
 
-    public function hasTemplateTypeRecursive() : bool
+    public function hasTemplateTypeRecursive(): bool
     {
         return true;
     }
@@ -73,7 +75,7 @@ class GenericArrayTemplateKeyType extends GenericArrayType
      * @param CodeBase $code_base
      * @return ?Closure(UnionType, Context):UnionType
      */
-    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type) : ?Closure
+    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type): ?Closure
     {
         $element_closure = parent::getTemplateTypeExtractorClosure($code_base, $template_type);
         $key_closure = $this->template_key_type->getTemplateTypeExtractorClosure($code_base, $template_type);

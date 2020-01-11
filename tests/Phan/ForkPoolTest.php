@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan\Tests;
 
@@ -16,7 +18,7 @@ final class ForkPoolTest extends BaseTest
      * Test that workers are able to send their data back
      * to the parent process.
      */
-    public function testBasicForkJoin() : void
+    public function testBasicForkJoin(): void
     {
         $data = [
             [1, 2, 3, 4],
@@ -34,14 +36,14 @@ final class ForkPoolTest extends BaseTest
         $worker_data = [];
         $pool = new ForkPool(
             $data,
-            static function () : void {
+            static function (): void {
             },
             /**
              * This is called on every value of the arrays passed to workers
              * @param int $unused_i
              * @param int $data
              */
-            static function (int $unused_i, int $data, int $count) use (&$worker_data) : void {
+            static function (int $unused_i, int $data, int $count) use (&$worker_data): void {
                 if ($count !== 4) {
                     $worker_data[] = "Unexpected count $count";
                 }
@@ -50,7 +52,7 @@ final class ForkPoolTest extends BaseTest
             /**
              * @return list<array>
              */
-            static function () use (&$worker_data) : array {
+            static function () use (&$worker_data): array {
                 return $worker_data;
             }
         );
@@ -63,24 +65,24 @@ final class ForkPoolTest extends BaseTest
     /**
      * Test that the startup function works.
      */
-    public function testStartupFunction() : void
+    public function testStartupFunction(): void
     {
         $did_startup = false;
         $pool = new ForkPool(
             [[1], [2], [3], [4]],
-            static function () use (&$did_startup) : void {
+            static function () use (&$did_startup): void {
                 $did_startup = true;
             },
             /**
              * @param int $unused_i
              * @param mixed $unused_data
              */
-            static function (int $unused_i, $unused_data, int $unused_count) : void {
+            static function (int $unused_i, $unused_data, int $unused_count): void {
             },
             /**
              * @return array{0:bool}
              */
-            static function () use (&$did_startup) : array {
+            static function () use (&$did_startup): array {
                 return [$did_startup];
             }
         );

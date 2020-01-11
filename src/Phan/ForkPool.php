@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Phan;
 
@@ -43,7 +45,7 @@ class ForkPool
     /** @var bool did any of the child processes fail (e.g. crash or send data that couldn't be unserialized) */
     private $did_have_error = false;
 
-    private function updateProgress(int $i, Progress $progress) : void
+    private function updateProgress(int $i, Progress $progress): void
     {
         // fwrite(STDERR, "Received progress from $i " . json_encode($progress) . "\n");
         $this->progress[$i] = $progress;
@@ -70,7 +72,7 @@ class ForkPool
         $this->renderAggregateProgress();
     }
 
-    private function renderAggregateProgress() : void
+    private function renderAggregateProgress(): void
     {
         $total_progress = 0.0;
         $total_cur_mem = 0.0;
@@ -153,7 +155,7 @@ class ForkPool
                 $task_data_iterator = $process_task_data_iterator[$proc_id];
                 $this->progress[] = new Progress(0.0, 0, count($task_data_iterator));
                 $this->read_streams[] = $read_stream;
-                $this->readers[intval($read_stream)] = new Reader($read_stream, function (string $notification_type, string $payload) use ($i) : void {
+                $this->readers[intval($read_stream)] = new Reader($read_stream, function (string $notification_type, string $payload) use ($i): void {
                     switch ($notification_type) {
                         case Writer::TYPE_PROGRESS:
                             $progress = unserialize($payload);
@@ -267,7 +269,7 @@ class ForkPool
      * @return list<IssueInstance>
      * @suppress PhanAccessMethodInternal
      */
-    private function readResultsFromChildren() : array
+    private function readResultsFromChildren(): array
     {
         // Create an array of all active streams, indexed by
         // resource id.
@@ -310,7 +312,7 @@ class ForkPool
      * Exit with a non-zero exit code if any of the workers exited without sending a valid response.
      * @suppress PhanAccessMethodInternal
      */
-    private function assertAnalysisWorkersExitedNormally() : void
+    private function assertAnalysisWorkersExitedNormally(): void
     {
         // Verify that the readers worked.
         $saw_errors = false;
@@ -330,7 +332,7 @@ class ForkPool
      * Wait for all child processes to complete
      * @return list<IssueInstance>
      */
-    public function wait() : array
+    public function wait(): array
     {
         // Read all the streams from child processes into an array.
         $content = $this->readResultsFromChildren();
@@ -356,7 +358,7 @@ class ForkPool
     /**
      * Returns true if this had an error, e.g. due to memory limits or due to a child process crashing.
      */
-    public function didHaveError() : bool
+    public function didHaveError(): bool
     {
         return $this->did_have_error;
     }
