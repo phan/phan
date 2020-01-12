@@ -54,6 +54,7 @@ use Phan\Language\Type\ListType;
 use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
+use Phan\Language\Type\NonEmptyMixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\SelfType;
@@ -1596,7 +1597,6 @@ class UnionTypeVisitor extends AnalysisVisitor
             $node->children['dim'],
             true
         );
-        // echo "Getting dim $dim_type for $union_type\n";
 
         // Figure out what the types of accessed array
         // elements would be.
@@ -2024,12 +2024,15 @@ class UnionTypeVisitor extends AnalysisVisitor
         // Figure out what the types of accessed array
         // elements would be
         // TODO: Account for Traversable once there are generics for Traversable
+        // TODO: Warn about possibly invalid unpack (e.g. nullable)
         $generic_types = $union_type->iterableValueUnionType($this->code_base);
 
         // If we have generics, we're all set
         try {
             if ($generic_types->isEmpty()) {
-                if (!$union_type->asExpandedTypes($this->code_base)->hasIterable() && !$union_type->hasType(MixedType::instance(false))) {
+                if (!$union_type->asExpandedTypes($this->code_base)->hasIterable() && !$union_type->hasTypeMatchingCallback(static function (Type $type): bool {
+                    return !$type->isNullable() && $type instanceof MixedType;
+                })) {
                     throw new IssueException(
                         Issue::fromType(Issue::TypeMismatchUnpackValue)(
                             $this->context->getFile(),
@@ -3792,7 +3795,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                     // And mixed could be a Traversable.
                     // So, don't infer anything if the union type contains any instances of the four classes.
                     // TODO: Check the expanded union type instead of anything with a class of exactly Type, searching for Traversable?
-                    if (\in_array(\get_class($type), [Type::class, IterableType::class, TemplateType::class, MixedType::class], true)) {
+                    if (\in_array(\get_class($type), [Type::class, IterableType::class, TemplateType::class, MixedType::class, NonEmptyMixedType::class], true)) {
                         return null;
                     }
                 }

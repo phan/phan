@@ -38,6 +38,7 @@ function test_unknown_field_type($x) {
     }
     // src/mixed.php:4 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type array|array{field:array}|array{field:null}|non-empty-array<mixed,mixed>
     // Inferring mixed for the non-array case instead of null is one way to fix that.
+    // TODO: non-empty-mixed is too strong of an inference for negation.
     '@phan-debug-var $x';
     if (is_string($x['field'])) {
         return false;

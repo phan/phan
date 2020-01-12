@@ -382,7 +382,7 @@ final class EmptyUnionType extends UnionType
     /** @override */
     public function nonFalseyClone(): UnionType
     {
-        return $this;
+        return UnionType::fromFullyQualifiedRealString('non-empty-mixed');
     }
 
     /**

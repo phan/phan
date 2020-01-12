@@ -1,1 +1,2 @@
-%s:11 PhanTypeMismatchReturn Returning type 'somefile.txt' but read() is declared to return array
+%s:11 PhanPossiblyUndeclaredVariable Variable $file is possibly undeclared
+%s:11 PhanTypeMismatchReturn Returning type ?'somefile.txt'= but read() is declared to return array

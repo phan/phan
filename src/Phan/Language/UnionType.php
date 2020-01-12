@@ -1525,7 +1525,11 @@ class UnionType implements Serializable
             $result[] = $type->asNonFalseyType();
         }
         // TODO: Preserve real types
-        return $result;
+        if ($result) {
+            return $result;
+        }
+        static $non_empty_mixed = null;
+        return $non_empty_mixed ?? ($non_empty_mixed = UnionType::typeSetFromString('non-empty-mixed'));
     }
 
     /**

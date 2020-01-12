@@ -9,13 +9,15 @@ use Phan\Language\Context;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 
+use function class_exists;
+
 /**
  * Represents the PHPDoc `mixed` type, which can cast to/from any type
  *
  * For purposes of analysis, there's usually no difference between mixed and nullable mixed.
  * @phan-pure
  */
-final class MixedType extends NativeType
+class MixedType extends NativeType
 {
     /** @phan-override */
     public const NAME = 'mixed';
@@ -145,4 +147,10 @@ final class MixedType extends NativeType
     {
         return ArrayType::instance(false);
     }
+
+    public function asNonFalseyType(): Type
+    {
+        return NonEmptyMixedType::instance(false);
+    }
 }
+class_exists(NonEmptyMixedType::class);
