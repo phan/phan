@@ -6,7 +6,7 @@ class Example {
         if (!$token || !file_exists($file = 'somefile.txt')) {
             return [];
         }
-
+        // TODO: Fix handling of assignments in arguments
         // Should infer the type of $file
         return $file;
     }

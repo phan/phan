@@ -44,6 +44,7 @@ use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
+use Phan\Language\Type\NonEmptyMixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\StringType;
@@ -278,7 +279,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $dim_node = $node->children['dim'];
             $dim_value = $dim_node instanceof Node ? (new ContextNode($this->code_base, $this->context, $dim_node))->getEquivalentPHPScalarValue() : $dim_node;
             // unset($x[$i]) should convert a list<T> or non-empty-list<T> to an array<Y>
-            $union_type = $union_type->withAssociativeArrays(true);
+            $union_type = $union_type->withAssociativeArrays(true)->asMappedUnionType(static function (Type $type): Type {
+                if ($type instanceof NonEmptyMixedType) {
+                    return MixedType::instance($type->isNullable());
+                }
+                return $type;
+            });
             $variable = clone($variable);
             $context->addScopeVariable($variable);
             $variable->setUnionType($union_type);

@@ -757,10 +757,9 @@ class ContextNode
 
             if (!$union_type->isEmpty()
                 && $union_type->isNativeType()
-                && !$union_type->hasAnyType([
-                    MixedType::instance(false),
-                    ObjectType::instance(false),
-                ])
+                && !$union_type->hasTypeMatchingCallback(static function (Type $type): bool {
+                    return !$type->isNullable() && ($type instanceof MixedType || $type instanceof ObjectType);
+                })
                 // reject `$stringVar->method()` but not `$stringVar::method()` and not (`new $stringVar()`
                 && !(($is_static || $is_new_expression) && $union_type->hasNonNullStringType())
                 && !(

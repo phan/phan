@@ -106,7 +106,7 @@ final class VoidType extends NativeType
                 return true;
             }
         }
-        if ($type instanceof MixedType) {
+        if (\get_class($type) === MixedType::class) {
             return true;
         }
 
@@ -125,7 +125,7 @@ final class VoidType extends NativeType
             return true;
         }
 
-        if ($type instanceof MixedType) {
+        if (\get_class($type) === MixedType::class) {
             return true;
         }
 
@@ -176,7 +176,7 @@ final class VoidType extends NativeType
             }
         }
         if ($type instanceof MixedType) {
-            return true;
+            return !$type instanceof NonEmptyMixedType;
         }
 
         // Test to see if we can cast to the non-nullable version

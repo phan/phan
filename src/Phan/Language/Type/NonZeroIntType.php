@@ -167,7 +167,7 @@ final class NonZeroIntType extends IntType
     {
         if ($other instanceof LiteralIntType) {
             return (bool)$other->getValue();
-        } elseif ($other instanceof NonZeroIntType)  {
+        } elseif ($other instanceof NonZeroIntType) {
             return true;
         }
         return parent::canCastToDeclaredType($code_base, $context, $other);

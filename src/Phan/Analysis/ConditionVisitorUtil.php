@@ -31,8 +31,8 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\FalseType;
-use Phan\Language\Type\IterableType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\IterableType;
 use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\LiteralTypeInterface;
@@ -213,13 +213,10 @@ trait ConditionVisitorUtil
                         return true;
                     }
                 }
-                return $type->containsFalsey();
+                return $type->containsFalsey() || !$type->hasRealTypeSet();
             },
             function (UnionType $type) use ($var_node, $context): UnionType {
                 $result = $type->nonFalseyClone();
-                if (!$result->isEmpty()) {
-                    return $result;
-                }
                 $fallback = $this->getTypesFallback($var_node, $context);
                 if (!$fallback) {
                     return $result;
@@ -978,13 +975,13 @@ trait ConditionVisitorUtil
                         $union_type = $union_type->nonNullableClone();
                     }
                 }
-                if ($union_type->hasPhpdocOrRealTypeMatchingCallback(static function (Type $type) : bool {
+                if ($union_type->hasPhpdocOrRealTypeMatchingCallback(static function (Type $type): bool {
                     return \get_class($type) === IntType::class;
                 })) {
                     // @phan-suppress-next-line PhanAccessMethodInternal
                     if (!Type::performComparison(0, $expr_value, $flags)) {
-                        // E.g. $x > 0 will remove the type null.
-                        $union_type = $union_type->asMappedUnionType(static function (Type $type) : Type {
+                        // E.g. $x > 0 will convert int to non-zero-int
+                        $union_type = $union_type->asMappedUnionType(static function (Type $type): Type {
                             if (\get_class($type) === IntType::class) {
                                 return NonZeroIntType::instance($type->isNullable());
                             }
@@ -1084,8 +1081,6 @@ trait ConditionVisitorUtil
                         return $this->removeFalseyFromVariable($var_node, $context, false);
                     }
                     return $this->removeFalseFromVariable($var_node, $context);
-                } elseif ($expr == null) {
-                    $context = $this->removeNullFromVariable($var_node, $context, false);
                 } elseif ($expr == true) {  // e.g. 1, "1", -1
                     return $this->removeTrueFromVariable($var_node, $context);
                 }
@@ -1561,11 +1556,9 @@ trait ConditionVisitorUtil
         }
         // Give the field an unused stub name and compute the new type
         $old_field_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $context, $node);
-        // echo "Old field type is {$old_field_type->getDebugRepresentation()}\n";
         $field_variable = new Variable($context, "__phan", $old_field_type, 0);
         $type_modification_callback($this->code_base, $context, $field_variable, $args);
         $new_field_type = $field_variable->getUnionType();
-        // echo "New field type is {$new_field_type->getDebugRepresentation()}\n";
         if ($new_field_type->isIdenticalTo($old_field_type)) {
             return $context;
         }

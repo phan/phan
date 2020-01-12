@@ -54,6 +54,7 @@ use Phan\Language\Type\NativeType;
 use Phan\Language\Type\NonEmptyAssociativeArrayType;
 use Phan\Language\Type\NonEmptyGenericArrayType;
 use Phan\Language\Type\NonEmptyListType;
+use Phan\Language\Type\NonEmptyMixedType;
 use Phan\Language\Type\NonEmptyStringType;
 use Phan\Language\Type\NonZeroIntType;
 use Phan\Language\Type\NullType;
@@ -102,17 +103,17 @@ class Type
      * A legal type identifier (e.g. 'int' or 'DateTime')
      */
     public const simple_type_regex =
-        '(\??)(?:callable-(?:string|object|array)|associative-array|class-string|non-(?:zero-int|empty-(?:associative-array|array|list|string))|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
+        '(\??)(?:callable-(?:string|object|array)|associative-array|class-string|non-(?:zero-int|empty-(?:associative-array|array|list|string|mixed))|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
 
     public const simple_noncapturing_type_regex =
-        '\\\\?(?:callable-(?:string|object|array)|associative-array|class-string|non-(?:zero-int|empty-(?:associative-array|array|list|string))|[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
+        '\\\\?(?:callable-(?:string|object|array)|associative-array|class-string|non-(?:zero-int|empty-(?:associative-array|array|list|string|mixed))|[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
 
     /**
      * @var string
      * A legal type identifier (e.g. 'int' or 'DateTime')
      */
     public const simple_type_regex_or_this =
-        '(\??)(callable-(?:string|object|array)|associative-array|class-string|non-(?:zero-int|empty-(?:associative-array|array|list|string))|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*|\$this)';
+        '(\??)(callable-(?:string|object|array)|associative-array|class-string|non-(?:zero-int|empty-(?:associative-array|array|list|string|mixed))|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*|\$this)';
 
     public const shape_key_regex =
         '(?:[-.\/^;$%*+_a-zA-Z0-9\x7f-\xff]|\\\\(?:[nrt\\\\]|x[0-9a-fA-F]{2}))+\??';
@@ -238,6 +239,7 @@ class Type
         'mixed'           => true,
         'non-empty-array' => true,
         'non-empty-associative-array' => true,
+        'non-empty-mixed' => true,
         'non-empty-list'  => true,
         'non-empty-string' => true,
         'non-zero-int'    => true,
@@ -795,6 +797,8 @@ class Type
                 return ListType::fromElementType(MixedType::instance(false), $is_nullable);
             case 'mixed':
                 return MixedType::instance($is_nullable);
+            case 'non-empty-mixed':
+                return NonEmptyMixedType::instance($is_nullable);
             case 'non-empty-array':
                 return NonEmptyGenericArrayType::fromElementType(MixedType::instance(false), $is_nullable, GenericArrayType::KEY_MIXED);
             case 'non-empty-associative-array':
@@ -2962,7 +2966,7 @@ class Type
         }
 
         if ($type instanceof MixedType) {
-            return true;
+            return \get_class($type) === MixedType::class || $this->isPossiblyTruthy();
         }
 
         // A nullable type cannot cast to a non-nullable type

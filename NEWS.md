@@ -28,6 +28,7 @@ New Features(Analysis):
 + Support the `non-empty-string` type in phpdoc comments (neither `''` nor `'0'`).
   Warn about redundant/impossible checks of `non-empty-string`.
 + Support the `non-zero-int` type in phpdoc comments. Infer it in real types and warn about redundant checks for zero/truthiness.
++ Support the the `non-empty-mixed` in phpdoc comments and in inferences.
 
 Bug fixes:
 + Fix a crash analyzing assignment operations on `$GLOBALS` such as `$GLOBALS['var'] += expr;` (#3615)
