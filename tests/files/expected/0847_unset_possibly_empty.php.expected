@@ -1,0 +1,2 @@
+%s:10 PhanRedundantCondition Redundant attempt to cast $result of type non-empty-mixed to truthy
+%s:24 PhanRedundantCondition Redundant attempt to cast $result of type non-empty-associative-array<mixed> to truthy

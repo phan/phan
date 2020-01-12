@@ -1753,13 +1753,11 @@ class AssignmentVisitor extends AnalysisVisitor
     public function typeCheckDimAssignment(UnionType $assign_type, Node $node): UnionType
     {
         static $int_or_string_type = null;
-        static $mixed_type = null;
         static $string_array_type = null;
         static $simple_xml_element_type = null;
 
         if ($int_or_string_type === null) {
             $int_or_string_type = UnionType::fromFullyQualifiedPHPDocString('int|string');
-            $mixed_type = MixedType::instance(false);
             $string_array_type = UnionType::fromFullyQualifiedPHPDocString('string[]');
             $simple_xml_element_type =
                 Type::fromNamespaceAndName('\\', 'SimpleXMLElement', false);
@@ -1817,7 +1815,9 @@ class AssignmentVisitor extends AnalysisVisitor
                         return StringType::instance(false)->asPHPDocUnionType();
                     }
                 }
-            } elseif (!$assign_type->hasType($mixed_type) && !$assign_type->hasType($simple_xml_element_type)) {
+            } elseif (!$assign_type->hasTypeMatchingCallback(static function (Type $type) use ($simple_xml_element_type) : bool {
+                return !$type->isNullable() && ($type instanceof MixedType || $type === $simple_xml_element_type);
+            })) {
                 // Imitate the check in UnionTypeVisitor, don't warn for mixed, etc.
                 $this->emitIssue(
                     Issue::TypeArraySuspicious,
