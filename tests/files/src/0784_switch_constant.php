@@ -55,6 +55,9 @@ class Main {
             // Check that Phan won't crash. It can't analyze this to infer that $x would be null
             case !$x:
                 var_export(is_string($x));
+                if ($x) {  // Phan should warn
+                    echo "Definitely still truthy\n";
+                }
                 break;
             case !is_object($y):
                 echo strlen($y);  // should infer $y is an object (false == 0 in php)

@@ -1,2 +1,2 @@
-%s:23 PhanImpossibleTypeComparison Impossible attempt to check if $result of type bool is identical to MY_GLOBAL of type 2
-%s:31 PhanImpossibleTypeComparison Impossible attempt to check if !$e->getCode() of type bool is identical to HasConst::MY_VAL of type 1
+%s:23 PhanSuspiciousValueComparison Suspicious attempt to compare $result of type bool to MY_GLOBAL of type 2 with operator '==='
+%s:31 PhanSuspiciousValueComparison Suspicious attempt to compare !$e->getCode() of type bool to HasConst::MY_VAL of type 1 with operator '==='

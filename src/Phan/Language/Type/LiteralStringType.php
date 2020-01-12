@@ -262,6 +262,8 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
                         return false;
                     }
                     break;
+                case 'non-empty-string':
+                    return (bool)$this->value;
             }
         }
 
@@ -279,6 +281,8 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
                         }
                     }
                     return true;
+                case 'non-empty-string':
+                    return (bool)$this->value;
                 case 'int':
                     // Allow int or float strings to cast to int or floats
                     if (filter_var($this->value, FILTER_VALIDATE_INT) === false) {
@@ -312,6 +316,8 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
                         return $type->value === $this->value;
                     }
                     return true;
+                case 'non-empty-string':
+                    return (bool)$this->value;
                 default:
                     return false;
             }
@@ -330,6 +336,8 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
             if ($type instanceof StringType) {
                 if ($type instanceof LiteralStringType) {
                     return $type->value === $this->value;
+                } elseif ($type instanceof NonEmptyStringType) {
+                    return (bool)$this->value;
                 }
                 return true;
             }
@@ -411,15 +419,15 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
             if ($other instanceof LiteralTypeInterface) {
                 return $other->getValue() == $this->value;
             }
-            if ($other instanceof NullType || $other instanceof FalseType) {
-                // Allow 0 == null but not 1 == null
-                if (!$this->isPossiblyFalsey()) {
-                    return false;
-                }
-            }
-            return true;
+            // Allow 0 == null but not 1 == null
+            return $this->value ? ($this->is_nullable || $other->isPossiblyTruthy()) : $other->isPossiblyFalsey();
         }
         return parent::weaklyOverlaps($other);
+    }
+
+    public function asNonFalseyType(): Type
+    {
+        return $this->value ? $this->withIsNullable(false) : NonEmptyStringType::instance(false);
     }
 }
 

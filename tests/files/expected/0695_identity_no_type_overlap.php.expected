@@ -4,5 +4,5 @@
 %s:8 PhanImpossibleTypeComparison Impossible attempt to check if $obj of type \stdClass is identical to $bool of type bool
 %s:9 PhanImpossibleTypeComparison Impossible attempt to check if $obj of type \stdClass is identical to $bool of type bool
 %s:10 PhanImpossibleTypeComparison Impossible attempt to check if $obj of type \stdClass is identical to $nullableBool of type ?bool
-%s:12 PhanImpossibleTypeComparison Impossible attempt to check if $bool of type bool is identical to null of type null
+%s:12 PhanSuspiciousValueComparison Suspicious attempt to compare $bool of type bool to null of type null with operator '==='
 %s:16 PhanImpossibleTypeComparison Impossible attempt to check if $nullableObj of type ?\stdClass is identical to true of type true

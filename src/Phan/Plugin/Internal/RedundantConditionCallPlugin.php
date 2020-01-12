@@ -431,9 +431,12 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
         $code_base = $this->code_base;
         $left = $left->getRealUnionType()->withStaticResolvedInContext($this->context);
         $right = $right->getRealUnionType()->withStaticResolvedInContext($this->context);
-        $left_non_literal = $left->asNonLiteralType();
-        $right_non_literal = $right->asNonLiteralType();
-        if (!$left_non_literal->hasAnyTypeOverlap($code_base, $right_non_literal) && ($strict || !$left->hasAnyWeakTypeOverlap($right))) {
+        // $left_non_literal = $left->asNonLiteralType();
+        // $right_non_literal = $right->asNonLiteralType();
+        if ($this->checkUselessScalarComparison($node, $left->getRealUnionType(), $right->getRealUnionType())) {
+            return;
+        }
+        if (!$left->hasAnyTypeOverlap($code_base, $right) && ($strict || !$left->hasAnyWeakTypeOverlap($right))) {
             $this->emitIssueForBinaryOp(
                 $node,
                 $left,
@@ -443,24 +446,22 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
                     return !$new_left_type->hasAnyTypeOverlap($code_base, $new_right_type) && ($strict || !$new_left_type->hasAnyWeakTypeOverlap($new_right_type));
                 }
             );
-        } else {
-            $this->checkUselessScalarComparison($node, $left->getRealUnionType(), $right->getRealUnionType());
         }
     }
 
     /**
      * @suppress PhanAccessMethodInternal
      */
-    private function checkUselessScalarComparison(Node $node, UnionType $left, UnionType $right): void
+    private function checkUselessScalarComparison(Node $node, UnionType $left, UnionType $right): bool
     {
         // Give up if any of the sides aren't constant
         $left_values = $left->asScalarValues(true);
         if (!$left_values) {
-            return;
+            return false;
         }
         $right_values = $right->asScalarValues(true);
         if (!$right_values) {
-            return;
+            return false;
         }
         $issue_args = [
             ASTReverter::toShortString($node->children['left']),
@@ -473,7 +474,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
         $left_count = count($left_values);
         $right_count = count($right_values);
         if ($left_count * $right_count > 100) {
-            return;
+            return false;
         }
         $unique_results = [];
         try {
@@ -482,12 +483,12 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
                     $value = InferValue::computeBinaryOpResult($left_value, $right_value, $node->flags);
                     $unique_results[\serialize($value)] = $value;
                     if (count($unique_results) > 1) {
-                        return;
+                        return false;
                     }
                 }
             }
         } catch (Error $_) {
-            return;
+            return false;
         }
 
         $context = $this->context;
@@ -528,7 +529,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
                         ...$issue_args
                     );
                 });
-                return;
+                return true;
             }
         }
         // Go on to warn if the values comparison result doesn't vary.
@@ -546,6 +547,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
             $node->lineno,
             ...$issue_args
         );
+        return true;
     }
 
     /**

@@ -30,9 +30,9 @@ function testNegate341B(?int $x) {
 
 function testNegate341C(?int $x) {
     if (empty($x)) {
-        intdiv($x, 2);  // wrong if it's null, can be null or 0 (?int)
+        intdiv($x, 2);  // wrong if it's null, can be null or 0 (?0)
     } else {
-        echo strlen($x);  // infers that $x is int and warns
+        echo strlen($x);  // infers that $x is non-zero-int and warns
     }
 }
 

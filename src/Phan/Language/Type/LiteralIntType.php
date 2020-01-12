@@ -133,9 +133,11 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
             switch ($type::NAME) {
                 case 'int':
                     if ($type instanceof LiteralIntType) {
-                        return $type->getValue() === $this->getValue();
+                        return $type->value === $this->value;
                     }
                     return true;
+                case 'non-zero-int':
+                    return (bool)$this->value;
                 case 'string':
                     if ($type instanceof LiteralStringType) {
                         if ($type->getValue() != $this->value) {
@@ -183,14 +185,16 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
             switch ($type::NAME) {
                 case 'int':
                     if ($type instanceof LiteralIntType) {
-                        return $type->getValue() === $this->getValue();
+                        return $type->value === $this->value;
                     }
                     return true;
                 case 'float':
                     if ($type instanceof LiteralFloatType) {
-                        return $type->getValue() == $this->getValue();
+                        return $type->getValue() == $this->value;
                     }
                     return true;
+                case 'non-zero-int':
+                    return (bool)$this->value;
                 default:
                     return false;
             }
@@ -208,7 +212,10 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
         if ($type instanceof ScalarType) {
             if ($type instanceof IntType) {
                 if ($type instanceof LiteralIntType) {
-                    return $type->getValue() === $this->getValue();
+                    return $type->value === $this->value;
+                }
+                if ($type instanceof NonZeroIntType) {
+                    return (bool)$this->value;
                 }
                 return true;
             }
@@ -262,13 +269,7 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
             if ($other instanceof LiteralTypeInterface) {
                 return $other->getValue() == $this->value;
             }
-            if ($other instanceof NullType || $other instanceof FalseType) {
-                // Allow 0 == null but not 1 == null
-                if (!$this->isPossiblyFalsey()) {
-                    return false;
-                }
-            }
-            return true;
+            return $this->value ? ($this->is_nullable || $other->isPossiblyTruthy()) : $other->isPossiblyFalsey();
         }
         return parent::weaklyOverlaps($other);
     }
@@ -277,8 +278,15 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
     {
         if ($other instanceof LiteralIntType) {
             return $other->value === $this->value;
+        } elseif ($other instanceof NonZeroIntType) {
+            return (bool)$this->value;
         }
         return parent::canCastToDeclaredType($code_base, $context, $other);
+    }
+
+    public function asNonFalseyType(): Type
+    {
+        return $this->value ? $this->withIsNullable(false) : NonZeroIntType::instance(false);
     }
 }
 
